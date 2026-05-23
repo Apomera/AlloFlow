@@ -88,15 +88,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     },
     chesapeake: {
       id: 'chesapeake', label: 'Chesapeake Bay',
-      buoyage: 'IALA-B', portName: 'Annapolis', complete: false
+      buoyage: 'IALA-B',
+      portName: 'Annapolis',
+      portCoords: 'Sparks Wharf · 38.9784° N, 76.4922° W',
+      landmarks: ['Thomas Point Shoal Light', 'Sandy Point', 'Kent Island', 'Severn River'],
+      dmrAuthority: 'Maryland Department of Natural Resources',
+      complete: true
     },
     pnw: {
       id: 'pnw', label: 'Pacific Northwest',
-      buoyage: 'IALA-B', portName: 'Anacortes', complete: false
+      buoyage: 'IALA-B',
+      portName: 'Anacortes',
+      portCoords: 'Cap Sante Marina · 48.5186° N, 122.6083° W',
+      landmarks: ['Lime Kiln Light', 'Burrows Island', 'Guemes Channel', 'Mount Baker View'],
+      dmrAuthority: 'Washington Department of Fish and Wildlife',
+      complete: true
     },
     greatlakes: {
       id: 'greatlakes', label: 'Great Lakes',
-      buoyage: 'IALA-B', portName: 'Sault Ste. Marie', complete: false
+      buoyage: 'IALA-B',
+      portName: 'Sault Ste. Marie',
+      portCoords: 'Soo Locks Marina · 46.5011° N, 84.3622° W',
+      landmarks: ['Point Iroquois Light', 'Whitefish Point', 'St. Marys River', 'Round Island'],
+      dmrAuthority: 'Great Lakes Fishery Commission',
+      complete: true
     }
   };
   var DEFAULT_REGION = 'maine';
@@ -309,6 +324,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       stewardship: 'Range-shifting north as Gulf warms. Maine landings have grown 10×+ in past decade. New regulations being developed.',
       cite: 'ASMFC + climate.gov' }
   ];
+
+  var CHESAPEAKE_SPECIES = [
+    { id: 'stripedbass', name: 'Striped Bass (Rockfish)', sci: 'Morone saxatilis', emoji: '🐟', group: 'inshore',
+      minSize: 19, slot: '19-24 inches', dailyBag: 1, season: 'May 16 – Dec 10',
+      idMarks: 'Seven or eight dark horizontal stripes; two dorsal fins; silver sides.',
+      gear: ['trolling', 'casting', 'chumming'], depth: '1-15 m',
+      habitat: 'Estuarine channels, tidal flats, bridge pilings',
+      stewardship: 'Chesapeake Bay is the primary spawning ground for the Atlantic coast stock. Spawning biomass is under heavy pressure; slot limits protect key breeding-age fish.',
+      cite: 'MD-DNR' },
+    { id: 'bluefish', name: 'Bluefish', sci: 'Pomatomus saltatrix', emoji: '🐟', group: 'pelagic',
+      minSize: 8, slot: null, dailyBag: 3, season: 'Open year-round',
+      idMarks: 'Sleek blue-green back, silver sides, sharp teeth, deeply forked tail.',
+      gear: ['trolling', 'casting', 'metal lures'], depth: 'surface to 15 m',
+      habitat: 'Open water bays, coastal inlets',
+      stewardship: 'Managed under rebuilding plan to restrict commercial and recreational harvest along the Atlantic coast.',
+      cite: 'ASMFC' },
+    { id: 'whiteperch', name: 'White Perch', sci: 'Morone americana', emoji: '🐟', group: 'inshore',
+      minSize: 9, slot: null, dailyBag: 25, season: 'Open',
+      idMarks: 'Deep silvery body, no distinct stripes, dark back.',
+      gear: ['light tackle', 'bait fishing'], depth: '2-10 m',
+      habitat: 'Brackish creeks, tidal rivers, shallow weed beds',
+      stewardship: 'Highly abundant throughout the Bay. Provides excellent eating and sustainable recreational opportunities.',
+      cite: 'MD-DNR' },
+    { id: 'bluecrab', name: 'Blue Crab', sci: 'Callinectes sapidus', emoji: '🦀', group: 'shellfish',
+      minSize: 5, slot: '5"+ carapace', dailyBag: 24, season: 'April 1 – Dec 15',
+      idMarks: 'Bright blue claws (tips red in females), olive-green carapace, paddle-like back swimming legs.',
+      gear: ['crab pots', 'trotline'], depth: '1-5 m',
+      habitat: 'Eelgrass beds, shallow muddy bottoms, tidal creeks',
+      stewardship: 'Female crabs carrying visible orange egg masses (sponges) are strictly protected to protect the reproductive pool. Size limits apply to hard crabs, peelers, and soft crabs.',
+      cite: 'MD-DNR & VMRC' }
+  ];
+
+  var PNW_SPECIES = [
+    { id: 'chinook', name: 'Chinook Salmon (King)', sci: 'Oncorhynchus tshawytscha', emoji: '🐟', group: 'pelagic',
+      minSize: 22, slot: null, dailyBag: 2, season: 'July 16 – Sept 30 (varies)',
+      idMarks: 'Dark mouth with black gums, spots on both upper and lower lobes of the tail.',
+      gear: ['trolling', 'mooching', 'spinning'], depth: '10-60 m',
+      habitat: 'Open ocean, coastal bays, river estuaries',
+      stewardship: 'Keystone species for Pacific Northwest ecosystems and resident Orcas. Hatchery fish (clipped adipose fin) may be kept, while wild fish must often be released.',
+      cite: 'WDFW' },
+    { id: 'coho', name: 'Coho Salmon (Silver)', sci: 'Oncorhynchus kisutch', emoji: '🐟', group: 'pelagic',
+      minSize: 16, slot: null, dailyBag: 2, season: 'July 1 – Sept 30 (varies)',
+      idMarks: 'White gums, dark back, spots only on upper lobe of the tail.',
+      gear: ['trolling', 'casting', 'fly fishing'], depth: '5-30 m',
+      habitat: 'Surface ocean waters, river mouths',
+      stewardship: 'Wild populations are sensitive; regulations frequently require release of unclipped wild fish.',
+      cite: 'WDFW' },
+    { id: 'halibut', name: 'Pacific Halibut', sci: 'Hippoglossus stenolepis', emoji: '🐟', group: 'groundfish',
+      minSize: null, slot: null, dailyBag: 1, season: 'Selected Spring days',
+      idMarks: 'Massive flatfish, right-eyed, white underside, brown mottled top.',
+      gear: ['heavy bottom rig'], depth: '30-150 m',
+      habitat: 'Deep gravel and sand flats',
+      stewardship: 'Slow growth and late maturity. Strictly managed via quotas by the International Pacific Halibut Commission.',
+      cite: 'IPHC' },
+    { id: 'dungeness', name: 'Dungeness Crab', sci: 'Metacarcinus magister', emoji: '🦀', group: 'shellfish',
+      minSize: 6.25, slot: '6.25"+ carapace', dailyBag: 6, season: 'Year-round (varies)',
+      idMarks: 'Purplish-brown shell, white-tipped claws, rounded carapace.',
+      gear: ['crab pots', 'ring nets'], depth: '5-40 m',
+      habitat: 'Sandy and muddy ocean bottoms, eelgrass beds',
+      stewardship: 'Male-only harvest: females must be released immediately to protect spawning capability. Carapace width measured point-to-point (spike-to-spike).',
+      cite: 'WDFW' }
+  ];
+
+  var GREATLAKES_SPECIES = [
+    { id: 'laketrout', name: 'Lake Trout', sci: 'Salvelinus namaycush', emoji: '🐟', group: 'groundfish',
+      minSize: 15, slot: null, dailyBag: 3, season: 'Jan 1 – Sept 30',
+      idMarks: 'Light spots on dark background, deeply forked tail, white leading edges on pelvic fins.',
+      gear: ['trolling', 'jigging'], depth: '10-50 m',
+      habitat: 'Deep cold lake basins, rocky reefs',
+      stewardship: 'Severely impacted historically by invasive sea lampreys and overfishing. Populations are recovering through restocking and sea lamprey control.',
+      cite: 'GLFC' },
+    { id: 'walleye', name: 'Walleye', sci: 'Sander vitreus', emoji: '🐟', group: 'groundfish',
+      minSize: 15, slot: null, dailyBag: 6, season: 'May 15 – March 15',
+      idMarks: 'Large glassy eyes (reflect light), golden sides, white tip on lower tail lobe.',
+      gear: ['trolling', 'jigging', 'casting'], depth: '3-15 m',
+      habitat: 'Gravel reefs, weed margins, turbid river mouths',
+      stewardship: 'Prized sport and table fish. Managed with size limits to ensure fish reach maturity and spawn.',
+      cite: 'GLFC' },
+    { id: 'yellowperch', name: 'Yellow Perch', sci: 'Perca flavescens', emoji: '🐟', group: 'inshore',
+      minSize: 7, slot: null, dailyBag: 25, season: 'Open',
+      idMarks: 'Bright yellow-green body, 6-8 dark vertical bands, orange fins.',
+      gear: ['light tackle', 'bait fishing'], depth: '2-15 m',
+      habitat: 'Lake bays, weed beds, sandy shores',
+      stewardship: 'Highly prolific but subject to localized population pressures. Managed to balance sport catch and forage base.',
+      cite: 'GLFC' },
+    { id: 'crayfish', name: 'Crayfish (Northern)', sci: 'Faxonius virilis', emoji: '🦞', group: 'shellfish',
+      minSize: 3, slot: '3"+ body length', dailyBag: 50, season: 'Open year-round',
+      idMarks: 'Lobster-like appearance, dark brownish-green body, segmented tail.',
+      gear: ['crayfish traps', 'dip nets'], depth: '0.5-3 m',
+      habitat: 'Rocky lake margins, stream beds',
+      stewardship: 'Important detritivore and prey species. Do not transport live crayfish between watersheds to prevent spreading invasive species (like Rusty Crayfish).',
+      cite: 'GLFC' }
+  ];
+
+  function getSpeciesForRegion(reg) {
+    if (reg === 'chesapeake') return CHESAPEAKE_SPECIES;
+    if (reg === 'pnw') return PNW_SPECIES;
+    if (reg === 'greatlakes') return GREATLAKES_SPECIES;
+    return MAINE_SPECIES;
+  }
 
   // ───────────────────────────────────────────────────────────
   // DATA: GEAR & METHODS
@@ -7530,9 +7645,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var W = canvas.clientWidth || 720;
     var H = canvas.clientHeight || 420;
 
+    var activeRegion = (opts && opts.region) || 'maine';
+
+    var skyColorHex = 0x9bc4d8;
+    var fogColorHex = 0xa8c8d8;
+    var waterColorHex = 0x2f6a8c;
+    var sunColorHex = 0xfff2c8;
+    var ambientColorHex = 0xeaf2f8;
+    
+    if (activeRegion === 'chesapeake') {
+      skyColorHex = 0xfef08a; // warm golden sky
+      fogColorHex = 0xfef9c3;
+      waterColorHex = 0x3c645c; // olive-green water
+      sunColorHex = 0xfef08a;
+      ambientColorHex = 0xfefadc;
+    } else if (activeRegion === 'pnw') {
+      skyColorHex = 0x94a3b8; // damp overcast sky
+      fogColorHex = 0xa1a1aa;
+      waterColorHex = 0x1e293b; // dark water
+      sunColorHex = 0xe4e4e7;
+      ambientColorHex = 0xf1f5f9;
+    } else if (activeRegion === 'greatlakes') {
+      skyColorHex = 0xbae6fd; // crystal clear sky
+      fogColorHex = 0xe0f2fe;
+      waterColorHex = 0x0d9488; // turquoise freshwater water
+      sunColorHex = 0xffffff;
+      ambientColorHex = 0xf0f9ff;
+    }
+
     var scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x9bc4d8); // hazy sky
-    var fogColor = new THREE.Color(0xa8c8d8);
+    scene.background = new THREE.Color(skyColorHex);
+    var fogColor = new THREE.Color(fogColorHex);
     scene.fog = new THREE.Fog(fogColor, 80, 480);
 
     var camera = new THREE.PerspectiveCamera(65, W / H, 0.5, 1200);
@@ -7552,9 +7695,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     renderer.shadowMap.enabled = false; // perf
 
     // Lights
-    var ambient = new THREE.AmbientLight(0xeaf2f8, 0.65);
+    var ambient = new THREE.AmbientLight(ambientColorHex, 0.65);
     scene.add(ambient);
-    var sun = new THREE.DirectionalLight(0xfff2c8, 0.9);
+    var sun = new THREE.DirectionalLight(sunColorHex, 0.9);
     sun.position.set(60, 80, 40);
     scene.add(sun);
     var fill = new THREE.HemisphereLight(0xb0d6ee, 0x4a6878, 0.5);
@@ -7562,7 +7705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // Water plane
     var waterGeo = new THREE.PlaneGeometry(1400, 1400, 80, 80);
-    var waterMat = new THREE.MeshLambertMaterial({ color: 0x2f6a8c, transparent: true, opacity: 0.95 });
+    var waterMat = new THREE.MeshLambertMaterial({ color: waterColorHex, transparent: true, opacity: 0.95 });
     var water = new THREE.Mesh(waterGeo, waterMat);
     water.rotation.x = -Math.PI / 2;
     water.position.y = 0;
@@ -7576,21 +7719,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       initialZ[iw] = waterPosArr[iw * 3 + 2];
     }
 
-    // ─── Pine Trees and Shoreline Islands
-    function createPineTree(x, z) {
+    // ─── Procedural Vegetation Generator
+    function createTree(x, z) {
       var tree = new THREE.Group();
-      var trunkGeo = new THREE.CylinderGeometry(0.1, 0.15, 0.8, 5);
-      var trunkMat = new THREE.MeshLambertMaterial({ color: 0x4a3b32 }); // brown
-      var trunk = new THREE.Mesh(trunkGeo, trunkMat);
-      trunk.position.y = 0.4;
-      tree.add(trunk);
-
-      var foliageGeo = new THREE.ConeGeometry(0.5, 1.6, 5);
-      var foliageMat = new THREE.MeshLambertMaterial({ color: 0x14532d }); // deep green
-      var foliage = new THREE.Mesh(foliageGeo, foliageMat);
-      foliage.position.y = 1.4;
-      tree.add(foliage);
-
+      
+      if (activeRegion === 'chesapeake') {
+        // Deciduous tree: yellow-green dodecahedron + thin brown trunk
+        var trunkGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.7, 5);
+        var trunkMat = new THREE.MeshLambertMaterial({ color: 0x4a3b32 });
+        var trunk = new THREE.Mesh(trunkGeo, trunkMat);
+        trunk.position.y = 0.35;
+        tree.add(trunk);
+        
+        var foliageGeo = new THREE.DodecahedronGeometry(0.45);
+        var foliageMat = new THREE.MeshLambertMaterial({ color: 0x65a30d }); // bright yellow-green
+        var foliage = new THREE.Mesh(foliageGeo, foliageMat);
+        foliage.position.y = 0.9;
+        tree.add(foliage);
+      } 
+      else if (activeRegion === 'pnw') {
+        // Redwoods / spruces: tall trunk + stacked cones
+        var trunkGeo = new THREE.CylinderGeometry(0.12, 0.22, 1.4, 5);
+        var trunkMat = new THREE.MeshLambertMaterial({ color: 0x3b2a20 });
+        var trunk = new THREE.Mesh(trunkGeo, trunkMat);
+        trunk.position.y = 0.7;
+        tree.add(trunk);
+        
+        var foliageMat = new THREE.MeshLambertMaterial({ color: 0x064e3b }); // dark green
+        
+        var f1 = new THREE.Mesh(new THREE.ConeGeometry(0.65, 1.0, 5), foliageMat);
+        f1.position.y = 1.3;
+        tree.add(f1);
+        
+        var f2 = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.8, 5), foliageMat);
+        f2.position.y = 1.9;
+        tree.add(f2);
+        
+        var f3 = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.6, 5), foliageMat);
+        f3.position.y = 2.4;
+        tree.add(f3);
+      } 
+      else if (activeRegion === 'greatlakes') {
+        // Birch/Oak: white trunk + bright green top
+        var trunkGeo = new THREE.CylinderGeometry(0.07, 0.1, 0.9, 5);
+        var trunkMat = new THREE.MeshLambertMaterial({ color: 0xf1f5f9 }); // white birch
+        var trunk = new THREE.Mesh(trunkGeo, trunkMat);
+        trunk.position.y = 0.45;
+        tree.add(trunk);
+        
+        var foliageGeo = new THREE.DodecahedronGeometry(0.4);
+        var foliageMat = new THREE.MeshLambertMaterial({ color: 0x22c55e }); // vibrant green
+        var foliage = new THREE.Mesh(foliageGeo, foliageMat);
+        foliage.position.y = 1.0;
+        tree.add(foliage);
+      } 
+      else {
+        // Maine: standard pine
+        var trunkGeo = new THREE.CylinderGeometry(0.1, 0.15, 0.8, 5);
+        var trunkMat = new THREE.MeshLambertMaterial({ color: 0x4a3b32 });
+        var trunk = new THREE.Mesh(trunkGeo, trunkMat);
+        trunk.position.y = 0.4;
+        tree.add(trunk);
+        
+        var foliageGeo = new THREE.ConeGeometry(0.5, 1.6, 5);
+        var foliageMat = new THREE.MeshLambertMaterial({ color: 0x14532d });
+        var foliage = new THREE.Mesh(foliageGeo, foliageMat);
+        foliage.position.y = 1.4;
+        tree.add(foliage);
+      }
+      
       tree.position.set(x, 0.0, z);
       var s = 0.75 + Math.random() * 0.5;
       tree.scale.set(s, s, s);
@@ -7598,26 +7795,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     function createIsland(x, z, radius, height) {
-      var islandGeo = new THREE.CylinderGeometry(radius * 0.85, radius, height, 8);
-      var islandMat = new THREE.MeshLambertMaterial({ color: 0x5e7a4e });
+      var islandColorHex = 0x5e7a4e; // default green-brown
+      var islandHeight = height;
+      
+      if (activeRegion === 'chesapeake') {
+        islandColorHex = 0x6b7280; // muddy grey-brown marsh
+        islandHeight = 0.4; // flat marshes
+      } else if (activeRegion === 'pnw') {
+        islandColorHex = 0x475569; // slate-grey rocky cliffs
+        islandHeight = height * 2.2; // tall cliffs
+      } else if (activeRegion === 'greatlakes') {
+        islandColorHex = 0xfef08a; // sandy yellow dune
+        islandHeight = height * 0.8;
+      }
+      
+      var islandGeo = new THREE.CylinderGeometry(radius * 0.85, radius, islandHeight, 8);
+      var islandMat = new THREE.MeshLambertMaterial({ color: islandColorHex });
       var island = new THREE.Mesh(islandGeo, islandMat);
-      island.position.set(x, height / 2 - 0.2, z);
+      island.position.set(x, islandHeight / 2 - 0.2, z);
       scene.add(island);
 
-      // Populate with pine trees
+      // Populate with trees
       var numTrees = Math.floor(5 + Math.random() * 6);
       for (var i = 0; i < numTrees; i++) {
         var tx = x + (Math.random() - 0.5) * (radius * 1.1);
         var tz = z + (Math.random() - 0.5) * (radius * 1.1);
-        createPineTree(tx, tz);
+        createTree(tx, tz);
       }
     }
 
-    // Coastal Maine Mainland Background
+    // Coastal Mainland Background
     for (var i = 0; i < 18; i++) {
       var tx = -22 + i * 2.6 + (Math.random() - 0.5) * 1.5;
       var tz = 13.5 + (Math.random() - 0.5) * 2;
-      createPineTree(tx, tz);
+      createTree(tx, tz);
     }
 
     // Add 3 islands in the bay
@@ -7859,14 +8070,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // ─── Lighthouse landmark
     var lighthouse = new THREE.Group();
-    var lhBase = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.7, 3, 16), new THREE.MeshLambertMaterial({ color: 0xf5f5f5 }));
-    lhBase.position.y = 1.5;
-    lighthouse.add(lhBase);
-    var lhTop = new THREE.Mesh(new THREE.ConeGeometry(0.6, 1.0, 16), new THREE.MeshLambertMaterial({ color: 0x991b1b }));
-    lhTop.position.y = 3.5;
-    lighthouse.add(lhTop);
+    var lhLabel = 'Portland Head Light';
+    var beamY = 7.5; // default absolute height of the beam center (group position.y = 4 + 3.5 = 7.5)
+
+    if (activeRegion === 'chesapeake') {
+      lhLabel = 'Thomas Point Shoal Light';
+      // Screwpile legs: several thin dark cylinders
+      var legGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.8, 5);
+      var legMat = new THREE.MeshLambertMaterial({ color: 0x1e293b });
+      var legCoords = [
+        [-0.8, -0.8], [0.8, -0.8], [-0.8, 0.8], [0.8, 0.8], [0, 0]
+      ];
+      legCoords.forEach(function(c) {
+        var leg = new THREE.Mesh(legGeo, legMat);
+        leg.position.set(c[0], 0.9, c[1]);
+        lighthouse.add(leg);
+      });
+      // Cottage base
+      var cottageGeo = new THREE.CylinderGeometry(1.2, 1.2, 1.2, 6); // hexagonal cottage
+      var cottageMat = new THREE.MeshLambertMaterial({ color: 0xf5f5f5 }); // white walls
+      var cottage = new THREE.Mesh(cottageGeo, cottageMat);
+      cottage.position.y = 2.4;
+      lighthouse.add(cottage);
+      // Roof (red cone)
+      var roofGeo = new THREE.ConeGeometry(1.4, 0.8, 6);
+      var roofMat = new THREE.MeshLambertMaterial({ color: 0x991b1b });
+      var roof = new THREE.Mesh(roofGeo, roofMat);
+      roof.position.y = 3.4;
+      lighthouse.add(roof);
+      // Small lantern tower on top
+      var lanternGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.6, 6);
+      var lanternMat = new THREE.MeshLambertMaterial({ color: 0x1e293b });
+      var lantern = new THREE.Mesh(lanternGeo, lanternMat);
+      lantern.position.y = 4.0;
+      lighthouse.add(lantern);
+      var lanternRoof = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.4, 6), new THREE.MeshLambertMaterial({ color: 0x991b1b }));
+      lanternRoof.position.y = 4.5;
+      lighthouse.add(lanternRoof);
+      
+      beamY = 4 + 4.0; // group position.y + lantern center
+    } 
+    else if (activeRegion === 'pnw') {
+      lhLabel = 'Lime Kiln Light';
+      // Keepers' house base (red brick box)
+      var houseGeo = new THREE.BoxGeometry(2.0, 1.2, 1.6);
+      var houseMat = new THREE.MeshLambertMaterial({ color: 0x991b1b });
+      var house = new THREE.Mesh(houseGeo, houseMat);
+      house.position.set(0, 0.6, 0);
+      lighthouse.add(house);
+      // Tower (white square tower)
+      var towerGeo = new THREE.BoxGeometry(0.8, 3.2, 0.8);
+      var towerMat = new THREE.MeshLambertMaterial({ color: 0xf5f5f5 });
+      var tower = new THREE.Mesh(towerGeo, towerMat);
+      tower.position.set(0.6, 1.6, 0.6);
+      lighthouse.add(tower);
+      // Lantern cap
+      var cap = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.4, 8), new THREE.MeshLambertMaterial({ color: 0x1e293b }));
+      cap.position.set(0.6, 3.4, 0.6);
+      lighthouse.add(cap);
+      var capRoof = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.3, 8), new THREE.MeshLambertMaterial({ color: 0x1e293b }));
+      capRoof.position.set(0.6, 3.75, 0.6);
+      lighthouse.add(capRoof);
+      
+      beamY = 4 + 3.4;
+    }
+    else if (activeRegion === 'greatlakes') {
+      lhLabel = 'Point Iroquois Light';
+      // Keepers' house base (white brick box)
+      var houseGeo = new THREE.BoxGeometry(2.2, 1.4, 1.8);
+      var houseMat = new THREE.MeshLambertMaterial({ color: 0xf5f5f5 });
+      var house = new THREE.Mesh(houseGeo, houseMat);
+      house.position.set(0, 0.7, 0);
+      lighthouse.add(house);
+      // Round white brick tower
+      var towerGeo = new THREE.CylinderGeometry(0.5, 0.7, 3.5, 12);
+      var towerMat = new THREE.MeshLambertMaterial({ color: 0xf5f5f5 });
+      var tower = new THREE.Mesh(towerGeo, towerMat);
+      tower.position.set(0.8, 1.75, 0);
+      lighthouse.add(tower);
+      // Lantern room (dark grey cylinder + red cone roof)
+      var lantern = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.5, 12), new THREE.MeshLambertMaterial({ color: 0x1e293b }));
+      lantern.position.set(0.8, 3.75, 0);
+      lighthouse.add(lantern);
+      var lanternRoof = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.4, 12), new THREE.MeshLambertMaterial({ color: 0x991b1b }));
+      lanternRoof.position.set(0.8, 4.2, 0);
+      lighthouse.add(lanternRoof);
+      
+      beamY = 4 + 3.75;
+    }
+    else {
+      // Maine (Portland Head Light)
+      lhLabel = 'Portland Head Light';
+      var lhBase = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.7, 3, 16), new THREE.MeshLambertMaterial({ color: 0xf5f5f5 }));
+      lhBase.position.y = 1.5;
+      lighthouse.add(lhBase);
+      var lhTop = new THREE.Mesh(new THREE.ConeGeometry(0.6, 1.0, 16), new THREE.MeshLambertMaterial({ color: 0x991b1b }));
+      lhTop.position.y = 3.5;
+      lighthouse.add(lhTop);
+      
+      beamY = 7.5;
+    }
+
     lighthouse.position.set(15, 4, 14);
-    lighthouse.userData = { label: 'Portland Head Light' };
+    lighthouse.userData = { label: lhLabel };
     scene.add(lighthouse);
 
     // ─── Rotating lighthouse beam
@@ -7881,7 +8187,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     });
     var beam = new THREE.Mesh(beamGeo, beamMat);
     beam.rotation.x = Math.PI / 2;
-    beam.position.set(15, 7.5, 14);
+    beam.position.set(15, beamY, 14);
     beam.visible = false;
     scene.add(beam);
 
@@ -8160,17 +8466,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         waterColor = 0x0f222e;
       }
 
+      // Modifiers from Region
+      var activeRegion = (opts && opts.region) || 'maine';
+      if (activeRegion === 'chesapeake') {
+        if (tod === 'day') {
+          bg = 0xfef08a; fg = 0xfef9c3; // warm golden
+          waterColor = 0x3c645c; // olive green
+        } else if (tod === 'sunset') {
+          bg = 0xf97316; fg = 0xfdba74;
+          waterColor = 0x27423d;
+        } else if (tod === 'night') {
+          bg = 0x090514; fg = 0x090514;
+          waterColor = 0x12211e;
+        }
+      } else if (activeRegion === 'pnw') {
+        if (tod === 'day') {
+          bg = 0x94a3b8; fg = 0xa1a1aa; // slate gray
+          waterColor = 0x1e293b; // dark blue-gray
+        } else if (tod === 'sunset') {
+          bg = 0xd97706; fg = 0xf59e0b;
+          waterColor = 0x111827;
+        } else if (tod === 'night') {
+          bg = 0x030712; fg = 0x030712;
+          waterColor = 0x030712;
+        }
+      } else if (activeRegion === 'greatlakes') {
+        if (tod === 'day') {
+          bg = 0xbae6fd; fg = 0xe0f2fe; // clear turquoise
+          waterColor = 0x0d9488; // vibrant turquoise
+        } else if (tod === 'sunset') {
+          bg = 0xf472b6; fg = 0xfbcfe8; // pink-purple
+          waterColor = 0x0f766e;
+        } else if (tod === 'night') {
+          bg = 0x0f172a; fg = 0x0f172a;
+          waterColor = 0x115e59;
+        }
+      }
+
       // Modifiers from Weather
       if (weather === 'foggy') {
         bg = 0x94a3b8; fg = 0x94a3b8; fgNear = 10; fgFar = 55;
         ambInt = ambInt * 0.7;
         sunInt = sunInt * 0.25;
-        waterColor = 0x334155;
+        waterColor = activeRegion === 'chesapeake' ? 0x4a5d4e : activeRegion === 'greatlakes' ? 0x134e4a : 0x334155;
       } else if (weather === 'rainy') {
         bg = 0x334155; fg = 0x334155; fgNear = 35; fgFar = 220;
         ambColor = 0x1e293b; ambInt = ambInt * 0.6;
         sunColor = 0x64748b; sunInt = sunInt * 0.3;
-        waterColor = 0x1e293b;
+        waterColor = activeRegion === 'chesapeake' ? 0x1c2d24 : activeRegion === 'greatlakes' ? 0x115e59 : 0x1e293b;
       }
 
       scene.background.setHex(bg);
@@ -8422,31 +8765,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           var buoy = buoys.find(function(b) { return b.userData.id === boatState.closestTrapId; });
           if (buoy) buoy.userData.hauled = true;
 
-          // Generate catch
-          var length = 3.0 + Math.random() * 2.8; // 3.0" to 5.8"
-          var isFemale = Math.random() < 0.5;
-          var isVNotched = isFemale && (Math.random() < 0.25);
-          var lengthStr = length.toFixed(2);
-          var keeper = false;
-
-          if (length < 3.25) {
-            keeper = false;
-          } else if (length > 5.0) {
-            keeper = false;
-          } else if (isVNotched) {
-            keeper = false;
-          } else {
-            keeper = true;
+          // Generate catch based on region
+          var length = 3.0, isFemale = false, isVNotched = false, hasSponge = false, keeper = false;
+          
+          if (activeRegion === 'chesapeake') {
+            length = 3.5 + Math.random() * 3.0; // 3.5" to 6.5" width
+            isFemale = Math.random() < 0.5;
+            hasSponge = isFemale && (Math.random() < 0.3); // pregnant female
+            keeper = (length >= 5.0) && !hasSponge;
+          } 
+          else if (activeRegion === 'pnw') {
+            length = 4.5 + Math.random() * 3.0; // 4.5" to 7.5" width
+            isFemale = Math.random() < 0.5;
+            keeper = (length >= 6.25) && !isFemale; // male-only keep rule!
+          } 
+          else if (activeRegion === 'greatlakes') {
+            length = 2.0 + Math.random() * 2.5; // 2.0" to 4.5" length
+            isFemale = Math.random() < 0.5;
+            keeper = (length >= 3.0);
+          } 
+          else {
+            // Maine (Lobster)
+            length = 3.0 + Math.random() * 2.8; // 3.0" to 5.8" carapace length
+            isFemale = Math.random() < 0.5;
+            isVNotched = isFemale && (Math.random() < 0.25);
+            keeper = (length >= 3.25) && (length <= 5.0) && !isVNotched;
           }
 
           statusCb({
             type: 'lobster-haul',
+            specimenType: (activeRegion === 'chesapeake' || activeRegion === 'pnw') ? 'crab' : activeRegion === 'greatlakes' ? 'crayfish' : 'lobster',
+            region: activeRegion,
             length: length,
             isFemale: isFemale,
             isVNotched: isVNotched,
+            hasSponge: hasSponge,
             isKeeper: keeper,
-            buoyLabel: buoy.userData.label,
-            text: 'Hauled ' + buoy.userData.label + ' — inspection required!'
+            buoyLabel: buoy ? buoy.userData.label : 'trap',
+            text: 'Hauled ' + (buoy ? buoy.userData.label : 'trap') + ' — inspection required!'
           });
         }
       }
@@ -8497,24 +8853,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         keys['f'] = false;
         var roll = Math.random();
         var sp, len;
+        var regSpec = getSpeciesForRegion(activeRegion);
+        
+        // Select from regional species list
         if (roll < 0.35) {
-          sp = MAINE_SPECIES[0]; // cod
-          len = 16 + Math.floor(Math.random() * 18);
+          sp = regSpec[0];
+          len = 14 + Math.floor(Math.random() * 16);
         } else if (roll < 0.65) {
-          sp = MAINE_SPECIES[1]; // haddock
-          len = 14 + Math.floor(Math.random() * 14);
+          sp = regSpec[1];
+          len = 10 + Math.floor(Math.random() * 12);
         } else {
-          sp = MAINE_SPECIES[2]; // pollock
-          len = 16 + Math.floor(Math.random() * 16);
+          sp = regSpec[2];
+          len = 8 + Math.floor(Math.random() * 10);
         }
+        
+        // Ensure size rules match the species slot/minSize boundaries realistically
+        if (sp.minSize) {
+          // Adjust random lengths slightly to produce both keeper and sub-legal fish
+          len = Math.max(5, Math.floor(sp.minSize - 4 + Math.random() * 12));
+        }
+
         boatState.fishLanded += 1;
-        var isKeeper = (typeof sp.minSize === 'number') ? (len >= sp.minSize) : true;
+        var isKeeper = true;
+        if (typeof sp.minSize === 'number') {
+          isKeeper = (len >= sp.minSize);
+        }
+        if (sp.slot) {
+          // If there is a slot range (e.g. "19-24 inches"), check if fish is inside it
+          var bounds = sp.slot.match(/\d+/g);
+          if (bounds && bounds.length >= 2) {
+            var minB = parseInt(bounds[0], 10);
+            var maxB = parseInt(bounds[1], 10);
+            isKeeper = (len >= minB && len <= maxB);
+          }
+        }
+        
         statusCb({
           type: 'fish',
           species: sp,
           length: len,
           isKeeper: isKeeper,
-          text: 'Landed a ' + len + '" ' + sp.name + (isKeeper ? ' — KEEPER' : ' — release (min ' + sp.minSize + '")')
+          text: 'Landed a ' + len + '" ' + sp.name + (isKeeper ? ' — KEEPER' : ' — release (' + (sp.slot ? 'slot ' + sp.slot : 'min ' + sp.minSize + '"') + ')')
         });
         if (sp.id === 'cod' && isKeeper) boatState.keptKeeperCod = true;
       }
@@ -8687,6 +9066,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var caliperHook = useState(3.5);
     var caliperVal = caliperHook[0], setCaliperVal = caliperHook[1];
 
+    var checkpointHook = useState(null);
+    var checkpointSpecimen = checkpointHook[0], setCheckpointSpecimen = checkpointHook[1];
+    var checkpointResultHook = useState(null);
+    var checkpointResult = checkpointResultHook[0], setCheckpointResult = checkpointResultHook[1];
+    var checkpointScoreHook = useState({ correctCount: 0, totalCount: 0 });
+    var checkpointScore = checkpointScoreHook[0], setCheckpointScore = checkpointScoreHook[1];
+
+    function generateCheckpointSpecimen() {
+      var speciesList = getSpeciesForRegion(region);
+      if (!speciesList || speciesList.length === 0) return;
+      var sp = speciesList[Math.floor(Math.random() * speciesList.length)];
+      var length = 0;
+      var isFemale = Math.random() < 0.5;
+      var isVNotched = false;
+      var hasSponge = false;
+      var isKeeper = true;
+      var ruleText = '';
+
+      if (sp.group === 'shellfish') {
+        if (region === 'chesapeake') {
+          length = 4.0 + Math.random() * 2.5; // 4" to 6.5"
+          hasSponge = isFemale && (Math.random() < 0.4);
+          isKeeper = (length >= 5.0) && !hasSponge;
+          ruleText = 'Blue Crab regulations: Min width is 5". Female crabs with visible orange egg masses (sponges) are strictly protected.';
+        } else if (region === 'pnw') {
+          length = 5.0 + Math.random() * 2.5; // 5" to 7.5"
+          isKeeper = (length >= 6.25) && !isFemale; // male-only
+          ruleText = 'Dungeness Crab regulations: Min carapace width is 6.25". Only males may be kept; females must be released immediately.';
+        } else if (region === 'greatlakes') {
+          length = 2.0 + Math.random() * 2.5; // 2" to 4.5"
+          isKeeper = (length >= 3.0);
+          ruleText = 'Crayfish regulations: Min body length is 3".';
+        } else { // maine
+          length = 3.0 + Math.random() * 2.8; // 3" to 5.8"
+          isVNotched = isFemale && (Math.random() < 0.3);
+          isKeeper = (length >= 3.25) && (length <= 5.0) && !isVNotched;
+          ruleText = 'Maine Lobster regulations: Carapace must be between 3-1/4" and 5". V-notched females must be released.';
+        }
+      } else {
+        // Finfish
+        if (sp.minSize) {
+          length = Math.max(5, Math.floor(sp.minSize - 4 + Math.random() * 12));
+          isKeeper = (length >= sp.minSize);
+        } else {
+          length = 10 + Math.floor(Math.random() * 20);
+          isKeeper = true;
+        }
+
+        if (sp.slot) {
+          var bounds = sp.slot.match(/\d+/g);
+          if (bounds && bounds.length >= 2) {
+            var minB = parseInt(bounds[0], 10);
+            var maxB = parseInt(bounds[1], 10);
+            isKeeper = (length >= minB && length <= maxB);
+          }
+        }
+        ruleText = sp.name + ' rules: ' + (sp.slot ? 'Slot limit ' + sp.slot : (sp.minSize ? 'Min size ' + sp.minSize + '"' : 'No size limit')) + '.';
+      }
+
+      setCheckpointSpecimen({
+        species: sp,
+        length: length,
+        isFemale: isFemale,
+        isVNotched: isVNotched,
+        hasSponge: hasSponge,
+        isKeeper: isKeeper,
+        ruleText: ruleText
+      });
+      setCheckpointResult(null);
+    }
+
+    // Regenerate checkpoint specimen on region changes
+    useEffect(function() {
+      generateCheckpointSpecimen();
+    }, [region]);
+
     useEffect(function() {
       if (harborRef.current && harborRef.current.toggleSound) {
         harborRef.current.toggleSound(soundOn);
@@ -8767,30 +9222,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       setSim({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
     }
 
+    var activeSimRegionRef = useRef(region);
     useEffect(function() {
-      if (sim.active && canvasRef.current && !harborRef.current) {
-        try {
-          harborRef.current = initHarborSim(canvasRef.current, {
-            onHudUpdate: setHud,
-            onStatus: pushStatus,
-            onSoundToggle: setSoundOn,
-            onCameraToggle: setCameraViewState
-          });
-          if (!harborRef.current) {
-            throw new Error('WebGLRenderer could not be initialized.');
+      if (sim.active && canvasRef.current) {
+        if (harborRef.current && activeSimRegionRef.current !== region) {
+          if (harborRef.current.dispose) harborRef.current.dispose();
+          harborRef.current = null;
+        }
+        if (!harborRef.current) {
+          try {
+            activeSimRegionRef.current = region;
+            harborRef.current = initHarborSim(canvasRef.current, {
+              region: region,
+              onHudUpdate: setHud,
+              onStatus: pushStatus,
+              onSoundToggle: setSoundOn,
+              onCameraToggle: setCameraViewState
+            });
+            if (!harborRef.current) {
+              throw new Error('WebGLRenderer could not be initialized.');
+            }
+            harborRef.current.toggleSound(soundOn);
+            harborRef.current.setTimeOfDay(timeOfDay);
+            harborRef.current.setCameraView(cameraView);
+            harborRef.current.setWeather(weather);
+            flAnnounce('FisherLab 3D sim launched for ' + REGIONS[region].label + '. Use WASD/arrows to steer, Space for boost, F to fish, H to haul trap, V to cycle camera, M to toggle sound.');
+          } catch (err) {
+            console.error('[FisherLab] Error starting 3D simulation:', err);
+            setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
+            flAnnounce('3D engine failed to initialize. Use Chart Mode (2D fallback) instead.');
           }
-          harborRef.current.toggleSound(soundOn);
-          harborRef.current.setTimeOfDay(timeOfDay);
-          harborRef.current.setCameraView(cameraView);
-          harborRef.current.setWeather(weather);
-          flAnnounce('FisherLab 3D sim launched. Use WASD/arrows to steer, Space for boost, F to fish, H to haul trap, V to cycle camera, M to toggle sound.');
-        } catch (err) {
-          console.error('[FisherLab] Error starting 3D simulation:', err);
-          setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
-          flAnnounce('3D engine failed to initialize. Use Chart Mode (2D fallback) instead.');
         }
       }
-    }, [sim.active]);
+    }, [sim.active, region]);
 
     useEffect(function() {
       return function() { if (harborRef.current && harborRef.current.dispose) harborRef.current.dispose(); };
@@ -9179,231 +9643,408 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               style: { position: 'absolute', bottom: 10, right: 10, padding: '6px 12px', background: 'rgba(220,38,38,0.85)', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', zIndex: 15 } },
               '✕ Exit sim'),
               
-            // Interactive Lobster Carapace Caliper Inspection Screen Overlay
-            activeLobster ? h('div', {
-              style: {
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'rgba(9,17,28,0.96)',
-                zIndex: 100,
-                display: 'flex',
-                flexDirection: 'column',
-                padding: '16px',
-                borderRadius: '8px',
-                border: '2px dashed #0ea5e9',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.8)'
+            // Interactive Carapace Caliper Inspection Screen Overlay
+            activeLobster ? (function() {
+              var activeRegion = region;
+              var ppi = activeLobster.specimenType === 'crab' ? 52 : 70;
+              var ticks = activeLobster.specimenType === 'crab' ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : [0, 1, 2, 3, 4, 5, 6];
+              
+              var keeperMin = 3.25;
+              var keeperMax = 5.0;
+              if (activeLobster.specimenType === 'crab') {
+                if (activeLobster.region === 'chesapeake') {
+                  keeperMin = 5.0;
+                  keeperMax = 8.0;
+                } else { // pnw
+                  keeperMin = 6.25;
+                  keeperMax = 8.0;
+                }
+              } else if (activeLobster.specimenType === 'crayfish') {
+                keeperMin = 3.0;
+                keeperMax = 6.0;
               }
-            },
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(56,189,248,0.3)', paddingBottom: '10px', marginBottom: '14px' } },
-                h('span', { style: { fontSize: '15px', fontWeight: '800', color: '#bae6fd', display: 'flex', alignItems: 'center', gap: '8px' } }, '🦞 DMR LOBSTER INSPECTION GAUGE STATION'),
-                h('span', { style: { fontSize: '11px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', padding: '2px 8px', borderRadius: '4px' } }, 'PAUSED')
-              ),
-              h('div', { style: { display: 'flex', flex: 1, gap: '16px', minHeight: 0 } },
-                // Left Panel: Interactive Caliper Gauge board (SVG)
-                h('div', { style: { flex: '1.4', background: '#070f1e', borderRadius: '8px', border: '1px solid rgba(56,189,248,0.15)', display: 'flex', flexDirection: 'column', padding: '10px', position: 'relative', overflow: 'hidden' } },
-                  h('div', { style: { fontSize: '10px', color: '#64748b', marginBottom: '8px', fontWeight: 'bold' } }, 'MEASURE BOARD (DIAGRAM NOT TO SCALE)'),
-                  
-                  // SVG Schematic
-                  h('svg', {
-                    width: '100%',
-                    height: '100%',
-                    viewBox: '0 0 540 280',
-                    style: { flex: 1, background: '#111827', borderRadius: '6px' }
-                  },
-                    // Ruler background markings
-                    h('rect', { x: 40, y: 220, width: 460, height: 40, fill: '#1f2937', stroke: '#374151' }),
-                    [0, 1, 2, 3, 4, 5, 6].map(function(val) {
-                      var tickX = 60 + val * 70;
-                      return h('g', { key: val },
-                        h('line', { x1: tickX, y1: 220, x2: tickX, y2: 235, stroke: '#9ca3af', strokeWidth: 2 }),
-                        h('text', { x: tickX, y: 252, textAnchor: 'middle', fontSize: '11', fill: '#9ca3af', fontFamily: 'monospace' }, val + '"'),
-                        val < 6 ? [0.25, 0.5, 0.75].map(function(sub) {
-                          var subX = tickX + sub * 70;
-                          return h('line', { key: sub, x1: subX, y1: 220, x2: subX, y2: 228, stroke: '#4b5563', strokeWidth: 1 });
-                        }) : null
-                      );
-                    }),
-                    
-                    // Highlight the Legal Keeper Zone (3.25" to 5.0" = x: 287.5 to x: 410)
-                    h('rect', { x: 60 + 3.25 * 70, y: 220, width: (5.0 - 3.25) * 70, height: 12, fill: 'rgba(16,185,129,0.25)' }),
-                    h('text', { x: 60 + 4.125 * 70, y: 230, textAnchor: 'middle', fontSize: '9', fill: '#34d399', fontWeight: 'bold' }, 'KEEPER ZONE'),
+              var keeperWidth = keeperMax - keeperMin;
 
-                    // Draw stylized Lobster
-                    h('g', { transform: 'translate(60, 40)' },
-                      // Lobster Antennas
-                      h('path', { d: 'M 20 80 Q -30 60 -50 90 M 20 100 Q -30 120 -50 90', fill: 'none', stroke: '#b91c1c', strokeWidth: 2 }),
-                      // Lobster Claws (front)
-                      h('path', { d: 'M 40 40 C 0 20 -20 50 10 70 Z', fill: '#991b1b', stroke: '#7f1d1d' }),
-                      h('path', { d: 'M 40 140 C 0 160 -20 130 10 110 Z', fill: '#991b1b', stroke: '#7f1d1d' }),
-                      h('line', { x1: 40, y1: 70, x2: 20, y2: 55, stroke: '#991b1b', strokeWidth: 5 }),
-                      h('line', { x1: 40, y1: 110, x2: 20, y2: 125, stroke: '#991b1b', strokeWidth: 5 }),
+              var lawsCardContent;
+              if (activeLobster.region === 'chesapeake') {
+                lawsCardContent = h('div', { style: { background: 'rgba(30,41,59,0.4)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #ef4444', fontSize: '10.5px', color: '#cbd5e1', lineHeight: '1.4' } },
+                  h('div', { style: { fontWeight: 'bold', color: '#f87171', marginBottom: '4px', fontSize: '11px' } }, 'MARYLAND DEPT OF NATURAL RESOURCES (MD-DNR) LAWS:'),
+                  h('div', null, '1. ', h('strong', null, 'Min Carapace Width: '), '5.0 inches (5.0"). Measure spike-to-spike. Throw back if smaller.'),
+                  h('div', null, '2. ', h('strong', null, 'Egg-Bearing Female (Sponge) Rule: '), 'Sponge crabs (females with an orange egg mass on the abdomen) must be released immediately.'),
+                  h('div', null, '3. ', h('strong', null, 'Daily Limit: '), '24 crabs per person per day.'),
+                  h('div', { style: { color: '#e2e8f0', marginTop: '6px', fontWeight: 'bold' } }, 'Violation penalty: $150 - $300 fine.')
+                );
+              } else if (activeLobster.region === 'pnw') {
+                lawsCardContent = h('div', { style: { background: 'rgba(30,41,59,0.4)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #ef4444', fontSize: '10.5px', color: '#cbd5e1', lineHeight: '1.4' } },
+                  h('div', { style: { fontWeight: 'bold', color: '#f87171', marginBottom: '4px', fontSize: '11px' } }, 'WASHINGTON DEPT OF FISH & WILDLIFE (WDFW) LAWS:'),
+                  h('div', null, '1. ', h('strong', null, 'Min Carapace Width: '), '6-1/4 inches (6.25"). Measure spike-to-spike. Throw back if smaller.'),
+                  h('div', null, '2. ', h('strong', null, 'Male-Only Harvest: '), 'Only male Dungeness crabs may be harvested. Female crabs must be released immediately to protect reproduction.'),
+                  h('div', null, '3. ', h('strong', null, 'Apron ID: '), 'Males have a narrow, pointed abdomen (apron). Females have a wide, rounded abdomen.'),
+                  h('div', { style: { color: '#e2e8f0', marginTop: '6px', fontWeight: 'bold' } }, 'Violation penalty: $200 - $400 fine.')
+                );
+              } else if (activeLobster.region === 'greatlakes') {
+                lawsCardContent = h('div', { style: { background: 'rgba(30,41,59,0.4)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #ef4444', fontSize: '10.5px', color: '#cbd5e1', lineHeight: '1.4' } },
+                  h('div', { style: { fontWeight: 'bold', color: '#f87171', marginBottom: '4px', fontSize: '11px' } }, 'GREAT LAKES FISHERY COMMISSION (GLFC) CRAYFISH LAWS:'),
+                  h('div', null, '1. ', h('strong', null, 'Min Body Length: '), '3.0 inches. Measure rostrum tip to end of tail. Throw back if smaller.'),
+                  h('div', null, '2. ', h('strong', null, 'Invasive Prevention: '), 'Never transport live crayfish between bodies of water. Use only locally-harvested bait to prevent Rusty Crayfish spread.'),
+                  h('div', null, '3. ', h('strong', null, 'Season: '), 'Open year-round.'),
+                  h('div', { style: { color: '#e2e8f0', marginTop: '6px', fontWeight: 'bold' } }, 'Violation penalty: $75 fine.')
+                );
+              } else {
+                lawsCardContent = h('div', { style: { background: 'rgba(30,41,59,0.4)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #ef4444', fontSize: '10.5px', color: '#cbd5e1', lineHeight: '1.4' } },
+                  h('div', { style: { fontWeight: 'bold', color: '#f87171', marginBottom: '4px', fontSize: '11px' } }, 'MAINE DIVISION OF MARINE RESOURCES (DMR) LAWS:'),
+                  h('div', null, '1. ', h('strong', null, 'Min Carapace Length: '), '3-1/4 inches (3.25"). Throw back if smaller.'),
+                  h('div', null, '2. ', h('strong', null, 'Max Carapace Length: '), '5 inches (5.0"). Throw back if larger (preserves breeders).'),
+                  h('div', null, '3. ', h('strong', null, 'V-Notch Female rule: '), 'Any female with a V-notch on the right-middle tail flipper must be released. It designates a known fertile breeder.'),
+                  h('div', { style: { color: '#e2e8f0', marginTop: '6px', fontWeight: 'bold' } }, 'Violation penalty: $250 - $750 fine.')
+                );
+              }
 
-                      // Eye socket marker (reference point for 0.00" on carapace)
-                      h('circle', { cx: 0, cy: 90, r: 4, fill: '#00ffff' }),
-                      h('text', { x: 0, y: 78, textAnchor: 'middle', fontSize: '9', fill: '#00ffff', fontWeight: 'bold' }, 'Eye Socket (0")'),
-                      h('line', { x1: 0, y1: 86, x2: 0, y2: 180, stroke: '#00ffff', strokeDasharray: '3,3', strokeWidth: 1 }),
-
-                      // Lobster Carapace
-                      h('rect', {
-                        x: 0,
-                        y: 70,
-                        width: activeLobster.length * 70,
-                        height: 40,
-                        rx: 8,
-                        fill: '#7f1d1d',
-                        stroke: '#991b1b',
-                        strokeWidth: 2
-                      }),
-                      h('text', { x: (activeLobster.length * 70) / 2, y: 94, textAnchor: 'middle', fontSize: '11', fill: '#fca5a5', fontWeight: 'bold' }, 'Carapace'),
-                      
-                      // Rear edge of carapace marker
-                      h('line', { x1: activeLobster.length * 70, y1: 70, x2: activeLobster.length * 70, y2: 180, stroke: '#f87171', strokeDasharray: '3,3', strokeWidth: 1.5 }),
-                      
-                      // Lobster Tail
-                      h('rect', {
-                        x: activeLobster.length * 70,
-                        y: 75,
-                        width: 100,
-                        height: 30,
-                        rx: 4,
-                        fill: '#991b1b',
-                        stroke: '#7f1d1d'
-                      }),
-                      // Tail flipper
-                      h('path', {
-                        d: 'M ' + (activeLobster.length * 70 + 100) + ' 70 L ' + (activeLobster.length * 70 + 130) + ' 60 L ' + (activeLobster.length * 70 + 140) + ' 90 L ' + (activeLobster.length * 70 + 130) + ' 120 L ' + (activeLobster.length * 70 + 100) + ' 110 Z',
-                        fill: '#7f1d1d',
-                        stroke: '#991b1b'
-                      }),
-                      // Egg graphics if female
-                      activeLobster.isFemale ? h('circle', { cx: activeLobster.length * 70 + 40, cy: 90, r: 8, fill: '#fbbf24', opacity: 0.85 }) : null,
-                      activeLobster.isFemale ? h('text', { x: activeLobster.length * 70 + 40, y: 93, textAnchor: 'middle', fontSize: '8', fill: '#000', fontWeight: 'bold' }, '♀') : null,
-                      // V-Notch indicator in the tail flipper
-                      activeLobster.isVNotched ? h('path', {
-                        d: 'M ' + (activeLobster.length * 70 + 135) + ' 90 L ' + (activeLobster.length * 70 + 120) + ' 90 L ' + (activeLobster.length * 70 + 135) + ' 98 Z',
-                        fill: '#111827',
-                        stroke: '#991b1b',
-                        strokeWidth: 1
-                      }) : null,
-                      activeLobster.isVNotched ? h('text', { x: activeLobster.length * 70 + 105, y: 118, fontSize: '9', fill: '#f87171', fontWeight: 'bold' }, '⚠ V-Notch') : null
-                    ),
-
-                    // Caliper overlays
-                    h('rect', { x: 57, y: 20, width: 6, height: 200, fill: '#9ca3af', opacity: 0.9 }),
-                    h('rect', { x: 57, y: 20, width: 40, height: 12, fill: '#9ca3af' }),
-                    h('g', { transform: 'translate(' + (60 + caliperVal * 70) + ', 0)' },
-                      h('rect', { x: -3, y: 20, width: 6, height: 200, fill: '#f59e0b', opacity: 0.95 }),
-                      h('rect', { x: -40, y: 20, width: 43, height: 12, fill: '#f59e0b' }),
-                      h('text', { x: -20, y: 10, textAnchor: 'middle', fontSize: '9', fill: '#fbbf24', fontWeight: 'bold' }, 'Caliper')
-                    ),
-                    h('rect', { x: 170, y: 5, width: 200, height: 26, rx: 4, fill: 'rgba(15,23,42,0.85)', stroke: '#38bdf8' }),
-                    h('text', { x: 270, y: 22, textAnchor: 'middle', fontSize: '12', fill: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold' }, 'Caliper Width: ' + caliperVal.toFixed(2) + '"')
+              return h('div', {
+                style: {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'rgba(9,17,28,0.96)',
+                  zIndex: 100,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  padding: '16px',
+                  borderRadius: '8px',
+                  border: '2px dashed #0ea5e9',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.8)'
+                }
+              },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(56,189,248,0.3)', paddingBottom: '10px', marginBottom: '14px' } },
+                  h('span', { style: { fontSize: '15px', fontWeight: '800', color: '#bae6fd', display: 'flex', alignItems: 'center', gap: '8px' } },
+                    (activeLobster.region === 'chesapeake' ? '🦀 MD-DNR BLUE CRAB GAUGE STATION' : 
+                     activeLobster.region === 'pnw' ? '🦀 WDFW DUNGENESS CRAB GAUGE STATION' :
+                     activeLobster.region === 'greatlakes' ? '🦞 GLFC CRAYFISH GAUGE STATION' :
+                     '🦞 DMR LOBSTER INSPECTION GAUGE STATION')
                   ),
-                  
-                  // Slider input to adjust caliperVal
-                  h('div', { style: { padding: '8px 10px', background: 'rgba(15,23,42,0.6)', borderRadius: '6px', marginTop: '10px' } },
-                    h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#94a3b8', marginBottom: '4px' } },
-                      h('span', null, 'Caliper Jaw Width Adjustment:'),
-                      h('span', { style: { color: '#f59e0b', fontWeight: 'bold' } }, caliperVal.toFixed(2) + ' in')
-                    ),
-                    h('input', {
-                      type: 'range',
-                      min: 2.50,
-                      max: 6.00,
-                      step: 0.05,
-                      value: caliperVal,
-                      onChange: function(e) { setCaliperVal(parseFloat(e.target.value)); },
-                      style: { width: '100%', cursor: 'ew-resize', accentColor: '#f59e0b' }
-                    })
-                  )
+                  h('span', { style: { fontSize: '11px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', padding: '2px 8px', borderRadius: '4px' } }, 'PAUSED')
                 ),
+                h('div', { style: { display: 'flex', flex: 1, gap: '16px', minHeight: 0 } },
+                  // Left Panel: Interactive Caliper Gauge board (SVG)
+                  h('div', { style: { flex: '1.4', background: '#070f1e', borderRadius: '8px', border: '1px solid rgba(56,189,248,0.15)', display: 'flex', flexDirection: 'column', padding: '10px', position: 'relative', overflow: 'hidden' } },
+                    h('div', { style: { fontSize: '10px', color: '#64748b', marginBottom: '8px', fontWeight: 'bold' } }, 'MEASURE BOARD (DIAGRAM NOT TO SCALE)'),
+                    
+                    // SVG Schematic
+                    h('svg', {
+                      width: '100%',
+                      height: '100%',
+                      viewBox: '0 0 540 280',
+                      style: { flex: 1, background: '#111827', borderRadius: '6px' }
+                    },
+                      // Ruler background markings
+                      h('rect', { x: 40, y: 220, width: 460, height: 40, fill: '#1f2937', stroke: '#374151' }),
+                      ticks.map(function(val) {
+                        var tickX = 60 + val * ppi;
+                        return h('g', { key: val },
+                          h('line', { x1: tickX, y1: 220, x2: tickX, y2: 235, stroke: '#9ca3af', strokeWidth: 2 }),
+                          h('text', { x: tickX, y: 252, textAnchor: 'middle', fontSize: '11', fill: '#9ca3af', fontFamily: 'monospace' }, val + '"'),
+                          val < ticks.length - 1 ? [0.25, 0.5, 0.75].map(function(sub) {
+                            var subX = tickX + sub * ppi;
+                            return h('line', { key: sub, x1: subX, y1: 220, x2: subX, y2: 228, stroke: '#4b5563', strokeWidth: 1 });
+                          }) : null
+                        );
+                      }),
+                      
+                      // Highlight the Legal Keeper Zone
+                      h('rect', { x: 60 + keeperMin * ppi, y: 220, width: keeperWidth * ppi, height: 12, fill: 'rgba(16,185,129,0.25)' }),
+                      h('text', { x: 60 + (keeperMin + keeperWidth / 2) * ppi, y: 230, textAnchor: 'middle', fontSize: '9', fill: '#34d399', fontWeight: 'bold' }, 'KEEPER ZONE'),
 
-                // Right Panel
-                h('div', { style: { flex: '1', display: 'flex', flexDirection: 'column', gap: '12px' } },
-                  h('div', { style: { background: 'rgba(15,23,42,0.6)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(56,189,248,0.1)' } },
-                    h('div', { style: { fontWeight: 'bold', fontSize: '11px', color: '#38bdf8', marginBottom: '8px' } }, 'SPECIMEN REPORT'),
-                    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' } },
-                      h('div', null, 'Gender: ', h('b', { style: { color: activeLobster.isFemale ? '#f472b6' : '#60a5fa' } }, activeLobster.isFemale ? 'Female ♀' : 'Male ♂')),
-                      h('div', null, 'V-Notch: ', h('b', { style: { color: activeLobster.isVNotched ? '#ef4444' : '#10b981' } }, activeLobster.isVNotched ? 'Present (Protected)' : 'None')),
-                      h('div', null, 'Source: ', h('b', { style: { color: '#cbd5e1' } }, activeLobster.buoyLabel)),
-                      h('div', null, 'Est. Weight: ', h('b', { style: { color: '#cbd5e1' } }, (Math.pow(activeLobster.length, 3) * 0.005).toFixed(2) + ' lbs'))
+                      // Draw stylized specimen
+                      h('g', { transform: 'translate(60, 40)' },
+                        activeLobster.specimenType === 'crab' ? (
+                          // CRAB DRAWING
+                          h('g', null,
+                            // Legs
+                            [10, 20, 30].map(function(offset, li) {
+                              var legY = 90 + (li - 1) * 12;
+                              return h('g', { key: li },
+                                // Left leg
+                                h('path', { d: 'M ' + (activeLobster.length * ppi / 2 - 10) + ' ' + legY + ' Q ' + (activeLobster.length * ppi / 2 - 40) + ' ' + (legY + 25) + ' 5 ' + (legY + 45), fill: 'none', stroke: activeLobster.region === 'chesapeake' ? '#3b82f6' : '#f59e0b', strokeWidth: 2.5 }),
+                                // Right leg
+                                h('path', { d: 'M ' + (activeLobster.length * ppi / 2 + 10) + ' ' + legY + ' Q ' + (activeLobster.length * ppi / 2 + 40) + ' ' + (legY + 25) + ' ' + (activeLobster.length * ppi - 5) + ' ' + (legY + 45), fill: 'none', stroke: activeLobster.region === 'chesapeake' ? '#3b82f6' : '#f59e0b', strokeWidth: 2.5 })
+                              );
+                            }),
+                            // Swimming paddles for Chesapeake blue crab
+                            activeLobster.region === 'chesapeake' ? h('g', null,
+                              h('path', { d: 'M ' + (activeLobster.length * ppi / 2 - 15) + ' 115 Q ' + (activeLobster.length * ppi / 2 - 35) + ' 145 10 135', fill: 'none', stroke: '#0284c7', strokeWidth: 3 }),
+                              h('path', { d: 'M ' + (activeLobster.length * ppi / 2 + 15) + ' 115 Q ' + (activeLobster.length * ppi / 2 + 35) + ' 145 ' + (activeLobster.length * ppi - 10) + ' 135', fill: 'none', stroke: '#0284c7', strokeWidth: 3 })
+                            ) : (
+                              // PNW Crab back legs
+                              h('g', null,
+                                h('path', { d: 'M ' + (activeLobster.length * ppi / 2 - 15) + ' 115 Q ' + (activeLobster.length * ppi / 2 - 35) + ' 145 15 140', fill: 'none', stroke: '#d97706', strokeWidth: 2.5 }),
+                                h('path', { d: 'M ' + (activeLobster.length * ppi / 2 + 15) + ' 115 Q ' + (activeLobster.length * ppi / 2 + 35) + ' 145 ' + (activeLobster.length * ppi - 15) + ' 140', fill: 'none', stroke: '#d97706', strokeWidth: 2.5 })
+                              )
+                            ),
+                            
+                            // Claws (arms stretching out and pincers at the side edges)
+                            h('path', { d: 'M ' + (activeLobster.length * ppi / 2 - 25) + ' 75 Q ' + (activeLobster.length * ppi / 2 - 60) + ' 45 10 65', fill: 'none', stroke: activeLobster.region === 'chesapeake' ? '#2563eb' : '#b45309', strokeWidth: 5 }),
+                            h('path', { d: 'M ' + (activeLobster.length * ppi / 2 + 25) + ' 75 Q ' + (activeLobster.length * ppi / 2 + 60) + ' 45 ' + (activeLobster.length * ppi - 10) + ' 65', fill: 'none', stroke: activeLobster.region === 'chesapeake' ? '#2563eb' : '#b45309', strokeWidth: 5 }),
+                            
+                            // Left Pincer
+                            h('path', { d: 'M 10 65 C -10 50 -15 80 12 75 Z', fill: activeLobster.region === 'chesapeake' ? '#ef4444' : '#d97706', stroke: '#0f172a', strokeWidth: 1 }),
+                            // Right Pincer
+                            h('path', { d: 'M ' + (activeLobster.length * ppi - 10) + ' 65 C ' + (activeLobster.length * ppi + 10) + ' 50 ' + (activeLobster.length * ppi + 15) + ' 80 ' + (activeLobster.length * ppi - 12) + ' 75 Z', fill: activeLobster.region === 'chesapeake' ? '#ef4444' : '#d97706', stroke: '#0f172a', strokeWidth: 1 }),
+                            
+                            // Main Carapace
+                            h('path', {
+                              d: 'M 0 90 Q ' + (activeLobster.length * ppi / 2) + ' 50 ' + (activeLobster.length * ppi) + ' 90 Q ' + (activeLobster.length * ppi / 2) + ' 130 0 90 Z',
+                              fill: activeLobster.region === 'chesapeake' ? '#0f766e' : '#701a75',
+                              stroke: activeLobster.region === 'chesapeake' ? '#0d9488' : '#a21caf',
+                              strokeWidth: 2
+                            }),
+                            
+                            // Eyes
+                            h('circle', { cx: activeLobster.length * ppi / 2 - 8, cy: 75, r: 2.5, fill: '#000' }),
+                            h('circle', { cx: activeLobster.length * ppi / 2 + 8, cy: 75, r: 2.5, fill: '#000' }),
+                            
+                            // Apron graphics on center of carapace
+                            h('path', {
+                              d: activeLobster.isFemale ? 
+                                'M ' + (activeLobster.length * ppi / 2 - 8) + ' 105 A 8 8 0 0 1 ' + (activeLobster.length * ppi / 2 + 8) + ' 105 Z' : // rounded dome
+                                'M ' + (activeLobster.length * ppi / 2 - 3) + ' 95 L ' + (activeLobster.length * ppi / 2 + 3) + ' 95 L ' + (activeLobster.length * ppi / 2 + 1) + ' 115 L ' + (activeLobster.length * ppi / 2 - 1) + ' 115 Z', // T-apron
+                              fill: '#e2e8f0',
+                              opacity: 0.8,
+                              stroke: '#94a3b8',
+                              strokeWidth: 1
+                            }),
+                            h('text', { x: activeLobster.length * ppi / 2, y: 92, textAnchor: 'middle', fontSize: '9', fill: '#cbd5e1', fontWeight: 'bold' }, activeLobster.region === 'chesapeake' ? 'Blue Crab' : 'Dungeness'),
+                            
+                            // Orange egg mass (sponge) for female Chesapeake Blue Crab
+                            (activeLobster.region === 'chesapeake' && activeLobster.hasSponge) ? h('g', null,
+                              h('circle', { cx: activeLobster.length * ppi / 2, cy: 110, r: 16, fill: '#f97316', opacity: 0.9, stroke: '#ea580c', strokeWidth: 1 }),
+                              h('text', { x: activeLobster.length * ppi / 2, y: 113, textAnchor: 'middle', fontSize: '8', fill: '#fff', fontWeight: 'bold' }, 'SPONGE')
+                            ) : null,
+                            
+                            // Measurement line indicators at points
+                            h('line', { x1: 0, y1: 90, x2: 0, y2: 180, stroke: '#00ffff', strokeDasharray: '3,3', strokeWidth: 1 }),
+                            h('line', { x1: activeLobster.length * ppi, y1: 90, x2: activeLobster.length * ppi, y2: 180, stroke: '#f87171', strokeDasharray: '3,3', strokeWidth: 1.5 }),
+                            h('circle', { cx: 0, cy: 90, r: 4, fill: '#00ffff' }),
+                            h('circle', { cx: activeLobster.length * ppi, cy: 90, r: 4, fill: '#f87171' }),
+                            h('text', { x: 0, y: 84, textAnchor: 'middle', fontSize: '8', fill: '#00ffff', fontWeight: 'bold' }, 'Spike 1'),
+                            h('text', { x: activeLobster.length * ppi, y: 84, textAnchor: 'middle', fontSize: '8', fill: '#f87171', fontWeight: 'bold' }, 'Spike 2')
+                          )
+                        ) : activeLobster.specimenType === 'crayfish' ? (
+                          // CRAYFISH DRAWING
+                          h('g', null,
+                            // Antennas
+                            h('path', { d: 'M 20 80 Q -20 60 -40 85 M 20 100 Q -20 120 -40 95', fill: 'none', stroke: '#15803d', strokeWidth: 1.5 }),
+                            // Claws
+                            h('path', { d: 'M 35 50 C 5 35 -10 60 15 75 Z', fill: '#16a34a', stroke: '#14532d' }),
+                            h('path', { d: 'M 35 130 C 5 145 -10 120 15 105 Z', fill: '#16a34a', stroke: '#14532d' }),
+                            h('line', { x1: 35, y1: 75, x2: 20, y2: 60, stroke: '#16a34a', strokeWidth: 4 }),
+                            h('line', { x1: 35, y1: 105, x2: 20, y2: 120, stroke: '#16a34a', strokeWidth: 4 }),
+                            
+                            // Rostrum reference point
+                            h('circle', { cx: 0, cy: 90, r: 4, fill: '#00ffff' }),
+                            h('line', { x1: 0, y1: 86, x2: 0, y2: 180, stroke: '#00ffff', strokeDasharray: '3,3', strokeWidth: 1 }),
+                            
+                            // Body carapace
+                            h('rect', { x: 0, y: 75, width: activeLobster.length * ppi - 60, height: 30, rx: 6, fill: '#14532d', stroke: '#16a34a', strokeWidth: 1.5 }),
+                            h('text', { x: (activeLobster.length * ppi - 60) / 2, y: 93, textAnchor: 'middle', fontSize: '9', fill: '#86efac', fontWeight: 'bold' }, 'Crayfish'),
+                            
+                            // Segmented tail
+                            h('rect', { x: activeLobster.length * ppi - 60, y: 78, width: 45, height: 24, rx: 3, fill: '#16a34a', stroke: '#14532d' }),
+                            h('path', {
+                              d: 'M ' + (activeLobster.length * ppi - 15) + ' 75 L ' + (activeLobster.length * ppi + 10) + ' 68 L ' + (activeLobster.length * ppi + 15) + ' 90 L ' + (activeLobster.length * ppi + 10) + ' 112 L ' + (activeLobster.length * ppi - 15) + ' 105 Z',
+                              fill: '#14532d',
+                              stroke: '#16a34a'
+                            }),
+                            
+                            // End of tail marker
+                            h('line', { x1: activeLobster.length * ppi, y1: 70, x2: activeLobster.length * ppi, y2: 180, stroke: '#f87171', strokeDasharray: '3,3', strokeWidth: 1.5 })
+                          )
+                        ) : (
+                          // LOBSTER DRAWING (MAINE DEFAULT)
+                          h('g', null,
+                            // Antennas
+                            h('path', { d: 'M 20 80 Q -30 60 -50 90 M 20 100 Q -30 120 -50 90', fill: 'none', stroke: '#b91c1c', strokeWidth: 2 }),
+                            // Claws
+                            h('path', { d: 'M 40 40 C 0 20 -20 50 10 70 Z', fill: '#991b1b', stroke: '#7f1d1d' }),
+                            h('path', { d: 'M 40 140 C 0 160 -20 130 10 110 Z', fill: '#991b1b', stroke: '#7f1d1d' }),
+                            h('line', { x1: 40, y1: 70, x2: 20, y2: 55, stroke: '#991b1b', strokeWidth: 5 }),
+                            h('line', { x1: 40, y1: 110, x2: 20, y2: 125, stroke: '#991b1b', strokeWidth: 5 }),
+                            // Eye socket
+                            h('circle', { cx: 0, cy: 90, r: 4, fill: '#00ffff' }),
+                            h('text', { x: 0, y: 78, textAnchor: 'middle', fontSize: '9', fill: '#00ffff', fontWeight: 'bold' }, 'Eye Socket (0")'),
+                            h('line', { x1: 0, y1: 86, x2: 0, y2: 180, stroke: '#00ffff', strokeDasharray: '3,3', strokeWidth: 1 }),
+                            // Carapace
+                            h('rect', { x: 0, y: 70, width: activeLobster.length * ppi, height: 40, rx: 8, fill: '#7f1d1d', stroke: '#991b1b', strokeWidth: 2 }),
+                            h('text', { x: (activeLobster.length * ppi) / 2, y: 94, textAnchor: 'middle', fontSize: '11', fill: '#fca5a5', fontWeight: 'bold' }, 'Carapace'),
+                            // Rear edge of carapace
+                            h('line', { x1: activeLobster.length * ppi, y1: 70, x2: activeLobster.length * ppi, y2: 180, stroke: '#f87171', strokeDasharray: '3,3', strokeWidth: 1.5 }),
+                            // Tail
+                            h('rect', { x: activeLobster.length * ppi, y: 75, width: 100, height: 30, rx: 4, fill: '#991b1b', stroke: '#7f1d1d' }),
+                            h('path', {
+                              d: 'M ' + (activeLobster.length * ppi + 100) + ' 70 L ' + (activeLobster.length * ppi + 130) + ' 60 L ' + (activeLobster.length * ppi + 140) + ' 90 L ' + (activeLobster.length * ppi + 130) + ' 120 L ' + (activeLobster.length * ppi + 100) + ' 110 Z',
+                              fill: '#7f1d1d',
+                              stroke: '#991b1b'
+                            }),
+                            // Egg sponge
+                            activeLobster.isFemale ? h('circle', { cx: activeLobster.length * ppi + 40, cy: 90, r: 8, fill: '#fbbf24', opacity: 0.85 }) : null,
+                            activeLobster.isFemale ? h('text', { x: activeLobster.length * ppi + 40, y: 93, textAnchor: 'middle', fontSize: '8', fill: '#000', fontWeight: 'bold' }, '♀') : null,
+                            // V-Notch
+                            activeLobster.isVNotched ? h('path', {
+                              d: 'M ' + (activeLobster.length * ppi + 135) + ' 90 L ' + (activeLobster.length * ppi + 120) + ' 90 L ' + (activeLobster.length * ppi + 135) + ' 98 Z',
+                              fill: '#111827',
+                              stroke: '#991b1b',
+                              strokeWidth: 1
+                            }) : null,
+                            activeLobster.isVNotched ? h('text', { x: activeLobster.length * ppi + 105, y: 118, fontSize: '9', fill: '#f87171', fontWeight: 'bold' }, '⚠ V-Notch') : null
+                          )
+                        )
+                      ),
+
+                      // Caliper overlays
+                      h('rect', { x: 57, y: 20, width: 6, height: 200, fill: '#9ca3af', opacity: 0.9 }),
+                      h('rect', { x: 57, y: 20, width: 40, height: 12, fill: '#9ca3af' }),
+                      h('g', { transform: 'translate(' + (60 + caliperVal * ppi) + ', 0)' },
+                        h('rect', { x: -3, y: 20, width: 6, height: 200, fill: '#f59e0b', opacity: 0.95 }),
+                        h('rect', { x: -40, y: 20, width: 43, height: 12, fill: '#f59e0b' }),
+                        h('text', { x: -20, y: 10, textAnchor: 'middle', fontSize: '9', fill: '#fbbf24', fontWeight: 'bold' }, 'Caliper')
+                      ),
+                      h('rect', { x: 170, y: 5, width: 200, height: 26, rx: 4, fill: 'rgba(15,23,42,0.85)', stroke: '#38bdf8' }),
+                      h('text', { x: 270, y: 22, textAnchor: 'middle', fontSize: '12', fill: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold' }, 'Caliper Width: ' + caliperVal.toFixed(2) + '"')
+                    ),
+                    
+                    // Slider input to adjust caliperVal
+                    h('div', { style: { padding: '8px 10px', background: 'rgba(15,23,42,0.6)', borderRadius: '6px', marginTop: '10px' } },
+                      h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#94a3b8', marginBottom: '4px' } },
+                        h('span', null, 'Caliper Jaw Width Adjustment:'),
+                        h('span', { style: { color: '#f59e0b', fontWeight: 'bold' } }, caliperVal.toFixed(2) + ' in')
+                      ),
+                      h('input', {
+                        type: 'range',
+                        min: activeLobster.specimenType === 'crab' ? 3.00 : activeLobster.specimenType === 'crayfish' ? 1.50 : 2.50,
+                        max: activeLobster.specimenType === 'crab' ? 8.00 : activeLobster.specimenType === 'crayfish' ? 5.00 : 6.00,
+                        step: 0.05,
+                        value: caliperVal,
+                        onChange: function(e) { setCaliperVal(parseFloat(e.target.value)); },
+                        style: { width: '100%', cursor: 'ew-resize', accentColor: '#f59e0b' }
+                      })
                     )
                   ),
 
-                  h('div', { style: { background: 'rgba(30,41,59,0.4)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #ef4444', fontSize: '10.5px', color: '#cbd5e1', lineHeight: '1.4' } },
-                    h('div', { style: { fontWeight: 'bold', color: '#f87171', marginBottom: '4px', fontSize: '11px' } }, 'MAINE DIVISION OF MARINE RESOURCES (DMR) LAWS:'),
-                    h('div', null, '1. ', h('strong', null, 'Min Carapace Length: '), '3-1/4 inches (3.25"). Throw back if smaller.'),
-                    h('div', null, '2. ', h('strong', null, 'Max Carapace Length: '), '5 inches (5.0"). Throw back if larger (preserves breeders).'),
-                    h('div', null, '3. ', h('strong', null, 'V-Notch Female rule: '), 'Any female with a V-notch on the right-middle tail flipper must be released. It designates a known fertile breeder.'),
-                    h('div', { style: { color: '#e2e8f0', marginTop: '6px', fontWeight: 'bold' } }, 'Violation penalty: $250 - $750 fine.')
-                  ),
-
-                  h('div', { style: { marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' } },
-                    h('div', { style: { textAlign: 'center', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' } }, 'Confirm your compliance action:'),
-                    h('button', {
-                      className: 'fl-btn',
-                      onClick: function() {
-                        var decisionCorrect = activeLobster.isKeeper;
-                        var msg = '';
-                        var violationText = '';
-
-                        if (decisionCorrect) {
-                          msg = '✓ Legal Keeper kept! Length: ' + activeLobster.length.toFixed(2) + '" ' + (activeLobster.isFemale ? 'Female' : 'Male') + '.';
-                          flAnnounce(msg);
-                          pushStatus({ type: 'lobster', length: activeLobster.length, isKeeper: true, text: msg });
-                        } else {
-                          var fine = 250;
-                          var reason = 'Undersized lobster (< 3.25")';
-                          if (activeLobster.length > 5.0) {
-                            fine = 500;
-                            reason = 'Oversized lobster (> 5.0")';
-                          } else if (activeLobster.isVNotched) {
-                            fine = 750;
-                            reason = 'V-notched female breeder lobster';
-                          }
-                          violationText = 'CITATION: Possession of ' + reason + ' (' + activeLobster.length.toFixed(2) + '"). Fine: $' + fine + '.';
-                          flAnnounce(violationText);
-                          pushStatus({ type: 'violation', text: violationText });
-                        }
-
-                        if (harborRef.current && harborRef.current.resumeSim) {
-                          harborRef.current.resumeSim('keep', decisionCorrect);
-                        }
-                        setActiveLobster(null);
-                      },
-                      style: { padding: '10px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }
-                    }, '📥 KEEP IN LIVEWELL (LEGAL CATCH)'),
-
-                    h('button', {
-                      className: 'fl-btn',
-                      onClick: function() {
-                        var decisionCorrect = !activeLobster.isKeeper;
-                        var msg = '';
-
-                        if (decisionCorrect) {
-                          msg = '✓ Released illegal lobster overboard (' + activeLobster.length.toFixed(2) + '"' + (activeLobster.isVNotched ? ' V-notched' : '') + '). Compliance check passed.';
-                          flAnnounce(msg);
-                          pushStatus({ type: 'complete', text: msg });
-                        } else {
-                          msg = '⚠ Released a legal keeper lobster (' + activeLobster.length.toFixed(2) + '"). Lost catch market value.';
-                          flAnnounce(msg);
-                          pushStatus({ type: 'complete', text: msg });
-                        }
+                  // Right Panel
+                  h('div', { style: { flex: '1', display: 'flex', flexDirection: 'column', gap: '12px' } },
+                    h('div', { style: { background: 'rgba(15,23,42,0.6)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(56,189,248,0.1)' } },
+                      h('div', { style: { fontWeight: 'bold', fontSize: '11px', color: '#38bdf8', marginBottom: '8px' } }, 'SPECIMEN REPORT'),
+                      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' } },
+                        h('div', null, 'Gender: ', h('b', { style: { color: activeLobster.isFemale ? '#f472b6' : '#60a5fa' } }, activeLobster.isFemale ? 'Female ♀' : 'Male ♂')),
                         
-                        if (harborRef.current && harborRef.current.resumeSim) {
-                          harborRef.current.resumeSim('release', false);
-                        }
-                        setActiveLobster(null);
-                      },
-                      style: { padding: '10px', background: '#64748b', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }
-                    }, '🌊 RELEASE OVERBOARD (RETURN TO SEA)')
+                        activeLobster.specimenType === 'lobster' ? (
+                          h('div', null, 'V-Notch: ', h('b', { style: { color: activeLobster.isVNotched ? '#ef4444' : '#10b981' } }, activeLobster.isVNotched ? 'Present (Protected)' : 'None'))
+                        ) : activeLobster.region === 'chesapeake' ? (
+                          h('div', null, 'Sponge (Eggs): ', h('b', { style: { color: activeLobster.hasSponge ? '#ef4444' : '#10b981' } }, activeLobster.hasSponge ? 'Present (Protected)' : 'None'))
+                        ) : activeLobster.region === 'pnw' ? (
+                          h('div', null, 'Harvest Rule: ', h('b', { style: { color: activeLobster.isFemale ? '#ef4444' : '#10b981' } }, activeLobster.isFemale ? 'Male Only (Release ♀)' : 'Legal Male ♂'))
+                        ) : (
+                          h('div', null, 'Species: ', h('b', { style: { color: '#cbd5e1' } }, 'Crayfish'))
+                        ),
+                        
+                        h('div', null, 'Source: ', h('b', { style: { color: '#cbd5e1' } }, activeLobster.buoyLabel)),
+                        h('div', null, 'Est. Weight: ', h('b', { style: { color: '#cbd5e1' } }, (Math.pow(activeLobster.length, 3) * (activeLobster.specimenType === 'crab' ? 0.003 : 0.005)).toFixed(2) + ' lbs'))
+                      )
+                    ),
+
+                    lawsCardContent,
+
+                    h('div', { style: { marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' } },
+                      h('div', { style: { textAlign: 'center', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' } }, 'Confirm your compliance action:'),
+                      h('button', {
+                        className: 'fl-btn',
+                        onClick: function() {
+                          var decisionCorrect = activeLobster.isKeeper;
+                          var msg = '';
+                          var violationText = '';
+
+                          if (decisionCorrect) {
+                            msg = '✓ Legal ' + (activeLobster.specimenType === 'crab' ? 'crab' : activeLobster.specimenType === 'crayfish' ? 'crayfish' : 'lobster') + ' kept! Size: ' + activeLobster.length.toFixed(2) + '" ' + (activeLobster.isFemale ? 'Female' : 'Male') + '.';
+                            flAnnounce(msg);
+                            pushStatus({ type: 'lobster', length: activeLobster.length, isKeeper: true, text: msg });
+                          } else {
+                            var fine = 250;
+                            var reason = 'Undersized specimen';
+                            
+                            if (activeLobster.region === 'chesapeake') {
+                              if (activeLobster.length < 5.0) {
+                                fine = 150;
+                                reason = 'Undersized blue crab (< 5.0")';
+                              } else if (activeLobster.hasSponge) {
+                                fine = 300;
+                                reason = 'Sponge crab (female blue crab carrying eggs)';
+                              }
+                            } else if (activeLobster.region === 'pnw') {
+                              if (activeLobster.length < 6.25) {
+                                fine = 200;
+                                reason = 'Undersized Dungeness crab (< 6.25")';
+                              } else if (activeLobster.isFemale) {
+                                fine = 400;
+                                reason = 'Female Dungeness crab (male-only harvest)';
+                              }
+                            } else if (activeLobster.region === 'greatlakes') {
+                              fine = 75;
+                              reason = 'Undersized crayfish (< 3.0")';
+                            } else {
+                              if (activeLobster.length < 3.25) {
+                                fine = 250;
+                                reason = 'Undersized lobster (< 3.25")';
+                              } else if (activeLobster.length > 5.0) {
+                                fine = 500;
+                                reason = 'Oversized lobster (> 5.0")';
+                              } else if (activeLobster.isVNotched) {
+                                fine = 750;
+                                reason = 'V-notched female breeder lobster';
+                              }
+                            }
+                            
+                            violationText = 'CITATION: Possession of ' + reason + ' (' + activeLobster.length.toFixed(2) + '"). Fine: $' + fine + '.';
+                            flAnnounce(violationText);
+                            pushStatus({ type: 'violation', text: violationText });
+                          }
+
+                          if (harborRef.current && harborRef.current.resumeSim) {
+                            harborRef.current.resumeSim('keep', decisionCorrect);
+                          }
+                          setActiveLobster(null);
+                        },
+                        style: { padding: '10px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }
+                      }, '📥 KEEP IN LIVEWELL (LEGAL CATCH)'),
+
+                      h('button', {
+                        className: 'fl-btn',
+                        onClick: function() {
+                          var decisionCorrect = !activeLobster.isKeeper;
+                          var msg = '';
+
+                          if (decisionCorrect) {
+                            msg = '✓ Released illegal ' + (activeLobster.specimenType === 'crab' ? 'crab' : activeLobster.specimenType === 'crayfish' ? 'crayfish' : 'lobster') + ' overboard (' + activeLobster.length.toFixed(2) + '"). Compliance check passed.';
+                            flAnnounce(msg);
+                            pushStatus({ type: 'complete', text: msg });
+                          } else {
+                            msg = '⚠ Released a legal keeper ' + (activeLobster.specimenType === 'crab' ? 'crab' : activeLobster.specimenType === 'crayfish' ? 'crayfish' : 'lobster') + ' (' + activeLobster.length.toFixed(2) + '"). Lost catch market value.';
+                            flAnnounce(msg);
+                            pushStatus({ type: 'complete', text: msg });
+                          }
+                          
+                          if (harborRef.current && harborRef.current.resumeSim) {
+                            harborRef.current.resumeSim('release', false);
+                          }
+                          setActiveLobster(null);
+                        },
+                        style: { padding: '10px', background: '#64748b', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }
+                      }, '🌊 RELEASE OVERBOARD (RETURN TO SEA)')
+                    )
                   )
                 )
-              )
-            ) : null
+              );
+            })() : null
           ) : null
         ),
         h('div', { style: cardStyle },
@@ -9588,12 +10229,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // ─── DMR REGS tab
     function regsTab() {
+      var activeRegion = region;
+      var currentSpeciesList = getSpeciesForRegion(activeRegion);
+      var currentAuthority = REGIONS[activeRegion].dmrAuthority;
+      var currentTitle = '📜 ' + REGIONS[activeRegion].label + ' Regulations Lookup';
+
       return h('div', null,
         regionBar(),
         h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '📜 DMR Regulations Lookup (Maine)'),
+          h('div', { style: headerStyle }, currentTitle),
           h('p', { style: { fontSize: 11, color: '#fb923c', marginBottom: 12, fontStyle: 'italic' } },
-            '⚠ Live DMR rules change. Treat in-tool numbers as instructional. Always confirm at maine.gov/dmr or current state\'s authority before fishing.'),
+            '⚠ Live rules change. Treat in-tool numbers as instructional. Always confirm with ' + currentAuthority + ' before fishing.'),
           h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
             h('thead', null,
               h('tr', { style: { background: 'rgba(56,189,248,0.15)' } },
@@ -9601,7 +10247,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   return h('th', { key: ci, style: { padding: '6px 8px', textAlign: 'left', color: '#bae6fd', fontWeight: 700 } }, c);
                 }))),
             h('tbody', null,
-              MAINE_SPECIES.map(function(s, i) {
+              currentSpeciesList.map(function(s, i) {
                 return h('tr', { key: i, style: { borderBottom: '1px solid rgba(100,116,139,0.18)' } },
                   h('td', { style: { padding: '6px 8px', fontWeight: 700 } }, s.name),
                   h('td', { style: { padding: '6px 8px' } }, (typeof s.minSize === 'number' ? s.minSize + '"' : (s.minSize || '—'))),
@@ -9609,14 +10255,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   h('td', { style: { padding: '6px 8px' } }, s.dailyBag != null ? String(s.dailyBag) : '—'),
                   h('td', { style: { padding: '6px 8px' } }, s.season || 'Open'));
               })))),
+
+        // Checkpoint quiz section
+        checkpointSpecimen ? h('div', { style: Object.assign({}, cardStyle, { border: '2px solid rgba(14, 165, 233, 0.4)', background: 'linear-gradient(135deg, rgba(8, 25, 48, 0.95), rgba(4, 15, 30, 0.95))' }) },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
+            h('div', { style: headerStyle }, '📝 Hands-on Compliance Checkpoint'),
+            h('div', { style: { fontSize: 11, color: '#38bdf8', fontWeight: 'bold' } }, 
+              'Score: ' + checkpointScore.correctCount + ' / ' + checkpointScore.totalCount + 
+              (checkpointScore.totalCount > 0 ? ' (' + Math.round(checkpointScore.correctCount / checkpointScore.totalCount * 100) + '%)' : '')
+            )
+          ),
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
+            'Test your knowledge of the ' + currentAuthority + ' regulations. Examine the specimen below and decide if it is legal to keep.'
+          ),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 14, background: 'rgba(15,23,42,0.4)', padding: 12, borderRadius: 8, border: '1px solid rgba(56,189,248,0.1)', marginBottom: 12 } },
+            h('div', { style: { flex: 1, minWidth: 150 } },
+              h('div', { style: { fontSize: 13, fontWeight: 'bold', color: '#bae6fd' } }, checkpointSpecimen.species.emoji + ' ' + checkpointSpecimen.species.name),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, checkpointSpecimen.species.sci),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, 'Measured Length: ', h('strong', { style: { color: '#f59e0b' } }, checkpointSpecimen.length.toFixed(2) + '"')),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Gender: ', h('strong', null, checkpointSpecimen.isFemale ? 'Female ♀' : 'Male ♂'))
+            ),
+            h('div', { style: { flex: 1.2, minWidth: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
+              checkpointSpecimen.species.group === 'shellfish' ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                h('div', null, 'Markings/State:'),
+                region === 'chesapeake' ? h('div', { style: { fontWeight: 'bold', color: checkpointSpecimen.hasSponge ? '#fb923c' : '#86efac' } }, checkpointSpecimen.hasSponge ? '⚠️ Egg sponge present (carrying eggs)' : 'No eggs present') :
+                region === 'maine' ? h('div', { style: { fontWeight: 'bold', color: checkpointSpecimen.isVNotched ? '#ef4444' : '#10b981' } }, checkpointSpecimen.isVNotched ? '⚠️ V-notch present (protected breeder)' : 'No V-notch') :
+                region === 'pnw' ? h('div', { style: { fontWeight: 'bold', color: checkpointSpecimen.isFemale ? '#fb923c' : '#86efac' } }, checkpointSpecimen.isFemale ? '⚠️ Female (Female-release rule applies)' : 'Male specimen') :
+                h('div', null, 'None')
+              ) : h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } },
+                h('strong', null, 'ID Marks: '), checkpointSpecimen.species.idMarks || 'No special marks.'
+              )
+            )
+          ),
+          
+          checkpointResult ? h('div', { style: { padding: 10, borderRadius: 6, marginBottom: 12, border: '1px solid ' + (checkpointResult.correct ? '#10b981' : '#ef4444'), background: checkpointResult.correct ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: checkpointResult.correct ? '#34d399' : '#f87171', fontSize: 11.5 } },
+            h('div', { style: { fontWeight: 'bold', marginBottom: 2 } }, checkpointResult.correct ? '✓ Correct Decision!' : '✕ Incorrect Action!'),
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, checkpointResult.feedback),
+            h('div', { style: { color: '#fb923c', marginTop: 4, fontStyle: 'italic' } }, 'Rule reference: ' + checkpointSpecimen.ruleText)
+          ) : null,
+
+          h('div', { style: { display: 'flex', gap: 10 } },
+            !checkpointResult ? [
+              h('button', { key: 'keep', className: 'fl-btn',
+                onClick: function() {
+                  var correct = checkpointSpecimen.isKeeper;
+                  var fb = correct ? 
+                    'Correct! This ' + checkpointSpecimen.species.name + ' is a legal keeper.' :
+                    'Incorrect. You kept an illegal specimen! The rules require this specimen to be released.';
+                  setCheckpointScore(function(prev) { return { correctCount: prev.correctCount + (correct ? 1 : 0), totalCount: prev.totalCount + 1 }; });
+                  setCheckpointResult({ correct: correct, feedback: fb });
+                },
+                style: { flex: 1, padding: '8px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer', fontSize: 11.5 } }, '📥 Keep Specimen'),
+              h('button', { key: 'release', className: 'fl-btn',
+                onClick: function() {
+                  var correct = !checkpointSpecimen.isKeeper;
+                  var fb = correct ?
+                    'Correct! You released the specimen, complying with regulations.' :
+                    'Incorrect. You threw back a legal keeper! While conserving is fine, for this compliance check you want to keep legal catch.';
+                  setCheckpointScore(function(prev) { return { correctCount: prev.correctCount + (correct ? 1 : 0), totalCount: prev.totalCount + 1 }; });
+                  setCheckpointResult({ correct: correct, feedback: fb });
+                },
+                style: { flex: 1, padding: '8px', background: '#64748b', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer', fontSize: 11.5 } }, '🌊 Release Overboard')
+            ] : h('button', { className: 'fl-btn',
+              onClick: generateCheckpointSpecimen,
+              style: { flex: 1, padding: '8px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer', fontSize: 11.5 } }, 'Next Specimen ➔')
+          )
+        ) : null,
+
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, 'Conservation tools you\'ll see in the sim'),
           h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
-            h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Slot limits — '), 'Striper 28-31". Protects both juveniles AND big breeders. Smaller fish = future biomass; bigger fish = disproportionate reproductive output.'),
-            h('li', null, h('b', { style: { color: '#fbbf24' } }, 'V-notch (lobster) — '), 'Any female caught with eggs gets a v-notch on her tail flipper. She\'s protected for life from harvest, even years later when no longer carrying. Maine\'s most distinctive sustainability lever.'),
-            h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Maximum size (lobster) — '), 'Lobsters >5" carapace must also be released. The largest breeders produce vastly more eggs per spawn than smaller ones.'),
-            h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Escape vents (traps) — '), 'Required size openings in lobster traps that let sub-legal lobsters walk out before haul. Reduces handling stress + mortality.'),
-            h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Closed seasons + areas — '), 'NOAA and DMR close zones during spawning. Required learning if you fish here.'))));
+            h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Slot limits — '), 'striped bass 19-24" (Chesapeake). Protects both juveniles AND big breeding-age fish.'),
+            h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Female-release rule (Dungeness) — '), 'Only male crabs may be harvested. Restricting take to males ensures that females are left in the ocean to reproduce.'),
+            h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Egg-bearing sponge rules — '), 'Blue crabs carrying visible orange egg masses (sponges) are strictly protected to safeguard the reproductive pool.'),
+            h('li', null, h('b', { style: { color: '#fbbf24' } }, 'V-notch (lobster) — '), 'Any female caught with eggs gets a v-notch on her tail flipper, protecting her for life from harvest.'),
+            h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Closed seasons — '), 'State and federal agencies close zones during spawning to reduce catch mortality when fish are most vulnerable.')))
+      );
     }
 
     // ─── LICENSE LADDER tab
