@@ -10,15 +10,29 @@ export async function bootAlloFlow(page: Page, mode: 'learning' | 'full' = 'lear
   await page.waitForLoadState('domcontentloaded');
   await page.waitForFunction(() => document.body.innerHTML.length > 5000, null, { timeout: 30000 });
 
+  // Function to wait for loading screen to be detached
+  const waitLoader = async () => {
+    const loader = page.locator('div[role="status"]').filter({ hasText: /AlloFlow/i }).first();
+    if (await loader.count() > 0) {
+      console.log('Waiting for AlloFlow loading screen to disappear...');
+      await loader.waitFor({ state: 'detached', timeout: 180000 }).catch(() => {});
+      console.log('AlloFlow loading screen disappeared/detached!');
+    }
+  };
+
+  await waitLoader();
+
   // Mode picker is divs with role="button" + aria-label starting with "Full Platform"/"Learning Tools"/etc
   const target = mode === 'learning' ? /Learning Tools/i : /Full Platform/i;
   const card = page.getByRole('button', { name: target }).first();
-  // Wait briefly for it to appear
-  await card.waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
-  if (await card.count() > 0) {
-    await card.click({ force: true }).catch(() => {});
-    await page.waitForTimeout(2000);
-  }
+
+  console.log('Waiting for mode picker card to be visible...');
+  await card.waitFor({ state: 'visible', timeout: 30000 });
+  console.log('Mode picker card is visible! Clicking it...');
+  await page.waitForTimeout(1000); // Allow hydration
+  // Click without force to ensure standard actionability (not covered, etc.)
+  await card.click({ timeout: 15000 });
+  await page.waitForTimeout(2000);
 
   // Dismiss tutorial overlays
   for (const sel of [
@@ -31,6 +45,11 @@ export async function bootAlloFlow(page: Page, mode: 'learning' | 'full' = 'lear
   ]) {
     const btn = page.locator(sel).first();
     if (await btn.count() > 0 && await btn.isVisible().catch(() => false)) {
+      const ariaLabel = (await btn.getAttribute('aria-label').catch(() => '')) || '';
+      if (ariaLabel.toLowerCase().includes('learning hub') || ariaLabel.toLowerCase().includes('learning tools')) {
+        console.log(`Skipping dismiss for learning hub close button: ${ariaLabel}`);
+        continue;
+      }
       await btn.click().catch(() => {});
       await page.waitForTimeout(300);
     }

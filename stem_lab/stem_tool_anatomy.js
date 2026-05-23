@@ -3713,33 +3713,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 var spPulse = 1.0 + Math.sin(anatTick * 0.1) * 0.4;
                 var spRotation = anatTick * 0.02; // slow rotation
                 cCtx.save();
-                // Outer rotating dashed ring
-                cCtx.globalAlpha = 0.25 + Math.sin(anatTick * 0.08) * 0.1;
+                
+                // Add drop shadow to make the reticle pop on any background color
+                cCtx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+                cCtx.shadowBlur = 5;
+                cCtx.shadowOffsetX = 0;
+                cCtx.shadowOffsetY = 0;
+
+                // Outer rotating dashed ring (Cyan/Teal)
+                cCtx.globalAlpha = 0.6 + Math.sin(anatTick * 0.08) * 0.15;
                 cCtx.save(); cCtx.translate(spx, spy2); cCtx.rotate(spRotation);
                 cCtx.beginPath(); cCtx.arc(0, 0, 20 + spPulse * 5, 0, Math.PI * 2);
-                cCtx.strokeStyle = '#f59e0b'; cCtx.lineWidth = 2; cCtx.setLineDash([6, 4]); cCtx.stroke(); cCtx.setLineDash([]);
+                cCtx.strokeStyle = '#06b6d4'; cCtx.lineWidth = 2.5; cCtx.setLineDash([6, 4]); cCtx.stroke(); cCtx.setLineDash([]);
                 cCtx.restore();
-                // Inner counter-rotating ring
+                
+                // Inner counter-rotating ring (Bright Turquoise)
+                cCtx.globalAlpha = 0.7 + Math.sin(anatTick * 0.1) * 0.1;
                 cCtx.save(); cCtx.translate(spx, spy2); cCtx.rotate(-spRotation * 0.7);
                 cCtx.beginPath(); cCtx.arc(0, 0, 14 + spPulse * 2, 0, Math.PI * 2);
-                cCtx.strokeStyle = '#fbbf24'; cCtx.lineWidth = 1; cCtx.setLineDash([3, 5]); cCtx.stroke(); cCtx.setLineDash([]);
+                cCtx.strokeStyle = '#22d3ee'; cCtx.lineWidth = 1.5; cCtx.setLineDash([3, 5]); cCtx.stroke(); cCtx.setLineDash([]);
                 cCtx.restore();
-                // Inner target fill
+                
+                // Inner target fill (translucent cyan)
+                cCtx.globalAlpha = 0.4;
                 cCtx.beginPath(); cCtx.arc(spx, spy2, 8, 0, Math.PI * 2);
-                cCtx.fillStyle = '#f59e0b20'; cCtx.fill();
-                // Center dot
-                cCtx.beginPath(); cCtx.arc(spx, spy2, 2, 0, Math.PI * 2);
-                cCtx.fillStyle = '#f59e0b'; cCtx.fill();
-                // Crosshair lines
-                cCtx.globalAlpha = 0.7;
+                cCtx.fillStyle = '#06b6d4'; cCtx.fill();
+                
+                // Center dot (bright cyan with dark shadow)
+                cCtx.globalAlpha = 1.0;
+                cCtx.beginPath(); cCtx.arc(spx, spy2, 3, 0, Math.PI * 2);
+                cCtx.fillStyle = '#22d3ee'; cCtx.fill();
+                cCtx.beginPath(); cCtx.arc(spx, spy2, 1, 0, Math.PI * 2);
+                cCtx.fillStyle = '#ffffff'; cCtx.fill();
+                
+                // Crosshair lines (Cyan)
+                cCtx.globalAlpha = 0.95;
                 cCtx.beginPath(); cCtx.moveTo(spx - 14, spy2); cCtx.lineTo(spx - 5, spy2);
                 cCtx.moveTo(spx + 5, spy2); cCtx.lineTo(spx + 14, spy2);
                 cCtx.moveTo(spx, spy2 - 14); cCtx.lineTo(spx, spy2 - 5);
                 cCtx.moveTo(spx, spy2 + 5); cCtx.lineTo(spx, spy2 + 14);
-                cCtx.strokeStyle = '#f59e0b'; cCtx.lineWidth = 1.5; cCtx.stroke();
+                cCtx.strokeStyle = '#06b6d4'; cCtx.lineWidth = 2; cCtx.stroke();
+                
                 // Corner brackets (L-shaped brackets at cardinal points)
                 var brkR = 24 + spPulse * 4; var brkLen = 6;
-                cCtx.globalAlpha = 0.5;
+                cCtx.globalAlpha = 0.85;
                 cCtx.beginPath();
                 // Top-left bracket
                 cCtx.moveTo(spx - brkR, spy2 - brkR + brkLen); cCtx.lineTo(spx - brkR, spy2 - brkR); cCtx.lineTo(spx - brkR + brkLen, spy2 - brkR);
@@ -3749,7 +3766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 cCtx.moveTo(spx - brkR, spy2 + brkR - brkLen); cCtx.lineTo(spx - brkR, spy2 + brkR); cCtx.lineTo(spx - brkR + brkLen, spy2 + brkR);
                 // Bottom-right bracket
                 cCtx.moveTo(spx + brkR - brkLen, spy2 + brkR); cCtx.lineTo(spx + brkR, spy2 + brkR); cCtx.lineTo(spx + brkR, spy2 + brkR - brkLen);
-                cCtx.strokeStyle = '#f59e0b'; cCtx.lineWidth = 1.5; cCtx.stroke();
+                cCtx.strokeStyle = '#06b6d4'; cCtx.lineWidth = 2; cCtx.stroke();
                 cCtx.restore();
               }
             }
@@ -3999,17 +4016,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           });
           if (closest) {
             if (spotterActive && spotterFeedback === null) {
-              // Clicking directly submits the answer in Spotter Mode
+              // Block clicking on the target body part directly to obtain the correct answer
+              if (closest.id === spotterTarget) {
+                if (addToast) addToast('🎯 Identify the structure using the multiple-choice buttons in the side panel!');
+                return;
+              }
+              // Clicking directly submits the answer in Spotter Mode (for other parts, marking them wrong)
               var elapsed = (Date.now() - spotterStartTime) / 1000;
               upd('_spotterFeedback', closest.id);
               upd('_spotterTotal', spotterTotal + 1);
-              if (closest.id === spotterTarget) {
-                upd('_spotterScore', spotterScore + 1);
-                if (elapsed < spotterBestTime) upd('_spotterBestTime', elapsed);
-                playSound('spotterCorrect');
-              } else {
-                playSound('spotterWrong');
-              }
+              playSound('spotterWrong');
             } else {
               // Standard explore mode click
               upd('selectedStructure', closest.id);
@@ -4727,9 +4743,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     }, '\uD83C\uDFAF Start Spotter Test'),
                     spotterTotal > 0 ? h('p', { className: 'text-[11px] text-slate-600 mt-2' }, 'Score: ' + spotterScore + ' correct out of ' + spotterTotal + ' attempts') : null
                   ) : h('div', { className: 'space-y-3' },
-                    h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200 text-center' },
-                      h('p', { className: 'text-sm font-bold text-amber-900 mb-1' }, 'What structure is marked on the figure?'),
-                      h('p', { className: 'text-[11px] text-amber-600' }, 'Look for the pulsing amber crosshair on the canvas')
+                    h('div', { className: 'bg-cyan-50 rounded-lg p-3 border border-cyan-200 text-center' },
+                      h('p', { className: 'text-sm font-bold text-cyan-900 mb-1' }, 'What structure is marked on the figure?'),
+                      h('p', { className: 'text-[11px] text-cyan-700' }, 'Look for the pulsing cyan crosshair on the canvas')
                     ),
                     h('div', { className: 'grid grid-cols-2 gap-2' },
                       spotterOptions.map(function(opt) {

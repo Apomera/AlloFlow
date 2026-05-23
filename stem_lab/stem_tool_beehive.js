@@ -3914,17 +3914,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var al = dc.getAttribute('aria-label') || '';
             console.log('[Beehive DEBUG]   canvas[' + i + ']: aria-label="' + al.slice(0, 50) + '" size=' + dc.clientWidth + 'x' + dc.clientHeight + ' parent=' + (dc.parentElement ? dc.parentElement.tagName : '?'));
           }
-          // NEW: find the TOP MARKER (if it rendered) and log its siblings to see what's actually in DOM
-          var topMarker = document.querySelector('div[style*="TOP MARKER"]') || Array.from(document.querySelectorAll('div')).find(function(d) { return d.textContent && d.textContent.indexOf('TOP MARKER') !== -1 && d.children.length === 0; });
-          console.log('[Beehive DEBUG] TOP MARKER in DOM:', topMarker ? 'YES' : 'NO');
-          if (topMarker) {
-            var parent = topMarker.parentElement;
-            console.log('[Beehive DEBUG] TOP MARKER parent:', parent ? parent.tagName + '.' + parent.className + ' (' + parent.children.length + ' children)' : 'NULL');
+          // Sibling diagnostic: find the simulation perspective tablist and print its parent's children in the DOM
+          var tablist = document.querySelector('[role="tablist"][aria-label="Simulation perspective"]');
+          console.log('[Beehive DEBUG] tablist in DOM:', tablist ? 'YES' : 'NO');
+          if (tablist) {
+            var parent = tablist.parentElement;
+            console.log('[Beehive DEBUG] tablist parent:', parent ? parent.tagName + '.' + parent.className + ' (' + parent.children.length + ' children)' : 'NULL');
             if (parent) {
-              for (var ci = 0; ci < Math.min(parent.children.length, 10); ci++) {
+              for (var ci = 0; ci < parent.children.length; ci++) {
                 var ch = parent.children[ci];
-                var txt = (ch.textContent || '').slice(0, 60).replace(/\s+/g, ' ');
-                console.log('[Beehive DEBUG]   child[' + ci + ']: <' + ch.tagName + '> "' + txt + '"');
+                var txt = (ch.textContent || '').slice(0, 40).replace(/\s+/g, ' ');
+                console.log('[Beehive DEBUG]   child[' + ci + ']: <' + ch.tagName + '> id="' + (ch.id || '') + '" class="' + (ch.className || '') + '" text="' + txt + '"');
               }
             }
           }
