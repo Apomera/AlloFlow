@@ -4069,6 +4069,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
+    var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
+    var pluginCdnVersion = '348c1927';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -4166,7 +4168,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     //    one-click "Send to Aaron" button that pre-fills the bug-report form.
     //    Same CDN + raw-fallback pattern as the AIBackend loader below.
     (function() {
-      const url = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@50c0e33/error_reporter_module.js';
+      const url = pluginCdnBase + 'error_reporter_module.js?v=' + pluginCdnVersion;
       const s = document.createElement('script');
       s.src = url;
       s.crossOrigin = 'anonymous';
@@ -4180,7 +4182,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     (function() {
-      const url = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97e87aa/ai_backend_module.js';
+      const url = pluginCdnBase + 'ai_backend_module.js?v=' + pluginCdnVersion;
       const s = document.createElement('script');
       s.src = url;
       s.crossOrigin = 'anonymous';
@@ -4239,7 +4241,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js');
     window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js'); }; })();
     window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js'); }; })();
     loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js');
     loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js');
     loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js');
@@ -4380,7 +4382,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js');
     loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js');
     loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js');
-    loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
+    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -4398,8 +4400,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // gates the script-append loop). The hubs poll their registries to render
     // tiles progressively as plugins finish loading.
     (function() {
-      var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-      var pluginCdnVersion = '2945b450';
+      // pluginCdnBase and pluginCdnVersion hoisted to useEffect scope
       var stemToolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -4610,7 +4611,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           s.onerror = (e) => { console.warn('[TTS] Failed to load:', url, e); resolve(false); };
           document.head.appendChild(s);
         });
-        await loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97e87aa/kokoro_tts_loader.js');
+        await loadTTSScript(pluginCdnBase + 'kokoro_tts_loader.js?v=' + pluginCdnVersion);
         if (window._kokoroTTS) {
           try {
             await window._kokoroTTS.init((progress) => {
@@ -4631,7 +4632,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       window.__loadPiperTTS = async () => {
         if (window._piperTTS) return true;
         const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97e87aa/piper_tts_loader.js';
+        s.src = pluginCdnBase + 'piper_tts_loader.js?v=' + pluginCdnVersion;
         s.async = true; s.crossOrigin = 'anonymous';
         return new Promise(r => { s.onload = () => r(true); s.onerror = () => r(false); document.head.appendChild(s); });
       };

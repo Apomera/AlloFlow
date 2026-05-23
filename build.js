@@ -717,12 +717,26 @@ const MODULES = [
         name: 'ConceptPictionaryModule',
         filename: 'concept_pictionary_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'PoetTree',
+        filename: 'poet_tree_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'EscapeRoomModule',
+        filename: 'escape_room_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
 // Plugin files loaded via the setTimeout plugin loader (not loadModule)
 // build.js updates their CDN hash in the pluginCdnBase variable
 const PLUGIN_FILES = [
+    'error_reporter_module.js',
+    'ai_backend_module.js',
+    'kokoro_tts_loader.js',
+    'piper_tts_loader.js',
     'stem_lab/stem_tool_dna.js',
     'stem_lab/stem_tool_unitconvert.js',
     'stem_lab/stem_tool_logiclab.js',
