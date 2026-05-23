@@ -16085,9 +16085,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.save();
               c.fillStyle = 'rgba(15,23,42,0.72)';
               c.beginPath(); c.roundRect(hudX, hudY, hudW, hudH, 10); c.fill();
-              var _droneCvRef = React.useRef(null);
-              var _droneOverlayCvRef = React.useRef(null);
-              var _droneAnimId = React.useRef(0);
               c.strokeStyle = hudDanger ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.13)';
               c.lineWidth = hudDanger ? 1.6 : 1;
               c.beginPath(); c.roundRect(hudX, hudY, hudW, hudH, 10); c.stroke();
@@ -16233,6 +16230,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // ═══ DRONE FLIGHT MODE — Pseudo-3D nuptial flight experience ═══
         // ═══════════════════════════════════════════════════════════════
         var _droneCvRef = React.useRef(null);
+        var _droneOverlayCvRef = React.useRef(null);
         var _droneAnimId = React.useRef(0);
         var _droneKeys = React.useRef({});
         var _droneState = React.useRef({
