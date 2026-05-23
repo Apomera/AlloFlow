@@ -17613,8 +17613,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var active = viewMode === tab.id;
               return h('button', { key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
                 onClick: function() { upd('viewMode', tab.id); },
-                className: 'flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all ' +
-                  (active ? (dk ? 'bg-amber-700 text-white shadow-md' : 'bg-white text-amber-800 shadow-md') : (dk ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-300 hover:text-slate-700 hover:bg-white/50')),
+                className: 'flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-bold transition-all ' +
+                  (active ? (dk ? 'bg-amber-700 text-white shadow-md' : 'bg-white text-amber-800 shadow-md border border-amber-200') : (dk ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-600 hover:text-slate-800 hover:bg-white/60 border border-transparent')),
                 title: tab.desc
               }, h('span', { 'aria-hidden': 'true' }, tab.icon), tab.label);
             })),
