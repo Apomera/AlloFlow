@@ -558,7 +558,6 @@ function HighlightOverlay({ a, onDelete }) {
   return (
     <React.Fragment>
       {a.rects.map(function (r, idx) {
-        const isFirst = idx === 0;
         return (
           <div
             key={a.id + ':' + idx}
@@ -574,38 +573,13 @@ function HighlightOverlay({ a, onDelete }) {
             }}
             title={titleText}
             aria-label={'Highlight: ' + titleText}
-          >
-            {isFirst && typeof onDelete === 'function' && (
-              <button
-                type="button"
-                onClick={function (e) { e.stopPropagation(); onDelete(a.id); }}
-                className="absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
-                style={{
-                  top: -10, right: -10,
-                  width: 18, height: 18,
-                  borderRadius: '50%',
-                  background: 'white',
-                  border: '1px solid ' + palette.border,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#475569',
-                  lineHeight: 1,
-                }}
-                aria-label="Delete highlight"
-                title="Delete highlight"
-              >✕</button>
-            )}
-          </div>
+          />
         );
       })}
       {/* Invisible wrapper that catches hover so the X reveals when the
           user hovers anywhere over any of the rects, not just the first. */}
       <div
-        className="absolute pointer-events-auto z-30 hover:opacity-100"
+        className="absolute pointer-events-auto z-30"
         style={{
           top: a.rects[0].y,
           left: a.rects[0].x,
@@ -614,17 +588,40 @@ function HighlightOverlay({ a, onDelete }) {
           background: 'transparent',
         }}
         onMouseEnter={function (e) {
-          // Find the sibling X button and reveal it. CSS :hover on the
-          // rect itself would be simpler but pointer-events:none on the
-          // rect blocks :hover entirely.
-          const btn = e.currentTarget.parentNode.querySelector('button[aria-label="Delete highlight"]');
+          const btn = e.currentTarget.querySelector('button[aria-label="Delete highlight"]');
           if (btn) btn.style.opacity = '1';
         }}
         onMouseLeave={function (e) {
-          const btn = e.currentTarget.parentNode.querySelector('button[aria-label="Delete highlight"]');
+          const btn = e.currentTarget.querySelector('button[aria-label="Delete highlight"]');
           if (btn) btn.style.opacity = '0';
         }}
-      />
+      >
+        {typeof onDelete === 'function' && (
+          <button
+            type="button"
+            onClick={function (e) { e.stopPropagation(); onDelete(a.id); }}
+            className="absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
+            style={{
+              top: -10, right: -10,
+              width: 18, height: 18,
+              borderRadius: '50%',
+              background: 'white',
+              border: '1px solid ' + palette.border,
+              fontSize: 11,
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#475569',
+              lineHeight: 1,
+              zIndex: 50,
+            }}
+            aria-label="Delete highlight"
+            title="Delete highlight"
+          >✕</button>
+        )}
+      </div>
     </React.Fragment>
   );
 }

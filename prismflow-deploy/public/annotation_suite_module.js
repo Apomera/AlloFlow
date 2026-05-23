@@ -485,7 +485,6 @@ function HighlightOverlay({ a, onDelete }) {
   const title = buildStickerTitle(a) || "Highlight";
   const titleText = (a.text ? '"' + a.text.slice(0, 80) + (a.text.length > 80 ? "\u2026" : "") + '"  ' : "") + title;
   return /* @__PURE__ */ React.createElement(React.Fragment, null, a.rects.map(function(r, idx) {
-    const isFirst = idx === 0;
     return /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -502,43 +501,12 @@ function HighlightOverlay({ a, onDelete }) {
         },
         title: titleText,
         "aria-label": "Highlight: " + titleText
-      },
-      isFirst && typeof onDelete === "function" && /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: function(e) {
-            e.stopPropagation();
-            onDelete(a.id);
-          },
-          className: "absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity",
-          style: {
-            top: -10,
-            right: -10,
-            width: 18,
-            height: 18,
-            borderRadius: "50%",
-            background: "white",
-            border: "1px solid " + palette.border,
-            fontSize: 11,
-            fontWeight: 700,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#475569",
-            lineHeight: 1
-          },
-          "aria-label": "Delete highlight",
-          title: "Delete highlight"
-        },
-        "\u2715"
-      )
+      }
     );
   }), /* @__PURE__ */ React.createElement(
     "div",
     {
-      className: "absolute pointer-events-auto z-30 hover:opacity-100",
+      className: "absolute pointer-events-auto z-30",
       style: {
         top: a.rects[0].y,
         left: a.rects[0].x,
@@ -547,14 +515,46 @@ function HighlightOverlay({ a, onDelete }) {
         background: "transparent"
       },
       onMouseEnter: function(e) {
-        const btn = e.currentTarget.parentNode.querySelector('button[aria-label="Delete highlight"]');
+        const btn = e.currentTarget.querySelector('button[aria-label="Delete highlight"]');
         if (btn) btn.style.opacity = "1";
       },
       onMouseLeave: function(e) {
-        const btn = e.currentTarget.parentNode.querySelector('button[aria-label="Delete highlight"]');
+        const btn = e.currentTarget.querySelector('button[aria-label="Delete highlight"]');
         if (btn) btn.style.opacity = "0";
       }
-    }
+    },
+    typeof onDelete === "function" && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: function(e) {
+          e.stopPropagation();
+          onDelete(a.id);
+        },
+        className: "absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity",
+        style: {
+          top: -10,
+          right: -10,
+          width: 18,
+          height: 18,
+          borderRadius: "50%",
+          background: "white",
+          border: "1px solid " + palette.border,
+          fontSize: 11,
+          fontWeight: 700,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#475569",
+          lineHeight: 1,
+          zIndex: 50
+        },
+        "aria-label": "Delete highlight",
+        title: "Delete highlight"
+      },
+      "\u2715"
+    )
   ));
 }
 function DrawingOverlay({ a, onDelete }) {
