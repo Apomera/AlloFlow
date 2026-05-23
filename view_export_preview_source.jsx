@@ -976,36 +976,7 @@ function ExportPreviewView(props) {
                     className="w-full h-full bg-white rounded-lg shadow-inner border border-slate-400"
                     sandbox="allow-same-origin allow-scripts allow-forms"
                     onLoad={() => {
-                      setTimeout(() => {
-                        updateExportPreview();
-                        setTimeout(() => {
-                          const iframe = exportPreviewRef.current;
-                          const doc = iframe?.contentDocument;
-                          if (doc) {
-                            doc.designMode = 'on';
-                            doc.body.spellcheck = true;
-                            const editStyle = doc.createElement('style');
-                            editStyle.textContent = `
-                              [contenteditable]:focus, *:focus { outline: 2px solid #6366f1 !important; outline-offset: 2px; border-radius: 4px; }
-                              img { cursor: move; transition: outline 0.2s; }
-                              img:hover { outline: 2px dashed #6366f1; }
-                              ::selection { background: #c7d2fe; }
-                            `;
-                            doc.head.appendChild(editStyle);
-                            doc.addEventListener('keydown', function(e) {
-                              if (e.ctrlKey || e.metaKey) {
-                                if (e.key === '1') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h1>'); }
-                                else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }
-                                else if (e.key === '3') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h3>'); }
-                                else if (e.key === '0') { e.preventDefault(); doc.execCommand('formatBlock', false, '<p>'); }
-                                else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); var url = prompt('Enter link URL:'); if (url) doc.execCommand('createLink', false, url); }
-                                else if (e.shiftKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); doc.execCommand('insertUnorderedList', false, null); }
-                                else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); doc.execCommand('insertOrderedList', false, null); }
-                              }
-                            });
-                          }
-                        }, 300);
-                      }, 100);
+                      console.info('[ExportPreview] iframe loaded');
                     }}
                   />
                 </div>

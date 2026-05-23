@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -12670,8 +12670,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     .alloflow-glossary-section tbody .gloss-term { font-weight: 700 !important; color: #047857 !important; letter-spacing: -0.01em; }
                     .alloflow-glossary-section tbody .gloss-img-cell { background: #ffffff !important; }
                     .alloflow-glossary-section tbody .gloss-img-cell img { width: var(--gloss-img) !important; height: var(--gloss-img) !important; max-width: var(--gloss-img) !important; max-height: var(--gloss-img) !important; object-fit: contain; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: transform 0.18s ease, box-shadow 0.18s ease; }
-                    .alloflow-glossary-section tbody tr:hover .gloss-img-cell img { transform: scale(1.08); box-shadow: 0 4px 12px rgba(16,185,129,0.18); }
-                    @media print { .alloflow-glossary-section tbody tr:hover { background-color: inherit !important; box-shadow: none !important; } .alloflow-glossary-section tbody tr:hover .gloss-img-cell img { transform: none; box-shadow: 0 1px 2px rgba(0,0,0,0.04); } }
+                    .alloflow-glossary-section tbody tr:hover .gloss-img-cell img { box-shadow: 0 4px 12px rgba(16,185,129,0.25); }
+                    @media print { .alloflow-glossary-section tbody tr:hover { background-color: inherit !important; box-shadow: none !important; } .alloflow-glossary-section tbody tr:hover .gloss-img-cell img { box-shadow: 0 1px 2px rgba(0,0,0,0.04); } }
                   </style>
                   ${_glossarySelfTest ? `
                     <div class="alloflow-glossary-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
@@ -13824,7 +13824,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                        hover transforms so paper output stays static. */
                     .alloflow-brainstorm-grid .grid { gap: 1rem; }
                     .alloflow-brainstorm-grid .alloflow-bs-card { position: relative; border: 1px solid #e2e8f0; border-top-width: 4px; border-radius: 12px; background: #fff; padding: 1.1rem 1.25rem 1.25rem; box-shadow: 0 1px 3px rgba(15,23,42,0.05); transition: transform 0.18s ease, box-shadow 0.18s ease; break-inside: avoid; page-break-inside: avoid; }
-                    .alloflow-brainstorm-grid .alloflow-bs-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(15,23,42,0.10); }
+                    .alloflow-brainstorm-grid .alloflow-bs-card:hover { border-color: #cbd5e1; box-shadow: 0 6px 18px rgba(15,23,42,0.12); }
                     .alloflow-brainstorm-grid .alloflow-bs-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 9px; border-radius: 9999px; margin-bottom: 8px; }
                     .alloflow-brainstorm-grid .alloflow-bs-title { margin: 0 0 10px 0; font-size: 1.05em; font-weight: 700; color: #0f172a; line-height: 1.3; letter-spacing: -0.01em; }
                     .alloflow-brainstorm-grid .alloflow-bs-row { margin: 6px 0; font-size: 0.92em; line-height: 1.5; color: #334155; }
@@ -15401,9 +15401,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-reading-tools.mode-note .alloflow-anno-colors-note,
           .alloflow-reading-tools.mode-highlight .alloflow-anno-colors-hl { display: flex; }
           .alloflow-anno-colors-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
-          .alloflow-anno-swatch { width: 22px; height: 22px; border-radius: 6px; cursor: pointer; transition: transform 0.12s; padding: 0; }
-          .alloflow-anno-swatch:hover { transform: scale(1.15); }
-          .alloflow-anno-swatch[aria-pressed="true"] { transform: scale(1.18); box-shadow: 0 0 0 2px #4f46e5; }
+          .alloflow-anno-swatch { width: 22px; height: 22px; border-radius: 6px; cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s; padding: 0; }
+          .alloflow-anno-swatch:hover { border-color: #4f46e5; box-shadow: 0 0 0 2px #4f46e5; }
+          .alloflow-anno-swatch[aria-pressed="true"] { border-color: #4f46e5; box-shadow: 0 0 0 2px #4f46e5; }
 
           /* ─── Inline note editor (Tier 1: replaces prompt()) ─── */
           .alloflow-note-editor { position: absolute; min-width: 200px; max-width: 280px; border-radius: 8px; box-shadow: 0 4px 14px rgba(15,23,42,0.18); z-index: 56; font-family: system-ui, -apple-system, sans-serif; pointer-events: auto; }
@@ -15492,6 +15492,62 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="dark"] .alloflow-rt-btn[aria-pressed="true"] { background: #6366f1; color: white; }
           html[data-alloflow-theme="dark"] img { opacity: 0.92; }
 
+          /* ─── Custom UDL Blocks Dark Mode Overrides ─── */
+          html[data-alloflow-theme="dark"] .alloflow-glossary-card { background: #1e293b !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-card-front { background: #1e293b !important; color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-card-back { background: #0f172a !important; color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-card-fold { background: #0f172a !important; color: #94a3b8 !important; border-top-color: #334155 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-show-all { background: #1e3a8a !important; color: #bfdbfe !important; border-color: #2563eb !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-hide-all { background: #334155 !important; color: #cbd5e1 !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-shuffle { background: #78350f !important; color: #fde68a !important; border-color: #d97706 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-cell details summary { background: #064e3b !important; color: #a7f3d0 !important; border-color: #059669 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-controls button { background: #1e293b !important; color: #cbd5e1 !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-controls .alloflow-glossary-reveal-all { background: #064e3b !important; color: #a7f3d0 !important; border-color: #059669 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-controls span { color: #94a3b8 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-section table { box-shadow: 0 1px 3px rgba(0,0,0,0.4); border-color: #334155 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-section thead tr { background: linear-gradient(180deg, #064e3b, #022c22) !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-section thead th { color: #a7f3d0 !important; border-bottom: 2px solid #065f46 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-section tbody tr { background-color: #1e293b !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-section tbody tr:nth-child(even) { background-color: #0f172a !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-section tbody tr:hover { background-color: #115e59 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-section tbody td { color: #e2e8f0 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-section tbody .gloss-term { color: #34d399 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-section tbody .gloss-img-cell { background: #1e293b !important; }
+          html[data-alloflow-theme="dark"] .alloflow-glossary-section tbody .gloss-img-cell img { background: #334155 !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-faq-expand { background: #164e63 !important; color: #cffafe !important; border-color: #0891b2 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-faq-collapse { background: #334155 !important; color: #cbd5e1 !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-faq-item { background: #1e293b !important; border-color: #334155 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-faq-item summary { color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-faq-item summary h3 { color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-faq-caret { color: #94a3b8 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-faq-answer { color: #cbd5e1 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-mindmap-detail { color: #cbd5e1 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-brainstorm-grid .alloflow-bs-title { color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-brainstorm-grid .alloflow-bs-row { color: #cbd5e1 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-brainstorm-grid .alloflow-bs-row strong { color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-brainstorm-grid .alloflow-bs-connection { color: #94a3b8 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-brainstorm-grid .alloflow-bs-guide { background: #0f172a !important; border-left-color: #475569 !important; color: #cbd5e1 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-brainstorm-grid .alloflow-bs-guide strong { color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-math-controls button { background: #334155 !important; color: #cbd5e1 !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-math-controls .alloflow-math-reveal-all { background: #064e3b !important; color: #a7f3d0 !important; border-color: #059669 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-math-solution { border-left-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-math-solution summary { color: #93c5fd !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tl-strip { background: #1e293b !important; border-color: #475569 !important; color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tl-scissor { color: #94a3b8 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tl-arrows button { background: #334155 !important; border-color: #475569 !important; color: #cbd5e1 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tl-arrows button:hover { background: #475569 !important; color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tl-controls button { background: #334155 !important; color: #cbd5e1 !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tl-controls .alloflow-tl-shuffle-btn { background: #334155 !important; color: #cbd5e1 !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tl-controls .alloflow-tl-check-btn { background: #4f46e5 !important; color: white !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tl-controls .alloflow-tl-reset-btn { background: #0f172a !important; color: #cbd5e1 !important; border-color: #334155 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tl-results { color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-strip { background: #1e293b !important; border-color: #475569 !important; color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-strip:hover { border-color: #6366f1 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-controls button { background: #334155 !important; color: #cbd5e1 !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-controls .alloflow-cs-check-btn { background: #4f46e5 !important; color: white !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-controls .alloflow-cs-reset-btn { background: #0f172a !important; color: #cbd5e1 !important; border-color: #334155 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-results { color: #ffffff !important; }
+
           /* ─── Sepia theme (warm, low-glare; popular for dyslexic readers) ─── */
           html[data-alloflow-theme="sepia"] { background: #f5ecd9 !important; }
           html[data-alloflow-theme="sepia"] body { background: #f5ecd9 !important; color: #5b4636 !important; }
@@ -15509,6 +15565,62 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="sepia"] .alloflow-rt-btn { color: #5b4636; border-left-color: #d4c5a0; }
           html[data-alloflow-theme="sepia"] .alloflow-rt-btn:hover { background: #ede0c4; }
           html[data-alloflow-theme="sepia"] .alloflow-rt-btn[aria-pressed="true"] { background: #8b6f4a; color: #fdf6e3; }
+
+          /* ─── Custom UDL Blocks Sepia Mode Overrides ─── */
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-card { background: #fdf6e3 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-card-front { background: #fdf6e3 !important; color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-card-back { background: #f5ecd9 !important; color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-card-fold { background: #f5ecd9 !important; color: #8b6f4a !important; border-top-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-show-all { background: #ede0c4 !important; color: #5b4636 !important; border-color: #cbd5e1 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-hide-all { background: #fdf6e3 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-shuffle { background: #ede0c4 !important; color: #8b6f4a !important; border-color: #cbd5e1 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-cell details summary { background: #ede0c4 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-controls button { background: #fdf6e3 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-controls .alloflow-glossary-reveal-all { background: #ede0c4 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-controls span { color: #8b6f4a !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-section table { border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-section thead tr { background: linear-gradient(180deg, #ede0c4, #e4d3b2) !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-section thead th { color: #5b4636 !important; border-bottom: 2px solid #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody tr { background-color: #fdf6e3 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody tr:nth-child(even) { background-color: #f5ecd9 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody tr:hover { background-color: #ede0c4 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody td { color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody .gloss-term { color: #8b6f4a !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody .gloss-img-cell { background: #fdf6e3 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody .gloss-img-cell img { background: #fdf6e3 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-faq-expand { background: #ede0c4 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-faq-collapse { background: #fdf6e3 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-faq-item { background: #fdf6e3 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-faq-item summary { color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-faq-item summary h3 { color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-faq-caret { color: #8b6f4a !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-faq-answer { color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-mindmap-detail { color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-brainstorm-grid .alloflow-bs-title { color: #4a3a2a !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-brainstorm-grid .alloflow-bs-row { color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-brainstorm-grid .alloflow-bs-row strong { color: #4a3a2a !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-brainstorm-grid .alloflow-bs-connection { color: #8b6f4a !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-brainstorm-grid .alloflow-bs-guide { background: #f5ecd9 !important; border-left-color: #d4c5a0 !important; color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-brainstorm-grid .alloflow-bs-guide strong { color: #4a3a2a !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-math-controls button { background: #fdf6e3 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-math-controls .alloflow-math-reveal-all { background: #ede0c4 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-math-solution { border-left-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-math-solution summary { color: #8b6f4a !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-tl-strip { background: #fdf6e3 !important; border-color: #d4c5a0 !important; color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-tl-scissor { color: #8b6f4a !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-tl-arrows button { background: #fdf6e3 !important; border-color: #d4c5a0 !important; color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-tl-arrows button:hover { background: #ede0c4 !important; color: #4a3a2a !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-tl-controls button { background: #fdf6e3 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-tl-controls .alloflow-tl-shuffle-btn { background: #fdf6e3 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-tl-controls .alloflow-tl-check-btn { background: #8b6f4a !important; color: white !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-tl-controls .alloflow-tl-reset-btn { background: #f5ecd9 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-tl-results { color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-cs-strip { background: #fdf6e3 !important; border-color: #d4c5a0 !important; color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-cs-strip:hover { border-color: #8b6f4a !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-cs-controls button { background: #fdf6e3 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-cs-controls .alloflow-cs-check-btn { background: #8b6f4a !important; color: white !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-cs-controls .alloflow-cs-reset-btn { background: #f5ecd9 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-cs-results { color: #5b4636 !important; }
 
           /* ─── High Contrast theme (WCAG AAA target — black/white/blue links) ─── */
           html[data-alloflow-theme="hc"] { background: #ffffff !important; color: #000000 !important; }
@@ -16854,7 +16966,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     var csStyle = document.createElement('style');
                     csStyle.textContent =
                         '.alloflow-cs-strip { cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }' +
-                        '.alloflow-cs-strip:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }' +
+                        '.alloflow-cs-strip:hover { border-color: #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }' +
                         '.alloflow-cs-strip.alloflow-cs-selected { border-color: #4f46e5 !important; background: #eef2ff !important; box-shadow: 0 0 0 3px #c7d2fe; }' +
                         '.alloflow-cs-dropzone { cursor: pointer; transition: background 0.15s; }' +
                         '.alloflow-cs-dropzone.alloflow-cs-droptarget { background: rgba(79,70,229,0.08) !important; }' +
@@ -17158,11 +17270,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     downloadBatchResults: _wrapAsync(downloadBatchResults),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
