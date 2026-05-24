@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-24T17:23:39.383Z",
+  "generated": "2026-05-24T17:32:53.849Z",
   "count": 10,
   "total_keys_expected": 9307,
   "available": [
@@ -28,8 +28,8 @@
     {
       "slug": "haitian_creole",
       "display": "Haitian Creole",
-      "keys": 7143,
-      "bytes": 735405,
+      "keys": 9955,
+      "bytes": 904714,
       "updated": "2026-05-24"
     },
     {
@@ -42,8 +42,8 @@
     {
       "slug": "japanese",
       "display": "Japanese",
-      "keys": 9421,
-      "bytes": 672911,
+      "keys": 10025,
+      "bytes": 714596,
       "updated": "2026-05-24"
     },
     {
