@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-24T20:56:16.141Z",
-  "count": 15,
+  "generated": "2026-05-24T22:49:28.734Z",
+  "count": 17,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -40,6 +40,13 @@
       "updated": "2026-05-24"
     },
     {
+      "slug": "italian",
+      "display": "Italian",
+      "keys": 9968,
+      "bytes": 1025613,
+      "updated": "2026-05-24"
+    },
+    {
       "slug": "japanese",
       "display": "Japanese",
       "keys": 10025,
@@ -51,6 +58,13 @@
       "display": "Korean",
       "keys": 9968,
       "bytes": 1012498,
+      "updated": "2026-05-24"
+    },
+    {
+      "slug": "polish",
+      "display": "Polish",
+      "keys": 9968,
+      "bytes": 904526,
       "updated": "2026-05-24"
     },
     {
