@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-24T21:02:51.246Z",
-  "count": 16,
+  "generated": "2026-05-24T22:56:27.612Z",
+  "count": 18,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -16,6 +16,13 @@
       "display": "Chinese (Simplified)",
       "keys": 9953,
       "bytes": 895107,
+      "updated": "2026-05-24"
+    },
+    {
+      "slug": "farsi",
+      "display": "Farsi",
+      "keys": 9973,
+      "bytes": 1361480,
       "updated": "2026-05-24"
     },
     {
@@ -37,6 +44,13 @@
       "display": "Hebrew",
       "keys": 9955,
       "bytes": 1194856,
+      "updated": "2026-05-24"
+    },
+    {
+      "slug": "italian",
+      "display": "Italian",
+      "keys": 9968,
+      "bytes": 1025613,
       "updated": "2026-05-24"
     },
     {
