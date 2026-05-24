@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-24T17:18:27.591Z",
+  "generated": "2026-05-24T17:23:39.383Z",
   "count": 10,
   "total_keys_expected": 9307,
   "available": [
@@ -28,8 +28,8 @@
     {
       "slug": "haitian_creole",
       "display": "Haitian Creole",
-      "keys": 7140,
-      "bytes": 724236,
+      "keys": 7143,
+      "bytes": 735405,
       "updated": "2026-05-24"
     },
     {
@@ -63,9 +63,9 @@
     {
       "slug": "spanish_latin_america",
       "display": "Spanish (Latin America)",
-      "keys": 9295,
-      "bytes": 1100191,
-      "updated": "2026-05-18"
+      "keys": 9953,
+      "bytes": 1152537,
+      "updated": "2026-05-24"
     },
     {
       "slug": "vietnamese",
