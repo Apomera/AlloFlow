@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-24T23:10:10.991Z",
-  "count": 20,
+  "generated": "2026-05-24T23:33:43.062Z",
+  "count": 21,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -135,6 +135,13 @@
       "display": "Ukrainian",
       "keys": 9968,
       "bytes": 1206991,
+      "updated": "2026-05-24"
+    },
+    {
+      "slug": "urdu",
+      "display": "Urdu",
+      "keys": 9965,
+      "bytes": 1451000,
       "updated": "2026-05-24"
     },
     {
