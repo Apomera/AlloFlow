@@ -3013,6 +3013,64 @@
     return "💡 Use this resource with the student:";
   }
 
+  // Phase Z++ — Strip the inline link token (and its preceding usage hint
+  // line) for the given resourceId from whichever rung contains it. Returns
+  // the patched item. No-op if the token isn't found on any rung.
+  // Pattern matched:  "<existing>\n\n💡 Usage hint line: [Title](resource:<id>)"
+  function removeLinkTokenFromRung(item, resourceId) {
+    if (!resourceId) return item;
+    var ladder = (item.promptLadder || []).slice();
+    var changed = false;
+    for (var li = 0; li < ladder.length; li++) {
+      var step = ladder[li];
+      if (!step || typeof step.text !== "string") continue;
+      var marker = "](resource:" + resourceId + ")";
+      var hit = step.text.indexOf(marker);
+      if (hit < 0) continue;
+      // Walk back to the start of the `[` that opens this link.
+      var bracketStart = step.text.lastIndexOf("[", hit);
+      if (bracketStart < 0) continue;
+      // Walk back further to strip the usage-hint line (everything from the
+      // preceding blank line / start of text up to the link end). This keeps
+      // the rung clean — no orphan emoji on its own line.
+      var hintStart = step.text.lastIndexOf("\n\n", bracketStart);
+      if (hintStart < 0) {
+        // Link was the only content; nuke whole text up through link.
+        hintStart = 0;
+      }
+      var linkEnd = hit + marker.length;
+      var cleaned = step.text.slice(0, hintStart) + step.text.slice(linkEnd);
+      // Strip any trailing whitespace/newlines we may have left behind.
+      cleaned = cleaned.replace(/[\s\n]+$/g, "");
+      ladder[li] = Object.assign({}, step, { text: cleaned });
+      changed = true;
+      break;
+    }
+    return changed ? Object.assign({}, item, { promptLadder: ladder }) : item;
+  }
+
+  // Move a resource's inline link from its current rung to a new one. Strips
+  // from the old rung then re-appends to the new (with the right usage hint).
+  function moveResourceAnchor(item, resourceId, newRung, kind, title) {
+    if (!resourceId || !(newRung >= 1 && newRung <= 4)) return item;
+    var stripped = removeLinkTokenFromRung(item, resourceId);
+    var token = makeResourceLinkToken(title || "Resource", resourceId);
+    return appendLinkTokenToRung(stripped, newRung, token, resourceId, kind);
+  }
+
+  // Detach a resource from an item: remove it from the supplementaryResources
+  // array AND strip its link from whichever rung holds it. The history entry
+  // itself is NOT touched — the resource lives on in the pack, just unlinked
+  // from this DA item.
+  function detachResourceFromItem(item, resourceId) {
+    if (!resourceId) return item;
+    var stripped = removeLinkTokenFromRung(item, resourceId);
+    var supps = (stripped.supplementaryResources || []).filter(function (sr) {
+      return !(sr && sr.resourceId === resourceId);
+    });
+    return Object.assign({}, stripped, { supplementaryResources: supps });
+  }
+
   // Inject a resource link token + a usage hint at the end of a ladder rung's
   // text so the clinician sees BOTH the link AND a one-line instruction on
   // how to use it at that rung. Idempotent: if the same resource:id is already
@@ -9108,6 +9166,160 @@
         });
     }
 
+    // Phase Z++ — Per-chip editor state. Holds the resourceId currently being
+    // edited (or null) and a transient draft object specific to the chip's kind.
+    // Only one chip can be edited at a time across all items.
+    var editingChipTuple = useState(null); // { itemIdx, resourceId, kind, draft }
+    var editingChip = editingChipTuple[0];
+    var setEditingChip = editingChipTuple[1];
+
+    function openChipEditor(itemIdx, sr) {
+      if (!sr || !sr.resourceId) return;
+      var draft = {};
+      if (sr.kind === "glossary") {
+        draft = { seedTerms: Array.isArray(sr.seedTerms) ? sr.seedTerms.slice() : [], title: sr.title || "" };
+      } else if (sr.kind === "math-manipulative") {
+        draft = { toolId: sr.toolId, preset: Object.assign({}, sr.preset || {}), title: sr.title || "" };
+      } else if (sr.kind === "word-sounds-probe") {
+        draft = { activity: sr.activity, words: Array.isArray(sr.words) ? sr.words.slice() : [], title: sr.title || "" };
+      } else if (sr.kind === "reuse") {
+        // Reuse entries can be detached/moved but not deeply edited.
+        draft = { title: sr.title || "" };
+      }
+      setEditingChip({ itemIdx: itemIdx, resourceId: sr.resourceId, kind: sr.kind, draft: draft });
+    }
+    function closeChipEditor() { setEditingChip(null); }
+
+    // Detach + move (kind-agnostic) — both work for any kind.
+    function detachChipFromItem(itemIdx, sr) {
+      if (!sr || !sr.resourceId) return;
+      editGeneratedItem(itemIdx, function (i) {
+        return detachResourceFromItem(i, sr.resourceId);
+      });
+      if (editingChip && editingChip.resourceId === sr.resourceId) closeChipEditor();
+      addToast("Detached — resource is still in your resource pack.");
+    }
+    function moveChipRung(itemIdx, sr, newRung) {
+      if (!sr || !sr.resourceId || !(newRung >= 1 && newRung <= 4)) return;
+      editGeneratedItem(itemIdx, function (i) {
+        var patched = moveResourceAnchor(i, sr.resourceId, newRung, sr._reusedKind || sr.kind, sr.title);
+        var supps = (patched.supplementaryResources || []).map(function (s) {
+          if (s && s.resourceId === sr.resourceId) return Object.assign({}, s, { anchorRung: newRung });
+          return s;
+        });
+        return Object.assign({}, patched, { supplementaryResources: supps });
+      });
+    }
+
+    // Save handlers per kind.
+    // Glossary: regenerate (mints a NEW history entry; old one becomes orphaned
+    // in the resource pack but the inline link is swapped).
+    function saveGlossaryEdit(itemIdx, sr, draft) {
+      if (typeof props.onGenerateGlossary !== "function") {
+        addToast("Glossary callback isn't wired in this host.");
+        return;
+      }
+      var terms = (Array.isArray(draft.seedTerms) ? draft.seedTerms : [])
+        .map(function (s) { return String(s || "").trim().toLowerCase(); })
+        .filter(function (s) { return s.length > 1; }).slice(0, 6);
+      if (terms.length === 0) { addToast("Enter at least one term."); return; }
+      var title = String(draft.title || "").trim().slice(0, 80) || ("Glossary: " + terms.slice(0, 2).join(", "));
+      var item = generatedItems[itemIdx];
+      addToast("Regenerating glossary with edited terms…");
+      var provenance = { fromDA: true, daItemIndex: itemIdx, daItemPrompt: String(item && item.prompt || "").slice(0, 80) };
+      props.onGenerateGlossary(terms, title, provenance)
+        .then(function (res) {
+          if (!res || !res.id) throw new Error("Glossary callback returned no id.");
+          editGeneratedItem(itemIdx, function (i) {
+            // Strip old link, then add new one at the same anchor rung.
+            var stripped = removeLinkTokenFromRung(i, sr.resourceId);
+            var anchorRung = sr.anchorRung || 1;
+            var token = makeResourceLinkToken(title, res.id);
+            var withLink = appendLinkTokenToRung(stripped, anchorRung, token, res.id, "glossary");
+            // Replace the supps entry with the new id + terms.
+            var supps = (withLink.supplementaryResources || []).map(function (s) {
+              if (s && s.resourceId === sr.resourceId) {
+                return Object.assign({}, s, { seedTerms: terms, title: title, resourceId: res.id, status: "generated" });
+              }
+              return s;
+            });
+            return Object.assign({}, withLink, { supplementaryResources: supps });
+          });
+          closeChipEditor();
+          addToast("Glossary updated. (Old entry remains in resource pack — delete it if you don't need it.)");
+        })
+        .catch(function (err) {
+          addToast("Edit failed: " + (err && err.message ? err.message : "unknown"));
+        });
+    }
+    // Manipulative: update in place via host callback (no Imagen cost).
+    function saveManipulativeEdit(itemIdx, sr, draft) {
+      if (typeof props.onUpdateManipulativePreset !== "function") {
+        addToast("In-place manipulative update isn't wired in this host.");
+        return;
+      }
+      var preset = sanitizeManipulativePreset(sr.toolId, draft.preset || {});
+      if (!preset) { addToast("Preset values are out of range."); return; }
+      var title = String(draft.title || "").trim().slice(0, 80) || defaultManipulativeTitle(sr.toolId, preset);
+      props.onUpdateManipulativePreset(sr.resourceId, preset, title)
+        .then(function () {
+          editGeneratedItem(itemIdx, function (i) {
+            // Update title in the link token too so the chip + rung text reflect the new label.
+            var stripped = removeLinkTokenFromRung(i, sr.resourceId);
+            var anchorRung = sr.anchorRung || 3;
+            var token = makeResourceLinkToken(title, sr.resourceId);
+            var withLink = appendLinkTokenToRung(stripped, anchorRung, token, sr.resourceId, "math-manipulative");
+            var supps = (withLink.supplementaryResources || []).map(function (s) {
+              if (s && s.resourceId === sr.resourceId) {
+                return Object.assign({}, s, { preset: preset, title: title });
+              }
+              return s;
+            });
+            return Object.assign({}, withLink, { supplementaryResources: supps });
+          });
+          closeChipEditor();
+          addToast("Manipulative updated in place.");
+        })
+        .catch(function (err) {
+          addToast("Update failed: " + (err && err.message ? err.message : "unknown"));
+        });
+    }
+    // Word Sounds probe: update in place via host callback.
+    function saveWordSoundsEdit(itemIdx, sr, draft) {
+      if (typeof props.onUpdateWordSoundsProbe !== "function") {
+        addToast("In-place phonics update isn't wired in this host.");
+        return;
+      }
+      var ALLOWED = { counting: 1, segmentation: 1, blending: 1, isolation: 1, manipulation: 1, rhyming: 1, syllable_blending: 1, syllable_counting: 1 };
+      var activity = ALLOWED[draft.activity] ? draft.activity : sr.activity;
+      var words = (Array.isArray(draft.words) ? draft.words : [])
+        .map(function (w) { return String(w || "").toLowerCase().replace(/[^a-z]/g, ""); })
+        .filter(function (w) { return w.length >= 2 && w.length <= 14; }).slice(0, 12);
+      if (words.length < 3) { addToast("Need at least 3 valid words."); return; }
+      var title = String(draft.title || "").trim().slice(0, 80) || defaultWordSoundsProbeTitle(activity, words);
+      props.onUpdateWordSoundsProbe(sr.resourceId, activity, words, title)
+        .then(function () {
+          editGeneratedItem(itemIdx, function (i) {
+            var stripped = removeLinkTokenFromRung(i, sr.resourceId);
+            var anchorRung = sr.anchorRung || 1;
+            var token = makeResourceLinkToken(title, sr.resourceId);
+            var withLink = appendLinkTokenToRung(stripped, anchorRung, token, sr.resourceId, "word-sounds-probe");
+            var supps = (withLink.supplementaryResources || []).map(function (s) {
+              if (s && s.resourceId === sr.resourceId) {
+                return Object.assign({}, s, { activity: activity, words: words, title: title });
+              }
+              return s;
+            });
+            return Object.assign({}, withLink, { supplementaryResources: supps });
+          });
+          closeChipEditor();
+          addToast("Phonics probe updated in place.");
+        })
+        .catch(function (err) {
+          addToast("Update failed: " + (err && err.message ? err.message : "unknown"));
+        });
+    }
+
     // Phase 3 — On-demand "Add inline phonics probe" trigger. Asks Gemini for
     // a one-shot recommendation (activity + word list) tied to this item's
     // prompt, then runs the same Phase Z host callback path so the probe
@@ -9196,6 +9408,158 @@
           });
           addToast("Phonics probe generation failed: " + (err && err.message ? err.message : "unknown"));
         });
+    }
+
+    // Phase Z++ — Kind-specific inline editor that opens BELOW a chip when
+    // the user clicks "✏️ Edit". Renders a minimal form for each kind; on
+    // Save, calls the matching save* helper which patches the resource in
+    // place (manipulative / word-sounds) OR regenerates (glossary).
+    function renderChipEditor(itemIdx, sr, draft) {
+      var ed = function (patch) { setEditingChip(Object.assign({}, editingChip, { draft: Object.assign({}, draft, patch) })); };
+      var commonBox = { marginTop: 6, padding: 8, background: "#ffffff", border: "1px dashed #fbbf24", borderRadius: 4 };
+      var labelStyle = { display: "block", fontSize: 10, fontWeight: 700, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 };
+      var inputStyle = { width: "100%", padding: "4px 6px", border: "1px solid #cbd5e1", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box" };
+      var saveBtnStyle = { padding: "3px 12px", borderRadius: 4, border: "1px solid #15803d", background: "#16a34a", color: "#ffffff", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" };
+      var cancelBtnStyle = { padding: "3px 10px", borderRadius: 4, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", marginLeft: 6 };
+
+      if (sr.kind === "glossary") {
+        var termsStr = (draft.seedTerms || []).join(", ");
+        return h("div", { style: commonBox },
+          h("label", { style: labelStyle }, "Seed terms (comma-separated, 1-6)"),
+          h("input", {
+            type: "text", value: termsStr,
+            onChange: function (e) { ed({ seedTerms: e.target.value.split(",").map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean).slice(0, 6) }); },
+            style: inputStyle
+          }),
+          h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Title (optional)"),
+          h("input", {
+            type: "text", value: draft.title || "", maxLength: 80,
+            onChange: function (e) { ed({ title: e.target.value }); },
+            style: inputStyle
+          }),
+          h("div", { style: { marginTop: 8, fontSize: 10, color: "#92400e", fontStyle: "italic", lineHeight: 1.4 } },
+            "Saving regenerates the glossary with the new terms + auto-icons. The old glossary entry stays in your resource pack (you can delete it manually if needed)."),
+          h("div", { style: { marginTop: 6 } },
+            h("button", { onClick: function () { saveGlossaryEdit(itemIdx, sr, draft); }, style: saveBtnStyle }, "Regenerate with new terms"),
+            h("button", { onClick: closeChipEditor, style: cancelBtnStyle }, "Cancel")
+          )
+        );
+      }
+
+      if (sr.kind === "math-manipulative") {
+        var preset = draft.preset || {};
+        var toolForm = null;
+        if (sr.toolId === "numberline") {
+          var r = preset.range || { min: 0, max: 20 };
+          toolForm = h("div", null,
+            h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 } },
+              h("div", null,
+                h("label", { style: labelStyle }, "Range min"),
+                h("input", { type: "number", value: r.min, onChange: function (e) { ed({ preset: Object.assign({}, preset, { range: Object.assign({}, r, { min: parseInt(e.target.value, 10) }) }) }); }, style: inputStyle })
+              ),
+              h("div", null,
+                h("label", { style: labelStyle }, "Range max"),
+                h("input", { type: "number", value: r.max, onChange: function (e) { ed({ preset: Object.assign({}, preset, { range: Object.assign({}, r, { max: parseInt(e.target.value, 10) }) }) }); }, style: inputStyle })
+              )
+            ),
+            h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Tab"),
+            h("select", { value: preset.tab || "explore", onChange: function (e) { ed({ preset: Object.assign({}, preset, { tab: e.target.value }) }); }, style: inputStyle },
+              h("option", { value: "explore" }, "explore"),
+              h("option", { value: "skipCount" }, "skipCount"),
+              h("option", { value: "fracDec" }, "fracDec")
+            ),
+            h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Markers (value:label, comma-separated — e.g., 7:start, 12:end)"),
+            h("input", {
+              type: "text",
+              value: (preset.markers || []).map(function (m) { return m.value + (m.label ? ":" + m.label : ""); }).join(", "),
+              onChange: function (e) {
+                var newMarkers = e.target.value.split(",").map(function (chunk) {
+                  var parts = chunk.split(":").map(function (s) { return s.trim(); });
+                  var v = parseFloat(parts[0]);
+                  if (!isFinite(v)) return null;
+                  return { value: v, color: "#ef4444", label: parts[1] || "" };
+                }).filter(Boolean).slice(0, 6);
+                ed({ preset: Object.assign({}, preset, { markers: newMarkers }) });
+              },
+              style: inputStyle
+            })
+          );
+        } else if (sr.toolId === "fractions") {
+          toolForm = h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 } },
+            h("div", null,
+              h("label", { style: labelStyle }, "Numerator"),
+              h("input", { type: "number", value: preset.numerator || 1, onChange: function (e) { ed({ preset: Object.assign({}, preset, { numerator: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
+            ),
+            h("div", null,
+              h("label", { style: labelStyle }, "Denominator"),
+              h("input", { type: "number", value: preset.denominator || 2, onChange: function (e) { ed({ preset: Object.assign({}, preset, { denominator: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
+            ),
+            h("div", null,
+              h("label", { style: labelStyle }, "Tab"),
+              h("select", { value: preset.tab || "practice", onChange: function (e) { ed({ preset: Object.assign({}, preset, { tab: e.target.value }) }); }, style: inputStyle },
+                h("option", { value: "practice" }, "practice"),
+                h("option", { value: "compare" }, "compare"),
+                h("option", { value: "wall" }, "wall")
+              )
+            )
+          );
+        } else if (sr.toolId === "areamodel") {
+          toolForm = h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 } },
+            h("div", null,
+              h("label", { style: labelStyle }, "Rows"),
+              h("input", { type: "number", value: preset.rows || 3, onChange: function (e) { ed({ preset: Object.assign({}, preset, { rows: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
+            ),
+            h("div", null,
+              h("label", { style: labelStyle }, "Cols"),
+              h("input", { type: "number", value: preset.cols || 4, onChange: function (e) { ed({ preset: Object.assign({}, preset, { cols: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
+            )
+          );
+        }
+        return h("div", { style: commonBox },
+          toolForm,
+          h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Title (optional)"),
+          h("input", { type: "text", value: draft.title || "", maxLength: 80, onChange: function (e) { ed({ title: e.target.value }); }, style: inputStyle }),
+          h("div", { style: { marginTop: 8, fontSize: 10, color: "#92400e", fontStyle: "italic", lineHeight: 1.4 } },
+            "Saving updates this manipulative in place — same resource id, same history entry, no re-render of student devices needed."),
+          h("div", { style: { marginTop: 6 } },
+            h("button", { onClick: function () { saveManipulativeEdit(itemIdx, sr, draft); }, style: saveBtnStyle }, "Apply changes"),
+            h("button", { onClick: closeChipEditor, style: cancelBtnStyle }, "Cancel")
+          )
+        );
+      }
+
+      if (sr.kind === "word-sounds-probe") {
+        var wordsStr = (draft.words || []).join(", ");
+        return h("div", { style: commonBox },
+          h("label", { style: labelStyle }, "Activity"),
+          h("select", { value: draft.activity || "segmentation", onChange: function (e) { ed({ activity: e.target.value }); }, style: inputStyle },
+            h("option", { value: "counting" }, "counting"),
+            h("option", { value: "segmentation" }, "segmentation"),
+            h("option", { value: "blending" }, "blending"),
+            h("option", { value: "isolation" }, "isolation"),
+            h("option", { value: "manipulation" }, "manipulation"),
+            h("option", { value: "rhyming" }, "rhyming"),
+            h("option", { value: "syllable_blending" }, "syllable_blending"),
+            h("option", { value: "syllable_counting" }, "syllable_counting")
+          ),
+          h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Words (comma-separated, 3-12)"),
+          h("input", {
+            type: "text", value: wordsStr,
+            onChange: function (e) { ed({ words: e.target.value.split(",").map(function (w) { return w.trim().toLowerCase(); }).filter(Boolean).slice(0, 12) }); },
+            style: inputStyle
+          }),
+          h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Title (optional)"),
+          h("input", { type: "text", value: draft.title || "", maxLength: 80, onChange: function (e) { ed({ title: e.target.value }); }, style: inputStyle }),
+          h("div", { style: { marginTop: 8, fontSize: 10, color: "#92400e", fontStyle: "italic", lineHeight: 1.4 } },
+            "Saving updates this probe in place — same resource id."),
+          h("div", { style: { marginTop: 6 } },
+            h("button", { onClick: function () { saveWordSoundsEdit(itemIdx, sr, draft); }, style: saveBtnStyle }, "Apply changes"),
+            h("button", { onClick: closeChipEditor, style: cancelBtnStyle }, "Cancel")
+          )
+        );
+      }
+
+      return null;
     }
 
     function renderEditableItem(item, idx) {
@@ -9358,15 +9722,43 @@
                                   : sr.status === "failed" ? "✗ failed"
                                   : sr.status === "generating" ? "… generating"
                                   : "· suggested";
-                  return h("div", { key: "da-supp-" + idx + "-" + sri, style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 2 } },
-                    h("span", { style: { fontWeight: 700, color: "#3730a3" } }, iconForKind(sr.kind, sr.toolId) + " " + (sr.title || "Resource")),
-                    h("span", { style: { color: "#64748b", fontSize: 10 } }, "L" + (sr.anchorRung || 1)),
-                    h("span", { style: { color: statusColor, fontSize: 10, fontWeight: 700 } }, statusLabel),
-                    sr.status === "generated" && sr.resourceId && typeof props.onOpenResource === "function" ? h("button", {
-                      onClick: function (e) { try { e.preventDefault(); } catch (_) {} props.onOpenResource(sr.resourceId); },
-                      style: { padding: "1px 8px", borderRadius: 4, border: "1px solid #c7d2fe", background: "#ffffff", color: "#3730a3", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
-                    }, "Open") : null,
-                    sr.status === "failed" && sr._failureMessage ? h("span", { style: { color: "#7f1d1d", fontSize: 10, fontStyle: "italic" } }, "— " + sr._failureMessage) : null
+                  var isEditing = editingChip && editingChip.resourceId === sr.resourceId && editingChip.itemIdx === idx;
+                  var canEdit = sr.status === "generated" && sr.resourceId
+                    && (sr.kind === "glossary" || sr.kind === "math-manipulative" || sr.kind === "word-sounds-probe");
+                  var canDetach = sr.status === "generated" && sr.resourceId;
+                  return h("div", { key: "da-supp-" + idx + "-" + sri, style: { marginBottom: 4, padding: 4, borderRadius: 4, background: isEditing ? "#fef3c7" : "transparent" } },
+                    h("div", { style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" } },
+                      h("span", { style: { fontWeight: 700, color: "#3730a3" } }, iconForKind(sr.kind, sr.toolId) + " " + (sr.title || "Resource")),
+                      // Rung selector (changes anchor on the fly). For chips with status=generated only.
+                      canDetach ? h("select", {
+                        value: String(sr.anchorRung || 1),
+                        onChange: function (e) { moveChipRung(idx, sr, parseInt(e.target.value, 10)); },
+                        title: "Move this support to a different scaffold rung",
+                        style: { padding: "0 4px", borderRadius: 4, border: "1px solid #c7d2fe", background: "#ffffff", color: "#3730a3", fontSize: 10, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }
+                      },
+                        h("option", { value: "1" }, "L1"),
+                        h("option", { value: "2" }, "L2"),
+                        h("option", { value: "3" }, "L3"),
+                        h("option", { value: "4" }, "L4")
+                      ) : h("span", { style: { color: "#64748b", fontSize: 10 } }, "L" + (sr.anchorRung || 1)),
+                      h("span", { style: { color: statusColor, fontSize: 10, fontWeight: 700 } }, statusLabel),
+                      sr.status === "generated" && sr.resourceId && typeof props.onOpenResource === "function" ? h("button", {
+                        onClick: function (e) { try { e.preventDefault(); } catch (_) {} props.onOpenResource(sr.resourceId); },
+                        style: { padding: "1px 8px", borderRadius: 4, border: "1px solid #c7d2fe", background: "#ffffff", color: "#3730a3", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                      }, "Open") : null,
+                      canEdit ? h("button", {
+                        onClick: function () { isEditing ? closeChipEditor() : openChipEditor(idx, sr); },
+                        title: "Edit this resource (terms / preset / words)",
+                        style: { padding: "1px 8px", borderRadius: 4, border: "1px solid #fbbf24", background: "#ffffff", color: "#92400e", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                      }, isEditing ? "Cancel" : "✏️ Edit") : null,
+                      canDetach ? h("button", {
+                        onClick: function () { detachChipFromItem(idx, sr); },
+                        title: "Remove this link from the rung (keeps the resource in your pack)",
+                        style: { padding: "1px 8px", borderRadius: 4, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                      }, "⛓️‍💥 Detach") : null,
+                      sr.status === "failed" && sr._failureMessage ? h("span", { style: { color: "#7f1d1d", fontSize: 10, fontStyle: "italic" } }, "— " + sr._failureMessage) : null
+                    ),
+                    isEditing ? renderChipEditor(idx, sr, editingChip.draft) : null
                   );
                 }))
               : h("div", { style: { color: "#64748b", fontSize: 10.5, fontStyle: "italic" } },

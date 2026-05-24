@@ -25718,6 +25718,42 @@ ${_toolList}
                                 })();
                                 return { id: newId };
                             },
+                            // Phase Z++ — In-place update callbacks for the "✏️ Edit" flow on
+                            // manipulative + word-sounds chips. Same resource id stays put;
+                            // only the data payload changes. Glossary edits go through
+                            // onGenerateGlossary (regeneration) since they involve new images.
+                            onUpdateManipulativePreset: async (resourceId, newPreset, newTitle) => {
+                                setHistory(prev => prev.map(it => {
+                                    if (!it || it.id !== resourceId || it.type !== 'manipulative-resource') return it;
+                                    return Object.assign({}, it, {
+                                        data: Object.assign({}, it.data || {}, { preset: newPreset || {} }),
+                                        title: newTitle ? String(newTitle).slice(0, 80) : it.title
+                                    });
+                                }));
+                                return { id: resourceId };
+                            },
+                            onUpdateWordSoundsProbe: async (resourceId, activity, words, newTitle) => {
+                                const safeWords = (Array.isArray(words) ? words : [])
+                                    .map(w => String(w || '').toLowerCase().replace(/[^a-z]/g, ''))
+                                    .filter(w => w.length >= 2 && w.length <= 14)
+                                    .slice(0, 12);
+                                if (safeWords.length < 3) throw new Error('Need at least 3 valid words.');
+                                const wordObjs = safeWords.map(w => ({
+                                    word: w, term: w, targetWord: w, ttsReady: false, _audioRequested: false
+                                }));
+                                setHistory(prev => prev.map(it => {
+                                    if (!it || it.id !== resourceId || it.type !== 'word-sounds') return it;
+                                    return Object.assign({}, it, {
+                                        data: wordObjs,
+                                        wsPreloadedWords: wordObjs,
+                                        probeActivity: activity || it.probeActivity,
+                                        lessonPlanSequence: activity ? [activity] : it.lessonPlanSequence,
+                                        configSummary: `Probe: ${(activity || it.probeActivity || '').replace(/_/g, ' ')}`,
+                                        title: newTitle ? String(newTitle).slice(0, 80) : it.title
+                                    });
+                                }));
+                                return { id: resourceId };
+                            },
                             // Phase 3 — Word Sounds probe host callback. Mints a
                             // type:'word-sounds' history entry with isProbeMode=true,
                             // preloaded word list, and the chosen activity. Clicking
