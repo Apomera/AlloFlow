@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-24T19:19:23.254Z",
+  "generated": "2026-05-24T19:25:45.420Z",
   "count": 12,
   "total_keys_expected": 9307,
   "available": [
@@ -57,7 +57,7 @@
       "slug": "russian",
       "display": "Russian",
       "keys": 9197,
-      "bytes": 590468,
+      "bytes": 626872,
       "updated": "2026-05-24"
     },
     {
