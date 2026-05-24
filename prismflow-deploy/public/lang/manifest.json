@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-24T17:50:39.921Z",
-  "count": 11,
+  "generated": "2026-05-24T19:19:23.254Z",
+  "count": 12,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -43,7 +43,7 @@
       "slug": "japanese",
       "display": "Japanese",
       "keys": 10025,
-      "bytes": 707963,
+      "bytes": 716034,
       "updated": "2026-05-24"
     },
     {
@@ -56,8 +56,8 @@
     {
       "slug": "russian",
       "display": "Russian",
-      "keys": 9182,
-      "bytes": 588691,
+      "keys": 9197,
+      "bytes": 590468,
       "updated": "2026-05-24"
     },
     {
@@ -72,6 +72,13 @@
       "display": "Spanish (Latin America)",
       "keys": 9953,
       "bytes": 1152537,
+      "updated": "2026-05-24"
+    },
+    {
+      "slug": "tagalog",
+      "display": "Tagalog",
+      "keys": 9953,
+      "bytes": 1015158,
       "updated": "2026-05-24"
     },
     {

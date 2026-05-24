@@ -3745,7 +3745,17 @@
       "stop_aria": "Stop batch remediation",
       "avg_improvement": "Avg Improvement",
       "scored_90_plus": "Scored 90+",
-      "new_batch": "New Batch"
+      "new_batch": "New Batch",
+      "resume": {
+        "title": "Предыдущий пакет был прерван",
+        "summary": "{done}/{total} файлов было завершено до закрытия вкладки.",
+        "remaining": "{n} осталось.",
+        "files_label": "Файлы:",
+        "files_more": "+ ещё {n}",
+        "resume_button": "Возобновить пакет",
+        "discard_button": "Отбросить",
+        "toast": "Возобновление пакета · {done} в кэше, {remaining} к обработке"
+      }
     },
     "choose_how": "Choose how to process this PDF:",
     "settings": {
@@ -4096,6 +4106,19 @@
       "highlight_color": "Highlight color",
       "insert_table_aria": "Insert table",
       "insert_table_title": "Insert accessible table"
+    },
+    "agreement": {
+      "tooltip": "Отмечено {n} из {total} аудиторов",
+      "unanimous_suffix": " (единогласно)",
+      "minority_suffix": " — мнение меньшинства, низкая уверенность"
+    },
+    "divergence": {
+      "semantic": "Структурно соответствует, но семантически слабо — ИИ отметил качество содержимого (alt-текст, значение заголовков, порядок чтения), которое axe-core не может обнаружить",
+      "structural": "Обнаружены нарушения WCAG на уровне кода — axe-core нашёл машинно-проверяемые сбои, которым рубрика ИИ присвоила малый вес"
+    },
+    "tagtree": {
+      "label": "Существующая структура тегов",
+      "tooltip": "Этот PDF включает дерево тегов в стиле PDF/UA. Аудиторам было поручено зачесть существующую структуру, а не наказывать её как отсутствующую."
     }
   },
   "concept_sort": {
