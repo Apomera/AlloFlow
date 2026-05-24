@@ -3710,42 +3710,42 @@
     "image_size_tooltip": "Adjust the size of timeline images"
   },
   "pdf_audit": {
-    "view_last_audit": "View Last Audit",
-    "start_new_audit": "Start New Audit",
-    "apply_and_export": "Apply & Export",
-    "applying_remarkup": "Re-applying accessible markup to your approved text…",
-    "rejected_count": "{n} rejected",
-    "undo_all_rejections": "undo all",
-    "granularity_warning": "Changing granularity will reset your rejections. Continue?",
-    "remarkup_failed": "Couldn't reapply full markup — exported plain paragraphs. Retry later if needed.",
-    "reject_selection": "Reject selection",
-    "keep_selection": "Keep selection",
-    "edits_applied": "Edits applied. Accessible HTML updated.",
-    "start_new_confirm": "Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it.",
-    "modal_aria": "PDF Accessibility Audit",
-    "close_modal_aria": "Close audit modal",
-    "close_wait_title": "Wait for remediation to finish or click Stop first",
-    "close_esc_title": "Close (Esc)",
+    "view_last_audit": "Просмотреть последний аудит",
+    "start_new_audit": "Начать новый аудит",
+    "apply_and_export": "Применить и экспортировать",
+    "applying_remarkup": "Повторное применение доступной разметки к утверждённому тексту…",
+    "rejected_count": "{n} отклонено",
+    "undo_all_rejections": "отменить всё",
+    "granularity_warning": "Изменение детализации сбросит ваши отклонения. Продолжить?",
+    "remarkup_failed": "Не удалось повторно применить полную разметку — экспортированы обычные абзацы. При необходимости повторите позже.",
+    "reject_selection": "Отклонить выделение",
+    "keep_selection": "Оставить выделение",
+    "edits_applied": "Правки применены. Доступный HTML обновлён.",
+    "start_new_confirm": "Начать новый аудит? Ваш текущий аудит будет очищен — убедитесь, что вы скачали исправленный HTML, если он вам нужен.",
+    "modal_aria": "Аудит доступности PDF",
+    "close_modal_aria": "Закрыть окно аудита",
+    "close_wait_title": "Дождитесь завершения исправления или сначала нажмите Стоп",
+    "close_esc_title": "Закрыть (Esc)",
     "web": {
-      "heading": "🌐 Website & HTML Accessibility",
-      "subheading": "Audit a website URL or paste HTML for full WCAG 2.1 AA audit + remediation",
-      "url_label": "Website URL",
-      "url_aria": "Website URL to audit",
-      "fetch_aria": "Fetch website HTML",
-      "or_paste_hint": "Or paste HTML source code directly below",
-      "html_label": "HTML Source",
-      "html_placeholder": "Paste HTML source code here, or use Fetch above...",
-      "html_aria": "HTML source code to audit"
+      "heading": "🌐 Доступность сайта и HTML",
+      "subheading": "Проведите аудит URL сайта или вставьте HTML для полного аудита WCAG 2.1 AA + исправление",
+      "url_label": "URL сайта",
+      "url_aria": "URL сайта для аудита",
+      "fetch_aria": "Получить HTML сайта",
+      "or_paste_hint": "Или вставьте исходный HTML-код напрямую ниже",
+      "html_label": "HTML-источник",
+      "html_placeholder": "Вставьте исходный HTML-код здесь или используйте «Получить» выше...",
+      "html_aria": "Исходный HTML-код для аудита"
     },
     "batch": {
-      "drop_text": "Drag & drop PDFs here",
-      "browse_files": "Browse Files",
-      "clear_all": "Clear All",
-      "progress_aria": "Batch remediation progress",
-      "stop_aria": "Stop batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "New Batch",
+      "drop_text": "Перетащите PDF сюда",
+      "browse_files": "Обзор файлов",
+      "clear_all": "Очистить всё",
+      "progress_aria": "Прогресс пакетного исправления",
+      "stop_aria": "Остановить пакетное исправление",
+      "avg_improvement": "Среднее улучшение",
+      "scored_90_plus": "Оценка 90+",
+      "new_batch": "Новый пакет",
       "resume": {
         "title": "Предыдущий пакет был прерван",
         "summary": "{done}/{total} файлов было завершено до закрытия вкладки.",
@@ -3757,355 +3757,355 @@
         "toast": "Возобновление пакета · {done} в кэше, {remaining} к обработке"
       }
     },
-    "choose_how": "Choose how to process this PDF:",
+    "choose_how": "Выберите, как обработать этот PDF:",
     "settings": {
-      "audit_passes_aria": "Number of audit passes",
-      "target_score_aria": "Target accessibility score",
-      "max_fix_passes_aria": "Max fix pass count",
-      "auto_continue_aria": "Auto-continue remediation until target score",
-      "polish_passes_aria": "Polish pass count"
+      "audit_passes_aria": "Количество проходов аудита",
+      "target_score_aria": "Целевой балл доступности",
+      "max_fix_passes_aria": "Максимальное количество проходов исправления",
+      "auto_continue_aria": "Автоматически продолжать исправление до целевого балла",
+      "polish_passes_aria": "Количество проходов полировки"
     },
     "brand": {
-      "heading": "Brand Colors",
-      "where_from": "Where do the colors come from?",
-      "match_original": "🎨 Match Original",
-      "match_original_desc": "Extract colors from this PDF",
-      "upload_guide": "📎 Upload Brand Guide",
-      "upload_guide_desc": "Use a different doc/logo",
-      "no_branding": "⬜ No Branding",
-      "no_branding_desc": "Use default palette",
-      "tip": "Tip: If you pick a specific Style Seed below (not \"Match Original\"), that seed's colors override your branding choice. To use your brand colors, pair them with the Match Original seed."
+      "heading": "Брендовые цвета",
+      "where_from": "Откуда берутся цвета?",
+      "match_original": "🎨 Сохранить оригинал",
+      "match_original_desc": "Извлечь цвета из этого PDF",
+      "upload_guide": "📎 Загрузить бренд-гайд",
+      "upload_guide_desc": "Использовать другой документ/логотип",
+      "no_branding": "⬜ Без брендинга",
+      "no_branding_desc": "Использовать палитру по умолчанию",
+      "tip": "Совет: Если вы выберете конкретный Style Seed ниже (не «Сохранить оригинал»), цвета этого сида переопределят ваш выбор брендинга. Чтобы использовать брендовые цвета, сочетайте их с сидом Сохранить оригинал."
     },
     "style": {
       "heading": "Style Seed",
-      "subtext": "What design style should the AI apply? WCAG compliance guaranteed by deterministic sanitizer.",
-      "your_custom": "Your Custom Styles",
-      "name_label": "Style Name",
-      "name_placeholder": "My Style",
-      "name_aria": "Custom style name",
-      "font_aria": "Font family",
-      "font_inter": "Inter (Clean)",
-      "font_georgia": "Georgia (Serif)",
-      "font_atkinson": "Atkinson (A11y)",
-      "font_lexend": "Lexend (Readable)",
-      "font_comic": "Comic Sans (Fun)",
-      "font_times": "Times (Classic)",
-      "heading_color_label": "Heading Color",
-      "heading_color_aria": "Heading color",
-      "accent_color_label": "Accent Color",
-      "accent_color_aria": "Accent color",
-      "bg_color_aria": "Background color"
+      "subtext": "Какой стиль дизайна должен применить ИИ? Соответствие WCAG гарантировано детерминистическим санитайзером.",
+      "your_custom": "Ваши пользовательские стили",
+      "name_label": "Имя стиля",
+      "name_placeholder": "Мой стиль",
+      "name_aria": "Имя пользовательского стиля",
+      "font_aria": "Семейство шрифтов",
+      "font_inter": "Inter (Чистый)",
+      "font_georgia": "Georgia (С засечками)",
+      "font_atkinson": "Atkinson (Доступный)",
+      "font_lexend": "Lexend (Читаемый)",
+      "font_comic": "Comic Sans (Весёлый)",
+      "font_times": "Times (Классический)",
+      "heading_color_label": "Цвет заголовка",
+      "heading_color_aria": "Цвет заголовка",
+      "accent_color_label": "Акцентный цвет",
+      "accent_color_aria": "Акцентный цвет",
+      "bg_color_aria": "Цвет фона"
     },
     "triage": {
-      "source_type": "Source type",
-      "issues_to_fix": "Issues to fix:",
-      "estimated_time": "Estimated remediation time:"
+      "source_type": "Тип источника",
+      "issues_to_fix": "Проблемы для исправления:",
+      "estimated_time": "Ориентировочное время исправления:"
     },
     "post_fix": {
-      "label": "Post-fix mode",
-      "aria": "Post-fix mode"
+      "label": "Режим после исправления",
+      "aria": "Режим после исправления"
     },
     "quick_downloads": {
-      "heading": "Quick downloads (no remediation needed)",
-      "tagged_pdf_title": "Download a Tagged PDF based on the original. For richer tagging — extracted headings, properly scoped tables, alt text — run Fix & Verify first and download the tagged version after."
+      "heading": "Быстрые загрузки (исправление не требуется)",
+      "tagged_pdf_title": "Скачать тегированный PDF на основе оригинала. Для более богатого тегирования — извлечённых заголовков, правильно охваченных таблиц, alt-текста — сначала запустите «Исправить и проверить», а затем скачайте тегированную версию."
     },
     "loading": {
-      "title": "Auditing PDF Accessibility...",
-      "subtitle": "Running 5 parallel WCAG 2.1 AA audits with triangulation. This may take 15-30 seconds.",
-      "progress_aria": "Audit in progress"
+      "title": "Аудит доступности PDF...",
+      "subtitle": "Выполняется 5 параллельных аудитов WCAG 2.1 AA с триангуляцией. Это может занять 15-30 секунд.",
+      "progress_aria": "Аудит в процессе"
     },
     "knowbility": {
-      "partner_badge": "Accessibility Partner",
-      "mission_lead": "Creating an inclusive digital world for people with disabilities",
-      "ada_title": "The Americans with Disabilities Act (ADA) Title II",
-      "wcag_label": "WCAG 2.1 Level AA",
-      "deadline_range": "April 2026 to April 2027",
-      "broader_reach_desc": "Accessible content works on any device, any bandwidth, any assistive technology — reaching more users",
-      "seo_desc": "Structured headings, alt text, and semantic HTML improve search ranking and content discovery",
-      "cognitive_desc": "Clear navigation, consistent layouts, and plain language help all users — especially in high-cognitive-load contexts",
-      "future_desc": "WCAG-compliant content adapts to new devices, AI readers, and emerging assistive technologies",
-      "italic_callout": "WCAG 2.1 AA isn't just about avoiding litigation — it's about building documents that are perceivable, operable, understandable, and robust for every human being.",
-      "audit_service_desc": "Expert WCAG audits and document remediation by certified professionals",
-      "usability_service_desc": "Real-world usability testing by people who use assistive technology daily",
-      "docrem_service_desc": "Specialist team for PDF and MS Office docs — full usability with assistive technology",
-      "training_service_desc": "Annual conference and on-demand courses — beginner to advanced accessibility skills",
-      "mission_strong": "Mission: Create an inclusive digital world for people with disabilities.",
-      "testing_desc": "Manual WCAG audits producing actionable reports and remediation paths for websites, apps, and documents",
-      "docrem_full_desc": "Specialist team for PDF and MS Office documents — ensuring full usability with assistive technology",
-      "accessworks_desc": "Real-world usability testing by people with disabilities who use assistive technology daily",
-      "training_full_desc": "Annual conference and on-demand courses — from beginner to advanced accessibility skills"
+      "partner_badge": "Партнёр по доступности",
+      "mission_lead": "Создаём инклюзивный цифровой мир для людей с инвалидностью",
+      "ada_title": "Закон об американцах с инвалидностью (ADA), раздел II",
+      "wcag_label": "WCAG 2.1 уровень AA",
+      "deadline_range": "Апрель 2026 – апрель 2027",
+      "broader_reach_desc": "Доступный контент работает на любом устройстве, при любой пропускной способности, с любой ассистивной технологией — охватывая больше пользователей",
+      "seo_desc": "Структурированные заголовки, alt-текст и семантический HTML улучшают поисковый рейтинг и обнаружение контента",
+      "cognitive_desc": "Чёткая навигация, единообразные макеты и простой язык помогают всем пользователям — особенно в условиях высокой когнитивной нагрузки",
+      "future_desc": "WCAG-совместимый контент адаптируется к новым устройствам, ИИ-читателям и появляющимся ассистивным технологиям",
+      "italic_callout": "WCAG 2.1 AA — это не только избегание судебных исков, это создание документов, которые воспринимаемы, управляемы, понятны и устойчивы для каждого человека.",
+      "audit_service_desc": "Экспертные аудиты WCAG и исправление документов сертифицированными специалистами",
+      "usability_service_desc": "Тестирование удобства использования в реальном мире людьми, которые ежедневно используют ассистивные технологии",
+      "docrem_service_desc": "Специализированная команда для PDF и документов MS Office — полное удобство использования с ассистивными технологиями",
+      "training_service_desc": "Ежегодная конференция и курсы по запросу — навыки доступности от начального до продвинутого уровня",
+      "mission_strong": "Миссия: Создать инклюзивный цифровой мир для людей с инвалидностью.",
+      "testing_desc": "Ручные аудиты WCAG, создающие действенные отчёты и пути исправления для сайтов, приложений и документов",
+      "docrem_full_desc": "Специализированная команда для PDF и документов MS Office — обеспечение полного удобства использования с ассистивными технологиями",
+      "accessworks_desc": "Тестирование удобства использования в реальном мире людьми с инвалидностью, которые ежедневно используют ассистивные технологии",
+      "training_full_desc": "Ежегодная конференция и курсы по запросу — от начальных до продвинутых навыков доступности"
     },
     "unavailable": {
-      "title": "Audit Unavailable",
-      "body": "The AI accessibility audit could not complete. This is usually caused by a temporary API issue, rate limiting, or a very large/complex PDF.",
-      "proceed_hint": "You can still proceed — Fix & Verify will transform the document and run a full audit afterward."
+      "title": "Аудит недоступен",
+      "body": "Не удалось завершить ИИ-аудит доступности. Обычно это вызвано временной проблемой API, ограничением частоты запросов или очень большим/сложным PDF.",
+      "proceed_hint": "Вы всё ещё можете продолжить — «Исправить и проверить» преобразует документ и затем проведёт полный аудит."
     },
     "tabs": {
-      "aria": "Audit view",
-      "remediation_results": "Remediation Results",
-      "original_audit": "Original Audit"
+      "aria": "Вид аудита",
+      "remediation_results": "Результаты исправления",
+      "original_audit": "Оригинальный аудит"
     },
     "doc_props": {
-      "aria": "Document properties",
-      "contains_images": "Contains Images",
-      "contains_tables": "Contains Tables",
-      "contains_forms": "Contains Forms"
+      "aria": "Свойства документа",
+      "contains_images": "Содержит изображения",
+      "contains_tables": "Содержит таблицы",
+      "contains_forms": "Содержит формы"
     },
     "reliability": {
-      "std_dev": "Standard Deviation",
-      "icc_title": "Custom 1−(SD/50) index; not textbook ICC",
-      "icc_label": "Auditor Consistency (ICC-like)",
-      "cronbach": "Cronbach's α"
+      "std_dev": "Стандартное отклонение",
+      "icc_title": "Пользовательский индекс 1−(SD/50); не учебный ICC",
+      "icc_label": "Согласованность аудиторов (как ICC)",
+      "cronbach": "α Кронбаха"
     },
     "score": {
-      "total_checks": "Total checks performed",
-      "issues_found": "Issues found",
-      "ai_rubric_label": "AI Rubric",
-      "starts_at_100": "Starts at 100, deducts per issue type",
-      "how_ai_scores": "How AI scores",
-      "ai_critical_rule": "Critical: -15 each (lang, title, alt, landmark, contrast)",
-      "ai_major_rule": "Major: -10 each (headings, tables, forms)",
-      "ai_minor_rule": "Minor: -5 each (skip-nav, landmarks, links, lists)",
-      "ai_passes_rule": "Passes reduce total deductions proportionally",
-      "axe_desc": "Deque automated WCAG 2.1 AA checker",
-      "how_axe_scores": "How axe-core scores",
-      "no_violations": "No violations detected",
-      "average_both": "Average of both engines (equal weight)"
+      "total_checks": "Всего проверок выполнено",
+      "issues_found": "Найдено проблем",
+      "ai_rubric_label": "Рубрика ИИ",
+      "starts_at_100": "Начинается со 100, вычитает за каждый тип проблемы",
+      "how_ai_scores": "Как ИИ оценивает",
+      "ai_critical_rule": "Критические: −15 за каждую (lang, title, alt, ориентир, контраст)",
+      "ai_major_rule": "Серьёзные: −10 за каждую (заголовки, таблицы, формы)",
+      "ai_minor_rule": "Незначительные: −5 за каждую (skip-nav, ориентиры, ссылки, списки)",
+      "ai_passes_rule": "Проходы пропорционально уменьшают общие вычеты",
+      "axe_desc": "Автоматический WCAG 2.1 AA-чекер Deque",
+      "how_axe_scores": "Как axe-core оценивает",
+      "no_violations": "Нарушения не обнаружены",
+      "average_both": "Среднее двух движков (одинаковый вес)"
     },
     "multi_session": {
-      "no_pdf_attached": "Original PDF isn't attached to this session — you'll be prompted to re-select it from disk when you start the fix. (Project files don't include the PDF bytes to stay small.)",
-      "autosave_aria": "Auto-save project file after each completed range",
-      "autosave_label": "Auto-save project file after each range"
+      "no_pdf_attached": "Оригинальный PDF не прикреплён к этой сессии — вам будет предложено заново выбрать его с диска при запуске исправления. (Файлы проекта не включают байты PDF, чтобы оставаться компактными.)",
+      "autosave_aria": "Автосохранение файла проекта после каждого завершённого диапазона",
+      "autosave_label": "Автосохранение файла проекта после каждого диапазона"
     },
     "page_range": {
-      "start_aria": "Start page",
-      "end_aria": "End page",
-      "clear_aria": "Clear page range and remediate whole document"
+      "start_aria": "Начальная страница",
+      "end_aria": "Конечная страница",
+      "clear_aria": "Очистить диапазон страниц и исправить весь документ"
     },
     "fix_pass": {
-      "additional_sweep": "Additional Sweep",
-      "progress_aria": "Fix and verify progress"
+      "additional_sweep": "Дополнительный проход",
+      "progress_aria": "Прогресс исправления и проверки"
     },
     "pipeline": {
-      "tracker_aria": "Pipeline progress tracker",
-      "why_matters": "Why this matters:"
+      "tracker_aria": "Трекер прогресса конвейера",
+      "why_matters": "Почему это важно:"
     },
     "boring_palette": {
-      "prompt": "Would you like to keep the original look or apply a theme?"
+      "prompt": "Хотите сохранить оригинальный вид или применить тему?"
     },
     "live_chunk": {
-      "review_aria": "Live chunk remediation review",
-      "heading_short": "Live Remediation",
-      "no_fixes_title": "This section already meets WCAG accessibility standards — the pipeline made no changes because none were needed.",
-      "retried_title": "AI had to retry this section once after the first attempt failed integrity or token-preservation checks.",
-      "content_verified_title": "AI content-preservation check passed — the section's text content was preserved through the rewrite.",
-      "ai_skipped_long_title": "AI rewrite failed or was rejected for this section — only deterministic (rule-based) fixes were applied. The section is still more accessible than the original, just less so than successfully AI-fixed sections.",
-      "ai_skipped_rule_only": "AI skipped · rule-based only",
-      "review_heading": "Live Remediation Review",
-      "review_subhead": "Watch each section get fixed in real time — reject or re-fix anything that looks wrong",
-      "progress_aria": "Live remediation progress",
-      "rule_based_title": "Rule-based (deterministic) regex fixes applied — always safe, no AI involved",
-      "targeted_title": "AI-diagnosed targeted micro-fixes applied via deterministic tools (content-preserving)",
-      "ai_skipped_short_title": "AI rewrite failed or was rejected for this section — only rule-based fixes were applied. Still more accessible than the original.",
-      "ai_skipped_short": "AI skipped",
-      "verified_title": "AI verified content preserved",
-      "integrity_title": "Word overlap integrity check passed",
-      "before": "Before (original)",
-      "after": "After (fixed)",
-      "integrity_note": "Integrity note:",
-      "violations_targeted": "Violations targeted in this pass",
-      "clear_history_aria": "Clear live review history"
+      "review_aria": "Обзор живого исправления блока",
+      "heading_short": "Живое исправление",
+      "no_fixes_title": "Этот раздел уже соответствует стандартам доступности WCAG — конвейер не внёс изменений, потому что они не были нужны.",
+      "retried_title": "ИИ пришлось повторить этот раздел один раз после того, как первая попытка не прошла проверки целостности или сохранности токенов.",
+      "content_verified_title": "Проверка ИИ на сохранение содержимого пройдена — текстовое содержимое раздела было сохранено при переписывании.",
+      "ai_skipped_long_title": "Переписывание ИИ не удалось или было отклонено для этого раздела — применены только детерминистические (на основе правил) исправления. Раздел всё ещё более доступен, чем оригинал, просто менее доступен, чем успешно исправленные ИИ разделы.",
+      "ai_skipped_rule_only": "ИИ пропущен · только на основе правил",
+      "review_heading": "Обзор живого исправления",
+      "review_subhead": "Наблюдайте за исправлением каждого раздела в реальном времени — отклоняйте или переисправляйте всё, что выглядит неправильно",
+      "progress_aria": "Прогресс живого исправления",
+      "rule_based_title": "Применены детерминистические (regex) исправления на основе правил — всегда безопасны, ИИ не задействован",
+      "targeted_title": "Применены целевые микроисправления, диагностированные ИИ, через детерминистические инструменты (с сохранением содержимого)",
+      "ai_skipped_short_title": "Переписывание ИИ не удалось или было отклонено для этого раздела — применены только исправления на основе правил. Всё ещё более доступно, чем оригинал.",
+      "ai_skipped_short": "ИИ пропущен",
+      "verified_title": "ИИ проверил сохранение содержимого",
+      "integrity_title": "Проверка целостности перекрытия слов пройдена",
+      "before": "До (оригинал)",
+      "after": "После (исправлено)",
+      "integrity_note": "Заметка о целостности:",
+      "violations_targeted": "Нарушения, на которые нацелились в этом проходе",
+      "clear_history_aria": "Очистить историю живого обзора"
     },
     "why_matters": {
-      "heading": "Why Accessible Documents Matter",
-      "udl_part1": "Accessible materials support Universal Design for Learning (UDL) — benefiting",
-      "all": "all",
-      "udl_part2": "learners regardless of ability, language, or learning style",
-      "ux_part1": "Clear headings, logical structure, and sufficient contrast make documents easier to read for",
-      "ux_part2": "users — including on mobile and in bright sunlight",
-      "seo_desc": "Semantic HTML, alt text, and proper headings help search engines index content — boosting discoverability and organic reach",
-      "innovation_desc": "Voice recognition, closed captioning, and screen readers all began as accessibility features — then became essential tools used by millions"
+      "heading": "Почему важны доступные документы",
+      "udl_part1": "Доступные материалы поддерживают универсальный дизайн для обучения (UDL) — принося пользу",
+      "all": "всем",
+      "udl_part2": "ученикам независимо от способностей, языка или стиля обучения",
+      "ux_part1": "Чёткие заголовки, логическая структура и достаточный контраст облегчают чтение документов для",
+      "ux_part2": "пользователей — в том числе на мобильных устройствах и при ярком солнечном свете",
+      "seo_desc": "Семантический HTML, alt-текст и правильные заголовки помогают поисковым системам индексировать контент — повышая обнаруживаемость и органический охват",
+      "innovation_desc": "Распознавание голоса, скрытые субтитры и экранные читалки начинались как функции доступности — а затем стали важными инструментами, используемыми миллионами"
     },
     "ada": {
-      "heading": "ADA Title II & WCAG 2.1 AA",
-      "deadline_badge": "Deadline: April 24, 2026",
-      "title_strong": "Title II of the Americans with Disabilities Act (ADA)",
-      "wcag_strong": "WCAG 2.1 Level AA",
-      "deadline_50k": "April 24, 2026",
-      "deadline_small": "April 26, 2027",
-      "covered_desc": "Public-facing websites, mobile apps, digital documents (PDFs, Word, Excel, PowerPoint), and social media published by government entities",
-      "who_desc": "All state and local government entities — including public schools, universities, courts, libraries, transit agencies, and municipal services",
-      "matters_desc": "Beyond legal compliance: accessible documents ensure people with disabilities can equally access education, public services, employment, and civic participation",
-      "standard_callout": "The standard AlloFlow targets — WCAG 2.1 Level AA — is the exact standard required by this federal rule."
+      "heading": "ADA, раздел II и WCAG 2.1 AA",
+      "deadline_badge": "Срок: 24 апреля 2026 г.",
+      "title_strong": "Раздел II Закона об американцах с инвалидностью (ADA)",
+      "wcag_strong": "WCAG 2.1 уровень AA",
+      "deadline_50k": "24 апреля 2026 г.",
+      "deadline_small": "26 апреля 2027 г.",
+      "covered_desc": "Публичные сайты, мобильные приложения, цифровые документы (PDF, Word, Excel, PowerPoint) и социальные сети, публикуемые государственными организациями",
+      "who_desc": "Все государственные и местные органы власти — включая государственные школы, университеты, суды, библиотеки, транзитные агентства и муниципальные службы",
+      "matters_desc": "Помимо юридического соответствия: доступные документы обеспечивают равный доступ людей с инвалидностью к образованию, государственным услугам, занятости и гражданскому участию",
+      "standard_callout": "Стандарт, к которому стремится AlloFlow — WCAG 2.1 уровень AA — это именно тот стандарт, который требуется этим федеральным правилом."
     },
     "doc_details": {
-      "heading": "Document Details"
+      "heading": "Детали документа"
     },
     "images": {
-      "review_heading": "Review Image Descriptions",
-      "download_all_title": "Download every extracted image — useful as a manual fallback if AI reinsertion misplaces or skips one.",
-      "edit_alt_hint": "Edit alt text below — changes apply to the final document",
-      "download_one_title": "Download this image",
-      "ai_generated_badge": "AI Generated",
-      "alt_placeholder": "Describe this image for screen reader users...",
-      "regen_title": "Regenerate this image via AI using the stored description",
-      "dropped_by_ai": "Dropped by AI pass",
-      "regen_hint": "Click Regenerate to recreate an image via AI using its stored description, or use Upload/Replace inside the figure in the preview."
+      "review_heading": "Просмотр описаний изображений",
+      "download_all_title": "Скачать каждое извлечённое изображение — полезно как резервный вариант, если повторная вставка ИИ неправильно разместит или пропустит какое-то.",
+      "edit_alt_hint": "Редактируйте alt-текст ниже — изменения применяются к финальному документу",
+      "download_one_title": "Скачать это изображение",
+      "ai_generated_badge": "Создано ИИ",
+      "alt_placeholder": "Опишите это изображение для пользователей экранных читалок...",
+      "regen_title": "Перегенерировать это изображение через ИИ, используя сохранённое описание",
+      "dropped_by_ai": "Отброшено проходом ИИ",
+      "regen_hint": "Нажмите «Перегенерировать», чтобы воссоздать изображение через ИИ, используя его сохранённое описание, или используйте «Загрузить/Заменить» внутри фигуры в предпросмотре."
     },
     "integrity": {
-      "verifying": "Verifying content integrity…",
-      "diff_open_verifying_aria": "Open diff view (verification still running in background)",
-      "diff_open_verifying_title": "Open the word-level diff view. The integrity verification is still running in the background, but the diff itself is ready now.",
-      "unverified": "Content integrity unverified",
-      "diff_open_aria": "Open diff view of source PDF text vs. final HTML",
-      "diff_open_title": "Side-by-side word-level diff: see every insertion, deletion, and paraphrase between the source PDF and the remediated HTML.",
-      "recheck_aria": "Re-run pdf.js content integrity check",
-      "recheck_title": "Re-run the fidelity recovery ladder (Stages A-D) against the current remediated HTML."
+      "verifying": "Проверка целостности содержимого…",
+      "diff_open_verifying_aria": "Открыть вид diff (проверка ещё выполняется в фоновом режиме)",
+      "diff_open_verifying_title": "Открыть пословный вид diff. Проверка целостности всё ещё выполняется в фоновом режиме, но сам diff уже готов.",
+      "unverified": "Целостность содержимого не проверена",
+      "diff_open_aria": "Открыть вид diff исходного текста PDF против финального HTML",
+      "diff_open_title": "Параллельный пословный diff: посмотрите каждую вставку, удаление и парафраз между исходным PDF и исправленным HTML.",
+      "recheck_aria": "Повторно запустить проверку целостности содержимого pdf.js",
+      "recheck_title": "Повторно запустить лестницу восстановления верности (этапы A-D) против текущего исправленного HTML."
     },
     "verification": {
-      "details_heading": "Verification details",
-      "char_coverage": "Char coverage",
-      "word_coverage": "Word coverage",
-      "source_words": "Source words",
-      "recovery_stages": "Recovery stages applied",
-      "ai_retry": "AI retry",
-      "ground_truth": "Ground truth:",
-      "open_diff_title": "Open the word-level diff view"
+      "details_heading": "Детали проверки",
+      "char_coverage": "Покрытие символов",
+      "word_coverage": "Покрытие слов",
+      "source_words": "Слова в источнике",
+      "recovery_stages": "Применённые этапы восстановления",
+      "ai_retry": "Повтор ИИ",
+      "ground_truth": "Эталон:",
+      "open_diff_title": "Открыть пословный вид diff"
     },
     "fidelity": {
-      "heading": "Verify Text Fidelity",
-      "run_title": "Compare the remediated document against the source text — flags any words that appear in the source but not in the current remediated output.",
-      "run_aria": "Run text fidelity check against source OCR",
-      "restore_title": "Splice missing words back into the remediated document using fuzzy context-anchor matching. Unplaceable words go to a Content Recovery appendix so nothing is lost.",
-      "restore_aria": "Restore missing words into the remediated document",
-      "not_ready": "Remediation not ready."
+      "heading": "Проверить точность текста",
+      "run_title": "Сравните исправленный документ с исходным текстом — отметит любые слова, которые есть в источнике, но не в текущем исправленном выводе.",
+      "run_aria": "Запустить проверку точности текста против исходного OCR",
+      "restore_title": "Вставить отсутствующие слова обратно в исправленный документ с помощью нечёткого сопоставления контекстных якорей. Неразмещаемые слова попадают в приложение «Восстановление содержимого», чтобы ничего не потерялось.",
+      "restore_aria": "Восстановить отсутствующие слова в исправленный документ",
+      "not_ready": "Исправление не готово."
     },
     "report": {
-      "download_title": "Download audit report",
-      "text_extract_title": "Extract text for content generation"
+      "download_title": "Скачать отчёт об аудите",
+      "text_extract_title": "Извлечь текст для генерации содержания"
     },
     "resume": {
-      "heading": "Saved Progress Found"
+      "heading": "Найден сохранённый прогресс"
     },
-    "start_new_title": "Clear this audit result and start fresh with a new PDF",
+    "start_new_title": "Очистить этот результат аудита и начать заново с новым PDF",
     "results": {
-      "verified_accessible": "Verified Accessible",
-      "zero_violations": "Zero WCAG violations detected"
+      "verified_accessible": "Проверено как доступный",
+      "zero_violations": "Нарушений WCAG не обнаружено"
     },
     "wcag_report": {
-      "coverage_note": "Coverage may be incomplete — this view aggregates axe-core rules by WCAG SC. Manual review still required for some criteria (e.g. semantic meaning, reading order, complex forms)."
+      "coverage_note": "Покрытие может быть неполным — этот вид агрегирует правила axe-core по WCAG SC. Ручная проверка всё ещё требуется для некоторых критериев (например, семантическое значение, порядок чтения, сложные формы)."
     },
     "auto_fix": {
-      "stop_aria": "Stop auto-continue remediation",
-      "progress_aria": "Auto-fix progress"
+      "stop_aria": "Остановить авто-продолжение исправления",
+      "progress_aria": "Прогресс автоисправления"
     },
     "section_map": {
-      "heading": "Document Section Map",
-      "rule_based_title": "Rule-based (deterministic) fixes applied",
-      "targeted_title": "AI-diagnosed targeted micro-fixes",
-      "ai_skipped_title": "AI rewrite was rejected — only rule-based fixes applied",
-      "ai_skipped": "AI skipped"
+      "heading": "Карта разделов документа",
+      "rule_based_title": "Применены детерминистические исправления на основе правил",
+      "targeted_title": "Целевые микроисправления, диагностированные ИИ",
+      "ai_skipped_title": "Переписывание ИИ было отклонено — применены только исправления на основе правил",
+      "ai_skipped": "ИИ пропущен"
     },
     "expert_referral": {
-      "heading": "This Document Needs Expert Accessibility Remediation"
+      "heading": "Этому документу нужно экспертное исправление доступности"
     },
     "diff": {
-      "button_aria": "Open word-level diff view between source PDF and remediated HTML",
-      "button_title": "Open the word-level diff modal — see every insertion, deletion, and paraphrase between the source PDF text and the remediated HTML, with click-to-reject and Apply & Export."
+      "button_aria": "Открыть пословный вид diff между исходным PDF и исправленным HTML",
+      "button_title": "Открыть модальное окно пословного diff — посмотрите каждую вставку, удаление и парафраз между исходным текстом PDF и исправленным HTML, с возможностью отклонить кликом и «Применить и экспортировать»."
     },
     "pdf_from_html": {
-      "title": "Regenerate a PDF from the remediated HTML. Layout reflows — page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents."
+      "title": "Перегенерировать PDF из исправленного HTML. Макет перетекает — разрывы страниц, шрифты и пагинация могут отличаться от оригинала. Хорошо работает для простых прозаических документов."
     },
     "tagged_pdf": {
-      "title": "Preserve the original PDF's visual layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-column documents, and branded PDFs where visual fidelity matters."
+      "title": "Сохранить визуальный макет оригинального PDF побайтно и внедрить теги доступности в его структурное дерево. Лучше всего для учебников, многоколоночных документов и брендированных PDF, где визуальная точность важна."
     },
     "alt_formats": {
-      "intro": "Download the remediated document in accessible alternative formats"
+      "intro": "Скачайте исправленный документ в доступных альтернативных форматах"
     },
     "expert": {
-      "command_aria": "Expert remediation command",
-      "log_aria": "Agent activity log"
+      "command_aria": "Команда экспертного исправления",
+      "log_aria": "Журнал активности агента"
     },
     "translate": {
-      "lang_aria": "Translation language — type any language or pick from suggestions",
-      "lang_placeholder": "🌐 Type language (e.g. Spanish, Tagalog, Dari...)"
+      "lang_aria": "Язык перевода — введите любой язык или выберите из предложений",
+      "lang_placeholder": "🌐 Введите язык (например, испанский, тагальский, дари...)"
     },
     "simplify": {
-      "level_aria": "Simplification grade level"
+      "level_aria": "Уровень класса упрощения"
     },
     "plain_summary": {
-      "intro": "Generate an easy-to-read version for parents, guardians, or community members.",
-      "lang_aria": "Translation language"
+      "intro": "Создайте легко читаемую версию для родителей, опекунов или членов сообщества.",
+      "lang_aria": "Язык перевода"
     },
     "close_confirm": {
-      "title": "Close without saving?",
-      "save_close": "Save & close"
+      "title": "Закрыть без сохранения?",
+      "save_close": "Сохранить и закрыть"
     },
     "preview": {
-      "modal_aria": "Accessible document preview and editor",
-      "close_aria": "Close preview",
-      "edit_hint": "Click anywhere in the preview to edit text directly. Use the controls below to customize appearance.",
-      "wcag_guaranteed": "WCAG compliance guaranteed — sanitizer runs on every style change.",
-      "ai_restyle_hint": "One-click AI restyling. These override the theme above.",
-      "body_font_aria": "Body font",
-      "font_system": "System (Default)",
-      "font_georgia": "Georgia (Serif)",
+      "modal_aria": "Предпросмотр и редактор доступного документа",
+      "close_aria": "Закрыть предпросмотр",
+      "edit_hint": "Нажмите в любом месте предпросмотра, чтобы редактировать текст напрямую. Используйте элементы управления ниже для настройки внешнего вида.",
+      "wcag_guaranteed": "Соответствие WCAG гарантировано — санитайзер запускается при каждом изменении стиля.",
+      "ai_restyle_hint": "Изменение стиля ИИ в один клик. Они переопределяют тему выше.",
+      "body_font_aria": "Шрифт основного текста",
+      "font_system": "Системный (по умолчанию)",
+      "font_georgia": "Georgia (с засечками)",
       "font_times_new": "Times New Roman",
       "font_atkinson_hyper": "Atkinson Hyperlegible",
       "font_comic_short": "Comic Sans",
-      "font_courier": "Courier (Mono)",
-      "font_size_aria": "Font size",
-      "live_preview": "Live Preview",
-      "iframe_title": "Accessible document preview"
+      "font_courier": "Courier (моноширинный)",
+      "font_size_aria": "Размер шрифта",
+      "live_preview": "Живой предпросмотр",
+      "iframe_title": "Предпросмотр доступного документа"
     },
     "wordart": {
-      "text_placeholder": "Your word art text...",
-      "text_aria": "Word art text"
+      "text_placeholder": "Ваш текст word art...",
+      "text_aria": "Текст word art"
     },
     "a11y_inspect": {
-      "headings": "Headings (H1-H6)",
-      "images": "Images + alt text",
-      "tables": "Tables + headers",
-      "figures": "Figures + captions",
-      "main_landmark": "Main landmark",
-      "aria_roles": "ARIA roles"
+      "headings": "Заголовки (H1-H6)",
+      "images": "Изображения + alt-текст",
+      "tables": "Таблицы + заголовки",
+      "figures": "Фигуры + подписи",
+      "main_landmark": "Главный ориентир",
+      "aria_roles": "ARIA-роли"
     },
     "ai_image": {
-      "prompt_placeholder": "Describe an image to generate...",
-      "prompt_aria": "Image generation prompt",
-      "select_hint": "Click an image in the preview to select it, then:"
+      "prompt_placeholder": "Опишите изображение для генерации...",
+      "prompt_aria": "Подсказка для генерации изображения",
+      "select_hint": "Нажмите на изображение в предпросмотре, чтобы выбрать его, затем:"
     },
     "layout": {
-      "insert_blocks": "Insert Blocks",
-      "header_branding": "Header / Branding"
+      "insert_blocks": "Вставить блоки",
+      "header_branding": "Шапка / Брендинг"
     },
     "templates": {
-      "aria": "Document template",
-      "apply_placeholder": "Apply template...",
-      "saved_heading": "Saved Accessible Templates"
+      "aria": "Шаблон документа",
+      "apply_placeholder": "Применить шаблон...",
+      "saved_heading": "Сохранённые доступные шаблоны"
     },
     "version_stamp": {
-      "heading": "Version Stamp"
+      "heading": "Метка версии"
     },
     "extracted_images": {
-      "drag_hint": "Drag a thumbnail onto any image placeholder in the preview to insert it, or click \"📷 Upload\" inside a placeholder and choose \"Use extracted image\"."
+      "drag_hint": "Перетащите миниатюру на любой плейсхолдер изображения в предпросмотре, чтобы вставить его, или нажмите «📷 Загрузить» внутри плейсхолдера и выберите «Использовать извлечённое изображение»."
     },
     "toolbar": {
-      "aria": "Text formatting",
-      "bullet_list": "Bullet list",
-      "numbered_list": "Numbered list",
-      "align_left": "Align left",
-      "align_center": "Align center",
-      "align_center_title": "Center",
-      "insert_link": "Insert link",
-      "remove_link": "Remove link",
-      "clear_formatting": "Clear formatting",
-      "undo": "Undo",
-      "redo": "Redo",
-      "text_color": "Text color",
-      "highlight_color": "Highlight color",
-      "insert_table_aria": "Insert table",
-      "insert_table_title": "Insert accessible table"
+      "aria": "Форматирование текста",
+      "bullet_list": "Маркированный список",
+      "numbered_list": "Нумерованный список",
+      "align_left": "Выровнять по левому краю",
+      "align_center": "Выровнять по центру",
+      "align_center_title": "По центру",
+      "insert_link": "Вставить ссылку",
+      "remove_link": "Удалить ссылку",
+      "clear_formatting": "Очистить форматирование",
+      "undo": "Отменить",
+      "redo": "Повторить",
+      "text_color": "Цвет текста",
+      "highlight_color": "Цвет выделения",
+      "insert_table_aria": "Вставить таблицу",
+      "insert_table_title": "Вставить доступную таблицу"
     },
     "agreement": {
       "tooltip": "Отмечено {n} из {total} аудиторов",
