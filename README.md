@@ -99,7 +99,7 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 | **17 Assessment Presets** | WISC-V, WIAT-4, BASC-3 (Parent & Teacher), Vineland-3, BRIEF-2, Conners-4, WJ-IV COG & ACH, KABC-II, DAS-II, CELF-5, KTEA-3, SRS-2, GARS-3, BOT-2 |
 | **Student Analytics (RTI)** | Automated Tier 1/2/3 classification with aimline monitoring (4-week warning, 6-week critical alerts); ORF, Math Fluency, and Literacy CBM probes; Pearson correlation analysis; anomaly flagging; CSV export |
 | **Math Fluency Probes** | K–8 grade-normed DCPM arithmetic drills (addition, subtraction, multiplication, division) with error analysis and frustration detection |
-| **PDF Accessibility Pipeline** | Upload any PDF → 5-auditor triangulated AI audit with statistical analysis (ICC, Cronbach's alpha) → one-click WCAG remediation via Vision API → axe-core verification → self-healing auto-fix loop → preview/edit with themes, brand matching, and AI image tools → export as accessible PDF, HTML, or audio |
+| **PDF Accessibility Pipeline** | Upload any PDF → up to 10-auditor triangulated AI audit (user-configurable, with stakeholder-perspective variants: screen-reader user, disability-rights advocate, Section 508, Title II ADA, JAWS/NVDA tester, etc.) → statistical agreement analysis (ICC-like, Cronbach-like) → one-click WCAG remediation via Vision API + Tesseract.js OCR for scanned/encrypted PDFs → axe-core 4.10 verification → self-healing auto-fix loop with regression-revert + SEM-based plateau detection → preview/edit with themes, brand matching, and AI image tools → export as accessible PDF, HTML, or audio |
 
 ---
 

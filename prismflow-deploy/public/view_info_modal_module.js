@@ -481,7 +481,7 @@ function getFeatureDetails(title) {
     },
     "PDF Accessibility": {
       inputs: ["PDF / image / DOCX / PPTX file", "Optional teacher remediation prompt", "Brand / theme preferences"],
-      engine: ["5-auditor triangulated AI audit with statistical analysis (ICC, Cronbach's alpha)", "Vision API remediation pass", "axe-core 4.10 verification", "Self-healing auto-fix loop"],
+      engine: ["Up to 10-auditor triangulated AI audit with stakeholder-perspective variants (screen-reader user, Section 508, JAWS/NVDA tester, etc.)", "Statistical agreement analysis (ICC-like + Cronbach-like, honestly named as pragmatic hybrids)", "Vision API remediation pass + surgical AI fixes + deterministic WCAG closures (form labels, complex tables, ARIA, lang)", "axe-core 4.10 verification + Tesseract.js OCR fallback for scanned/encrypted PDFs", "Self-healing auto-fix loop with regression-revert and SEM-based plateau detection"],
       outputs: ["WCAG-AA remediated HTML", "Accessible PDF export", "Audio version", "Audit report card with auditor agreement scores", "Diff view (original vs remediated)"],
       customizations: ["Theme + brand colors", "Image alt-text generation", "Batch upload mode", "Re-run specific auditor passes"],
       proTip: "Batch-upload your district's worksheet library overnight \u2014 the pipeline produces WCAG-AA versions while you sleep."

@@ -3172,7 +3172,8 @@ Return ONLY valid JSON:
   "hasSearchableText": true/false,
   "hasImages": true/false,
   "hasTables": true/false,
-  "hasForms": true/false
+  "hasForms": true/false,
+  "documentLanguage": "BCP-47 / ISO 639-1 code (e.g., 'en', 'es', 'fr', 'zh-CN', 'ar', 'vi') — detect from the actual text content, not the file metadata. If multilingual, pick the dominant language."
 }`;
       // Run N independent audits for high-reliability triangulation (user-configurable)
       const parseAudit = (raw) => {
@@ -3497,7 +3498,7 @@ SCORING RUBRIC — Start at 100, deduct points for each unique violation:
   MODERATE (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists
   MINOR (-2 each): Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity
 
-Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 sentence overview","critical":[{"issue":"description","wcag":"SC number"}],"serious":[{"issue":"...","wcag":"..."}],"moderate":[{"issue":"...","wcag":"..."}],"minor":[{"issue":"...","wcag":"..."}],"passes":["what's already accessible"],"pageCount":N,"hasSearchableText":true/false,"hasImages":true/false,"hasTables":true/false,"hasForms":true/false}`;
+Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 sentence overview","critical":[{"issue":"description","wcag":"SC number"}],"serious":[{"issue":"...","wcag":"..."}],"moderate":[{"issue":"...","wcag":"..."}],"minor":[{"issue":"...","wcag":"..."}],"passes":["what's already accessible"],"pageCount":N,"hasSearchableText":true/false,"hasImages":true/false,"hasTables":true/false,"hasForms":true/false,"documentLanguage":"BCP-47 ISO code detected from text content (e.g. 'en','es','fr','zh-CN','ar','vi'); pick dominant if multilingual"}`;
 
     const batchAllVariants = [
       batchAuditPrompt,
@@ -4446,13 +4447,28 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
           _roleFixCount++; return '';
         });
         if (_roleFixCount > 0) log(`  Deterministic: fixed ${_roleFixCount} invalid ARIA roles`);
-        // Fix invalid lang attribute
+        // Fix invalid lang attribute — use source language detected by the
+        // multi-auditor pass when present (each auditor returns a
+        // documentLanguage field). Fall back to 'en' only if no auditor
+        // detected a language. This stops Spanish/bilingual source PDFs
+        // from being wrongly tagged as English.
         const _validLangPat = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
+        const _detectedLangs = (typeof batchParsedAudits !== 'undefined' && Array.isArray(batchParsedAudits))
+          ? batchParsedAudits.map(a => (a && a.documentLanguage) ? String(a.documentLanguage).trim().toLowerCase().replace(/_/g, '-') : null).filter(Boolean)
+          : [];
+        // Majority-vote: pick the most common BCP-47 code among auditors
+        let _detectedLang = 'en';
+        if (_detectedLangs.length > 0) {
+          const _counts = {};
+          _detectedLangs.forEach(l => { if (_validLangPat.test(l)) _counts[l] = (_counts[l] || 0) + 1; });
+          const _entries = Object.entries(_counts).sort((a, b) => b[1] - a[1]);
+          if (_entries.length > 0) _detectedLang = _entries[0][0];
+        }
         accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang="([^"]*)"/, (m, before, langVal) => {
           const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
           if (!trimmed || !_validLangPat.test(trimmed)) {
-            log(`  Deterministic: fixed invalid lang="${langVal}" → "en"`);
-            return `<html${before}lang="en"`;
+            log(`  Deterministic: fixed invalid lang="${langVal}" → "${_detectedLang}" (${_detectedLang === 'en' ? 'fallback' : 'detected from audit'})`);
+            return `<html${before}lang="${_detectedLang}"`;
           }
           return m;
         });
