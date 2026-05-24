@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-24T20:59:03.846Z",
+  "generated": "2026-05-24T21:02:51.246Z",
   "count": 16,
   "total_keys_expected": 9307,
   "available": [
@@ -56,8 +56,8 @@
     {
       "slug": "polish",
       "display": "Polish",
-      "keys": 887,
-      "bytes": 45619,
+      "keys": 9968,
+      "bytes": 904526,
       "updated": "2026-05-24"
     },
     {
