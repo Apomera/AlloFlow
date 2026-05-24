@@ -4071,7 +4071,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '132a1a18';
+    var pluginCdnVersion = 'db7be4b5';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -25680,6 +25680,48 @@ ${_toolList}
                                         }
                                     }
                                 })();
+                                return { id: newId };
+                            },
+                            // Phase 3 — Word Sounds probe host callback. Mints a
+                            // type:'word-sounds' history entry with isProbeMode=true,
+                            // preloaded word list, and the chosen activity. Clicking
+                            // the inline link routes through handleRestoreView →
+                            // launches Word Sounds Studio in probe mode at that activity.
+                            onGenerateWordSoundsProbe: async (activity, words, title, provenance) => {
+                                const ALLOWED = { counting: 1, segmentation: 1, blending: 1, isolation: 1, manipulation: 1, rhyming: 1, syllable_blending: 1, syllable_counting: 1 };
+                                if (!ALLOWED[activity]) throw new Error('Unsupported phonics activity: ' + activity);
+                                const safeWords = (Array.isArray(words) ? words : [])
+                                    .map(w => String(w || '').toLowerCase().replace(/[^a-z]/g, ''))
+                                    .filter(w => w.length >= 2 && w.length <= 14)
+                                    .slice(0, 12);
+                                if (safeWords.length < 3) throw new Error('Need at least 3 valid words for a probe.');
+                                const wordObjs = safeWords.map(w => ({
+                                    word: w,
+                                    term: w,
+                                    targetWord: w,
+                                    ttsReady: false,
+                                    _audioRequested: false
+                                }));
+                                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                                const newItem = {
+                                    id: newId,
+                                    type: 'word-sounds',
+                                    title: String(title || `Word Sounds Probe: ${activity} (${safeWords.length} words)`).slice(0, 80),
+                                    data: wordObjs,
+                                    wsPreloadedWords: wordObjs,
+                                    lessonPlanSequence: [activity],
+                                    lessonPlanConfig: { activities: [{ id: activity, count: safeWords.length }] },
+                                    configSummary: `Probe: ${activity.replace(/_/g, ' ')}`,
+                                    isProbeMode: true,
+                                    probeActivity: activity,
+                                    meta: 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : ''),
+                                    timestamp: new Date(),
+                                    config: {},
+                                    fromDA: true,
+                                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
+                                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null
+                                };
+                                setHistory(prev => [...prev, newItem]);
                                 return { id: newId };
                             },
                             // Phase 2 — Math manipulative host callback. Mints a
