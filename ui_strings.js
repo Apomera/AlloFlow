@@ -6877,6 +6877,34 @@
           "desc": "95+ browser-based interactive simulations across math, science, CS, engineering, and creative design — from DNA labs to physics sandboxes.",
           "category": "platform",
           "color": "teal"
+        },
+        {
+          "title": "DBQ Generator",
+          "icon": "FileQuestion",
+          "desc": "Document-Based Question sets for source analysis — DOK-tiered prompts with sourcing/contextualization/corroboration scaffolds + rubric.",
+          "category": "creation",
+          "color": "amber"
+        },
+        {
+          "title": "Note Taking Templates",
+          "icon": "ListOrdered",
+          "desc": "Cornell notes, two-column compare/contrast, sketchnote prompts, mindmaps, and summary scaffolds — pre-filled or blank.",
+          "category": "creation",
+          "color": "blue"
+        },
+        {
+          "title": "Anchor Charts",
+          "icon": "Layout",
+          "desc": "Printable classroom-poster anchor charts with iconography, color-coded sections, AI imagery, and differentiated complexity levels.",
+          "category": "creation",
+          "color": "rose"
+        },
+        {
+          "title": "Annotation Suite",
+          "icon": "Quote",
+          "desc": "Overlay annotations on any AlloFlow resource — highlights, sticky notes, voice notes, drawings — with color-coded layers and exportable PDFs.",
+          "category": "activities",
+          "color": "purple"
         }
       ]
     }

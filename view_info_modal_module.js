@@ -256,11 +256,11 @@ function getFeatureDetails(title) {
       proTip: "Generate a Lesson Plan after creating your quizzes and activities to automatically include them in the procedural steps."
     },
     "Visual Organizer": {
-      inputs: ["Passage text", "Type of organizer (Venn diagram, outline, flow chart)"],
-      engine: ["Hierarchical content analysis", "Key relationship extraction", "Formatting for interactive rendering"],
-      outputs: ["Interactive diagram (Venn or Flow chart)", "Structured lesson outline", "Visual comparison table"],
-      customizations: ["Toggle organizer types", "Edit nodes or details inline"],
-      proTip: "Use the outline view as a quick visual scaffold for students who struggle with long-form reading passages."
+      inputs: ["Passage text", "Type of organizer (Venn diagram, outline, flow chart, or concept map)"],
+      engine: ["Hierarchical content analysis", "Key relationship extraction", "Concept-to-concept link mapping (for concept-map mode)", "Formatting for interactive rendering"],
+      outputs: ["Interactive diagram (Venn, Flow chart, or Concept Map with nodes + relationship arrows)", "Structured lesson outline", "Visual comparison table"],
+      customizations: ["Toggle between organizer types", "Edit nodes or details inline", "Customize concept-map relationships"],
+      proTip: "Use the outline view as a quick visual scaffold for long-form passages. Switch to concept-map mode when students need to see how multiple ideas interact rather than a linear hierarchy."
     },
     "Brainstorm": {
       inputs: ["Passage text / Topic", "Differentiation prompts"],
@@ -499,6 +499,34 @@ function getFeatureDetails(title) {
       outputs: ["Interactive math labs (Fractions, Algebra CAS, 3D Geometry, Calculus, Probability)", "Life science (Cell, Anatomy, Brain Atlas, DNA Lab, Punnett, Dissection, Ecosystem)", "Earth/Space (Plate Tectonics, Solar System, Universe Timelapse)", "Physics + Chemistry (Wave Simulator, Circuit Builder, Molecule Builder, Titration)", "CS, creative design, social studies, and applied simulation tools"],
       customizations: ["95+ individual tool configurations", "Some tools support multi-student saved worlds", "Print/export per tool"],
       proTip: "Open STEM Lab from the Educator Hub and search by keyword \u2014 the catalog filters to tools matching your current lesson topic in real time."
+    },
+    "DBQ Generator": {
+      inputs: ["Primary or secondary source document (text, PDF, image)", "Target grade level", "Number of DBQs"],
+      engine: ["Document analysis (claim extraction, perspective identification)", "Generate analysis questions at multiple DOK levels", "Build sourcing / contextualization / corroboration scaffolds", "Compose rubric criteria"],
+      outputs: ["DBQ question set with source-text excerpts", "Scaffolded response templates", "Rubric (sourcing, contextualization, corroboration, evidence)", "Teacher answer key"],
+      customizations: ["DOK level mix", "Number of DBQs", "Include scaffolded outline vs blank response", "Bilingual companion"],
+      proTip: "Pair DBQ Generator with primary-source archive PDFs (Library of Congress, National Archives) \u2014 the analysis pipeline scaffolds students through the hardest part of evidence-based history writing."
+    },
+    "Note Taking Templates": {
+      inputs: ["Source passage or lesson content", "Template style (Cornell, two-column, sketchnote, outline, mindmap, summary)", "Optional vocabulary focus list"],
+      engine: ["Content chunking into note-friendly sections", "Pre-population of cue / question column", "Sketchnote prompt suggestions", "Summary scaffolding"],
+      outputs: ["Pre-filled or blank Cornell notes", "Two-column compare/contrast template", "Sketchnote prompt board", "Printable notetaking PDF", "Interactive digital version"],
+      customizations: ["Template style selection", "Pre-fill level (full / cues only / blank)", "Vocabulary focus", "Print vs interactive"],
+      proTip: "Cornell-format notes pair well with the FAQ Generator \u2014 students fill the cue column with FAQ questions as they read, turning passive reading into active anticipation."
+    },
+    "Anchor Charts": {
+      inputs: ["Concept or skill to anchor", "Grade band", "Visual style preference"],
+      engine: ["Visual hierarchy composition", "Iconography + color-coded sections", "Imagen illustration generation for central concept", "Print-optimization (large readable text + high-contrast layout)"],
+      outputs: ["Printable classroom-poster anchor chart", "Digital reference card", "Themed visual hierarchy with imagery", "Differentiated complexity levels"],
+      customizations: ["Visual style (watercolor, flat, hand-drawn)", "Color palette", "Add/remove sections", "Multilingual print version"],
+      proTip: "Generate the anchor chart at the start of a unit and reprint as a quick reference for students who arrive mid-week or need a visual reminder during independent work."
+    },
+    "Annotation Suite": {
+      inputs: ["Any AlloFlow resource (passage, image, document)", "Annotation tool selection (highlight, sticky note, voice note, drawing)"],
+      engine: ["Overlay rendering with stable coordinates", "Per-element undo/redo with stack management", "Voice-to-text transcription for voice notes", "Color-coded annotation layers"],
+      outputs: ["Annotated passage with persistent overlays", "Exportable annotated PDF", "Voice-note library", "Color-coded highlight layers (theme, evidence, vocabulary, question)"],
+      customizations: ["Annotation tool selection", "Color palette for layer types", "Voice-note transcription on/off", "Export with or without annotations"],
+      proTip: "Use color-coded highlight layers (theme / evidence / vocabulary / question) consistently across a unit \u2014 students start recognizing the pattern and self-annotating in the same scheme."
     }
   };
   return details[title] || {
