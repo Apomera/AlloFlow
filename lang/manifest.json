@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-24T17:56:59.318Z",
-  "count": 11,
+  "generated": "2026-05-24T19:05:17.139Z",
+  "count": 12,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -43,7 +43,7 @@
       "slug": "japanese",
       "display": "Japanese",
       "keys": 10025,
-      "bytes": 715007,
+      "bytes": 716034,
       "updated": "2026-05-24"
     },
     {
@@ -72,6 +72,13 @@
       "display": "Spanish (Latin America)",
       "keys": 9953,
       "bytes": 1152537,
+      "updated": "2026-05-24"
+    },
+    {
+      "slug": "tagalog",
+      "display": "Tagalog",
+      "keys": 9953,
+      "bytes": 1015158,
       "updated": "2026-05-24"
     },
     {
