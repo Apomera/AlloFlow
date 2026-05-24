@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-24T17:32:53.849Z",
+  "generated": "2026-05-24T17:40:03.963Z",
   "count": 10,
   "total_keys_expected": 9307,
   "available": [
@@ -35,8 +35,8 @@
     {
       "slug": "hebrew",
       "display": "Hebrew",
-      "keys": 7159,
-      "bytes": 1004698,
+      "keys": 9955,
+      "bytes": 1194856,
       "updated": "2026-05-24"
     },
     {
