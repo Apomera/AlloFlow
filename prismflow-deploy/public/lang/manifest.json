@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-24T16:04:56.784Z",
+  "generated": "2026-05-24T16:10:17.853Z",
   "count": 10,
   "total_keys_expected": 9307,
   "available": [
@@ -42,8 +42,8 @@
     {
       "slug": "japanese",
       "display": "Japanese",
-      "keys": 5579,
-      "bytes": 379078,
+      "keys": 6176,
+      "bytes": 426185,
       "updated": "2026-05-24"
     },
     {

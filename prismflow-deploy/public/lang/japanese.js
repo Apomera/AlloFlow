@@ -6157,5 +6157,774 @@
         "motor_desc": "運動障害は視覚的シミュレーションに抵抗します。最も正確なテストは、実際の生徒が使用するOSレベルのツールを使用することです: Windowsスティッキーキー、macOSスロウキー、ドウェルクリックソフトウェア、スイッチアクセス (例: iOSスイッチコントロールまたはAndroidスイッチアクセス)。片手のみ、キーボードのみ、または1本の指だけでレッスンを完了してみてください。"
       }
     }
+  },
+  "groups": {
+    "title": "差別化グループ",
+    "modal_title": "グループとリソースを管理",
+    "modal_subtitle": "グループを作成し、差別化されたリソースを割り当て、名簿を管理。",
+    "manage_button": "グループとリソースを管理",
+    "manage_button_desc": "グループを作成し、差別化されたコンテンツを割り当て。",
+    "create_group": "新しいグループを作成",
+    "new_group_placeholder": "新しいグループ名",
+    "add_button": "追加",
+    "remove_button": "削除",
+    "resource_label": "リソース: ツールが分析し適応する、現在読み込まれた、または生成された学習リソース。",
+    "assign_resource_label": "割り当てられたリソース: 生徒またはグループに完了するように割り当てられた特定のコンテンツやアクティビティ。",
+    "assign_resource_placeholder": "このグループに割り当てるリソースを選択または検索。リソースにはレッスン、クイズ、アクティビティが含まれます。",
+    "default_resource": "デフォルト (クラスと同じ)",
+    "no_groups": "まだグループが作成されていません。",
+    "roster_title": "生徒名簿と割り当て",
+    "roster_assignment": "生徒をグループに割り当て",
+    "active_groups": "アクティブなグループ",
+    "main_class": "メインクラス",
+    "return_main": "メインクラスに戻る",
+    "move_to": "移動先...",
+    "unassigned": "未割り当て",
+    "waiting_for_students": "生徒の参加を待っています...",
+    "resource_library": "リソースライブラリ: 保存されたすべてのレッスン、教材、生成されたコンテンツを1つの整理された場所で閲覧・管理。",
+    "resource_library_hint": "下のグループドロップダウンを使ってグループにリソースを割り当て。",
+    "done_button": "完了",
+    "created": "グループが正常に作成されました！",
+    "deleted": "グループを削除しました。",
+    "drag_to_reorder": "ドラッグして並べ替え",
+    "language_default": "英語 (デフォルト)",
+    "language_label": "言語",
+    "language_tooltip": "生徒はこの言語でクイズを表示します",
+    "wizard_step_codename": "コードネームを選ぼう！",
+    "wizard_step_preferences": "どのように学ぶのが得意？",
+    "wizard_preferences_sub": "これらは先生があなたの体験をパーソナライズするのに役立ちます。すべてオプションです！",
+    "wizard_home_language": "家ではどの言語を話しますか？",
+    "wizard_reading_comfort": "どのように読むのが好きですか？",
+    "wizard_tts_preference": "テキストをどのように聞くのが好きですか？",
+    "wizard_visual_support": "絵は学習に役立ちますか？",
+    "wizard_next": "次へ",
+    "wizard_back": "戻る",
+    "reading_level_label": "読解レベル",
+    "reading_level_tooltip": "このグループのコンテンツ簡略化のため、目標読解レベルを設定",
+    "visual_density_label": "ビジュアル",
+    "visual_density_tooltip": "このグループの生徒が受ける視覚的サポートの量",
+    "visuals_minimal": "最小限",
+    "visuals_normal": "通常",
+    "visuals_high": "高い (より多くの画像)",
+    "tts_speed_label": "TTS速度",
+    "tts_speed_tooltip": "このグループの生徒のテキスト読み上げ再生速度",
+    "karaoke_label": "カラオケモード",
+    "karaoke_tooltip": "このグループの読み上げ中に単語ハイライトを自動有効化",
+    "class_default": "クラスデフォルト",
+    "communication_mode_label": "コミュニケーション",
+    "communication_mode_tooltip": "このグループの生徒のコミュニケーションモダリティ",
+    "comm_verbal": "口頭",
+    "comm_limited": "限定的口頭",
+    "comm_aac": "AAC/ビジュアル",
+    "no_resources": "このセッションにリソースなし",
+    "resources_reordered": "リソースを並べ替えました",
+    "waiting_students": "生徒の参加を待っています...",
+    "pushed": "プッシュ済み",
+    "pushing": "プッシュ中…"
+  },
+  "learner": {
+    "total_xp": "総XP",
+    "current_run": "現在の実行",
+    "daily_streak": "日次連続",
+    "ws_accuracy": "Word Sounds正確度",
+    "coming_up": "予定",
+    "xp_earned": "獲得XP",
+    "words_today": "今日の単語",
+    "xp_this_week": "今週のXP",
+    "activities_week": "アクティビティ",
+    "words_this_week": "今週の単語",
+    "words_correct": "正解の単語",
+    "phonemes_touched": "扱った音素",
+    "sessions": "セッション",
+    "label_challenges": "ラベルチャレンジ",
+    "recent_activity": "最近のアクティビティ",
+    "progress_report": "学習進捗レポート",
+    "my_learning_journey": "私の学習の旅",
+    "sessions_tracked": "追跡されたセッション",
+    "level": "レベル",
+    "activities": "アクティビティ",
+    "quiz_avg": "クイズ平均",
+    "word_accuracy": "単語正確度",
+    "my_badges": "私のバッジ",
+    "my_strengths": "私の強み",
+    "my_growth_journey": "私の成長の旅",
+    "session_history": "セッション履歴",
+    "word_sounds": "Word Sounds",
+    "download_progress_report": "進捗レポートをダウンロード",
+    "report_downloaded": "進捗レポートをダウンロードしました！",
+    "leave_empty_all_sessions": "すべてのセッションを含めるには空白のままに"
+  },
+  "grades_short": {
+    "k": "K",
+    "g1": "1年",
+    "g2": "2年",
+    "g3": "3年",
+    "g4": "4年",
+    "g5": "5年",
+    "g6": "6年",
+    "g7": "7年",
+    "g8": "8年",
+    "g9": "9年",
+    "g10": "10年",
+    "g11": "11年",
+    "g12": "12年",
+    "college": "大学"
+  },
+  "learning_hub": {
+    "title": "学習ツール",
+    "subtitle": "探求するツールを選択",
+    "stem_title": "STEMラボ",
+    "stem_desc": "40以上のインタラクティブな数学・科学探究",
+    "storyforge_title": "StoryForge",
+    "storyforge_desc": "AI作文ツールでイラスト付きの物語を作成",
+    "sel_title": "SELハブ",
+    "sel_desc": "自己認識と成長のための社会的・感情的学習",
+    "close_aria": "学習ハブを閉じる",
+    "litlab_title": "LitLab",
+    "litlab_desc": "キャラクターの声と文学分析で物語に命を吹き込む",
+    "poettree_title": "PoetTree",
+    "poettree_desc": "形式スキャフォールド、韻律分析、AIフィードバックで詩を書く"
+  },
+  "socratic": {
+    "title": "ソクラテス式チューター",
+    "thinking": "考え中...",
+    "placeholder": "ヒントを求める...",
+    "welcome": "こんにちは！私はあなたのチューターです。答えは教えませんが、自分で見つける手助けができます。何に取り組んでいますか？",
+    "ask_for_help": "助けを求める",
+    "auto_read": "応答を自動読み上げ",
+    "auto_send": "音声自動送信",
+    "mic_tooltip": "音声入力",
+    "listening": "聴取中...",
+    "expand_tooltip": "チャットを展開",
+    "collapse_tooltip": "チャットを折りたたむ",
+    "drag_hint": "ドラッグして移動"
+  },
+  "rti": {
+    "progress_monitor": "RTI進捗モニター",
+    "baseline": "ベースライン",
+    "target_wcpm": "目標WCPM",
+    "target_date": "目標日",
+    "trend_line_comparison": "トレンドライン比較",
+    "ncii_recommended": "NCII推奨",
+    "frequency": "頻度",
+    "weekly": "週次",
+    "group_size": "グループサイズ",
+    "start_date": "開始日",
+    "download_report_title": "家族と共有するのに適した成長重視のレポートをダウンロード"
+  },
+  "text_tools": {
+    "click_to_add": "クリックして用語集に追加",
+    "click_to_phonics": "クリックしてフォニックスを聞く",
+    "click_to_define": "クリックして定義",
+    "menu_placeholder": "これをどう変更しますか？",
+    "simplify": "簡略化",
+    "custom": "カスタム改訂",
+    "explain": "説明",
+    "define": "定義",
+    "add_term": "用語を追加"
+  },
+  "resource_builder": {
+    "question": "質問",
+    "quick_templates": "クイックテンプレート",
+    "use_current_text": "現在のテキストを使用",
+    "attach_image": "画像を添付",
+    "use_generated": "生成済みを使用",
+    "generation_mode": "生成モード",
+    "target_group": "対象グループ",
+    "target_language": "対象言語",
+    "reading_level": "読解レベル"
+  },
+  "export_menu": {
+    "label": "ダウンロード形式...",
+    "qti": "Canvasクイズ (QTI)",
+    "print": "印刷 / PDF保存",
+    "clean_pdf": "クリーンPDFファイル",
+    "worksheet": "ワークシート",
+    "html": "HTMLバンドル",
+    "slides": "PowerPointスライド",
+    "ims": "LMSパッケージ (IMS)"
+  },
+  "student": {
+    "save_banner_title": "進捗を保存",
+    "save_banner_desc": "リソースをバックアップして作品のコピーを保管。",
+    "save_drive": "ファイルを保存",
+    "load_file": "ファイルを読み込む",
+    "resume_adventure": "アドベンチャーを再開",
+    "resume_adventure_desc": "保存されたアドベンチャーを継続",
+    "adventure_restored": "アドベンチャーの進捗を復元しました！",
+    "adventure_saved": "アドベンチャーの進捗が保存に含まれました"
+  },
+  "survey": {
+    "tam_student_usefulness": "AlloFlowは読み書きと数学が上手になるのに役立ちます",
+    "tam_student_ease": "AlloFlowは使いやすいです",
+    "tam_student_intention": "AlloFlowを使い続けたいです",
+    "tam_teacher_usefulness": "AlloFlowは生徒の読み書き能力を意義深く向上させます",
+    "tam_teacher_ease": "AlloFlowは既存のワークフローに簡単に統合できます",
+    "tam_teacher_intention": "来年度もAlloFlowを使い続ける予定です",
+    "tam_parent_usefulness": "AlloFlowは私の子供の学習に役立っています",
+    "tam_parent_intention": "他の親にもAlloFlowを推奨します"
+  },
+  "anchor_chart": {
+    "type_label": "チャートタイプ",
+    "reference": "リファレンス (特徴 / 規範 / 規約)",
+    "process": "プロセス (順次ステップ)",
+    "concept_map": "コンセプトマップ (全体の部分)",
+    "comparison": "比較 (カテゴリ間)",
+    "help": "ELスタイルのクラスアンカーチャート。AIが構造と手描きアイコンを下書き。いつでも編集可能。仲間が「気づいた / 不思議に思った」メモを残せる批評モードを開く。",
+    "generate": "アンカーチャートを生成"
+  },
+  "annotation": {
+    "undo_tooltip": "最後の注釈を取り消す ({count} 個利用可能) — Ctrl/Cmd+Z",
+    "nothing_to_undo": "取り消すものがありません",
+    "undo_aria": "最後の注釈を取り消す",
+    "undo_button": "↩ 元に戻す",
+    "show_all_tooltip": "すべての注釈を表示",
+    "toggle_list_aria": "注釈リストを切り替え",
+    "list_button": "📋 リスト"
+  },
+  "canvas_settings": {
+    "title": "詳細設定",
+    "google_api_label": "Google検索APIキー",
+    "google_api_placeholder": "あなたのGoogle APIキー...",
+    "google_api_hint": "パワーユーザー: 独自のGoogle Custom Search APIキーを入力 (1日100回無料クエリ)",
+    "wolfram_label": "Wolfram Alpha App ID",
+    "wolfram_placeholder": "XXXXX-XXXXXXXXXX (developer.wolframalpha.comから)",
+    "wolfram_hint": "無料: 2,000クエリ/月。正確な数学解決とステップバイステップ検証を追加"
+  },
+  "volume_builder": {
+    "zoom_out_aria": "ズームアウト",
+    "zoom_in_aria": "ズームイン",
+    "reset_view_aria": "ビューをリセット",
+    "help_caption": "ドラッグで回転 • スクロールでズーム • 単位立方体で長方形プリズムまたはLブロックを構築 (5.MD.3-5)",
+    "shape_radiogroup_aria": "Volume Builder形状",
+    "answer_placeholder": "体積を入力...",
+    "answer_aria": "体積回答"
+  },
+  "note_taking": {
+    "template_label": "テンプレートタイプ",
+    "cornell": "Cornellノート (2列 + 要約)",
+    "lab_report": "ラボレポート (質問 / 仮説 / 方法 / データ / CER / 結論)",
+    "reading_response": "Reading Responseジャーナルエントリー",
+    "help": "各テンプレートは今日のソーステキストからスキャフォールドされますが、履歴に持続するため、レッスン間で追加し続けることができます。",
+    "generate": "テンプレートを生成"
+  },
+  "fluency_maze": {
+    "title": "流暢さの迷路",
+    "description": "たいまつで照らされたダンジョンをナビゲート。各ゲートは数学の事実でロックされています — 解いて通過。金の鍵を見つけて出口を開けてください。",
+    "open_aria": "メインビューで流暢さの迷路を開く",
+    "open_button": "🚪 迷路を開く (フルビュー)",
+    "saved_note": "後で再入場できるよう履歴に保存されました。",
+    "tagline": "数学の事実がゲートを開けます"
+  },
+  "student_dashboard": {
+    "level_progress": "レベル進捗",
+    "level_abbr": "Lv",
+    "total_xp": "合計XP",
+    "no_activities": "まだ完了したアクティビティがありません。"
+  },
+  "prompts": {
+    "verified_correct": "**検証済みの正解:**",
+    "actual_correct": "**実際の正解:**",
+    "correction_warning": "**修正 / 警告:**",
+    "why_incorrect": "**他のオプションが不正解な理由:**"
+  },
+  "error": {
+    "syntax_scramble": "シンタックススクランブルでエラーが発生しました。"
+  },
+  "chat": {
+    "location_unknown": "インターフェースで「{target}」がどこにあるかわかりません。",
+    "generating_resource": "了解しました。レベル別テキストリソースを今生成します...",
+    "settings_updated": "設定を更新しました:\n- {changes}\n\n生成する準備ができましたか?",
+    "settings_failed": "設定を変更したかったことは理解しましたが、特定の値を検出できませんでした。もう一度お試しください。",
+    "find_feature_error": "その機能が見つかりませんでした。"
+  },
+  "organizer": {
+    "labels": {
+      "cause": "原因",
+      "effect": "結果",
+      "end": "終了",
+      "problem_label": "問題",
+      "solutions": "解決策"
+    }
+  },
+  "stem_lab": {
+    "save_to_resources": "リソースに保存",
+    "assessment_saved": "STEM評価をリソースに保存しました!",
+    "assessment_prefix": "STEM評価:"
+  },
+  "report_writer": {
+    "loading": "Report Writerを読み込み中...",
+    "loading_hint": "CDNからモジュールを読み込み中。続く場合は接続を確認してください。"
+  },
+  "sel_hub": {
+    "loading": "SEL Hubを読み込み中...",
+    "loading_hint": "CDNからモジュールを読み込み中。続く場合は接続を確認してください。"
+  },
+  "adventure_title": "アドベンチャー",
+  "cancel": "キャンセル",
+  "move_down": "下に移動",
+  "move_up": "上に移動",
+  "docbuilder": {
+    "search_aria": "ブロックを検索",
+    "search_placeholder": "ブロックを検索…"
+  },
+  "lms": {
+    "dismiss_banner_aria": "LMSバナーを閉じる",
+    "dismiss_button": "閉じる",
+    "audit_queue_help": "ドキュメントをクリックして取得し、アクセシビリティパイプラインに読み込みます。一部のLMSファイルでは、このブラウザでLMSにログインする必要がある場合があります。"
+  },
+  "live_polling": {
+    "open_aria": "ライブ投票を開く",
+    "button": "ライブ投票"
+  },
+  "pictionary": {
+    "open_aria": "概念ピクショナリーを開く",
+    "button": "🎨 ピクショナリー"
+  },
+  "visual_support": {
+    "teacher_modal_aria": "先生からのビジュアルサポート"
+  },
+  "tour": {
+    "input_panel_title": "入力パネル",
+    "input_panel_text": "ここから授業作成の旅を始めます。この入力パネルはすべての生成リソースの基盤です。\n### 入力オプション\n• **テキスト貼り付け**: 任意の記事、ストーリー、授業計画から直接コンテンツを貼り付けます。\n• **ファイルアップロード**: PDF、画像、テキストファイル、音声 (MP3/WAV)、または動画をアップロード。\n• **URL取得**: 任意の記事URLを貼り付けて自動的に抽出。\n• **AIリソース検索**: トピックを記述し、AIに学年に適したリソースを見つけてもらいます。\n• **ソーステキストを生成**: トピック、トーン、学年、ターゲット基準を指定してオリジナルコンテンツを作成。",
+    "analysis_title": "分析を開始",
+    "analysis_text": "AIによるコンテンツの深い理解を確認します。この分析はテキストを基本的な教育的コンポーネントに分解します。",
+    "glossary_title": "スマート用語集",
+    "glossary_text": "強力な語彙サポート、多言語機能、インタラクティブゲームを備えた包括的なビジュアル用語集を生成します。",
+    "simplified_title": "レベル別リーダー",
+    "simplified_text": "多様な学習者のためにテキストを差別化します。特定の習熟度レベルに書き直し、識字サポート付きの豊富なイマーシブリーダーを提供します。",
+    "wordsounds_title": "Word Sounds",
+    "wordsounds_text": "Word Sounds Studioで基礎的な識字スキルを構築します — 包括的な音素認識とフォニックス練習環境。",
+    "outline_title": "ビジュアル整理ツール",
+    "outline_text": "コンテンツ構造のビジュアル表現を作成します。テキストを6種類のグラフィックオーガナイザー形式に変換。",
+    "visual_title": "AIビジュアル",
+    "visual_text": "AI生成画像で理解を強化します。デュアルコーディング戦略をサポートするためにビジュアル表現を作成。",
+    "faq_title": "予測FAQ",
+    "faq_text": "生徒の混乱が発生する前に予測します。テキストの複雑さに基づいて予測FAQを自動的に生成。",
+    "scaffolds_title": "ライティングスキャフォールド",
+    "scaffolds_text": "AI搭載の採点とカスタマイズ可能な文構造を備えた包括的なライティングサポートシステム。",
+    "quiz_title": "ゲーミファイドクイズ",
+    "quiz_text": "複数の競争的でイマーシブなモードを持つゲーミファイド評価。",
+    "brainstorm_title": "アイデアエンジン",
+    "brainstorm_text": "デュアル目的のアイディエーションとシミュレーションジェネレーター。",
+    "persona_title": "ペルソナチャット",
+    "persona_text": "ペルソナインタビューモードはイマーシブなキャラクター会話を通じてコンテンツに命を吹き込みます。",
+    "timeline_title": "シーケンスビルダー",
+    "timeline_text": "シーケンスビルダー (タイムライン) はイベントをインタラクティブなドラッグ&ドロップ順序付けアクティビティに変換します。",
+    "concept_sort_title": "概念ソート",
+    "concept_sort_text": "分類スキルと概念的関係を強化します。生徒は用語を定義されたカテゴリにドラッグ&ドロップします。",
+    "math_title": "STEMソルバー",
+    "math_text": "文章題を超えた包括的なSTEM問題ソルバー。10の分野を4つの異なる解決モードでカバー。",
+    "adventure_title": "アドベンチャーモード",
+    "adventure_text": "アドベンチャーモードはコンテンツをイマーシブなインタラクティブ体験に変換します。",
+    "alignment_title": "整合性レポート",
+    "alignment_text": "授業が的を射ていることを確認します。Common Core基準とUDLガイドラインに対して相互参照。",
+    "lesson_plan_title": "授業計画",
+    "lesson_plan_text": "すべてを結びつける完全で構造化された授業計画を生成します。",
+    "fullpack_title": "フルパック",
+    "fullpack_text": "即時で高品質なコンテンツ生成のための万能な「イージーボタン」。",
+    "utils_title": "アクセシビリティハブ",
+    "utils_text": "アクセシビリティと設定ハブ。多様な学習者のニーズに合わせてアプリケーション全体をカスタマイズします。",
+    "dashboard_title": "ダッシュボード / ツール",
+    "dashboard_text": "ツールナビゲーションバーと教師ダッシュボードのアクセスポイント。",
+    "actions_title": "アクションバー",
+    "actions_text": "アクションバー: 言語制御、ライブセッション、翻訳、エクスポートオプション。",
+    "history_title": "セッション履歴",
+    "history_text": "セッション履歴。素晴らしい生成を絶対に失わないでください。",
+    "spotlight_title": "スポットライト",
+    "spotlight_message": "{name}さんに挨拶しましょう!",
+    "dbq_title": "ドキュメントベースの質問",
+    "dbq_text": "ドキュメントベースの質問: 生徒は一次資料を分析し、証拠に基づく議論を構築します。",
+    "quiz_mode_title": "適切なクイズモードを選択",
+    "quiz_mode_text": "このクイズが何のためか選択します。退出チケットは今日の学習を確認、事前確認は事前知識を探り、形成的確認は授業中の素早いパルス、間隔復習は保持を追跡します。"
+  },
+  "pdf_audit": {
+    "view_last_audit": "前回の監査を表示",
+    "start_new_audit": "新しい監査を開始",
+    "apply_and_export": "適用＆エクスポート",
+    "applying_remarkup": "承認されたテキストにアクセシブルなマークアップを再適用中…",
+    "rejected_count": "{n} 個拒否",
+    "undo_all_rejections": "すべて元に戻す",
+    "granularity_warning": "粒度を変更すると拒否がリセットされます。続行しますか？",
+    "remarkup_failed": "完全なマークアップを再適用できませんでした — プレーン段落をエクスポートしました。必要に応じて後で再試行してください。",
+    "reject_selection": "選択を拒否",
+    "keep_selection": "選択を保持",
+    "edits_applied": "編集を適用しました。アクセシブルHTMLを更新しました。",
+    "start_new_confirm": "新しい監査を開始しますか？現在の監査はクリアされます — 必要な場合は修正済みHTMLをダウンロードしておいてください。",
+    "modal_aria": "PDFアクセシビリティ監査",
+    "close_modal_aria": "監査モーダルを閉じる",
+    "close_wait_title": "修正が完了するまで待つか、まず停止をクリック",
+    "close_esc_title": "閉じる (Esc)",
+    "web": {
+      "heading": "🌐 ウェブサイト＆HTMLアクセシビリティ",
+      "subheading": "ウェブサイトURLを監査するか、HTMLを貼り付けて完全なWCAG 2.1 AA監査＋修正",
+      "url_label": "ウェブサイトURL",
+      "url_aria": "監査するウェブサイトURL",
+      "fetch_aria": "ウェブサイトHTMLを取得",
+      "or_paste_hint": "または下にHTMLソースコードを直接貼り付け",
+      "html_label": "HTMLソース",
+      "html_placeholder": "HTMLソースコードをここに貼り付け、または上のフェッチを使用...",
+      "html_aria": "監査するHTMLソースコード"
+    },
+    "batch": {
+      "drop_text": "PDFをここにドラッグ＆ドロップ",
+      "browse_files": "ファイルを参照",
+      "clear_all": "すべてクリア",
+      "progress_aria": "バッチ修正の進捗",
+      "stop_aria": "バッチ修正を停止",
+      "avg_improvement": "平均改善",
+      "scored_90_plus": "90以上のスコア",
+      "new_batch": "新しいバッチ"
+    },
+    "choose_how": "このPDFの処理方法を選択:",
+    "settings": {
+      "audit_passes_aria": "監査パスの数",
+      "target_score_aria": "目標アクセシビリティスコア",
+      "max_fix_passes_aria": "最大修正パス数",
+      "auto_continue_aria": "目標スコアまで自動継続修正",
+      "polish_passes_aria": "磨き上げパス数"
+    },
+    "brand": {
+      "heading": "ブランドカラー",
+      "where_from": "色はどこから？",
+      "match_original": "🎨 オリジナルに合わせる",
+      "match_original_desc": "このPDFから色を抽出",
+      "upload_guide": "📎 ブランドガイドをアップロード",
+      "upload_guide_desc": "別の文書/ロゴを使用",
+      "no_branding": "⬜ ブランディングなし",
+      "no_branding_desc": "デフォルトパレットを使用",
+      "tip": "ヒント: 下に特定のスタイルシード (「オリジナルに合わせる」以外) を選択すると、そのシードの色がブランディングの選択を上書きします。ブランドカラーを使用するには、オリジナルに合わせるシードと組み合わせてください。"
+    },
+    "style": {
+      "heading": "スタイルシード",
+      "subtext": "AIはどのデザインスタイルを適用すべきか？決定論的サニタイザーによりWCAG準拠が保証されます。",
+      "your_custom": "あなたのカスタムスタイル",
+      "name_label": "スタイル名",
+      "name_placeholder": "私のスタイル",
+      "name_aria": "カスタムスタイル名",
+      "font_aria": "フォントファミリー",
+      "font_inter": "Inter (クリーン)",
+      "font_georgia": "Georgia (セリフ)",
+      "font_atkinson": "Atkinson (A11y)",
+      "font_lexend": "Lexend (読みやすい)",
+      "font_comic": "Comic Sans (楽しい)",
+      "font_times": "Times (クラシック)",
+      "heading_color_label": "見出し色",
+      "heading_color_aria": "見出し色",
+      "accent_color_label": "アクセント色",
+      "accent_color_aria": "アクセント色",
+      "bg_color_aria": "背景色"
+    },
+    "triage": {
+      "source_type": "ソースタイプ",
+      "issues_to_fix": "修正する問題:",
+      "estimated_time": "推定修正時間:"
+    },
+    "post_fix": {
+      "label": "修正後モード",
+      "aria": "修正後モード"
+    },
+    "quick_downloads": {
+      "heading": "クイックダウンロード (修正不要)",
+      "tagged_pdf_title": "オリジナルベースのタグ付きPDFをダウンロード。より豊かなタグ付け — 抽出された見出し、適切にスコープされた表、altテキスト — の場合は、まず修正＆検証を実行し、その後タグ付きバージョンをダウンロードしてください。"
+    },
+    "loading": {
+      "title": "PDFアクセシビリティを監査中...",
+      "subtitle": "三角測量を使用して5つの並列WCAG 2.1 AA監査を実行。これには15-30秒かかる場合があります。",
+      "progress_aria": "監査進行中"
+    },
+    "knowbility": {
+      "partner_badge": "アクセシビリティパートナー",
+      "mission_lead": "障害を持つ人々のための包括的なデジタル世界を創造",
+      "ada_title": "アメリカ障害者法 (ADA) タイトルII",
+      "wcag_label": "WCAG 2.1 レベルAA",
+      "deadline_range": "2026年4月から2027年4月",
+      "broader_reach_desc": "アクセシブルなコンテンツは任意のデバイス、任意の帯域幅、任意の支援技術で動作 — より多くのユーザーに到達",
+      "seo_desc": "構造化された見出し、altテキスト、セマンティックHTMLは検索ランキングとコンテンツ発見を改善",
+      "cognitive_desc": "明確なナビゲーション、一貫したレイアウト、平易な言葉はすべてのユーザーを助ける — 特に高い認知負荷の文脈で",
+      "future_desc": "WCAG準拠のコンテンツは新しいデバイス、AIリーダー、新興の支援技術に適応",
+      "italic_callout": "WCAG 2.1 AAは訴訟を避けるためだけのものではない — それはすべての人間にとって知覚可能、操作可能、理解可能、堅牢な文書を構築することについてです。",
+      "audit_service_desc": "認定専門家による専門的なWCAG監査と文書修正",
+      "usability_service_desc": "毎日支援技術を使用する人々による実世界のユーザビリティテスト",
+      "docrem_service_desc": "PDFとMS Officeドキュメントの専門チーム — 支援技術での完全なユーザビリティ",
+      "training_service_desc": "年次会議とオンデマンドコース — 初心者から上級アクセシビリティスキルまで",
+      "mission_strong": "ミッション: 障害を持つ人々のための包括的なデジタル世界を創造。",
+      "testing_desc": "ウェブサイト、アプリ、ドキュメント向けの実行可能なレポートと修正パスを生み出す手動WCAG監査",
+      "docrem_full_desc": "PDFとMS Officeドキュメントの専門チーム — 支援技術での完全なユーザビリティを確保",
+      "accessworks_desc": "毎日支援技術を使用する障害を持つ人々による実世界のユーザビリティテスト",
+      "training_full_desc": "年次会議とオンデマンドコース — 初心者から上級アクセシビリティスキルまで"
+    },
+    "unavailable": {
+      "title": "監査利用不可",
+      "body": "AIアクセシビリティ監査を完了できませんでした。これは通常、一時的なAPIの問題、レート制限、または非常に大きい/複雑なPDFによって引き起こされます。",
+      "proceed_hint": "それでも続行できます — 修正＆検証はドキュメントを変換し、その後完全な監査を実行します。"
+    },
+    "tabs": {
+      "aria": "監査ビュー",
+      "remediation_results": "修正結果",
+      "original_audit": "元の監査"
+    },
+    "doc_props": {
+      "aria": "ドキュメントプロパティ",
+      "contains_images": "画像を含む",
+      "contains_tables": "表を含む",
+      "contains_forms": "フォームを含む"
+    },
+    "reliability": {
+      "std_dev": "標準偏差",
+      "icc_title": "カスタム 1−(SD/50) インデックス。教科書ICCではありません",
+      "icc_label": "監査人の一貫性 (ICC様)",
+      "cronbach": "Cronbachのα"
+    },
+    "score": {
+      "total_checks": "実行された総チェック数",
+      "issues_found": "見つかった問題",
+      "ai_rubric_label": "AIルーブリック",
+      "starts_at_100": "100から始まり、問題タイプごとに減点",
+      "how_ai_scores": "AIのスコア方法",
+      "ai_critical_rule": "重要: 各-15 (言語、タイトル、alt、ランドマーク、コントラスト)",
+      "ai_major_rule": "メジャー: 各-10 (見出し、表、フォーム)",
+      "ai_minor_rule": "マイナー: 各-5 (スキップナビ、ランドマーク、リンク、リスト)",
+      "ai_passes_rule": "パスは総減点を比例的に減らします",
+      "axe_desc": "Deque自動WCAG 2.1 AAチェッカー",
+      "how_axe_scores": "axe-coreのスコア方法",
+      "no_violations": "違反は検出されませんでした",
+      "average_both": "両エンジンの平均 (等しい重み)"
+    },
+    "multi_session": {
+      "no_pdf_attached": "元のPDFはこのセッションにアタッチされていません — 修正を開始するとディスクから再選択するように促されます。(プロジェクトファイルは小さく保つためPDFバイトを含みません。)",
+      "autosave_aria": "完了した範囲ごとにプロジェクトファイルを自動保存",
+      "autosave_label": "範囲ごとにプロジェクトファイルを自動保存"
+    },
+    "page_range": {
+      "start_aria": "開始ページ",
+      "end_aria": "終了ページ",
+      "clear_aria": "ページ範囲をクリアして文書全体を修正"
+    },
+    "fix_pass": {
+      "additional_sweep": "追加スイープ",
+      "progress_aria": "修正と検証の進捗"
+    },
+    "pipeline": {
+      "tracker_aria": "パイプライン進捗トラッカー",
+      "why_matters": "なぜ重要か:"
+    },
+    "boring_palette": {
+      "prompt": "オリジナルの見た目を保つか、テーマを適用しますか？"
+    },
+    "live_chunk": {
+      "review_aria": "ライブチャンク修正レビュー",
+      "heading_short": "ライブ修正",
+      "no_fixes_title": "このセクションは既にWCAGアクセシビリティ基準を満たしています — 必要がなかったため、パイプラインは変更を加えませんでした。",
+      "retried_title": "最初の試行が整合性またはトークン保持チェックに失敗した後、AIはこのセクションを一度再試行する必要がありました。",
+      "content_verified_title": "AIコンテンツ保持チェックに合格 — セクションのテキストコンテンツは書き直しを通じて保持されました。",
+      "ai_skipped_long_title": "このセクションでAIの書き直しが失敗または拒否されました — 決定論的 (ルールベース) 修正のみが適用されました。セクションは元のものよりまだアクセシブルですが、AIで成功した修正よりは劣ります。",
+      "ai_skipped_rule_only": "AIスキップ · ルールベースのみ",
+      "review_heading": "ライブ修正レビュー",
+      "review_subhead": "各セクションがリアルタイムで修正されるのを見る — 間違っているように見えるものを拒否または再修正",
+      "progress_aria": "ライブ修正の進捗",
+      "rule_based_title": "ルールベース (決定論的) 正規表現修正が適用 — 常に安全、AIは関与しない",
+      "targeted_title": "AIで診断された対象マイクロ修正が決定論的ツール経由で適用 (コンテンツ保持)",
+      "ai_skipped_short_title": "このセクションでAIの書き直しが失敗または拒否されました — ルールベースの修正のみ適用。元のものよりまだアクセシブル。",
+      "ai_skipped_short": "AIスキップ",
+      "verified_title": "AIがコンテンツ保持を検証",
+      "integrity_title": "単語重複整合性チェックに合格",
+      "before": "前 (元)",
+      "after": "後 (修正済み)",
+      "integrity_note": "整合性メモ:",
+      "violations_targeted": "このパスで対象とされた違反",
+      "clear_history_aria": "ライブレビュー履歴をクリア"
+    },
+    "why_matters": {
+      "heading": "アクセシブルなドキュメントが重要な理由",
+      "udl_part1": "アクセシブルな素材は学習のためのユニバーサルデザイン (UDL) をサポート — ",
+      "all": "すべての",
+      "udl_part2": "能力、言語、学習スタイルに関係なく学習者の利益",
+      "ux_part1": "明確な見出し、論理的な構造、十分なコントラストは、ドキュメントを以下のユーザーにとって読みやすくする",
+      "ux_part2": "ユーザー — モバイルや明るい日光下を含む",
+      "seo_desc": "セマンティックHTML、altテキスト、適切な見出しは検索エンジンがコンテンツをインデックス化するのを助ける — 発見可能性とオーガニックリーチを向上",
+      "innovation_desc": "音声認識、クローズドキャプション、スクリーンリーダーはすべてアクセシビリティ機能として始まり — そして数百万人に使われる不可欠なツールとなった"
+    },
+    "ada": {
+      "heading": "ADAタイトルII＆WCAG 2.1 AA",
+      "deadline_badge": "期限: 2026年4月24日",
+      "title_strong": "アメリカ障害者法 (ADA) タイトルII",
+      "wcag_strong": "WCAG 2.1 レベルAA",
+      "deadline_50k": "2026年4月24日",
+      "deadline_small": "2027年4月26日",
+      "covered_desc": "政府機関が公開する公共向けウェブサイト、モバイルアプリ、デジタルドキュメント (PDF、Word、Excel、PowerPoint)、ソーシャルメディア",
+      "who_desc": "すべての州および地方政府機関 — 公立学校、大学、裁判所、図書館、交通機関、市町村サービスを含む",
+      "matters_desc": "法的遵守を超えて: アクセシブルなドキュメントは障害を持つ人々が教育、公共サービス、雇用、市民参加に平等にアクセスできることを保証",
+      "standard_callout": "AlloFlowが目標とする標準 — WCAG 2.1 レベルAA — はこの連邦規則で要求される正確な標準です。"
+    },
+    "doc_details": {
+      "heading": "ドキュメント詳細"
+    },
+    "images": {
+      "review_heading": "画像説明をレビュー",
+      "download_all_title": "抽出されたすべての画像をダウンロード — AIの再挿入が誤って配置したりスキップしたりした場合の手動フォールバックとして便利。",
+      "edit_alt_hint": "下のaltテキストを編集 — 変更は最終ドキュメントに適用",
+      "download_one_title": "この画像をダウンロード",
+      "ai_generated_badge": "AI生成",
+      "alt_placeholder": "スクリーンリーダーユーザー向けにこの画像を説明...",
+      "regen_title": "保存された説明を使用してこの画像をAIで再生成",
+      "dropped_by_ai": "AIパスで削除",
+      "regen_hint": "保存された説明を使用してAIで画像を再作成するには再生成をクリック、またはプレビュー内の図でアップロード/置換を使用。"
+    },
+    "integrity": {
+      "verifying": "コンテンツ整合性を検証中…",
+      "diff_open_verifying_aria": "差分ビューを開く (検証はバックグラウンドで実行中)",
+      "diff_open_verifying_title": "単語レベルの差分ビューを開く。整合性検証はまだバックグラウンドで実行中ですが、差分自体は今準備できています。",
+      "unverified": "コンテンツ整合性未検証",
+      "diff_open_aria": "ソースPDFテキストと最終HTMLの差分ビューを開く",
+      "diff_open_title": "並列単語レベル差分: ソースPDFと修正済みHTMLの間のすべての挿入、削除、言い換えを見る。",
+      "recheck_aria": "pdf.jsコンテンツ整合性チェックを再実行",
+      "recheck_title": "現在の修正済みHTMLに対して忠実度回復はしご (ステージA-D) を再実行。"
+    },
+    "verification": {
+      "details_heading": "検証の詳細",
+      "char_coverage": "文字カバレッジ",
+      "word_coverage": "単語カバレッジ",
+      "source_words": "ソース単語",
+      "recovery_stages": "適用された回復ステージ",
+      "ai_retry": "AI再試行",
+      "ground_truth": "真の値:",
+      "open_diff_title": "単語レベル差分ビューを開く"
+    },
+    "fidelity": {
+      "heading": "テキスト忠実度を検証",
+      "run_title": "修正済みドキュメントをソーステキストと比較 — ソースには表示されるが現在の修正済み出力には表示されない単語をフラグ。",
+      "run_aria": "ソースOCRに対してテキスト忠実度チェックを実行",
+      "restore_title": "ファジーコンテキストアンカーマッチングを使用して、欠けている単語を修正済みドキュメントに戻す。配置できない単語はコンテンツ回復付録に移動し、何も失われないようにします。",
+      "restore_aria": "欠けている単語を修正済みドキュメントに復元",
+      "not_ready": "修正準備ができていません。"
+    },
+    "report": {
+      "download_title": "監査レポートをダウンロード",
+      "text_extract_title": "コンテンツ生成のためにテキストを抽出"
+    },
+    "resume": {
+      "heading": "保存された進捗が見つかりました"
+    },
+    "start_new_title": "この監査結果をクリアして新しいPDFで開始",
+    "results": {
+      "verified_accessible": "アクセシブル検証済み",
+      "zero_violations": "WCAG違反はゼロ検出"
+    },
+    "wcag_report": {
+      "coverage_note": "カバレッジは不完全な場合があります — このビューはWCAG SCによりaxe-coreルールを集計します。一部の基準 (例: 意味、読書順、複雑なフォーム) には手動レビューがまだ必要です。"
+    },
+    "auto_fix": {
+      "stop_aria": "自動継続修正を停止",
+      "progress_aria": "自動修正進捗"
+    },
+    "section_map": {
+      "heading": "ドキュメントセクションマップ",
+      "rule_based_title": "ルールベース (決定論的) 修正が適用",
+      "targeted_title": "AIで診断された対象マイクロ修正",
+      "ai_skipped_title": "AIの書き直しが拒否されました — ルールベースの修正のみ適用",
+      "ai_skipped": "AIスキップ"
+    },
+    "expert_referral": {
+      "heading": "このドキュメントには専門家のアクセシビリティ修正が必要です"
+    },
+    "diff": {
+      "button_aria": "ソースPDFと修正済みHTMLの間の単語レベル差分ビューを開く",
+      "button_title": "単語レベル差分モーダルを開く — ソースPDFテキストと修正済みHTMLの間のすべての挿入、削除、言い換えを見る、クリックで拒否＆適用＆エクスポート。"
+    },
+    "pdf_from_html": {
+      "title": "修正済みHTMLからPDFを再生成。レイアウトは再フロー — 改ページ、フォント、ページネーションは元のものと異なる場合があります。シンプルな散文ドキュメントに適しています。"
+    },
+    "tagged_pdf": {
+      "title": "元のPDFの視覚レイアウトをバイト単位で保持し、構造ツリーにアクセシビリティタグを注入。教科書、複数列ドキュメント、視覚的忠実度が重要なブランドPDFに最適。"
+    },
+    "alt_formats": {
+      "intro": "修正済みドキュメントをアクセシブルな代替形式でダウンロード"
+    },
+    "expert": {
+      "command_aria": "エキスパート修正コマンド",
+      "log_aria": "エージェントアクティビティログ"
+    },
+    "translate": {
+      "lang_aria": "翻訳言語 — 任意の言語を入力するか提案から選択",
+      "lang_placeholder": "🌐 言語を入力 (例: スペイン語、タガログ語、ダリ語...)"
+    },
+    "simplify": {
+      "level_aria": "簡略化学年レベル"
+    },
+    "plain_summary": {
+      "intro": "親、保護者、コミュニティメンバー向けに読みやすい版を生成。",
+      "lang_aria": "翻訳言語"
+    },
+    "close_confirm": {
+      "title": "保存せずに閉じる？",
+      "save_close": "保存して閉じる"
+    },
+    "preview": {
+      "modal_aria": "アクセシブルドキュメントプレビューとエディター",
+      "close_aria": "プレビューを閉じる",
+      "edit_hint": "プレビュー内の任意の場所をクリックしてテキストを直接編集。下のコントロールを使用して外観をカスタマイズ。",
+      "wcag_guaranteed": "WCAG準拠保証 — すべてのスタイル変更でサニタイザーが実行されます。",
+      "ai_restyle_hint": "ワンクリックAIリスタイル。これらは上のテーマを上書きします。",
+      "body_font_aria": "本文フォント",
+      "font_system": "システム (デフォルト)",
+      "font_georgia": "Georgia (セリフ)",
+      "font_times_new": "Times New Roman",
+      "font_atkinson_hyper": "Atkinson Hyperlegible",
+      "font_comic_short": "Comic Sans",
+      "font_courier": "Courier (Mono)",
+      "font_size_aria": "フォントサイズ",
+      "live_preview": "ライブプレビュー",
+      "iframe_title": "アクセシブルドキュメントプレビュー"
+    },
+    "wordart": {
+      "text_placeholder": "ワードアートテキスト...",
+      "text_aria": "ワードアートテキスト"
+    },
+    "a11y_inspect": {
+      "headings": "見出し (H1-H6)",
+      "images": "画像 + altテキスト",
+      "tables": "表 + ヘッダー",
+      "figures": "図 + キャプション",
+      "main_landmark": "メインランドマーク",
+      "aria_roles": "ARIAロール"
+    },
+    "ai_image": {
+      "prompt_placeholder": "生成する画像を説明...",
+      "prompt_aria": "画像生成プロンプト",
+      "select_hint": "プレビュー内の画像をクリックして選択、その後:"
+    },
+    "layout": {
+      "insert_blocks": "ブロックを挿入",
+      "header_branding": "ヘッダー / ブランディング"
+    },
+    "templates": {
+      "aria": "ドキュメントテンプレート",
+      "apply_placeholder": "テンプレートを適用...",
+      "saved_heading": "保存されたアクセシブルテンプレート"
+    },
+    "version_stamp": {
+      "heading": "バージョンスタンプ"
+    },
+    "extracted_images": {
+      "drag_hint": "サムネイルをプレビュー内の任意の画像プレースホルダーにドラッグして挿入、またはプレースホルダー内の「📷 アップロード」をクリックして「抽出された画像を使用」を選択。"
+    },
+    "toolbar": {
+      "aria": "テキスト書式",
+      "bullet_list": "箇条書きリスト",
+      "numbered_list": "番号付きリスト",
+      "align_left": "左揃え",
+      "align_center": "中央揃え",
+      "align_center_title": "中央",
+      "insert_link": "リンクを挿入",
+      "remove_link": "リンクを削除",
+      "clear_formatting": "書式をクリア",
+      "undo": "元に戻す",
+      "redo": "やり直す",
+      "text_color": "テキスト色",
+      "highlight_color": "ハイライト色",
+      "insert_table_aria": "表を挿入",
+      "insert_table_title": "アクセシブルな表を挿入"
+    }
   }
 }
