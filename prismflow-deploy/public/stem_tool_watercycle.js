@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // stem_tool_watercycle.js - Water Cycle Interactive Simulator
 // Extracted and enhanced with Journey Mode
 (function(){
@@ -15,10 +25,618 @@
     document.body.appendChild(liveRegion);
   })();
 
+  // ── Water Cycle Audio System ──
+  var _wcAC = null;
+  function getWCAC() { if (!_wcAC) { try { _wcAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_wcAC && _wcAC.state === 'suspended') { try { _wcAC.resume(); } catch(e) {} } return _wcAC; }
+  function wcTone(f, d2, t, v) { var ac = getWCAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d2||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d2||0.1)); } catch(e) {} }
+  function wcNoise(dur, vol, hz, type) { var ac = getWCAC(); if (!ac) return; try { var bs = Math.floor(ac.sampleRate*(dur||0.1)); var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0); for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1)*(1-i/bs); var s = ac.createBufferSource(); s.buffer=b; var f = ac.createBiquadFilter(); f.type=type||'lowpass'; f.frequency.value=hz||600; var g = ac.createGain(); g.gain.setValueAtTime(vol||0.04,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(dur||0.1)); s.connect(f); f.connect(g); g.connect(ac.destination); s.start(); } catch(e) {} }
+  function sfxRain() { for (var i = 0; i < 5; i++) { (function(d3) { setTimeout(function() { wcNoise(0.03, 0.02 + Math.random() * 0.02, 1500 + Math.random() * 1000, 'bandpass'); }, d3); })(i * 25 + Math.random() * 15); } }
+  function sfxEvaporate() { wcTone(400, 0.1, 'sine', 0.05); setTimeout(function() { wcTone(600, 0.08, 'sine', 0.05); }, 60); setTimeout(function() { wcTone(800, 0.12, 'sine', 0.06); }, 120); }
+  function sfxCondense() { wcTone(600, 0.08, 'sine', 0.05); setTimeout(function() { wcTone(400, 0.1, 'sine', 0.05); }, 60); }
+  function sfxCollect() { wcNoise(0.15, 0.05, 300, 'lowpass'); wcTone(200, 0.1, 'sine', 0.04); }
+  function sfxStream() { wcNoise(0.2, 0.04, 400, 'bandpass'); }
+  function sfxFreeze() { wcTone(1200, 0.04, 'sine', 0.04); setTimeout(function() { wcTone(1400, 0.03, 'sine', 0.03); }, 30); setTimeout(function() { wcTone(1600, 0.03, 'sine', 0.03); }, 60); }
+  function sfxWcCorrect() { wcTone(523, 0.08, 'sine', 0.07); setTimeout(function() { wcTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { wcTone(784, 0.1, 'sine', 0.08); }, 140); }
+  function sfxWcClick() { wcTone(600, 0.03, 'sine', 0.04); }
+  function sfxWcIncorrect() { wcTone(220, 0.15, 'triangle', 0.06); setTimeout(function() { wcTone(180, 0.2, 'triangle', 0.06); }, 120); }
+
+  // Ambient water background
+  var _wcAmb = null;
+  function startWcAmbient() {
+    if (_wcAmb) return;
+    var ac = getWCAC(); if (!ac) return;
+    try {
+      var bs = ac.sampleRate * 2; var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0);
+      for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1);
+      var s = ac.createBufferSource(); s.buffer=b; s.loop=true;
+      var f = ac.createBiquadFilter(); f.type='lowpass'; f.frequency.value=250;
+      var lfo = ac.createOscillator(); lfo.type='sine'; lfo.frequency.value=0.12;
+      var lg = ac.createGain(); lg.gain.value=40; lfo.connect(lg); lg.connect(f.frequency);
+      var m = ac.createGain(); m.gain.setValueAtTime(0,ac.currentTime); m.gain.linearRampToValueAtTime(0.008,ac.currentTime+2);
+      s.connect(f); f.connect(m); m.connect(ac.destination); s.start(); lfo.start();
+      _wcAmb = { src:s, lfo:lfo, master:m };
+      _wcAmb._int = setInterval(function() {
+        if (Math.random() > 0.5) sfxRain();
+        if (Math.random() > 0.8) wcTone(200 + Math.random() * 100, 0.3, 'sine', 0.01); // distant thunder
+      }, 3000 + Math.random() * 4000);
+    } catch(e) {}
+  }
+  function stopWcAmbient() {
+    if (_wcAmb) {
+      try { var ac = getWCAC(); if (ac) _wcAmb.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5); } catch(e) {}
+      if (_wcAmb._int) clearInterval(_wcAmb._int);
+      var n = _wcAmb; setTimeout(function() { try { n.src.stop(); n.lfo.stop(); } catch(e) {} }, 600);
+      _wcAmb = null;
+    }
+  }
+
+  // WCAG a11y CSS
+  if (!document.getElementById('wc-a11y-css')) { var _s = document.createElement('style'); _s.id = 'wc-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }'; document.head.appendChild(_s); }
+
+  // ═══════════════════════════════════════════════════════
+  // WATERSHED STEWARD: 10-YEAR MAINE WATERSHED CAMPAIGN
+  // Parallel to Fire Ecology's Cultural Mosaic, Ecosystem's Conservation
+  // Manager, and Epidemic Lab's Outbreak Response. Pedagogical core is
+  // watershed-scale hydrology: how riparian buffers feed cold-water
+  // streams, how beaver wetlands attenuate floods and restore floodplains,
+  // how dam removal restores anadromous-fish connectivity, how
+  // agricultural and suburban land use drive water quality.
+  // ═══════════════════════════════════════════════════════
+
+  var MAINE_WATERSHED_COMPONENTS = [
+    {
+      id: 'headwaterStreams', name: 'Headwater Streams', icon: '🏔️', color: '#0ea5e9',
+      role: 'Cold-water indicator',
+      desc: 'High-elevation forested streams. Native brook trout, native eastern brook trout, water temperature below 20°C. The cleanest water in the watershed; everything downstream is shaped by what happens here.',
+      defaultState: { quality: 62, connectivity: 78, support: 60 }, targets: { quality: 78, connectivity: 80, support: 65 },
+      deepDive: {
+        knowledge: 'Headwater streams are first-order channels: small enough to step across, fed by springs and seeps, almost always shaded by mature forest. They make up roughly 60 to 80 percent of the total stream-mile length in a typical Maine watershed but receive a fraction of the regulatory attention. Native brook trout require water below about 20°C, dissolved oxygen above 7 mg/L, and woody debris for cover. Every degree of warming pushes their range north and uphill.',
+        casework: 'The Eastern Brook Trout Joint Venture maps the status of native populations across the species range. Maine retains an unusually large portion of historic native brook trout habitat compared to the rest of the Northeast. Most successful headwater protection has come from upper-watershed conservation easements and replacement of undersized culverts that act as warm-water bottlenecks.',
+        modernContext: 'Climate change is the central long-term threat to Maine headwater streams. Several Maine Audubon and Wabanaki community projects have led culvert replacement and shade-tree planting campaigns. The 2023 Maine Climate Action Plan named cold-water-fishery protection as a priority but funding has lagged.'
+      }
+    },
+    {
+      id: 'riverMainstem', name: 'River Mainstem', icon: '🌊', color: '#1d4ed8',
+      role: 'Migratory fish corridor',
+      desc: 'The big channel through the watershed. Historically the route for Atlantic salmon, alewife, sea-run brook trout, eels, sturgeon. In Maine, dam barriers block most of these runs; recent removals (Edwards Dam 1999, Fort Halifax 2008, Veazie 2012, Great Works 2013) reopened sections.',
+      defaultState: { quality: 48, connectivity: 25, support: 65 }, targets: { quality: 70, connectivity: 70, support: 70 },
+      deepDive: {
+        knowledge: 'Anadromous fish (born in fresh water, mature at sea, return upstream to spawn) include Atlantic salmon, alewife, blueback herring, American shad, sea lamprey, and sea-run brook trout. Each species has different barrier-passage tolerance: alewife can use modest fish ladders; Atlantic salmon need near-full passage; sturgeon need almost-complete connectivity. Dam barriers degrade water quality upstream too: stagnant impoundments warm, accumulate sediment, and lose dissolved oxygen.',
+        casework: 'The Penobscot River Restoration Project (Penobscot Nation, NGOs, hydro companies) removed Veazie Dam in 2012 and Great Works Dam in 2013 while preserving most generation through upgrades elsewhere. River herring returns increased over 1000-fold in the first decade post-removal. The Kennebec saw Edwards Dam come down in 1999 and Fort Halifax in 2008. The Sebasticook tributary alone now hosts the largest river-herring run on the East Coast.',
+        modernContext: 'The Penobscot Nation has led the legal, political, and ecological work on its ancestral river. Ongoing dam-removal campaigns target the Mattaceunk, Milford, and lower Kennebec dams. NOAA and the Atlantic Salmon Federation track returns annually; numbers are recovering but still well below historic.'
+      }
+    },
+    {
+      id: 'floodplainWetlands', name: 'Floodplain Wetlands', icon: '🪷', color: '#16a34a',
+      role: 'Beaver-built flood storage',
+      desc: 'Beaver dam complexes and adjacent wet meadows. Slow flood pulses, recharge groundwater, filter nutrients, support amphibians, waterfowl, moose, otter. Beaver Dam Analogs (BDAs) mimic this work where beavers have not returned.',
+      defaultState: { quality: 55, connectivity: 60, support: 50 }, targets: { quality: 75, connectivity: 70, support: 65 },
+      deepDive: {
+        knowledge: 'Beaver-built wetlands are the textbook example of ecosystem engineering. A single beaver complex can create up to 10 acres of wet meadow that stores flood water, recharges groundwater, traps sediment, filters nutrients, and supports moose, waterfowl, river otter, brook trout, and amphibians. Wetland complexes also act as firebreaks during dry years. North American beaver populations were estimated at 60 to 400 million pre-contact; the European fur trade crashed them to under 100,000 by 1900.',
+        casework: 'Beaver populations have recovered to perhaps 10 to 15 million across North America but remain far below historic in most Northeast watersheds. Beaver Dam Analog (BDA) restoration mimics beaver work with imported wood, rock, and posts; it is increasingly used where beavers have not naturally recolonized. The Methow Beaver Project in Washington and similar Maine pilots have shown that BDAs can trigger natural beaver return within 2 to 4 years.',
+        modernContext: 'Beavers face conflict with road managers and downstream landowners over flooding. Lethal trapping continues in Maine. Beaver Deceiver flow-control devices are the non-lethal alternative; Wabanaki communities have led some of the strongest beaver-protection advocacy in the region. Climate-resilience planners increasingly cite beavers as low-cost natural infrastructure.'
+      }
+    },
+    {
+      id: 'forestBuffer', name: 'Forested Buffer Zones', icon: '🌲', color: '#15803d',
+      role: 'Riparian shade and filter',
+      desc: 'The strip of mature forest along stream banks. Shade keeps water cold, roots stabilize banks, leaf litter feeds aquatic insects, wood falls in to create habitat. A 50-foot intact buffer is the single most cost-effective stream protection.',
+      defaultState: { quality: 58, connectivity: 50, support: 60 }, targets: { quality: 75, connectivity: 70, support: 70 },
+      deepDive: {
+        knowledge: 'Riparian buffers do five distinct jobs at once: shade keeps water cold for trout and salmon parr, root systems stabilize banks against erosion, leaf litter is the primary food source for stream insects (which feed fish), woody debris falls in to create pools and cover, and the buffer filters runoff from adjacent agricultural and developed land. The pioneering research by Allan and others established that even a 30-foot intact buffer captures most of the runoff-quality benefit, and a 100-foot buffer provides the full hydrological function.',
+        casework: 'Maine\'s Shoreland Zoning Act (1971) regulates the first 75 feet around great ponds and 250 feet around rivers, but enforcement is uneven and exemptions for development are routine. Land trust easements have been more effective than regulation in many Maine watersheds. The Maine Coast Heritage Trust and Atlantic Salmon Federation have funded buffer-replanting on hundreds of farm streams; cover-cropping plus tree-row plantings cut runoff measurably within 3 to 5 years.',
+        modernContext: 'Buffer policy in Maine remains fragmented across jurisdictions. The strongest buffer protections often come from voluntary landowner agreements rather than zoning. Climate-driven storm events make buffers MORE important (they hold the streambank during high flows), so the federal Infrastructure Investment and Jobs Act has lifted buffer-restoration funding.'
+      }
+    },
+    {
+      id: 'agriculturalWatershed', name: 'Agricultural Watershed', icon: '🚜', color: '#a16207',
+      role: 'Nutrient + sediment source',
+      desc: 'Dairy farms, hay fields, row crops, blueberry barrens. The dominant land use in central Maine watersheds. Manure runoff, fertilizer, sediment from tilled land all flow downstream. BMPs (Best Management Practices) can cut runoff by 50-80%.',
+      defaultState: { quality: 45, connectivity: 55, support: 55 }, targets: { quality: 65, connectivity: 60, support: 65 },
+      deepDive: {
+        knowledge: 'Agricultural land delivers three primary watershed insults: sediment from tilled or overgrazed land, nutrients (nitrogen and phosphorus) from manure and fertilizer, and pathogens from livestock waste. Best Management Practices include cover cropping, contour farming, livestock fencing from streams, manure storage upgrades, riparian buffer easements, and reduced-till or no-till cropping. Documented BMP implementations cut watershed nutrient export by 50 to 80 percent on participating farms.',
+        casework: 'Maine has roughly 7,500 farms covering about 1.3 million acres. The Maine Soil and Water Conservation Districts operate the state-side BMP outreach; USDA NRCS provides federal cost-share. Dairy farms in the Sebasticook and Kennebec watersheds have implemented manure-handling and buffer projects with measurable downstream quality improvement; comparable work in the St. John watershed has helped Aroostook potato production.',
+        modernContext: 'Farm consolidation pressures BMP adoption (the smallest farms have the thinnest margins to invest in capital improvements). PFAS contamination from historic biosolid spreading has surfaced as a major Maine farm-water issue post-2022, with state-led testing and remediation programs. The Maine Farmland Trust links farmland protection to watershed protection.'
+      }
+    },
+    {
+      id: 'suburbanEdges', name: 'Suburban Edges', icon: '🏘️', color: '#7c3aed',
+      role: 'Stormwater + impervious surface',
+      desc: 'Subdivisions, parking lots, lawns. Impervious surfaces deliver pulses of warm polluted water to streams during storms. Lawn fertilizer and pet waste are the modern eutrophication inputs. Green stormwater infrastructure can offset the impact.',
+      defaultState: { quality: 50, connectivity: 60, support: 50 }, targets: { quality: 65, connectivity: 65, support: 65 },
+      deepDive: {
+        knowledge: 'Impervious surface (roads, roofs, parking lots, driveways) shapes urban and suburban hydrology more than any other variable. Above 10 percent watershed-wide impervious cover, stream biology measurably degrades; above 25 percent, most native fish populations are gone. Stormwater pulses are warm, fast, and pollutant-laden: lawn fertilizer, dog waste, vehicle drip, road salt, sediment from construction. Conventional drainage (curb, gutter, pipe) delivers all of it directly to streams.',
+        casework: 'Portland, ME has documented stream impairment along the Capisic Brook and Stroudwater drainages tied directly to impervious cover. Green Stormwater Infrastructure (rain gardens, swales, permeable pavement, detention basins, green roofs) can offset 50 to 80 percent of the conventional pulse. The Maine Stormwater BMP Manual is the regulatory reference; municipal stormwater (MS4) permits require larger towns to implement.',
+        modernContext: 'Most suburban watershed work in Maine happens at municipal scale through MS4 permits, town stormwater ordinances, and watershed-association advocacy. Climate-resilience funding under the Infrastructure Investment and Jobs Act has dramatically increased available capital for retrofit. The biggest challenge is older developments built before stormwater regulation that have no easy retrofit path.'
+      }
+    }
+  ];
+
+  var STEWARD_TECHNIQUES = [
+    { id: 'bufferPlant', name: 'Riparian buffer planting', icon: '🌲', hours: 5, desc: 'Plant native trees and shrubs along stream banks. Slow buildup that pays off in shade, bank stability, and nutrient filtering for decades.', effects: { quality: 8, connectivity: 4 }, appliesTo: ['forestBuffer', 'headwaterStreams'] },
+    { id: 'beaverDamAnalog', name: 'Beaver Dam Analog', icon: '🦫', hours: 6, desc: 'Build a low-cost wood-and-stone structure that mimics beaver dam function. Encourages real beaver recolonization. Restores wet meadow conditions.', effects: { quality: 11, connectivity: 6 }, appliesTo: ['floodplainWetlands'] },
+    { id: 'damRemoval', name: 'Dam removal', icon: '🪨', hours: 15, desc: 'Remove or breach a barrier dam. Huge connectivity gain. Politically expensive: some landowners and recreational users will be upset.', effects: { connectivity: 28, quality: 8, support: -12 }, appliesTo: ['riverMainstem'] },
+    { id: 'fishPassage', name: 'Fish passage installation', icon: '🐟', hours: 10, desc: 'Build a fish ladder or nature-like bypass around a barrier. Cheaper than dam removal and politically easier, but less effective for some species.', effects: { connectivity: 14, quality: 2 }, appliesTo: ['riverMainstem'] },
+    { id: 'bmpOutreach', name: 'BMP outreach', icon: '🤝', hours: 4, desc: 'Work with farmers on Best Management Practices: cover crops, livestock fencing, manure storage, buffer easements. Real Maine programs.', effects: { quality: 7, support: 4 }, appliesTo: ['agriculturalWatershed'] },
+    { id: 'easement', name: 'Conservation easement', icon: '📜', hours: 12, desc: 'Pay a landowner to permanently protect a riparian or upland parcel. The single highest-impact and highest-cost intervention.', effects: { quality: 15, connectivity: 12, support: 3 }, appliesTo: 'any' },
+    { id: 'stormwater', name: 'Stormwater retrofit', icon: '🌧️', hours: 8, desc: 'Install rain gardens, swales, permeable pavement, or detention basins in developed areas. Slows and filters stormwater pulses.', effects: { quality: 13, connectivity: 3 }, appliesTo: ['suburbanEdges'] },
+    { id: 'citizenScience', name: 'Citizen science monitoring', icon: '🔬', hours: 3, desc: 'Train volunteer water-quality monitors. Slow but builds long-term community support and detects problems early.', effects: { quality: 2, support: 7 }, appliesTo: 'any' },
+    { id: 'publicEd', name: 'Public education + River Days', icon: '📣', hours: 3, desc: 'Watershed festivals, school programs, paddle events. Build community ownership of the watershed.', effects: { support: 9 }, appliesTo: 'any' },
+    { id: 'rest', name: 'Hold steady', icon: '🍃', hours: 0, desc: 'No active intervention this year. Some natural recovery; some drift.', effects: {}, appliesTo: 'any' }
+  ];
+
+  var STEWARD_EVENTS = [
+    { id: 'majorFlood', name: 'Major flood', icon: '🌊', desc: 'A 10-year flood scoured stream banks and washed sediment downstream. Buffers without good root systems lost ground.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'forestBuffer' && c.quality < 65) c.quality = Math.max(0, c.quality - 7); if (c.id === 'floodplainWetlands') c.quality = Math.min(100, c.quality + 3); }); } },
+    { id: 'drought', name: 'Drought year', icon: '☀️', desc: 'Low summer flows raised stream temperatures and concentrated pollutants. Cold-water species took a hit.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'headwaterStreams') c.quality = Math.max(0, c.quality - 8); if (c.id === 'riverMainstem') c.quality = Math.max(0, c.quality - 4); }); } },
+    { id: 'sewageRelease', name: 'Sewage discharge', icon: '⚠️', desc: 'A wastewater treatment plant bypass during a heavy storm released untreated discharge. Mainstem quality drops.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'riverMainstem' || c.id === 'suburbanEdges') c.quality = Math.max(0, c.quality - 10); }); } },
+    { id: 'algalBloom', name: 'Cyanobacteria bloom', icon: '🟢', desc: 'A cyanobacteria bloom closed swim beaches and prompted advisories. Public support shifts toward stronger watershed protection.', apply: function(comps) { comps.forEach(function(c) { c.support = Math.min(100, c.support + 5); if (c.id === 'agriculturalWatershed') c.quality = Math.max(0, c.quality - 5); }); } },
+    { id: 'volunteerSurge', name: 'Volunteer surge', icon: '🙌', desc: 'A successful River Day brought 200+ volunteers. Citizen monitoring + cleanup boost across the board.', apply: function(comps) { comps.forEach(function(c) { c.support = Math.min(100, c.support + 7); c.quality = Math.min(100, c.quality + 2); }); } },
+    { id: 'farmSold', name: 'Farm sold for development', icon: '🚜', desc: 'A long-running family dairy operation sold to a residential developer. BMP gains on that land reset.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'agriculturalWatershed') c.quality = Math.max(0, c.quality - 6); if (c.id === 'suburbanEdges') c.quality = Math.max(0, c.quality - 3); }); } },
+    { id: 'salmonReturn', name: 'Atlantic salmon detected', icon: '🐟', desc: 'Returning Atlantic salmon (or alewife runs) detected in the mainstem. Major morale boost and federal attention.', apply: function(comps, state) { if (state.connectivityBoosts >= 1) comps.forEach(function(c) { c.support = Math.min(100, c.support + 10); }); else comps.forEach(function(c) { c.support = Math.min(100, c.support + 4); }); } },
+    { id: 'beaverExpand', name: 'Beaver complex expands', icon: '🦫', desc: 'Beavers expanded their territory and built three new dam complexes in the floodplain.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'floodplainWetlands') { c.quality = Math.min(100, c.quality + 9); c.connectivity = Math.min(100, c.connectivity + 5); } }); } },
+    { id: 'fundingBump', name: 'EPA / FEMA grant', icon: '💵', desc: 'A federal grant lands. Stewardship hours next year will be +5.', apply: function(comps, state) { state.fundingBonusNextYear = (state.fundingBonusNextYear || 0) + 5; } },
+    { id: 'erosionEvent', name: 'Major bank erosion', icon: '🏞️', desc: 'A bend in the river undercut a road shoulder. Public attention focuses on streambank stabilization.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'forestBuffer') c.support = Math.min(100, c.support + 8); }); } }
+  ];
+
+  // Hydrological cascade rules. These tie the watershed components together
+  // the way real watersheds work: buffers feed headwaters, beavers create
+  // floodplain function, low ag runoff cleans up the mainstem, removed
+  // barriers + good buffers bring fish runs back.
+  var STEWARD_FEEDBACK_RULES = [
+    { id: 'bufferFeedsHeadwaters', when: function(s) { return s.find(function(c) { return c.id === 'forestBuffer'; }).quality > 70; }, apply: function(s) { var h = s.find(function(c) { return c.id === 'headwaterStreams'; }); h.quality = Math.min(100, h.quality + 4); }, msg: 'Healthy forest buffers cooled and cleaned headwater streams.' },
+    { id: 'beaverHelpsFloodplain', when: function(s) { return s.find(function(c) { return c.id === 'floodplainWetlands'; }).quality > 60; }, apply: function(s) { var m = s.find(function(c) { return c.id === 'riverMainstem'; }); m.quality = Math.min(100, m.quality + 3); m.connectivity = Math.min(100, m.connectivity + 2); }, msg: 'Beaver-built wetlands attenuated flood pulses and improved mainstem water quality.' },
+    { id: 'agCleansUp', when: function(s) { return s.find(function(c) { return c.id === 'agriculturalWatershed'; }).quality > 60; }, apply: function(s) { var m = s.find(function(c) { return c.id === 'riverMainstem'; }); m.quality = Math.min(100, m.quality + 4); }, msg: 'Lower agricultural runoff cleaned up the river mainstem.' },
+    { id: 'runRestoration', when: function(s) { var m = s.find(function(c) { return c.id === 'riverMainstem'; }); var b = s.find(function(c) { return c.id === 'forestBuffer'; }); return m.connectivity > 60 && b.quality > 60; }, apply: function(s) { s.forEach(function(c) { c.support = Math.min(100, c.support + 2); }); }, msg: 'Connected, shaded river segments support documented anadromous fish returns.' }
+  ];
+
+  var STEWARD_DIFFICULTIES = {
+    volunteer:   { id: 'volunteer',   label: 'New Volunteer',         hoursPerYear: 24, eventSkip: 0.3, severity: 0.8, desc: '24 hours / year, gentler events. For first runs.' },
+    coordinator: { id: 'coordinator', label: 'Watershed Coordinator', hoursPerYear: 18, eventSkip: 0,   severity: 1.0, desc: '18 hours / year, standard events. Default.' },
+    director:    { id: 'director',    label: 'Watershed Director',    hoursPerYear: 14, eventSkip: 0,   severity: 1.4, desc: '14 hours / year, harsher events. Real constraint.' }
+  };
+
+  function defaultStewardState() {
+    var diff = STEWARD_DIFFICULTIES.coordinator;
+    return {
+      phase: 'setup',
+      year: 1,
+      maxYears: 10,
+      difficulty: diff.id,
+      hoursPerYear: diff.hoursPerYear,
+      hoursLeft: diff.hoursPerYear,
+      components: MAINE_WATERSHED_COMPONENTS.map(function(c) { return Object.assign({ id: c.id }, c.defaultState); }),
+      yearActions: [],
+      yearLog: [],
+      lastEvent: null,
+      cascadesFiredThisYear: [],
+      finalOutcome: null,
+      connectivityBoosts: 0,
+      fundingBonusNextYear: 0,
+      deepDiveComponent: null,
+      firstTipDismissed: false,
+      seed: 'steward-' + (new Date()).getFullYear() + (new Date()).getMonth() + (new Date()).getDate() + '-' + Math.floor(Math.random() * 9999)
+    };
+  }
+
+  function getWatershedComponent(id) {
+    for (var i = 0; i < MAINE_WATERSHED_COMPONENTS.length; i++) if (MAINE_WATERSHED_COMPONENTS[i].id === id) return MAINE_WATERSHED_COMPONENTS[i];
+    return null;
+  }
+
+  function stewardRng(seed, year, purpose) {
+    var s = (seed || 'default') + ':' + year + ':' + purpose;
+    var h = 2166136261 >>> 0;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h * 16777619) >>> 0; }
+    return function() {
+      h |= 0; h = (h + 0x6D2B79F5) | 0;
+      var t = Math.imul(h ^ (h >>> 15), 1 | h);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  var WATER_CYCLE_VOCAB = {
+    'evaporation': 'The process where liquid water absorbs thermal energy and changes into water vapor gas, rising into the atmosphere.',
+    'condensation': 'The process where water vapor gas cools and changes back into liquid water droplets, forming clouds.',
+    'precipitation': 'Water falling from clouds to Earth\'s surface as rain, snow, sleet, or hail when droplets grow too heavy.',
+    'collection': 'The accumulation of water in oceans, lakes, rivers, and underground reservoirs, completing the surface loop.',
+    'transpiration': 'The evaporation of water from plant leaves through tiny pores called stomata, acting as a natural pump.',
+    'infiltration': 'The process by which water on the ground surface enters the soil and rocks, replenishing groundwater.',
+    'sublimation': 'The direct transition of water from solid ice or snow into water vapor gas, bypassing the liquid phase.',
+    'aquifer': 'An underground layer of water-bearing permeable rock, gravel, sand, or silt from which groundwater can be extracted.',
+    'watershed': 'An area of land where all of the water that falls in it drains off into a common outlet like a river or bay.',
+    'riparian buffer': 'A vegetated area next to a water body, usually forested, which helps shade streams and filter run-off.',
+    'Darcy\'s Law': 'A mathematical equation that describes the flow of a fluid through a porous medium, governing groundwater.',
+    'PFAS': 'Synthetic per- and polyfluoroalkyl substances that contaminate water supplies and resist natural breakdown.',
+    'latent heat': 'The heat energy absorbed or released by water during a phase change (like liquid to gas) without changing temperature.',
+    'Bowen ratio': 'The ratio of sensible heat to latent heat loss from the surface, determining local climate feedbacks.',
+    'Clausius-Clapeyron': 'The thermodynamic relationship showing that atmospheric moisture capacity increases by about 7% per degree Celsius of warming.'
+  };
+
+  var WATER_CYCLE_CHALLENGES = [
+    { id: 'complete_journey', name: 'Droplet Cycle', desc: 'Complete 1 full water droplet journey cycle', icon: '💧', rp: 25 },
+    { id: 'explore_all_stages', name: 'Global Explorer', desc: 'View all 5 water cycle stages', icon: '🌍', rp: 35 },
+    { id: 'adjust_climate', name: 'Climate Experimenter', desc: 'Adjust solar, temperature, or wind sliders in the Climate Lab', icon: '🌡️', rp: 20 },
+    { id: 'quiz_pass', name: 'Hydrologist Scholar', desc: 'Answer a quiz question correctly', icon: '🎓', rp: 15 },
+    { id: 'vocabulary_studied', name: 'Word Power', desc: 'Study 3 water cycle vocabulary flashcards', icon: '📝', rp: 20 },
+    { id: 'stewardship_win', name: 'Watershed Champion', desc: 'Achieve a "Watershed Recovery" or "Recovering Watershed" outcome in the campaign', icon: '🏆', rp: 50 }
+  ];
+
+  var WATER_CYCLE_QUIZZES = {
+    'K-2': [
+      {
+        q: 'What makes puddles disappear on sunny days?',
+        a: 'The sun heats the water',
+        opts: ['The ground drinks it', 'The sun heats the water', 'Wind blows it away', 'It goes to sleep'],
+        concept: 'evaporation',
+        wrongFeedback: {
+          'The ground drinks it': 'While some water soaks into the ground, puddles on sidewalks and streets mostly disappear because the sun heats them up into vapor.',
+          'Wind blows it away': 'Wind can help water evaporate faster by moving air, but the sun\'s heat is the main reason liquid water changes into gas.',
+          'It goes to sleep': 'Water molecules never sleep! The sun\'s energy makes them move faster and float up into the sky.'
+        }
+      },
+      {
+        q: 'What are clouds made of?',
+        a: 'Tiny water drops',
+        opts: ['Cotton', 'Tiny water drops', 'Smoke', 'Air bubbles'],
+        concept: 'condensation',
+        wrongFeedback: {
+          'Cotton': 'Clouds look soft like cotton, but they are actually made of billions of tiny liquid water droplets floating in the air.',
+          'Smoke': 'Smoke comes from fires, but clouds in the sky are made of clean water droplets and ice crystals.',
+          'Air bubbles': 'Air bubbles are trapped inside water, but clouds are water droplets trapped in the air!'
+        }
+      },
+      {
+        q: 'What falls from clouds?',
+        a: 'Rain and snow',
+        opts: ['Stars', 'Rain and snow', 'Leaves', 'Rocks'],
+        concept: 'precipitation',
+        wrongFeedback: {
+          'Stars': 'Stars are huge, burning suns far away in space. They do not fall from clouds!',
+          'Leaves': 'Leaves fall from trees in autumn, not from clouds in the sky.',
+          'Rocks': 'Rocks are heavy parts of the ground. Only liquid or frozen water falls from clouds.'
+        }
+      },
+      {
+        q: 'Where does rain go after it falls?',
+        a: 'Rivers, lakes, and oceans',
+        opts: ['It disappears', 'Back up to the sky', 'Rivers, lakes, and oceans', 'Into outer space'],
+        concept: 'collection',
+        wrongFeedback: {
+          'It disappears': 'Water does not vanish! It collects in lakes, flows down rivers, and fills the oceans.',
+          'Back up to the sky': 'Rain must collect on the ground first before the sun can heat it to rise back up later.',
+          'Into outer space': 'Earth\'s gravity keeps water on our planet. It collects in oceans and lakes rather than escaping into space.'
+        }
+      },
+      {
+        q: 'How do plants drink water?',
+        a: 'Through their roots',
+        opts: ['Through their leaves', 'Through their roots', 'Through their flowers', 'They don\'t drink water'],
+        concept: 'transpiration',
+        wrongFeedback: {
+          'Through their leaves': 'Leaves can absorb a tiny bit of moisture, but plants get almost all their water by drinking it from the soil through their roots.',
+          'Through their flowers': 'Flowers attract bees and make seeds, but they do not drink water from the soil.',
+          'They don\'t drink water': 'All living things need water to survive, including plants!'
+        }
+      },
+      {
+        q: 'What does the sun do to ocean water?',
+        a: 'Heats it up so it rises as vapor',
+        opts: ['Freezes it', 'Heats it up so it rises as vapor', 'Turns it green', 'Makes it salty'],
+        concept: 'evaporation',
+        wrongFeedback: {
+          'Freezes it': 'The sun provides warm heat, which warms water up instead of freezing it into ice.',
+          'Turns it green': 'Algae and plants can make water look green, but the sun heats it up so it evaporates.',
+          'Makes it salty': 'Ocean water is already salty because of dissolved minerals, not because of the sun.'
+        }
+      },
+      {
+        q: 'What happens when water vapor gets cold up high?',
+        a: 'It turns into cloud drops',
+        opts: ['It turns into cloud drops', 'It becomes a star', 'It stays invisible', 'It catches fire'],
+        concept: 'condensation',
+        wrongFeedback: {
+          'It becomes a star': 'Stars are massive bodies in space, whereas water vapor just condenses into cloud droplets.',
+          'It stays invisible': 'Water vapor gas is invisible, but when it cools and condenses, it becomes visible liquid droplets (clouds).',
+          'It catches fire': 'Water does not catch fire! Cooling vapor turns back into liquid water.'
+        }
+      },
+      {
+        q: 'Can water underground come back up?',
+        a: 'Yes, through springs and wells',
+        opts: ['No, never', 'Yes, through springs and wells', 'Only if you dig', 'Only on rainy days'],
+        concept: 'infiltration',
+        wrongFeedback: {
+          'No, never': 'Groundwater is part of the cycle. It flows slowly and emerges at natural springs or is pumped up through wells.',
+          'Only if you dig': 'Digger wells do reach groundwater, but natural springs bubble up to the surface without any digging.',
+          'Only on rainy days': 'Springs flow continuously, even on sunny days, because groundwater moves very slowly.'
+        }
+      }
+    ],
+    '3-5': [
+      {
+        q: 'What drives evaporation?',
+        a: 'Solar energy',
+        opts: ['Wind', 'Solar energy', 'Gravity', 'Moon'],
+        concept: 'evaporation',
+        wrongFeedback: {
+          'Wind': 'Wind helps speed up evaporation by carrying moist air away, but solar energy is the heat source that drives the phase change.',
+          'Gravity': 'Gravity pulls water downward (precipitation, runoff), whereas solar energy drives it upward via evaporation.',
+          'Moon': 'The Moon causes ocean tides but does not heat water to drive evaporation.'
+        }
+      },
+      {
+        q: 'What forms clouds?',
+        a: 'Condensation',
+        opts: ['Evaporation', 'Precipitation', 'Condensation', 'Infiltration'],
+        concept: 'condensation',
+        wrongFeedback: {
+          'Evaporation': 'Evaporation is liquid water turning into invisible gas. Clouds are formed when this gas cools and turns back to liquid.',
+          'Precipitation': 'Precipitation is rain or snow falling out of clouds, not the process that forms the clouds themselves.',
+          'Infiltration': 'Infiltration is water soaking into the soil, which is the opposite of cloud formation.'
+        }
+      },
+      {
+        q: 'Where does most evaporation occur?',
+        a: 'Oceans',
+        opts: ['Lakes', 'Rivers', 'Oceans', 'Soil'],
+        concept: 'evaporation',
+        wrongFeedback: {
+          'Lakes': 'Lakes evaporate water, but oceans cover over 70% of Earth\'s surface and contain 97% of its water, making them the primary source.',
+          'Rivers': 'Rivers flow to the sea and have small surface areas compared to the vast oceans.',
+          'Soil': 'Soil releases moisture (evapotranspiration), but oceans are by far the largest source of atmospheric moisture.'
+        }
+      },
+      {
+        q: 'What is transpiration?',
+        a: 'Water release from plants',
+        opts: ['Rain falling', 'Water release from plants', 'Snow melting', 'Rivers flowing'],
+        concept: 'transpiration',
+        wrongFeedback: {
+          'Rain falling': 'Rain falling is precipitation. Transpiration is water rising up through plants and escaping from their leaves.',
+          'Snow melting': 'Snow melting is a phase change from solid to liquid, not related to plant transpiration.',
+          'Rivers flowing': 'Rivers flowing is runoff or collection, not a biological release of water.'
+        }
+      },
+      {
+        q: 'How much of Earth\'s water is freshwater?',
+        a: '3%',
+        opts: ['3%', '10%', '25%', '50%'],
+        concept: 'collection',
+        wrongFeedback: {
+          '10%': 'Freshwater is much scarcer! Only 3% of Earth\'s water is fresh, and most of that is frozen in ice caps.',
+          '25%': 'A quarter of Earth\'s water is not fresh. Over 97% is salty ocean water.',
+          '50%': 'Half of Earth\'s water is not fresh. Freshwater is a tiny fraction of global water.'
+        }
+      },
+      {
+        q: 'What are stomata?',
+        a: 'Tiny pores on leaves',
+        opts: ['Types of clouds', 'Tiny pores on leaves', 'Underground rivers', 'Rain droplets'],
+        concept: 'transpiration',
+        wrongFeedback: {
+          'Types of clouds': 'Clouds are made of condensed water droplets. Stomata are biological structures on plant leaves.',
+          'Underground rivers': 'Underground channels are part of aquifers. Stomata are tiny leaf pores used for gas exchange.',
+          'Rain droplets': 'Rain droplets are precipitation. Stomata are pores that let plants release water vapor.'
+        }
+      },
+      {
+        q: 'What is sublimation?',
+        a: 'Ice turning directly to vapor',
+        opts: ['Ice turning directly to vapor', 'Water freezing', 'Rain evaporating', 'Clouds forming'],
+        concept: 'sublimation',
+        wrongFeedback: {
+          'Water freezing': 'Freezing is liquid water turning to solid ice. Sublimation bypasses the liquid state entirely.',
+          'Rain evaporating': 'Rain evaporating is liquid turning to gas, whereas sublimation starts with solid ice or snow.',
+          'Clouds forming': 'Cloud formation is condensation (gas to liquid), not solid to gas.'
+        }
+      },
+      {
+        q: 'How does deforestation affect the water cycle?',
+        a: 'Reduces transpiration and increases runoff',
+        opts: ['Increases evaporation', 'Reduces transpiration and increases runoff', 'Creates more clouds', 'Has no effect'],
+        concept: 'watershed',
+        wrongFeedback: {
+          'Increases evaporation': 'Removing trees reduces the total leaf area, which decreases transpiration and makes the local climate drier.',
+          'Creates more clouds': 'Fewer trees mean less moisture is pumped into the air, leading to fewer clouds and less local rainfall.',
+          'Has no effect': 'Trees are key hydrologic pumps. Removing them severely disrupts local water cycles and increases flooding.'
+        }
+      }
+    ],
+    '6-8': [
+      {
+        q: 'What drives evaporation?',
+        a: 'Solar energy',
+        opts: ['Wind', 'Solar energy', 'Gravity', 'Moon'],
+        concept: 'evaporation',
+        wrongFeedback: {
+          'Wind': 'Wind enhances the evaporation rate by removing the boundary layer of moist air, but solar radiation is the thermodynamic driver.',
+          'Gravity': 'Gravity is a downward force driving infiltration and precipitation, whereas solar energy drives water upward.',
+          'Moon': 'The Moon drives tides but does not supply the heat energy required for the latent heat of vaporization.'
+        }
+      },
+      {
+        q: 'What forms clouds?',
+        a: 'Condensation',
+        opts: ['Evaporation', 'Precipitation', 'Condensation', 'Infiltration'],
+        concept: 'condensation',
+        wrongFeedback: {
+          'Evaporation': 'Evaporation is liquid transitioning to gas. Clouds form when this gas cools and condenses back into liquid droplets.',
+          'Precipitation': 'Precipitation occurs when cloud droplets grow too heavy and fall, not when clouds form.',
+          'Infiltration': 'Infiltration is surface water soaking into ground soil, unrelated to atmospheric clouds.'
+        }
+      },
+      {
+        q: 'Where does most evaporation occur?',
+        a: 'Oceans',
+        opts: ['Lakes', 'Rivers', 'Oceans', 'Soil'],
+        concept: 'evaporation',
+        wrongFeedback: {
+          'Lakes': 'Lakes contribute a tiny fraction of global evaporation compared to the vast surface area of the oceans.',
+          'Rivers': 'Rivers represent a tiny portion of global surface water and account for very little evaporation.',
+          'Soil': 'Soil moisture evaporation is limited by capillary action and plant coverage.'
+        }
+      },
+      {
+        q: 'What is transpiration?',
+        a: 'Water release from plants',
+        opts: ['Rain falling', 'Water release from plants', 'Snow melting', 'Rivers flowing'],
+        concept: 'transpiration',
+        wrongFeedback: {
+          'Rain falling': 'Rain falling is precipitation. Transpiration is water vapor release from plant stomata.',
+          'Snow melting': 'Melting is a solid-to-liquid transition, not a biological release of moisture.',
+          'Rivers flowing': 'River flow is runoff and collection, not a plant-driven water transport process.'
+        }
+      },
+      {
+        q: 'How much of Earth\'s water is freshwater?',
+        a: '3%',
+        opts: ['3%', '10%', '25%', '50%'],
+        concept: 'collection',
+        wrongFeedback: {
+          '10%': 'Freshwater is much scarcer! Only 3% is fresh, and about 68% of that is locked in glaciers and ice sheets.',
+          '25%': 'Over 97% of Earth\'s water is salty ocean water. Fresh water is a tiny portion.',
+          '50%': 'Half of Earth\'s water is saline. Freshwater is a scarce resource.'
+        }
+      },
+      {
+        q: 'What are stomata?',
+        a: 'Tiny pores on leaves',
+        opts: ['Types of clouds', 'Tiny pores on leaves', 'Underground rivers', 'Rain droplets'],
+        concept: 'transpiration',
+        wrongFeedback: {
+          'Types of clouds': 'Clouds are made of condensed vapor. Stomata are microscopic pores in plant epidermal layers.',
+          'Underground rivers': 'Subsurface channels are aquifers. Stomata are biological valves regulating leaf transpiration.',
+          'Rain droplets': 'Rain droplets are precipitation. Stomata are microscopic openings on leaves.'
+        }
+      },
+      {
+        q: 'What is sublimation?',
+        a: 'Ice turning directly to vapor',
+        opts: ['Ice turning directly to vapor', 'Water freezing', 'Rain evaporating', 'Clouds forming'],
+        concept: 'sublimation',
+        wrongFeedback: {
+          'Water freezing': 'Freezing is liquid to solid. Sublimation is the transition from solid directly to gas.',
+          'Rain evaporating': 'Rain evaporating is liquid to gas, whereas sublimation starts with solid ice or snow.',
+          'Clouds forming': 'Cloud formation is condensation, which is gas to liquid.'
+        }
+      },
+      {
+        q: 'How does deforestation affect the water cycle?',
+        a: 'Reduces transpiration and increases runoff',
+        opts: ['Increases evaporation', 'Reduces transpiration and increases runoff', 'Creates more clouds', 'Has no effect'],
+        concept: 'watershed',
+        wrongFeedback: {
+          'Increases evaporation': 'Without tree leaves to transpire and block wind, overall evapotranspiration drops, drying the local climate.',
+          'Creates more clouds': 'Deforestation reduces the water pump effect, decreasing atmospheric humidity and cloud formation.',
+          'Has no effect': 'Trees are vital hydrological regulators. Deforestation leads to severe soil erosion and immediate flooding.'
+        }
+      }
+    ],
+    '9-12': [
+      {
+        q: 'At what rate does air temperature decrease with altitude (environmental lapse rate)?',
+        a: '~6.5°C per 1000m',
+        opts: ['~2°C per 1000m', '~6.5°C per 1000m', '~10°C per 1000m', '~15°C per 1000m'],
+        concept: 'condensation',
+        wrongFeedback: {
+          '~2°C per 1000m': 'This rate is too low. The average environmental lapse rate in the troposphere is 6.5°C per kilometer.',
+          '~10°C per 1000m': 'This is the dry adiabatic lapse rate (9.8°C/km) for dry rising air, not the environmental profile.',
+          '~15°C per 1000m': 'This cooling rate is too high. The average atmospheric cooling is around 6.5°C per 1000m.'
+        }
+      },
+      {
+        q: 'What law governs groundwater flow through saturated porous media?',
+        a: 'Darcy\'s Law',
+        opts: ['Darcy\'s Law', 'Boyle\'s Law', 'Ohm\'s Law', 'Bernoulli\'s Principle'],
+        concept: 'Darcy\'s Law',
+        wrongFeedback: {
+          'Boyle\'s Law': 'Boyle\'s Law relates gas pressure to volume, not fluid flow through soils.',
+          'Ohm\'s Law': 'Ohm\'s Law relates voltage and current, though it shares mathematical forms with Darcy\'s Law.',
+          'Bernoulli\'s Principle': 'Bernoulli\'s equation applies to open pipe flow, not flow within saturated media.'
+        }
+      },
+      {
+        q: 'What is the latent heat of vaporization of water at 20°C?',
+        a: '~2.45 MJ/kg',
+        opts: ['~1.0 MJ/kg', '~2.45 MJ/kg', '~4.18 MJ/kg', '~0.33 MJ/kg'],
+        concept: 'latent heat',
+        wrongFeedback: {
+          '~1.0 MJ/kg': 'This value is too low. Water requires about 2.45 megajoules per kilogram to vaporize.',
+          '~4.18 MJ/kg': 'This is the specific heat capacity of liquid water, not its latent heat of vaporization.',
+          '~0.33 MJ/kg': 'This is close to the latent heat of fusion (melting ice) which is 0.334 MJ/kg.'
+        }
+      },
+      {
+        q: 'The Clausius-Clapeyron relation predicts saturation vapor pressure increases by what per °C?',
+        a: '~7%',
+        opts: ['~2%', '~7%', '~15%', '~25%'],
+        concept: 'Clausius-Clapeyron',
+        wrongFeedback: {
+          '~2%': 'This is too low. Saturation vapor pressure increases by approximately 7% per degree of heating.',
+          '~15%': 'This is too high. The capacity grows exponentially but is about 7% per degree Celsius.',
+          '~25%': 'This is too high. A 1 degree Celsius increase corresponds to a 7% capacity expansion.'
+        }
+      },
+      {
+        q: 'What equation extends Darcy\'s Law to unsaturated flow?',
+        a: 'Richards\' equation',
+        opts: ['Navier-Stokes', 'Richards\' equation', 'Bernoulli\'s equation', 'Poiseuille\'s equation'],
+        concept: 'infiltration',
+        wrongFeedback: {
+          'Navier-Stokes': 'Navier-Stokes equations model momentum in open fluid dynamics, not unsaturated flow in soils.',
+          'Bernoulli\'s equation': 'Bernoulli\'s equation relates pressure and speed in open inviscid flows.',
+          'Poiseuille\'s equation': 'Poiseuille\'s equation describes flow through open cylindrical pipes.'
+        }
+      },
+      {
+        q: 'What is cloud albedo\'s approximate effect on solar radiation?',
+        a: 'Reflects ~30%',
+        opts: ['Reflects ~5%', 'Reflects ~30%', 'Reflects ~60%', 'Reflects ~90%'],
+        concept: 'condensation',
+        wrongFeedback: {
+          'Reflects ~5%': 'This is too low. Average global cloud albedo is significant, reflecting about 30% of incoming light.',
+          'Reflects ~60%': 'While specific storm clouds can be highly reflective, the global average is around 30%.',
+          'Reflects ~90%': 'Only the densest storm clouds reflect 90%, whereas the global average is much lower.'
+        }
+      },
+      {
+        q: 'What is the average residence time of a water molecule in the ocean?',
+        a: '~3,200 years',
+        opts: ['~9 days', '~100 years', '~3,200 years', '~1 million years'],
+        concept: 'collection',
+        wrongFeedback: {
+          '~9 days': 'This is the atmospheric residence time before precipitation, not the ocean residence time.',
+          '~100 years': 'This is too short. Due to ocean volume, the average water molecule remains there for about 3,200 years.',
+          '~1 million years': 'This is too long. Oceanic circulation and evaporation cycle molecules much faster.'
+        }
+      },
+      {
+        q: 'What is the Bowen ratio?',
+        a: 'Ratio of sensible to latent heat flux',
+        opts: ['Ratio of sensible to latent heat flux', 'Ratio of runoff to infiltration', 'Ratio of evaporation to precipitation', 'Ratio of cloud cover to clear sky'],
+        concept: 'Bowen ratio',
+        wrongFeedback: {
+          'Ratio of runoff to infiltration': 'This is a hydrological partition ratio, not the thermodynamic Bowen ratio.',
+          'Ratio of evaporation to precipitation': 'This is a global water budget balance, not the Bowen ratio.',
+          'Ratio of cloud cover to clear sky': 'This relates to cloud cover fraction, not the Bowen heat flux ratio.'
+        }
+      }
+    ]
+  };
+
+  function stewardClamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
   if(!window.StemLab||!window.StemLab.registerTool) return;
   window.StemLab.registerTool('waterCycle',{
-    icon:'\uD83C\uDF0A', label:'waterCycle', desc:'Interactive Water Cycle with Journey Mode',
+    icon:'\uD83C\uDF0A', label:'Water Cycle', desc:'Live water cycle canvas plus Journey Mode: ride one droplet through evaporation, condensation, precipitation, collection, transpiration, and infiltration with real choices along the way.',
     color:'sky', category:'science',
+    questHooks: [
+      { id: 'complete_journey', label: 'Complete a water droplet journey loop', icon: '\uD83D\uDCA7', check: function(d) { return (d.journeyLoops || 0) >= 1; }, progress: function(d) { return (d.journeyLoops || 0) >= 1 ? 'Complete!' : 'In journey'; } },
+      { id: 'complete_3_journeys', label: 'Complete 3 journey loops', icon: '\uD83C\uDFC6', check: function(d) { return (d.journeyLoops || 0) >= 3; }, progress: function(d) { return (d.journeyLoops || 0) + '/3 loops'; } },
+      { id: 'explore_all_stages', label: 'View all water cycle stages', icon: '\uD83C\uDF0D', check: function(d) { return Object.keys(d.stagesViewed || {}).length >= 5; }, progress: function(d) { return Object.keys(d.stagesViewed || {}).length + '/5 stages'; } },
+      { id: 'adjust_climate', label: 'Experiment with climate controls', icon: '\uD83C\uDF21', check: function(d) { return d.climateAdjusted || false; }, progress: function(d) { return d.climateAdjusted ? 'Explored!' : 'Try the sliders'; } }
+    ],
     render:function(ctx){
       var React=ctx.React; var h=React.createElement;
       var labToolData=ctx.toolData; var setLabToolData=ctx.setToolData;
@@ -37,6 +655,827 @@
 const d = labToolData.waterCycle;
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, waterCycle: { ...prev.waterCycle, [key]: val } }));
+          const updMulti = (obj) => setLabToolData(prev => ({ ...prev, waterCycle: Object.assign({}, prev.waterCycle, obj) }));
+          const h = React.createElement;
+
+          var checkWaterCycleChallenges = function(customState) {
+            var state = customState || {};
+            var completed = state.completedChallenges || [];
+            var newlyCompleted = [];
+            var pointsEarned = 0;
+
+            for (var i = 0; i < WATER_CYCLE_CHALLENGES.length; i++) {
+              var ch = WATER_CYCLE_CHALLENGES[i];
+              if (completed.indexOf(ch.id) !== -1) continue;
+
+              var met = false;
+              if (ch.id === 'complete_journey') {
+                met = (state.journeyLoops || 0) >= 1;
+              } else if (ch.id === 'explore_all_stages') {
+                met = Object.keys(state.stagesViewed || {}).length >= 5;
+              } else if (ch.id === 'adjust_climate') {
+                met = !!state.climateAdjusted;
+              } else if (ch.id === 'quiz_pass') {
+                met = (state.quizCorrectCount || 0) >= 1;
+              } else if (ch.id === 'vocabulary_studied') {
+                met = (state.vocabWordsStudied || []).length >= 3;
+              } else if (ch.id === 'stewardship_win') {
+                met = state.campaignSuccess === true;
+              }
+
+              if (met) {
+                newlyCompleted.push(ch.id);
+                pointsEarned += ch.rp;
+              }
+            }
+
+            if (newlyCompleted.length > 0) {
+              var updatedCompleted = completed.concat(newlyCompleted);
+              var newRP = (state.researchPoints || 0) + pointsEarned;
+              
+              updMulti({
+                completedChallenges: updatedCompleted,
+                researchPoints: newRP
+              });
+
+              newlyCompleted.forEach(function(finishedId) {
+                var ch = WATER_CYCLE_CHALLENGES.find(function(c) { return c.id === finishedId; });
+                if (addToast) {
+                  addToast('🏆 Challenge Complete: ' + ch.name + ' (+' + ch.rp + ' RP)', 'success');
+                }
+                if (typeof awardStemXP === 'function') {
+                  awardStemXP('waterCycle', ch.rp, 'Challenge: ' + ch.name);
+                }
+              });
+
+              if (typeof stemCelebrate === 'function') stemCelebrate();
+              if (typeof announceToSR === 'function') {
+                announceToSR('Challenges updated. Completed ' + updatedCompleted.length + ' of ' + WATER_CYCLE_CHALLENGES.length + '. Research points: ' + newRP);
+              }
+            }
+          };
+
+          var studyVocab = function(word) {
+            var current = d.vocabWordsStudied || [];
+            if (current.indexOf(word) === -1) {
+              var next = current.concat([word]);
+              var nextState = Object.assign({}, d, {
+                vocabWordsStudied: next,
+                researchPoints: (d.researchPoints || 0) + 5
+              });
+              updMulti({
+                vocabWordsStudied: next,
+                researchPoints: (d.researchPoints || 0) + 5
+              });
+              if (addToast) {
+                addToast('📖 Concept studied: ' + word + ' (+5 RP)', 'info');
+              }
+              setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
+            }
+          };
+
+          var selectStage = function(stageId) {
+            var nextStagesViewed = Object.assign({}, d.stagesViewed || {});
+            nextStagesViewed[stageId] = true;
+            var nextState = Object.assign({}, d, {
+              activeStage: stageId,
+              stagesViewed: nextStagesViewed
+            });
+            updMulti({
+              activeStage: stageId,
+              stagesViewed: nextStagesViewed
+            });
+            setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
+          };
+
+          var adjustClimate = function(key, val) {
+            var nextState = Object.assign({}, d, {
+              [key]: val,
+              climateAdjusted: true
+            });
+            updMulti({
+              [key]: val,
+              climateAdjusted: true
+            });
+            var cv = document.getElementById('wcCanvas');
+            if (cv) cv.dataset[key] = String(val);
+            setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
+          };
+
+          var askHydrologist = function() {
+            var query = d.hydrologistQuery || '';
+            if (!query.trim()) return;
+            if (typeof callGemini !== 'function') {
+              updMulti({ hydrologistError: 'AI tutor not available.' });
+              return;
+            }
+            updMulti({ hydrologistLoading: true, hydrologistError: '', hydrologistReply: '' });
+            var prompt = 'You are a friendly, encouraging Water Cycle & Hydrology tutor for middle-to-high school students. ' +
+              'The student is asking about: "' + query + '". ' +
+              'Explain the science behind this clearly in 3-4 sentences using helpful analogies. ' +
+              'Provide the explanation in plain prose. No markdown, no headings, no bullets.';
+            callGemini(prompt, false, false, 0.5).then(function(resp) {
+              updMulti({
+                hydrologistReply: String(resp || '').trim(),
+                hydrologistLoading: false
+              });
+              if (typeof announceToSR === 'function') announceToSR('AI Hydrologist reply ready.');
+            }).catch(function() {
+              updMulti({
+                hydrologistLoading: false,
+                hydrologistError: 'Could not reach AI tutor. Try again in a moment.'
+              });
+            });
+          };
+
+          // ═══ WATERSHED STEWARD CAMPAIGN ═══
+          var wcMode = d.wcMode || 'explorer';   // 'explorer' (existing) | 'steward' (new)
+          var steward = d.steward || defaultStewardState();
+          var T_BLUE = '#0ea5e9', T_BLUE_HI = '#7dd3fc';
+
+          function setSteward(patch) { updMulti({ steward: Object.assign({}, steward, patch) }); }
+          function switchMode(mode) { upd('wcMode', mode); }
+
+          function startStewardCampaign(opts) {
+            opts = opts || {};
+            var fresh = defaultStewardState();
+            var diffId = opts.difficulty || steward.difficulty || 'coordinator';
+            var diff = STEWARD_DIFFICULTIES[diffId] || STEWARD_DIFFICULTIES.coordinator;
+            fresh.phase = 'year';
+            fresh.difficulty = diff.id;
+            fresh.hoursPerYear = diff.hoursPerYear;
+            fresh.hoursLeft = diff.hoursPerYear;
+            if (opts.seed) fresh.seed = opts.seed;
+            setSteward(fresh);
+            if (addToast) addToast('💧 Watershed Steward begins. Year 1 of 10 on ' + diff.label + '.', 'success');
+            awardStemXP && awardStemXP('steward_start', 10, 'Watershed campaign begins');
+            if (typeof announceToSR === 'function') announceToSR('Watershed Steward started on ' + diff.label + '. Year 1 of 10. ' + diff.hoursPerYear + ' hours.');
+          }
+          function resetSteward() { setSteward(defaultStewardState()); }
+
+          function applyStewardTech(techId, componentId) {
+            var tech = STEWARD_TECHNIQUES.find(function(t) { return t.id === techId; });
+            if (!tech) return;
+            if (steward.hoursLeft < tech.hours) { if (addToast) addToast('Not enough stewardship hours left.', 'warn'); return; }
+            if (tech.appliesTo !== 'any' && componentId && tech.appliesTo.indexOf(componentId) < 0) {
+              if (addToast) addToast(tech.name + ' does not apply to that component.', 'info'); return;
+            }
+            var newComps = steward.components.map(function(c) {
+              if (componentId && c.id !== componentId && tech.appliesTo !== 'any') return c;
+              if (!componentId && tech.appliesTo !== 'any') return c;
+              var nc = Object.assign({}, c);
+              if (tech.effects.quality) nc.quality = stewardClamp(nc.quality + tech.effects.quality, 0, 100);
+              if (tech.effects.connectivity) nc.connectivity = stewardClamp(nc.connectivity + tech.effects.connectivity, 0, 100);
+              if (tech.effects.support !== undefined) nc.support = stewardClamp(nc.support + tech.effects.support, 0, 100);
+              return nc;
+            });
+            var actionLog = { tech: tech.name, target: componentId ? (getWatershedComponent(componentId) ? getWatershedComponent(componentId).name : componentId) : 'Watershed-wide', hours: tech.hours };
+            var patch = { components: newComps, hoursLeft: steward.hoursLeft - tech.hours, yearActions: steward.yearActions.concat([actionLog]) };
+            if (techId === 'damRemoval' || techId === 'fishPassage') patch.connectivityBoosts = (steward.connectivityBoosts || 0) + 1;
+            setSteward(patch);
+            if (typeof announceToSR === 'function') announceToSR(tech.name + ' applied. ' + (steward.hoursLeft - tech.hours) + ' hours left.');
+          }
+
+          function endStewardYear() {
+            var pre = steward.components.map(function(c) { return Object.assign({}, c); });
+
+            // Natural drift: components with high quality slowly grow, low quality slowly decay
+            var drifted = steward.components.map(function(c) {
+              var nc = Object.assign({}, c);
+              if (nc.quality > 70) nc.quality = stewardClamp(nc.quality + 1, 0, 100);
+              else if (nc.quality < 35) nc.quality = stewardClamp(nc.quality - 2, 0, 100);
+              nc.support = stewardClamp(nc.support + (nc.support < 50 ? 1 : -1), 0, 100);
+              return nc;
+            });
+
+            // Seeded event
+            var diff = STEWARD_DIFFICULTIES[steward.difficulty || 'coordinator'];
+            var skipRng = stewardRng(steward.seed, steward.year, 'skip');
+            var pickRng = stewardRng(steward.seed, steward.year, 'pick');
+            var ev;
+            if (skipRng() < (diff.eventSkip || 0)) {
+              ev = { id: 'quietYear', name: 'A Quiet Year', icon: '🌤️', desc: 'No major event. Routine fieldwork, steady progress.', apply: function() {} };
+            } else {
+              ev = STEWARD_EVENTS[Math.floor(pickRng() * STEWARD_EVENTS.length)];
+            }
+            var eventState = { fundingBonusNextYear: steward.fundingBonusNextYear || 0, connectivityBoosts: steward.connectivityBoosts || 0 };
+            ev.apply(drifted, eventState);
+            // Severity scaling
+            var sev = diff.severity || 1;
+            if (sev !== 1) {
+              for (var di = 0; di < drifted.length; di++) {
+                var sp = drifted[di]; var pr = pre[di];
+                sp.quality = stewardClamp(pr.quality + (sp.quality - pr.quality) * sev, 0, 100);
+                sp.connectivity = stewardClamp(pr.connectivity + (sp.connectivity - pr.connectivity) * sev, 0, 100);
+                sp.support = stewardClamp(pr.support + (sp.support - pr.support) * sev, 0, 100);
+              }
+            }
+
+            // Cascade rules
+            var fired = [];
+            STEWARD_FEEDBACK_RULES.forEach(function(rule) {
+              if (rule.when(drifted)) { rule.apply(drifted); fired.push({ id: rule.id, msg: rule.msg }); }
+            });
+
+            var snap = {
+              year: steward.year, event: ev.name, eventIcon: ev.icon, eventDesc: ev.desc,
+              pre: pre, post: drifted.map(function(c) { return Object.assign({}, c); }),
+              actions: steward.yearActions.slice(), cascades: fired
+            };
+
+            setSteward({
+              phase: 'review',
+              components: drifted,
+              lastEvent: ev,
+              cascadesFiredThisYear: fired,
+              yearLog: steward.yearLog.concat([snap]),
+              fundingBonusNextYear: eventState.fundingBonusNextYear || 0
+            });
+            if (typeof announceToSR === 'function') announceToSR('Year ' + steward.year + ' complete. Event: ' + ev.name + '.');
+          }
+
+          function advanceFromStewardReview() {
+            if (steward.year >= steward.maxYears) {
+              // Final outcome
+              var avgQ = Math.round(steward.components.reduce(function(a, c) { return a + c.quality; }, 0) / steward.components.length);
+              var componentsAt75 = steward.components.filter(function(c) { return c.quality >= 75; }).length;
+              var connectivityBoosts = steward.connectivityBoosts || 0;
+              var outcome;
+              if (componentsAt75 >= 4 && connectivityBoosts >= 1 && avgQ >= 70) outcome = { tier: 'recovery', label: 'Watershed Recovery', color: '#16a34a', icon: '🏆', desc: 'The watershed is healing across the board. Headwaters are cold and clean. The mainstem carries fish again. Beaver wetlands are doing the floodplain work. This is what watershed-scale recovery looks like when timing and community come together.' };
+              else if (componentsAt75 >= 3 && avgQ >= 62) outcome = { tier: 'recovering', label: 'Recovering Watershed', color: '#22c55e', icon: '🌊', desc: 'Most components are improving. A few still need work. The trajectory is good and the community is engaged.' };
+              else if (componentsAt75 >= 2 || avgQ >= 55) outcome = { tier: 'mixed', label: 'Mixed Recovery', color: '#f59e0b', icon: '🍃', desc: 'Some wins, some gaps. Real watershed work is rarely uniform; some pieces improved while others stalled.' };
+              else outcome = { tier: 'slipping', label: 'Slipping Watershed', color: '#ef4444', icon: '⚠️', desc: 'Average quality is low and few components reached recovery thresholds. This is how watersheds degrade quietly when stewardship cannot keep up with pressures.' };
+              var success = (outcome.tier === 'recovery' || outcome.tier === 'recovering');
+              var nextState = Object.assign({}, d, { campaignSuccess: success });
+              setSteward({ phase: 'debrief', finalOutcome: outcome, componentsAt75: componentsAt75 });
+              upd('campaignSuccess', success);
+              awardStemXP && awardStemXP('steward_complete', 50, outcome.label);
+              setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
+            } else {
+              setSteward({
+                phase: 'year', year: steward.year + 1,
+                hoursLeft: steward.hoursPerYear + (steward.fundingBonusNextYear || 0),
+                fundingBonusNextYear: 0,
+                yearActions: [], lastEvent: null
+              });
+              if (typeof announceToSR === 'function') announceToSR('Year ' + (steward.year + 1) + ' begins.');
+            }
+          }
+
+          // ── Watershed artifact translations ──
+          // Numbers calibrated to a plausible mid-Maine watershed of about
+          // 600 stream miles, 12,000 acres of forested buffer potential,
+          // 3,500 acres of floodplain wetland potential, 75 dams in the
+          // historic record, ~150 farms.
+          function watershedArtifact(c) {
+            var q = Math.max(0, Math.round(c.quality));
+            var k = Math.max(0, Math.round(c.connectivity));
+            if (c.id === 'headwaterStreams')      return { icon: '🐠', text: Math.round(q * 4) + ' stream miles with wild brook trout' };
+            if (c.id === 'riverMainstem')         return { icon: '🐟', text: Math.round(k * 0.6) + ' mainstem miles with fish passage to the sea' };
+            if (c.id === 'floodplainWetlands')    return { icon: '🦫', text: Math.round(q * 35) + ' acres of beaver-engineered wetland' };
+            if (c.id === 'forestBuffer')          return { icon: '🌲', text: Math.round(q * 120) + ' acres of mature riparian buffer' };
+            if (c.id === 'agriculturalWatershed') return { icon: '🚜', text: Math.round(q * 1.5) + ' farms enrolled in BMP programs' };
+            if (c.id === 'suburbanEdges')         return { icon: '🏘️', text: Math.round(q * 0.4) + ' impervious-acre equivalents retrofitted' };
+            return { icon: '💧', text: '' };
+          }
+
+          // ── Do-nothing baseline: 10 years of drift with no actions or events ──
+          function computeStewardDoNothing() {
+            var sim = MAINE_WATERSHED_COMPONENTS.map(function(c) { return Object.assign({ id: c.id }, c.defaultState); });
+            for (var y = 0; y < steward.maxYears; y++) {
+              sim = sim.map(function(c) {
+                var nc = Object.assign({}, c);
+                if (nc.quality > 70) nc.quality = stewardClamp(nc.quality + 1, 0, 100);
+                else if (nc.quality < 35) nc.quality = stewardClamp(nc.quality - 2, 0, 100);
+                nc.support = stewardClamp(nc.support + (nc.support < 50 ? 1 : -1), 0, 100);
+                return nc;
+              });
+              STEWARD_FEEDBACK_RULES.forEach(function(rule) {
+                if (rule.when(sim)) rule.apply(sim);
+              });
+            }
+            return sim;
+          }
+
+          // ── Year-1 coaching tip ──
+          function stewardCoachingTip() {
+            var ag = steward.components.find(function(c) { return c.id === 'agriculturalWatershed'; });
+            var mainstem = steward.components.find(function(c) { return c.id === 'riverMainstem'; });
+            var buffer = steward.components.find(function(c) { return c.id === 'forestBuffer'; });
+            if (ag && ag.quality < 50) {
+              return {
+                priority: 'Open with BMP outreach to farms',
+                text: 'Agricultural runoff is the dominant pressure on this watershed (current quality ' + Math.round(ag.quality) + '). BMP outreach is cheap (4h) and triggers the feedback rule that cleans up the mainstem. Pair it with riparian buffer planting on adjacent stream miles for compounding effect over the campaign.'
+              };
+            }
+            if (mainstem && mainstem.connectivity < 35) {
+              return {
+                priority: 'Plan the connectivity arc',
+                text: 'River mainstem connectivity is critically low (' + Math.round(mainstem.connectivity) + '). Dam removal is the highest-impact move available but it costs 15 hours and 12 support. Most successful Maine projects (Edwards 1999, Veazie 2012) started with 2 to 3 years of public education and fish-passage installations before attempting full removal.'
+              };
+            }
+            return {
+              priority: 'Hold and read the watershed',
+              text: 'Initial conditions look workable. Use Year 1 for citizen-science monitoring and education to build community support before spending it on contested actions like dam removal.'
+            };
+          }
+
+          // ── Per-component deep-dive ──
+          function openStewardDeepDive(id) { setSteward({ deepDiveComponent: id }); }
+          function closeStewardDeepDive() { setSteward({ deepDiveComponent: null }); }
+
+          function renderStewardDeepDive(id) {
+            var def = getWatershedComponent(id);
+            if (!def || !def.deepDive) return null;
+            var dd = def.deepDive;
+            var applicable = STEWARD_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any' || t.appliesTo.indexOf(id) >= 0; });
+            return h('div', {
+              role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Watershed deep-dive: ' + def.name,
+              style: { background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)', border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color, borderRadius: 14, padding: 18, marginBottom: 16 }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
+                h('span', { style: { fontSize: 36 } }, def.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Watershed deep-dive'),
+                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
+                  h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
+                ),
+                h('button', { onClick: closeStewardDeepDive,
+                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ Close')
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '💧 Hydrology'),
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
+                ),
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📰 Case work'),
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
+                ),
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 Maine context'),
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
+                )
+              ),
+              applicable.length > 0 ? h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.4)', borderRight: '1px solid rgba(14,165,233,0.4)', borderBottom: '1px solid rgba(14,165,233,0.4)', borderLeft: '3px solid #0ea5e9', borderRadius: 10 } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#7dd3fc', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🛠 What you can do for this component'),
+                applicable.map(function(t, i) {
+                  return h('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: '#bae6fd', lineHeight: 1.5 } },
+                    h('strong', { style: { color: '#e0f2fe' } }, t.icon + ' ' + t.name), ' (' + t.hours + 'h): ', t.desc
+                  );
+                })
+              ) : null
+            );
+          }
+
+          // ── Multi-line week-by-week trend chart ──
+          function renderStewardTrendChart(yearLog) {
+            if (!yearLog || yearLog.length === 0) return null;
+            var w = 600, hgt = 220, padL = 36, padR = 110, padT = 12, padB = 24;
+            var ix = w - padL - padR;
+            var iy = hgt - padT - padB;
+            var components = MAINE_WATERSHED_COMPONENTS;
+            function ptsFor(cid) {
+              return yearLog.map(function(snap, i) {
+                var post = (snap.post || []).find(function(p) { return p.id === cid; });
+                var v = post ? post.quality : 0;
+                var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
+                var y = padT + iy - (v / 100) * iy;
+                return { x: x, y: y, v: v };
+              });
+            }
+            function pathStr(pts) { return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' '); }
+            return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid var(--allo-stem-border, #1e293b)' } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, '📈 Component quality across the 10-year campaign'),
+              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': 'Year-by-year quality trend chart by watershed component' },
+                [0, 25, 50, 75, 100].map(function(g, gi) {
+                  var y = padT + iy - (g / 100) * iy;
+                  return h('g', { key: 'g' + gi },
+                    h('line', { x1: padL, y1: y, x2: padL + ix, y2: y, stroke: '#1e293b', strokeWidth: 1 }),
+                    h('text', { x: padL - 4, y: y + 3, fontSize: 9, fill: '#64748b', textAnchor: 'end' }, g)
+                  );
+                }),
+                yearLog.map(function(snap, i) {
+                  var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
+                  return h('text', { key: 'xl' + i, x: x, y: hgt - 8, fontSize: 9, fill: '#64748b', textAnchor: 'middle' }, 'Y' + snap.year);
+                }),
+                components.map(function(comp) {
+                  var pts = ptsFor(comp.id);
+                  return h('g', { key: comp.id },
+                    h('path', { d: pathStr(pts), stroke: comp.color, strokeWidth: 2, fill: 'none', strokeLinejoin: 'round' })
+                  );
+                }),
+                components.map(function(comp, ci) {
+                  return h('g', { key: 'leg' + comp.id },
+                    h('line', { x1: w - padR + 6, y1: padT + 8 + ci * 16, x2: w - padR + 20, y2: padT + 8 + ci * 16, stroke: comp.color, strokeWidth: 2.5 }),
+                    h('text', { x: w - padR + 24, y: padT + 12 + ci * 16, fontSize: 10, fill: '#cbd5e1' }, comp.icon + ' ' + comp.name.split(' ')[0])
+                  );
+                })
+              )
+            );
+          }
+
+          // ── AI Watershed Reading: safe-framing AI educator ──
+          function readWatershed() {
+            if (!callGemini || steward.aiReadLoading) return;
+            var summary = steward.components.map(function(c) {
+              var def = getWatershedComponent(c.id);
+              return '- ' + def.name + ' (' + def.role + '): quality ' + Math.round(c.quality) + '/' + def.targets.quality + ', connectivity ' + Math.round(c.connectivity) + '/' + def.targets.connectivity + ', community support ' + Math.round(c.support) + '/' + def.targets.support;
+            }).join('\n');
+            var prompt = [
+              'You are an AI watershed-science educator. You are NOT a Wabanaki person, NOT a real watershed coordinator, NOT a hydrologist, NOT an agency staff member, and you do NOT speak for any Wabanaki nation, agency, watershed organization, or named individual.',
+              '',
+              'A student is managing a simulated central Maine watershed across 10 years. Six components.',
+              '',
+              'Current state (Year ' + steward.year + ' of ' + steward.maxYears + ', difficulty: ' + (STEWARD_DIFFICULTIES[steward.difficulty] || STEWARD_DIFFICULTIES.coordinator).label + '):',
+              summary,
+              'Stewardship hours this year: ' + steward.hoursLeft + ' of ' + steward.hoursPerYear,
+              'Connectivity boosts so far: ' + (steward.connectivityBoosts || 0),
+              '',
+              'Read this state and give 3 to 4 sentences of practical coaching grounded in watershed-science research and documented Maine projects.',
+              '',
+              'HARD CONSTRAINTS:',
+              '- NEVER claim to be Wabanaki, Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki, a watershed coordinator, hydrologist, agency staff, or any named individual.',
+              '- NEVER invoke sacred, ceremonial, or spiritual claims.',
+              '- NEVER use "noble savage" framing or romanticized language about Indigenous peoples.',
+              '- NEVER invent quotes attributed to anyone.',
+              '- DO frame as "documented watershed-science research" or "Maine restoration project case studies" (Edwards Dam 1999, Penobscot River Restoration Project, Beaver Dam Analog research, Eastern Brook Trout Joint Venture, Maine Soil and Water Conservation Districts).',
+              '- DO acknowledge that the Penobscot Nation led the Penobscot River Restoration Project when relevant, and that Wabanaki nations have shaped Maine watershed policy, without speaking for them.',
+              '- DO stay grounded in observable component state and concrete techniques: buffer planting, beaver dam analog, dam removal, fish passage, BMP outreach, conservation easement, stormwater retrofit.',
+              '- Name 1 or 2 highest-priority moves and explain why, grounded in hydrology and feedback rules.',
+              '- Be direct, observational, useful. No flowery language.',
+              '',
+              'Respond in 3 to 4 sentences of plain prose. Do not use markdown.'
+            ].join('\n');
+            setSteward({ aiReadLoading: true, aiReadResponse: null });
+            try {
+              var p = callGemini(prompt);
+              if (p && typeof p.then === 'function') {
+                p.then(function(resp) {
+                  var text = '';
+                  if (typeof resp === 'string') text = resp;
+                  else if (resp && typeof resp.text === 'string') text = resp.text;
+                  else if (resp && resp.candidates) text = (resp.candidates[0] && resp.candidates[0].content && resp.candidates[0].content.parts && resp.candidates[0].content.parts[0] && resp.candidates[0].content.parts[0].text) || '';
+                  text = (text || 'The reader returned no text. Try again in a moment.').replace(/\*\*/g, '').replace(/^[\s\n]+|[\s\n]+$/g, '');
+                  setSteward({ aiReadResponse: text, aiReadLoading: false });
+                  if (typeof announceToSR === 'function') announceToSR('AI Watershed Reading complete.');
+                }).catch(function() {
+                  setSteward({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+                });
+              } else {
+                setSteward({ aiReadResponse: 'AI is not available in this context.', aiReadLoading: false });
+              }
+            } catch (e) {
+              setSteward({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+            }
+          }
+          function dismissStewardAIRead() { setSteward({ aiReadResponse: null }); }
+
+          function renderStewardAIPanel() {
+            if (steward.aiReadLoading) {
+              return h('div', { role: 'status', 'aria-live': 'polite',
+                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
+                '⏳ AI watershed educator is reading your watershed data...');
+            }
+            if (!steward.aiReadResponse) return null;
+            return h('div', { role: 'region', 'aria-label': 'AI Watershed Reading',
+              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                h('span', { style: { fontSize: 20 } }, '🔍'),
+                h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Watershed Reading'),
+                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
+                  h('button', { onClick: readWatershed,
+                    style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '↻ Re-read'),
+                  h('button', { onClick: dismissStewardAIRead,
+                    style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕')
+                )
+              ),
+              h('p', { style: { margin: '0 0 10px 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.6 } }, steward.aiReadResponse),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
+                'AI watershed-science educator. ',
+                h('strong', null, 'It is not a Wabanaki person, not a real watershed coordinator or hydrologist, and does not speak for any Wabanaki nation, agency, or organization.'),
+                ' For authoritative voices on Maine watershed work, consult Penobscot Nation Cultural and Historic Preservation Department, Wabanaki Public Health and Wellness, Atlantic Salmon Federation, Maine Coast Heritage Trust, Maine Audubon, Maine Soil and Water Conservation Districts, and the Maine Department of Environmental Protection.'
+              )
+            );
+          }
+
+          function renderStewardCampaign() {
+            // Deep-dive panel renders at the top of every phase when active
+            var stewardDeepDive = steward.deepDiveComponent ? renderStewardDeepDive(steward.deepDiveComponent) : null;
+
+            // ── SETUP ──
+            if (steward.phase === 'setup') {
+              return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
+                stewardDeepDive,
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  h('button', { onClick: () => switchMode('explorer'),
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
+                  h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Watershed Steward: Maine campaign')
+                ),
+                h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(14,165,233,0.18) 0%, rgba(21,128,61,0.06) 100%)', border: '1px solid ' + T_BLUE + '66', borderLeft: '4px solid ' + T_BLUE } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
+                    h('span', { style: { fontSize: 36 } }, '💧'),
+                    h('div', null,
+                      h('h3', { style: { margin: 0, color: T_BLUE_HI, fontSize: 22 } }, 'Watershed Steward: 10-year Maine campaign'),
+                      h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, 'You are the Watershed Coordinator for a central Maine river system.')
+                    )
+                  ),
+                  h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
+                    'Six watershed components, ten years, real Maine pressures: dam barriers, agricultural runoff, suburban stormwater, climate-driven floods and droughts. ',
+                    h('strong', null, 'Hydrological feedback rules tie them together.'),
+                    ' Healthy buffers cool headwater streams. Beaver wetlands attenuate floods and clean the mainstem. Low ag runoff lets the river breathe. Connected, shaded rivers bring back salmon and alewife runs.'
+                  )
+                ),
+
+                // Component preview cards
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
+                  MAINE_WATERSHED_COMPONENTS.map(function(c) {
+                    return h('div', { key: c.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + c.color, borderRadius: 10, padding: 12 } },
+                      h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                        h('span', { style: { fontSize: 22 } }, c.icon),
+                        h('strong', { style: { color: c.color } }, c.name)
+                      ),
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, c.role),
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, c.desc),
+                      c.deepDive ? h('button', { onClick: function() { openStewardDeepDive(c.id); },
+                        'aria-label': 'Open deep-dive for ' + c.name,
+                        style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + c.color + '88', background: c.color + '22', color: c.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
+                      }, '📚 Watershed deep-dive →') : null
+                    );
+                  })
+                ),
+
+                // Difficulty
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, border: '1px solid var(--allo-stem-border, #1e293b)' } },
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                    Object.keys(STEWARD_DIFFICULTIES).map(function(dkey) {
+                      var df = STEWARD_DIFFICULTIES[dkey];
+                      var picked = (steward.difficulty || 'coordinator') === dkey;
+                      return h('button', { key: dkey, onClick: function() { setSteward({ difficulty: dkey }); }, 'aria-pressed': picked,
+                        style: { background: picked ? 'rgba(14,165,233,0.20)' : '#1e293b', border: '1px solid ' + (picked ? '#0ea5e9' : '#334155'), color: picked ? '#7dd3fc' : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' } },
+                        h('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
+                        h('div', { style: { fontSize: 11, color: picked ? '#bae6fd' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, df.desc)
+                      );
+                    })
+                  )
+                ),
+
+                h('button', { onClick: function() { startStewardCampaign(); },
+                  style: { width: '100%', padding: '14px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_BLUE + ' 0%, #0369a1 100%)', color: '#fff', fontWeight: 800, fontSize: 16, boxShadow: '0 6px 14px rgba(14,165,233,0.35)' } }, '💧 Begin 10-year Watershed Campaign')
+              );
+            }
+
+            // ── DEBRIEF ──
+            if (steward.phase === 'debrief' && steward.finalOutcome) {
+              var o = steward.finalOutcome;
+              var baseline = computeStewardDoNothing();
+              var actualAvgQ = Math.round(steward.components.reduce(function(a, c) { return a + c.quality; }, 0) / steward.components.length);
+              var baselineAvgQ = Math.round(baseline.reduce(function(a, c) { return a + c.quality; }, 0) / baseline.length);
+              var actualAvgConn = Math.round(steward.components.reduce(function(a, c) { return a + c.connectivity; }, 0) / steward.components.length);
+              var baselineAvgConn = Math.round(baseline.reduce(function(a, c) { return a + c.connectivity; }, 0) / baseline.length);
+              return h('div', { className: 'max-w-3xl mx-auto space-y-3' },
+                stewardDeepDive,
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  h('button', { onClick: () => switchMode('explorer'),
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
+                  h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Watershed Steward: Debrief')
+                ),
+                h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
+                  h('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
+                  h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
+                  h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, o.desc)
+                ),
+
+                // Year-by-year trend chart
+                renderStewardTrendChart(steward.yearLog),
+
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 } },
+                  steward.components.map(function(c) {
+                    var def = getWatershedComponent(c.id);
+                    var targetsHit = c.quality >= def.targets.quality && c.connectivity >= def.targets.connectivity && c.support >= def.targets.support;
+                    var art = watershedArtifact(c);
+                    return h('div', { key: c.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
+                      h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
+                        h('span', null, def.icon + ' ' + def.name + (targetsHit ? ' ✓' : '')),
+                        def.deepDive ? h('button', { onClick: function() { openStewardDeepDive(c.id); }, 'aria-label': 'Deep-dive',
+                          style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '📚') : null
+                      ),
+                      h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
+                        'Quality: ' + Math.round(c.quality) + '/' + def.targets.quality,
+                        h('br'),
+                        'Connectivity: ' + Math.round(c.connectivity) + '/' + def.targets.connectivity,
+                        h('br'),
+                        'Community support: ' + Math.round(c.support) + '/' + def.targets.support
+                      ),
+                      art.text ? h('div', { style: { marginTop: 6, padding: 6, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11.5, color: '#fde68a' } },
+                        h('span', { style: { fontSize: 14, marginRight: 4 } }, art.icon), art.text
+                      ) : null
+                    );
+                  })
+                ),
+
+                // Do-nothing baseline
+                h('div', { style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
+                  h('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ What if you had done nothing for 10 years?'),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+                    h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, 'Your campaign'),
+                      h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Avg quality ' + actualAvgQ + ' · Avg connectivity ' + actualAvgConn)
+                    ),
+                    h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, 'Pure neglect'),
+                      h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Avg quality ' + baselineAvgQ + ' · Avg connectivity ' + baselineAvgConn)
+                    )
+                  ),
+                  h('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                    actualAvgQ > baselineAvgQ + 8 || actualAvgConn > baselineAvgConn + 8
+                      ? 'Your stewardship pulled the watershed substantially ahead of where neglect would have left it. That gap is the riparian, beaver, BMP, and connectivity infrastructure you built.'
+                      : (actualAvgQ > baselineAvgQ - 2
+                          ? 'You roughly held the line against drift. Sometimes stewardship that matches the do-nothing baseline still counts: stasis is the holding ground for everything you build later.'
+                          : 'Active stewardship cost more than it returned this run. Look at WHICH techniques you used and whether the community had the trust to make them stick.')
+                  )
+                ),
+                h('div', { style: { padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                  h('strong', { style: { color: '#7dd3fc' } }, 'Components at 75+ quality: '), steward.componentsAt75 + ' / 6 · ',
+                  h('strong', { style: { color: '#7dd3fc' } }, 'Connectivity boosts: '), (steward.connectivityBoosts || 0)
+                ),
+                h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  h('button', { onClick: resetSteward, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, '↻ New campaign'),
+                  h('button', { onClick: function() { startStewardCampaign({ seed: steward.seed, difficulty: steward.difficulty }); },
+                    style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '🔁 Replay same conditions')
+                ),
+                h('div', { style: { padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, monospace' } },
+                  h('span', { style: { color: 'var(--allo-stem-text-soft, #64748b)' } }, 'Campaign seed: '),
+                  h('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, steward.seed)
+                )
+              );
+            }
+
+            // ── REVIEW ──
+            if (steward.phase === 'review') {
+              var lastSnap = steward.yearLog[steward.yearLog.length - 1] || {};
+              var ev = steward.lastEvent || {};
+              return h('div', { className: 'max-w-3xl mx-auto space-y-3' },
+                stewardDeepDive,
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  h('button', { onClick: () => switchMode('explorer'),
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
+                  h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Year ' + steward.year + ' review')
+                ),
+                h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #fbbf24' } },
+                  h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '🌿'),
+                  h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Year ' + steward.year + ' event: ' + (ev.name || 'quiet year')),
+                  h('p', { style: { margin: '6px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, ev.desc || '')
+                ),
+                (lastSnap.cascades && lastSnap.cascades.length > 0) ? h('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', fontSize: 13, color: '#bae6fd' } },
+                  h('strong', { style: { color: '#38bdf8' } }, '🔄 Hydrological feedback rules this year'),
+                  lastSnap.cascades.map(function(c, ci) { return h('div', { key: ci, style: { margin: '6px 0 0', fontStyle: 'italic' } }, '· ' + c.msg); })
+                ) : null,
+
+                // Per-component deltas
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10 } },
+                  h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 13 } }, 'What changed this year'),
+                  (lastSnap.pre || []).map(function(preC) {
+                    var postC = (lastSnap.post || []).find(function(p) { return p.id === preC.id; }) || preC;
+                    var def = getWatershedComponent(preC.id);
+                    function delta(label, before, after) {
+                      var dlt = Math.round(after - before);
+                      var color = '#64748b'; var arrow = '·';
+                      if (Math.abs(dlt) >= 1) { color = dlt > 0 ? '#86efac' : '#fca5a5'; arrow = dlt > 0 ? '▲' : '▼'; }
+                      return h('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
+                    }
+                    return h('div', { key: preC.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid var(--allo-stem-border, #1e293b)' } },
+                      h('strong', { style: { color: def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
+                      delta('Q', preC.quality, postC.quality),
+                      delta('Conn', preC.connectivity, postC.connectivity),
+                      delta('Sup', preC.support, postC.support)
+                    );
+                  })
+                ),
+
+                h('button', { onClick: advanceFromStewardReview,
+                  style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_BLUE + ' 0%, #0369a1 100%)', color: '#fff', fontWeight: 700, fontSize: 14 } },
+                  steward.year >= steward.maxYears ? 'See final outcome →' : 'Begin Year ' + (steward.year + 1) + ' →')
+              );
+            }
+
+            // ── YEAR ──
+            var coachingTip = (steward.year === 1 && !steward.firstTipDismissed && steward.yearActions.length === 0) ? stewardCoachingTip() : null;
+            return h('div', { className: 'max-w-3xl mx-auto space-y-3' },
+              stewardDeepDive,
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                h('button', { onClick: () => switchMode('explorer'),
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
+                h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Watershed Steward · Year ' + steward.year)
+              ),
+              coachingTip ? h('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', borderTop: '1px solid rgba(168,85,247,0.6)', borderRight: '1px solid rgba(168,85,247,0.6)', borderBottom: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+                h('span', { style: { fontSize: 20, flexShrink: 0 } }, '🪶'),
+                h('div', { style: { flex: 1 } },
+                  h('strong', { style: { color: '#a855f7' } }, 'Year 1 priority: '),
+                  h('span', { style: { color: '#fde68a' } }, coachingTip.priority),
+                  h('div', { style: { marginTop: 4, color: '#e9d5ff' } }, coachingTip.text)
+                ),
+                h('button', { onClick: function() { setSteward({ firstTipDismissed: true }); }, 'aria-label': 'Dismiss tip',
+                  style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 } }, '✕')
+              ) : null,
+              // AI panel renders here when active
+              renderStewardAIPanel(),
+              // HUD
+              h('div', { style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(14,165,233,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_BLUE + '66', borderLeft: '4px solid ' + T_BLUE, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Year'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: T_BLUE_HI } }, steward.year + ' / ' + steward.maxYears)
+                ),
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Hours left'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, steward.hoursLeft + ' / ' + steward.hoursPerYear)
+                ),
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Connectivity boosts'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, steward.connectivityBoosts || 0)
+                ),
+                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                  callGemini ? h('button', { onClick: readWatershed, disabled: steward.aiReadLoading,
+                    'aria-label': 'Ask AI watershed educator to read your watershed data',
+                    title: 'AI watershed-science educator reads your current state',
+                    style: { padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8', cursor: steward.aiReadLoading ? 'wait' : 'pointer', background: 'rgba(56,189,248,0.10)', color: '#38bdf8', fontWeight: 700, fontSize: 12, opacity: steward.aiReadLoading ? 0.6 : 1 }
+                  }, steward.aiReadLoading ? '⏳ Reading...' : '🔍 Read the watershed (AI)') : null,
+                  h('button', { onClick: endStewardYear, 'aria-label': 'End this year',
+                    style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, 'End Year →')
+                )
+              ),
+
+              // Component cards with actions
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10 } },
+                steward.components.map(function(c) {
+                  var def = getWatershedComponent(c.id);
+                  if (!def) return null;
+                  var applicable = STEWARD_TECHNIQUES.filter(function(t) {
+                    return t.appliesTo === 'any' || t.appliesTo.indexOf(c.id) >= 0;
+                  });
+                  return h('div', { key: c.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, borderLeft: '3px solid ' + def.color } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                      h('span', { style: { fontSize: 22 } }, def.icon),
+                      h('div', { style: { flex: 1 } },
+                        h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
+                        h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, def.role)
+                      ),
+                      def.deepDive ? h('button', { onClick: function() { openStewardDeepDive(c.id); }, 'aria-label': 'Deep-dive for ' + def.name, title: 'Watershed deep-dive',
+                        style: { background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '📚') : null
+                    ),
+                    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
+                      [['Q', Math.round(c.quality), c.quality < 40 ? '#ef4444' : c.quality < 65 ? '#f59e0b' : '#22c55e', def.targets.quality],
+                       ['Conn', Math.round(c.connectivity), c.connectivity < 40 ? '#ef4444' : c.connectivity < 65 ? '#f59e0b' : '#22c55e', def.targets.connectivity],
+                       ['Sup', Math.round(c.support), c.support < 40 ? '#ef4444' : c.support < 60 ? '#f59e0b' : '#22c55e', def.targets.support]
+                      ].map(function(st, si) {
+                        return h('div', { key: si, style: { background: 'var(--allo-stem-panel, #1e293b)', padding: 6, borderRadius: 6, textAlign: 'center' } },
+                          h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, st[0]),
+                          h('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
+                          h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)' } }, 'goal ' + st[3])
+                        );
+                      })
+                    ),
+                    h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                      applicable.filter(function(t) { return t.appliesTo !== 'any'; }).map(function(t) {
+                        var disabled = steward.hoursLeft < t.hours;
+                        return h('button', { key: t.id, onClick: function() { applyStewardTech(t.id, c.id); }, disabled: disabled, title: t.desc,
+                          style: { padding: '4px 8px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#0ea5e9', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } },
+                          t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                      })
+                    )
+                  );
+                })
+              ),
+
+              // Watershed-wide interventions row
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, borderLeft: '3px solid #38bdf8' } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#bae6fd', marginBottom: 8 } }, '🛠 Watershed-wide actions'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                  STEWARD_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any'; }).map(function(t) {
+                    var disabled = steward.hoursLeft < t.hours;
+                    return h('button', { key: t.id, onClick: function() { applyStewardTech(t.id, null); }, disabled: disabled, title: t.desc,
+                      style: { padding: '6px 10px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#0ea5e9', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } },
+                      t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                  })
+                )
+              ),
+
+              // Action log
+              steward.yearActions.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, 'Year ' + steward.year + ' actions'),
+                steward.yearActions.map(function(a, ai) {
+                  return h('div', { key: ai }, '· ' + a.tech + ' → ' + a.target + ' (' + a.hours + 'h)');
+                })
+              ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'No actions yet this year. Pick a component, pick a technique.')
+            );
+          }
+
+          // If user has switched into Watershed Steward mode, render that
+          // instead of the existing Water Cycle Explorer.
+          if (wcMode === 'steward') {
+            return renderStewardCampaign();
+          }
 
           // ═══ GRADE BAND HELPER ═══
           var GRADE_BANDS = ['K-2', '3-5', '6-8', '9-12'];
@@ -63,7 +1502,7 @@ const d = labToolData.waterCycle;
                          '3-5': 'If all the water vapor in the atmosphere rained at once, it would cover Earth with only 2.5 cm of water!',
                          '6-8': 'The atmosphere holds about 12,900 km\u00B3 of water vapor at any time — but that is only 0.001% of all water on Earth.',
                          '9-12': 'Global mean evaporation is ~1,200 mm/yr over oceans. The Bowen ratio (sensible/latent heat) determines partitioning of surface energy into evaporation vs heating.' } },
-            { id: 'condensation', label: t('stem.water_cycle.condensation'), emoji: '\u2601', color: '#64748b',
+            { id: 'condensation', label: t('stem.water_cycle.condensation'), emoji: '\u2601', color: 'var(--allo-stem-text-soft, #94a3b8)',
               desc: { 'K-2': 'When the warm, wet air goes high up where it is cold, the water vapor turns back into tiny water drops. These tiny drops stick together and make clouds!',
                       '3-5': 'Water vapor cools as it rises, forming tiny droplets around particles of dust, pollen, or pollution, creating clouds. Each cloud droplet is about 10 micrometers wide.',
                       '6-8': 'As air rises, it cools at ~6.5\u00B0C/km (environmental lapse rate). When temperature reaches the dew point, vapor condenses onto cloud condensation nuclei (CCN) — aerosol particles 0.1\u20131 \u00B5m wide. Cloud droplets are typically 5\u201315 \u00B5m.',
@@ -1168,7 +2607,7 @@ const d = labToolData.waterCycle;
 
                 { id: 'evaporation', text: '\u2191 Evaporation', x: 8, y: cH * 0.54, color: '#fbbf24' },
 
-                { id: 'condensation', text: '\u2601 Condensation', x: cW * 0.28, y: cH * 0.06, color: '#94a3b8' },
+                { id: 'condensation', text: '\u2601 Condensation', x: cW * 0.28, y: cH * 0.06, color: 'var(--allo-stem-text-soft, #94a3b8)' },
 
                 { id: 'precipitation', text: '\u2193 Precipitation', x: cW * 0.08, y: cH * 0.28, color: '#60a5fa' },
 
@@ -1494,6 +2933,14 @@ const d = labToolData.waterCycle;
             };
             // Bridge canvas clicks to React state (called from click handler)
             canvasEl._wcSyncReact = function(nextState, pathKey) {
+              // Play state-specific water cycle sound
+              if (nextState && nextState.indexOf('evap') >= 0) sfxEvaporate();
+              else if (nextState && nextState.indexOf('cloud') >= 0) sfxCondense();
+              else if (nextState && (nextState.indexOf('rain') >= 0 || nextState.indexOf('precip') >= 0 || nextState.indexOf('snow') >= 0)) sfxRain();
+              else if (nextState && (nextState.indexOf('river') >= 0 || nextState.indexOf('runoff') >= 0 || nextState.indexOf('stream') >= 0)) sfxStream();
+              else if (nextState && (nextState.indexOf('collect') >= 0 || nextState.indexOf('ocean') >= 0 || nextState.indexOf('lake') >= 0)) sfxCollect();
+              else if (nextState && (nextState.indexOf('freez') >= 0 || nextState.indexOf('ice') >= 0 || nextState.indexOf('glacier') >= 0)) sfxFreeze();
+              else sfxWcClick();
               upd('journeyState', nextState);
               if (pathKey) {
                 var paths = Object.assign({}, d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
@@ -1510,35 +2957,113 @@ const d = labToolData.waterCycle;
 
           };
 
+          // ── Keyboard shortcuts (WCAG 2.1.1): 1-6 = stage, J = toggle Journey, R/U/P = journey ground choice ──
+          function onWcKey(e) {
+            var tgt = e.target || {};
+            var tn = (tgt.tagName || '').toUpperCase();
+            if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
+            var k = e.key;
+            if (k >= '1' && k <= '9') {
+              var idx = parseInt(k, 10) - 1;
+              if (STAGES[idx]) {
+                e.preventDefault();
+                var st = STAGES[idx];
+                selectStage(st.id);
+                if (typeof announceToSR === 'function') announceToSR('Stage ' + (idx + 1) + ': ' + st.label + '.');
+              }
+            } else if (k === 'j' || k === 'J') {
+              e.preventDefault();
+              if (d.journeyActive) {
+                upd('journeyActive', false); upd('journeyState', 'idle');
+                var cvOff = document.getElementById('wcCanvas'); if (cvOff) cvOff.dataset.journeyState = 'idle';
+                if (typeof announceToSR === 'function') announceToSR('Journey ended.');
+              } else {
+                upd('journeyActive', true); upd('journeyState', 'ocean');
+                upd('journeyLoops', d.journeyLoops || 0);
+                upd('journeyPaths', d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
+                var cvOn = document.getElementById('wcCanvas'); if (cvOn) cvOn.dataset.journeyState = 'ocean';
+                if (typeof announceToSR === 'function') announceToSR('Journey started. You are now a water droplet in the ocean.');
+              }
+            } else if (d.journeyActive && d.journeyState === 'ground_choice' && (k === 'r' || k === 'R' || k === 'u' || k === 'U' || k === 'p' || k === 'P')) {
+              e.preventDefault();
+              var choice = (k === 'r' || k === 'R') ? 'runoff' : (k === 'u' || k === 'U') ? 'infiltrate' : 'plant';
+              var stateMap = { runoff: 'river_runoff', infiltrate: 'infiltrating', plant: 'plant_absorb' };
+              var nextState = stateMap[choice];
+              upd('journeyState', nextState);
+              var newPaths = Object.assign({}, d.journeyPaths || {}, {}); newPaths[choice] = (newPaths[choice] || 0) + 1;
+              upd('journeyPaths', newPaths);
+              var cv2 = document.getElementById('wcCanvas');
+              if (cv2) { cv2.dataset.journeyState = nextState; if (cv2._onJourneyTransition) cv2._onJourneyTransition(nextState); }
+              if (typeof announceToSR === 'function') announceToSR('Path chosen: ' + choice + '.');
+            }
+          }
 
+          return React.createElement("div", {
+              className: "max-w-3xl mx-auto animate-in fade-in duration-200",
+              role: "region",
+              "aria-label": "Water Cycle. Keyboard shortcuts: 1 through 6 select a stage, J toggles Journey mode, R U P choose your journey path.",
+              tabIndex: 0,
+              onKeyDown: onWcKey
+            },
 
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+            React.createElement("div", { className: "flex items-center gap-3 mb-3 flex-wrap" },
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Water Cycle"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
+              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "ANIMATED"),
+
+              React.createElement("button", { onClick: () => switchMode('steward'),
+                className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-sky-500 to-emerald-500 text-white hover:from-sky-600 hover:to-emerald-600 shadow-md",
+                'aria-label': 'Switch to Watershed Steward 10-year campaign'
+              }, "\uD83D\uDCA7 Watershed Steward \u2192")
 
             ),
 
             // ═══ GRADE LEVEL SELECTOR ═══
             React.createElement("div", { className: "flex items-center gap-1.5 mb-3 flex-wrap" },
-              React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1" }, "\uD83C\uDF93 Grade:"),
+              React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1" }, "\uD83C\uDF93 Grade:"),
               GRADE_BANDS.map(function(gb) {
-                return React.createElement("button", { "aria-label": "Change wc grade override",
-                  key: gb,
+                return React.createElement("button", { key: gb,
                   onClick: function() {
                     upd('wcGradeOverride', gb);
-                    addToast('\uD83C\uDF93 Grade set to ' + gb + ' — content complexity updated!', 'success');
+                    addToast('\uD83C\uDF93 Grade set to ' + gb + ' - content complexity updated!', 'success');
                   },
-                  className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-indigo-50 border border-slate-400')
+                  className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400')
                 }, gb);
               }),
               React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[11px] font-bold rounded-full border border-indigo-200" },
                 gradeBand === 'K-2' ? '\uD83E\uDDF8 Elementary' : gradeBand === '3-5' ? '\uD83D\uDCDA Upper Elementary' : gradeBand === '6-8' ? '\uD83E\uDD13 Middle School' : '\uD83C\uDF93 High School'
+              )
+            ),
+
+            // ═══ CHALLENGES PROGRESS CARD ═══
+            React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 via-sky-50 to-blue-50 rounded-xl border border-sky-200 p-3 shadow-sm mb-3 flex flex-col gap-2" },
+              React.createElement("div", { className: "flex items-center justify-between" },
+                React.createElement("div", { className: "flex items-center gap-2" },
+                  React.createElement("span", { style: { fontSize: "18px" } }, "⭐"),
+                  React.createElement("span", { className: "text-sm font-bold text-sky-700" }, (d.researchPoints || 0) + " RP")
+                ),
+                React.createElement("span", {
+                  className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-600"
+                }, (d.completedChallenges || []).length + "/" + WATER_CYCLE_CHALLENGES.length + " challenges")
+              ),
+              React.createElement("div", { className: "w-full rounded-full h-2.5 bg-sky-100/50", style: { boxShadow: "inset 0 1px 2px rgba(0,0,0,0.1)" } },
+                React.createElement("div", {
+                  className: "bg-gradient-to-r from-sky-400 to-indigo-500 h-2.5 rounded-full transition-all duration-500",
+                  style: { width: Math.min(100, ((d.completedChallenges || []).length / WATER_CYCLE_CHALLENGES.length) * 100) + "%", boxShadow: "0 0 8px rgba(14,165,233,0.3)" }
+                })
+              ),
+              React.createElement("div", { className: "flex flex-wrap gap-2 mt-2" },
+                WATER_CYCLE_CHALLENGES.map(function(ch) {
+                  var done = (d.completedChallenges || []).indexOf(ch.id) !== -1;
+                  return React.createElement("div", {
+                    key: ch.id, title: ch.name + ": " + ch.desc + " (" + ch.rp + " RP)",
+                    className: "text-center cursor-default transition-all " + (done ? "drop-shadow-md" : "opacity-25 grayscale"),
+                    style: { fontSize: "18px" }
+                  }, ch.icon);
+                })
               )
             ),
 
@@ -1563,7 +3088,7 @@ const d = labToolData.waterCycle;
               React.createElement("div", { className: "grid grid-cols-3 gap-3" },
                 // Solar Intensity
                 React.createElement("div", { className: "space-y-1" },
-                  React.createElement("label", { className: "text-[10px] font-bold text-amber-700 flex items-center gap-1" }, "\u2600\uFE0F Solar: " + ((d.climSolar != null ? d.climSolar : 1.0) * 100).toFixed(0) + "%"),
+                  React.createElement("label", { className: "text-[11px] font-bold text-amber-700 flex items-center gap-1" }, "\u2600\uFE0F Solar: " + ((d.climSolar != null ? d.climSolar : 1.0) * 100).toFixed(0) + "%"),
                   React.createElement("input", {
                     type: "range", min: "0", max: "2", step: "0.05",
                     value: d.climSolar != null ? d.climSolar : 1.0,
@@ -1571,14 +3096,14 @@ const d = labToolData.waterCycle;
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-indigo-300 via-amber-300 to-amber-500 cursor-pointer",
                     style: { accentColor: '#f59e0b' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[8px] text-amber-500" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] text-amber-500" },
                     React.createElement("span", null, "\uD83C\uDF19 Night"),
                     React.createElement("span", null, "\u2600\uFE0F Bright")
                   )
                 ),
                 // Temperature
                 React.createElement("div", { className: "space-y-1" },
-                  React.createElement("label", { className: "text-[10px] font-bold text-sky-700 flex items-center gap-1" }, "\uD83C\uDF21\uFE0F Temp: " + (d.climTemp != null ? d.climTemp : 15) + "\u00B0C"),
+                  React.createElement("label", { className: "text-[11px] font-bold text-sky-700 flex items-center gap-1" }, "\uD83C\uDF21\uFE0F Temp: " + (d.climTemp != null ? d.climTemp : 15) + "\u00B0C"),
                   React.createElement("input", {
                     type: "range", min: "-20", max: "45", step: "1",
                     value: d.climTemp != null ? d.climTemp : 15,
@@ -1586,14 +3111,14 @@ const d = labToolData.waterCycle;
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-blue-400 via-emerald-300 to-red-400 cursor-pointer",
                     style: { accentColor: '#0ea5e9' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[8px] text-sky-500" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] text-sky-500" },
                     React.createElement("span", null, "\u2744\uFE0F -20\u00B0"),
                     React.createElement("span", null, "\uD83D\uDD25 45\u00B0")
                   )
                 ),
                 // Wind Speed
                 React.createElement("div", { className: "space-y-1" },
-                  React.createElement("label", { className: "text-[10px] font-bold text-emerald-700 flex items-center gap-1" }, "\uD83C\uDF2C\uFE0F Wind: " + ((d.climWind != null ? d.climWind : 1.0)).toFixed(1) + "x"),
+                  React.createElement("label", { className: "text-[11px] font-bold text-emerald-700 flex items-center gap-1" }, "\uD83C\uDF2C\uFE0F Wind: " + ((d.climWind != null ? d.climWind : 1.0)).toFixed(1) + "x"),
                   React.createElement("input", {
                     type: "range", min: "0", max: "3", step: "0.1",
                     value: d.climWind != null ? d.climWind : 1.0,
@@ -1601,7 +3126,7 @@ const d = labToolData.waterCycle;
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-slate-200 to-emerald-400 cursor-pointer",
                     style: { accentColor: '#22c55e' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[8px] text-emerald-500" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] text-emerald-500" },
                     React.createElement("span", null, "Calm"),
                     React.createElement("span", null, "\uD83C\uDF2A Gale")
                   )
@@ -1620,27 +3145,33 @@ const d = labToolData.waterCycle;
               )
             ),
 
-            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
-
-              STAGES.map(function (stage) {
-
-                return React.createElement("button", { "aria-label": "Change active stage",
-
-                  key: stage.id, onClick: function () { upd('activeStage', stage.id); if (typeof canvasNarrate === 'function') { canvasNarrate('waterCycle', 'stage_select', { first: 'Selected ' + stage.label + ' stage. ' + (typeof selDesc === 'string' ? selDesc.substring(0, 80) : ''), repeat: stage.label + ' stage.', terse: stage.label + '.' }, { debounce: 500 }); } },
-
-                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.activeStage || 'evaporation') === stage.id ? 'text-white shadow-md' : 'border hover:opacity-80'),
-
-                  style: { backgroundColor: (d.activeStage || 'evaporation') === stage.id ? stage.color : stage.color + '15', borderColor: stage.color, color: (d.activeStage || 'evaporation') === stage.id ? 'white' : stage.color }
-
-                }, stage.emoji + " " + stage.label);
-
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3", role: "group", "aria-label": "Water cycle stages" },
+              STAGES.map(function (stage, stageIdx) {
+                var isActive = (d.activeStage || 'evaporation') === stage.id;
+                var shortcut = (stageIdx + 1).toString();
+                return React.createElement("button", {
+                  "aria-label": "Stage " + shortcut + ": " + stage.label + (isActive ? " (selected)" : ""),
+                  "aria-pressed": isActive,
+                  key: stage.id,
+                  onClick: function () {
+                    selectStage(stage.id);
+                    if (typeof announceToSR === 'function') announceToSR(stage.label + ' stage selected.');
+                    if (typeof canvasNarrate === 'function') {
+                      canvasNarrate('waterCycle', 'stage_select', {
+                        first: 'Selected ' + stage.label + ' stage. ' + (typeof selDesc === 'string' ? selDesc.substring(0, 80) : ''),
+                        repeat: stage.label + ' stage.',
+                        terse: stage.label + '.'
+                      }, { debounce: 500 });
+                    }
+                  },
+                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 " + (isActive ? 'text-white shadow-md' : 'border hover:opacity-80'),
+                  style: { backgroundColor: isActive ? stage.color : stage.color + '15', borderColor: stage.color, color: isActive ? 'white' : stage.color }
+                },
+                  React.createElement("span", { className: "inline-flex items-center justify-center w-4 h-4 rounded text-[9px] font-bold " + (isActive ? "bg-white/25 text-white" : "bg-white/60"), "aria-hidden": "true" }, shortcut),
+                  React.createElement("span", null, stage.emoji + " " + stage.label));
               })
-
             ),
 
-
-
-            // ═══ JOURNEY MODE UI ═══
             React.createElement("div", { className: "bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl border-2 border-cyan-300 p-4 mb-3 shadow-md" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("div", { className: "flex items-center gap-2" },
@@ -1649,7 +3180,7 @@ const d = labToolData.waterCycle;
                   React.createElement("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[11px] font-bold rounded-full" }, "PLAY AS WATER")
                 ),
                 !d.journeyActive
-                  ? React.createElement("button", { "aria-label": "Start Journey",
+                  ? React.createElement("button", { "aria-label": "Start Journey mode (shortcut: J)",
                       onClick: function() {
                         upd('journeyActive', true);
                         upd('journeyState', 'ocean');
@@ -1657,21 +3188,36 @@ const d = labToolData.waterCycle;
                         upd('journeyPaths', d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
                         var cv = document.getElementById('wcCanvas');
                         if (cv) { cv.dataset.journeyState = 'ocean'; }
+                        if (typeof announceToSR === 'function') announceToSR('Journey started. You are now a water droplet in the ocean.');
                         addToast('\uD83D\uDCA7 You are now a water droplet in the ocean! Watch and learn as you travel through the water cycle.', 'info');
                       },
                       className: "px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold rounded-xl hover:from-cyan-600 hover:to-blue-600 shadow-lg transition-all hover:scale-105"
-                    }, "\uD83C\uDFAE Start Journey")
+                    }, "\uD83C\uDFAE Start Journey (J)")
                   : React.createElement("div", { className: "flex gap-1.5" },
-                      React.createElement("button", { "aria-label": "End Journey",
+                      React.createElement("button", { "aria-label": "End Journey mode (shortcut: J)",
                         onClick: function() {
                           upd('journeyActive', false);
                           upd('journeyState', 'idle');
                           var cv = document.getElementById('wcCanvas');
                           if (cv) { cv.dataset.journeyState = 'idle'; }
+                          if (typeof announceToSR === 'function') announceToSR('Journey ended.');
                         },
-                        className: "px-3 py-1.5 bg-slate-600 text-white text-[10px] font-bold rounded-lg hover:bg-slate-500 transition-all"
-                      }, "\u23F9 End Journey")
+                        className: "px-3 py-1.5 bg-slate-600 text-white text-[11px] font-bold rounded-lg hover:bg-slate-500 transition-all"
+                      }, "\u23F9 End Journey (J)")
                     )
+              ),
+
+              !d.journeyActive && React.createElement("div", {
+                role: "note",
+                style: {
+                  padding: '8px 12px', borderRadius: 10,
+                  background: 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%)',
+                  borderTop: '1px solid rgba(14,165,233,0.5)', borderRight: '1px solid rgba(14,165,233,0.5)', borderBottom: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
+                  color: '#0c4a6e', fontSize: 12.5, lineHeight: 1.55
+                }
+              },
+                React.createElement("strong", { style: { color: '#0369a1' } }, "Goal: "),
+                "ride one droplet from the ocean back to the ocean. You will start in the ocean, evaporate, drift into a cloud, fall as rain, then pick a path at the ground (river runoff, underground infiltration, or absorbed by a plant). Each path takes a different amount of time. Complete the loop to log a journey; 3 loops unlocks the Journey badge."
               ),
 
               // Journey status
@@ -1683,44 +3229,47 @@ const d = labToolData.waterCycle;
                     (d.journeyState === 'complete') ? "\u2705 You completed the water cycle! +25 XP" :
                     "\uD83D\uDCA7 Current: " + (d.journeyState || 'ocean').replace(/_/g, ' ')
                   ),
-                  d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2" },
-                    React.createElement("button", { "aria-label": "Change journey state",
+                  d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2", role: "group", },
+                    React.createElement("button", { "aria-label": "Choose River Runoff path (shortcut: R)",
                       onClick: function() {
                         upd('journeyState', 'river_runoff');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { runoff: (d.journeyPaths.runoff || 0) + 1 }));
                         var cv = document.getElementById('wcCanvas');
                         if (cv) { cv.dataset.journeyState = 'river_runoff'; if (cv._onJourneyTransition) cv._onJourneyTransition('river_runoff'); }
+                        if (typeof announceToSR === 'function') announceToSR('Path chosen: River Runoff.');
                       },
-                      className: "p-2 rounded-lg text-center bg-blue-50 border-2 border-blue-300 hover:bg-blue-100 transition-all hover:scale-105"
+                      className: "p-2 rounded-lg text-center bg-blue-50 border-2 border-blue-600 hover:bg-blue-100 transition-all hover:scale-105"
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
-                      React.createElement("p", { className: "text-[10px] font-bold text-blue-700" }, "River Runoff"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-blue-700" }, "River Runoff (R)"),
                       React.createElement("p", { className: "text-[11px] text-blue-500" }, "Fast path!")
                     ),
-                    React.createElement("button", { "aria-label": "Change journey state",
+                    React.createElement("button", { "aria-label": "Choose Underground infiltration path (shortcut: U)",
                       onClick: function() {
                         upd('journeyState', 'infiltrating');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { infiltrate: (d.journeyPaths.infiltrate || 0) + 1 }));
                         var cv = document.getElementById('wcCanvas');
                         if (cv) { cv.dataset.journeyState = 'infiltrating'; if (cv._onJourneyTransition) cv._onJourneyTransition('infiltrating'); }
+                        if (typeof announceToSR === 'function') announceToSR('Path chosen: Underground infiltration.');
                       },
-                      className: "p-2 rounded-lg text-center bg-amber-50 border-2 border-amber-300 hover:bg-amber-100 transition-all hover:scale-105"
+                      className: "p-2 rounded-lg text-center bg-amber-50 border-2 border-amber-600 hover:bg-amber-100 transition-all hover:scale-105"
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
-                      React.createElement("p", { className: "text-[10px] font-bold text-amber-700" }, "Underground"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-amber-700" }, "Underground (U)"),
                       React.createElement("p", { className: "text-[11px] text-amber-500" }, "Slow + deep")
                     ),
-                    React.createElement("button", { "aria-label": "Change journey state",
+                    React.createElement("button", { "aria-label": "Choose Plant absorption path (shortcut: P)",
                       onClick: function() {
                         upd('journeyState', 'plant_absorb');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { plant: (d.journeyPaths.plant || 0) + 1 }));
                         var cv = document.getElementById('wcCanvas');
                         if (cv) { cv.dataset.journeyState = 'plant_absorb'; if (cv._onJourneyTransition) cv._onJourneyTransition('plant_absorb'); }
+                        if (typeof announceToSR === 'function') announceToSR('Path chosen: Plant absorption.');
                       },
-                      className: "p-2 rounded-lg text-center bg-emerald-50 border-2 border-emerald-300 hover:bg-emerald-100 transition-all hover:scale-105"
+                      className: "p-2 rounded-lg text-center bg-emerald-50 border-2 border-emerald-600 hover:bg-emerald-100 transition-all hover:scale-105"
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
-                      React.createElement("p", { className: "text-[10px] font-bold text-emerald-700" }, "Enter Plant"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-emerald-700" }, "Enter Plant (P)"),
                       React.createElement("p", { className: "text-[11px] text-emerald-500" }, "Transpiration!")
                     )
                   ),
@@ -1739,7 +3288,7 @@ const d = labToolData.waterCycle;
                 ),
 
                 // Stats bar
-                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex gap-3 text-[10px] font-bold" },
+                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex gap-3 text-[11px] font-bold" },
                   React.createElement("span", { className: "text-cyan-600" }, "\uD83D\uDD04 Loops: " + (d.journeyLoops || 0)),
                   React.createElement("span", { className: "text-blue-600" }, "\uD83C\uDF0A Runoff: " + ((d.journeyPaths && d.journeyPaths.runoff) || 0)),
                   React.createElement("span", { className: "text-amber-600" }, "\uD83E\uDEB4 Underground: " + ((d.journeyPaths && d.journeyPaths.infiltrate) || 0)),
@@ -1748,7 +3297,7 @@ const d = labToolData.waterCycle;
               ),
 
               // Inactive description
-              !d.journeyActive && React.createElement("p", { className: "text-[10px] text-cyan-600 mt-1" }, "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation.")
+              !d.journeyActive && React.createElement("p", { className: "text-[11px] text-cyan-600 mt-1" }, "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation.")
             ),
 
             sel && React.createElement("div", { className: "bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-4 border border-sky-200 mb-3" },
@@ -1765,10 +3314,40 @@ const d = labToolData.waterCycle;
 
               selFunFact && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" },
 
-                React.createElement("p", { className: "text-[10px] text-amber-700" }, "\uD83D\uDCA1 " + selFunFact)
+                React.createElement("p", { className: "text-[11px] text-amber-700" }, "\uD83D\uDCA1 " + selFunFact)
 
               )
 
+            ),
+
+            // ═══ AI HYDROLOGIST TUTOR PANEL ═══
+            React.createElement("div", { className: "bg-white rounded-xl border border-sky-200 p-3 mb-3 shadow-sm" },
+              React.createElement("p", { className: "text-xs font-black text-slate-700 mb-1 flex items-center gap-1.5" },
+                React.createElement("span", null, "🧠"),
+                React.createElement("span", null, "Ask the AI Hydrologist Tutor")
+              ),
+              React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" },
+                "Ask questions about the " + (sel ? sel.label : 'water cycle') + " stage, climate feedbacks, or global hydrology."
+              ),
+              React.createElement("div", { className: "flex gap-2" },
+                React.createElement("input", {
+                  type: "text",
+                  placeholder: "Ask a question (e.g., Why do clouds float?)...",
+                  value: d.hydrologistQuery || '',
+                  onChange: function(e) { upd("hydrologistQuery", e.target.value); },
+                  onKeyDown: function(e) { if (e.key === 'Enter') askHydrologist(); },
+                  className: "flex-1 px-3 py-1.5 text-xs border rounded-lg focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none"
+                }),
+                React.createElement("button", {
+                  disabled: d.hydrologistLoading,
+                  onClick: askHydrologist,
+                  className: "px-3 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 transition-all disabled:opacity-50"
+                }, d.hydrologistLoading ? "Thinking..." : "Ask")
+              ),
+              d.hydrologistReply && React.createElement("div", { className: "mt-2 p-2.5 bg-sky-50 border border-sky-100 rounded-lg animate-in slide-in-from-top-1" },
+                React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed font-medium" }, d.hydrologistReply)
+              ),
+              d.hydrologistError && React.createElement("p", { className: "text-xs text-red-500 mt-2 font-bold" }, d.hydrologistError)
             ),
 
             // ═══ WATER BUDGET — Live Data Panel ═══
@@ -1776,7 +3355,7 @@ const d = labToolData.waterCycle;
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-base" }, "\uD83D\uDCCA"),
                 React.createElement("h4", { className: "text-xs font-bold text-slate-700" }, "Water Budget (Live)"),
-                React.createElement("span", { className: "px-1.5 py-0.5 bg-sky-100 text-sky-600 text-[8px] font-bold rounded-full" }, "REAL-TIME")
+                React.createElement("span", { className: "px-1.5 py-0.5 bg-sky-100 text-sky-600 text-[11px] font-bold rounded-full" }, "REAL-TIME")
               ),
               (function() {
                 var s2 = d.climSolar != null ? d.climSolar : 1.0;
@@ -1789,19 +3368,19 @@ const d = labToolData.waterCycle;
                 return React.createElement("div", { className: "grid grid-cols-4 gap-2" },
                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-amber-100" },
                     React.createElement("p", { className: "text-lg font-bold text-amber-600" }, (evapRate * 100).toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[8px] font-bold text-amber-500" }, "Evaporation")
+                    React.createElement("p", { className: "text-[11px] font-bold text-amber-500" }, "Evaporation")
                   ),
                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-blue-100" },
                     React.createElement("p", { className: "text-sm font-bold text-blue-600" }, precipType),
-                    React.createElement("p", { className: "text-[8px] font-bold text-blue-500" }, "Precip Type")
+                    React.createElement("p", { className: "text-[11px] font-bold text-blue-500" }, "Precip Type")
                   ),
                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-cyan-100" },
                     React.createElement("p", { className: "text-lg font-bold text-cyan-600" }, runoffPct.toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[8px] font-bold text-cyan-500" }, "Runoff")
+                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-500" }, "Runoff")
                   ),
                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-emerald-100" },
                     React.createElement("p", { className: "text-lg font-bold text-emerald-600" }, gwRecharge.toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[8px] font-bold text-emerald-500" }, "GW Recharge")
+                    React.createElement("p", { className: "text-[11px] font-bold text-emerald-500" }, "GW Recharge")
                   )
                 );
               })()
@@ -1810,46 +3389,19 @@ const d = labToolData.waterCycle;
             React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
               React.createElement("button", { "aria-label": "Start water cycle quiz",
-
                 onClick: function () {
-                  // Grade-tiered static quiz banks
-                  var WC_QS_ELEM = [
-                    { q: 'What makes puddles disappear on sunny days?', a: 'The sun heats the water', opts: ['The ground drinks it', 'The sun heats the water', 'Wind blows it away', 'It goes to sleep'] },
-                    { q: 'What are clouds made of?', a: 'Tiny water drops', opts: ['Cotton', 'Tiny water drops', 'Smoke', 'Air bubbles'] },
-                    { q: 'What falls from clouds?', a: 'Rain and snow', opts: ['Stars', 'Rain and snow', 'Leaves', 'Rocks'] },
-                    { q: 'Where does rain go after it falls?', a: 'Rivers, lakes, and oceans', opts: ['It disappears', 'Back up to the sky', 'Rivers, lakes, and oceans', 'Into outer space'] },
-                    { q: 'How do plants drink water?', a: 'Through their roots', opts: ['Through their leaves', 'Through their roots', 'Through their flowers', 'They don\'t drink water'] },
-                    { q: 'What does the sun do to ocean water?', a: 'Heats it up so it rises as vapor', opts: ['Freezes it', 'Heats it up so it rises as vapor', 'Turns it green', 'Makes it salty'] },
-                    { q: 'What happens when water vapor gets cold up high?', a: 'It turns into cloud drops', opts: ['It turns into cloud drops', 'It becomes a star', 'It stays invisible', 'It catches fire'] },
-                    { q: 'Can water underground come back up?', a: 'Yes, through springs and wells', opts: ['No, never', 'Yes, through springs and wells', 'Only if you dig', 'Only on rainy days'] },
-                  ];
-                  var WC_QS_MIDDLE = [
-                    { q: 'What drives evaporation?', a: 'Solar energy', opts: ['Wind', 'Solar energy', 'Gravity', 'Moon'] },
-                    { q: 'What forms clouds?', a: t('stem.water_cycle.condensation'), opts: [t('stem.water_cycle.evaporation'), t('stem.water_cycle.precipitation'), t('stem.water_cycle.condensation'), t('stem.water_cycle.infiltration')] },
-                    { q: 'Where does most evaporation occur?', a: 'Oceans', opts: ['Lakes', 'Rivers', 'Oceans', 'Soil'] },
-                    { q: 'What is transpiration?', a: 'Water release from plants', opts: ['Rain falling', 'Water release from plants', 'Snow melting', 'Rivers flowing'] },
-                    { q: 'How much of Earth\'s water is freshwater?', a: '3%', opts: ['3%', '10%', '25%', '50%'] },
-                    { q: 'What are stomata?', a: 'Tiny pores on leaves', opts: ['Types of clouds', 'Tiny pores on leaves', 'Underground rivers', 'Rain droplets'] },
-                    { q: 'What is sublimation?', a: 'Ice turning directly to vapor', opts: ['Ice turning directly to vapor', 'Water freezing', 'Rain evaporating', 'Clouds forming'] },
-                    { q: 'How does deforestation affect the water cycle?', a: 'Reduces transpiration and increases runoff', opts: ['Increases evaporation', 'Reduces transpiration and increases runoff', 'Creates more clouds', 'Has no effect'] },
-                  ];
-                  var WC_QS_ADVANCED = [
-                    { q: 'At what rate does air temperature decrease with altitude (environmental lapse rate)?', a: '~6.5\u00B0C per 1000m', opts: ['~2\u00B0C per 1000m', '~6.5\u00B0C per 1000m', '~10\u00B0C per 1000m', '~15\u00B0C per 1000m'] },
-                    { q: 'What law governs groundwater flow through saturated porous media?', a: 'Darcy\'s Law', opts: ['Darcy\'s Law', 'Boyle\'s Law', 'Ohm\'s Law', 'Bernoulli\'s Principle'] },
-                    { q: 'What is the latent heat of vaporization of water at 20\u00B0C?', a: '~2.45 MJ/kg', opts: ['~1.0 MJ/kg', '~2.45 MJ/kg', '~4.18 MJ/kg', '~0.33 MJ/kg'] },
-                    { q: 'The Clausius-Clapeyron relation predicts saturation vapor pressure increases by what per \u00B0C?', a: '~7%', opts: ['~2%', '~7%', '~15%', '~25%'] },
-                    { q: 'What equation extends Darcy\'s Law to unsaturated flow?', a: 'Richards\' equation', opts: ['Navier-Stokes', 'Richards\' equation', 'Bernoulli\'s equation', 'Poiseuille\'s equation'] },
-                    { q: 'What is cloud albedo\'s approximate effect on solar radiation?', a: 'Reflects ~30%', opts: ['Reflects ~5%', 'Reflects ~30%', 'Reflects ~60%', 'Reflects ~90%'] },
-                    { q: 'What is the average residence time of a water molecule in the ocean?', a: '~3,200 years', opts: ['~9 days', '~100 years', '~3,200 years', '~1 million years'] },
-                    { q: 'What is the Bowen ratio?', a: 'Ratio of sensible to latent heat flux', opts: ['Ratio of sensible to latent heat flux', 'Ratio of runoff to infiltration', 'Ratio of evaporation to precipitation', 'Ratio of cloud cover to clear sky'] },
-                  ];
-                  var pool = (gradeBand === 'K-2' || gradeBand === '3-5') ? WC_QS_ELEM : (gradeBand === '9-12') ? WC_QS_ADVANCED : WC_QS_MIDDLE;
+                  var pool = WATER_CYCLE_QUIZZES[gradeBand] || WATER_CYCLE_QUIZZES['3-5'];
                   var q = pool[Math.floor(Math.random() * pool.length)];
-
-                  upd('wcQuiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0 });
-
+                  upd('wcQuiz', {
+                    q: q.q,
+                    a: q.a,
+                    opts: q.opts,
+                    answered: false,
+                    score: (d.wcQuiz && d.wcQuiz.score) || 0,
+                    concept: q.concept,
+                    wrongFeedback: q.wrongFeedback
+                  });
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.wcQuiz ? 'bg-sky-100 text-sky-700' : 'bg-sky-600 text-white') + " transition-all"
-
               }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz (" + gradeBand + ")"),
 
               // ═══ AI GENERATED QUIZ BUTTON ═══
@@ -1868,31 +3420,43 @@ const d = labToolData.waterCycle;
                     'Current stage being studied: ' + stageCtx + '. ' +
                     'Current climate simulation settings: ' + climCtx + '. ' +
                     'Generate exactly ONE multiple-choice question about the water cycle relevant to this stage and conditions. ' +
+                    'Name the core scientific concept (from: evaporation, condensation, precipitation, collection, transpiration, infiltration, aquifer, watershed). ' +
+                    'For each distractor, provide a short 1-sentence explanation of why it is incorrect. ' +
+                    'Ensure all text uses standard hyphens and NO em-dashes or en-dashes. ' +
                     'Respond ONLY with valid JSON in this exact format (no markdown, no explanation): ' +
-                    '{"question":"...","correct":"...","distractors":["...","...","..."]}';
+                    '{"question":"...","correct":"...","distractors":["...","...","..."],"concept":"...","wrongFeedback":{"distractor1":"why incorrect","distractor2":"why incorrect","distractor3":"why incorrect"}}';
                   callGemini(prompt, true, false, 0.7).then(function(resp) {
                     try {
                       var clean = (typeof resp === 'string' ? resp : '').replace(/```json?\n?/g, '').replace(/```/g, '').trim();
                       var parsed = JSON.parse(clean);
                       if (parsed.question && parsed.correct && parsed.distractors && parsed.distractors.length >= 3) {
                         var allOpts = [parsed.correct].concat(parsed.distractors.slice(0, 3)).sort(function() { return Math.random() - 0.5; });
-                        upd('wcQuiz', { q: parsed.question, a: parsed.correct, opts: allOpts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0, isAI: true });
+                        upd('wcQuiz', {
+                          q: parsed.question,
+                          a: parsed.correct,
+                          opts: allOpts,
+                          answered: false,
+                          score: (d.wcQuiz && d.wcQuiz.score) || 0,
+                          isAI: true,
+                          concept: parsed.concept || stageCtx,
+                          wrongFeedback: parsed.wrongFeedback || {}
+                        });
                         upd('aiQuizLoading', false);
                       } else { throw new Error('bad format'); }
                     } catch(e) {
                       addToast('\u26A0\uFE0F AI quiz failed, using static question', 'error');
                       upd('aiQuizLoading', false);
                       // Fallback to static
-                      var fb = [{ q: 'What percentage of Earth is covered by water?', a: '71%', opts: ['50%', '60%', '71%', '85%'] }];
+                      var fb = [{ q: 'What percentage of Earth is covered by water?', a: '71%', opts: ['50%', '60%', '71%', '85%'], concept: 'collection', wrongFeedback: { '50%': 'Too low. Earth is 71% water.', '60%': 'Too low. Earth is 71% water.', '85%': 'Too high. Earth is 71% water.' } }];
                       var q2 = fb[0];
-                      upd('wcQuiz', { q: q2.q, a: q2.a, opts: q2.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0 });
+                      upd('wcQuiz', { q: q2.q, a: q2.a, opts: q2.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0, concept: q2.concept, wrongFeedback: q2.wrongFeedback });
                     }
                   }).catch(function() {
                     addToast('\u26A0\uFE0F AI unavailable, using static question', 'error');
                     upd('aiQuizLoading', false);
-                    var fb = [{ q: 'How much of Earth\'s water is freshwater?', a: '3%', opts: ['3%', '10%', '25%', '50%'] }];
+                    var fb = [{ q: 'How much of Earth\'s water is freshwater?', a: '3%', opts: ['3%', '10%', '25%', '50%'], concept: 'collection', wrongFeedback: { '10%': 'Too high. Only 3% is fresh.', '25%': 'Too high. Only 3% is fresh.', '50%': 'Too high. Only 3% is fresh.' } }];
                     var q2 = fb[0];
-                    upd('wcQuiz', { q: q2.q, a: q2.a, opts: q2.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0 });
+                    upd('wcQuiz', { q: q2.q, a: q2.a, opts: q2.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0, concept: q2.concept, wrongFeedback: q2.wrongFeedback });
                   });
                 },
                 disabled: d.aiQuizLoading,
@@ -1900,9 +3464,9 @@ const d = labToolData.waterCycle;
               }, d.aiQuizLoading ? '\u23F3 Generating...' : '\u2728 AI Question'),
 
               d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
-              d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[8px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
+              d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
               (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
-              (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
+              (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
 
               d.wcQuiz && React.createElement("div", { className: "mt-2 bg-gradient-to-br from-sky-50 to-indigo-50 rounded-xl p-3 border border-sky-200 shadow-sm" },
 
@@ -1926,11 +3490,8 @@ const d = labToolData.waterCycle;
                         var newStreak = correct ? (d.wcStreak || 0) + 1 : 0;
                         var newAttempts = (d.wcAttempts || 0) + 1;
 
-                        upd('wcQuiz', Object.assign({}, d.wcQuiz, { answered: true, chosen: opt, score: d.wcQuiz.score + (correct ? 1 : 0) }));
-                        upd('wcStreak', newStreak);
-                        upd('wcAttempts', newAttempts);
-
                         if (correct) {
+                          sfxWcCorrect();
                           addToast('\u2705 Correct! +5 XP', 'success');
                           if (typeof awardStemXP === 'function') awardStemXP('waterCycle', 5, 'Water Cycle quiz');
                           // Streak celebration
@@ -1940,8 +3501,24 @@ const d = labToolData.waterCycle;
                             if (typeof awardStemXP === 'function') awardStemXP('waterCycle', 10, 'Water Cycle streak bonus');
                           }
                         } else {
+                          sfxWcIncorrect();
                           addToast('\u274C The answer is: ' + d.wcQuiz.a, 'error');
                         }
+
+                        var nextQuizCorrectCount = (d.quizCorrectCount || 0) + (correct ? 1 : 0);
+                        var nextState = Object.assign({}, d, {
+                          quizCorrectCount: nextQuizCorrectCount,
+                          wcQuiz: Object.assign({}, d.wcQuiz, { answered: true, chosen: opt, score: d.wcQuiz.score + (correct ? 1 : 0) }),
+                          wcStreak: newStreak,
+                          wcAttempts: newAttempts
+                        });
+                        updMulti({
+                          wcQuiz: nextState.wcQuiz,
+                          wcStreak: newStreak,
+                          wcAttempts: newAttempts,
+                          quizCorrectCount: nextQuizCorrectCount
+                        });
+                        setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
 
                       }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all cursor-pointer " + cls
 
@@ -1949,6 +3526,41 @@ const d = labToolData.waterCycle;
 
                   })
 
+                ),
+
+                // Inline wrong-option explanations and vocabulary study cards
+                d.wcQuiz.answered && React.createElement("div", { className: "mt-3 space-y-2 animate-in fade-in" },
+                  React.createElement("div", {
+                    className: "p-3 rounded-lg text-sm " + (d.wcQuiz.chosen === d.wcQuiz.a ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-600 border border-red-200")
+                  },
+                    React.createElement("p", { className: "font-black text-xs" }, d.wcQuiz.chosen === d.wcQuiz.a ? "✅ Correct answer!" : "❌ Incorrect answer"),
+                    React.createElement("p", { className: "text-xs mt-1 leading-relaxed text-slate-700 font-medium" },
+                      d.wcQuiz.chosen === d.wcQuiz.a
+                        ? "Great job! That is correct."
+                        : (d.wcQuiz.wrongFeedback && d.wcQuiz.wrongFeedback[d.wcQuiz.chosen])
+                          ? d.wcQuiz.wrongFeedback[d.wcQuiz.chosen]
+                          : "That choice is not correct. Study the concept to learn more."
+                    )
+                  ),
+
+                  // Concept study card
+                  d.wcQuiz.concept && WATER_CYCLE_VOCAB[d.wcQuiz.concept] && (function() {
+                    var concept = d.wcQuiz.concept;
+                    var definition = WATER_CYCLE_VOCAB[concept];
+                    var studied = (d.vocabWordsStudied || []).indexOf(concept) !== -1;
+                    return React.createElement("div", { className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in" },
+                      React.createElement("div", { className: "flex-1" },
+                        React.createElement("p", { className: "text-xs font-bold text-indigo-800" }, "🔍 Concept Focus: " + concept),
+                        React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5 leading-relaxed font-medium" }, definition)
+                      ),
+                      !studied && React.createElement("button", {
+                        onClick: function() {
+                          studyVocab(concept);
+                        },
+                        className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105"
+                      }, "📖 Study Term (+5 RP)")
+                    );
+                  })()
                 )
 
               )

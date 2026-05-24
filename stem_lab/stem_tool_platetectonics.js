@@ -108,6 +108,16 @@ var d = labToolData.plateTectonics || {};
           var timelapseSpeed = d.timelapseSpeed || 1;
           var timelapseProgress = d.timelapseProgress || 0;
 
+          // New UDL states
+          var completedChallenges = d.completedChallenges || [];
+          var researchPoints = d.researchPoints || 0;
+          var totalRP = d.totalRP || 0;
+          var quizScore = d.quizScore || 0;
+          var eruptionCount = d.eruptionCount || 0;
+          var quakeCount = d.quakeCount || 0;
+          var vocabLookedUp = d.vocabLookedUp || [];
+          var timelapsePlayed = d.timelapsePlayed || false;
+
 
 
           var upd = function(patch) {
@@ -119,6 +129,53 @@ var d = labToolData.plateTectonics || {};
             });
 
           };
+
+          // --- UDL Challenges & Vocabulary ---
+          var CHALLENGES = [
+            { id: 'first_quake', name: 'Plate Boundary Shaker', desc: 'Trigger an earthquake', icon: '📈', rp: 10, check: function() { return (d.quakeCount || 0) >= 1; } },
+            { id: 'major_quake', name: 'Cataclysmic Rumble', desc: 'Trigger a magnitude 8.0+ earthquake', icon: '⚡', rp: 25, check: function() { return d.eqMagnitude >= 8.0 && (d.quakeCount || 0) >= 1; } },
+            { id: 'erupt_volcano', name: 'Magma Vent', desc: 'Trigger a volcanic eruption', icon: '🌋', rp: 15, check: function() { return (d.eruptionCount || 0) >= 1; } },
+            { id: 'five_eruptions', name: 'Volcanic Ring', desc: 'Trigger 5+ volcanic eruptions', icon: '🔥', rp: 30, check: function() { return (d.eruptionCount || 0) >= 5; } },
+            { id: 'read_cascadia', name: 'Cascadia Scholar', desc: 'Read the Cascadia Subduction Zone tab', icon: '🌲', rp: 20, check: function() { return d.simTab === 'cascadia'; } },
+            { id: 'quiz_pass', name: 'Tectonics Scholar', desc: 'Score 5+ on the Plate Tectonics Quiz', icon: '🎓', rp: 50, check: function() { return d.quizScore >= 5; } },
+            { id: 'vocab_look', name: 'Earth Glossary', desc: 'Look up 3 vocabulary terms in the dictionary', icon: '📖', rp: 15, check: function() { return (d.vocabLookedUp || []).length >= 3; } },
+            { id: 'timelapse_drift', name: 'Continental Drift', desc: 'Play the continental drift time-lapse', icon: '⏳', rp: 20, check: function() { return d.timelapsePlayed; } }
+          ];
+
+          var TECT_VOCAB = {
+            'Convergent boundary': 'Where two plates push together; produces mountains, trenches, and volcanic arcs.',
+            'P-wave': 'Primary wave; compressional; fastest seismic wave; travels through solids and liquids.',
+            'Divergent boundary': 'Where two plates move apart; produces mid-ocean ridges and continental rifts.',
+            'Pacific': 'Largest plate. Hosts the Ring of Fire. Subducts under most surrounding plates.',
+            'Convection': 'The transfer of heat by movement of fluid; drives plate motion in the mantle.',
+            'Subduction zone': 'A convergent boundary where one plate dives beneath another, recycling crust into the mantle.',
+            'Moment magnitude (Mw)': 'Modern scale used for all earthquake sizes; supplants Richter for large events.',
+            'Pangaea': 'Supercontinent assembled by ~300 million years ago; broke apart starting ~200 Ma.'
+          };
+
+          function checkChallenges() {
+            var newCompleted = completedChallenges.slice();
+            var rpGain = 0;
+            CHALLENGES.forEach(function(ch) {
+              if (newCompleted.indexOf(ch.id) === -1 && ch.check()) {
+                newCompleted.push(ch.id);
+                rpGain += ch.rp;
+                if (typeof addToast === 'function') addToast('🏆 Challenge: ' + ch.name + ' (+' + ch.rp + ' RP)', 'success');
+                sfxTectCorrect();
+              }
+            });
+            if (rpGain > 0) {
+              upd({ completedChallenges: newCompleted, researchPoints: researchPoints + rpGain, totalRP: totalRP + rpGain });
+            }
+          }
+
+          // Track tab views automatically
+          var currentViews = d.tabsViewed || {};
+          if (!currentViews[simTab]) {
+            currentViews[simTab] = true;
+            upd({ tabsViewed: currentViews });
+            setTimeout(checkChallenges, 50);
+          }
 
 
 
@@ -3992,26 +4049,113 @@ var d = labToolData.plateTectonics || {};
 
 
 
-          // â”€â”€ Quiz data â”€â”€
+          // ———— Quiz data ————
 
           var QUIZZES = [
-
-            { q: 'What type of boundary creates the Himalayas?', opts: ['Divergent','Convergent','Transform','Subduction'], ans: 1, explain: 'The Indian plate collides with the Eurasian plate, pushing up the Himalayas.' },
-
-            { q: 'Which seismic wave arrives first at a station?', opts: ['S-wave','Surface wave','P-wave','Love wave'], ans: 2, explain: 'P-waves (primary) are compression waves that travel fastest through rock.' },
-
-            { q: 'What forms at a divergent boundary?', opts: ['Mountains','Trenches','Mid-ocean ridges','Volcanoes only'], ans: 2, explain: 'Plates pull apart, magma rises, and new oceanic crust forms a ridge.' },
-
-            { q: 'The Ring of Fire encircles which ocean?', opts: ['Atlantic','Indian','Arctic','Pacific'], ans: 3, explain: 'The Ring of Fire borders the Pacific Ocean with ~75% of the world\'s volcanoes.' },
-
-            { q: 'What drives tectonic plate movement?', opts: ['Gravity alone','Convection currents','Wind erosion','Solar energy'], ans: 1, explain: 'Convection currents in the mantle create drag that moves plates.' },
-
-            { q: 'What is subduction?', opts: ['Plates sliding past','One plate diving under another','Plates pulling apart','Plates rotating'], ans: 1, explain: 'An oceanic plate dives beneath a continental plate, forming trenches and volcanoes.' },
-
-            { q: 'What scale measures earthquake magnitude?', opts: ['Beaufort','Mohs','Richter/Moment','Kelvin'], ans: 2, explain: 'The Richter (or Moment Magnitude) scale measures earthquake energy release.' },
-
-            { q: 'Pangaea means...', opts: ['All land','All water','All fire','All air'], ans: 0, explain: 'Pangaea comes from Greek: "pan" (all) + "gaia" (earth/land).' }
-
+            {
+              q: 'What type of boundary creates the Himalayas?',
+              opts: ['Divergent', 'Convergent', 'Transform', 'Subduction'],
+              ans: 1,
+              concept: 'Convergent boundary',
+              explain: 'The Indian plate collides with the Eurasian plate, pushing up the Himalayas.',
+              wrongFeedback: [
+                'Incorrect. Divergent boundaries pull plates apart, forming rift valleys and mid-ocean ridges, not mountains.',
+                'Correct! The continental collision between India and Eurasia pushes the crust upward to form mountains.',
+                'Incorrect. Transform boundaries slide horizontally, causing faults and quakes but not high mountains.',
+                'Incorrect. While subduction is convergent, continental collision does not involve subduction because both plates are buoyant.'
+              ]
+            },
+            {
+              q: 'Which seismic wave arrives first at a recording station?',
+              opts: ['S-wave', 'Surface wave', 'P-wave', 'Love wave'],
+              ans: 2,
+              concept: 'P-wave',
+              explain: 'P-waves (primary) are compression waves that travel fastest through rock.',
+              wrongFeedback: [
+                'Incorrect. Secondary (S) waves travel slower than P-waves and arrive second.',
+                'Incorrect. Surface waves are the slowest seismic waves and arrive last.',
+                'Correct! P-waves are primary compressional waves and always arrive first.',
+                'Incorrect. Love waves are surface waves and arrive much later than body waves.'
+              ]
+            },
+            {
+              q: 'What forms at a divergent boundary in the ocean?',
+              opts: ['Mountains', 'Trenches', 'Mid-ocean ridges', 'Volcanoes only'],
+              ans: 2,
+              concept: 'Divergent boundary',
+              explain: 'Plates pull apart, magma rises, and new oceanic crust forms a ridge.',
+              wrongFeedback: [
+                'Incorrect. Mountains typically form where plates collide (convergent boundaries).',
+                'Incorrect. Trenches form at subduction zones where plates converge.',
+                'Correct! Mid-ocean ridges form as tectonic plates pull apart and magma rises to create new seafloor.',
+                'Incorrect. Mid-ocean ridges form here, which include underwater volcanoes but also structural rift zones.'
+              ]
+            },
+            {
+              q: 'The Ring of Fire encircles which ocean?',
+              opts: ['Atlantic', 'Indian', 'Arctic', 'Pacific'],
+              ans: 3,
+              concept: 'Pacific',
+              explain: 'The Ring of Fire borders the Pacific Ocean with ~75% of the world\'s active volcanoes.',
+              wrongFeedback: [
+                'Incorrect. The Atlantic Ocean has the mid-ocean ridge but not the subduction-related Ring of Fire.',
+                'Incorrect. The Indian Ocean lacks the continuous subduction trenches that define the Ring of Fire.',
+                'Incorrect. The Arctic Ocean is relatively quiet tectonically compared to this area.',
+                'Correct! The Pacific Ocean is ringed by subduction zones, causing frequent quakes and eruptions.'
+              ]
+            },
+            {
+              q: 'What drives tectonic plate movement in the mantle?',
+              opts: ['Gravity alone', 'Convection currents', 'Wind erosion', 'Solar energy'],
+              ans: 1,
+              concept: 'Convection',
+              explain: 'Convection currents in the mantle transfer heat and drag plates along.',
+              wrongFeedback: [
+                'Incorrect. Gravity plays a role via slab pull, but heat-driven circulation is the primary engine.',
+                'Correct! Heat from the core drives convection currents in the asthenosphere, moving plates.',
+                'Incorrect. Wind erosion only affects the surface of the Earth, not the deep mantle.',
+                'Incorrect. Solar energy drives weather and surface cycles, not internal tectonics.'
+              ]
+            },
+            {
+              q: 'What is subduction in tectonic terms?',
+              opts: ['Plates sliding past', 'One plate diving under another', 'Plates pulling apart', 'Plates rotating'],
+              ans: 1,
+              concept: 'Subduction zone',
+              explain: 'An oceanic plate dives beneath a continental plate, recycling crust into the mantle.',
+              wrongFeedback: [
+                'Incorrect. Plates sliding past horizontally is called transform motion.',
+                'Correct! Subduction happens when a denser oceanic plate sinks beneath another plate into the mantle.',
+                'Incorrect. Plates pulling apart is divergent boundary motion.',
+                'Incorrect. Plate rotation is microplate behavior, not subduction.'
+              ]
+            },
+            {
+              q: 'What scale measures modern earthquake magnitude?',
+              opts: ['Beaufort', 'Mohs', 'Moment magnitude (Mw)', 'Kelvin'],
+              ans: 2,
+              concept: 'Moment magnitude (Mw)',
+              explain: 'The Moment Magnitude scale measures the total energy released by an earthquake.',
+              wrongFeedback: [
+                'Incorrect. The Beaufort scale measures wind speed, not earthquakes.',
+                'Incorrect. The Mohs scale measures mineral hardness.',
+                'Correct! Moment magnitude measures total energy release and is the modern scientific standard.',
+                'Incorrect. Kelvin is a unit of temperature.'
+              ]
+            },
+            {
+              q: 'Pangaea means which of the following in Greek?',
+              opts: ['All land', 'All water', 'All fire', 'All air'],
+              ans: 0,
+              concept: 'Pangaea',
+              explain: 'Pangaea comes from Greek: "pan" (all) + "gaia" (earth/land).',
+              wrongFeedback: [
+                'Correct! Pangaea translates literally to "all Earth" or "all land" in ancient Greek.',
+                'Incorrect. "All water" would refer to Panthalassa, the superocean.',
+                'Incorrect. There is no fire in the word Pangaea.',
+                'Incorrect. There is no air in the word Pangaea.'
+              ]
+            }
           ];
 
 
@@ -4181,7 +4325,7 @@ var d = labToolData.plateTectonics || {};
 
                   if (gap < 15) {
 
-                    // Collision — spawn earthquake + trigger eruption
+                    // Collision - spawn earthquake and trigger eruption
 
                     var bx = (dp.x + dp.w / 2 + op.x + op.w / 2) / 2;
 
@@ -4193,10 +4337,19 @@ var d = labToolData.plateTectonics || {};
 
                     }
 
+                    sfxTectQuake();
+
                     // Trigger full eruption at collision point
                     if ((dp.type !== op.type || Math.random() > 0.4) && !eruptState.active) {
                       triggerEruption(bx);
+                      sfxTectErupt();
+                      var curErupt = (d.eruptionCount || 0) + 1;
+                      upd({ eruptionCount: curErupt });
                     }
+
+                    var curQuakes = (d.quakeCount || 0) + 1;
+                    upd({ quakeCount: curQuakes });
+                    setTimeout(checkChallenges, 50);
 
                     if (typeof awardStemXP === 'function') awardStemXP('plateTectonics', 3, 'Boundary interaction');
 
@@ -4863,6 +5016,10 @@ var d = labToolData.plateTectonics || {};
             canvasEl.addEventListener('triggerEruption', _ptHandlers.triggerEruption = function() {
               if (!eruptState.active) {
                 triggerEruption(cW * 0.5);
+                sfxTectErupt();
+                var curErupt = (d.eruptionCount || 0) + 1;
+                upd({ eruptionCount: curErupt });
+                setTimeout(checkChallenges, 50);
               }
             });
 
@@ -5112,9 +5269,39 @@ var d = labToolData.plateTectonics || {};
 
             ),
 
+            // Challenges Progress Card
+            React.createElement("div", {
+              className: "mt-4 rounded-xl p-4 border bg-gradient-to-r from-orange-50 to-red-50 border-orange-200",
+              style: { boxShadow: '0 2px 8px rgba(220,38,38,0.1)' }
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("div", { className: "flex items-center gap-2" },
+                  React.createElement("span", { style: { fontSize: '18px' } }, "⭐"),
+                  React.createElement("span", { className: "text-sm font-bold text-orange-700" }, (d.researchPoints || 0) + " RP")
+                ),
+                React.createElement("span", {
+                  className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-600"
+                }, (d.completedChallenges || []).length + "/" + CHALLENGES.length + " challenges")
+              ),
+              React.createElement("div", { className: "w-full rounded-full h-2.5 bg-orange-100/50", style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+                React.createElement("div", {
+                  className: "bg-gradient-to-r from-orange-500 to-red-500 h-2.5 rounded-full transition-all duration-500",
+                  style: { width: Math.min(100, ((d.completedChallenges || []).length / CHALLENGES.length) * 100) + '%', boxShadow: '0 0 8px rgba(249,115,22,0.4)' }
+                })
+              ),
+              React.createElement("div", { className: "flex flex-wrap gap-2 mt-3" },
+                CHALLENGES.map(function(ch) {
+                  var done = (d.completedChallenges || []).indexOf(ch.id) !== -1;
+                  return React.createElement("div", {
+                    key: ch.id, title: ch.name + ': ' + ch.desc + ' (' + ch.rp + ' RP)',
+                    className: "text-center cursor-default transition-all " + (done ? 'drop-shadow-md' : 'opacity-25 grayscale'),
+                    style: { fontSize: '18px' }
+                  }, ch.icon);
+                })
+              )
+            ),
 
-
-            // â•â•â• TAB 1: SIMULATION â•â•â•
+            // ── TAB 1: SIMULATION ──
 
             simTab === 'sim' && React.createElement("div", { className: "space-y-4" },
 
@@ -5283,7 +5470,7 @@ var d = labToolData.plateTectonics || {};
 
                   React.createElement("span", { className: "text-xs font-bold text-red-600 w-20" }, "Magnitude:"),
 
-                  React.createElement("input", { type: "range", "aria-label": "Earthquake magnitude (Richter scale)", min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); }, className: "flex-1 accent-red-500" }),
+                  React.createElement("input", { type: "range", "aria-label": "Earthquake magnitude (Richter scale)", min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); setTimeout(checkChallenges, 50); }, className: "flex-1 accent-red-500" }),
 
                   React.createElement("span", { className: "text-lg font-black px-3 py-1 rounded-lg", style: { background: eqMagnitude >= 7 ? '#dc2626' : eqMagnitude >= 5 ? '#f59e0b' : '#22c55e', color: 'white' } }, eqMagnitude.toFixed(1))
 
@@ -5377,7 +5564,8 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('button', {
                       onClick: function() {
                         if (!timelapsePlaying) {
-                          upd({ timelapsePlaying: true, timelapseProgress: timelineEra });
+                          upd({ timelapsePlaying: true, timelapseProgress: timelineEra, timelapsePlayed: true });
+                          setTimeout(checkChallenges, 50);
                         } else {
                           upd({ timelapsePlaying: false });
                         }
@@ -5889,22 +6077,32 @@ var d = labToolData.plateTectonics || {};
             simTab === 'quiz' && (function() {
 
               var qz = QUIZZES[quizIdx % QUIZZES.length];
+              var isAnswered = quizAnswer !== null;
+
+              var chosenOpt = null;
+              if (quizAnswer && quizAnswer.indexOf('wrong_') === 0) {
+                chosenOpt = parseInt(quizAnswer.split('_')[1], 10);
+              } else if (quizAnswer === 'correct') {
+                chosenOpt = qz.ans;
+              }
 
               return React.createElement("div", { className: "p-6 rounded-2xl border-2 border-red-200", style: { background: _gCard } },
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-4" },
 
-                  React.createElement("span", { className: "text-2xl" }, "\u2753"),
+                  React.createElement("span", { className: "text-2xl" }, "❓"),
 
                   React.createElement("h3", { className: "font-black text-red-900" }, "Plate Tectonics Quiz"),
 
-                  React.createElement("span", { className: "ml-auto text-xs font-bold text-red-400" }, (quizIdx % QUIZZES.length + 1) + " / " + QUIZZES.length)
+                  React.createElement("span", { className: "ml-auto text-xs font-bold text-red-500" },
+                    "Score: " + (d.quizScore || 0) + " | Question " + (quizIdx % QUIZZES.length + 1) + " / " + QUIZZES.length
+                  )
 
                 ),
 
                 React.createElement("div", { className: "p-4 bg-white rounded-xl border border-red-200 mb-4 text-sm font-bold text-slate-700" }, qz.q),
 
-                quizAnswer === null && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                !isAnswered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
                   qz.opts.map(function(opt, oi) {
 
@@ -5913,10 +6111,18 @@ var d = labToolData.plateTectonics || {};
                       onClick: function() {
 
                         var correct = oi === qz.ans;
+                        var newAnswer = correct ? 'correct' : 'wrong_' + oi;
+                        var newScore = correct ? (d.quizScore || 0) + 1 : (d.quizScore || 0);
 
-                        upd({ quizAnswer: correct ? 'correct' : 'wrong_' + oi });
+                        upd({ quizAnswer: newAnswer, quizScore: newScore });
 
-                        if (correct && typeof awardStemXP === 'function') awardStemXP('plateTectonics', 3, 'Quiz correct');
+                        if (correct) {
+                          sfxTectCorrect();
+                          if (typeof awardStemXP === 'function') awardStemXP('plateTectonics', 3, 'Quiz correct');
+                        } else {
+                          sfxTectQuake();
+                        }
+                        setTimeout(checkChallenges, 50);
 
                       },
 
@@ -5928,7 +6134,7 @@ var d = labToolData.plateTectonics || {};
 
                 ),
 
-                quizAnswer && React.createElement("div", { className: "space-y-2" },
+                isAnswered && React.createElement("div", { className: "space-y-4" },
 
                   React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
@@ -5944,29 +6150,62 @@ var d = labToolData.plateTectonics || {};
 
                         className: "p-3 rounded-xl text-sm font-bold border-2 transition-all text-left " + (isCorrect ? "border-emerald-400 bg-emerald-50 text-emerald-700" : wasSelected ? "border-red-400 bg-red-50 text-red-600" : "border-slate-200 bg-white text-slate-600")
 
-                      }, (isCorrect ? "\u2705 " : wasSelected ? "\u274C " : "") + String.fromCharCode(65 + oi) + ". " + opt);
+                      }, (isCorrect ? "✅ " : wasSelected ? "❌ " : "") + String.fromCharCode(65 + oi) + ". " + opt);
 
                     })
 
                   ),
 
-                  React.createElement("div", { className: "p-3 rounded-xl border " + (quizAnswer === 'correct' ? "bg-emerald-50 border-emerald-300" : "bg-amber-50 border-amber-300") },
+                  React.createElement("div", { className: "p-3 rounded-xl border " + (quizAnswer === 'correct' ? "bg-emerald-50 border-emerald-300" : "bg-red-50 border-red-200") },
 
-                    React.createElement("div", { className: "text-xs font-bold " + (quizAnswer === 'correct' ? "text-emerald-700" : "text-amber-700") }, quizAnswer === 'correct' ? "\uD83C\uDF89 Correct!" : "\uD83E\uDD14 Not quite!"),
+                    React.createElement("div", { className: "text-xs font-bold " + (quizAnswer === 'correct' ? "text-emerald-700" : "text-red-700") },
+                      quizAnswer === 'correct' ? "🎉 Correct!" : "🤔 Not quite!"
+                    ),
 
-                    React.createElement("div", { className: "text-xs text-slate-600 mt-1" }, qz.explain)
+                    React.createElement("div", { className: "text-xs text-slate-600 mt-1" },
+                      chosenOpt !== null && qz.wrongFeedback ? qz.wrongFeedback[chosenOpt] : qz.explain
+                    ),
+
+                    React.createElement("div", { className: "text-[11px] text-slate-400 mt-1 italic" },
+                      "Explanation: " + qz.explain
+                    )
 
                   ),
 
-                  React.createElement("div", { className: "text-center" },
+                  // Vocabulary Concept Helper Card
+                  qz.concept && TECT_VOCAB[qz.concept] && (function() {
+                    var lookedUp = (vocabLookedUp || []).indexOf(qz.concept) !== -1;
+                    return React.createElement("div", { className: "p-3 rounded-xl border border-orange-200 bg-orange-50/50" },
+                      React.createElement("div", { className: "flex items-center justify-between" },
+                        React.createElement("span", { className: "text-xs font-bold text-orange-700" }, "🔍 Concept: " + qz.concept),
+                        !lookedUp && React.createElement("button", {
+                          onClick: function() {
+                            var newList = (vocabLookedUp || []).slice();
+                            if (newList.indexOf(qz.concept) === -1) {
+                              newList.push(qz.concept);
+                              upd({ vocabLookedUp: newList, researchPoints: (d.researchPoints || 0) + 5, totalRP: (d.totalRP || 0) + 5 });
+                              sfxTectCorrect();
+                              setTimeout(checkChallenges, 50);
+                            }
+                          },
+                          className: "px-2 py-0.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-700 text-[10px] font-bold transition-all"
+                        }, "Study Term (+5 RP)")
+                      ),
+                      lookedUp && React.createElement("div", { className: "text-xs text-slate-600 mt-1" },
+                        TECT_VOCAB[qz.concept]
+                      )
+                    );
+                  })(),
+
+                  React.createElement("div", { className: "text-center pt-2" },
 
                     React.createElement("button", { "aria-label": "Next Question",
 
-                      onClick: function() { upd({ quizIdx: quizIdx + 1, quizAnswer: null }); },
+                      onClick: function() { upd({ quizAnswer: null, quizIdx: quizIdx + 1 }); },
 
                       className: "px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-all"
 
-                    }, "Next Question \u2192")
+                    }, "Next Question ➔")
 
                   )
 

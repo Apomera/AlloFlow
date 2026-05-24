@@ -176,6 +176,28 @@
       check: function(d) { return d._allScenesComplete; } }
   ];
 
+  var DECOMPOSER_VOCAB = {
+    'covalent bond': 'A chemical bond formed when two atoms share electrons, typically between nonmetal atoms.',
+    'ionic bond': 'A chemical bond formed through the electrostatic attraction between oppositely charged ions, usually a metal and a nonmetal.',
+    'molar mass': 'The mass of one mole of a substance, usually expressed in grams per mole, which helps count molecules by weighing them.',
+    'oxidation': 'A chemical reaction that involves the loss of electrons or an increase in the oxidation state of a substance, such as when iron rusts.',
+    'neutralization': 'A chemical reaction between an acid and a base that produces water and a salt, neutralising their acidic and basic properties.',
+    'decomposition': 'A chemical reaction in which a single compound breaks down into two or more simpler substances, such as when decomposers recycle nutrients.',
+    'molecule': 'A group of two or more atoms held together by chemical bonds.',
+    'compound': 'A substance made of two or more different elements chemically bonded together.',
+    'element': 'A pure substance consisting entirely of one type of atom, which cannot be broken down chemically.'
+  };
+
+  var DECOMPOSER_CHALLENGES = [
+    { id: 'first_decompose', name: 'First Decomposition', desc: 'Decompose a compound into its constituent elements', icon: '⚡', rp: 25 },
+    { id: 'explore_materials', name: 'Material Explorer', desc: 'Explore 5 different materials', icon: '🧪', rp: 20 },
+    { id: 'quiz_pass', name: 'Quiz Scholar', desc: 'Answer 3 quiz questions correctly', icon: '🧠', rp: 15 },
+    { id: 'mix_reactants', name: 'Reaction Chemist', desc: 'Discover 3 different chemical reactions', icon: '🌋', rp: 30 },
+    { id: 'hunt_compounds', name: 'Compound Hunter', desc: 'Find 5 hidden compounds in the Hunt scene', icon: '🔍', rp: 20 },
+    { id: 'vocab_studied', name: 'Word Power', desc: 'Study 3 vocabulary concept cards', icon: '📝', rp: 15 }
+  ];
+
+
   /* ═══════════════════════════════════════════════════════════
      Element Visual Constants (for canvas)
      ═══════════════════════════════════════════════════════════ */
@@ -442,6 +464,80 @@
           });
         };
 
+        var checkDecomposerChallenges = function(customState) {
+          var state = customState || {};
+          var completed = state.completedChallenges || [];
+          var newlyCompleted = [];
+          var pointsEarned = 0;
+
+          for (var i = 0; i < DECOMPOSER_CHALLENGES.length; i++) {
+            var ch = DECOMPOSER_CHALLENGES[i];
+            if (completed.indexOf(ch.id) !== -1) continue;
+
+            var met = false;
+            if (ch.id === 'first_decompose') {
+              met = !!state._hasDecomposed;
+            } else if (ch.id === 'explore_materials') {
+              met = (state.materialsExplored || []).length >= 5;
+            } else if (ch.id === 'quiz_pass') {
+              met = (state.quizCorrectCount || 0) >= 3;
+            } else if (ch.id === 'mix_reactants') {
+              met = Object.keys(state.reactionsDiscovered || {}).length >= 3;
+            } else if (ch.id === 'hunt_compounds') {
+              met = Object.keys(state.foundObjects || {}).length >= 5;
+            } else if (ch.id === 'vocab_studied') {
+              met = (state.vocabWordsStudied || []).length >= 3;
+            }
+
+            if (met) {
+              newlyCompleted.push(ch.id);
+              pointsEarned += ch.rp;
+            }
+          }
+
+          if (newlyCompleted.length > 0) {
+            var updatedCompleted = completed.concat(newlyCompleted);
+            var newRP = (state.researchPoints || 0) + pointsEarned;
+            
+            updMulti({
+              completedChallenges: updatedCompleted,
+              researchPoints: newRP
+            });
+
+            newlyCompleted.forEach(function(finishedId) {
+              var ch = DECOMPOSER_CHALLENGES.find(function(c) { return c.id === finishedId; });
+              if (addToast) {
+                addToast('🏆 Challenge Complete: ' + ch.name + ' (+' + ch.rp + ' RP)', 'success');
+              }
+              if (typeof awardStemXP === 'function') {
+                awardStemXP('decomposer', ch.rp, 'Challenge: ' + ch.name);
+              }
+            });
+
+            if (typeof stemCelebrate === 'function') stemCelebrate();
+            if (typeof announceToSR === 'function') {
+              announceToSR('Challenges updated. Completed ' + updatedCompleted.length + ' of ' + DECOMPOSER_CHALLENGES.length + '. Research points: ' + newRP);
+            }
+          }
+        };
+
+        var studyDecomposerVocab = function(word) {
+          var current = d.vocabWordsStudied || [];
+          if (current.indexOf(word) === -1) {
+            var next = current.concat([word]);
+            var nextState = Object.assign({}, d, { vocabWordsStudied: next });
+            upd('vocabWordsStudied', next);
+            if (typeof awardStemXP === 'function') {
+              awardStemXP('decomposer', 5, 'Studied: ' + word);
+            }
+            if (addToast) {
+              addToast('📖 Studied concept: ' + word + ' (+5 RP)', 'info');
+            }
+            setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
+          }
+        };
+
+
 
         /* ═══════════════════════════════════════════════════
            Materials Database  (15 compounds)
@@ -653,11 +749,17 @@
           var atoms = (d.totalAtomsViewed || 0) + totalAtoms;
           var bonds = d.bondsSeen || [];
           if (bonds.indexOf(sel.bondType) < 0) bonds = bonds.concat([sel.bondType]);
+          var nextState = Object.assign({}, d, {
+            materialsExplored: next,
+            totalAtomsViewed: atoms,
+            bondsSeen: bonds
+          });
           updMulti({
             materialsExplored: next,
             totalAtomsViewed: atoms,
             bondsSeen: bonds
           });
+          setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
         }
 
 
@@ -699,9 +801,10 @@
           var mat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)];
           var q = {};
           var opts = [];
+          var tc = 0;
 
           if (type === 'formula') {
-            q = { text: 'What is the chemical formula for ' + mat.name + '?', answer: mat.formula };
+            q = { text: 'What is the chemical formula for ' + mat.name + '?', answer: mat.formula, concept: 'molecule' };
             opts = [mat.formula];
             while (opts.length < 4) {
               var r = MATERIALS[Math.floor(Math.random() * MATERIALS.length)].formula;
@@ -709,7 +812,7 @@
             }
           } else if (type === 'elements') {
             var elNames = mat.elements.map(function(e) { return e.name; }).join(', ');
-            q = { text: mat.formula + ' contains which elements?', answer: elNames };
+            q = { text: mat.formula + ' contains which elements?', answer: elNames, concept: 'element' };
             opts = [elNames];
             while (opts.length < 4) {
               var rm = MATERIALS[Math.floor(Math.random() * MATERIALS.length)];
@@ -717,31 +820,32 @@
               if (opts.indexOf(rn) < 0) opts.push(rn);
             }
           } else if (type === 'count') {
-            var tc = mat.elements.reduce(function(s, e) { return s + e.count; }, 0);
-            q = { text: 'How many total atoms in one molecule of ' + mat.formula + '?', answer: String(tc) };
+            tc = mat.elements.reduce(function(s, e) { return s + e.count; }, 0);
+            q = { text: 'How many total atoms in one molecule of ' + mat.formula + '?', answer: String(tc), concept: 'compound' };
             opts = [String(tc)];
             while (opts.length < 4) {
               var rv = String(tc + Math.floor(Math.random() * 10) - 4);
               if (rv !== String(tc) && parseInt(rv, 10) > 0 && opts.indexOf(rv) < 0) opts.push(rv);
             }
           } else if (type === 'bond') {
-            q = { text: 'What type of bonding does ' + mat.name + ' have?', answer: mat.bondType };
+            var conceptTag = mat.bondType.toLowerCase().indexOf('covalent') !== -1 ? 'covalent bond' : 'ionic bond';
+            q = { text: 'What type of bonding does ' + mat.name + ' have?', answer: mat.bondType, concept: conceptTag };
             opts = [mat.bondType];
             var allBonds = ['Ionic', 'Covalent', 'Ionic + Covalent', 'Metallic'];
             allBonds.forEach(function(b) { if (opts.indexOf(b) < 0 && opts.length < 4) opts.push(b); });
           } else if (type === 'state') {
-            q = { text: 'At room temperature, ' + mat.name + ' (' + mat.formula + ') is a...', answer: mat.state };
+            q = { text: 'At room temperature, ' + mat.name + ' (' + mat.formula + ') is a...', answer: mat.state, concept: 'compound' };
             opts = [mat.state];
             ['Solid', 'Liquid', 'Gas', 'Plasma'].forEach(function(s) { if (opts.indexOf(s) < 0 && opts.length < 4) opts.push(s); });
           } else if (type === 'realUse') {
-            q = { text: 'Which compound: ' + mat.realUse.substring(0, 80) + '...', answer: mat.name };
+            q = { text: 'Which compound: ' + mat.realUse.substring(0, 80) + '...', answer: mat.name, concept: 'compound' };
             opts = [mat.name];
             while (opts.length < 4) {
               var ru = MATERIALS[Math.floor(Math.random() * MATERIALS.length)].name;
               if (opts.indexOf(ru) < 0) opts.push(ru);
             }
           } else if (type === 'nameFromFormula') {
-            q = { text: 'What is ' + mat.formula + ' commonly known as?', answer: mat.name };
+            q = { text: 'What is ' + mat.formula + ' commonly known as?', answer: mat.name, concept: 'molecule' };
             opts = [mat.name];
             while (opts.length < 4) {
               var nf = MATERIALS[Math.floor(Math.random() * MATERIALS.length)].name;
@@ -751,14 +855,74 @@
             // True/false
             var isTruth = Math.random() > 0.5;
             if (isTruth) {
-              q = { text: 'True or False: ' + mat.name + ' has the formula ' + mat.formula + '.', answer: 'True' };
+              q = { text: 'True or False: ' + mat.name + ' has the formula ' + mat.formula + '.', answer: 'True', concept: 'molecule' };
             } else {
               var fakeMat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)];
               while (fakeMat.name === mat.name) fakeMat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)];
-              q = { text: 'True or False: ' + mat.name + ' has the formula ' + fakeMat.formula + '.', answer: 'False' };
+              q = { text: 'True or False: ' + mat.name + ' has the formula ' + fakeMat.formula + '.', answer: 'False', concept: 'molecule' };
             }
             opts = ['True', 'False'];
           }
+
+          var wf = {};
+          opts.forEach(function(opt) {
+            if (opt === q.answer) return;
+            if (type === 'formula') {
+              var other = MATERIALS.find(function(m) { return m.formula === opt; });
+              if (other) {
+                wf[opt] = opt + ' is the chemical formula for ' + other.name + ', not ' + mat.name + '.';
+              } else {
+                wf[opt] = 'That is not the correct chemical formula for ' + mat.name + '.';
+              }
+            } else if (type === 'elements') {
+              var other = MATERIALS.find(function(m) {
+                return m.elements.map(function(e) { return e.name; }).join(', ') === opt;
+              });
+              if (other) {
+                wf[opt] = 'Those elements are found in ' + other.name + ' (' + other.formula + '), not ' + mat.name + '.';
+              } else {
+                wf[opt] = 'Those elements do not match the composition of ' + mat.name + '.';
+              }
+            } else if (type === 'count') {
+              wf[opt] = 'A molecule of ' + mat.name + ' (' + mat.formula + ') contains ' + tc + ' atoms, not ' + opt + '.';
+            } else if (type === 'bond') {
+              if (opt === 'Covalent') {
+                wf[opt] = 'Covalent bonding involves sharing electrons between nonmetal atoms. ' + mat.name + ' has ' + mat.bondType + ' bonding.';
+              } else if (opt === 'Ionic') {
+                wf[opt] = 'Ionic bonding involves electrostatic attraction between oppositely charged metal and nonmetal ions. ' + mat.name + ' has ' + mat.bondType + ' bonding.';
+              } else if (opt === 'Ionic + Covalent') {
+                wf[opt] = 'This compound has polyatomic ions with internal covalent bonds forming ionic networks. ' + mat.name + ' has ' + mat.bondType + ' bonding.';
+              } else if (opt === 'Metallic') {
+                wf[opt] = 'Metallic bonding exists in pure metals, not in chemical compounds like ' + mat.name + '.';
+              } else {
+                wf[opt] = mat.name + ' has ' + mat.bondType + ' bonding, not ' + opt + '.';
+              }
+            } else if (type === 'state') {
+              wf[opt] = 'At room temperature, ' + mat.name + ' is a ' + mat.state + ', not a ' + opt + '.';
+            } else if (type === 'realUse') {
+              var other = MATERIALS.find(function(m) { return m.name === opt; });
+              if (other) {
+                wf[opt] = opt + ' is commonly used for ' + other.realUse.substring(0, 50) + '..., not this description.';
+              } else {
+                wf[opt] = 'That choice does not match the real-world application described.';
+              }
+            } else if (type === 'nameFromFormula') {
+              var other = MATERIALS.find(function(m) { return m.name === opt; });
+              if (other) {
+                wf[opt] = opt + ' has the chemical formula ' + other.formula + ', while ' + mat.formula + ' is ' + mat.name + '.';
+              } else {
+                wf[opt] = 'That name does not match the chemical formula ' + mat.formula + '.';
+              }
+            } else {
+              // truefalse
+              if (q.answer === 'True') {
+                wf[opt] = 'This statement is true. ' + mat.name + ' indeed has the formula ' + mat.formula + '.';
+              } else {
+                wf[opt] = 'This statement is false. ' + mat.name + ' has the formula ' + mat.formula + ', not the other one shown.';
+              }
+            }
+          });
+          q.wrongFeedback = wf;
 
           q.opts = opts.sort(function() { return Math.random() - 0.5; });
           q.answered = false;
@@ -1160,6 +1324,9 @@
             h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' },
               totalAtoms + ' ATOMS'
             ),
+            (d.researchPoints || 0) > 0 && h('span', { className: 'px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full' },
+              '⭐ ' + d.researchPoints + ' RP'
+            ),
             badges.length > 0 && h('span', { className: 'px-2 py-0.5 bg-purple-100 text-purple-700 text-[11px] font-bold rounded-full' },
               '\uD83C\uDFC5 ' + badges.length + '/' + BADGES.length
             )
@@ -1172,6 +1339,35 @@
               onClick: function() { speakText(gradeBandIntro()); },
               className: 'mt-1 text-[11px] text-amber-600 hover:text-amber-800 font-bold'
             }, '\uD83D\uDD0A Read aloud')
+          ),
+
+          // ═══ CHALLENGES PROGRESS CARD ═══
+          h('div', { className: 'bg-gradient-to-br from-indigo-50 via-sky-50 to-blue-50 rounded-xl border border-sky-200 p-3 shadow-sm mb-3 flex flex-col gap-2' },
+            h('div', { className: 'flex items-center justify-between' },
+              h('div', { className: 'flex items-center gap-2' },
+                h('span', { style: { fontSize: '18px' } }, '⭐'),
+                h('span', { className: 'text-sm font-bold text-sky-700' }, (d.researchPoints || 0) + ' RP')
+              ),
+              h('span', {
+                className: 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-600'
+              }, (d.completedChallenges || []).length + '/' + DECOMPOSER_CHALLENGES.length + ' challenges')
+            ),
+            h('div', { className: 'w-full rounded-full h-2.5 bg-sky-100/50', style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+              h('div', {
+                className: 'bg-gradient-to-r from-sky-400 to-indigo-500 h-2.5 rounded-full transition-all duration-500',
+                style: { width: Math.min(100, ((d.completedChallenges || []).length / DECOMPOSER_CHALLENGES.length) * 100) + '%', boxShadow: '0 0 8px rgba(14,165,233,0.3)' }
+              })
+            ),
+            h('div', { className: 'flex flex-wrap gap-2 mt-1' },
+              DECOMPOSER_CHALLENGES.map(function(ch) {
+                var done = (d.completedChallenges || []).indexOf(ch.id) !== -1;
+                return h('div', {
+                  key: ch.id, title: ch.name + ': ' + ch.desc + ' (' + ch.rp + ' RP)',
+                  className: 'text-center cursor-default transition-all ' + (done ? 'drop-shadow-md' : 'opacity-25 grayscale'),
+                  style: { fontSize: '18px' }
+                }, ch.icon);
+              })
+            )
           ),
 
           /* ── Tab bar ── */
@@ -1267,7 +1463,9 @@
                   var next = !decomposed;
                   if (next) {
                     SOUNDS.decompose();
+                    var nextState = Object.assign({}, d, { decomposed: true, _hasDecomposed: true });
                     updMulti({ decomposed: true, _hasDecomposed: true });
+                    setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
                   } else {
                     SOUNDS.reassemble();
                     upd('decomposed', false);
@@ -2016,9 +2214,11 @@
                           } else {
                             updates.huntTarget = null;
                           }
+                          var nextState = Object.assign({}, d, updates);
                           updMulti(updates);
                           if (addToast) addToast('\u2705 Correct! ' + obj.name + ' = ' + MATERIALS.find(function(m) { return m.name === obj.material; }).formula, 'success');
                           if (awardStemXP) awardStemXP(5);
+                          setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
                         } else {
                           SOUNDS.quizWrong();
                           updMulti({ huntWrongGuess: obj.id, huntStreak: 0 });
@@ -2209,9 +2409,11 @@
                     if (reaction) {
                       var disc = Object.assign({}, reactionsDiscovered);
                       disc[reaction.name] = true;
+                      var nextState = Object.assign({}, d, { activeReaction: reaction, reactionsDiscovered: disc });
                       updMulti({ activeReaction: reaction, reactionsDiscovered: disc });
                       if (addToast) addToast(reaction.emoji + ' ' + reaction.name + '!', 'success');
                       if (awardStemXP) awardStemXP(10);
+                      setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
                     } else {
                       upd('activeReaction', { name: 'No Known Reaction', emoji: '\uD83E\uDD37', desc: 'These two materials don\u2019t have a notable reaction in our database. Try a different combination!', equation: reactantA + ' + ' + reactantB + ' \u2192 ?', type: 'Unknown', observable: 'No visible change' });
                     }
@@ -2507,8 +2709,15 @@
               h('button', { 'aria-label': 'Speak Text',
                 onClick: function() {
                   var next = !decomposed;
-                  if (next) { SOUNDS.decompose(); updMulti({ decomposed: true, _hasDecomposed: true }); }
-                  else { SOUNDS.reassemble(); upd('decomposed', false); }
+                  if (next) {
+                    SOUNDS.decompose();
+                    var nextState = Object.assign({}, d, { decomposed: true, _hasDecomposed: true });
+                    updMulti({ decomposed: true, _hasDecomposed: true });
+                    setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
+                  } else {
+                    SOUNDS.reassemble();
+                    upd('decomposed', false);
+                  }
                 },
                 className: 'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all '
                   + (decomposed
@@ -2626,6 +2835,7 @@
                       var correct = opt === quizQ.answer;
                       var newStreak = correct ? quizStreak + 1 : 0;
                       var newBest = Math.max(bestStreak, newStreak);
+                      var newCorrectCount = (d.quizCorrectCount || 0) + (correct ? 1 : 0);
                       if (correct) {
                         SOUNDS.quizCorrect();
                         addToast('Correct!', 'success');
@@ -2634,16 +2844,60 @@
                         SOUNDS.quizWrong();
                         addToast('The answer is: ' + quizQ.answer, 'error');
                       }
-                      updMulti({
+                      var nextState = Object.assign({}, d, {
                         quizQ: Object.assign({}, quizQ, { answered: true, chosen: opt }),
                         quizScore: quizScore + (correct ? 1 : 0),
+                        quizCorrectCount: newCorrectCount,
                         quizStreak: newStreak,
                         bestStreak: newBest
                       });
+                      updMulti({
+                        quizQ: Object.assign({}, quizQ, { answered: true, chosen: opt }),
+                        quizScore: quizScore + (correct ? 1 : 0),
+                        quizCorrectCount: newCorrectCount,
+                        quizStreak: newStreak,
+                        bestStreak: newBest
+                      });
+                      setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
                     },
                     className: 'px-3 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ' + cls
                   }, opt);
                 })
+              ),
+
+              /* Inline wrong-option explanations and vocabulary study cards */
+              quizQ.answered && h('div', { className: 'mt-3 mb-3 space-y-2 animate-in fade-in' },
+                h('div', {
+                  className: 'p-3 rounded-lg text-sm ' + (quizQ.chosen === quizQ.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200')
+                },
+                  h('p', { className: 'font-black text-xs' }, quizQ.chosen === quizQ.answer ? '✅ Correct answer!' : '❌ Incorrect answer'),
+                  h('p', { className: 'text-xs mt-1 leading-relaxed text-slate-700 font-medium' },
+                    quizQ.chosen === quizQ.answer
+                      ? 'Great job! That is correct.'
+                      : (quizQ.wrongFeedback && quizQ.wrongFeedback[quizQ.chosen])
+                        ? quizQ.wrongFeedback[quizQ.chosen]
+                        : 'That choice is not correct. Study the concept to learn more.'
+                  )
+                ),
+
+                /* Concept study card */
+                quizQ.concept && DECOMPOSER_VOCAB[quizQ.concept] && (function() {
+                  var concept = quizQ.concept;
+                  var definition = DECOMPOSER_VOCAB[concept];
+                  var studied = (d.vocabWordsStudied || []).indexOf(concept) !== -1;
+                  return h('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in' },
+                    h('div', { className: 'flex-1' },
+                      h('p', { className: 'text-xs font-bold text-indigo-800' }, '🔍 Concept Focus: ' + concept),
+                      h('p', { className: 'text-[11px] text-slate-600 mt-0.5 leading-relaxed font-medium' }, definition)
+                    ),
+                    !studied && h('button', {
+                      onClick: function() {
+                        studyDecomposerVocab(concept);
+                      },
+                      className: 'px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105'
+                    }, '📖 Study Term (+5 RP)')
+                  );
+                })()
               ),
 
               /* Next question button (after answer) */

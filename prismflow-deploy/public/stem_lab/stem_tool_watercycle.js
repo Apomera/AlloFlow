@@ -38,6 +38,7 @@
   function sfxFreeze() { wcTone(1200, 0.04, 'sine', 0.04); setTimeout(function() { wcTone(1400, 0.03, 'sine', 0.03); }, 30); setTimeout(function() { wcTone(1600, 0.03, 'sine', 0.03); }, 60); }
   function sfxWcCorrect() { wcTone(523, 0.08, 'sine', 0.07); setTimeout(function() { wcTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { wcTone(784, 0.1, 'sine', 0.08); }, 140); }
   function sfxWcClick() { wcTone(600, 0.03, 'sine', 0.04); }
+  function sfxWcIncorrect() { wcTone(220, 0.15, 'triangle', 0.06); setTimeout(function() { wcTone(180, 0.2, 'triangle', 0.06); }, 120); }
 
   // Ambient water background
   var _wcAmb = null;
@@ -234,6 +235,396 @@
     };
   }
 
+  var WATER_CYCLE_VOCAB = {
+    'evaporation': 'The process where liquid water absorbs thermal energy and changes into water vapor gas, rising into the atmosphere.',
+    'condensation': 'The process where water vapor gas cools and changes back into liquid water droplets, forming clouds.',
+    'precipitation': 'Water falling from clouds to Earth\'s surface as rain, snow, sleet, or hail when droplets grow too heavy.',
+    'collection': 'The accumulation of water in oceans, lakes, rivers, and underground reservoirs, completing the surface loop.',
+    'transpiration': 'The evaporation of water from plant leaves through tiny pores called stomata, acting as a natural pump.',
+    'infiltration': 'The process by which water on the ground surface enters the soil and rocks, replenishing groundwater.',
+    'sublimation': 'The direct transition of water from solid ice or snow into water vapor gas, bypassing the liquid phase.',
+    'aquifer': 'An underground layer of water-bearing permeable rock, gravel, sand, or silt from which groundwater can be extracted.',
+    'watershed': 'An area of land where all of the water that falls in it drains off into a common outlet like a river or bay.',
+    'riparian buffer': 'A vegetated area next to a water body, usually forested, which helps shade streams and filter run-off.',
+    'Darcy\'s Law': 'A mathematical equation that describes the flow of a fluid through a porous medium, governing groundwater.',
+    'PFAS': 'Synthetic per- and polyfluoroalkyl substances that contaminate water supplies and resist natural breakdown.',
+    'latent heat': 'The heat energy absorbed or released by water during a phase change (like liquid to gas) without changing temperature.',
+    'Bowen ratio': 'The ratio of sensible heat to latent heat loss from the surface, determining local climate feedbacks.',
+    'Clausius-Clapeyron': 'The thermodynamic relationship showing that atmospheric moisture capacity increases by about 7% per degree Celsius of warming.'
+  };
+
+  var WATER_CYCLE_CHALLENGES = [
+    { id: 'complete_journey', name: 'Droplet Cycle', desc: 'Complete 1 full water droplet journey cycle', icon: '💧', rp: 25 },
+    { id: 'explore_all_stages', name: 'Global Explorer', desc: 'View all 5 water cycle stages', icon: '🌍', rp: 35 },
+    { id: 'adjust_climate', name: 'Climate Experimenter', desc: 'Adjust solar, temperature, or wind sliders in the Climate Lab', icon: '🌡️', rp: 20 },
+    { id: 'quiz_pass', name: 'Hydrologist Scholar', desc: 'Answer a quiz question correctly', icon: '🎓', rp: 15 },
+    { id: 'vocabulary_studied', name: 'Word Power', desc: 'Study 3 water cycle vocabulary flashcards', icon: '📝', rp: 20 },
+    { id: 'stewardship_win', name: 'Watershed Champion', desc: 'Achieve a "Watershed Recovery" or "Recovering Watershed" outcome in the campaign', icon: '🏆', rp: 50 }
+  ];
+
+  var WATER_CYCLE_QUIZZES = {
+    'K-2': [
+      {
+        q: 'What makes puddles disappear on sunny days?',
+        a: 'The sun heats the water',
+        opts: ['The ground drinks it', 'The sun heats the water', 'Wind blows it away', 'It goes to sleep'],
+        concept: 'evaporation',
+        wrongFeedback: {
+          'The ground drinks it': 'While some water soaks into the ground, puddles on sidewalks and streets mostly disappear because the sun heats them up into vapor.',
+          'Wind blows it away': 'Wind can help water evaporate faster by moving air, but the sun\'s heat is the main reason liquid water changes into gas.',
+          'It goes to sleep': 'Water molecules never sleep! The sun\'s energy makes them move faster and float up into the sky.'
+        }
+      },
+      {
+        q: 'What are clouds made of?',
+        a: 'Tiny water drops',
+        opts: ['Cotton', 'Tiny water drops', 'Smoke', 'Air bubbles'],
+        concept: 'condensation',
+        wrongFeedback: {
+          'Cotton': 'Clouds look soft like cotton, but they are actually made of billions of tiny liquid water droplets floating in the air.',
+          'Smoke': 'Smoke comes from fires, but clouds in the sky are made of clean water droplets and ice crystals.',
+          'Air bubbles': 'Air bubbles are trapped inside water, but clouds are water droplets trapped in the air!'
+        }
+      },
+      {
+        q: 'What falls from clouds?',
+        a: 'Rain and snow',
+        opts: ['Stars', 'Rain and snow', 'Leaves', 'Rocks'],
+        concept: 'precipitation',
+        wrongFeedback: {
+          'Stars': 'Stars are huge, burning suns far away in space. They do not fall from clouds!',
+          'Leaves': 'Leaves fall from trees in autumn, not from clouds in the sky.',
+          'Rocks': 'Rocks are heavy parts of the ground. Only liquid or frozen water falls from clouds.'
+        }
+      },
+      {
+        q: 'Where does rain go after it falls?',
+        a: 'Rivers, lakes, and oceans',
+        opts: ['It disappears', 'Back up to the sky', 'Rivers, lakes, and oceans', 'Into outer space'],
+        concept: 'collection',
+        wrongFeedback: {
+          'It disappears': 'Water does not vanish! It collects in lakes, flows down rivers, and fills the oceans.',
+          'Back up to the sky': 'Rain must collect on the ground first before the sun can heat it to rise back up later.',
+          'Into outer space': 'Earth\'s gravity keeps water on our planet. It collects in oceans and lakes rather than escaping into space.'
+        }
+      },
+      {
+        q: 'How do plants drink water?',
+        a: 'Through their roots',
+        opts: ['Through their leaves', 'Through their roots', 'Through their flowers', 'They don\'t drink water'],
+        concept: 'transpiration',
+        wrongFeedback: {
+          'Through their leaves': 'Leaves can absorb a tiny bit of moisture, but plants get almost all their water by drinking it from the soil through their roots.',
+          'Through their flowers': 'Flowers attract bees and make seeds, but they do not drink water from the soil.',
+          'They don\'t drink water': 'All living things need water to survive, including plants!'
+        }
+      },
+      {
+        q: 'What does the sun do to ocean water?',
+        a: 'Heats it up so it rises as vapor',
+        opts: ['Freezes it', 'Heats it up so it rises as vapor', 'Turns it green', 'Makes it salty'],
+        concept: 'evaporation',
+        wrongFeedback: {
+          'Freezes it': 'The sun provides warm heat, which warms water up instead of freezing it into ice.',
+          'Turns it green': 'Algae and plants can make water look green, but the sun heats it up so it evaporates.',
+          'Makes it salty': 'Ocean water is already salty because of dissolved minerals, not because of the sun.'
+        }
+      },
+      {
+        q: 'What happens when water vapor gets cold up high?',
+        a: 'It turns into cloud drops',
+        opts: ['It turns into cloud drops', 'It becomes a star', 'It stays invisible', 'It catches fire'],
+        concept: 'condensation',
+        wrongFeedback: {
+          'It becomes a star': 'Stars are massive bodies in space, whereas water vapor just condenses into cloud droplets.',
+          'It stays invisible': 'Water vapor gas is invisible, but when it cools and condenses, it becomes visible liquid droplets (clouds).',
+          'It catches fire': 'Water does not catch fire! Cooling vapor turns back into liquid water.'
+        }
+      },
+      {
+        q: 'Can water underground come back up?',
+        a: 'Yes, through springs and wells',
+        opts: ['No, never', 'Yes, through springs and wells', 'Only if you dig', 'Only on rainy days'],
+        concept: 'infiltration',
+        wrongFeedback: {
+          'No, never': 'Groundwater is part of the cycle. It flows slowly and emerges at natural springs or is pumped up through wells.',
+          'Only if you dig': 'Digger wells do reach groundwater, but natural springs bubble up to the surface without any digging.',
+          'Only on rainy days': 'Springs flow continuously, even on sunny days, because groundwater moves very slowly.'
+        }
+      }
+    ],
+    '3-5': [
+      {
+        q: 'What drives evaporation?',
+        a: 'Solar energy',
+        opts: ['Wind', 'Solar energy', 'Gravity', 'Moon'],
+        concept: 'evaporation',
+        wrongFeedback: {
+          'Wind': 'Wind helps speed up evaporation by carrying moist air away, but solar energy is the heat source that drives the phase change.',
+          'Gravity': 'Gravity pulls water downward (precipitation, runoff), whereas solar energy drives it upward via evaporation.',
+          'Moon': 'The Moon causes ocean tides but does not heat water to drive evaporation.'
+        }
+      },
+      {
+        q: 'What forms clouds?',
+        a: 'Condensation',
+        opts: ['Evaporation', 'Precipitation', 'Condensation', 'Infiltration'],
+        concept: 'condensation',
+        wrongFeedback: {
+          'Evaporation': 'Evaporation is liquid water turning into invisible gas. Clouds are formed when this gas cools and turns back to liquid.',
+          'Precipitation': 'Precipitation is rain or snow falling out of clouds, not the process that forms the clouds themselves.',
+          'Infiltration': 'Infiltration is water soaking into the soil, which is the opposite of cloud formation.'
+        }
+      },
+      {
+        q: 'Where does most evaporation occur?',
+        a: 'Oceans',
+        opts: ['Lakes', 'Rivers', 'Oceans', 'Soil'],
+        concept: 'evaporation',
+        wrongFeedback: {
+          'Lakes': 'Lakes evaporate water, but oceans cover over 70% of Earth\'s surface and contain 97% of its water, making them the primary source.',
+          'Rivers': 'Rivers flow to the sea and have small surface areas compared to the vast oceans.',
+          'Soil': 'Soil releases moisture (evapotranspiration), but oceans are by far the largest source of atmospheric moisture.'
+        }
+      },
+      {
+        q: 'What is transpiration?',
+        a: 'Water release from plants',
+        opts: ['Rain falling', 'Water release from plants', 'Snow melting', 'Rivers flowing'],
+        concept: 'transpiration',
+        wrongFeedback: {
+          'Rain falling': 'Rain falling is precipitation. Transpiration is water rising up through plants and escaping from their leaves.',
+          'Snow melting': 'Snow melting is a phase change from solid to liquid, not related to plant transpiration.',
+          'Rivers flowing': 'Rivers flowing is runoff or collection, not a biological release of water.'
+        }
+      },
+      {
+        q: 'How much of Earth\'s water is freshwater?',
+        a: '3%',
+        opts: ['3%', '10%', '25%', '50%'],
+        concept: 'collection',
+        wrongFeedback: {
+          '10%': 'Freshwater is much scarcer! Only 3% of Earth\'s water is fresh, and most of that is frozen in ice caps.',
+          '25%': 'A quarter of Earth\'s water is not fresh. Over 97% is salty ocean water.',
+          '50%': 'Half of Earth\'s water is not fresh. Freshwater is a tiny fraction of global water.'
+        }
+      },
+      {
+        q: 'What are stomata?',
+        a: 'Tiny pores on leaves',
+        opts: ['Types of clouds', 'Tiny pores on leaves', 'Underground rivers', 'Rain droplets'],
+        concept: 'transpiration',
+        wrongFeedback: {
+          'Types of clouds': 'Clouds are made of condensed water droplets. Stomata are biological structures on plant leaves.',
+          'Underground rivers': 'Underground channels are part of aquifers. Stomata are tiny leaf pores used for gas exchange.',
+          'Rain droplets': 'Rain droplets are precipitation. Stomata are pores that let plants release water vapor.'
+        }
+      },
+      {
+        q: 'What is sublimation?',
+        a: 'Ice turning directly to vapor',
+        opts: ['Ice turning directly to vapor', 'Water freezing', 'Rain evaporating', 'Clouds forming'],
+        concept: 'sublimation',
+        wrongFeedback: {
+          'Water freezing': 'Freezing is liquid water turning to solid ice. Sublimation bypasses the liquid state entirely.',
+          'Rain evaporating': 'Rain evaporating is liquid turning to gas, whereas sublimation starts with solid ice or snow.',
+          'Clouds forming': 'Cloud formation is condensation (gas to liquid), not solid to gas.'
+        }
+      },
+      {
+        q: 'How does deforestation affect the water cycle?',
+        a: 'Reduces transpiration and increases runoff',
+        opts: ['Increases evaporation', 'Reduces transpiration and increases runoff', 'Creates more clouds', 'Has no effect'],
+        concept: 'watershed',
+        wrongFeedback: {
+          'Increases evaporation': 'Removing trees reduces the total leaf area, which decreases transpiration and makes the local climate drier.',
+          'Creates more clouds': 'Fewer trees mean less moisture is pumped into the air, leading to fewer clouds and less local rainfall.',
+          'Has no effect': 'Trees are key hydrologic pumps. Removing them severely disrupts local water cycles and increases flooding.'
+        }
+      }
+    ],
+    '6-8': [
+      {
+        q: 'What drives evaporation?',
+        a: 'Solar energy',
+        opts: ['Wind', 'Solar energy', 'Gravity', 'Moon'],
+        concept: 'evaporation',
+        wrongFeedback: {
+          'Wind': 'Wind enhances the evaporation rate by removing the boundary layer of moist air, but solar radiation is the thermodynamic driver.',
+          'Gravity': 'Gravity is a downward force driving infiltration and precipitation, whereas solar energy drives water upward.',
+          'Moon': 'The Moon drives tides but does not supply the heat energy required for the latent heat of vaporization.'
+        }
+      },
+      {
+        q: 'What forms clouds?',
+        a: 'Condensation',
+        opts: ['Evaporation', 'Precipitation', 'Condensation', 'Infiltration'],
+        concept: 'condensation',
+        wrongFeedback: {
+          'Evaporation': 'Evaporation is liquid transitioning to gas. Clouds form when this gas cools and condenses back into liquid droplets.',
+          'Precipitation': 'Precipitation occurs when cloud droplets grow too heavy and fall, not when clouds form.',
+          'Infiltration': 'Infiltration is surface water soaking into ground soil, unrelated to atmospheric clouds.'
+        }
+      },
+      {
+        q: 'Where does most evaporation occur?',
+        a: 'Oceans',
+        opts: ['Lakes', 'Rivers', 'Oceans', 'Soil'],
+        concept: 'evaporation',
+        wrongFeedback: {
+          'Lakes': 'Lakes contribute a tiny fraction of global evaporation compared to the vast surface area of the oceans.',
+          'Rivers': 'Rivers represent a tiny portion of global surface water and account for very little evaporation.',
+          'Soil': 'Soil moisture evaporation is limited by capillary action and plant coverage.'
+        }
+      },
+      {
+        q: 'What is transpiration?',
+        a: 'Water release from plants',
+        opts: ['Rain falling', 'Water release from plants', 'Snow melting', 'Rivers flowing'],
+        concept: 'transpiration',
+        wrongFeedback: {
+          'Rain falling': 'Rain falling is precipitation. Transpiration is water vapor release from plant stomata.',
+          'Snow melting': 'Melting is a solid-to-liquid transition, not a biological release of moisture.',
+          'Rivers flowing': 'River flow is runoff and collection, not a plant-driven water transport process.'
+        }
+      },
+      {
+        q: 'How much of Earth\'s water is freshwater?',
+        a: '3%',
+        opts: ['3%', '10%', '25%', '50%'],
+        concept: 'collection',
+        wrongFeedback: {
+          '10%': 'Freshwater is much scarcer! Only 3% is fresh, and about 68% of that is locked in glaciers and ice sheets.',
+          '25%': 'Over 97% of Earth\'s water is salty ocean water. Fresh water is a tiny portion.',
+          '50%': 'Half of Earth\'s water is saline. Freshwater is a scarce resource.'
+        }
+      },
+      {
+        q: 'What are stomata?',
+        a: 'Tiny pores on leaves',
+        opts: ['Types of clouds', 'Tiny pores on leaves', 'Underground rivers', 'Rain droplets'],
+        concept: 'transpiration',
+        wrongFeedback: {
+          'Types of clouds': 'Clouds are made of condensed vapor. Stomata are microscopic pores in plant epidermal layers.',
+          'Underground rivers': 'Subsurface channels are aquifers. Stomata are biological valves regulating leaf transpiration.',
+          'Rain droplets': 'Rain droplets are precipitation. Stomata are microscopic openings on leaves.'
+        }
+      },
+      {
+        q: 'What is sublimation?',
+        a: 'Ice turning directly to vapor',
+        opts: ['Ice turning directly to vapor', 'Water freezing', 'Rain evaporating', 'Clouds forming'],
+        concept: 'sublimation',
+        wrongFeedback: {
+          'Water freezing': 'Freezing is liquid to solid. Sublimation is the transition from solid directly to gas.',
+          'Rain evaporating': 'Rain evaporating is liquid to gas, whereas sublimation starts with solid ice or snow.',
+          'Clouds forming': 'Cloud formation is condensation, which is gas to liquid.'
+        }
+      },
+      {
+        q: 'How does deforestation affect the water cycle?',
+        a: 'Reduces transpiration and increases runoff',
+        opts: ['Increases evaporation', 'Reduces transpiration and increases runoff', 'Creates more clouds', 'Has no effect'],
+        concept: 'watershed',
+        wrongFeedback: {
+          'Increases evaporation': 'Without tree leaves to transpire and block wind, overall evapotranspiration drops, drying the local climate.',
+          'Creates more clouds': 'Deforestation reduces the water pump effect, decreasing atmospheric humidity and cloud formation.',
+          'Has no effect': 'Trees are vital hydrological regulators. Deforestation leads to severe soil erosion and immediate flooding.'
+        }
+      }
+    ],
+    '9-12': [
+      {
+        q: 'At what rate does air temperature decrease with altitude (environmental lapse rate)?',
+        a: '~6.5°C per 1000m',
+        opts: ['~2°C per 1000m', '~6.5°C per 1000m', '~10°C per 1000m', '~15°C per 1000m'],
+        concept: 'condensation',
+        wrongFeedback: {
+          '~2°C per 1000m': 'This rate is too low. The average environmental lapse rate in the troposphere is 6.5°C per kilometer.',
+          '~10°C per 1000m': 'This is the dry adiabatic lapse rate (9.8°C/km) for dry rising air, not the environmental profile.',
+          '~15°C per 1000m': 'This cooling rate is too high. The average atmospheric cooling is around 6.5°C per 1000m.'
+        }
+      },
+      {
+        q: 'What law governs groundwater flow through saturated porous media?',
+        a: 'Darcy\'s Law',
+        opts: ['Darcy\'s Law', 'Boyle\'s Law', 'Ohm\'s Law', 'Bernoulli\'s Principle'],
+        concept: 'Darcy\'s Law',
+        wrongFeedback: {
+          'Boyle\'s Law': 'Boyle\'s Law relates gas pressure to volume, not fluid flow through soils.',
+          'Ohm\'s Law': 'Ohm\'s Law relates voltage and current, though it shares mathematical forms with Darcy\'s Law.',
+          'Bernoulli\'s Principle': 'Bernoulli\'s equation applies to open pipe flow, not flow within saturated media.'
+        }
+      },
+      {
+        q: 'What is the latent heat of vaporization of water at 20°C?',
+        a: '~2.45 MJ/kg',
+        opts: ['~1.0 MJ/kg', '~2.45 MJ/kg', '~4.18 MJ/kg', '~0.33 MJ/kg'],
+        concept: 'latent heat',
+        wrongFeedback: {
+          '~1.0 MJ/kg': 'This value is too low. Water requires about 2.45 megajoules per kilogram to vaporize.',
+          '~4.18 MJ/kg': 'This is the specific heat capacity of liquid water, not its latent heat of vaporization.',
+          '~0.33 MJ/kg': 'This is close to the latent heat of fusion (melting ice) which is 0.334 MJ/kg.'
+        }
+      },
+      {
+        q: 'The Clausius-Clapeyron relation predicts saturation vapor pressure increases by what per °C?',
+        a: '~7%',
+        opts: ['~2%', '~7%', '~15%', '~25%'],
+        concept: 'Clausius-Clapeyron',
+        wrongFeedback: {
+          '~2%': 'This is too low. Saturation vapor pressure increases by approximately 7% per degree of heating.',
+          '~15%': 'This is too high. The capacity grows exponentially but is about 7% per degree Celsius.',
+          '~25%': 'This is too high. A 1 degree Celsius increase corresponds to a 7% capacity expansion.'
+        }
+      },
+      {
+        q: 'What equation extends Darcy\'s Law to unsaturated flow?',
+        a: 'Richards\' equation',
+        opts: ['Navier-Stokes', 'Richards\' equation', 'Bernoulli\'s equation', 'Poiseuille\'s equation'],
+        concept: 'infiltration',
+        wrongFeedback: {
+          'Navier-Stokes': 'Navier-Stokes equations model momentum in open fluid dynamics, not unsaturated flow in soils.',
+          'Bernoulli\'s equation': 'Bernoulli\'s equation relates pressure and speed in open inviscid flows.',
+          'Poiseuille\'s equation': 'Poiseuille\'s equation describes flow through open cylindrical pipes.'
+        }
+      },
+      {
+        q: 'What is cloud albedo\'s approximate effect on solar radiation?',
+        a: 'Reflects ~30%',
+        opts: ['Reflects ~5%', 'Reflects ~30%', 'Reflects ~60%', 'Reflects ~90%'],
+        concept: 'condensation',
+        wrongFeedback: {
+          'Reflects ~5%': 'This is too low. Average global cloud albedo is significant, reflecting about 30% of incoming light.',
+          'Reflects ~60%': 'While specific storm clouds can be highly reflective, the global average is around 30%.',
+          'Reflects ~90%': 'Only the densest storm clouds reflect 90%, whereas the global average is much lower.'
+        }
+      },
+      {
+        q: 'What is the average residence time of a water molecule in the ocean?',
+        a: '~3,200 years',
+        opts: ['~9 days', '~100 years', '~3,200 years', '~1 million years'],
+        concept: 'collection',
+        wrongFeedback: {
+          '~9 days': 'This is the atmospheric residence time before precipitation, not the ocean residence time.',
+          '~100 years': 'This is too short. Due to ocean volume, the average water molecule remains there for about 3,200 years.',
+          '~1 million years': 'This is too long. Oceanic circulation and evaporation cycle molecules much faster.'
+        }
+      },
+      {
+        q: 'What is the Bowen ratio?',
+        a: 'Ratio of sensible to latent heat flux',
+        opts: ['Ratio of sensible to latent heat flux', 'Ratio of runoff to infiltration', 'Ratio of evaporation to precipitation', 'Ratio of cloud cover to clear sky'],
+        concept: 'Bowen ratio',
+        wrongFeedback: {
+          'Ratio of runoff to infiltration': 'This is a hydrological partition ratio, not the thermodynamic Bowen ratio.',
+          'Ratio of evaporation to precipitation': 'This is a global water budget balance, not the Bowen ratio.',
+          'Ratio of cloud cover to clear sky': 'This relates to cloud cover fraction, not the Bowen heat flux ratio.'
+        }
+      }
+    ]
+  };
+
   function stewardClamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
   if(!window.StemLab||!window.StemLab.registerTool) return;
@@ -266,6 +657,136 @@ const d = labToolData.waterCycle;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, waterCycle: { ...prev.waterCycle, [key]: val } }));
           const updMulti = (obj) => setLabToolData(prev => ({ ...prev, waterCycle: Object.assign({}, prev.waterCycle, obj) }));
           const h = React.createElement;
+
+          var checkWaterCycleChallenges = function(customState) {
+            var state = customState || {};
+            var completed = state.completedChallenges || [];
+            var newlyCompleted = [];
+            var pointsEarned = 0;
+
+            for (var i = 0; i < WATER_CYCLE_CHALLENGES.length; i++) {
+              var ch = WATER_CYCLE_CHALLENGES[i];
+              if (completed.indexOf(ch.id) !== -1) continue;
+
+              var met = false;
+              if (ch.id === 'complete_journey') {
+                met = (state.journeyLoops || 0) >= 1;
+              } else if (ch.id === 'explore_all_stages') {
+                met = Object.keys(state.stagesViewed || {}).length >= 5;
+              } else if (ch.id === 'adjust_climate') {
+                met = !!state.climateAdjusted;
+              } else if (ch.id === 'quiz_pass') {
+                met = (state.quizCorrectCount || 0) >= 1;
+              } else if (ch.id === 'vocabulary_studied') {
+                met = (state.vocabWordsStudied || []).length >= 3;
+              } else if (ch.id === 'stewardship_win') {
+                met = state.campaignSuccess === true;
+              }
+
+              if (met) {
+                newlyCompleted.push(ch.id);
+                pointsEarned += ch.rp;
+              }
+            }
+
+            if (newlyCompleted.length > 0) {
+              var updatedCompleted = completed.concat(newlyCompleted);
+              var newRP = (state.researchPoints || 0) + pointsEarned;
+              
+              updMulti({
+                completedChallenges: updatedCompleted,
+                researchPoints: newRP
+              });
+
+              newlyCompleted.forEach(function(finishedId) {
+                var ch = WATER_CYCLE_CHALLENGES.find(function(c) { return c.id === finishedId; });
+                if (addToast) {
+                  addToast('🏆 Challenge Complete: ' + ch.name + ' (+' + ch.rp + ' RP)', 'success');
+                }
+                if (typeof awardStemXP === 'function') {
+                  awardStemXP('waterCycle', ch.rp, 'Challenge: ' + ch.name);
+                }
+              });
+
+              if (typeof stemCelebrate === 'function') stemCelebrate();
+              if (typeof announceToSR === 'function') {
+                announceToSR('Challenges updated. Completed ' + updatedCompleted.length + ' of ' + WATER_CYCLE_CHALLENGES.length + '. Research points: ' + newRP);
+              }
+            }
+          };
+
+          var studyVocab = function(word) {
+            var current = d.vocabWordsStudied || [];
+            if (current.indexOf(word) === -1) {
+              var next = current.concat([word]);
+              var nextState = Object.assign({}, d, {
+                vocabWordsStudied: next,
+                researchPoints: (d.researchPoints || 0) + 5
+              });
+              updMulti({
+                vocabWordsStudied: next,
+                researchPoints: (d.researchPoints || 0) + 5
+              });
+              if (addToast) {
+                addToast('📖 Concept studied: ' + word + ' (+5 RP)', 'info');
+              }
+              setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
+            }
+          };
+
+          var selectStage = function(stageId) {
+            var nextStagesViewed = Object.assign({}, d.stagesViewed || {});
+            nextStagesViewed[stageId] = true;
+            var nextState = Object.assign({}, d, {
+              activeStage: stageId,
+              stagesViewed: nextStagesViewed
+            });
+            updMulti({
+              activeStage: stageId,
+              stagesViewed: nextStagesViewed
+            });
+            setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
+          };
+
+          var adjustClimate = function(key, val) {
+            var nextState = Object.assign({}, d, {
+              [key]: val,
+              climateAdjusted: true
+            });
+            updMulti({
+              [key]: val,
+              climateAdjusted: true
+            });
+            var cv = document.getElementById('wcCanvas');
+            if (cv) cv.dataset[key] = String(val);
+            setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
+          };
+
+          var askHydrologist = function() {
+            var query = d.hydrologistQuery || '';
+            if (!query.trim()) return;
+            if (typeof callGemini !== 'function') {
+              updMulti({ hydrologistError: 'AI tutor not available.' });
+              return;
+            }
+            updMulti({ hydrologistLoading: true, hydrologistError: '', hydrologistReply: '' });
+            var prompt = 'You are a friendly, encouraging Water Cycle & Hydrology tutor for middle-to-high school students. ' +
+              'The student is asking about: "' + query + '". ' +
+              'Explain the science behind this clearly in 3-4 sentences using helpful analogies. ' +
+              'Provide the explanation in plain prose. No markdown, no headings, no bullets.';
+            callGemini(prompt, false, false, 0.5).then(function(resp) {
+              updMulti({
+                hydrologistReply: String(resp || '').trim(),
+                hydrologistLoading: false
+              });
+              if (typeof announceToSR === 'function') announceToSR('AI Hydrologist reply ready.');
+            }).catch(function() {
+              updMulti({
+                hydrologistLoading: false,
+                hydrologistError: 'Could not reach AI tutor. Try again in a moment.'
+              });
+            });
+          };
 
           // ═══ WATERSHED STEWARD CAMPAIGN ═══
           var wcMode = d.wcMode || 'explorer';   // 'explorer' (existing) | 'steward' (new)
@@ -384,8 +905,12 @@ const d = labToolData.waterCycle;
               else if (componentsAt75 >= 3 && avgQ >= 62) outcome = { tier: 'recovering', label: 'Recovering Watershed', color: '#22c55e', icon: '🌊', desc: 'Most components are improving. A few still need work. The trajectory is good and the community is engaged.' };
               else if (componentsAt75 >= 2 || avgQ >= 55) outcome = { tier: 'mixed', label: 'Mixed Recovery', color: '#f59e0b', icon: '🍃', desc: 'Some wins, some gaps. Real watershed work is rarely uniform; some pieces improved while others stalled.' };
               else outcome = { tier: 'slipping', label: 'Slipping Watershed', color: '#ef4444', icon: '⚠️', desc: 'Average quality is low and few components reached recovery thresholds. This is how watersheds degrade quietly when stewardship cannot keep up with pressures.' };
+              var success = (outcome.tier === 'recovery' || outcome.tier === 'recovering');
+              var nextState = Object.assign({}, d, { campaignSuccess: success });
               setSteward({ phase: 'debrief', finalOutcome: outcome, componentsAt75: componentsAt75 });
+              upd('campaignSuccess', success);
               awardStemXP && awardStemXP('steward_complete', 50, outcome.label);
+              setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
             } else {
               setSteward({
                 phase: 'year', year: steward.year + 1,
@@ -2432,8 +2957,6 @@ const d = labToolData.waterCycle;
 
           };
 
-
-
           // ── Keyboard shortcuts (WCAG 2.1.1): 1-6 = stage, J = toggle Journey, R/U/P = journey ground choice ──
           function onWcKey(e) {
             var tgt = e.target || {};
@@ -2445,7 +2968,7 @@ const d = labToolData.waterCycle;
               if (STAGES[idx]) {
                 e.preventDefault();
                 var st = STAGES[idx];
-                upd('activeStage', st.id);
+                selectStage(st.id);
                 if (typeof announceToSR === 'function') announceToSR('Stage ' + (idx + 1) + ': ' + st.label + '.');
               }
             } else if (k === 'j' || k === 'J') {
@@ -2505,13 +3028,42 @@ const d = labToolData.waterCycle;
                 return React.createElement("button", { key: gb,
                   onClick: function() {
                     upd('wcGradeOverride', gb);
-                    addToast('\uD83C\uDF93 Grade set to ' + gb + ' — content complexity updated!', 'success');
+                    addToast('\uD83C\uDF93 Grade set to ' + gb + ' - content complexity updated!', 'success');
                   },
                   className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400')
                 }, gb);
               }),
               React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[11px] font-bold rounded-full border border-indigo-200" },
                 gradeBand === 'K-2' ? '\uD83E\uDDF8 Elementary' : gradeBand === '3-5' ? '\uD83D\uDCDA Upper Elementary' : gradeBand === '6-8' ? '\uD83E\uDD13 Middle School' : '\uD83C\uDF93 High School'
+              )
+            ),
+
+            // ═══ CHALLENGES PROGRESS CARD ═══
+            React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 via-sky-50 to-blue-50 rounded-xl border border-sky-200 p-3 shadow-sm mb-3 flex flex-col gap-2" },
+              React.createElement("div", { className: "flex items-center justify-between" },
+                React.createElement("div", { className: "flex items-center gap-2" },
+                  React.createElement("span", { style: { fontSize: "18px" } }, "⭐"),
+                  React.createElement("span", { className: "text-sm font-bold text-sky-700" }, (d.researchPoints || 0) + " RP")
+                ),
+                React.createElement("span", {
+                  className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-600"
+                }, (d.completedChallenges || []).length + "/" + WATER_CYCLE_CHALLENGES.length + " challenges")
+              ),
+              React.createElement("div", { className: "w-full rounded-full h-2.5 bg-sky-100/50", style: { boxShadow: "inset 0 1px 2px rgba(0,0,0,0.1)" } },
+                React.createElement("div", {
+                  className: "bg-gradient-to-r from-sky-400 to-indigo-500 h-2.5 rounded-full transition-all duration-500",
+                  style: { width: Math.min(100, ((d.completedChallenges || []).length / WATER_CYCLE_CHALLENGES.length) * 100) + "%", boxShadow: "0 0 8px rgba(14,165,233,0.3)" }
+                })
+              ),
+              React.createElement("div", { className: "flex flex-wrap gap-2 mt-2" },
+                WATER_CYCLE_CHALLENGES.map(function(ch) {
+                  var done = (d.completedChallenges || []).indexOf(ch.id) !== -1;
+                  return React.createElement("div", {
+                    key: ch.id, title: ch.name + ": " + ch.desc + " (" + ch.rp + " RP)",
+                    className: "text-center cursor-default transition-all " + (done ? "drop-shadow-md" : "opacity-25 grayscale"),
+                    style: { fontSize: "18px" }
+                  }, ch.icon);
+                })
               )
             ),
 
@@ -2594,34 +3146,32 @@ const d = labToolData.waterCycle;
             ),
 
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3", role: "group", "aria-label": "Water cycle stages" },
-
               STAGES.map(function (stage, stageIdx) {
-
                 var isActive = (d.activeStage || 'evaporation') === stage.id;
-
                 var shortcut = (stageIdx + 1).toString();
-
-                return React.createElement("button", { "aria-label": "Stage " + shortcut + ": " + stage.label + (isActive ? " (selected)" : ""), "aria-pressed": isActive,
-
-                  key: stage.id, onClick: function () { upd('activeStage', stage.id); if (typeof announceToSR === 'function') announceToSR(stage.label + ' stage selected.'); if (typeof canvasNarrate === 'function') { canvasNarrate('waterCycle', 'stage_select', { first: 'Selected ' + stage.label + ' stage. ' + (typeof selDesc === 'string' ? selDesc.substring(0, 80) : ''), repeat: stage.label + ' stage.', terse: stage.label + '.' }, { debounce: 500 }); } },
-
+                return React.createElement("button", {
+                  "aria-label": "Stage " + shortcut + ": " + stage.label + (isActive ? " (selected)" : ""),
+                  "aria-pressed": isActive,
+                  key: stage.id,
+                  onClick: function () {
+                    selectStage(stage.id);
+                    if (typeof announceToSR === 'function') announceToSR(stage.label + ' stage selected.');
+                    if (typeof canvasNarrate === 'function') {
+                      canvasNarrate('waterCycle', 'stage_select', {
+                        first: 'Selected ' + stage.label + ' stage. ' + (typeof selDesc === 'string' ? selDesc.substring(0, 80) : ''),
+                        repeat: stage.label + ' stage.',
+                        terse: stage.label + '.'
+                      }, { debounce: 500 });
+                    }
+                  },
                   className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 " + (isActive ? 'text-white shadow-md' : 'border hover:opacity-80'),
-
                   style: { backgroundColor: isActive ? stage.color : stage.color + '15', borderColor: stage.color, color: isActive ? 'white' : stage.color }
-
                 },
-
                   React.createElement("span", { className: "inline-flex items-center justify-center w-4 h-4 rounded text-[9px] font-bold " + (isActive ? "bg-white/25 text-white" : "bg-white/60"), "aria-hidden": "true" }, shortcut),
-
                   React.createElement("span", null, stage.emoji + " " + stage.label));
-
               })
-
             ),
 
-
-
-            // ═══ JOURNEY MODE UI ═══
             React.createElement("div", { className: "bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl border-2 border-cyan-300 p-4 mb-3 shadow-md" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("div", { className: "flex items-center gap-2" },
@@ -2770,6 +3320,36 @@ const d = labToolData.waterCycle;
 
             ),
 
+            // ═══ AI HYDROLOGIST TUTOR PANEL ═══
+            React.createElement("div", { className: "bg-white rounded-xl border border-sky-200 p-3 mb-3 shadow-sm" },
+              React.createElement("p", { className: "text-xs font-black text-slate-700 mb-1 flex items-center gap-1.5" },
+                React.createElement("span", null, "🧠"),
+                React.createElement("span", null, "Ask the AI Hydrologist Tutor")
+              ),
+              React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" },
+                "Ask questions about the " + (sel ? sel.label : 'water cycle') + " stage, climate feedbacks, or global hydrology."
+              ),
+              React.createElement("div", { className: "flex gap-2" },
+                React.createElement("input", {
+                  type: "text",
+                  placeholder: "Ask a question (e.g., Why do clouds float?)...",
+                  value: d.hydrologistQuery || '',
+                  onChange: function(e) { upd("hydrologistQuery", e.target.value); },
+                  onKeyDown: function(e) { if (e.key === 'Enter') askHydrologist(); },
+                  className: "flex-1 px-3 py-1.5 text-xs border rounded-lg focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none"
+                }),
+                React.createElement("button", {
+                  disabled: d.hydrologistLoading,
+                  onClick: askHydrologist,
+                  className: "px-3 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 transition-all disabled:opacity-50"
+                }, d.hydrologistLoading ? "Thinking..." : "Ask")
+              ),
+              d.hydrologistReply && React.createElement("div", { className: "mt-2 p-2.5 bg-sky-50 border border-sky-100 rounded-lg animate-in slide-in-from-top-1" },
+                React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed font-medium" }, d.hydrologistReply)
+              ),
+              d.hydrologistError && React.createElement("p", { className: "text-xs text-red-500 mt-2 font-bold" }, d.hydrologistError)
+            ),
+
             // ═══ WATER BUDGET — Live Data Panel ═══
             React.createElement("div", { className: "bg-gradient-to-r from-slate-50 to-sky-50 rounded-xl p-3 border border-slate-400 mb-3 shadow-sm" },
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
@@ -2809,46 +3389,19 @@ const d = labToolData.waterCycle;
             React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
               React.createElement("button", { "aria-label": "Start water cycle quiz",
-
                 onClick: function () {
-                  // Grade-tiered static quiz banks
-                  var WC_QS_ELEM = [
-                    { q: 'What makes puddles disappear on sunny days?', a: 'The sun heats the water', opts: ['The ground drinks it', 'The sun heats the water', 'Wind blows it away', 'It goes to sleep'] },
-                    { q: 'What are clouds made of?', a: 'Tiny water drops', opts: ['Cotton', 'Tiny water drops', 'Smoke', 'Air bubbles'] },
-                    { q: 'What falls from clouds?', a: 'Rain and snow', opts: ['Stars', 'Rain and snow', 'Leaves', 'Rocks'] },
-                    { q: 'Where does rain go after it falls?', a: 'Rivers, lakes, and oceans', opts: ['It disappears', 'Back up to the sky', 'Rivers, lakes, and oceans', 'Into outer space'] },
-                    { q: 'How do plants drink water?', a: 'Through their roots', opts: ['Through their leaves', 'Through their roots', 'Through their flowers', 'They don\'t drink water'] },
-                    { q: 'What does the sun do to ocean water?', a: 'Heats it up so it rises as vapor', opts: ['Freezes it', 'Heats it up so it rises as vapor', 'Turns it green', 'Makes it salty'] },
-                    { q: 'What happens when water vapor gets cold up high?', a: 'It turns into cloud drops', opts: ['It turns into cloud drops', 'It becomes a star', 'It stays invisible', 'It catches fire'] },
-                    { q: 'Can water underground come back up?', a: 'Yes, through springs and wells', opts: ['No, never', 'Yes, through springs and wells', 'Only if you dig', 'Only on rainy days'] },
-                  ];
-                  var WC_QS_MIDDLE = [
-                    { q: 'What drives evaporation?', a: 'Solar energy', opts: ['Wind', 'Solar energy', 'Gravity', 'Moon'] },
-                    { q: 'What forms clouds?', a: t('stem.water_cycle.condensation'), opts: [t('stem.water_cycle.evaporation'), t('stem.water_cycle.precipitation'), t('stem.water_cycle.condensation'), t('stem.water_cycle.infiltration')] },
-                    { q: 'Where does most evaporation occur?', a: 'Oceans', opts: ['Lakes', 'Rivers', 'Oceans', 'Soil'] },
-                    { q: 'What is transpiration?', a: 'Water release from plants', opts: ['Rain falling', 'Water release from plants', 'Snow melting', 'Rivers flowing'] },
-                    { q: 'How much of Earth\'s water is freshwater?', a: '3%', opts: ['3%', '10%', '25%', '50%'] },
-                    { q: 'What are stomata?', a: 'Tiny pores on leaves', opts: ['Types of clouds', 'Tiny pores on leaves', 'Underground rivers', 'Rain droplets'] },
-                    { q: 'What is sublimation?', a: 'Ice turning directly to vapor', opts: ['Ice turning directly to vapor', 'Water freezing', 'Rain evaporating', 'Clouds forming'] },
-                    { q: 'How does deforestation affect the water cycle?', a: 'Reduces transpiration and increases runoff', opts: ['Increases evaporation', 'Reduces transpiration and increases runoff', 'Creates more clouds', 'Has no effect'] },
-                  ];
-                  var WC_QS_ADVANCED = [
-                    { q: 'At what rate does air temperature decrease with altitude (environmental lapse rate)?', a: '~6.5\u00B0C per 1000m', opts: ['~2\u00B0C per 1000m', '~6.5\u00B0C per 1000m', '~10\u00B0C per 1000m', '~15\u00B0C per 1000m'] },
-                    { q: 'What law governs groundwater flow through saturated porous media?', a: 'Darcy\'s Law', opts: ['Darcy\'s Law', 'Boyle\'s Law', 'Ohm\'s Law', 'Bernoulli\'s Principle'] },
-                    { q: 'What is the latent heat of vaporization of water at 20\u00B0C?', a: '~2.45 MJ/kg', opts: ['~1.0 MJ/kg', '~2.45 MJ/kg', '~4.18 MJ/kg', '~0.33 MJ/kg'] },
-                    { q: 'The Clausius-Clapeyron relation predicts saturation vapor pressure increases by what per \u00B0C?', a: '~7%', opts: ['~2%', '~7%', '~15%', '~25%'] },
-                    { q: 'What equation extends Darcy\'s Law to unsaturated flow?', a: 'Richards\' equation', opts: ['Navier-Stokes', 'Richards\' equation', 'Bernoulli\'s equation', 'Poiseuille\'s equation'] },
-                    { q: 'What is cloud albedo\'s approximate effect on solar radiation?', a: 'Reflects ~30%', opts: ['Reflects ~5%', 'Reflects ~30%', 'Reflects ~60%', 'Reflects ~90%'] },
-                    { q: 'What is the average residence time of a water molecule in the ocean?', a: '~3,200 years', opts: ['~9 days', '~100 years', '~3,200 years', '~1 million years'] },
-                    { q: 'What is the Bowen ratio?', a: 'Ratio of sensible to latent heat flux', opts: ['Ratio of sensible to latent heat flux', 'Ratio of runoff to infiltration', 'Ratio of evaporation to precipitation', 'Ratio of cloud cover to clear sky'] },
-                  ];
-                  var pool = (gradeBand === 'K-2' || gradeBand === '3-5') ? WC_QS_ELEM : (gradeBand === '9-12') ? WC_QS_ADVANCED : WC_QS_MIDDLE;
+                  var pool = WATER_CYCLE_QUIZZES[gradeBand] || WATER_CYCLE_QUIZZES['3-5'];
                   var q = pool[Math.floor(Math.random() * pool.length)];
-
-                  upd('wcQuiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0 });
-
+                  upd('wcQuiz', {
+                    q: q.q,
+                    a: q.a,
+                    opts: q.opts,
+                    answered: false,
+                    score: (d.wcQuiz && d.wcQuiz.score) || 0,
+                    concept: q.concept,
+                    wrongFeedback: q.wrongFeedback
+                  });
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.wcQuiz ? 'bg-sky-100 text-sky-700' : 'bg-sky-600 text-white') + " transition-all"
-
               }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz (" + gradeBand + ")"),
 
               // ═══ AI GENERATED QUIZ BUTTON ═══
@@ -2867,31 +3420,43 @@ const d = labToolData.waterCycle;
                     'Current stage being studied: ' + stageCtx + '. ' +
                     'Current climate simulation settings: ' + climCtx + '. ' +
                     'Generate exactly ONE multiple-choice question about the water cycle relevant to this stage and conditions. ' +
+                    'Name the core scientific concept (from: evaporation, condensation, precipitation, collection, transpiration, infiltration, aquifer, watershed). ' +
+                    'For each distractor, provide a short 1-sentence explanation of why it is incorrect. ' +
+                    'Ensure all text uses standard hyphens and NO em-dashes or en-dashes. ' +
                     'Respond ONLY with valid JSON in this exact format (no markdown, no explanation): ' +
-                    '{"question":"...","correct":"...","distractors":["...","...","..."]}';
+                    '{"question":"...","correct":"...","distractors":["...","...","..."],"concept":"...","wrongFeedback":{"distractor1":"why incorrect","distractor2":"why incorrect","distractor3":"why incorrect"}}';
                   callGemini(prompt, true, false, 0.7).then(function(resp) {
                     try {
                       var clean = (typeof resp === 'string' ? resp : '').replace(/```json?\n?/g, '').replace(/```/g, '').trim();
                       var parsed = JSON.parse(clean);
                       if (parsed.question && parsed.correct && parsed.distractors && parsed.distractors.length >= 3) {
                         var allOpts = [parsed.correct].concat(parsed.distractors.slice(0, 3)).sort(function() { return Math.random() - 0.5; });
-                        upd('wcQuiz', { q: parsed.question, a: parsed.correct, opts: allOpts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0, isAI: true });
+                        upd('wcQuiz', {
+                          q: parsed.question,
+                          a: parsed.correct,
+                          opts: allOpts,
+                          answered: false,
+                          score: (d.wcQuiz && d.wcQuiz.score) || 0,
+                          isAI: true,
+                          concept: parsed.concept || stageCtx,
+                          wrongFeedback: parsed.wrongFeedback || {}
+                        });
                         upd('aiQuizLoading', false);
                       } else { throw new Error('bad format'); }
                     } catch(e) {
                       addToast('\u26A0\uFE0F AI quiz failed, using static question', 'error');
                       upd('aiQuizLoading', false);
                       // Fallback to static
-                      var fb = [{ q: 'What percentage of Earth is covered by water?', a: '71%', opts: ['50%', '60%', '71%', '85%'] }];
+                      var fb = [{ q: 'What percentage of Earth is covered by water?', a: '71%', opts: ['50%', '60%', '71%', '85%'], concept: 'collection', wrongFeedback: { '50%': 'Too low. Earth is 71% water.', '60%': 'Too low. Earth is 71% water.', '85%': 'Too high. Earth is 71% water.' } }];
                       var q2 = fb[0];
-                      upd('wcQuiz', { q: q2.q, a: q2.a, opts: q2.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0 });
+                      upd('wcQuiz', { q: q2.q, a: q2.a, opts: q2.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0, concept: q2.concept, wrongFeedback: q2.wrongFeedback });
                     }
                   }).catch(function() {
                     addToast('\u26A0\uFE0F AI unavailable, using static question', 'error');
                     upd('aiQuizLoading', false);
-                    var fb = [{ q: 'How much of Earth\'s water is freshwater?', a: '3%', opts: ['3%', '10%', '25%', '50%'] }];
+                    var fb = [{ q: 'How much of Earth\'s water is freshwater?', a: '3%', opts: ['3%', '10%', '25%', '50%'], concept: 'collection', wrongFeedback: { '10%': 'Too high. Only 3% is fresh.', '25%': 'Too high. Only 3% is fresh.', '50%': 'Too high. Only 3% is fresh.' } }];
                     var q2 = fb[0];
-                    upd('wcQuiz', { q: q2.q, a: q2.a, opts: q2.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0 });
+                    upd('wcQuiz', { q: q2.q, a: q2.a, opts: q2.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0, concept: q2.concept, wrongFeedback: q2.wrongFeedback });
                   });
                 },
                 disabled: d.aiQuizLoading,
@@ -2925,11 +3490,8 @@ const d = labToolData.waterCycle;
                         var newStreak = correct ? (d.wcStreak || 0) + 1 : 0;
                         var newAttempts = (d.wcAttempts || 0) + 1;
 
-                        upd('wcQuiz', Object.assign({}, d.wcQuiz, { answered: true, chosen: opt, score: d.wcQuiz.score + (correct ? 1 : 0) }));
-                        upd('wcStreak', newStreak);
-                        upd('wcAttempts', newAttempts);
-
                         if (correct) {
+                          sfxWcCorrect();
                           addToast('\u2705 Correct! +5 XP', 'success');
                           if (typeof awardStemXP === 'function') awardStemXP('waterCycle', 5, 'Water Cycle quiz');
                           // Streak celebration
@@ -2939,8 +3501,24 @@ const d = labToolData.waterCycle;
                             if (typeof awardStemXP === 'function') awardStemXP('waterCycle', 10, 'Water Cycle streak bonus');
                           }
                         } else {
+                          sfxWcIncorrect();
                           addToast('\u274C The answer is: ' + d.wcQuiz.a, 'error');
                         }
+
+                        var nextQuizCorrectCount = (d.quizCorrectCount || 0) + (correct ? 1 : 0);
+                        var nextState = Object.assign({}, d, {
+                          quizCorrectCount: nextQuizCorrectCount,
+                          wcQuiz: Object.assign({}, d.wcQuiz, { answered: true, chosen: opt, score: d.wcQuiz.score + (correct ? 1 : 0) }),
+                          wcStreak: newStreak,
+                          wcAttempts: newAttempts
+                        });
+                        updMulti({
+                          wcQuiz: nextState.wcQuiz,
+                          wcStreak: newStreak,
+                          wcAttempts: newAttempts,
+                          quizCorrectCount: nextQuizCorrectCount
+                        });
+                        setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
 
                       }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all cursor-pointer " + cls
 
@@ -2948,6 +3526,41 @@ const d = labToolData.waterCycle;
 
                   })
 
+                ),
+
+                // Inline wrong-option explanations and vocabulary study cards
+                d.wcQuiz.answered && React.createElement("div", { className: "mt-3 space-y-2 animate-in fade-in" },
+                  React.createElement("div", {
+                    className: "p-3 rounded-lg text-sm " + (d.wcQuiz.chosen === d.wcQuiz.a ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-600 border border-red-200")
+                  },
+                    React.createElement("p", { className: "font-black text-xs" }, d.wcQuiz.chosen === d.wcQuiz.a ? "✅ Correct answer!" : "❌ Incorrect answer"),
+                    React.createElement("p", { className: "text-xs mt-1 leading-relaxed text-slate-700 font-medium" },
+                      d.wcQuiz.chosen === d.wcQuiz.a
+                        ? "Great job! That is correct."
+                        : (d.wcQuiz.wrongFeedback && d.wcQuiz.wrongFeedback[d.wcQuiz.chosen])
+                          ? d.wcQuiz.wrongFeedback[d.wcQuiz.chosen]
+                          : "That choice is not correct. Study the concept to learn more."
+                    )
+                  ),
+
+                  // Concept study card
+                  d.wcQuiz.concept && WATER_CYCLE_VOCAB[d.wcQuiz.concept] && (function() {
+                    var concept = d.wcQuiz.concept;
+                    var definition = WATER_CYCLE_VOCAB[concept];
+                    var studied = (d.vocabWordsStudied || []).indexOf(concept) !== -1;
+                    return React.createElement("div", { className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in" },
+                      React.createElement("div", { className: "flex-1" },
+                        React.createElement("p", { className: "text-xs font-bold text-indigo-800" }, "🔍 Concept Focus: " + concept),
+                        React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5 leading-relaxed font-medium" }, definition)
+                      ),
+                      !studied && React.createElement("button", {
+                        onClick: function() {
+                          studyVocab(concept);
+                        },
+                        className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105"
+                      }, "📖 Study Term (+5 RP)")
+                    );
+                  })()
                 )
 
               )

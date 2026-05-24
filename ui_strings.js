@@ -1110,8 +1110,7 @@
     "bilingual_synced": "Bilingual content synced.",
     "bridge_translation_failed": "Bridge translation failed.",
     "resource_assign_failed": "Failed to assign resource.",
-    "session_sync_error": "Session sync error."
-  ,
+    "session_sync_error": "Session sync error.",
     "cancel_active_recording_before_undoing": "Cancel the active recording before undoing.",
     "undid_last_annotation": "↩ Undid last annotation",
     "orf_passage_available_grade": "No ORF passage available for grade ",
@@ -1156,8 +1155,7 @@
     "not_valid_alloflow_project": "Not a valid AlloFlow project",
     "loaded": "📂 Loaded: ",
     "failed": "Failed: ",
-    "progress_report_exported": "Progress report exported!"
-  ,
+    "progress_report_exported": "Progress report exported!",
     "image_refine_yet": "No image to refine yet.",
     "image_edit_unavailable_callgeminiimageedit_provide": "Image edit unavailable: callGeminiImageEdit not provided.",
     "image_refined": "Image refined.",
@@ -1165,8 +1163,7 @@
     "bulk_improve_unavailable": "Bulk improve unavailable.",
     "weak_distractors_improve": "No weak distractors to improve.",
     "rewriting": "Rewriting ",
-    "rewrote": "Rewrote "
-  ,
+    "rewrote": "Rewrote ",
     "pdf_appears_password_protected_using": "PDF appears password-protected — using Vision OCR instead of text layer extraction.",
     "pdf_may_corrupted_malformed_attempting": "PDF may be corrupted or malformed — attempting Vision OCR fallback.",
     "docx_appears_password_protected_using": "DOCX appears password-protected — using Vision OCR instead.",
@@ -1186,8 +1183,7 @@
     "pdf_remediation_failed": "PDF remediation failed: ",
     "pop_up_blocked_allow_pop_2": "Pop-up blocked — allow pop-ups to download PDF",
     "custom_style_generated_preview_updated": "Custom style generated! Preview updated.",
-    "style_generation_failed_try_different": "Style generation failed — try a different description"
-  ,
+    "style_generation_failed_try_different": "Style generation failed — try a different description",
     "ai_available": "AI not available",
     "ai_demo_generation_failed_try": "AI demo generation failed — try again or use a preset case",
     "adaptation_failed": "Adaptation failed",
@@ -1211,8 +1207,7 @@
     "behaviorlens_data_imported_behavioral_observations": "BehaviorLens data imported to Behavioral observations",
     "reference_added": "Reference added",
     "resolve_contradictions_before_copying_run": "Resolve contradictions before copying — run accuracy audit and fix flagged claims",
-    "resolve_contradictions_before_printing_run": "Resolve contradictions before printing — run accuracy audit and fix flagged claims"
-  ,
+    "resolve_contradictions_before_printing_run": "Resolve contradictions before printing — run accuracy audit and fix flagged claims",
     "students_imported": "No students imported",
     "screening_csv_exported": "Screening CSV exported",
     "fluency_assessments_export_2": "No fluency assessments to export",
@@ -1253,8 +1248,7 @@
     "rti_goal_saved": "RTI goal saved for ",
     "fill_all_three_fields": "Please fill in all three fields",
     "intervention_logged": "Intervention logged for ",
-    "program_name_frequency_required": "Program name and frequency are required"
-  ,
+    "program_name_frequency_required": "Program name and frequency are required",
     "fluency_analysis_available_mode": "Fluency analysis not available in this mode",
     "analyzing_reading": "Analyzing your reading...",
     "great_reading_check_results_below": "Great reading! Check your results below.",
@@ -1309,8 +1303,7 @@
     "failed_share_try_again": "Failed to share — try again",
     "draft_exported_as_json_share": "Draft exported as JSON — share with a classmate!",
     "invalid_storyforge_file": "Invalid StoryForge file",
-    "could_read_file": "Could not read that file"
-  ,
+    "could_read_file": "Could not read that file",
     "hotspot_data_copied": "Hotspot data copied ✅",
     "exported_as_png": "Exported as PNG ✅",
     "transcript_copied": "Transcript copied ✅",
@@ -1378,8 +1371,7 @@
     "speech_recognition_error": "Speech recognition error: ",
     "ai_available_2": "AI not available",
     "ai_scenario_generated": "AI scenario generated!",
-    "failed_generate_scenario_try_again": "Failed to generate scenario. Try again."
-  ,
+    "failed_generate_scenario_try_again": "Failed to generate scenario. Try again.",
     "avatar_created": "Avatar created for ",
     "avatar_generation_failed": "Avatar generation failed",
     "avatar_photo_uploaded": "Avatar photo uploaded!",
@@ -1453,8 +1445,7 @@
     "board_pushed_students": "Board pushed to students!",
     "push_failed_check_session_connection": "Push failed — check session connection",
     "schedule_pushed_students": "Schedule pushed to students!",
-    "template": "⭐ Template \""
-  ,
+    "template": "⭐ Template \"",
     "enter_url": "Enter a URL",
     "fetching_website": "Fetching website...",
     "website_fetched": "Website fetched! (",
@@ -6788,6 +6779,104 @@
           "desc": "Generate prompts to build custom interactive apps in Gemini Canvas.",
           "category": "platform",
           "color": "slate"
+        },
+        {
+          "title": "Smart Glossary",
+          "icon": "BookOpen",
+          "desc": "Visual vocabulary cards with audio, bilingual translations, and 5 vocabulary games (crossword, bingo, memory match, word search, scramble).",
+          "category": "creation",
+          "color": "purple"
+        },
+        {
+          "title": "Immersive Reader",
+          "icon": "Ear",
+          "desc": "Multi-mode reading support: RSVP speed reading, karaoke highlighting, bionic reading, line-focus ruler, grammar overlays.",
+          "category": "creation",
+          "color": "blue"
+        },
+        {
+          "title": "Word Sounds Studio",
+          "icon": "Mic",
+          "desc": "Phonemic awareness practice across 8 activity types — blending, segmenting, rhyming, mapping, isolation, spelling, families, sight & spell.",
+          "category": "creation",
+          "color": "amber"
+        },
+        {
+          "title": "StoryForge",
+          "icon": "Quote",
+          "desc": "Six-phase scaffolded creative writing with AI illustrations, narration, custom rubrics, and 18-language support.",
+          "category": "creation",
+          "color": "rose"
+        },
+        {
+          "title": "AlloBot",
+          "icon": "Sparkles",
+          "desc": "Always-available AI tutor and platform guide. Answers content questions, navigates AlloFlow, and auto-configures settings on request.",
+          "category": "activities",
+          "color": "indigo"
+        },
+        {
+          "title": "Escape Room",
+          "icon": "MapIcon",
+          "desc": "Team-based puzzle challenges built from your lesson content. Teacher-controlled hints, timed escape tracking, multi-stage rooms.",
+          "category": "activities",
+          "color": "orange"
+        },
+        {
+          "title": "SEL Hub",
+          "icon": "Heart",
+          "desc": "32 social-emotional learning tools across CASEL competencies — coping cards, restorative circles, self-advocacy rehearsal, and more.",
+          "category": "activities",
+          "color": "rose"
+        },
+        {
+          "title": "BehaviorLens",
+          "icon": "ShieldCheck",
+          "desc": "FBA/BIP suite: ABC data collection, frequency/interval tracking, IOA calculator (5 methods), preference assessments, intervention templates.",
+          "category": "assessment",
+          "color": "indigo"
+        },
+        {
+          "title": "Report Writer",
+          "icon": "ClipboardList",
+          "desc": "10-step wizard for psychoeducational reports: 17 assessment presets, fact-chunk verification, triangulated drafting, dual-pass accuracy audit.",
+          "category": "assessment",
+          "color": "purple"
+        },
+        {
+          "title": "Dynamic Assessment",
+          "icon": "Filter",
+          "desc": "Vygotsky/Feuerstein/Lidz test-teach-retest probes with 4-level prompt ladders, modifiability scoring, IEP goal + accommodation generation.",
+          "category": "assessment",
+          "color": "blue"
+        },
+        {
+          "title": "Student Analytics",
+          "icon": "Layout",
+          "desc": "Automated RTI Tier 1/2/3 classification with aimline monitoring, CBM probe history, anomaly flagging, class screening reports.",
+          "category": "assessment",
+          "color": "emerald"
+        },
+        {
+          "title": "PDF Accessibility",
+          "icon": "Download",
+          "desc": "Upload any PDF → 5-auditor triangulated audit → WCAG remediation via Vision API → axe-core verification → accessible PDF/HTML/audio export.",
+          "category": "platform",
+          "color": "cyan"
+        },
+        {
+          "title": "Symbol Studio",
+          "icon": "ImageIcon",
+          "desc": "Full AAC platform: AI-generated PCS symbols, board builder, visual schedules, social stories, Symbol Quest games, Word Garden vocabulary tracking.",
+          "category": "platform",
+          "color": "fuchsia"
+        },
+        {
+          "title": "STEM Lab",
+          "icon": "Layers",
+          "desc": "95+ browser-based interactive simulations across math, science, CS, engineering, and creative design — from DNA labs to physics sandboxes.",
+          "category": "platform",
+          "color": "teal"
         }
       ]
     }

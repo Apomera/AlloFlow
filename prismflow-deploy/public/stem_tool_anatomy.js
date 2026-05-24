@@ -266,6 +266,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // ── Active tab ──
         var activeTab = d._activeTab || 'explore';
 
+        var ANAT_CHALLENGES = [
+          { id: 'explore_systems', name: 'System Explorer', desc: 'Explore 3 different body systems', icon: '🫁', rp: 15, check: function() { return Object.keys(d.systemsViewed || {}).length >= 3; } },
+          { id: 'spotter_3', name: 'Spotter Pro', desc: 'Identify 3 structures in the Spotter Test', icon: '🎯', rp: 20, check: function() { return (d._spotterScore || 0) >= 3; } },
+          { id: 'cases_solved', name: 'Clinical Intern', desc: 'Solve 2 clinical cases', icon: '🥼', rp: 25, check: function() { return (d._clinicalSolved || 0) >= 2; } },
+          { id: 'pathways_traced', name: 'Pathway Explorer', desc: 'Complete 2 physiological pathways', icon: '🛣️', rp: 20, check: function() { return Object.keys(d._pathwaysCompleted || {}).length >= 2; } },
+          { id: 'mnemonics_viewed', name: 'Memory Master', desc: 'Unlock 3 anatomical mnemonics', icon: '🧠', rp: 15, check: function() { return Object.keys(d._mnemonicsViewed || {}).length >= 3; } },
+          { id: 'compare_structures', name: 'Comparative Anatomist', desc: 'Compare 3 pairs of structures', icon: '⚖️', rp: 15, check: function() { return (d._comparisons || 0) >= 3; } }
+        ];
+
+        var ANAT_VOCAB = {
+          'Cranium': 'The skeleton of the head, protecting the brain and supporting facial structures.',
+          'Hyoid': 'A U-shaped bone in the neck that supports the tongue and throat muscles.',
+          'Aorta': 'The main and largest artery in the body, carrying oxygenated blood from the heart to the systemic circulation.',
+          'Cerebellum': 'The part of the brain at the back of the skull, coordinating muscle activity and balance.',
+          'Circle of Willis': 'A circulatory anastomosis that supplies blood to the brain and provides collateral circulation.',
+          'Deltoid': 'A large triangular muscle covering the shoulder joint, responsible for arm abduction.',
+          'Psoas Major': 'A long muscle in the loin region that flexes the hip joint and stabilizes the spine.',
+          'Alveoli': 'Tiny air sacs in the lungs where rapid gaseous exchange of oxygen and carbon dioxide takes place.',
+          'Nephron': 'The functional unit of the kidney, filtering blood and forming urine.',
+          'Villi': 'Small, finger-like projections on the walls of the small intestine that increase surface area for absorption.'
+        };
+
+        var checkAnatomyChallenges = function() {
+          var completed = d.completedChallenges || [];
+          var newlyCompleted = [];
+          var pointsEarned = 0;
+
+          for (var i = 0; i < ANAT_CHALLENGES.length; i++) {
+            var ch = ANAT_CHALLENGES[i];
+            if (completed.indexOf(ch.id) === -1) {
+              if (ch.check()) {
+                newlyCompleted.push(ch.id);
+                pointsEarned += ch.rp;
+              }
+            }
+          }
+
+          if (newlyCompleted.length > 0) {
+            var updatedCompleted = completed.concat(newlyCompleted);
+            var newRP = (d.researchPoints || 0) + pointsEarned;
+            var newTotal = (d.totalRP || 0) + pointsEarned;
+            updMulti({
+              completedChallenges: updatedCompleted,
+              researchPoints: newRP,
+              totalRP: newTotal
+            });
+            playSound('badge');
+            if (typeof addToast === 'function') {
+              for (var j = 0; j < newlyCompleted.length; j++) {
+                var finishedId = newlyCompleted[j];
+                var name = ANAT_CHALLENGES.find(function(c) { return c.id === finishedId; }).name;
+                addToast({
+                  type: 'success',
+                  title: 'Challenge Complete!',
+                  message: 'Unlocked: ' + name + ' (+20 RP)'
+                });
+              }
+            }
+            if (typeof announceToSR === 'function') {
+              announceToSR('Challenges updated. You have completed ' + updatedCompleted.length + ' of ' + ANAT_CHALLENGES.length + ' challenges. Research points: ' + newRP);
+            }
+          }
+        };
+
         // ══════════════════════════════════════
         // DATA — ALL 10 BODY SYSTEMS
         // ══════════════════════════════════════
@@ -1052,6 +1116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         }
 
         checkBadges();
+        checkAnatomyChallenges();
 
         // ══════════════════════════════════════
         // CANVAS — Animated anatomical figure
@@ -4198,6 +4263,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('span', { className: 'ml-auto text-[11px] font-bold text-amber-600 self-center' }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ' badges')
           ),
 
+          // Challenges Progress Card
+          h('div', {
+            className: 'mb-3 rounded-xl p-4 border bg-gradient-to-r from-amber-50 to-orange-50 border-orange-200',
+            style: { boxShadow: '0 2px 8px rgba(180,83,9,0.06)' }
+          },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('div', { className: 'flex items-center gap-2' },
+                h('span', { style: { fontSize: '18px' } }, '⭐'),
+                h('span', { className: 'text-sm font-bold text-amber-700' }, (d.researchPoints || 0) + ' RP')
+              ),
+              h('span', {
+                className: 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-600'
+              }, (d.completedChallenges || []).length + '/' + ANAT_CHALLENGES.length + ' challenges')
+            ),
+            h('div', { className: 'w-full rounded-full h-2.5 bg-orange-100/50', style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+              h('div', {
+                className: 'bg-gradient-to-r from-amber-500 to-orange-500 h-2.5 rounded-full transition-all duration-500',
+                style: { width: Math.min(100, ((d.completedChallenges || []).length / ANAT_CHALLENGES.length) * 100) + '%', boxShadow: '0 0 8px rgba(245,158,11,0.4)' }
+              })
+            ),
+            h('div', { className: 'flex flex-wrap gap-2 mt-3' },
+              ANAT_CHALLENGES.map(function(ch) {
+                var done = (d.completedChallenges || []).indexOf(ch.id) !== -1;
+                return h('div', {
+                  key: ch.id, title: ch.name + ': ' + ch.desc + ' (' + ch.rp + ' RP)',
+                  className: 'text-center cursor-default transition-all ' + (done ? 'drop-shadow-md' : 'opacity-25 grayscale'),
+                  style: { fontSize: '18px' }
+                }, ch.icon);
+              })
+            )
+          ),
+
           // ── Topic-accent hero band per tab ──
           (function() {
             var TAB_META = {
@@ -4283,6 +4380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       newMV[mn.id] = true;
                       upd('_mnemonicsViewed', newMV);
                       playSound('mnemonicReveal');
+                      setTimeout(checkAnatomyChallenges, 50);
                     },
                     className: 'text-[11px] font-bold text-purple-600 hover:text-purple-800 transition-all'
                   }, 'Reveal meaning \u2192')
@@ -4500,7 +4598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         h('div', { className: 'flex gap-1' },
                           h('button', { onClick: function() {
                               if (compareStructureId === sel.id) { upd('_compareStructure', null); }
-                              else { upd('_compareStructure', sel.id); upd('_comparisons', comparisons + 1); playSound('compareView'); }
+                              else { upd('_compareStructure', sel.id); upd('_comparisons', comparisons + 1); playSound('compareView'); setTimeout(checkAnatomyChallenges, 50); }
                             },
                             title: compareStructureId === sel.id ? 'Remove from compare' : 'Set as compare target (B)',
                             className: 'p-1 rounded text-[11px] font-bold transition-all ' + (compareStructureId === sel.id ? 'bg-violet-100 text-violet-700' : 'hover:bg-violet-50 text-violet-400')
@@ -4765,6 +4863,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                             } else {
                               playSound('spotterWrong');
                             }
+                            setTimeout(checkAnatomyChallenges, 50);
                           },
                           className: 'px-3 py-2.5 rounded-xl text-xs font-bold transition-all border-2 text-left ' +
                             (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
@@ -4773,28 +4872,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
                       })
                     ),
-                    spotterFeedback && h('div', { className: 'space-y-2' },
-                      h('div', { className: 'rounded-lg p-3 text-xs leading-relaxed ' + (spotterFeedback === spotterTarget ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
-                        h('p', { className: 'font-bold ' + (spotterFeedback === spotterTarget ? 'text-green-800' : 'text-amber-800') },
-                          spotterFeedback === spotterTarget ? '\u2705 Correct! (' + ((Date.now() - spotterStartTime) / 1000).toFixed(1) + 's)' : '\u274C The answer was: ' + (function() { for (var si3 = 0; si3 < filtered.length; si3++) { if (filtered[si3].id === spotterTarget) return filtered[si3].name; } return ''; })()
-                        )
-                      ),
-                      h('button', { 'aria-label': 'Next Structure',
-                        onClick: function() {
-                          var pool = filtered.filter(function(s) { return s.fn; });
-                          if (pool.length < 4) return;
-                          var target = pool[Math.floor(Math.random() * pool.length)];
-                          var wrong = pool.filter(function(s) { return s.id !== target.id; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
-                          var opts = wrong.concat([target]).sort(function() { return Math.random() - 0.5; });
-                          updMulti({ _spotterTarget: target.id, _spotterFeedback: null, _spotterOpts: opts, _spotterStartTime: Date.now() });
-                        },
-                        className: 'w-full py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all'
-                      }, 'Next Structure \u2192'),
-                      h('button', { 'aria-label': 'End Test',
-                        onClick: function() { updMulti({ _spotterActive: false, _spotterTarget: null, _spotterFeedback: null }); },
-                        className: 'w-full py-1.5 rounded-lg text-[11px] font-bold text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-all'
-                      }, 'End Test')
-                    )
+                    spotterFeedback && (function() {
+                      var targetStruct = allStructures.find(function(s) { return s.id === spotterTarget; }) || {};
+                      var selectedStruct = allStructures.find(function(s) { return s.id === spotterFeedback; }) || {};
+                      var isRight = spotterFeedback === spotterTarget;
+
+                      var vocabTerm = Object.keys(ANAT_VOCAB).find(function(k) {
+                        return targetStruct.name && targetStruct.name.toLowerCase().indexOf(k.toLowerCase()) !== -1;
+                      });
+
+                      return h('div', { className: 'space-y-2' },
+                        h('div', { className: 'rounded-lg p-3 text-xs leading-relaxed ' + (isRight ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200') },
+                          h('p', { className: 'font-bold ' + (isRight ? 'text-green-800' : 'text-red-800') },
+                            isRight ? '🎉 Correct! (' + ((Date.now() - spotterStartTime) / 1000).toFixed(1) + 's)' : '🤔 Not quite! The correct structure is: ' + targetStruct.name
+                          ),
+                          h('p', { className: 'text-slate-600 mt-1' },
+                            isRight
+                              ? targetStruct.name + ' functions to: ' + targetStruct.fn
+                              : 'You chose ' + selectedStruct.name + ', which functions to: ' + selectedStruct.fn + '. ' + targetStruct.name + ' functions to: ' + targetStruct.fn
+                          )
+                        ),
+
+                        // Glossary card inside Spotter panel
+                        vocabTerm && (function() {
+                          var lookedUp = (d.vocabLookedUp || []).indexOf(vocabTerm) !== -1;
+                          return h('div', { className: 'p-3 rounded-lg border border-orange-200 bg-orange-50/50' },
+                            h('div', { className: 'flex items-center justify-between' },
+                              h('span', { className: 'text-xs font-bold text-orange-700' }, '🔍 Concept: ' + vocabTerm),
+                              !lookedUp && h('button', {
+                                onClick: function() {
+                                  var newList = (d.vocabLookedUp || []).slice();
+                                  if (newList.indexOf(vocabTerm) === -1) {
+                                    newList.push(vocabTerm);
+                                    updMulti({ vocabLookedUp: newList, researchPoints: (d.researchPoints || 0) + 5, totalRP: (d.totalRP || 0) + 5 });
+                                    playSound('spotterCorrect');
+                                    setTimeout(checkAnatomyChallenges, 50);
+                                  }
+                                },
+                                className: 'px-2 py-0.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-700 text-[10px] font-bold transition-all'
+                              }, 'Study Term (+5 RP)')
+                            ),
+                            lookedUp && h('div', { className: 'text-xs text-slate-600 mt-1' }, ANAT_VOCAB[vocabTerm])
+                          );
+                        })(),
+
+                        h('button', { 'aria-label': 'Next Structure',
+                          onClick: function() {
+                            var pool = filtered.filter(function(s) { return s.fn; });
+                            if (pool.length < 4) return;
+                            var target = pool[Math.floor(Math.random() * pool.length)];
+                            var wrong = pool.filter(function(s) { return s.id !== target.id; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
+                            var opts = wrong.concat([target]).sort(function() { return Math.random() - 0.5; });
+                            updMulti({ _spotterTarget: target.id, _spotterFeedback: null, _spotterOpts: opts, _spotterStartTime: Date.now() });
+                          },
+                          className: 'w-full py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all'
+                        }, 'Next Structure ➔'),
+                        h('button', { 'aria-label': 'End Test',
+                          onClick: function() { updMulti({ _spotterActive: false, _spotterTarget: null, _spotterFeedback: null }); },
+                          className: 'w-full py-1.5 rounded-lg text-[11px] font-bold text-slate-500 hover:bg-slate-100 transition-all'
+                        }, 'End Test')
+                      );
+                    })()
                   )
                 )
               ) : activeTab === 'pathways' ? (
@@ -4870,6 +5008,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                             updMulti({ _pathwaysCompleted: newPC, _activePathway: null, _pathwayStep: 0 });
                             playSound('badge');
                             if (addToast) addToast('\uD83D\uDEE4 Pathway complete: ' + pw.title + '!');
+                            setTimeout(checkAnatomyChallenges, 50);
                           },
                           className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 transition-all'
                         }, '\uD83C\uDFC6 Complete Pathway!')
@@ -4993,7 +5132,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         upd('_activeCaseIdx', ci);
                         upd('_activeCaseFeedback', 'correct');
                         upd('_clinicalSolved', (d._clinicalSolved || 0) + 1);
-                        playSound('clinicalCase');
+                        playSound('spotterCorrect');
+                        setTimeout(checkAnatomyChallenges, 50);
                       },
                       className: 'px-2 py-1 rounded text-[11px] font-bold bg-green-50 text-green-700 border border-green-600 hover:bg-green-100 transition-all'
                     }, '\u2705 I got it!'),

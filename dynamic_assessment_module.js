@@ -2577,7 +2577,8 @@
       '    "acceptableAnswers": ["<variant 1>", "<variant 2>"]',
       '  },',
       '  "supplementaryResources": [',
-      '    { "kind": "glossary", "title": "<short label, e.g. \\"Glossary: photosynthesis terms\\">", "seedTerms": ["<term 1>", "<term 2>", "<term 3>"], "anchorRung": <1|2|3|4> }',
+      '    { "kind": "glossary", "title": "<short label, e.g. \\"Glossary: photosynthesis terms\\">", "seedTerms": ["<term 1>", "<term 2>", "<term 3>"], "anchorRung": <1|2|3|4> },',
+      '    { "kind": "math-manipulative", "title": "<short label, e.g. \\"Number Line: 0-20\\">", "toolId": "numberline" | "fractions" | "areamodel", "preset": { /* tool-specific, see SUPPLEMENTARY RESOURCES section */ }, "anchorRung": <1|2|3|4> }',
       '  ]',
       "}",
       "",
@@ -2592,20 +2593,52 @@
       "8. acceptableAnswers should include the canonical form plus reasonable variants (e.g., '7', 'seven', '7 apples').",
       "",
       "SUPPLEMENTARY RESOURCES (REQUIRED for most items — Phase Z):",
-      "Every item gets a `supplementaryResources` array. The host auto-generates the resource (a glossary card) and injects an inline clickable link into the named scaffold rung, alongside a one-line usage hint the host writes for the clinician.",
-      "DEFAULT BEHAVIOR: include EXACTLY ONE glossary entry per item, unless the prompt + ladder genuinely have zero domain-specific vocabulary (a rare case — most academic items have at least one Tier-2 word worth previewing). When in doubt, attach a glossary.",
+      "Every item gets a `supplementaryResources` array. The host auto-generates the resource (a glossary card, an interactive number line, etc.) and injects an inline clickable link into the named scaffold rung, alongside a one-line usage hint the host writes for the clinician.",
+      "",
+      "TWO SUPPORTED KINDS:",
+      "  1. kind=\"glossary\" — vocabulary preview card (one per item max)",
+      "  2. kind=\"math-manipulative\" — interactive STEM Lab tool preset to specific state (one per item max)",
+      "An item can have BOTH a glossary AND a manipulative attached if both genuinely help.",
+      "",
+      "─── GLOSSARY GUIDANCE ───",
+      "DEFAULT: attach EXACTLY ONE glossary entry per item, unless the prompt + ladder genuinely have zero domain-specific vocabulary (rare — most academic items have at least one Tier-2 word worth previewing). When in doubt, attach a glossary.",
       "Examples that ALWAYS warrant a glossary:",
       "- Reading-comprehension or reading-intervention items (domain=reading) → glossary of the 2-3 Tier-2/3 words appearing in the prompt; anchorRung=1.",
       "- Language-domain items (domain=language) → glossary of the target vocabulary; anchorRung=1.",
-      "- Math word problems → glossary of the operation/concept terms (e.g., 'numerator', 'remainder', 'product'); anchorRung=2 (the leading question naturally references them).",
-      "- Working-memory items that reference categorical vocabulary → glossary of those category labels; anchorRung=1.",
-      "Rules for supplementaryResources:",
-      "- Phase 1 supports ONLY kind=\"glossary\" (do not invent other kinds).",
-      "- Include AT MOST 1 glossary entry per item.",
-      "- seedTerms: 2-4 specific words actually appearing in the prompt OR the L3 model. Lowercase, no punctuation, no proper nouns.",
-      "- anchorRung: pick the rung at which a struggling student would benefit most from the vocabulary preview. Default to 1 (preview before the student attempts the item). Use 2 when the leading question itself is the natural place to share the terms.",
-      "- title: a concise human-readable label that will appear as the link text (e.g., 'Glossary: photosynthesis terms').",
-      "- If — and only if — the item truly has no terminology a struggling student might stumble on, omit the field or send an empty array. Do not pad with off-topic vocabulary.",
+      "- Math word problems → glossary of the operation/concept terms (e.g., 'numerator', 'remainder', 'product'); anchorRung=2.",
+      "Glossary fields:",
+      "  - seedTerms: 2-4 words actually appearing in the prompt OR the L3 model. Lowercase, no punctuation, no proper nouns.",
+      "  - anchorRung: 1 (preview before the student attempts) or 2 (leading question shares the terms). Default 1.",
+      "  - title: concise label like 'Glossary: photosynthesis terms'.",
+      "",
+      "─── MATH-MANIPULATIVE GUIDANCE ───",
+      "DEFAULT for domain=math: attach EXACTLY ONE math-manipulative whose tool fits the construct. The manipulative is an interactive STEM Lab tool preset to relevant state, so the clinician can demonstrate or have the student manipulate during scaffolding.",
+      "Tool selection (toolId):",
+      "  - \"numberline\" — for whole-number arithmetic, counting, comparison, skip counting, integer ordering. Preset: { range: {min, max}, markers: [{value, color, label}], tab: 'explore'|'skipCount'|'fracDec' }",
+      "      Example for 'what is 17 - 8?': { range: {min: 0, max: 20}, markers: [{value: 17, color: '#3b82f6', label: 'start'}, {value: 8, color: '#ef4444', label: 'subtract'}], tab: 'explore' }",
+      "  - \"fractions\" — for fractional reasoning, part-whole, equivalents, comparison. Preset: { numerator: int, denominator: int, tab?: 'practice'|'compare'|'wall' }",
+      "      Example for 'is 3/4 greater than 5/8?': { numerator: 3, denominator: 4, tab: 'compare' }",
+      "  - \"areamodel\" — for multiplication, area, array reasoning, distributive property. Preset: { rows: int, cols: int, highlight?: {row, col} }",
+      "      Example for '4 × 7': { rows: 4, cols: 7 }",
+      "Anchor rung guidance for manipulatives:",
+      "  - L1: orient the student to the tool layout. Use when seeing the tool removes ambiguity (e.g., 'this is a number line from 0 to 20').",
+      "  - L2: invite the student to point/move/predict on the tool. Most natural anchor for leading-question support.",
+      "  - L3 (most common for manipulatives): model the strategy on the tool. Use when the example solve needs visual mediation.",
+      "  - L4: show the answer concretely on the tool while explaining.",
+      "Bounds (the host will reject preset values outside these):",
+      "  - numberline: range min/max integers in [-1000, 1000]; max-min ≤ 200; markers ≤ 6 entries.",
+      "  - fractions: numerator ∈ [0, 24], denominator ∈ [2, 24].",
+      "  - areamodel: rows ∈ [1, 20], cols ∈ [1, 20].",
+      "Manipulative fields:",
+      "  - toolId: ONE of \"numberline\", \"fractions\", \"areamodel\" — do not invent other tool names.",
+      "  - preset: an object matching the chosen tool's shape above. Keep it minimal and tied to THIS specific item.",
+      "  - anchorRung: 1-4. Default 3 for manipulatives unless the item makes another rung obviously better.",
+      "  - title: concise label like 'Number Line: 0-20' or 'Fraction Bar: 3/4 vs 5/8'.",
+      "",
+      "─── GENERAL RULES ───",
+      "- AT MOST 1 entry per kind per item (max 2 total per item: one glossary + one manipulative).",
+      "- Do not invent new kinds. Phase 2 supports exactly the two above.",
+      "- If — and only if — the item truly has no terminology AND no manipulative would help, omit the field or send an empty array. Do not pad.",
       "",
       "Output STRICT JSON ARRAY only. No markdown fences. No commentary. No leading/trailing text."
     ].join("\n");
@@ -2681,30 +2714,60 @@
     // the whole item-validation pass.
     var suppResources = [];
     if (Array.isArray(raw.supplementaryResources)) {
+      var hasGlossary = false;
+      var hasManipulative = false;
       raw.supplementaryResources.forEach(function (sr) {
         if (!sr || typeof sr !== "object") return;
         var kind = String(sr.kind || "").trim().toLowerCase();
-        if (kind !== "glossary") return; // Phase 1 ships only glossary
-        var seedTerms = Array.isArray(sr.seedTerms)
-          ? sr.seedTerms.map(function (s) { return String(s || "").trim().toLowerCase().replace(/[^\w\s-]/g, ""); })
-              .filter(function (s) { return s.length > 1 && s.length <= 40; })
-              .slice(0, 6)
-          : [];
-        if (seedTerms.length === 0) return; // empty seed list → nothing to generate
         var anchorRung = parseInt(sr.anchorRung, 10);
-        if (!(anchorRung >= 1 && anchorRung <= 4)) anchorRung = 1; // default to L1 vocabulary preview
-        var title = String(sr.title || "").trim().slice(0, 80) || ("Glossary: " + seedTerms.slice(0, 2).join(", "));
-        suppResources.push({
-          kind: "glossary",
-          title: title,
-          seedTerms: seedTerms,
-          anchorRung: anchorRung,
-          status: "suggested",  // 'suggested' | 'generating' | 'generated' | 'failed'
-          resourceId: null      // populated when generateDaSupports succeeds
-        });
+        if (!(anchorRung >= 1 && anchorRung <= 4)) anchorRung = (kind === "math-manipulative" ? 3 : 1);
+
+        if (kind === "glossary") {
+          if (hasGlossary) return; // one glossary per item max
+          var seedTerms = Array.isArray(sr.seedTerms)
+            ? sr.seedTerms.map(function (s) { return String(s || "").trim().toLowerCase().replace(/[^\w\s-]/g, ""); })
+                .filter(function (s) { return s.length > 1 && s.length <= 40; })
+                .slice(0, 6)
+            : [];
+          if (seedTerms.length === 0) return;
+          var gTitle = String(sr.title || "").trim().slice(0, 80) || ("Glossary: " + seedTerms.slice(0, 2).join(", "));
+          suppResources.push({
+            kind: "glossary",
+            title: gTitle,
+            seedTerms: seedTerms,
+            anchorRung: anchorRung,
+            status: "suggested",
+            resourceId: null
+          });
+          hasGlossary = true;
+          return;
+        }
+
+        if (kind === "math-manipulative") {
+          if (hasManipulative) return; // one manipulative per item max
+          var toolId = String(sr.toolId || "").trim().toLowerCase();
+          var ALLOWED_TOOLS = { numberline: 1, fractions: 1, areamodel: 1 };
+          if (!ALLOWED_TOOLS[toolId]) return; // unknown tool → drop silently (the model invented one)
+          var rawPreset = (sr.preset && typeof sr.preset === "object") ? sr.preset : {};
+          var preset = sanitizeManipulativePreset(toolId, rawPreset);
+          if (!preset) return; // sanitizer rejected it (bounds violated, structure unsalvageable)
+          var mTitle = String(sr.title || "").trim().slice(0, 80) || defaultManipulativeTitle(toolId, preset);
+          suppResources.push({
+            kind: "math-manipulative",
+            toolId: toolId,
+            title: mTitle,
+            preset: preset,
+            anchorRung: anchorRung,
+            status: "suggested",
+            resourceId: null
+          });
+          hasManipulative = true;
+          return;
+        }
+        // Unknown kind → ignore (don't crash, don't pad)
       });
-      // Phase 1: at most 1 supplementary resource per item (per plan)
-      if (suppResources.length > 1) suppResources = suppResources.slice(0, 1);
+      // Safety cap: max 2 resources per item (1 glossary + 1 manipulative)
+      if (suppResources.length > 2) suppResources = suppResources.slice(0, 2);
     }
 
     var item = {
@@ -2742,21 +2805,105 @@
   // before, just without the inline links).
   // ═════════════════════════════════════════════════════════
 
+  // Phase 2 — Sanitize a math-manipulative preset coming from Gemini.
+  // Returns the cleaned preset object, or null if the input is unsalvageable.
+  // The bounds here MUST match the limits documented to Gemini in
+  // buildCustomProbePrompt — if you relax/tighten them, update both.
+  function sanitizeManipulativePreset(toolId, raw) {
+    if (!raw || typeof raw !== "object") return null;
+    if (toolId === "numberline") {
+      var r = raw.range && typeof raw.range === "object" ? raw.range : {};
+      var minN = parseInt(r.min, 10);
+      var maxN = parseInt(r.max, 10);
+      if (!isFinite(minN) || !isFinite(maxN)) { minN = 0; maxN = 20; }
+      if (minN < -1000) minN = -1000;
+      if (maxN > 1000) maxN = 1000;
+      if (maxN <= minN) maxN = minN + 10;
+      if ((maxN - minN) > 200) maxN = minN + 200;
+      var markers = Array.isArray(raw.markers) ? raw.markers.slice(0, 6).map(function (m) {
+        if (!m || typeof m !== "object") return null;
+        var v = parseFloat(m.value);
+        if (!isFinite(v)) return null;
+        var color = typeof m.color === "string" && /^#[0-9a-fA-F]{3,8}$/.test(m.color) ? m.color : "#ef4444";
+        var label = typeof m.label === "string" ? String(m.label).slice(0, 24) : "";
+        return { value: v, color: color, label: label };
+      }).filter(Boolean) : [];
+      var tab = raw.tab;
+      var ALLOWED_TABS = { explore: 1, skipCount: 1, fracDec: 1 };
+      if (typeof tab !== "string" || !ALLOWED_TABS[tab]) tab = "explore";
+      return { range: { min: minN, max: maxN }, markers: markers, tab: tab };
+    }
+    if (toolId === "fractions") {
+      var num = parseInt(raw.numerator, 10);
+      var den = parseInt(raw.denominator, 10);
+      if (!isFinite(num)) num = 1;
+      if (!isFinite(den)) den = 2;
+      if (num < 0) num = 0;
+      if (num > 24) num = 24;
+      if (den < 2) den = 2;
+      if (den > 24) den = 24;
+      var fTab = raw.tab;
+      var F_TABS = { practice: 1, compare: 1, wall: 1, operations: 1, equivalents: 1, converter: 1 };
+      if (typeof fTab !== "string" || !F_TABS[fTab]) fTab = "practice";
+      return { numerator: num, denominator: den, tab: fTab };
+    }
+    if (toolId === "areamodel") {
+      var rows = parseInt(raw.rows, 10);
+      var cols = parseInt(raw.cols, 10);
+      if (!isFinite(rows)) rows = 3;
+      if (!isFinite(cols)) cols = 4;
+      if (rows < 1) rows = 1; if (rows > 20) rows = 20;
+      if (cols < 1) cols = 1; if (cols > 20) cols = 20;
+      var hl = (raw.highlight && typeof raw.highlight === "object")
+        ? { row: Math.max(0, Math.min(rows - 1, parseInt(raw.highlight.row, 10) || 0)),
+            col: Math.max(0, Math.min(cols - 1, parseInt(raw.highlight.col, 10) || 0)) }
+        : null;
+      var out = { rows: rows, cols: cols };
+      if (hl) out.highlight = hl;
+      return out;
+    }
+    return null;
+  }
+
+  // Fallback title for a manipulative when Gemini didn't supply one.
+  function defaultManipulativeTitle(toolId, preset) {
+    if (toolId === "numberline") {
+      var r = preset && preset.range;
+      return "Number Line: " + (r ? r.min + "–" + r.max : "0–20");
+    }
+    if (toolId === "fractions") {
+      return "Fraction Bar: " + (preset ? preset.numerator + "/" + preset.denominator : "1/2");
+    }
+    if (toolId === "areamodel") {
+      return "Area Model: " + (preset ? preset.rows + " × " + preset.cols : "3 × 4");
+    }
+    return "Manipulative";
+  }
+
   // Markdown-link-token format reused from Lesson Plan: [title](resource:id)
   function makeResourceLinkToken(title, resourceId) {
     var safeTitle = String(title || "Resource").replace(/[\[\]\(\)]/g, "").slice(0, 80);
     return "[" + safeTitle + "](resource:" + String(resourceId) + ")";
   }
 
-  // Usage-guidance string for the clinician — varies by rung level so it
-  // reads as a natural instruction at the moment of escalation. Plain text
-  // (the link token is appended after this string).
+  // Usage-guidance string for the clinician — varies by rung level AND
+  // resource kind so it reads as a natural instruction at the moment of
+  // escalation. Plain text (the link token is appended after this string).
   function usageHintForAnchorRung(level, kind) {
-    if (kind !== "glossary") return "";
-    if (level === 1) return "💡 Before asking, pre-teach these terms with the student:";
-    if (level === 2) return "💡 As you ask the leading question, point to these terms together:";
-    if (level === 3) return "💡 Use these terms in the model alongside the example:";
-    if (level === 4) return "💡 Reinforce these terms as you give the direct answer:";
+    if (kind === "math-manipulative") {
+      if (level === 1) return "🧮 Show this manipulative so the student can orient before answering:";
+      if (level === 2) return "🧮 Have the student point or move on this tool as they answer the leading question:";
+      if (level === 3) return "🧮 Model the strategy step-by-step using this tool:";
+      if (level === 4) return "🧮 Use this tool to show the canonical answer concretely:";
+      return "🧮 Use this tool with the student:";
+    }
+    if (kind === "glossary") {
+      if (level === 1) return "💡 Before asking, pre-teach these terms with the student:";
+      if (level === 2) return "💡 As you ask the leading question, point to these terms together:";
+      if (level === 3) return "💡 Use these terms in the model alongside the example:";
+      if (level === 4) return "💡 Reinforce these terms as you give the direct answer:";
+      return "💡 Use this resource with the student:";
+    }
     return "💡 Use this resource with the student:";
   }
 
@@ -2784,8 +2931,10 @@
   // Never throws — failures are captured in status='failed'.
   function generateDaSupportsForItem(item, idx, hostCallbacks) {
     var onGenerateGlossary = hostCallbacks && hostCallbacks.onGenerateGlossary;
-    if (typeof onGenerateGlossary !== "function") {
-      return Promise.resolve(item); // No-op if host hasn't wired the callback
+    var onGenerateManipulative = hostCallbacks && hostCallbacks.onGenerateManipulative;
+    // If neither callback is wired, no-op (preserves Phase 1 behavior for older hosts).
+    if (typeof onGenerateGlossary !== "function" && typeof onGenerateManipulative !== "function") {
+      return Promise.resolve(item);
     }
     var supps = Array.isArray(item.supplementaryResources) ? item.supplementaryResources : [];
     if (supps.length === 0) return Promise.resolve(item);
@@ -2799,11 +2948,11 @@
         var snapshot = currentItem.supplementaryResources.slice();
         snapshot[si] = Object.assign({}, sr, { status: "generating" });
         currentItem = Object.assign({}, currentItem, { supplementaryResources: snapshot });
-        // Glossary kind (Phase 1 — only kind we ship for now)
+        // Glossary kind (Phase 1)
         if (sr.kind === "glossary") {
-          // Tag the resource with provenance so the host can show "from DA · item N"
-          var provenance = { fromDA: true, daItemIndex: idx, daItemPrompt: String(currentItem.prompt || "").slice(0, 80) };
-          return onGenerateGlossary(sr.seedTerms, sr.title, provenance)
+          if (typeof onGenerateGlossary !== "function") return currentItem; // host hasn't wired glossary cb
+          var gProv = { fromDA: true, daItemIndex: idx, daItemPrompt: String(currentItem.prompt || "").slice(0, 80) };
+          return onGenerateGlossary(sr.seedTerms, sr.title, gProv)
             .then(function (res) {
               if (!res || !res.id) throw new Error("Glossary callback returned no id.");
               var token = makeResourceLinkToken(sr.title, res.id);
@@ -2819,7 +2968,31 @@
               return Object.assign({}, currentItem, { supplementaryResources: failSupps });
             });
         }
-        // Unknown kind in Phase 1 — pass through unchanged.
+
+        // Math manipulative kind (Phase 2). Synchronous from DA's perspective:
+        // the host just mints a history entry pointing at the right STEM tool
+        // with the preset state Gemini specified. No image gen, no AI roundtrip.
+        if (sr.kind === "math-manipulative") {
+          if (typeof onGenerateManipulative !== "function") return currentItem;
+          var mProv = { fromDA: true, daItemIndex: idx, daItemPrompt: String(currentItem.prompt || "").slice(0, 80) };
+          return Promise.resolve()
+            .then(function () { return onGenerateManipulative(sr.toolId, sr.preset, sr.title, mProv); })
+            .then(function (res) {
+              if (!res || !res.id) throw new Error("Manipulative callback returned no id.");
+              var token = makeResourceLinkToken(sr.title, res.id);
+              var nextSupps = currentItem.supplementaryResources.slice();
+              nextSupps[si] = Object.assign({}, sr, { status: "generated", resourceId: res.id });
+              var withSupps = Object.assign({}, currentItem, { supplementaryResources: nextSupps });
+              return appendLinkTokenToRung(withSupps, sr.anchorRung, token, res.id, sr.kind);
+            })
+            .catch(function (err) {
+              try { console.warn("[DA Phase Z] Manipulative generation failed for item " + idx + ":", err && err.message); } catch (_) {}
+              var failSupps = currentItem.supplementaryResources.slice();
+              failSupps[si] = Object.assign({}, sr, { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
+              return Object.assign({}, currentItem, { supplementaryResources: failSupps });
+            });
+        }
+        // Unknown kind — pass through unchanged.
         return currentItem;
       });
     }, Promise.resolve(working));
@@ -4603,19 +4776,21 @@
       // resources. If the host hasn't wired them yet (older callers), the
       // orchestrator silently no-ops and items render without inline links.
       var hostCallbacks = {
-        onGenerateGlossary: typeof props.onGenerateGlossary === "function" ? props.onGenerateGlossary : null
+        onGenerateGlossary: typeof props.onGenerateGlossary === "function" ? props.onGenerateGlossary : null,
+        onGenerateManipulative: typeof props.onGenerateManipulative === "function" ? props.onGenerateManipulative : null
       };
 
       // Helper: terminal "we're done" step. Runs Phase Z supports generation
       // first (sequential, with progress UI), then commits items + closes UI.
       // Used at all 5 exit points in the pipeline (success + each fallback).
       function finalizeAndCommit(items, announceMsg) {
-        // No supports callback wired OR none of the items declared any
-        // supplementaryResources → fast-path skip the orchestrator entirely.
+        // No supports callbacks wired AT ALL, OR none of the items declared
+        // any supplementaryResources → fast-path skip the orchestrator entirely.
         var anySupps = (items || []).some(function (it) {
           return it && Array.isArray(it.supplementaryResources) && it.supplementaryResources.length > 0;
         });
-        if (!hostCallbacks.onGenerateGlossary || !anySupps) {
+        var anyCallback = hostCallbacks.onGenerateGlossary || hostCallbacks.onGenerateManipulative;
+        if (!anyCallback || !anySupps) {
           setGeneratedItems(items);
           setGenBusy(false);
           setGenStage(null);
@@ -8602,6 +8777,106 @@
         });
     }
 
+    // Phase 2 — On-demand "Add inline manipulative" trigger. Asks Gemini for a
+    // one-shot recommendation (toolId + preset) tied to this item's prompt,
+    // then runs the same Phase Z host callback path so the manipulative lands
+    // in history + the rung gets the inline link + usage hint.
+    function addManualManipulativeToItem(idx) {
+      var item = generatedItems[idx];
+      if (!item) return;
+      if (typeof props.onGenerateManipulative !== "function") {
+        addToast("Manipulative generation isn't wired in this host.");
+        return;
+      }
+      if (typeof callGeminiFn !== "function") {
+        addToast("AI is not available in this host — cannot decide a manipulative.");
+        return;
+      }
+      // Ask Gemini to pick the right tool + preset for THIS item. Keep the
+      // prompt small and tightly schema'd; if Gemini refuses, we fall back
+      // to a default numberline 0-20.
+      var promptText = String(item.prompt || "");
+      var correctAns = String(item.correctAnswer || "");
+      var pickPrompt = [
+        "You are picking ONE math manipulative tool + preset state to support a Dynamic Assessment item.",
+        "Allowed tools:",
+        "  numberline → { range: {min, max}, markers: [{value, color, label}], tab: 'explore'|'skipCount'|'fracDec' }",
+        "  fractions  → { numerator, denominator, tab: 'practice'|'compare'|'wall' }",
+        "  areamodel  → { rows, cols, highlight?: {row, col} }",
+        "Bounds: numberline max-min ≤ 200 and ∈ [-1000,1000], fractions denominator ∈ [2,24], areamodel rows/cols ∈ [1,20].",
+        "",
+        "Item prompt: " + promptText,
+        "Correct answer: " + correctAns,
+        "",
+        "Output STRICT JSON only (no fences, no prose): { \"toolId\": \"<one of the three>\", \"preset\": {...}, \"title\": \"<short label>\", \"anchorRung\": <1|2|3|4> }"
+      ].join("\n");
+      addToast("Picking the right manipulative…");
+      // Insert a placeholder supps entry so the panel shows status=generating
+      // immediately while we wait for Gemini.
+      var placeholder = {
+        kind: "math-manipulative",
+        toolId: "pending",
+        title: "Picking manipulative…",
+        preset: {},
+        anchorRung: 3,
+        status: "generating",
+        resourceId: null
+      };
+      editGeneratedItem(idx, function (i) {
+        var existing = Array.isArray(i.supplementaryResources) ? i.supplementaryResources : [];
+        return Object.assign({}, i, { supplementaryResources: existing.concat([placeholder]) });
+      });
+      Promise.resolve()
+        .then(function () { return callGeminiFn(pickPrompt, true); })
+        .then(function (raw) {
+          var cleaned = String(raw || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+          var parsed = null;
+          try { parsed = JSON.parse(cleaned); } catch (_) {}
+          if (!parsed || typeof parsed !== "object") throw new Error("AI did not return valid JSON.");
+          var toolId = String(parsed.toolId || "").toLowerCase();
+          if (!({ numberline: 1, fractions: 1, areamodel: 1 })[toolId]) {
+            toolId = "numberline";
+            parsed.preset = { range: { min: 0, max: 20 }, markers: [], tab: "explore" };
+          }
+          var preset = sanitizeManipulativePreset(toolId, parsed.preset || {});
+          if (!preset) {
+            // Fallback default by tool
+            if (toolId === "numberline") preset = { range: { min: 0, max: 20 }, markers: [], tab: "explore" };
+            else if (toolId === "fractions") preset = { numerator: 1, denominator: 2, tab: "practice" };
+            else preset = { rows: 3, cols: 4 };
+          }
+          var anchorRung = parseInt(parsed.anchorRung, 10);
+          if (!(anchorRung >= 1 && anchorRung <= 4)) anchorRung = 3;
+          var title = String(parsed.title || "").trim().slice(0, 80) || defaultManipulativeTitle(toolId, preset);
+          var provenance = { fromDA: true, daItemIndex: idx, daItemPrompt: promptText.slice(0, 80) };
+          return props.onGenerateManipulative(toolId, preset, title, provenance)
+            .then(function (res) {
+              if (!res || !res.id) throw new Error("Manipulative callback returned no id.");
+              var token = makeResourceLinkToken(title, res.id);
+              editGeneratedItem(idx, function (i) {
+                var supps = (i.supplementaryResources || []).slice();
+                var sIdx = supps.findIndex(function (s) { return s && s.status === "generating" && s.toolId === "pending"; });
+                if (sIdx < 0) sIdx = supps.length - 1;
+                supps[sIdx] = { kind: "math-manipulative", toolId: toolId, title: title, preset: preset, anchorRung: anchorRung, status: "generated", resourceId: res.id };
+                var withSupps = Object.assign({}, i, { supplementaryResources: supps });
+                return appendLinkTokenToRung(withSupps, anchorRung, token, res.id, "math-manipulative");
+              });
+              addToast("Inline manipulative attached: " + title);
+            });
+        })
+        .catch(function (err) {
+          editGeneratedItem(idx, function (i) {
+            var supps = (i.supplementaryResources || []).slice();
+            var sIdx = supps.findIndex(function (s) { return s && s.status === "generating" && s.toolId === "pending"; });
+            if (sIdx >= 0) {
+              supps[sIdx] = Object.assign({}, supps[sIdx], { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
+            }
+            return Object.assign({}, i, { supplementaryResources: supps });
+          });
+          addToast("Manipulative generation failed: " + (err && err.message ? err.message : "unknown"));
+        });
+    }
+
     function renderEditableItem(item, idx) {
       var warnings = Array.isArray(item._generationWarnings) ? item._generationWarnings : [];
       var isExcluded = !!item._excluded;
@@ -8691,56 +8966,78 @@
           })
         ),
         // Phase Z — Supplementary resources panel.
-        // Always rendered: shows existing supports with status, AND a small
-        // "+ Add inline glossary" button for items that came back without one
-        // (Gemini judgment varies). The button calls Gemini for a glossary
-        // tied to vocabulary in this item's prompt.
-        h("div", {
-          style: { marginBottom: 8, padding: 8, background: "#eef2ff", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 11, lineHeight: 1.5 }
-        },
-          h("div", { style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" } },
-            h("span", { style: { fontWeight: 800, color: "#3730a3", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em", flex: 1 } },
-              "🔗 Inline supports for this item"),
-            // "+ Add glossary" button — visible when no support is currently attached or generating
-            (!Array.isArray(item.supplementaryResources) || item.supplementaryResources.length === 0
-              || !item.supplementaryResources.some(function (sr) { return sr && (sr.status === "generated" || sr.status === "generating"); }))
-              ? h("button", {
-                  onClick: function () { addManualGlossaryToItem(idx); },
-                  disabled: typeof props.onGenerateGlossary !== "function",
-                  title: typeof props.onGenerateGlossary === "function" ? "Generate a glossary for vocabulary in this prompt" : "Host glossary callback not wired",
-                  style: {
-                    padding: "2px 10px", borderRadius: 4,
-                    border: "1px solid #6366f1", background: "#ffffff", color: "#4338ca",
-                    fontSize: 10, fontWeight: 800, cursor: typeof props.onGenerateGlossary === "function" ? "pointer" : "not-allowed",
-                    fontFamily: "inherit"
-                  }
-                }, "+ Add inline glossary")
-              : null
-          ),
-          (Array.isArray(item.supplementaryResources) && item.supplementaryResources.length > 0)
-            ? h("div", null, item.supplementaryResources.map(function (sr, sri) {
-                var statusColor = sr.status === "generated" ? "#15803d"
-                                : sr.status === "failed" ? "#b91c1c"
-                                : sr.status === "generating" ? "#a16207"
-                                : "#64748b";
-                var statusLabel = sr.status === "generated" ? "✓ generated"
-                                : sr.status === "failed" ? "✗ failed"
-                                : sr.status === "generating" ? "… generating"
-                                : "· suggested";
-                return h("div", { key: "da-supp-" + idx + "-" + sri, style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 2 } },
-                  h("span", { style: { fontWeight: 700, color: "#3730a3" } }, (sr.kind === "glossary" ? "📚 " : "🔗 ") + (sr.title || "Resource")),
-                  h("span", { style: { color: "#64748b", fontSize: 10 } }, "L" + (sr.anchorRung || 1)),
-                  h("span", { style: { color: statusColor, fontSize: 10, fontWeight: 700 } }, statusLabel),
-                  sr.status === "generated" && sr.resourceId && typeof props.onOpenResource === "function" ? h("button", {
-                    onClick: function (e) { try { e.preventDefault(); } catch (_) {} props.onOpenResource(sr.resourceId); },
-                    style: { padding: "1px 8px", borderRadius: 4, border: "1px solid #c7d2fe", background: "#ffffff", color: "#3730a3", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
-                  }, "Open") : null,
-                  sr.status === "failed" && sr._failureMessage ? h("span", { style: { color: "#7f1d1d", fontSize: 10, fontStyle: "italic" } }, "— " + sr._failureMessage) : null
-                );
-              }))
-            : h("div", { style: { color: "#64748b", fontSize: 10.5, fontStyle: "italic" } },
-                "No inline supports attached. Use ", h("strong", null, "+ Add inline glossary"), " to pre-teach vocabulary from this item's prompt at the L1 cue.")
-        ),
+        // Always rendered: shows existing supports with status, AND small
+        // "+ Add inline glossary" / "+ Add inline manipulative" buttons for
+        // items that came back without one (Gemini judgment varies). The
+        // buttons call Gemini for the right support tied to THIS item.
+        (function () {
+          var supps = Array.isArray(item.supplementaryResources) ? item.supplementaryResources : [];
+          var hasActiveGlossary = supps.some(function (sr) { return sr && sr.kind === "glossary" && (sr.status === "generated" || sr.status === "generating"); });
+          var hasActiveManipulative = supps.some(function (sr) { return sr && sr.kind === "math-manipulative" && (sr.status === "generated" || sr.status === "generating"); });
+          var iconForKind = function (kind, toolId) {
+            if (kind === "glossary") return "📚";
+            if (kind === "math-manipulative") {
+              if (toolId === "numberline") return "📏";
+              if (toolId === "fractions") return "🧩";
+              if (toolId === "areamodel") return "🟦";
+              return "🧮";
+            }
+            return "🔗";
+          };
+          return h("div", {
+            style: { marginBottom: 8, padding: 8, background: "#eef2ff", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 11, lineHeight: 1.5 }
+          },
+            h("div", { style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" } },
+              h("span", { style: { fontWeight: 800, color: "#3730a3", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em", flex: 1 } },
+                "🔗 Inline supports for this item"),
+              !hasActiveGlossary ? h("button", {
+                onClick: function () { addManualGlossaryToItem(idx); },
+                disabled: typeof props.onGenerateGlossary !== "function",
+                title: typeof props.onGenerateGlossary === "function" ? "Generate a glossary for vocabulary in this prompt" : "Host glossary callback not wired",
+                style: {
+                  padding: "2px 10px", borderRadius: 4,
+                  border: "1px solid #6366f1", background: "#ffffff", color: "#4338ca",
+                  fontSize: 10, fontWeight: 800, cursor: typeof props.onGenerateGlossary === "function" ? "pointer" : "not-allowed",
+                  fontFamily: "inherit"
+                }
+              }, "+ Add inline glossary") : null,
+              !hasActiveManipulative ? h("button", {
+                onClick: function () { addManualManipulativeToItem(idx); },
+                disabled: typeof props.onGenerateManipulative !== "function",
+                title: typeof props.onGenerateManipulative === "function" ? "Attach an interactive math manipulative (number line, fraction bar, or area model)" : "Host manipulative callback not wired",
+                style: {
+                  padding: "2px 10px", borderRadius: 4,
+                  border: "1px solid #d97706", background: "#ffffff", color: "#92400e",
+                  fontSize: 10, fontWeight: 800, cursor: typeof props.onGenerateManipulative === "function" ? "pointer" : "not-allowed",
+                  fontFamily: "inherit"
+                }
+              }, "+ Add inline manipulative") : null
+            ),
+            supps.length > 0
+              ? h("div", null, supps.map(function (sr, sri) {
+                  var statusColor = sr.status === "generated" ? "#15803d"
+                                  : sr.status === "failed" ? "#b91c1c"
+                                  : sr.status === "generating" ? "#a16207"
+                                  : "#64748b";
+                  var statusLabel = sr.status === "generated" ? "✓ generated"
+                                  : sr.status === "failed" ? "✗ failed"
+                                  : sr.status === "generating" ? "… generating"
+                                  : "· suggested";
+                  return h("div", { key: "da-supp-" + idx + "-" + sri, style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 2 } },
+                    h("span", { style: { fontWeight: 700, color: "#3730a3" } }, iconForKind(sr.kind, sr.toolId) + " " + (sr.title || "Resource")),
+                    h("span", { style: { color: "#64748b", fontSize: 10 } }, "L" + (sr.anchorRung || 1)),
+                    h("span", { style: { color: statusColor, fontSize: 10, fontWeight: 700 } }, statusLabel),
+                    sr.status === "generated" && sr.resourceId && typeof props.onOpenResource === "function" ? h("button", {
+                      onClick: function (e) { try { e.preventDefault(); } catch (_) {} props.onOpenResource(sr.resourceId); },
+                      style: { padding: "1px 8px", borderRadius: 4, border: "1px solid #c7d2fe", background: "#ffffff", color: "#3730a3", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                    }, "Open") : null,
+                    sr.status === "failed" && sr._failureMessage ? h("span", { style: { color: "#7f1d1d", fontSize: 10, fontStyle: "italic" } }, "— " + sr._failureMessage) : null
+                  );
+                }))
+              : h("div", { style: { color: "#64748b", fontSize: 10.5, fontStyle: "italic" } },
+                  "No inline supports attached. Use ", h("strong", null, "+ Add inline glossary"), " to pre-teach vocabulary, or ", h("strong", null, "+ Add inline manipulative"), " to attach an interactive math tool.")
+          );
+        })(),
         // Correct answer field
         h("div", { style: { marginBottom: 8, display: "grid", gridTemplateColumns: "1fr 2fr", gap: 8 } },
           h("div", null,

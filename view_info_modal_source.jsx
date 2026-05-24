@@ -457,7 +457,8 @@ function InfoModal({
                           'Terminal': Terminal, 'History': History, 'Wifi': Wifi, 'Cloud': Cloud,
                           'Mic': Mic, 'Download': Download, 'Clock': Clock,
                           'Gamepad2': Gamepad2, 'Ear': Ear, 'FileQuestion': FileQuestion,
-                          'MessageCircleQuestion': MessageCircleQuestion, 'Users': Users
+                          'MessageCircleQuestion': MessageCircleQuestion, 'Users': Users,
+                          'Heart': Heart, 'Layers': Layers, 'Sparkles': Sparkles
                         }[feature.icon] || Sparkles;
                         const colorClass = colorMap[feature.color || 'slate'];
                         return (
@@ -664,6 +665,104 @@ function getFeatureDetails(title) {
       outputs: ["Gemini Canvas workspace prompts", "Custom interactive app builders"],
       customizations: ["Choose custom workspace styles", "Edit output prompts"],
       proTip: "Use Gemini Bridge to create a completely custom, self-grading interactive app based on your lesson packs."
+    },
+    "Smart Glossary": {
+      inputs: ["Passage text / topic", "Number of Tier 2 / Tier 3 terms", "Definition reading level (K–College)", "Optional target languages (up to 4)"],
+      engine: ["Tier 2/Tier 3 vocabulary extraction", "Grade-aware definition simplification", "Imagen visual term generation", "Bilingual side-by-side alignment"],
+      outputs: ["Visual flashcards with audio", "Multilingual definitions side-by-side", "5 vocabulary games (crossword, bingo, memory match, word search, scramble)", "Printable PDF + slide exports"],
+      customizations: ["Term counts per tier", "Definition complexity", "Bilingual / multilingual mode", "Auto-grade games or print-only"],
+      proTip: "Link the glossary directly into Word Sounds Studio to drill phonemic awareness on the same vocabulary set."
+    },
+    "Immersive Reader": {
+      inputs: ["Leveled passage", "Reader preferences (font, speed, voice)"],
+      engine: ["RSVP word-by-word display engine", "Karaoke sentence-by-sentence TTS sync", "Bionic-reading bold-letter highlighting", "Grammar tagging (nouns / verbs / adjectives)"],
+      outputs: ["Focus-reader RSVP view", "Karaoke read-aloud playback", "Bionic-bolded passage", "Color-coded parts-of-speech overlay", "Line ruler / focus magnifier"],
+      customizations: ["RSVP speed (200–600 wpm)", "TTS voice + speech rate", "Line ruler height", "Grammar highlight on/off", "Zen mode fullscreen"],
+      proTip: "Pair karaoke mode with the Oral Fluency probe — students hear the passage modeled before recording their own reading."
+    },
+    "Word Sounds Studio": {
+      inputs: ["Word list (from Glossary or AI-generated)", "Grade band (K–2, 3–5, Custom)", "Activity mode selection"],
+      engine: ["Phoneme decomposition + grapheme mapping", "Grade-normed adaptive difficulty", "TTS pronunciation engine", "Confusion-pattern detection (b/d, short vowels)"],
+      outputs: ["8 activity types (blending, segmenting, isolation, rhyming, mapping, spelling, families, sight-and-spell)", "6 achievement badges", "Phoneme mastery progress report"],
+      customizations: ["Adaptive vs fixed difficulty", "TTS speed", "Activity mix selection", "Source from glossary or AI-generated patterns"],
+      proTip: "Use the Phoneme Bank Picker to focus on specific sounds for targeted RTI intervention groups."
+    },
+    "StoryForge": {
+      inputs: ["Story prompt or genre", "Student grade level", "Optional rubric criteria", "Target language (1 of 18)"],
+      engine: ["Six-phase scaffold (plan → draft → illustrate → revise → narrate → publish)", "Imagen illustration per phase", "TTS narration in 8 voices", "AI grammar / style coaching with revision tracking"],
+      outputs: ["Phased writing draft with revision history", "AI-illustrated storybook export", "Narrated audio version", "Custom rubric scoring sheet", "Comic-panel sticker mode"],
+      customizations: ["Genre presets", "Illustration art style", "Voice selection", "Writing sprint Pomodoro timers"],
+      proTip: "Enable the writing sprint timer for students who struggle to initiate longer drafts — short focused bursts beat staring at a blank page."
+    },
+    "AlloBot": {
+      inputs: ["Free-text question or command", "Voice query (optional)", "Current canvas context"],
+      engine: ["Intent classification (content question vs navigation vs settings)", "Context-aware answer generation", "Auto-fill detection (grade, topic, standards)"],
+      outputs: ["Conversational answer with citations", "Navigation actions (auto-opens tools)", "Auto-applied configuration", "Suggested next steps"],
+      customizations: ["Voice or text input", "Sage persona depth", "Auto-fill confirm-before-apply"],
+      proTip: "Ask AlloBot 'Set up a 3rd grade lesson on gravity' — it configures grade, topic, and standards in one step, then offers to generate the full pack."
+    },
+    "Escape Room": {
+      inputs: ["Lesson concepts / vocabulary", "Team composition", "Difficulty + time limit"],
+      engine: ["Puzzle generation from content", "Multi-stage room sequencing", "Hint system with teacher pacing", "Live team progress aggregation"],
+      outputs: ["Multi-stage interactive escape room", "Team leaderboard", "Per-puzzle accuracy report", "Time-to-escape stats"],
+      customizations: ["Room theme / visual aesthetic", "Hint availability tier", "Team size", "Stage count"],
+      proTip: "Pre-load the Glossary first — escape room puzzles re-use that vocabulary for the vocab-recall stages, giving students a familiar entry point."
+    },
+    "SEL Hub": {
+      inputs: ["Student situation / context", "Optional teacher facilitation prompts"],
+      engine: ["32-tool registry across CASEL competencies + Civic & Hope", "Multi-turn role-play rehearsal in 5 tools", "Defense-in-depth safety pipeline (pre-flight regex + 2 AI assessors + 1 confirmation)", "Auto-routing of safety flags to staff"],
+      outputs: ["Interactive SEL activities + journals", "Safety-flagged escalations to staff", "Generated role-play scenes with break-character coach", "End-of-session reflection prompts"],
+      customizations: ["Tool selection from 32 options", "Safety threshold tuning", "Teacher visibility settings", "Custom scenarios"],
+      proTip: "The safety pipeline filters concerning free-text BEFORE any AI sees it — students get private rehearsal space while staff still receive alerts on real-risk content."
+    },
+    "BehaviorLens": {
+      inputs: ["Natural-language observation OR structured ABC entry", "Student profile / referral context", "Intervention history"],
+      engine: ["Quick-Fill AI structures observations into Antecedent–Behavior–Consequence", "Function hypothesis generation", "IOA calculator with 5 reliability methods", "Preference assessment matrices (MSWO, Paired, Free Operant)"],
+      outputs: ["Structured ABC log", "Function hypothesis report", "Frequency / interval / scatterplot charts", "Intervention plan templates (DRO, token economy, FCT, BIP, de-escalation)", "Restorative-language transformations"],
+      customizations: ["Person-first language toggle", "Restorative-language pass", "Template library selection", "One-click export to Report Writer"],
+      proTip: "Use Quick-Fill to type observations naturally — the AI auto-structures them, saving 5–10 minutes per ABC entry over manual coding."
+    },
+    "Report Writer": {
+      inputs: ["Student data + 17 standardized assessment scores (WISC-V, WIAT-4, BASC-3, Vineland-3, etc.)", "Observations + interviews", "Optional DA findings or BehaviorLens hypothesis"],
+      engine: ["Immutable fact-chunk layer (PII-scrubbed)", "Triangulated N-pass drafting + best-of-N by evidence coverage", "Self-healing dual-pass accuracy audit", "Score-text verification + cross-section consistency check"],
+      outputs: ["Bilingual psychoeducational report", "Fact-verified narrative sections", "Editable structured findings", "Audit log of verification passes"],
+      customizations: ["Section selection", "Bilingual output", "Triangulation pass count", "Re-run accuracy audit on edited drafts"],
+      proTip: "Ingest a Dynamic Assessment session BEFORE drafting — its modifiability findings get auto-added as fact chunks and pre-drafted into a 'Dynamic Assessment Results' section."
+    },
+    "Dynamic Assessment": {
+      inputs: ["Student nickname + intake context", "Domain (math / reading / working memory / language)", "Difficulty band", "Optional recent Math Fluency CBM as baseline"],
+      engine: ["Pretest → mediation → posttest → optional transfer probe", "4-level prompt ladder per item (cue → leading → modeling → direct teach)", "Modifiability Index = (post − pre) / (max − pre)", "AI item generation + Phase Y self-critique loop", "AI mediation in real-time (optional)"],
+      outputs: ["Modifiability tier (high / moderate / low) + index", "IEP goals + UDL accommodations + family letter + teacher handoff + monitoring plan (all AI-generated)", "Fact-chunk export to Report Writer"],
+      customizations: ["Examiner-led or AI-mediated", "Output language (per session)", "Custom probe builder", "Save-and-resume on quota errors"],
+      proTip: "Pull recent Math Fluency CBM probes into the intake — they auto-populate existing-assessment context and improve every downstream AI draft."
+    },
+    "Student Analytics": {
+      inputs: ["Probe history (ORF, Math CBM, NWF, LNF, etc.)", "Imported student roster", "Intervention logs"],
+      engine: ["Tier 1/2/3 classification from CBM probe trends + class averages", "Aimline + trend monitoring (4-week warn / 6-week critical)", "Pearson correlation analysis", "Anomaly + paste-event flagging"],
+      outputs: ["RTI tier badges (1/2/3)", "Aimline progress charts", "Class screening reports", "Printable RTI data-team meeting summary", "CSV export"],
+      customizations: ["Tier threshold tuning", "Roster + group filters", "Season-of-year benchmarks (Fall/Winter/Spring)", "Print-ready or live dashboard"],
+      proTip: "After a Dynamic Assessment session, the RTI meeting summary auto-includes modifiability findings alongside the standard CBM trend — load-bearing for IEP review meetings."
+    },
+    "PDF Accessibility": {
+      inputs: ["PDF / image / DOCX / PPTX file", "Optional teacher remediation prompt", "Brand / theme preferences"],
+      engine: ["5-auditor triangulated AI audit with statistical analysis (ICC, Cronbach's alpha)", "Vision API remediation pass", "axe-core 4.10 verification", "Self-healing auto-fix loop"],
+      outputs: ["WCAG-AA remediated HTML", "Accessible PDF export", "Audio version", "Audit report card with auditor agreement scores", "Diff view (original vs remediated)"],
+      customizations: ["Theme + brand colors", "Image alt-text generation", "Batch upload mode", "Re-run specific auditor passes"],
+      proTip: "Batch-upload your district's worksheet library overnight — the pipeline produces WCAG-AA versions while you sleep."
+    },
+    "Symbol Studio": {
+      inputs: ["Vocabulary list / target concept", "Student communication profile", "Board layout preference"],
+      engine: ["AI PCS-style symbol generation (Imagen + image-to-image)", "Board layout grid builder", "Symbol Quest 4 game modes", "Word Garden familiarity + cross-context tracking", "Carol Gray social-story formatting"],
+      outputs: ["AAC communication boards (8 Quick Board types)", "Visual schedules", "Social stories", "Word Garden growth report (clinical, parent, teacher, poster, CSV)", "Multilingual boards (14 languages)"],
+      customizations: ["Per-cell parent voice recording", "Up to 8 student profiles", "Partner-assisted scanning", "Wish-seed capture for unmet vocabulary"],
+      proTip: "Word Garden's wish-seed button (💫) captures the moment a student reaches for a word that isn't on their board — invaluable data for next-board planning."
+    },
+    "STEM Lab": {
+      inputs: ["Tool selection from 95+ simulations across 9 subject areas", "Optional grade + standards filters"],
+      engine: ["Dynamically lazy-loaded per-tool plugin (Cloudflare Pages CDN)", "Per-tool state persistence", "Theme-aware rendering shell"],
+      outputs: ["Interactive math labs (Fractions, Algebra CAS, 3D Geometry, Calculus, Probability)", "Life science (Cell, Anatomy, Brain Atlas, DNA Lab, Punnett, Dissection, Ecosystem)", "Earth/Space (Plate Tectonics, Solar System, Universe Timelapse)", "Physics + Chemistry (Wave Simulator, Circuit Builder, Molecule Builder, Titration)", "CS, creative design, social studies, and applied simulation tools"],
+      customizations: ["95+ individual tool configurations", "Some tools support multi-student saved worlds", "Print/export per tool"],
+      proTip: "Open STEM Lab from the Educator Hub and search by keyword — the catalog filters to tools matching your current lesson topic in real time."
     }
   };
 

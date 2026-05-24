@@ -263,18 +263,78 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
   // ── Quiz questions ──
   var QUIZ_QUESTIONS = [
-    { q: 'In a predator-prey relationship, what happens to predator populations when prey populations increase?', choices: ['Predators decrease', 'Predators increase after a lag', 'Predators stay the same', 'Predators immediately double'], answer: 1 },
-    { q: 'What does the Lotka\u2013Volterra model describe?', choices: ['Rock formation', 'Predator-prey population dynamics', 'Weather patterns', 'Ocean currents'], answer: 1 },
-    { q: 'Which term best describes a fox eating a rabbit?', choices: ['Mutualism', 'Parasitism', 'Predation', 'Commensalism'], answer: 2 },
-    { q: 'What is carrying capacity?', choices: ['The weight an animal can lift', 'The maximum population an environment can sustain', 'The speed of population growth', 'The number of species in an area'], answer: 1 },
-    { q: 'In a food web, which organisms are primary producers?', choices: ['Foxes', 'Rabbits', 'Plants', 'Decomposers'], answer: 2 },
-    { q: 'What happens to prey when there are too many predators?', choices: ['Prey population increases', 'Prey population stays the same', 'Prey population decreases', 'Prey evolve instantly'], answer: 2 },
-    { q: 'A trophic level is best described as:', choices: ['A step in a food chain', 'A type of habitat', 'A weather pattern', 'A rock layer'], answer: 0 },
-    { q: 'If prey birth rate is very high and predator death rate is very high, what likely happens?', choices: ['Both go extinct', 'Prey boom, predators decline', 'Stable equilibrium', 'Nothing changes'], answer: 1 },
-    { q: 'What does a phase portrait show?', choices: ['A photograph of the ecosystem', 'Prey vs predator population plotted against each other', 'Temperature over time', 'Rainfall data'], answer: 1 },
-    { q: 'Decomposers are important because they:', choices: ['Hunt prey', 'Break down dead matter and recycle nutrients', 'Produce oxygen', 'Migrate south in winter'], answer: 1 },
-    { q: 'In Lotka\u2013Volterra equations, what causes predator population growth?', choices: ['Sunlight', 'Encounters between predators and prey', 'Rain', 'Wind'], answer: 1 },
-    { q: 'An ecosystem with only one predator and one prey species is called:', choices: ['A biome', 'A simple food chain', 'A rainforest', 'A tundra'], answer: 1 }
+    {
+      q: 'In a predator-prey relationship, what happens to predator populations when prey populations increase?',
+      choices: ['Predators decrease', 'Predators increase after a lag', 'Predators stay the same', 'Predators immediately double'],
+      answer: 1,
+      concept: 'Lotka-Volterra cycle',
+      wrongFeedback: [
+        'Incorrect. More prey provides more food, which allows predator populations to grow, not shrink.',
+        'Correct! As prey numbers grow, there is more food for predators. After a slight lag (time to reproduce), the predator population rises.',
+        'Incorrect. Predator numbers are directly influenced by the availability of their food source.',
+        'Incorrect. Predator growth is not instant; it requires time for gestation and birth.'
+      ]
+    },
+    {
+      q: 'What does the Lotka-Volterra model describe?',
+      choices: ['Rock formation', 'Predator-prey population dynamics', 'Weather patterns', 'Ocean currents'],
+      answer: 1,
+      concept: 'Lotka-Volterra cycle',
+      wrongFeedback: [
+        'Incorrect. Geology studies rock formation, not biology.',
+        'Correct! The Lotka-Volterra model uses differential equations to represent how predator and prey numbers oscillate over time.',
+        'Incorrect. Weather modeling uses fluid dynamics and thermodynamics, not population models.',
+        'Incorrect. Ocean currents are driven by wind and salinity, not predator-prey interactions.'
+      ]
+    },
+    {
+      q: 'Which term best describes a fox eating a rabbit?',
+      choices: ['Mutualism', 'Parasitism', 'Predation', 'Commensalism'],
+      answer: 2,
+      concept: 'Predation',
+      wrongFeedback: [
+        'Incorrect. Mutualism is a symbiotic relationship where both species benefit.',
+        'Incorrect. Parasites feed on hosts but usually do not kill them immediately.',
+        'Correct! Predation is the act of one organism hunting, killing, and consuming another.',
+        'Incorrect. Commensalism benefits one species while leaving the other unaffected.'
+      ]
+    },
+    {
+      q: 'What is carrying capacity in an ecosystem?',
+      choices: ['The weight an animal can lift', 'The maximum population an environment can sustain', 'The speed of population growth', 'The number of species in an area'],
+      answer: 1,
+      concept: 'Carrying capacity',
+      wrongFeedback: [
+        'Incorrect. That is physical strength, not an ecological metric.',
+        'Correct! Carrying capacity (represented by K) is the maximum population size that resources can sustain indefinitely.',
+        'Incorrect. Population growth rate is a separate parameter (r).',
+        'Incorrect. The number of species in an area is biodiversity or species richness.'
+      ]
+    },
+    {
+      q: 'In a food web, which organisms are primary producers?',
+      choices: ['Foxes', 'Rabbits', 'Plants', 'Decomposers'],
+      answer: 2,
+      concept: 'Primary producers',
+      wrongFeedback: [
+        'Incorrect. Foxes are tertiary or secondary consumers (carnivores).',
+        'Incorrect. Rabbits are primary consumers (herbivores).',
+        'Correct! Plants produce their own food using sunlight via photosynthesis, making them primary producers.',
+        'Incorrect. Decomposers break down dead matter rather than creating new organic matter from sunlight.'
+      ]
+    },
+    {
+      q: 'A trophic level is best described as which of the following?',
+      choices: ['A step in a food chain', 'A type of habitat', 'A weather pattern', 'A rock layer'],
+      answer: 0,
+      concept: 'Trophic level',
+      wrongFeedback: [
+        'Correct! A trophic level is the position an organism occupies in a food chain or food web.',
+        'Incorrect. A habitat is a physical environment, not a step in food energy levels.',
+        'Incorrect. Weather patterns are meteorological cycles.',
+        'Incorrect. A rock layer is a geological stratum.'
+      ]
+    }
   ];
 
   // ═══════════════════════════════════════════
@@ -290,13 +350,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
   // ── Ecology challenges ──
   var ECO_CHALLENGES = [
     { id: 'balance60', emoji: '\u2696\uFE0F', name: 'Steady State', desc: 'Prey:pred ratio 2:1\u20135:1 for 60 samples', reward: 30,
-      check: function(h) { if(h.length<60) return false; var r=h.slice(-60); for(var i=0;i<r.length;i++){var ratio=r[i].prey/Math.max(1,r[i].pred); if(ratio<2||ratio>5) return false;} return true; } },
+      check: function(h, d2) { if(!h || h.length<60) return false; var r=h.slice(-60); for(var i=0;i<r.length;i++){var ratio=r[i].prey/Math.max(1,r[i].pred); if(ratio<2||ratio>5) return false;} return true; } },
     { id: 'survive_crash', emoji: '\uD83C\uDF31', name: 'Recovery', desc: 'Prey drops below 10, then recovers above 25', reward: 25,
-      check: function(h) { var saw=false; for(var i=0;i<h.length;i++){if(h[i].prey<10)saw=true; if(saw&&h[i].prey>25) return true;} return false; } },
+      check: function(h, d2) { if(!h) return false; var saw=false; for(var i=0;i<h.length;i++){if(h[i].prey<10)saw=true; if(saw&&h[i].prey>25) return true;} return false; } },
     { id: 'coexist', emoji: '\uD83E\uDD1D', name: 'Coexistence', desc: 'Both species above 5 for 100 samples', reward: 35,
-      check: function(h) { if(h.length<100) return false; var r=h.slice(-100); for(var i=0;i<r.length;i++){if(r[i].prey<5||r[i].pred<5) return false;} return true; } },
+      check: function(h, d2) { if(!h || h.length<100) return false; var r=h.slice(-100); for(var i=0;i<r.length;i++){if(r[i].prey<5||r[i].pred<5) return false;} return true; } },
     { id: 'apex_crash', emoji: '\uD83D\uDCA5', name: 'Trophic Cascade', desc: 'Predators hit 0 while prey exceed 40', reward: 20,
-      check: function(h) { for(var i=0;i<h.length;i++){if(h[i].pred===0&&h[i].prey>40) return true;} return false; } }
+      check: function(h, d2) { if(!h) return false; for(var i=0;i<h.length;i++){if(h[i].pred===0&&h[i].prey>40) return true;} return false; } },
+    { id: 'quiz_ace', emoji: '🎓', name: 'Ecology Scholar', desc: 'Correctly answer 3 questions in the quiz', reward: 20,
+      check: function(h, d2) { return d2 && (d2.quizCorrect || 0) >= 3; } },
+    { id: 'vocab_study', emoji: '🔍', name: 'Glossary Reader', desc: 'Study 3 key terminology definitions', reward: 15,
+      check: function(h, d2) { return d2 && (d2.vocabLookedUp || []).length >= 3; } }
   ];
 
 
@@ -640,6 +704,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       var researchPoints = d.researchPoints || 0;
       var totalRP = d.totalRP || 0;
       var completedChallenges = d.completedChallenges || {};
+      var vocabLookedUp = d.vocabLookedUp || [];
+
+      var ECO_VOCAB = {
+        'Trophic level': 'The position that an organism occupies in a food chain (such as producer, primary consumer, or secondary consumer).',
+        'Lotka-Volterra cycle': 'A mathematical model describing how predator and prey populations oscillate out of phase with each other.',
+        'Carrying capacity': 'The maximum population size of a species that an environment can sustain indefinitely given the available resources.',
+        'Predation': 'An ecological interaction where one organism (the predator) kills and eats another (the prey).',
+        'Primary producers': 'Organisms, like plants or algae, that produce their own organic food from sunlight or chemistry.',
+        'Food web': 'A network of interconnecting food chains representing all the energy pathways in an ecosystem.',
+        'Phase portrait': 'A graph showing the states of two variables (like prey vs. predator populations) plotted against each other to reveal cyclic paths.',
+        'Decomposers': 'Organisms, like bacteria and fungi, that break down dead organic material and recycle nutrients back into the soil.'
+      };
       var tutorialStep = d.tutorialStep || 0;
       var tutorialDismissed = d.tutorialDismissed || false;
 
@@ -738,22 +814,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
       // ── Check ecology challenges ──
-      var checkEcoChallenges = function(hist) {
-        if (!hist || hist.length < 10) return;
-        var nc = Object.assign({}, completedChallenges);
-        var rpGain = 0;
-        ECO_CHALLENGES.forEach(function(ch) {
-          if (!nc[ch.id] && ch.check(hist)) {
-            nc[ch.id] = true;
-            rpGain += ch.reward;
-            playSound('badge');
-            if (addToast) addToast(ch.emoji + ' Challenge: ' + ch.name + '! +' + ch.reward + ' RP', 'success');
-          }
-        });
-        if (rpGain > 0) {
-          updMulti({ completedChallenges: nc, researchPoints: (researchPoints || 0) + rpGain, totalRP: (totalRP || 0) + rpGain });
-        }
-      };
+       var checkEcoChallenges = function(hist) {
+         var h = hist || data || livePopHistory;
+         var currentD = ld.ecosystem || d || {};
+         var nc = Object.assign({}, currentD.completedChallenges || {});
+         var rpGain = 0;
+         ECO_CHALLENGES.forEach(function(ch) {
+           if (!nc[ch.id] && ch.check(h, currentD)) {
+             nc[ch.id] = true;
+             rpGain += ch.reward;
+             playSound('badge');
+             if (addToast) addToast(ch.emoji + ' Challenge: ' + ch.name + '! +' + ch.reward + ' RP', 'success');
+           }
+         });
+         if (rpGain > 0) {
+           var newRP = (currentD.researchPoints || 0) + rpGain;
+           var newTotal = (currentD.totalRP || 0) + rpGain;
+           updMulti({ completedChallenges: nc, researchPoints: newRP, totalRP: newTotal });
+         }
+       };
 
       // ── Biome change ──
       var changeBiome = function(newBiome) {
@@ -3419,26 +3498,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
           // ── Ecology Challenges ──
-          h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl p-3 border border-purple-200 dark:border-purple-700 space-y-2' },
-            h('p', { className: 'text-xs font-bold text-purple-700 dark:text-purple-300' },
-              '\uD83C\uDFAF Ecology Challenges (' + Object.keys(completedChallenges).length + '/' + ECO_CHALLENGES.length + ')'
+          h('div', {
+            className: 'mb-3 rounded-xl p-4 border bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200 shadow-sm',
+            style: { boxShadow: '0 2px 8px rgba(109,40,217,0.06)' }
+          },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('div', { className: 'flex items-center gap-2' },
+                h('span', { style: { fontSize: '18px' } }, '⭐'),
+                h('span', { className: 'text-sm font-bold text-purple-700' }, (d.researchPoints || 0) + ' RP')
+              ),
+              h('span', {
+                className: 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-600'
+              }, Object.keys(completedChallenges).length + '/' + ECO_CHALLENGES.length + ' challenges')
             ),
-            h('div', { className: 'grid grid-cols-2 gap-2' },
+            h('div', { className: 'w-full rounded-full h-2.5 bg-purple-100/50', style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+              h('div', {
+                className: 'bg-gradient-to-r from-purple-500 to-indigo-500 h-2.5 rounded-full transition-all duration-500',
+                style: { width: Math.min(100, (Object.keys(completedChallenges).length / ECO_CHALLENGES.length) * 100) + '%', boxShadow: '0 0 8px rgba(139,92,246,0.4)' }
+              })
+            ),
+            h('div', { className: 'grid grid-cols-2 gap-2 mt-3' },
               ECO_CHALLENGES.map(function(ch) {
                 var done = !!completedChallenges[ch.id];
                 return h('div', {
                   key: ch.id,
                   className: 'p-2 rounded-lg border transition-all ' +
-                    (done ? 'border-green-400 bg-green-50 dark:bg-green-900/20' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800')
+                    (done ? 'border-green-400 bg-green-50' : 'border-slate-200 bg-white')
                 },
                   h('div', { className: 'flex items-center gap-1 mb-1' },
                     h('span', { className: 'text-sm' }, ch.emoji),
-                    h('span', { className: 'text-[11px] font-bold ' + (done ? 'text-green-700 dark:text-green-300' : 'text-slate-700 dark:text-slate-200') }, ch.name),
-                    done && h('span', { className: 'text-[11px] text-green-700 dark:text-green-400 font-bold ml-auto' }, '\u2714')
+                    h('span', { className: 'text-[11px] font-bold ' + (done ? 'text-green-700' : 'text-slate-700') }, ch.name),
+                    done && h('span', { className: 'text-[11px] text-green-700 font-bold ml-auto' }, '✔')
                   ),
-                  h('p', { className: 'text-[11px] text-slate-700 dark:text-slate-200 mb-1' }, ch.desc),
+                  h('p', { className: 'text-[11px] text-slate-600 mb-1' }, ch.desc),
                   h('p', { className: 'text-[11px] font-bold ' + (done ? 'text-green-600' : 'text-amber-600') },
-                    done ? '\u2714 Completed!' : '\u2B50 +' + ch.reward + ' RP')
+                    done ? '✔ Completed!' : '⭐ +' + ch.reward + ' RP')
                 );
               })
             )
@@ -4597,14 +4691,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 );
               })
             ),
-            quizFeedback && h('div', { 
-              className: 'text-xs font-semibold p-2 rounded-lg ' +
-                (quizAnswer === currentQ.answer ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300')
-            }, quizFeedback),
-            quizAnswer !== -1 && h('button', { 'aria-label': 'Next Question',
-              className: 'w-full py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 transition-all',
-              onClick: nextQuiz
-            }, 'Next Question \u2192')
+            quizAnswer !== -1 && h('div', { className: 'space-y-3' },
+              h('div', { 
+                className: 'text-xs font-semibold p-3 rounded-lg border ' +
+                  (quizAnswer === currentQ.answer ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800')
+              }, 
+                h('p', { className: 'font-bold' }, quizAnswer === currentQ.answer ? '🎉 Correct!' : '🤔 Not quite!'),
+                h('p', { className: 'text-slate-600 mt-1 font-normal' }, currentQ.wrongFeedback ? currentQ.wrongFeedback[quizAnswer] : quizFeedback)
+              ),
+
+              // Concept glossary helper card
+              currentQ.concept && ECO_VOCAB[currentQ.concept] && (function() {
+                var lookedUp = (vocabLookedUp || []).indexOf(currentQ.concept) !== -1;
+                return h('div', { className: 'p-3 rounded-lg border border-orange-200 bg-orange-50/50' },
+                  h('div', { className: 'flex items-center justify-between' },
+                    h('span', { className: 'text-xs font-bold text-orange-700' }, '🔍 Concept: ' + currentQ.concept),
+                    !lookedUp && h('button', {
+                      onClick: function() {
+                        var newList = (vocabLookedUp || []).slice();
+                        if (newList.indexOf(currentQ.concept) === -1) {
+                          newList.push(currentQ.concept);
+                          upd('vocabLookedUp', newList);
+                          upd('researchPoints', (researchPoints || 0) + 5);
+                          upd('totalRP', (totalRP || 0) + 5);
+                          playSound('quizCorrect');
+                          setTimeout(function() { checkEcoChallenges(); }, 50);
+                        }
+                      },
+                      className: 'px-2 py-0.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-700 text-[10px] font-bold transition-all'
+                    }, 'Study Term (+5 RP)')
+                  ),
+                  lookedUp && h('div', { className: 'text-xs text-slate-600 mt-1 font-normal' }, ECO_VOCAB[currentQ.concept])
+                );
+              })(),
+
+              h('button', { 'aria-label': 'Next Question',
+                className: 'w-full py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 transition-all',
+                onClick: nextQuiz
+              }, 'Next Question ➔')
+            )
           ),
           // Quiz progress
           h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-xl p-3' },

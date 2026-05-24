@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// stem_tool_punnett.js — Punnett Square Lab v3.0
+// stem_tool_punnett.js - Punnett Square Lab v3.0
 // 8 sub-tools: Punnett Cross, Pedigree Builder,
 // Population Genetics, Trait Explorer, DNA→Protein,
 // Challenge Mode, Gene Defense Battle, Learn Tab
@@ -14,7 +14,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -53,6 +53,28 @@ window.StemLab = window.StemLab || {
       return g912;
     };
   };
+
+  // ── Vocabulary dictionary ──
+  var PUNNETT_VOCAB = {
+    genotype: { term: 'Genotype', def: 'The genetic makeup of an organism, represented by letters (like BB, Bb, or bb) that code for traits.' },
+    phenotype: { term: 'Phenotype', def: 'The physical or observable characteristics of an organism (like brown eyes or height) resulting from its genotype.' },
+    allele: { term: 'Allele', def: 'A different or alternative version of a gene (like a dominant "B" vs recessive "b" version).' },
+    heterozygous: { term: 'Heterozygous', def: 'Having two different alleles for a specific gene (like Bb or XhY).' },
+    homozygous: { term: 'Homozygous', def: 'Having two identical alleles for a specific gene (like BB or bb).' },
+    codominance: { term: 'Codominance', def: 'An inheritance pattern where both alleles in a heterozygote are fully and equally expressed (like AB blood type).' },
+    incompleteDominance: { term: 'Incomplete Dominance', def: 'An inheritance pattern where the heterozygote shows a blended, intermediate phenotype (like red and white crossing to make pink flowers).' },
+    pedigree: { term: 'Pedigree', def: 'A family tree showing inheritance patterns of traits across generations.' },
+    geneticDrift: { term: 'Genetic Drift', def: 'A change in allele frequencies in a population due to random chance events, rather than natural selection.' }
+  };
+
+  // ── Quest Challenges ──
+  var PUNNETT_CHALLENGES = [
+    { id: 'first_cross', label: 'Perform a genetic cross', icon: '🧬', desc: 'Cross two parents in Punnett mode', check: function(u) { return u.crossCount >= 1; } },
+    { id: 'pedigree_solved', label: 'Solve a pedigree analysis', icon: '👪', desc: 'Determine the correct genotypes on a pedigree tree', check: function(u) { return u.pedigreeSolved; } },
+    { id: 'population_sim', label: 'Simulate genetic drift', icon: '📈', desc: 'Simulate population genetics over time', check: function(u) { return u.popSimDone; } },
+    { id: 'battle_won', label: 'Win a Gene Defense battle', icon: '🛡️', desc: 'Defeat the virus in battle mode', check: function(u) { return u.battleWon; } },
+    { id: 'study_vocab', label: 'Study 3 vocabulary terms', icon: '📇', desc: 'Study flashcards for genetics terms', check: function(u) { return Object.keys(u.studiedVocab || {}).length >= 3; } }
+  ];
 
   // ── Sub-tools ──
   var SUBTOOLS = [
@@ -100,7 +122,7 @@ window.StemLab = window.StemLab || {
       { label: '\uD83C\uDF31 Peas (Tt \u00D7 Tt)', p1: ['T', 't'], p2: ['T', 't'], trait: 'Tall vs Short', domEmoji: '\uD83C\uDF31', recEmoji: '\uD83C\uDF3F', domLabel: 'Tall', recLabel: 'Short', tip: 'Mendel\'s classic 3:1 ratio of tall to short pea plants' },
       { label: '\uD83C\uDF38 Flower (Rr \u00D7 Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Red vs White', domEmoji: '\uD83C\uDF39', recEmoji: '\uD83E\uDEB7', domLabel: 'Red', recLabel: 'White', tip: 'Red flower color is dominant over white' },
       { label: '\uD83D\uDFE4 Eyes (Bb \u00D7 Bb)', p1: ['B', 'b'], p2: ['B', 'b'], trait: 'Brown vs Blue', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Brown', recLabel: 'Blue', tip: 'Brown eye color is dominant over blue (simplified)' },
-      { label: '\uD83D\uDCA0 Test Cross (Bb \u00D7 bb)', p1: ['B', 'b'], p2: ['b', 'b'], trait: 'Test cross', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'Test cross reveals heterozygosity \u2014 1:1 ratio' },
+      { label: '\uD83D\uDCA0 Test Cross (Bb \u00D7 bb)', p1: ['B', 'b'], p2: ['b', 'b'], trait: 'Test cross', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'Test cross reveals heterozygosity - 1:1 ratio' },
       { label: '\uD83E\uDD47 BB \u00D7 bb (All Hetero)', p1: ['B', 'B'], p2: ['b', 'b'], trait: 'Pure cross', domEmoji: '\uD83D\uDFE2', recEmoji: '\uD83D\uDD34', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'F1 generation: 100% heterozygous, all dominant' }
     ],
     incomplete: [
@@ -109,7 +131,7 @@ window.StemLab = window.StemLab || {
       { label: '\uD83D\uDC34 Palomino (Cc \u00D7 Cc)', p1: ['C', 'c'], p2: ['C', 'c'], trait: 'Coat color', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83E\uDDD1', blendEmoji: '\uD83D\uDFE1', domLabel: 'Chestnut', recLabel: 'Cremello', blendLabel: 'Palomino', tip: 'Horse coat: chestnut \u00D7 cremello = palomino' }
     ],
     codominant: [
-      { label: '\uD83E\uDE78 Blood Type (AB \u00D7 AB)', p1: ['A', 'B'], p2: ['A', 'B'], trait: 'ABO blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'A and B alleles are codominant \u2014 both expressed in AB blood type' },
+      { label: '\uD83E\uDE78 Blood Type (AB \u00D7 AB)', p1: ['A', 'B'], p2: ['A', 'B'], trait: 'ABO blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'A and B alleles are codominant - both expressed in AB blood type' },
       { label: '\uD83E\uDE78 Blood (Ai \u00D7 Bi)', p1: ['A', 'i'], p2: ['B', 'i'], trait: 'Blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'Carrier cross: possible A, B, AB, or O children' },
       { label: '\uD83D\uDC04 Roan Cattle (Rr \u00D7 Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Coat pattern', domEmoji: '\uD83D\uDD34', recEmoji: '\u26AA', blendEmoji: '\uD83D\uDD35', domLabel: 'Red', recLabel: 'White', blendLabel: 'Roan (mixed)', tip: 'Roan cattle show both red and white hairs together' }
     ],
@@ -262,7 +284,7 @@ window.StemLab = window.StemLab || {
     { name: 'Polydactyly', mode: 'complete', dom: 'Extra digits', rec: 'Normal (5)', icon: '\u270B', freq: '~1 in 500-1000', desc: 'Having extra fingers or toes. Autosomal dominant with variable expressivity and reduced penetrance.' },
     { name: 'Huntington\'s Disease', mode: 'complete', dom: 'Affected', rec: 'Normal', icon: '\uD83E\uDDE0', freq: '~1 in 10,000', desc: 'Progressive neurological disorder caused by CAG repeat expansion on chromosome 4. Autosomal dominant with late onset.' },
     { name: 'Cystic Fibrosis', mode: 'recessive', dom: 'Normal/Carrier', rec: 'Affected', icon: '\uD83E\uDEC1', freq: '~1 in 3,500 (Caucasian)', desc: 'Thick mucus production affecting lungs and pancreas. Caused by mutations in the CFTR gene on chromosome 7.' },
-    { name: 'Sickle Cell Anemia', mode: 'codominant', dom: 'Normal RBC', rec: 'Sickle-shaped RBC', icon: '\uD83E\uDE78', freq: '~1 in 365 (African American)', desc: 'Hemoglobin S mutation causes red blood cells to sickle. Carriers (AS) have sickle cell trait \u2014 partial protection from malaria.' },
+    { name: 'Sickle Cell Anemia', mode: 'codominant', dom: 'Normal RBC', rec: 'Sickle-shaped RBC', icon: '\uD83E\uDE78', freq: '~1 in 365 (African American)', desc: 'Hemoglobin S mutation causes red blood cells to sickle. Carriers (AS) have sickle cell trait - partial protection from malaria.' },
     { name: 'ABO Blood Type', mode: 'codominant', dom: 'A or B antigen', rec: 'No antigen (O)', icon: '\uD83C\uDD8E', freq: 'O: 44%, A: 42%, B: 10%, AB: 4%', desc: 'Three alleles (I\u1D2C, I\u1D2E, i) control blood type. I\u1D2C and I\u1D2E are codominant; both dominant over i.' },
     { name: 'Snapdragon Flower Color', mode: 'incomplete', dom: 'Red', rec: 'White', icon: '\uD83C\uDF3A', freq: 'n/a (plant)', desc: 'Classic incomplete dominance. Red (RR) \u00D7 White (rr) = Pink (Rr). The 1:2:1 ratio produces red, pink, and white flowers.' },
     { name: 'Color Blindness', mode: 'x_linked', dom: 'Normal vision', rec: 'Color blind', icon: '\uD83D\uDC41', freq: '~8% males, ~0.5% females', desc: 'Red-green color blindness is X-linked recessive. Males need only one copy; females need two. Carrier females have normal vision.' },
@@ -306,72 +328,698 @@ window.StemLab = window.StemLab || {
   };
 
   // ── Challenge questions (3 tiers × 8) ──
+  // ── Challenge questions (3 tiers x 12) ──
   var CHALLENGE_QS = {
     easy: [
-      { q: 'What is a genotype?', a: ['The genetic makeup of an organism', 'The physical appearance', 'A type of protein', 'A chromosome number'], correct: 0 },
-      { q: 'What does "heterozygous" mean?', a: ['Two identical alleles', 'Two different alleles', 'No alleles', 'Three alleles'], correct: 1 },
-      { q: 'In complete dominance, Bb shows which phenotype?', a: ['Recessive', 'Blended', 'Dominant', 'Codominant'], correct: 2 },
-      { q: 'What is the phenotype ratio of Bb \u00D7 Bb?', a: ['1:1', '1:2:1', '3:1', '4:0'], correct: 2 },
-      { q: 'Who is the father of genetics?', a: ['Darwin', 'Mendel', 'Watson', 'Crick'], correct: 1 },
-      { q: 'What molecule carries genetic information?', a: ['RNA', 'Protein', 'DNA', 'Lipid'], correct: 2 },
-      { q: 'What are different versions of a gene called?', a: ['Chromosomes', 'Alleles', 'Phenotypes', 'Codons'], correct: 1 },
-      { q: 'How many chromosomes do humans have?', a: ['23', '46', '44', '48'], correct: 1 },
-      { q: 'Where is DNA found in a cell?', a: ['Cell wall', 'Cytoplasm', 'Nucleus', 'Ribosome'], correct: 2 },
-      { q: 'A "purebred" organism is also called:', a: ['Heterozygous', 'Homozygous', 'Hybrid', 'Mutant'], correct: 1 },
-      { q: 'Which scientist discovered the structure of DNA?', a: ['Mendel', 'Watson & Crick', 'Darwin', 'Pasteur'], correct: 1 },
-      { q: 'What does DNA stand for?', a: ['Deoxyribose Nucleic Acid', 'Deoxyribonucleic Acid', 'Dinitrogen Acid', 'Dynamic Nuclear Acid'], correct: 1 }
+      {
+        q: 'What is a genotype?',
+        a: ['The genetic makeup of an organism', 'The physical appearance', 'A type of protein', 'A chromosome number'],
+        correct: 0,
+        concept: 'genotype',
+        wrongFeedback: [
+          '',
+          'Incorrect. Physical appearance is the phenotype.',
+          'Incorrect. Proteins are molecules made from amino acid chains.',
+          'Incorrect. Chromosome count is not the genotype of a specific trait.'
+        ]
+      },
+      {
+        q: 'What does "heterozygous" mean?',
+        a: ['Two identical alleles', 'Two different alleles', 'No alleles', 'Three alleles'],
+        correct: 1,
+        concept: 'heterozygous',
+        wrongFeedback: [
+          'Incorrect. Having identical alleles is homozygous.',
+          '',
+          'Incorrect. Organisms inherit at least one allele per gene from each parent.',
+          'Incorrect. Normal diploid organisms have two alleles per gene.'
+        ]
+      },
+      {
+        q: 'In complete dominance, Bb shows which phenotype?',
+        a: ['Recessive', 'Blended', 'Dominant', 'Codominant'],
+        correct: 2,
+        concept: 'phenotype',
+        wrongFeedback: [
+          'Incorrect. Recessive phenotypes only show when both alleles are recessive (bb).',
+          'Incorrect. Blended phenotypes are seen in incomplete dominance.',
+          '',
+          'Incorrect. Codominant phenotypes show both traits fully, not complete dominance.'
+        ]
+      },
+      {
+        q: 'What is the phenotype ratio of Bb \u00D7 Bb?',
+        a: ['1:1', '1:2:1', '3:1', '4:0'],
+        correct: 2,
+        concept: 'phenotype',
+        wrongFeedback: [
+          'Incorrect. A 1-1 ratio is produced by Bb x bb.',
+          'Incorrect. 1-2-1 is the genotype ratio, not the phenotype ratio.',
+          '',
+          'Incorrect. A 4-0 ratio is produced by BB x BB or BB x bb.'
+        ]
+      },
+      {
+        q: 'Who is the father of genetics?',
+        a: ['Darwin', 'Mendel', 'Watson', 'Crick'],
+        correct: 1,
+        concept: 'allele',
+        wrongFeedback: [
+          'Incorrect. Darwin developed the theory of natural selection.',
+          '',
+          'Incorrect. Watson co-discovered the double-helix structure of DNA.',
+          'Incorrect. Crick co-discovered the double-helix structure of DNA.'
+        ]
+      },
+      {
+        q: 'What molecule carries genetic information?',
+        a: ['RNA', 'Protein', 'DNA', 'Lipid'],
+        correct: 2,
+        concept: 'genotype',
+        wrongFeedback: [
+          'Incorrect. RNA helps translate genetic information but is not the main carrier.',
+          'Incorrect. Proteins carry out cellular functions but do not store genetic code.',
+          '',
+          'Incorrect. Lipids form cell membranes and store energy.'
+        ]
+      },
+      {
+        q: 'What are different versions of a gene called?',
+        a: ['Chromosomes', 'Alleles', 'Phenotypes', 'Codons'],
+        correct: 1,
+        concept: 'allele',
+        wrongFeedback: [
+          'Incorrect. Chromosomes are structures that carry many genes.',
+          '',
+          'Incorrect. Phenotypes are the physical traits, not the gene versions.',
+          'Incorrect. Codons are triplets of nucleotides coding for amino acids.'
+        ]
+      },
+      {
+        q: 'How many chromosomes do humans have?',
+        a: ['23', '46', '44', '48'],
+        correct: 1,
+        concept: 'genotype',
+        wrongFeedback: [
+          'Incorrect. Humans have 23 pairs of chromosomes, totaling 46.',
+          '',
+          'Incorrect. 44 is the number of autosomes, not total chromosomes.',
+          'Incorrect. 48 is the chromosome count of great apes.'
+        ]
+      },
+      {
+        q: 'Where is DNA found in a cell?',
+        a: ['Cell wall', 'Cytoplasm', 'Nucleus', 'Ribosome'],
+        correct: 2,
+        concept: 'genotype',
+        wrongFeedback: [
+          'Incorrect. Cell walls are outer structural layers in plants and bacteria.',
+          'Incorrect. Cytoplasm contains organelles, but nuclear DNA is inside the nucleus.',
+          '',
+          'Incorrect. Ribosomes translate RNA to make proteins.'
+        ]
+      },
+      {
+        q: 'A "purebred" organism is also called:',
+        a: ['Heterozygous', 'Homozygous', 'Hybrid', 'Mutant'],
+        correct: 1,
+        concept: 'homozygous',
+        wrongFeedback: [
+          'Incorrect. Heterozygous refers to hybrids with different alleles.',
+          '',
+          'Incorrect. Hybrids have two different alleles.',
+          'Incorrect. Mutants have altered DNA sequences.'
+        ]
+      },
+      {
+        q: 'Which scientist discovered the structure of DNA?',
+        a: ['Mendel', 'Watson & Crick', 'Darwin', 'Pasteur'],
+        correct: 1,
+        concept: 'genotype',
+        wrongFeedback: [
+          'Incorrect. Mendel studied genetics in pea plants.',
+          '',
+          'Incorrect. Darwin studied natural selection and evolution.',
+          'Incorrect. Pasteur discovered pasteurization and vaccine concepts.'
+        ]
+      },
+      {
+        q: 'What does DNA stand for?',
+        a: ['Deoxyribose Nucleic Acid', 'Deoxyribonucleic Acid', 'Dinitrogen Acid', 'Dynamic Nuclear Acid'],
+        correct: 1,
+        concept: 'genotype',
+        wrongFeedback: [
+          'Incorrect. The sugar is deoxyribose, but the molecule is deoxyribonucleic acid.',
+          '',
+          'Incorrect. This formula is chemically incorrect.',
+          'Incorrect. Dynamic nuclear acid is not the correct chemical name.'
+        ]
+      }
     ],
     medium: [
-      { q: 'In incomplete dominance, the heterozygote looks:', a: ['Like the dominant parent', 'Like the recessive parent', 'An intermediate blend', 'Both traits equally'], correct: 2 },
-      { q: 'Why are X-linked recessive traits more common in males?', a: ['Males have two X chromosomes', 'Males need only one copy on X', 'Y chromosome is dominant', 'Males have stronger alleles'], correct: 1 },
-      { q: 'What is codominance?', a: ['One allele masks the other', 'Neither is expressed', 'Both alleles fully expressed', 'Alleles blend together'], correct: 2 },
-      { q: 'A test cross uses which parent genotype?', a: ['Homozygous dominant', 'Heterozygous', 'Homozygous recessive', 'Codominant'], correct: 2 },
-      { q: 'Bb \u00D7 bb produces what ratio?', a: ['3:1', '1:1', '1:2:1', '4:0'], correct: 1 },
-      { q: 'What separates during meiosis I?', a: ['Sister chromatids', 'Homologous chromosomes', 'Centromeres', 'Nucleotides'], correct: 1 },
-      { q: 'What is a pedigree chart used for?', a: ['Making DNA', 'Tracking traits in families', 'Counting chromosomes', 'Cloning organisms'], correct: 1 },
-      { q: 'Blood type AB is an example of:', a: ['Complete dominance', 'Incomplete dominance', 'Codominance', 'Epistasis'], correct: 2 },
-      { q: 'A carrier of a recessive disorder is:', a: ['Homozygous dominant', 'Heterozygous', 'Homozygous recessive', 'Affected'], correct: 1 },
-      { q: 'Crossing over happens during:', a: ['Mitosis', 'Meiosis I', 'Meiosis II', 'Interphase'], correct: 1 },
-      { q: 'Which parent determines the sex of offspring?', a: ['Mother (XX)', 'Father (XY)', 'Both equally', 'Neither'], correct: 1 },
-      { q: 'A dihybrid cross involves how many genes?', a: ['1', '2', '3', '4'], correct: 1 }
+      {
+        q: 'In incomplete dominance, the heterozygote looks:',
+        a: ['Like the dominant parent', 'Like the recessive parent', 'An intermediate blend', 'Both traits equally'],
+        correct: 2,
+        concept: 'incompleteDominance',
+        wrongFeedback: [
+          'Incorrect. That would be complete dominance.',
+          'Incorrect. That would be recessive complete dominance.',
+          '',
+          'Incorrect. That is codominance.'
+        ]
+      },
+      {
+        q: 'Why are X-linked recessive traits more common in males?',
+        a: ['Males have two X chromosomes', 'Males need only one copy on X', 'Y chromosome is dominant', 'Males have stronger alleles'],
+        correct: 1,
+        concept: 'heterozygous',
+        wrongFeedback: [
+          'Incorrect. Males have only one X chromosome (XY).',
+          '',
+          'Incorrect. Y chromosomes do not carry alleles for X-linked traits.',
+          'Incorrect. Allele strength is not determined by gender.'
+        ]
+      },
+      {
+        q: 'What is codominance?',
+        a: ['One allele masks the other', 'Neither is expressed', 'Both alleles fully expressed', 'Alleles blend together'],
+        correct: 2,
+        concept: 'codominance',
+        wrongFeedback: [
+          'Incorrect. This is complete dominance.',
+          'Incorrect. Alleles are still expressed.',
+          '',
+          'Incorrect. This is incomplete dominance.'
+        ]
+      },
+      {
+        q: 'A test cross uses which parent genotype?',
+        a: ['Homozygous dominant', 'Heterozygous', 'Homozygous recessive', 'Codominant'],
+        correct: 2,
+        concept: 'homozygous',
+        wrongFeedback: [
+          'Incorrect. Dominant homozygotes mask recessive alleles.',
+          'Incorrect. Heterozygotes add too many variables.',
+          '',
+          'Incorrect. Codominance is not a parent genotype.'
+        ]
+      },
+      {
+        q: 'Bb \u00D7 bb produces what ratio?',
+        a: ['3:1', '1:1', '1:2:1', '4:0'],
+        correct: 1,
+        concept: 'allele',
+        wrongFeedback: [
+          'Incorrect. 3-1 is produced by Bb x Bb.',
+          '',
+          'Incorrect. 1-2-1 is the genotype ratio of Bb x Bb.',
+          'Incorrect. 4-0 is produced by BB x bb.'
+        ]
+      },
+      {
+        q: 'What separates during meiosis I?',
+        a: ['Sister chromatids', 'Homologous chromosomes', 'Centromeres', 'Nucleotides'],
+        correct: 1,
+        concept: 'allele',
+        wrongFeedback: [
+          'Incorrect. Sister chromatids separate during meiosis II or mitosis.',
+          '',
+          'Incorrect. Centromeres divide to separate sister chromatids.',
+          'Incorrect. Nucleotides are single chemical bases.'
+        ]
+      },
+      {
+        q: 'What is a pedigree chart used for?',
+        a: ['Making DNA', 'Tracking traits in families', 'Counting chromosomes', 'Cloning organisms'],
+        correct: 1,
+        concept: 'pedigree',
+        wrongFeedback: [
+          'Incorrect. Pedigree charts analyze history, not generate DNA.',
+          '',
+          'Incorrect. Karyotypes are used to count chromosomes.',
+          'Incorrect. Pedigrees trace traits, they do not clone organisms.'
+        ]
+      },
+      {
+        q: 'Blood type AB is an example of:',
+        a: ['Complete dominance', 'Incomplete dominance', 'Codominance', 'Epistasis'],
+        correct: 2,
+        concept: 'codominance',
+        wrongFeedback: [
+          'Incorrect. A and B alleles are both fully expressed.',
+          'Incorrect. The traits do not blend to form an intermediate phenotype.',
+          '',
+          'Incorrect. Epistasis is when one gene masks another.'
+        ]
+      },
+      {
+        q: 'A carrier of a recessive disorder is:',
+        a: ['Homozygous dominant', 'Heterozygous', 'Homozygous recessive', 'Affected'],
+        correct: 1,
+        concept: 'heterozygous',
+        wrongFeedback: [
+          'Incorrect. Homozygous dominant individuals do not carry the recessive allele.',
+          '',
+          'Incorrect. Homozygous recessive individuals are affected by the disorder.',
+          'Incorrect. Recessive carriers do not show symptoms.'
+        ]
+      },
+      {
+        q: 'Crossing over happens during:',
+        a: ['Mitosis', 'Meiosis I', 'Meiosis II', 'Interphase'],
+        correct: 1,
+        concept: 'allele',
+        wrongFeedback: [
+          'Incorrect. Mitosis does not involve crossing over.',
+          '',
+          'Incorrect. Meiosis II separates chromatids without crossing over.',
+          'Incorrect. Interphase is for growth and DNA replication.'
+        ]
+      },
+      {
+        q: 'Which parent determines the sex of offspring?',
+        a: ['Mother (XX)', 'Father (XY)', 'Both equally', 'Neither'],
+        correct: 1,
+        concept: 'heterozygous',
+        wrongFeedback: [
+          'Incorrect. Mothers can only pass on an X chromosome.',
+          '',
+          'Incorrect. The father\'s sperm carries either X or Y, which determines sex.',
+          'Incorrect. The father\'s genetic contribution determines sex.'
+        ]
+      },
+      {
+        q: 'A dihybrid cross involves how many genes?',
+        a: ['1', '2', '3', '4'],
+        correct: 1,
+        concept: 'allele',
+        wrongFeedback: [
+          'Incorrect. 1 gene is a monohybrid cross.',
+          '',
+          'Incorrect. Trihybrid crosses involve 3 genes.',
+          'Incorrect. Dihybrid cross involves 2 genes.'
+        ]
+      }
     ],
     hard: [
-      { q: 'In Hardy-Weinberg, if q = 0.3, what is 2pq?', a: ['0.42', '0.49', '0.09', '0.21'], correct: 0 },
-      { q: 'Epistasis occurs when:', a: ['Genes are linked', 'One gene masks another gene', 'Alleles blend', 'Mutations accumulate'], correct: 1 },
-      { q: 'Which is NOT a Hardy-Weinberg assumption?', a: ['No mutation', 'Random mating', 'Natural selection occurs', 'Large population'], correct: 2 },
-      { q: 'Crossing over increases:', a: ['Mutation rate', 'Genetic variation', 'Chromosome number', 'Gene expression'], correct: 1 },
-      { q: 'A dihybrid cross (AaBb \u00D7 AaBb) ratio is:', a: ['3:1', '1:2:1', '9:3:3:1', '1:1:1:1'], correct: 2 },
-      { q: 'The codon AUG codes for:', a: ['Stop', 'Leucine', 'Methionine (Start)', 'Alanine'], correct: 2 },
-      { q: 'Polygenic inheritance produces:', a: ['Discrete ratios', 'Continuous variation', 'Sex-linked traits', 'Lethal alleles'], correct: 1 },
-      { q: 'What percentage of children from Cc \u00D7 Cc have CF?', a: ['50%', '75%', '25%', '0%'], correct: 2 },
-      { q: 'A frameshift mutation is caused by:', a: ['Substitution', 'Insertion or deletion', 'Translocation', 'Inversion'], correct: 1 },
-      { q: 'Mitochondrial DNA is inherited from:', a: ['Father only', 'Both parents', 'Mother only', 'Neither'], correct: 2 },
-      { q: 'If p=0.6 in Hardy-Weinberg, what is q?', a: ['0.6', '0.36', '0.4', '0.16'], correct: 2 },
-      { q: 'Epigenetic changes alter gene expression by:', a: ['Changing DNA sequence', 'Modifying chromatin/methylation', 'Deleting genes', 'Adding chromosomes'], correct: 1 }
+      {
+        q: 'In Hardy-Weinberg, if q = 0.3, what is 2pq?',
+        a: ['0.42', '0.49', '0.09', '0.21'],
+        correct: 0,
+        concept: 'geneticDrift',
+        wrongFeedback: [
+          '',
+          'Incorrect. 0.49 is p squared (0.7 squared).',
+          'Incorrect. 0.09 is q squared (0.3 squared).',
+          'Incorrect. 0.21 is pq (0.7 * 0.3).'
+        ]
+      },
+      {
+        q: 'Epistasis occurs when:',
+        a: ['Genes are linked', 'One gene masks another gene', 'Alleles blend', 'Mutations accumulate'],
+        correct: 1,
+        concept: 'genotype',
+        wrongFeedback: [
+          'Incorrect. Gene linkage means they inherit together.',
+          '',
+          'Incorrect. Allele blending is incomplete dominance.',
+          'Incorrect. Mutation accumulation leads to new alleles, not epistasis.'
+        ]
+      },
+      {
+        q: 'Which is NOT a Hardy-Weinberg assumption?',
+        a: ['No mutation', 'Random mating', 'Natural selection occurs', 'Large population'],
+        correct: 2,
+        concept: 'geneticDrift',
+        wrongFeedback: [
+          'Incorrect. "No mutation" is a Hardy-Weinberg assumption.',
+          'Incorrect. "Random mating" is a Hardy-Weinberg assumption.',
+          '',
+          'Incorrect. "Large population" is a Hardy-Weinberg assumption.'
+        ]
+      },
+      {
+        q: 'Crossing over increases:',
+        a: ['Mutation rate', 'Genetic variation', 'Chromosome number', 'Gene expression'],
+        correct: 1,
+        concept: 'allele',
+        wrongFeedback: [
+          'Incorrect. Mutations are random sequence errors, not from crossing over.',
+          '',
+          'Incorrect. Chromosome number remains the same (23 pairs).',
+          'Incorrect. Expression level is controlled by promoters and enhancers.'
+        ]
+      },
+      {
+        q: 'A dihybrid cross (AaBb \u00D7 AaBb) ratio is:',
+        a: ['3:1', '1:2:1', '9:3:3:1', '1:1:1:1'],
+        correct: 2,
+        concept: 'allele',
+        wrongFeedback: [
+          'Incorrect. 3-1 is a monohybrid phenotype ratio.',
+          'Incorrect. 1-2-1 is a monohybrid genotype ratio.',
+          '',
+          'Incorrect. 1-1-1-1 is the test cross ratio of AaBb x aabb.'
+        ]
+      },
+      {
+        q: 'The codon AUG codes for:',
+        a: ['Stop', 'Leucine', 'Methionine (Start)', 'Alanine'],
+        correct: 2,
+        concept: 'genotype',
+        wrongFeedback: [
+          'Incorrect. Stop codons are UAA, UAG, and UGA.',
+          'Incorrect. Leucine is coded by UUA, UUG, and others.',
+          '',
+          'Incorrect. Alanine is coded by GCU, GCC, GCA, and GCG.'
+        ]
+      },
+      {
+        q: 'Polygenic inheritance produces:',
+        a: ['Discrete ratios', 'Continuous variation', 'Sex-linked traits', 'Lethal alleles'],
+        correct: 1,
+        concept: 'phenotype',
+        wrongFeedback: [
+          'Incorrect. Discrete ratios are for single-gene Mendelian traits.',
+          '',
+          'Incorrect. Sex-linked traits are carried on sex chromosomes.',
+          'Incorrect. Lethal alleles lead to death, not continuous variation.'
+        ]
+      },
+      {
+        q: 'What percentage of children from Cc \u00D7 Cc have CF?',
+        a: ['50%', '75%', '25%', '0%'],
+        correct: 2,
+        concept: 'heterozygous',
+        wrongFeedback: [
+          'Incorrect. 50% will be carriers (Cc), not affected (cc).',
+          'Incorrect. 75% will be unaffected (CC or Cc).',
+          '',
+          'Incorrect. There is a 25% chance of inheriting both recessive alleles (cc).'
+        ]
+      },
+      {
+        q: 'A frameshift mutation is caused by:',
+        a: ['Substitution', 'Insertion or deletion', 'Translocation', 'Inversion'],
+        correct: 1,
+        concept: 'genotype',
+        wrongFeedback: [
+          'Incorrect. Substitution only changes a single amino acid.',
+          '',
+          'Incorrect. Translocation moves a segment between chromosomes.',
+          'Incorrect. Inversion reverses a segment inside a chromosome.'
+        ]
+      },
+      {
+        q: 'Mitochondrial DNA is inherited from:',
+        a: ['Father only', 'Both parents', 'Mother only', 'Neither'],
+        correct: 2,
+        concept: 'pedigree',
+        wrongFeedback: [
+          'Incorrect. Sperm mitochondria are degraded after fertilization.',
+          'Incorrect. Only one parent contributes mitochondrial DNA.',
+          '',
+          'Incorrect. Mothers pass mitochondrial DNA to all offspring.'
+        ]
+      },
+      {
+        q: 'If p=0.6 in Hardy-Weinberg, what is q?',
+        a: ['0.6', '0.36', '0.4', '0.16'],
+        correct: 2,
+        concept: 'geneticDrift',
+        wrongFeedback: [
+          'Incorrect. p and q must sum to 1.',
+          'Incorrect. 0.36 is p squared.',
+          '',
+          'Incorrect. 0.16 is q squared.'
+        ]
+      },
+      {
+        q: 'Epigenetic changes alter gene expression by:',
+        a: ['Changing DNA sequence', 'Modifying chromatin/methylation', 'Deleting genes', 'Adding chromosomes'],
+        correct: 1,
+        concept: 'genotype',
+        wrongFeedback: [
+          'Incorrect. Epigenetics does not change the DNA sequence letters.',
+          '',
+          'Incorrect. Deleting genes changes the physical genetic makeup.',
+          'Incorrect. Adding chromosomes is a karyotype abnormality (like trisomy).'
+        ]
+      }
     ]
   };
 
   // ── Battle questions ──
+  // ── Battle questions ──
   var BATTLE_QS = [
-    { q: 'A homozygous dominant parent is:', a: ['AA', 'Aa', 'aa', 'AaBb'], correct: 0, dmg: 15 },
-    { q: 'Gametes are produced by:', a: ['Mitosis', 'Meiosis', 'Binary fission', 'Budding'], correct: 1, dmg: 15 },
-    { q: 'What is the probability of Bb from Bb \u00D7 Bb?', a: ['25%', '50%', '75%', '100%'], correct: 1, dmg: 20 },
-    { q: 'Sickle cell carriers are protected from:', a: ['Cancer', 'Diabetes', 'Malaria', 'Flu'], correct: 2, dmg: 20 },
-    { q: 'DNA is made of units called:', a: ['Amino acids', 'Nucleotides', 'Lipids', 'Sugars'], correct: 1, dmg: 15 },
-    { q: 'How many bases form a codon?', a: ['1', '2', '3', '4'], correct: 2, dmg: 20 },
-    { q: 'Which is a stop codon?', a: ['AUG', 'UAA', 'GCA', 'CUG'], correct: 1, dmg: 25 },
-    { q: 'Gregor Mendel studied:', a: ['Fruit flies', 'Pea plants', 'Bacteria', 'Mice'], correct: 1, dmg: 15 },
-    { q: 'Females have which sex chromosomes?', a: ['XY', 'XX', 'YY', 'XO'], correct: 1, dmg: 15 },
-    { q: 'Phenotype is determined by genotype and:', a: ['Blood type', 'Environment', 'Age only', 'Gender only'], correct: 1, dmg: 20 },
-    { q: 'What does a Punnett square predict?', a: ['Exact offspring', 'Offspring probabilities', 'Parent age', 'Mutation rate'], correct: 1, dmg: 15 },
-    { q: 'Incomplete dominance produces:', a: ['3:1 ratio', '1:2:1 ratio', '9:3:3:1 ratio', '1:1 ratio'], correct: 1, dmg: 20 },
-    { q: 'Which organelle has its own DNA?', a: ['Ribosome', 'Mitochondria', 'Golgi body', 'Lysosome'], correct: 1, dmg: 20 },
-    { q: 'A nonsense mutation creates a:', a: ['New amino acid', 'Premature stop codon', 'Stronger protein', 'Frameshift'], correct: 1, dmg: 25 },
-    { q: 'The law of segregation says:', a: ['Genes are linked', 'Alleles separate in meiosis', 'DNA never changes', 'Cells divide equally'], correct: 1, dmg: 15 },
-    { q: 'A karyotype shows:', a: ['DNA sequence', 'Chromosome pairs arranged by size', 'Protein structure', 'Cell organelles'], correct: 1, dmg: 20 },
-    { q: 'What is genetic drift?', a: ['Planned breeding', 'Random allele frequency change', 'Mutation accumulation', 'Natural selection'], correct: 1, dmg: 20 },
-    { q: 'CRISPR-Cas9 is used for:', a: ['X-ray imaging', 'Gene editing', 'Blood typing', 'PCR amplification'], correct: 1, dmg: 25 },
-    { q: 'Trisomy 21 causes:', a: ['Turner syndrome', 'Down syndrome', 'Klinefelter syndrome', 'Cri du chat'], correct: 1, dmg: 20 }
+    {
+      q: 'A homozygous dominant parent is:',
+      a: ['AA', 'Aa', 'aa', 'AaBb'],
+      correct: 0,
+      dmg: 15,
+      concept: 'homozygous',
+      wrongFeedback: [
+        '',
+        'Incorrect. Aa is heterozygous (one dominant, one recessive).',
+        'Incorrect. aa is homozygous recessive.',
+        'Incorrect. AaBb is a dihybrid genotype.'
+      ]
+    },
+    {
+      q: 'Gametes are produced by:',
+      a: ['Mitosis', 'Meiosis', 'Binary fission', 'Budding'],
+      correct: 1,
+      dmg: 15,
+      concept: 'allele',
+      wrongFeedback: [
+        'Incorrect. Mitosis produces identical somatic cells.',
+        '',
+        'Incorrect. Binary fission is asexual reproduction in prokaryotes.',
+        'Incorrect. Budding is asexual reproduction in yeast and simple organisms.'
+      ]
+    },
+    {
+      q: 'What is the probability of Bb from Bb \u00D7 Bb?',
+      a: ['25%', '50%', '75%', '100%'],
+      correct: 1,
+      dmg: 20,
+      concept: 'heterozygous',
+      wrongFeedback: [
+        'Incorrect. 25% is the probability of homozygous BB or homozygous bb.',
+        '',
+        'Incorrect. 75% is the probability of showing the dominant phenotype.',
+        'Incorrect. There is a 50% chance of homozygous offspring.'
+      ]
+    },
+    {
+      q: 'Sickle cell carriers are protected from:',
+      a: ['Cancer', 'Diabetes', 'Malaria', 'Flu'],
+      correct: 2,
+      dmg: 20,
+      concept: 'allele',
+      wrongFeedback: [
+        'Incorrect. Sickle cell trait does not protect against cancer.',
+        'Incorrect. Sickle cell trait does not protect against diabetes.',
+        '',
+        'Incorrect. Sickle cell trait does not protect against the flu.'
+      ]
+    },
+    {
+      q: 'DNA is made of units called:',
+      a: ['Amino acids', 'Nucleotides', 'Lipids', 'Sugars'],
+      correct: 1,
+      dmg: 15,
+      concept: 'genotype',
+      wrongFeedback: [
+        'Incorrect. Amino acids are the building blocks of proteins.',
+        '',
+        'Incorrect. Lipids are fats and oils.',
+        'Incorrect. Sugars (like deoxyribose) are part of nucleotides, but nucleotides are the full units.'
+      ]
+    },
+    {
+      q: 'How many bases form a codon?',
+      a: ['1', '2', '3', '4'],
+      correct: 2,
+      dmg: 20,
+      concept: 'genotype',
+      wrongFeedback: [
+        'Incorrect. A single base cannot code for 20 amino acids.',
+        'Incorrect. Two bases can only code for 16 combinations.',
+        '',
+        'Incorrect. Four bases is more redundant than the triplet code.'
+      ]
+    },
+    {
+      q: 'Which is a stop codon?',
+      a: ['AUG', 'UAA', 'GCA', 'CUG'],
+      correct: 1,
+      dmg: 25,
+      concept: 'genotype',
+      wrongFeedback: [
+        'Incorrect. AUG is the start codon (Methionine).',
+        '',
+        'Incorrect. GCA codes for Alanine.',
+        'Incorrect. CUG codes for Leucine.'
+      ]
+    },
+    {
+      q: 'Gregor Mendel studied:',
+      a: ['Fruit flies', 'Pea plants', 'Bacteria', 'Mice'],
+      correct: 1,
+      dmg: 15,
+      concept: 'allele',
+      wrongFeedback: [
+        'Incorrect. Thomas Hunt Morgan studied fruit flies.',
+        '',
+        'Incorrect. Mendel did not use bacteria.',
+        'Incorrect. Mendel did not use mice.'
+      ]
+    },
+    {
+      q: 'Females have which sex chromosomes?',
+      a: ['XY', 'XX', 'YY', 'XO'],
+      correct: 1,
+      dmg: 15,
+      concept: 'heterozygous',
+      wrongFeedback: [
+        'Incorrect. XY represents males.',
+        '',
+        'Incorrect. YY is non-viable.',
+        'Incorrect. XO is Turner syndrome.'
+      ]
+    },
+    {
+      q: 'Phenotype is determined by genotype and:',
+      a: ['Blood type', 'Environment', 'Age only', 'Gender only'],
+      correct: 1,
+      dmg: 20,
+      concept: 'phenotype',
+      wrongFeedback: [
+        'Incorrect. Blood type is a genetic trait, not an external factor.',
+        '',
+        'Incorrect. Environment plays a major role, regardless of age.',
+        'Incorrect. Environment plays a major role, regardless of gender.'
+      ]
+    },
+    {
+      q: 'What does a Punnett square predict?',
+      a: ['Exact offspring', 'Offspring probabilities', 'Parent age', 'Mutation rate'],
+      correct: 1,
+      dmg: 15,
+      concept: 'phenotype',
+      wrongFeedback: [
+        'Incorrect. Punnett squares predict probability, not exact outcomes.',
+        '',
+        'Incorrect. Punnett squares do not predict age.',
+        'Incorrect. Mutations are random events not predicted by Punnett squares.'
+      ]
+    },
+    {
+      q: 'Incomplete dominance produces:',
+      a: ['3:1 ratio', '1:2:1 ratio', '9:3:3:1 ratio', '1:1 ratio'],
+      correct: 1,
+      dmg: 20,
+      concept: 'incompleteDominance',
+      wrongFeedback: [
+        'Incorrect. 3-1 is the monohybrid complete dominance ratio.',
+        '',
+        'Incorrect. 9-3-3-1 is the dihybrid phenotype ratio.',
+        'Incorrect. 1-1 is the test cross phenotype ratio.'
+      ]
+    },
+    {
+      q: 'Which organelle has its own DNA?',
+      a: ['Ribosome', 'Mitochondria', 'Golgi body', 'Lysosome'],
+      correct: 1,
+      dmg: 20,
+      concept: 'genotype',
+      wrongFeedback: [
+        'Incorrect. Ribosomes do not have their own DNA.',
+        '',
+        'Incorrect. Golgi bodies modify and package proteins.',
+        'Incorrect. Lysosomes degrade waste.'
+      ]
+    },
+    {
+      q: 'A nonsense mutation creates a:',
+      a: ['New amino acid', 'Premature stop codon', 'Stronger protein', 'Frameshift'],
+      correct: 1,
+      dmg: 25,
+      concept: 'genotype',
+      wrongFeedback: [
+        'Incorrect. Missense mutations create a new amino acid.',
+        '',
+        'Incorrect. Mutations usually decrease or alter protein function.',
+        'Incorrect. Frameshift is caused by insertion or deletion.'
+      ]
+    },
+    {
+      q: 'The law of segregation says:',
+      a: ['Genes are linked', 'Alleles separate in meiosis', 'DNA never changes', 'Cells divide equally'],
+      correct: 1,
+      dmg: 15,
+      concept: 'allele',
+      wrongFeedback: [
+        'Incorrect. The law of independent assortment describes genes sorting separately.',
+        '',
+        'Incorrect. DNA changes through mutations and recombination.',
+        'Incorrect. Cells divide during mitosis or meiosis, but segregation refers to alleles separating.'
+      ]
+    },
+    {
+      q: 'A karyotype shows:',
+      a: ['DNA sequence', 'Chromosome pairs arranged by size', 'Protein structure', 'Cell organelles'],
+      correct: 1,
+      dmg: 20,
+      concept: 'genotype',
+      wrongFeedback: [
+        'Incorrect. Karyotypes are images of chromosomes, not DNA sequences.',
+        '',
+        'Incorrect. Karyotypes show whole chromosomes, not molecular protein details.',
+        'Incorrect. Karyotypes show chromosomes, not organelles.'
+      ]
+    },
+    {
+      q: 'What is genetic drift?',
+      a: ['Planned breeding', 'Random allele frequency change', 'Mutation accumulation', 'Natural selection'],
+      correct: 1,
+      dmg: 20,
+      concept: 'geneticDrift',
+      wrongFeedback: [
+        'Incorrect. Planned breeding is artificial selection.',
+        '',
+        'Incorrect. Mutations are changes in DNA sequence.',
+        'Incorrect. Natural selection is non-random survival based on fitness.'
+      ]
+    },
+    {
+      q: 'CRISPR-Cas9 is used for:',
+      a: ['X-ray imaging', 'Gene editing', 'Blood typing', 'PCR amplification'],
+      correct: 1,
+      dmg: 25,
+      concept: 'genotype',
+      wrongFeedback: [
+        'Incorrect. CRISPR is not an imaging tool.',
+        '',
+        'Incorrect. Blood typing is done using antibody tests.',
+        'Incorrect. PCR amplifies DNA, while CRISPR edits it.'
+      ]
+    },
+    {
+      q: 'Trisomy 21 causes:',
+      a: ['Turner syndrome', 'Down syndrome', 'Klinefelter syndrome', 'Cri du chat'],
+      correct: 1,
+      dmg: 20,
+      concept: 'genotype',
+      wrongFeedback: [
+        'Incorrect. Turner syndrome is monosomy X.',
+        '',
+        'Incorrect. Klinefelter syndrome is XXY.',
+        'Incorrect. Cri du chat is a deletion on chromosome 5.'
+      ]
+    }
   ];
 
   // ── Learn topics ──
@@ -386,20 +1034,20 @@ window.StemLab = window.StemLab || {
     {
       title: 'Genes & Alleles', icon: '\uD83C\uDFAF',
       k2: 'Genes are small sections of DNA that tell your body to make specific things, like blue eyes or curly hair. You get one copy from your mom and one from your dad! Different versions of a gene are called alleles.',
-      g35: 'A gene is a segment of DNA that codes for a specific protein or trait. You inherit two copies (alleles) of each gene \u2014 one from each parent. If both alleles are the same, you\'re homozygous (BB or bb). If they\'re different, you\'re heterozygous (Bb). The allele combination is your genotype; what you actually look like is your phenotype.',
+      g35: 'A gene is a segment of DNA that codes for a specific protein or trait. You inherit two copies (alleles) of each gene - one from each parent. If both alleles are the same, you\'re homozygous (BB or bb). If they\'re different, you\'re heterozygous (Bb). The allele combination is your genotype; what you actually look like is your phenotype.',
       g68: 'Genes occupy specific positions (loci) on chromosomes. Humans have ~20,000 protein-coding genes across 23 chromosome pairs. Alleles arise from mutations creating different DNA sequences at the same locus. Dominant alleles produce their phenotype with just one copy; recessive alleles need two copies. Some genes show incomplete dominance, codominance, or multiple alleles (like ABO blood type with three alleles: I\u1D2C, I\u1D2E, i).',
       g912: 'Gene expression involves transcription (DNA \u2192 mRNA by RNA polymerase) and translation (mRNA \u2192 protein by ribosomes). Regulatory elements (promoters, enhancers, silencers) control when and where genes are expressed. Epigenetic modifications (DNA methylation, histone acetylation) alter gene expression without changing the DNA sequence. Pleiotropy (one gene, many effects) and polygenic inheritance (many genes, one trait) add complexity beyond simple Mendelian genetics.'
     },
     {
       title: 'Inheritance Patterns', icon: '\uD83D\uDCCA',
       k2: 'Some traits are "stronger" than others! If you get a "strong" (dominant) gene from one parent and a "weak" (recessive) gene from the other, you\'ll show the strong trait. That\'s why brown eyes are more common than blue eyes!',
-      g35: 'Mendel discovered three laws: (1) Law of Dominance \u2014 one allele can mask another. (2) Law of Segregation \u2014 allele pairs separate during gamete formation. (3) Law of Independent Assortment \u2014 genes on different chromosomes sort independently. A Punnett square predicts offspring ratios: Bb \u00D7 Bb gives a 3:1 dominant:recessive ratio.',
+      g35: 'Mendel discovered three laws: (1) Law of Dominance - one allele can mask another. (2) Law of Segregation - allele pairs separate during gamete formation. (3) Law of Independent Assortment - genes on different chromosomes sort independently. A Punnett square predicts offspring ratios: Bb \u00D7 Bb gives a 3:1 dominant:recessive ratio.',
       g68: 'Beyond simple dominance, inheritance patterns include: Incomplete dominance (red \u00D7 white = pink snapdragons), Codominance (AB blood type), Sex-linked (hemophilia on X chromosome), and Polygenic (height, skin color). Linked genes on the same chromosome violate independent assortment but recombination during crossing over creates new combinations. Pedigree charts trace traits through generations.',
       g912: 'Complex inheritance includes epistasis (gene interaction where one gene modifies another\'s expression), penetrance (% showing phenotype), and expressivity (degree of expression). Quantitative trait loci (QTL) analysis maps polygenic traits. Mitochondrial inheritance is maternal. Genomic imprinting means some genes are expressed only from the maternal or paternal copy. Genetic linkage and recombination frequencies are used to map gene positions on chromosomes.'
     },
     {
       title: 'Mutations & Evolution', icon: '\uD83D\uDD2C',
-      k2: 'Sometimes the DNA recipe has a small change \u2014 that\'s a mutation! Most mutations don\'t do anything, but some give animals special abilities that help them survive, like a rabbit with white fur in the snow.',
+      k2: 'Sometimes the DNA recipe has a small change - that\'s a mutation! Most mutations don\'t do anything, but some give animals special abilities that help them survive, like a rabbit with white fur in the snow.',
       g35: 'Mutations are changes in the DNA sequence. They can be caused by errors during DNA copying, radiation, or chemicals. Some mutations are harmful (sickle cell disease), some are neutral, and rarely some are helpful (antibiotic resistance in bacteria). Mutations create new alleles, providing the raw material for evolution.',
       g68: 'Point mutations include substitutions (silent, missense, nonsense), insertions, and deletions. Frameshift mutations (insertions/deletions not divisible by 3) change the entire downstream amino acid sequence. Chromosomal mutations include deletions, duplications, inversions, and translocations. Natural selection acts on phenotypic variation: individuals with advantageous traits survive and reproduce more, changing allele frequencies over generations.',
       g912: 'Mutation types at the molecular level: transitions (purine\u2192purine), transversions (purine\u2192pyrimidine), trinucleotide repeat expansions (Huntington\'s, Fragile X). Mutagens include UV light (thymine dimers), benzene (insertions), and reactive oxygen species. The neutral theory of molecular evolution (Kimura) proposes most mutations are selectively neutral. Population genetics combines mutation, selection, drift, migration, and non-random mating to model allele frequency changes.'
@@ -414,7 +1062,7 @@ window.StemLab = window.StemLab || {
     {
       title: 'CRISPR & Gene Editing', icon: '\u2702\uFE0F',
       k2: 'Scientists have found a way to fix spelling mistakes in DNA, like using a special eraser and pencil! This might help cure diseases in the future. It is called CRISPR.',
-      g35: 'CRISPR is like a pair of molecular scissors that can cut DNA at a specific spot. Scientists use a guide (made of RNA) to tell the scissors exactly where to cut. Once cut, the cell can fix the DNA \u2014 and scientists can add, remove, or change genes. It was inspired by how bacteria defend against viruses!',
+      g35: 'CRISPR is like a pair of molecular scissors that can cut DNA at a specific spot. Scientists use a guide (made of RNA) to tell the scissors exactly where to cut. Once cut, the cell can fix the DNA - and scientists can add, remove, or change genes. It was inspired by how bacteria defend against viruses!',
       g68: 'CRISPR-Cas9 is a gene editing tool adapted from bacterial immune systems. Bacteria store snippets of viral DNA (CRISPR arrays) to recognize future invaders. Scientists engineered this into a tool: a guide RNA (gRNA) directs the Cas9 enzyme to a specific DNA sequence, creating a double-strand break. The cell repairs it via NHEJ (error-prone, can disable genes) or HDR (precise, can insert new sequences). Applications include disease treatment, agriculture, and research.',
       g912: 'CRISPR-Cas9 mechanism: The gRNA (crRNA + tracrRNA, or synthetic sgRNA) forms a complex with Cas9 endonuclease. PAM sequence (NGG for SpCas9) recognition enables R-loop formation and double-strand cleavage. Beyond Cas9: Cas12a (Cpf1) for staggered cuts, Cas13 for RNA editing, base editors (CBE/ABE) for single-nucleotide changes without DSBs, and prime editing for precise insertions/deletions. Ethical considerations include germline editing (He Jiankui controversy), gene drives in ecology, and off-target effects. Current clinical trials target sickle cell disease (Casgevy/Exa-cel), beta-thalassemia, and certain cancers.'
     }
@@ -580,7 +1228,7 @@ window.StemLab = window.StemLab || {
                 newBadges[b.id] = true;
                 awarded = true;
                 punnettSound('badge');
-                addToast(b.icon + ' Badge: ' + b.name + ' \u2014 ' + b.desc, 'success');
+                addToast(b.icon + ' Badge: ' + b.name + ' - ' + b.desc, 'success');
                 awardXP('punnettBadge_' + b.id, 15, b.name);
               }
             });
@@ -591,6 +1239,48 @@ window.StemLab = window.StemLab || {
           React.useEffect(function() {
             checkBadges(getBadgeState());
           }, [crossCount, presetsUsed, d._testCrossDone, d._sexLinkedDone, d._genScore, d._pedigreeSolved, d._popSimDone, d._dnaDone, d._chalTotalScore, d._battleWon, d._visited, d._diCrossCount, d._mutTypesUsed]);
+
+          var checkPunnettChallenges = function(updates) {
+            var completed = Object.assign({}, d._completedChallenges || {});
+            var newlyCompleted = false;
+            var addRP = 0;
+            PUNNETT_CHALLENGES.forEach(function(chal) {
+              if (!completed[chal.id] && chal.check(updates)) {
+                completed[chal.id] = true;
+                newlyCompleted = true;
+                punnettSound('badge');
+                addToast('🏆 Challenge Unlocked: ' + chal.label, 'success');
+                awardXP('punnettChal_' + chal.id, 20, chal.label);
+                
+                var rewardRP = 10;
+                if (chal.id === 'pedigree_solved' || chal.id === 'population_sim') rewardRP = 20;
+                if (chal.id === 'battle_won') rewardRP = 30;
+                if (chal.id === 'study_vocab') rewardRP = 15;
+                addRP += rewardRP;
+              }
+            });
+            if (newlyCompleted) {
+              var currentRP = d.researchPoints || 0;
+              updMulti({
+                _completedChallenges: completed,
+                researchPoints: currentRP + addRP
+              });
+            }
+          };
+
+          // Check challenges on state changes
+          React.useEffect(function() {
+            var timer = setTimeout(function() {
+              checkPunnettChallenges({
+                crossCount: crossCount,
+                pedigreeSolved: d._pedigreeSolved || false,
+                popSimDone: d._popSimDone || false,
+                battleWon: d._battleWon || false,
+                studiedVocab: d._studiedVocab || {}
+              });
+            }, 0);
+            return function() { clearTimeout(timer); };
+          }, [crossCount, d._pedigreeSolved, d._popSimDone, d._battleWon, d._studiedVocab]);
 
           // ═══ AI TUTOR ═══
           var showAI = d._showAI || false;
@@ -995,6 +1685,7 @@ window.StemLab = window.StemLab || {
               ),
               h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83E\uDDEC Punnett Square Lab'),
               h('span', { className: 'px-2 py-0.5 bg-violet-100 text-violet-700 text-[11px] font-bold rounded-full' }, 'GENETICS v3'),
+              h('span', { className: 'px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full' }, '⭐ ' + (d.researchPoints || 0) + ' RP'),
               h('button', {
                 onClick: function() { upd('_showBadgePanel', !showBadgePanel); },
                 className: 'ml-auto px-2 py-1 text-[11px] font-bold rounded-lg border ' + (showBadgePanel ? 'bg-amber-100 text-amber-700 border-amber-600' : 'bg-slate-50 text-slate-600 border-slate-200'),
@@ -1020,17 +1711,46 @@ window.StemLab = window.StemLab || {
               })
             ),
 
+            // ── Challenges Progress checklist card ──
+            h('div', { className: 'bg-white rounded-xl border border-violet-200 p-3 mb-3 shadow-sm' },
+              h('div', { className: 'flex justify-between items-center mb-2' },
+                h('h4', { className: 'text-xs font-bold text-violet-800 uppercase tracking-wider flex items-center gap-1.5' },
+                  h('span', null, '🏆'), h('span', null, 'Quest Progress')
+                ),
+                h('span', { className: 'text-[11px] font-bold text-violet-700 bg-violet-50 px-2 py-0.5 rounded-full' },
+                  PUNNETT_CHALLENGES.filter(function(c) { return d._completedChallenges && d._completedChallenges[c.id]; }).length + '/' + PUNNETT_CHALLENGES.length
+                )
+              ),
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2' },
+                PUNNETT_CHALLENGES.map(function(chal) {
+                  var isDone = d._completedChallenges && d._completedChallenges[chal.id];
+                  return h('div', {
+                    key: chal.id,
+                    className: 'p-2 rounded-lg border flex flex-col items-center justify-between text-center transition-all ' +
+                      (isDone ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-400'),
+                    title: chal.desc
+                  },
+                    h('span', { className: 'text-lg mb-1' }, chal.icon),
+                    h('span', { className: 'text-[10px] font-bold leading-tight' }, chal.label),
+                    h('span', { className: 'text-[9px] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-500') },
+                      isDone ? 'Done' : 'Locked'
+                    )
+                  );
+                })
+              )
+            ),
+
             // ── Topic-accent hero band per sub-tool ──
             (function() {
               var TAB_META = {
-                cross:       { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDDEC', title: 'Punnett Cross \u2014 predict offspring ratios',         hint: 'Mendel\u2019s peas (1866). Aa \u00d7 Aa \u2192 1:2:1 genotype, 3:1 phenotype. Codominant + incomplete + X-linked break the simple rule. Mendel\u2019s laws were ignored for 34 years until rediscovered in 1900.' },
-                pedigree:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDC6A', title: 'Pedigree \u2014 trace inheritance through families',     hint: 'Squares = males, circles = females, filled = affected. Autosomal recessive skips generations; autosomal dominant shows in every generation; X-linked recessive shows mostly in males. Real genetic counselors do this daily.' },
-                population:  { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCCA', title: 'Population \u2014 Hardy-Weinberg equilibrium',           hint: 'p\u00b2 + 2pq + q\u00b2 = 1. Allele frequencies stay constant when 5 conditions hold (large pop, no migration, no mutation, no selection, random mating). Deviations reveal evolution in action. AP Bio Big Idea 1.A.1.' },
-                traits:      { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD2C', title: 'Trait Explorer \u2014 real genetic conditions',          hint: 'Sickle cell trait protects against malaria (heterozygote advantage). Cystic fibrosis is recessive but in 1 of 25 carriers in NW European descent. Most \u201Csimple Mendelian\u201D textbook traits are actually polygenic.' },
-                dna2protein: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDEA', title: 'DNA \u2192 Protein \u2014 codon table + translation',    hint: 'Triplet code: 64 codons \u2192 20 amino acids + stop. AUG starts; UAA/UAG/UGA stop. Wobble at the third position lets one tRNA read multiple codons \u2014 evolution\u2019s redundancy buffer.' },
-                challenge:   { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\uD83C\uDFC6', title: 'Challenge \u2014 graded genetics quiz',                  hint: 'Punnett ratios, pedigree analysis, Hardy-Weinberg algebra, dihybrid 9:3:3:1, sex-linked traps. AP Bio Big Idea 3.A.1\u20133. NGSS HS-LS3-1, HS-LS3-2.' },
-                battle:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F', title: 'Gene Defense \u2014 retrieval as combat',                hint: 'Speed builds automaticity. Once codon-table lookups + Punnett ratios are automatic, your working memory is free for higher-order reasoning like predicting the consequences of a frameshift mutation.' },
-                learn:       { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCD6', title: 'Learn \u2014 genetics concepts by grade',                hint: 'K-2: families pass on traits. 3-5: dominant/recessive. MS: Punnett squares + DNA basics. HS: full Mendelian + transcription/translation + epigenetics. AP Bio adds population genetics + evolutionary inference.' }
+                cross:       { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDDEC', title: 'Punnett Cross - predict offspring ratios',         hint: 'Mendel\'s peas (1866). Aa \u00d7 Aa \u2192 1:2:1 genotype, 3:1 phenotype. Codominant + incomplete + X-linked break the simple rule. Mendel\'s laws were ignored for 34 years until rediscovered in 1900.' },
+                pedigree:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDC6A', title: 'Pedigree - trace inheritance through families',     hint: 'Squares = males, circles = females, filled = affected. Autosomal recessive skips generations; autosomal dominant shows in every generation; X-linked recessive shows mostly in males. Real genetic counselors do this daily.' },
+                population:  { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCCA', title: 'Population - Hardy-Weinberg equilibrium',           hint: 'p\u00b2 + 2pq + q\u00b2 = 1. Allele frequencies stay constant when 5 conditions hold (large pop, no migration, no mutation, no selection, random mating). Deviations reveal evolution in action. AP Bio Big Idea 1.A.1.' },
+                traits:      { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD2C', title: 'Trait Explorer - real genetic conditions',          hint: 'Sickle cell trait protects against malaria (heterozygote advantage). Cystic fibrosis is recessive but in 1 of 25 carriers in NW European descent. Most "simple Mendelian" textbook traits are actually polygenic.' },
+                dna2protein: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDEA', title: 'DNA \u2192 Protein - codon table + translation',    hint: 'Triplet code: 64 codons \u2192 20 amino acids + stop. AUG starts; UAA/UAG/UGA stop. Wobble at the third position lets one tRNA read multiple codons - evolution\'s redundancy buffer.' },
+                challenge:   { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\uD83C\uDFC6', title: 'Challenge - graded genetics quiz',                  hint: 'Punnett ratios, pedigree analysis, Hardy-Weinberg algebra, dihybrid 9:3:3:1, sex-linked traps. AP Bio Big Idea 3.A.1-3. NGSS HS-LS3-1, HS-LS3-2.' },
+                battle:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F', title: 'Gene Defense - retrieval as combat',                hint: 'Speed builds automaticity. Once codon-table lookups + Punnett ratios are automatic, your working memory is free for higher-order reasoning like predicting the consequences of a frameshift mutation.' },
+                learn:       { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCD6', title: 'Learn - genetics concepts by grade',                hint: 'K-2: families pass on traits. 3-5: dominant/recessive. MS: Punnett squares + DNA basics. HS: full Mendelian + transcription/translation + epigenetics. AP Bio adds population genetics + evolutionary inference.' }
               };
               var meta = TAB_META[subtool] || TAB_META.cross;
               return h('div', {
@@ -1262,7 +1982,7 @@ window.StemLab = window.StemLab || {
 
               // Phenotype Visual
               activePreset && h('div', { className: 'mt-3 bg-gradient-to-r from-violet-50 to-blue-50 rounded-xl border border-violet-200 p-3' },
-                h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider mb-2' }, '\uD83D\uDC40 Offspring Phenotypes \u2014 ' + activePreset.trait),
+                h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider mb-2' }, '\uD83D\uDC40 Offspring Phenotypes - ' + activePreset.trait),
                 h('div', { className: 'flex justify-center gap-2' },
                   flatGrid.map(function(g, i) {
                     var p = phenotype(g);
@@ -1282,12 +2002,12 @@ window.StemLab = window.StemLab || {
               !isDihybrid && h('p', { className: 'mt-3 text-xs text-slate-600 italic' },
                 (function() {
                   if (inheritMode === 'incomplete') {
-                    if (blendCount === 4) return '\uD83D\uDCA1 100% blended phenotype! Both parents are heterozygous \u2014 classic incomplete dominance 1:2:1 ratio.';
+                    if (blendCount === 4) return '\uD83D\uDCA1 100% blended phenotype! Both parents are heterozygous - classic incomplete dominance 1:2:1 ratio.';
                     if (blendCount === 2) return '\uD83D\uDCA1 50% blended. Some offspring express intermediate traits!';
                     return '\uD83D\uDCA1 Incomplete dominance: heterozygotes show a blend of both parental traits.';
                   }
                   if (inheritMode === 'codominant') {
-                    if (blendCount > 0) return '\uD83D\uDCA1 ' + (blendCount * 25) + '% of offspring express both alleles simultaneously \u2014 that\u2019s codominance!';
+                    if (blendCount > 0) return '\uD83D\uDCA1 ' + (blendCount * 25) + '% of offspring express both alleles simultaneously - that\u2019s codominance!';
                     return '\uD83D\uDCA1 No heterozygotes in this cross. Try crossing different alleles to see codominance.';
                   }
                   if (isSexLinked) {
@@ -1296,9 +2016,9 @@ window.StemLab = window.StemLab || {
                     return '\uD83D\uDCA1 X-linked: ' + (malesAffected > 0 ? malesAffected + '/2 sons affected' : 'no sons affected') + '. ' + (femalesCarrier > 0 ? femalesCarrier + '/2 daughters are carriers.' : 'Daughters are not carriers.');
                   }
                   if (domCount === 4) return '\uD83D\uDCA1 100% dominant phenotype. At least one parent must be homozygous dominant (BB).';
-                  if (domCount === 3) return '\uD83D\uDCA1 Classic 3:1 ratio! Both parents are heterozygous (Bb) \u2014 this is Mendel\u2019s foundational ratio.';
-                  if (domCount === 2) return '\uD83D\uDCA1 1:1 ratio. This is a test cross \u2014 one parent is heterozygous, the other recessive.';
-                  if (domCount === 1) return '\uD83D\uDCA1 Only 25% dominant. This is unusual \u2014 check your allele assignments!';
+                  if (domCount === 3) return '\uD83D\uDCA1 Classic 3:1 ratio! Both parents are heterozygous (Bb) - this is Mendel\u2019s foundational ratio.';
+                  if (domCount === 2) return '\uD83D\uDCA1 1:1 ratio. This is a test cross - one parent is heterozygous, the other recessive.';
+                  if (domCount === 1) return '\uD83D\uDCA1 Only 25% dominant. This is unusual - check your allele assignments!';
                   return '\uD83D\uDCA1 100% recessive. Both parents must be homozygous recessive (bb).';
                 })()
               ),
@@ -1988,7 +2708,7 @@ window.StemLab = window.StemLab || {
                       h('p', { className: 'font-mono text-sm font-bold text-blue-700 tracking-widest' }, dnaSeq)
                     ),
                     h('div', null,
-                      h('p', { className: 'text-[11px] font-bold text-emerald-600' }, '2\uFE0F\u20E3 mRNA (5\'\u21923\') — Transcription'),
+                      h('p', { className: 'text-[11px] font-bold text-emerald-600' }, '2\uFE0F\u20E3 mRNA (5\'\u21923\') - Transcription'),
                       h('p', { className: 'font-mono text-sm font-bold text-emerald-700 tracking-widest' }, mRNA)
                     ),
                     h('div', null,
@@ -2102,15 +2822,15 @@ window.StemLab = window.StemLab || {
                         ),
                         h('p', { className: 'text-[11px] font-bold mb-1 ' + (changes > 0 ? 'text-red-600' : 'text-emerald-600') },
                           changes === 0
-                            ? '\u2705 Silent mutation \u2014 protein unchanged!'
+                            ? '\u2705 Silent mutation - protein unchanged!'
                             : '\u26A0\uFE0F ' + changes + ' amino acid' + (changes > 1 ? 's' : '') + ' changed' + (mutType === 'insertion' || mutType === 'deletion' ? ' (frameshift!)' : '')
                         ),
                         h('div', { className: 'flex flex-wrap gap-0.5' },
                           (function() {
                             var items = [];
                             for (var ai = 0; ai < maxLen; ai++) {
-                              var origAA = origAminos[ai] || '\u2014';
-                              var mutAA = mutAminos[ai] || '\u2014';
+                              var origAA = origAminos[ai] || '-';
+                              var mutAA = mutAminos[ai] || '-';
                               var changed = origAA !== mutAA;
                               items.push(h('div', {
                                 key: ai,
@@ -2126,16 +2846,16 @@ window.StemLab = window.StemLab || {
                           })()
                         ),
                         (mutType === 'insertion' || mutType === 'deletion') && h('p', { className: 'text-[11px] text-red-500 mt-1 italic' },
-                          '\uD83D\uDCA1 ' + (mutType === 'insertion' ? 'Insertion' : 'Deletion') + ' shifts the reading frame \u2014 all downstream codons change! This is called a frameshift mutation.'
+                          '\uD83D\uDCA1 ' + (mutType === 'insertion' ? 'Insertion' : 'Deletion') + ' shifts the reading frame - all downstream codons change! This is called a frameshift mutation.'
                         ),
                         mutType === 'point' && changes === 0 && h('p', { className: 'text-[11px] text-emerald-500 mt-1 italic' },
                           '\uD83D\uDCA1 This is a silent (synonymous) mutation. The codon changed, but it still codes for the same amino acid due to redundancy in the genetic code.'
                         ),
                         mutType === 'point' && changes === 1 && mutAminos[mutAminos.length - 1] === 'Stop' && origAminos[origAminos.length - 1] !== 'Stop' && h('p', { className: 'text-[11px] text-red-500 mt-1 italic' },
-                          '\uD83D\uDCA1 This is a nonsense mutation \u2014 it created a premature stop codon, producing a shorter (truncated) protein!'
+                          '\uD83D\uDCA1 This is a nonsense mutation - it created a premature stop codon, producing a shorter (truncated) protein!'
                         ),
                         mutType === 'point' && changes === 1 && !(mutAminos[mutAminos.length - 1] === 'Stop' && origAminos[origAminos.length - 1] !== 'Stop') && h('p', { className: 'text-[11px] text-orange-500 mt-1 italic' },
-                          '\uD83D\uDCA1 This is a missense mutation \u2014 one amino acid changed. The effect depends on whether the new amino acid has similar properties.'
+                          '\uD83D\uDCA1 This is a missense mutation - one amino acid changed. The effect depends on whether the new amino acid has similar properties.'
                         )
                       );
                     })(),
@@ -2198,24 +2918,58 @@ window.StemLab = window.StemLab || {
                         updMulti({
                           _chalScore: newScore,
                           _chalStreak: newStreak,
+                          _selectedOption: i,
                           _chalFeedback: isCorrect ? '\u2705 Correct!' + (newStreak >= 3 ? ' \u2B50 Streak bonus!' : '') : '\u274C Incorrect. Answer: ' + chalQuestions[chalIdx].a[chalQuestions[chalIdx].correct]
                         });
-                        setTimeout(function() {
-                          var nextIdx = chalIdx + 1;
-                          if (nextIdx < chalQuestions.length) {
-                            updMulti({ _chalIdx: nextIdx, _chalFeedback: null });
-                          } else {
-                            var total = (d._chalTotalScore || 0) + newScore;
-                            updMulti({ _chalFeedback: '\uD83C\uDFC6 Complete! Score: ' + newScore + '/' + chalQuestions.length, _chalTotalScore: total });
-                          }
-                        }, 1500);
+                        if (isCorrect) {
+                          setTimeout(function() {
+                            var nextIdx = chalIdx + 1;
+                            if (nextIdx < chalQuestions.length) {
+                              updMulti({ _chalIdx: nextIdx, _chalFeedback: null });
+                            } else {
+                              var total = (d._chalTotalScore || 0) + newScore;
+                              updMulti({ _chalFeedback: '\uD83C\uDFC6 Complete! Score: ' + newScore + '/' + chalQuestions.length, _chalTotalScore: total });
+                            }
+                          }, 1500);
+                        }
                       },
                       className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' +
                         (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-violet-600 hover:bg-violet-50')
                     }, opt);
                   })
                 ),
-                chalFeedback && h('p', { className: 'mt-2 text-xs font-bold text-center ' + (chalFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, chalFeedback)
+                chalFeedback && h('div', { className: 'mt-3 p-3 bg-slate-50 border rounded-lg text-xs' },
+                  h('p', { className: 'font-bold ' + (chalFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, chalFeedback),
+                  (function() {
+                    var qObj = chalQuestions[chalIdx];
+                    var isWrong = chalFeedback.indexOf('\u274C') !== -1;
+                    if (isWrong && qObj && qObj.wrongFeedback) {
+                      var wrongText = qObj.wrongFeedback[d._selectedOption] || '';
+                      return h('div', { className: 'mt-2 space-y-2' },
+                        h('p', { className: 'text-slate-600 leading-relaxed font-normal' }, wrongText),
+                        h('div', { className: 'flex gap-2 pt-1' },
+                          qObj.concept && h('button', {
+                            onClick: function() { upd('_studyConcept', qObj.concept); },
+                            className: 'px-2 py-1 bg-violet-50 text-violet-700 border border-violet-600 rounded font-bold text-[10px] hover:bg-violet-100 transition-all'
+                          }, '📖 Study ' + (PUNNETT_VOCAB[qObj.concept] ? PUNNETT_VOCAB[qObj.concept].term : qObj.concept) + ' (+5 RP)'),
+                          h('button', {
+                            onClick: function() {
+                              var nextIdx = chalIdx + 1;
+                              if (nextIdx < chalQuestions.length) {
+                                updMulti({ _chalIdx: nextIdx, _chalFeedback: null });
+                              } else {
+                                var total = (d._chalTotalScore || 0) + chalScore;
+                                updMulti({ _chalFeedback: '\uD83C\uDFC6 Complete! Score: ' + chalScore + '/' + chalQuestions.length, _chalTotalScore: total });
+                              }
+                            },
+                            className: 'px-2 py-1 bg-slate-600 text-white rounded font-bold text-[10px] hover:bg-slate-700 transition-all'
+                          }, 'Continue \u2192')
+                        )
+                      );
+                    }
+                    return null;
+                  })()
+                )
               ) : h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-4 text-center' },
                 h('p', { className: 'text-2xl mb-2' }, '\uD83C\uDFC6'),
                 h('p', { className: 'text-sm font-bold text-violet-700' }, 'Challenge Complete!'),
@@ -2270,7 +3024,7 @@ window.StemLab = window.StemLab || {
                 ),
 
                 // Round indicator
-                h('p', { className: 'text-[11px] font-bold text-slate-600 text-center mb-2' }, 'Round ' + (battleRound + 1) + '/' + BATTLE_QS.length + ' \u2014 Score: ' + battleScore),
+                h('p', { className: 'text-[11px] font-bold text-slate-600 text-center mb-2' }, 'Round ' + (battleRound + 1) + '/' + BATTLE_QS.length + ' - Score: ' + battleScore),
 
                 // Question
                 h('div', { className: 'bg-white rounded-xl border p-4' },
@@ -2294,28 +3048,66 @@ window.StemLab = window.StemLab || {
                             newHP = Math.max(0, battleHP - 15);
                           }
                           var fb = isCorrect ? '\u2705 Hit! -' + bq.dmg + ' HP to virus!' : '\u274C Virus attacks! -15 HP! Answer: ' + bq.a[bq.correct];
-                          updMulti({ _battleEnemyHP: newEHP, _battleHP: newHP, _battleScore: newScore, _battleFeedback: fb });
-
-                          setTimeout(function() {
-                            // Check win/lose
-                            if (newEHP <= 0) {
-                              punnettSound('victory');
-                              updMulti({ _battleActive: false, _battleResult: 'won', _battleWon: true, _battleFeedback: null });
-                              awardXP('battleWin', 30, 'Gene Defense Victory');
-                            } else if (newHP <= 0) {
-                              punnettSound('damage');
-                              updMulti({ _battleActive: false, _battleResult: 'lost', _battleFeedback: null });
-                            } else {
-                              updMulti({ _battleRound: battleRound + 1, _battleFeedback: null });
-                            }
-                          }, 1500);
+                          updMulti({
+                            _battleEnemyHP: newEHP,
+                            _battleHP: newHP,
+                            _battleScore: newScore,
+                            _selectedOption: i,
+                            _battleFeedback: fb
+                          });
+                          if (isCorrect) {
+                            setTimeout(function() {
+                              // Check win/lose
+                              if (newEHP <= 0) {
+                                punnettSound('victory');
+                                updMulti({ _battleActive: false, _battleResult: 'won', _battleWon: true, _battleFeedback: null });
+                                awardXP('battleWin', 30, 'Gene Defense Victory');
+                              } else {
+                                updMulti({ _battleRound: battleRound + 1, _battleFeedback: null });
+                              }
+                            }, 1500);
+                          }
                         },
                         className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' +
                           (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-600 hover:bg-red-50')
                       }, opt);
                     })
                   ),
-                  battleFeedback && h('p', { className: 'mt-2 text-xs font-bold text-center ' + (battleFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, battleFeedback)
+                  battleFeedback && h('div', { className: 'mt-3 p-3 bg-slate-50 border rounded-lg text-xs' },
+                    h('p', { className: 'font-bold ' + (battleFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, battleFeedback),
+                    (function() {
+                      var qObj = BATTLE_QS[battleRound];
+                      var isWrong = battleFeedback.indexOf('\u274C') !== -1;
+                      if (isWrong && qObj && qObj.wrongFeedback) {
+                        var wrongText = qObj.wrongFeedback[d._selectedOption] || '';
+                        return h('div', { className: 'mt-2 space-y-2' },
+                          h('p', { className: 'text-slate-600 leading-relaxed font-normal' }, wrongText),
+                          h('div', { className: 'flex gap-2 pt-1' },
+                            qObj.concept && h('button', {
+                              onClick: function() { upd('_studyConcept', qObj.concept); },
+                              className: 'px-2 py-1 bg-violet-50 text-violet-700 border border-violet-600 rounded font-bold text-[10px] hover:bg-violet-100 transition-all'
+                            }, '📖 Study ' + (PUNNETT_VOCAB[qObj.concept] ? PUNNETT_VOCAB[qObj.concept].term : qObj.concept) + ' (+5 RP)'),
+                            h('button', {
+                              onClick: function() {
+                                if (battleHP <= 0) {
+                                  punnettSound('damage');
+                                  updMulti({ _battleActive: false, _battleResult: 'lost', _battleFeedback: null });
+                                } else if (battleEnemyHP <= 0) {
+                                  punnettSound('victory');
+                                  updMulti({ _battleActive: false, _battleResult: 'won', _battleWon: true, _battleFeedback: null });
+                                  awardXP('battleWin', 30, 'Gene Defense Victory');
+                                } else {
+                                  updMulti({ _battleRound: battleRound + 1, _battleFeedback: null });
+                                }
+                              },
+                              className: 'px-2 py-1 bg-slate-600 text-white rounded font-bold text-[10px] hover:bg-slate-700 transition-all'
+                            }, 'Continue \u2192')
+                          )
+                        );
+                      }
+                      return null;
+                    })()
+                  )
                 )
               ),
 
@@ -2339,7 +3131,7 @@ window.StemLab = window.StemLab || {
               // Ran out of questions without KO
               battleActive && battleRound >= BATTLE_QS.length && h('div', { className: 'text-center bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-6' },
                 h('p', { className: 'text-4xl mb-2' }, '\u23F0'),
-                h('p', { className: 'text-lg font-bold text-amber-700' }, 'Battle Over \u2014 Time Ran Out!'),
+                h('p', { className: 'text-lg font-bold text-amber-700' }, 'Battle Over - Time Ran Out!'),
                 h('p', { className: 'text-xs text-slate-600 mt-1 mb-3' }, 'Score: ' + battleScore + '/' + BATTLE_QS.length + ' | Your HP: ' + battleHP + ' | Virus HP: ' + battleEnemyHP),
                 h('button', { 'aria-label': 'Try Again',
                   onClick: function() {
@@ -2426,7 +3218,61 @@ window.StemLab = window.StemLab || {
                 onClick: takeSnapshot,
                 className: 'ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all'
               }, '\uD83D\uDCF8 Snapshot')
-            )
+            ),
+
+            // ── Vocabulary Concept Flashcard Modal/Overlay ──
+            d._studyConcept && (function() {
+              var termKey = d._studyConcept;
+              var vocabInfo = PUNNETT_VOCAB[termKey];
+              if (!vocabInfo) return null;
+              var isStudied = d._studiedVocab && d._studiedVocab[termKey];
+              return h('div', {
+                style: {
+                  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                  backgroundColor: 'rgba(15, 23, 42, 0.65)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  zIndex: 9999, padding: 16, backdropFilter: 'blur(4px)',
+                  animation: 'fadeIn 0.2s ease-out'
+                }
+              },
+                h('div', { className: 'bg-white rounded-2xl border border-violet-100 p-6 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-200' },
+                  h('button', {
+                    onClick: function() { upd('_studyConcept', null); },
+                    className: 'absolute top-3 right-3 text-slate-400 hover:text-slate-600 font-bold p-1 rounded-lg hover:bg-slate-100',
+                    'aria-label': 'Close flashcard'
+                  }, '✕'),
+                  h('div', { className: 'text-center' },
+                    h('span', { className: 'text-4xl mb-3 inline-block' }, '📇'),
+                    h('h4', { className: 'text-lg font-bold text-violet-800 mb-2' }, vocabInfo.term),
+                    h('div', { className: 'bg-violet-50 rounded-xl p-4 border border-violet-100 text-xs text-slate-700 leading-relaxed mb-4 text-left' },
+                      vocabInfo.def
+                    ),
+                    !isStudied ? h('button', {
+                      onClick: function() {
+                        var sv = Object.assign({}, d._studiedVocab || {});
+                        sv[termKey] = true;
+                        var newRP = (d.researchPoints || 0) + 5;
+                        updMulti({
+                          _studiedVocab: sv,
+                          researchPoints: newRP,
+                          _studyConcept: null
+                        });
+                        punnettSound('streak');
+                        addToast('✨ Concept Studied! +5 RP (' + vocabInfo.term + ')', 'success');
+                        awardXP('studyVocab_' + termKey, 10, 'Study Vocab: ' + vocabInfo.term);
+                      },
+                      className: 'w-full py-2.5 px-4 text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl hover:from-violet-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all'
+                    }, 'Study Term (+5 RP)') : h('div', null,
+                      h('p', { className: 'text-xs text-emerald-600 font-bold mb-3' }, '✓ You have already studied this term!'),
+                      h('button', {
+                        onClick: function() { upd('_studyConcept', null); },
+                        className: 'w-full py-2 px-4 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all'
+                      }, 'Close')
+                    )
+                  )
+                )
+              );
+            })()
           );
         };
       }

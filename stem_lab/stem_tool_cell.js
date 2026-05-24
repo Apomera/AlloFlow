@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// stem_tool_cell.js — Cell Biology Simulator
+// stem_tool_cell.js - Cell Biology Simulator
 // Standalone CDN module (extracted from stem_tool_science.js)
 // ═══════════════════════════════════════════
 
@@ -29,7 +29,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -52,6 +52,28 @@ window.StemLab = window.StemLab || {
   })();
 
 
+  // ── Vocabulary dictionary ──
+  var CELL_VOCAB = {
+    nucleus: { term: 'Nucleus', def: 'The control center of eukaryotic cells containing DNA, which carries genetic instructions.' },
+    mitochondria: { term: 'Mitochondria', def: 'The powerhouse organelle that produces ATP energy through cellular respiration.' },
+    ribosome: { term: 'Ribosome', def: 'Tiny molecular machines that translate genetic code to synthesize proteins.' },
+    chloroplast: { term: 'Chloroplast', def: 'The site of photosynthesis in plant cells, converting sunlight into chemical energy.' },
+    cellMembrane: { term: 'Cell Membrane', def: 'The selectively permeable phospholipid bilayer controlling what enters and exits the cell.' },
+    cellWall: { term: 'Cell Wall', def: 'A rigid outer layer providing structural support in plant cells, fungi, and bacteria.' },
+    cytoplasm: { term: 'Cytoplasm', def: 'The jelly-like fluid filling the cell where chemical reactions take place.' },
+    phagocytosis: { term: 'Phagocytosis', def: 'The process by which cells engulf and digest solid food particles or pathogens.' },
+    photosynthesis: { term: 'Photosynthesis', def: 'The chemical process of using light energy to synthesize organic compounds from CO2 and water.' }
+  };
+
+  // ── Quest Challenges ──
+  var CELL_CHALLENGES = [
+    { id: 'first_observe', label: 'Observe an organism', icon: '👁️', desc: 'Select an organism in the petri dish', check: function(u) { return u.organismsObserved.length >= 1; } },
+    { id: 'quiz_correct_3', label: 'Correctly answer 3 questions', icon: '🧠', desc: 'Get 3 quiz questions correct', check: function(u) { return u.quizCorrect >= 3; } },
+    { id: 'play_organism', label: 'Play as an organism', icon: '🎮', desc: 'Steer any cell through the simulator', check: function(u) { return u.playModeUsed; } },
+    { id: 'anatomy_ace', label: 'Inspect 5 organelles', icon: '🔬', desc: 'Click 5 different organelle labels', check: function(u) { return u.organellesClicked.length >= 5; } },
+    { id: 'study_vocab', label: 'Study 3 vocabulary terms', icon: '📇', desc: 'Study flashcards for cell biology terms', check: function(u) { return Object.keys(u.studiedVocab || {}).length >= 3; } }
+  ];
+
   window.StemLab.registerTool('cell', {
     icon: '\uD83D\uDD2C',
     label: 'Cell Simulator',
@@ -65,7 +87,7 @@ window.StemLab = window.StemLab || {
       { id: 'earn_50_xp', label: 'Earn 50 Cell Explorer XP', icon: '\u2B50', check: function(d) { return (d.xpEarned || 0) >= 50; }, progress: function(d) { return (d.xpEarned || 0) + '/50 XP'; } }
     ],
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases - maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -161,7 +183,7 @@ var d = labToolData.cell;
               [523, 659, 784, 1047].forEach(function(f, i) { setTimeout(function() { cellTone(f, 0.1, 'triangle', 0.08); }, i * 90); });
               break;
             case 'divide':
-              // Cell division — splitting wobble
+              // Cell division - splitting wobble
               cellTone(300, 0.06, 'sine', 0.05);
               setTimeout(function() { cellTone(350, 0.05, 'sine', 0.05); }, 40);
               setTimeout(function() { cellTone(300, 0.04, 'sine', 0.04); cellTone(400, 0.04, 'sine', 0.04); }, 80);
@@ -271,6 +293,50 @@ var d = labToolData.cell;
         if (changed) updExt({ badges: newBadges });
       };
 
+      var checkCellChallenges = function(updates) {
+        var completed = Object.assign({}, d._completedChallenges || {});
+        var newlyCompleted = false;
+        var addRP = 0;
+        CELL_CHALLENGES.forEach(function(chal) {
+          if (!completed[chal.id] && chal.check(updates)) {
+            completed[chal.id] = true;
+            newlyCompleted = true;
+            cellSound('badge');
+            addToast('🏆 Challenge Unlocked: ' + chal.label, 'success');
+            if (typeof awardStemXP === 'function') awardStemXP('cell_chal_' + chal.id, 20, chal.label);
+            
+            var rewardRP = 10;
+            if (chal.id === 'play_organism') rewardRP = 20;
+            if (chal.id === 'study_vocab' || chal.id === 'quiz_correct_3' || chal.id === 'anatomy_ace') rewardRP = 15;
+            addRP += rewardRP;
+          }
+        });
+        if (newlyCompleted) {
+          var currentRP = d.researchPoints || 0;
+          setLabToolData(function(prev) {
+            var p = prev || {};
+            var cel = Object.assign({}, p.cell || {});
+            cel._completedChallenges = completed;
+            cel.researchPoints = currentRP + addRP;
+            return Object.assign({}, p, { cell: cel });
+          });
+        }
+      };
+
+      // Check challenges on state changes
+      React.useEffect(function() {
+        var timer = setTimeout(function() {
+          checkCellChallenges({
+            organismsObserved: ext.organismsObserved || [],
+            quizCorrect: ext.quizCorrect || 0,
+            playModeUsed: ext.playModeUsed || false,
+            organellesClicked: ext.organellesClicked || [],
+            studiedVocab: d._studiedVocab || {}
+          });
+        }, 0);
+        return function() { clearTimeout(timer); };
+      }, [ext.organismsObserved, ext.quizCorrect, ext.playModeUsed, ext.organellesClicked, d._studiedVocab]);
+
       // ── AI Tutor ──
       var askAI = function (question) {
         if (!question || !callGemini) return;
@@ -289,7 +355,7 @@ var d = labToolData.cell;
           // ── Organism definitions ──
 
           // ═══════════════════════════════════════════════════════════
-          // ORGANISM ENCYCLOPEDIA — deep profiles for 60+ organisms
+          // ORGANISM ENCYCLOPEDIA - deep profiles for 60+ organisms
           // ═══════════════════════════════════════════════════════════
           var ORGANISM_DB = [
             {
@@ -499,7 +565,7 @@ var d = labToolData.cell;
               feeding: "Photosynthesis",
               reproduction: "Binary fission",
               movement: "Some have gas vacuoles",
-              discovered: "Ancient — fossils 3.5 billion years old",
+              discovered: "Ancient - fossils 3.5 billion years old",
               relevance: "Origin of all photosynthesis"
             },
             {
@@ -509,7 +575,7 @@ var d = labToolData.cell;
               cellType: "Prokaryote",
               size: "5-50 μm",
               description: "Flexible spiral bacterium. Includes Treponema pallidum (syphilis), Borrelia burgdorferi (Lyme disease).",
-              habitat: "Various — some pathogenic",
+              habitat: "Various - some pathogenic",
               feeding: "Variable",
               reproduction: "Binary fission",
               movement: "Axial filaments inside cell",
@@ -537,7 +603,7 @@ var d = labToolData.cell;
               cellType: "Prokaryote",
               size: "1-10 μm",
               description: "Rod bacterium with waxy cell walls. Includes M. tuberculosis (TB) and M. leprae (leprosy).",
-              habitat: "Various — soil, water, mammals",
+              habitat: "Various - soil, water, mammals",
               feeding: "Various",
               reproduction: "Binary fission (slow ~24 hr)",
               movement: "Non-motile",
@@ -738,7 +804,7 @@ var d = labToolData.cell;
               reproduction: "Parthenogenetic only",
               movement: "Ciliary",
               discovered: "Studied since 1700s",
-              relevance: "Evolution puzzle — no sex for 40M years"
+              relevance: "Evolution puzzle - no sex for 40M years"
             },
             {
               id: 33,
@@ -793,7 +859,7 @@ var d = labToolData.cell;
               feeding: "Phagocytosis via reticulopodia",
               reproduction: "Alternation of generations",
               movement: "Sliding via cytoplasmic threads",
-              discovered: "Ancient — pyramids ~2500 BCE",
+              discovered: "Ancient - pyramids ~2500 BCE",
               relevance: "Geological indicators + limestone"
             },
             {
@@ -1151,7 +1217,7 @@ var d = labToolData.cell;
             {
               id: 5,
               year: 1839,
-              event: "Theodor Schwann extends cell theory to animals — all life is cellular.",
+              event: "Theodor Schwann extends cell theory to animals - all life is cellular.",
               country: "Germany"
             },
             {
@@ -1301,7 +1367,7 @@ var d = labToolData.cell;
           ];
 
           // ═══════════════════════════════════════════════════════════
-          // FAMOUS BIOLOGISTS — 30 cell + microbiology pioneers
+          // FAMOUS BIOLOGISTS - 30 cell + microbiology pioneers
           // ═══════════════════════════════════════════════════════════
           var FAMOUS_BIOLOGISTS = [
             {
@@ -1386,7 +1452,7 @@ var d = labToolData.cell;
               name: "Lynn Margulis",
               years: "1938-2011",
               country: "USA",
-              contribution: "Endosymbiotic theory — mitochondria + chloroplasts were once free-living bacteria."
+              contribution: "Endosymbiotic theory - mitochondria + chloroplasts were once free-living bacteria."
             },
             {
               id: 13,
@@ -1428,7 +1494,7 @@ var d = labToolData.cell;
               name: "Frederick Sanger",
               years: "1918-2013",
               country: "UK",
-              contribution: "Two Nobel Prizes — protein sequencing 1958, DNA sequencing 1980."
+              contribution: "Two Nobel Prizes - protein sequencing 1958, DNA sequencing 1980."
             },
             {
               id: 19,
@@ -1470,7 +1536,7 @@ var d = labToolData.cell;
               name: "Watson & Crick model",
               years: "N/A",
               country: "UK",
-              contribution: "Triple helix DNA model — corrected by Photo 51 evidence."
+              contribution: "Triple helix DNA model - corrected by Photo 51 evidence."
             },
             {
               id: 25,
@@ -2111,7 +2177,7 @@ var d = labToolData.cell;
             {
               id: 22,
               habitat: "Kombucha",
-              inhabitants: "SCOBY — yeast + bacteria",
+              inhabitants: "SCOBY - yeast + bacteria",
               importance: "Fermented tea beverage"
             },
             {
@@ -2147,7 +2213,7 @@ var d = labToolData.cell;
           ];
 
           // ═══════════════════════════════════════════════════════════
-          // CELL BIOLOGY GLOSSARY — 100+ terms
+          // CELL BIOLOGY GLOSSARY - 100+ terms
           // ═══════════════════════════════════════════════════════════
           var CELL_GLOSSARY = [
             {
@@ -2183,7 +2249,7 @@ var d = labToolData.cell;
             {
               id: 7,
               term: "Mitochondria",
-              definition: "Powerhouse — produces ATP. Has own DNA."
+              definition: "Powerhouse - produces ATP. Has own DNA."
             },
             {
               id: 8,
@@ -2694,7 +2760,7 @@ var d = labToolData.cell;
 
 
           // ═══════════════════════════════════════════════════════════
-          // EXTRA QUIZ QUESTIONS — 200 questions
+          // EXTRA QUIZ QUESTIONS - 200 questions
           // ═══════════════════════════════════════════════════════════
           var EXTRA_QUIZ = [
             {
@@ -4700,7 +4766,7 @@ var d = labToolData.cell;
           ];
 
           // ═══════════════════════════════════════════════════════════
-          // ORGANELLE ATLAS — 100 detailed profiles
+          // ORGANELLE ATLAS - 100 detailed profiles
           // ═══════════════════════════════════════════════════════════
           var ORGANELLE_ATLAS = [
             {
@@ -6034,7 +6100,7 @@ var d = labToolData.cell;
           ];
 
           // ═══════════════════════════════════════════════════════════
-          // LESSON PLANS — 50 ready-to-use
+          // LESSON PLANS - 50 ready-to-use
           // ═══════════════════════════════════════════════════════════
           var LESSON_PLANS = [
             {
@@ -6440,7 +6506,7 @@ var d = labToolData.cell;
           ];
 
           // ═══════════════════════════════════════════════════════════
-          // CELL TRIVIA — 200 facts
+          // CELL TRIVIA - 200 facts
           // ═══════════════════════════════════════════════════════════
           var CELL_TRIVIA = [
             {
@@ -7270,7 +7336,7 @@ var d = labToolData.cell;
             },
             {
               id: 166,
-              fact: "Viruses are not technically alive — they require host cells.",
+              fact: "Viruses are not technically alive - they require host cells.",
               category: "Disease"
             },
             {
@@ -7447,7 +7513,7 @@ var d = labToolData.cell;
 
 
           // ═══════════════════════════════════════════════════════════
-          // MICROBIAL SPECIES — 200 detailed profiles
+          // MICROBIAL SPECIES - 200 detailed profiles
           // ═══════════════════════════════════════════════════════════
           var MICROBE_SPECIES = [
             {
@@ -9370,7 +9436,7 @@ var d = labToolData.cell;
           ];
 
           // ═══════════════════════════════════════════════════════════
-          // FAMOUS EXPERIMENTS — 60 landmark studies
+          // FAMOUS EXPERIMENTS - 60 landmark studies
           // ═══════════════════════════════════════════════════════════
           var FAMOUS_EXPERIMENTS = [
             {
@@ -9882,7 +9948,7 @@ var d = labToolData.cell;
           ];
 
           // ═══════════════════════════════════════════════════════════
-          // CELL RECORDS — superlatives
+          // CELL RECORDS - superlatives
           // ═══════════════════════════════════════════════════════════
           var CELL_RECORDS = [
             {
@@ -10393,7 +10459,7 @@ var d = labToolData.cell;
             {
               id: 13,
               author: "Lynn Margulis",
-              quote: "Symbiosis is the synthesis of life forms — the origin of new species."
+              quote: "Symbiosis is the synthesis of life forms - the origin of new species."
             },
             {
               id: 14,
@@ -10459,7 +10525,7 @@ var d = labToolData.cell;
 
 
           // ═══════════════════════════════════════════════════════════
-          // CASE STUDIES — 100 famous events
+          // CASE STUDIES - 100 famous events
           // ═══════════════════════════════════════════════════════════
           var CASE_STUDIES = [
             {
@@ -10645,7 +10711,7 @@ var d = labToolData.cell;
           ];
 
           // ═══════════════════════════════════════════════════════════
-          // LAB SAFETY — 60 scenarios
+          // LAB SAFETY - 60 scenarios
           // ═══════════════════════════════════════════════════════════
           var LAB_SAFETY = [
             {
@@ -10801,7 +10867,7 @@ var d = labToolData.cell;
           ];
 
           // ═══════════════════════════════════════════════════════════
-          // STUDY QUESTIONS — 200 short prompts
+          // STUDY QUESTIONS - 200 short prompts
           // ═══════════════════════════════════════════════════════════
           var STUDY_QS = [
             {
@@ -12114,7 +12180,7 @@ var d = labToolData.cell;
 
 
           // ═══════════════════════════════════════════════════════════
-          // HUMAN BODY CELL TYPES — 60 profiles
+          // HUMAN BODY CELL TYPES - 60 profiles
           // ═══════════════════════════════════════════════════════════
           var HUMAN_CELLS = [
             {
@@ -12561,7 +12627,7 @@ var d = labToolData.cell;
           ];
 
           // ═══════════════════════════════════════════════════════════
-          // METABOLIC PATHWAYS — 80 detailed
+          // METABOLIC PATHWAYS - 80 detailed
           // ═══════════════════════════════════════════════════════════
           var METABOLIC_PATHWAYS = [
             {
@@ -13216,7 +13282,7 @@ var d = labToolData.cell;
 
 
           // ═══════════════════════════════════════════════════════════
-          // MICROBIAL NICHES — 100 specific environments
+          // MICROBIAL NICHES - 100 specific environments
           // ═══════════════════════════════════════════════════════════
           var MICRO_NICHES = [
             {
@@ -16199,15 +16265,15 @@ var d = labToolData.cell;
 
               anatomy: [
 
-                { name: 'Pseudopods', fn: 'Temporary cytoplasm extensions used for movement and engulfing food (phagocytosis). Formed by actin filament polymerization.', icon: '\uD83E\uDDB6', lx: 0.8, ly: 0.7 },
+                { name: 'Pseudopods', fn: 'Temporary cytoplasm extensions used for movement and engulfing food (phagocytosis). Formed by rapid polymerization and cross-linking of actin filaments pushing the cell membrane outward.', icon: '\uD83E\uDDB6', lx: 0.8, ly: 0.7 },
 
-                { name: 'Food Vacuole', fn: 'Membrane-bound compartment containing engulfed food particles. Enzymes digest the contents, releasing nutrients into cytoplasm.', icon: '\uD83D\uDFE2', lx: -0.4, ly: 0.3 },
+                { name: 'Food Vacuole', fn: 'Membrane-bound compartment containing engulfed food particles. Lysosomes fuse with it to inject digestive enzymes, breaking down organic matter to release nutrients into the cytoplasm.', icon: '\uD83D\uDFE2', lx: -0.4, ly: 0.3 },
 
-                { name: 'Contractile Vacuole', fn: 'Pumps excess water out of the cell to maintain osmotic balance. Fills and contracts rhythmically.', icon: '\uD83D\uDCA7', lx: 0.7, ly: -0.5 },
+                { name: 'Contractile Vacuole', fn: 'Pumps excess water out of the cell to maintain osmotic balance (osmoregulation) in hypotonic environments. Fills with water and contracts rhythmically to prevent cell lysis (bursting).', icon: '\uD83D\uDCA7', lx: 0.7, ly: -0.5 },
 
-                { name: 'Nucleus', fn: 'Contains DNA and controls cell activities. Single large nucleus with visible nucleolus.', icon: '\uD83D\uDFE3', lx: 0, ly: 0 },
+                { name: 'Nucleus', fn: 'The genetic control center containing chromosomal DNA. Directs all cellular activities, gene transcription, and replication. Features a prominent nucleolus for ribosome assembly.', icon: '\uD83D\uDFE3', lx: 0, ly: 0 },
 
-                { name: 'Cell Membrane', fn: 'Flexible phospholipid bilayer that allows shape changes. Selectively permeable \u2014 controls what enters and exits.', icon: '\u26AA', lx: 0, ly: -1.1 }
+                { name: 'Cell Membrane', fn: 'Flexible phospholipid bilayer that allows constant shape changes. It is selectively permeable - regulating the import of essential nutrients and export of metabolic wastes.', icon: '\u26AA', lx: 0, ly: -1.1 }
 
               ]
 
@@ -16219,15 +16285,15 @@ var d = labToolData.cell;
 
               anatomy: [
 
-                { name: 'Cilia', fn: 'Thousands of short hair-like projections covering the cell. Beat in coordinated metachronal waves for rapid swimming (~3mm/sec).', icon: '\u{1F4A8}', lx: 1.5, ly: -0.5 },
+                { name: 'Cilia', fn: 'Thousands of short hair-like projections covering the cell. Beat in highly coordinated metachronal waves to propel the cell forward through water at rapid speeds.', icon: '\u{1F4A8}', lx: 1.5, ly: -0.5 },
 
-                { name: 'Oral Groove', fn: 'Funnel-shaped depression that channels food particles into the cell mouth (cytostome). Cilia sweep food inward.', icon: '\uD83E\uDD44', lx: 0.4, ly: 0 },
+                { name: 'Oral Groove', fn: 'Funnel-shaped depression lined with cilia that directs food particles (mostly bacteria) into the cytostome (cell mouth) where food vacuoles are formed.', icon: '\uD83E\uDD44', lx: 0.4, ly: 0 },
 
-                { name: 'Macronucleus', fn: 'Large kidney-shaped nucleus controlling daily cell functions (gene expression for proteins, metabolism).', icon: '\uD83D\uDFE3', lx: -0.1, ly: 0 },
+                { name: 'Macronucleus', fn: 'Large polyploid nucleus controlling daily vegetative cell functions, including transcription of essential proteins, metabolic regulation, and growth.', icon: '\uD83D\uDFE3', lx: -0.1, ly: 0 },
 
-                { name: 'Micronucleus', fn: 'Small round nucleus used only during sexual reproduction (conjugation). Contains complete genome.', icon: '\u26AA', lx: 0.25, ly: 0.15 },
+                { name: 'Micronucleus', fn: 'Small diploid nucleus containing the complete germline genome. Remains inactive during daily life but plays a critical role in genetic exchange during sexual reproduction (conjugation).', icon: '\u26AA', lx: 0.25, ly: 0.15 },
 
-                { name: 'Trichocysts', fn: 'Defensive organelles embedded in the pellicle. Fire tiny needle-like shafts when the cell is threatened.', icon: '\u26A1', lx: -1.2, ly: 0.4 }
+                { name: 'Trichocysts', fn: 'Defensive organelles embedded in the pellicle. Under threat, they rapidly discharge needle-like shafts to deter predators or anchor the cell during feeding.', icon: '\u26A1', lx: -1.2, ly: 0.4 }
 
               ]
 
@@ -16239,15 +16305,15 @@ var d = labToolData.cell;
 
               anatomy: [
 
-                { name: 'Flagellum', fn: 'Long whip-like appendage emerging from anterior end. Rotates to pull the cell forward through water.', icon: '\u{1F4A8}', lx: 2.2, ly: -0.2 },
+                { name: 'Flagellum', fn: 'Long whip-like microtubule appendage emerging from the anterior reservoir. Rotates in a helical pattern to pull the cell forward through the water.', icon: '\u{1F4A8}', lx: 2.2, ly: -0.2 },
 
-                { name: 'Eyespot (Stigma)', fn: 'Red-orange carotenoid pigment spot that shades a photoreceptor, allowing Euglena to detect light direction for phototaxis.', icon: '\uD83D\uDD34', lx: 0.8, ly: -0.15 },
+                { name: 'Eyespot (Stigma)', fn: 'Red-orange carotenoid pigment shield that blocks light from certain angles, allowing the adjacent photoreceptor to detect light direction for phototaxis (swimming toward light).', icon: '\uD83D\uDD34', lx: 0.8, ly: -0.15 },
 
-                { name: 'Chloroplasts', fn: 'Green plastids containing chlorophyll for photosynthesis. Can be lost permanently if cell is kept in darkness.', icon: '\uD83D\uDFE2', lx: -0.2, ly: -0.15 },
+                { name: 'Chloroplasts', fn: 'Green double-membrane plastids containing chlorophyll a and b. Conduct photosynthesis to synthesize glucose from sunlight, carbon dioxide, and water.', icon: '\uD83D\uDFE2', lx: -0.2, ly: -0.15 },
 
-                { name: 'Pellicle', fn: 'Flexible protein strips beneath the membrane (not a cell wall). Allows euglenoid movement \u2014 stretching and contracting.', icon: '\u26AA', lx: -0.9, ly: 0.35 },
+                { name: 'Pellicle', fn: 'Flexible layer of interlocking protein strips beneath the cell membrane. Supported by microtubules, it maintains structure while allowing peristaltic shape changes (euglenoid movement).', icon: '\u26AA', lx: -0.9, ly: 0.35 },
 
-                { name: 'Paramylon Body', fn: 'Unique carbohydrate storage granule (beta-1,3-glucan). Euglena\u2019s version of starch, used as energy reserve.', icon: '\u26AA', lx: 0.3, ly: 0.25 }
+                { name: 'Paramylon Body', fn: 'Unique beta-glucan carbohydrate storage granule. Functions as an energy reserve, synthesized during photosynthesis and consumed when light is unavailable.', icon: '\u26AA', lx: 0.3, ly: 0.25 }
 
               ]
 
@@ -16259,15 +16325,15 @@ var d = labToolData.cell;
 
               anatomy: [
 
-                { name: 'Lobed Nucleus', fn: 'Multi-lobed nucleus (neutrophils have 3-5 lobes). Allows the cell to squeeze through tight spaces between tissue cells.', icon: '\uD83D\uDFE3', lx: -0.2, ly: -0.1 },
+                { name: 'Lobed Nucleus', fn: 'Segmented, multi-lobed nucleus that can easily deform, allowing the cell to squeeze through narrow gaps in blood vessel walls (diapedesis) to reach infection sites.', icon: '\uD83D\uDFE3', lx: -0.2, ly: -0.1 },
 
-                { name: 'Lysosomes', fn: 'Enzyme-filled vesicles that digest engulfed pathogens. Contain hydrolytic enzymes active at acidic pH.', icon: '\uD83D\uDFE1', lx: 0.5, ly: 0.4 },
+                { name: 'Lysosomes', fn: 'Specialized vesicles packed with digestive enzymes and reactive oxygen species. Fuse with phagosomes to degrade and destroy engulfed bacterial pathogens.', icon: '\uD83D\uDFE1', lx: 0.5, ly: 0.4 },
 
-                { name: 'Pseudopods', fn: 'Cytoplasmic extensions used for amoeboid movement and phagocytosis. Follow chemical gradients (chemotaxis) to find bacteria.', icon: '\uD83E\uDDB6', lx: 0.8, ly: 0.7 },
+                { name: 'Pseudopods', fn: 'Temporary cytoplasmic projections driven by actin filament rearrangement. Enable amoeboid crawling and engulfment of foreign particles during phagocytosis.', icon: '\uD83E\uDDB6', lx: 0.8, ly: 0.7 },
 
-                { name: 'Phagosomes', fn: 'Membrane-bound vesicles formed when the cell engulfs a pathogen. Fuse with lysosomes to destroy the invader.', icon: '\uD83D\uDD34', lx: -0.6, ly: 0.5 },
+                { name: 'Phagosomes', fn: 'Membrane-bound vesicles formed around engulfed pathogens or debris. Move into the cytoplasm to merge with lysosomes for enzymatic degradation.', icon: '\uD83D\uDD34', lx: -0.6, ly: 0.5 },
 
-                { name: 'Surface Receptors', fn: 'Toll-like receptors and antibody receptors recognize foreign molecules (antigens) on pathogen surfaces.', icon: '\u26A1', lx: 0, ly: -1.0 }
+                { name: 'Surface Receptors', fn: 'Transmembrane proteins (such as Toll-like receptors) that recognize specific pathogen-associated molecular patterns, triggering phagocytosis and immune signaling.', icon: '\u26A1', lx: 0, ly: -1.0 }
 
               ]
 
@@ -16279,15 +16345,15 @@ var d = labToolData.cell;
 
               anatomy: [
 
-                { name: 'Nucleoid', fn: 'Region of circular DNA (not membrane-bound). Single chromosome contains ~4,000 genes. No histones in most bacteria.', icon: '\uD83D\uDFE1', lx: 0, ly: 0 },
+                { name: 'Nucleoid', fn: 'Irregularly-shaped region containing the single circular bacterial chromosome. Lacks a surrounding nuclear membrane; transcription and translation occur simultaneously here.', icon: '\uD83D\uDFE1', lx: 0, ly: 0 },
 
-                { name: 'Peptidoglycan Wall', fn: 'Rigid mesh of sugars and amino acids surrounding the membrane. Gram+ have thick walls; Gram- have thin walls + outer membrane.', icon: '\uD83D\uDFE7', lx: 0, ly: -0.9 },
+                { name: 'Peptidoglycan Wall', fn: 'Rigid macromolecular mesh of sugars and amino acids. Protects the cell from osmotic bursting, maintains shape, and serves as the target for many antibiotics.', icon: '\uD83D\uDFE7', lx: 0, ly: -0.9 },
 
-                { name: 'Plasmids', fn: 'Small circular DNA molecules separate from the chromosome. Carry genes for antibiotic resistance; can transfer between bacteria.', icon: '\uD83D\uDD35', lx: 0.8, ly: 0.3 },
+                { name: 'Plasmids', fn: 'Small, circular, self-replicating DNA molecules separate from the main chromosome. Often carry accessory genes, such as those encoding antibiotic resistance.', icon: '\uD83D\uDD35', lx: 0.8, ly: 0.3 },
 
-                { name: 'Flagellum', fn: 'Rotating protein filament driven by a molecular motor (proton gradient). Spins ~100 revolutions/second for swimming.', icon: '\u{1F4A8}', lx: -2.2, ly: 0 },
+                { name: 'Flagellum', fn: 'Rigid helical structure driven by a rotary proton-motive motor at its base. Spins at high speeds to propel the bacterium in a run-and-tumble pattern.', icon: '\u{1F4A8}', lx: -2.2, ly: 0 },
 
-                { name: 'Ribosomes (70S)', fn: 'Smaller than eukaryotic ribosomes (70S vs 80S). This size difference is why antibiotics can target bacterial ribosomes specifically.', icon: '\u26AA', lx: -0.5, ly: 0.3 }
+                { name: 'Ribosomes (70S)', fn: 'Molecular complexes of RNA and protein that translate genetic code into polypeptide chains. Their smaller size (70S) makes them selective targets for antibiotic drugs.', icon: '\u26AA', lx: -0.5, ly: 0.3 }
 
               ]
 
@@ -16299,19 +16365,19 @@ var d = labToolData.cell;
 
               anatomy: [
 
-                { name: 'Cell Wall', fn: 'Rigid outer layer of cellulose microfibrils. Provides structural support, prevents bursting from osmotic pressure, and gives plants their shape.', icon: '\uD83D\uDFE9', lx: 0, ly: -1.3 },
+                { name: 'Cell Wall', fn: 'Rigid outer structure made of cellulose microfibrils embedded in a pectin matrix. Provides structural support, resists high turgor pressure, and shapes the cell.', icon: '\uD83D\uDFE9', lx: 0, ly: -1.3 },
 
-                { name: 'Central Vacuole', fn: 'Massive fluid-filled organelle occupying up to 90% of cell volume. Stores water, nutrients, and waste; maintains turgor pressure.', icon: '\uD83D\uDFE6', lx: 0, ly: 0 },
+                { name: 'Central Vacuole', fn: 'Large fluid-filled organelle that maintains cellular turgor pressure against the cell wall. Stores water, enzymes, inorganic ions, and metabolic waste products.', icon: '\uD83D\uDFE6', lx: 0, ly: 0 },
 
-                { name: 'Chloroplast', fn: 'Double-membrane organelle with internal thylakoid membranes where photosynthesis occurs. Contains its own DNA (endosymbiotic origin).', icon: '\uD83D\uDFE2', lx: -0.8, ly: -0.5 },
+                { name: 'Chloroplast', fn: 'Double-membrane organelle containing internal thylakoid stacks (grana) where light reactions occur. Converts solar energy into chemical energy via photosynthesis.', icon: '\uD83D\uDFE2', lx: -0.8, ly: -0.5 },
 
-                { name: 'Nucleus', fn: 'Contains chromosomal DNA enclosed by a double membrane (nuclear envelope) with pores. Controls gene expression and cell division.', icon: '\uD83D\uDFE3', lx: 0.5, ly: -0.35 },
+                { name: 'Nucleus', fn: 'Double-membrane bound command center containing linear chromosomes. Houses the cell\'s genetic blueprints and coordinates transcription and replication.', icon: '\uD83D\uDFE3', lx: 0.5, ly: -0.35 },
 
-                { name: 'Mitochondria', fn: 'Powerhouse of the cell \u2014 performs cellular respiration (glucose + O\u2082 \u2192 ATP + CO\u2082 + H\u2082O). Has its own circular DNA.', icon: '\uD83D\uDFE0', lx: 0.9, ly: 0.5 },
+                { name: 'Mitochondria', fn: 'Double-membrane organelles that generate adenosine triphosphate (ATP) through aerobic respiration. Contain their own circular DNA and replicate independently.', icon: '\uD83D\uDFE0', lx: 0.9, ly: 0.5 },
 
-                { name: 'Endoplasmic Reticulum', fn: 'Network of membrane channels. Rough ER (with ribosomes) makes proteins; Smooth ER synthesizes lipids and detoxifies chemicals.', icon: '\u26AA', lx: -0.6, ly: -0.7 },
+                { name: 'Endoplasmic Reticulum', fn: 'Folded membrane network. Rough ER (studded with ribosomes) synthesizes and folds proteins; Smooth ER synthesizes lipids and detoxifies metabolic byproducts.', icon: '\u26AA', lx: -0.6, ly: -0.7 },
 
-                { name: 'Plasmodesmata', fn: 'Tiny channels through the cell wall connecting adjacent plant cells. Allow transport of water, nutrients, and signaling molecules.', icon: '\uD83D\uDD35', lx: -1.5, ly: 0 }
+                { name: 'Plasmodesmata', fn: 'Microscopic membrane-lined channels traversing the cell wall. Connect neighboring plant cells to facilitate direct transport of water, ions, and signaling molecules.', icon: '\uD83D\uDD17', lx: -1.5, ly: 0 }
 
               ]
 
@@ -16323,31 +16389,13 @@ var d = labToolData.cell;
 
               anatomy: [
 
-                { name: 'Frustule', fn: 'Two-part silica shell (epitheca + hypotheca) that fits together like a petri dish. Ornately patterned with pores (areolae) for gas exchange.', icon: '\uD83D\uDC8E', lx: 0, ly: -1.3 },
+                { name: 'Frustule', fn: 'Intricate, rigid cell wall made of hydrated silicon dioxide (silica). Features ornate arrays of microscopic pores (areolae) that permit nutrient uptake.', icon: '\uD83D\uDC8E', lx: 0, ly: -1.3 },
 
-                { name: 'Raphe', fn: 'Slit along the frustule that secretes mucilage for gliding movement. Not all diatoms have one (pennate vs centric types).', icon: '\u27B0', lx: -1.1, ly: 0 },
+                { name: 'Raphe', fn: 'Longitudinal slit in the silica frustule. Secretes mucilage strands that interact with the substrate, enabling the diatom to slide or glide across surfaces.', icon: '\u27B0', lx: -1.1, ly: 0 },
 
-                { name: 'Chloroplasts', fn: 'Golden-brown plastids containing chlorophylls a \u0026 c plus fucoxanthin pigment (gives diatoms their characteristic color).', icon: '\uD83D\uDFE2', lx: 0.3, ly: 0.3 },
+                { name: 'Chloroplasts', fn: 'Golden-brown plastids containing chlorophylls a and c alongside fucoxanthin. Capture light energy to drive carbon fixation in aquatic environments.', icon: '\uD83D\uDFE2', lx: 0.3, ly: 0.3 },
 
-                { name: 'Central Node', fn: 'Thickened area in the center of the frustule where the raphe splits. Controls mucilage secretion direction.', icon: '\u26AA', lx: 0, ly: 0 }
-
-              ]
-
-            },
-
-            {
-
-              id: 'volvox', label: 'Volvox', icon: '\u{1F7E2}', color: '#10b981', bodyColor: 'rgba(16,185,129,0.2)', desc: 'Colonial green algae forming hollow spheres of 500-50,000 cells. Each cell has two flagella.', speed: 0.4, size: 32, activity: 'Colony Coordination', activityDesc: 'Spin toward the light!', xp: 4, facts: ['Colonies can contain 500 to 50,000 cells', 'Daughter colonies form inside the parent', 'Each cell has two flagella and an eyespot', 'Demonstrates division of labor in evolution', 'Rotates like a planet \u2014 name means "fierce roller"'],
-
-              anatomy: [
-
-                { name: 'Somatic Cells', fn: 'Thousands of biflagellate cells on the colony surface. Beat flagella in coordination for locomotion. Cannot reproduce.', icon: '\uD83D\uDFE2', lx: 0.9, ly: -0.5 },
-
-                { name: 'Gonidia', fn: 'Large reproductive cells inside the colony. Divide repeatedly to form miniature daughter colonies (asexual reproduction).', icon: '\uD83C\uDF1F', lx: 0.15, ly: -0.1 },
-
-                { name: 'Cytoplasmic Bridges', fn: 'Thin strands connecting adjacent somatic cells, enabling coordinated flagellar beating across the entire colony surface.', icon: '\uD83D\uDD17', lx: -0.7, ly: 0.4 },
-
-                { name: 'Glycoprotein Matrix', fn: 'Extracellular gel matrix holding the colony together. Each cell sits in its own pocket within this transparent sphere.', icon: '\u26AA', lx: 0, ly: 0.95 }
+                { name: 'Central Node', fn: 'Thickened central silica region where the raphe terminates. Provides structural reinforcement to the frustule against mechanical stress.', icon: '\u26AA', lx: 0, ly: 0 }
 
               ]
 
@@ -16355,19 +16403,17 @@ var d = labToolData.cell;
 
             {
 
-              id: 'stentor', label: 'Stentor', icon: '\u{1F3BA}', color: '#a855f7', bodyColor: 'rgba(168,85,247,0.3)', desc: 'Trumpet-shaped ciliate, one of the largest single-celled organisms (up to 2mm). Can regenerate from fragments.', speed: 0.1, size: 30, activity: 'Filter Feeding', activityDesc: 'Anchor and sweep food!', xp: 5, facts: ['Can be up to 2mm long \u2014 visible to naked eye', 'Can regenerate from tiny fragments', 'Has a bead-like macronucleus', 'Creates vortex currents to capture food', 'Can change color: blue, green, or pink'],
+              id: 'volvox', label: 'Volvox', icon: '\u{1F7E2}', color: '#10b981', bodyColor: 'rgba(16,185,129,0.2)', desc: 'Colonial green algae forming hollow spheres of 500-50,000 cells. Each cell has two flagella.', speed: 0.4, size: 32, activity: 'Colony Coordination', activityDesc: 'Spin toward the light!', xp: 4, facts: ['Colonies can contain 500 to 50,000 cells', 'Daughter colonies form inside the parent', 'Each cell has two flagella and an eyespot', 'Demonstrates division of labor in evolution', 'Rotates like a planet - name means "fierce roller"'],
 
               anatomy: [
 
-                { name: 'Membranellar Band', fn: 'Crown of fused cilia (membranelles) spiraling around the oral end. Creates water vortex currents that sweep food into the oral groove.', icon: '\uD83C\uDF00', lx: 0, ly: -1.0 },
+                { name: 'Somatic Cells', fn: 'Biflagellated cells covering the colony\'s surface. Cooperatively beat their flagella to drive swimming and rotation, and contain eyespots for light detection.', icon: '\uD83D\uDFE2', lx: 0.9, ly: -0.5 },
 
-                { name: 'Myonemes', fn: 'Contractile fibers running the length of the body like muscle fibers. Allow rapid contraction to 1/4 length in milliseconds.', icon: '\u26A1', lx: 0.3, ly: 0.5 },
+                { name: 'Gonidia', fn: 'Specialized, non-motile reproductive cells located inside the colony. Divide mitotically to produce embryonic daughter colonies that eventually hatch.', icon: '\uD83C\uDF1F', lx: 0.15, ly: -0.1 },
 
-                { name: 'Beaded Macronucleus', fn: 'Distinctive moniliform (bead-like chain) macronucleus. Can be fragmented during regeneration \u2014 each piece contains full genetic info.', icon: '\uD83D\uDFE3', lx: 0, ly: 0 },
+                { name: 'Cytoplasmic Bridges', fn: 'Fine cytoplasmic connections linking adjacent somatic cells. Enable synchronized flagellar beating and nutrient sharing across the entire colony.', icon: '\uD83D\uDD17', lx: -0.7, ly: 0.4 },
 
-                { name: 'Holdfast', fn: 'Attachment structure at the narrow (aboral) end. Anchors the cell to substrate while feeding. Can release for relocation.', icon: '\u2693', lx: 0, ly: 1.3 },
-
-                { name: 'Body Cilia', fn: 'Short cilia covering the body surface. Used for swimming when detached, but primary function is tactile sensing.', icon: '\u{1F4A8}', lx: -0.7, ly: 0.3 }
+                { name: 'Glycoprotein Matrix', fn: 'Extracellular gelatinous matrix that holds the somatic cells in a precise hollow sphere, protecting the internal daughter colonies.', icon: '\u26AA', lx: 0, ly: 0.95 }
 
               ]
 
@@ -16375,19 +16421,19 @@ var d = labToolData.cell;
 
             {
 
-              id: 'tardigrade', label: 'Tardigrade', icon: '\u{1F43B}', color: '#d946ef', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Microscopic "water bear" with 8 legs. Nearly indestructible \u2014 survives space, radiation, extreme temps.', speed: 0.2, size: 20, activity: 'Cryptobiosis', activityDesc: 'Survive extreme zones!', xp: 7, facts: ['Can survive temperatures from -272\u00B0C to 150\u00B0C', 'Survived exposure to outer space', 'Enter cryptobiosis \u2014 suspend all metabolism', 'Have 8 legs with tiny claws', 'Can live without water for over 10 years'],
+              id: 'stentor', label: 'Stentor', icon: '\u{1F3BA}', color: '#a855f7', bodyColor: 'rgba(168,85,247,0.3)', desc: 'Trumpet-shaped ciliate, one of the largest single-celled organisms (up to 2mm). Can regenerate from fragments.', speed: 0.1, size: 30, activity: 'Filter Feeding', activityDesc: 'Anchor and sweep food!', xp: 5, facts: ['Can be up to 2mm long - visible to naked eye', 'Can regenerate from tiny fragments', 'Has a bead-like macronucleus', 'Creates vortex currents to capture food', 'Can change color: blue, green, or pink'],
 
               anatomy: [
 
-                { name: 'Cuticle', fn: 'Tough external covering shed (molted) periodically. Made of chitin-like material. Provides protection and is permeable to gases.', icon: '\uD83D\uDEE1', lx: 0, ly: -1.0 },
+                { name: 'Membranellar Band', fn: 'Spiral ring of cilia surrounding the oral opening. Beats in rhythm to create water currents that sweep bacteria and algae into the cell\'s gullet.', icon: '\uD83C\uDF00', lx: 0, ly: -1.0 },
 
-                { name: 'Stylets', fn: 'Piercing mouthparts used to puncture plant cells or small invertebrates. Retracted during molting and re-synthesized.', icon: '\uD83D\uDD2A', lx: 1.5, ly: 0 },
+                { name: 'Myonemes', fn: 'Contractile protein filaments running longitudinally beneath the cell membrane. Contract instantly in response to mechanical stimuli, shrinking the cell body.', icon: '\u26A1', lx: 0.3, ly: 0.5 },
 
-                { name: 'Lobopod Legs', fn: 'Eight stubby legs ending in 4-8 claws each. Last pair faces backward. No joints \u2014 moved by individual muscle fibers.', icon: '\uD83E\uDDB6', lx: -0.5, ly: 0.9 },
+                { name: 'Beaded Macronucleus', fn: 'Chain of bead-like nodules containing multiple copies of the genome. Directs RNA synthesis, protein production, and facilitates regeneration.', icon: '\uD83D\uDFE3', lx: 0, ly: 0 },
 
-                { name: 'Tun State', fn: 'Cryptobiosis form: body contracts into a ball (tun), loses 97% of water, metabolism drops to 0.01%. Can survive decades.', icon: '\uD83D\uDFE4', lx: 0, ly: 0.3 },
+                { name: 'Holdfast', fn: 'Anchoring organelle at the posterior tip. Secretes a sticky adhesive to attach the cell to substrate, but can release to let the cell swim away.', icon: '\u2693', lx: 0, ly: 1.3 },
 
-                { name: 'Dsup Protein', fn: 'Damage Suppressor protein unique to tardigrades. Binds to DNA and shields it from radiation damage (discovered 2016).', icon: '\u2B50', lx: -0.3, ly: -0.3 }
+                { name: 'Body Cilia', fn: 'Short cilia covering the cell body in longitudinal rows. Used for swimming and maneuvering through the water when the stentor is free-floating.', icon: '\u{1F4A8}', lx: -0.7, ly: 0.3 }
 
               ]
 
@@ -16395,17 +16441,37 @@ var d = labToolData.cell;
 
             {
 
-              id: 'spirillum', label: 'Spirillum', icon: '\u{1F300}', color: '#f97316', bodyColor: 'rgba(249,115,22,0.3)', desc: 'Spiral-shaped bacterium that moves with a distinctive corkscrew motion using bipolar flagella.', speed: 1.0, size: 12, activity: 'Helical Propulsion', activityDesc: 'Corkscrew through the medium!', xp: 4, facts: ['Rigid spiral shape (not flexible like spirochetes)', 'Uses bipolar tufts of flagella', 'Found in stagnant freshwater', 'Moves in a corkscrew pattern', 'One of the largest bacteria \u2014 up to 60\u03BCm'],
+              id: 'tardigrade', label: 'Tardigrade', icon: '\u{1F43B}', color: '#d946ef', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Microscopic "water bear" with 8 legs. Nearly indestructible - survives space, radiation, extreme temps.', speed: 0.2, size: 20, activity: 'Cryptobiosis', activityDesc: 'Survive extreme zones!', xp: 7, facts: ['Can survive temperatures from -272°C to 150°C', 'Survived exposure to outer space', 'Enter cryptobiosis - suspend all metabolism', 'Have 8 legs with tiny claws', 'Can live without water for over 10 years'],
 
               anatomy: [
 
-                { name: 'Bipolar Flagella', fn: 'Tufts of flagella at both cell poles. Rotate in opposite directions to produce the characteristic corkscrew swimming motion.', icon: '\u{1F4A8}', lx: -2.8, ly: 0.3 },
+                { name: 'Cuticle', fn: 'Tough, chitinous exoskeleton that protects the organs from mechanical damage and water loss. Periodically shed (molted) to accommodate growth.', icon: '\uD83D\uDEE1', lx: 0, ly: -1.0 },
 
-                { name: 'Rigid Spiral Body', fn: 'Cell shape is a fixed helix (unlike flexible spirochetes). The peptidoglycan wall maintains this permanent corkscrew shape.', icon: '\uD83C\uDF00', lx: 0, ly: -0.6 },
+                { name: 'Stylets', fn: 'Pair of sharp, calcareous piercing needles in the mouth. Extensively used to puncture plant cells or animal prey to suck out their fluids.', icon: '\uD83D\uDD2A', lx: 1.5, ly: 0 },
 
-                { name: 'Volutin Granules', fn: 'Intracellular phosphate storage bodies. Appear as dark spots under microscopy. Energy reserve for nutrient-poor conditions.', icon: '\u26AA', lx: 0.5, ly: 0 },
+                { name: 'Lobopod Legs', fn: 'Eight unjointed legs tipped with tiny claws. Driven by individual muscle fibers to walk slowly across substrates.', icon: '\uD83E\uDDB6', lx: -0.5, ly: 0.9 },
 
-                { name: 'Polar Membrane', fn: 'Specialized membrane region at cell poles where flagellar motors are anchored. Contains chemoreceptor proteins for sensing environment.', icon: '\uD83D\uDD35', lx: 2.3, ly: -0.3 }
+                { name: 'Tun State', fn: 'Dormant form assumed during cryptobiosis. The body contracts, loses nearly all water, and halts metabolism, allowing survival in extreme environments.', icon: '\uD83D\uDFE4', lx: 0, ly: 0.3 },
+
+                { name: 'Dsup Protein', fn: 'Damage Suppressor protein that binds directly to DNA. Shields the chromosome from radiation damage and free radical oxidation.', icon: '\u2B50', lx: -0.3, ly: -0.3 }
+
+              ]
+
+            },
+
+            {
+
+              id: 'spirillum', label: 'Spirillum', icon: '\u{1F300}', color: '#f97316', bodyColor: 'rgba(249,115,22,0.3)', desc: 'Spiral-shaped bacterium that moves with a distinctive corkscrew motion using bipolar flagella.', speed: 1.0, size: 12, activity: 'Helical Propulsion', activityDesc: 'Corkscrew through the medium!', xp: 4, facts: ['Rigid spiral shape (not flexible like spirochetes)', 'Uses bipolar tufts of flagella', 'Found in stagnant freshwater', 'Moves in a corkscrew pattern', 'One of the largest bacteria - up to 60μm'],
+
+              anatomy: [
+
+                { name: 'Bipolar Flagella', fn: 'Clusters of flagella at both ends of the cell. Rotate in opposite directions, driving the bacterium forward in a fast corkscrew motion.', icon: '\u{1F4A8}', lx: -2.8, ly: 0.3 },
+
+                { name: 'Rigid Spiral Body', fn: 'Helical cell shape maintained by a rigid peptidoglycan cell wall. The spiral structure minimizes fluid resistance during swimming.', icon: '\uD83C\uDF00', lx: 0, ly: -0.6 },
+
+                { name: 'Volutin Granules', fn: 'Intracellular reserves of polymerized inorganic polyphosphate. Serve as energy and phosphate sources during times of nutrient limitation.', icon: '\u26AA', lx: 0.5, ly: 0 },
+
+                { name: 'Polar Membrane', fn: 'Specialized membrane region at the poles that anchors the flagellar motors and houses chemoreceptors to navigate chemical gradients.', icon: '\uD83D\uDD35', lx: 2.3, ly: -0.3 }
 
               ]
 
@@ -16421,43 +16487,43 @@ var d = labToolData.cell;
 
             { q: 'Which organism moves toward light?', a: 'euglena', hint: 'Look for the one with an eyespot (green, teardrop shape).' },
 
-            { q: 'What is the amoeba doing to food particles?', a: 'phagocytosis', options: ['phagocytosis', 'photosynthesis', 'osmosis', 'mitosis'], hint: 'Watch how it wraps around food.' },
+            { q: 'What is the amoeba doing to food particles?', a: 'phagocytosis', options: ['phagocytosis', 'photosynthesis', 'osmosis', 'mitosis'], hint: 'Watch how it wraps around food.', concept: 'phagocytosis', wrongFeedback: ['', 'Photosynthesis converts sunlight into energy, but amoebas must consume physical particles.', 'Osmosis is the passive movement of water molecules across a membrane, not engulfing food.', 'Mitosis is cell division, not food engulfment.'] },
 
             { q: 'Which organism has cilia for movement?', a: 'paramecium', hint: 'Look for the oval one that moves fastest.' },
 
             { q: 'What type of cell has no nucleus?', a: 'bacterium', hint: 'The smallest organisms in the dish.' },
 
-            { q: 'Which cell has a rigid cell wall AND chloroplasts?', a: 'plantcell', hint: 'It does not move \u2014 rectangular shape.' },
+            { q: 'Which cell has a rigid cell wall AND chloroplasts?', a: 'plantcell', hint: 'It does not move - rectangular shape.' },
 
             { q: 'What cell defends against pathogens?', a: 'wbc', hint: 'The red-tinted one that chases bacteria.' },
 
-            { q: 'How does a bacterium reproduce?', a: 'binary fission', options: ['binary fission', 'mitosis', 'meiosis', 'budding'], hint: 'Watch the small ones split in two.' },
+            { q: 'How does a bacterium reproduce?', a: 'binary fission', options: ['binary fission', 'mitosis', 'meiosis', 'budding'], hint: 'Watch the small ones split in two.', concept: 'nucleus', wrongFeedback: ['', 'Mitosis requires a nucleus and spindle apparatus, which prokaryotic bacteria lack.', 'Meiosis is sexual cell division that produces gametes, which bacteria do not undergo.', 'Budding is asexual reproduction where a new organism grows out of the parent, typical of yeast, not bacteria.'] },
 
-            { q: 'What structure does Euglena use to detect light?', a: 'eyespot', options: ['eyespot', 'antenna', 'lens', 'cornea'], hint: 'Also called a stigma \u2014 a red dot.' },
+            { q: 'What structure does Euglena use to detect light?', a: 'eyespot', options: ['eyespot', 'antenna', 'lens', 'cornea'], hint: 'Also called a stigma - a red dot.', concept: 'photosynthesis', wrongFeedback: ['', 'Antennas are multicellular sensory organs found in insects and animals.', 'Lenses are complex structures in multicellular eyes that focus light, not simple organelles.', 'Cornea is a tissue layer of animal eyes, not an organelle.'] },
 
-            { q: 'What is the powerhouse organelle in eukaryotic cells?', a: 'mitochondria', options: ['mitochondria', 'ribosome', 'golgi', 'lysosome'], hint: 'Produces ATP.' },
+            { q: 'What is the powerhouse organelle in eukaryotic cells?', a: 'mitochondria', options: ['mitochondria', 'ribosome', 'golgi', 'lysosome'], hint: 'Produces ATP.', concept: 'mitochondria', wrongFeedback: ['', 'Ribosomes synthesize proteins; they do not produce energy or ATP.', 'The Golgi apparatus packages and modifies proteins; it is not the powerhouse.', 'Lysosomes break down waste materials; they do not generate metabolic energy.'] },
 
             { q: 'Which organism can act as BOTH plant and animal?', a: 'euglena', hint: 'Has chloroplasts but can also consume food.' },
 
-            { q: 'What does phagocytosis mean?', a: 'cell eating', options: ['cell eating', 'cell drinking', 'cell dividing', 'cell dying'], hint: 'Phago = eat, cyto = cell.' },
+            { q: 'What does phagocytosis mean?', a: 'cell eating', options: ['cell eating', 'cell drinking', 'cell dividing', 'cell dying'], hint: 'Phago = eat, cyto = cell.', concept: 'phagocytosis', wrongFeedback: ['', 'Cell drinking is pinocytosis, where a cell takes in dissolved fluids.', 'Cell division is mitosis or binary fission.', 'Programmed cell death is apoptosis.'] },
 
-            { q: 'Which structure controls what enters and exits a cell?', a: 'cell membrane', options: ['cell membrane', 'cell wall', 'nucleus', 'ribosome'], hint: 'Phospholipid bilayer.' },
+            { q: 'Which structure controls what enters and exits a cell?', a: 'cell membrane', options: ['cell membrane', 'cell wall', 'nucleus', 'ribosome'], hint: 'Phospholipid bilayer.', concept: 'cellMembrane', wrongFeedback: ['', 'The cell wall provides rigid shape and structure, but does not control substance passage.', 'The nucleus holds DNA and controls cell activities, but does not directly act as the gatekeeper.', 'Ribosomes build proteins and have no gatekeeping role.'] },
 
             { q: 'Which organism has a cell wall made of glass (silica)?', a: 'diatom', hint: 'Look for the geometric, crystalline-looking one.' },
 
-            { q: 'What organism forms hollow spheres of thousands of cells?', a: 'volvox', hint: 'A rotating green colony \u2014 its name means "fierce roller."' },
+            { q: 'What organism forms hollow spheres of thousands of cells?', a: 'volvox', hint: 'A rotating green colony - its name means "fierce roller."' },
 
-            { q: 'Which organism can regenerate from tiny fragments?', a: 'stentor', hint: 'The trumpet-shaped one \u2014 one of the largest single cells.' },
+            { q: 'Which organism can regenerate from tiny fragments?', a: 'stentor', hint: 'The trumpet-shaped one - one of the largest single cells.' },
 
-            { q: 'What organism can survive in outer space?', a: 'tardigrade', options: ['tardigrade', 'amoeba', 'bacterium', 'paramecium'], hint: 'Also called a water bear \u2014 nearly indestructible!' },
+            { q: 'What organism can survive in outer space?', a: 'tardigrade', options: ['tardigrade', 'amoeba', 'bacterium', 'paramecium'], hint: 'Also called a water bear - nearly indestructible!', concept: 'cytoplasm', wrongFeedback: ['', 'Amoebas are extremely sensitive to dehydration and radiation.', 'While some bacterial spores can survive extreme conditions, the active bacterium cannot survive space unprotected.', 'Paramecia are fragile freshwater protists that dry up and die instantly in dry or extreme environments.'] },
 
             { q: 'Which bacterium moves with a corkscrew spiral motion?', a: 'spirillum', hint: 'Look for the spiral orange one spinning through the medium.' },
 
-            { q: 'What organelle is the "powerhouse" that produces ATP?', a: 'mitochondria', options: ['mitochondria', 'chloroplast', 'nucleus', 'ribosome'], hint: 'It converts glucose and oxygen into energy currency (ATP).' },
+            { q: 'What organelle is the "powerhouse" that produces ATP?', a: 'mitochondria', options: ['mitochondria', 'chloroplast', 'nucleus', 'ribosome'], hint: 'It converts glucose and oxygen into energy currency (ATP).', concept: 'mitochondria', wrongFeedback: ['', 'Chloroplasts generate sugars using light, whereas mitochondria break down sugars to produce ATP.', 'The nucleus is the cell\'s genomic control center, not the energy powerhouse.', 'Ribosomes translate mRNA to synthesize proteins, consuming energy instead of producing it.'] },
 
-            { q: 'What does Stentor use its holdfast for?', a: 'anchoring', options: ['anchoring', 'swimming', 'reproduction', 'feeding'], hint: 'The narrow end attaches to a surface while the trumpet end feeds.' },
+            { q: 'What does Stentor use its holdfast for?', a: 'anchoring', options: ['anchoring', 'swimming', 'reproduction', 'feeding'], hint: 'The narrow end attaches to a surface while the trumpet end feeds.', concept: 'cytoplasm', wrongFeedback: ['', 'Swimming is done via cilia around the trumpet crown, not the holdfast.', 'Stentors reproduce via binary fission or conjugation, unrelated to the holdfast.', 'Feeding is done by creating a vortex with cilia near the oral mouth, not by the anchoring holdfast.'] },
 
-            { q: 'What unique protein protects tardigrade DNA from radiation?', a: 'Dsup', options: ['Dsup', 'p53', 'BRCA1', 'Rad51'], hint: 'Damage Suppressor protein \u2014 discovered in 2016.' }
+            { q: 'What unique protein protects tardigrade DNA from radiation?', a: 'Dsup', options: ['Dsup', 'p53', 'BRCA1', 'Rad51'], hint: 'Damage Suppressor protein - discovered in 2016.', concept: 'nucleus', wrongFeedback: ['', 'p53 is a tumor suppressor protein in humans that regulates cell cycle, not a tardigrade specific protective protein.', 'BRCA1 is a human DNA repair gene, not a unique tardigrade damage suppressor.', 'Rad51 is a conserved recombinase involved in double-strand break repair in many species, not the unique Dsup.'] }
 
           ];
 
@@ -16532,6 +16598,10 @@ var d = labToolData.cell;
               // Spawn 2-3 of each type
 
               ORGANISMS.forEach(function (def) {
+
+                var isActive = !d._activeSpawns || d._activeSpawns[def.id] !== false;
+
+                if (!isActive) return;
 
                 var count = def.id === 'plantcell' ? 2 : 3;
 
@@ -17607,7 +17677,7 @@ var d = labToolData.cell;
 
                 var sy = p.y + ry;
 
-                // Target label position — pushed outward from center
+                // Target label position - pushed outward from center
 
                 var labelDist = sz * 1.5 + fontSize * 2;
 
@@ -17657,7 +17727,7 @@ var d = labToolData.cell;
 
                 cctx.stroke();
 
-                // Main leader line — solid with flowing dash overlay
+                // Main leader line - solid with flowing dash overlay
 
                 cctx.beginPath();
 
@@ -17929,7 +17999,7 @@ var d = labToolData.cell;
 
                   } else if (stCycle < 350) {
 
-                    // Drifting phase — slow purposeful glide seeking attachment site
+                    // Drifting phase - slow purposeful glide seeking attachment site
 
                     if (stCycle === 0 || stCycle % 140 === 0) {
 
@@ -17949,7 +18019,7 @@ var d = labToolData.cell;
 
                   } else {
 
-                    // Feeding pause — anchored, body pulses as cilia create feeding currents
+                    // Feeding pause - anchored, body pulses as cilia create feeding currents
 
                     o.vx *= 0.88; o.vy *= 0.88;
 
@@ -17973,7 +18043,7 @@ var d = labToolData.cell;
 
                 } else if (def.id === 'spirillum') {
 
-                  // Corkscrew movement — smooth spiraling path using sine-based steering
+                  // Corkscrew movement - smooth spiraling path using sine-based steering
 
                   var spSteer = Math.sin(world.tick * 0.04 + o.phase) * 0.04;
 
@@ -17987,7 +18057,7 @@ var d = labToolData.cell;
 
                 } else if (def.id === 'diatom') {
 
-                  // Gentle drift — simulate water currents
+                  // Gentle drift - simulate water currents
 
                   o.vx += Math.sin(world.tick * 0.005 + o.phase) * 0.005;
 
@@ -17995,7 +18065,7 @@ var d = labToolData.cell;
 
                 } else if (def.id === 'tardigrade') {
 
-                  // Slow purposeful walk — smooth sine-based wandering
+                  // Slow purposeful walk - smooth sine-based wandering
 
                   o.vx += Math.sin(world.tick * 0.012 + o.phase) * 0.012;
 
@@ -18007,7 +18077,7 @@ var d = labToolData.cell;
 
                 } else {
 
-                  // Random walk — smoothed with velocity damping instead of raw noise
+                  // Random walk - smoothed with velocity damping instead of raw noise
 
                   o.vx += Math.sin(world.tick * 0.02 + o.phase) * 0.02 + (Math.random() - 0.5) * 0.01;
 
@@ -18015,7 +18085,7 @@ var d = labToolData.cell;
 
                 }
 
-                // Velocity damping — reduces jitter across all organisms
+                // Velocity damping - reduces jitter across all organisms
 
                 o.vx *= 0.97; o.vy *= 0.97;
 
@@ -18621,6 +18691,54 @@ var d = labToolData.cell;
 
 
 
+              // ── Highlight pulse for selected structure ──
+
+              if (world._highlightOrganelle) {
+
+                var hl = world._highlightOrganelle;
+
+                var age = world.tick - hl.startTick;
+
+                if (age > 60) {
+
+                  world._highlightOrganelle = null;
+
+                } else {
+
+                  cctx.save();
+
+                  var radius = (15 + age * 1.5) * dpr;
+
+                  var opacity = Math.max(0, 1 - age / 60);
+
+                  cctx.beginPath();
+
+                  cctx.arc(hl.x, hl.y, radius, 0, Math.PI * 2);
+
+                  cctx.strokeStyle = hexToRgba(hl.color, opacity);
+
+                  cctx.lineWidth = 3 * dpr;
+
+                  cctx.stroke();
+
+                  cctx.beginPath();
+
+                  cctx.arc(hl.x, hl.y, radius * 0.6, 0, Math.PI * 2);
+
+                  cctx.strokeStyle = hexToRgba('#ffffff', opacity * 0.7);
+
+                  cctx.lineWidth = 1.5 * dpr;
+
+                  cctx.stroke();
+
+                  cctx.restore();
+
+                }
+
+              }
+
+
+
               // ── Enhanced Microscope Vignette Overlay ──
 
               // Circular vignette
@@ -18985,7 +19103,7 @@ var d = labToolData.cell;
 
             animId = requestAnimationFrame(loop);
 
-            // Restart method — revives a dead loop
+            // Restart method - revives a dead loop
 
             canvasEl._cellSimRestart = function () {
 
@@ -19169,6 +19287,116 @@ var d = labToolData.cell;
 
             };
 
+            canvasEl._cellSimToggleSpawn = function (orgId, active) {
+
+              if (active) {
+
+                var existing = world.organisms.filter(function (o) { return o.type === orgId; });
+
+                if (existing.length === 0) {
+
+                  var def = ORGANISMS.find(function (o) { return o.id === orgId; });
+
+                  if (def) {
+
+                    var count = def.id === 'plantcell' ? 2 : 3;
+
+                    for (var i = 0; i < count; i++) {
+
+                      world.organisms.push({
+
+                        type: def.id, x: 60 + Math.random() * (WORLD_W - 120), y: 60 + Math.random() * (WORLD_H - 120),
+
+                        vx: (Math.random() - 0.5) * def.speed, vy: (Math.random() - 0.5) * def.speed,
+
+                        size: def.size * (0.85 + Math.random() * 0.3), angle: Math.random() * Math.PI * 2,
+
+                        phase: Math.random() * Math.PI * 2, energy: 50 + Math.random() * 50, def: def
+
+                      });
+
+                    }
+
+                  }
+
+                }
+
+              } else {
+
+                world.organisms = world.organisms.filter(function (o) { return o.type !== orgId; });
+
+                if (selectedOrg && selectedOrg.type === orgId) {
+
+                  selectedOrg = null;
+
+                }
+
+              }
+
+            };
+
+            canvasEl._cellSimShowOrganelleTooltip = function (orgId, organelleName) {
+
+              var o = (selectedOrg && selectedOrg.type === orgId) ? selectedOrg : world.organisms.find(function (org) { return org.type === orgId; });
+
+              if (!o) return;
+
+              var def = o.def;
+
+              var a = def.anatomy.find(function (anat) { return anat.name === organelleName; });
+
+              if (!a) return;
+
+              var p = toScreen(o.x, o.y);
+
+              var sz = o.size * cam.zoom * dpr;
+
+              var ox = a.lx * sz;
+
+              var oy = a.ly * sz;
+
+              var cos = Math.cos(o.angle), sin = Math.sin(o.angle);
+
+              var rx = ox * cos - oy * sin;
+
+              var ry = ox * sin + oy * cos;
+
+              var sx = p.x + rx;
+
+              var sy = p.y + ry;
+
+              world._tooltip = {
+
+                anatomy: a,
+
+                def: def,
+
+                x: sx,
+
+                y: sy,
+
+                alpha: 0,
+
+                startTick: world.tick
+
+              };
+
+              world._highlightOrganelle = {
+
+                x: sx,
+
+                y: sy,
+
+                color: def.color,
+
+                startTick: world.tick
+
+              };
+
+              cellSound('select');
+
+            };
+
 
 
             // Cleanup
@@ -19242,6 +19470,10 @@ var d = labToolData.cell;
               React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Cell Simulator"),
+
+              React.createElement("span", { className: "px-2 py-0.5 bg-teal-100 text-teal-800 text-[11px] font-bold rounded-full" }, "CELL v3"),
+
+              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "⭐ " + (d.researchPoints || 0) + " RP"),
 
               React.createElement("span", { className: "text-xs text-slate-600 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
 
@@ -19363,12 +19595,41 @@ var d = labToolData.cell;
 
             ),
 
+            // ── Challenges Progress checklist card ──
+            React.createElement('div', { className: 'bg-white rounded-xl border border-green-200 p-3 mb-3 shadow-sm' },
+              React.createElement('div', { className: 'flex justify-between items-center mb-2' },
+                React.createElement('h4', { className: 'text-xs font-bold text-green-800 uppercase tracking-wider flex items-center gap-1.5' },
+                  React.createElement('span', null, '🏆'), React.createElement('span', null, 'Quest Progress')
+                ),
+                React.createElement('span', { className: 'text-[11px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full' },
+                  CELL_CHALLENGES.filter(function(c) { return d._completedChallenges && d._completedChallenges[c.id]; }).length + '/' + CELL_CHALLENGES.length
+                )
+              ),
+              React.createElement('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2' },
+                CELL_CHALLENGES.map(function(chal) {
+                  var isDone = d._completedChallenges && d._completedChallenges[chal.id];
+                  return React.createElement('div', {
+                    key: chal.id,
+                    className: 'p-2 rounded-lg border flex flex-col items-center justify-between text-center transition-all ' +
+                      (isDone ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-400'),
+                    title: chal.desc
+                  },
+                    React.createElement('span', { className: 'text-lg mb-1' }, chal.icon),
+                    React.createElement('span', { className: 'text-[10px] font-bold leading-tight' }, chal.label),
+                    React.createElement('span', { className: 'text-[9px] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-500') },
+                      isDone ? 'Done' : 'Locked'
+                    )
+                  );
+                })
+              )
+            ),
+
             // ── Topic-accent hero band (per mode) ──
             (function() {
               var MODE_META = {
-                observe: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '👁️', title: 'Observe — explore the cell',         hint: 'Click any organelle to see its structure, function, and how it talks to its neighbors. Cells are factories: every organelle has a job and a delivery route.' },
-                play:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎮', title: 'Play — be the organism',           hint: 'Steer the cell yourself. Bacteria swim with flagella; protists pseudopod; humans push fluid via pumps. Movement reveals what each cell is built for.' },
-                quiz:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🧠', title: 'Quiz — concepts in context',        hint: 'Multi-choice items on organelle function, transport, signaling, and life cycle. Each question links back to what you saw in the simulator.' }
+                observe: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '👁️', title: 'Observe - explore the cell',         hint: 'Click any organelle to see its structure, function, and how it talks to its neighbors. Cells are factories: every organelle has a job and a delivery route.' },
+                play:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎮', title: 'Play - be the organism',           hint: 'Steer the cell yourself. Bacteria swim with flagella; protists pseudopod; humans push fluid via pumps. Movement reveals what each cell is built for.' },
+                quiz:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🧠', title: 'Quiz - concepts in context',        hint: 'Multi-choice items on organelle function, transport, signaling, and life cycle. Each question links back to what you saw in the simulator.' }
               };
               var meta = MODE_META[d.mode] || MODE_META.observe;
               return React.createElement('div', {
@@ -19464,23 +19725,23 @@ var d = labToolData.cell;
 
                   amoeba: { pred: 'Paramecium & WBCs', warn: 'Larger cells may engulf you!' },
 
-                  paramecium: { pred: 'Stentor', warn: 'Stentor creates vortex currents \u2014 avoid its trumpet-shaped mouth!' },
+                  paramecium: { pred: 'Stentor', warn: 'Stentor creates vortex currents - avoid its trumpet-shaped mouth!' },
 
                   euglena: { pred: 'Amoeba & Paramecium', warn: 'They can engulf small protists. Stay in the light!' },
 
-                  wbc: { pred: 'None \u2014 you are the hunter!', warn: 'Your targets are bacteria. Failure to catch them lets infection spread.' },
+                  wbc: { pred: 'None - you are the hunter!', warn: 'Your targets are bacteria. Failure to catch them lets infection spread.' },
 
                   bacterium: { pred: 'WBCs & Amoeba', warn: 'White blood cells will chase and engulf you!' },
 
-                  plantcell: { pred: 'None \u2014 you are stationary', warn: 'Explore your organelles up close.' },
+                  plantcell: { pred: 'None - you are stationary', warn: 'Explore your organelles up close.' },
 
                   diatom: { pred: 'Copepods & Ciliates', warn: 'Filter-feeders may sweep you up!' },
 
                   volvox: { pred: 'Rotifers', warn: 'Stay together with your colony!' },
 
-                  stentor: { pred: 'None \u2014 apex filter feeder!', warn: 'Anchor and create food vortices.' },
+                  stentor: { pred: 'None - apex filter feeder!', warn: 'Anchor and create food vortices.' },
 
-                  tardigrade: { pred: 'None \u2014 nearly indestructible', warn: 'You can survive extreme conditions!' },
+                  tardigrade: { pred: 'None - nearly indestructible', warn: 'You can survive extreme conditions!' },
 
                   spirillum: { pred: 'WBCs & Bacteriophages', warn: 'Immune cells are hunting you!' }
 
@@ -19586,7 +19847,7 @@ var d = labToolData.cell;
 
                         style: { background: 'linear-gradient(135deg, ' + org.color + ', ' + org.color + 'cc)' }
 
-                      }, "\uD83D\uDE80 Got it \u2014 Let's Go!")
+                      }, "\uD83D\uDE80 Got it - Let's Go!")
 
                     )
 
@@ -19600,6 +19861,136 @@ var d = labToolData.cell;
 
 
 
+            // 🔬 Petri Dish Filters: Select Visible Cell Types
+
+            React.createElement("div", { className: "bg-white rounded-xl border border-green-200 p-3 mt-3 shadow-sm" },
+
+              React.createElement("div", { className: "flex justify-between items-center mb-2" },
+
+                React.createElement("h4", { className: "text-xs font-bold text-green-800 uppercase tracking-wider flex items-center gap-1.5" },
+
+                  React.createElement("span", null, "🔬"), React.createElement("span", null, "Petri Dish Filters: Select Visible Cell Types")
+
+                ),
+
+                React.createElement("div", { className: "flex gap-2" },
+
+                  React.createElement("button", {
+
+                    onClick: function() {
+
+                      var nextSpawns = {};
+
+                      ORGANISMS.forEach(function(o) { nextSpawns[o.id] = true; });
+
+                      upd('_activeSpawns', nextSpawns);
+
+                      var cv = document.querySelector('[data-cell-sim-canvas]');
+
+                      if (cv && cv._cellSimToggleSpawn) {
+
+                        ORGANISMS.forEach(function(o) { cv._cellSimToggleSpawn(o.id, true); });
+
+                      }
+
+                      cellSound('select');
+
+                    },
+
+                    className: "text-[10px] font-bold text-green-600 hover:text-green-800 px-2 py-0.5 bg-green-50 rounded hover:bg-green-100 transition-all border border-green-200"
+
+                  }, "Show All"),
+
+                  React.createElement("button", {
+
+                    onClick: function() {
+
+                      var nextSpawns = {};
+
+                      ORGANISMS.forEach(function(o) { nextSpawns[o.id] = false; });
+
+                      upd('_activeSpawns', nextSpawns);
+
+                      var cv = document.querySelector('[data-cell-sim-canvas]');
+
+                      if (cv && cv._cellSimToggleSpawn) {
+
+                        ORGANISMS.forEach(function(o) { cv._cellSimToggleSpawn(o.id, false); });
+
+                      }
+
+                      cellSound('select');
+
+                    },
+
+                    className: "text-[10px] font-bold text-slate-500 hover:text-slate-700 px-2 py-0.5 bg-slate-100 rounded hover:bg-slate-200 transition-all border border-slate-200"
+
+                  }, "Clear All")
+
+                )
+
+              ),
+
+              React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-6 gap-2" },
+
+                ORGANISMS.map(function(org) {
+
+                  var isActive = !d._activeSpawns || d._activeSpawns[org.id] !== false;
+
+                  return React.createElement("button", {
+
+                    key: org.id,
+
+                    onClick: function() {
+
+                      var nextSpawns = Object.assign({}, d._activeSpawns || {});
+
+                      nextSpawns[org.id] = !isActive;
+
+                      upd('_activeSpawns', nextSpawns);
+
+                      var cv = document.querySelector('[data-cell-sim-canvas]');
+
+                      if (cv && cv._cellSimToggleSpawn) {
+
+                        cv._cellSimToggleSpawn(org.id, !isActive);
+
+                      }
+
+                      cellSound('select');
+
+                    },
+
+                    className: "p-2 rounded-lg border flex items-center justify-between transition-all " +
+
+                      (isActive
+
+                        ? "bg-green-50 border-green-300 text-green-800 font-bold"
+
+                        : "bg-slate-50 border-slate-200 text-slate-400 opacity-60"),
+
+                    style: isActive ? { borderColor: org.color } : {}
+
+                  },
+
+                    React.createElement("span", { className: "text-xs flex items-center gap-1.5" },
+
+                      React.createElement("span", null, org.icon),
+
+                      React.createElement("span", { className: "text-[10px] leading-none" }, org.label)
+
+                    ),
+
+                    React.createElement("span", { className: "text-[9px]" }, isActive ? "🟢" : "⚫")
+
+                  );
+
+                })
+
+              )
+
+            ),
+
             // Organism selector buttons
 
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
@@ -19610,6 +20001,28 @@ var d = labToolData.cell;
 
                   onClick: function () {
 
+                    // Auto-enable spawn if it was disabled in the filter
+
+                    var isActive = !d._activeSpawns || d._activeSpawns[org.id] !== false;
+
+                    if (!isActive) {
+
+                      var nextSpawns = Object.assign({}, d._activeSpawns || {});
+
+                      nextSpawns[org.id] = true;
+
+                      upd('_activeSpawns', nextSpawns);
+
+                      var cv = document.querySelector('[data-cell-sim-canvas]');
+
+                      if (cv && cv._cellSimToggleSpawn) {
+
+                        cv._cellSimToggleSpawn(org.id, true);
+
+                      }
+
+                    }
+
                     upd("selectedOrganism", d.selectedOrganism === org.id ? null : org.id);
 
                     var cv = document.querySelector('[data-cell-sim-canvas]');
@@ -19617,8 +20030,11 @@ var d = labToolData.cell;
                     if (cv && cv._cellSimFocusOrganism) cv._cellSimFocusOrganism(org.id);
 
                     cellSound('select');
+
                     var obs = ext.organismsObserved.slice();
+
                     if (obs.indexOf(org.id) === -1) { obs.push(org.id); }
+
                     updExtAndBadge({ organismsObserved: obs });
 
                   },
@@ -19722,7 +20138,7 @@ var d = labToolData.cell;
 
               ),
 
-              // Facts — always visible
+              // Facts - always visible
 
               React.createElement("div", { className: "mt-2 grid grid-cols-1 gap-0.5" },
 
@@ -19752,15 +20168,75 @@ var d = labToolData.cell;
 
                   selDef.anatomy.map(function (a, i) {
 
-                    return React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[11px]" },
+                    return React.createElement("button", {
 
-                      React.createElement("span", { className: "flex-shrink-0", style: { color: selDef.color } }, a.icon || "\u25CF"),
+                      key: i,
+
+                      onClick: function() {
+
+                        var cv = document.querySelector('[data-cell-sim-canvas]');
+
+                        if (cv && cv._cellSimShowOrganelleTooltip) {
+
+                          cv._cellSimShowOrganelleTooltip(selDef.id, a.name);
+
+                        }
+
+                        var clicks = ext.organellesClicked.slice();
+
+                        if (clicks.indexOf(a.name) === -1) {
+
+                          clicks.push(a.name);
+
+                          updExtAndBadge({ organellesClicked: clicks });
+
+                        }
+
+                      },
+
+                      style: {
+
+                        display: 'flex',
+
+                        alignItems: 'start',
+
+                        textAlign: 'left',
+
+                        gap: '6px',
+
+                        fontSize: '11px',
+
+                        width: '100%',
+
+                        padding: '6px',
+
+                        borderRadius: '6px',
+
+                        border: '1px solid transparent',
+
+                        background: 'transparent',
+
+                        cursor: 'pointer',
+
+                        transition: 'all 0.2s',
+
+                        outline: 'none'
+
+                      },
+
+                      className: "hover:bg-slate-50 active:bg-slate-100 rounded-lg w-full text-left"
+
+                    },
+
+                      React.createElement("span", { className: "flex-shrink-0 text-xs", style: { color: selDef.color } }, a.icon || "●"),
 
                       React.createElement("span", null,
 
-                        React.createElement("span", { className: "font-bold text-slate-700" }, a.name + ": "),
+                        React.createElement("span", { className: "font-bold text-slate-800" }, a.name + ": "),
 
-                        React.createElement("span", { className: "text-slate-600" }, a.fn)
+                        React.createElement("span", { className: "text-slate-600 leading-relaxed" }, a.fn),
+
+                        React.createElement("span", { className: "text-[9px] text-green-700 font-bold ml-1.5 inline-flex items-center gap-0.5 hover:text-green-800" }, "🔍 [Locate]")
 
                       )
 
@@ -19778,117 +20254,227 @@ var d = labToolData.cell;
 
             // Quiz mode panel
 
-            d.quizMode && quizQuestion && React.createElement("div", { className: "mt-3 bg-purple-50 rounded-xl border-2 border-purple-200 p-4 animate-in fade-in" },
+            // Quiz mode panel
 
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+            d.quizMode && quizQuestion && (function() {
+              function getOrganismSpotterFeedback(selectedId, correctId) {
+                var selOrg = ORGANISMS.find(function(o) { return o.id === selectedId; });
+                var corOrg = ORGANISMS.find(function(o) { return o.id === correctId; });
+                if (!selOrg || !corOrg) return 'That is not the correct organism.';
 
-                React.createElement("p", { className: "text-xs font-bold text-purple-700" }, "\uD83E\uDDE0 Question " + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
+                var roleText = '';
+                if (selectedId === 'amoeba') roleText = 'amoebas are slow, flexible predators that engulf food using pseudopods.';
+                else if (selectedId === 'paramecium') roleText = 'paramecia are rapid swimmers covered in cilia that sweep food into their oral groove.';
+                else if (selectedId === 'euglena') roleText = 'euglena can photosynthesize with chloroplasts and detect light using their eyespot.';
+                else if (selectedId === 'wbc') roleText = 'white blood cells are animal immune cells that destroy pathogens in blood vessels.';
+                else if (selectedId === 'bacterium') roleText = 'bacteria are tiny prokaryotes lacking a nucleus that reproduce rapidly by binary fission.';
+                else if (selectedId === 'plantcell') roleText = 'plant cells are rigid, non-motile structures containing cell walls and chloroplasts.';
+                else if (selectedId === 'diatom') roleText = 'diatoms are photosynthetic algae housed in glass-like silica shells.';
+                else if (selectedId === 'volvox') roleText = 'volvox forms rolling green spherical colonies made of thousands of flagellated cells.';
+                else if (selectedId === 'stentor') roleText = 'stentors are large, trumpet-shaped protists that anchor themselves to surfaces to filter feed.';
+                else if (selectedId === 'tardigrade') roleText = 'tardigrades are microscopic multicellular animals capable of surviving extreme environments.';
+                else if (selectedId === 'spirillum') roleText = 'spirillum is a rigid, spiral-shaped bacterium that moves with a corkscrew motion.';
 
-                React.createElement("div", { className: "flex items-center gap-2 text-xs" },
+                var correctName = corOrg.label;
+                var selectedName = selOrg.label;
+                return 'You selected ' + selectedName + '. Remember, ' + roleText + ' We are looking for the ' + correctName + '.';
+              }
 
-                  React.createElement("span", { className: "font-bold text-green-600" }, "\u2714 " + (d.quizScore || 0)),
+              return React.createElement("div", { className: "mt-3 bg-purple-50 rounded-xl border-2 border-purple-200 p-4 animate-in fade-in" },
 
-                  React.createElement("span", { className: "font-bold text-amber-500" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
+                React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
-                )
+                  React.createElement("p", { className: "text-xs font-bold text-purple-700" }, "\uD83E\uDDE0 Question " + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
 
-              ),
+                  React.createElement("div", { className: "flex items-center gap-2 text-xs" },
 
-              React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQuestion.q),
+                    React.createElement("span", { className: "font-bold text-green-600" }, "\u2714 " + (d.quizScore || 0)),
 
-              quizQuestion.options
+                    React.createElement("span", { className: "font-bold text-amber-500" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
 
-                ? React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-
-                  quizQuestion.options.map(function (opt) {
-
-                    return React.createElement("button", { "aria-label": "Select quiz answer: " + opt,
-
-                      key: opt, onClick: function () {
-
-                        var correct = opt.toLowerCase() === quizQuestion.a.toLowerCase();
-
-                        upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +" + 10 + " XP" : "\u274C Not quite. " + quizQuestion.hint });
-
-                        if (correct) {
-
-                          upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); awardStemXP('galaxy_quiz', 10, 'Galaxy quiz correct');
-
-                          cellSound('correct');
-                          if ((d.quizStreak || 0) + 1 >= 3) cellSound('streak');
-                          updExtAndBadge({ quizCorrect: ext.quizCorrect + 1 });
-
-                          var ansOrg = ORGANISMS.find(function (o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
-
-                          if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function (f, i) { return ansOrg.id + '_' + i; }).filter(function (k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
-
-                        }
-
-                        else { upd("quizStreak", 0); cellSound('wrong'); }
-
-                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt.toLowerCase() === quizQuestion.a.toLowerCase() ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-purple-200 bg-white text-slate-700 hover:border-purple-400")
-
-                    }, opt);
-
-                  })
-
-                )
-
-                : React.createElement("div", { className: "flex flex-wrap gap-2" },
-
-                  ORGANISMS.map(function (org) {
-
-                    return React.createElement("button", { "aria-label": "Select answer: " + org.label,
-
-                      key: org.id, onClick: function () {
-
-                        var correct = org.id === quizQuestion.a;
-
-                        upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +" + 10 + " XP" : "\u274C Not quite. " + quizQuestion.hint });
-
-                        if (correct) {
-
-                          upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1);
-
-                          cellSound('correct');
-                          if ((d.quizStreak || 0) + 1 >= 3) cellSound('streak');
-                          updExtAndBadge({ quizCorrect: ext.quizCorrect + 1 });
-
-                          var ansOrg = ORGANISMS.find(function (o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
-
-                          if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function (f, i) { return ansOrg.id + '_' + i; }).filter(function (k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
-
-                        }
-
-                        else { upd("quizStreak", 0); cellSound('wrong'); }
-
-                      }, className: "px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all hover:scale-105 border-purple-200 bg-white text-slate-700 hover:border-purple-400"
-
-                    }, org.icon + " " + org.label);
-
-                  })
+                  )
 
                 ),
 
-              d.quizFeedback && React.createElement("div", { className: "mt-2 p-2 rounded-lg text-center text-sm font-bold " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200") },
+                React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQuestion.q),
 
-                d.quizFeedback.msg,
+                quizQuestion.options
 
-                React.createElement("button", { "aria-label": "Next",
+                  ? React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
-                  onClick: function () {
+                    quizQuestion.options.map(function (opt, idx) {
+                      var isCorrect = opt.toLowerCase() === quizQuestion.a.toLowerCase();
+                      var isSelected = d._selectedOption === idx;
 
-                    var nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
+                      return React.createElement("button", { "aria-label": "Select quiz answer: " + opt,
 
-                    upd("quizIdx", nextIdx); upd("quizFeedback", null);
+                        key: opt,
+                        disabled: !!d.quizFeedback,
+                        onClick: function () {
+                          if (d.quizFeedback) return;
 
-                  }, className: "ml-3 px-2 py-0.5 bg-purple-600 text-white rounded text-xs"
+                          var correct = isCorrect;
 
-                }, "Next \u2192")
+                          upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C Incorrect." });
+                          upd("_selectedOption", idx);
 
-              )
+                          if (correct) {
 
-            ),
+                            upd("quizScore", (d.quizScore || 0) + 1);
+                            upd("quizStreak", (d.quizStreak || 0) + 1);
+                            if (typeof awardStemXP === 'function') awardStemXP('cell_quiz', 10, 'Cell quiz correct');
+
+                            cellSound('correct');
+                            if ((d.quizStreak || 0) + 1 >= 3) cellSound('streak');
+                            updExtAndBadge({ quizCorrect: ext.quizCorrect + 1 });
+
+                            var ansOrg = ORGANISMS.find(function (o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
+
+                            if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function (f, i) { return ansOrg.id + '_' + i; }).filter(function (k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
+
+                            // Auto advance after 1500ms on correct
+                            setTimeout(function() {
+                              var nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
+                              setLabToolData(function(prev) {
+                                var p = prev || {};
+                                var cel = Object.assign({}, p.cell || {});
+                                cel.quizIdx = nextIdx;
+                                cel.quizFeedback = null;
+                                cel._selectedOption = null;
+                                return Object.assign({}, p, { cell: cel });
+                              });
+                            }, 1500);
+
+                          }
+
+                          else { upd("quizStreak", 0); cellSound('wrong'); }
+
+                        }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " +
+                          (d.quizFeedback
+                            ? (isCorrect
+                              ? "border-green-400 bg-green-50 text-green-700"
+                              : (isSelected ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-400"))
+                            : "border-purple-200 bg-white text-slate-700 hover:border-purple-400")
+
+                      }, opt);
+
+                    })
+
+                  )
+
+                  : React.createElement("div", { className: "flex flex-wrap gap-2" },
+
+                    ORGANISMS.map(function (org) {
+                      var isCorrect = org.id === quizQuestion.a;
+                      var isSelected = d._selectedOption === org.id;
+
+                      return React.createElement("button", { "aria-label": "Select answer: " + org.label,
+
+                        key: org.id,
+                        disabled: !!d.quizFeedback,
+                        onClick: function () {
+                          if (d.quizFeedback) return;
+
+                          var correct = isCorrect;
+
+                          upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C Incorrect." });
+                          upd("_selectedOption", org.id);
+
+                          if (correct) {
+
+                            upd("quizScore", (d.quizScore || 0) + 1);
+                            upd("quizStreak", (d.quizStreak || 0) + 1);
+                            if (typeof awardStemXP === 'function') awardStemXP('cell_quiz', 10, 'Cell quiz correct');
+
+                            cellSound('correct');
+                            if ((d.quizStreak || 0) + 1 >= 3) cellSound('streak');
+                            updExtAndBadge({ quizCorrect: ext.quizCorrect + 1 });
+
+                            var ansOrg = ORGANISMS.find(function (o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
+
+                            if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function (f, i) { return ansOrg.id + '_' + i; }).filter(function (k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
+
+                            // Auto advance after 1500ms on correct
+                            setTimeout(function() {
+                              var nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
+                              setLabToolData(function(prev) {
+                                var p = prev || {};
+                                var cel = Object.assign({}, p.cell || {});
+                                cel.quizIdx = nextIdx;
+                                cel.quizFeedback = null;
+                                cel._selectedOption = null;
+                                return Object.assign({}, p, { cell: cel });
+                              });
+                            }, 1500);
+
+                          }
+
+                          else { upd("quizStreak", 0); cellSound('wrong'); }
+
+                        }, className: "px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all hover:scale-105 " +
+                          (d.quizFeedback
+                            ? (isCorrect
+                              ? "border-green-400 bg-green-50 text-green-700"
+                              : (isSelected ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-400"))
+                            : "border-purple-200 bg-white text-slate-700 hover:border-purple-400")
+
+                      }, org.icon + " " + org.label);
+
+                    })
+
+                  ),
+
+                d.quizFeedback && React.createElement("div", { className: "mt-3 p-3 bg-white rounded-lg border text-left text-xs font-normal space-y-2 " + (d.quizFeedback.correct ? "border-green-200 animate-pulse" : "border-red-200") },
+
+                  React.createElement("p", { className: "font-bold text-sm " + (d.quizFeedback.correct ? "text-green-700" : "text-red-600") }, d.quizFeedback.msg),
+
+                  !d.quizFeedback.correct && React.createElement("div", { className: "space-y-2" },
+                    React.createElement("p", { className: "text-slate-700 leading-relaxed font-normal" },
+                      quizQuestion.options
+                        ? (quizQuestion.wrongFeedback ? quizQuestion.wrongFeedback[d._selectedOption] : quizQuestion.hint)
+                        : getOrganismSpotterFeedback(d._selectedOption, quizQuestion.a)
+                    ),
+                    React.createElement("div", { className: "flex flex-wrap gap-2 pt-1" },
+                      quizQuestion.concept && React.createElement("button", {
+                        onClick: function() { upd("_studyConcept", quizQuestion.concept); },
+                        className: "px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-600 rounded font-bold text-xs hover:bg-emerald-100 transition-all"
+                      }, "📖 Study " + (CELL_VOCAB[quizQuestion.concept] ? CELL_VOCAB[quizQuestion.concept].term : quizQuestion.concept) + " (+5 RP)"),
+                      React.createElement("button", {
+                        onClick: function () {
+                          var nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
+                          setLabToolData(function(prev) {
+                            var p = prev || {};
+                            var cel = Object.assign({}, p.cell || {});
+                            cel.quizIdx = nextIdx;
+                            cel.quizFeedback = null;
+                            cel._selectedOption = null;
+                            return Object.assign({}, p, { cell: cel });
+                          });
+                        }, className: "px-2.5 py-1 bg-purple-600 text-white rounded font-bold text-xs hover:bg-purple-700 transition-all"
+                      }, "Continue →")
+                    )
+                  ),
+
+                  d.quizFeedback.correct && React.createElement("div", { className: "flex justify-end" },
+                    React.createElement("button", { "aria-label": "Next",
+                      onClick: function () {
+                        var nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
+                        setLabToolData(function(prev) {
+                          var p = prev || {};
+                          var cel = Object.assign({}, p.cell || {});
+                          cel.quizIdx = nextIdx;
+                          cel.quizFeedback = null;
+                          cel._selectedOption = null;
+                          return Object.assign({}, p, { cell: cel });
+                        });
+                      }, className: "px-2.5 py-1 bg-purple-600 text-white rounded font-bold text-xs hover:bg-purple-700 transition-all"
+                    }, "Next →")
+                  )
+
+                )
+
+              );
+            })(),
 
             // Badge panel
             d._cellShowBadges && React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in" },
@@ -19950,6 +20536,31 @@ var d = labToolData.cell;
             // ENCYCLOPEDIA MODE
             // ═══════════════════════════════════════════════════════════
             d.mode === 'encyclopedia' && (function() {
+              function getKingdomTheme(k) {
+                var lower = (k || '').toLowerCase();
+                if (lower.indexOf('protist') !== -1) return { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', badge: 'bg-emerald-100 text-emerald-800' };
+                if (lower.indexOf('bacteria') !== -1 || lower.indexOf('bacterium') !== -1) return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-800' };
+                if (lower.indexOf('animal') !== -1) return { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-700', badge: 'bg-sky-100 text-sky-800' };
+                if (lower.indexOf('plant') !== -1) return { bg: 'bg-lime-50', border: 'border-lime-200', text: 'text-lime-700', badge: 'bg-lime-100 text-lime-800' };
+                if (lower.indexOf('algae') !== -1) return { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700', badge: 'bg-cyan-100 text-cyan-800' };
+                return { bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-700', badge: 'bg-slate-100 text-slate-800' };
+              }
+
+              function findConcepts(text) {
+                var concepts = [];
+                var t = (text || '').toLowerCase();
+                Object.keys(CELL_VOCAB).forEach(function(key) {
+                  var v = CELL_VOCAB[key];
+                  var termLower = v.term.toLowerCase();
+                  if (t.indexOf(termLower) !== -1 || key.toLowerCase() === t) {
+                    if (concepts.indexOf(key) === -1) {
+                      concepts.push(key);
+                    }
+                  }
+                });
+                return concepts;
+              }
+
               var idx = (d._encyclopediaIdx != null) ? d._encyclopediaIdx : 0;
               var filterK = d._encyclopediaFilter || 'all';
               var search = d._encyclopediaSearch || '';
@@ -19960,56 +20571,100 @@ var d = labToolData.cell;
               });
               var item = filtered[idx] || filtered[0];
               var kingdoms = ['all'].concat(ORGANISM_DB.map(function(o) { return o.kingdom; }).filter(function(v, i, a) { return a.indexOf(v) === i; }));
-              return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-green-300 p-4 space-y-3' },
+
+              var theme = item ? getKingdomTheme(item.kingdom) : null;
+              var parsedSize = item ? parseFloat(item.size) : 10;
+              var percentage = item ? Math.min(100, Math.max(5, Math.round((Math.log10(parsedSize) / Math.log10(1000)) * 100))) : 0;
+
+              return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-green-300 p-4 space-y-3 shadow-md' },
                 React.createElement('div', { className: 'flex items-baseline justify-between mb-2' },
-                  React.createElement('h3', { className: 'text-base font-bold text-green-700' }, 'Organism Encyclopedia'),
-                  React.createElement('span', { className: 'text-xs text-slate-600' }, filtered.length + ' organisms')
+                  React.createElement('h3', { className: 'text-base font-bold text-green-700 flex items-center gap-1.5' }, '📚 Organism Encyclopedia'),
+                  React.createElement('span', { className: 'text-xs text-slate-600 font-mono bg-slate-100 px-2 py-0.5 rounded-full' }, filtered.length + ' organisms')
                 ),
                 React.createElement('input', { type: 'text', placeholder: 'Search organisms...', value: search, onChange: function(e) { upd('_encyclopediaSearch', e.target.value); upd('_encyclopediaIdx', 0); }, className: 'w-full px-2 py-1 text-xs border-2 border-green-200 rounded' }),
                 React.createElement('div', { className: 'flex flex-wrap gap-1' },
                   kingdoms.map(function(k) {
                     var sel = filterK === k;
-                    return React.createElement('button', { key: k, onClick: function() { upd('_encyclopediaFilter', k); upd('_encyclopediaIdx', 0); }, className: 'px-2 py-1 rounded text-xs font-bold ' + (sel ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-green-100') }, k);
+                    return React.createElement('button', { key: k, onClick: function() { upd('_encyclopediaFilter', k); upd('_encyclopediaIdx', 0); }, className: 'px-2 py-1 rounded text-xs font-bold transition-all ' + (sel ? 'bg-green-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-green-100') }, k);
                   })
                 ),
-                React.createElement('div', { className: 'flex flex-wrap gap-1 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded' },
+                React.createElement('div', { className: 'flex flex-wrap gap-1 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded border border-slate-200' },
                   filtered.map(function(o, i) {
                     var sel = idx === i;
-                    return React.createElement('button', { key: o.id, onClick: function() { upd('_encyclopediaIdx', i); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (sel ? 'bg-green-700 text-white' : 'bg-white text-slate-700 border border-slate-300 hover:bg-green-50'), title: o.name }, o.name);
+                    return React.createElement('button', { key: o.id, onClick: function() { upd('_encyclopediaIdx', i); }, className: 'px-2 py-1 rounded text-[10px] font-bold transition-all ' + (sel ? 'bg-green-700 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-300 hover:bg-green-50 hover:border-green-400'), title: o.name }, o.name);
                   })
                 ),
-                item && React.createElement('div', { className: 'bg-green-50 border-2 border-green-300 rounded-xl p-3 space-y-2' },
-                  React.createElement('div', { className: 'flex items-baseline justify-between' },
-                    React.createElement('h4', { className: 'text-lg font-bold text-green-800' }, item.name),
-                    React.createElement('span', { className: 'text-xs text-slate-600 font-mono' }, item.kingdom + ' - ' + item.cellType + ' - ' + item.size)
-                  ),
-                  React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed' }, item.description),
-                  React.createElement('div', { className: 'grid md:grid-cols-2 gap-2 text-xs' },
-                    React.createElement('div', { className: 'bg-white border border-green-200 rounded p-2' },
-                      React.createElement('div', { className: 'font-bold text-green-700' }, 'Habitat'),
-                      React.createElement('div', { className: 'text-slate-700' }, item.habitat)
-                    ),
-                    React.createElement('div', { className: 'bg-white border border-green-200 rounded p-2' },
-                      React.createElement('div', { className: 'font-bold text-amber-700' }, 'Feeding'),
-                      React.createElement('div', { className: 'text-slate-700' }, item.feeding)
-                    ),
-                    React.createElement('div', { className: 'bg-white border border-green-200 rounded p-2' },
-                      React.createElement('div', { className: 'font-bold text-pink-700' }, 'Reproduction'),
-                      React.createElement('div', { className: 'text-slate-700' }, item.reproduction)
-                    ),
-                    React.createElement('div', { className: 'bg-white border border-green-200 rounded p-2' },
-                      React.createElement('div', { className: 'font-bold text-blue-700' }, 'Movement'),
-                      React.createElement('div', { className: 'text-slate-700' }, item.movement)
-                    ),
-                    React.createElement('div', { className: 'bg-white border border-green-200 rounded p-2' },
-                      React.createElement('div', { className: 'font-bold text-purple-700' }, 'Discovered'),
-                      React.createElement('div', { className: 'text-slate-700' }, item.discovered)
-                    ),
-                    React.createElement('div', { className: 'bg-white border border-green-200 rounded p-2' },
-                      React.createElement('div', { className: 'font-bold text-orange-700' }, 'Relevance'),
-                      React.createElement('div', { className: 'text-slate-700' }, item.relevance)
+                item && React.createElement('div', { className: 'border-2 rounded-xl p-4 space-y-3 shadow-inner ' + theme.bg + ' ' + theme.border },
+                  React.createElement('div', { className: 'flex flex-wrap items-baseline justify-between gap-2 border-b pb-2 ' + theme.border },
+                    React.createElement('h4', { className: 'text-xl font-bold ' + theme.text }, item.name),
+                    React.createElement('div', { className: 'flex gap-1.5' },
+                      React.createElement('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm ' + theme.badge }, item.kingdom),
+                      React.createElement('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-300 text-slate-700' }, item.cellType)
                     )
-                  )
+                  ),
+                  React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed font-medium bg-white/60 p-2.5 rounded-lg border border-white/80' }, item.description),
+                  
+                  React.createElement('div', { className: 'p-2.5 bg-white/80 border rounded-lg shadow-sm ' + theme.border },
+                    React.createElement('div', { className: 'flex justify-between items-center text-[10px] text-slate-500 font-bold mb-1' },
+                      React.createElement('span', null, '🔬 Scale Comparison'),
+                      React.createElement('span', { className: theme.text + ' font-mono' }, item.size)
+                    ),
+                    React.createElement('div', { className: 'w-full bg-slate-200 h-2 rounded-full overflow-hidden' },
+                      React.createElement('div', {
+                        className: 'bg-green-600 h-full transition-all duration-300',
+                        style: { width: percentage + '%' }
+                      })
+                    ),
+                    React.createElement('div', { className: 'flex justify-between text-[8px] text-slate-400 font-mono mt-0.5' },
+                      React.createElement('span', null, '1 μm (Bacteria)'),
+                      React.createElement('span', null, '100 μm (Protist)'),
+                      React.createElement('span', null, '1000 μm (Water Bear)')
+                    )
+                  ),
+
+                  React.createElement('div', { className: 'grid md:grid-cols-2 gap-2 text-xs' },
+                    React.createElement('div', { className: 'bg-white/80 border rounded-lg p-2.5 shadow-sm ' + theme.border },
+                      React.createElement('div', { className: 'font-bold text-green-700 flex items-center gap-1' }, '🏠 Habitat'),
+                      React.createElement('div', { className: 'text-slate-700 mt-0.5' }, item.habitat)
+                    ),
+                    React.createElement('div', { className: 'bg-white/80 border rounded-lg p-2.5 shadow-sm ' + theme.border },
+                      React.createElement('div', { className: 'font-bold text-amber-700 flex items-center gap-1' }, '🍴 Feeding'),
+                      React.createElement('div', { className: 'text-slate-700 mt-0.5' }, item.feeding)
+                    ),
+                    React.createElement('div', { className: 'bg-white/80 border rounded-lg p-2.5 shadow-sm ' + theme.border },
+                      React.createElement('div', { className: 'font-bold text-rose-700 flex items-center gap-1' }, '🔬 Reproduction'),
+                      React.createElement('div', { className: 'text-slate-700 mt-0.5' }, item.reproduction)
+                    ),
+                    React.createElement('div', { className: 'bg-white/80 border rounded-lg p-2.5 shadow-sm ' + theme.border },
+                      React.createElement('div', { className: 'font-bold text-blue-700 flex items-center gap-1' }, '🏃 Movement'),
+                      React.createElement('div', { className: 'text-slate-700 mt-0.5' }, item.movement)
+                    ),
+                    React.createElement('div', { className: 'bg-white/80 border rounded-lg p-2.5 shadow-sm ' + theme.border },
+                      React.createElement('div', { className: 'font-bold text-indigo-700 flex items-center gap-1' }, '🧑‍🔬 Discovered'),
+                      React.createElement('div', { className: 'text-slate-700 mt-0.5' }, item.discovered)
+                    ),
+                    React.createElement('div', { className: 'bg-white/80 border rounded-lg p-2.5 shadow-sm ' + theme.border },
+                      React.createElement('div', { className: 'font-bold text-purple-700 flex items-center gap-1' }, '🌟 Relevance'),
+                      React.createElement('div', { className: 'text-slate-700 mt-0.5' }, item.relevance)
+                    )
+                  ),
+
+                  (function() {
+                    var textToScan = (item.description || '') + ' ' + (item.feeding || '') + ' ' + (item.movement || '');
+                    var matched = findConcepts(textToScan);
+                    if (matched.length === 0) return null;
+                    return React.createElement('div', { className: 'flex flex-wrap gap-1.5 mt-2 pt-2 border-t ' + theme.border },
+                      React.createElement('span', { className: 'text-[10px] font-bold text-slate-500 flex items-center gap-1 w-full' }, '📇 Key concepts to study:'),
+                      matched.map(function(key) {
+                        return React.createElement('button', {
+                          key: key,
+                          onClick: function() { upd('_studyConcept', key); },
+                          className: 'px-2.5 py-1 text-[9px] bg-white text-emerald-800 border border-emerald-400 rounded-lg font-bold hover:bg-emerald-50 hover:scale-[1.02] shadow-sm transition-all flex items-center gap-1'
+                        }, '📖 Study ' + CELL_VOCAB[key].term + ' (+5 RP)');
+                      })
+                    );
+                  })()
+
                 )
               );
             })(),
@@ -20018,18 +20673,38 @@ var d = labToolData.cell;
             // FILTER MODE
             // ═══════════════════════════════════════════════════════════
             d.mode === 'filter' && (function() {
+              function getKingdomTheme(k) {
+                var lower = (k || '').toLowerCase();
+                if (lower.indexOf('protist') !== -1) return { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', hover: 'hover:border-emerald-500' };
+                if (lower.indexOf('bacteria') !== -1 || lower.indexOf('bacterium') !== -1) return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', hover: 'hover:border-amber-500' };
+                if (lower.indexOf('animal') !== -1) return { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-700', hover: 'hover:border-sky-500' };
+                if (lower.indexOf('plant') !== -1) return { bg: 'bg-lime-50', border: 'border-lime-200', text: 'text-lime-700', hover: 'hover:border-lime-500' };
+                if (lower.indexOf('algae') !== -1) return { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700', hover: 'hover:border-cyan-500' };
+                return { bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-700', hover: 'hover:border-slate-500' };
+              }
+
               var byKingdom = {};
               ORGANISM_DB.forEach(function(o) { (byKingdom[o.kingdom] = byKingdom[o.kingdom] || []).push(o); });
-              return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-cyan-300 p-4' },
-                React.createElement('h3', { className: 'text-base font-bold text-cyan-700 mb-3' }, 'Filter Microorganisms by Kingdom'),
-                React.createElement('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'Browse organisms grouped by classification.'),
-                React.createElement('div', { className: 'space-y-3' },
+              return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-cyan-300 p-4 shadow-md' },
+                React.createElement('h3', { className: 'text-base font-bold text-cyan-700 mb-1 flex items-center gap-1.5' }, '🔍 Filter Microorganisms by Kingdom'),
+                React.createElement('p', { className: 'text-xs text-slate-500 italic mb-3' }, 'Click on any microorganism card below to view its full structural detail in the Encyclopedia.'),
+                React.createElement('div', { className: 'grid sm:grid-cols-2 gap-3' },
                   Object.keys(byKingdom).map(function(k) {
-                    return React.createElement('div', { key: k, className: 'border border-cyan-200 rounded p-2 bg-cyan-50' },
-                      React.createElement('div', { className: 'font-bold text-cyan-800 mb-1' }, k + ' (' + byKingdom[k].length + ')'),
-                      React.createElement('div', { className: 'flex flex-wrap gap-1' },
+                    var t = getKingdomTheme(k);
+                    return React.createElement('div', { key: k, className: 'border-2 rounded-xl p-3 shadow-sm ' + t.bg + ' ' + t.border },
+                      React.createElement('div', { className: 'font-bold text-sm border-b pb-1 mb-2 ' + t.text + ' ' + t.border }, k + ' (' + byKingdom[k].length + ')'),
+                      React.createElement('div', { className: 'flex flex-wrap gap-1.5' },
                         byKingdom[k].map(function(o) {
-                          return React.createElement('span', { key: o.id, className: 'px-2 py-1 text-[10px] bg-white border border-cyan-200 rounded text-slate-700' }, o.name);
+                          return React.createElement('button', {
+                            key: o.id,
+                            onClick: function() {
+                              var idx = ORGANISM_DB.findIndex(function(dbItem) { return dbItem.id === o.id; });
+                              upd('mode', 'encyclopedia');
+                              upd('_encyclopediaIdx', idx !== -1 ? idx : 0);
+                              upd('_encyclopediaFilter', 'all');
+                            },
+                            className: 'px-2.5 py-1 text-[10px] bg-white border border-slate-200 rounded-lg text-slate-700 transition-all hover:scale-105 font-bold shadow-sm flex items-center gap-1 ' + t.hover
+                          }, '🦠 ' + o.name);
                         })
                       )
                     );
@@ -20042,43 +20717,107 @@ var d = labToolData.cell;
             // COMPARE MODE
             // ═══════════════════════════════════════════════════════════
             d.mode === 'compare' && (function() {
+              function getKingdomTheme(k) {
+                var lower = (k || '').toLowerCase();
+                if (lower.indexOf('protist') !== -1) return { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700' };
+                if (lower.indexOf('bacteria') !== -1 || lower.indexOf('bacterium') !== -1) return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700' };
+                if (lower.indexOf('animal') !== -1) return { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-700' };
+                if (lower.indexOf('plant') !== -1) return { bg: 'bg-lime-50', border: 'border-lime-200', text: 'text-lime-700' };
+                if (lower.indexOf('algae') !== -1) return { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700' };
+                return { bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-700' };
+              }
+
+              function findConcepts(text) {
+                var concepts = [];
+                var t = (text || '').toLowerCase();
+                Object.keys(CELL_VOCAB).forEach(function(key) {
+                  var v = CELL_VOCAB[key];
+                  var termLower = v.term.toLowerCase();
+                  if (t.indexOf(termLower) !== -1 || key.toLowerCase() === t) {
+                    if (concepts.indexOf(key) === -1) {
+                      concepts.push(key);
+                    }
+                  }
+                });
+                return concepts;
+              }
+
               var aIdx = d._cmpA == null ? 0 : d._cmpA;
               var bIdx = d._cmpB == null ? 1 : d._cmpB;
               var oA = ORGANISM_DB[aIdx];
               var oB = ORGANISM_DB[bIdx];
-              return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-purple-300 p-4' },
-                React.createElement('h3', { className: 'text-base font-bold text-purple-700 mb-3' }, 'Compare Two Organisms'),
-                React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-3' },
+
+              var tA = oA ? getKingdomTheme(oA.kingdom) : null;
+              var tB = oB ? getKingdomTheme(oB.kingdom) : null;
+
+              return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-purple-300 p-4 shadow-md' },
+                React.createElement('h3', { className: 'text-base font-bold text-purple-700 mb-1 flex items-center gap-1.5' }, '⚖ Compare Two Organisms'),
+                React.createElement('p', { className: 'text-xs text-slate-500 italic mb-3' }, 'Compare structures, habitats, and properties. Fields with differences are automatically highlighted in amber.'),
+                React.createElement('div', { className: 'grid grid-cols-2 gap-3 mb-4' },
                   React.createElement('div', null,
-                    React.createElement('label', { className: 'text-xs font-bold text-purple-700' }, 'Organism A'),
-                    React.createElement('select', { value: aIdx, onChange: function(e) { upd('_cmpA', parseInt(e.target.value)); }, className: 'w-full px-2 py-1 text-xs border-2 border-purple-200 rounded mt-1' },
+                    React.createElement('label', { className: 'text-[10px] font-black text-purple-700 uppercase' }, 'Organism A'),
+                    React.createElement('select', { value: aIdx, onChange: function(e) { upd('_cmpA', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-200 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
                       ORGANISM_DB.map(function(o, i) { return React.createElement('option', { key: i, value: i }, o.name); })
                     )
                   ),
                   React.createElement('div', null,
-                    React.createElement('label', { className: 'text-xs font-bold text-purple-700' }, 'Organism B'),
-                    React.createElement('select', { value: bIdx, onChange: function(e) { upd('_cmpB', parseInt(e.target.value)); }, className: 'w-full px-2 py-1 text-xs border-2 border-purple-200 rounded mt-1' },
+                    React.createElement('label', { className: 'text-[10px] font-black text-purple-700 uppercase' }, 'Organism B'),
+                    React.createElement('select', { value: bIdx, onChange: function(e) { upd('_cmpB', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-200 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
                       ORGANISM_DB.map(function(o, i) { return React.createElement('option', { key: i, value: i }, o.name); })
                     )
                   )
                 ),
-                oA && oB && React.createElement('table', { className: 'w-full text-xs' },
-                  React.createElement('thead', null,
-                    React.createElement('tr', { className: 'border-b border-purple-200' },
-                      React.createElement('th', { className: 'p-2 text-left text-purple-700' }, 'Property'),
-                      React.createElement('th', { className: 'p-2 text-left text-purple-700' }, oA.name),
-                      React.createElement('th', { className: 'p-2 text-left text-purple-700' }, oB.name)
-                    )
+                oA && oB && React.createElement('div', { className: 'space-y-2' },
+                  React.createElement('div', { className: 'grid grid-cols-2 gap-2 text-center' },
+                    React.createElement('div', { className: 'p-2 rounded-lg border-2 font-bold text-sm shadow-sm ' + tA.bg + ' ' + tA.border + ' ' + tA.text }, oA.name),
+                    React.createElement('div', { className: 'p-2 rounded-lg border-2 font-bold text-sm shadow-sm ' + tB.bg + ' ' + tB.border + ' ' + tB.text }, oB.name)
                   ),
-                  React.createElement('tbody', null,
-                    ['kingdom', 'cellType', 'size', 'habitat', 'feeding', 'reproduction', 'movement'].map(function(k, i) {
-                      return React.createElement('tr', { key: k, className: 'border-b border-slate-100 ' + (i % 2 === 0 ? 'bg-purple-50' : '') },
-                        React.createElement('td', { className: 'p-2 font-bold text-purple-700 capitalize' }, k.replace(/([A-Z])/g, ' $1')),
-                        React.createElement('td', { className: 'p-2 text-slate-700' }, oA[k]),
-                        React.createElement('td', { className: 'p-2 text-slate-700' }, oB[k])
-                      );
-                    })
-                  )
+                  ['kingdom', 'cellType', 'size', 'habitat', 'feeding', 'reproduction', 'movement'].map(function(k) {
+                    var valA = oA[k];
+                    var valB = oB[k];
+                    var isDifferent = valA !== valB;
+
+                    return React.createElement('div', { key: k, className: 'p-2.5 rounded-xl border transition-all ' + (isDifferent ? 'bg-amber-50/50 border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200') },
+                      React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                        React.createElement('span', { className: 'text-[9px] font-black uppercase text-slate-500 tracking-wider' }, k.replace(/([A-Z])/g, ' $1')),
+                        isDifferent && React.createElement('span', { className: 'text-[8px] bg-amber-100 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.2 rounded' }, 'Difference')
+                      ),
+                      React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-xs' },
+                        React.createElement('div', { className: 'text-slate-700 leading-normal' },
+                          valA,
+                          (function() {
+                            var matched = findConcepts(valA);
+                            if (matched.length === 0) return null;
+                            return React.createElement('div', { className: 'flex flex-wrap gap-1 mt-1' },
+                              matched.map(function(key) {
+                                return React.createElement('button', {
+                                  key: key,
+                                  onClick: function() { upd('_studyConcept', key); },
+                                  className: 'px-1.5 py-0.5 text-[8px] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100'
+                                }, '📖 Study ' + CELL_VOCAB[key].term);
+                              })
+                            );
+                          })()
+                        ),
+                        React.createElement('div', { className: 'text-slate-700 leading-normal' },
+                          valB,
+                          (function() {
+                            var matched = findConcepts(valB);
+                            if (matched.length === 0) return null;
+                            return React.createElement('div', { className: 'flex flex-wrap gap-1 mt-1' },
+                              matched.map(function(key) {
+                                return React.createElement('button', {
+                                  key: key,
+                                  onClick: function() { upd('_studyConcept', key); },
+                                  className: 'px-1.5 py-0.5 text-[8px] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100'
+                                }, '📖 Study ' + CELL_VOCAB[key].term);
+                              })
+                            );
+                          })()
+                        )
+                      )
+                    );
+                  })
                 )
               );
             })(),
@@ -20201,7 +20940,62 @@ var d = labToolData.cell;
               React.createElement('div', { className: 'text-6xl mb-2' }, 'Goal!'),
               React.createElement('h3', { className: 'text-2xl font-bold text-amber-800 mb-2' }, 'Cell Master Achievement'),
               React.createElement('p', { className: 'text-sm text-amber-700 italic' }, 'You explored a microscopic universe of life.')
-            )
+            ),
+
+            // ── Vocabulary Concept Flashcard Overlay (Modal) ──
+            (function() {
+              if (!d._studyConcept) return null;
+              var termKey = d._studyConcept;
+              var vocabInfo = CELL_VOCAB[termKey];
+              if (!vocabInfo) return null;
+              var isStudied = d._studiedVocab && d._studiedVocab[termKey];
+
+              return React.createElement('div', {
+                className: 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200'
+              },
+                React.createElement('div', {
+                  className: 'bg-white rounded-2xl border-2 border-emerald-500 max-w-sm w-full p-6 shadow-2xl relative animate-in zoom-in-95 duration-200'
+                },
+                  React.createElement('button', {
+                    onClick: function() { upd('_studyConcept', null); },
+                    className: 'absolute top-3 right-3 text-slate-400 hover:text-slate-600 font-bold p-1 rounded-lg hover:bg-slate-100',
+                    'aria-label': 'Close flashcard'
+                  }, '✕'),
+                  React.createElement('div', { className: 'text-center' },
+                    React.createElement('span', { className: 'text-4xl mb-3 inline-block' }, '📇'),
+                    React.createElement('h4', { className: 'text-lg font-bold text-emerald-800 mb-2' }, vocabInfo.term),
+                    React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 border border-emerald-100 text-xs text-slate-700 leading-relaxed mb-4 text-left' },
+                      vocabInfo.def
+                    ),
+                    !isStudied ? React.createElement('button', {
+                      onClick: function() {
+                        var sv = Object.assign({}, d._studiedVocab || {});
+                        sv[termKey] = true;
+                        var newRP = (d.researchPoints || 0) + 5;
+                        setLabToolData(function(prev) {
+                          var p = prev || {};
+                          var cel = Object.assign({}, p.cell || {});
+                          cel._studiedVocab = sv;
+                          cel.researchPoints = newRP;
+                          cel._studyConcept = null;
+                          return Object.assign({}, p, { cell: cel });
+                        });
+                        cellSound('badge');
+                        addToast('✨ Concept Studied! +5 RP (' + vocabInfo.term + ')', 'success');
+                        if (typeof awardStemXP === 'function') awardStemXP('studyVocab_' + termKey, 10, 'Study Vocab: ' + vocabInfo.term);
+                      },
+                      className: 'w-full py-2.5 px-4 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl hover:from-emerald-700 hover:to-teal-700 shadow-md hover:shadow-lg transition-all'
+                    }, 'Study Term (+5 RP)') : React.createElement('div', null,
+                      React.createElement('p', { className: 'text-xs text-emerald-600 font-bold mb-3' }, '✓ You have already studied this term!'),
+                      React.createElement('button', {
+                        onClick: function() { upd('_studyConcept', null); },
+                        className: 'w-full py-2 px-4 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all'
+                      }, 'Close')
+                    )
+                  )
+                )
+              );
+            })()
 
           )
       })();
