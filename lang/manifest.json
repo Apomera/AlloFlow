@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-24T23:04:08.103Z",
-  "count": 19,
+  "generated": "2026-05-24T23:58:18.325Z",
+  "count": 22,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -30,6 +30,13 @@
       "display": "French",
       "keys": 9953,
       "bytes": 1178604,
+      "updated": "2026-05-24"
+    },
+    {
+      "slug": "german",
+      "display": "German",
+      "keys": 9974,
+      "bytes": 1057824,
       "updated": "2026-05-24"
     },
     {
@@ -72,6 +79,13 @@
       "display": "Korean",
       "keys": 9968,
       "bytes": 1012498,
+      "updated": "2026-05-24"
+    },
+    {
+      "slug": "nepali",
+      "display": "Nepali",
+      "keys": 9968,
+      "bytes": 1433213,
       "updated": "2026-05-24"
     },
     {
@@ -128,6 +142,13 @@
       "display": "Ukrainian",
       "keys": 9968,
       "bytes": 1206991,
+      "updated": "2026-05-24"
+    },
+    {
+      "slug": "urdu",
+      "display": "Urdu",
+      "keys": 9965,
+      "bytes": 1451000,
       "updated": "2026-05-24"
     },
     {
