@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-24T19:25:45.420Z",
-  "count": 12,
+  "generated": "2026-05-24T19:56:03.806Z",
+  "count": 14,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -47,6 +47,13 @@
       "updated": "2026-05-24"
     },
     {
+      "slug": "korean",
+      "display": "Korean",
+      "keys": 9968,
+      "bytes": 1012498,
+      "updated": "2026-05-24"
+    },
+    {
       "slug": "portuguese_brazil",
       "display": "Portuguese (Brazil)",
       "keys": 9953,
@@ -57,7 +64,7 @@
       "slug": "russian",
       "display": "Russian",
       "keys": 9197,
-      "bytes": 626872,
+      "bytes": 689318,
       "updated": "2026-05-24"
     },
     {
@@ -79,6 +86,13 @@
       "display": "Tagalog",
       "keys": 9953,
       "bytes": 1015158,
+      "updated": "2026-05-24"
+    },
+    {
+      "slug": "ukrainian",
+      "display": "Ukrainian",
+      "keys": 9968,
+      "bytes": 1206991,
       "updated": "2026-05-24"
     },
     {
