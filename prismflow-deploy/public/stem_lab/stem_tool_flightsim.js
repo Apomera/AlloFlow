@@ -20550,7 +20550,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 var isMono = /formula|variables|code/i.test(k);
                 return h('div', { key: k, style: { marginBottom: '8px' } },
                   h('div', {
-                    style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }
+                    style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }
                   }, labelStr),
                   h('div', {
                     style: { fontSize: '12px', color: '#e2e8f0', lineHeight: 1.5, fontFamily: isMono ? 'ui-monospace, Menlo, monospace' : 'inherit', whiteSpace: 'pre-wrap' }
@@ -20561,7 +20561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               if (Array.isArray(v)) {
                 return h('div', { key: k, style: { marginBottom: '8px' } },
                   h('div', {
-                    style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }
+                    style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }
                   }, labelStr),
                   h('ul', { style: { margin: 0, paddingLeft: '20px', color: '#cbd5e1' } },
                     v.map(function(item, ii) {
@@ -20581,7 +20581,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               if (v && typeof v === 'object') {
                 return h('div', { key: k, style: { marginBottom: '8px' } },
                   h('div', {
-                    style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }
+                    style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }
                   }, labelStr),
                   h('div', { style: { fontSize: '11px', color: '#cbd5e1', paddingLeft: '12px' } },
                     Object.keys(v).map(function(sk) {
@@ -21006,12 +21006,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('div', { style: { marginBottom: '12px' } },
                 h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Air density'),
                 h('div', { style: { fontSize: '15px', color: '#22d3ee', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, rho.toFixed(5) + ' slug/ft³'),
-                h('div', { style: { fontSize: '10px', color: '#64748b' } }, (Math.round(sigma * 100)) + '% of sea-level density')
+                h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, (Math.round(sigma * 100)) + '% of sea-level density')
               ),
               h('div', { style: { marginBottom: '12px' } },
                 h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Lift force'),
                 h('div', { style: { fontSize: '24px', color: '#86efac', fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(liftLb).toLocaleString() + ' lb'),
-                h('div', { style: { fontSize: '10px', color: '#64748b' } }, '= ' + Math.round(liftLb / 2.2046).toLocaleString() + ' kg')
+                h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, '= ' + Math.round(liftLb / 2.2046).toLocaleString() + ' kg')
               ),
               h('div', { style: { marginBottom: '12px' } },
                 h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Aircraft weight (preset)'),

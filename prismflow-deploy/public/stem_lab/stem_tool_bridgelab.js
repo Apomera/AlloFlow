@@ -2152,7 +2152,7 @@
                     var active = (d.selectedRepair || TECHNIQUES[0].id) === t.id;
                     return h('button', { key: t.id,
                       onClick: function() { upd({ selectedRepair: t.id }); },
-                      style: { padding: '8px 12px', borderRadius: 8, background: active ? t.color + '33' : '#1e293b', border: '1px solid ' + (active ? t.color : '#334155'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '8px 12px', borderRadius: 8, background: active ? t.color + '33' : '#1e293b', border: '1px solid ' + (active ? t.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, t.name);
                   })
                 ),
@@ -2305,12 +2305,12 @@
                   good: 'Low permeability — good for retaining walls. Cohesive (sticks together).',
                   watch: 'Settles for DECADES under load (consolidation). The Tower of Pisa\'s famous lean comes from differential consolidation in soft clay.'
                 },
-                { id: 'soft', name: 'Soft clay / silt', bearingMPa: 0.05, color: '#525252',
+                { id: 'soft', name: 'Soft clay / silt', bearingMPa: 0.05, color: '#a3a3a3',
                   desc: 'Marine deposits, lake bed, recently-deposited mud. Allowable bearing 25-100 kPa.',
                   good: 'Few benefits — usually a problem soil. Common in coastal + river-delta regions where bridges are most needed.',
                   watch: 'Bearing capacity often inadequate for shallow foundations. Requires deep piles or ground improvement (vibroflotation, soil mixing, preloading). Boston\'s Big Dig + the Bay Area\'s reclaimed land are full of soft clays.'
                 },
-                { id: 'fill', name: 'Loose fill / made ground', bearingMPa: 0.05, color: '#737373',
+                { id: 'fill', name: 'Loose fill / made ground', bearingMPa: 0.05, color: '#a3a3a3',
                   desc: 'Man-made fill, demolition rubble, uncontrolled placement. Highly variable.',
                   good: '(Not a foundation material on its own. Always investigate + treat.)',
                   watch: 'Heterogeneous, may contain voids, decomposable materials (wood, plastic). Will settle unpredictably + can liquefy. Best practice: remove + replace with engineered fill or install deep piles to a competent layer below.'
@@ -2347,7 +2347,7 @@
                     var active = soilId === s.id;
                     return h('button', { key: s.id,
                       onClick: function() { upd({ selectedSoil: s.id }); },
-                      style: { padding: '8px 12px', borderRadius: 8, background: active ? s.color + 'AA' : '#1e293b', border: '1px solid ' + (active ? s.color : '#334155'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '8px 12px', borderRadius: 8, background: active ? s.color + 'AA' : '#1e293b', border: '1px solid ' + (active ? s.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, s.name);
                   })
                 ),
@@ -2857,7 +2857,7 @@
               var active = d.selectedForce === f.id;
               return h('button', { key: f.id,
                 onClick: function() { upd({ selectedForce: f.id }); },
-                style: { padding: '6px 12px', borderRadius: 8, background: active ? f.color + '33' : '#1e293b', border: '1px solid ' + (active ? f.color : '#334155'), color: active ? f.color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '6px 12px', borderRadius: 8, background: active ? f.color + '33' : '#1e293b', border: '1px solid ' + (active ? f.color : '#94a3b8'), color: active ? f.color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
               }, f.icon + ' ' + f.name);
             })
           ),
@@ -3012,7 +3012,7 @@
                     var active = (d.selectedSensor || SENSORS[0].id) === s.id;
                     return h('button', { key: s.id,
                       onClick: function() { upd({ selectedSensor: s.id }); },
-                      style: { padding: '8px 12px', borderRadius: 8, background: active ? s.color + '33' : '#1e293b', border: '1px solid ' + (active ? s.color : '#334155'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '8px 12px', borderRadius: 8, background: active ? s.color + '33' : '#1e293b', border: '1px solid ' + (active ? s.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, s.name);
                   })
                 ),

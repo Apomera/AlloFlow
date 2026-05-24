@@ -2619,7 +2619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         }
                       },
                       className: 'p-3 rounded-xl border-2 text-left transition-all hover:scale-[1.02]',
-                      style: isActive ? { background: 'linear-gradient(135deg, #064e3b, #065f46)', borderColor: '#10b981', boxShadow: '0 0 15px rgba(16,185,129,0.25)', animation: 'kp-glow 3s infinite' } : { background: 'linear-gradient(135deg, #0f172a, #1e293b)', borderColor: '#334155' }
+                      style: isActive ? { background: 'linear-gradient(135deg, #064e3b, #065f46)', borderColor: '#10b981', boxShadow: '0 0 15px rgba(16,185,129,0.25)', animation: 'kp-glow 3s infinite' } : { background: 'linear-gradient(135deg, #0f172a, #1e293b)', borderColor: '#94a3b8' }
                     },
                       React.createElement('div', { className: 'flex items-center gap-1 mb-1' },
                         React.createElement('span', { className: 'text-lg' }, pol2.icon),
@@ -2641,7 +2641,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     var canAdopt = !isAdopted && resources.science >= 10;
                     return React.createElement('div', {
                       key: td3.id, className: 'p-2 rounded-xl border flex items-center justify-between transition-all ' + (canAdopt && !isAdopted ? 'hover:scale-[1.01]' : ''),
-                      style: isAdopted ? { background: 'linear-gradient(135deg, #451a03, #422006)', borderColor: '#ca8a04', boxShadow: '0 0 10px rgba(202,138,4,0.15)' } : canAdopt ? { background: 'linear-gradient(135deg, #0f172a, #1e293b)', borderColor: '#475569' } : { background: '#0f172a', borderColor: '#1e293b', opacity: 0.5 }
+                      style: isAdopted ? { background: 'linear-gradient(135deg, #451a03, #422006)', borderColor: '#ca8a04', boxShadow: '0 0 10px rgba(202,138,4,0.15)' } : canAdopt ? { background: 'linear-gradient(135deg, #0f172a, #1e293b)', borderColor: '#94a3b8' } : { background: '#0f172a', borderColor: '#1e293b', opacity: 0.5 }
                     },
                       React.createElement('div', { className: 'flex items-center gap-2 flex-1' },
                         React.createElement('span', { className: 'text-xl' }, td3.icon),
@@ -2851,7 +2851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               React.createElement('div', { className: 'rounded-xl p-2 border mb-3', style: { background: 'linear-gradient(135deg, #0f172a, #1e293b)', borderColor: '#33415520' } },
                 React.createElement('div', { className: 'flex items-center justify-between mb-1' },
                   React.createElement('h4', { className: 'text-[11px] font-bold uppercase', style: { color: '#94a3b8' } }, '\u267B Resource Converter'),
-                  React.createElement('span', { className: 'text-[11px]', style: { color: '#475569' } }, 'Trade 5 of one for 3 of another')
+                  React.createElement('span', { className: 'text-[11px]', style: { color: '#94a3b8' } }, 'Trade 5 of one for 3 of another')
                 ),
                 React.createElement('div', { className: 'flex gap-1 flex-wrap' },
                   [['food', 'energy'], ['energy', 'materials'], ['materials', 'science'], ['water', 'food'], ['science', 'energy']].map(function (pair) {
@@ -3006,7 +3006,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     var canBuild2 = Object.keys(rd4.cost).every(function(k) { return resources[k] >= rd4.cost[k]; });
                     return React.createElement('button', { key: rd4.type, onClick: function() { if(canBuild2) buildRover(rd4.type); }, disabled: !canBuild2,
                       className: 'p-2 rounded-lg text-center transition-all ' + (canBuild2 ? 'hover:scale-[1.03]' : ''),
-                      style: canBuild2 ? { background: 'linear-gradient(135deg, #0f172a, #164e63)', border: '1px solid ' + rd4.color + '40', color: rd4.color } : { background: '#0f172a', border: '1px solid #1e293b', color: '#334155' }
+                      style: canBuild2 ? { background: 'linear-gradient(135deg, #0f172a, #164e63)', border: '1px solid ' + rd4.color + '40', color: rd4.color } : { background: '#0f172a', border: '1px solid #1e293b', color: '#94a3b8' }
                     },
                       React.createElement('div', { className: 'text-lg' }, rd4.icon),
                       React.createElement('div', { className: 'text-[11px] font-bold' }, rd4.name),
@@ -3024,7 +3024,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 )
               ) : null; })(),
               // Log
-              React.createElement('div', { className: 'rounded-xl p-2 border max-h-28 overflow-y-auto', style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderColor: '#334155' } },
+              React.createElement('div', { className: 'rounded-xl p-2 border max-h-28 overflow-y-auto', style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderColor: '#94a3b8' } },
                 React.createElement('h4', { className: 'text-[11px] font-bold text-indigo-400 uppercase mb-1 flex items-center gap-1' }, '\uD83D\uDCDC Mission Log'),
                 gameLog.slice(-8).reverse().map(function (log, li) { return React.createElement('div', { key: li, className: 'text-[11px] py-0.5 border-b border-slate-800/50', style: { color: li === 0 ? '#c4b5fd' : '#94a3b8', animation: li === 0 ? 'kp-fadeIn 0.5s ease-out' : 'none' } }, log); })
               ),

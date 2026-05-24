@@ -288,7 +288,7 @@ window.StemLab = window.StemLab || {
       };
 
       var DOPANTS = {
-        none:      { name: 'Intrinsic',    type: null,   valence: 4, color: '#6B7280', symbol: '-' },
+        none:      { name: 'Intrinsic',    type: null,   valence: 4, color: '#9ca3af', symbol: '-' },
         phosphorus:{ name: 'Phosphorus (P)', type: 'n',   valence: 5, color: '#EF4444', symbol: 'P' },
         arsenic:   { name: 'Arsenic (As)',  type: 'n',    valence: 5, color: '#F97316', symbol: 'As' },
         boron:     { name: 'Boron (B)',     type: 'p',    valence: 3, color: '#3B82F6', symbol: 'B' },
@@ -451,7 +451,7 @@ window.StemLab = window.StemLab || {
           // Conduction band
           var cGrad = cx.createLinearGradient(0, 15, 0, conductionBot);
           cGrad.addColorStop(0, '#1E293B');
-          cGrad.addColorStop(1, isConductor ? mat.color : '#334155');
+          cGrad.addColorStop(1, isConductor ? mat.color : '#94a3b8');
           cx.fillStyle = cGrad;
           cx.fillRect(30, 15, W - 60, conductionBot - 15);
           cx.fillStyle = '#E2E8F0';

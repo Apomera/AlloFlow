@@ -3273,7 +3273,7 @@ window.StemLab = window.StemLab || {
             style: {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               gap: 10, marginBottom: 10, padding: '10px 14px',
-              background: bg, color: '#1f2937',
+              background: bg, color: '#d1d5db',
               border: '2px solid ' + (tier ? tier.color : '#92400e'),
               borderRadius: 12,
               boxShadow: glow,

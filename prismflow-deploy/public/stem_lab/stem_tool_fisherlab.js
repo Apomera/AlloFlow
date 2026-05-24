@@ -9729,7 +9729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('div', { style: { display: 'flex', flex: 1, gap: '16px', minHeight: 0 } },
                   // Left Panel: Interactive Caliper Gauge board (SVG)
                   h('div', { style: { flex: '1.4', background: '#070f1e', borderRadius: '8px', border: '1px solid rgba(56,189,248,0.15)', display: 'flex', flexDirection: 'column', padding: '10px', position: 'relative', overflow: 'hidden' } },
-                    h('div', { style: { fontSize: '10px', color: '#64748b', marginBottom: '8px', fontWeight: 'bold' } }, 'MEASURE BOARD (DIAGRAM NOT TO SCALE)'),
+                    h('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '8px', fontWeight: 'bold' } }, 'MEASURE BOARD (DIAGRAM NOT TO SCALE)'),
                     
                     // SVG Schematic
                     h('svg', {

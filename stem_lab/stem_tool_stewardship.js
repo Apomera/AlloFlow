@@ -1128,7 +1128,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 var c = snap.campaign;
                 var picked = cmp.a === c.id;
                 return h('button', { key: c.id, onClick: function() { pickComparisonCampaign(c.id); },
-                  style: { padding: 12, borderRadius: 10, border: '2px solid ' + (picked ? c.color : '#334155'), background: picked ? c.color + '22' : '#0f172a', cursor: 'pointer', textAlign: 'left' } },
+                  style: { padding: 12, borderRadius: 10, border: '2px solid ' + (picked ? c.color : '#94a3b8'), background: picked ? c.color + '22' : '#0f172a', cursor: 'pointer', textAlign: 'left' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                     h('span', { style: { fontSize: 22 } }, c.icon),
                     h('div', { style: { flex: 1 } },
@@ -1450,7 +1450,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           },
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Final outcome'),
             h('div', { style: { fontSize: 18, fontWeight: 800, color: outcome.color || '#0f172a' } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
-            h('p', { style: { margin: '6px 0 0', color: '#334155', fontSize: 13, lineHeight: 1.55 } }, outcome.desc || '')
+            h('p', { style: { margin: '6px 0 0', color: '#94a3b8', fontSize: 13, lineHeight: 1.55 } }, outcome.desc || '')
           ) : null,
 
           // Campaign metadata
@@ -1490,7 +1490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Campaign Log'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
               eventHighlights.map(function(eh, i) {
-                return h('div', { key: i, style: { padding: '6px 10px', background: '#f8fafc', borderLeft: '3px solid ' + c.color, borderRadius: 4, fontSize: 12, color: '#334155' } },
+                return h('div', { key: i, style: { padding: '6px 10px', background: '#f8fafc', borderLeft: '3px solid ' + c.color, borderRadius: 4, fontSize: 12, color: '#94a3b8' } },
                   h('strong', null, eh.label + ': '),
                   eh.event,
                   eh.cascades && eh.cascades.length > 0 ? h('div', { style: { marginTop: 2, fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } },

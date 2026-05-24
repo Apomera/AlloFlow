@@ -3069,8 +3069,6 @@ const d = labToolData.rocks || {};
 
               )
 
-              )
-
             })(),
 
 

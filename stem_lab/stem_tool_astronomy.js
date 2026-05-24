@@ -666,7 +666,7 @@
               },
                 h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 2 } }, c.name),
                 h('div', { style: { fontSize: 11, color: '#94a3b8' } }, c.common),
-                h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, c.season)
+                h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, c.season)
               );
             })
           ),
@@ -858,7 +858,7 @@
                 })
               ),
 
-              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Showing ' + filtered.length + ' constellations'),
+              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'Showing ' + filtered.length + ' constellations'),
 
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10, maxHeight: 700, overflowY: 'auto', padding: 4 } },
                 filtered.map(function(c) {
@@ -975,7 +975,7 @@
               'aria-label': 'Moon phase position',
               style: { width: '100%', accentColor: INDIGO }
             }),
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#64748b', marginTop: 4 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8', marginTop: 4 } },
               h('span', null, 'New'),
               h('span', null, 'First Quarter'),
               h('span', null, 'Full'),
@@ -1124,7 +1124,7 @@
                     var active = (d.selectedTideTopic || TOPICS[0].id) === t.id;
                     return h('button', { key: t.id,
                       onClick: function() { upd({ selectedTideTopic: t.id }); },
-                      style: { padding: '8px 14px', borderRadius: 8, background: active ? t.color + '33' : '#1e293b', border: '1px solid ' + (active ? t.color : '#334155'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '8px 14px', borderRadius: 8, background: active ? t.color + '33' : '#1e293b', border: '1px solid ' + (active ? t.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, t.name);
                   })
                 ),
@@ -1232,7 +1232,7 @@
                     var active = (d.selectedSSStage || 'cloud') === s.id;
                     return h('button', { key: s.id,
                       onClick: function() { upd({ selectedSSStage: s.id }); },
-                      style: { padding: '8px 12px', borderRadius: 8, background: active ? s.color + '33' : '#1e293b', border: '1px solid ' + (active ? s.color : '#334155'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '8px 12px', borderRadius: 8, background: active ? s.color + '33' : '#1e293b', border: '1px solid ' + (active ? s.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, s.name);
                   })
                 ),
@@ -1752,7 +1752,7 @@
                     var active = (d.selectedAstroTarget || TARGETS[0].id) === t.id;
                     return h('button', { key: t.id,
                       onClick: function() { upd({ selectedAstroTarget: t.id }); },
-                      style: { padding: '8px 12px', borderRadius: 8, background: active ? t.color + '33' : '#1e293b', border: '1px solid ' + (active ? t.color : '#334155'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '8px 12px', borderRadius: 8, background: active ? t.color + '33' : '#1e293b', border: '1px solid ' + (active ? t.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, t.name);
                   })
                 ),
@@ -2416,7 +2416,7 @@
                     var active = (d.selectedNebula || NEBULAE[0].id) === n.id;
                     return h('button', { key: n.id,
                       onClick: function() { upd({ selectedNebula: n.id }); },
-                      style: { padding: '8px 12px', borderRadius: 8, background: active ? n.color + '33' : '#1e293b', border: '1px solid ' + (active ? n.color : '#334155'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '8px 12px', borderRadius: 8, background: active ? n.color + '33' : '#1e293b', border: '1px solid ' + (active ? n.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, n.name);
                   })
                 ),
@@ -2549,7 +2549,7 @@
                     var active = (d.selectedSolarLayer || 'core') === l.id;
                     return h('button', { key: l.id,
                       onClick: function() { upd({ selectedSolarLayer: l.id }); },
-                      style: { padding: '6px 12px', borderRadius: 8, background: active ? l.color + '33' : '#1e293b', border: '1px solid ' + (active ? l.color : '#334155'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '6px 12px', borderRadius: 8, background: active ? l.color + '33' : '#1e293b', border: '1px solid ' + (active ? l.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, l.name);
                   })
                 ),
@@ -2641,7 +2641,7 @@
                     var active = (d.selectedCompact || 'wd') === c.id;
                     return h('button', { key: c.id,
                       onClick: function() { upd({ selectedCompact: c.id }); },
-                      style: { padding: '8px 14px', borderRadius: 8, background: active ? c.color + '33' : '#1e293b', border: '1px solid ' + (active ? c.color : '#334155'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '8px 14px', borderRadius: 8, background: active ? c.color + '33' : '#1e293b', border: '1px solid ' + (active ? c.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, c.name);
                   })
                 ),
@@ -3147,7 +3147,7 @@
                 })
               ),
 
-              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Showing ' + filtered.length + ' stars'),
+              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'Showing ' + filtered.length + ' stars'),
 
               h('div', { style: { maxHeight: 600, overflowY: 'auto', padding: 4 } },
                 filtered.map(function(s, idx) {
@@ -4019,7 +4019,7 @@
                 })
               ),
 
-              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Showing ' + filtered.length + ' of 110 Messier objects'),
+              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'Showing ' + filtered.length + ' of 110 Messier objects'),
 
               h('div', { style: { maxHeight: 600, overflowY: 'auto', padding: 4 } },
                 filtered.map(function(o) {
@@ -4029,7 +4029,7 @@
                   },
                     h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                       h('div', { style: { fontSize: 16, fontWeight: 900, color: typeColor(o.type) } }, 'M' + o.m),
-                      h('div', { style: { fontSize: 9, color: '#64748b', fontFamily: 'monospace' } }, o.type)
+                      h('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'monospace' } }, o.type)
                     ),
                     h('div', null,
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 4, marginBottom: 2 } },
@@ -4122,7 +4122,7 @@
                     var active = (d.selectedMeteoroid || ITEMS[0].id) === it.id;
                     return h('button', { key: it.id,
                       onClick: function() { upd({ selectedMeteoroid: it.id }); },
-                      style: { padding: '8px 12px', borderRadius: 8, background: active ? it.color + '33' : '#1e293b', border: '1px solid ' + (active ? it.color : '#334155'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '8px 12px', borderRadius: 8, background: active ? it.color + '33' : '#1e293b', border: '1px solid ' + (active ? it.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, it.name);
                   })
                 ),
@@ -4199,7 +4199,7 @@
                     var active = (d.selectedImpact || IMPACTS[0].id) === i.id;
                     return h('button', { key: i.id,
                       onClick: function() { upd({ selectedImpact: i.id }); },
-                      style: { padding: '8px 12px', borderRadius: 8, background: active ? i.color + '33' : '#1e293b', border: '1px solid ' + (active ? i.color : '#334155'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '8px 12px', borderRadius: 8, background: active ? i.color + '33' : '#1e293b', border: '1px solid ' + (active ? i.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     },
                       h('div', null, i.name),
                       h('div', { style: { fontSize: 10, opacity: 0.75, fontWeight: 500, marginTop: 2 } }, i.size)
@@ -5042,7 +5042,7 @@
                   var active = (d.selectedHistFig || FIGURES[0].id) === f.id;
                   return h('button', { key: f.id,
                     onClick: function() { upd({ selectedHistFig: f.id }); },
-                    style: { padding: '8px 12px', borderRadius: 8, background: active ? f.color + '33' : '#1e293b', border: '1px solid ' + (active ? f.color : '#334155'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                    style: { padding: '8px 12px', borderRadius: 8, background: active ? f.color + '33' : '#1e293b', border: '1px solid ' + (active ? f.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                   }, f.name);
                 })
               ),
@@ -6039,7 +6039,7 @@
                 )
               ),
 
-              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Showing ' + filtered.length + ' of ' + TERMS.length + ' terms'),
+              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'Showing ' + filtered.length + ' of ' + TERMS.length + ' terms'),
 
               h('dl', { style: { maxHeight: 600, overflowY: 'auto', padding: 4, margin: 0 } },
                 filtered.map(function(t, idx) {
@@ -6520,7 +6520,7 @@
           h('div', { id: 'astro-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
               h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'Night Sky Observing Kit'),
-              h('div', { style: { fontSize: 11, color: '#475569' } }, 'NGSS MS-ESS1 · HS-ESS1')
+              h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'NGSS MS-ESS1 · HS-ESS1')
             ),
 
             h('div', { style: { padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, marginBottom: 12, fontSize: 12, lineHeight: 1.55, color: '#7f1d1d' } },
@@ -6595,7 +6595,7 @@
               )
             ),
 
-            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#94a3b8', lineHeight: 1.5 } },
               'Sources: NASA (nasa.gov) · International Dark-Sky Association (darksky.org) · NGSS Lead States, 2013 · Bortle, J. (2001), "Introducing the Bortle Dark-Sky Scale" · Penobscot Nation, Passamaquoddy Tribe, and other Wabanaki sources for the local sky traditions. Printed from AlloFlow STEM Lab.'
             )
           )

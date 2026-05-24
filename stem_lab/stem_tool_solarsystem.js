@@ -16692,7 +16692,7 @@ const d = labToolData.solarSystem;
                                       var TYPES = {
                                         cType: { name: 'C-type (Carbonaceous)', fraction: 75, color: '#1c1917', desc: 'Most common (75%). Dark, primitive, water-rich. Found in outer belt.', composition: [['Carbon + organics', 40, '#7c2d12'], ['Silicates', 30, '#a3a3a3'], ['Water + hydrated minerals', 20, '#3b82f6'], ['Iron + nickel', 10, '#71717a']] },
                                         sType: { name: 'S-type (Silicaceous)', fraction: 17, color: '#a16207', desc: 'Stony (17%). Lighter, made of silicate minerals + iron. Found in inner belt.', composition: [['Silicates', 50, '#a3a3a3'], ['Iron + nickel', 25, '#71717a'], ['Magnesium minerals', 15, '#fbbf24'], ['Other', 10, '#7c2d12']] },
-                                        mType: { name: 'M-type (Metallic)', fraction: 8, color: '#52525b', desc: 'Metal-rich (8%). Mostly iron + nickel. Possibly from core of broken protoplanets. Mining target.', composition: [['Iron', 60, '#71717a'], ['Nickel', 25, '#a3a3a3'], ['Platinum + Pd', 5, '#fde047'], ['Other metals', 10, '#52525b']] }
+                                        mType: { name: 'M-type (Metallic)', fraction: 8, color: '#a1a1aa', desc: 'Metal-rich (8%). Mostly iron + nickel. Possibly from core of broken protoplanets. Mining target.', composition: [['Iron', 60, '#71717a'], ['Nickel', 25, '#a3a3a3'], ['Platinum + Pd', 5, '#fde047'], ['Other metals', 10, '#52525b']] }
                                       };
                                       var sel = TYPES[astType];
                                       var cx = 200, cy = 130, r = 65;
@@ -18481,7 +18481,7 @@ const d = labToolData.solarSystem;
                                         { name: 'Polaris (North Star)', mag: 1.98, color: '#fff' },
                                         { name: 'Faintest naked-eye', mag: 6.0, color: 'var(--allo-stem-text-soft, #94a3b8)' },
                                         { name: 'Backyard scope limit', mag: 13, color: 'var(--allo-stem-text-soft, #475569)' },
-                                        { name: 'JWST limit', mag: 34, color: '#1f2937' }
+                                        { name: 'JWST limit', mag: 34, color: '#d1d5db' }
                                       ];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
