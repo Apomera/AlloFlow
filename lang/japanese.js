@@ -7827,6 +7827,140 @@
       "your_role_2": "あなたの役割:",
       "preference_assessment_wizard": "選好評価ウィザード",
       "virtual_practicum": "バーチャル実習"
+    },
+    "profile": {
+      "accommodations": "現在の配慮",
+      "desc": "この情報はすべてのAI駆動ツールと自動的に共有され、推奨事項をパーソナライズします。",
+      "goals": "目標",
+      "interests": "興味と動機",
+      "notes": "追加のメモ",
+      "strengths": "強み",
+      "title": "生徒プロファイル",
+      "triggers": "既知のトリガー"
+    },
+    "counseling": {
+      "choose_scenario": "シナリオを選択",
+      "enable_images": "画像生成を有効化",
+      "start": "カウンセリングセッションを開始",
+      "title": "カウンセリングシミュレーション"
+    },
+    "interval": {
+      "save": "セッションを保存",
+      "saved": "インターバルセッションを保存しました ✅",
+      "start": "記録を開始",
+      "title": "インターバル記録"
+    },
+    "obs": {
+      "behavior_occurring": "🔴 行動発生中...",
+      "elapsed": "経過時間",
+      "interval_length": "インターバル:",
+      "latency_recorded": "潜時を記録しました！",
+      "occurrences": "発生数",
+      "save_session": "セッションを保存",
+      "saved": "観察セッションを保存しました ✅",
+      "session_notes": "セッションメモ...",
+      "start_to_begin": "潜時測定を開始するにはタイマーを開始",
+      "tap_when_starts": "行動が始まったらタップ",
+      "title": "ライブ観察",
+      "waiting_for_behavior": "⏳ 行動を待っています..."
+    },
+    "heatmap": {
+      "less": "少",
+      "more": "多",
+      "subtitle": "日と時間による行動頻度",
+      "title": "行動ヒートマップ"
+    },
+    "sandbox": {
+      "add_phase_data": "フェーズデータを追加",
+      "add_phase_desc": "カスタムデータポイント付きの新しいフェーズを追加。",
+      "complex_scenario": "複雑なシナリオ",
+      "complex_desc": "混合した傾向を持つ複数フェーズデータ。",
+      "entries_loaded": "エントリーが読み込まれました",
+      "expected_pattern": "予想されるパターン",
+      "generate_custom": "カスタムを生成",
+      "generating": "生成中…",
+      "generation_preview": "生成プレビュー",
+      "intervention_desc_label": "介入の説明",
+      "new_entries": "新しいエントリー",
+      "phase_duration": "フェーズ持続時間",
+      "phase_label": "フェーズ",
+      "standard_scenario": "標準シナリオ",
+      "standard_desc": "典型的なベースライン-介入データセット。"
+    },
+    "dq": {
+      "completeness": "完全性",
+      "dataset_grade": "データセット評価",
+      "diversity": "多様性",
+      "recency": "新しさ",
+      "scorecard_title": "データ品質スコアカード",
+      "temporal_spread": "時間的広がり",
+      "tip_add_entries": "このスコアを強化するためにエントリーを追加してください。",
+      "tip_all_complete": "すべてのエントリーに必須フィールドが入力されています。",
+      "tip_antecedent_types": "観察された先行事象タイプの良い範囲。",
+      "tip_data_current": "データは現在のもので、最近の行動を反映しています。",
+      "tip_good_coverage": "日全体で良いカバレッジ。",
+      "tip_good_diversity": "先行事象全体で良い多様性。",
+      "tip_great_volume": "分析のための素晴らしいエントリー量。",
+      "tip_last_entry_ago": "最後のエントリーは少し前に記録されました。",
+      "tip_missing_fields": "一部のエントリーで必須フィールドが欠けています。",
+      "tip_spread_days": "エントリーは日全体に良く広がっています。",
+      "volume": "量"
+    },
+    "fba": {
+      "open_tool": "ツールを開く",
+      "progress_pct": "進捗",
+      "step_ai_analysis": "AI分析",
+      "step_ai_analysis_desc": "AIを使ってパターンと仮定機能を特定。",
+      "step_collect_more": "さらにデータを収集",
+      "step_collect_more_desc": "データセットを強化するため、さらに観察セッションを追加。",
+      "step_hypothesis": "仮説",
+      "step_hypothesis_desc": "行動機能の作業仮説を下書き。",
+      "step_record_abc": "ABCデータを記録",
+      "step_record_abc_desc": "先行事象、行動、結果を文書化。",
+      "step_report": "レポート",
+      "step_report_desc": "チーム用のFBAレポートを生成。",
+      "step_select_student": "生徒を選択",
+      "step_select_student_desc": "このFBAの対象生徒を選択。",
+      "step_sessions": "セッション",
+      "step_sessions_desc": "設定と時間にわたって観察セッションを実行。"
+    },
+    "allobot_chat": {
+      "card_desc": "行動戦略、FBA、BIP、介入計画についてAIとチャット",
+      "empty_desc": "FBA戦略、介入アイデア、データ解釈、緩和テクニックなどについてお手伝いできます。",
+      "empty_title": "行動分析について何でも聞いてください！",
+      "placeholder": "行動、戦略、FBA、BIPについて質問...",
+      "subtitle": "AI駆動の行動分析アシスタント",
+      "title": "AlloBotに質問"
+    },
+    "workflow": {
+      "subtitle": "臨床プロセスのステップバイステップガイドを選択",
+      "title": "ガイド付きワークフロー"
+    },
+    "consent": {
+      "title": "FERPA同意マネージャー"
+    },
+    "homelog": {
+      "title": "家庭行動ログ"
+    },
+    "intervention": {
+      "title": "AI介入計画ジェネレーター"
+    },
+    "progress": {
+      "title": "進捗ナラティブジェネレーター"
+    },
+    "snapshot": {
+      "title": "生徒スナップショット交換"
+    },
+    "selfcheck": {
+      "title": "生徒セルフチェック"
+    },
+    "abaguide": {
+      "title": "ABAクイックガイド"
+    },
+    "freq": {
+      "elapsed": "経過",
+      "save": "保存",
+      "saved": "セッションを保存しました ✅"
     }
   },
   "about": {
