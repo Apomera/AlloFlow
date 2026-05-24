@@ -1,7 +1,48 @@
 # STEM Lab Theme Responsiveness Audit
 
 **Generated**: 2026-05-19 (Claude Opus 4.7)
+**Updated**: 2026-05-19 (Claude Opus 4.7) — Pieces A + B + C landed.
 **Trigger**: Fractions Lab and other tools render dark backgrounds that don't respond to AlloFlow theme switching. Aaron's example: in Fractions Lab the bottom section flips with theme, the top viz area stays dark navy regardless.
+
+## Update — what's implemented as of 2026-05-19
+
+Three pieces shipped instead of the full bulk migration originally proposed:
+
+**Piece A — `window.AlloStemTheme` JS helper** (in `stem_lab/stem_lab_module.js`).
+JS-accessible palette for canvas / SVG / dynamic style code that can't use CSS variables. Usage:
+```js
+var p = window.AlloStemTheme.palette();         // current theme
+var p = window.AlloStemTheme.palette('contrast'); // explicit
+ctx.fillStyle = p.canvas;
+ctx.strokeStyle = p.text;
+// Subscribe to theme changes (optional — fires when <main> class changes)
+var unsub = window.AlloStemTheme.onChange(function (themeName, palette) { /* repaint */ });
+```
+Palette keys match the `--allo-stem-*` CSS variables: `canvas`, `panel`, `deeper`, `text`, `textSoft`, `border`, `buttonBg`, `buttonText`, `buttonBorder`.
+
+**Piece B — High-contrast override stylesheet** (in `AlloFlowANTI.txt`, alongside the existing CSS variable block).
+Attribute-selector CSS that catches inline-styled dark backgrounds and light text across all STEM tools when `theme === 'contrast'`. Covers:
+- Hex bg patterns: `#0f172a`, `#1e293b`, `#020617`, `#0a0e1a`, `#0a0a18`, `#0b1220`, `#162032` → `#000`
+- RGBA bg patterns: `rgba(15,23,42,*)`, `rgba(2,6,23,*)`, `rgba(30,41,59,*)`, `rgba(8,18,32,*)`, `rgba(9,17,28,*)`, `rgba(11,17,32,*)` → `#000`
+- Light text colors (slate-100/200/300/400, zinc/neutral/gray equivalents) → `#ffff00`
+- Dark borders (`#334155`, `#475569`) → `#ffff00`
+- Property-name-aware (matches inline-style substrings): `background:` rules don't touch `color:` text and vice versa.
+- SVG `fill`/`stroke` deliberately untouched — those encode information in visualizations.
+Reaches all 101 hardcoded-palette tools without per-tool migration.
+
+**Piece C — This document + architecture.md note.**
+Design rationale recorded so the immersive dark-palette aesthetic isn't accidentally erased by future "let's make tools follow theme" attempts.
+
+## Design rationale — why we chose targeted contrast over full theme migration
+
+The original instinct ("migrate all 101 tools to follow app theme") would have:
+- Broken the lab-immersion aesthetic. STEM visualizations (planetariums, microscopes, optics ray tracing, simulators) traditionally use dark backgrounds for glare reduction, spectral color visibility, and the "lab mode" psychological signal.
+- Risked breaking 101 custom simulations with subtle visual regressions (gradients, semi-transparent overlays, color-coded data viz).
+- Cost 1-2 days of work for an unclear UX win — many users would prefer the immersive dark experience regardless of app theme.
+
+What was actually broken — and now fixed — was **high-contrast accessibility users getting no benefit from the contrast theme inside STEM tools.** Piece B addresses that without forcing all tools into the host's day/night switching.
+
+The CSS-variable infrastructure (this doc's original proposal, defined at AlloFlowANTI.txt:22016) remains. Tools that want to opt in to full theme awareness can use `var(--allo-stem-*)` for their backgrounds and `window.AlloStemTheme.palette()` for their canvas-drawn elements. The 3 already-theme-aware tools (echolocation, echotrainer, geosandbox) demonstrate this pattern.
 
 ## TL;DR
 

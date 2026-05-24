@@ -16,6 +16,85 @@
     // STEM Lab module for AlloFlow - loaded from GitHub CDN
     // Version: 1.0.0 (Feb 2026)
 
+    // ── AlloStemTheme JS helper (Piece A) ──
+    // Exposes the same palette as the --allo-stem-* CSS variables defined
+    // in AlloFlowANTI.txt, but as plain strings for JS consumers that can't
+    // use CSS variables (canvas drawing, SVG attribute writes, dynamic
+    // style construction). Reads the current theme by checking the
+    // .theme-{light,dark,contrast} class on document.body or the
+    // <main> element. Tools call:
+    //   var p = window.AlloStemTheme.palette();      // current theme
+    //   var p = window.AlloStemTheme.palette('dark'); // explicit
+    //   ctx.fillStyle = p.canvas;
+    //   ctx.strokeStyle = p.text;
+    // The helper re-reads on each call so tools don't need to subscribe
+    // to theme changes — they pick up the new palette next paint.
+    if (!window.AlloStemTheme) {
+      var _ASTPalettes = {
+        light: {
+          canvas: '#ffffff', panel: '#f8fafc', deeper: '#e2e8f0',
+          text: '#0f172a', textSoft: '#475569', border: '#cbd5e1',
+          buttonBg: '#f1f5f9', buttonText: '#0f172a', buttonBorder: '#cbd5e1',
+        },
+        dark: {
+          canvas: '#0f172a', panel: '#1e293b', deeper: '#020617',
+          text: '#e2e8f0', textSoft: '#94a3b8', border: '#334155',
+          buttonBg: '#1e293b', buttonText: '#e2e8f0', buttonBorder: '#334155',
+        },
+        contrast: {
+          canvas: '#000000', panel: '#000000', deeper: '#000000',
+          text: '#ffff00', textSoft: '#ffff00', border: '#ffff00',
+          buttonBg: '#000000', buttonText: '#00ff00', buttonBorder: '#00ff00',
+        },
+      };
+      var _ASTDetectTheme = function () {
+        try {
+          if (typeof document === 'undefined') return 'dark';
+          // <main> carries `theme-${theme}` class; fallback to body if absent
+          var main = document.querySelector('main.theme-contrast') ? 'contrast'
+                   : document.querySelector('main.theme-dark')     ? 'dark'
+                   : document.querySelector('main.theme-light')    ? 'light'
+                   : null;
+          if (main) return main;
+          if (document.body && document.body.classList) {
+            if (document.body.classList.contains('theme-contrast')) return 'contrast';
+            if (document.body.classList.contains('theme-dark')) return 'dark';
+            if (document.body.classList.contains('theme-light')) return 'light';
+          }
+        } catch (_) {}
+        // Last-resort fallback to dark since the legacy STEM palette is dark.
+        return 'dark';
+      };
+      window.AlloStemTheme = {
+        palette: function (themeName) {
+          var t = themeName || _ASTDetectTheme();
+          return _ASTPalettes[t] || _ASTPalettes.dark;
+        },
+        currentTheme: _ASTDetectTheme,
+        // Opt-in: tools that need a render-time refresh on theme change
+        // can subscribe. Light implementation via MutationObserver on the
+        // main element's class attribute.
+        onChange: function (callback) {
+          if (typeof document === 'undefined' || typeof MutationObserver === 'undefined') {
+            return function () {};
+          }
+          var main = document.querySelector('main');
+          if (!main) return function () {};
+          var lastTheme = _ASTDetectTheme();
+          var observer = new MutationObserver(function () {
+            var newTheme = _ASTDetectTheme();
+            if (newTheme !== lastTheme) {
+              lastTheme = newTheme;
+              try { callback(newTheme, _ASTPalettes[newTheme] || _ASTPalettes.dark); }
+              catch (e) { console.warn('[AlloStemTheme] onChange callback error:', e); }
+            }
+          });
+          observer.observe(main, { attributes: true, attributeFilter: ['class'] });
+          return function () { observer.disconnect(); };
+        },
+      };
+    }
+
     // ── StemLab Plugin Registry (Phase 2) ──
     // Initialize before the hub component so plugins can register tools.
     // Plugins (stem_tool_*.js) call window.StemLab.registerTool(id, config)

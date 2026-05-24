@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════
-// stem_tool_dna.js — DNA / Genetics Lab  v3.0
-// Enhanced STEM Lab tool — 11 sub-tools
+// stem_tool_dna.js - DNA / Genetics Lab  v3.0
+// Enhanced STEM Lab tool - 11 sub-tools
 // Build · Replicate · Transcribe · Translate · Mutate
 // CRISPR · Protein · Forensics · Challenge · Battle · Learn
 // ═══════════════════════════════════════════════════════
@@ -31,7 +31,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -126,6 +126,7 @@ window.StemLab = window.StemLab || {
   var BASE_COMPLEMENT = { 'A':'T', 'T':'A', 'G':'C', 'C':'G' };
   var DNA_TO_RNA = { 'A':'U', 'T':'A', 'G':'C', 'C':'G' };
   var BASE_COLORS = { 'A':'#ef4444', 'T':'#3b82f6', 'G':'#22c55e', 'C':'#f59e0b', 'U':'#a855f7' };
+  var BASE_DARK_COLORS = { 'A':'#991b1b', 'T':'#1e3a8a', 'G':'#166534', 'C':'#9a3412', 'U':'#6b21a8' };
 
   var PRESETS = [
     { name: 'Insulin Fragment', seq: 'ATGTTCGTCAACCAACACCTGTGCGGCTCACAC', desc: 'Regulates blood sugar. Mutations cause diabetes.' },
@@ -243,24 +244,24 @@ window.StemLab = window.StemLab || {
   var LEARN_TOPICS = [
     { title: 'DNA Structure', icon: '\uD83E\uDDEC', tryIt: 'build', content: {
       'K-2': 'DNA is like a recipe book inside every cell! It tells your body how to grow. DNA looks like a twisted ladder called a double helix. The steps of the ladder are made of four letters: A, T, G, and C. A always pairs with T, and G always pairs with C!',
-      '3-5': 'DNA (deoxyribonucleic acid) is a molecule found in the nucleus of every cell. It\u2019s shaped like a twisted ladder \u2014 the double helix. The sides are made of sugar and phosphate, and the rungs are base pairs: Adenine-Thymine and Guanine-Cytosine. Your DNA has about 3 billion base pairs!',
+      '3-5': 'DNA (deoxyribonucleic acid) is a molecule found in the nucleus of every cell. It\u2019s shaped like a twisted ladder - the double helix. The sides are made of sugar and phosphate, and the rungs are base pairs: Adenine-Thymine and Guanine-Cytosine. Your DNA has about 3 billion base pairs!',
       '6-8': 'DNA is a polymer of nucleotides, each containing deoxyribose sugar, a phosphate group, and a nitrogenous base (A, T, G, or C). The antiparallel strands run 5\u2032\u21923\u2032 and 3\u2032\u21925\u2032, connected by hydrogen bonds (2 for A-T, 3 for G-C). Chromosomes are DNA wrapped around histone proteins forming chromatin.',
       '9-12': 'DNA is a right-handed B-form double helix with major and minor grooves. Each nucleotide: 2\u2032-deoxyribose, phosphodiester backbone, nitrogenous base. Chargaff\u2019s rules: %A=%T, %G=%C. Antiparallel strands, pitch of 3.4nm (10bp/turn). Supercoiling by topoisomerases regulates access. Telomeric TTAGGG repeats protect chromosome ends.'
     }},
     { title: 'Central Dogma', icon: '\uD83D\uDD04', tryIt: 'transcribe', content: {
       'K-2': 'DNA is like a recipe, and proteins are the food! First, the cell copies the recipe (transcription) to make a message called mRNA. Then tiny machines called ribosomes read the message and build proteins (translation). Proteins do almost everything in your body!',
-      '3-5': 'The Central Dogma: DNA \u2192 RNA \u2192 Protein. In transcription, RNA polymerase reads DNA and makes mRNA. The mRNA goes to a ribosome for translation \u2014 it reads mRNA in groups of 3 letters (codons) and builds a chain of amino acids that folds into a protein!',
+      '3-5': 'The Central Dogma: DNA \u2192 RNA \u2192 Protein. In transcription, RNA polymerase reads DNA and makes mRNA. The mRNA goes to a ribosome for translation - it reads mRNA in groups of 3 letters (codons) and builds a chain of amino acids that folds into a protein!',
       '6-8': 'DNA is transcribed into mRNA by RNA polymerase (reading template 3\u2032\u21925\u2032, building mRNA 5\u2032\u21923\u2032). mRNA is processed (5\u2032 cap, poly-A tail, splicing of introns) then exported to ribosomes. tRNAs with anticodons deliver amino acids; the ribosome catalyzes peptide bonds during translation.',
       '9-12': 'Transcription: RNA Pol II binds TATA box via TBP/TFIID, assembles PIC, synthesizes pre-mRNA 5\u2032\u21923\u2032. Co-transcriptional processing: 7-methylguanosine cap, spliceosome-mediated intron removal, CstF/CPSF-directed polyadenylation. Translation: 43S PIC scans for Kozak-context AUG; 80S ribosome cycles A/P/E sites; EF-Tu delivers aminoacyl-tRNAs; release factors recognize stop codons.'
     }},
     { title: 'Mutations & Evolution', icon: '\uD83E\uDDA0', tryIt: 'mutate', content: {
-      'K-2': 'Sometimes the cell makes a mistake when copying DNA \u2014 like a typo! These mistakes are called mutations. Most mutations don\u2019t do anything, but some can change how an organism looks or works. Over a very long time, helpful mutations help living things survive better!',
+      'K-2': 'Sometimes the cell makes a mistake when copying DNA - like a typo! These mistakes are called mutations. Most mutations don\u2019t do anything, but some can change how an organism looks or works. Over a very long time, helpful mutations help living things survive better!',
       '3-5': 'Mutations are changes in DNA sequence. A substitution swaps one base. An insertion adds a base. A deletion removes one. Insertions and deletions can shift the reading frame (frameshift), often breaking the protein. Natural selection acts on mutations over generations, driving evolution.',
       '6-8': 'Point mutations: transitions (purine\u2194purine) and transversions (purine\u2194pyrimidine). Effects: silent (synonymous), missense (different amino acid), nonsense (premature stop). Frameshift mutations from indels alter all downstream codons. Mutagens: UV light, chemicals, replication errors. Beneficial mutations spread via natural selection.',
       '9-12': 'Mutation rates: ~10\u207B\u2079/bp/replication after proofreading and mismatch repair. Transitions more common (tautomeric shifts). Trinucleotide repeat expansions (Huntington\u2019s: CAG>36). Neutral theory (Kimura): most molecular evolution is neutral drift. Positive selection detected by dN/dS>1. Ames test screens mutagens via Salmonella auxotrophs.'
     }},
     { title: 'Genetic Engineering', icon: '\u2702\uFE0F', tryIt: 'crispr', content: {
-      'K-2': 'Scientists have learned to edit DNA like editing a story! They use special tools called CRISPR \u2014 like tiny scissors \u2014 to cut DNA at exactly the right spot. This helps cure diseases, make healthier crops, and even bring back extinct animals someday!',
+      'K-2': 'Scientists have learned to edit DNA like editing a story! They use special tools called CRISPR - like tiny scissors - to cut DNA at exactly the right spot. This helps cure diseases, make healthier crops, and even bring back extinct animals someday!',
       '3-5': 'Genetic engineering means changing an organism\u2019s DNA on purpose. CRISPR-Cas9 uses a guide RNA to find the right spot, then Cas9 cuts the DNA. The cell repairs the cut, and scientists can add, remove, or change genes. It\u2019s already being used to treat sickle cell disease!',
       '6-8': 'CRISPR-Cas9: A synthetic guide RNA (sgRNA) directs the Cas9 nuclease to a 20nt target adjacent to a PAM (NGG). The double-strand break is repaired by NHEJ (error-prone, knockouts) or HDR (precise, with donor template). Applications: CASGEVY\u2122 for sickle cell, CAR-T therapy, disease-resistant crops, gene drives.',
       '9-12': 'Beyond Cas9: Cas12a (Cpf1) recognizes T-rich PAMs, staggered cuts. Base editors (CBE/ABE) enable C\u2192T or A\u2192G without DSBs. Prime editing: pegRNA + Cas9 nickase-RT fusion for all 12 substitution types plus small indels. Epigenome editors (dCas9-DNMT3A/TET1/p300) modulate expression without sequence changes. Delivery: AAV, LNPs, RNP electroporation.'
@@ -403,6 +404,81 @@ window.StemLab = window.StemLab || {
         var _tick = 0;
         var _animId = null;
         var currentAnimStep = animStep;
+        var hoveredIndex = -1;
+
+        function draw3DSphere(ctx, x, y, r, baseChar) {
+          var baseColor = BASE_COLORS[baseChar] || '#888';
+          var darkColor = BASE_DARK_COLORS[baseChar] || '#444';
+          var grad = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r);
+          grad.addColorStop(0, '#ffffff');
+          grad.addColorStop(0.3, baseColor);
+          grad.addColorStop(1, darkColor);
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold ' + Math.max(9, r * 1.2) + 'px monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+          ctx.shadowBlur = 3;
+          ctx.fillText(baseChar, x, y);
+          ctx.shadowColor = 'transparent';
+          ctx.shadowBlur = 0;
+        }
+
+        cv.onmousemove = function(e) {
+          var rect = cv.getBoundingClientRect();
+          var scaleX = cv.width / rect.width / 2;
+          var scaleY = cv.height / rect.height / 2;
+          var mX = (e.clientX - rect.left) * scaleX;
+          var mY = (e.clientY - rect.top) * scaleY;
+
+          var baseW = Math.min(32, (w - 80) / dnaSeq.length);
+          var startX = (w - dnaSeq.length * baseW) / 2;
+          var midY = hh / 2;
+
+          var found = -1;
+          for (var i = 0; i < dnaSeq.length; i++) {
+            var x = startX + i * baseW + baseW / 2;
+            var yOff = Math.sin((i * 0.5) + _tick * 0.02) * 18;
+            var topY = midY - 25 + yOff;
+            var bottomY = midY + 25 - yOff;
+
+            var distTop = Math.sqrt((mX - x)*(mX - x) + (mY - topY)*(mY - topY));
+            var distBottom = Math.sqrt((mX - x)*(mX - x) + (mY - bottomY)*(mY - bottomY));
+            var radius = baseW * 0.38;
+
+            if (distTop <= radius + 5 || distBottom <= radius + 5) {
+              found = i;
+              break;
+            }
+          }
+
+          if (found !== hoveredIndex) {
+            hoveredIndex = found;
+            cv.style.cursor = (found !== -1) ? 'pointer' : '';
+          }
+        };
+
+        cv.onmouseleave = function() {
+          hoveredIndex = -1;
+          cv.style.cursor = '';
+        };
+
+        cv.onclick = function(e) {
+          if (hoveredIndex !== -1) {
+            sfxDnaClick();
+            var order = 'ATGC';
+            var currentBase = dnaSeq[hoveredIndex];
+            var next = order[(order.indexOf(currentBase) + 1) % 4];
+            var newSeq = dnaSeq.substring(0, hoveredIndex) + next + dnaSeq.substring(hoveredIndex + 1);
+            updMulti({ dnaSequence: newSeq, mRNA: '', protein: [], animStep: 0, animPlaying: false });
+            announceToSR('Mutated base at position ' + (hoveredIndex + 1) + ' to ' + next);
+          }
+        };
 
         function draw() {
           ctx2d.clearRect(0, 0, w, hh);
@@ -411,7 +487,9 @@ window.StemLab = window.StemLab || {
           var midY = hh / 2;
           var helixAmp = 18;
 
-          ctx2d.strokeStyle = '#94a3b8'; ctx2d.lineWidth = 2;
+          // Draw template strand backbone
+          ctx2d.strokeStyle = '#94a3b8'; ctx2d.lineWidth = 2.5;
+          ctx2d.shadowColor = 'rgba(148, 163, 184, 0.3)'; ctx2d.shadowBlur = 4;
           ctx2d.beginPath();
           for (var i = 0; i < dnaSeq.length; i++) {
             var x = startX + i * baseW + baseW / 2;
@@ -420,6 +498,7 @@ window.StemLab = window.StemLab || {
           }
           ctx2d.stroke();
 
+          // Draw coding/mRNA strand backbone
           ctx2d.beginPath();
           for (var i = 0; i < dnaSeq.length; i++) {
             var x = startX + i * baseW + baseW / 2;
@@ -429,45 +508,83 @@ window.StemLab = window.StemLab || {
             else ctx2d.lineTo(x, midY + 25 - yOff);
           }
           ctx2d.stroke();
+          ctx2d.shadowColor = 'transparent'; ctx2d.shadowBlur = 0;
 
+          // Draw bonds and base spheres
           for (var i = 0; i < dnaSeq.length; i++) {
             var x = startX + i * baseW + baseW / 2;
             var yOff = Math.sin((i * 0.5) + _tick * 0.02) * helixAmp;
             var base = dnaSeq[i]; var comp = complementStrand[i];
             var topY = midY - 25 + yOff;
-            ctx2d.fillStyle = BASE_COLORS[base] || '#888';
-            ctx2d.font = 'bold ' + Math.max(10, baseW * 0.6) + 'px monospace';
-            ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
-            ctx2d.beginPath(); ctx2d.arc(x, topY, baseW * 0.38, 0, Math.PI * 2); ctx2d.fill();
-            ctx2d.fillStyle = '#fff'; ctx2d.fillText(base, x, topY);
+            var bottomY = midY + 25 - yOff;
 
+            // Draw hydrogen bonds
             if (!(tab === 'transcribe' && i < currentAnimStep)) {
-              ctx2d.setLineDash([2, 2]); ctx2d.strokeStyle = '#cbd5e1';
-              ctx2d.beginPath(); ctx2d.moveTo(x, topY + baseW * 0.38); ctx2d.lineTo(x, midY + 25 - yOff - baseW * 0.38); ctx2d.stroke();
+              var pulseDashOffset = -_tick * 0.5;
+              ctx2d.setLineDash([3, 3]);
+              ctx2d.lineDashOffset = pulseDashOffset;
+              var isGC = (base === 'G' && comp === 'C') || (base === 'C' && comp === 'G');
+              ctx2d.strokeStyle = isGC ? 'rgba(34, 197, 94, 0.8)' : 'rgba(59, 130, 246, 0.8)';
+              ctx2d.lineWidth = isGC ? 2.5 : 1.5;
+              ctx2d.shadowColor = isGC ? '#22c55e' : '#3b82f6';
+              ctx2d.shadowBlur = 8;
+
+              var bY = tab === 'transcribe' ? bottomY + 15 : bottomY;
+              ctx2d.beginPath();
+              ctx2d.moveTo(x, topY + baseW * 0.38);
+              ctx2d.lineTo(x, bY - baseW * 0.38);
+              ctx2d.stroke();
+
+              ctx2d.shadowColor = 'transparent';
+              ctx2d.shadowBlur = 0;
               ctx2d.setLineDash([]);
+              ctx2d.lineDashOffset = 0;
             }
 
-            var bottomY = midY + 25 - yOff;
+            // Draw 3D base spheres
+            draw3DSphere(ctx2d, x, topY, baseW * 0.38, base);
+
             if (tab === 'transcribe' && i < currentAnimStep) {
               var rnaBase = DNA_TO_RNA[base];
-              ctx2d.fillStyle = BASE_COLORS[rnaBase] || '#888';
-              ctx2d.beginPath(); ctx2d.arc(x, bottomY + 15, baseW * 0.38, 0, Math.PI * 2); ctx2d.fill();
-              ctx2d.fillStyle = '#fff'; ctx2d.fillText(rnaBase, x, bottomY + 15);
+              draw3DSphere(ctx2d, x, bottomY + 15, baseW * 0.38, rnaBase);
             } else {
-              ctx2d.fillStyle = BASE_COLORS[comp] || '#888';
-              ctx2d.beginPath(); ctx2d.arc(x, bottomY, baseW * 0.38, 0, Math.PI * 2); ctx2d.fill();
-              ctx2d.fillStyle = '#fff'; ctx2d.fillText(comp, x, bottomY);
+              draw3DSphere(ctx2d, x, bottomY, baseW * 0.38, comp);
             }
 
+            // Draw hover rings
+            if (i === hoveredIndex) {
+              var pulse = 1 + 0.15 * Math.sin(_tick * 0.15);
+              ctx2d.strokeStyle = 'rgba(234, 179, 8, 0.95)';
+              ctx2d.lineWidth = 2.5;
+              ctx2d.shadowColor = '#eab308';
+              ctx2d.shadowBlur = 8;
+              
+              ctx2d.beginPath();
+              ctx2d.arc(x, topY, baseW * 0.38 * pulse, 0, Math.PI * 2);
+              ctx2d.stroke();
+
+              if (!(tab === 'transcribe' && i < currentAnimStep)) {
+                ctx2d.beginPath();
+                ctx2d.arc(x, (tab === 'transcribe' ? bottomY + 15 : bottomY), baseW * 0.38 * pulse, 0, Math.PI * 2);
+                ctx2d.stroke();
+              }
+              ctx2d.shadowColor = 'transparent';
+              ctx2d.shadowBlur = 0;
+            }
+
+            // Draw RNA Polymerase
             if (tab === 'transcribe' && i === currentAnimStep && currentAnimStep < dnaSeq.length) {
-              ctx2d.fillStyle = 'rgba(168, 85, 247, 0.2)';
-              ctx2d.beginPath(); ctx2d.arc(x, midY, baseW * 1.5, 0, Math.PI * 2); ctx2d.fill();
-              ctx2d.fillStyle = '#7c3aed'; ctx2d.font = 'bold 8px sans-serif';
-              ctx2d.fillText('RNA Pol', x, midY - baseW * 1.8);
+              ctx2d.fillStyle = 'rgba(168, 85, 247, 0.15)';
+              ctx2d.strokeStyle = 'rgba(168, 85, 247, 0.4)';
+              ctx2d.lineWidth = 1.5;
+              ctx2d.beginPath(); ctx2d.arc(x, midY, baseW * 1.6, 0, Math.PI * 2); ctx2d.fill(); ctx2d.stroke();
+              ctx2d.fillStyle = '#a855f7'; ctx2d.font = 'bold 9px sans-serif';
+              ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
+              ctx2d.fillText('RNA Pol', x, midY - baseW * 1.9);
             }
           }
 
-          ctx2d.fillStyle = '#475569'; ctx2d.font = 'bold 10px sans-serif'; ctx2d.textAlign = 'left';
+          ctx2d.fillStyle = '#475569'; ctx2d.font = 'bold 10px sans-serif'; ctx2d.textAlign = 'left'; ctx2d.textBaseline = 'middle';
           ctx2d.fillText("3'", startX - 18, midY - 25);
           ctx2d.fillText("5'", startX + dnaSeq.length * baseW + 4, midY - 25);
           ctx2d.fillText("5'", startX - 18, midY + 25);
@@ -587,6 +704,285 @@ window.StemLab = window.StemLab || {
         }
         drawRepl();
         window._dnaCleanup.replAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+      };
+
+      // ═══════════════════════════════════════════
+      // CANVAS: Translation (callback ref)
+      // ═══════════════════════════════════════════
+      var _translationCanvasRef = function(cv) {
+        if (window._dnaCleanup.transAnim) { window._dnaCleanup.transAnim(); window._dnaCleanup.transAnim = null; }
+        if (!cv) return;
+        if (tab !== 'translate') return;
+        var ctx2d = cv.getContext('2d');
+        if (!ctx2d) return;
+        var W = cv.width = cv.offsetWidth * 2;
+        var H = cv.height = cv.offsetHeight * 2;
+        ctx2d.scale(2, 2);
+        var w = W / 2, hh = H / 2;
+        var _tick = 0;
+        var _animId = null;
+
+        var lastStep = -1;
+        var stepStartTime = Date.now();
+
+        function drawTRNA(ctx, x, y, anticodon, aaChar, hasAA, alpha) {
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
+          ctx.lineWidth = 1.5;
+          ctx.shadowColor = '#0ea5e9';
+          ctx.shadowBlur = 4;
+          
+          // Cloverleaf structure
+          ctx.beginPath();
+          ctx.moveTo(x, y - 15); ctx.lineTo(x, y);
+          ctx.arc(x - 9, y - 8, 4, 0, Math.PI * 2);
+          ctx.arc(x + 9, y - 8, 4, 0, Math.PI * 2);
+          ctx.arc(x, y + 8, 6, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+
+          if (anticodon) {
+            ctx.fillStyle = '#bae6fd';
+            ctx.font = 'bold 7px monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(anticodon, x, y + 8);
+          }
+
+          if (hasAA && aaChar) {
+            var aaColor = (AA_PROPS[aaChar] && AA_PROPS[aaChar].color) || '#cbd5e1';
+            var r = 6;
+            var grad = ctx.createRadialGradient(x - r*0.3, y - 20 - r*0.3, r*0.1, x, y - 20, r);
+            grad.addColorStop(0, '#ffffff');
+            grad.addColorStop(0.3, aaColor);
+            grad.addColorStop(1, '#222');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(x, y - 20, r, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 6px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText((AA_PROPS[aaChar] && AA_PROPS[aaChar].abbr) || aaChar.substring(0,1), x, y - 20);
+          }
+          ctx.restore();
+        }
+
+        function drawTrans() {
+          ctx2d.clearRect(0, 0, w, hh);
+
+          // Track step duration & progress
+          var duration = 800 / speed;
+          if (transStep !== lastStep) {
+            lastStep = transStep;
+            stepStartTime = Date.now();
+          }
+          var pct = transPlaying ? Math.min(1, (Date.now() - stepStartTime) / duration) : 0;
+
+          var midY = hh / 2 + 10;
+          var yChannel = midY + 15;
+
+          // ─── 1. DRAW RIBOSOME ENVELOPE ───
+          ctx2d.shadowColor = 'rgba(16, 185, 129, 0.2)';
+          ctx2d.shadowBlur = 10;
+
+          // Large Subunit (top green dome)
+          ctx2d.fillStyle = 'rgba(16, 185, 129, 0.12)';
+          ctx2d.strokeStyle = 'rgba(16, 185, 129, 0.6)';
+          ctx2d.lineWidth = 2;
+          ctx2d.beginPath();
+          ctx2d.moveTo(w / 2 - 90, yChannel - 5);
+          ctx2d.bezierCurveTo(w / 2 - 90, yChannel - 85, w / 2 + 90, yChannel - 85, w / 2 + 90, yChannel - 5);
+          ctx2d.closePath();
+          ctx2d.fill();
+          ctx2d.stroke();
+
+          // Small Subunit (bottom green capsule)
+          ctx2d.fillStyle = 'rgba(52, 211, 153, 0.15)';
+          ctx2d.strokeStyle = 'rgba(52, 211, 153, 0.6)';
+          ctx2d.beginPath();
+          ctx2d.roundRect(w / 2 - 80, yChannel + 5, 160, 30, 10);
+          ctx2d.fill();
+          ctx2d.stroke();
+          ctx2d.shadowBlur = 0;
+
+          // E, P, A Site Boxes
+          var xP = w / 2;
+          var xE = w / 2 - 45;
+          var xA = w / 2 + 45;
+
+          ctx2d.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+          ctx2d.lineWidth = 1;
+          ctx2d.setLineDash([2, 2]);
+          [xE, xP, xA].forEach(function(slotX) {
+            ctx2d.strokeRect(slotX - 15, yChannel - 50, 30, 45);
+          });
+          ctx2d.setLineDash([]);
+
+          // EPA Labels
+          ctx2d.fillStyle = 'rgba(16, 185, 129, 0.8)';
+          ctx2d.font = 'bold 9px sans-serif';
+          ctx2d.textAlign = 'center';
+          ctx2d.fillText('E', xE, yChannel - 55);
+          ctx2d.fillText('P', xP, yChannel - 55);
+          ctx2d.fillText('A', xA, yChannel - 55);
+
+          // ─── 2. DRAW mRNA STRAND ───
+          // Draw mRNA backbone
+          ctx2d.strokeStyle = '#a855f7';
+          ctx2d.lineWidth = 3;
+          ctx2d.beginPath();
+          ctx2d.moveTo(0, yChannel + 15);
+          ctx2d.lineTo(w, yChannel + 15);
+          ctx2d.stroke();
+
+          var codonW = 42;
+          var startX = w / 2; // P-site align
+
+          var codons = (fullMRNA.match(/.{1,3}/g) || []);
+          codons.forEach(function(codon, idx) {
+            // codon horizontal center
+            var cx = startX + (idx - transStep - pct) * codonW;
+            if (cx < -40 || cx > w + 40) return;
+
+            // Draw 3 bases inside the codon
+            for (var b = 0; b < 3; b++) {
+              var baseChar = codon[b];
+              var bx = cx - 12 + b * 12;
+              var baseColor = BASE_COLORS[baseChar] || '#888';
+
+              // Draw base dot
+              ctx2d.fillStyle = baseColor;
+              ctx2d.beginPath();
+              ctx2d.arc(bx, yChannel + 15, 4.5, 0, Math.PI * 2);
+              ctx2d.fill();
+
+              // Draw base label
+              ctx2d.fillStyle = '#fff';
+              ctx2d.font = 'bold 6px monospace';
+              ctx2d.fillText(baseChar, bx, yChannel + 15);
+            }
+
+            // Codon boundary bracket
+            ctx2d.strokeStyle = 'rgba(168, 85, 247, 0.3)';
+            ctx2d.lineWidth = 1;
+            ctx2d.beginPath();
+            ctx2d.moveTo(cx - 16, yChannel + 22);
+            ctx2d.lineTo(cx - 16, yChannel + 25);
+            ctx2d.lineTo(cx + 16, yChannel + 25);
+            ctx2d.lineTo(cx + 16, yChannel + 22);
+            ctx2d.stroke();
+
+            ctx2d.fillStyle = 'rgba(168, 85, 247, 0.7)';
+            ctx2d.font = 'bold 7px sans-serif';
+            ctx2d.fillText(codon, cx, yChannel + 32);
+          });
+
+          // ─── 3. DRAW ANIMATING tRNAs & POLYPEPTIDE CHAIN ───
+          // tRNA 1: Exiting E-site
+          if (transStep > 0) {
+            var t1Codon = codons[transStep - 1];
+            var compMap = { 'A':'U', 'U':'A', 'G':'C', 'C':'G' };
+            var t1Anti = t1Codon ? t1Codon.split('').map(function(c) { return compMap[c] || 'U'; }).join('') : '';
+
+            var t1X = xE - pct * 35;
+            var t1Y = (yChannel - 20) - pct * 60;
+            var t1Alpha = Math.max(0, 1 - pct * 1.5);
+            drawTRNA(ctx2d, t1X, t1Y, t1Anti, null, false, t1Alpha);
+          }
+
+          // tRNA 2: P-site shifting to E-site
+          var t2Codon = transStep > 0 ? codons[transStep - 1] : null;
+          if (t2Codon) {
+            var compMap = { 'A':'U', 'U':'A', 'G':'C', 'C':'G' };
+            var t2Anti = t2Codon.split('').map(function(c) { return compMap[c] || 'U'; }).join('');
+            var t2X = xP - pct * codonW;
+            var t2Y = yChannel - 20;
+            var t2AA = CODON_TABLE[t2Codon];
+            var t2HasAA = pct < 0.4;
+            drawTRNA(ctx2d, t2X, t2Y, t2Anti, t2AA, t2HasAA, 1);
+          }
+
+          // tRNA 3: Incoming A-site landing & shifting to P-site
+          var t3Codon = transStep < codons.length ? codons[transStep] : null;
+          if (t3Codon && transPlaying) {
+            var compMap = { 'A':'U', 'U':'A', 'G':'C', 'C':'G' };
+            var t3Anti = t3Codon.split('').map(function(c) { return compMap[c] || 'U'; }).join('');
+            
+            var t3X = xA - pct * codonW;
+            var t3Y = yChannel - 20;
+            if (pct < 0.5) {
+              var f = (0.5 - pct) * 2;
+              t3Y = (yChannel - 20) + f * 50;
+            }
+            var t3AA = CODON_TABLE[t3Codon];
+            drawTRNA(ctx2d, t3X, t3Y, t3Anti, t3AA, true, 1);
+          }
+
+          // ─── 4. DRAW GROWING POLYPEPTIDE CHAIN ───
+          if (builtProtein.length > 0) {
+            var anchorX, anchorY;
+            if (pct < 0.4) {
+              anchorX = xP - pct * codonW;
+              anchorY = yChannel - 40;
+            } else {
+              var t3X = xA - pct * codonW;
+              var t3Y = yChannel - 20;
+              if (pct < 0.5) {
+                var f = (0.5 - pct) * 2;
+                t3Y = (yChannel - 20) + f * 50;
+              }
+              anchorX = t3X;
+              anchorY = t3Y - 20;
+            }
+
+            ctx2d.strokeStyle = '#94a3b8';
+            ctx2d.lineWidth = 1.5;
+            
+            var prevX = anchorX;
+            var prevY = anchorY;
+
+            for (var k = builtProtein.length - 1; k >= 0; k--) {
+              var aaData = builtProtein[k];
+              var aaChar = aaData.aa;
+              var depth = builtProtein.length - 1 - k;
+
+              var sx = anchorX + Math.sin(_tick * 0.06 + depth * 0.5) * 5;
+              var sy = anchorY - 14 - depth * 12;
+
+              ctx2d.beginPath();
+              ctx2d.moveTo(prevX, prevY);
+              ctx2d.lineTo(sx, sy);
+              ctx2d.stroke();
+
+              var aaColor = (AA_PROPS[aaChar] && AA_PROPS[aaChar].color) || '#cbd5e1';
+              var r = 5.5;
+              var grad = ctx2d.createRadialGradient(sx - r*0.3, sy - r*0.3, r*0.1, sx, sy, r);
+              grad.addColorStop(0, '#ffffff');
+              grad.addColorStop(0.3, aaColor);
+              grad.addColorStop(1, '#222');
+
+              ctx2d.fillStyle = grad;
+              ctx2d.beginPath();
+              ctx2d.arc(sx, sy, r, 0, Math.PI * 2);
+              ctx2d.fill();
+
+              ctx2d.fillStyle = '#ffffff';
+              ctx2d.font = 'bold 5px sans-serif';
+              ctx2d.fillText((AA_PROPS[aaChar] && AA_PROPS[aaChar].abbr) || aaChar.substring(0,1), sx, sy);
+
+              prevX = sx;
+              prevY = sy;
+            }
+          }
+
+          _tick++;
+          _animId = requestAnimationFrame(drawTrans);
+        }
+
+        drawTrans();
+        window._dnaCleanup.transAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
       };
 
       // ═══ Replication timer ═══
@@ -1005,34 +1401,48 @@ window.StemLab = window.StemLab || {
         ),
 
         // ═══ TAB BAR ═══
-        h("div", { className: "flex gap-1 bg-slate-100 p-1 rounded-xl flex-wrap", role: "tablist" },
+        h("div", { className: "flex gap-1 bg-[#0a0e1a]/85 backdrop-blur-md p-1 rounded-xl flex-wrap border border-slate-700/50 shadow-lg", role: "tablist" },
           SUBTOOLS.map(function(tb) {
-            return h("button", { key: tb.id, role: "tab", 'aria-selected': tab === tb.id ? 'true' : 'false',
+            var isActive = tab === tb.id;
+            return h("button", {
+              key: tb.id,
+              role: "tab",
+              'aria-selected': isActive ? 'true' : 'false',
               onClick: function() {
                 var v = Object.assign({}, d.visitedTabs || {}); v[tb.id] = true;
                 updMulti({ tab: tb.id, visitedTabs: v });
                 if (Object.keys(v).length >= SUBTOOLS.length) checkBadge('explorer');
                 announceToSR('Switched to ' + tb.label);
               },
-              className: "flex-1 min-w-[70px] px-2 py-2 text-[11px] font-bold rounded-lg transition-all " + (tab === tb.id ? "bg-white text-violet-700 shadow-sm" : "text-slate-600 hover:text-slate-700")
-            }, tb.icon + " " + tb.label);
+              className: "relative flex-1 min-w-[70px] px-2 py-2 text-[11px] font-bold rounded-lg transition-all focus:outline-none focus:ring-2 " +
+                (isActive
+                  ? "bg-white/10 text-white border border-fuchsia-500/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] focus:ring-fuchsia-500 focus:ring-offset-1 focus:ring-offset-[#0a0e1a]"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent focus:ring-violet-500/60"
+                )
+            }, [
+              h("span", { key: "text", className: "relative z-10" }, tb.icon + " " + tb.label),
+              isActive && h("span", {
+                key: "indicator",
+                className: "absolute bottom-0.5 left-1/4 right-1/4 h-[3px] rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500 shadow-[0_0_8px_#d946ef]"
+              })
+            ]);
           })
         ),
 
         // ── Topic-accent hero band per tab ──
         (function() {
           var TAB_META = {
-            build:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDDEC', title: 'Build \u2014 the double helix from 4 letters',         hint: 'A pairs with T (2 bonds), G with C (3). Watson + Crick + Franklin (1953) cracked the structure from X-ray crystallography. The shape itself encodes how DNA copies and reads.' },
-            replicate:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD00', title: 'Replicate \u2014 unzip, copy, rezip',                      hint: 'Helicase splits the strands; DNA polymerase synthesizes complements. Semi-conservative: each new helix has one old strand + one new. Meselson & Stahl proved it 1958.' },
-            transcribe: { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83D\uDCDD', title: 'Transcribe \u2014 DNA \u2192 mRNA in the nucleus',          hint: 'RNA polymerase reads one DNA strand 3\u2032\u21925\u2032 and builds RNA 5\u2032\u21923\u2032. Same letters except T becomes U. mRNA carries the recipe out to the ribosomes \u2014 the central dogma\u2019s first arrow.' },
-            translate:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDD2C', title: 'Translate \u2014 mRNA \u2192 protein at the ribosome',     hint: '64 codons \u2192 20 amino acids (the genetic code is redundant). AUG starts; UAA/UAG/UGA stop. tRNA reads codons, charges them with the right amino acid, peptide bond forms.' },
-            mutate:     { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83E\uDDA0', title: 'Mutate \u2014 substitution, insertion, deletion',          hint: 'Point mutation: one letter swapped. Insertion/deletion: frameshift, the entire downstream protein is garbled. Sickle-cell is a single A\u2192T \u2014 one letter, lifelong consequence.' },
-            crispr:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2702',         title: 'CRISPR \u2014 the precision edit',                      hint: 'Bacterial immune system, repurposed. Cas9 enzyme + guide RNA = molecular scissors. Doudna + Charpentier won the 2020 Nobel. First CRISPR therapy (sickle-cell) FDA-approved Dec 2023.' },
-            protein:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83E\uDDEA', title: 'Protein \u2014 fold, function, malfunction',              hint: 'Sequence determines structure determines function. Hemoglobin carries O\u2082, antibodies recognize, enzymes catalyze. AlphaFold (2020) predicted ~200M structures \u2014 a problem that took 50 years, cracked in 18 months.' },
-            forensics:  { accent: '#475569', soft: 'rgba(71,85,105,0.10)',  icon: '\uD83D\uDD0D', title: 'Forensics \u2014 STR profiling + DNA evidence',           hint: 'CODIS uses 20 short tandem repeat (STR) loci. Match probability is one-in-quadrillions when all loci agree. Innocence Project: 245+ wrongful convictions overturned by post-conviction DNA testing.' },
-            challenge:  { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFAF', title: 'Challenge \u2014 graded problems',                          hint: 'Practice transcription, translation, mutation classification. AP Bio Big Idea 3.A.1: DNA, sometimes RNA, is the primary source of heritable information. NGSS HS-LS3-1.' },
-            battle:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\u2694',         title: 'Battle \u2014 head-to-head retrieval',                  hint: 'Retrieval-practice gamified. Speed builds automaticity \u2014 once codon-table lookups are automatic, your working memory is free for higher-order thinking like predicting mutation impact.' },
-            learn:      { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCDA', title: 'Learn \u2014 the central dogma + history',                hint: 'DNA \u2192 RNA \u2192 protein \u2014 with retroviruses (HIV) running it backward via reverse transcriptase. Crick coined \u201Cdogma\u201D in 1957; he later said he meant it as a hypothesis, not scripture.' }
+            build:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDDEC', title: 'Build - the double helix from 4 letters',         hint: 'A pairs with T (2 bonds), G with C (3). Watson + Crick + Franklin (1953) cracked the structure from X-ray crystallography. The shape itself encodes how DNA copies and reads.' },
+            replicate:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD00', title: 'Replicate - unzip, copy, rezip',                      hint: 'Helicase splits the strands; DNA polymerase synthesizes complements. Semi-conservative: each new helix has one old strand + one new. Meselson & Stahl proved it 1958.' },
+            transcribe: { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83D\uDCDD', title: 'Transcribe - DNA \u2192 mRNA in the nucleus',          hint: 'RNA polymerase reads one DNA strand 3\u2032\u21925\u2032 and builds RNA 5\u2032\u21923\u2032. Same letters except T becomes U. mRNA carries the recipe out to the ribosomes - the central dogma\u2019s first arrow.' },
+            translate:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDD2C', title: 'Translate - mRNA \u2192 protein at the ribosome',     hint: '64 codons \u2192 20 amino acids (the genetic code is redundant). AUG starts; UAA/UAG/UGA stop. tRNA reads codons, charges them with the right amino acid, peptide bond forms.' },
+            mutate:     { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83E\uDDA0', title: 'Mutate - substitution, insertion, deletion',          hint: 'Point mutation: one letter swapped. Insertion/deletion: frameshift, the entire downstream protein is garbled. Sickle-cell is a single A\u2192T - one letter, lifelong consequence.' },
+            crispr:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2702',         title: 'CRISPR - the precision edit',                      hint: 'Bacterial immune system, repurposed. Cas9 enzyme + guide RNA = molecular scissors. Doudna + Charpentier won the 2020 Nobel. First CRISPR therapy (sickle-cell) FDA-approved Dec 2023.' },
+            protein:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83E\uDDEA', title: 'Protein - fold, function, malfunction',              hint: 'Sequence determines structure determines function. Hemoglobin carries O\u2082, antibodies recognize, enzymes catalyze. AlphaFold (2020) predicted ~200M structures - a problem that took 50 years, cracked in 18 months.' },
+            forensics:  { accent: '#475569', soft: 'rgba(71,85,105,0.10)',  icon: '\uD83D\uDD0D', title: 'Forensics - STR profiling + DNA evidence',           hint: 'CODIS uses 20 short tandem repeat (STR) loci. Match probability is one-in-quadrillions when all loci agree. Innocence Project: 245+ wrongful convictions overturned by post-conviction DNA testing.' },
+            challenge:  { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFAF', title: 'Challenge - graded problems',                          hint: 'Practice transcription, translation, mutation classification. AP Bio Big Idea 3.A.1: DNA, sometimes RNA, is the primary source of heritable information. NGSS HS-LS3-1.' },
+            battle:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\u2694',         title: 'Battle - head-to-head retrieval',                  hint: 'Retrieval-practice gamified. Speed builds automaticity - once codon-table lookups are automatic, your working memory is free for higher-order thinking like predicting mutation impact.' },
+            learn:      { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCDA', title: 'Learn - the central dogma + history',                hint: 'DNA \u2192 RNA \u2192 protein - with retroviruses (HIV) running it backward via reverse transcriptase. Crick coined \u201Cdogma\u201D in 1957; he later said he meant it as a hypothesis, not scripture.' }
           };
           var meta = TAB_META[tab] || TAB_META.build;
           return h('div', {
@@ -1066,17 +1476,17 @@ window.StemLab = window.StemLab || {
         // ═══ TOPIC HERO BAND (per-tab) ═══
         (function() {
           var TAB_META = {
-            build:      { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDEC', title: 'Build a DNA strand',          hint: 'Pick a sequence \u2014 the complementary strand fills in via base pairing (A\u2013T, G\u2013C). Real DNA is built like this constantly.' },
-            replicate:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.10)', icon: '\uD83D\uDD00', title: 'DNA replication',              hint: 'Helicase unwinds the helix; DNA polymerase reads each template strand and lays down its complement. Semiconservative \u2014 each daughter has one old + one new strand.' },
-            transcribe: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCDD', title: 'Transcription \u2014 DNA \u2192 mRNA', hint: 'RNA polymerase reads the template strand. Same complementary rules but T \u2192 U. Output: a single-stranded mRNA copy ready to leave the nucleus.' },
-            translate:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDD2C', title: 'Translation \u2014 mRNA \u2192 protein', hint: 'Ribosome reads codons (3 bases at a time). Each codon \u2192 one amino acid. The genetic code is read in non-overlapping triplets, no commas.' },
+            build:      { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDEC', title: 'Build a DNA strand',          hint: 'Pick a sequence - the complementary strand fills in via base pairing (A-T, G-C). Real DNA is built like this constantly.' },
+            replicate:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.10)', icon: '\uD83D\uDD00', title: 'DNA replication',              hint: 'Helicase unwinds the helix; DNA polymerase reads each template strand and lays down its complement. Semiconservative - each daughter has one old + one new strand.' },
+            transcribe: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCDD', title: 'Transcription - DNA \u2192 mRNA', hint: 'RNA polymerase reads the template strand. Same complementary rules but T \u2192 U. Output: a single-stranded mRNA copy ready to leave the nucleus.' },
+            translate:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDD2C', title: 'Translation - mRNA \u2192 protein', hint: 'Ribosome reads codons (3 bases at a time). Each codon \u2192 one amino acid. The genetic code is read in non-overlapping triplets, no commas.' },
             mutate:     { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83E\uDDA0', title: 'Mutations',                     hint: 'Point mutations: silent (no protein change), missense (one AA different), nonsense (premature stop). Frameshifts (insertion/deletion) are usually catastrophic.' },
             crispr:     { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  icon: '\u2702\uFE0F',  title: 'CRISPR-Cas9 editing',          hint: 'Guide RNA points Cas9 to a 20-base target. Cas9 cuts both strands. Cell repair pathways either knock out the gene or insert a template you provide.' },
             protein:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83E\uDDEA', title: 'Protein structure',            hint: 'Primary (sequence) \u2192 secondary (\u03B1-helix, \u03B2-sheet) \u2192 tertiary (3D fold) \u2192 quaternary (multi-subunit). One amino acid swap can break the fold.' },
-            forensics:  { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDD0D', title: 'DNA forensics',                hint: 'STR profiling: 13\u201320 short-tandem-repeat loci. Probability of a random match across all loci is roughly one in a billion. Used in CODIS, paternity, and crime labs.' },
+            forensics:  { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDD0D', title: 'DNA forensics',                hint: 'STR profiling: 13-20 short-tandem-repeat loci. Probability of a random match across all loci is roughly one in a billion. Used in CODIS, paternity, and crime labs.' },
             challenge:  { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAF', title: 'Daily challenge',              hint: 'A new DNA puzzle every session. Translate, identify the mutation, find the ORF, or solve a forensic case. Streak counter tracks daily wins.' },
             battle:     { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F',  title: 'Codon battle',                 hint: 'Speed-translation duel. Decode codons fast against a timer. Tests whether the genetic code is in your head, not just your reference card.' },
-            learn:      { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: 'Reference + glossary',         hint: 'Codon table, base-pairing rules, key terms (ORF, intron, exon, promoter, repressor) \u2014 the cheat sheet you keep coming back to.' }
+            learn:      { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: 'Reference + glossary',         hint: 'Codon table, base-pairing rules, key terms (ORF, intron, exon, promoter, repressor) - the cheat sheet you keep coming back to.' }
           };
           var meta = TAB_META[tab] || TAB_META.build;
           return h('div', {
@@ -1211,10 +1621,13 @@ window.StemLab = window.StemLab || {
                 return h("span", { key: idx, className: "inline-block px-1 py-0.5 mx-0.5 rounded text-xs font-bold " + (isActive ? "bg-violet-600 text-white scale-110" : isPast ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-600"), title: codon + ' \u2192 ' + (CODON_TABLE[codon] || '?') }, codon);
               })
             ),
-            h("div", { className: "flex flex-wrap gap-1 items-center", role: "list" },
+            h("div", { className: "flex flex-wrap gap-1 items-center mb-3", role: "list" },
               h("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, "Protein:"),
               builtProtein.map(function(p, idx) { var pr = AA_PROPS[p.aa] || { color: '#888', full: p.aa }; return h("span", { key: idx, role: "listitem", className: "px-1.5 py-0.5 rounded-md text-[11px] font-bold text-white", style: { background: pr.color }, title: pr.full }, p.aa); }),
               builtProtein.length === 0 && h("span", { className: "text-[11px] text-slate-600 italic" }, "Press Start to begin...")
+            ),
+            h("div", { className: "bg-slate-950 border border-slate-800 rounded-xl overflow-hidden mb-4 shadow-inner" },
+              h("canvas", { ref: _translationCanvasRef, style: { width: '100%', height: 240 }, tabIndex: 0, 'aria-label': 'Ribosome Translation Simulator' })
             ),
             h("div", { className: "flex items-center gap-3 mt-4" },
               h("button", { onClick: function() { if (transPlaying) updMulti({ transPlaying: false }); else { updMulti({ transStep: 0, builtProtein: [], transPlaying: true }); } }, className: "px-4 py-2 text-sm font-bold rounded-xl " + (transPlaying ? "bg-amber-700 text-white" : "bg-emerald-700 text-white hover:bg-emerald-700") }, transPlaying ? "\u23F8 Pause" : "\u25B6 Translate"),
@@ -1357,12 +1770,12 @@ window.StemLab = window.StemLab || {
                 h("button", { onClick: function() { applyCRISPRRepair('nhej'); }, className: "p-3 rounded-xl border-2 border-amber-600 bg-amber-50 hover:bg-amber-100 transition-all text-left" },
                   h("p", { className: "text-xs font-bold text-amber-700" }, '\uD83D\uDD27 NHEJ'),
                   h("p", { className: "text-[11px] text-amber-600 mt-0.5" }, 'Non-Homologous End Joining'),
-                  h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Quick fix \u2014 might make mistakes!', 'Error-prone, may add or delete bases.', 'Error-prone. Introduces indels. Used for gene knockouts.', 'Error-prone. Introduces indels. Used for gene knockouts.'))
+                  h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Quick fix - might make mistakes!', 'Error-prone, may add or delete bases.', 'Error-prone. Introduces indels. Used for gene knockouts.', 'Error-prone. Introduces indels. Used for gene knockouts.'))
                 ),
                 h("button", { onClick: function() { applyCRISPRRepair('hdr'); }, className: "p-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-all text-left" },
                   h("p", { className: "text-xs font-bold text-emerald-700" }, '\uD83E\uDDEC HDR'),
                   h("p", { className: "text-[11px] text-emerald-600 mt-0.5" }, 'Homology-Directed Repair'),
-                  h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Careful fix \u2014 uses a template!', 'Precise editing using a template.', 'Precise editing using donor template. Used for gene knock-ins.', 'Precise editing using donor template. Used for gene knock-ins and corrections.'))
+                  h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Careful fix - uses a template!', 'Precise editing using a template.', 'Precise editing using donor template. Used for gene knock-ins.', 'Precise editing using donor template. Used for gene knock-ins and corrections.'))
                 )
               )
             ),
@@ -1394,9 +1807,9 @@ window.StemLab = window.StemLab || {
               h("div", null,
                 h("p", { className: "font-bold text-slate-700" }, 'Key Components:'),
                 h("ul", { className: "list-disc ml-4 space-y-0.5" },
-                  h("li", null, h("strong", null, 'Cas9'), ' \u2014 The molecular scissors (endonuclease)'),
-                  h("li", null, h("strong", null, 'Guide RNA'), ' \u2014 A ~20nt RNA that directs Cas9 to the target'),
-                  h("li", null, h("strong", null, 'PAM'), ' \u2014 Protospacer Adjacent Motif (NGG). Required for binding.')
+                  h("li", null, h("strong", null, 'Cas9'), ' - The molecular scissors (endonuclease)'),
+                  h("li", null, h("strong", null, 'Guide RNA'), ' - A ~20nt RNA that directs Cas9 to the target'),
+                  h("li", null, h("strong", null, 'PAM'), ' - Protospacer Adjacent Motif (NGG). Required for binding.')
                 )
               ),
               h("div", null,
@@ -1413,7 +1826,7 @@ window.StemLab = window.StemLab || {
         tab === 'protein' && h("div", { className: "space-y-4" },
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4" },
             h("div", { className: "flex items-center justify-between mb-3" },
-              h("h4", { className: "text-sm font-bold text-slate-700" }, "\uD83E\uDDEA Protein \u2014 " + fullProtein.length + " amino acids"),
+              h("h4", { className: "text-sm font-bold text-slate-700" }, "\uD83E\uDDEA Protein - " + fullProtein.length + " amino acids"),
               fullProtein.length > 0 && h("span", { className: "text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full" },
                 Math.round(fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'nonpolar'; }).length / Math.max(1, fullProtein.length) * 100) + '% hydrophobic'
               )
@@ -1493,47 +1906,47 @@ window.StemLab = window.StemLab || {
           // 10 mutation vignettes. Player picks the effect type from 5 options
           // (silent / missense / nonsense / frameshift / in-frame indel). Tests the
           // AP Bio canonical concept that mutation TYPE matters more than mutation
-          // existence \u2014 silent mutations don't change protein, frameshifts are
+          // existence - silent mutations don't change protein, frameshifts are
           // usually catastrophic, missense varies by which AA changes.
           (function() {
             var MS_TYPES = [
               { id: 'silent',     label: 'Silent',           color: '#22c55e', icon: '\uD83E\uDD2D', def: 'Codon changes but encodes the same amino acid (wobble, mostly 3rd position). No protein change.' },
               { id: 'missense',   label: 'Missense',         color: '#f59e0b', icon: '\uD83D\uDD04', def: 'Codon changes to a different amino acid. Effect ranges from harmless (conservative) to catastrophic (e.g., sickle cell).' },
-              { id: 'nonsense',   label: 'Nonsense',         color: '#dc2626', icon: '\uD83D\uDED1', def: 'Sense codon changes to STOP. Protein is truncated \u2014 usually nonfunctional.' },
+              { id: 'nonsense',   label: 'Nonsense',         color: '#dc2626', icon: '\uD83D\uDED1', def: 'Sense codon changes to STOP. Protein is truncated - usually nonfunctional.' },
               { id: 'frameshift', label: 'Frameshift',       color: '#7c3aed', icon: '\u21AA\uFE0F',  def: 'Insertion or deletion NOT divisible by 3. Reading frame shifts; downstream protein is garbage. Usually catastrophic.' },
               { id: 'inframe',    label: 'In-frame indel',   color: '#0ea5e9', icon: '\u2795', def: 'Insertion or deletion that IS divisible by 3. Adds or removes whole amino acids; rest of protein is unchanged.' }
             ];
             var MS_VIGNETTES = [
               { id: 1, before: 'ATG GCC TTC TAA',  after: 'ATG GCC TTT TAA',          change: 'TTC \u2192 TTT (3rd-position C\u2192T)',
                 aaBefore: 'Met-Ala-Phe-stop', aaAfter: 'Met-Ala-Phe-stop', correct: 'silent',
-                why: 'Both TTC and TTT encode phenylalanine \u2014 the 3rd-position change is wobble and produces no protein change. Common at the 3rd codon position because of the genetic code\'s redundancy there.' },
+                why: 'Both TTC and TTT encode phenylalanine - the 3rd-position change is wobble and produces no protein change. Common at the 3rd codon position because of the genetic code\'s redundancy there.' },
               { id: 2, before: 'ATG GAG GTG TAA', after: 'ATG GTG GTG TAA',           change: 'GAG \u2192 GTG (2nd-position A\u2192T)',
                 aaBefore: 'Met-Glu-Val-stop', aaAfter: 'Met-Val-Val-stop', correct: 'missense',
                 why: 'Glutamate \u2192 Valine. This is the actual sickle-cell hemoglobin mutation (HbS). Single AA swap radically changes hemoglobin folding under low O\u2082. Missense effect depends entirely on which AA changes to which.' },
               { id: 3, before: 'ATG CAG GCC TAA', after: 'ATG TAG GCC TAA',           change: 'CAG \u2192 TAG (1st-position C\u2192T)',
                 aaBefore: 'Met-Gln-Ala-stop', aaAfter: 'Met-STOP', correct: 'nonsense',
-                why: 'Glutamine \u2192 STOP. Protein is truncated immediately after Met. CAG\u2192TAG (and CGA\u2192TGA, TGG\u2192TGA, TGG\u2192TAG) are the most common nonsense mutations \u2014 single base flip from a sense codon to a stop.' },
+                why: 'Glutamine \u2192 STOP. Protein is truncated immediately after Met. CAG\u2192TAG (and CGA\u2192TGA, TGG\u2192TGA, TGG\u2192TAG) are the most common nonsense mutations - single base flip from a sense codon to a stop.' },
               { id: 4, before: 'ATG GCC TTC GGG TAA', after: 'ATG GCC GTT CGG GTA A',  change: 'Single G inserted between codons 2 and 3',
                 aaBefore: 'Met-Ala-Phe-Gly-stop', aaAfter: 'Met-Ala-Val-Arg-Val-...', correct: 'frameshift',
-                why: 'Inserting one base shifts the reading frame for everything downstream. Every codon past the insertion is a different triplet \u2014 usually creating a premature stop within ~20 codons. Frameshifts almost always destroy protein function.' },
+                why: 'Inserting one base shifts the reading frame for everything downstream. Every codon past the insertion is a different triplet - usually creating a premature stop within ~20 codons. Frameshifts almost always destroy protein function.' },
               { id: 5, before: 'ATG GCC TTC TAA', after: 'ATG GCC GGG TTC TAA',       change: 'GGG (3 bases) inserted between codons 2 and 3',
                 aaBefore: 'Met-Ala-Phe-stop', aaAfter: 'Met-Ala-Gly-Phe-stop', correct: 'inframe',
-                why: 'Inserting 3 bases keeps the reading frame intact. One extra glycine added between Ala and Phe. The rest of the protein is unchanged \u2014 effect depends on whether the new AA disrupts folding. Often less severe than frameshift.' },
+                why: 'Inserting 3 bases keeps the reading frame intact. One extra glycine added between Ala and Phe. The rest of the protein is unchanged - effect depends on whether the new AA disrupts folding. Often less severe than frameshift.' },
               { id: 6, before: 'ATG CCG GCC TAA', after: 'ATG CCA GCC TAA',           change: 'CCG \u2192 CCA (3rd-position G\u2192A)',
                 aaBefore: 'Met-Pro-Ala-stop', aaAfter: 'Met-Pro-Ala-stop', correct: 'silent',
-                why: 'Both CCG and CCA encode proline. All four CC_ codons code for proline \u2014 the 3rd position is fully wobble for proline. Silent mutations are common in coding sequences and one reason synonymous-substitution rates are used in molecular evolution.' },
+                why: 'Both CCG and CCA encode proline. All four CC_ codons code for proline - the 3rd position is fully wobble for proline. Silent mutations are common in coding sequences and one reason synonymous-substitution rates are used in molecular evolution.' },
               { id: 7, before: 'ATG TGG GCC TAA', after: 'ATG TGA GCC TAA',           change: 'TGG \u2192 TGA (3rd-position G\u2192A)',
                 aaBefore: 'Met-Trp-Ala-stop', aaAfter: 'Met-STOP', correct: 'nonsense',
-                why: 'Tryptophan \u2192 STOP. TGG is the only Trp codon, and a single 3rd-position G\u2192A change makes it a stop. This is one reason Trp residues are often essential \u2014 they are fragile in the genetic code.' },
+                why: 'Tryptophan \u2192 STOP. TGG is the only Trp codon, and a single 3rd-position G\u2192A change makes it a stop. This is one reason Trp residues are often essential - they are fragile in the genetic code.' },
               { id: 8, before: 'ATG GCC TTC GGG TAA', after: 'ATG GCC TTC GGA',       change: 'Last base of stop codon deleted',
                 aaBefore: 'Met-Ala-Phe-Gly-stop', aaAfter: 'Met-Ala-Phe-Gly-...', correct: 'frameshift',
                 why: 'Deleting one base causes a frameshift. The stop codon is destroyed; ribosome reads through into UTR until it hits the next in-frame stop somewhere downstream. The extended protein is usually misfolded.' },
               { id: 9, before: 'ATG TTC GGG GCC TAA', after: 'ATG GCC TAA',           change: 'TTC GGG (6 bases, 2 codons) deleted in-frame',
                 aaBefore: 'Met-Phe-Gly-Ala-stop', aaAfter: 'Met-Ala-stop', correct: 'inframe',
-                why: 'Deleting 6 bases (2 codons) keeps the reading frame intact. Phe and Gly are removed; Ala remains. Classic example: cystic fibrosis \u0394F508 is a 3-base deletion that removes one phenylalanine \u2014 in-frame, but breaks CFTR folding.' },
+                why: 'Deleting 6 bases (2 codons) keeps the reading frame intact. Phe and Gly are removed; Ala remains. Classic example: cystic fibrosis \u0394F508 is a 3-base deletion that removes one phenylalanine - in-frame, but breaks CFTR folding.' },
               { id: 10, before: 'ATG AAA GCC TAA', after: 'ATG AGA GCC TAA',          change: 'AAA \u2192 AGA (2nd-position A\u2192G)',
                 aaBefore: 'Met-Lys-Ala-stop', aaAfter: 'Met-Arg-Ala-stop', correct: 'missense',
-                why: 'Lysine \u2192 Arginine. Both are basic, positively-charged AAs \u2014 chemically very similar. This is a CONSERVATIVE missense. Often has minimal protein-function impact, unlike radical missense (e.g., Glu\u2192Val in #2).' }
+                why: 'Lysine \u2192 Arginine. Both are basic, positively-charged AAs - chemically very similar. This is a CONSERVATIVE missense. Often has minimal protein-function impact, unlike radical missense (e.g., Glu\u2192Val in #2).' }
             ];
             var msIdx = d.msIdx == null ? -1 : d.msIdx;
             var msSeed = d.msSeed || 1;
@@ -1588,12 +2001,12 @@ window.StemLab = window.StemLab || {
               msOpen && (msIdx < 0
                 ? h("div", { className: "text-center py-3" },
                     h("p", { className: "text-[11px] text-slate-700 leading-relaxed mb-3" },
-                      '10 mutation vignettes. Each shows a short before/after DNA sequence with the change highlighted. Pick the effect type \u2014 silent, missense, nonsense, frameshift, or in-frame indel. Coaching after each pick names what makes this effect more likely than the others.'),
+                      '10 mutation vignettes. Each shows a short before/after DNA sequence with the change highlighted. Pick the effect type - silent, missense, nonsense, frameshift, or in-frame indel. Coaching after each pick names what makes this effect more likely than the others.'),
                     h("button", {
                       onClick: startMs,
                       'aria-label': 'Start Mutation Effect Sleuth',
                       className: "px-4 py-2 rounded-lg bg-violet-600 text-white text-[11px] font-bold hover:bg-violet-500"
-                    }, '\uD83D\uDD75\uFE0F Start \u2014 vignette 1 of 10')
+                    }, '\uD83D\uDD75\uFE0F Start - vignette 1 of 10')
                   )
                 : (function() {
                     var v = MS_VIGNETTES[msIdx];
@@ -1661,7 +2074,7 @@ window.StemLab = window.StemLab || {
                       },
                         h("div", { className: "text-[12px] font-bold mb-1", style: { color: pickedCorrect ? '#166534' : '#991b1b' } },
                           pickedCorrect
-                            ? '\u2705 Correct \u2014 ' + (MS_TYPES.filter(function(x) { return x.id === v.correct; })[0]).label
+                            ? '\u2705 Correct - ' + (MS_TYPES.filter(function(x) { return x.id === v.correct; })[0]).label
                             : '\u274C The effect is ' + (MS_TYPES.filter(function(x) { return x.id === v.correct; })[0]).label + (msPick ? ' (you picked ' + (MS_TYPES.filter(function(x) { return x.id === msPick; })[0]).label + ')' : '')
                         ),
                         h("p", { className: "text-[11px] text-slate-700 leading-relaxed mb-2" }, v.why),
@@ -1670,10 +2083,10 @@ window.StemLab = window.StemLab || {
                               h("div", { className: "text-[12px] font-bold text-violet-800 mb-1" }, '\uD83C\uDFC6 All 10 vignettes complete'),
                               h("div", { className: "text-[11px] text-slate-700 leading-relaxed" },
                                 'Final: ', h('strong', null, msScore + ' / ' + MS_VIGNETTES.length + ' (' + Math.round((msScore / MS_VIGNETTES.length) * 100) + '%)'),
-                                msScore === MS_VIGNETTES.length ? ' \u2014 every effect type correctly identified. Ready for AP Bio FRQ work.' :
-                                msScore >= 8 ? ' \u2014 strong codon-effect reasoning. The most-confused pair is usually missense vs silent (3rd-position changes can go either way) and frameshift vs in-frame indel (count the bases mod 3).' :
-                                msScore >= 6 ? ' \u2014 solid baseline. The mod-3 rule for indels and the wobble-rule for 3rd position are the two reflexes to build.' :
-                                ' \u2014 these distinctions take practice. Re-read the codon table + the rationales on misses, then retake.'
+                                msScore === MS_VIGNETTES.length ? ' - every effect type correctly identified. Ready for AP Bio FRQ work.' :
+                                msScore >= 8 ? ' - strong codon-effect reasoning. The most-confused pair is usually missense vs silent (3rd-position changes can go either way) and frameshift vs in-frame indel (count the bases mod 3).' :
+                                msScore >= 6 ? ' - solid baseline. The mod-3 rule for indels and the wobble-rule for 3rd position are the two reflexes to build.' :
+                                ' - these distinctions take practice. Re-read the codon table + the rationales on misses, then retake.'
                               ),
                               h("button", {
                                 onClick: function() { upd('msIdx', -1); upd('msShown', []); upd('msScore', 0); upd('msRounds', 0); upd('msStreak', 0); },
@@ -1699,13 +2112,13 @@ window.StemLab = window.StemLab || {
           h("div", { className: "bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl border-2 border-cyan-200 p-4 space-y-3" },
             h("div", { className: "flex items-center gap-2 mb-1" },
               h("span", { className: "text-lg" }, "\uD83D\uDD0D"),
-              h("h4", { className: "text-sm font-bold text-cyan-800" }, "DNA Forensics \u2014 Gel Electrophoresis"),
+              h("h4", { className: "text-sm font-bold text-cyan-800" }, "DNA Forensics - Gel Electrophoresis"),
               h("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[11px] font-bold rounded-full" }, "CASE " + (forensicCase + 1) + "/" + FORENSIC_CASES.length)
             ),
             h("p", { className: "text-xs text-slate-600" },
               gradeText(
                 'DNA fingerprinting is like finding someone\u2019s unique barcode! Scientists cut DNA into pieces and sort them by size to see who matches.',
-                'Restriction enzymes cut DNA at specific sequences. The fragments are separated by size using gel electrophoresis \u2014 smaller pieces move faster through the gel. If two samples have the same banding pattern, they match!',
+                'Restriction enzymes cut DNA at specific sequences. The fragments are separated by size using gel electrophoresis - smaller pieces move faster through the gel. If two samples have the same banding pattern, they match!',
                 'Restriction Fragment Length Polymorphism (RFLP): Restriction endonucleases cut DNA at palindromic sites. Gel electrophoresis separates fragments by size (smaller = faster migration). Matching banding patterns between samples indicates same DNA source.',
                 'RFLP & STR analysis: Restriction endonucleases recognize 4-8bp palindromic sequences. Gel electrophoresis separates fragments inversely proportional to log(MW). Modern forensics uses PCR-amplified Short Tandem Repeats (STRs) at 13+ CODIS loci for statistical match probabilities <10\u207B\u00B9\u2070.'
               )
@@ -1779,7 +2192,7 @@ window.StemLab = window.StemLab || {
               // Result
               forensicResult && h("div", { className: "space-y-2" },
                 h("div", { className: "p-3 rounded-xl text-sm font-bold " + (forensicResult === 'correct' ? 'bg-emerald-50 text-emerald-700 border-2 border-emerald-200' : 'bg-red-50 text-red-700 border-2 border-red-200') },
-                  forensicResult === 'correct' ? '\u2705 Correct! The banding patterns match perfectly. Case solved!' : '\u274c Incorrect. Compare the band positions more carefully \u2014 matching samples have identical fragment sizes.',
+                  forensicResult === 'correct' ? '\u2705 Correct! The banding patterns match perfectly. Case solved!' : '\u274c Incorrect. Compare the band positions more carefully - matching samples have identical fragment sizes.',
                   h("button", { onClick: function() {
                     var nextCase = (forensicCase + 1) % FORENSIC_CASES.length;
                     updMulti({ forensicCase: nextCase, forensicGelRun: false, forensicGuess: null, forensicResult: null, forensicAI: null });
@@ -1793,7 +2206,7 @@ window.StemLab = window.StemLab || {
                     var gradeCtx = gradeText('kindergarten, very simple', '3rd-5th grade', '6th-8th grade, scientific terms', '9th-12th grade, advanced forensic science');
                     var caseData = currentCase;
                     var matchSample = caseData.samples[caseData.match];
-                    var prompt = 'You are a forensic genetics teacher. Grade: ' + gradeCtx + '. Case: "' + caseData.name + '" \u2014 ' + caseData.desc + ' The restriction enzyme ' + caseData.enzyme + ' was used. The ' + caseData.samples[0].label + ' matched ' + matchSample.label + ' because they share identical fragment sizes: ' + matchSample.fragments.join(', ') + ' bp. Explain in 3-4 sentences why the bands match, what restriction enzymes do, and how gel electrophoresis separates DNA. Be educational and engaging.';
+                    var prompt = 'You are a forensic genetics teacher. Grade: ' + gradeCtx + '. Case: "' + caseData.name + '" - ' + caseData.desc + ' The restriction enzyme ' + caseData.enzyme + ' was used. The ' + caseData.samples[0].label + ' matched ' + matchSample.label + ' because they share identical fragment sizes: ' + matchSample.fragments.join(', ') + ' bp. Explain in 3-4 sentences why the bands match, what restriction enzymes do, and how gel electrophoresis separates DNA. Be educational and engaging.';
                     callGemini(prompt, true, false, 0.7).then(function(r) { updMulti({ forensicAI: typeof r === 'string' ? r : 'Analysis unavailable.', forensicAILoading: false }); }).catch(function() { updMulti({ forensicAI: 'AI unavailable.', forensicAILoading: false }); });
                   }, disabled: d.forensicAILoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.forensicAILoading ? 'bg-cyan-300 text-white cursor-wait' : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-md') }, d.forensicAILoading ? '\u23F3 Analyzing...' : '\u2728 AI: Explain the Evidence'),
                   d.forensicAI && h("div", { className: "mt-2 p-3 bg-cyan-50 rounded-xl border border-cyan-200 text-xs text-cyan-900 leading-relaxed" },
@@ -1883,7 +2296,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ═══════════════════════════════════════════
-        // BATTLE TAB (NEW — Gene Defense)
+        // BATTLE TAB (NEW - Gene Defense)
         // ═══════════════════════════════════════════
         tab === 'battle' && h("div", { className: "space-y-4" },
           h("div", { className: "bg-gradient-to-br from-red-50 to-orange-50 rounded-xl border-2 border-red-200 p-4 space-y-4" },
@@ -1964,7 +2377,7 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         tab === 'learn' && h("div", { className: "space-y-4" },
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4" },
-            h("h4", { className: "text-sm font-bold text-slate-700 mb-3" }, "\uD83D\uDCDA Learn \u2014 Genetics Concepts"),
+            h("h4", { className: "text-sm font-bold text-slate-700 mb-3" }, "\uD83D\uDCDA Learn - Genetics Concepts"),
             h("p", { className: "text-xs text-slate-600 mb-4" }, "Explore key topics adapted to your grade level (" + gradeBand + ").")
           ),
           LEARN_TOPICS.map(function(topic) {

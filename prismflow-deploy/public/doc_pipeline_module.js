@@ -3114,20 +3114,119 @@ var createDocPipeline = function(deps) {
     }
   };
 
+  // ── Tier 5 safe-slice: content-hash audit cache ──
+  // Identical PDFs audited twice shouldn't pay twice (e.g., user re-runs a
+  // batch after a small UI tweak, or re-audits the same file across sessions).
+  // SHA-256 of the base64 content + auditor count + output-language is the key.
+  // Cached entries expire after 7 days. NO model cascade — model selection is
+  // unchanged to avoid any accuracy regression. This is pure additive caching.
+  const _AUDIT_CACHE_DB = 'allo_pdf_audit_cache_v1';
+  const _AUDIT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  // Bump when the audit prompt changes materially so users get fresh audits
+  // instead of stale cached results from old prompts. Format: YYYYMMDD-N.
+  // Last bump: 2026-05-20 (added documentLanguage field + i18n directive).
+  const _PIPELINE_PROMPT_VERSION = '20260520-1';
+  const _sha256Hex = async (str) => {
+    try {
+      if (typeof crypto === 'undefined' || !crypto.subtle) return null;
+      const buf = new TextEncoder().encode(str);
+      const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+      return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (_) { return null; }
+  };
+  const _auditCacheKey = async (base64Data, numAuditors, outLang) => {
+    const sample = base64Data ? (base64Data.length > 8192
+      ? base64Data.slice(0, 4096) + '|' + base64Data.length + '|' + base64Data.slice(-4096)
+      : base64Data) : '';
+    const hash = await _sha256Hex(sample);
+    return hash ? `pdf_audit_${_PIPELINE_PROMPT_VERSION}_${hash}_n${numAuditors}_${(outLang || 'en').toLowerCase().replace(/[^a-z0-9-]/g, '_')}` : null;
+  };
+  const _readAuditCache = async (key) => {
+    if (!key || typeof window === 'undefined' || !window.idbKeyval) return null;
+    try {
+      const cached = await storageDB.get(key);
+      if (!cached || !cached.audit || !cached.savedAt) return null;
+      if (Date.now() - cached.savedAt > _AUDIT_CACHE_TTL_MS) return null;
+      return cached.audit;
+    } catch (_) { return null; }
+  };
+  const _writeAuditCache = async (key, audit) => {
+    if (!key || typeof window === 'undefined' || !window.idbKeyval || !audit) return;
+    try { await storageDB.set(key, { audit, savedAt: Date.now() }); } catch (_) {}
+  };
+
+  // ── Tier 4 via Tier 5 mechanism: remediation cache ──
+  // Caches the FULL remediation result (accessibleHtml + before/after scores).
+  // When a user re-runs a batch over the same files with the same settings,
+  // we skip both audit + fix entirely. Covers the most common "resume" use
+  // case (user re-uploads same files after closing the tab) without needing
+  // a full mid-batch persistence layer. TTL: 7 days (same as audit cache).
+  const _remediationCacheKey = async (base64Data, numAuditors, outLang, targetScore, autoFixPasses) => {
+    const sample = base64Data ? (base64Data.length > 8192
+      ? base64Data.slice(0, 4096) + '|' + base64Data.length + '|' + base64Data.slice(-4096)
+      : base64Data) : '';
+    const hash = await _sha256Hex(sample);
+    if (!hash) return null;
+    const lang = (outLang || 'en').toLowerCase().replace(/[^a-z0-9-]/g, '_');
+    return `pdf_remed_${_PIPELINE_PROMPT_VERSION}_${hash}_n${numAuditors}_${lang}_t${targetScore || 90}_p${autoFixPasses || 0}`;
+  };
+  const _readRemediationCache = async (key) => {
+    if (!key || typeof window === 'undefined' || !window.idbKeyval) return null;
+    try {
+      const cached = await storageDB.get(key);
+      if (!cached || !cached.result || !cached.savedAt) return null;
+      if (Date.now() - cached.savedAt > _AUDIT_CACHE_TTL_MS) return null;
+      // Add a flag so the UI can show "from cache" to the user
+      return { ...cached.result, _fromCache: true, _cachedAt: cached.savedAt };
+    } catch (_) { return null; }
+  };
+  const _writeRemediationCache = async (key, result) => {
+    if (!key || typeof window === 'undefined' || !window.idbKeyval || !result) return;
+    try { await storageDB.set(key, { result, savedAt: Date.now() }); } catch (_) {}
+  };
+
   // ── PDF Accessibility Audit ──
   const runPdfAccessibilityAudit = async (base64Data, options) => {
-    // options: { skipUiUpdates?: boolean } — when true, skips setPdfAuditResult/setPdfAuditLoading/addToast
-    //                                        so batch mode can audit per-file without clobbering single-file UI state.
-    //                                        In either mode, the final audit result object is returned.
+    // options: { skipUiUpdates?: boolean, skipCache?: boolean }
+    //   skipUiUpdates — when true, skips setPdfAuditResult/setPdfAuditLoading/addToast
+    //                   so batch mode can audit per-file without clobbering single-file UI.
+    //   skipCache     — when true, bypasses the content-hash audit cache (force re-audit).
+    // In either mode, the final audit result object is returned.
     const _skipUi = !!(options && options.skipUiUpdates);
+    const _skipCache = !!(options && options.skipCache);
     if (!_skipUi) setPdfAuditLoading(true);
     // Estimate audit time based on data size (rough proxy for page count before we know it)
     const dataSizeKB = base64Data ? Math.round(base64Data.length * 0.75 / 1024) : 0;
     const estTime = dataSizeKB < 200 ? '15-30 seconds' : dataSizeKB < 1000 ? '30-90 seconds' : dataSizeKB < 5000 ? '2-5 minutes' : '5-10 minutes';
+
+    // ── Content-hash cache check (Tier 5 safe slice) ──
+    const _cacheKey = !_skipCache ? await _auditCacheKey(base64Data, pdfAuditorCount, leveledTextLanguage) : null;
+    if (_cacheKey) {
+      const cached = await _readAuditCache(_cacheKey);
+      if (cached) {
+        warnLog(`[PDF Audit] Cache hit for ${_cacheKey.slice(0, 24)}... — skipping ${pdfAuditorCount} audit calls`);
+        if (!_skipUi) {
+          addToast && addToast('♿ Audit loaded from cache (identical document seen recently)', 'info');
+          setPdfAuditResult(cached);
+          setPdfAuditLoading(false);
+        }
+        return cached;
+      }
+    }
+
     if (!_skipUi) addToast && addToast(`♿ Auditing document (${dataSizeKB > 1024 ? (dataSizeKB / 1024).toFixed(1) + 'MB' : dataSizeKB + 'KB'}) — typically ${estTime}`, 'info');
     try {
+      // ── Output-language directive (Tier 3 i18n) ──
+      // When the user's UI / leveledTextLanguage is non-English, ask the auditors
+      // to write all human-readable findings in that language. JSON keys and WCAG
+      // codes stay English/numeric. documentLanguage stays a BCP-47 code about
+      // the SOURCE PDF (different concept from output language).
+      const _auditOutLang = (typeof leveledTextLanguage === 'string' && leveledTextLanguage && leveledTextLanguage !== 'English') ? leveledTextLanguage : null;
+      const _outLangDirective = _auditOutLang
+        ? `\n\n═══ OUTPUT LANGUAGE ═══\nWrite ALL human-readable field values ("issue", "summary", "passes") in ${_auditOutLang}. Use the locale's standard accessibility / WCAG terminology. JSON keys, WCAG codes (e.g. "1.3.1"), and the "documentLanguage" BCP-47 code stay English/numeric — only translate VALUES that a human will read. The documentLanguage field describes the SOURCE PDF's primary language (not your output language).\n═══════════════════════\n`
+        : '';
       // ── Triangulated scoring: run 2 independent audits, average scores, flag discrepancies ──
-      const auditPrompt = `You are a WCAG 2.1 AA accessibility auditor for educational documents. Analyze this PDF for accessibility violations.
+      const auditPrompt = `You are a WCAG 2.1 AA accessibility auditor for educational documents. Analyze this PDF for accessibility violations.${_outLangDirective}
 
 Check for these specific issues:
 1. STRUCTURE: Missing heading hierarchy, no logical reading order, flat text without sections
@@ -3413,9 +3512,28 @@ Return ONLY valid JSON:
         hasImages: parsedAudits.some(a => a.hasImages),
         hasTables: parsedAudits.some(a => a.hasTables),
         hasForms: parsedAudits.some(a => a.hasForms),
+        // Detected source language via majority-vote across auditors' documentLanguage field.
+        // Falls back to undefined if no auditor returned a valid BCP-47 / ISO 639-1 code.
+        // Consumed by the deterministic lang-attribute fix in fixAndVerifyPdf so source PDFs
+        // in Spanish/Arabic/Vietnamese/etc. get correctly tagged (not forced to 'en').
+        documentLanguage: (() => {
+          const _validLangPat = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
+          const _votes = {};
+          parsedAudits.forEach(a => {
+            if (!a || !a.documentLanguage) return;
+            const code = String(a.documentLanguage).trim().toLowerCase().replace(/_/g, '-');
+            if (_validLangPat.test(code)) _votes[code] = (_votes[code] || 0) + 1;
+          });
+          const sorted = Object.entries(_votes).sort((a, b) => b[1] - a[1]);
+          return sorted.length > 0 ? sorted[0][0] : undefined;
+        })(),
         timestamp: new Date().toISOString(),
       };
       if (!_skipUi) setPdfAuditResult(triangulated);
+      // Write to content-hash cache (Tier 5). Only triangulated result — no
+      // intermediate model state — so the cache hit replays the same final
+      // findings without any model behavior change.
+      if (_cacheKey) { try { _writeAuditCache(_cacheKey, triangulated); } catch (_) {} }
 
       // ── Quick axe-core baseline: extract text deterministically, build minimal HTML, run axe-core ──
       // Uses the shared extractPdfTextDeterministic helper (reading-order sorted, no truncation)
@@ -3500,7 +3618,9 @@ SCORING RUBRIC — Start at 100, deduct points for each unique violation:
   MODERATE (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists
   MINOR (-2 each): Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity
 
-Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 sentence overview","critical":[{"issue":"description","wcag":"SC number"}],"serious":[{"issue":"...","wcag":"..."}],"moderate":[{"issue":"...","wcag":"..."}],"minor":[{"issue":"...","wcag":"..."}],"passes":["what's already accessible"],"pageCount":N,"hasSearchableText":true/false,"hasImages":true/false,"hasTables":true/false,"hasForms":true/false,"documentLanguage":"BCP-47 ISO code detected from text content (e.g. 'en','es','fr','zh-CN','ar','vi'); pick dominant if multilingual"}`;
+Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 sentence overview","critical":[{"issue":"description","wcag":"SC number"}],"serious":[{"issue":"...","wcag":"..."}],"moderate":[{"issue":"...","wcag":"..."}],"minor":[{"issue":"...","wcag":"..."}],"passes":["what's already accessible"],"pageCount":N,"hasSearchableText":true/false,"hasImages":true/false,"hasTables":true/false,"hasForms":true/false,"documentLanguage":"BCP-47 ISO code detected from text content (e.g. 'en','es','fr','zh-CN','ar','vi'); pick dominant if multilingual"}` + ((typeof leveledTextLanguage === 'string' && leveledTextLanguage && leveledTextLanguage !== 'English')
+        ? `\n\nIMPORTANT — write all human-readable values ("issue", "summary", "passes") in ${leveledTextLanguage}. JSON keys + WCAG codes + documentLanguage stay English/numeric.`
+        : '');
 
     const batchAllVariants = [
       batchAuditPrompt,
@@ -4596,6 +4716,22 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     const _processOne = async (item, i, isRetry) => {
       const label = isRetry ? '[Retry]' : `[${i + 1}/${queue.length}]`;
       const progress = (msg) => setPdfBatchStep(`${label} ${item.fileName}: ${msg}`);
+
+      // ── Tier 4: remediation cache check (covers re-batch use case) ──
+      // If we've already processed this PDF with these settings within the
+      // last 7 days, return the cached result and skip audit + remediation.
+      // The full mid-batch resume (close tab during file 13 of 50, reload,
+      // resume from 13) requires a separate persistence layer not added yet.
+      const _remedKey = await _remediationCacheKey(item.base64, pdfAuditorCount, leveledTextLanguage, pdfTargetScore, pdfAutoFixPasses);
+      if (_remedKey) {
+        const cached = await _readRemediationCache(_remedKey);
+        if (cached) {
+          progress('✓ Loaded from cache (identical document processed recently)');
+          warnLog(`[Batch] Cache hit for ${item.fileName} — skipping audit + remediation`);
+          return cached;
+        }
+      }
+
       // Step 1: per-file audit (suppresses single-file UI updates)
       progress('Auditing...');
       const auditResult = await runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true });
@@ -4609,6 +4745,12 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         auditResult: auditResult,
         onProgress: (step, msg) => progress(msg),
       });
+
+      // Write remediation cache (Tier 4)
+      if (_remedKey && result) {
+        try { await _writeRemediationCache(_remedKey, result); } catch (_) {}
+      }
+
       return result;
     };
 
@@ -9283,14 +9425,25 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             __roleFixCount++; return '';
           });
           if (__roleFixCount > 0) warnLog(`  Deterministic: fixed ${__roleFixCount} invalid ARIA roles`);
-          // Fix invalid lang attribute
+          // Fix invalid lang attribute. Priority order:
+          //   1. Existing valid BCP-47 lang on the document — preserve it.
+          //   2. Source language detected by the audit (pdfAuditResult.documentLanguage,
+          //      majority-voted across auditors).
+          //   3. Word-form fallback ('english' → 'en', 'spanish' → 'es', etc.).
+          //   4. Final fallback: 'en'.
+          // The audit-detected path is preferred so Spanish/Arabic/Vietnamese source PDFs
+          // get correctly tagged rather than forced to English.
           accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang=["']([^"']*)["']/i, (m, before, langVal) => {
             const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
             const validLang = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
             if (!trimmed || !validLang.test(trimmed)) {
-              const langMap = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar' };
-              const fixed = langMap[trimmed] || 'en';
-              warnLog(`  Deterministic: fixed invalid lang="${langVal}" → "${fixed}"`);
+              const langMap = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar', 'vietnamese': 'vi', 'haitian': 'ht', 'haitian creole': 'ht', 'somali': 'so', 'hebrew': 'he', 'russian': 'ru' };
+              const auditDetected = (pdfAuditResult && pdfAuditResult.documentLanguage && validLang.test(pdfAuditResult.documentLanguage))
+                ? pdfAuditResult.documentLanguage
+                : null;
+              const fixed = auditDetected || langMap[trimmed] || 'en';
+              const source = auditDetected ? 'audit-detected' : (langMap[trimmed] ? 'name-mapped' : 'fallback');
+              warnLog(`  Deterministic: fixed invalid lang="${langVal}" → "${fixed}" (${source})`);
               return `<html${before}lang="${fixed}"`;
             }
             return m;

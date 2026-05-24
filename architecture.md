@@ -655,6 +655,43 @@ TTS is in-browser, never cloud:
 
 Audio never leaves the device.
 
+### STEM tool theme + contrast
+
+STEM tools (~104) intentionally use an immersive dark palette regardless of
+the host app's `theme === 'light'` / `dark` setting — the dark canvas is
+a deliberate lab-mode aesthetic (glare reduction, spectral color visibility,
+"you are in a lab" psychological signal). Forcing all of them to flip with
+the host theme would erase that design choice.
+
+What IS wired up across all 101 hardcoded-palette tools (2026-05-19):
+
+- **CSS variables** at `AlloFlowANTI.txt:22016` define `--allo-stem-canvas`,
+  `--allo-stem-panel`, `--allo-stem-deeper`, `--allo-stem-text`,
+  `--allo-stem-text-soft`, `--allo-stem-border`, `--allo-stem-button-*`.
+  Three theme variants: light (`:root`/`.theme-default`), dark (`.theme-dark`),
+  contrast (`.theme-contrast`). Tools that opt in use `var(--allo-stem-*)`
+  for theme-responsive surfaces.
+- **JS helper** at `stem_lab/stem_lab_module.js`:
+  `window.AlloStemTheme.palette([themeName])` returns plain hex strings for
+  canvas / SVG / dynamic-style consumers that can't use CSS variables.
+  `window.AlloStemTheme.onChange(cb)` for tools that need a repaint signal.
+- **High-contrast override stylesheet** at `AlloFlowANTI.txt:22057+` —
+  attribute-selector CSS that catches inline `background: '#0f172a'` /
+  `rgba(15,23,42,*)` / similar dark patterns and swaps them to `#000`
+  when `.theme-contrast` is active. Same for common light text colors
+  (`#cbd5e1`, etc. → `#ffff00`) and dark borders (`#334155` → `#ffff00`).
+  Property-name-aware (won't override `color:` with bg rules or vice versa).
+  SVG `fill`/`stroke` deliberately untouched — those encode information.
+- **Bad-text-color guardrail** (`_stem_contrast_fix.cjs`) — per-tool
+  script that replaces failing-AA dim text shades (`#64748b`, `#334155`,
+  `#1f2937`, etc.) with AA-passing equivalents inside `color: '#X'`
+  declarations. Already applied to 10 high-confidence dark-themed tools.
+
+The result: high-contrast a11y users get a usable STEM Lab; everyone else
+keeps the immersive lab-dark aesthetic. Full per-tool theme migration is
+deliberately *not* attempted — see `STEM_LAB_THEME_AUDIT.md` for the
+extended rationale.
+
 ## Privacy Architecture
 
 | Layer | Implementation |
