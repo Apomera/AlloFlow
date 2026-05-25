@@ -1,5 +1,5 @@
 {
-  "_version": "20260525171706T1779729426348",
+  "_version": "20260525175028T1779731428073",
   "tour": {
     "input_panel_title": "ibyinjira urubaho",
     "input_panel_text": "Begin cyawe isomo creation journey here. Iki ibyinjira urubaho ni foundation kuri byose byakozwe umutungo. It serves as central hub aho wowe define ibirimo, context, na parameters. ### ibyinjira amahitamo • **inyandiko Komeza**: Komeza ibirimo directly kuva any article, inkuru, cyangwa isomo gahunda. • **dosiye Ohereza**: Ohereza PDFs, ifoto, inyandiko dosiye, amajwi (MP3/WAV), cyangwa video kuri cyikora ubwacyo extraction. • **URL Zana**: Komeza any article URL ku automatically kuramo na zana imbere its ibirimo. • **AI umutungo Shakisha**: Describe ingingo na let AI find ishuri-appropriate online umutungo kuri wowe. • **Kora inkomoko inyandiko**: Rema umwimerere ibirimo by specifying ingingo, ijwi, urwego rw'ishuri, na intego urwego. ### Isekuru ibiranga • **ijwi Selection**: Hitamo kuva Informative, Inkuru, Persuasive, Humorous, cyangwa intambwe-by-intambwe imiterere. • **urwego Kuringaniza**: Koresha AI-powered urwego finder cyangwa manually ibyinjira intego urwego (up ku 3). • **Fact Verification**: Bashisha web grounding ku verify facts na shyiramo citations automatically. • **Custom amabwiriza**: Ongeraho cyihariye guidance kuri byinshi tailored ibirimo isekuru. ### sisitemu Capabilities • **Auto-Detection**: Automatically identifies inkomoko ururimi. • **Chunked Processing**: amajwi na video dosiye hejuru 20MB ni intelligently split kuri reliable transcription. ### Important Most ibikoresho muri sidebar require inkomoko material before they irashobora be byakoreshejwe. Komeza cyangwa kora cyawe ibirimo here cya mbere, then sesengura ikindi umutungo.",
@@ -9506,80 +9506,80 @@
       "target_placeholder": "e.g., Raise hand before speaking"
     },
     "hotspot": {
-      "title": "Routine Hotspot Matrix",
-      "analyze": "Suzuma Hotspots",
-      "tap_hint": "Tap akagari ku increment. Kanda routine name ku hindura."
+      "title": "Matrix ya Hotspot y'Imihango",
+      "analyze": "Sesengura Hotspots",
+      "tap_hint": "Kanda cell ku kongera. Kanda izina ry'umuhango ku guhindura."
     },
     "export": {
-      "title": "Ohereza hanze amakuru",
-      "download": "Manura Ohereza hanze"
+      "title": "Ohereza Amakuru",
+      "download": "Manura Export"
     },
     "record": {
-      "title": "Record Review",
+      "title": "Isuzuma ry'Inyandiko",
       "analyze": "AI Summarize",
-      "desc": "Komeza IEP intego, evaluation reports, cyangwa ihinduka notes kuri AI-powered analysis.",
-      "placeholder": "Komeza inyandiko inyandiko here..."
+      "desc": "Manika intego za IEP, raporo z'isuzuma, cyangwa notes z'iterambere ku isesengura riyobowe na AI.",
+      "placeholder": "Manika inyandiko y'urupapuro hano..."
     },
     "hypothesis": {
-      "title": "Hypothesis ishusho",
-      "generate": "Kora Hypothesis kuva amakuru"
+      "title": "Diagram ya Hypothesis",
+      "generate": "Kora Hypothesis Iva mu Makuru"
     },
     "goals": {
-      "title": "SMART intego Builder",
-      "save": "Bika intego",
-      "suggest": "AI Suggest intego"
+      "title": "SMART Goal Builder",
+      "save": "Bika Intego",
+      "suggest": "AI Suggest Intego"
     },
     "contract": {
-      "title": "imyitwarire Contract",
-      "draft": "AI Draft Contract",
-      "print": "Capa Contract"
+      "title": "Amasezerano y'Imyitwarire",
+      "draft": "AI Draft Amasezerano",
+      "print": "Capa Amasezerano"
     },
     "cycle": {
-      "title": "Acting-Out Cycle",
-      "personalize": "Personalize kuri Iki umunyeshuri"
+      "title": "Cycle yo Gukora",
+      "personalize": "Huza Ku Uyu Munyeshuri"
     },
     "reinforcer": {
-      "title": "Reinforcer isuzuma",
+      "title": "Reinforcer Assessment",
       "suggest": "AI Recommend Reinforcers"
     },
     "audit": {
-      "title": "Environment Audit",
-      "recommend": "AI Recommend Improvements"
+      "title": "Audit y'Ikirere",
+      "recommend": "AI Recommend Impinduka"
     },
     "triangulation": {
-      "title": "amakuru Triangulation",
-      "analyze": "Suzuma amakuru Convergence"
+      "title": "Triangulation y'Amakuru",
+      "analyze": "Sesengura Amakuru Convergence"
     },
     "impact": {
       "title": "Impact Calculator",
-      "interpret": "AI Interpret Impact"
+      "interpret": "AI Sobanura Impact"
     },
     "crisis": {
-      "title": "Crisis Gahunda",
-      "draft": "AI Draft Crisis Gahunda"
+      "title": "Gahunda ya Crisis",
+      "draft": "AI Draft Gahunda ya Crisis"
     },
     "traffic": {
       "title": "Traffic Light",
       "generate": "AI Kora Expectations"
     },
     "datasheet": {
-      "title": "amakuru Sheet Generator"
+      "title": "Data Sheet Generator"
     },
     "homenote": {
-      "title": "Home Note",
-      "generate": "AI Kora Home Note"
+      "title": "Inyandiko yo mu Rugo",
+      "generate": "AI Kora Inyandiko yo mu Rugo"
     },
     "fidelity": {
       "title": "Fidelity Checklist",
-      "generate": "AI Kora Checklist kuva BIP"
+      "generate": "AI Kora Checklist Iva ku BIP"
     },
     "feasibility": {
       "title": "Feasibility Check",
       "recommend": "AI Recommendations"
     },
     "gas": {
-      "title": "GAS Rubric",
-      "generate": "AI Kora GAS Descriptors"
+      "title": "Rubric ya GAS",
+      "generate": "AI Kora Descriptors za GAS"
     },
     "pocket": {
       "title": "Pocket BIP",
@@ -9763,87 +9763,87 @@
     "quiz_opt_identify_why": "Kumenya IMPAMVU imyitwarire ibaho",
     "quiz_opt_any_stops": "Imyitwarire iyo ari yo yose ihagarika ikibazo",
     "analysis": {
-      "title": "AI Pattern Analysis",
-      "confidence": "Confidence",
-      "hypothesized_function": "Hypothesized Function",
-      "patterns": "Imiterere Identified",
-      "recommendations": "Recommendations"
+      "title": "Isesengura ry'Imiterere rya AI",
+      "confidence": "Kwizera",
+      "hypothesized_function": "Imikorere Yatekerejweho",
+      "patterns": "Imiterere Yamenyekanye",
+      "recommendations": "Inama"
     },
     "ph": {
-      "a_break_help_someone_to_listen_space": "break? ubufasha? Someone ku tega amatwi? Space?",
-      "add_a_custom_reinforcer": "Ongeraho gakondo reinforcer",
-      "add_a_team_note_shiftenter_for_new_line": "Ongeraho team note... (Shift+Injiza kuri gishya umurongo)",
-      "add_context_constraints_or_specific_challenges_eg": "Ongeraho context, constraints, cyangwa cyihariye imbogamizi... e.g., \" umunyeshuri also has speech delay\" cyangwa \"Iki ni middle ishuri umunyeshuri\"",
-      "any_other_details_was_child_tired_hungry_etc": "Any ikindi ibisobanuro (was child tired, hungry, etc.)...",
-      "behavior": "imyitwarire...",
-      "behavior_name": "imyitwarire name...",
-      "behavior_name_from_sessions": "imyitwarire name (kuva igihe)...",
-      "by_when": "By igihe?",
-      "counts_per_session_3_5_2_8_4": "Counts per igihe: 3, 5, 2, 8, 4...",
-      "describe_the_scenario_you_want_to_practice_with": "Describe scenario wowe want ku kora imyitozo hamwe na...",
-      "describe_the_student_persona_eg_you_are_a_3rd_grad": "Describe umunyeshuri persona... e.g., \"wowe ni 3rd grader who becomes anxious during imibare na tends ku cry na shut down...\"",
-      "describe_what_your_child_did": "Describe iki cyawe child did...",
-      "eg_12_15_14_13_16": "e.g. 12, 15, 14, 13, 16",
-      "eg_5": "e.g. 5",
-      "eg_8_6_5_4_3": "e.g. 8, 6, 5, 4, 3",
-      "eg_does_a_token_economy_reduce_offtask_behavior_du": "e.g. \"Does token economy reduce off-task imyitwarire during imibare amabwiriza?\"",
-      "eg_handwashing_tying_shoes_morning_routine": "e.g. Handwashing, Tying Shoes, Morning Routine",
-      "eg_hitting_peers_when_frustrated": "e.g. Hitting peers igihe frustrated",
-      "eg_i_need_a_break": "e.g. \"I need break\"",
-      "eg_offtask_behavior": "e.g., Off-task imyitwarire",
-      "eg_offtask_behavior_2": "e.g. Off-Task imyitwarire",
-      "eg_offtask_behavior_in_math": "e.g. Off-task imyitwarire muri imibare",
-      "eg_receptive_id_colors": "e.g. Receptive ID ibara",
-      "eg_responding_to_name": "e.g. Responding ku name",
-      "eg_spanish_arabic_somali": "e.g. Spanish, Arabic, Somali…",
-      "eg_student_is_defiant_and_refuses_to_follow_direct": "e.g., \"umunyeshuri ni defiant na refuses ku follow directions.\"",
-      "eg_student_with_autism_cooccurring_adhd_new_to_the": "e.g. \"umunyeshuri hamwe na autism\", \"co-occurring ADHD\", \"gishya ku ishuri\"",
-      "eg_token_economy_fct_protocol": "e.g. Token Economy + FCT Protocol",
-      "eg_touch_red": "e.g. Touch \"red\"",
-      "enter_descriptor": "Injiza descriptor...",
-      "enter_the_behavioral_goal_to_scale_eg_student_will": "Injiza behavioral intego ku scale (e.g., \"umunyeshuri will remain muri seat during independent work kuri 15 minutes\")",
-      "first_task": "cya mbere (task)...",
-      "followup_needed_optional": "Follow-up needed? (cy'ihitamo)",
-      "how_will_progress_be_measured": "gute will ihinduka be measured?",
-      "items_separated_by_semicolons": "ikintu separated by semicolons",
-      "mastered_skill_name": "Mastered ubumenyi name...",
-      "nervous_angry_bored_overwhelmed": "Nervous? Angry? Bored? Overwhelmed?",
-      "new_behavior_label": "gishya imyitwarire label...",
-      "optional": "cy'ihitamo",
-      "outcome_key_takeaways_optional": "Outcome / key takeaways (cy'ihitamo)",
-      "paste_share_code_here": "Komeza sangiza code here...",
-      "person": "Person\\",
-      "phase_label": "Phase label",
-      "rationale_which_antecedent_does_this_address": "Rationale (which antecedent does iki address?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect kuri cyawe approach...\\n• iki worked well?\\n• iki would wowe do differently?\\n• iki ingamba do wowe want ku kora imyitozo cyikurikira?",
-      "reinforcement_how_you": "⭐ Reinforcement (gute wowe\\",
-      "replacement_behavior_functionally_equivalent": "✅ Replacement imyitwarire (functionally equivalent)",
-      "respond_as_the_counselor": "Respond as counselor...",
-      "schooldistrict_name": "ishuri/District Name",
-      "search_81_tools": "🔍 Shakisha 81+ ibikoresho…",
-      "search_aba_terms": "🔍 Shakisha ABA ijambo...",
-      "search_terms_eg_reinforcement_fba_data": "🔍 Shakisha ijambo... (e.g. \"reinforcement\", \"FBA\", \"amakuru\")",
-      "session_1_3nsession_2_7nsession_3_5n": "igihe 1: 3\\nSession 2: 7\\nSession 3: 5\\n...",
-      "setting_eg_math_class_cafeteria": "igenamiterere (e.g., Imibare ishuri, Cafeteria)",
-      "share_what_you_notice_at_home_strengths_concerns_c": "Sangiza iki wowe notice at home — strengths, concerns, cultural context, cyangwa suggestions kuri ishuri team...",
-      "step_description": "intambwe description...",
-      "target_behavior_what_you_want_to_reduce": "🎯 Intego imyitwarire (iki wowe want ku reduce)",
-      "teacherspecialist_name": "umwarimu/Specialist Name",
-      "teaching_strategy_how_you": "📚 Teaching ingamba (gute wowe\\",
-      "then_reward": "THEN (igihembo)...",
-      "topic_purpose_of_contact": "Ingingo / purpose cya contact",
-      "type_full_name": "Type full name",
-      "type_language_eg_spanish_arabic_somali": "Type ururimi (e.g., Spanish, Arabic, Somali)",
-      "type_your_observation_note_or_click_the_mic_to_dic": "Type cyawe kwitegereza, note, cyangwa kanda mic ku dictate...",
-      "type_your_response_here_be_thorough_and_use_profes": "Type cyawe response here. Be thorough na koresha professional ururimi...",
-      "what_behavior_will_change": "iki imyitwarire will guhindura?",
-      "what_could_you_or_a_grownup_do_differently": "iki could wowe cyangwa grown-up do differently?",
-      "what_environmental_change_will_you_make": "iki environmental guhindura will wowe kora?",
-      "what_made_you_feel_this_way_optional": "iki made wowe feel iki way? (cy'ihitamo)",
-      "what_supports_are_needed": "iki ubufasha ni needed?",
-      "what_was_going_on_before_you_felt_this_way": "iki was going kuri before wowe felt iki way?",
-      "who_did_you_contact": "Who did wowe contact?",
-      "why_does_this_matter": "Why does iki matter?"
+      "a_break_help_someone_to_listen_space": "Akaruhuko? Ubufasha? Umuntu wo gutega amatwi? Umwanya?",
+      "add_a_custom_reinforcer": "Ongeraho reinforcer yihariye",
+      "add_a_team_note_shiftenter_for_new_line": "Ongeraho inyandiko y'itsinda... (Shift+Enter ku umurongo mushya)",
+      "add_context_constraints_or_specific_challenges_eg": "Ongera context, imipaka, cyangwa ibibazo byihariye... urugero: \"Umunyeshuri kandi afite ukubuza kuvuga\" cyangwa \"Uyu ni umunyeshuri wo muri middle school\"",
+      "any_other_details_was_child_tired_hungry_etc": "Andi makuru ayo ariyo yose (umwana yari arushye, asonzeye, n'ibindi)...",
+      "behavior": "Imyitwarire...",
+      "behavior_name": "Izina ry'imyitwarire...",
+      "behavior_name_from_sessions": "Izina ry'imyitwarire (rikuva mu mbonezamubano)...",
+      "by_when": "Ryari?",
+      "counts_per_session_3_5_2_8_4": "Umubare ku mbonezamubano: 3, 5, 2, 8, 4...",
+      "describe_the_scenario_you_want_to_practice_with": "Sobanura scenario ushaka kwitozaho...",
+      "describe_the_student_persona_eg_you_are_a_3rd_grad": "Sobanura persona y'umunyeshuri... urugero: \"Uri umunyeshuri wo mu rwego rwa 3 uhubuka mu math kandi akunda kurira no kwifunga...\"",
+      "describe_what_your_child_did": "Sobanura icyo umwana wawe yakoze...",
+      "eg_12_15_14_13_16": "urugero: 12, 15, 14, 13, 16",
+      "eg_5": "urugero: 5",
+      "eg_8_6_5_4_3": "urugero: 8, 6, 5, 4, 3",
+      "eg_does_a_token_economy_reduce_offtask_behavior_du": "urugero: \"Token economy igabanya imyitwarire idahuje n'umurimo mu mabwiriza ya math?\"",
+      "eg_handwashing_tying_shoes_morning_routine": "urugero: Gukaraba intoki, Guhambira inkweto, Imihango ya mu gitondo",
+      "eg_hitting_peers_when_frustrated": "urugero: Gukubita bagenzi iyo bahangayitse",
+      "eg_i_need_a_break": "urugero: \"Nkeneye akaruhuko\"",
+      "eg_offtask_behavior": "urugero: Imyitwarire idahuje n'umurimo",
+      "eg_offtask_behavior_2": "urugero: Imyitwarire Idahuje n'Umurimo",
+      "eg_offtask_behavior_in_math": "urugero: Imyitwarire idahuje n'umurimo muri math",
+      "eg_receptive_id_colors": "urugero: Receptive ID Amabara",
+      "eg_responding_to_name": "urugero: Gusubiza ku izina",
+      "eg_spanish_arabic_somali": "urugero: Icyesipanyole, Icyarabu, Igisomali…",
+      "eg_student_is_defiant_and_refuses_to_follow_direct": "urugero: \"Umunyeshuri ni umunyamigani kandi yanga gukurikira amabwiriza.\"",
+      "eg_student_with_autism_cooccurring_adhd_new_to_the": "urugero: \"umunyeshuri ufite autism\", \"co-occurring ADHD\", \"mushya mu ishuri\"",
+      "eg_token_economy_fct_protocol": "urugero: Token Economy + FCT Protocol",
+      "eg_touch_red": "urugero: Kora ku \"umutuku\"",
+      "enter_descriptor": "Andika descriptor...",
+      "enter_the_behavioral_goal_to_scale_eg_student_will": "Andika intego y'imyitwarire yo gupima (urugero: \"Umunyeshuri azakomeza mu ntebe mu gihe cy'akazi k'wenyine mu maminota 15\")",
+      "first_task": "BANZE (umurimo)...",
+      "followup_needed_optional": "Gukurikirana bikenewe? (bitari ngombwa)",
+      "how_will_progress_be_measured": "Iterambere rizapimwa gute?",
+      "items_separated_by_semicolons": "Ibintu bitandukanyijwe na semicolons",
+      "mastered_skill_name": "Izina ry'ubuhanga bwagezweho...",
+      "nervous_angry_bored_overwhelmed": "Ufite ubwoba? Urakaye? Wararuhutse? Uragenywe?",
+      "new_behavior_label": "Akamenyetso k'imyitwarire nshya...",
+      "optional": "Bitari ngombwa",
+      "outcome_key_takeaways_optional": "Ikivamo / icy'ingenzi (bitari ngombwa)",
+      "paste_share_code_here": "Manika code yo gusangira hano...",
+      "person": "Umuntu\\",
+      "phase_label": "Akamenyetso ka phase",
+      "rationale_which_antecedent_does_this_address": "Impamvu (ni iyihe antecedent iri yivuga?)",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Tekereza ku nzira yawe...\\n• Iki cyakoze neza?\\n• Iki wakora utandukanye?\\n• Ni izihe strategies ushaka kwitozaho hakurikira?",
+      "reinforcement_how_you": "⭐ Reinforcement (uko wowe\\",
+      "replacement_behavior_functionally_equivalent": "✅ Imyitwarire isimbura (functionally equivalent)",
+      "respond_as_the_counselor": "Subiza nk'umujyanama...",
+      "schooldistrict_name": "Izina ry'Ishuri/District",
+      "search_81_tools": "🔍  Shakisha ibikoresho 81+…",
+      "search_aba_terms": "🔍 Shakisha imvugo za ABA...",
+      "search_terms_eg_reinforcement_fba_data": "🔍 Shakisha imvugo... (urugero: \"reinforcement\", \"FBA\", \"amakuru\")",
+      "session_1_3nsession_2_7nsession_3_5n": "Imbonezamubano 1: 3\\nImbonezamubano 2: 7\\nImbonezamubano 3: 5\\n...",
+      "setting_eg_math_class_cafeteria": "Ahantu (urugero: Math class, Cafeteria)",
+      "share_what_you_notice_at_home_strengths_concerns_c": "Sangira ibyo ubona mu rugo — imbaraga, impungenge, imimerere y'umuco, cyangwa inama ku itsinda ry'ishuri...",
+      "step_description": "Ibisobanuro by'intambwe...",
+      "target_behavior_what_you_want_to_reduce": "🎯 Imyitwarire ya intego (icyo ushaka kugabanya)",
+      "teacherspecialist_name": "Izina ry'Umwarimu/Inzobere",
+      "teaching_strategy_how_you": "📚 Strategy yo kwigisha (uko wowe\\",
+      "then_reward": "HANYUMA (gihembo)...",
+      "topic_purpose_of_contact": "Ingingo / intego yo kuvugana",
+      "type_full_name": "Andika izina ryuzuye",
+      "type_language_eg_spanish_arabic_somali": "Andika ururimi (urugero: Icyesipanyole, Icyarabu, Igisomali)",
+      "type_your_observation_note_or_click_the_mic_to_dic": "Andika observation yawe, inyandiko, cyangwa kanda mic ku gucuruza...",
+      "type_your_response_here_be_thorough_and_use_profes": "Andika igisubizo cyawe hano. Sobanura neza kandi koresha ururimi rw'umwuga...",
+      "what_behavior_will_change": "Ni iyihe myitwarire izahinduka?",
+      "what_could_you_or_a_grownup_do_differently": "Ni iki wowe cyangwa umuntu mukuru yashobora gukora utandukanye?",
+      "what_environmental_change_will_you_make": "Ni iyihe mpinduka y'ikirere uzakora?",
+      "what_made_you_feel_this_way_optional": "Ni iki cyatumye wumva uku? (bitari ngombwa)",
+      "what_supports_are_needed": "Ni izihe nkunga zikenewe?",
+      "what_was_going_on_before_you_felt_this_way": "Ni iki cyari kibaye mbere yo kumva uku?",
+      "who_did_you_contact": "Wavuganye n'inde?",
+      "why_does_this_matter": "Kuki ibi bigira agaciro?"
     },
     "toast": {
       "added_n_entries_to_abc_data": "Yongewemo iyandika N ku makuru ya ABC!",
@@ -10294,77 +10294,77 @@
     "week_comparison": "Igutwerera Icyumweru-ku-Cyumweru",
     "yes_delete": "Yego, Siba",
     "abaguide": {
-      "title": "ABA byihuse Guide"
+      "title": "Guide Yihuse ya ABA"
     },
     "allobot_chat": {
-      "card_desc": "ikiganiro hamwe na AI ku byerekeye imyitwarire ingamba, FBA, BIP, na intervention planning",
-      "empty_desc": "I irashobora ubufasha hamwe na FBA ingamba, intervention ideas, amakuru interpretation, de-escalation techniques, na byinshi.",
-      "empty_title": "Ask me anything ku byerekeye imyitwarire analysis!",
-      "placeholder": "Ask ku byerekeye imyitwarire, ingamba, FBA, BIP...",
-      "subtitle": "AI-powered behavioral analysis assistant",
-      "title": "Ask AlloBot"
+      "card_desc": "Ganira na AI ku ngamba z'imyitwarire, FBA, BIP, no gutegura intervention",
+      "empty_desc": "Nshobora gufasha ku ngamba za FBA, ibitekerezo bya intervention, gusobanura amakuru, uburyo bwo de-escalation, n'ibindi.",
+      "empty_title": "Mbaze ikintu icyo ari cyo cyose ku isesengura ry'imyitwarire!",
+      "placeholder": "Baza ku myitwarire, ingamba, FBA, BIP...",
+      "subtitle": "Umufasha w'isesengura ry'imyitwarire ufashijwe na AI",
+      "title": "Baza AlloBot"
     },
     "consent": {
-      "title": "FERPA Consent Manager"
+      "title": "Umuyobozi w'Uburenganzira bwa FERPA"
     },
     "counseling": {
       "choose_scenario": "Hitamo Scenario",
-      "enable_images": "Bashisha ifoto Isekuru",
-      "start": "Begin Counseling igihe",
-      "title": "Counseling Simulation"
+      "enable_images": "Bishyireho Gukora Amashusho",
+      "start": "Tangiza Imbonezamubano y'Ubujyanama",
+      "title": "Simulation y'Ubujyanama"
     },
     "freq": {
-      "elapsed": "Elapsed",
+      "elapsed": "Igihe Cyahise",
       "save": "Bika",
-      "saved": "igihe byabitswe ✅"
+      "saved": "Imbonezamubano yabitswe ✅"
     },
     "homelog": {
-      "title": "Home imyitwarire Log"
+      "title": "Log y'Imyitwarire yo mu Rugo"
     },
     "interval": {
-      "save": "Bika igihe",
-      "saved": "Interval igihe byabitswe ✅",
-      "start": "Tangira Recording",
+      "save": "Bika Imbonezamubano",
+      "saved": "Imbonezamubano ya Interval yabitswe ✅",
+      "start": "Tangira Kwandika",
       "title": "Interval Recording"
     },
     "intervention": {
-      "title": "AI Intervention Gahunda Generator"
+      "title": "AI Intervention Plan Generator"
     },
     "obs": {
-      "behavior_occurring": "🔴 imyitwarire occurring...",
-      "elapsed": "Elapsed Time",
+      "behavior_occurring": "🔴 Imyitwarire iri kuba...",
+      "elapsed": "Igihe Cyahise",
       "interval_length": "Interval:",
-      "latency_recorded": "Latency recorded!",
-      "occurrences": "Occurrences",
-      "save_session": "Bika igihe",
-      "saved": "kwitegereza igihe byabitswe ✅",
-      "session_notes": "igihe notes...",
-      "start_to_begin": "Tangira timer ku begin latency measurement",
-      "tap_when_starts": "Tap igihe imyitwarire starts",
-      "title": "Mu buryo butaziguye kwitegereza",
-      "waiting_for_behavior": "⏳ Waiting kuri imyitwarire..."
+      "latency_recorded": "Latency yanditswe!",
+      "occurrences": "Inshuro Bibaye",
+      "save_session": "Bika Imbonezamubano",
+      "saved": "Imbonezamubano y'observation yabitswe ✅",
+      "session_notes": "Notes z'imbonezamubano...",
+      "start_to_begin": "Tangiza timer ku gutangira gupima latency",
+      "tap_when_starts": "Kanda iyo imyitwarire itangiye",
+      "title": "Observation Nzima",
+      "waiting_for_behavior": "⏳ Gutegereza imyitwarire..."
     },
     "profile": {
-      "accommodations": "Current Accommodations",
-      "desc": "Iki amakuru ni automatically shared hamwe na byose AI-powered ibikoresho ku personalize recommendations.",
-      "goals": "intego",
-      "interests": "Interests & Motivators",
-      "notes": "Additional Notes",
-      "strengths": "Strengths",
-      "title": "umunyeshuri Profile",
-      "triggers": "Known Triggers"
+      "accommodations": "Accommodations za Ubu",
+      "desc": "Aya makuru asangirwa byikora n'ibikoresho byose bya AI ku guhuza inama.",
+      "goals": "Intego",
+      "interests": "Ibyo Akunda & Motivators",
+      "notes": "Notes z'Inyongera",
+      "strengths": "Imbaraga",
+      "title": "Profile y'Umunyeshuri",
+      "triggers": "Triggers Zizwi"
     },
     "progress": {
-      "title": "ihinduka Inkuru Generator"
+      "title": "Progress Narrative Generator"
     },
     "selfcheck": {
-      "title": "umunyeshuri Ubuntu-Check"
+      "title": "Self-Check y'Umunyeshuri"
     },
     "snapshot": {
-      "title": "umunyeshuri Snapshot Exchange"
+      "title": "Snapshot Exchange y'Umunyeshuri"
     },
     "workflow": {
-      "subtitle": "Hitamo intambwe-by-intambwe guide kuri cyawe clinical process",
+      "subtitle": "Hitamo step-by-step guide ku clinical process yawe",
       "title": "Guided Workflows"
     },
     "raw": {
