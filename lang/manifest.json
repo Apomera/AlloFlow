@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T04:50:00.707Z",
-  "count": 45,
+  "generated": "2026-05-25T04:50:54.080Z",
+  "count": 47,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -131,6 +131,13 @@
       "updated": "2026-05-25"
     },
     {
+      "slug": "indonesian",
+      "display": "Indonesian",
+      "keys": 9982,
+      "bytes": 998829,
+      "updated": "2026-05-25"
+    },
+    {
       "slug": "italian",
       "display": "Italian",
       "keys": 9968,
@@ -205,6 +212,13 @@
       "display": "Maay Maay",
       "keys": 9982,
       "bytes": 992529,
+      "updated": "2026-05-25"
+    },
+    {
+      "slug": "marshallese",
+      "display": "Marshallese",
+      "keys": 9982,
+      "bytes": 1000591,
       "updated": "2026-05-25"
     },
     {
