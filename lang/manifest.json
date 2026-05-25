@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T04:11:54.588Z",
-  "count": 41,
+  "generated": "2026-05-25T04:13:23.134Z",
+  "count": 42,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -143,6 +143,13 @@
       "keys": 9968,
       "bytes": 1109015,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "khmer",
+      "display": "Khmer",
+      "keys": 9982,
+      "bytes": 1322676,
+      "updated": "2026-05-25"
     },
     {
       "slug": "kinyarwanda",
