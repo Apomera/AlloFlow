@@ -4071,7 +4071,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'c2e2b441';
+    var pluginCdnVersion = '065705dd';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -8622,7 +8622,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                           : { gradeLevel: '5th Grade', leveledTextLanguage: 'English' };
                         const targetLang = myProfile.leveledTextLanguage || 'English';
                         const gradeLevel = myProfile.gradeLevel || '5th Grade';
-                        const langNames = { 'English': '🇺🇸 English', 'Spanish': '🇪🇸 Español', 'French': '🇫🇷 Français', 'Arabic': '🇸🇦 العربية', 'Somali': '🇸🇴 Soomaali', 'Vietnamese': '🇻🇳 Tiếng Việt', 'Portuguese': '🇧🇷 Português', 'Mandarin': '🇨🇳 中文', 'Korean': '🇰🇷 한국어', 'Tagalog': '🇵🇭 Tagalog', 'Russian': '🇷🇺 Русский', 'Japanese': '🇯🇵 日本語' };
+                        // Flag/endonym overrides for languages where the display name benefits from a flag or native script.
+                        // The fallback ('🌐 ' + targetLang) handles every language in the manifest — this dict is just for known popular ones.
+                        const langNames = { 'English': '🇺🇸 English', 'Spanish': '🇪🇸 Español', 'Spanish (Latin America)': '🇪🇸 Español', 'Spanish (Castilian)': '🇪🇸 Español', 'French': '🇫🇷 Français', 'French (Canadian)': '🇨🇦 Français', 'Arabic': '🇸🇦 العربية', 'Somali': '🇸🇴 Soomaali', 'Vietnamese': '🇻🇳 Tiếng Việt', 'Portuguese': '🇧🇷 Português', 'Portuguese (Brazil)': '🇧🇷 Português', 'Portuguese (Angola)': '🇦🇴 Português', 'Mandarin': '🇨🇳 中文', 'Chinese (Simplified)': '🇨🇳 中文', 'Chinese (Traditional)': '🇹🇼 中文', 'Korean': '🇰🇷 한국어', 'Tagalog': '🇵🇭 Tagalog', 'Russian': '🇷🇺 Русский', 'Japanese': '🇯🇵 日本語', 'German': '🇩🇪 Deutsch', 'Italian': '🇮🇹 Italiano', 'Polish': '🇵🇱 Polski', 'Ukrainian': '🇺🇦 Українська', 'Hindi': '🇮🇳 हिन्दी', 'Bengali': '🇧🇩 বাংলা', 'Punjabi': '🇮🇳 ਪੰਜਾਬੀ', 'Tamil': '🇮🇳 தமிழ்', 'Urdu': '🇵🇰 اردو', 'Farsi': '🇮🇷 فارسی', 'Pashto': '🇦🇫 پښتو', 'Dari': '🇦🇫 دری', 'Hebrew': '🇮🇱 עברית', 'Greek': '🇬🇷 Ελληνικά', 'Latin': '🏛 Latīna', 'Indonesian': '🇮🇩 Indonesia', 'Malay': '🇲🇾 Melayu', 'Thai': '🇹🇭 ไทย', 'Lao': '🇱🇦 ລາວ', 'Khmer': '🇰🇭 ខ្មែរ', 'Burmese': '🇲🇲 မြန်မာ', 'Nepali': '🇳🇵 नेपाली', 'Swahili': '🇰🇪 Kiswahili', 'Hausa': '🇳🇬 Hausa', 'Yoruba': '🇳🇬 Yorùbá', 'Igbo': '🇳🇬 Igbo', 'Amharic': '🇪🇹 አማርኛ', 'Tigrinya': '🇪🇷 ትግርኛ', 'Haitian Creole': '🇭🇹 Kreyòl', 'Lingala': '🇨🇩 Lingála', 'Kinyarwanda': '🇷🇼 Kinyarwanda', 'Kirundi': '🇧🇮 Kirundi', 'Acholi': '🇺🇬 Acholi', 'Karen': '🇲🇲 Karen', 'Chin (Hakha)': '🇲🇲 Hakha', 'Chin (Falam)': '🇲🇲 Falam', 'Hmong': '🇱🇦 Hmoob', 'Mongolian': '🇲🇳 Монгол', 'Maay Maay': '🇸🇴 Af-Maay', 'Marshallese': '🇲🇭 Kajin M̧ajeļ' };
                         (async () => {
                           try {
                             const prompt = bp.mode === 'translate'
