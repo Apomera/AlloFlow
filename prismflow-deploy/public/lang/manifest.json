@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T15:12:42.651Z",
-  "count": 49,
+  "generated": "2026-05-25T15:24:34.426Z",
+  "count": 50,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -131,6 +131,13 @@
       "updated": "2026-05-25"
     },
     {
+      "slug": "igbo",
+      "display": "Igbo",
+      "keys": 9982,
+      "bytes": 1051621,
+      "updated": "2026-05-25"
+    },
+    {
       "slug": "indonesian",
       "display": "Indonesian",
       "keys": 9982,
@@ -169,7 +176,7 @@
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
       "keys": 9976,
-      "bytes": 1045090,
+      "bytes": 1045524,
       "updated": "2026-05-25"
     },
     {
@@ -308,8 +315,8 @@
     {
       "slug": "thai",
       "display": "Thai",
-      "keys": 2058,
-      "bytes": 179333,
+      "keys": 2934,
+      "bytes": 265802,
       "updated": "2026-05-25"
     },
     {
