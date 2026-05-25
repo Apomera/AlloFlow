@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T16:54:10.083Z",
-  "count": 52,
+  "generated": "2026-05-25T16:57:29.223Z",
+  "count": 53,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -269,6 +269,13 @@
       "keys": 9953,
       "bytes": 1108495,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "portuguese_portugal",
+      "display": "Portuguese (Portugal)",
+      "keys": 9982,
+      "bytes": 1111104,
+      "updated": "2026-05-25"
     },
     {
       "slug": "punjabi",
