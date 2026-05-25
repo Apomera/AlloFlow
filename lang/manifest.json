@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T16:06:30.325Z",
-  "count": 50,
+  "generated": "2026-05-25T16:26:49.144Z",
+  "count": 51,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -108,6 +108,13 @@
       "keys": 9955,
       "bytes": 904714,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "hausa",
+      "display": "Hausa",
+      "keys": 9982,
+      "bytes": 989688,
+      "updated": "2026-05-25"
     },
     {
       "slug": "hebrew",
