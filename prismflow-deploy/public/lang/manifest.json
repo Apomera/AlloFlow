@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-25T03:08:40.219Z",
+  "generated": "2026-05-25T03:18:55.008Z",
   "count": 37,
   "total_keys_expected": 9307,
   "available": [
@@ -112,8 +112,8 @@
     {
       "slug": "hmong",
       "display": "Hmong",
-      "keys": 9980,
-      "bytes": 1048544,
+      "keys": 9976,
+      "bytes": 1039773,
       "updated": "2026-05-25"
     },
     {
@@ -140,8 +140,8 @@
     {
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
-      "keys": 1023,
-      "bytes": 57067,
+      "keys": 9976,
+      "bytes": 1030453,
       "updated": "2026-05-25"
     },
     {
