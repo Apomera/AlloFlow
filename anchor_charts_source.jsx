@@ -326,7 +326,7 @@ const AnchorChartSection = React.memo((props) => {
                       type="text"
                       value={studentAnswers[idx] || ''}
                       onChange={(e) => onStudentAnswerChange(idx, e.target.value)}
-                      placeholder="Type your answer here…"
+                      placeholder={t("placeholders.type_answer_here")}
                       className="flex-1 bg-white/70 outline-none border-b-2 border-dotted py-0.5 px-1"
                       style={{
                         fontFamily: '"Patrick Hand", "Caveat", cursive',

@@ -135,11 +135,11 @@ function FaqView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     onClick: expandAll,
     className: "px-3 py-1 text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-colors",
-    "aria-label": "Show all FAQ answers"
+    "aria-label": t("a11y.show_all_faq")
   }, "▾ Show all"), /*#__PURE__*/React.createElement("button", {
     onClick: collapseAll,
     className: "px-3 py-1 text-xs font-semibold bg-white text-slate-600 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors",
-    "aria-label": "Hide all FAQ answers"
+    "aria-label": t("a11y.hide_all_faq")
   }, "▸ Hide all"), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-slate-500 italic ml-1"
   }, "Tip: tap a question to reveal its answer")), /*#__PURE__*/React.createElement("div", {

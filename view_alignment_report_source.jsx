@@ -509,7 +509,7 @@ var _lazyIcon = function (name) {
     return <div className="p-5 rounded-2xl border-2 mb-6 shadow-md max-w-4xl mx-auto" style={{
       backgroundColor: statusClr.bg,
       borderColor: statusClr.ring
-    }} role="region" aria-label="Curriculum audit summary"><div className="flex items-center gap-5 mb-3 flex-wrap">{
+    }} role="region" aria-label={t("a11y.curriculum_audit_summary")}><div className="flex items-center gap-5 mb-3 flex-wrap">{
         // Score circle
         score !== null && dimEvaluated > 0 && <div className="relative flex-shrink-0" style={{
           width: '88px',

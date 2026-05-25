@@ -2212,7 +2212,7 @@ main{display:block}
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style></head><body>
 <a class="skip-link" href="#story-content">Skip to story</a>
-<button class="print-btn" onclick="window.print()" aria-label="Print this storybook or save as PDF">🖨️ Print</button>
+<button class="print-btn" onclick="window.print()" aria-label={t("a11y.story_print")}>🖨️ Print</button>
 <header class="cover" role="banner">
   ${coverArt ? `<img src="${coverArt}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
   <h1 id="story-title">${title}</h1>
@@ -2225,7 +2225,7 @@ ${chaptersHtml}
 <aside class="vocab-aside" aria-labelledby="vocab-heading">
 ${vocabHtml}
 </aside>
-${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${feedbackHtml}</aside>` : ''}
+${feedbackHtml ? `<aside class="feedback-aside" aria-label={t("a11y.teacher_feedback")}>${feedbackHtml}</aside>` : ''}
 <footer class="colophon" role="contentinfo">Created with StoryForge · AlloFlow</footer>
 </body></html>`;
 
@@ -2513,7 +2513,7 @@ show();
   const phaseIcons = [Sparkles, Type, ImageIcon, Volume2, Star, Download];
 
   return (
-    <div className={`sf-modal-root fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`} role="dialog" aria-modal="true" aria-label="StoryForge Creative Writing Studio">
+    <div className={`sf-modal-root fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`} role="dialog" aria-modal="true" aria-label={t("a11y.story_forge_studio")}>
       {/* Hidden audio element for playback */}
       <audio ref={audioRef} onEnded={handleAudioEnded} className="hidden" />
       {/* Screen reader playback announcements */}
@@ -2591,19 +2591,19 @@ show();
             data-sf-focusable
             onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
             className="hover:bg-white/20 p-2 rounded-full transition-colors flex items-center gap-1"
-            aria-label="Toggle theme"
+            aria-label={t("a11y.toggle_theme")}
             title={(() => { try { return document.querySelector('.theme-contrast') ? 'High Contrast' : document.querySelector('.theme-dark') ? 'Dark Mode' : 'Light Mode'; } catch(e) { return 'Toggle theme'; } })()}
           >
             <span className="text-sm">{(() => { try { return document.querySelector('.theme-contrast') ? '\uD83D\uDC41' : document.querySelector('.theme-dark') ? '\uD83C\uDF19' : '\u2600\uFE0F'; } catch(e) { return '\u2600\uFE0F'; } })()}</span>
           </button>
-          <button data-sf-focusable onClick={safeClose} className="hover:bg-white/20 p-2 rounded-full transition-colors" aria-label="Close StoryForge">
+          <button data-sf-focusable onClick={safeClose} className="hover:bg-white/20 p-2 rounded-full transition-colors" aria-label={t("a11y.close_story_forge")}>
             <X size={24} />
           </button>
         </div>
       </div>
 
       {/* ── Stepper ── */}
-      <nav className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-center gap-1 shrink-0 overflow-x-auto" role="navigation" aria-label="Story creation phases">
+      <nav className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-center gap-1 shrink-0 overflow-x-auto" role="navigation" aria-label={t("a11y.story_creation_phases")}>
         {PHASES.map((p, i) => {
           const Icon = phaseIcons[i];
           const isCurrent = i === phaseIdx;
@@ -2683,7 +2683,7 @@ show();
                     <input
                       id="sf-title"
                       type="text" value={storyTitle} onChange={(e) => setStoryTitle(e.target.value)}
-                      placeholder="Give your story a title..."
+                      placeholder={t("placeholders.story_title")}
                       className="w-full text-sm p-2.5 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none font-bold"
                     />
                   </div>

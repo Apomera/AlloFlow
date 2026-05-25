@@ -361,7 +361,7 @@ function SequenceSenseCard(p) {
       } catch (e) {}
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
-    "aria-label": "Read aloud"
+    "aria-label": t("a11y.read_aloud")
   }, "🔊 Read aloud")));
 }
 function RelationMismatchCard(p) {
@@ -615,7 +615,7 @@ function RelationMismatchCard(p) {
       } catch (e) {}
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
-    "aria-label": "Read aloud"
+    "aria-label": t("a11y.read_aloud")
   }, "🔊 Read aloud")));
 }
 function McqEnhancements(p) {
@@ -700,7 +700,7 @@ function McqEnhancements(p) {
     type: "button",
     onClick: requestExplainer,
     className: "text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors",
-    "aria-label": "Explain this concept",
+    "aria-label": t("a11y.explain_concept"),
     title: "Get a quick AI explanation of this concept"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
@@ -730,7 +730,7 @@ function McqEnhancements(p) {
       p.callTTS(explainer.text);
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
-    "aria-label": "Read aloud"
+    "aria-label": t("a11y.read_aloud")
   }, "🔊 Read aloud")), allowConfidence && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 flex-wrap text-xs"
   }, /*#__PURE__*/React.createElement("span", {
@@ -1260,7 +1260,7 @@ function LiveResultsDashboard(p) {
       type: "button",
       onClick: exportCsv,
       className: "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 transition-colors",
-      "aria-label": "Export gradebook as CSV",
+      "aria-label": t("a11y.export_gradebook_csv"),
       "data-help-key": "quiz_csv_export_btn",
       title: "Download gradebook as CSV — opens in Excel / Google Sheets / Numbers"
     }, /*#__PURE__*/React.createElement("span", {
@@ -1273,7 +1273,7 @@ function LiveResultsDashboard(p) {
       className: "bg-slate-100"
     }, /*#__PURE__*/React.createElement("th", {
       className: "w-7 px-1 py-1.5",
-      "aria-label": "Expand row"
+      "aria-label": t("a11y.expand_row")
     }), /*#__PURE__*/React.createElement("th", {
       className: "text-left px-2 py-1.5 font-bold text-slate-700"
     }, "Student"), /*#__PURE__*/React.createElement("th", {
@@ -1411,7 +1411,7 @@ function LiveResultsDashboard(p) {
             setTeacherOverride(row.uid, qIdx, null);
           },
           className: "text-xs font-bold px-2 h-6 rounded bg-white text-slate-700 border border-slate-300 hover:bg-slate-100",
-          "aria-label": "Remove teacher override and revert to AI or deterministic grade",
+          "aria-label": t("a11y.remove_teacher_override"),
           title: "Remove teacher override (revert to AI / deterministic grade)"
         }, /*#__PURE__*/React.createElement("span", {
           "aria-hidden": "true"
@@ -1449,7 +1449,7 @@ function LiveResultsDashboard(p) {
           openExplainer(card.questionIdx, card.conceptText);
         },
         className: "ml-auto inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors",
-        "aria-label": "Explain this concept to the class",
+        "aria-label": t("a11y.explain_to_class"),
         "data-help-key": "quiz_explain_to_class_btn",
         title: "Generate a 60-90 word concept explainer for the class"
       }, /*#__PURE__*/React.createElement("span", {
@@ -1638,7 +1638,7 @@ function LiveResultsDashboard(p) {
     className: "fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 p-4",
     role: "dialog",
     "aria-modal": "true",
-    "aria-label": "Concept explainer",
+    "aria-label": t("a11y.concept_explainer"),
     onClick: function (e) {
       if (e.target === e.currentTarget) closeExplainer();
     }
@@ -1658,7 +1658,7 @@ function LiveResultsDashboard(p) {
     type: "button",
     ref: explainerCloseBtnRef,
     onClick: closeExplainer,
-    "aria-label": "Close concept explainer",
+    "aria-label": t("a11y.close_concept_explainer"),
     className: "flex-shrink-0 text-slate-600 hover:text-slate-700 text-xl leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded"
   }, "×")), explainerModal.loading ? /*#__PURE__*/React.createElement("div", {
     className: "p-4 text-center text-sm text-slate-600"
@@ -1754,7 +1754,7 @@ function LiveResultsDashboard(p) {
   return /*#__PURE__*/React.createElement("div", {
     className: "p-5 rounded-xl border-2 border-indigo-300 bg-white mb-4 shadow-sm",
     role: "region",
-    "aria-label": "Live Results Dashboard"
+    "aria-label": t("a11y.live_results_dashboard")
   }, header, body, reflectionsEl, explainerModalEl);
 }
 function FreeformItemsBlock(p) {
@@ -1985,7 +1985,7 @@ function FreeformItemCard(p) {
     placeholder: "Type the missing word or phrase...",
     disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk',
     className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50",
-    "aria-label": "Fill in the blank"
+    "aria-label": t("a11y.fill_in_blank")
   }) : /*#__PURE__*/React.createElement("textarea", {
     value: response,
     onChange: function (ev) {
@@ -2061,7 +2061,7 @@ function FreeformItemCard(p) {
       p.callTTS(explainer.text);
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
-    "aria-label": "Read aloud"
+    "aria-label": t("a11y.read_aloud")
   }, "🔊 Read aloud"))), allowConfidence && grade.status && grade.status !== 'idk' && /*#__PURE__*/React.createElement("div", {
     className: "mt-2 flex items-center gap-2 flex-wrap text-xs"
   }, /*#__PURE__*/React.createElement("span", {
@@ -2396,7 +2396,7 @@ function QuizView(props) {
       disabled: isLoading,
       className: 'absolute top-1 right-1 ' + btnSize + ' rounded-full bg-white/90 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors disabled:opacity-50',
       title: isLoading ? 'Refining…' : 'Refine this image',
-      "aria-label": "Refine image",
+      "aria-label": t("a11y.refine_image"),
       "data-help-key": "quiz_image_refine_btn"
     }, isLoading ? '⋯' : '✏️'), isOpen && /*#__PURE__*/React.createElement("div", {
       className: "mt-2 p-2 rounded border border-indigo-200 bg-indigo-50 text-xs"
@@ -2622,7 +2622,7 @@ function QuizView(props) {
       } catch (e) {}
     },
     className: "text-xs font-bold px-3 py-1 rounded bg-white border border-amber-300 text-amber-900 hover:bg-amber-100",
-    "aria-label": "Read aloud"
+    "aria-label": t("a11y.read_aloud")
   }, "🔊 Read aloud"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
@@ -2731,7 +2731,7 @@ function QuizView(props) {
       props.callTTS(explainerData.response);
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
-    "aria-label": "Read aloud"
+    "aria-label": t("a11y.read_aloud")
   }, "🔊 Read aloud")), explainerData.error && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 p-2 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800"
   }, explainerData.error)) : null;

@@ -33,7 +33,7 @@ function ExportPreviewView(props) {
   if (!showExportPreview) return null;
 
   return (
-          <div className="fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="dialog" aria-modal="true" aria-label="Document Builder"
+          <div className="fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="dialog" aria-modal="true" aria-label={t("a11y.doc_builder")}
             onClick={(e) => { if (e.target === e.currentTarget) setShowExportPreview(false); }}
             onKeyDown={(e) => { if (e.key === 'Escape') setShowExportPreview(false); }}
             ref={(el) => {
@@ -58,7 +58,7 @@ function ExportPreviewView(props) {
                   <h2 className="text-sm font-black text-slate-800 flex items-center gap-2">🛠️ Document Builder</h2>
                   <div className="flex items-center gap-1">
                     <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
-                    <button onClick={() => setShowExportPreview(false)} className="p-1 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors" aria-label="Close document builder"><X size={16} /></button>
+                    <button onClick={() => setShowExportPreview(false)} className="p-1 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors" aria-label={t("a11y.close_doc_builder")}><X size={16} /></button>
                   </div>
                 </div>
 
@@ -131,7 +131,7 @@ function ExportPreviewView(props) {
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] text-slate-600 shrink-0">Size:</span>
                     <input type="range" min={12} max={24} value={exportConfig.fontSize} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, fontSize: parseInt(e.target.value) }))}
-                      className="flex-1 accent-indigo-600" aria-label="Font size" />
+                      className="flex-1 accent-indigo-600" aria-label={t("a11y.font_size")} />
                     <span className="text-xs font-mono text-slate-600 w-8">{exportConfig.fontSize}px</span>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
@@ -174,7 +174,7 @@ function ExportPreviewView(props) {
                     <label className="text-[11px] text-slate-600 shrink-0" htmlFor="word-goal-input">Goal:</label>
                     <input type="number" id="word-goal-input" min="0" step="50" placeholder="e.g. 500" defaultValue=""
                       className="flex-1 text-[11px] border border-slate-400 rounded px-2 py-1 bg-white"
-                      aria-label="Target word count goal"
+                      aria-label={t("a11y.target_word_count")}
                       onChange={(e) => {
                         const goal = parseInt(e.target.value);
                         const iframe = exportPreviewRef.current;
@@ -190,7 +190,7 @@ function ExportPreviewView(props) {
                         }
                       }} />
                   </div>
-                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden" role="progressbar" aria-label="Word count progress">
+                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden" role="progressbar" aria-label={t("a11y.word_count_progress")}>
                     <div id="word-goal-bar" className="h-full rounded-full transition-all duration-300" style={{ width: '0%', background: '#d97706' }}></div>
                   </div>
                   <div id="word-goal-label" className="text-[11px] text-slate-600 mt-0.5"></div>
@@ -200,10 +200,10 @@ function ExportPreviewView(props) {
                 {/* ── SECTION: Word Art ── */}
                 <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Word Art<span className="flex-1 h-px bg-indigo-100"></span></div>
                 <div className="bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-200 p-2 space-y-2">
-                  <input type="text" id="wordart-text-input" placeholder="Your word art text..." defaultValue="" className="w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none" aria-label="Word art text" />
+                  <input type="text" id="wordart-text-input" placeholder={t("placeholders.word_art_text_input")} defaultValue="" className="w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none" aria-label={t("a11y.word_art_text")} />
                   <div>
                     <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Style</div>
-                    <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label="Word art style">
+                    <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label={t("a11y.word_art_style")}>
                       {[['goldFoil','✨','Gold'],['neonGlow','💡','Neon'],['retroArcade','🕹️','Retro'],['chalkboard','🖍️','Chalk'],['embossed','🏛️','3D'],['rainbow','🌈','Rainbow']].map(([key, emoji, label], i) => (
                         <button key={key} type="button" role="radio" aria-checked={i === 0} data-wa-preset={key}
                           className="wordart-preset-btn text-[10px] font-bold py-1.5 px-1 rounded-md border text-slate-700 transition-all"
@@ -224,7 +224,7 @@ function ExportPreviewView(props) {
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Size</div>
-                      <div className="flex gap-0.5" role="radiogroup" aria-label="Word art size">
+                      <div className="flex gap-0.5" role="radiogroup" aria-label={t("a11y.word_art_size")}>
                         {['S','M','L','XL'].map((s) => (
                           <button key={s} type="button" role="radio" aria-checked={s === 'L'} data-wa-size={s}
                             className="wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
@@ -244,7 +244,7 @@ function ExportPreviewView(props) {
                     </div>
                     <div className="flex-1">
                       <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Align</div>
-                      <div className="flex gap-0.5" role="radiogroup" aria-label="Word art alignment">
+                      <div className="flex gap-0.5" role="radiogroup" aria-label={t("a11y.word_art_alignment")}>
                         {[['left','⇤'],['center','⇔'],['right','⇥']].map(([a, icon]) => (
                           <button key={a} type="button" role="radio" aria-checked={a === 'center'} data-wa-align={a}
                             className="wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
@@ -613,9 +613,9 @@ function ExportPreviewView(props) {
                   <div className="flex gap-1">
                     <input type="text" value={exportStylePrompt} onChange={(e) => setExportStylePrompt(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter' && exportStylePrompt.trim()) generateCustomExportStyle(); }}
-                      placeholder="Describe a style or click a preset above..."
+                      placeholder={t("placeholders.describe_style_preset")}
                       className="flex-1 text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
-                      aria-label="Custom export style description" />
+                      aria-label={t("a11y.custom_export_style")} />
                     <button onClick={generateCustomExportStyle}
                       disabled={!exportStylePrompt.trim() || isGeneratingStyle}
                       className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 disabled:opacity-40"
@@ -840,7 +840,7 @@ function ExportPreviewView(props) {
                   </div>
                 </div>
                 {/* Formatting toolbar */}
-                <div className="px-2 py-1 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0" role="toolbar" aria-label="Text formatting">
+                <div className="px-2 py-1 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0" role="toolbar" aria-label={t("a11y.text_formatting")}>
                   {[
                     { cmd: 'bold', icon: 'B', label: 'Bold', style: 'font-bold' },
                     { cmd: 'italic', icon: 'I', label: 'Italic', style: 'italic' },
@@ -862,7 +862,7 @@ function ExportPreviewView(props) {
                   ))}
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertUnorderedList', false, null); }}
-                    className="w-7 h-7 rounded text-xs text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Bullet list" title="Bullet list">•</button>
+                    className="w-7 h-7 rounded text-xs text-slate-600 hover:bg-indigo-100 transition-colors" aria-label={t("a11y.bullet_list")} title="Bullet list">•</button>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertOrderedList', false, null); }}
                     className="w-7 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Numbered list" title="Numbered list">1.</button>
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>

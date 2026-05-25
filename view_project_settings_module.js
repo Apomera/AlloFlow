@@ -309,7 +309,7 @@
       }
     },
     className: "w-full flex items-center justify-center gap-2 text-xs text-slate-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors font-medium",
-    "aria-label": "Report a problem or send feedback to Aaron"
+    "aria-label": t("a11y.report_problem")
   }, /*#__PURE__*/React.createElement(CircleHelp, {
     size: 14,
     "aria-hidden": "true"

@@ -409,7 +409,7 @@ const CornellNotesView = React.memo((props) => {
           onChange={handleTitleChange}
           placeholder="Today's lesson title"
           className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-indigo-500 outline-none py-1"
-          aria-label="Cornell Notes title"
+          aria-label={t("a11y.cornell_title")}
           data-help-key="cornell_notes_title_field"
         />
         {lessonRef.generatedAt ? (
@@ -460,7 +460,7 @@ const CornellNotesView = React.memo((props) => {
         <button
           onClick={handleAddRow}
           className="px-4 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-300 rounded-full hover:bg-indigo-100"
-          aria-label="Add a row to Cornell Notes"
+          aria-label={t("a11y.cornell_add_row")}
           data-help-key="cornell_notes_add_row_button"
         >+ Add row</button>
       </div>
@@ -468,10 +468,10 @@ const CornellNotesView = React.memo((props) => {
         <textarea
           value={summary}
           onChange={handleSummaryChange}
-          placeholder="Write your summary here after the lesson..."
+          placeholder={t("placeholders.type_summary_after")}
           className="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-md p-3 outline-none focus:ring-2 focus:ring-emerald-300 resize-y min-h-[100px]"
           rows={4}
-          aria-label="Cornell Notes summary"
+          aria-label={t("a11y.cornell_summary")}
           data-help-key="cornell_notes_summary_section"
         />
       </_CardSection>
@@ -522,9 +522,9 @@ const LabReportView = React.memo((props) => {
           type="text"
           value={title}
           onChange={(e) => handleNoteUpdate('title', e.target.value)}
-          placeholder="Experiment title"
+          placeholder={t("placeholders.experiment_title")}
           className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-sky-500 outline-none py-1"
-          aria-label="Lab Report title"
+          aria-label={t("a11y.lab_report_title")}
           data-help-key="lab_report_title_field"
         />
         {lessonRef.generatedAt ? (
@@ -535,20 +535,20 @@ const LabReportView = React.memo((props) => {
         <textarea
           value={question}
           onChange={(e) => handleNoteUpdate('question', e.target.value)}
-          placeholder="What question is this experiment trying to answer?"
+          placeholder={t("placeholders.research_question_q")}
           className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-sky-300 resize-y min-h-[60px]"
           rows={2}
-          aria-label="Research question"
+          aria-label={t("a11y.research_question")}
         />
       </_CardSection>
       <_CardSection title="Hypothesis" hint="Sentence frame: 'I predict that ___ will happen because ___.'" color="violet">
         <textarea
           value={hypothesis}
           onChange={(e) => handleNoteUpdate('hypothesis', e.target.value)}
-          placeholder="I predict that..."
+          placeholder={t("placeholders.hypothesis_predict")}
           className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-y min-h-[60px]"
           rows={2}
-          aria-label="Hypothesis"
+          aria-label={t("a11y.hypothesis")}
           data-help-key="lab_report_hypothesis_field"
         />
       </_CardSection>
@@ -566,7 +566,7 @@ const LabReportView = React.memo((props) => {
                 className="flex-1 text-sm bg-white border border-slate-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-300"
                 aria-label={`Material ${idx + 1}`}
               />
-              <button onClick={() => removeMaterialAt(idx)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs" aria-label="Remove material">✕</button>
+              <button onClick={() => removeMaterialAt(idx)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs" aria-label={t("a11y.remove_material")}>✕</button>
             </li>
           ))}
         </ul>
@@ -586,7 +586,7 @@ const LabReportView = React.memo((props) => {
                 rows={1}
                 aria-label={`Procedure step ${idx + 1}`}
               />
-              <button onClick={() => removeProcedureStepAt(idx)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs mt-2" aria-label="Remove step">✕</button>
+              <button onClick={() => removeProcedureStepAt(idx)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs mt-2" aria-label={t("a11y.remove_step")}>✕</button>
             </li>
           ))}
         </ol>
@@ -596,10 +596,10 @@ const LabReportView = React.memo((props) => {
         <textarea
           value={dataObservations}
           onChange={(e) => handleNoteUpdate('data', e.target.value)}
-          placeholder="Record observations, measurements, or data tables..."
+          placeholder={t("placeholders.record_observations")}
           className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-indigo-300 resize-y min-h-[100px] font-mono"
           rows={5}
-          aria-label="Data and observations"
+          aria-label={t("a11y.data_observations")}
           data-help-key="lab_report_data_observations_field"
         />
       </_CardSection>

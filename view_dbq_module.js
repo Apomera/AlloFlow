@@ -291,7 +291,7 @@
         setDbq('_dbqTimerInterval', null);
       },
       className: "text-[11px] text-slate-600 hover:text-red-600",
-      "aria-label": "Cancel timer"
+      "aria-label": t("a11y.cancel_timer")
     }, "✕")), timerDone && /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
@@ -301,12 +301,12 @@
         setDbq('_dbqTimerEnd', null);
       },
       className: "text-[11px] text-slate-600 hover:text-slate-700",
-      "aria-label": "Dismiss timer"
+      "aria-label": t("a11y.dismiss_timer")
     }, "Dismiss")));
   })())), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1 border-b border-slate-200 mb-0 shrink-0 bg-slate-50 rounded-t-xl px-2 pt-1 overflow-x-auto",
     role: "tablist",
-    "aria-label": "DBQ sections"
+    "aria-label": t("a11y.dbq_sections")
   }, [['documents', `📄 Docs (${docs.length})`], ['corroboration', '🔗 Corroborate'], ['essay', '✏️ Essay'], ['rubric', '📊 Rubric']].map(([id, label]) => /*#__PURE__*/React.createElement("button", {
     key: id,
     role: "tab",
@@ -526,7 +526,7 @@
       }
     },
     className: `text-[11px] font-bold px-2 py-1 rounded-full ${r[`_docVocab_${activeDoc.id}`] && r[`_docVocab_${activeDoc.id}`] !== 'loading' ? 'bg-green-200 hover:bg-green-300 text-green-800' : 'bg-purple-200 hover:bg-purple-300 text-purple-800'}`,
-    "aria-label": "Vocabulary help"
+    "aria-label": t("a11y.vocab_help")
   }, r[`_docVocab_${activeDoc.id}`] === 'loading' ? '⏳' : r[`_docVocab_${activeDoc.id}`] ? '📖 Hide Vocab' : '📖 Vocab Help')), r[`_docVocab_${activeDoc.id}`] && Array.isArray(r[`_docVocab_${activeDoc.id}`]) && /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 flex-wrap mb-2"
   }, r[`_docVocab_${activeDoc.id}`].map((v, vi) => /*#__PURE__*/React.createElement("span", {
@@ -572,7 +572,7 @@
       });
     },
     className: "text-red-600 hover:text-red-600 text-xs shrink-0",
-    "aria-label": "Remove annotation"
+    "aria-label": t("a11y.remove_annotation")
   }, "✕")))), /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -732,7 +732,7 @@ ${isE ? 'Use simple, encouraging language. Praise their attempt to think critica
       }
     },
     className: "mt-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl transition-all flex items-center gap-1.5",
-    "aria-label": "Compare my assessment with AI analysis"
+    "aria-label": t("a11y.compare_with_ai")
   }, "🔍 Compare My Assessment with AI Analysis"), r[`_reliabilityAI_${activeDoc.id}`] === 'loading' && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-rose-500 italic mt-2"
   }, "⏳ Analyzing source reliability..."), r[`_reliabilityAI_${activeDoc.id}`] && typeof r[`_reliabilityAI_${activeDoc.id}`] === 'object' && !r[`_reliabilityAI_${activeDoc.id}`].error && (() => {
@@ -855,7 +855,7 @@ Rules:
       },
       disabled: feedbackLoading,
       className: "bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2",
-      "aria-label": "Get AI feedback on document analysis"
+      "aria-label": t("a11y.get_ai_feedback_doc")
     }, feedbackLoading ? '⏳ Analyzing...' : '✨ Check My Analysis'), docFeedback && typeof docFeedback === 'object' && !docFeedback.error && /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5 space-y-3"
     }, /*#__PURE__*/React.createElement("div", {
@@ -942,7 +942,7 @@ Rules:
     rows: 3,
     placeholder: "I find the perspective of... more convincing because...",
     className: "w-full text-sm border border-purple-200 rounded-lg p-2.5 resize-none focus:ring-2 focus:ring-purple-400 outline-none",
-    "aria-label": "Perspective comparison response"
+    "aria-label": t("a11y.perspective_comparison")
   }))), /*#__PURE__*/React.createElement("div", {
     className: "bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h3", {

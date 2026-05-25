@@ -340,7 +340,7 @@ const renderOutlineContent = (deps) => {
                         {isInteractivePipeline && isTeacherMode && (
                           <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                             <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                            <button onClick={() => { setIsInteractivePipeline(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                            <button onClick={() => { setIsInteractivePipeline(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
                           </div>
                         )}
                     </div>
@@ -777,7 +777,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveTChart && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveTChart(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveTChart(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -854,7 +854,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveFishboneSort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveFishboneSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveFishboneSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -1023,7 +1023,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveCESort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveCESort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveCESort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -1085,7 +1085,7 @@ const renderOutlineContent = (deps) => {
                         {isInteractiveCESort && isTeacherMode && (
                           <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                             <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                            <button onClick={() => { setIsInteractiveCESort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                            <button onClick={() => { setIsInteractiveCESort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
                           </div>
                         )}
                     </div>
@@ -1176,7 +1176,7 @@ const renderOutlineContent = (deps) => {
                              {isInteractiveProblemSolutionSort && isTeacherMode && (
                                <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                  <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                 <button onClick={() => { setIsInteractiveProblemSolutionSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                 <button onClick={() => { setIsInteractiveProblemSolutionSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
                                </div>
                              )}
                          </div>
@@ -1298,7 +1298,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveConceptMapSort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveConceptMapSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveConceptMapSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -1395,7 +1395,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveFrayerSort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveFrayerSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveFrayerSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -1516,7 +1516,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveSeeThinkWonderSort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveSeeThinkWonderSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveSeeThinkWonderSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -1617,7 +1617,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveStoryMapSort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveStoryMapSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveStoryMapSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -1695,7 +1695,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveOutlineSort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveOutlineSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveOutlineSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>

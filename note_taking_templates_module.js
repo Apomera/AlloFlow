@@ -357,7 +357,7 @@ const CornellNotesView = React.memo((props) => {
       onChange: handleTitleChange,
       placeholder: "Today's lesson title",
       className: "w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-indigo-500 outline-none py-1",
-      "aria-label": "Cornell Notes title",
+      "aria-label": t("a11y.cornell_title"),
       "data-help-key": "cornell_notes_title_field"
     }
   ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, "Started: ", new Date(lessonRef.generatedAt).toLocaleString()) : null), /* @__PURE__ */ React.createElement("div", { className: "border-2 border-slate-300 rounded-xl overflow-hidden bg-white", "data-help-key": "cornell_notes_two_column_grid" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-[35%_65%] bg-slate-100 border-b border-slate-300" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700 border-r border-slate-300", "data-help-key": "cornell_notes_cue_column" }, "Cues / Questions"), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700", "data-help-key": "cornell_notes_notes_column" }, "Notes")), Array.from({ length: rowCount }).map((_, idx) => {
@@ -398,7 +398,7 @@ const CornellNotesView = React.memo((props) => {
     {
       onClick: handleAddRow,
       className: "px-4 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-300 rounded-full hover:bg-indigo-100",
-      "aria-label": "Add a row to Cornell Notes",
+      "aria-label": t("a11y.cornell_add_row"),
       "data-help-key": "cornell_notes_add_row_button"
     },
     "+ Add row"
@@ -410,7 +410,7 @@ const CornellNotesView = React.memo((props) => {
       placeholder: "Write your summary here after the lesson...",
       className: "w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-md p-3 outline-none focus:ring-2 focus:ring-emerald-300 resize-y min-h-[100px]",
       rows: 4,
-      "aria-label": "Cornell Notes summary",
+      "aria-label": t("a11y.cornell_summary"),
       "data-help-key": "cornell_notes_summary_section"
     }
   )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, "Cornell Notes: cues on the left, notes on the right, summary below. Saved to your history so this entry stays with you across lessons."));
@@ -455,7 +455,7 @@ const LabReportView = React.memo((props) => {
       onChange: (e) => handleNoteUpdate("title", e.target.value),
       placeholder: "Experiment title",
       className: "w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-sky-500 outline-none py-1",
-      "aria-label": "Lab Report title",
+      "aria-label": t("a11y.lab_report_title"),
       "data-help-key": "lab_report_title_field"
     }
   ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, "Started: ", new Date(lessonRef.generatedAt).toLocaleString()) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: "Research Question", hint: "What are you investigating? Frame it as a question you can answer through observation.", color: "sky" }, /* @__PURE__ */ React.createElement(
@@ -466,7 +466,7 @@ const LabReportView = React.memo((props) => {
       placeholder: "What question is this experiment trying to answer?",
       className: "w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-sky-300 resize-y min-h-[60px]",
       rows: 2,
-      "aria-label": "Research question"
+      "aria-label": t("a11y.research_question")
     }
   )), /* @__PURE__ */ React.createElement(_CardSection, { title: "Hypothesis", hint: "Sentence frame: 'I predict that ___ will happen because ___.'", color: "violet" }, /* @__PURE__ */ React.createElement(
     "textarea",
@@ -476,7 +476,7 @@ const LabReportView = React.memo((props) => {
       placeholder: "I predict that...",
       className: "w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-y min-h-[60px]",
       rows: 2,
-      "aria-label": "Hypothesis",
+      "aria-label": t("a11y.hypothesis"),
       "data-help-key": "lab_report_hypothesis_field"
     }
   )), /* @__PURE__ */ React.createElement(_CardSection, { title: "Materials", hint: "List everything you need to run the experiment.", color: "amber" }, /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, materials.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "No materials added yet.") : materials.map((m, idx) => /* @__PURE__ */ React.createElement("li", { key: m.id || idx, className: "flex items-center gap-2 group" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs" }, "\u2022"), /* @__PURE__ */ React.createElement(
@@ -488,7 +488,7 @@ const LabReportView = React.memo((props) => {
       className: "flex-1 text-sm bg-white border border-slate-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-300",
       "aria-label": `Material ${idx + 1}`
     }
-  ), /* @__PURE__ */ React.createElement("button", { onClick: () => removeMaterialAt(idx), className: "opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs", "aria-label": "Remove material" }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { onClick: addMaterial, className: "mt-2 px-3 py-1 text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200" }, "+ Add material")), /* @__PURE__ */ React.createElement(_CardSection, { title: "Procedure", hint: "Number each step. Another student should be able to follow your procedure and reproduce your experiment.", color: "emerald" }, /* @__PURE__ */ React.createElement("ol", { className: "space-y-1" }, procedure.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "No steps added yet.") : procedure.map((s, idx) => /* @__PURE__ */ React.createElement("li", { key: s.id || idx, className: "flex items-start gap-2 group" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-xs font-bold mt-1.5 w-5 flex-shrink-0" }, idx + 1, "."), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { onClick: () => removeMaterialAt(idx), className: "opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs", "aria-label": t("a11y.remove_material") }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { onClick: addMaterial, className: "mt-2 px-3 py-1 text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200" }, "+ Add material")), /* @__PURE__ */ React.createElement(_CardSection, { title: "Procedure", hint: "Number each step. Another student should be able to follow your procedure and reproduce your experiment.", color: "emerald" }, /* @__PURE__ */ React.createElement("ol", { className: "space-y-1" }, procedure.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "No steps added yet.") : procedure.map((s, idx) => /* @__PURE__ */ React.createElement("li", { key: s.id || idx, className: "flex items-start gap-2 group" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-xs font-bold mt-1.5 w-5 flex-shrink-0" }, idx + 1, "."), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: s.text || "",
@@ -497,7 +497,7 @@ const LabReportView = React.memo((props) => {
       rows: 1,
       "aria-label": `Procedure step ${idx + 1}`
     }
-  ), /* @__PURE__ */ React.createElement("button", { onClick: () => removeProcedureStepAt(idx), className: "opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs mt-2", "aria-label": "Remove step" }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { onClick: addProcedureStep, className: "mt-2 px-3 py-1 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded hover:bg-emerald-200", "data-help-key": "lab_report_add_step_button" }, "+ Add step")), /* @__PURE__ */ React.createElement(_CardSection, { title: "Data / Observations", hint: "Record what you see, measure, or count. Use specific numbers and units when possible.", color: "indigo" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { onClick: () => removeProcedureStepAt(idx), className: "opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs mt-2", "aria-label": t("a11y.remove_step") }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { onClick: addProcedureStep, className: "mt-2 px-3 py-1 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded hover:bg-emerald-200", "data-help-key": "lab_report_add_step_button" }, "+ Add step")), /* @__PURE__ */ React.createElement(_CardSection, { title: "Data / Observations", hint: "Record what you see, measure, or count. Use specific numbers and units when possible.", color: "indigo" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: dataObservations,
@@ -505,7 +505,7 @@ const LabReportView = React.memo((props) => {
       placeholder: "Record observations, measurements, or data tables...",
       className: "w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-indigo-300 resize-y min-h-[100px] font-mono",
       rows: 5,
-      "aria-label": "Data and observations",
+      "aria-label": t("a11y.data_observations"),
       "data-help-key": "lab_report_data_observations_field"
     }
   )), /* @__PURE__ */ React.createElement(_CardSection, { title: "Analysis (Claim / Evidence / Reasoning)", hint: "State your claim. List the evidence from your data. Explain the reasoning that connects them.", color: "rose" }, /* @__PURE__ */ React.createElement(

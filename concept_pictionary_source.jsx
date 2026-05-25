@@ -1428,7 +1428,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
                 value={guessText}
                 onChange={(e) => setGuessText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitGuess(); }}
-                placeholder="Type your guess and press Enter…"
+                placeholder={t("placeholders.type_guess")}
                 className="flex-1 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-amber-300"
                 aria-label="Your guess"
               />

@@ -1,5 +1,5 @@
 {
-  "_version": "20260525184233T1779734553808",
+  "_version": "20260525190425T1779735865828",
   "tour": {
     "input_panel_title": "Paneli yo Kwinjiza",
     "input_panel_text": "Tangirira hano urugendo rwo gukora isomo. Iyi Paneli yo Kwinjiza ni urufatiro rw'umutungo wose ukozwe. Ikora nk'umutwe nyamukuru aho usobanura ibikubiyemo, context, na parameters.\n### Amahitamo yo Kwinjiza\n• **Gushyira Inyandiko**: Manika ibikubiyemo direct biva mu nkuru iyo ari yo yose, inkuru, cyangwa gahunda y'isomo.\n• **Kohereza Idosiye**: Ohereza PDF, amashusho, idosiye z'inyandiko, audio (MP3/WAV), cyangwa video ku gukuramo byikora.\n• **Kuzana URL**: Manika URL y'inkuru iyo ari yo yose kugira ngo ukuremo ibikubiyemo byayo byikora.\n• **AI Kurikirana Umutungo**: Sobanura ingingo maze AI ibone umutungo wo kuri interineti ukwiye urwego rw'ishuri.\n• **Kora Inyandiko y'Inkomoko**: Kora ibikubiyemo by'umwimerere mu kuvuga ingingo, ijwi, urwego rw'ishuri, n'amahame ya intego.\n### Ibiranga byo Gukora\n• **Guhitamo Ijwi**: Hitamo mu mvugo Informative, Narrative, Persuasive, Humorous, cyangwa Step-by-Step.\n• **Guhuza n'Amahame**: Koresha standard finder ya AI cyangwa winjize amahame mu ntoki (kugeza ku 3).\n• **Kugenzura Ukuri**: Bishyireho web grounding ku gugenzura ibyukuri no gushyiramo citations byikora.\n• **Amabwiriza Yihariye**: Ongeraho ubuyobozi bwihariye ku gukora ibikubiyemo bihujwe.\n### Ubushobozi bwa Sisitemu\n• **Kumenya Byikora**: Imenya ururimi rw'inkomoko byikora.\n• **Gutunganya Mu Bice**: Idosiye z'audio na video zirenze 20MB zigabanyirizwa mu buryo bw'ubwenge ku transcription yizewe.\n### Ay'Ingenzi\nIbikoresho byinshi muri sidebar bisaba inkomoko mbere yo gukoreshwa. Manika cyangwa kora ibikubiyemo byawe hano mbere, hanyuma ushakishe undi mutungo.",
@@ -2651,7 +2651,7 @@
     "current_clue": "Current Clue",
     "history_empty": "History empty",
     "ready": "Ready ku tangira!",
-    "ready_sub": "Press \"Tangira Auto\" cyangwa koresha arrows ku begin.",
+    "ready_sub": "Kanda \"Tangira Auto\" cyangwa koresha arrows ku gutangira.",
     "win_message": "wowe found 5 muri umurongo!",
     "initializing_board": "Initializing umukino Board...",
     "win_header": "BINGO!",
@@ -4395,7 +4395,7 @@
       "ai_good": "byiza effort ({score}%). +{xp} XP.",
       "ai_poor": "amanota: {score}%. +{xp} XP.",
       "perfect_match": "Perfect Match! 100% (+{xp} XP)",
-      "good_match": "amanota: {score}%. +{xp} XP. Check red umurongo.",
+      "good_match": "Amanota: {score}%. +{xp} XP. Genzura imirongo itukura.",
       "try_again": "amanota: {score}%. Gerageza again."
     },
     "activity_complete": "Activity Uzuza!",
@@ -4848,7 +4848,7 @@
     "empty_chat_instruction": "Tangira conversation by asking ikibazo below.",
     "spark_limit_reached": "Ingingo Spark limit reached (2/2).",
     "no_candidates": "Oya umuntu found. Koresha \"Find Interview Candidates\" buto muri sidebar.",
-    "reflection_placeholder": "Type cyawe reflection here kuri AI grading...",
+    "reflection_placeholder": "Andika reflection yawe hano ku AI grading...",
     "candidates_found": "Interview candidates found.",
     "start_panel": "Tangira urubaho Discussion",
     "mode_single": "1-kuri-1 Interview",
@@ -7990,7 +7990,7 @@
     "area_correct": "Correct! {a} • {b} = {product}",
     "frac_identify": "gute many pieces ni shaded? (numerator)",
     "frac_equivalent": "{n}/{d} = ?/{target} (find missing numerator)",
-    "frac_compare": "Which ni larger: {n1}/{d1} cyangwa {n2}/{d2}? (Type numerator cya larger)",
+    "frac_compare": "Ni iyihe nini: {n1}/{d1} cyangwa {n2}/{d2}? (Andika numerator y'iyo nini)",
     "fluency_started": "Fluency drill started!"
   },
   "survey": {
@@ -10561,10 +10561,10 @@
       "replacement_behavior": "Replacement imyitwarire",
       "replacement_behaviors": "Replacement imyitwarire",
       "resource_availability": "umutungo Availability",
-      "review_existing_data_supporting_the_hypothesis": "Review existing amakuru supporting hypothesis",
-      "review_progress_monitoring_data_vs_baseline": "Review ihinduka monitoring amakuru vs. baseline",
+      "review_existing_data_supporting_the_hypothesis": "Suzuma amakuru ahari ashyigikira hypothesis",
+      "review_progress_monitoring_data_vs_baseline": "Suzuma progress monitoring data vs. baseline",
       "review_the_most_common_antecedent_triggers": "Review most rusange antecedent triggers",
-      "review_the_most_common_consequence_patterns": "Review most rusange consequence imiterere",
+      "review_the_most_common_consequence_patterns": "Suzuma imiterere ya consequence ikunze",
       "rti_behavior_tier": "RTI imyitwarire Tier",
       "rules_expectations": "Amategeko & Ibyitezweho",
       "run_ai_analysis_on_collected_data": "Tangiza AI Analysis kuri collected amakuru",
@@ -10584,7 +10584,7 @@
       "session_tracker": "igihe Tracker",
       "set_a_6week_intervention_cycle": "Shyiraho 6-week intervention cycle",
       "set_intervention_duration_eg_46_weeks": "Shyiraho intervention duration (e.g., 4–6 weeks)",
-      "set_review_dates_and_checkin_schedule": "Shyiraho review dates na check-muri schedule",
+      "set_review_dates_and_checkin_schedule": "Shyiraho itariki zo gusuzuma na check-in schedule",
       "set_timeline_and_milestones_eg_4_weeks": "Shyiraho timeline na milestones (e.g., 4 weeks)",
       "set_up_weekly_progress_monitoring": "Shyiraho up weekly ihinduka monitoring",
       "setting_event": "igenamiterere Event",
@@ -10773,32 +10773,32 @@
   },
   "educator_hub": {
     "title": "Educator ibikoresho",
-    "subtitle": "Professional ibikoresho kuri educators na clinicians",
+    "subtitle": "Ibikoresho by'umwuga ku barimu n'abakora mu cyiciro cy'amavuriro",
     "behavior_lens_title": "BehaviorLens",
-    "behavior_lens_desc": "FBA/BIP behavioral kwitegereza, ABC amakuru collection, na 60+ clinical ibikoresho",
+    "behavior_lens_desc": "FBA/BIP behavioral observation, ABC data collection, n'ibikoresho 60+ by'amavuriro",
     "report_writer_title": "Raporo Writer",
-    "report_writer_desc": "AI-powered clinical raporo isekuru hamwe na fact-chunks, ukuri audit, na developmental norms",
+    "report_writer_desc": "Gukora raporo z'amavuriro biyobowe na AI hamwe na fact-chunks, accuracy audit, na developmental norms",
     "dialog_aria": "Educator ibikoresho",
     "close_aria": "Funga educator ibikoresho",
     "symbol_studio_title": "Symbol Studio",
-    "symbol_studio_desc": "AI-byakozwe PCS-imiterere ikirango kuri ibigaragara ubufasha, AAC boards, na schedules — powered by ifoto-ku-ifoto editing",
+    "symbol_studio_desc": "AI-generated PCS-style icons ku visual supports, AAC boards, na schedules — biyobowe na image-to-image editing",
     "document_hub_title": "inyandiko Hub",
-    "document_hub_desc": "inyandiko builder hamwe na insanganyamatsiko, WYSIWYG editing, kugerwaho audit, na multi-imiterere ohereza hanze (PDF, HTML, worksheet, slides)",
+    "document_hub_desc": "Document builder hamwe na insanganyamatsiko, WYSIWYG editing, accessibility audit, na multi-format export (PDF, HTML, worksheet, slides)",
     "pdf_accessibility_title": "PDF Kugerwaho",
-    "pdf_accessibility_desc": "Ohereza PDFs kuri WCAG kugerwaho audit & remediation hamwe na axe-core verification",
-    "view_last_audit_tooltip": "Re-fungura cya nyuma PDF audit — reba diff, verification, na remediated HTML without re-running pipeline",
+    "pdf_accessibility_desc": "Ohereza PDFs ku WCAG accessibility audit & remediation hamwe na axe-core verification",
+    "view_last_audit_tooltip": "Subira ufungure PDF audit ya nyuma — reba diff, verification, na remediated HTML utabaye usubira gukora pipeline",
     "books_emoji_aria": "books",
     "community_catalog_title": "Community Catalog",
-    "community_catalog_desc": "Browse fungura-licensed isomo kuva AlloFlow community, cyangwa submit cyawe own kuri review",
+    "community_catalog_desc": "Reba amasomo afite open-license aturuka muri AlloFlow community, cyangwa tanga ayawe ku suzuma",
     "magnifying_glass_emoji_aria": "magnifying glass",
     "accessibility_lab_title": "Kugerwaho laboratwari",
-    "accessibility_lab_desc": "Verify umunyeshuri experience: preview as umunyeshuri, keyboard-only tour, mu buryo butaziguye WCAG audit (axe-core) hamwe na violations framed by umunyeshuri impact, ikadiri-reader announcement preview, na disability simulators (low-vision, ibara-blindness, dyslexia, motor delay).",
+    "accessibility_lab_desc": "Emeza ubunararibonye bw'umunyeshuri: reba nk'umunyeshuri, keyboard-only tour, live WCAG audit (axe-core) ifite violations zashyizwe mu mimerere y'umunyeshuri, screen-reader announcement preview, na disability simulators (low-vision, ibara-blindness, dyslexia, motor delay).",
     "dynamic_assessment_title": "Dynamic isuzuma",
-    "dynamic_assessment_desc": "Rema dynamic, urwego-aligned isuzuma tasks kuri diagnostic checks"
+    "dynamic_assessment_desc": "Kora dynamic, urwego-aligned isuzuma tasks ku diagnostic checks"
   },
   "report_writer": {
     "loading": "Loading Raporo Writer...",
-    "loading_hint": "Module loading kuva CDN. niba iki persists, check cyawe connection."
+    "loading_hint": "Module ipakira kuva muri CDN. Niba bikomeje, genzura ihuzwa ryawe."
   },
   "learning_hub": {
     "title": "Learning ibikoresho",
@@ -10817,7 +10817,7 @@
   },
   "sel_hub": {
     "loading": "Loading SEL Hub...",
-    "loading_hint": "Module loading kuva CDN. niba iki persists, check cyawe connection."
+    "loading_hint": "Module ipakira kuva muri CDN. Niba bikomeje, genzura ihuzwa ryawe."
   },
   "adventure_title": "Adventure",
   "cancel": "Hagarika",

@@ -601,7 +601,7 @@ function MathView(props) {
                                         onKeyDown={(e) => { if (e.key === "Enter" && mathEditInput.trim() && !isMathEditingChat) handleMathEdit(mathEditInput); }}
                                         placeholder="e.g. Make these easier, add 2 more division problems, change to a space theme..."
                                         className="flex-1 px-3 py-2 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none bg-white placeholder-slate-400"
-                                        aria-label="Edit math problems"
+                                        aria-label={t("a11y.edit_math_problems")}
                                         disabled={isMathEditingChat}
                                     />
                                     <button

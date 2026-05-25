@@ -843,7 +843,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                     </label>
                     <label className="flex items-center gap-2">
                         <span style={{ opacity: 0.7 }}>PALETTE</span>
-                        <select data-help-key="perspective_crawl_palette_select" aria-label="Palette" value={palette} onChange={e => setPalette(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: p.text, background: p.bg, color: p.text }}>
+                        <select data-help-key="perspective_crawl_palette_select" aria-label={t("a11y.fab_open_palette")} value={palette} onChange={e => setPalette(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: p.text, background: p.bg, color: p.text }}>
                             <option value="gold">Golden</option>
                             <option value="teal">Aqua</option>
                             <option value="paper">Paper</option>
@@ -863,7 +863,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                     <button data-help-key="perspective_crawl_play_pause_btn" onClick={togglePlay} aria-label={isPlaying ? 'Pause' : 'Play'} className="px-3 py-1 rounded" style={{ background: p.text + '22', color: p.text }}>
                         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                     </button>
-                    <button data-help-key="perspective_crawl_restart_btn" onClick={() => { resetCrawl(); setIsPlaying(true); }} aria-label="Restart crawl from top" className="px-3 py-1 rounded text-xs" style={{ background: p.text + '22', color: p.text }}>
+                    <button data-help-key="perspective_crawl_restart_btn" onClick={() => { resetCrawl(); setIsPlaying(true); }} aria-label={t("a11y.restart_crawl")} className="px-3 py-1 rounded text-xs" style={{ background: p.text + '22', color: p.text }}>
                         ↺ Restart
                     </button>
                 </div>
@@ -1290,7 +1290,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
                         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                     </button>
                     <button onClick={() => { hardStop(); setSentenceIdx(0); setSweepPct(0); setIsPlaying(false); }}
-                        className="px-3 py-1 rounded text-xs" style={{ background: c.dim + '33', color: c.ink }} aria-label="Restart from first sentence">
+                        className="px-3 py-1 rounded text-xs" style={{ background: c.dim + '33', color: c.ink }} aria-label={t("a11y.restart_first_sentence")}>
                         ↺ Restart
                     </button>
                 </div>
@@ -1302,7 +1302,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
                     ))}
                 </div>
             </div>
-            <div className="h-2 w-full" role="progressbar" aria-valuenow={Math.round(overallPct)} aria-valuemin={0} aria-valuemax={100} aria-label="Reading progress" style={{ background: c.dim + '33' }}>
+            <div className="h-2 w-full" role="progressbar" aria-valuenow={Math.round(overallPct)} aria-valuemin={0} aria-valuemax={100} aria-label={t("a11y.reading_progress")} style={{ background: c.dim + '33' }}>
                 <div className="h-full" style={{ width: overallPct + '%', backgroundColor: c.sweep, transition: reducedMotion ? 'none' : 'width 0.2s linear' }} />
             </div>
             <div className="px-4 py-2 text-center text-xs" style={{ color: c.dim }}>

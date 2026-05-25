@@ -256,7 +256,7 @@
     ref: personaScrollRef,
     role: "log",
     "aria-live": "polite",
-    "aria-label": "Interview conversation"
+    "aria-label": t("a11y.interview_conversation")
   }, personaState.chatHistory.map((msg, idx) => {
     const isUser = msg.role === 'user';
     const isCharB = !isUser && msg.speakerName === personaState.selectedCharacters[1]?.name;
