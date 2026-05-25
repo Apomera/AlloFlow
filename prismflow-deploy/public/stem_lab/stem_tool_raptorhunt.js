@@ -9330,6 +9330,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var lastT = performance.now();
         var animId;
         function loop() {
+          // Stop the rAF chain (and tear down the whole sim) once the
+          // canvas leaves the DOM — happens when the user navigates away
+          // from the Raptor Hunt sim section. The ref callback above only
+          // handles re-init on species change; React fires `ref(null)` on
+          // unmount but the callback returns early in that case, so
+          // _rhCleanup never ran. Result: the Three.js renderer (~50MB
+          // GPU), the animation loop, the wind AudioContext, and all the
+          // HUD DOM elements (HUD, crosshair, status, energy panel, event
+          // log, weather panel, sound button) all leaked permanently.
+          // Multi-open compounded into stacked zombie sims. Calling
+          // _rhCleanup here disposes everything and returns without
+          // scheduling another rAF.
+          if (!canvasEl.isConnected) {
+            try { if (canvasEl._rhCleanup) { canvasEl._rhCleanup(); canvasEl._rhCleanup = null; canvasEl._rhInit = false; } } catch (e) {}
+            return;
+          }
           animId = requestAnimationFrame(loop);
           var now = performance.now();
           var dt = Math.min(0.05, (now - lastT) / 1000);
@@ -9535,9 +9551,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           if (raptor.y > 300) raptor.y = 300;
 
-          // Wrap around if drifting off-map
-          if (Math.abs(raptor.x) > terrainSize * 0.45) raptor.x = -raptor.x * 0.9;
-          if (Math.abs(raptor.z) > terrainSize * 0.45) raptor.z = -raptor.z * 0.9;
+          // Wrap around if drifting off-map (true torus wrap).
+          // Previously: `raptor.x = -raptor.x * 0.9` — this flipped the
+          // sign + scaled, so a bird at x=+360.1 (just past the boundary)
+          // teleported to x=-324.09, a ~684-unit jump halfway across the
+          // 800-wide terrain. The yaw didn't change, so from the player's
+          // frame of reference the world suddenly looked completely
+          // different but they kept facing the same direction — felt
+          // exactly like "controls inverted" or "wrong direction."
+          // True torus wrap preserves continuity: exit one edge, enter
+          // the opposite edge at the same offset and the same yaw, so the
+          // transition is visually continuous and direction stays sensible.
+          var wrapBoundary = terrainSize * 0.45;
+          var wrapSpan = wrapBoundary * 2;
+          if (raptor.x > wrapBoundary)  raptor.x -= wrapSpan;
+          else if (raptor.x < -wrapBoundary) raptor.x += wrapSpan;
+          if (raptor.z > wrapBoundary)  raptor.z -= wrapSpan;
+          else if (raptor.z < -wrapBoundary) raptor.z += wrapSpan;
 
           // ── Update raptor mesh ──
           raptorGroup.position.set(raptor.x, raptor.y, raptor.z);
@@ -13732,6 +13762,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 var preyV = sv.preySpeed * 8; // visual px/s
 
                 function animate(now) {
+                  // If the user navigates away mid-animation, stop the
+                  // rAF chain. The spiral animation is only 4 seconds so
+                  // the leak window is small, but the check is cheap.
+                  if (!canvasEl.isConnected) { canvasEl._spiralAnim = null; return; }
                   var t = (now - startT) / 1000; // seconds
                   if (sv.paused) t = sv.playhead;
                   else sv.playhead = t;

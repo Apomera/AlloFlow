@@ -105,6 +105,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
       // ── Tool body (behaviorLab) ──
       return (function() {
 var d = labToolData || {};
+// Live ref to `d` for the rAF chamber loop. The animation useEffect's
+// deps are [blPhase, blPaused, d.blSpeed] but the loop body reads
+// d.blWeights (line ~1125), d.blTotalTicks (~1385), d.blPosHistory
+// (~1519), d.blSalivateTime (~1791), and d.blMouseX (~1922) — none
+// listed in deps. Most damaging: blTotalTicks increments from the
+// closure-captured baseline, so `upd('blTotalTicks', (d.blTotalTicks||0)+1)`
+// would forever write 1 instead of advancing. Updating dataRef each
+// render makes those reads live without tearing down the loop.
+var dataRef = React.useRef(d);
+dataRef.current = d;
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -1060,6 +1070,13 @@ var d = labToolData || {};
             function blFrame() {
               var cv2 = _blCvRef.current || document.getElementById('bl-chamber-canvas');
               if (!cv2) { _blAnimId.current = requestAnimationFrame(blFrame); return; }
+              // Shadow closure-captured `d` with live ref so per-frame
+              // reads of d.blTotalTicks, d.blPosHistory, d.blWeights,
+              // d.blSalivateTime, d.blMouseX reflect actual React state
+              // instead of mount-time values. Without this, the tick
+              // counter and position history both got pinned to their
+              // starting values.
+              var d = dataRef.current;
               var st = _blAnimState.current;
 
               // Distance-adaptive lerp

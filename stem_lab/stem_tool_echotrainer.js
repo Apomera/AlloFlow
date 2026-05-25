@@ -652,6 +652,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     render: function(ctx) {
       var React = ctx.React; var h = React.createElement; var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef; var useCallback = React.useCallback;
       var d = (ctx.toolData && ctx.toolData['echoTrainer']) || {};
+      // Live ref to `d` for continuous loops. Two useEffects (3D render
+      // loop at ~line 980 and 2D minimap loop at ~line 1407) read d.X
+      // game-state values (viewMode, bumps, waypointIdx, runHistory,
+      // clicks, goalFoundThisRun) every frame but list none of them in
+      // their deps. Updating dataRef each render lets the loops read
+      // live values via dataRef.current without tearing down.
+      var dataRef = React.useRef(d);
+      dataRef.current = d;
       var upd = function(key, val) { ctx.update('echoTrainer', key, val); };
       var updMulti = function(obj) { ctx.updateMulti('echoTrainer', obj); };
       var addToast = ctx.addToast; var announceToSR = ctx.announceToSR; var awardXP = ctx.awardXP; var setStemLabTool = ctx.setStemLabTool; var ArrowLeft = ctx.icons.ArrowLeft; var isDark = ctx.isDark; var theme = ctx.theme;
@@ -1126,6 +1134,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         function loop(now) {
           if (!running) return;
           animRef.current = requestAnimationFrame(loop);
+          // Shadow closure-captured `d` with the live ref so game-state
+          // toggles (viewMode, bumps, waypoint progress, etc.) flow into
+          // the loop on the next frame instead of being trapped at mount.
+          var d = dataRef.current;
           var dt = Math.min(0.05, (now - lastTime) / 1000); lastTime = now; ambientTime += dt;
           var keys = keysRef.current; var currentViewMode = d.viewMode || 'echo';
 
@@ -1409,6 +1421,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         var canvas = canvasRef.current; var gfx = canvas.getContext('2d'); var running = true; var goalCheckTimer2d = 0;
         function loop2d() {
           if (!running) return; requestAnimationFrame(loop2d);
+          // Live-read tool state so the minimap (and the 2D fallback when
+          // WebGL isn't available) reflects current viewMode / bumps /
+          // run-history rather than mount-time values.
+          var d = dataRef.current;
           var map = mapRef.current; var player = playerRef.current; var agents = agentsRef.current; var keys = keysRef.current;
           if (!map) return;
           var isMinimap = has3D; var W, H, scale, ox, oy;

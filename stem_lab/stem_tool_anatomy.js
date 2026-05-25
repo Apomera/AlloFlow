@@ -1140,6 +1140,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           var anatTick = 0;
 
           function drawAnatomyFrame() {
+            // Stop the rAF chain once the canvas leaves the DOM (the user
+            // switched to a different tool, or the SEL/STEM modal closed).
+            // Without this check, the loop kept firing forever — drawing to
+            // a detached canvas, consuming CPU, and pinning a closure that
+            // prevented GC of the canvas + cCtx + every variable in scope.
+            // Multiple open/close cycles compounded into multiple zombie
+            // loops running in parallel. canvas.isConnected returns false
+            // once the element is removed from any document.
+            if (!canvas.isConnected) {
+              canvas._anatomyAnim = null;
+              return;
+            }
             anatTick++;
             cCtx.clearRect(0, 0, W, H);
 

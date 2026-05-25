@@ -52,6 +52,35 @@ function PdfAuditView(props) {
     setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit
   } = props;
 
+  // Tier 4: surface "resume previous batch" banner when an interrupted batch
+  // is found in IndexedDB. Hooks must run unconditionally before any early
+  // return — keep this above the !pdfAuditResult guard.
+  const [resumableBatch, setResumableBatch] = useState(null);
+  // Tier A #1: most-recent tagged-PDF validation result, populated by the
+  // Tagged PDF download flow. Used by the Download Accessibility Report
+  // button to assemble an Adobe-style compliance report.
+  const [lastTaggedValidation, setLastTaggedValidation] = useState(null);
+  // Tier 6 helper: build a localized auditor-agreement tooltip.
+  const _agreementTooltip = (n, total) => {
+    const base = t('pdf_audit.agreement.tooltip', { n, total }) || `Flagged by ${n} of ${total} auditors`;
+    if (n === total) return base + (t('pdf_audit.agreement.unanimous_suffix') || ' (unanimous)');
+    if (n / total < 0.5) return base + (t('pdf_audit.agreement.minority_suffix') || ' — minority opinion, lower confidence');
+    return base;
+  };
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        if (!_docPipeline || !_docPipeline.loadResumableBatch) return;
+        const saved = await _docPipeline.loadResumableBatch();
+        if (!cancelled && saved && saved._incompleteCount > 0) {
+          setResumableBatch(saved);
+        }
+      } catch (_) { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   if (!pdfAuditResult && !pdfAuditLoading) return null;
 
   return (
@@ -260,6 +289,52 @@ function PdfAuditView(props) {
                           e.target.value = '';
                         }} />
                         <label htmlFor="batch-pdf-input" className="inline-block mt-2 px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-indigo-200 transition-colors">{t('pdf_audit.batch.browse_files') || 'Browse Files'}</label>
+                      </div>
+                    )}
+
+                    {/* Tier 4: Resume previous batch banner */}
+                    {resumableBatch && pdfBatchQueue.length === 0 && !pdfBatchProcessing && !pdfBatchSummary && (
+                      <div className="mb-4 p-4 bg-amber-50 rounded-xl border-2 border-amber-300">
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl shrink-0" aria-hidden="true">📋</span>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-black text-amber-800 mb-1">{t('pdf_audit.batch.resume.title') || 'Previous batch interrupted'}</h4>
+                            <p className="text-xs text-amber-700 mb-2">
+                              {t('pdf_audit.batch.resume.summary', { done: resumableBatch._doneCount, total: resumableBatch.files.length }) || `${resumableBatch._doneCount}/${resumableBatch.files.length} file(s) completed before the tab closed.`}
+                              {' '}
+                              {resumableBatch._incompleteCount > 0 && (t('pdf_audit.batch.resume.remaining', { n: resumableBatch._incompleteCount }) || `${resumableBatch._incompleteCount} remaining.`)}
+                            </p>
+                            <p className="text-[11px] text-amber-600 mb-3 truncate" title={resumableBatch.files.map(f => f.fileName).join(', ')}>
+                              {t('pdf_audit.batch.resume.files_label') || 'Files:'} {resumableBatch.files.slice(0, 3).map(f => f.fileName).join(', ')}{resumableBatch.files.length > 3 ? ' ' + (t('pdf_audit.batch.resume.files_more', { n: resumableBatch.files.length - 3 }) || `+ ${resumableBatch.files.length - 3} more`) : ''}
+                            </p>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  const resumeQueue = resumableBatch.files.map(f => ({
+                                    ...f,
+                                    status: f.status === 'processing' ? 'pending' : f.status,
+                                  }));
+                                  const toastMsg = t('pdf_audit.batch.resume.toast', { done: resumableBatch._doneCount, remaining: resumableBatch._incompleteCount }) || `Resuming batch · ${resumableBatch._doneCount} cached, ${resumableBatch._incompleteCount} to process`;
+                                  setResumableBatch(null);
+                                  addToast(toastMsg, 'info');
+                                  try { runPdfBatchRemediation({ resumeQueue }); } catch (e) { warnLog('[Batch Resume] start failed:', e); }
+                                }}
+                                className="px-4 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg text-xs font-bold hover:from-amber-700 hover:to-orange-700 transition-all shadow"
+                              >
+                                {'▶'} {t('pdf_audit.batch.resume.resume_button') || 'Resume Batch'}
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  try { if (_docPipeline && _docPipeline.discardResumableBatch) await _docPipeline.discardResumableBatch(); } catch (_) {}
+                                  setResumableBatch(null);
+                                }}
+                                className="px-4 py-1.5 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"
+                              >
+                                {t('pdf_audit.batch.resume.discard_button') || 'Discard'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -1059,8 +1134,33 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <div className="text-5xl font-black mb-1" aria-label={`Score: ${pdfAuditResult.score >= 0 ? pdfAuditResult.score : 'unknown'} out of 100`}>{pdfAuditResult.score >= 0 ? pdfAuditResult.score : '?'}<span className="text-2xl opacity-80" aria-hidden="true">/100</span></div>
                   <h3 className="text-lg font-bold" id="pdf-audit-title">PDF Accessibility Score {pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-70">(AI + axe-core blend)</span> : <span className="text-xs font-normal opacity-70">(AI Rubric)</span>}</h3>
                   {pdfAuditResult.scores && <p className="text-xs opacity-70 mt-0.5">Triangulated from {pdfAuditResult.auditorCount || pdfAuditResult.scores.length} independent AI audits (scores: {pdfAuditResult.scores.join(', ')}) · SD: {pdfAuditResult.scoreSD ?? '?'}</p>}
+                  {pdfAuditResult.structTree && pdfAuditResult.structTree.hasTags && (() => {
+                    const rc = pdfAuditResult.structTree.roleCounts || {};
+                    const top = Object.entries(rc).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([r, n]) => `${r}×${n}`).join(', ');
+                    return (
+                      <p className="text-[11px] opacity-80 mt-0.5" title={t('pdf_audit.tagtree.tooltip') || 'This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure.'}>
+                        📑 {t('pdf_audit.tagtree.label') || 'Pre-existing tag structure'}: {top}
+                      </p>
+                    );
+                  })()}
                   {pdfAuditResult._scoreIsBlended ? (
-                    <p className="text-[11px] opacity-70 mt-0.5">AI Rubric: {pdfAuditResult._aiOnlyScore} | axe-core: {pdfAuditResult._baselineAxeScore} | Blended: {pdfAuditResult.score} (50/50)</p>
+                    <>
+                      <p className="text-[11px] opacity-70 mt-0.5">AI Rubric: {pdfAuditResult._aiOnlyScore} | axe-core: {pdfAuditResult._baselineAxeScore} | Blended: {pdfAuditResult.score} (50/50)</p>
+                      {(() => {
+                        const ai = pdfAuditResult._aiOnlyScore;
+                        const axe = pdfAuditResult._baselineAxeScore;
+                        if (ai == null || axe == null) return null;
+                        const spread = Math.abs(ai - axe);
+                        if (spread < 15) return null;
+                        // AI lower than axe → semantic issues (alt text, heading meaning) that axe can't see
+                        // axe lower than AI → code-level WCAG failures that the rubric didn't weight enough
+                        const aiWeaker = ai < axe;
+                        const msg = aiWeaker
+                          ? (t('pdf_audit.divergence.semantic') || 'Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can\'t detect')
+                          : (t('pdf_audit.divergence.structural') || 'Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly');
+                        return <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold" title={`Spread: ${spread} points`}>{'⚠️'} {msg}</p>;
+                      })()}
+                    </>
                   ) : (
                     <p className="text-[11px] opacity-60 mt-0.5">axe-core automated verification will be added after Fix & Verify (50/50 blend)</p>
                   )}
@@ -1228,7 +1328,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {pdfAuditResult.critical.map((issue, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs text-slate-700 bg-red-50 p-2 rounded-lg border border-red-100">
                           <span className="text-red-500 shrink-0 mt-0.5" aria-hidden="true">●</span>
-                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-red-500 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1">×{issue.count}</span>}</div>
+                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-red-500 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1">×{issue.count}</span>}
+                            {issue.auditorAgreement != null && pdfAuditResult.auditorCount > 1 && (
+                              <span
+                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-green-100 text-green-700' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-amber-100 text-amber-700' : 'bg-orange-100 text-orange-700'}`}
+                                title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
+                              >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
+                            )}
+                          </div>
                         </li>
                       ))}
                       </ul>
@@ -1241,7 +1348,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {(pdfAuditResult.serious || pdfAuditResult.major).map((issue, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs text-slate-700 bg-amber-50 p-2 rounded-lg border border-amber-100">
                           <span className="text-amber-500 shrink-0 mt-0.5" aria-hidden="true">●</span>
-                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-amber-500 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1">×{issue.count}</span>}</div>
+                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-amber-500 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1">×{issue.count}</span>}
+                            {issue.auditorAgreement != null && pdfAuditResult.auditorCount > 1 && (
+                              <span
+                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-green-100 text-green-700' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-amber-100 text-amber-700' : 'bg-orange-100 text-orange-700'}`}
+                                title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
+                              >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
+                            )}
+                          </div>
                         </li>
                       ))}
                       </ul>
@@ -1254,7 +1368,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {pdfAuditResult.moderate.map((issue, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs text-slate-700 bg-yellow-50 p-2 rounded-lg border border-yellow-100">
                           <span className="text-yellow-500 shrink-0 mt-0.5" aria-hidden="true">●</span>
-                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-yellow-600 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1">×{issue.count}</span>}</div>
+                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-yellow-600 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1">×{issue.count}</span>}
+                            {issue.auditorAgreement != null && pdfAuditResult.auditorCount > 1 && (
+                              <span
+                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-green-100 text-green-700' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-amber-100 text-amber-700' : 'bg-orange-100 text-orange-700'}`}
+                                title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
+                              >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
+                            )}
+                          </div>
                         </li>
                       ))}
                       </ul>
@@ -1265,7 +1386,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <h4 className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-2">Minor Issues ({pdfAuditResult.minor.length})</h4>
                       <ul className="list-none space-y-1">
                       {pdfAuditResult.minor.map((issue, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-slate-600">{issue.issue}{issue.count > 1 && ` (×${issue.count})`}</li>
+                        <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
+                          <span>{issue.issue}{issue.count > 1 && ` (×${issue.count})`}</span>
+                          {issue.auditorAgreement != null && pdfAuditResult.auditorCount > 1 && (
+                            <span
+                              className={`inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-green-100 text-green-700' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-amber-100 text-amber-700' : 'bg-orange-100 text-orange-700'}`}
+                              title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
+                            >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
+                          )}
+                        </li>
                       ))}
                       </ul>
                     </section>
@@ -2970,6 +3099,74 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </>);
                       })()}
 
+                      {/* Issue-resolution summary (resolved / persisted / newly introduced) */}
+                      {pdfFixResult.issueResolution && pdfFixResult.issueResolution.summary && pdfFixResult.issueResolution.summary.totalPre > 0 && (() => {
+                        const s = pdfFixResult.issueResolution.summary;
+                        const pct = s.totalPre > 0 ? Math.round((s.resolvedCount / s.totalPre) * 100) : 0;
+                        return (
+                          <details className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200 p-3">
+                            <summary className="cursor-pointer flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg" aria-hidden="true">🎯</span>
+                                <div>
+                                  <div className="text-xs font-bold text-emerald-800">{t('pdf_audit.resolution.heading') || 'Issue Resolution'}</div>
+                                  <div className="text-[11px] text-emerald-600">{t('pdf_audit.resolution.subheading', { resolved: s.resolvedCount, total: s.totalPre, pct }) || `Resolved ${s.resolvedCount} of ${s.totalPre} original issues (${pct}%)`}</div>
+                                </div>
+                              </div>
+                              <div className="flex gap-1.5 text-[11px] font-bold shrink-0">
+                                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full" title={t('pdf_audit.resolution.resolved_tip') || 'Issues from the original audit no longer found in the verification audit'}>✓ {s.resolvedCount}</span>
+                                {s.persistedCount > 0 && <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full" title={t('pdf_audit.resolution.persisted_tip') || 'Issues from the original audit still present after the fix'}>↻ {s.persistedCount}</span>}
+                                {s.introducedCount > 0 && <span className="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full" title={t('pdf_audit.resolution.introduced_tip') || 'New issues that did not exist before the fix'}>⊕ {s.introducedCount}</span>}
+                              </div>
+                            </summary>
+                            <div className="mt-3 space-y-2">
+                              {pdfFixResult.issueResolution.resolved.length > 0 && (
+                                <div>
+                                  <div className="text-[10px] font-bold text-green-700 uppercase tracking-wider mb-1">{t('pdf_audit.resolution.resolved_label') || 'Resolved'} ({pdfFixResult.issueResolution.resolved.length})</div>
+                                  <ul className="text-[11px] text-slate-700 space-y-0.5">
+                                    {pdfFixResult.issueResolution.resolved.slice(0, 12).map((i, idx) => (
+                                      <li key={idx} className="flex items-start gap-1.5">
+                                        <span className="text-green-600 shrink-0">✓</span>
+                                        <span><span className="font-medium">{i.issue}</span>{i.wcag && <span className="text-slate-500 ml-1">(WCAG {i.wcag})</span>}</span>
+                                      </li>
+                                    ))}
+                                    {pdfFixResult.issueResolution.resolved.length > 12 && <li className="text-slate-500 italic">+ {pdfFixResult.issueResolution.resolved.length - 12} more</li>}
+                                  </ul>
+                                </div>
+                              )}
+                              {pdfFixResult.issueResolution.persisted.length > 0 && (
+                                <div>
+                                  <div className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1">{t('pdf_audit.resolution.persisted_label') || 'Still Present'} ({pdfFixResult.issueResolution.persisted.length})</div>
+                                  <ul className="text-[11px] text-slate-700 space-y-0.5">
+                                    {pdfFixResult.issueResolution.persisted.slice(0, 8).map((i, idx) => (
+                                      <li key={idx} className="flex items-start gap-1.5">
+                                        <span className="text-amber-600 shrink-0">↻</span>
+                                        <span><span className="font-medium">{i.issue}</span>{i.wcag && <span className="text-slate-500 ml-1">(WCAG {i.wcag})</span>}</span>
+                                      </li>
+                                    ))}
+                                    {pdfFixResult.issueResolution.persisted.length > 8 && <li className="text-slate-500 italic">+ {pdfFixResult.issueResolution.persisted.length - 8} more</li>}
+                                  </ul>
+                                </div>
+                              )}
+                              {pdfFixResult.issueResolution.introduced.length > 0 && (
+                                <div>
+                                  <div className="text-[10px] font-bold text-rose-700 uppercase tracking-wider mb-1">{t('pdf_audit.resolution.introduced_label') || 'Newly Introduced'} ({pdfFixResult.issueResolution.introduced.length})</div>
+                                  <ul className="text-[11px] text-slate-700 space-y-0.5">
+                                    {pdfFixResult.issueResolution.introduced.slice(0, 8).map((i, idx) => (
+                                      <li key={idx} className="flex items-start gap-1.5">
+                                        <span className="text-rose-600 shrink-0">⊕</span>
+                                        <span><span className="font-medium">{i.issue}</span>{i.wcag && <span className="text-slate-500 ml-1">(WCAG {i.wcag})</span>}</span>
+                                      </li>
+                                    ))}
+                                    {pdfFixResult.issueResolution.introduced.length > 8 && <li className="text-slate-500 italic">+ {pdfFixResult.issueResolution.introduced.length - 8} more</li>}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          </details>
+                        );
+                      })()}
+
                       {/* Verification details */}
                       {pdfFixResult.verificationAudit && (
                         <div className="space-y-2">
@@ -3571,12 +3768,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               } catch(_) {}
                               if (!title) title = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '');
                               const _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, subject: 'Remediated for accessibility by AlloFlow' });
-                              // createTaggedPdf returns { bytes, summary } as of the
-                              // tag-summary refactor. Tolerate the legacy raw-bytes
-                              // shape too in case a stale CDN-cached version of the
-                              // module is still loaded for this user.
+                              // createTaggedPdf returns { bytes, summary, pdfUa1Checks }.
+                              // Tolerate older shapes for users on stale CDN-cached modules.
                               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
                               const summary = (_result && _result.summary) || null;
+                              const pdfUa1Checks = (_result && _result.pdfUa1Checks) || null;
+                              if (pdfUa1Checks) {
+                                setLastTaggedValidation({
+                                  fileName: (pendingPdfFile?.name || 'document.pdf'),
+                                  title,
+                                  pdfUa1Checks,
+                                  generatedAt: new Date().toISOString(),
+                                });
+                              }
                               if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
                               const blob = new Blob([taggedBytes], { type: 'application/pdf' });
                               safeDownloadBlob(blob, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged.pdf');
@@ -3670,7 +3874,48 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <button className="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5">
                             📊 Report ▾
                           </button>
-                          <div className="hidden group-hover:block group-focus-within:block absolute bottom-full left-0 mb-1 bg-white border border-slate-400 rounded-xl shadow-xl z-10 min-w-[180px] overflow-hidden">
+                          <div className="hidden group-hover:block group-focus-within:block absolute bottom-full left-0 mb-1 bg-white border border-slate-400 rounded-xl shadow-xl z-10 min-w-[220px] overflow-hidden">
+                            {/* Tier A #2: Adobe-style PDF/UA-1 conformance report.
+                                Generates a category-by-category rule report matching
+                                Adobe Accessibility Checker's format, plus AlloFlow's
+                                reliability statistics, score blend, and issue-resolution
+                                diff. Best report for compliance officers + federal filings. */}
+                            <button onClick={async () => {
+                              try {
+                                if (!_docPipeline || !_docPipeline.generateAccessibilityReportHtml) {
+                                  addToast(t('toasts.report_generator_unavailable') || 'Report generator unavailable — reload the page', 'error');
+                                  return;
+                                }
+                                // Use the cached validation from the most recent Tagged PDF
+                                // generation. If the user hasn't generated a Tagged PDF yet,
+                                // the report still works (omits the PDF/UA-1 section).
+                                const cached = lastTaggedValidation;
+                                const checks = cached && cached.pdfUa1Checks ? cached.pdfUa1Checks : null;
+                                const html = _docPipeline.generateAccessibilityReportHtml(
+                                  pdfFixResult,
+                                  pdfAuditResult,
+                                  checks,
+                                  { fileName: pendingPdfFile?.name || 'document.pdf' }
+                                );
+                                const blob = new Blob([html], { type: 'text/html' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = `accessibility-report-${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-${new Date().toISOString().split('T')[0]}.html`;
+                                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                                if (!checks) {
+                                  addToast(t('toasts.report_downloaded_no_validation') || 'Report downloaded — generate a Tagged PDF first for PDF/UA-1 compliance checks', 'info');
+                                } else {
+                                  const sm = checks.summary || { pass: 0, fail: 0, conformancePct: 0 };
+                                  addToast(`Adobe-style report downloaded · ${sm.pass}/${sm.pass + sm.fail + (sm.warn || 0)} automated checks passed (${sm.conformancePct}% conformance)`, 'success');
+                                }
+                              } catch (err) {
+                                warnLog('[AccessibilityReport] generation failed:', err);
+                                addToast(t('toasts.report_generation_failed') || 'Report generation failed: ' + (err?.message || 'unknown'), 'error');
+                              }
+                            }} className="w-full px-4 py-2.5 text-left text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors">
+                              🏛️ Adobe-style A11y Report{lastTaggedValidation ? ` (${(lastTaggedValidation.pdfUa1Checks?.summary?.conformancePct ?? 0)}% conformance)` : ''}
+                            </button>
                             <button onClick={() => {
                               const _rptAi = pdfFixResult.afterScore; const _rptAxe = pdfFixResult.axeAudit?.score ?? null; const _rptBlended = (_rptAi !== null && _rptAxe !== null) ? Math.round((_rptAxe + _rptAi) / 2) : (_rptAxe ?? _rptAi);
                               const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, summary: pdfAuditResult?.summary || '' };

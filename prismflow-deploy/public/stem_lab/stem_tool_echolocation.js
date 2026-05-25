@@ -610,6 +610,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var useRef = React.useRef;
       var useCallback = React.useCallback;
       var d = (ctx.toolData && ctx.toolData['echolocation']) || {};
+      // Live ref to `d` for continuous animation loops. The sonar canvas
+      // useEffect reads d.mothsCaught, d.fruitCollected, d.caveMapped
+      // inside its animate() callback but doesn't list those in its deps
+      // [tab, sceneIdx, selectedPlayableSpecies] — so without this ref,
+      // gameplay state changes (caught a moth, collected fruit, mapped a
+      // cave section) were captured stale and the loop kept reading the
+      // mount-time values.
+      var dataRef = useRef(d);
+      dataRef.current = d;
       var upd = function(key, val) { ctx.update('echolocation', key, val); };
       var updMulti = function(obj) { ctx.updateMulti('echolocation', obj); };
       var addToast = ctx.addToast;
@@ -2316,6 +2325,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
         function animate(now) {
           if (!running) return;
+          // Read live tool state via dataRef so caught-moth / collected-
+          // fruit / mapped-cave counters reflect the actual gameplay
+          // state rather than mount-time values. See dataRef declaration
+          // for the full rationale.
+          var d = dataRef.current;
           var dt = Math.min((now - lastTime) / 1000, 0.05);
           lastTime = now;
           st.time += dt;

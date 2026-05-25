@@ -1,9 +1,53 @@
 // ═══════════════════════════════════════════
-// stem_tool_geosandbox.js — 3D Geometry Sandbox Plugin
-// Interactive 3D shape explorer with volume/SA formulas,
-// challenge mode, measurement tooltips, STL export,
-// sound effects, badges, AI tutor & keyboard shortcuts.
-// Extracted from stem_lab_module.js L33187-33677
+// stem_tool_geosandbox.js — 3D Geometry Sandbox Plugin (v2)
+//
+// ARCHITECTURE NOTES (for contributors)
+// ─────────────────────────────────────
+// Rendering: Three.js r128 + OrbitControls (loaded from CDN on first init).
+//   Real WebGL pipeline. Touch + mouse drag for camera control are built into
+//   OrbitControls. Falls back to a "WebGL unavailable" error panel if init fails.
+//
+// Two modes share the scene:
+//   • SINGLE SHAPE (original) — pick one of 7 primitives, adjust dimensions,
+//     measure volume/SA, take challenges, export STL.
+//   • DIMENSIONAL STRETCH (v2, HandWaver-inspired) — build geometry by
+//     stretching lower-dimensional objects into higher dimensions:
+//        point → segment (1D stretch)
+//        segment → rectangle (2D stretch)
+//        rectangle → prism (3D stretch / extrusion)
+//     Pedagogically connects the concept of dimension to a physical-feeling
+//     operation. Inspired by Dimmel & Bock's HandWaver (UMaine IMRE Lab),
+//     where this paradigm runs in VR with hand-tracking. In the browser we
+//     use sliders + click+stretch, but the conceptual move is the same.
+//
+// State (in ctx.toolData.geoSandbox):
+//   shape: 'box' | 'sphere' | 'cylinder' | 'cone' | 'pyramid' | 'torus' | 'prism'
+//   dims: { w, h, d, r, rTop, rBot, tube, segs }
+//   mode: 'single' | 'stretch'      ← v2 addition
+//   construction: { objects: [...], selection: index }  ← v2 addition
+//   history: [...snapshots]         ← v2 addition for undo
+//   savedConstructions: { name → snapshot }  ← v2 addition
+//   unitId: 'unit' | 'cm' | 'in' | 'ft' | 'm'   ← v2 addition
+//   _geoExt: { badges, streak, shapesExplored, ... }
+//
+// Construction objects (stretch mode) are stored as:
+//   { type: 'point' | 'segment' | 'rect' | 'prism', position, vector, ... }
+// Each object renders as a Three.js mesh in the scene. Selection adds a
+// highlight outline. "Stretch" operations create new objects from selected ones.
+//
+// Accessibility:
+//   aria-live region #allo-live-geosandbox for SR announcements (mode switches,
+//   shape changes, dimension changes — debounced). Canvas has tabIndex=0 and
+//   keyboard alternatives for the OrbitControls (arrow keys to orbit, +/- zoom).
+//   Reduced-motion respected.
+//
+// Future direction: a research collaboration with UMaine IMRE Lab could bridge
+// AlloFlow's browser-based dimensional-stretch mode with HandWaver's VR
+// implementation — a student would construct in the browser, then enter the
+// same construction in VR for spatial exploration. See ORIENTATION.md.
+//
+// Contributors: run `node --check` after edits. E2E test at
+// tests/e2e/geosandbox-tool.spec.ts.
 // ═══════════════════════════════════════════
 
 window.StemLab = window.StemLab || {
@@ -446,6 +490,194 @@ window.StemLab = window.StemLab || {
   // ── Color palette ──
   var colorPalette = ['#60a5fa', '#f472b6', '#34d399', '#fbbf24', '#a78bfa', '#fb923c', '#f87171', '#e2e8f0'];
 
+  // ══════════════════════════════════════════════════════════════
+  // DIMENSIONAL STRETCH MODE (v2, HandWaver-inspired)
+  // ──────────────────────────────────────────────────────────────
+  // Construction objects live in toolData.geoSandbox.construction.objects.
+  // Each object is one of:
+  //   { id, type: 'point',   position: [x,y,z] }
+  //   { id, type: 'segment', position: [x,y,z], vector: [dx,dy,dz] }
+  //   { id, type: 'rect',    position: [x,y,z], u: [ux,uy,uz], v: [vx,vy,vz] }
+  //   { id, type: 'prism',   position: [x,y,z], u, v, w: [wx,wy,wz] }
+  // u, v, w are orthogonal extrusion vectors that define the shape.
+  //
+  // Stretch operations:
+  //   stretchPoint(point, axis, length)  → new segment with vector along axis
+  //   stretchSegment(seg, axis, length)  → new rect with seg.vector as u, perp as v
+  //   stretchRect(rect, axis, length)    → new prism with rect's u,v + perp as w
+  // ══════════════════════════════════════════════════════════════
+  var STRETCH_AXES = [
+    { id: 'x', label: 'X axis (right)',  vec: [1, 0, 0], color: '#ef4444' },
+    { id: 'y', label: 'Y axis (up)',     vec: [0, 1, 0], color: '#22c55e' },
+    { id: 'z', label: 'Z axis (toward you)', vec: [0, 0, 1], color: '#3b82f6' }
+  ];
+  function nextObjId(objs) {
+    return (objs && objs.length ? Math.max.apply(null, objs.map(function(o) { return o.id || 0; })) + 1 : 1);
+  }
+  function vec3Scale(v, s) { return [v[0] * s, v[1] * s, v[2] * s]; }
+  function vec3Add(a, b)  { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
+  function vec3Perp(v) {
+    // Pick a perpendicular axis: if v is along x or close, perp is y; else perp is x.
+    var ax = Math.abs(v[0]), ay = Math.abs(v[1]), az = Math.abs(v[2]);
+    if (ay <= ax && ay <= az) return [0, 1, 0];
+    if (ax <= ay && ax <= az) return [1, 0, 0];
+    return [0, 0, 1];
+  }
+  function stretchPoint(point, axis, length) {
+    var ax = STRETCH_AXES.find(function(a) { return a.id === axis; }) || STRETCH_AXES[0];
+    return { type: 'segment', position: point.position.slice(), vector: vec3Scale(ax.vec, length) };
+  }
+  function stretchSegment(seg, axis, length) {
+    var ax = STRETCH_AXES.find(function(a) { return a.id === axis; }) || STRETCH_AXES[1];
+    // Don't allow stretching along the segment's own axis (would degenerate)
+    var segLen = Math.sqrt(seg.vector[0]*seg.vector[0] + seg.vector[1]*seg.vector[1] + seg.vector[2]*seg.vector[2]);
+    var normSeg = segLen > 0 ? vec3Scale(seg.vector, 1/segLen) : [1,0,0];
+    var perp;
+    // If chosen axis is roughly parallel to segment, fall back to the perpendicular axis
+    if (Math.abs(normSeg[0] * ax.vec[0] + normSeg[1] * ax.vec[1] + normSeg[2] * ax.vec[2]) > 0.95) {
+      perp = vec3Perp(seg.vector);
+    } else {
+      perp = ax.vec;
+    }
+    return { type: 'rect', position: seg.position.slice(), u: seg.vector.slice(), v: vec3Scale(perp, length) };
+  }
+  function stretchRect(rect, axis, length) {
+    // For a rect, w is the perpendicular of the plane defined by u, v.
+    var u = rect.u, v = rect.v;
+    // Cross product u × v gives a normal
+    var nx = u[1] * v[2] - u[2] * v[1];
+    var ny = u[2] * v[0] - u[0] * v[2];
+    var nz = u[0] * v[1] - u[1] * v[0];
+    var nLen = Math.sqrt(nx*nx + ny*ny + nz*nz);
+    var normal = nLen > 0 ? [nx/nLen, ny/nLen, nz/nLen] : [0, 0, 1];
+    return { type: 'prism', position: rect.position.slice(), u: u.slice(), v: v.slice(), w: vec3Scale(normal, length) };
+  }
+  function objectVolume(o) {
+    if (o.type === 'point') return 0;
+    if (o.type === 'segment') {
+      var v = o.vector; return Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);  // returns length, not volume
+    }
+    if (o.type === 'rect') {
+      var u = o.u, vv = o.v;
+      // Cross magnitude = parallelogram area
+      var cx = u[1] * vv[2] - u[2] * vv[1];
+      var cy = u[2] * vv[0] - u[0] * vv[2];
+      var cz = u[0] * vv[1] - u[1] * vv[0];
+      return Math.sqrt(cx*cx + cy*cy + cz*cz);
+    }
+    if (o.type === 'prism') {
+      // Volume = |u · (v × w)|
+      var u = o.u, vv = o.v, ww = o.w;
+      var cx = vv[1] * ww[2] - vv[2] * ww[1];
+      var cy = vv[2] * ww[0] - vv[0] * ww[2];
+      var cz = vv[0] * ww[1] - vv[1] * ww[0];
+      return Math.abs(u[0] * cx + u[1] * cy + u[2] * cz);
+    }
+    return 0;
+  }
+
+  // Render construction objects into a Three.js scene group, returns the group.
+  function buildConstructionGroup(THREE, objects, selectedId) {
+    var group = new THREE.Group();
+    if (!objects) return group;
+    objects.forEach(function(o) {
+      var isSel = (o.id === selectedId);
+      var color = isSel ? 0xfbbf24 : (o.type === 'point' ? 0xef4444 : o.type === 'segment' ? 0x22c55e : o.type === 'rect' ? 0x3b82f6 : 0xa78bfa);
+      var mesh;
+      if (o.type === 'point') {
+        var pg = new THREE.SphereGeometry(0.12, 16, 16);
+        mesh = new THREE.Mesh(pg, new THREE.MeshStandardMaterial({ color: color, emissive: isSel ? 0x444400 : 0x000000 }));
+        mesh.position.set(o.position[0], o.position[1], o.position[2]);
+      } else if (o.type === 'segment') {
+        var p0 = new THREE.Vector3(o.position[0], o.position[1], o.position[2]);
+        var p1 = new THREE.Vector3(o.position[0] + o.vector[0], o.position[1] + o.vector[1], o.position[2] + o.vector[2]);
+        var lineGeo = new THREE.BufferGeometry().setFromPoints([p0, p1]);
+        mesh = new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: color, linewidth: 4 }));
+        // Add endpoints
+        var s1 = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), new THREE.MeshBasicMaterial({ color: color }));
+        s1.position.copy(p0);
+        var s2 = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), new THREE.MeshBasicMaterial({ color: color }));
+        s2.position.copy(p1);
+        var sgGroup = new THREE.Group();
+        sgGroup.add(mesh); sgGroup.add(s1); sgGroup.add(s2);
+        mesh = sgGroup;
+      } else if (o.type === 'rect') {
+        var p0 = [o.position[0], o.position[1], o.position[2]];
+        var p1 = vec3Add(p0, o.u);
+        var p2 = vec3Add(p1, o.v);
+        var p3 = vec3Add(p0, o.v);
+        var corners = [p0, p1, p2, p3].map(function(p) { return new THREE.Vector3(p[0], p[1], p[2]); });
+        var rectGeo = new THREE.BufferGeometry();
+        var verts = new Float32Array([
+          corners[0].x, corners[0].y, corners[0].z,
+          corners[1].x, corners[1].y, corners[1].z,
+          corners[2].x, corners[2].y, corners[2].z,
+          corners[0].x, corners[0].y, corners[0].z,
+          corners[2].x, corners[2].y, corners[2].z,
+          corners[3].x, corners[3].y, corners[3].z
+        ]);
+        rectGeo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+        rectGeo.computeVertexNormals();
+        mesh = new THREE.Mesh(rectGeo, new THREE.MeshStandardMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.75 }));
+        // Border
+        var edgesGeo = new THREE.EdgesGeometry(rectGeo);
+        var edges = new THREE.LineSegments(edgesGeo, new THREE.LineBasicMaterial({ color: 0x0f172a }));
+        var rectGroup = new THREE.Group();
+        rectGroup.add(mesh); rectGroup.add(edges);
+        mesh = rectGroup;
+      } else if (o.type === 'prism') {
+        // Build a parallelepiped via 8 corners
+        var p0 = [o.position[0], o.position[1], o.position[2]];
+        var p1 = vec3Add(p0, o.u);
+        var p2 = vec3Add(p1, o.v);
+        var p3 = vec3Add(p0, o.v);
+        var p4 = vec3Add(p0, o.w);
+        var p5 = vec3Add(p1, o.w);
+        var p6 = vec3Add(p2, o.w);
+        var p7 = vec3Add(p3, o.w);
+        var pts = [p0, p1, p2, p3, p4, p5, p6, p7];
+        var faces = [
+          [0, 1, 2, 3], // bottom
+          [4, 5, 6, 7], // top
+          [0, 1, 5, 4], // front
+          [1, 2, 6, 5], // right
+          [2, 3, 7, 6], // back
+          [3, 0, 4, 7]  // left
+        ];
+        var verts2 = [];
+        faces.forEach(function(f) {
+          var v0 = pts[f[0]], v1 = pts[f[1]], v2 = pts[f[2]], v3 = pts[f[3]];
+          verts2.push(v0[0], v0[1], v0[2], v1[0], v1[1], v1[2], v2[0], v2[1], v2[2]);
+          verts2.push(v0[0], v0[1], v0[2], v2[0], v2[1], v2[2], v3[0], v3[1], v3[2]);
+        });
+        var prismGeo = new THREE.BufferGeometry();
+        prismGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(verts2), 3));
+        prismGeo.computeVertexNormals();
+        mesh = new THREE.Mesh(prismGeo, new THREE.MeshStandardMaterial({ color: color, transparent: true, opacity: 0.7 }));
+        var prismEdges = new THREE.EdgesGeometry(prismGeo);
+        var prismEdgeLines = new THREE.LineSegments(prismEdges, new THREE.LineBasicMaterial({ color: 0x0f172a }));
+        var prismGroup = new THREE.Group();
+        prismGroup.add(mesh); prismGroup.add(prismEdgeLines);
+        mesh = prismGroup;
+      }
+      if (mesh) {
+        mesh.userData.objId = o.id;
+        mesh.userData.objType = o.type;
+        group.add(mesh);
+      }
+    });
+    return group;
+  }
+
+  // Real-world unit conversion (shared with Volume Explorer)
+  var GEO_UNITS = [
+    { id: 'unit', short: 'u',   long: 'unit',        toL: 1 },
+    { id: 'cm',   short: 'cm',  long: 'centimeter',  toL: 0.001 },
+    { id: 'in',   short: 'in',  long: 'inch',        toL: 0.01639 },
+    { id: 'ft',   short: 'ft',  long: 'foot',        toL: 28.3168 },
+    { id: 'm',    short: 'm',   long: 'meter',       toL: 1000 }
+  ];
+
   // ══════════════════════════════════════
   // ═══ REGISTER TOOL ═══
   // ══════════════════════════════════════
@@ -504,6 +736,14 @@ window.StemLab = window.StemLab || {
           ext.dimAdjusts = (ext.dimAdjusts || 0) + 1;
           return Object.assign({}, prev, { geoSandbox: Object.assign({}, g, { dims: nd, _geoExt: ext }) });
         });
+        // Debounced SR announcement so we do not spam during rapid drags
+        if (announceToSR) {
+          if (window._geoSrTimer) clearTimeout(window._geoSrTimer);
+          window._geoSrTimer = setTimeout(function() {
+            var newMeas = calcMeasurements(shape, Object.assign({}, dims, (function() { var o = {}; o[key] = parseFloat(val); return o; })()));
+            announceToSR(key + ' set to ' + parseFloat(val).toFixed(1) + '. Volume ' + newMeas.vol.toFixed(2) + ', surface area ' + newMeas.sa.toFixed(2) + '.');
+          }, 350);
+        }
       };
 
       var shape = gd.shape || 'box';
@@ -511,6 +751,114 @@ window.StemLab = window.StemLab || {
       var shapeColor = gd.color || '#60a5fa';
       var wireframe = gd.wireframe || false;
       var opacity = gd.opacity != null ? gd.opacity : 1;
+
+      // v2 additions ─────────────────────────────────────────────
+      var mode = gd.mode || 'single'; // 'single' | 'stretch'
+      var construction = gd.construction || { objects: [], selection: null };
+      var history = gd.history || [];
+      var savedConstructions = gd.savedConstructions || {};
+      var showSaved = gd.showSaved || false;
+      var unitId = gd.unitId || 'unit';
+      var unitDef = GEO_UNITS.find(function(u) { return u.id === unitId; }) || GEO_UNITS[0];
+      var stretchAxis = gd.stretchAxis || 'x';
+      var stretchLength = gd.stretchLength != null ? gd.stretchLength : 2;
+
+      function pushHistory() {
+        var snap = JSON.parse(JSON.stringify(construction));
+        var next = history.concat([snap]);
+        if (next.length > 30) next = next.slice(next.length - 30);
+        setLabToolData(function(prev) {
+          var g = prev.geoSandbox || {};
+          return Object.assign({}, prev, { geoSandbox: Object.assign({}, g, { history: next }) });
+        });
+      }
+      function doStretchUndo() {
+        if (!history.length) return;
+        var prev = history[history.length - 1];
+        var next = history.slice(0, -1);
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: prev, history: next }) });
+        });
+        if (announceToSR) announceToSR('Undo. ' + prev.objects.length + ' objects in scene.');
+      }
+
+      function addPoint(pos) {
+        pushHistory();
+        var newObjs = construction.objects.concat([{ id: nextObjId(construction.objects), type: 'point', position: pos || [0, 0, 0] }]);
+        var newId = newObjs[newObjs.length - 1].id;
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: newObjs, selection: newId } }) });
+        });
+        geoSound('shapeChange');
+        if (announceToSR) announceToSR('Point added. Select an axis and stretch to create a segment.');
+      }
+      function performStretch() {
+        var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
+        if (!sel) { addToast('Select an object first', 'error'); return; }
+        var newObj;
+        if (sel.type === 'point')        newObj = stretchPoint(sel, stretchAxis, stretchLength);
+        else if (sel.type === 'segment') newObj = stretchSegment(sel, stretchAxis, stretchLength);
+        else if (sel.type === 'rect')    newObj = stretchRect(sel, stretchAxis, stretchLength);
+        else { addToast('Cannot stretch a solid further in this dimension', 'info'); return; }
+        pushHistory();
+        newObj.id = nextObjId(construction.objects);
+        var newObjs = construction.objects.concat([newObj]);
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: newObjs, selection: newObj.id } }) });
+        });
+        geoSound('shapeChange');
+        var nextLabel = newObj.type === 'segment' ? 'segment (line)' : newObj.type === 'rect' ? 'rectangle (plane)' : 'prism (solid)';
+        if (announceToSR) announceToSR('Stretched to ' + nextLabel + '. Now ' + newObjs.length + ' objects in construction.');
+      }
+      function clearConstruction() {
+        pushHistory();
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: [], selection: null } }) });
+        });
+        if (announceToSR) announceToSR('Construction cleared');
+      }
+      function selectObject(id) {
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: Object.assign({}, g.construction || construction, { selection: id }) }) });
+        });
+      }
+      function saveConstruction(name) {
+        if (!name) return;
+        var trimmed = String(name).trim().slice(0, 40);
+        if (!trimmed) return;
+        var snap = JSON.parse(JSON.stringify(construction));
+        snap.savedAt = Date.now();
+        var next = Object.assign({}, savedConstructions);
+        next[trimmed] = snap;
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { savedConstructions: next }) });
+        });
+        if (addToast) addToast('💾 Saved "' + trimmed + '"', 'success');
+      }
+      function loadConstruction(name) {
+        var snap = savedConstructions[name];
+        if (!snap) return;
+        pushHistory();
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: snap.objects || [], selection: snap.selection || null } }) });
+        });
+        if (announceToSR) announceToSR('Loaded ' + name);
+      }
+      function deleteConstruction(name) {
+        var next = Object.assign({}, savedConstructions);
+        delete next[name];
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { savedConstructions: next }) });
+        });
+      }
 
       // ── Extended state (badges, streaks, AI) ──
       var ext = gd._geoExt || {};
@@ -536,9 +884,15 @@ window.StemLab = window.StemLab || {
       var challengeResult = gd.challengeResult || null;
       var challengeScore = gd.challengeScore || { correct: 0, total: 0 };
 
-      // ── Shape change with sound + badge tracking ──
+      // ── Shape change with sound + badge tracking + SR announcement ──
       var selectShape = function(sid) {
         geoSound('shapeChange');
+        // SR announcement for shape switch
+        var shapeMeta = shapes.find(function(s) { return s.id === sid; });
+        if (announceToSR && shapeMeta) {
+          var newMeas = calcMeasurements(sid, dims);
+          announceToSR(shapeMeta.label + ' selected. Volume ' + newMeas.vol.toFixed(2) + ' cubic units, surface area ' + newMeas.sa.toFixed(2) + ' square units.');
+        }
         setLabToolData(function(prev) {
           var g = prev.geoSandbox || {};
           var exObj = Object.assign({}, g._geoExt || {});
@@ -665,25 +1019,36 @@ window.StemLab = window.StemLab || {
         });
       };
 
-      // ── Keyboard shortcuts (managed without useEffect) ──
-      if (window._geoSandboxKbHandler) window.removeEventListener('keydown', window._geoSandboxKbHandler);
-      window._geoSandboxKbHandler = function(e) {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-        var key = e.key;
-        if (key >= '1' && key <= '7') {
-          var idx = parseInt(key) - 1;
-          if (shapes[idx]) selectShape(shapes[idx].id);
-          return;
-        }
-        switch (key.toLowerCase()) {
-          case 'c': generateChallenge(); break;
-          case 'w': toggleWireframe(); break;
-          case 'e': doExportSTL(); break;
-          case 'b': updExt({ showBadges: !showBadges }); break;
-          case '/': e.preventDefault(); askAI(); break;
-        }
-      };
-      window.addEventListener('keydown', window._geoSandboxKbHandler);
+      // ── Keyboard shortcuts ─────────────────────────────────────
+      // Managed via useEffect for proper add/remove lifecycle. The previous
+      // pattern stored the handler on window and re-attached each render,
+      // which leaked listeners across remounts. This version cleanly removes
+      // the handler when the tool unmounts.
+      React.useEffect(function() {
+        var handler = function(e) {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+          var key = e.key;
+          if (mode === 'single' && key >= '1' && key <= '7') {
+            var idx = parseInt(key) - 1;
+            if (shapes[idx]) selectShape(shapes[idx].id);
+            return;
+          }
+          switch (key.toLowerCase()) {
+            case 'c': generateChallenge(); break;
+            case 'w': toggleWireframe(); break;
+            case 'e': doExportSTL(); break;
+            case 'b': updExt({ showBadges: !showBadges }); break;
+            case 'u': if (mode === 'stretch') doStretchUndo(); break;
+            case 'm':
+              upd('mode', mode === 'single' ? 'stretch' : 'single');
+              if (announceToSR) announceToSR((mode === 'single' ? 'Stretch' : 'Single shape') + ' mode');
+              break;
+            case '/': e.preventDefault(); askAI(); break;
+          }
+        };
+        window.addEventListener('keydown', handler);
+        return function() { window.removeEventListener('keydown', handler); };
+      }, [mode, shape, dims, shapeColor, wireframe, showBadges, construction.selection, history.length]);
 
       // ── Three.js scene update effect ──
       React.useEffect(function() {
@@ -713,7 +1078,30 @@ window.StemLab = window.StemLab || {
           }
         }
 
-        updateMesh(window._geoScene, shape, dims, shapeColor, wireframe, opacity);
+        // Single-shape mode: render the primitive.
+        // Stretch mode: hide primitive and render the construction group instead.
+        if (mode === 'single') {
+          // Remove construction group if present
+          if (window._geoScene.constructionGroup) {
+            window._geoScene.scene.remove(window._geoScene.constructionGroup);
+            window._geoScene.constructionGroup = null;
+          }
+          updateMesh(window._geoScene, shape, dims, shapeColor, wireframe, opacity);
+        } else {
+          // Stretch mode: clear the primitive mesh
+          if (window._geoScene.mesh) {
+            window._geoScene.scene.remove(window._geoScene.mesh);
+            if (window._geoScene.mesh.geometry) window._geoScene.mesh.geometry.dispose();
+            if (window._geoScene.mesh.material) window._geoScene.mesh.material.dispose();
+            window._geoScene.mesh = null;
+          }
+          // Rebuild construction group
+          if (window._geoScene.constructionGroup) {
+            window._geoScene.scene.remove(window._geoScene.constructionGroup);
+          }
+          window._geoScene.constructionGroup = buildConstructionGroup(window.THREE, construction.objects, construction.selection);
+          window._geoScene.scene.add(window._geoScene.constructionGroup);
+        }
         // Resize handler
         var handleResize = function() {
           if (!cnv || !window._geoScene || !window._geoScene.renderer) return;
@@ -723,7 +1111,7 @@ window.StemLab = window.StemLab || {
         };
         window.addEventListener('resize', handleResize);
         return function() { window.removeEventListener('resize', handleResize); };
-      }, [shape, dims, shapeColor, wireframe, opacity, theme]);
+      }, [shape, dims, shapeColor, wireframe, opacity, theme, mode, JSON.stringify(construction)]);
 
       // Cleanup on unmount
       React.useEffect(function() {
@@ -767,6 +1155,30 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
           h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-500 flex items-center gap-2' },
             '\uD83D\uDD37 Geometry Sandbox'
+          ),
+          // \u2500\u2500 v2: Mode toggle (Single shape \u2194 Dimensional stretch) \u2500\u2500
+          h('div', { className: 'flex items-center gap-1 bg-slate-800/60 rounded-full p-1 border border-slate-700', role: 'tablist', 'aria-label': 'Geometry mode' },
+            h('button', {
+              role: 'tab',
+              'aria-selected': mode === 'single',
+              onClick: function() {
+                upd('mode', 'single');
+                if (announceToSR) announceToSR('Single shape mode');
+              },
+              className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
+                (mode === 'single' ? 'bg-sky-600 text-white shadow' : 'text-slate-300 hover:text-slate-100')
+            }, '\uD83D\uDCE6 Single shape'),
+            h('button', {
+              role: 'tab',
+              'aria-selected': mode === 'stretch',
+              onClick: function() {
+                upd('mode', 'stretch');
+                if (announceToSR) announceToSR('Dimensional stretch mode. Place a point and stretch it into higher dimensions.');
+              },
+              title: 'HandWaver-inspired: build by stretching point \u2192 line \u2192 plane \u2192 solid',
+              className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
+                (mode === 'stretch' ? 'bg-purple-600 text-white shadow' : 'text-slate-300 hover:text-slate-100')
+            }, '\uD83D\uDCD0 Stretch mode')
           ),
           h('div', { className: 'flex gap-2 flex-wrap' },
             h('button', { 'aria-label': 'Challenge',
@@ -835,8 +1247,8 @@ window.StemLab = window.StemLab || {
           // === LEFT SIDEBAR ===
           h('div', { style: { width: '260px', maxHeight: '520px', overflowY: 'auto', flexShrink: 0 }, className: 'flex flex-col gap-3' },
 
-            // Shape palette
-            h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
+            // Shape palette (single-shape mode only)
+            mode === 'single' && h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
               h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, 'Shapes'),
               h('div', { className: 'grid grid-cols-4 gap-1.5' },
                 shapes.map(function(s) {
@@ -854,8 +1266,111 @@ window.StemLab = window.StemLab || {
               )
             ),
 
-            // Property sliders
-            h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
+            // ── v2: STRETCH MODE PANEL — the HandWaver-inspired workflow ──
+            mode === 'stretch' && h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/30 rounded-xl p-3 border border-purple-500/40 space-y-3' },
+              h('div', { className: 'text-xs font-bold text-purple-200 uppercase tracking-wider' }, '📐 Dimensional Stretch Builder'),
+              h('p', { className: 'text-[11px] text-purple-200/80 leading-relaxed' },
+                'Build geometry by stretching a point into a line, a line into a plane, and a plane into a solid. Each stretch adds a new object to the scene.'
+              ),
+              // Step 1: Place point
+              h('button', {
+                onClick: function() { addPoint([0, 0, 0]); },
+                'aria-label': 'Add a point at origin',
+                className: 'w-full px-3 py-2 rounded-lg text-xs font-bold bg-purple-600 text-white hover:bg-purple-700 transition-all shadow-md'
+              }, '⊙ Place point at origin'),
+              // Stretch axis selector
+              h('div', null,
+                h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' }, 'Stretch axis:'),
+                h('div', { className: 'flex gap-1', role: 'radiogroup', 'aria-label': 'Stretch axis' },
+                  STRETCH_AXES.map(function(ax) {
+                    var active = stretchAxis === ax.id;
+                    return h('button', {
+                      key: 'ax-' + ax.id,
+                      role: 'radio',
+                      'aria-checked': active,
+                      onClick: function() { upd('stretchAxis', ax.id); },
+                      style: { borderColor: active ? ax.color : 'transparent' },
+                      className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold border-2 ' +
+                        (active ? 'bg-slate-700 text-white' : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700')
+                    }, ax.id.toUpperCase());
+                  })
+                )
+              ),
+              // Stretch length
+              h('div', null,
+                h('div', { className: 'flex justify-between text-[11px] font-bold text-purple-200 mb-1' },
+                  h('span', null, 'Length'),
+                  h('span', { className: 'text-purple-300 font-mono' }, stretchLength.toFixed(1) + ' ' + unitDef.short)
+                ),
+                h('input', {
+                  type: 'range', min: '0.5', max: '8', step: '0.5',
+                  value: stretchLength,
+                  onChange: function(e) { upd('stretchLength', parseFloat(e.target.value)); },
+                  'aria-label': 'Stretch length',
+                  className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500'
+                })
+              ),
+              // Stretch button (context label changes based on selection)
+              (function() {
+                var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
+                var label = 'Select an object first';
+                var enabled = false;
+                if (sel) {
+                  if (sel.type === 'point')         { label = 'Stretch point → segment (1D)'; enabled = true; }
+                  else if (sel.type === 'segment')  { label = 'Stretch segment → rectangle (2D)'; enabled = true; }
+                  else if (sel.type === 'rect')     { label = 'Stretch rectangle → prism (3D)'; enabled = true; }
+                  else                              { label = '✓ Already a solid (3D)'; enabled = false; }
+                }
+                return h('button', {
+                  onClick: performStretch,
+                  disabled: !enabled,
+                  'aria-label': label,
+                  className: 'w-full px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
+                    (enabled ? 'bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white hover:from-fuchsia-700 hover:to-purple-700 shadow-md' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
+                }, '⤴ ' + label);
+              })(),
+              // Construction object list
+              construction.objects.length > 0 && h('div', { className: 'border-t border-purple-500/30 pt-2' },
+                h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' }, 'Construction (' + construction.objects.length + ' objects):'),
+                h('div', { className: 'space-y-1 max-h-40 overflow-y-auto' },
+                  construction.objects.map(function(o) {
+                    var isSel = o.id === construction.selection;
+                    var icon = o.type === 'point' ? '⊙' : o.type === 'segment' ? '⎯' : o.type === 'rect' ? '▭' : '⬛';
+                    var label = o.type === 'point' ? 'Point #' + o.id :
+                                o.type === 'segment' ? 'Segment #' + o.id + ' (L = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + ')' :
+                                o.type === 'rect' ? 'Rectangle #' + o.id + ' (A = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + '²)' :
+                                'Prism #' + o.id + ' (V = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + '³)';
+                    return h('button', {
+                      key: 'obj-' + o.id,
+                      onClick: function() { selectObject(o.id); },
+                      'aria-pressed': isSel,
+                      className: 'w-full text-left px-2 py-1 rounded text-[11px] transition-all flex items-center gap-2 ' +
+                        (isSel ? 'bg-fuchsia-600 text-white' : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700')
+                    }, h('span', { className: 'text-base' }, icon), label);
+                  })
+                )
+              ),
+              // Undo + Clear
+              h('div', { className: 'flex gap-2' },
+                h('button', {
+                  onClick: doStretchUndo,
+                  disabled: !history.length,
+                  'aria-label': 'Undo last stretch',
+                  className: 'flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
+                    (history.length ? 'bg-amber-700 text-white hover:bg-amber-800' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
+                }, '↶ Undo (' + history.length + ')'),
+                h('button', {
+                  onClick: clearConstruction,
+                  disabled: !construction.objects.length,
+                  'aria-label': 'Clear all construction objects',
+                  className: 'flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
+                    (construction.objects.length ? 'bg-rose-700 text-white hover:bg-rose-800' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
+                }, '× Clear all')
+              )
+            ),
+
+            // Property sliders (single-shape mode only)
+            mode === 'single' && h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
               h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, 'Properties'),
               currentSliders.map(function(sl) {
                 return h('div', { key: sl.key, className: 'mb-2' },
@@ -918,8 +1433,60 @@ window.StemLab = window.StemLab || {
               )
             ),
 
-            // Measurements (hidden during challenge mode)
-            !gd.challengeMode && h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
+            // ── v2: Real-world unit + save/load shared between modes ──
+            h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50 space-y-2' },
+              h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider' }, '🛠 Tools'),
+              h('div', { className: 'flex items-center gap-1' },
+                h('label', { className: 'text-[11px] text-slate-300 font-bold mr-1' }, 'Units:'),
+                h('select', {
+                  value: unitId,
+                  onChange: function(e) { upd('unitId', e.target.value); if (announceToSR) announceToSR('Unit changed to ' + e.target.options[e.target.selectedIndex].text); },
+                  'aria-label': 'Real-world unit',
+                  className: 'flex-1 text-[11px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200 font-mono'
+                }, GEO_UNITS.map(function(u) {
+                  return h('option', { key: u.id, value: u.id }, u.short + ' — ' + u.long);
+                }))
+              ),
+              mode === 'stretch' && h('div', { className: 'flex gap-1' },
+                h('button', {
+                  onClick: function() {
+                    if (typeof window !== 'undefined' && window.prompt) {
+                      var name = window.prompt('Name this construction:', 'Build ' + new Date().toLocaleDateString());
+                      if (name) saveConstruction(name);
+                    }
+                  },
+                  disabled: !construction.objects.length,
+                  className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold ' +
+                    (construction.objects.length ? 'bg-blue-700 text-white hover:bg-blue-800' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
+                }, '💾 Save'),
+                h('button', {
+                  onClick: function() { upd('showSaved', !showSaved); },
+                  className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold bg-indigo-700 text-white hover:bg-indigo-800'
+                }, '📂 Load (' + Object.keys(savedConstructions).length + ')')
+              ),
+              mode === 'stretch' && showSaved && h('div', { className: 'border-t border-slate-700 pt-2 space-y-1 max-h-40 overflow-y-auto' },
+                Object.keys(savedConstructions).length === 0
+                  ? h('p', { className: 'text-[11px] text-slate-500 italic' }, 'No saved constructions yet.')
+                  : Object.keys(savedConstructions).map(function(name) {
+                      var snap = savedConstructions[name];
+                      return h('div', { key: 'sv-' + name, className: 'flex items-center gap-1 bg-slate-900/60 rounded p-1' },
+                        h('span', { className: 'text-[11px] text-slate-200 flex-1 truncate', title: name }, name),
+                        h('span', { className: 'text-[10px] text-slate-400 font-mono' }, (snap.objects || []).length + ' objs'),
+                        h('button', {
+                          onClick: function() { loadConstruction(name); },
+                          className: 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-700 text-white hover:bg-indigo-800'
+                        }, 'Load'),
+                        h('button', {
+                          onClick: function() { if (window.confirm && window.confirm('Delete "' + name + '"?')) deleteConstruction(name); },
+                          className: 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-700 text-white hover:bg-rose-800'
+                        }, '×')
+                      );
+                    })
+              )
+            ),
+
+            // Measurements (hidden during challenge mode AND stretch mode — stretch has its own readouts in the object list)
+            !gd.challengeMode && mode === 'single' && h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
               h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, '\uD83D\uDCCF Measurements'),
               h('div', { className: 'space-y-1.5' },
                 // Volume with formula
@@ -990,13 +1557,61 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'absolute bottom-2 right-2 text-[11px] text-slate-600 bg-slate-900/80 px-2 py-1 rounded-md' },
               '\uD83D\uDDB1\uFE0F Drag: rotate \u2022 Scroll: zoom \u2022 Right-click: pan'
             ),
-            // Shape name overlay
+            // Shape name overlay (single mode) \u2014 or construction summary (stretch mode)
             h('div', { className: 'absolute top-2 left-2 text-xs font-bold text-sky-300 bg-slate-900/80 px-2 py-1 rounded-md' },
-              m.name
+              mode === 'stretch'
+                ? '\uD83D\uDCD0 ' + construction.objects.length + ' object' + (construction.objects.length === 1 ? '' : 's') + ' in scene'
+                : m.name
             ),
+            // \u2500\u2500 v2: Floating measurement label for the selected stretch object \u2500\u2500
+            // Acts as the "label on the geometry" \u2014 when you select a point/segment/rect/prism
+            // its dimensions appear here in a glowing pill. Replaces a true 3D-projected
+            // label (which would require additional Three.js setup) with a viewport-anchored
+            // panel that shows the same information accessibly.
+            mode === 'stretch' && construction.selection && (function() {
+              var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
+              if (!sel) return null;
+              var lines = [];
+              if (sel.type === 'point') {
+                lines.push('\u2299 Point #' + sel.id);
+                lines.push('Position: (' + sel.position.map(function(c) { return c.toFixed(1); }).join(', ') + ')');
+                lines.push('Dimension: 0D');
+              } else if (sel.type === 'segment') {
+                lines.push('\u23AF Segment #' + sel.id);
+                lines.push('Length: ' + objectVolume(sel).toFixed(2) + ' ' + unitDef.short);
+                lines.push('Dimension: 1D');
+              } else if (sel.type === 'rect') {
+                lines.push('\u25AD Rectangle #' + sel.id);
+                var uLen = Math.sqrt(sel.u[0]*sel.u[0] + sel.u[1]*sel.u[1] + sel.u[2]*sel.u[2]);
+                var vLen = Math.sqrt(sel.v[0]*sel.v[0] + sel.v[1]*sel.v[1] + sel.v[2]*sel.v[2]);
+                lines.push('Sides: ' + uLen.toFixed(2) + ' \u00D7 ' + vLen.toFixed(2) + ' ' + unitDef.short);
+                lines.push('Area: ' + objectVolume(sel).toFixed(2) + ' ' + unitDef.short + '\u00B2');
+                lines.push('Dimension: 2D');
+              } else if (sel.type === 'prism') {
+                lines.push('\u2B1B Prism #' + sel.id);
+                var uLen2 = Math.sqrt(sel.u[0]*sel.u[0] + sel.u[1]*sel.u[1] + sel.u[2]*sel.u[2]);
+                var vLen2 = Math.sqrt(sel.v[0]*sel.v[0] + sel.v[1]*sel.v[1] + sel.v[2]*sel.v[2]);
+                var wLen = Math.sqrt(sel.w[0]*sel.w[0] + sel.w[1]*sel.w[1] + sel.w[2]*sel.w[2]);
+                lines.push('Edges: ' + uLen2.toFixed(2) + ' \u00D7 ' + vLen2.toFixed(2) + ' \u00D7 ' + wLen.toFixed(2) + ' ' + unitDef.short);
+                lines.push('Volume: ' + objectVolume(sel).toFixed(2) + ' ' + unitDef.short + '\u00B3');
+                lines.push('Dimension: 3D');
+              }
+              return h('div', {
+                className: 'absolute top-12 left-2 text-[11px] text-fuchsia-100 bg-purple-900/90 backdrop-blur-md px-3 py-2 rounded-lg border border-fuchsia-400/40 shadow-lg shadow-fuchsia-600/20',
+                style: { maxWidth: '240px' },
+                role: 'status',
+                'aria-live': 'polite'
+              },
+                lines.map(function(line, i) {
+                  return h('div', { key: i, className: i === 0 ? 'font-bold text-fuchsia-200 mb-1' : 'font-mono text-fuchsia-100/90' }, line);
+                })
+              );
+            })(),
             // Keyboard shortcuts overlay
             h('div', { className: 'absolute top-2 right-2 text-[11px] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-md leading-relaxed' },
-              '1-7: shapes \u2022 C: challenge \u2022 W: wireframe \u2022 E: export \u2022 B: badges \u2022 /: AI'
+              mode === 'single'
+                ? '1-7: shapes \u2022 C: challenge \u2022 W: wireframe \u2022 E: export \u2022 B: badges \u2022 M: mode \u2022 /: AI'
+                : 'M: mode \u2022 U: undo \u2022 B: badges \u2022 /: AI'
             )
           )
         ),

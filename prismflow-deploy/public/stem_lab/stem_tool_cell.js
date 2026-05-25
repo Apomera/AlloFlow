@@ -137,11 +137,18 @@ var d = labToolData.cell;
 
       // ── Sound Effects (Web Audio) ──
       // ── Cell Biology Audio System (singleton context) ──
-      var _cellAC = null;
+      // Bug-fix note: this was previously `var _cellAC = null;` —
+      // declared inside render(), so React re-renders would reset the
+      // "singleton" to null. Each re-trigger (button click after any
+      // unrelated state change) would then create a NEW AudioContext,
+      // orphaning the old one. Browsers cap AudioContexts at ~6 per
+      // page; this leaked them. Backing with useRef preserves the
+      // context across render cycles like a true singleton should.
+      var _cellACRef = React.useRef(null);
       function getCellAC() {
-        if (!_cellAC) { try { _cellAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
-        if (_cellAC && _cellAC.state === 'suspended') { try { _cellAC.resume(); } catch(e) {} }
-        return _cellAC;
+        if (!_cellACRef.current) { try { _cellACRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+        if (_cellACRef.current && _cellACRef.current.state === 'suspended') { try { _cellACRef.current.resume(); } catch(e) {} }
+        return _cellACRef.current;
       }
       function cellTone(freq, dur, type, vol) {
         var ac = getCellAC(); if (!ac) return;
@@ -203,9 +210,15 @@ var d = labToolData.cell;
       };
 
       // ── Ambient petri dish soundscape ──
-      var _cellAmbient = null;
+      // Same useRef pattern as _cellACRef above — was `var _cellAmbient
+      // = null;` which got reset on every render, so startCellAmbient
+      // would happily spin up a brand-new ambient loop (with a fresh
+      // setInterval) on top of the old one whenever the user re-clicked
+      // after a re-render. Result: overlapping ambient noise + leaked
+      // intervals + leaked audio nodes. The ref persists across renders.
+      var _cellAmbientRef = React.useRef(null);
       function startCellAmbient() {
-        if (_cellAmbient) return;
+        if (_cellAmbientRef.current) return;
         var ac = getCellAC(); if (!ac) return;
         try {
           var bufSize = ac.sampleRate * 2;
@@ -218,22 +231,27 @@ var d = labToolData.cell;
           master.gain.linearRampToValueAtTime(0.006, ac.currentTime + 2);
           src.connect(filt); filt.connect(master); master.connect(ac.destination);
           src.start();
-          _cellAmbient = { src: src, master: master };
+          var ambient = { src: src, master: master, filter: filt };
           // Random microscopic bubbles
-          _cellAmbient._interval = setInterval(function() {
+          ambient._interval = setInterval(function() {
             if (Math.random() > 0.6) {
               cellTone(1200 + Math.random() * 800, 0.02, 'sine', 0.02);
             }
           }, 2000 + Math.random() * 3000);
+          _cellAmbientRef.current = ambient;
         } catch(e) {}
       }
       function stopCellAmbient() {
-        if (_cellAmbient) {
-          try { var ac = getCellAC(); if (ac) _cellAmbient.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5); } catch(e) {}
-          if (_cellAmbient._interval) clearInterval(_cellAmbient._interval);
-          var nodes = _cellAmbient;
-          setTimeout(function() { try { nodes.src.stop(); } catch(e) {} }, 600);
-          _cellAmbient = null;
+        var ambient = _cellAmbientRef.current;
+        if (ambient) {
+          try { var ac = getCellAC(); if (ac) ambient.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5); } catch(e) {}
+          if (ambient._interval) clearInterval(ambient._interval);
+          setTimeout(function() {
+            try { if (ambient.src) { ambient.src.stop(); ambient.src.disconnect(); } } catch(e) {}
+            try { if (ambient.filter) ambient.filter.disconnect(); } catch(e) {}
+            try { if (ambient.master) ambient.master.disconnect(); } catch(e) {}
+          }, 600);
+          _cellAmbientRef.current = null;
         }
       }
 

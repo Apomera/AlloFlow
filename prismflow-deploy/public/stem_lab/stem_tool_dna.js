@@ -1174,17 +1174,77 @@ window.StemLab = window.StemLab || {
         var w = W / 2, h2 = H / 2;
         var _tick = 0; var _animId = null;
 
+        var lastPhase = '';
+        var phaseStartTime = Date.now();
+
         function drawCRISPR() {
           ctx2d.clearRect(0, 0, w, h2);
           var baseW = Math.min(24, (w - 80) / dnaSeq.length);
           var startX = (w - dnaSeq.length * baseW) / 2;
-          var midY = h2 / 2;
+          var midY = h2 / 2 - 5;
 
-          ctx2d.fillStyle = '#e2e8f0'; ctx2d.font = 'bold 10px sans-serif'; ctx2d.textAlign = 'left';
-          ctx2d.fillText('CRISPR-Cas9 Gene Editor', 10, 14);
+          if (crisprPhase !== lastPhase) {
+            lastPhase = crisprPhase;
+            phaseStartTime = Date.now();
+          }
+          var elapsed = Date.now() - phaseStartTime;
 
+          var cutSite = selectedPAMSite ? selectedPAMSite.cutSite : 0;
+          
+          // Calculate cut split displacement
+          var displacement = 0;
+          if (crisprPhase === 'cut') {
+            var cutPct = Math.min(1, elapsed / 800);
+            displacement = 22 * cutPct;
+          } else if (crisprPhase === 'done') {
+            var repairPct = Math.min(1, elapsed / 1200);
+            displacement = 22 * (1 - repairPct);
+          }
+
+          ctx2d.fillStyle = '#e2e8f0'; ctx2d.font = 'bold 10px sans-serif'; ctx2d.textAlign = 'left'; ctx2d.textBaseline = 'top';
+          ctx2d.fillText('CRISPR-Cas9 Gene Editor', 10, 10);
+
+          // Draw DNA template & coding backbones in two broken segments
+          ctx2d.strokeStyle = '#94a3b8';
+          ctx2d.lineWidth = 2.5;
+
+          // Segment 1 (Left of cut site)
+          ctx2d.beginPath();
+          for (var i = 0; i < cutSite; i++) {
+            var x = startX + i * baseW + baseW / 2 - displacement;
+            var yOff = Math.sin((i * 0.4) + _tick * 0.015) * 10;
+            if (i === 0) ctx2d.moveTo(x, midY - 16 + yOff); else ctx2d.lineTo(x, midY - 16 + yOff);
+          }
+          ctx2d.stroke();
+
+          ctx2d.beginPath();
+          for (var i = 0; i < cutSite; i++) {
+            var x = startX + i * baseW + baseW / 2 - displacement;
+            var yOff = Math.sin((i * 0.4) + _tick * 0.015) * 10;
+            if (i === 0) ctx2d.moveTo(x, midY + 16 - yOff); else ctx2d.lineTo(x, midY + 16 - yOff);
+          }
+          ctx2d.stroke();
+
+          // Segment 2 (Right of cut site)
+          ctx2d.beginPath();
+          for (var i = cutSite; i < dnaSeq.length; i++) {
+            var x = startX + i * baseW + baseW / 2 + displacement;
+            var yOff = Math.sin((i * 0.4) + _tick * 0.015) * 10;
+            if (i === cutSite) ctx2d.moveTo(x, midY - 16 + yOff); else ctx2d.lineTo(x, midY - 16 + yOff);
+          }
+          ctx2d.stroke();
+
+          ctx2d.beginPath();
+          for (var i = cutSite; i < dnaSeq.length; i++) {
+            var x = startX + i * baseW + baseW / 2 + displacement;
+            var yOff = Math.sin((i * 0.4) + _tick * 0.015) * 10;
+            if (i === cutSite) ctx2d.moveTo(x, midY + 16 - yOff); else ctx2d.lineTo(x, midY + 16 - yOff);
+          }
+          ctx2d.stroke();
+
+          // Draw bases
           for (var i = 0; i < dnaSeq.length; i++) {
-            var x = startX + i * baseW + baseW / 2;
+            var x = startX + i * baseW + baseW / 2 + (i < cutSite ? -displacement : displacement);
             var yOff = Math.sin((i * 0.4) + _tick * 0.015) * 10;
             var base = dnaSeq[i];
             var comp = complementStrand[i];
@@ -1193,57 +1253,199 @@ window.StemLab = window.StemLab || {
             var isGuide = selectedPAMSite && (i >= selectedPAMSite.cutSite - crisprGuideLen && i < selectedPAMSite.cutSite);
             var isCutSite = selectedPAMSite && i === selectedPAMSite.cutSite;
 
-            if (crisprPhase === 'cut' && isCutSite) {
-              ctx2d.strokeStyle = '#ef4444'; ctx2d.lineWidth = 2;
-              ctx2d.setLineDash([4, 2]);
-              ctx2d.beginPath(); ctx2d.moveTo(x, midY - 35 + yOff); ctx2d.lineTo(x, midY + 35 - yOff); ctx2d.stroke();
-              ctx2d.setLineDash([]);
-              ctx2d.fillStyle = '#ef4444'; ctx2d.font = 'bold 8px sans-serif'; ctx2d.textAlign = 'center';
-              ctx2d.fillText('\u2702 CUT', x, midY - 40 + yOff);
-            }
-
+            // Highlight PAM and Guide regions
             if (isPAM) {
-              ctx2d.fillStyle = 'rgba(239,68,68,0.15)';
-              ctx2d.fillRect(x - baseW / 2, midY - 30 + yOff, baseW, 60);
+              ctx2d.fillStyle = 'rgba(239, 68, 68, 0.08)';
+              ctx2d.fillRect(x - baseW / 2, midY - 26 + yOff, baseW, 52);
             } else if (isGuide) {
-              ctx2d.fillStyle = 'rgba(59,130,246,0.1)';
-              ctx2d.fillRect(x - baseW / 2, midY - 30 + yOff, baseW, 60);
+              ctx2d.fillStyle = 'rgba(59, 130, 246, 0.06)';
+              ctx2d.fillRect(x - baseW / 2, midY - 26 + yOff, baseW, 52);
             }
 
-            ctx2d.fillStyle = isPAM ? '#ef4444' : isGuide ? '#3b82f6' : (BASE_COLORS[base] || '#888');
-            ctx2d.beginPath(); ctx2d.arc(x, midY - 16 + yOff, baseW * 0.35, 0, Math.PI * 2); ctx2d.fill();
+            // Hydrogen bonds
+            if (!(crisprPhase === 'cut' && isCutSite)) {
+              ctx2d.setLineDash([2, 2]);
+              ctx2d.strokeStyle = 'rgba(148, 163, 184, 0.3)';
+              ctx2d.beginPath();
+              ctx2d.moveTo(x, midY - 16 + yOff + baseW * 0.35);
+              ctx2d.lineTo(x, midY + 16 - yOff - baseW * 0.35);
+              ctx2d.stroke();
+              ctx2d.setLineDash([]);
+            }
+
+            // NHEJ Flashing mutation at cut site during done animation
+            var isNHEJFlashing = (crisprPhase === 'done' && crisprRepairType === 'nhej' && elapsed >= 400 && elapsed < 1000 && i === cutSite);
+
+            if (isNHEJFlashing) {
+              var flashBases = ['A', 'T', 'G', 'C'];
+              base = flashBases[Math.floor(_tick / 4) % 4];
+              comp = BASE_COMPLEMENT[base] || 'A';
+              ctx2d.fillStyle = '#f59e0b';
+            } else {
+              ctx2d.fillStyle = isPAM ? '#ef4444' : isGuide ? '#3b82f6' : (BASE_COLORS[base] || '#888');
+            }
+
+            // Draw 3D Base Spheres
+            var r = baseW * 0.35;
+            var baseColor = ctx2d.fillStyle;
+            var darkColor = isNHEJFlashing ? '#b45309' : (isPAM ? '#991b1b' : isGuide ? '#1e3a8a' : (BASE_DARK_COLORS[dnaSeq[i]] || '#444'));
+
+            // Top sphere
+            var gradTop = ctx2d.createRadialGradient(x - r*0.3, midY - 16 + yOff - r*0.3, r*0.1, x, midY - 16 + yOff, r);
+            gradTop.addColorStop(0, '#ffffff');
+            gradTop.addColorStop(0.3, baseColor);
+            gradTop.addColorStop(1, darkColor);
+            ctx2d.fillStyle = gradTop;
+            ctx2d.beginPath(); ctx2d.arc(x, midY - 16 + yOff, r, 0, Math.PI * 2); ctx2d.fill();
             ctx2d.fillStyle = '#fff'; ctx2d.font = 'bold ' + Math.max(7, baseW * 0.45) + 'px monospace'; ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
             ctx2d.fillText(base, x, midY - 16 + yOff);
 
-            ctx2d.setLineDash([2, 2]); ctx2d.strokeStyle = isCutSite && crisprPhase === 'cut' ? 'rgba(239,68,68,0.3)' : 'rgba(148,163,184,0.4)';
-            ctx2d.beginPath(); ctx2d.moveTo(x, midY - 16 + yOff + baseW * 0.35); ctx2d.lineTo(x, midY + 16 - yOff - baseW * 0.35); ctx2d.stroke();
-            ctx2d.setLineDash([]);
+            // Bottom sphere
+            if (isNHEJFlashing) {
+              ctx2d.fillStyle = '#f59e0b';
+            } else {
+              ctx2d.fillStyle = isPAM ? '#ef4444' : isGuide ? '#3b82f6' : (BASE_COLORS[comp] || '#888');
+            }
+            var compColor = ctx2d.fillStyle;
+            var compDarkColor = isNHEJFlashing ? '#b45309' : (isPAM ? '#991b1b' : isGuide ? '#1e3a8a' : (BASE_DARK_COLORS[complementStrand[i]] || '#444'));
 
-            ctx2d.fillStyle = isPAM ? '#ef4444' : isGuide ? '#3b82f6' : (BASE_COLORS[comp] || '#888');
-            ctx2d.beginPath(); ctx2d.arc(x, midY + 16 - yOff, baseW * 0.35, 0, Math.PI * 2); ctx2d.fill();
-            ctx2d.fillStyle = '#fff'; ctx2d.fillText(comp, x, midY + 16 - yOff);
+            var gradBot = ctx2d.createRadialGradient(x - r*0.3, midY + 16 - yOff - r*0.3, r*0.1, x, midY + 16 - yOff, r);
+            gradBot.addColorStop(0, '#ffffff');
+            gradBot.addColorStop(0.3, compColor);
+            gradBot.addColorStop(1, compDarkColor);
+            ctx2d.fillStyle = gradBot;
+            ctx2d.beginPath(); ctx2d.arc(x, midY + 16 - yOff, r, 0, Math.PI * 2); ctx2d.fill();
+            ctx2d.fillStyle = '#fff';
+            ctx2d.fillText(comp, x, midY + 16 - yOff);
+
+            // Scissor line during cut phase
+            if (crisprPhase === 'cut' && isCutSite) {
+              ctx2d.strokeStyle = '#ef4444'; ctx2d.lineWidth = 1.5;
+              ctx2d.setLineDash([3, 2]);
+              ctx2d.beginPath(); ctx2d.moveTo(x, midY - 32 + yOff); ctx2d.lineTo(x, midY + 32 - yOff); ctx2d.stroke();
+              ctx2d.setLineDash([]);
+              ctx2d.fillStyle = '#ef4444'; ctx2d.font = 'bold 7px sans-serif';
+              ctx2d.fillText('\u2702 CUT', x, midY - 36 + yOff);
+            }
           }
 
+          // ─── GUIDE RNA DOCKING ───
+          if (selectedPAMSite && (crisprPhase === 'scanning' || crisprPhase === 'cut')) {
+            // Draw Guide RNA backbone
+            ctx2d.strokeStyle = 'rgba(59, 130, 246, 0.8)';
+            ctx2d.lineWidth = 1.5;
+            ctx2d.shadowColor = '#3b82f6';
+            ctx2d.shadowBlur = 6;
+            ctx2d.beginPath();
+            var first = true;
+            for (var i = selectedPAMSite.cutSite - crisprGuideLen; i < selectedPAMSite.cutSite; i++) {
+              var x = startX + i * baseW + baseW / 2 + (i < cutSite ? -displacement : displacement);
+              var yOff = Math.sin((i * 0.4) + _tick * 0.015) * 10;
+              var gy = midY - 4 + yOff;
+              if (first) { ctx2d.moveTo(x, gy); first = false; }
+              else ctx2d.lineTo(x, gy);
+            }
+            ctx2d.stroke();
+            ctx2d.shadowBlur = 0;
+
+            // Draw gRNA bases
+            for (var i = selectedPAMSite.cutSite - crisprGuideLen; i < selectedPAMSite.cutSite; i++) {
+              var x = startX + i * baseW + baseW / 2 + (i < cutSite ? -displacement : displacement);
+              var yOff = Math.sin((i * 0.4) + _tick * 0.015) * 10;
+              var gy = midY - 4 + yOff;
+              var rnaBase = DNA_TO_RNA[dnaSeq[i]];
+
+              ctx2d.fillStyle = 'rgba(59, 130, 246, 0.95)';
+              ctx2d.beginPath();
+              ctx2d.arc(x, gy, baseW * 0.22, 0, Math.PI * 2);
+              ctx2d.fill();
+
+              ctx2d.fillStyle = '#fff';
+              ctx2d.font = 'bold 5px monospace';
+              ctx2d.fillText(rnaBase, x, gy);
+            }
+          }
+
+          // ─── CAS9 ENVELOPE MOLECULAR GRAPHICS ───
           var cas9Pos = crisprPhase === 'scanning' ? crisprScanPos : (selectedPAMSite ? selectedPAMSite.cutSite : 0);
           if (crisprPhase === 'scanning' || crisprPhase === 'cut') {
             var cas9X = startX + cas9Pos * baseW + baseW / 2;
             var cas9Y = midY;
-            ctx2d.fillStyle = 'rgba(168,85,247,0.2)';
-            ctx2d.beginPath(); ctx2d.ellipse(cas9X, cas9Y, baseW * 3, 30, 0, 0, Math.PI * 2); ctx2d.fill();
-            ctx2d.strokeStyle = '#7c3aed'; ctx2d.lineWidth = 1.5;
-            ctx2d.beginPath(); ctx2d.ellipse(cas9X, cas9Y, baseW * 3, 30, 0, 0, Math.PI * 2); ctx2d.stroke();
-            ctx2d.fillStyle = '#7c3aed'; ctx2d.font = 'bold 9px sans-serif'; ctx2d.textAlign = 'center';
-            ctx2d.fillText('Cas9', cas9X, cas9Y - 34);
+            var lobeR = baseW * 2.8;
+
+            ctx2d.fillStyle = 'rgba(139, 92, 246, 0.12)';
+            ctx2d.strokeStyle = 'rgba(139, 92, 246, 0.6)';
+            ctx2d.lineWidth = 1.5;
+            ctx2d.beginPath();
+            ctx2d.ellipse(cas9X - baseW * 0.8, cas9Y, lobeR, 28, 0, 0, Math.PI * 2);
+            ctx2d.ellipse(cas9X + baseW * 0.8, cas9Y, lobeR, 28, 0, 0, Math.PI * 2);
+            ctx2d.fill();
+            ctx2d.stroke();
+
+            ctx2d.fillStyle = '#8b5cf6'; ctx2d.font = 'bold 9px sans-serif'; ctx2d.textAlign = 'center';
+            ctx2d.fillText('Cas9 Protein Lobe', cas9X, cas9Y - 33);
+            
             if (crisprPhase === 'cut') {
               ctx2d.fillStyle = '#2563eb'; ctx2d.font = 'bold 7px sans-serif';
-              ctx2d.fillText('gRNA', cas9X - baseW * 2, cas9Y + 38);
+              ctx2d.fillText('gRNA guide', cas9X - baseW * 1.8, cas9Y + 36);
             }
           }
 
-          ctx2d.font = 'bold 8px sans-serif'; ctx2d.textAlign = 'left';
-          ctx2d.fillStyle = '#3b82f6'; ctx2d.fillText('\u25CF Guide RNA target', 10, h2 / 2 + 48);
-          ctx2d.fillStyle = '#ef4444'; ctx2d.fillText('\u25CF PAM site (NGG)', 10, h2 / 2 + 58);
-          ctx2d.fillStyle = '#7c3aed'; ctx2d.fillText('\u25CF Cas9 protein', w - 100, h2 / 2 + 48);
+          // ─── CLEAVAGE PARTICLE SPRAY ───
+          if (crisprPhase === 'cut' && elapsed < 1200) {
+            var xL = startX + (cutSite - 1) * baseW + baseW / 2 - displacement;
+            var xR = startX + cutSite * baseW + baseW / 2 + displacement;
+            var xMid = (xL + xR) / 2;
+            var yMid = midY + Math.sin(((cutSite - 0.5) * 0.4) + _tick * 0.015) * 10;
+
+            ctx2d.fillStyle = 'rgba(245, 158, 11, 0.9)';
+            for (var p = 0; p < 12; p++) {
+              var angle = (p / 12) * Math.PI * 2 + _tick * 0.03;
+              var speedDist = 12 + 28 * Math.sin(p * 55.7) * (elapsed / 1200);
+              var px = xMid + Math.cos(angle) * speedDist;
+              var py = yMid + Math.sin(angle) * speedDist;
+              var size = Math.max(1, 2.5 * (1 - elapsed / 1200));
+              ctx2d.beginPath();
+              ctx2d.arc(px, py, size, 0, Math.PI * 2);
+              ctx2d.fill();
+            }
+          }
+
+          // ─── HDR DONOR DNA TEMPLATE FLOATING ───
+          if (crisprPhase === 'done' && crisprRepairType === 'hdr') {
+            var repairPct = Math.min(1, elapsed / 1200);
+            if (repairPct < 0.5) {
+              var dy = 10 + (repairPct / 0.5) * (midY - 10);
+              var donorX = startX + cutSite * baseW + baseW / 2;
+              
+              ctx2d.strokeStyle = 'rgba(234, 179, 8, 0.8)';
+              ctx2d.lineWidth = 1.5;
+              ctx2d.setLineDash([2, 2]);
+              ctx2d.strokeRect(donorX - 16, dy - 20, 32, 40);
+              ctx2d.setLineDash([]);
+              
+              ctx2d.fillStyle = '#eab308';
+              ctx2d.font = 'bold 7px sans-serif';
+              ctx2d.fillText('Donor DNA Template', donorX, dy - 24);
+            }
+
+            // HDR Suture Glow
+            if (repairPct >= 0.5 && repairPct < 0.9) {
+              var glowX = startX + cutSite * baseW + baseW / 2;
+              var glowYOff = Math.sin((cutSite * 0.4) + _tick * 0.015) * 10;
+              ctx2d.strokeStyle = 'rgba(234, 179, 8, ' + (1 - (repairPct - 0.5) / 0.4) + ')';
+              ctx2d.lineWidth = 3.5;
+              ctx2d.shadowColor = '#eab308';
+              ctx2d.shadowBlur = 12;
+              ctx2d.strokeRect(glowX - 18, midY - 26 + glowYOff, 36, 52);
+              ctx2d.shadowBlur = 0;
+            }
+          }
+
+          ctx2d.font = 'bold 8px sans-serif'; ctx2d.textAlign = 'left'; ctx2d.textBaseline = 'middle';
+          ctx2d.fillStyle = '#3b82f6'; ctx2d.fillText('\u25CF Guide RNA target', 10, h2 - 25);
+          ctx2d.fillStyle = '#ef4444'; ctx2d.fillText('\u25CF PAM site (NGG)', 10, h2 - 13);
+          ctx2d.fillStyle = '#8b5cf6'; ctx2d.fillText('\u25CF Cas9 protein', w - 90, h2 - 25);
 
           _tick++;
           _animId = requestAnimationFrame(drawCRISPR);
@@ -1265,6 +1467,126 @@ window.StemLab = window.StemLab || {
         var logSize = Math.log(Math.max(80, Math.min(850, size)));
         return 35 + 180 * (logMax - logSize) / (logMax - logMin);
       }
+
+      var _forensicCanvasRef = function(cv) {
+        if (window._dnaCleanup.forensicAnim) { window._dnaCleanup.forensicAnim(); window._dnaCleanup.forensicAnim = null; }
+        if (!cv) return;
+        var ctx2d = cv.getContext('2d');
+        if (!ctx2d) return;
+        var W = cv.width = cv.offsetWidth * 2;
+        var H = cv.height = cv.offsetHeight * 2;
+        ctx2d.scale(2, 2);
+        var w = W / 2, h2 = H / 2;
+        var _tick = 0; var _animId = null;
+        var start = Date.now();
+
+        function drawForensics() {
+          ctx2d.clearRect(0, 0, w, h2);
+          
+          var progress = Math.min(1, (Date.now() - start) / 3000); // 3 seconds migration duration
+
+          // Gel background (high-contrast dark indigo)
+          ctx2d.fillStyle = '#0c1322';
+          ctx2d.beginPath();
+          ctx2d.roundRect(15, 10, w - 30, h2 - 20, 8);
+          ctx2d.fill();
+          ctx2d.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+          ctx2d.lineWidth = 1.5;
+          ctx2d.stroke();
+
+          // Electrode labels
+          ctx2d.font = 'bold 7px sans-serif';
+          ctx2d.textAlign = 'center';
+          ctx2d.textBaseline = 'middle';
+          ctx2d.fillStyle = '#ef4444';
+          ctx2d.fillText('- (cathode)', w / 2, 6);
+          ctx2d.fillStyle = '#22c55e';
+          ctx2d.fillText('+ (anode)', w / 2, h2 - 6);
+
+          var wellY = 18;
+
+          // Draw wells (sample loading slots)
+          ctx2d.fillStyle = '#1e293b';
+          [25, 68, 148, 228, 308].forEach(function(wx) {
+            ctx2d.fillRect(wx, wellY, 24, 5);
+          });
+
+          // Draw Ladder label
+          ctx2d.fillStyle = '#64748b';
+          ctx2d.font = 'bold 6.5px sans-serif';
+          ctx2d.fillText('Ladder', 37, 13);
+
+          // Draw Ladder bands
+          var ladderSizes = [100, 200, 300, 400, 500, 600, 700];
+          ladderSizes.forEach(function(size) {
+            var finalY = bandY(size);
+            var logMin = Math.log(80), logMax = Math.log(850);
+            var logSize = Math.log(size);
+            var speedFactor = 1.8 - (logSize - logMin) / (logMax - logMin);
+            var currentY = wellY + (finalY - wellY) * Math.min(1, progress * speedFactor);
+
+            ctx2d.fillStyle = 'rgba(245, 158, 11, 0.9)';
+            ctx2d.beginPath();
+            ctx2d.roundRect(28, currentY, 18, 2.5, 0.5);
+            ctx2d.fill();
+
+            // Label text
+            ctx2d.fillStyle = '#64748b';
+            ctx2d.font = '5px sans-serif';
+            ctx2d.textAlign = 'left';
+            ctx2d.fillText(size + 'bp', 50, currentY + 1.25);
+          });
+
+          // Draw Sample lanes
+          currentCase.samples.forEach(function(s, si) {
+            var laneX = 80 + si * 80;
+
+            // Lane label text
+            ctx2d.fillStyle = s.isRef ? '#22d3ee' : '#94a3b8';
+            ctx2d.font = 'bold 6.5px sans-serif';
+            ctx2d.textAlign = 'center';
+            ctx2d.fillText(s.label, laneX, 13);
+
+            s.fragments.forEach(function(frag) {
+              var finalY = bandY(frag);
+              var logMin = Math.log(80), logMax = Math.log(850);
+              var logSize = Math.log(frag);
+              var speedFactor = 1.8 - (logSize - logMin) / (logMax - logMin);
+              var currentY = wellY + (finalY - wellY) * Math.min(1, progress * speedFactor);
+
+              ctx2d.fillStyle = s.isRef ? '#22d3ee' : '#3b82f6';
+              ctx2d.shadowColor = s.isRef ? '#22d3ee' : '#3b82f6';
+              ctx2d.shadowBlur = 4;
+              ctx2d.beginPath();
+              ctx2d.roundRect(laneX - 10, currentY, 20, 2.5, 0.5);
+              ctx2d.fill();
+              ctx2d.shadowBlur = 0;
+            });
+          });
+
+          // Draw rising bubbles in gel lanes
+          if (progress < 1) {
+            ctx2d.fillStyle = 'rgba(255, 255, 255, 0.25)';
+            for (var b = 0; b < 24; b++) {
+              var laneIdx = b % 5;
+              var bx = (laneIdx === 0 ? 37 : 80 + (laneIdx - 1) * 80);
+              var bOffset = Math.sin(b * 12.7 + _tick * 0.08) * 6;
+              var by = h2 - 12 - ((_tick * 1.5 + b * 15) % (h2 - 24));
+              var radius = 0.8 + (b % 3) * 0.4;
+              
+              ctx2d.beginPath();
+              ctx2d.arc(bx + bOffset, by, radius, 0, Math.PI * 2);
+              ctx2d.fill();
+            }
+          }
+
+          _tick++;
+          _animId = requestAnimationFrame(drawForensics);
+        }
+
+        drawForensics();
+        window._dnaCleanup.forensicAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+      };
 
       function checkForensicAnswer() {
         if (forensicGuess == null) return;
@@ -2142,38 +2464,8 @@ window.StemLab = window.StemLab || {
             // Run gel button
             !forensicGelRun && h("button", { onClick: function() { upd('forensicGelRun', true); addToast('\u26A1 Running gel electrophoresis...', 'success'); }, className: "px-4 py-2 text-sm font-bold bg-cyan-700 text-white rounded-xl hover:bg-cyan-700 shadow-md transition-all" }, '\u26A1 Run Gel Electrophoresis'),
 
-            // Gel visualization (SVG)
             forensicGelRun && h("div", { className: "space-y-3" },
-              h("svg", { viewBox: '0 0 400 240', className: "w-full bg-slate-900 rounded-xl", style: { maxHeight: 280 }, 'aria-label': 'Gel electrophoresis results' },
-                // Gel background
-                h("rect", { x: 15, y: 10, width: 370, height: 220, fill: '#1a2744', rx: 6 }),
-                // Negative electrode label
-                h("text", { x: 200, y: 8, fill: '#ef4444', fontSize: 7, textAnchor: 'middle', fontWeight: 'bold' }, '\u2212 (cathode)'),
-                // Positive electrode label
-                h("text", { x: 200, y: 238, fill: '#22c55e', fontSize: 7, textAnchor: 'middle', fontWeight: 'bold' }, '+ (anode)'),
-                // Size ladder
-                h("rect", { x: 25, y: 18, width: 24, height: 5, fill: '#334155', rx: 1 }),
-                h("text", { x: 37, y: 16, fill: '#94a3b8', fontSize: 7, textAnchor: 'middle' }, 'Ladder'),
-                [100, 200, 300, 400, 500, 600, 700].map(function(size) {
-                  var y = bandY(size);
-                  return h("g", { key: 'l' + size },
-                    h("rect", { x: 28, y: y, width: 18, height: 2.5, fill: '#f59e0b', rx: 0.5, opacity: 0.85 }),
-                    h("text", { x: 50, y: y + 2, fill: '#94a3b8', fontSize: 5.5 }, size + 'bp')
-                  );
-                }),
-                // Sample lanes
-                currentCase.samples.map(function(s, si) {
-                  var laneX = 80 + si * 80;
-                  return h("g", { key: 'lane' + si },
-                    h("rect", { x: laneX - 12, y: 18, width: 24, height: 5, fill: '#334155', rx: 1 }),
-                    h("text", { x: laneX, y: 16, fill: s.isRef ? '#22d3ee' : '#94a3b8', fontSize: 6, textAnchor: 'middle', fontWeight: s.isRef ? 'bold' : 'normal' }, s.label),
-                    s.fragments.map(function(frag, fi) {
-                      var y = bandY(frag);
-                      return h("rect", { key: fi, x: laneX - 10, y: y, width: 20, height: 3, fill: s.isRef ? '#22d3ee' : '#60a5fa', rx: 1, opacity: 0.9 });
-                    })
-                  );
-                })
-              ),
+              h("canvas", { ref: _forensicCanvasRef, style: { width: '100%', height: 240 }, tabIndex: 0, 'aria-label': 'Gel electrophoresis results' }),
 
               // Answer selection
               !forensicResult && h("div", { className: "space-y-2" },

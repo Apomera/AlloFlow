@@ -3245,6 +3245,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }
 
       var d = (ctx.toolData && ctx.toolData['roadReady']) || {};
+      // Live ref to `d` for the continuous simulation loop. The main
+      // useEffect's deps are [view, selectedScenario, selectedVehicle]
+      // but the loop body reads d.freeExplore, d.rideshareMode, d.badges,
+      // d.completedTrips, d.freeExploreScenario, d.coachMode, etc. —
+      // toggles to any of those go silently ignored because the loop's
+      // closure captures the value at mount. Updating dataRef each
+      // render lets the loop read live values via dataRef.current.X
+      // without tearing the simulation down on every toggle.
+      var dataRef = React.useRef(d);
+      dataRef.current = d;
       var upd = function(key, val) { ctx.update('roadReady', key, val); };
       var updMulti = function(obj) { ctx.updateMulti ? ctx.updateMulti('roadReady', obj) : Object.keys(obj).forEach(function(k) { upd(k, obj[k]); }); };
       // Hydrate persisted state from localStorage on first render only. Gated by a ref so
@@ -4762,6 +4772,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }, [currentScenario, currentVehicle]);
 
       // ── Main simulation loop ──
+      // Loop deps deliberately limited to [view, selectedScenario,
+      // selectedVehicle]. Per-frame state reads use dataRef.current (see
+      // shadow inside the `step` function below) so toggling free-explore,
+      // rideshare, coach mode, etc. does NOT tear down the simulation.
       useEffect(function() {
         if (view !== 'driving') return;
         var canvas = canvasRef.current;
@@ -4825,6 +4839,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         var step = function(now) {
           if (!drivingRef.current) return;
+          // Shadow closure-captured `d` with the live ref every frame so
+          // toggles to free-explore / rideshare / coach / badge state
+          // take effect immediately. Without this shadow, ~10 d.X reads
+          // throughout this loop saw the mount-time values forever.
+          var d = dataRef.current;
           var dt = Math.min(0.1, (now - lastT) / 1000);
           lastT = now;
           pollGamepad();

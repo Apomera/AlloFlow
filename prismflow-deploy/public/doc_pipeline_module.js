@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -2558,6 +2558,186 @@ var createDocPipeline = function(deps) {
     }
   };
 
+  // ── Tier 8: extract PDF tag structure ──
+  // Modern tagged PDFs (textbook exports, gov docs, well-prepared LMS exports)
+  // ship a logical structure tree (H1/H2/P/Table/Figure/etc.). pdf.js exposes
+  // this via page.getStructTree(). The tree nodes don't carry text directly —
+  // their leaf children are marked-content references (`{type: 'content', id}`)
+  // that we resolve against page.getTextContent({ includeMarkedContent: true }).
+  // Result: real heading text the AI prompt + axe-baseline HTML can use.
+  const extractPdfStructTree = async (base64) => {
+    try {
+      await ensurePdfJsLoaded();
+      if (!window.pdfjsLib) return { hasTags: false };
+      const raw = base64.includes(',') ? base64.split(',')[1] : base64;
+      const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+      const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+      const roleCounts = {};
+      const headings = []; // { level, text, page }
+      let altWithText = 0;
+      let altMissing = 0;
+      let anyTagsFound = false;
+
+      // Collect every marked-content ID under `node` (recursive), so a heading
+      // wrapping multiple text runs assembles its full text.
+      const _collectMcids = (node, acc) => {
+        if (!node || typeof node !== 'object') return acc;
+        if (Array.isArray(node.children)) {
+          node.children.forEach(c => {
+            if (!c) return;
+            if (typeof c === 'object' && c.type === 'content' && c.id != null) {
+              acc.push(String(c.id));
+            } else if (typeof c === 'object' && c.role) {
+              _collectMcids(c, acc);
+            }
+          });
+        }
+        return acc;
+      };
+
+      for (let p = 1; p <= pdf.numPages; p++) {
+        const page = await pdf.getPage(p);
+        let structTree = null;
+        try { structTree = await page.getStructTree(); } catch (_) { continue; }
+        if (!structTree) continue;
+
+        // Build MCID → text map for this page. Pages without tagged content
+        // produce an empty map, which is fine — heading text just stays empty.
+        const mcidToText = {};
+        try {
+          const tc = await page.getTextContent({ includeMarkedContent: true });
+          let stack = [];
+          (tc.items || []).forEach(item => {
+            if (!item) return;
+            if (item.type === 'beginMarkedContent' || item.type === 'beginMarkedContentProps') {
+              if (item.id != null) stack.push(String(item.id));
+              else stack.push(null);
+            } else if (item.type === 'endMarkedContent') {
+              stack.pop();
+            } else if (item.str != null && stack.length > 0) {
+              const top = stack[stack.length - 1];
+              if (top != null) mcidToText[top] = (mcidToText[top] || '') + item.str + ' ';
+            }
+          });
+        } catch (_) { /* no marked content on this page */ }
+
+        const _walk = (node) => {
+          if (!node || typeof node !== 'object') return;
+          if (node.role) {
+            anyTagsFound = true;
+            roleCounts[node.role] = (roleCounts[node.role] || 0) + 1;
+            const m = /^H([1-6]?)$/.exec(node.role);
+            if (m) {
+              const level = m[1] ? parseInt(m[1], 10) : 1;
+              const mcids = _collectMcids(node, []);
+              const text = mcids.map(id => mcidToText[id] || '').join('').replace(/\s+/g, ' ').trim().slice(0, 300);
+              if (text) headings.push({ level, text, page: p });
+            }
+            if (node.role === 'Figure' || node.role === 'Image') {
+              if (typeof node.alt === 'string' && node.alt.trim()) altWithText++;
+              else altMissing++;
+            }
+          }
+          if (Array.isArray(node.children)) {
+            node.children.forEach(c => { if (c && typeof c === 'object' && c.role) _walk(c); });
+          }
+        };
+        _walk(structTree);
+      }
+
+      return {
+        hasTags: anyTagsFound,
+        roleCounts,
+        headings: headings.slice(0, 100),
+        headingCount: headings.length,
+        altTextPresent: altWithText,
+        altTextMissing: altMissing,
+        pageCount: pdf.numPages,
+      };
+    } catch (e) {
+      warnLog('[PDF StructTree] extraction failed:', e?.message || e);
+      return { hasTags: false, error: e?.message || String(e) };
+    }
+  };
+
+  // ── Tier 8 follow-up: build heading-aware HTML from extracted text + struct tree ──
+  // When the source PDF ships H1/H2/H3 tags, axe-baseline should see real <h1>
+  // elements rather than a wall of <p>. We splice the heading texts into the
+  // extracted text by string match, wrap them at the correct level, and emit
+  // the surrounding paragraphs as <p>. Falls back to all-flat-p when:
+  //   - structTree is empty / hasTags=false
+  //   - no headings have non-empty text
+  //   - none of the heading texts can be located in the extracted text
+  // The escape() pass guarantees axe runs on valid markup.
+  const buildHtmlFromStructTree = (structTree, fullText) => {
+    const _esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const _paras = (s) => {
+      return String(s || '').split(/\n\n+/).map(p => p.replace(/\s+/g, ' ').trim()).filter(Boolean).map(p => '<p>' + _esc(p) + '</p>').join('\n');
+    };
+    const _flatFallback = () => _paras(fullText);
+
+    if (!structTree || !structTree.hasTags || !Array.isArray(structTree.headings)) return _flatFallback();
+    const headings = structTree.headings.filter(h => h && h.text && typeof h.level === 'number');
+    if (headings.length === 0) return _flatFallback();
+    if (!fullText) {
+      // No body text — at least emit the heading scaffold.
+      return headings.map(h => `<h${Math.min(Math.max(h.level, 1), 6)}>${_esc(h.text)}</h${Math.min(Math.max(h.level, 1), 6)}>`).join('\n');
+    }
+
+    // Normalize for matching: collapse whitespace and lowercase. We keep the
+    // original-cased text for emission so the heading reads naturally.
+    const _norm = (s) => String(s || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    const fullNorm = _norm(fullText);
+
+    let html = '';
+    let cursor = 0; // index into the ORIGINAL fullText
+    let cursorNorm = 0; // index into normalized fullText (kept in lockstep)
+    let matchedAny = false;
+
+    for (const h of headings) {
+      const headingText = h.text;
+      const headingNorm = _norm(headingText);
+      if (!headingNorm) continue;
+      const idxNorm = fullNorm.indexOf(headingNorm, cursorNorm);
+      if (idxNorm === -1) {
+        // Heading wasn't found further in the text; emit standalone (no body
+        // chunk consumed). This preserves heading scaffold even when extracted
+        // text was noisy.
+        html += `<h${Math.min(Math.max(h.level, 1), 6)}>${_esc(headingText)}</h${Math.min(Math.max(h.level, 1), 6)}>\n`;
+        continue;
+      }
+      matchedAny = true;
+      // Translate normalized index back to original-text index: walk the
+      // original text consuming non-whitespace chars to align with normalized.
+      // Cheap approximation: count non-space chars up to idxNorm and find that
+      // many in the original starting from cursor.
+      const target = idxNorm - cursorNorm; // chars to skip in normalized window
+      let origIdx = cursor;
+      let skipped = 0;
+      while (origIdx < fullText.length && skipped < target) {
+        const ch = fullText[origIdx];
+        if (!/\s/.test(ch) || (skipped > 0 && fullText[origIdx - 1] && !/\s/.test(fullText[origIdx - 1]))) {
+          // count this char as contributing to normalized length
+          skipped++;
+        }
+        origIdx++;
+      }
+      const beforeChunk = fullText.slice(cursor, origIdx).trim();
+      if (beforeChunk) html += _paras(beforeChunk) + '\n';
+      html += `<h${Math.min(Math.max(h.level, 1), 6)}>${_esc(headingText)}</h${Math.min(Math.max(h.level, 1), 6)}>\n`;
+      // Advance cursor past the heading (use the heading length in original
+      // text as a rough advance — exact tracking would require char-by-char).
+      cursor = origIdx + headingText.length;
+      cursorNorm = idxNorm + headingNorm.length;
+    }
+
+    // Emit remainder
+    const tail = fullText.slice(cursor).trim();
+    if (tail) html += _paras(tail);
+
+    return matchedAny ? html : _flatFallback();
+  };
+
   // Lazy-load pako (zlib inflate/deflate) for Stage 4 PDF tagging's content-stream
   // surgery. Most PDFs ship their content streams FlateDecode-compressed so per-block
   // BDC/EMC injection requires inflate-edit-deflate. Loaded from CDN only on first
@@ -3124,8 +3304,8 @@ var createDocPipeline = function(deps) {
   const _AUDIT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
   // Bump when the audit prompt changes materially so users get fresh audits
   // instead of stale cached results from old prompts. Format: YYYYMMDD-N.
-  // Last bump: 2026-05-20 (added documentLanguage field + i18n directive).
-  const _PIPELINE_PROMPT_VERSION = '20260520-1';
+  // Last bump: 2026-05-24 (Tier 8 — added pre-extracted tag-tree directive).
+  const _PIPELINE_PROMPT_VERSION = '20260524-1';
   const _sha256Hex = async (str) => {
     try {
       if (typeof crypto === 'undefined' || !crypto.subtle) return null;
@@ -3185,6 +3365,90 @@ var createDocPipeline = function(deps) {
     try { await storageDB.set(key, { result, savedAt: Date.now() }); } catch (_) {}
   };
 
+  // ── Tier 4: Mid-batch resume persistence ──
+  // Split into two IDB stores:
+  //   _ACTIVE_BATCH_FILES_KEY  → heavy payload (base64) + settings, written once at batch start
+  //   _ACTIVE_BATCH_STATUS_KEY → light per-file status/result, rewritten after each completion
+  // This keeps per-completion writes small (a 50-file batch with 5MB/file no
+  // longer rewrites 250MB on every file finish). Load merges the two stores.
+  // Stale entries (>7 days or prompt-version mismatch) auto-invalidate.
+  const _ACTIVE_BATCH_FILES_KEY = 'pdf_active_batch_files_v1';
+  const _ACTIVE_BATCH_STATUS_KEY = 'pdf_active_batch_status_v1';
+  const _ACTIVE_BATCH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  // Strip the heavy base64 + result payloads so the status delta stays tiny.
+  const _toStatusEntry = (f) => ({
+    id: f.id,
+    fileName: f.fileName,
+    status: f.status,
+    error: f.error || null,
+    retried: f.retried || false,
+    // Keep result so cache hits can be replayed on resume without re-running.
+    // The result is order-of-KB (HTML + scores), not order-of-MB like base64.
+    result: f.result || null,
+  });
+  const _saveBatchFiles = async (files, settings, startedAt) => {
+    if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return;
+    try {
+      // Heavy payload: base64 per file + settings. Written once at batch start.
+      await storageDB.set(_ACTIVE_BATCH_FILES_KEY, {
+        files: files.map(f => ({ id: f.id, fileName: f.fileName, fileSize: f.fileSize, base64: f.base64 })),
+        settings,
+        startedAt,
+        promptVersion: _PIPELINE_PROMPT_VERSION,
+        savedAt: Date.now(),
+      });
+    } catch (e) { warnLog('[Batch Resume] saveFiles failed:', e?.message || e); }
+  };
+  const _saveBatchStatus = async (files) => {
+    if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return;
+    try {
+      // Light delta — status + result only. Written after each completion.
+      await storageDB.set(_ACTIVE_BATCH_STATUS_KEY, {
+        statuses: files.map(_toStatusEntry),
+        lastUpdatedAt: Date.now(),
+      });
+    } catch (e) { warnLog('[Batch Resume] saveStatus failed:', e?.message || e); }
+  };
+  const _loadActiveBatch = async () => {
+    if (typeof window === 'undefined' || !window.idbKeyval) return null;
+    try {
+      const filesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (!filesRec || !filesRec.files || !filesRec.savedAt) return null;
+      if (Date.now() - filesRec.savedAt > _ACTIVE_BATCH_TTL_MS) return null;
+      if (filesRec.promptVersion && filesRec.promptVersion !== _PIPELINE_PROMPT_VERSION) return null;
+      const statusRec = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+      const byId = {};
+      (statusRec && statusRec.statuses || []).forEach(s => { byId[s.id] = s; });
+      // Merge: heavy payload from files-store, status/result overlay from status-store.
+      const merged = filesRec.files.map(f => {
+        const s = byId[f.id] || {};
+        return {
+          ...f,
+          status: s.status || 'pending',
+          result: s.result || null,
+          error: s.error || null,
+          retried: s.retried || false,
+        };
+      });
+      const incomplete = merged.filter(f => f.status !== 'done' && f.status !== 'failed').length;
+      const done = merged.filter(f => f.status === 'done').length;
+      return {
+        files: merged,
+        settings: filesRec.settings,
+        startedAt: filesRec.startedAt,
+        _incompleteCount: incomplete,
+        _doneCount: done,
+      };
+    } catch (_) { return null; }
+  };
+  const _clearActiveBatch = async () => {
+    if (typeof window === 'undefined' || !window.idbKeyval) return;
+    try {
+      await storageDB.set(_ACTIVE_BATCH_FILES_KEY, null);
+      await storageDB.set(_ACTIVE_BATCH_STATUS_KEY, null);
+    } catch (_) {}
+  };
+
   // ── PDF Accessibility Audit ──
   const runPdfAccessibilityAudit = async (base64Data, options) => {
     // options: { skipUiUpdates?: boolean, skipCache?: boolean }
@@ -3216,6 +3480,23 @@ var createDocPipeline = function(deps) {
 
     if (!_skipUi) addToast && addToast(`♿ Auditing document (${dataSizeKB > 1024 ? (dataSizeKB / 1024).toFixed(1) + 'MB' : dataSizeKB + 'KB'}) — typically ${estTime}`, 'info');
     try {
+      // ── Tier 8: pre-extract PDF tag structure (cheap; null when untagged) ──
+      // When the source PDF ships a logical structure tree we surface it to
+      // the auditor so it doesn't penalize headings/figures/tables that the
+      // source already encoded correctly. Untagged PDFs short-circuit.
+      let _structTree = { hasTags: false };
+      try { _structTree = await extractPdfStructTree(base64Data); } catch (_) { _structTree = { hasTags: false }; }
+      const _structTreeDirective = _structTree && _structTree.hasTags
+        ? (() => {
+            const rc = _structTree.roleCounts || {};
+            const summary = Object.entries(rc).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([r, n]) => `${r}×${n}`).join(', ');
+            const outline = (_structTree.headings || []).slice(0, 12).map(h => `  H${h.level}: ${h.text}`).join('\n');
+            const altLine = (_structTree.altTextMissing > 0 || _structTree.altTextPresent > 0)
+              ? `\nAlt-text coverage in tag tree: ${_structTree.altTextPresent} present, ${_structTree.altTextMissing} missing (on Figure/Image roles).`
+              : '';
+            return `\n\n═══ PRE-EXTRACTED TAG STRUCTURE ═══\nThis PDF ships a logical structure tree (it is already tagged). Roles found: ${summary}.${altLine}${outline ? `\nHeading outline (first 12):\n${outline}` : ''}\nWhen scoring, GIVE CREDIT for headings/landmarks/tables/figures that the tag tree already encodes. Only penalize if the visible content contradicts the tagging (e.g., a tagged H1 whose text is non-meaningful, a Figure tag missing alt text). Do NOT deduct points for missing heading hierarchy if H1/H2/H3 tags are already present.\n═══════════════════════════════════\n`;
+          })()
+        : '';
       // ── Output-language directive (Tier 3 i18n) ──
       // When the user's UI / leveledTextLanguage is non-English, ask the auditors
       // to write all human-readable findings in that language. JSON keys and WCAG
@@ -3226,7 +3507,7 @@ var createDocPipeline = function(deps) {
         ? `\n\n═══ OUTPUT LANGUAGE ═══\nWrite ALL human-readable field values ("issue", "summary", "passes") in ${_auditOutLang}. Use the locale's standard accessibility / WCAG terminology. JSON keys, WCAG codes (e.g. "1.3.1"), and the "documentLanguage" BCP-47 code stay English/numeric — only translate VALUES that a human will read. The documentLanguage field describes the SOURCE PDF's primary language (not your output language).\n═══════════════════════\n`
         : '';
       // ── Triangulated scoring: run 2 independent audits, average scores, flag discrepancies ──
-      const auditPrompt = `You are a WCAG 2.1 AA accessibility auditor for educational documents. Analyze this PDF for accessibility violations.${_outLangDirective}
+      const auditPrompt = `You are a WCAG 2.1 AA accessibility auditor for educational documents. Analyze this PDF for accessibility violations.${_outLangDirective}${_structTreeDirective}
 
 Check for these specific issues:
 1. STRUCTURE: Missing heading hierarchy, no logical reading order, flat text without sections
@@ -3485,6 +3766,14 @@ Return ONLY valid JSON:
         });
       });
 
+      // Tier 6: attach per-issue auditor agreement so the UI can surface
+      // disagreement (e.g., "2/5 auditors flagged this"). Reuses the same
+      // key derivation as issueFrequency above so the join is exact.
+      const _attachAgreement = (issues) => (issues || []).map(issue => {
+        const k = (issue.issue || '').toLowerCase().substring(0, 40);
+        return { ...issue, auditorAgreement: issueFrequency[k] || 1 };
+      });
+
       const triangulated = {
         score: avgScore,
         scores,
@@ -3501,10 +3790,10 @@ Return ONLY valid JSON:
         summary: scoreRange > 25
           ? `Scores varied significantly (range: ${scoreRange}, SD: ${scoreSD}) across ${n} audits. ${parsedAudits[0].summary}`
           : `${parsedAudits[0].summary} (${n}-auditor consensus, SD: ${scoreSD})`,
-        critical: mergeIssues(...parsedAudits.map(a => a.critical)),
-        serious: mergeIssues(...parsedAudits.map(a => a.serious || a.major)),
-        moderate: mergeIssues(...parsedAudits.map(a => a.moderate)),
-        minor: mergeIssues(...parsedAudits.map(a => a.minor)),
+        critical: _attachAgreement(mergeIssues(...parsedAudits.map(a => a.critical))),
+        serious: _attachAgreement(mergeIssues(...parsedAudits.map(a => a.serious || a.major))),
+        moderate: _attachAgreement(mergeIssues(...parsedAudits.map(a => a.moderate))),
+        minor: _attachAgreement(mergeIssues(...parsedAudits.map(a => a.minor))),
         issueFrequency,
         passes: [...new Set(parsedAudits.flatMap(a => a.passes || []))],
         pageCount: parsedAudits.find(a => a.pageCount)?.pageCount,
@@ -3527,6 +3816,18 @@ Return ONLY valid JSON:
           const sorted = Object.entries(_votes).sort((a, b) => b[1] - a[1]);
           return sorted.length > 0 ? sorted[0][0] : undefined;
         })(),
+        // Tier 8: surface the pre-extracted tag structure so the UI can show
+        // "This PDF ships pre-existing tags" and the remediation phase can
+        // skip work the source already did. Null/empty when untagged.
+        structTree: _structTree && _structTree.hasTags ? {
+          hasTags: true,
+          roleCounts: _structTree.roleCounts,
+          headingCount: _structTree.headingCount,
+          headings: (_structTree.headings || []).slice(0, 20),
+          altTextPresent: _structTree.altTextPresent,
+          altTextMissing: _structTree.altTextMissing,
+          pageCount: _structTree.pageCount,
+        } : { hasTags: false },
         timestamp: new Date().toISOString(),
       };
       if (!_skipUi) setPdfAuditResult(triangulated);
@@ -3536,14 +3837,22 @@ Return ONLY valid JSON:
       if (_cacheKey) { try { _writeAuditCache(_cacheKey, triangulated); } catch (_) {} }
 
       // ── Quick axe-core baseline: extract text deterministically, build minimal HTML, run axe-core ──
-      // Uses the shared extractPdfTextDeterministic helper (reading-order sorted, no truncation)
+      // Uses the shared extractPdfTextDeterministic helper (reading-order sorted, no truncation).
+      // When the source PDF ships a tag tree (Tier 8), we splice its headings
+      // into the minimal HTML so axe-baseline credits the existing structure
+      // instead of penalizing it as missing.
       try {
         // Use the passed-in base64 when skipping UI (batch mode) so we don't read stale pendingPdfBase64 state
         const _base64ForBaseline = _skipUi ? base64Data : pendingPdfBase64;
         const detBaseline = await extractPdfTextDeterministic(_base64ForBaseline);
         const rawText = detBaseline.fullText || '';
-        // Build minimal HTML shell from extracted text
-        const minimalHtml = `<!DOCTYPE html><html><head><title></title></head><body><main>${rawText.split('\n\n').filter(p => p.trim()).map(p => '<p>' + p.replace(/</g, '&lt;') + '</p>').join('\n')}</main></body></html>`;
+        // Tier 8 deep wire: use struct-tree-aware HTML when tags exist; falls
+        // back to flat-paragraph rendering when untagged (same as before).
+        const _structTreeForBaseline = (triangulated.structTree && triangulated.structTree.hasTags) ? triangulated.structTree : null;
+        const bodyHtml = _structTreeForBaseline
+          ? buildHtmlFromStructTree(_structTreeForBaseline, rawText)
+          : rawText.split('\n\n').filter(p => p.trim()).map(p => '<p>' + p.replace(/</g, '&lt;') + '</p>').join('\n');
+        const minimalHtml = `<!DOCTYPE html><html><head><title></title></head><body><main>${bodyHtml}</main></body></html>`;
         const baselineAxe = await runAxeAudit(minimalHtml);
         if (baselineAxe) {
           warnLog(`[PDF Audit] Baseline axe-core: score ${baselineAxe.score}, ${baselineAxe.totalViolations} violations`);
@@ -4689,12 +4998,41 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     return { accessibleHtml, beforeScore, afterScore: finalScore, autoFixPasses, needsExpertReview, axeViolations: axeViolationCount, elapsed, docStyle: batchDocStyle };
   };
 
-  const runPdfBatchRemediation = async () => {
-    if (pdfBatchQueue.length === 0) return;
+  const runPdfBatchRemediation = async (opts) => {
+    // opts.resumeQueue — optional explicit queue (Tier 4 resume path).
+    // When provided, bypasses the state proxy entirely so the loop never
+    // races with React's commit cycle after a setPdfBatchQueue from the
+    // Resume banner. Falls back to the proxy queue for the normal flow.
+    const _resumeQueue = opts && Array.isArray(opts.resumeQueue) ? opts.resumeQueue : null;
+    const _sourceQueue = _resumeQueue || pdfBatchQueue;
+    if (!_sourceQueue || _sourceQueue.length === 0) return;
+    // If caller passed a resumeQueue, sync it into React state so the UI
+    // reflects what the loop is actually processing.
+    if (_resumeQueue) {
+      setPdfBatchQueue(_resumeQueue);
+    }
     setPdfBatchProcessing(true);
     setPdfBatchSummary(null);
-    const queue = [...pdfBatchQueue];
+    const queue = [..._sourceQueue];
     const startTime = Date.now();
+
+    // ── Tier 4: persist batch state so a closed tab can be resumed ──
+    // Two-store split: heavy payload (base64) written once at start;
+    // light status delta rewritten after each file completion.
+    const _batchSettings = {
+      pdfAuditorCount,
+      leveledTextLanguage,
+      pdfTargetScore,
+      pdfAutoFixPasses,
+      pdfPolishPasses,
+    };
+    const _persistBatchStatus = () => {
+      // Fire-and-forget — never block the loop on storage writes.
+      _saveBatchStatus(queue).catch(() => {});
+    };
+    // One-time heavy write at start
+    _saveBatchFiles(queue, _batchSettings, startTime).catch(() => {});
+    _persistBatchStatus();
 
     // Batch AbortController — separate global from auto-continue so the Stop
     // Batch button doesn't interfere with a single-file auto-continue run if
@@ -4759,6 +5097,12 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         setPdfBatchStep('Stopped by user · ' + i + '/' + queue.length + ' processed');
         break;
       }
+      // Tier 4 resume: skip files already marked done in a restored batch.
+      // Failed files still re-run (the existing retry pass handles them).
+      if (queue[i] && queue[i].status === 'done' && queue[i].result) {
+        warnLog(`[Batch] Skipping ${queue[i].fileName} — already completed in restored batch`);
+        continue;
+      }
       setPdfBatchCurrentIndex(i);
       const item = queue[i];
       setPdfBatchStep(`Processing ${i + 1}/${queue.length}: ${item.fileName}`);
@@ -4773,6 +5117,8 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         queue[i] = { ...item, status: 'failed', error: err.message };
         setPdfBatchQueue([...queue]);
       }
+      // Persist after each file so a tab close mid-batch is recoverable.
+      _persistBatchStatus();
 
       if (i < queue.length - 1) {
         setPdfBatchStep('Cooling down before next file...');
@@ -4799,6 +5145,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
           queue[idx] = { ...failedItem, status: 'failed', error: 'Failed after retry: ' + err.message };
           setPdfBatchQueue([...queue]);
         }
+        _persistBatchStatus();
         await new Promise(r => setTimeout(r, 3000));
       }
     }
@@ -4825,6 +5172,18 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     setPdfBatchProcessing(false);
     setPdfBatchCurrentIndex(-1);
     setPdfBatchStep('');
+    // Tier 4: clear persisted batch state once everything that's going to
+    // succeed has succeeded (failures are surfaced in the summary; user can
+    // re-upload to retry). If the loop broke via user abort, leave the state
+    // in place so Resume can pick it up on next page load.
+    if (!_batchAbortCtrl.signal.aborted) {
+      _clearActiveBatch().catch(() => {});
+    } else {
+      // Keep the state, but persist the latest queue (so any in-progress
+      // items show as still pending on resume rather than locked at
+      // 'processing').
+      _persistBatchStatus();
+    }
     // Release batch abort signal so post-batch Gemini calls aren't picked up
     // by a stale aborted controller. Guard against a subsequent run having
     // already overwritten the slot.
@@ -8225,7 +8584,18 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       };
 
       // ── Step 2b: Extract structured content as JSON ──
-      const jsonPrompt = `You are a WCAG 2.1 AA accessibility specialist extracting a PDF into structured, semantically correct HTML content blocks. Your output will be used directly by screen readers, so accuracy matters.
+      // Tier 8 deep wire: when the source PDF ships H1/H2/H3 tags, surface
+      // the heading outline so the AI preserves levels from the source
+      // rather than re-inferring them from visual cues. Untagged PDFs add no
+      // directive (the AI infers as before).
+      const _sourceStruct = _auditResult && _auditResult.structTree;
+      const _sourceHeadingsDirective = (_sourceStruct && _sourceStruct.hasTags && Array.isArray(_sourceStruct.headings) && _sourceStruct.headings.length > 0)
+        ? (() => {
+            const outline = _sourceStruct.headings.slice(0, 30).map(h => `  H${Math.min(Math.max(h.level || 1, 1), 6)}: ${(h.text || '').slice(0, 150)}`).join('\n');
+            return `\n\n═══ SOURCE TAG TREE — PRESERVE THESE HEADING LEVELS ═══\nThis PDF ships a logical structure tree. The headings below were extracted directly from the source's tags. When you emit h1/h2/h3 blocks, MATCH these levels exactly — do not re-infer from font size or visual weight. If a heading in the outline below is missing from your output, the document loses structure that the source explicitly encoded.\n\n${outline}\n═══════════════════════════════════════════════════\n`;
+          })()
+        : '';
+      const jsonPrompt = `You are a WCAG 2.1 AA accessibility specialist extracting a PDF into structured, semantically correct HTML content blocks. Your output will be used directly by screen readers, so accuracy matters.${_sourceHeadingsDirective}
 
 Extract ALL content as a JSON array of content blocks. Each block must be one of these types:
 
@@ -8332,6 +8702,17 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
         const processJsonChunk = async (i) => {
           const startPg = i * TRANSFORM_PAGES + 1;
           const endPg = Math.min((i + 1) * TRANSFORM_PAGES, pageCount);
+          // Tier 8 deep wire: filter source tag-tree headings to those that
+          // fall within this chunk's page range so the AI preserves source
+          // levels per-chunk without context bleed across chunks.
+          const _chunkHeadingsDirective = (_sourceStruct && _sourceStruct.hasTags && Array.isArray(_sourceStruct.headings))
+            ? (() => {
+                const inRange = _sourceStruct.headings.filter(h => h && typeof h.page === 'number' && h.page >= startPg && h.page <= endPg);
+                if (inRange.length === 0) return '';
+                const outline = inRange.slice(0, 20).map(h => `  H${Math.min(Math.max(h.level || 1, 1), 6)}: ${(h.text || '').slice(0, 150)}`).join('\n');
+                return `\n\nSOURCE TAG TREE — pages ${startPg}-${endPg} contain these headings (preserve levels exactly, do not re-infer from font):\n${outline}\n`;
+              })()
+            : '';
           try {
             const chunkResult = await callGeminiVision(
               `Extract ALL content from pages ${startPg} through ${endPg} of this PDF as a JSON array of content blocks.\n\n` +
@@ -8352,8 +8733,9 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               `- Describe all images thoroughly for alt text.\n` +
               `- LEGENDS / KEYS / color-coded references: emit as {"type":"image","description":"<verbatim enumeration of EVERY label visible>"}. NEVER as a table. Do NOT abstract specific entries into broad category headers. If the legend has 21 entries, list all 21.\n` +
               `- Generate slug IDs for h2/h3 headings.\n` +
-              `- Use <strong> for bold text and <em> for italic within text fields.\n\n` +
-              `Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`,
+              `- Use <strong> for bold text and <em> for italic within text fields.\n` +
+              _chunkHeadingsDirective +
+              `\nReturn ONLY a JSON array: [{"type":"...","text":"..."}, ...]`,
               _base64, _mimeType
             );
             if (chunkResult) {
@@ -9885,6 +10267,53 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
       } catch(e) { /* non-blocking */ }
 
+      // ── Issue-resolution diff (pre-fix vs verification) ──
+      // Compute which issues from the original audit were resolved by the fix,
+      // which persisted (still present in the verification audit), and which
+      // were newly introduced. Key derivation matches the per-issue agreement
+      // code (lowercased + first 40 chars) so a "missing alt text" pre-fix and
+      // a "missing alt text" post-fix match as the same issue even if wording
+      // shifted slightly. Attached to result as `issueResolution` for UI.
+      let _issueResolution = null;
+      if (_auditResult && verification && Array.isArray(verification.issues)) {
+        const _keyOf = (s) => (s || '').toLowerCase().substring(0, 40);
+        const _preFlat = []
+          .concat((_auditResult.critical || []).map(i => ({ ...i, severity: 'critical' })))
+          .concat((_auditResult.serious || _auditResult.major || []).map(i => ({ ...i, severity: 'serious' })))
+          .concat((_auditResult.moderate || []).map(i => ({ ...i, severity: 'moderate' })))
+          .concat((_auditResult.minor || []).map(i => ({ ...i, severity: 'minor' })));
+        const _postFlat = (verification.issues || []).map(i => ({ ...i }));
+        const _postKeys = new Set(_postFlat.map(i => _keyOf(i.issue)).filter(Boolean));
+        const _preKeys = new Set(_preFlat.map(i => _keyOf(i.issue)).filter(Boolean));
+        const _resolved = _preFlat.filter(i => { const k = _keyOf(i.issue); return k && !_postKeys.has(k); });
+        const _persisted = _preFlat.filter(i => { const k = _keyOf(i.issue); return k && _postKeys.has(k); });
+        const _introduced = _postFlat.filter(i => { const k = _keyOf(i.issue); return k && !_preKeys.has(k); });
+        const _bySev = (arr, sev) => arr.filter(i => (i.severity || '').toLowerCase() === sev).length;
+        _issueResolution = {
+          resolved: _resolved,
+          persisted: _persisted,
+          introduced: _introduced,
+          summary: {
+            resolvedCount: _resolved.length,
+            persistedCount: _persisted.length,
+            introducedCount: _introduced.length,
+            totalPre: _preFlat.length,
+            resolvedBySeverity: {
+              critical: _bySev(_resolved, 'critical'),
+              serious: _bySev(_resolved, 'serious'),
+              moderate: _bySev(_resolved, 'moderate'),
+              minor: _bySev(_resolved, 'minor'),
+            },
+            persistedBySeverity: {
+              critical: _bySev(_persisted, 'critical'),
+              serious: _bySev(_persisted, 'serious'),
+              moderate: _bySev(_persisted, 'moderate'),
+              minor: _bySev(_persisted, 'minor'),
+            },
+          },
+        };
+      }
+
       // ── Store results ──
       // sourceText + finalText feed the "Diff view" button in the remediation UI so
       // the user can audit verbatim-fidelity word-by-word. They cost some memory
@@ -9916,6 +10345,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         htmlChars: accessibleHtml.length,
         issuesFixed: (_auditResult.critical || []).length + (_auditResult.serious || _auditResult.major || []).length + (_auditResult.moderate || []).length + (_auditResult.minor || []).length,
         remainingIssues: verification ? (verification.issues || []).length : null,
+        issueResolution: _issueResolution,
+        // Carry the source PDF's tag tree (from Tier 8) through to the tagger.
+        // Stage 4 uses it as a supplemental outline so role inference can
+        // trust source-tagged heading levels when the original PDF was
+        // already tagged, rather than re-guessing from font scale.
+        sourceStructTree: (_auditResult && _auditResult.structTree) || null,
         elapsed: Math.round((Date.now() - _startTime) / 1000),
       };
 
@@ -10279,28 +10714,251 @@ tr { page-break-inside: avoid; }
     return html;
   };
 
+  // ── Adobe-style Accessibility Report (Tier A #2) ──
+  // Produces an HTML report formatted to match Adobe Accessibility Checker's
+  // category-by-category rule output, with AlloFlow-specific additions:
+  // multi-auditor reliability statistics, AI/axe-core score blend, and the
+  // pre→post issue-resolution diff. Compliance officers can attach this
+  // alongside the tagged PDF for federal / institutional filings.
+  //
+  // Inputs:
+  //   - fixResult: from fixAndVerifyPdf — carries accessibleHtml, scores,
+  //     issueResolution, verificationAudit, axeAudit, sourceStructTree
+  //   - auditResult: from runPdfAccessibilityAudit — carries structTree,
+  //     reliability metrics (icc, cronbachAlpha, scoreSD), per-issue agreement
+  //   - pdfUa1Checks: from createTaggedPdf — {checks, summary, spec}
+  //   - opts: { fileName, generatedDate }
+  //
+  // Returns: complete HTML string ready for download as .html.
+  const generateAccessibilityReportHtml = (fixResult, auditResult, pdfUa1Checks, opts) => {
+    opts = opts || {};
+    const _esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const fileName = _esc(opts.fileName || 'document.pdf');
+    const date = opts.generatedDate || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const ar = auditResult || {};
+    const fr = fixResult || {};
+    const checks = (pdfUa1Checks && pdfUa1Checks.checks) || [];
+    const checkSum = (pdfUa1Checks && pdfUa1Checks.summary) || { pass: 0, fail: 0, warn: 0, manual: 0, na: 0, conformancePct: 0 };
+
+    const _statusBadge = (status) => {
+      const map = {
+        pass: { color: '#16a34a', bg: '#dcfce7', label: 'Passed' },
+        fail: { color: '#dc2626', bg: '#fee2e2', label: 'Failed' },
+        warn: { color: '#d97706', bg: '#fef3c7', label: 'Warning' },
+        manual: { color: '#7c3aed', bg: '#ede9fe', label: 'Manual Check' },
+        na: { color: '#64748b', bg: '#f1f5f9', label: 'Not Applicable' },
+      };
+      const m = map[status] || map.na;
+      return `<span style="display:inline-block;padding:2px 10px;background:${m.bg};color:${m.color};border-radius:9999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em">${m.label}</span>`;
+    };
+
+    // Group checks by category, preserving order of first appearance
+    const byCategory = {};
+    const catOrder = [];
+    for (const c of checks) {
+      if (!byCategory[c.category]) { byCategory[c.category] = []; catOrder.push(c.category); }
+      byCategory[c.category].push(c);
+    }
+
+    const hasChecks = checks.length > 0;
+    const conformanceColor = !hasChecks
+      ? '#64748b'
+      : (checkSum.fail === 0 ? '#16a34a' : (checkSum.fail <= 2 ? '#d97706' : '#dc2626'));
+    const conformanceLabel = !hasChecks
+      ? 'Awaiting Tagged PDF'
+      : (checkSum.fail === 0 ? 'Conformant' : (checkSum.fail <= 2 ? 'Mostly Conformant' : 'Non-Conformant'));
+
+    // Reliability block — pulled from auditResult
+    const _reliabilityBlock = ar.auditorCount > 1 ? `
+      <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Audit Reliability</h2>
+      <p style="font-size:13px;color:#475569;margin:0 0 12px">Source-document audit triangulated across <strong>${ar.auditorCount} independent auditors</strong>. Higher agreement indicates more reliable scoring.</p>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px">
+        <tbody>
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Standard Deviation (across auditors)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.scoreSD ?? 'n/a'}</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Standard Error of Measurement (SEM)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">±${ar.scoreSEM ?? 'n/a'}</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">95% Confidence Interval</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${Array.isArray(ar.ci95) ? ar.ci95.join(' – ') : 'n/a'}</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Auditor Consistency (ICC-like)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.icc ?? 'n/a'}</td></tr>
+          ${ar.cronbachAlpha != null ? `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Cronbach's α (pragmatic hybrid)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.cronbachAlpha}</td></tr>` : ''}
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Reliability Classification</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-transform:capitalize">${_esc(ar.reliability || 'n/a')}</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Individual Auditor Scores</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${Array.isArray(ar.scores) ? ar.scores.join(', ') : 'n/a'}</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;color:#64748b;margin-top:0">No commercial PDF accessibility validator currently reports inter-rater reliability — this is an AlloFlow extension to give users a confidence signal alongside the score.</p>
+    ` : '';
+
+    // Score-blend block
+    const aiOnly = ar._aiOnlyScore;
+    const axeOnly = ar._baselineAxeScore;
+    const blendOk = aiOnly != null && axeOnly != null;
+    const _scoreBlock = `
+      <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Accessibility Score</h2>
+      <div style="display:flex;gap:16px;margin-bottom:12px;align-items:center">
+        <div style="flex:0 0 auto;text-align:center;padding:16px 24px;background:#f1f5f9;border-radius:12px;border:2px solid #cbd5e1">
+          <div style="font-size:36px;font-weight:900;color:${(fr.afterScore || 0) >= 80 ? '#16a34a' : (fr.afterScore || 0) >= 50 ? '#d97706' : '#dc2626'}">${fr.afterScore ?? '?'}</div>
+          <div style="font-size:11px;color:#475569;font-weight:600;text-transform:uppercase">Post-Remediation</div>
+        </div>
+        ${fr.beforeScore != null ? `<div style="font-size:24px;color:#64748b">→</div>
+        <div style="flex:0 0 auto;text-align:center;padding:12px 20px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0">
+          <div style="font-size:24px;font-weight:700;color:#475569">${fr.beforeScore}</div>
+          <div style="font-size:11px;color:#475569;font-weight:600;text-transform:uppercase">Pre-Remediation</div>
+        </div>
+        <div style="font-size:14px;color:#16a34a;font-weight:700">+${fr.afterScore - fr.beforeScore} points</div>` : ''}
+      </div>
+      ${blendOk ? `<p style="font-size:12px;color:#475569;margin:0">Composite score blends AI rubric (${aiOnly}) and axe-core automated WCAG checks (${axeOnly}) at 50/50.</p>` : '<p style="font-size:12px;color:#475569;margin:0">Score derived from AI rubric only.</p>'}
+    `;
+
+    // Issue resolution block
+    const ir = fr.issueResolution;
+    const _resolutionBlock = (ir && ir.summary && ir.summary.totalPre > 0) ? (() => {
+      const s = ir.summary;
+      const pct = s.totalPre > 0 ? Math.round((s.resolvedCount / s.totalPre) * 100) : 0;
+      const _list = (arr, limit) => arr.slice(0, limit).map(i => `<li><strong>${_esc(i.issue)}</strong>${i.wcag ? ` <span style="color:#64748b">(WCAG ${_esc(i.wcag)})</span>` : ''}</li>`).join('');
+      return `
+        <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Issue Resolution</h2>
+        <p style="font-size:13px;color:#475569;margin:0 0 12px">Resolved <strong>${s.resolvedCount} of ${s.totalPre}</strong> issues identified in the pre-remediation audit (${pct}%).</p>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <span style="display:inline-block;padding:6px 14px;background:#dcfce7;color:#16a34a;border-radius:9999px;font-size:12px;font-weight:700">✓ ${s.resolvedCount} Resolved</span>
+          ${s.persistedCount > 0 ? `<span style="display:inline-block;padding:6px 14px;background:#fef3c7;color:#d97706;border-radius:9999px;font-size:12px;font-weight:700">↻ ${s.persistedCount} Still Present</span>` : ''}
+          ${s.introducedCount > 0 ? `<span style="display:inline-block;padding:6px 14px;background:#fee2e2;color:#dc2626;border-radius:9999px;font-size:12px;font-weight:700">⊕ ${s.introducedCount} Newly Introduced</span>` : ''}
+        </div>
+        ${ir.resolved.length > 0 ? `<details><summary style="cursor:pointer;font-weight:600;color:#16a34a;margin-bottom:6px">Resolved Issues (${ir.resolved.length})</summary><ul style="font-size:12px;color:#334155;margin:6px 0 0 20px">${_list(ir.resolved, 25)}${ir.resolved.length > 25 ? `<li style="color:#64748b;font-style:italic">+ ${ir.resolved.length - 25} more</li>` : ''}</ul></details>` : ''}
+        ${ir.persisted.length > 0 ? `<details><summary style="cursor:pointer;font-weight:600;color:#d97706;margin-top:8px;margin-bottom:6px">Issues Still Present (${ir.persisted.length})</summary><ul style="font-size:12px;color:#334155;margin:6px 0 0 20px">${_list(ir.persisted, 15)}${ir.persisted.length > 15 ? `<li style="color:#64748b;font-style:italic">+ ${ir.persisted.length - 15} more</li>` : ''}</ul></details>` : ''}
+        ${ir.introduced.length > 0 ? `<details><summary style="cursor:pointer;font-weight:600;color:#dc2626;margin-top:8px;margin-bottom:6px">Newly Introduced Issues (${ir.introduced.length})</summary><ul style="font-size:12px;color:#334155;margin:6px 0 0 20px">${_list(ir.introduced, 15)}${ir.introduced.length > 15 ? `<li style="color:#64748b;font-style:italic">+ ${ir.introduced.length - 15} more</li>` : ''}</ul></details>` : ''}
+      `;
+    })() : '';
+
+    // Source tag tree (Tier 8) note
+    const st = ar.structTree;
+    const _tagTreeBlock = (st && st.hasTags) ? `
+      <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Source Tag Structure</h2>
+      <p style="font-size:13px;color:#475569;margin:0 0 8px">The source PDF shipped a logical structure tree (PDF/UA-style tags). AlloFlow detected and preserved it during remediation rather than re-inferring from visual cues.</p>
+      <p style="font-size:12px;color:#334155;margin:0"><strong>Roles detected:</strong> ${Object.entries(st.roleCounts || {}).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([r, n]) => _esc(r) + ' × ' + n).join(', ')}</p>
+      <p style="font-size:12px;color:#334155;margin:4px 0 0"><strong>Headings:</strong> ${st.headingCount || 0} extracted from source tag tree</p>
+    ` : '';
+
+    // PDF/UA-1 checks rendering
+    const _checksBlock = catOrder.map(cat => {
+      const items = byCategory[cat];
+      return `
+        <h3 style="font-size:14px;margin:20px 0 8px;color:#1e293b">${_esc(cat)}</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:#f1f5f9"><th style="text-align:left;padding:8px;border:1px solid #cbd5e1;width:35%">Rule</th><th style="text-align:left;padding:8px;border:1px solid #cbd5e1;width:15%">Status</th><th style="text-align:left;padding:8px;border:1px solid #cbd5e1">Details</th></tr></thead>
+          <tbody>
+            ${items.map(c => `<tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:600">${_esc(c.rule)}</td><td style="padding:8px;border:1px solid #e2e8f0">${_statusBadge(c.status)}</td><td style="padding:8px;border:1px solid #e2e8f0;color:#475569">${_esc(c.message)}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      `;
+    }).join('');
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accessibility Report — ${fileName}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; max-width: 920px; margin: 2rem auto; padding: 0 1.5rem; color: #1e293b; line-height: 1.6; }
+  h1 { font-size: 26px; margin: 0 0 4px; color: #0f172a; }
+  h2 { font-size: 18px; margin-top: 28px; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
+  .header { border-bottom: 3px solid #2563eb; padding-bottom: 16px; margin-bottom: 24px; }
+  .meta { font-size: 12px; color: #64748b; margin-top: 6px; }
+  .summary-card { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+  .summary-row { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .conformance { font-size: 48px; font-weight: 900; line-height: 1; }
+  .conformance-pct { font-size: 14px; color: #64748b; font-weight: 600; }
+  .stat-pill { display: inline-block; padding: 8px 16px; border-radius: 9999px; font-size: 13px; font-weight: 700; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; }
+  details summary { outline: none; }
+  details summary:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 4px; }
+  a { color: #2563eb; }
+  @media print {
+    body { max-width: none; padding: 0.5in; }
+    details { page-break-inside: avoid; }
+    table { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header class="header">
+    <h1>♿ Accessibility Conformance Report</h1>
+    <div class="meta"><strong>Document:</strong> ${fileName}</div>
+    <div class="meta"><strong>Generated:</strong> ${_esc(date)} · AlloFlow Document Accessibility Pipeline (${_esc((pdfUa1Checks && pdfUa1Checks.validatorVersion) || 'self-check')})</div>
+    <div class="meta"><strong>Specification:</strong> ${_esc((pdfUa1Checks && pdfUa1Checks.spec) || 'PDF/UA-1 (ISO 14289-1) — self-check')} · WCAG 2.1 AA</div>
+  </header>
+
+  <div class="summary-card">
+    <div class="summary-row">
+      <div>
+        <div class="conformance" style="color:${conformanceColor}">${conformanceLabel}</div>
+        <div class="conformance-pct">${checkSum.conformancePct}% conformance · ${checkSum.pass + checkSum.fail + checkSum.warn} automated rules checked</div>
+      </div>
+      <div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <span class="stat-pill" style="background:#dcfce7;color:#16a34a">✓ ${checkSum.pass} Passed</span>
+        ${checkSum.fail > 0 ? `<span class="stat-pill" style="background:#fee2e2;color:#dc2626">✕ ${checkSum.fail} Failed</span>` : ''}
+        ${checkSum.warn > 0 ? `<span class="stat-pill" style="background:#fef3c7;color:#d97706">⚠ ${checkSum.warn} Warnings</span>` : ''}
+        ${checkSum.manual > 0 ? `<span class="stat-pill" style="background:#ede9fe;color:#7c3aed">👁 ${checkSum.manual} Manual Check</span>` : ''}
+        ${checkSum.na > 0 ? `<span class="stat-pill" style="background:#f1f5f9;color:#64748b">— ${checkSum.na} N/A</span>` : ''}
+      </div>
+    </div>
+  </div>
+
+  ${_scoreBlock}
+
+  <h2>PDF/UA-1 Compliance Checks</h2>
+  ${hasChecks
+    ? `<p style="font-size:13px;color:#475569;margin:0 0 12px">Automated rule-by-rule verification of the tagged PDF against PDF/UA-1 (ISO 14289-1). Categories follow the Adobe Accessibility Checker format for familiarity. Items marked "Manual Check" cannot be verified automatically and require human review with assistive technology.</p>${_checksBlock}`
+    : `<div style="padding:16px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;font-size:13px;color:#92400e"><strong>No tagged PDF available for compliance check.</strong> Click <em>Tagged PDF</em> in the action bar to generate a tagged PDF — the next report download will include automated PDF/UA-1 rule verification.</div>`
+  }
+
+  ${_resolutionBlock}
+
+  ${_reliabilityBlock}
+
+  ${_tagTreeBlock}
+
+  <div class="footer">
+    <p><strong>About this report:</strong> AlloFlow's PDF/UA-1 self-check inspects the tagged PDF structure (StructTreeRoot, MarkInfo, ParentTree, MCID linkage, Lang, Title, ViewerPreferences) and reports per-rule pass/fail in the format used by Adobe Accessibility Checker and PAC 3. Self-check results are advisory — for high-stakes compliance filings (federal contracts, ADA Title II audits), pair this report with an independent run through <a href="https://pdfua.foundation/en/pdf-accessibility-checker-pac">PAC 3</a> or Adobe Acrobat Pro's Accessibility Checker.</p>
+    <p><strong>Standards referenced:</strong> PDF/UA-1 (ISO 14289-1) · WCAG 2.1 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
+    <p><strong>Methodology:</strong> Multi-auditor AI triangulation (up to 10 stakeholder-perspective passes), axe-core (Deque Systems) automated WCAG 2.1 AA verification, deterministic content-stream MCID wrapping with role inference from font scale + source tag tree, and structural validation against PDF/UA-1 specification requirements.</p>
+    <p><strong>Limitations:</strong> Automated checks cannot verify reading order intent, alt-text quality, or contextual appropriateness. For comprehensive compliance verification consider professional accessibility auditing services such as <a href="https://knowbility.org">Knowbility</a> (AccessWorks usability testing with people with disabilities).</p>
+    <p>Generated by AlloFlow · Open source (GNU AGPL v3) · ${_esc(date)}</p>
+  </div>
+</main>
+</body>
+</html>`;
+  };
+
   // ── Tag the ORIGINAL PDF in place (visual layer preserved, tag tree added) ──
   // Takes original PDF bytes + the remediation result and produces a new PDF
   // that:
-  //   - Preserves every byte of the original's visual layer (pages, fonts,
-  //     images, positions, annotations, colors) — pdf-lib modifies only
-  //     document-level metadata and Catalog entries, not content streams.
-  //   - Adds a StructTreeRoot with a flat StructElem outline derived from
-  //     the accessibleHtml (H1-H6, P, Figure with Alt, Table, List). This
-  //     gives capable assistive tech a structural outline to navigate by
-  //     heading, and claims PDF/UA scaffolding.
+  //   - Preserves the original visual layer (pages, fonts, images, positions,
+  //     annotations, colors). The content stream is modified ONLY by inserting
+  //     BDC/EMC markers and an optional invisible OCR text layer for scanned
+  //     PDFs — no glyph data is replaced or reordered.
+  //   - Adds a StructTreeRoot with a NESTED StructElem outline derived from
+  //     the accessibleHtml (H1-H6, P, Figure with Alt, Table with TH/scope,
+  //     List with LI/Lbl/LBody, BlockQuote, Link). Heading sections nest as
+  //     /Sect containers per ISO 32000-1 §14.7.4.
   //   - Sets document Lang (screen readers use this for pronunciation).
   //   - Sets Title + Author + Subject from fixResult metadata.
-  //   - Adds MarkInfo {Marked=true, Suspects=false} so readers know the
-  //     document has been tagged.
+  //   - Adds MarkInfo {Marked=true, Suspects=false} and PDF/UA-1 XMP packet.
+  //   - **Stage 4: content-stream MCID wrapping.** Each text block is wrapped
+  //     with /<role> <</MCID N>> BDC ... EMC via pako inflate/edit/deflate.
+  //     Per-block roles inferred from font scale + outline matching against
+  //     the remediated DOM (and, when the source PDF was already tagged, the
+  //     source tag tree from Tier 8 — fed in via fixResult.sourceStructTree).
+  //   - **Stage 4 ParentTree:** per-page entries map MCID → StructElem so
+  //     strict validators (Acrobat Pro AC, PAC 2024, axe DevTools PDF) can
+  //     walk both directions of the structure linkage.
+  //   - **Stage 5-6:** Table /Headers + /IDTree linkage, /Lang on
+  //     per-element StructElems, /Alt on figures, AcroForm widget tagging,
+  //     artifact detection for running headers/footers (/Artifact BMC, no
+  //     MCID — SR readers skip).
   //
-  // What this does NOT do in this pass:
-  //   - Content-stream MCID wrapping (each piece of page content wrapped
-  //     with /P <</MCID N>> BDC ... EMC and referenced back from the
-  //     StructElem). Without MCID linkage, the tag tree is structurally
-  //     present but not fully MCID-linked to content — capable readers
-  //     still use it for navigation, strict PDF/UA-1 validators will flag
-  //     it. Upgrading to MCID-linked content is the logical next step.
+  // Fallback chain: Stage 4 → Stage 3 (single-MCID per page) on per-page
+  // parse failure. Scanned PDFs skip Stage 4 because pdf.js on original
+  // bytes sees no text — they get Stage 3 + invisible OCR text layer.
   //
   // Returns: Uint8Array of the tagged PDF bytes, or throws.
   const createTaggedPdf = async (originalPdfBytes, fixResult, meta) => {
@@ -10834,6 +11492,22 @@ tr { page-break-inside: avoid; }
     // _buildOutlineStructElems because the walk is cheap (~ms) and keeps
     // that helper's return shape unchanged.
     const stage4OutlineItems = [];
+    // Prepend source-tag-tree headings (from Tier 8) so Stage 4 role
+    // inference prefers source-tagged levels when a heading's text appears
+    // in the original content stream. Substring matching in _stage4_inferRole
+    // walks outlineItems in order — earlier items win on ties, which is what
+    // we want for already-tagged sources where the AI rebuild might have
+    // dropped or shifted a level.
+    try {
+      const srcSt = fixResult && fixResult.sourceStructTree;
+      if (srcSt && srcSt.hasTags && Array.isArray(srcSt.headings)) {
+        for (const h of srcSt.headings) {
+          if (!h || !h.text) continue;
+          const lvl = Math.min(Math.max(h.level || 1, 1), 6);
+          stage4OutlineItems.push({ role: 'H' + lvl, text: String(h.text).trim().substring(0, 400), _source: 'pdfTagTree' });
+        }
+      }
+    } catch(_) {}
     try {
       const _b = htmlDoc.body || htmlDoc.documentElement;
       const _w = htmlDoc.createTreeWalker(_b, NodeFilter.SHOW_ELEMENT, null);
@@ -11377,11 +12051,166 @@ tr { page-break-inside: avoid; }
             linksGenericText,
         };
     })();
-    // ── Return tagged bytes + summary ──
+    // ── PDF/UA-1 self-check (Tier A #1) ──
+    // Walks the just-built doc structures and reports per-rule pass/fail in
+    // the same shape an external validator (PAC 3 / Adobe AC) would produce.
+    // The point isn't to REPLACE PAC 3 — it's to give compliance-conscious
+    // users a structured report they can submit alongside the tagged PDF,
+    // and to catch our own bugs (missing MarkInfo, broken ParentTree, etc.)
+    // before they ship. Rules are organized by Adobe Accessibility Checker
+    // category for familiarity.
+    const _pdfUa1Checks = (() => {
+      const checks = [];
+      const _addCheck = (category, rule, status, message) => {
+        checks.push({ category, rule, status, message });
+      };
+      // DOCUMENT
+      try {
+        const stRoot = catalog.get(PDFName.of('StructTreeRoot'));
+        _addCheck('Document', 'Tagged PDF', stRoot ? 'pass' : 'fail',
+          stRoot ? 'Document carries a StructTreeRoot' : 'No StructTreeRoot found — document is not tagged');
+      } catch (_) { _addCheck('Document', 'Tagged PDF', 'fail', 'Could not read StructTreeRoot'); }
+      try {
+        const markInfo = catalog.get(PDFName.of('MarkInfo'));
+        const marked = markInfo && markInfo.get ? markInfo.get(PDFName.of('Marked')) : null;
+        const isMarked = marked && String(marked) === 'true';
+        _addCheck('Document', 'MarkInfo present', isMarked ? 'pass' : 'fail',
+          isMarked ? '/MarkInfo dict has /Marked true' : 'Missing /MarkInfo or /Marked is not true');
+      } catch (_) { _addCheck('Document', 'MarkInfo present', 'fail', 'Could not read /MarkInfo'); }
+      try {
+        const cLang = catalog.get(PDFName.of('Lang'));
+        const langStr = cLang ? String(cLang).replace(/^\(|\)$/g, '').replace(/[<>]/g, '') : '';
+        _addCheck('Document', 'Primary language', langStr ? 'pass' : 'fail',
+          langStr ? 'Document /Lang = ' + langStr : 'No document language set (Catalog /Lang missing)');
+      } catch (_) { _addCheck('Document', 'Primary language', 'fail', 'Could not read /Lang'); }
+      try {
+        const info = doc.getInfoDict ? doc.getInfoDict() : null;
+        const title = info && info.get ? info.get(PDFName.of('Title')) : null;
+        const titleStr = title ? String(title).replace(/^\(|\)$/g, '') : '';
+        _addCheck('Document', 'Title', titleStr ? 'pass' : 'warn',
+          titleStr ? 'Document title set: "' + titleStr.slice(0, 60) + '"' : 'No document /Title — readers will fall back to filename');
+      } catch (_) { _addCheck('Document', 'Title', 'warn', 'Could not read document title'); }
+      try {
+        const vp = catalog.get(PDFName.of('ViewerPreferences'));
+        const ddt = vp && vp.get ? vp.get(PDFName.of('DisplayDocTitle')) : null;
+        const ddtTrue = ddt && String(ddt) === 'true';
+        _addCheck('Document', 'DisplayDocTitle', ddtTrue ? 'pass' : 'fail',
+          ddtTrue ? 'Window chrome will show document title (PDF/UA §7.1)' : 'ViewerPreferences /DisplayDocTitle not set true');
+      } catch (_) { _addCheck('Document', 'DisplayDocTitle', 'fail', 'Could not read ViewerPreferences'); }
+      try {
+        const meta = catalog.get(PDFName.of('Metadata'));
+        _addCheck('Document', 'PDF/UA-1 declared (XMP)', meta ? 'pass' : 'fail',
+          meta ? 'XMP metadata stream attached with pdfuaid:part 1' : 'No XMP metadata stream — PDF/UA conformance not declared');
+      } catch (_) { _addCheck('Document', 'PDF/UA-1 declared (XMP)', 'fail', 'Could not read /Metadata'); }
+      // PAGE CONTENT
+      try {
+        let pagesWithStructParents = 0;
+        for (const p of pages) {
+          const sp = p.node.get(PDFName.of('StructParents'));
+          if (sp != null) pagesWithStructParents++;
+        }
+        const allPages = pages.length;
+        const pass = pagesWithStructParents === allPages && allPages > 0;
+        _addCheck('Page Content', 'Tagged content', pass ? 'pass' : 'fail',
+          pass
+            ? allPages + ' of ' + allPages + ' pages link to the tag tree via /StructParents'
+            : pagesWithStructParents + ' of ' + allPages + ' pages have /StructParents — strict validators will flag missing pages');
+      } catch (_) { _addCheck('Page Content', 'Tagged content', 'fail', 'Could not check /StructParents per page'); }
+      // ALTERNATE TEXT
+      const _imgTotal = (_summary && _summary.images) || 0;
+      const _altMiss = (_summary && _summary.imagesMissingAlt) || 0;
+      const _altTrivial = (_summary && _summary.imagesTrivialAlt) || 0;
+      if (_imgTotal > 0) {
+        const _altOk = _imgTotal - _altMiss;
+        _addCheck('Alternate Text', 'Figures alternate text', _altMiss === 0 ? 'pass' : 'fail',
+          _altMiss === 0
+            ? 'All ' + _imgTotal + ' tagged figures have /Alt set'
+            : _altMiss + ' of ' + _imgTotal + ' figures missing /Alt' + (_altOk > 0 ? ' (' + _altOk + ' have alt text)' : ''));
+        if (_altTrivial > 0) {
+          _addCheck('Alternate Text', 'Alt text quality', 'warn',
+            _altTrivial + ' figures have generic alt text (e.g., "image", "photo", filename) — likely uninformative');
+        }
+      } else {
+        _addCheck('Alternate Text', 'Figures alternate text', 'na', 'No figures present');
+      }
+      _addCheck('Alternate Text', 'Hides annotation', 'manual',
+        'Manual review: any alt-text-only annotations should hide underlying decorative content');
+      // TABLES
+      const _tableTotal = (_summary && _summary.tables) || 0;
+      const _thNoScope = (_summary && _summary.thWithoutScope) || 0;
+      if (_tableTotal > 0) {
+        _addCheck('Tables', 'Headers (TH with scope)', _thNoScope === 0 ? 'pass' : 'fail',
+          _thNoScope === 0
+            ? 'All TH cells across ' + _tableTotal + ' tables carry /Scope (col/row)'
+            : _thNoScope + ' TH cells missing /Scope — screen readers won\'t announce headers correctly');
+        _addCheck('Tables', 'Regularity', 'manual',
+          'Manual review: rectangular structure (every row has equal cells, no merged-without-headers cells)');
+      } else {
+        _addCheck('Tables', 'Tables present', 'na', 'No tables in document');
+      }
+      // LISTS
+      const _listTotal = (_summary && _summary.lists) || 0;
+      if (_listTotal > 0) {
+        _addCheck('Lists', 'Tagged lists', 'pass', _listTotal + ' lists tagged with L / LI / Lbl / LBody structure');
+      } else {
+        _addCheck('Lists', 'Lists present', 'na', 'No lists in document');
+      }
+      // HEADINGS
+      const _hHierIssues = (_summary && _summary.headingHierarchyIssues) || 0;
+      const _hPath = (_summary && _summary.headingHierarchyPath) || [];
+      if ((_summary && _summary.headings) > 0) {
+        _addCheck('Headings', 'Appropriate nesting', _hHierIssues === 0 ? 'pass' : 'warn',
+          _hHierIssues === 0
+            ? 'Heading hierarchy is sequential (no skipped levels)'
+            : _hHierIssues + ' heading-level skips detected: ' + _hPath.join(', '));
+      } else {
+        _addCheck('Headings', 'Headings present', 'warn',
+          'No headings tagged — long documents without headings hurt screen-reader navigation');
+      }
+      // LINKS (quality lint, not strict PDF/UA)
+      const _linkTotal = (_summary && _summary.links) || 0;
+      const _genericLinks = (_summary && _summary.linksGenericText) || 0;
+      if (_linkTotal > 0 && _genericLinks > 0) {
+        _addCheck('Links', 'Link text quality', 'warn',
+          _genericLinks + ' of ' + _linkTotal + ' links use generic text ("click here", "read more") — WCAG 2.4.4');
+      }
+      // FORM FIELDS
+      const _fieldTotal = (_summary && _summary.fields) || 0;
+      if (_fieldTotal > 0) {
+        _addCheck('Forms', 'Tagged form fields', 'pass', _fieldTotal + ' form widgets linked to /Form StructElems');
+        _addCheck('Forms', 'Field descriptions', 'manual', 'Manual review: each field has a tooltip / label that describes its purpose');
+      } else {
+        _addCheck('Forms', 'Form fields present', 'na', 'No form widgets in document');
+      }
+      // BOOKMARKS — recommended for long docs
+      const _bm = (_summary && _summary.bookmarks) || 0;
+      if (pages.length >= 21) {
+        _addCheck('Document', 'Bookmarks', _bm > 0 ? 'pass' : 'warn',
+          _bm > 0
+            ? _bm + ' bookmarks generated from headings'
+            : 'Document has ' + pages.length + ' pages and no bookmarks — recommended for docs ≥ 21 pages (WCAG 2.4.5)');
+      }
+      // Compute summary
+      const passCount = checks.filter(c => c.status === 'pass').length;
+      const failCount = checks.filter(c => c.status === 'fail').length;
+      const warnCount = checks.filter(c => c.status === 'warn').length;
+      const manualCount = checks.filter(c => c.status === 'manual').length;
+      const naCount = checks.filter(c => c.status === 'na').length;
+      const automatedTotal = passCount + failCount + warnCount; // excludes manual + na
+      const conformancePct = automatedTotal > 0 ? Math.round((passCount / automatedTotal) * 100) : 0;
+      return {
+        checks,
+        summary: { pass: passCount, fail: failCount, warn: warnCount, manual: manualCount, na: naCount, conformancePct },
+        spec: 'PDF/UA-1 (ISO 14289-1) — self-check',
+        validatorVersion: 'AlloFlow ' + _PIPELINE_PROMPT_VERSION,
+      };
+    })();
+
+    // ── Return tagged bytes + summary + PDF/UA-1 self-check ──
     // useObjectStreams=false produces slightly larger PDFs but more
     // compatible with older readers and validators.
     const _bytes = await doc.save({ useObjectStreams: false, addDefaultPage: false });
-    return { bytes: _bytes, summary: _summary };
+    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks };
   };
 
   // ── Download Accessible PDF from HTML ──
@@ -17437,8 +18266,18 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     parseAuditJson: _wrap(parseAuditJson),
     remediateSurgicallyThenAI: _wrapAsync(remediateSurgicallyThenAI),
     downloadBatchResults: _wrapAsync(downloadBatchResults),
+    // Tier 4: mid-batch resume — host inspects/clears persisted batch state
+    loadResumableBatch: _loadActiveBatch,
+    discardResumableBatch: _clearActiveBatch,
+    // Tier A #2: Adobe-style accessibility report generator
+    generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.createDocPipeline = createDocPipeline;
+window.AlloModules.DocPipelineModule = true;
+console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

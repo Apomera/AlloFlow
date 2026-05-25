@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// stem_tool_molecule.js — Molecule Lab (Enhanced Standalone)
+// stem_tool_molecule.js - Molecule Lab (Enhanced Standalone)
 // Full 118-element periodic table, compound creator (32 recipes),
 // molecule builder, Bohr model, reaction simulator, challenges & RP
 // ═══════════════════════════════════════════
@@ -30,7 +30,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -431,7 +431,20 @@ window.StemLab = window.StemLab || {
               atomGroup.add(sprite);
             });
 
-            // Render Covalent Bonds
+            // Render Covalent Bonds (Supports single, double, and triple parallel rods)
+            var renderBond = function(mid, len, quat, radius) {
+              var cylinderGeo = new THREE.CylinderGeometry(radius, radius, len, 12);
+              var bondMat = new THREE.MeshStandardMaterial({
+                color: 0x94a3b8,
+                roughness: 0.35,
+                metalness: 0.2
+              });
+              var cylinderMesh = new THREE.Mesh(cylinderGeo, bondMat);
+              cylinderMesh.position.copy(mid);
+              cylinderMesh.quaternion.copy(quat);
+              atomGroup.add(cylinderMesh);
+            };
+
             bonds.forEach(function(b) {
               var posA = positions[b[0]];
               var posB = positions[b[1]];
@@ -444,16 +457,34 @@ window.StemLab = window.StemLab || {
               var alignAxis = new THREE.Vector3(0, 1, 0);
               var quaternion = new THREE.Quaternion().setFromUnitVectors(alignAxis, direction);
 
-              var cylinderGeo = new THREE.CylinderGeometry(0.12, 0.12, dist, 12);
-              var bondMat = new THREE.MeshStandardMaterial({
-                color: 0x94a3b8,
-                roughness: 0.35,
-                metalness: 0.2
-              });
-              var cylinderMesh = new THREE.Mesh(cylinderGeo, bondMat);
-              cylinderMesh.position.copy(midpoint);
-              cylinderMesh.quaternion.copy(quaternion);
-              atomGroup.add(cylinderMesh);
+              var bondType = b[2] || 1;
+              if (bondType === 1) {
+                renderBond(midpoint, dist, quaternion, 0.12);
+              } else {
+                // Find a perpendicular direction for parallel offset cylinders
+                var offsetDir = new THREE.Vector3(0, 0, 1);
+                if (Math.abs(direction.dot(offsetDir)) > 0.95) {
+                  offsetDir.set(1, 0, 0);
+                }
+                var perp1 = new THREE.Vector3().crossVectors(direction, offsetDir).normalize();
+                
+                if (bondType === 2) {
+                  var off = 0.18;
+                  var mid1 = new THREE.Vector3().copy(midpoint).addScaledVector(perp1, off);
+                  var mid2 = new THREE.Vector3().copy(midpoint).addScaledVector(perp1, -off);
+                  renderBond(mid1, dist, quaternion, 0.08);
+                  renderBond(mid2, dist, quaternion, 0.08);
+                } else if (bondType === 3) {
+                  var perp2 = new THREE.Vector3().crossVectors(direction, perp1).normalize();
+                  var off = 0.22;
+                  var mid1 = new THREE.Vector3().copy(midpoint);
+                  var mid2 = new THREE.Vector3().copy(midpoint).addScaledVector(perp2, off);
+                  var mid3 = new THREE.Vector3().copy(midpoint).addScaledVector(perp2, -off);
+                  renderBond(mid1, dist, quaternion, 0.07);
+                  renderBond(mid2, dist, quaternion, 0.07);
+                  renderBond(mid3, dist, quaternion, 0.07);
+                }
+              }
             });
           };
 
@@ -577,7 +608,7 @@ window.StemLab = window.StemLab || {
 
             { n: 78, s: 'Pt', name: t('stem.periodic.platinum'), cat: 'transition', c: '#fb923c' }, { n: 79, s: 'Au', name: t('stem.periodic.gold'), cat: 'transition', c: '#fb923c' },
 
-            { n: 80, s: 'Hg', name: t('stem.periodic.mercury'), cat: 'transition', c: '#fb923c' }, { n: 81, s: 'Tl', name: t('stem.periodic.thallium'), cat: 'metal', c: '#94a3b8', gravity: '0.38g', atmosphere: 'None \u2014 no significant atmosphere', surface: 'Heavily cratered, resembling the Moon', notableFeatures: ['Caloris Basin (1,550 km crater)', 'Ice in permanently shadowed craters', 'Fastest orbital speed: 47 km/s'], skyColor: '#000000', terrainColor: '#7a7a7a', terrainType: 'cratered', surfaceDesc: 'Grey cratered wasteland under a black sky. The Sun appears 3x larger than on Earth.' },
+            { n: 80, s: 'Hg', name: t('stem.periodic.mercury'), cat: 'transition', c: '#fb923c' }, { n: 81, s: 'Tl', name: t('stem.periodic.thallium'), cat: 'metal', c: '#94a3b8', gravity: '0.38g', atmosphere: 'None - no significant atmosphere', surface: 'Heavily cratered, resembling the Moon', notableFeatures: ['Caloris Basin (1,550 km crater)', 'Ice in permanently shadowed craters', 'Fastest orbital speed: 47 km/s'], skyColor: '#000000', terrainColor: '#7a7a7a', terrainType: 'cratered', surfaceDesc: 'Grey cratered wasteland under a black sky. The Sun appears 3x larger than on Earth.' },
 
             { n: 82, s: 'Pb', name: t('stem.periodic.lead'), cat: 'metal', c: '#94a3b8' }, { n: 83, s: 'Bi', name: t('stem.periodic.bismuth'), cat: 'metal', c: '#94a3b8' },
 
@@ -744,7 +775,7 @@ window.StemLab = window.StemLab || {
             { name: 'Calcium Chloride', formula: 'CaCl₂', recipe: { Ca: 1, Cl: 2 }, desc: 'Road de-icer & cheese making', emoji: '❄️' },
             { name: 'Sodium Sulfate', formula: 'Na₂SO₄', recipe: { Na: 2, S: 1, O: 4 }, desc: 'Detergent additive', emoji: '🧴' },
             { name: 'Magnesium Hydroxide', formula: 'Mg(OH)₂', recipe: { Mg: 1, O: 2, H: 2 }, desc: 'Milk of magnesia (antacid)', emoji: '🥛' },
-            { name: 'Aluminum Oxide', formula: 'Al₂O₃', recipe: { Al: 2, O: 3 }, desc: 'Corundum — ruby & sapphire', emoji: '💎' },
+            { name: 'Aluminum Oxide', formula: 'Al₂O₃', recipe: { Al: 2, O: 3 }, desc: 'Corundum - ruby & sapphire', emoji: '💎' },
             { name: 'Silver Nitrate', formula: 'AgNO₃', recipe: { Ag: 1, N: 1, O: 3 }, desc: 'Photography & wound treatment', emoji: '📷' },
             { name: 'Potassium Permanganate', formula: 'KMnO₄', recipe: { K: 1, Mn: 1, O: 4 }, desc: 'Purple water purifier', emoji: '🟣' },
             { name: 'Zinc Oxide', formula: 'ZnO', recipe: { Zn: 1, O: 1 }, desc: 'Sunscreen & diaper cream', emoji: '☀️' },
@@ -809,7 +840,7 @@ window.StemLab = window.StemLab || {
               right: [{ formula: 'H₂O', atoms: { H: 2, O: 1 } }],
               answer: [2, 1, 2] },
             { id: 'haber', name: 'Haber Process', emoji: '🌾', type: 'Synthesis', difficulty: 2,
-              desc: 'Nitrogen and hydrogen form ammonia — feeds half the world!',
+              desc: 'Nitrogen and hydrogen form ammonia - feeds half the world!',
               left: [{ formula: 'N₂', atoms: { N: 2 } }, { formula: 'H₂', atoms: { H: 2 } }],
               right: [{ formula: 'NH₃', atoms: { N: 1, H: 3 } }],
               answer: [1, 3, 2] },
@@ -829,7 +860,7 @@ window.StemLab = window.StemLab || {
               right: [{ formula: 'NaCl', atoms: { Na: 1, Cl: 1 } }],
               answer: [2, 1, 2] },
             { id: 'propane_combust', name: 'Propane Combustion', emoji: '🔥', type: 'Combustion', difficulty: 3,
-              desc: 'Propane burns — the BBQ grill reaction!',
+              desc: 'Propane burns - the BBQ grill reaction!',
               left: [{ formula: 'C₃H₈', atoms: { C: 3, H: 8 } }, { formula: 'O₂', atoms: { O: 2 } }],
               right: [{ formula: 'CO₂', atoms: { C: 1, O: 2 } }, { formula: 'H₂O', atoms: { H: 2, O: 1 } }],
               answer: [1, 5, 3, 4] },
@@ -919,7 +950,7 @@ window.StemLab = window.StemLab || {
               checkMoleculeChallenges();
             } else {
               updMulti({ reactionResult: 'incorrect' });
-              addToast('❌ Not balanced yet — check the atom counts!', 'warning');
+              addToast('❌ Not balanced yet - check the atom counts!', 'warning');
             }
           };
 
@@ -1169,11 +1200,11 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
             // ── Topic-accent hero band per mode ──
             (function() {
               var MODE_META = {
-                viewer:    { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83D\uDD2C', title: 'Viewer \u2014 ball-and-stick + space-filling',         hint: 'Each atom\u2019s color follows CPK (carbon black, oxygen red, nitrogen blue, hydrogen white). Bond lengths are not arbitrary \u2014 covalent radii from quantum chemistry tables, ~70-150 picometers.' },
-                creator:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2697',         title: 'Compound Creator \u2014 valence + bonding rules',     hint: 'Octet rule: most atoms want 8 valence electrons. C bonds 4 ways, N 3, O 2, H 1. Lewis dot structures (1916) still drive 90% of intro chemistry intuition.' },
-                build:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDF1', title: 'Build \u2014 drag atoms, draw bonds',                  hint: 'Single, double, triple bonds = 1, 2, 3 shared electron pairs. Triple bonds are shorter and stronger (N\u2261N at 110pm vs N\u2013N at 145pm). Geometry follows VSEPR: pairs repel.' },
-                table:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDC2', title: 'Periodic Table \u2014 Mendeleev\u2019s 1869 grid',     hint: 'Periods (rows) = electron shells; groups (columns) = valence electrons. Mendeleev predicted gallium and germanium\u2019s properties before discovery \u2014 the table predicted reality.' },
-                reactions: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2697',         title: 'Reactions \u2014 reactants \u2192 products + ΔH',      hint: 'Conservation of mass (Lavoisier 1789): atoms in = atoms out. Balance the equation, predict the product, classify (synthesis / decomposition / single-replace / double-replace / combustion).' }
+                viewer:    { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83D\uDD2C', title: 'Viewer - ball-and-stick + space-filling',         hint: 'Each atom\u2019s color follows CPK (carbon black, oxygen red, nitrogen blue, hydrogen white). Bond lengths are not arbitrary - covalent radii from quantum chemistry tables, ~70-150 picometers.' },
+                creator:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2697',         title: 'Compound Creator - valence + bonding rules',     hint: 'Octet rule: most atoms want 8 valence electrons. C bonds 4 ways, N 3, O 2, H 1. Lewis dot structures (1916) still drive 90% of intro chemistry intuition.' },
+                build:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDF1', title: 'Build - drag atoms, draw bonds',                  hint: 'Single, double, triple bonds = 1, 2, 3 shared electron pairs. Triple bonds are shorter and stronger (N\u2261N at 110pm vs N-N at 145pm). Geometry follows VSEPR: pairs repel.' },
+                table:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDC2', title: 'Periodic Table - Mendeleev\u2019s 1869 grid',     hint: 'Periods (rows) = electron shells; groups (columns) = valence electrons. Mendeleev predicted gallium and germanium\u2019s properties before discovery - the table predicted reality.' },
+                reactions: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2697',         title: 'Reactions - reactants \u2192 products + ΔH',      hint: 'Conservation of mass (Lavoisier 1789): atoms in = atoms out. Balance the equation, predict the product, classify (synthesis / decomposition / single-replace / double-replace / combustion).' }
               };
               var meta = MODE_META[mode] || MODE_META.viewer;
               return React.createElement('div', {
@@ -1230,7 +1261,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 React.createElement("span", { className: "text-sm font-bold text-slate-600" }, "Formula: "),
 
-                React.createElement("span", { className: "text-lg font-bold text-slate-800" }, d.formula || '\u2014'),
+                React.createElement("span", { className: "text-lg font-bold text-slate-800" }, d.formula || '-'),
 
               d.formula && d.atoms && React.createElement("span", { className: "ml-2 text-xs text-slate-600" },
                 calcMolarMass((() => { const c = {}; (d.atoms || []).forEach(a => { c[a.el] = (c[a.el] || 0) + 1; }); return c; })()) + " g/mol"
@@ -1243,7 +1274,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             mode === 'creator' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, "Select elements to craft compounds \u2014 discover real-world chemistry by combining atoms!"),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, "Select elements to craft compounds - discover real-world chemistry by combining atoms!"),
 
               // Element selector grid (common elements)
 
@@ -1539,30 +1570,26 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                         e.stopPropagation();
 
-                        // If in bond-drawing mode
+                        // If in bond-drawing mode (either buildBondMode or selected from bottom)
 
-                        if (d.buildBondFrom !== null && d.buildBondFrom !== undefined && d.buildBondFrom !== i) {
-
-                          // Create bond
-
-                          const existingBonds = d.buildBonds || [];
-
-                          const already = existingBonds.find(b => (b[0] === d.buildBondFrom && b[1] === i) || (b[0] === i && b[1] === d.buildBondFrom));
-
-                          if (!already) {
-
-                            upd('buildBonds', [...existingBonds, [d.buildBondFrom, i, 1]]);
-
+                        if (d.buildBondMode || (d.buildBondFrom !== null && d.buildBondFrom !== undefined)) {
+                          if (d.buildBondFrom === null || d.buildBondFrom === undefined) {
+                            upd('buildBondFrom', i);
+                          } else if (d.buildBondFrom === i) {
+                            upd('buildBondFrom', null);
+                          } else {
+                            // Create bond
+                            const existingBonds = d.buildBonds || [];
+                            const already = existingBonds.find(b => (b[0] === d.buildBondFrom && b[1] === i) || (b[0] === i && b[1] === d.buildBondFrom));
+                            if (!already) {
+                              upd('buildBonds', [...existingBonds, [d.buildBondFrom, i, 1]]);
+                              if (typeof announceToSR === 'function') announceToSR("Connected atom " + d.buildAtoms[d.buildBondFrom].el + " to " + a.el);
+                            }
+                            upd('buildBondFrom', null);
+                            upd('buildCheckResult', null);
                           }
-
-                          upd('buildBondFrom', null);
-
-                          upd('buildCheckResult', null);
-
                         } else {
-
                           upd('buildDragging', i);
-
                         }
 
                       }
@@ -1805,7 +1832,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   React.createElement("p", { className: "text-sm font-bold text-amber-800" }, "\u{1F3AF} Target: " + d.buildTarget.name),
 
-                  React.createElement("p", { className: "text-xs text-amber-600" }, d.buildTarget.formula + " \u2014 " + d.buildTarget.desc),
+                  React.createElement("p", { className: "text-xs text-amber-600" }, d.buildTarget.formula + " - " + d.buildTarget.desc),
 
                   React.createElement("p", { className: "text-[11px] text-amber-500 mt-0.5" }, "Recipe: " + Object.entries(d.buildTarget.recipe).map(([el, n]) => el + (n > 1 ? '\u00D7' + n : '')).join(' + '))
 
@@ -1823,7 +1850,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     React.createElement("p", { className: "text-lg font-black text-emerald-700" }, "\u{1F389} " + d.buildCheckResult.compound.name),
 
-                    React.createElement("p", { className: "text-sm font-bold text-emerald-600" }, d.buildCheckResult.compound.formula + " \u2014 " + d.buildCheckResult.compound.desc),
+                    React.createElement("p", { className: "text-sm font-bold text-emerald-600" }, d.buildCheckResult.compound.formula + " - " + d.buildCheckResult.compound.desc),
 
                     React.createElement("p", { className: "text-xs text-emerald-500 mt-1" }, "+15 XP \u{1F31F}")
 
@@ -2024,30 +2051,78 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                             var nucleusR = Math.max(8, Math.min(22, 6 + protons * 0.15));
 
                             var shellColors = ['#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#fb923c', '#38bdf8'];
+                            var shellLabels = ['K', 'L', 'M', 'N', 'O', 'P', 'Q'];
 
                             var angle = 0;
 
                             var animId = null;
 
+                            // State interpolation for expanding/contracting shells smoothly
+                            var targetRadii = [];
+                            for (var s = 0; s < nShells; s++) {
+                              var r = nucleusR + 12 + (maxR - nucleusR - 12) * ((s + 1) / (nShells + 0.5));
+                              targetRadii.push(r);
+                            }
+
+                            canvas._activeRadii = canvas._activeRadii || [];
+                            if (canvas._activeRadii.length !== nShells) {
+                              canvas._activeRadii = [];
+                              for (var s = 0; s < nShells; s++) {
+                                canvas._activeRadii.push(targetRadii[s]);
+                              }
+                            }
+
+                            // Photon wave packet transitions
+                            canvas._photons = canvas._photons || [];
+                            if (canvas._prevN && canvas._prevN !== atomicNum) {
+                              var isRelaxation = atomicNum < canvas._prevN;
+                              for (var p = 0; p < 3; p++) {
+                                var pAngle = Math.random() * Math.PI * 2;
+                                canvas._photons.push({
+                                  angle: pAngle,
+                                  dist: isRelaxation ? nucleusR : maxR,
+                                  speed: isRelaxation ? 4 : -4,
+                                  color: isRelaxation ? '#a78bfa' : '#34d399', // relaxation (purple), excitation (green)
+                                  life: 0,
+                                  maxLife: 35
+                                });
+                              }
+                            }
+                            canvas._prevN = atomicNum;
+
                             function draw() {
 
                               ctx.clearRect(0, 0, W, H);
 
-                              // Draw shells (concentric rings)
+                              // Smoothly ease active radii towards target
+                              for (var s = 0; s < nShells; s++) {
+                                if (canvas._activeRadii[s] !== undefined) {
+                                  canvas._activeRadii[s] += (targetRadii[s] - canvas._activeRadii[s]) * 0.08;
+                                } else {
+                                  canvas._activeRadii[s] = targetRadii[s];
+                                }
+                              }
 
+                              // Draw concentric shells
                               for (var s = 0; s < nShells; s++) {
 
-                                var r = nucleusR + 12 + (maxR - nucleusR - 12) * ((s + 1) / (nShells + 0.5));
+                                var r = canvas._activeRadii[s];
 
                                 ctx.beginPath();
 
                                 ctx.arc(cx, cy, r, 0, Math.PI * 2);
 
-                                ctx.strokeStyle = 'rgba(148,163,184,0.25)';
+                                ctx.strokeStyle = 'rgba(148,163,184,0.18)';
 
                                 ctx.lineWidth = 1;
 
                                 ctx.stroke();
+
+                                // Shell boundary energy labels
+                                ctx.fillStyle = 'rgba(148, 163, 184, 0.45)';
+                                ctx.font = '7px monospace';
+                                ctx.textAlign = 'right';
+                                ctx.fillText(shellLabels[s] + '(n=' + (s + 1) + ')', cx + r - 4, cy - 3);
 
                               }
 
@@ -2121,15 +2196,15 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                               }
 
-                              // Draw electrons orbiting
+                              // Draw electrons orbiting (with trails)
 
                               for (var s2 = 0; s2 < nShells; s2++) {
 
-                                var r2 = nucleusR + 12 + (maxR - nucleusR - 12) * ((s2 + 1) / (nShells + 0.5));
+                                var r2 = canvas._activeRadii[s2] || targetRadii[s2];
 
                                 var eCount = shells[s2];
 
-                                var speed = (0.3 + s2 * 0.15) * (s2 % 2 === 0 ? 1 : -1);
+                                var speed = (0.22 + s2 * 0.08) * (s2 % 2 === 0 ? 1 : -1);
 
                                 var eColor = shellColors[s2 % shellColors.length];
 
@@ -2141,21 +2216,32 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                                   var ey = cy + Math.sin(eAngle) * r2;
 
-                                  // Glow
-
+                                  // Glow ring
                                   ctx.beginPath();
 
-                                  ctx.arc(ex, ey, 5, 0, Math.PI * 2);
+                                  ctx.arc(ex, ey, 5.5, 0, Math.PI * 2);
 
-                                  ctx.fillStyle = eColor + '44';
+                                  ctx.fillStyle = eColor + '22';
 
                                   ctx.fill();
 
-                                  // Electron dot
+                                  // Orbit electron trails
+                                  for (var tIdx = 1; tIdx <= 3; tIdx++) {
+                                    var trailAngle = eAngle - tIdx * 0.045 * speed;
+                                    var tx = cx + Math.cos(trailAngle) * r2;
+                                    var ty = cy + Math.sin(trailAngle) * r2;
+                                    ctx.beginPath();
+                                    ctx.arc(tx, ty, 3.2 - tIdx * 0.6, 0, Math.PI * 2);
+                                    ctx.fillStyle = eColor;
+                                    ctx.globalAlpha = 0.5 - tIdx * 0.15;
+                                    ctx.fill();
+                                    ctx.globalAlpha = 1.0;
+                                  }
 
+                                  // Electron core dot
                                   ctx.beginPath();
 
-                                  ctx.arc(ex, ey, 3, 0, Math.PI * 2);
+                                  ctx.arc(ex, ey, 3.2, 0, Math.PI * 2);
 
                                   ctx.fillStyle = eColor;
 
@@ -2165,11 +2251,35 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                               }
 
+                              // Render transition photons
+                              canvas._photons.forEach(function(ph) {
+                                ph.dist += ph.speed;
+                                ph.life++;
+                                
+                                var pX = cx + Math.cos(ph.angle) * ph.dist;
+                                var pY = cy + Math.sin(ph.angle) * ph.dist;
+                                
+                                // Wave oscillation offset
+                                var perpAngle = ph.angle + Math.PI / 2;
+                                var waveOffset = Math.sin(ph.life * 0.85) * 4.5;
+                                pX += Math.cos(perpAngle) * waveOffset;
+                                pY += Math.sin(perpAngle) * waveOffset;
+                                
+                                ctx.beginPath();
+                                ctx.arc(pX, pY, 3, 0, Math.PI * 2);
+                                ctx.fillStyle = ph.color;
+                                ctx.shadowColor = ph.color;
+                                ctx.shadowBlur = 6;
+                                ctx.fill();
+                                ctx.shadowBlur = 0;
+                              });
+                              canvas._photons = canvas._photons.filter(function(ph) { return ph.life < ph.maxLife; });
+
                               // Symbol label at top
 
-                              ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                              ctx.fillStyle = 'rgba(255,255,255,0.75)';
 
-                              ctx.font = 'bold 10px sans-serif';
+                              ctx.font = 'bold 9px monospace';
 
                               ctx.textAlign = 'center';
 
@@ -2426,21 +2536,43 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                   ),
 
                   // Equation balancer
-                  React.createElement("div", { className: "bg-white rounded-xl border-2 border-dashed border-slate-300 p-4 mb-3" },
-                    React.createElement("div", { className: "flex items-center justify-center gap-2 flex-wrap" },
+                  React.createElement("div", { className: "bg-slate-900/60 rounded-xl border border-slate-800 p-4 mb-3" },
+                    React.createElement("div", { className: "flex items-center justify-center gap-2 flex-wrap" }),
+                    
+                    // Visual Molecule Shelf
+                    React.createElement("div", { className: "flex gap-3 justify-center items-center mt-4 border-t border-slate-800 pt-3 flex-wrap" },
+                      drawVisualShelf(r.left, true),
+                      React.createElement("span", { className: "text-lg font-bold text-slate-600 mt-4" }, "→"),
+                      drawVisualShelf(r.right, false)
+                    )
 
                       // Left side (reactants)
                       r.left.map((term, i) => React.createElement("div", { key: 'l' + i, className: "flex items-center gap-1" },
                         i > 0 && React.createElement("span", { className: "text-lg font-bold text-slate-600 mx-1" }, "+"),
                         React.createElement("div", { className: "flex flex-col items-center" },
-                          React.createElement("div", { className: "flex items-center gap-0.5" },
+                          React.createElement("div", {
+                            "aria-label": "Coefficient for " + term.formula + ". Current value is " + coeffs[i] + ". Use Arrow Keys to adjust.",
+                            tabIndex: 0,
+                            onKeyDown: (e) => {
+                              if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+                                e.preventDefault(); setCoeff(i, 1);
+                                if (typeof announceToSR === 'function') announceToSR(term.formula + " coefficient increased to " + Math.min(9, coeffs[i] + 1));
+                              } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+                                e.preventDefault(); setCoeff(i, -1);
+                                if (typeof announceToSR === 'function') announceToSR(term.formula + " coefficient decreased to " + Math.max(1, coeffs[i] - 1));
+                              }
+                            },
+                            className: "flex items-center gap-0.5 focus:ring-2 focus:ring-yellow-500 focus:outline-none rounded-lg p-0.5"
+                          },
                             React.createElement("button", { "aria-label": "Decrease coefficient for " + term.formula,
                               onClick: () => setCoeff(i, -1),
+                              tabIndex: -1,
                               className: "w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center"
                             }, "−"),
-                            React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700" }, coeffs[i]),
+                            React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700 font-mono" }, coeffs[i]),
                             React.createElement("button", { "aria-label": "Increase coefficient for " + term.formula,
                               onClick: () => setCoeff(i, 1),
+                              tabIndex: -1,
                               className: "w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center"
                             }, "+")
                           ),
@@ -2455,14 +2587,29 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                       r.right.map((term, i) => React.createElement("div", { key: 'r' + i, className: "flex items-center gap-1" },
                         i > 0 && React.createElement("span", { className: "text-lg font-bold text-slate-600 mx-1" }, "+"),
                         React.createElement("div", { className: "flex flex-col items-center" },
-                          React.createElement("div", { className: "flex items-center gap-0.5" },
+                          React.createElement("div", {
+                            "aria-label": "Coefficient for " + term.formula + ". Current value is " + coeffs[r.left.length + i] + ". Use Arrow Keys to adjust.",
+                            tabIndex: 0,
+                            onKeyDown: (e) => {
+                              if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+                                e.preventDefault(); setCoeff(r.left.length + i, 1);
+                                if (typeof announceToSR === 'function') announceToSR(term.formula + " coefficient increased to " + Math.min(9, coeffs[r.left.length + i] + 1));
+                              } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+                                e.preventDefault(); setCoeff(r.left.length + i, -1);
+                                if (typeof announceToSR === 'function') announceToSR(term.formula + " coefficient decreased to " + Math.max(1, coeffs[r.left.length + i] - 1));
+                              }
+                            },
+                            className: "flex items-center gap-0.5 focus:ring-2 focus:ring-yellow-500 focus:outline-none rounded-lg p-0.5"
+                          },
                             React.createElement("button", { "aria-label": "Decrease coefficient for " + term.formula,
                               onClick: () => setCoeff(r.left.length + i, -1),
+                              tabIndex: -1,
                               className: "w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center"
                             }, "−"),
-                            React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700" }, coeffs[r.left.length + i]),
+                            React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700 font-mono" }, coeffs[r.left.length + i]),
                             React.createElement("button", { "aria-label": "Increase coefficient for " + term.formula,
                               onClick: () => setCoeff(r.left.length + i, 1),
+                              tabIndex: -1,
                               className: "w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center"
                             }, "+")
                           ),
@@ -2612,7 +2759,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                     'Select elements from the grid to craft real compounds. Discover all 32 recipes to earn the Master Chemist challenge!',
                     'Place atoms on the canvas and draw bonds between them. Click bonds to cycle single → double → triple. Try the Random Challenge!',
                     'Browse all 118 elements with animated Bohr models, electron configurations, and electronegativity values. Test yourself with the Element Quiz!',
-                    'Adjust coefficients to balance chemical equations. Match atom counts on both sides. 10 reactions from easy to hard — earn RP for each!'
+                    'Adjust coefficients to balance chemical equations. Match atom counts on both sides. 10 reactions from easy to hard - earn RP for each!'
                   ][tutorialStep]
                 ),
                 React.createElement("div", { className: "flex items-center justify-between" },

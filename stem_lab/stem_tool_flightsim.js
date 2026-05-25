@@ -8889,6 +8889,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var useRef = React.useRef;
       var useCallback = React.useCallback;
       var d = (ctx.toolData && ctx.toolData['flightSim']) || {};
+      // Live ref to `d` for the animation loop. The main render-loop
+      // useEffect closure-captures `d` at mount time and reads many
+      // properties off it (d.thirdPerson, d.autopilot, d.showForces,
+      // d.showHelp, d.rescue, etc.). Without this ref, toggling any of
+      // those via upd() updates React state but the loop keeps reading
+      // the stale captured value — so e.g. pressing V repeatedly does
+      // not actually flip third-person view. Updating dataRef.current
+      // on each render gives the loop a single live source of truth.
+      var dataRef = useRef(d);
+      dataRef.current = d;
       var upd = function(key, val) { ctx.update('flightSim', key, val); };
       var updMulti = function(obj) { ctx.updateMulti('flightSim', obj); };
       var addToast = ctx.addToast;
@@ -9555,6 +9565,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var THREE = window.THREE;
         var canvas = webglCanvasRef.current;
         if (!canvas) return;
+        // Same closure-capture concern as the 2D animation loop: this
+        // function is invoked from the animation loop which captured
+        // an old `d`. Read live state via dataRef so d.thirdPerson
+        // (camera mode) and d.aircraft (which model to render) reflect
+        // the current React state instead of mount-time values.
+        var d = dataRef.current;
 
         if (!threeSceneRef.current) {
           initThree(canvas);
@@ -16021,12 +16037,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       var stopEngineSound = function() {
         var a = audioRef.current;
-        if (a.gain) { try { a.gain.gain.setTargetAtTime(0, a.ctx.currentTime, 0.05); } catch(e) {} }
-        // Stop oscillator and close context after fade-out
+        // Capture the exact ctx/osc we want to stop BEFORE the setTimeout.
+        // If the user re-enters flying mode within 150ms, audioRef.current's
+        // ctx/osc properties will be reassigned to brand-new nodes —
+        // reading a.ctx / a.osc inside the timer would then accidentally
+        // close the NEW context (silencing the newly-started engine) and
+        // overwrite a.started. The locals freeze the intended targets.
+        var ctx = a.ctx;
+        var osc = a.osc;
+        if (a.gain) { try { a.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.05); } catch(e) {} }
+        // Mark stopped immediately so a rapid re-entry calls the
+        // initialization branch instead of skipping it.
+        a.started = false;
         setTimeout(function() {
-          try { if (a.osc) { a.osc.stop(); a.osc.disconnect(); } } catch(e) {}
-          try { if (a.ctx && a.ctx.state !== 'closed') a.ctx.close(); } catch(e) {}
-          a.started = false;
+          try { if (osc) { osc.stop(); osc.disconnect(); } } catch(e) {}
+          try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch(e) {}
         }, 150);
       };
 
@@ -16063,8 +16088,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       };
       var stopWindSound = function() {
         var w = windRef.current;
+        // Same race-condition guard as stopEngineSound: capture src
+        // before the setTimeout so a rapid re-entry doesn't stop the
+        // newly-started wind source.
+        var src = w.src;
         if (w.gain) { try { w.gain.gain.setTargetAtTime(0, audioRef.current.ctx.currentTime, 0.1); } catch(e) {} }
-        setTimeout(function() { try { if (w.src) { w.src.stop(); w.src.disconnect(); } } catch(e) {} w.started = false; }, 200);
+        w.started = false;
+        setTimeout(function() { try { if (src) { src.stop(); src.disconnect(); } } catch(e) {} }, 200);
       };
 
       // ── Aircraft Selection State ──
@@ -17008,11 +17038,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             lfoGain.connect(sh.osc.frequency);
             lfo.start();
             sh.lfo = lfo;
+            sh.lfoGain = lfoGain;
           } catch(e) {}
         } else if (!stalling && sh.active) {
           try {
-            if (sh.osc) { sh.osc.stop(); sh.osc.disconnect(); }
-            if (sh.lfo) { sh.lfo.stop(); sh.lfo.disconnect(); }
+            // Disconnect every node — not just osc/lfo. The gain and
+            // lfoGain nodes were previously left connected to the
+            // AudioContext destination across stall→un-stall cycles,
+            // accumulating orphan nodes. Each cycle now fully releases
+            // its audio graph; only the AudioContext itself persists
+            // (intentional — reusing the ctx avoids re-prompting for
+            // user-gesture audio resumption).
+            if (sh.osc)     { sh.osc.stop();    sh.osc.disconnect();    sh.osc    = null; }
+            if (sh.lfo)     { sh.lfo.stop();    sh.lfo.disconnect();    sh.lfo    = null; }
+            if (sh.gain)    { sh.gain.disconnect();                     sh.gain   = null; }
+            if (sh.lfoGain) { sh.lfoGain.disconnect();                  sh.lfoGain = null; }
             sh.active = false;
           } catch(e) {}
         }
@@ -17048,11 +17088,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         if (view !== 'flying' || !canvasRef.current) return;
         var canvas = canvasRef.current;
         var gfx = canvas.getContext('2d');
-        var showForces = d.showForces;
 
         var loop = function() {
           try {
           if (!flyingRef.current) return;
+          // Read tool-state live via dataRef so toggles to d.thirdPerson,
+          // d.autopilot, d.showForces, d.showHelp, d.rescue, etc. take
+          // effect on the next frame instead of being trapped by the
+          // closure capture. Before this shadow, pressing V / B / F / ?
+          // failed to actually toggle their respective UI states beyond
+          // the first press, because the loop kept reading the captured
+          // value of `d` from mount time.
+          var d = dataRef.current;
+          var showForces = d.showForces;
+          // Shadow the outer-closure `threeLoaded` with a live read every
+          // frame. The useEffect deps are [view] — when THREE.js finishes
+          // loading async, setThreeLoaded(true) triggers a React re-render
+          // but does NOT re-run this useEffect. Without this shadow, every
+          // `threeLoaded` / `!threeLoaded` branch below would see the
+          // stale false value forever, leading to the 3D scene never
+          // rendering AND the 2D fallback terrain/clouds being drawn ON
+          // TOP of the (correctly-mounted) WebGL canvas.
+          var threeLoaded = !!(window.THREE && webglCanvasRef.current);
           var W = canvas.width = canvas.clientWidth || canvas.parentElement?.clientWidth || 800;
           var H = canvas.height = canvas.clientHeight || canvas.parentElement?.clientHeight || 500;
           var dt = 1 / 30;
@@ -19608,7 +19665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e) {}
           disposeThree();
         };
-      }, [view, d.showForces]);
+      }, [view]);
 
       // ── MENU VIEW ──
       if (view === 'menu') {
