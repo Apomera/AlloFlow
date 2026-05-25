@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T16:41:26.657Z",
-  "count": 51,
+  "generated": "2026-05-25T16:44:15.617Z",
+  "count": 52,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -290,6 +290,13 @@
       "keys": 9953,
       "bytes": 1050236,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "spanish_castilian",
+      "display": "Spanish (Castilian)",
+      "keys": 9982,
+      "bytes": 1154606,
+      "updated": "2026-05-25"
     },
     {
       "slug": "spanish_latin_america",
