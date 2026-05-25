@@ -1,5 +1,5 @@
 {
-  "_version": "20260525181548T1779732948658",
+  "_version": "20260525181837T1779733117076",
   "tour": {
     "input_panel_title": "Paneli yo Kwinjiza",
     "input_panel_text": "Tangirira hano urugendo rwo gukora isomo. Iyi Paneli yo Kwinjiza ni urufatiro rw'umutungo wose ukozwe. Ikora nk'umutwe nyamukuru aho usobanura ibikubiyemo, context, na parameters.\n### Amahitamo yo Kwinjiza\n• **Gushyira Inyandiko**: Manika ibikubiyemo direct biva mu nkuru iyo ari yo yose, inkuru, cyangwa gahunda y'isomo.\n• **Kohereza Idosiye**: Ohereza PDF, amashusho, idosiye z'inyandiko, audio (MP3/WAV), cyangwa video ku gukuramo byikora.\n• **Kuzana URL**: Manika URL y'inkuru iyo ari yo yose kugira ngo ukuremo ibikubiyemo byayo byikora.\n• **AI Kurikirana Umutungo**: Sobanura ingingo maze AI ibone umutungo wo kuri interineti ukwiye urwego rw'ishuri.\n• **Kora Inyandiko y'Inkomoko**: Kora ibikubiyemo by'umwimerere mu kuvuga ingingo, ijwi, urwego rw'ishuri, n'amahame ya intego.\n### Ibiranga byo Gukora\n• **Guhitamo Ijwi**: Hitamo mu mvugo Informative, Narrative, Persuasive, Humorous, cyangwa Step-by-Step.\n• **Guhuza n'Amahame**: Koresha standard finder ya AI cyangwa winjize amahame mu ntoki (kugeza ku 3).\n• **Kugenzura Ukuri**: Bishyireho web grounding ku gugenzura ibyukuri no gushyiramo citations byikora.\n• **Amabwiriza Yihariye**: Ongeraho ubuyobozi bwihariye ku gukora ibikubiyemo bihujwe.\n### Ubushobozi bwa Sisitemu\n• **Kumenya Byikora**: Imenya ururimi rw'inkomoko byikora.\n• **Gutunganya Mu Bice**: Idosiye z'audio na video zirenze 20MB zigabanyirizwa mu buryo bw'ubwenge ku transcription yizewe.\n### Ay'Ingenzi\nIbikoresho byinshi muri sidebar bisaba inkomoko mbere yo gukoreshwa. Manika cyangwa kora ibikubiyemo byawe hano mbere, hanyuma ushakishe undi mutungo.",
@@ -7387,327 +7387,327 @@
     "rerun_wizard_aria": "Subira ukoze wizard ya QuickStart yo gutegura"
   },
   "about": {
-    "title": "Ku byerekeye AlloFlow v1.0",
-    "tab_about": "Ku byerekeye UDL",
-    "tab_features": "ibiranga Guide",
-    "approach_header": "AlloFlow Approach",
+    "title": "Iby'AlloFlow v1.0",
+    "tab_about": "Iby'UDL",
+    "tab_features": "Feature Guide",
+    "approach_header": "Inzira ya AlloFlow",
     "allo_acronym_label": "ALLO:",
-    "allo_acronym_def": "Adaptive urwego, Layers, & ibivamo",
+    "allo_acronym_def": "Adaptive Levels, Layers, & Outputs",
     "flow_acronym_label": "FLOW:",
-    "flow_acronym_def": "Flexible Learning amahitamo kuri Whole-umunyeshuri Education",
-    "what_is_udl": "iki ni UDL?",
-    "udl_definition": "Universal Design kuri Learning (UDL) ni framework ku improve na optimize teaching na learning kuri byose people based kuri scientific insights into gute humans iga.",
-    "how_help_header": "gute does iki ibikoresho ubufasha?",
-    "how_help_desc": "Iki ibikoresho irakoresha AI ku instantly rema diverse entry ahantu kuri cyawe curriculum, ensuring wowe address three core principles cya UDL:",
+    "flow_acronym_def": "Flexible Learning Options for Whole-Student Education",
+    "what_is_udl": "UDL ni iki?",
+    "udl_definition": "Universal Design for Learning (UDL) ni framework yo kunoza no kuringaniza kwigisha no kwiga ku bantu bose hashingiwe ku bumenyi bw'ubushakashatsi ku uburyo abantu biga.",
+    "how_help_header": "Iki gikoresho gifasha gute?",
+    "how_help_desc": "Iki gikoresho gikoresha AI ku gukora ako kanya inzira zitandukanye zo kwinjira mu mabwiriza yawe, byemeza ko uvuga amahame atatu nyamukuru ya UDL:",
     "rep_title": "Representation:",
-    "rep_desc": "Presenting amakuru muri different ways (e.g., Leveled inyandiko, ibigaragara ubufasha, Glossaries).",
+    "rep_desc": "Gutanga amakuru mu nzira zitandukanye (urugero: Leveled Text, Visual Supports, Glossaries).",
     "action_title": "Action & Expression:",
-    "action_desc": "Providing amahitamo kuri umunyeshuri ku demonstrate iki they know (e.g., Scaffolds, igeragezwa).",
+    "action_desc": "Gutanga amahitamo ku banyeshuri yo kwerekana ibyo bazi (urugero: Scaffolds, Quizzes).",
     "engage_title": "Engagement:",
-    "engage_desc": "Tapping into interests ku imbogamizi na motivate (e.g., Interest-based analogies).",
-    "ai_guide_tip": "Koresha \"AI UDL & Kuringaniza Guide\" buto muri sidebar ku ikiganiro hamwe na expert pedagogical bot kuri cyihariye ingamba advice.",
-    "cast_link_text": "Reba Full UDL Guidelines (CAST.org)",
-    "reset_wizard": "Subiramo byihuse Tangira umuyobozi",
-    "support_kofi": "ubufasha kuri Ko-fi",
+    "engage_desc": "Gukora ku byo bakunda ku gushishikariza no kubaha imbaraga (urugero: Interest-based analogies).",
+    "ai_guide_tip": "Koresha buto ya \"AI UDL & Alignment Guide\" muri sidebar kugira ngo uganire na bot y'inzobere mu mabwiriza ku nama z'ingamba zihariye.",
+    "cast_link_text": "Reba UDL Guidelines Yuzuye (CAST.org)",
+    "reset_wizard": "Subiza Quick Start Wizard",
+    "support_kofi": "Shyigikira kuri Ko-fi",
     "features_list": {
       "categories": {
-        "creation": "Gahunda & Rema",
-        "activities": "Engage & Kina",
-        "assessment": "Assess & ubufasha",
-        "platform": "Manage & Adapt"
+        "creation": "Tegura & Kora",
+        "activities": "Witabire & Kina",
+        "assessment": "Suzuma & Shyigikira",
+        "platform": "Cunga & Huza"
       },
       "items": [
         {
-          "title": "Suzuma inkomoko",
-          "icon": "Shakisha",
-          "desc": "Kuramo reading urwego, key ibitekerezo, na ukuri checks kuva any inkomoko inyandiko.",
+          "title": "Sesengura Inkomoko",
+          "icon": "Search",
+          "desc": "Kura urwego rwo gusoma, ibitekerezo by'ingenzi, n'igenzura ry'ukuri kuva mu nyandiko iyo ari yo yose y'inkomoko.",
           "category": "creation",
           "color": "blue"
         },
         {
-          "title": "Leveled inyandiko",
+          "title": "Leveled Text",
           "icon": "BookOpen",
-          "desc": "Adapt inyandiko ubukomere kuri any ishuri K-12. Harimo indimi ebyiri side-by-side views.",
+          "desc": "Huza ubukomatanye bw'inyandiko ku rwego rw'ishuri urwo ari rwo rwose K-12. Birimo bilingual side-by-side views.",
           "category": "creation",
           "color": "indigo"
         },
         {
-          "title": "isomo Gahunda",
+          "title": "Gahunda y'Isomo",
           "icon": "ClipboardList",
-          "desc": "Synthesize byose umutungo into urwego-aligned isomo gahunda cyangwa study guide.",
+          "desc": "Shyira hamwe umutungo wose mu gahunda y'isomo ihujwe n'amahame cyangwa study guide.",
           "category": "creation",
           "color": "violet"
         },
         {
-          "title": "ibigaragara Organizer",
+          "title": "Visual Organizer",
           "icon": "Layout",
-          "desc": "Kora Flow ishusho, Venn ishusho, na structured outlines.",
+          "desc": "Kora Flow Charts, Venn Diagrams, na structured outlines.",
           "category": "creation",
           "color": "cyan"
         },
         {
           "title": "Brainstorm",
           "icon": "Lightbulb",
-          "desc": "Kora hands-kuri activity ideas na real-world connections.",
+          "desc": "Kora ibitekerezo by'ibikorwa byifite intoki n'isano y'isi nyayo.",
           "category": "creation",
           "color": "yellow"
         },
         {
           "title": "FAQ Generator",
           "icon": "FileQuestion",
-          "desc": "Anticipate umunyeshuri misconceptions hamwe na auto-byakozwe Q& lists.",
+          "desc": "Tekereza ibitekerezo bibi by'umunyeshuri hamwe na Q&A lists zakozwe byikora.",
           "category": "creation",
           "color": "teal"
         },
         {
-          "title": "Interview uburyo",
+          "title": "Interview Mode",
           "icon": "History",
-          "desc": "ikiganiro hamwe na historical figures, fictional umuntu, cyangwa experts. Uncover hidden secrets.",
+          "desc": "Ganira n'abakinnyi b'amateka, ab'igihimbano, cyangwa experts. Bona ibanga byihishe.",
           "category": "activities",
           "color": "amber"
         },
         {
-          "title": "Adventure uburyo",
+          "title": "Adventure Mode",
           "icon": "MapIcon",
-          "desc": "Interactive 'Hitamo cyawe Own Adventure' simulation na roleplay scenarios.",
+          "desc": "Interactive 'Choose Your Own Adventure' simulation na roleplay scenarios.",
           "category": "activities",
           "color": "purple"
         },
         {
-          "title": "umukino Arcade",
+          "title": "Game Arcade",
           "icon": "Gamepad2",
-          "desc": "Auto-kora Bingo, Memory Match, ijambo Shakisha, na Crosswords.",
+          "desc": "Kora byikora Bingo, Memory Match, Word Search, na Crosswords.",
           "category": "activities",
           "color": "pink"
         },
         {
           "title": "Sequence Builder",
           "icon": "ListOrdered",
-          "desc": "Kurura-na-reka timeline activity kuri chronological events cyangwa process intambwe.",
+          "desc": "Drag-and-drop timeline activity ku byabaye bya chronological cyangwa intambwe z'inzira.",
           "category": "activities",
           "color": "rose"
         },
         {
-          "title": "Igitekerezo Tondeka",
-          "icon": "Yungura",
-          "desc": "Categorize ijambo na ibitekerezo into buckets. Gikomeye kuri distinguishing similar ideas.",
+          "title": "Concept Sort",
+          "icon": "Filter",
+          "desc": "Tondeka imvugo n'ibitekerezo mu byiciro. Byiza ku gutandukanya ibitekerezo bisa.",
           "category": "activities",
           "color": "orange"
         },
         {
           "title": "Socratic Tutor",
           "icon": "MessageCircleQuestion",
-          "desc": "AI guide icyo asks guiding ikibazo instead cya giving igisubizo.",
+          "desc": "AI guide ibaza ibibazo biyobora aho gutanga ibisubizo.",
           "category": "activities",
           "color": "fuchsia"
         },
         {
           "title": "Exit Ticket",
           "icon": "CheckSquare",
-          "desc": "Rema igeragezwa. Tangiza 'Mu buryo butaziguye igeragezwa' uburyo kuri real-time ishuri ibyavuye.",
-          "category": "isuzuma",
+          "desc": "Kora quizzes. Tangiza 'Live Quiz' mode ku bivamo by'ishuri ku gihe nyacyo.",
+          "category": "assessment",
           "color": "emerald"
         },
         {
-          "title": "Kwandika Scaffolds",
+          "title": "Writing Scaffolds",
           "icon": "Quote",
-          "desc": "interuro starters na igika frames hamwe na built-muri rubrics.",
-          "category": "isuzuma",
+          "desc": "Sentence starters na paragraph frames hamwe na rubrics zinjijwe.",
+          "category": "assessment",
           "color": "orange"
         },
         {
-          "title": "ibigaragara ubufasha",
+          "title": "Visual Support",
           "icon": "ImageIcon",
-          "desc": "AI ishusho na ifoto. Koresha 'Nano Banana' ku refine cyangwa kuraho inyandiko.",
-          "category": "isuzuma",
+          "desc": "AI diagrams na illustrations. Koresha 'Nano Banana' ku gukosora cyangwa kuvanaho inyandiko.",
+          "category": "assessment",
           "color": "purple"
         },
         {
-          "title": "Imibare & STEM",
+          "title": "Math & STEM",
           "icon": "Calculator",
-          "desc": "intambwe-by-intambwe solvers, ishusho isekuru, na similar kora imyitozo ibibazo.",
-          "category": "isuzuma",
+          "desc": "Step-by-step solvers, gukora graph, na practice problems zisa.",
+          "category": "assessment",
           "color": "blue"
         },
         {
-          "title": "urwego Audit",
+          "title": "Standard Audit",
           "icon": "ShieldCheck",
-          "desc": "Verify kuringaniza hamwe na cyihariye educational urwego na kumenya rigor gaps.",
-          "category": "isuzuma",
+          "desc": "Emeza guhuza n'amahame y'uburezi yihariye no kumenya rigor gaps.",
+          "category": "assessment",
           "color": "slate"
         },
         {
           "title": "Oral Fluency",
           "icon": "Mic",
-          "desc": "Tega amatwi ku umunyeshuri soma aloud na bara WCPM na ukuri.",
-          "category": "isuzuma",
+          "desc": "Tega amatwi abanyeshuri basoma mu ijwi rirenga kandi ubare WCPM n'ubunoze.",
+          "category": "assessment",
           "color": "rose"
         },
         {
-          "title": "umwarimu Dashboard",
+          "title": "Teacher Dashboard",
           "icon": "Layout",
-          "desc": "Track umunyeshuri ihinduka, reba analytics, na ohereza hanze gradebooks.",
+          "desc": "Kurikirana iterambere ry'umunyeshuri, reba analytics, no kohereza gradebooks.",
           "category": "platform",
           "color": "indigo"
         },
         {
-          "title": "Mu buryo butaziguye igihe",
+          "title": "Live Sessions",
           "icon": "Wifi",
-          "desc": "Host synchronized ishuri, tangiza Democracy uburyo voting, na manage mu buryo butaziguye igeragezwa.",
+          "desc": "Tegura amasomo yihujwe, kora Democracy Mode voting, no kuyobora live quizzes.",
           "category": "platform",
           "color": "rose"
         },
         {
-          "title": "umunyeshuri Profiles",
+          "title": "Student Profiles",
           "icon": "Users",
-          "desc": "Bika differentiation igenamiterere (ururimi, Interests) kuri different groups.",
+          "desc": "Bika differentiation settings (Ururimi, Ibyo Bakunda) ku matsinda atandukanye.",
           "category": "platform",
           "color": "cyan"
         },
         {
-          "title": "Kugerwaho",
+          "title": "Accessibility",
           "icon": "Ear",
-          "desc": "Immersive Reader, umurongo Focus, Dictation, na inyandiko-ku-Speech ibikoresho.",
+          "desc": "Immersive Reader, Line Focus, Dictation, na Text-to-Speech tools.",
           "category": "platform",
           "color": "teal"
         },
         {
-          "title": "Ohereza hanze Suite",
-          "icon": "Manura",
-          "desc": "Ohereza hanze ku PDF, PowerPoint, Canvas QTI, cyangwa HTML Bundles.",
+          "title": "Export Suite",
+          "icon": "Download",
+          "desc": "Ohereza ku PDF, PowerPoint, Canvas QTI, cyangwa HTML Bundles.",
           "category": "platform",
           "color": "blue"
         },
         {
           "title": "Gemini Bridge",
           "icon": "Terminal",
-          "desc": "Kora amabwiriza ku kubaka gakondo interactive apps muri Gemini Canvas.",
+          "desc": "Kora prompts zo kubaka apps zihariye za interactive muri Gemini Canvas.",
           "category": "platform",
           "color": "slate"
         },
         {
-          "title": "Smart inkoranya",
+          "title": "Smart Glossary",
           "icon": "BookOpen",
-          "desc": "ibigaragara amagambo ikarita hamwe na amajwi, indimi ebyiri ubusobanuro, na 5 amagambo umukino (crossword, bingo, memory match, ijambo shakisha, scramble).",
+          "desc": "Visual vocabulary cards zifite audio, bilingual translations, n'imikino 5 y'imvugo (crossword, bingo, memory match, word search, scramble).",
           "category": "creation",
           "color": "purple"
         },
         {
           "title": "Immersive Reader",
           "icon": "Ear",
-          "desc": "Multi-uburyo reading ubufasha: RSVP umuvuduko reading, karaoke highlighting, bionic reading, umurongo-focus ruler, grammar overlays.",
+          "desc": "Multi-mode reading support: RSVP speed reading, karaoke highlighting, bionic reading, line-focus ruler, grammar overlays.",
           "category": "creation",
           "color": "blue"
         },
         {
-          "title": "ijambo Amajwi Studio",
+          "title": "Word Sounds Studio",
           "icon": "Mic",
-          "desc": "Phonemic awareness kora imyitozo across 8 activity types — blending, segmenting, rhyming, mapping, isolation, spelling, families, sight & spell.",
+          "desc": "Practice ya phonemic awareness hagati y'ubwoko 8 bw'ibikorwa — blending, segmenting, rhyming, mapping, isolation, spelling, families, sight & spell.",
           "category": "creation",
           "color": "amber"
         },
         {
           "title": "StoryForge",
           "icon": "Quote",
-          "desc": "Six-phase scaffolded creative kwandika hamwe na AI ifoto, narration, gakondo rubrics, na 18-ururimi ubufasha.",
+          "desc": "Kwandika kw'ubuhanzi kwa scaffolded muri phases 6 hamwe na AI illustrations, narration, rubrics zihariye, n'inkunga y'indimi 18.",
           "category": "creation",
           "color": "rose"
         },
         {
           "title": "AlloBot",
           "icon": "Sparkles",
-          "desc": "Always-kirahari AI tutor na platform guide. igisubizo ibirimo ikibazo, navigates AlloFlow, na auto-configures igenamiterere kuri request.",
+          "desc": "AI tutor na platform guide bihari iteka. Bisubiza ibibazo by'ibikubiyemo, bitembera muri AlloFlow, kandi bishyiraho settings ku gusaba.",
           "category": "activities",
           "color": "indigo"
         },
         {
           "title": "Escape Room",
           "icon": "MapIcon",
-          "desc": "Team-based puzzle imbogamizi built kuva cyawe isomo ibirimo. umwarimu-controlled inama, timed escape gukurikirana, multi-stage rooms.",
+          "desc": "Team-based puzzle challenges zubatswe ku bikubiyemo by'isomo ryawe. Inama zigenzurwa n'umwarimu, gukurikirana escape kw'igihe, multi-stage rooms.",
           "category": "activities",
           "color": "orange"
         },
         {
           "title": "SEL Hub",
           "icon": "Heart",
-          "desc": "32 social-emotional learning ibikoresho across CASEL competencies — coping ikarita, restorative uruziga, ubuntu-advocacy rehearsal, na byinshi.",
+          "desc": "Ibikoresho 32 byo kwiga ku mibanire n'amarangamutima hagati ya CASEL competencies — coping cards, restorative circles, self-advocacy rehearsal, n'ibindi.",
           "category": "activities",
           "color": "rose"
         },
         {
           "title": "BehaviorLens",
           "icon": "ShieldCheck",
-          "desc": "FBA/BIP suite: ABC amakuru collection, frequency/interval gukurikirana, IOA calculator (5 methods), preference isuzuma, intervention templates.",
-          "category": "isuzuma",
+          "desc": "Suite ya FBA/BIP: ABC data collection, frequency/interval tracking, IOA calculator (uburyo 5), preference assessments, intervention templates.",
+          "category": "assessment",
           "color": "indigo"
         },
         {
-          "title": "Raporo Writer",
+          "title": "Report Writer",
           "icon": "ClipboardList",
-          "desc": "10-intambwe umuyobozi kuri psychoeducational reports: 17 isuzuma presets, fact-chunk verification, triangulated drafting, dual-pass ukuri audit.",
-          "category": "isuzuma",
+          "desc": "10-step wizard ku raporo z'psychoeducational: 17 assessment presets, fact-chunk verification, triangulated drafting, dual-pass accuracy audit.",
+          "category": "assessment",
           "color": "purple"
         },
         {
-          "title": "Dynamic isuzuma",
-          "icon": "Yungura",
-          "desc": "Vygotsky/Feuerstein/Lidz ikizamini-teach-retest probes hamwe na 4-urwego prompt ladders, modifiability scoring, IEP intego + accommodation isekuru.",
-          "category": "isuzuma",
+          "title": "Dynamic Assessment",
+          "icon": "Filter",
+          "desc": "Vygotsky/Feuerstein/Lidz test-teach-retest probes hamwe na 4-level prompt ladders, modifiability scoring, IEP goal + accommodation generation.",
+          "category": "assessment",
           "color": "blue"
         },
         {
-          "title": "umunyeshuri Analytics",
+          "title": "Student Analytics",
           "icon": "Layout",
-          "desc": "Automated RTI Tier 1/2/3 classification hamwe na aimline monitoring, CBM probe history, anomaly flagging, ishuri screening reports.",
-          "category": "isuzuma",
+          "desc": "Automated RTI Tier 1/2/3 classification hamwe na aimline monitoring, CBM probe history, anomaly flagging, raporo zo gusuzuma ishuri.",
+          "category": "assessment",
           "color": "emerald"
         },
         {
-          "title": "PDF Kugerwaho",
-          "icon": "Manura",
-          "desc": "Ohereza any PDF → 5-auditor triangulated audit → WCAG remediation via Vision API → axe-core verification → kuboneka PDF/HTML/amajwi ohereza hanze.",
+          "title": "PDF Accessibility",
+          "icon": "Download",
+          "desc": "Ohereza PDF iyo ari yo yose → 5-auditor triangulated audit → WCAG remediation binyuze muri Vision API → axe-core verification → accessible PDF/HTML/audio export.",
           "category": "platform",
           "color": "cyan"
         },
         {
           "title": "Symbol Studio",
           "icon": "ImageIcon",
-          "desc": "Full AAC platform: AI-byakozwe PCS symbols, board builder, ibigaragara schedules, social stories, Symbol umushinga umukino, ijambo Garden amagambo gukurikirana.",
+          "desc": "AAC platform yuzuye: AI-generated PCS symbols, board builder, visual schedules, social stories, Symbol Quest games, Word Garden vocabulary tracking.",
           "category": "platform",
           "color": "fuchsia"
         },
         {
-          "title": "STEM laboratwari",
+          "title": "STEM Lab",
           "icon": "Layers",
-          "desc": "95+ browser-based interactive simulations across imibare, science, CS, engineering, na creative design — kuva DNA labs ku physics sandboxes.",
+          "desc": "Simulations 95+ za interactive muri browser hagati ya math, science, CS, engineering, na creative design — kuva ku DNA labs ku physics sandboxes.",
           "category": "platform",
           "color": "teal"
         },
         {
           "title": "DBQ Generator",
           "icon": "FileQuestion",
-          "desc": "inyandiko-Based ikibazo sets kuri inkomoko analysis — DOK-tiered amabwiriza hamwe na sourcing/contextualization/corroboration scaffolds + rubric.",
+          "desc": "Document-Based Question sets ku isesengura ry'inkomoko — DOK-tiered prompts hamwe na sourcing/contextualization/corroboration scaffolds + rubric.",
           "category": "creation",
           "color": "amber"
         },
         {
           "title": "Note Taking Templates",
           "icon": "ListOrdered",
-          "desc": "Cornell notes, two-inkingi gereranya/contrast, sketchnote amabwiriza, mindmaps, na incamake scaffolds — pre-filled cyangwa blank.",
+          "desc": "Cornell notes, two-column compare/contrast, sketchnote prompts, mindmaps, na summary scaffolds — zuzuye cyangwa zera.",
           "category": "creation",
           "color": "blue"
         },
         {
-          "title": "Anchor ishusho",
+          "title": "Anchor Charts",
           "icon": "Layout",
-          "desc": "Printable ishuri-poster anchor ishusho hamwe na iconography, ibara-coded igice, AI imagery, na differentiated ubukomere urwego.",
+          "desc": "Anchor charts zacapwa za classroom-poster zifite iconography, ibice byifite amabara, AI imagery, n'urwego rw'ubukomatanye butandukanyijwe.",
           "category": "creation",
           "color": "rose"
         },
         {
           "title": "Annotation Suite",
           "icon": "Quote",
-          "desc": "Overlay annotations kuri any AlloFlow umutungo — highlights, sticky notes, ijwi notes, drawings — hamwe na ibara-coded layers na exportable PDFs.",
+          "desc": "Shyira annotations hejuru y'umutungo iyo ari yo yose ya AlloFlow — highlights, sticky notes, voice notes, igishushanyo — hamwe na layers zifite amabara na exportable PDFs.",
           "category": "activities",
           "color": "purple"
         }
