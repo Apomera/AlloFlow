@@ -7268,7 +7268,7 @@
       "auto_fill_stop": "Itoranya ry'ubwiriza ryarahagaze."
     },
     "pack": {
-      "count_selection": "Birasobanutse. Iri somo rigomba kugera kure gute? - **Ubwiriza:** AI ihitamo ihuje neza. - **Byose:** Tunganya byose. - **Yawe:** Andika umubare (urugero: '10').",
+      "count_selection": "Birasobanutse. Iri somo rigomba kugera kure gute?\n- **Ubwiriza:** AI ihitamo ihuje neza.\n- **Byose:** Tunganya byose.\n- **Yawe:** Andika umubare (urugero: '10').",
       "designing": "Bitegurwa blueprint y'isomo y'ibikoresho {count}... Uzashobora kwifuza ihinduka mu gahunda nyuma yo kuyitunganya.",
       "error": "Nagize ikosa mu gutegura blueprint. Reka tugerageze Intambwe ku Ntambwe.",
       "comprehensive": "byuzuye"
