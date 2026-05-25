@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T03:52:17.624Z",
-  "count": 37,
+  "generated": "2026-05-25T03:54:52.837Z",
+  "count": 38,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -141,7 +141,7 @@
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
       "keys": 9976,
-      "bytes": 1033182,
+      "bytes": 1033554,
       "updated": "2026-05-25"
     },
     {
@@ -157,6 +157,13 @@
       "keys": 9968,
       "bytes": 1012498,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "latin",
+      "display": "Latin",
+      "keys": 9982,
+      "bytes": 1036383,
+      "updated": "2026-05-25"
     },
     {
       "slug": "lingala",
