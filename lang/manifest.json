@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-25T15:06:26.001Z",
+  "generated": "2026-05-25T15:08:36.031Z",
   "count": 49,
   "total_keys_expected": 9307,
   "available": [
@@ -42,8 +42,8 @@
     {
       "slug": "chin_falam",
       "display": "Chin (Falam)",
-      "keys": 1790,
-      "bytes": 92217,
+      "keys": 1906,
+      "bytes": 97976,
       "updated": "2026-05-25"
     },
     {
@@ -189,8 +189,8 @@
     {
       "slug": "lao",
       "display": "Lao",
-      "keys": 1789,
-      "bytes": 151653,
+      "keys": 1905,
+      "bytes": 160240,
       "updated": "2026-05-25"
     },
     {
