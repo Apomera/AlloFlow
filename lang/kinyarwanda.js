@@ -1,5 +1,5 @@
 {
-  "_version": "20260525204352T1779741832526",
+  "_version": "20260525204855T1779742135658",
   "tour": {
     "input_panel_title": "Paneli yo Kwinjiza",
     "input_panel_text": "Tangirira hano urugendo rwo gukora isomo. Iyi Paneli yo Kwinjiza ni urufatiro rw'umutungo wose ukozwe. Ikora nk'umutwe nyamukuru aho usobanura ibikubiyemo, context, na parameters.\n### Amahitamo yo Kwinjiza\n• **Gushyira Inyandiko**: Manika ibikubiyemo direct biva mu nkuru iyo ari yo yose, inkuru, cyangwa gahunda y'isomo.\n• **Kohereza Idosiye**: Ohereza PDF, amashusho, idosiye z'inyandiko, audio (MP3/WAV), cyangwa video ku gukuramo byikora.\n• **Kuzana URL**: Manika URL y'inkuru iyo ari yo yose kugira ngo ukuremo ibikubiyemo byayo byikora.\n• **AI Kurikirana Umutungo**: Sobanura ingingo maze AI ibone umutungo wo kuri interineti ukwiye urwego rw'ishuri.\n• **Kora Inyandiko y'Inkomoko**: Kora ibikubiyemo by'umwimerere mu kuvuga ingingo, ijwi, urwego rw'ishuri, n'amahame ya intego.\n### Ibiranga byo Gukora\n• **Guhitamo Ijwi**: Hitamo mu mvugo Informative, Narrative, Persuasive, Humorous, cyangwa Step-by-Step.\n• **Guhuza n'Amahame**: Koresha standard finder ya AI cyangwa winjize amahame mu ntoki (kugeza ku 3).\n• **Kugenzura Ukuri**: Bishyireho web grounding ku gugenzura ibyukuri no gushyiramo citations byikora.\n• **Amabwiriza Yihariye**: Ongeraho ubuyobozi bwihariye ku gukora ibikubiyemo bihujwe.\n### Ubushobozi bwa Sisitemu\n• **Kumenya Byikora**: Imenya ururimi rw'inkomoko byikora.\n• **Gutunganya Mu Bice**: Idosiye z'audio na video zirenze 20MB zigabanyirizwa mu buryo bw'ubwenge ku transcription yizewe.\n### Ay'Ingenzi\nIbikoresho byinshi muri sidebar bisaba inkomoko mbere yo gukoreshwa. Manika cyangwa kora ibikubiyemo byawe hano mbere, hanyuma ushakishe undi mutungo.",
@@ -2407,7 +2407,7 @@
     "cleared_message": "wowe cleared board muri {moves} moves.",
     "announcement_match": "It's match! +30 ahantu",
     "announcement_mismatch": "ntibi match. -5 ahantu. ikarita flipped gusubira.",
-    "mode_switch_confirm": "Changing uburyo will restart iki round. Komeza?",
+    "mode_switch_confirm": "Guhindura uburyo bizatangiriza iyi round. Komeza?",
     "modes": {
       "smart": "Auto (ijambo ? ibigaragara)",
       "term_def": "ijambo ? igisobanuro",
@@ -5217,7 +5217,7 @@
       "privacy_note": "Iy'ibanga kuri wowe — ntisangijwe n'umunyeshuri",
       "delete_aria": "Siba iyi nyandiko",
       "delete_tooltip": "Siba iyi nyandiko",
-      "placeholder": "Inyandiko ku wowe kuri iki gikoresho (Cmd/Ctrl+Enter ngo ubike)",
+      "placeholder": "Inyandiko bwite ku iyi mutungo (Cmd/Ctrl+Enter ku kubika)",
       "textarea_aria": "Inyandiko nshya ya mwarimu",
       "save_btn": "Bika",
       "saved": "Inyandiko yabitswe."
@@ -5333,10 +5333,10 @@
     "toggle_spacing": "Hindura extra letter spacing",
     "toggle_syllables": "Hindura Syllabification",
     "toggle_line_focus": "Hindura umurongo focus mask",
-    "highlight_nouns": "Highlight Nouns (Blue)",
-    "highlight_verbs": "Highlight Verbs (Red)",
-    "highlight_adjectives": "Highlight Adjectives (Green)",
-    "highlight_adverbs": "Highlight Adverbs (Purple)",
+    "highlight_nouns": "Shyira mu Mabara Amazina (Ubururu)",
+    "highlight_verbs": "Shyira mu Mabara Amavugategeko (Umutuku)",
+    "highlight_adjectives": "Shyira mu Mabara Amavugaranga (Icyatsi)",
+    "highlight_adverbs": "Shyira mu Mabara Adverbs (Purple)",
     "close": "Funga Immersive Reba",
     "settings_label": "inyandiko Appearance igenamiterere",
     "label_text": "inyandiko",
