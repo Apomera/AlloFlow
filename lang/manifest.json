@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T00:46:22.756Z",
-  "count": 27,
+  "generated": "2026-05-25T00:58:07.421Z",
+  "count": 29,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -117,6 +117,13 @@
       "updated": "2026-05-24"
     },
     {
+      "slug": "pashto",
+      "display": "Pashto",
+      "keys": 9965,
+      "bytes": 1390968,
+      "updated": "2026-05-25"
+    },
+    {
       "slug": "polish",
       "display": "Polish",
       "keys": 9968,
@@ -129,6 +136,13 @@
       "keys": 9953,
       "bytes": 1108495,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "punjabi",
+      "display": "Punjabi",
+      "keys": 9976,
+      "bytes": 1274409,
+      "updated": "2026-05-25"
     },
     {
       "slug": "russian",
