@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-25T14:29:54.743Z",
+  "generated": "2026-05-25T14:42:00.142Z",
   "count": 47,
   "total_keys_expected": 9307,
   "available": [
@@ -43,7 +43,7 @@
       "slug": "chin_falam",
       "display": "Chin (Falam)",
       "keys": 1207,
-      "bytes": 61295,
+      "bytes": 62590,
       "updated": "2026-05-25"
     },
     {
@@ -169,7 +169,7 @@
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
       "keys": 9976,
-      "bytes": 1042097,
+      "bytes": 1043028,
       "updated": "2026-05-25"
     },
     {
@@ -190,7 +190,7 @@
       "slug": "lao",
       "display": "Lao",
       "keys": 1206,
-      "bytes": 102532,
+      "bytes": 103826,
       "updated": "2026-05-25"
     },
     {
@@ -301,8 +301,8 @@
     {
       "slug": "thai",
       "display": "Thai",
-      "keys": 1298,
-      "bytes": 115003,
+      "keys": 1654,
+      "bytes": 145793,
       "updated": "2026-05-25"
     },
     {
