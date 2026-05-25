@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T00:58:07.421Z",
-  "count": 29,
+  "generated": "2026-05-25T01:10:33.412Z",
+  "count": 31,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -17,6 +17,20 @@
       "keys": 9953,
       "bytes": 1318221,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "bengali",
+      "display": "Bengali",
+      "keys": 9988,
+      "bytes": 1418575,
+      "updated": "2026-05-25"
+    },
+    {
+      "slug": "chin_hakha",
+      "display": "Chin (Hakha)",
+      "keys": 9976,
+      "bytes": 997348,
+      "updated": "2026-05-25"
     },
     {
       "slug": "chinese_simplified",
