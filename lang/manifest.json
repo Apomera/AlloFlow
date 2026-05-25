@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-25T16:04:27.251Z",
+  "generated": "2026-05-25T16:06:30.325Z",
   "count": 50,
   "total_keys_expected": 9307,
   "available": [
@@ -315,8 +315,8 @@
     {
       "slug": "thai",
       "display": "Thai",
-      "keys": 5420,
-      "bytes": 489282,
+      "keys": 10455,
+      "bytes": 1173621,
       "updated": "2026-05-25"
     },
     {
