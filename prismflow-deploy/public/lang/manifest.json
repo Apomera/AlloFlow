@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T01:04:43.487Z",
-  "count": 30,
+  "generated": "2026-05-25T01:15:29.538Z",
+  "count": 32,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -26,11 +26,25 @@
       "updated": "2026-05-25"
     },
     {
+      "slug": "chin_hakha",
+      "display": "Chin (Hakha)",
+      "keys": 9976,
+      "bytes": 997348,
+      "updated": "2026-05-25"
+    },
+    {
       "slug": "chinese_simplified",
       "display": "Chinese (Simplified)",
       "keys": 9953,
       "bytes": 895107,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "chinese_traditional",
+      "display": "Chinese (Traditional)",
+      "keys": 9953,
+      "bytes": 895107,
+      "updated": "2026-05-25"
     },
     {
       "slug": "farsi",
