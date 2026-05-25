@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-25T13:56:10.370Z",
+  "generated": "2026-05-25T14:00:56.243Z",
   "count": 47,
   "total_keys_expected": 9307,
   "available": [
@@ -169,7 +169,7 @@
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
       "keys": 9976,
-      "bytes": 1042673,
+      "bytes": 1043644,
       "updated": "2026-05-25"
     },
     {
@@ -189,8 +189,8 @@
     {
       "slug": "lao",
       "display": "Lao",
-      "keys": 1,
-      "bytes": 36,
+      "keys": 979,
+      "bytes": 82823,
       "updated": "2026-05-25"
     },
     {
