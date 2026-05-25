@@ -110,6 +110,9 @@
     'burundian': 'Kirundi',
     'luganda': 'Luganda',
     'ganda': 'Luganda',
+    'acholi': 'Acholi',
+    'acoli': 'Acholi',
+    'lwo': 'Acholi',
 
     // West Africa
     'yoruba': 'Yoruba',
