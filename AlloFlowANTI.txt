@@ -4071,7 +4071,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'f6e7e82c';
+    var pluginCdnVersion = '9df8af69';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -9941,7 +9941,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isGeneratingStyle, setIsGeneratingStyle] = useState(false);
   const [showExportPreview, setShowExportPreview] = useState(false);
   const [exportPreviewMode, setExportPreviewMode] = useState('print'); // 'print' | 'worksheet' | 'html'
-  const [exportConfig, setExportConfig] = useState({
+  // Document Builder Tier 1.3 — single source of truth for default export
+  // config. Used both as the initial React state AND as the merge target when
+  // loading saved presets so old presets (missing recently-added fields) get
+  // sensible defaults instead of `undefined`. When you add a new field here,
+  // also bump _EXPORT_PRESET_SCHEMA_VERSION below so existing localStorage
+  // presets re-merge cleanly on next load.
+  const DEFAULT_EXPORT_CONFIG = {
     includeAnalysis: false,
     includeUdlAdvice: false,
     includeBrainstorm: false,
@@ -9978,7 +9984,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     faqAccordion: true,
     mathHideSolution: true,
     glossarySelfTest: false,
-  });
+  };
+  const [exportConfig, setExportConfig] = useState({ ...DEFAULT_EXPORT_CONFIG });
   const exportPreviewRef = useRef(null);
   const [a11yInspectMode, setA11yInspectMode] = useState(false);
   const [exportAuditResult, setExportAuditResult] = useState(null);
@@ -9988,12 +9995,63 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     studentWorksheet: { name: 'Student Worksheet', emoji: '📝', config: { includeAnalysis: false, includeUdlAdvice: false, includeBrainstorm: false, includeLessonPlan: false, includeSimplified: true, includeOutline: true, includeGlossary: true, includeQuiz: true, includeFaq: false, includeSentenceFrames: true, includeImage: true, includeMath: true, includeDbq: false, includeStudentResponses: true, includeTeacherKey: false, includeAudioSource: false, includeAudioLeveled: false, fontSize: 16, useAppFont: false }, theme: 'colorful', format: 'worksheet' },
     quizOnly: { name: 'Quiz Only', emoji: '❓', config: { includeAnalysis: false, includeUdlAdvice: false, includeBrainstorm: false, includeLessonPlan: false, includeSimplified: false, includeOutline: false, includeGlossary: false, includeQuiz: true, includeFaq: false, includeSentenceFrames: false, includeImage: false, includeMath: false, includeDbq: false, includeStudentResponses: true, includeTeacherKey: true, includeAudioSource: false, includeAudioLeveled: false, fontSize: 16, useAppFont: false }, theme: 'minimal', format: 'print' },
   };
+  // Document Builder Tier 1.3 — preset schema versioning + migration.
+  // Bump this when DEFAULT_EXPORT_CONFIG gains fields or any preset field's
+  // semantics change. Old presets are merged over current defaults on load
+  // so users don't silently lose recently-added toggle defaults.
+  const _EXPORT_PRESET_SCHEMA_VERSION = 2;
+  // Migrate one preset object to the current schema. Idempotent: a preset
+  // already at the current version round-trips unchanged. Tolerant of
+  // malformed shapes (missing config, missing theme, etc.).
+  const _migrateExportPreset = (preset) => {
+    if (!preset || typeof preset !== 'object') return null;
+    const cfg = preset.config && typeof preset.config === 'object' ? preset.config : {};
+    return {
+      name: preset.name || 'Untitled',
+      emoji: preset.emoji || '💾',
+      config: { ...DEFAULT_EXPORT_CONFIG, ...cfg },
+      theme: preset.theme || 'professional',
+      format: preset.format || 'print',
+      _schemaVersion: _EXPORT_PRESET_SCHEMA_VERSION,
+    };
+  };
   const [exportPresets, setExportPresets] = useState(() => {
-    try { const saved = localStorage.getItem('alloflow_export_presets'); return saved ? JSON.parse(saved) : {}; } catch { return {}; }
+    try {
+      const saved = localStorage.getItem('alloflow_export_presets');
+      if (!saved) return {};
+      const parsed = JSON.parse(saved);
+      // Walk every preset; migrate any that are missing or below the current
+      // schema version. Write the migrated set back to storage so we don't
+      // re-migrate on every page load.
+      const migrated = {};
+      let didMigrate = false;
+      for (const [k, p] of Object.entries(parsed || {})) {
+        const before = p && p._schemaVersion;
+        const next = _migrateExportPreset(p);
+        if (next) {
+          migrated[k] = next;
+          if (before !== _EXPORT_PRESET_SCHEMA_VERSION) didMigrate = true;
+        }
+      }
+      if (didMigrate) {
+        try { localStorage.setItem('alloflow_export_presets', JSON.stringify(migrated)); } catch {}
+      }
+      return migrated;
+    } catch { return {}; }
   });
   const saveExportPreset = (name) => {
     const key = name.toLowerCase().replace(/\s+/g, '_');
-    const updated = { ...exportPresets, [key]: { name, emoji: '💾', config: { ...exportConfig }, theme: exportTheme, format: exportPreviewMode } };
+    const updated = {
+      ...exportPresets,
+      [key]: {
+        name,
+        emoji: '💾',
+        config: { ...exportConfig },
+        theme: exportTheme,
+        format: exportPreviewMode,
+        _schemaVersion: _EXPORT_PRESET_SCHEMA_VERSION,
+      },
+    };
     setExportPresets(updated);
     try { localStorage.setItem('alloflow_export_presets', JSON.stringify(updated)); } catch {}
     addToast && addToast(`Preset "${name}" saved!`, 'success');
@@ -10005,9 +10063,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     try { localStorage.setItem('alloflow_export_presets', JSON.stringify(updated)); } catch {}
   };
   const applyExportPreset = (preset) => {
-    setExportConfig(preset.config);
-    setExportTheme(preset.theme);
-    setExportPreviewMode(preset.format);
+    // Belt-and-suspenders: merge over defaults at apply time too, in case a
+    // preset survived migration but the schema has advanced since.
+    setExportConfig({ ...DEFAULT_EXPORT_CONFIG, ...((preset && preset.config) || {}) });
+    setExportTheme((preset && preset.theme) || 'professional');
+    setExportPreviewMode((preset && preset.format) || 'print');
     setTimeout(updateExportPreview, 50);
   };
   const [largeFileProgress, setLargeFileProgress] = useState(0);
