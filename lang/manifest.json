@@ -1,9 +1,16 @@
 {
   "version": 2,
-  "generated": "2026-05-25T01:15:29.538Z",
-  "count": 32,
+  "generated": "2026-05-25T01:20:54.033Z",
+  "count": 33,
   "total_keys_expected": 9307,
   "available": [
+    {
+      "slug": "acholi",
+      "display": "Acholi",
+      "keys": 9976,
+      "bytes": 986325,
+      "updated": "2026-05-25"
+    },
     {
       "slug": "amharic",
       "display": "Amharic",
