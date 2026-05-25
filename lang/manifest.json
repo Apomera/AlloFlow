@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T14:42:00.142Z",
-  "count": 47,
+  "generated": "2026-05-25T14:45:14.071Z",
+  "count": 48,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -332,6 +332,13 @@
       "keys": 9956,
       "bytes": 1271616,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "yoruba",
+      "display": "Yoruba",
+      "keys": 9982,
+      "bytes": 1009480,
+      "updated": "2026-05-25"
     }
   ]
 }
