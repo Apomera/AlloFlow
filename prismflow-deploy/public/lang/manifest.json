@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T01:26:17.984Z",
-  "count": 34,
+  "generated": "2026-05-25T01:54:09.139Z",
+  "count": 35,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -51,6 +51,13 @@
       "display": "Chinese (Traditional)",
       "keys": 9953,
       "bytes": 895107,
+      "updated": "2026-05-25"
+    },
+    {
+      "slug": "dari",
+      "display": "Dari",
+      "keys": 9973,
+      "bytes": 1359404,
       "updated": "2026-05-25"
     },
     {
