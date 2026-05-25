@@ -1,9 +1,16 @@
 {
   "version": 2,
-  "generated": "2026-05-25T01:15:29.538Z",
-  "count": 32,
+  "generated": "2026-05-25T01:26:17.984Z",
+  "count": 34,
   "total_keys_expected": 9307,
   "available": [
+    {
+      "slug": "acholi",
+      "display": "Acholi",
+      "keys": 9976,
+      "bytes": 986325,
+      "updated": "2026-05-25"
+    },
     {
       "slug": "amharic",
       "display": "Amharic",
@@ -115,6 +122,13 @@
       "keys": 9968,
       "bytes": 1109015,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "kirundi",
+      "display": "Kirundi",
+      "keys": 9988,
+      "bytes": 1080957,
+      "updated": "2026-05-25"
     },
     {
       "slug": "korean",
