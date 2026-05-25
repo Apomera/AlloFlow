@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T01:20:54.033Z",
-  "count": 33,
+  "generated": "2026-05-25T02:40:26.593Z",
+  "count": 37,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -33,6 +33,13 @@
       "updated": "2026-05-25"
     },
     {
+      "slug": "burmese",
+      "display": "Burmese",
+      "keys": 9976,
+      "bytes": 1418612,
+      "updated": "2026-05-25"
+    },
+    {
       "slug": "chin_hakha",
       "display": "Chin (Hakha)",
       "keys": 9976,
@@ -51,6 +58,13 @@
       "display": "Chinese (Traditional)",
       "keys": 9953,
       "bytes": 895107,
+      "updated": "2026-05-25"
+    },
+    {
+      "slug": "dari",
+      "display": "Dari",
+      "keys": 9973,
+      "bytes": 1359404,
       "updated": "2026-05-25"
     },
     {
@@ -122,6 +136,20 @@
       "keys": 9968,
       "bytes": 1109015,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "kinyarwanda",
+      "display": "Kinyarwanda",
+      "keys": 0,
+      "bytes": 3,
+      "updated": "2026-05-25"
+    },
+    {
+      "slug": "kirundi",
+      "display": "Kirundi",
+      "keys": 9988,
+      "bytes": 1080957,
+      "updated": "2026-05-25"
     },
     {
       "slug": "korean",
