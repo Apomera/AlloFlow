@@ -11104,7 +11104,7 @@
       "sci_past_400": "Pase pwen ideyal la"
     }
   },
-  "_version": "20260525T1779744556525",
+  "_version": "20260525T1779747879069",
   "a11y_lab": {
     "tabs": {
       "preview": "Prevyou kòm elèv",
@@ -11371,5 +11371,35 @@
     "math_equation": "Mathematical ekwasyon",
     "remove_equation": "Retire ekwasyon",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Kontinye Where You Left Off?",
+    "start_fresh": "Kòmanse Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your pwogrè hasn't been exported or anrejistre. Are you sure you want to fèmen?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Fèmen Anyway",
+    "skip_to_story": "Sote to istwa",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Fikse Up Your istwa",
+    "set_up_story_desc": "Name your istwa, chwazi a jan, and fikse your vokabilè ingredients",
+    "story_title_label": "istwa Title",
+    "write_your_story": "Ekri Your istwa",
+    "writing_coach_tip": "Writing Coach konsèy",
+    "illustrate_story": "Illustrate Your istwa",
+    "illustrate_story_desc": "AI will kreye artwork for each paragraf",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty paragraf",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Modifye the prompt below before k ap jenere, or klike Jenere to proceed.",
+    "vocabulary_used": "vokabilè Used",
+    "vocab_terms_used": "vokabilè tèm Used",
+    "still_needed": "Still needed:",
+    "move_up": "Deplase up",
+    "move_down": "Deplase down",
+    "click_to_insert": "Klike to insert this transition mo",
+    "edit_illustration": "Modifye ilistrasyon with AI",
+    "regenerate_illustration": "Regenerate ilistrasyon"
   }
 }

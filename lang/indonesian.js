@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744558670",
+  "_version": "20260525T1779747881372",
   "tour": {
     "input_panel_title": "masukan panel",
     "input_panel_text": "Begin Anda pelajaran creation journey di sini. ini masukan panel adalah foundation untuk semua dihasilkan sumber daya. itu serves sebagai central hub di mana Anda define konten, konteks, dan parameters.\n### masukan opsi\n• **teks Tempel**: Tempel konten directly dari apapun article, cerita, atau pelajaran rencana.\n• **berkas Unggah**: Unggah PDFs, gambar, teks berkas, audio (MP3/WAV), atau video untuk otomatis extraction.\n• **URL Ambil**: Tempel apapun article URL ke automatically ekstrak dan impor its konten.\n• **AI sumber daya Cari**: Describe sebuah topik dan let AI cari kelas-appropriate online sumber daya untuk Anda.\n• **Hasilkan sumber teks**: Buat asli konten by specifying topik, nada, tingkat kelas, dan target standar.\n### Generasi fitur\n• **nada Selection**: Pilih dari Informative, Narasi, Persuasive, Humorous, atau langkah-by-langkah gaya.\n• **standar Penyelarasan**: Gunakan AI-powered standar finder atau manually masukan target standar (up ke 3).\n• **Fact Verification**: Aktifkan web grounding ke verify facts dan sertakan citations automatically.\n• **Custom instruksi**: Tambah spesifik guidance untuk lebih tailored konten generasi.\n### sistem Capabilities\n• **Otomatis-Detection**: Automatically identifies sumber bahasa.\n• **Chunked Processing**: audio dan video berkas lebih 20MB adalah intelligently split untuk reliable transcription.\n### Important Paling alat di sidebar require sumber material sebelum mereka dapat menjadi digunakan. Tempel atau hasilkan Anda konten di sini pertama, kemudian jelajahi lainnya sumber daya.",
@@ -11410,5 +11410,35 @@
     "math_equation": "Mathematical persamaan",
     "remove_equation": "Hapus persamaan",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Lanjutkan Where You Left Off?",
+    "start_fresh": "Mulai Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your kemajuan hasn't been exported or tersimpan. Are you sure you want to tutup?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Tutup Anyway",
+    "skip_to_story": "Lewati to cerita",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Atur Up Your cerita",
+    "set_up_story_desc": "Name your cerita, pilih a genre, and atur your kosakata ingredients",
+    "story_title_label": "cerita Title",
+    "write_your_story": "Tulis Your cerita",
+    "writing_coach_tip": "Writing Coach tip",
+    "illustrate_story": "Illustrate Your cerita",
+    "illustrate_story_desc": "AI will buat artwork for each paragraf",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty paragraf",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Ubah the prompt below before generating, or klik Hasilkan to proceed.",
+    "vocabulary_used": "kosakata Used",
+    "vocab_terms_used": "kosakata istilah Used",
+    "still_needed": "Still needed:",
+    "move_up": "Pindah up",
+    "move_down": "Pindah down",
+    "click_to_insert": "Klik to insert this transition kata",
+    "edit_illustration": "Ubah illustration with AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744555315",
+  "_version": "20260525T1779747877384",
   "tour": {
     "input_panel_title": "ထည့်သွင်းမှု panel",
     "input_panel_text": "Begin သင်၏ သင်ခန်းစာ creation journey here. ဤ ထည့်သွင်းမှု panel ဖြစ်သည် foundation အတွက် အားလုံး ထုတ်လုပ်ပြီး အရင်းအမြစ်များ. It serves as central hub ဘယ်မှာ သင် define အကြောင်းအရာ, အကြောင်းအရာ, နှင့် parameters.\n### ထည့်သွင်းမှု ရွေးချယ်စရာ\n• **စာသား ကပ်ပါ**: ကပ်ပါ အကြောင်းအရာ directly မှ မည်သည့် article, ပုံပြင်, သို့မဟုတ် သင်ခန်းစာ အစီအစဉ်.\n• **ဖိုင် အပ်လုဒ်လုပ်ပါ**: အပ်လုဒ်လုပ်ပါ PDFs, ပုံ, စာသား ဖိုင်, အသံ (MP3/WAV), သို့မဟုတ် ဗီဒီယို အတွက် အလိုအလျောက် extraction.\n• **URL ရယူပါ**: ကပ်ပါ မည်သည့် article URL သို့ အလိုအလျောက် ထုတ်ယူပါ နှင့် တင်သွင်းပါ its အကြောင်းအရာ.\n• **AI အရင်းအမြစ်များ ရှာဖွေပါ**: Describe အကြောင်းအရာ နှင့် let AI find အတန်း-သင့်လျော် online အရင်းအမြစ်များ အတွက် သင်.\n• **ထုတ်လုပ်ပါ အရင်းအမြစ် စာသား**: ဖန်တီးပါ မူရင်း အကြောင်းအရာ by specifying အကြောင်းအရာ, အသံ, အတန်းအဆင့်, နှင့် ပစ်မှတ် စံချိန်.\n### မျိုးဆက် အင်္ဂါရပ်များ\n• **အသံ Selection**: ရွေးချယ်ပါ မှ Informative, ဇာတ်ကြောင်း, Persuasive, Humorous, သို့မဟုတ် အဆင့်-by-အဆင့် ပုံစံ.\n• **စံချိန် အလိုက်အညီ**: အသုံးပြုပါ AI-powered စံချိန် finder သို့မဟုတ် ကိုယ်တိုင် ထည့်သွင်းမှု ပစ်မှတ် စံချိန် (up သို့ 3).\n• **Fact Verification**: ဖွင့်ပါ web grounding သို့ verify facts နှင့် ထည့်သွင်းပါ citations အလိုအလျောက်.\n• **Custom ညွှန်ကြားချက်**: ထည့်ပါ တိကျသော guidance အတွက် ပိုပြီး tailored အကြောင်းအရာ မျိုးဆက်.\n### စနစ် Capabilities\n• **Auto-Detection**: အလိုအလျောက် identifies အရင်းအမြစ် ဘာသာစကား.\n• **Chunked Processing**: အသံ နှင့် ဗီဒီယို ဖိုင် အပေါ် 20MB ဖြစ်ကြသည် intelligently split အတွက် reliable transcription.\n### Important အများဆုံး ကိရိယာများ တွင် sidebar require အရင်းအမြစ်ပစ္စည်း မတိုင်မီ ၎င်းတို့ နိုင်သည် be အသုံးပြုပြီး. ကပ်ပါ သို့မဟုတ် ထုတ်လုပ်ပါ သင်၏ အကြောင်းအရာ here ပထမ, ထို့နောက် ရှာဖွေပါ အခြား အရင်းအမြစ်များ.",
@@ -11402,5 +11402,35 @@
     "math_equation": "Mathematical ညီမျှခြင်း",
     "remove_equation": "ဖယ်ရှားပါ ညီမျှခြင်း",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "ဆက်လုပ်ပါ Where You Left Off?",
+    "start_fresh": "စတင်ပါ Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your တိုးတက်မှု hasn't been exported or သိမ်းပြီး. Are you sure you want to ပိတ်ပါ?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "ပိတ်ပါ Anyway",
+    "skip_to_story": "ကျော်ပါ to ပုံပြင်",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "သတ်မှတ်ပါ Up Your ပုံပြင်",
+    "set_up_story_desc": "Name your ပုံပြင်, ရွေးချယ်ပါ a အမျိုးအစား, and သတ်မှတ်ပါ your ဝေါဟာရ ingredients",
+    "story_title_label": "ပုံပြင် Title",
+    "write_your_story": "ရေးပါ Your ပုံပြင်",
+    "writing_coach_tip": "Writing Coach အကြံပြုချက်",
+    "illustrate_story": "Illustrate Your ပုံပြင်",
+    "illustrate_story_desc": "AI will ဖန်တီးပါ artwork for each စာပိုဒ်",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty စာပိုဒ်",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "တည်းဖြတ်ပါ the prompt below before ထုတ်လုပ်နေသည်, or နှိပ်ပါ ထုတ်လုပ်ပါ to proceed.",
+    "vocabulary_used": "ဝေါဟာရ Used",
+    "vocab_terms_used": "ဝေါဟာရ ဝေါဟာရ Used",
+    "still_needed": "Still needed:",
+    "move_up": "ရွှေ့ပါ up",
+    "move_down": "ရွှေ့ပါ down",
+    "click_to_insert": "နှိပ်ပါ to insert ဤ transition စကားလုံး",
+    "edit_illustration": "တည်းဖြတ်ပါ ပုံပြင် with AI",
+    "regenerate_illustration": "Regenerate ပုံပြင်"
   }
 }

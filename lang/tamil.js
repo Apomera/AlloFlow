@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744565073",
+  "_version": "20260525T1779747888279",
   "tour": {
     "input_panel_title": "உள்ளீடு பலகை",
     "input_panel_text": "Begin உங்கள் பாடம் creation journey here. இது உள்ளீடு பலகை ஆகும் foundation க்கு எல்லாம் உருவாக்கப்பட்டது வளங்கள். It serves as central hub எங்கே நீங்கள் define உள்ளடக்கம், context, மற்றும் parameters.\n### உள்ளீடு விருப்பங்கள்\n• **உரை ஒட்டு**: ஒட்டு உள்ளடக்கம் directly இருந்து any article, கதை, அல்லது பாடம் plan.\n• **கோப்பு பதிவேற்று**: பதிவேற்று PDFs, படம், உரை கோப்பு, ஒலி (MP3/WAV), அல்லது வீடியோ க்கு தானியங்கி extraction.\n• **URL பெறு**: ஒட்டு any article URL க்கு automatically பிரித்தெடு மற்றும் இறக்குமதி its உள்ளடக்கம்.\n• **AI வளங்கள் தேடு**: Describe ஒரு topic மற்றும் let AI find வகுப்பு-appropriate online வளங்கள் க்கு நீங்கள்.\n• **உருவாக்கு மூலம் உரை**: உருவாக்கு original உள்ளடக்கம் by specifying topic, தொனி, வகுப்பு நிலை, மற்றும் target தரநிலை.\n### Generation அம்சங்கள்\n• **தொனி Selection**: தேர்ந்தெடு இருந்து Informative, Narrative, Persuasive, Humorous, அல்லது படி-by-படி பாணி.\n• **தரநிலை Alignment**: பயன்படுத்து AI-powered தரநிலை finder அல்லது manually உள்ளீடு target தரநிலை (up க்கு 3).\n• **Fact Verification**: இயக்கு web grounding க்கு verify facts மற்றும் சேர் citations automatically.\n• **Custom அறிவுறுத்தல்**: சேர் குறிப்பிட்ட guidance க்கு மேலும் tailored உள்ளடக்கம் generation.\n### அமைப்பு Capabilities\n• **Auto-Detection**: Automatically identifies மூலம் மொழி.\n• **Chunked Processing**: ஒலி மற்றும் வீடியோ கோப்பு over 20MB ஆகும் intelligently split க்கு reliable transcription.\n### Important Most கருவிகள் இல் sidebar require மூலம் material before they முடியும் be பயன்படுத்தப்பட்டது. ஒட்டு அல்லது உருவாக்கு உங்கள் உள்ளடக்கம் here முதல், then ஆராய் other வளங்கள்.",
@@ -11410,5 +11410,35 @@
     "math_equation": "Mathematical சமன்பாடு",
     "remove_equation": "அகற்று சமன்பாடு",
     "insert_formula": "Insert formula இருந்து library"
+  },
+  "ui_common": {
+    "continue_where_left": "தொடர் எங்கே நீங்கள் Left Off?",
+    "start_fresh": "தொடங்கு Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "நீங்கள் உள்ளது Unsaved Changes",
+    "unsaved_changes_body": "உங்கள் முன்னேற்றம் hasn't been exported அல்லது சேமிக்கப்பட்டது. ஆகும் நீங்கள் sure நீங்கள் want க்கு மூடு?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "மூடு Anyway",
+    "skip_to_story": "தவிர் க்கு கதை",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "அமை Up உங்கள் கதை",
+    "set_up_story_desc": "Name உங்கள் கதை, தேர்ந்தெடு ஒரு genre, மற்றும் அமை உங்கள் சொற்களஞ்சியம் ingredients",
+    "story_title_label": "கதை Title",
+    "write_your_story": "எழுது உங்கள் கதை",
+    "writing_coach_tip": "Writing Coach குறிப்பு",
+    "illustrate_story": "Illustrate உங்கள் கதை",
+    "illustrate_story_desc": "AI விருந்து உருவாக்கு artwork க்கு ஒவ்வொன்றும் பத்தி",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty பத்தி",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "திருத்து prompt below before generating, அல்லது கிளிக் செய் உருவாக்கு க்கு proceed.",
+    "vocabulary_used": "சொற்களஞ்சியம் Used",
+    "vocab_terms_used": "சொற்களஞ்சியம் சொல் Used",
+    "still_needed": "Still needed:",
+    "move_up": "நகர்த்து up",
+    "move_down": "நகர்த்து down",
+    "click_to_insert": "கிளிக் செய் க்கு insert இது transition சொல்",
+    "edit_illustration": "திருத்து illustration உடன் AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

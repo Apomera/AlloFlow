@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744554466",
+  "_version": "20260525T1779747876466",
   "tour": {
     "input_panel_title": "Input Gicaa",
     "input_panel_text": "Begin mamegi pwony creation journey here. man Input Gicaa tye foundation pi ducu yene resources. It serves as central hub kwene in define content, context, ki parameters.\n### Input Options\n• **Text Paste**: Paste content directly ki bot any article, lok ma kicoyo, onyo pwony yub.\n• **buk Cwal malo**: Cwal malo PDFs, cal, text buk, audio (MP3/WAV), onyo video pi automatic extraction.\n• **URL Fetch**: Paste any article URL i automatically extract ki import its content.\n• **AI Resource Yenyo**: Describe lok ki let AI find grade-appropriate online resources pi in.\n• **Generate Source Text**: Create macon content by specifying lok, tone, grade level, ki kit standards.\n### Kwo Features\n• **Tone Selection**: Yer ki bot Informative, Lok ma kicoyo, Persuasive, Humorous, onyo Step-by-Step styles.\n• **Standards Aribo**: Tii AI-powered standard finder onyo manually input kit standards (up i 3).\n• **Fact Verification**: Enable web grounding i verify facts ki include citations automatically.\n• **Custom Instructions**: Med mukene guidance pi mapol tailored content kwo.\n### System Capabilities\n• **Auto-Detection**: Automatically identifies source leb.\n• **Chunked Processing**: Audio ki video buk malo 20MB tye intelligently split pi reliable transcription.\n### Important Most tools i sidebar require source material before they can be used. Paste onyo generate mamegi content here first, then explore okene resources.",
@@ -11402,5 +11402,35 @@
     "math_equation": "Mathematical equation",
     "remove_equation": "Kwany equation",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Mede Where You Left Off?",
+    "start_fresh": "Cak Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your progress hasn't been exported or gigwokki. Are you sure you want to lor?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Lor Anyway",
+    "skip_to_story": "Skip to lok ma kicoyo",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Set Up Your lok ma kicoyo",
+    "set_up_story_desc": "nying your lok ma kicoyo, yer a genre, and set your vocabulary ingredients",
+    "story_title_label": "lok ma kicoyo Title",
+    "write_your_story": "Coyo Your lok ma kicoyo",
+    "writing_coach_tip": "Writing Coach Tip",
+    "illustrate_story": "Illustrate Your lok ma kicoyo",
+    "illustrate_story_desc": "AI will create artwork for each paragraph",
+    "book_cover": "buk Cover",
+    "empty_paragraph": "Empty paragraph",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Loko the prompt below before generating, or dii Generate to proceed.",
+    "vocabulary_used": "Vocabulary Used",
+    "vocab_terms_used": "Vocabulary Terms Used",
+    "still_needed": "Still needed:",
+    "move_up": "Move up",
+    "move_down": "Move down",
+    "click_to_insert": "Dii to insert this transition lok",
+    "edit_illustration": "Loko illustration with AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

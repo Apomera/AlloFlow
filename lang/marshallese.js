@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744562475",
+  "_version": "20260525T1779747886256",
   "tour": {
     "input_panel_title": "Input Panel",
     "input_panel_text": "Begin eo am katak creation journey here. in Input Panel ej eo foundation ñan aolep kōṃṃan resources. It serves as eo central hub ia kwe define eo content, context, im parameters.\n### Input Options\n• **Text Paste**: Paste content directly from any article, bwebwenato, ak katak plan.\n• **fail Upload**: Upload PDFs, pija, text fail, audio (MP3/WAV), ak video ñan automatic extraction.\n• **URL Fetch**: Paste any article URL ñan automatically extract im import its content.\n• **AI Resource Pukot**: Describe a topic im let AI find grade-appropriate online resources ñan kwe.\n• **Generate Source Text**: Create jinoin content by specifying topic, tone, grade level, im target standards.\n### Epepen Features\n• **Tone Selection**: Kālōt from Informative, Narrative, Persuasive, Humorous, ak Step-by-Step styles.\n• **Standards Alignment**: Kōjerbal AI-powered standard finder ak manually input target standards (up ñan 3).\n• **Fact Verification**: Enable web grounding ñan verify facts im include citations automatically.\n• **Custom Instructions**: Kobaik specific guidance ñan eḷap ḷọk tailored content epepen.\n### System Capabilities\n• **Auto-Detection**: Automatically identifies eo source kajin.\n• **Chunked Processing**: Audio im video fail over 20MB rej intelligently split ñan reliable transcription.\n### Important Most tools ilo eo sidebar require source material ṃokta they maroñ be used. Paste ak generate eo am content here first, then explore eo bar juon resources.",
@@ -11410,5 +11410,35 @@
     "math_equation": "Mathematical equation",
     "remove_equation": "Joḷọk equation",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Wōnṃaanḷọk Where You Left Off?",
+    "start_fresh": "Jino Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your progress hasn't been exported or saved. Are you sure you want to kiili?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Kiili Anyway",
+    "skip_to_story": "Skip to bwebwenato",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Set Up Your bwebwenato",
+    "set_up_story_desc": "āt your bwebwenato, kālōt a genre, and set your vocabulary ingredients",
+    "story_title_label": "bwebwenato Title",
+    "write_your_story": "Jeje Your bwebwenato",
+    "writing_coach_tip": "Writing Coach Tip",
+    "illustrate_story": "Illustrate Your bwebwenato",
+    "illustrate_story_desc": "AI will create artwork for each paragraph",
+    "book_cover": "bok Cover",
+    "empty_paragraph": "Empty paragraph",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Ukot the prompt below before generating, or klik Generate to proceed.",
+    "vocabulary_used": "Vocabulary Used",
+    "vocab_terms_used": "Vocabulary Terms Used",
+    "still_needed": "Still needed:",
+    "move_up": "Move up",
+    "move_down": "Move down",
+    "click_to_insert": "Klik to insert this transition naan",
+    "edit_illustration": "Ukot illustration with AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

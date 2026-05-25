@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744554903",
+  "_version": "20260525T1779747876997",
   "tour": {
     "input_panel_title": "ግቤት ፓነል",
     "input_panel_text": "Begin የእርስዎ ትምህርት creation journey here. ይህ ግቤት ፓነል ነው foundation ለ ሁሉም ተመንጭቷል ሀብቶች. It serves as central hub የት እርስዎ define ይዘት, አውድ, እና parameters.\n### ግቤት አማራጮች\n• **ጽሑፍ ለጥፍ**: ለጥፍ ይዘት directly ከ ማንኛውም article, ታሪክ, ወይም ትምህርት ዕቅድ.\n• **ፋይል ስቀል**: ስቀል PDFs, ምስል, ጽሑፍ ፋይል, ድምጽ (MP3/WAV), ወይም ቪዲዮ ለ ራስ ሰር extraction.\n• **URL አምጣ**: ለጥፍ ማንኛውም article URL ወደ ራስ ሰር አውጣ እና አስገባ its ይዘት.\n• **AI ሀብቶች ፈልግ**: Describe አንድ ርዕስ እና let AI find ክፍል-ተገቢ online ሀብቶች ለ እርስዎ.\n• **አመንጭ ምንጭ ጽሑፍ**: ፍጠር ኦሪጅናል ይዘት by specifying ርዕስ, ቃና, የክፍል ደረጃ, እና ግብ መስፈርት.\n### ትውልድ ባህሪያት\n• **ቃና Selection**: ምረጥ ከ Informative, ትረካ, Persuasive, Humorous, ወይም እርምጃ-by-እርምጃ ዘይቤ.\n• **መስፈርት ማስተካከያ**: ተጠቀም AI-powered መስፈርት finder ወይም በእጅ ግቤት ግብ መስፈርት (up ወደ 3).\n• **Fact Verification**: አንቃ web grounding ወደ verify facts እና አካትት citations ራስ ሰር.\n• **Custom መመሪያ**: ጨምር የተወሰነ guidance ለ ተጨማሪ tailored ይዘት ትውልድ.\n### ስርዓት Capabilities\n• **Auto-Detection**: ራስ ሰር identifies ምንጭ ቋንቋ.\n• **Chunked Processing**: ድምጽ እና ቪዲዮ ፋይል በላይ 20MB ናቸው intelligently split ለ reliable transcription.\n### Important አብዛኛው መሳሪያዎች ውስጥ sidebar require የምንጭ ቁሳቁስ በፊት እነሱ ይችላል be ጥቅም ላይ ውሏል. ለጥፍ ወይም አመንጭ የእርስዎ ይዘት here መጀመሪያ, ከዚያ ቃኝ ሌላ ሀብቶች.",
@@ -11392,5 +11392,35 @@
     "math_equation": "Mathematical እኩልታ",
     "remove_equation": "አስወግድ እኩልታ",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "ቀጥል Where You Left Off?",
+    "start_fresh": "ጀምር Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your እድገት hasn't been exported or ተቀምጧል. Are you sure you want to ዝጋ?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "ዝጋ Anyway",
+    "skip_to_story": "ዝለል to ታሪክ",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "አዘጋጅ Up Your ታሪክ",
+    "set_up_story_desc": "Name your ታሪክ, ምረጥ a ዘውግ, and አዘጋጅ your ቃላት ingredients",
+    "story_title_label": "ታሪክ Title",
+    "write_your_story": "ጻፍ Your ታሪክ",
+    "writing_coach_tip": "Writing Coach ምክር",
+    "illustrate_story": "Illustrate Your ታሪክ",
+    "illustrate_story_desc": "AI will ፍጠር artwork for each አንቀጽ",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty አንቀጽ",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "አስተካክል the prompt below before በማመንጨት ላይ, or ጠቅ ያድርጉ አመንጭ to proceed.",
+    "vocabulary_used": "ቃላት Used",
+    "vocab_terms_used": "ቃላት ቃል Used",
+    "still_needed": "Still needed:",
+    "move_up": "አንቀሳቅስ up",
+    "move_down": "አንቀሳቅስ down",
+    "click_to_insert": "ጠቅ ያድርጉ to insert ይህ transition ቃላት",
+    "edit_illustration": "አስተካክል ስዕል with AI",
+    "regenerate_illustration": "Regenerate ስዕል"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744559831",
+  "_version": "20260525T1779747882847",
   "_slug": "japanese",
   "_display": "Japanese",
   "_generated": "2026-05-24",
@@ -11441,5 +11441,35 @@
     "math_equation": "数学的方程式。",
     "remove_equation": "削除方程式。",
     "insert_formula": "Insert formula からライブラリ。"
+  },
+  "ui_common": {
+    "continue_where_left": "続行前回の続きから?。",
+    "start_fresh": "開始新規。",
+    "restore_draft": "復元下書き。",
+    "unsaved_changes": "未保存変更。",
+    "unsaved_changes_body": "進捗 hasn't exported または保存。",
+    "keep_working": "保持書き込み。",
+    "close_anyway": "閉じる Anyway。",
+    "skip_to_story": "スキップ物語。",
+    "creative_writing_studio": "Creative 書き込みスタジオ。",
+    "set_up_story": "設定上物語。",
+    "set_up_story_desc": "名前物語, 選択ジャンル, と設定語彙 ingredients。",
+    "story_title_label": "物語タイトル。",
+    "write_your_story": "書く物語。",
+    "writing_coach_tip": "書き込みコーチヒント。",
+    "illustrate_story": "Illustrate 物語。",
+    "illustrate_story_desc": "AI 作成 artwork 各段落。",
+    "book_cover": "ブック Cover。",
+    "empty_paragraph": "空段落。",
+    "generation_failed": "生成 failed。",
+    "edit_prompt_below": "編集プロンプト下前生成中, またはクリック生成進む。",
+    "vocabulary_used": "語彙 Used。",
+    "vocab_terms_used": "語彙用語 Used。",
+    "still_needed": "まだ必要。",
+    "move_up": "移動上。",
+    "move_down": "移動 down。",
+    "click_to_insert": "クリック insert この移行単語。",
+    "edit_illustration": "編集イラスト AI。",
+    "regenerate_illustration": "Regenerate イラスト。"
   }
 }

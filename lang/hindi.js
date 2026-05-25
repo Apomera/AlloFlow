@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744557628",
+  "_version": "20260525T1779747880094",
   "tour": {
     "input_panel_title": "इनपुट पैनल",
     "input_panel_text": "Begin आपका पाठ creation journey here. यह इनपुट पैनल है foundation के लिए सभी उत्पन्न संसाधन. It serves as central hub कहाँ आप define सामग्री, संदर्भ, और parameters.\n### इनपुट विकल्प\n• **पाठ पेस्ट करें**: पेस्ट करें सामग्री directly से कोई भी article, कहानी, या पाठ योजना.\n• **फ़ाइल अपलोड करें**: अपलोड करें PDFs, छवि, पाठ फ़ाइल, ऑडियो (MP3/WAV), या वीडियो के लिए स्वचालित extraction.\n• **URL प्राप्त करें**: पेस्ट करें कोई भी article URL को स्वचालित रूप से निकालें और आयात करें its सामग्री.\n• **AI संसाधन खोजें**: Describe एक विषय और let AI खोजना कक्षा-उपयुक्त online संसाधन के लिए आप.\n• **उत्पन्न करें स्रोत पाठ**: बनाएं मूल सामग्री by specifying विषय, स्वर, कक्षा स्तर, और लक्ष्य मानक.\n### पीढ़ी विशेषताएं\n• **स्वर Selection**: चुनें से Informative, कथा, Persuasive, Humorous, या चरण-by-चरण शैली.\n• **मानक संरेखण**: उपयोग करें AI-powered मानक finder या मैनुअल रूप से इनपुट लक्ष्य मानक (up को 3).\n• **Fact Verification**: सक्षम करें web grounding को verify facts और शामिल करें citations स्वचालित रूप से.\n• **Custom निर्देश**: जोड़ें विशिष्ट guidance के लिए अधिक tailored सामग्री पीढ़ी.\n### सिस्टम Capabilities\n• **स्वतः-Detection**: स्वचालित रूप से identifies स्रोत भाषा.\n• **Chunked Processing**: ऑडियो और वीडियो फ़ाइल के ऊपर 20MB हैं intelligently split के लिए reliable transcription.\n### Important सबसे ज़्यादा उपकरण में sidebar require स्रोत सामग्री पहले वे सकता है be उपयोग किया गया. पेस्ट करें या उत्पन्न करें आपका सामग्री here पहला, फिर अन्वेषण करें अन्य संसाधन.",
@@ -11392,5 +11392,35 @@
     "math_equation": "Mathematical समीकरण",
     "remove_equation": "हटाएं समीकरण",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "जारी रखें Where You Left Off?",
+    "start_fresh": "शुरू करें Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your प्रगति hasn't been exported or सहेजा गया. Are you sure you want to बंद करें?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "बंद करें Anyway",
+    "skip_to_story": "छोड़ें to कहानी",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "सेट करें Up Your कहानी",
+    "set_up_story_desc": "Name your कहानी, चुनें a शैली, and सेट करें your शब्दावली ingredients",
+    "story_title_label": "कहानी Title",
+    "write_your_story": "लिखें Your कहानी",
+    "writing_coach_tip": "Writing Coach सुझाव",
+    "illustrate_story": "Illustrate Your कहानी",
+    "illustrate_story_desc": "AI will बनाएं artwork for each अनुच्छेद",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty अनुच्छेद",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "संपादित करें the prompt below before उत्पन्न हो रहा है, or क्लिक करें उत्पन्न करें to proceed.",
+    "vocabulary_used": "शब्दावली Used",
+    "vocab_terms_used": "शब्दावली शब्द Used",
+    "still_needed": "Still needed:",
+    "move_up": "स्थानांतरित करें up",
+    "move_down": "स्थानांतरित करें down",
+    "click_to_insert": "क्लिक करें to insert यह transition शब्द",
+    "edit_illustration": "संपादित करें चित्रण with AI",
+    "regenerate_illustration": "Regenerate चित्रण"
   }
 }

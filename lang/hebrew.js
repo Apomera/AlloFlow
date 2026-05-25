@@ -11104,7 +11104,7 @@
       "structures_layers_count": "{count} structures • {layers} layers"
     }
   },
-  "_version": "20260525T1779744557207",
+  "_version": "20260525T1779747879695",
   "a11y_lab": {
     "tabs": {
       "preview": "Preview as תלמידים",
@@ -11371,5 +11371,35 @@
     "math_equation": "Mathematical משוואות",
     "remove_equation": "הסר משוואות",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "המשך Where You Left Off?",
+    "start_fresh": "התחל Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your התקדמות hasn't been exported or נשמר. Are you sure you want to סגור?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "סגור Anyway",
+    "skip_to_story": "דלג to סיפור",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "הגדר Up Your סיפור",
+    "set_up_story_desc": "Name your סיפור, בחר a ז'אנר, and הגדר your אוצר מילים ingredients",
+    "story_title_label": "סיפור Title",
+    "write_your_story": "כתוב Your סיפור",
+    "writing_coach_tip": "Writing Coach טיפים",
+    "illustrate_story": "Illustrate Your סיפור",
+    "illustrate_story_desc": "בינה מלאכותית will צור artwork for each פסקאות",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty פסקאות",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "ערוך the prompt below before מפיק, or לחץ הפק to proceed.",
+    "vocabulary_used": "אוצר מילים Used",
+    "vocab_terms_used": "אוצר מילים מונחים Used",
+    "still_needed": "Still needed:",
+    "move_up": "הזז up",
+    "move_down": "הזז down",
+    "click_to_insert": "לחץ to insert זה transition מילים",
+    "edit_illustration": "ערוך איורים with בינה מלאכותית",
+    "regenerate_illustration": "Regenerate איורים"
   }
 }

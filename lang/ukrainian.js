@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744566594",
+  "_version": "20260525T1779747889068",
   "tour": {
     "input_panel_title": "ввід панель",
     "input_panel_text": "Begin ваш уроки creation journey here. Це ввід панель є foundation для всі створено ресурси. It serves as central hub де ви define вміст, контекст, та parameters.\n### ввід опції\n• **текст Вставити**: Вставити вміст directly від будь-який article, історія, або уроки план.\n• **файли Завантажити**: Завантажити PDFs, зображення, текст файли, аудіо (MP3/WAV), або відео для автоматичний extraction.\n• **URL Отримати**: Вставити будь-який article URL до автоматично витягти та імпортувати its вміст.\n• **AI ресурси Пошук**: Describe тема та let AI знайти клас-відповідний online ресурси для ви.\n• **Створити джерело текст**: Створити оригінал вміст by specifying тема, тон, рівень класу, та ціль стандарти.\n### Генерація функції\n• **тон Selection**: Вибрати від Informative, Розповідь, Persuasive, Humorous, або кроки-by-кроки стилі.\n• **стандарти Вирівнювання**: Використати AI-powered стандарти finder або вручну ввід ціль стандарти (up до 3).\n• **Fact Verification**: Увімкнути web grounding до verify facts та включити citations автоматично.\n• **Custom інструкції**: Додати специфічний guidance для більше tailored вміст генерація.\n### системи Capabilities\n• **Авто-Detection**: автоматично identifies джерело мови.\n• **Chunked Processing**: аудіо та відео файли над 20MB є intelligently split для reliable transcription.\n### Important Найбільше інструменти в sidebar require вихідний матеріал перед вони може be використано. Вставити або створити ваш вміст here перший, потім дослідити інший ресурси.",
@@ -11392,5 +11392,35 @@
     "math_equation": "Mathematical рівняння",
     "remove_equation": "Видалити рівняння",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Продовжити Where You Left Off?",
+    "start_fresh": "Почати Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your прогрес hasn't been exported or збережено. Are you sure you want to закрити?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Закрити Anyway",
+    "skip_to_story": "Пропустити to історія",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Встановити Up Your історія",
+    "set_up_story_desc": "Name your історія, вибрати a жанр, and встановити your словник ingredients",
+    "story_title_label": "історія Title",
+    "write_your_story": "Писати Your історія",
+    "writing_coach_tip": "Writing Coach поради",
+    "illustrate_story": "Illustrate Your історія",
+    "illustrate_story_desc": "AI will створити artwork for each абзац",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty абзац",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Редагувати the prompt below before створення, or натиснути Створити to proceed.",
+    "vocabulary_used": "словник Used",
+    "vocab_terms_used": "словник терміни Used",
+    "still_needed": "Still needed:",
+    "move_up": "Перемістити up",
+    "move_down": "Перемістити down",
+    "click_to_insert": "Натиснути to insert це transition слова",
+    "edit_illustration": "Редагувати ілюстрації with AI",
+    "regenerate_illustration": "Regenerate ілюстрації"
   }
 }

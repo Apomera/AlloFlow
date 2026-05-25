@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744555704",
+  "_version": "20260525T1779747878027",
   "tour": {
     "input_panel_title": "Input Panel",
     "input_panel_text": "Begin nangmah cawnnak creation journey here. hi Input Panel si foundation caah dihlak tuah resources. It serves as central hub khoika nang define content, context, le parameters.\n### Input Options\n• **Text Paste**: Paste content directly from any article, tuanbia, asilole cawnnak taipuelaknak.\n• **file Thlaktan**: Thlaktan PDFs, limceu, text file, audio (MP3/WAV), asilole video caah automatic extraction.\n• **URL Fetch**: Paste any article URL ah automatically extract le import its content.\n• **AI Resource Kawl**: Describe kong le let AI find grade-appropriate online resources caah nang.\n• **Generate Source Text**: Create a sual content by specifying kong, tone, grade level, le tinhmi standards.\n### Chan Features\n• **Tone Selection**: Thim from Informative, Tuanbia, Persuasive, Humorous, asilole Step-by-Step styles.\n• **Standards Rian buatsaihnak**: Hman AI-powered standard finder asilole manually input tinhmi standards (up ah 3).\n• **Fact Verification**: Enable web grounding ah verify facts le include citations automatically.\n• **Custom Instructions**: Tel lakhmi guidance caah tampin tailored content chan.\n### System Capabilities\n• **Auto-Detection**: Automatically identifies source holh.\n• **Chunked Processing**: Audio le video file cunglei 20MB si intelligently split caah reliable transcription.\n### Important Most tools ah sidebar require source material before they can be used. Paste asilole generate nangmah content here first, then explore a dang resources.",
@@ -11402,5 +11402,35 @@
     "math_equation": "Mathematical equation",
     "remove_equation": "Lak equation",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Zulh Where You Left Off?",
+    "start_fresh": "Thawk Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your progress hasn't been exported or a khoh cang. Are you sure you want to khar?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Khar Anyway",
+    "skip_to_story": "Skip to tuanbia",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Set Up Your tuanbia",
+    "set_up_story_desc": "Name your tuanbia, thim a genre, and set your vocabulary ingredients",
+    "story_title_label": "tuanbia Title",
+    "write_your_story": "Tial Your tuanbia",
+    "writing_coach_tip": "Writing Coach Tip",
+    "illustrate_story": "Illustrate Your tuanbia",
+    "illustrate_story_desc": "AI will create artwork for each paragraph",
+    "book_cover": "cauk Cover",
+    "empty_paragraph": "Empty paragraph",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Thlen the prompt below before generating, or hnen Generate to proceed.",
+    "vocabulary_used": "Vocabulary Used",
+    "vocab_terms_used": "Vocabulary Terms Used",
+    "still_needed": "Still needed:",
+    "move_up": "Move up",
+    "move_down": "Move down",
+    "click_to_insert": "Hnen to insert this transition biafang",
+    "edit_illustration": "Thlen illustration with AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

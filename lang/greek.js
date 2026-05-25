@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744556077",
+  "_version": "20260525T1779747878694",
   "tour": {
     "input_panel_title": "είσοδος πίνακας",
     "input_panel_text": "Begin σας μάθημα creation journey εδώ. αυτό είσοδος πίνακας είναι foundation για όλα δημιουργήθηκε πόροι. αυτό serves ως central hub που εσείς define περιεχόμενο, πλαίσιο, και parameters.\n### είσοδος επιλογές\n• **κείμενο Επικόλληση**: Επικόλληση περιεχόμενο directly από οποιοδήποτε article, ιστορία, ή μάθημα σχέδιο.\n• **αρχείο Μεταφόρτωση**: Μεταφόρτωση PDFs, εικόνα, κείμενο αρχείο, ήχος (MP3/WAV), ή βίντεο για αυτόματο extraction.\n• **URL Λήψη**: Επικόλληση οποιοδήποτε article URL σε automatically εξαγωγή και εισαγωγή its περιεχόμενο.\n• **AI πόροι Αναζήτηση**: Describe θέμα και let AI βρίσκω τάξη-appropriate online πόροι για εσείς.\n• **Δημιουργία πηγή κείμενο**: Δημιουργία πρωτότυπο περιεχόμενο by specifying θέμα, τόνος, επίπεδο τάξης, και στόχος πρότυπο.\n### Γενιά χαρακτηριστικά\n• **τόνος Selection**: Επιλέξτε από Informative, Αφήγηση, Persuasive, Humorous, ή βήμα-by-βήμα στυλ.\n• **πρότυπο Ευθυγράμμιση**: Χρήση AI-powered πρότυπο finder ή manually είσοδος στόχος πρότυπο (up σε 3).\n• **Fact Verification**: Ενεργοποίηση web grounding σε verify facts και συμπερίληψη citations automatically.\n• **Custom οδηγία**: Προσθήκη συγκεκριμένος guidance για περισσότερο tailored περιεχόμενο γενιά.\n### σύστημα Capabilities\n• **Αυτόματο-Detection**: Automatically identifies πηγή γλώσσα.\n• **Chunked Processing**: ήχος και βίντεο αρχείο πάνω 20MB είναι intelligently split για reliable transcription.\n### Important Πιο εργαλεία σε sidebar require πηγή material πριν αυτοί μπορεί είναι χρησιμοποιήθηκε. Επικόλληση ή δημιουργία σας περιεχόμενο εδώ πρώτο, τότε εξερεύνηση άλλος πόροι.",
@@ -11410,5 +11410,35 @@
     "math_equation": "Mathematical εξίσωση",
     "remove_equation": "Αφαίρεση εξίσωση",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Συνέχεια Where You Left Off?",
+    "start_fresh": "Έναρξη Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your πρόοδος hasn't been exported or αποθηκευμένο. Are you sure you want to κλείσιμο?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Κλείσιμο Anyway",
+    "skip_to_story": "Παράλειψη to ιστορία",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Ορισμός Up Your ιστορία",
+    "set_up_story_desc": "Name your ιστορία, επιλέξτε a genre, and ορισμός your λεξιλόγιο ingredients",
+    "story_title_label": "ιστορία Title",
+    "write_your_story": "Γράψτε Your ιστορία",
+    "writing_coach_tip": "Writing Coach συμβουλή",
+    "illustrate_story": "Illustrate Your ιστορία",
+    "illustrate_story_desc": "AI will δημιουργία artwork for each παράγραφος",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty παράγραφος",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Επεξεργασία the prompt below before generating, or κάντε κλικ Δημιουργία to proceed.",
+    "vocabulary_used": "λεξιλόγιο Used",
+    "vocab_terms_used": "λεξιλόγιο όρος Used",
+    "still_needed": "Still needed:",
+    "move_up": "Μετακίνηση up",
+    "move_down": "Μετακίνηση down",
+    "click_to_insert": "Κάντε κλικ to insert this transition λέξη",
+    "edit_illustration": "Επεξεργασία illustration with AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

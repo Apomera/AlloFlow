@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744560480",
+  "_version": "20260525T1779747883601",
   "tour": {
     "input_panel_title": "ការបញ្ចូល បន្ទះ",
     "input_panel_text": "Begin របស់អ្នក មេរៀន creation journey here. នេះ ការបញ្ចូល បន្ទះ គឺ foundation សម្រាប់ ទាំងអស់ បានបង្កើត ធនធាន. It serves as central hub កន្លែង អ្នក define មាតិកា, បរិបទ, និង parameters.\n### ការបញ្ចូល ជម្រើស\n• **អត្ថបទ បិទភ្ជាប់**: បិទភ្ជាប់ មាតិកា directly ពី ណាមួយ article, រឿង, ឬ មេរៀន ផែនការ.\n• **ឯកសារ ផ្ទុកឡើង**: ផ្ទុកឡើង PDFs, រូបភាព, អត្ថបទ ឯកសារ, សំឡេង (MP3/WAV), ឬ វីដេអូ សម្រាប់ ស្វ័យប្រវត្តិ extraction.\n• **URL យក**: បិទភ្ជាប់ ណាមួយ article URL ទៅ ដោយស្វ័យប្រវត្តិ ស្រង់ចេញ និង នាំចូល its មាតិកា.\n• **AI ធនធាន ស្វែងរក**: Describe ប្រធានបទ និង let AI find ថ្នាក់-សមរម្យ online ធនធាន សម្រាប់ អ្នក.\n• **បង្កើត ប្រភព អត្ថបទ**: បង្កើត ដើម មាតិកា by specifying ប្រធានបទ, សំឡេង, កម្រិតថ្នាក់, និង គោលដៅ ស្តង់ដារ.\n### ជំនាន់ លក្ខណៈពិសេស\n• **សំឡេង Selection**: ជ្រើសរើស ពី Informative, រឿងនិទាន, Persuasive, Humorous, ឬ ជំហាន-by-ជំហាន រចនាប័ទ្ម.\n• **ស្តង់ដារ ការតម្រឹម**: ប្រើ AI-powered ស្តង់ដារ finder ឬ ដោយដៃ ការបញ្ចូល គោលដៅ ស្តង់ដារ (up ទៅ 3).\n• **Fact Verification**: បើកដំណើរការ web grounding ទៅ verify facts និង រួមបញ្ចូល citations ដោយស្វ័យប្រវត្តិ.\n• **Custom ការណែនាំ**: បន្ថែម ជាក់លាក់ guidance សម្រាប់ ច្រើនទៀត tailored មាតិកា ជំនាន់.\n### ប្រព័ន្ធ Capabilities\n• **Auto-Detection**: ដោយស្វ័យប្រវត្តិ identifies ប្រភព ភាសា.\n• **Chunked Processing**: សំឡេង និង វីដេអូ ឯកសារ លើ 20MB គឺ intelligently split សម្រាប់ reliable transcription.\n### Important ច្រើនបំផុត ឧបករណ៍ ក្នុង sidebar require ប្រភព material មុន ពួកគេ អាច be បានប្រើ. បិទភ្ជាប់ ឬ បង្កើត របស់អ្នក មាតិកា here ដំបូង, បន្ទាប់មក ស្វែងយល់ ផ្សេងទៀត ធនធាន.",
@@ -11410,5 +11410,35 @@
     "math_equation": "Mathematical សមីការ",
     "remove_equation": "ដក សមីការ",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "បន្ត Where You Left Off?",
+    "start_fresh": "ចាប់ផ្តើម Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your វឌ្ឍនភាព hasn't been exported or បានរក្សាទុក. Are you sure you want to បិទ?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "បិទ Anyway",
+    "skip_to_story": "រំលង to រឿង",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "កំណត់ Up Your រឿង",
+    "set_up_story_desc": "Name your រឿង, ជ្រើសរើស a ប្រភេទ, and កំណត់ your វាក្យសព្ទ ingredients",
+    "story_title_label": "រឿង Title",
+    "write_your_story": "សរសេរ Your រឿង",
+    "writing_coach_tip": "Writing Coach គន្លឹះ",
+    "illustrate_story": "Illustrate Your រឿង",
+    "illustrate_story_desc": "AI will បង្កើត artwork for each កថាខណ្ឌ",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty កថាខណ្ឌ",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "កែសម្រួល the prompt below before កំពុងបង្កើត, or ចុច បង្កើត to proceed.",
+    "vocabulary_used": "វាក្យសព្ទ Used",
+    "vocab_terms_used": "វាក្យសព្ទ ពាក្យ Used",
+    "still_needed": "Still needed:",
+    "move_up": "ផ្លាស់ទី up",
+    "move_down": "ផ្លាស់ទី down",
+    "click_to_insert": "ចុច to insert នេះ transition ពាក្យ",
+    "edit_illustration": "កែសម្រួល រូបភាព with AI",
+    "regenerate_illustration": "Regenerate រូបភាព"
   }
 }

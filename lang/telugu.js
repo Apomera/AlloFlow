@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744565583",
+  "_version": "20260525T1779747888562",
   "tour": {
     "input_panel_title": "ఇన్‌పుట్ ప్యానెల్",
     "input_panel_text": "Begin మీ పాఠం creation journey here. ఇది ఇన్‌పుట్ ప్యానెల్ ఉంది foundation కోసం అన్నీ రూపొందించబడింది వనరులు. It serves as central hub ఎక్కడ మీరు define కంటెంట్, context, మరియు parameters.\n### ఇన్‌పుట్ ఎంపికలు\n• **వచనం అతికించు**: అతికించు కంటెంట్ directly నుండి any article, కథ, లేదా పాఠం plan.\n• **ఫైల్ అప్‌లోడ్ చేయి**: అప్‌లోడ్ చేయి PDFs, చిత్రం, వచనం ఫైల్, ఆడియో (MP3/WAV), లేదా వీడియో కోసం స్వయంచాలక extraction.\n• **URL తీసుకురా**: అతికించు any article URL కు automatically వెలికితీయి మరియు దిగుమతి చేయి its కంటెంట్.\n• **AI వనరులు వెతుకు**: Describe ఒక topic మరియు let AI find తరగతి-appropriate online వనరులు కోసం మీరు.\n• **రూపొందించు మూలం వచనం**: సృష్టించు original కంటెంట్ by specifying topic, స్వరం, తరగతి స్థాయి, మరియు target ప్రమాణం.\n### Generation లక్షణాలు\n• **స్వరం Selection**: ఎంచుకో నుండి Informative, Narrative, Persuasive, Humorous, లేదా దశ-by-దశ శైలి.\n• **ప్రమాణం Alignment**: ఉపయోగించు AI-powered ప్రమాణం finder లేదా manually ఇన్‌పుట్ target ప్రమాణం (up కు 3).\n• **Fact Verification**: ప్రారంభించు web grounding కు verify facts మరియు చేర్చు citations automatically.\n• **Custom సూచన**: జోడించు నిర్దిష్ట guidance కోసం మరిన్ని tailored కంటెంట్ generation.\n### వ్యవస్థ Capabilities\n• **Auto-Detection**: Automatically identifies మూలం భాష.\n• **Chunked Processing**: ఆడియో మరియు వీడియో ఫైల్ over 20MB ఉన్నాయి intelligently split కోసం reliable transcription.\n### Important Most సాధనాలు లో sidebar require మూలం material before they చేయగలదు be ఉపయోగించబడింది. అతికించు లేదా రూపొందించు మీ కంటెంట్ here మొదటి, then అన్వేషించు other వనరులు.",
@@ -11410,5 +11410,35 @@
     "math_equation": "Mathematical సమీకరణం",
     "remove_equation": "తొలగించు సమీకరణం",
     "insert_formula": "Insert formula నుండి library"
+  },
+  "ui_common": {
+    "continue_where_left": "కొనసాగించు ఎక్కడ మీరు Left Off?",
+    "start_fresh": "ప్రారంభించు Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "మీరు ఉంది Unsaved Changes",
+    "unsaved_changes_body": "మీ పురోగతి hasn't been exported లేదా సేవ్ చేయబడింది. ఉన్నాయి మీరు sure మీరు want కు మూసివేయి?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "మూసివేయి Anyway",
+    "skip_to_story": "దాటవేయి కు కథ",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "సెట్ చేయి Up మీ కథ",
+    "set_up_story_desc": "Name మీ కథ, ఎంచుకో ఒక genre, మరియు సెట్ చేయి మీ పదజాలం ingredients",
+    "story_title_label": "కథ Title",
+    "write_your_story": "రాయి మీ కథ",
+    "writing_coach_tip": "Writing Coach చిట్కా",
+    "illustrate_story": "Illustrate మీ కథ",
+    "illustrate_story_desc": "AI చేస్తుంది సృష్టించు artwork కోసం ప్రతి పేరా",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty పేరా",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "సవరించు prompt below before generating, లేదా క్లిక్ చేయి రూపొందించు కు proceed.",
+    "vocabulary_used": "పదజాలం Used",
+    "vocab_terms_used": "పదజాలం పదం Used",
+    "still_needed": "Still needed:",
+    "move_up": "తరలించు up",
+    "move_down": "తరలించు down",
+    "click_to_insert": "క్లిక్ చేయి కు insert ఇది transition పదం",
+    "edit_illustration": "సవరించు illustration తో AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

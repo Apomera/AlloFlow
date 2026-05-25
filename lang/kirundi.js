@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744561082",
+  "_version": "20260525T1779747884540",
   "tour": {
     "input_panel_title": "ivyinjira urubaho",
     "input_panel_text": "Begin cawe isomo creation journey here. Iki ivyinjira urubaho ni foundation kuri vyose vyakozwe umutungo. It serves as central hub aho wewe define ibirimwo, context, na parameters.\n### ivyinjira amahitamwo\n• **inyandiko Domeka**: Domeka ibirimwo directly kuva any article, inkuru, canke isomo umugambi.\n• **dosiye Rungika**: Rungika PDFs, ifoto, inyandiko dosiye, ijwi (MP3/WAV), canke video kuri cikora cononyene extraction.\n• **URL Zana**: Domeka any article URL ku automatically kuramwo na zana imbere its ibirimwo.\n• **AI umutungo Rondera**: Describe ikiyago na let AI find ishuri-appropriate online umutungo kuri wewe.\n• **Kora imvo inyandiko**: Rema umwimerere ibirimwo by specifying ikiyago, ijwi, urwego rw'ishuri, na intumbero urwego.\n### Igisekuru ibiranga\n• **ijwi Selection**: Hitamwo kuva Informative, Inkuru, Persuasive, Humorous, canke intambwe-by-intambwe imiterere.\n• **urwego Guhuza**: Koresha AI-powered urwego finder canke manually ivyinjira intumbero urwego (up ku 3).\n• **Fact Verification**: Emerera web grounding ku verify facts na shiramwo citations automatically.\n• **Custom amategeko**: Ongerako kanaka guidance kuri vyinshi tailored ibirimwo igisekuru.\n### sisitemu Capabilities\n• **Auto-Detection**: Automatically identifies imvo ururimi.\n• **Chunked Processing**: ijwi na video dosiye hejuru 20MB ni intelligently split kuri reliable transcription.\n### Important Most ibikoresho muri sidebar require imvo material before they can be vyakoreshejwe. Domeka canke kora cawe ibirimwo here ca mbere, then sesengura ikindi umutungo.",
@@ -11402,5 +11402,35 @@
     "math_equation": "Mathematical équation",
     "remove_equation": "Kuraho équation",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Bandanya Where You Left Off?",
+    "start_fresh": "Tangura Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your iterambere hasn't been exported or vyabitswe. Are you sure you want to yugara?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Yugara Anyway",
+    "skip_to_story": "Simbuka to inkuru",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Shiraho Up Your inkuru",
+    "set_up_story_desc": "Name your inkuru, hitamwo a genre, and shiraho your amajambo ingredients",
+    "story_title_label": "inkuru Title",
+    "write_your_story": "Andika Your inkuru",
+    "writing_coach_tip": "Writing Coach impanuro",
+    "illustrate_story": "Illustrate Your inkuru",
+    "illustrate_story_desc": "AI will rema artwork for each igika",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty igika",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Hindura the prompt below before kurema, or kanda Kora to proceed.",
+    "vocabulary_used": "amajambo Used",
+    "vocab_terms_used": "amajambo ijambo Used",
+    "still_needed": "Still needed:",
+    "move_up": "Imura up",
+    "move_down": "Imura down",
+    "click_to_insert": "Kanda to insert iki transition ijambo",
+    "edit_illustration": "Hindura illustration with AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

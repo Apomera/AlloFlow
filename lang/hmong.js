@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744558004",
+  "_version": "20260525T1779747880618",
   "tour": {
     "input_panel_title": "kev nkag phab ntsa",
     "input_panel_text": "Begin koj zaj lus qhia creation journey here. Qhov no kev nkag phab ntsa yog foundation rau tag nrho tau tsim kev pab cuam. It serves as central hub qhov twg koj define cov ntsiab, context, thiab parameters.\n### kev nkag kev xaiv\n• **cov ntawv Muab tso**: Muab tso cov ntsiab directly los ntawm any article, dab neeg, los yog zaj lus qhia kev npaj.\n• **cov ntaub ntawv Xa mus**: Xa mus PDFs, duab, cov ntawv cov ntaub ntawv, suab (MP3/WAV), los yog video rau ua nws tus kheej extraction.\n• **URL Nqa**: Muab tso any article URL mus automatically rho tawm thiab coj los its cov ntsiab.\n• **AI kev pab cuam Nrhiav**: Describe cov ncauj lus thiab let AI find qib-appropriate online kev pab cuam rau koj.\n• **Tsim qhov chaw cov ntawv**: Tsim thawj cov ntsiab by specifying cov ncauj lus, suab, theem qib kawm, thiab lub hom phiaj tus qauv.\n### Tiam cov yam ntxwv\n• **suab Selection**: Xaiv los ntawm Informative, Zaj dab neeg, Persuasive, Humorous, los yog cov theem-by-cov theem hom.\n• **tus qauv Kev sib raug**: Siv AI-powered tus qauv finder los yog manually kev nkag lub hom phiaj tus qauv (up mus 3).\n• **Fact Verification**: Qhib web grounding mus verify facts thiab suav nrog citations automatically.\n• **Custom cov lus qhia**: Ntxiv tshwj xeeb guidance rau ntau tailored cov ntsiab tiam.\n### system Capabilities\n• **Auto-Detection**: Automatically identifies qhov chaw hom lus.\n• **Chunked Processing**: suab thiab video cov ntaub ntawv tshaj 20MB yog intelligently split rau reliable transcription.\n### Important Most cov cuab yeej hauv sidebar require qhov chaw material before they tuaj yeem be tau siv. Muab tso los yog tsim koj cov ntsiab here thawj, then nrhiav xyuas lwm kev pab cuam.",
@@ -11402,5 +11402,35 @@
     "math_equation": "Mathematical equation",
     "remove_equation": "Tshem equation",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Mus ntxiv Where You Left Off?",
+    "start_fresh": "Pib Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your kev nce qib hasn't been exported or tau khaws. Are you sure you want to kaw?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Kaw Anyway",
+    "skip_to_story": "Hla to dab neeg",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Teeb Up Your dab neeg",
+    "set_up_story_desc": "Name your dab neeg, xaiv a genre, and teeb your cov lus ingredients",
+    "story_title_label": "dab neeg Title",
+    "write_your_story": "Sau Your dab neeg",
+    "writing_coach_tip": "Writing Coach cov lus qhia",
+    "illustrate_story": "Illustrate Your dab neeg",
+    "illustrate_story_desc": "AI will tsim artwork for each nqe lus",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty nqe lus",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Kho the prompt below before tab tom tsim, or nyem Tsim to proceed.",
+    "vocabulary_used": "cov lus Used",
+    "vocab_terms_used": "cov lus lo lus Used",
+    "still_needed": "Still needed:",
+    "move_up": "Tshais up",
+    "move_down": "Tshais down",
+    "click_to_insert": "Nyem to insert qhov no transition lo lus",
+    "edit_illustration": "Kho illustration with AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

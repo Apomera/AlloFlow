@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744564693",
+  "_version": "20260525T1779747888026",
   "tour": {
     "input_panel_title": "input panel",
     "input_panel_text": "Begin iyong aralin creation journey here. Ito input panel ay ang foundation para sa lahat nabuo mga resource. It serves as ang central hub saan ikaw define ang nilalaman, konteksto, at parameters.\n### input mga opsyon\n• **teksto I-paste**: I-paste nilalaman directly mula sa anumang article, kwento, o aralin plano.\n• **file I-upload**: I-upload PDFs, imahe, teksto file, audio (MP3/WAV), o video para sa awtomatiko extraction.\n• **URL Kunin**: I-paste anumang article URL sa awtomatikong i-extract at i-import its nilalaman.\n• **AI mga resource Maghanap**: Describe isang paksa at let AI hanapin grado-angkop online mga resource para sa ikaw.\n• **Bumuo pinagkunan teksto**: Gumawa orihinal nilalaman by specifying paksa, tono, antas ng grado, at target pamantayan.\n### Henerasyon mga feature\n• **tono Selection**: Pumili mula sa Informative, Salaysay, Persuasive, Humorous, o hakbang-by-hakbang estilo.\n• **pamantayan Pagkakahanay**: Gamitin AI-powered pamantayan finder o manwal input target pamantayan (up sa 3).\n• **Fact Verification**: Paganahin web grounding sa verify facts at isama citations awtomatikong.\n• **Custom tagubilin**: Magdagdag tiyak guidance para sa higit pa tailored nilalaman henerasyon.\n### sistema Capabilities\n• **Awtomatiko-Detection**: awtomatikong identifies ang pinagkunan wika.\n• **Chunked Processing**: audio at video file higit 20MB ay intelligently split para sa reliable transcription.\n### Important Pinaka mga tool sa ang sidebar require pinagkunang materyal bago sila maaari be ginamit. I-paste o bumuo iyong nilalaman here una, tapos tuklasin ang iba pa mga resource.",
@@ -11369,5 +11369,35 @@
     "math_equation": "Mathematical ekwasyon",
     "remove_equation": "Tanggalin ekwasyon",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Magpatuloy Where You Left Off?",
+    "start_fresh": "Simulan Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your pag-unlad hasn't been exported or na-save. Are you sure you want to isara?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Isara Anyway",
+    "skip_to_story": "Laktawan to kwento",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Itakda Up Your kwento",
+    "set_up_story_desc": "Name your kwento, pumili a genre, and itakda your bokabularyo ingredients",
+    "story_title_label": "kwento Title",
+    "write_your_story": "Isulat Your kwento",
+    "writing_coach_tip": "Writing Coach tip",
+    "illustrate_story": "Illustrate Your kwento",
+    "illustrate_story_desc": "AI will gumawa artwork for each talata",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty talata",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "I-i-edit the prompt below before bumubuo, or i-click Bumuo to proceed.",
+    "vocabulary_used": "bokabularyo Used",
+    "vocab_terms_used": "bokabularyo termino Used",
+    "still_needed": "Still needed:",
+    "move_up": "Ilipat up",
+    "move_down": "Ilipat down",
+    "click_to_insert": "I-i-click to insert ito transition mga salita",
+    "edit_illustration": "I-i-edit ilustrasyon with AI",
+    "regenerate_illustration": "Regenerate ilustrasyon"
   }
 }

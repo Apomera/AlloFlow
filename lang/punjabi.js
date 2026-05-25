@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744563614",
+  "_version": "20260525T1779747887161",
   "tour": {
     "input_panel_title": "ਇਨਪੁੱਟ ਪੈਨਲ",
     "input_panel_text": "Begin ਤੁਹਾਡਾ ਪਾਠ creation journey here. ਇਹ ਇਨਪੁੱਟ ਪੈਨਲ ਹੈ foundation ਲਈ ਸਾਰੇ ਤਿਆਰ ਕੀਤਾ ਗਿਆ ਸਰੋਤ. It serves as central hub ਕਿੱਥੇ ਤੁਸੀਂ define ਸਮੱਗਰੀ, ਪ੍ਰਸੰਗ, ਅਤੇ parameters.\n### ਇਨਪੁੱਟ ਵਿਕਲਪ\n• **ਟੈਕਸਟ ਚਿਪਕਾਓ**: ਚਿਪਕਾਓ ਸਮੱਗਰੀ directly ਤੋਂ ਕੋਈ ਵੀ article, ਕਹਾਣੀ, ਜਾਂ ਪਾਠ ਯੋਜਨਾ.\n• **ਫਾਈਲ ਅੱਪਲੋਡ ਕਰੋ**: ਅੱਪਲੋਡ ਕਰੋ PDFs, ਚਿੱਤਰ, ਟੈਕਸਟ ਫਾਈਲ, ਆਡੀਓ (MP3/WAV), ਜਾਂ ਵੀਡੀਓ ਲਈ ਆਟੋਮੈਟਿਕ extraction.\n• **URL ਪ੍ਰਾਪਤ ਕਰੋ**: ਚਿਪਕਾਓ ਕੋਈ ਵੀ article URL ਨੂੰ ਆਟੋਮੈਟਿਕ ਤੌਰ ਤੇ ਕੱਢੋ ਅਤੇ ਆਯਾਤ ਕਰੋ its ਸਮੱਗਰੀ.\n• **AI ਸਰੋਤ ਖੋਜੋ**: Describe ਇੱਕ ਵਿਸ਼ਾ ਅਤੇ let AI find ਜਮਾਤ-ਉਚਿਤ online ਸਰੋਤ ਲਈ ਤੁਸੀਂ.\n• **ਤਿਆਰ ਕਰੋ ਸਰੋਤ ਟੈਕਸਟ**: ਬਣਾਓ ਮੂਲ ਸਮੱਗਰੀ by specifying ਵਿਸ਼ਾ, ਸੁਰ, ਜਮਾਤ ਪੱਧਰ, ਅਤੇ ਟੀਚਾ ਮਿਆਰ.\n### ਪੀੜ੍ਹੀ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ\n• **ਸੁਰ Selection**: ਚੁਣੋ ਤੋਂ Informative, ਬਿਰਤਾਂਤ, Persuasive, Humorous, ਜਾਂ ਕਦਮ-by-ਕਦਮ ਸ਼ੈਲੀ.\n• **ਮਿਆਰ ਅਲਾਈਨਮੈਂਟ**: ਵਰਤੋ AI-powered ਮਿਆਰ finder ਜਾਂ ਹੱਥੀਂ ਇਨਪੁੱਟ ਟੀਚਾ ਮਿਆਰ (up ਨੂੰ 3).\n• **Fact Verification**: ਯੋਗ ਕਰੋ web grounding ਨੂੰ verify facts ਅਤੇ ਸ਼ਾਮਲ ਕਰੋ citations ਆਟੋਮੈਟਿਕ ਤੌਰ ਤੇ.\n• **Custom ਹਦਾਇਤ**: ਜੋੜੋ ਖਾਸ guidance ਲਈ ਹੋਰ tailored ਸਮੱਗਰੀ ਪੀੜ੍ਹੀ.\n### ਸਿਸਟਮ Capabilities\n• **Auto-Detection**: ਆਟੋਮੈਟਿਕ ਤੌਰ ਤੇ identifies ਸਰੋਤ ਭਾਸ਼ਾ.\n• **Chunked Processing**: ਆਡੀਓ ਅਤੇ ਵੀਡੀਓ ਫਾਈਲ ਉੱਪਰ 20MB ਹਨ intelligently split ਲਈ reliable transcription.\n### Important ਜ਼ਿਆਦਾਤਰ ਔਜ਼ਾਰ ਵਿੱਚ sidebar require ਸਰੋਤ ਸਮੱਗਰੀ ਪਹਿਲਾਂ ਉਹ ਸਕਦਾ ਹੈ be ਵਰਤਿਆ ਗਿਆ. ਚਿਪਕਾਓ ਜਾਂ ਤਿਆਰ ਕਰੋ ਤੁਹਾਡਾ ਸਮੱਗਰੀ here ਪਹਿਲਾ, ਫਿਰ ਪੜਚੋਲ ਕਰੋ ਹੋਰ ਸਰੋਤ.",
@@ -11402,5 +11402,35 @@
     "math_equation": "Mathematical ਸਮੀਕਰਨ",
     "remove_equation": "ਹਟਾਓ ਸਮੀਕਰਨ",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "ਜਾਰੀ ਰੱਖੋ Where You Left Off?",
+    "start_fresh": "ਸ਼ੁਰੂ ਕਰੋ Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your ਤਰੱਕੀ hasn't been exported or ਸੰਭਾਲਿਆ ਗਿਆ. Are you sure you want to ਬੰਦ ਕਰੋ?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "ਬੰਦ ਕਰੋ Anyway",
+    "skip_to_story": "ਛੱਡੋ to ਕਹਾਣੀ",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "ਸੈੱਟ ਕਰੋ Up Your ਕਹਾਣੀ",
+    "set_up_story_desc": "Name your ਕਹਾਣੀ, ਚੁਣੋ a ਸ਼ੈਲੀ, and ਸੈੱਟ ਕਰੋ your ਸ਼ਬਦਾਵਲੀ ingredients",
+    "story_title_label": "ਕਹਾਣੀ Title",
+    "write_your_story": "ਲਿਖੋ Your ਕਹਾਣੀ",
+    "writing_coach_tip": "Writing Coach ਸੁਝਾਅ",
+    "illustrate_story": "Illustrate Your ਕਹਾਣੀ",
+    "illustrate_story_desc": "AI will ਬਣਾਓ artwork for each ਪੈਰਾ",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty ਪੈਰਾ",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "ਸੰਪਾਦਿਤ ਕਰੋ the prompt below before ਤਿਆਰ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ, or ਕਲਿੱਕ ਕਰੋ ਤਿਆਰ ਕਰੋ to proceed.",
+    "vocabulary_used": "ਸ਼ਬਦਾਵਲੀ Used",
+    "vocab_terms_used": "ਸ਼ਬਦਾਵਲੀ ਸ਼ਬਦ Used",
+    "still_needed": "Still needed:",
+    "move_up": "ਹਿਲਾਓ up",
+    "move_down": "ਹਿਲਾਓ down",
+    "click_to_insert": "ਕਲਿੱਕ ਕਰੋ to insert ਇਹ transition ਸ਼ਬਦ",
+    "edit_illustration": "ਸੰਪਾਦਿਤ ਕਰੋ ਚਿੱਤਰਣ with AI",
+    "regenerate_illustration": "Regenerate ਚਿੱਤਰਣ"
   }
 }

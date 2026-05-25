@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744564023",
+  "_version": "20260525T1779747887434",
   "tour": {
     "input_panel_title": "intrare panou",
     "input_panel_text": "Begin tău lecție creation journey here. acesta intrare panou este foundation pentru toate generat resurse. It serves as central hub unde tu define conținut, context, și parameters.\n### intrare opțiuni\n• **text Lipește**: Lipește conținut directly din any article, poveste, sau lecție plan.\n• **fișier Încarcă**: Încarcă PDFs, imagine, text fișier, audio (MP3/WAV), sau videoclip pentru automat extraction.\n• **URL Preia**: Lipește any article URL la automatically extrage și importă its conținut.\n• **AI resurse Caută**: Describe un topic și let AI find clasă-appropriate online resurse pentru tu.\n• **Generează sursă text**: Creează original conținut by specifying topic, ton, nivel de clasă, și target standard.\n### Generation caracteristici\n• **ton Selection**: Alege din Informative, Narrative, Persuasive, Humorous, sau pas-by-pas stil.\n• **standard Alignment**: Folosește AI-powered standard finder sau manually intrare target standard (up la 3).\n• **Fact Verification**: Activează web grounding la verify facts și include citations automatically.\n• **Custom instrucțiune**: Adaugă specific guidance pentru mai mult tailored conținut generation.\n### sistem Capabilities\n• **Auto-Detection**: Automatically identifies sursă limbă.\n• **Chunked Processing**: audio și videoclip fișier over 20MB sunt intelligently split pentru reliable transcription.\n### Important Most instrumente în sidebar require sursă material before they poate be folosit. Lipește sau generează tău conținut here primul, then explorează other resurse.",
@@ -11402,5 +11402,35 @@
     "math_equation": "Mathematical ecuație",
     "remove_equation": "Elimină ecuație",
     "insert_formula": "Insert formula din library"
+  },
+  "ui_common": {
+    "continue_where_left": "Continuă unde tu Left Off?",
+    "start_fresh": "Începe Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "tu are Unsaved Changes",
+    "unsaved_changes_body": "tău progres hasn't been exported sau salvat. sunt tu sure tu want la închide?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Închide Anyway",
+    "skip_to_story": "Omite la poveste",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Setează Up tău poveste",
+    "set_up_story_desc": "Name tău poveste, alege un genre, și setează tău vocabular ingredients",
+    "story_title_label": "poveste Title",
+    "write_your_story": "Scrie tău poveste",
+    "writing_coach_tip": "Writing Coach sfat",
+    "illustrate_story": "Illustrate tău poveste",
+    "illustrate_story_desc": "AI va creează artwork pentru fiecare paragraf",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty paragraf",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Editează prompt below before generating, sau apasă Generează la proceed.",
+    "vocabulary_used": "vocabular Used",
+    "vocab_terms_used": "vocabular termen Used",
+    "still_needed": "Still needed:",
+    "move_up": "Mută up",
+    "move_down": "Mută down",
+    "click_to_insert": "Apasă la insert acesta transition cuvânt",
+    "edit_illustration": "Editează illustration cu AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

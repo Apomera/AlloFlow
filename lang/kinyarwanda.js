@@ -1,5 +1,5 @@
 {
-  "_version": "20260525214127T1779745287010",
+  "_version": "20260525T1779747884295",
   "tour": {
     "input_panel_title": "Paneli yo Kwinjiza",
     "input_panel_text": "Tangirira hano urugendo rwo gukora isomo. Iyi Paneli yo Kwinjiza ni urufatiro rw'umutungo wose ukozwe. Ikora nk'umutwe nyamukuru aho usobanura ibikubiyemo, context, na parameters.\n### Amahitamo yo Kwinjiza\n• **Gushyira Inyandiko**: Manika ibikubiyemo direct biva mu nkuru iyo ari yo yose, inkuru, cyangwa gahunda y'isomo.\n• **Kohereza Idosiye**: Ohereza PDF, amashusho, idosiye z'inyandiko, audio (MP3/WAV), cyangwa video ku gukuramo byikora.\n• **Kuzana URL**: Manika URL y'inkuru iyo ari yo yose kugira ngo ukuremo ibikubiyemo byayo byikora.\n• **AI Kurikirana Umutungo**: Sobanura ingingo maze AI ibone umutungo wo kuri interineti ukwiye urwego rw'ishuri.\n• **Kora Inyandiko y'Inkomoko**: Kora ibikubiyemo by'umwimerere mu kuvuga ingingo, ijwi, urwego rw'ishuri, n'amahame ya intego.\n### Ibiranga byo Gukora\n• **Guhitamo Ijwi**: Hitamo mu mvugo Informative, Narrative, Persuasive, Humorous, cyangwa Step-by-Step.\n• **Guhuza n'Amahame**: Koresha standard finder ya AI cyangwa winjize amahame mu ntoki (kugeza ku 3).\n• **Kugenzura Ukuri**: Bishyireho web grounding ku gugenzura ibyukuri no gushyiramo citations byikora.\n• **Amabwiriza Yihariye**: Ongeraho ubuyobozi bwihariye ku gukora ibikubiyemo bihujwe.\n### Ubushobozi bwa Sisitemu\n• **Kumenya Byikora**: Imenya ururimi rw'inkomoko byikora.\n• **Gutunganya Mu Bice**: Idosiye z'audio na video zirenze 20MB zigabanyirizwa mu buryo bw'ubwenge ku transcription yizewe.\n### Ay'Ingenzi\nIbikoresho byinshi muri sidebar bisaba inkomoko mbere yo gukoreshwa. Manika cyangwa kora ibikubiyemo byawe hano mbere, hanyuma ushakishe undi mutungo.",
@@ -11402,5 +11402,35 @@
     "math_equation": "Mathematical équation",
     "remove_equation": "Kuraho équation",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Komeza Where You Left Off?",
+    "start_fresh": "Tangira Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your ihinduka hasn't been exported or byabitswe. Are you sure you want to funga?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Funga Anyway",
+    "skip_to_story": "Simbuka to inkuru",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Shyiraho Up Your inkuru",
+    "set_up_story_desc": "Name your inkuru, hitamo a ubwoko, and shyiraho your amagambo ingredients",
+    "story_title_label": "inkuru Title",
+    "write_your_story": "Andika Your inkuru",
+    "writing_coach_tip": "Writing Coach inama",
+    "illustrate_story": "Illustrate Your inkuru",
+    "illustrate_story_desc": "AI will rema artwork for each igika",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty igika",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Hindura the prompt below before kurema, or kanda Kora to proceed.",
+    "vocabulary_used": "amagambo Used",
+    "vocab_terms_used": "amagambo ijambo Used",
+    "still_needed": "Still needed:",
+    "move_up": "Imura up",
+    "move_down": "Imura down",
+    "click_to_insert": "Kanda to insert iki transition ijambo",
+    "edit_illustration": "Hindura ifoto with AI",
+    "regenerate_illustration": "Regenerate ifoto"
   }
 }

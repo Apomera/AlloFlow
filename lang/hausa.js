@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744556832",
+  "_version": "20260525T1779747879344",
   "tour": {
     "input_panel_title": "shigarwa panel",
     "input_panel_text": "Begin naka darasi creation journey here. wannan shigarwa panel shi ne foundation don duka samar albarkatu. It serves as central hub ina kai define abun ciki, context, da parameters.\n### shigarwa zaɓi\n• **rubutu Manna**: Manna abun ciki directly daga any article, labari, ko darasi plan.\n• **fayil Loda**: Loda PDFs, hoto, rubutu fayil, sauti (MP3/WAV), ko bidiyo don na atomatik extraction.\n• **URL Kawo**: Manna any article URL zuwa automatically cire da shigo its abun ciki.\n• **AI albarkatu Bincika**: Describe topic da let AI find aji-appropriate online albarkatu don kai.\n• **Samar da tushe rubutu**: Ƙirƙira original abun ciki by specifying topic, sauti, matakin aji, da target mizani.\n### Generation fasaloli\n• **sauti Selection**: Zaɓi daga Informative, Narrative, Persuasive, Humorous, ko mataki-by-mataki salo.\n• **mizani Alignment**: Yi amfani AI-powered mizani finder ko manually shigarwa target mizani (up zuwa 3).\n• **Fact Verification**: Kunna web grounding zuwa verify facts da haɗ citations automatically.\n• **Custom umarni**: Ƙara na musamman guidance don ƙari tailored abun ciki generation.\n### tsarin Capabilities\n• **Auto-Detection**: Automatically identifies tushe harshe.\n• **Chunked Processing**: sauti da bidiyo fayil over 20MB su ne intelligently split don reliable transcription.\n### Important Most kayan aiki sidebar require tushe material before they zai iya be yi amfani. Manna ko samar da naka abun ciki here na farko, then bincika other albarkatu.",
@@ -11410,5 +11410,35 @@
     "math_equation": "Mathematical lissafi",
     "remove_equation": "Cire lissafi",
     "insert_formula": "Insert formula daga library"
+  },
+  "ui_common": {
+    "continue_where_left": "Ci gaba ina kai Left Off?",
+    "start_fresh": "Fara Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "kai yana da Unsaved Changes",
+    "unsaved_changes_body": "naka ci gaba hasn't been exported ko ajiye. su ne kai sure kai want zuwa rufe?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Rufe Anyway",
+    "skip_to_story": "Tsallaka zuwa labari",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Saita Up naka labari",
+    "set_up_story_desc": "Name naka labari, zaɓi genre, da saita naka ƙamus ingredients",
+    "story_title_label": "labari Title",
+    "write_your_story": "Rubuta naka labari",
+    "writing_coach_tip": "Writing Coach shawara",
+    "illustrate_story": "Illustrate naka labari",
+    "illustrate_story_desc": "AI za ƙirƙira artwork don kowane sakin layi",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty sakin layi",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Gyara prompt below before generating, ko danna Samar da zuwa proceed.",
+    "vocabulary_used": "ƙamus Used",
+    "vocab_terms_used": "ƙamus kalma Used",
+    "still_needed": "Still needed:",
+    "move_up": "Matsa up",
+    "move_down": "Matsa down",
+    "click_to_insert": "Danna zuwa insert wannan transition kalma",
+    "edit_illustration": "Gyara illustration tare da AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

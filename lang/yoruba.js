@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744566994",
+  "_version": "20260525T1779747889291",
   "tour": {
     "input_panel_title": "wọle pẹpẹ",
     "input_panel_text": "Begin rẹ ẹkọ creation journey here. eyi wọle pẹpẹ jẹ foundation fun gbogbo ti ṣẹda awọn ohun elo. It serves as central hub ibi ti iwọ define akoonu, context, ati parameters.\n### wọle ṣayan\n• **ọrọ Lẹ**: Lẹ akoonu directly lati any article, itan, tabi ẹkọ plan.\n• **faili Gbe sori**: Gbe sori PDFs, aworan, ọrọ faili, ohun (MP3/WAV), tabi fidio fun aifọwọyi extraction.\n• **URL Mu wa**: Lẹ any article URL si automatically yọ jade ati mu wa its akoonu.\n• **AI awọn ohun elo Wa**: Describe topic ati let AI find kilasi-appropriate online awọn ohun elo fun iwọ.\n• **Ṣẹda orisun ọrọ**: Ṣẹda original akoonu by specifying topic, ohun, ipele kilasi, ati target eto.\n### Generation awọn ẹya\n• **ohun Selection**: Yan lati Informative, Narrative, Persuasive, Humorous, tabi igbesẹ-by-igbesẹ ọna.\n• **eto Alignment**: Lo AI-powered eto finder tabi manually wọle target eto (up si 3).\n• **Fact Verification**: Mu ṣiṣẹ web grounding si verify facts ati fikun citations automatically.\n• **Custom itọsọna**: Fikun pato guidance fun sii tailored akoonu generation.\n### eto Capabilities\n• **Auto-Detection**: Automatically identifies orisun ede.\n• **Chunked Processing**: ohun ati fidio faili over 20MB jẹ intelligently split fun reliable transcription.\n### Important Most irinṣẹ ninu sidebar require orisun material before they le be lo. Lẹ tabi ṣẹda rẹ akoonu here akọkọ, then wadii other awọn ohun elo.",
@@ -11410,5 +11410,35 @@
     "math_equation": "Mathematical iṣiro",
     "remove_equation": "Yọ kuro iṣiro",
     "insert_formula": "Insert formula lati library"
+  },
+  "ui_common": {
+    "continue_where_left": "Tẹsiwaju ibi ti iwọ Left Off?",
+    "start_fresh": "Bẹrẹ Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "iwọ ni Unsaved Changes",
+    "unsaved_changes_body": "rẹ ilọsiwaju hasn't been exported tabi ti pamọ. jẹ iwọ sure iwọ want si tipa?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Tipa Anyway",
+    "skip_to_story": "Foju ko si itan",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Ṣeto Up rẹ itan",
+    "set_up_story_desc": "Name rẹ itan, yan genre, ati ṣeto rẹ awọn ọrọ ingredients",
+    "story_title_label": "itan Title",
+    "write_your_story": "Kọ rẹ itan",
+    "writing_coach_tip": "Writing Coach imọran",
+    "illustrate_story": "Illustrate rẹ itan",
+    "illustrate_story_desc": "AI yoo ṣẹda artwork fun kọọkan apakan",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty apakan",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Ṣatunṣe prompt below before generating, tabi tẹ Ṣẹda si proceed.",
+    "vocabulary_used": "awọn ọrọ Used",
+    "vocab_terms_used": "awọn ọrọ ọrọ Used",
+    "still_needed": "Still needed:",
+    "move_up": "Gbe up",
+    "move_down": "Gbe down",
+    "click_to_insert": "Tẹ si insert eyi transition ọrọ",
+    "edit_illustration": "Ṣatunṣe illustration pẹlu AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744560080",
+  "_version": "20260525T1779747883091",
   "tour": {
     "input_panel_title": "Input Panel",
     "input_panel_text": "Begin နၤအ တၢ်မၤလိ creation journey here. အံၤ Input Panel မ့ၢ် foundation လ၁် all ဘှီထီၣ် resources. It serves as central hub where နၤ define content, context, ဒီး parameters.\n### Input Options\n• **Text Paste**: Paste content directly from any article, တၢ်ဂ့ၢ်, မ့တမ့် တၢ်မၤလိ တၢ်ကူၣ်.\n• **File Upload**: Upload PDFs, တၢ်ဂီၤ, text files, audio (MP3/WAV), မ့တမ့် video လ၁် automatic extraction.\n• **URL Fetch**: Paste any article URL ဆူ automatically extract ဒီး import its content.\n• **AI Resource ဃုကွၢ်**: Describe တၢ်ဂ့ၢ် ဒီး let AI find grade-appropriate online resources လ၁် နၤ.\n• **Generate Source Text**: Create အသနၢၣ် content by specifying တၢ်ဂ့ၢ်, tone, grade level, ဒီး တၢ်ပညိၣ် standards.\n### ဆၢကတၢၢ် Features\n• **Tone Selection**: ဃုထၢ from Informative, Narrative, Persuasive, Humorous, မ့တမ့် Step-by-Step styles.\n• **Standards Alignment**: Use AI-powered standard finder မ့တမ့် manually input တၢ်ပညိၣ် standards (up ဆူ 3).\n• **Fact Verification**: Enable web grounding ဆူ verify facts ဒီး include citations automatically.\n• **Custom Instructions**: ထၢနုၥ် အလီၤလီၤ guidance လ၁် more tailored content ဆၢကတၢၢ်.\n### System Capabilities\n• **Auto-Detection**: Automatically identifies source ကျိၥ်.\n• **Chunked Processing**: Audio ဒီး video files ဖီခိၣ် 20MB မ့ၢ် intelligently split လ၁် reliable transcription.\n### Important Most tools လ၁် sidebar require source material before they can be used. Paste မ့တမ့် generate နၤအ content here first, then explore အဂုၤအဂၤ resources.",
@@ -11392,5 +11392,35 @@
     "math_equation": "Mathematical equation",
     "remove_equation": "ထုးထီၣ်ကွံၥ် equation",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "ဆဲးလီၤ Where You Left Off?",
+    "start_fresh": "စးထီၣ် Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your progress hasn't been exported or ပာ်ဖျါဝံၤ. Are you sure you want to ကးတံၢ်?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "ကးတံၢ် Anyway",
+    "skip_to_story": "Skip to တၢ်ဂ့ၢ်",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Set Up Your တၢ်ဂ့ၢ်",
+    "set_up_story_desc": "Name your တၢ်ဂ့ၢ်, ဃုထၢ a genre, and set your vocabulary ingredients",
+    "story_title_label": "တၢ်ဂ့ၢ် Title",
+    "write_your_story": "ကွဲးတၢ် Your တၢ်ဂ့ၢ်",
+    "writing_coach_tip": "Writing Coach Tip",
+    "illustrate_story": "Illustrate Your တၢ်ဂ့ၢ်",
+    "illustrate_story_desc": "AI will create artwork for each paragraph",
+    "book_cover": "လံၥ် Cover",
+    "empty_paragraph": "Empty paragraph",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "ဘှီတၢ် the prompt below before generating, or ဆဲးကၠုၥ် Generate to proceed.",
+    "vocabulary_used": "Vocabulary Used",
+    "vocab_terms_used": "Vocabulary Terms Used",
+    "still_needed": "Still needed:",
+    "move_up": "Move up",
+    "move_down": "Move down",
+    "click_to_insert": "ဆဲးကၠုၥ် to insert this transition တၢ်ကတိၤ",
+    "edit_illustration": "ဘှီတၢ် illustration with AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

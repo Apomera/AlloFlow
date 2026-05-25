@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744559063",
+  "_version": "20260525T1779747881883",
   "tour": {
     "input_panel_title": "input pannello",
     "input_panel_text": "Begin tuo lezioni creation journey here. Questo input pannello è il foundation per tutti generato risorse. It serves as il central hub dove tu define il contenuto, contesto, e parameters.\n### input opzioni\n• **testo Incolla**: Incolla contenuto directly da qualsiasi article, storia, o lezioni piano.\n• **file Carica**: Carica PDFs, immagini, testo file, audio (MP3/WAV), o video per automatico extraction.\n• **URL Recupera**: Incolla qualsiasi article URL un automaticamente estrai e importa its contenuto.\n• **AI risorse Cerca**: Describe un argomento e let AI trovare classe-appropriato online risorse per tu.\n• **Genera origine testo**: Crea originale contenuto by specifying argomento, tono, livello scolastico, e obiettivo standard.\n### Generazione funzionalità\n• **tono Selection**: Scegli da Informative, Narrativa, Persuasive, Humorous, o passi-by-passi stili.\n• **standard Allineamento**: Usa AI-powered standard finder o manualmente input obiettivo standard (up un 3).\n• **Fact Verification**: Abilita web grounding un verify facts e includi citations automaticamente.\n• **Custom istruzioni**: Aggiungi specifico guidance per altro tailored contenuto generazione.\n### sistema Capabilities\n• **Auto-Detection**: automaticamente identifies il origine lingue.\n• **Chunked Processing**: audio e video file oltre 20MB sono intelligently split per reliable transcription.\n### Important Più strumenti in il sidebar require materiale di origine prima essi può be usato. Incolla o genera tuo contenuto here primo, poi esplora il altro risorse.",
@@ -11392,5 +11392,35 @@
     "math_equation": "Mathematical equazioni",
     "remove_equation": "Rimuovi equazioni",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Continua Where You Left Off?",
+    "start_fresh": "Inizia Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your progresso hasn't been exported or salvato. Are you sure you want to chiudi?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Chiudi Anyway",
+    "skip_to_story": "Salta to storia",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Imposta Up Your storia",
+    "set_up_story_desc": "Name your storia, scegli a genere, and imposta your vocabolario ingredients",
+    "story_title_label": "storia Title",
+    "write_your_story": "Scrivi Your storia",
+    "writing_coach_tip": "Writing Coach consigli",
+    "illustrate_story": "Illustrate Your storia",
+    "illustrate_story_desc": "AI will crea artwork for each paragrafi",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty paragrafi",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Modifica the prompt below before generazione, or clicca Genera to proceed.",
+    "vocabulary_used": "vocabolario Used",
+    "vocab_terms_used": "vocabolario termini Used",
+    "still_needed": "Still needed:",
+    "move_up": "Sposta up",
+    "move_down": "Sposta down",
+    "click_to_insert": "Clicca to insert questo transition parole",
+    "edit_illustration": "Modifica illustrazioni with AI",
+    "regenerate_illustration": "Regenerate illustrazioni"
   }
 }

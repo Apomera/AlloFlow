@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744561963",
+  "_version": "20260525T1779747885716",
   "tour": {
     "input_panel_title": "eloko ekoti lopangu",
     "input_panel_text": "Begin yo liteya creation journey here. Oyo eloko ekoti lopangu ezali foundation mpo na nyonso esalemi biloko. It serves as central hub wapi yo define mateya, context, na parameters.\n### eloko ekoti baponi\n• **makomi Pasiká**: Pasiká mateya directly uta any article, lisapo, to liteya mwango.\n• **fichier Tomá**: Tomá PDFs, elilingi, makomi fichier, mongongo (MP3/WAV), to video mpo na ya yango moko extraction.\n• **URL Kamatá**: Pasiká any article URL na automatically bimisá na kotisá its mateya.\n• **AI biloko Lukáká**: Describe ntina na let AI find kelasi-appropriate online biloko mpo na yo.\n• **Sala esika ya kobimisa makomi**: Salá ya liboso mateya by specifying ntina, mongongo, niveau ya kelasi, na mokano mibeko.\n### Ekeke misala\n• **mongongo Selection**: Poná uta Informative, Lisapo, Persuasive, Humorous, to litambe-by-litambe lolenge.\n• **mibeko Kosengisa**: Salelá AI-powered mibeko finder to manually eloko ekoti mokano mibeko (up na 3).\n• **Fact Verification**: Fungolá web grounding na verify facts na bakisá citations automatically.\n• **Custom malako**: Bakisá oyo guidance mpo na mingi tailored mateya ekeke.\n### molongo Capabilities\n• **Auto-Detection**: Automatically identifies esika ya kobimisa monoko.\n• **Chunked Processing**: mongongo na video fichier likoló 20MB ezali intelligently split mpo na reliable transcription.\n### Important Most biloko ya mosala na sidebar require esika ya kobimisa material before they can be esalelami. Pasiká to sala yo mateya here ya liboso, then luka mosusu biloko.",
@@ -11402,5 +11402,35 @@
     "math_equation": "Mathematical équation",
     "remove_equation": "Longolá équation",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Landá Where You Left Off?",
+    "start_fresh": "Bandá Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your bokoli hasn't been exported or ebombami. Are you sure you want to kangá?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Kangá Anyway",
+    "skip_to_story": "Lekisá to lisapo",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Tiá Up Your lisapo",
+    "set_up_story_desc": "Name your lisapo, poná a genre, and tiá your maloba ingredients",
+    "story_title_label": "lisapo Title",
+    "write_your_story": "Komá Your lisapo",
+    "writing_coach_tip": "Writing Coach toli",
+    "illustrate_story": "Illustrate Your lisapo",
+    "illustrate_story_desc": "AI will salá artwork for each paragraphe",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty paragraphe",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Bongisá the prompt below before kosala, or finá Sala to proceed.",
+    "vocabulary_used": "maloba Used",
+    "vocab_terms_used": "maloba liloba Used",
+    "still_needed": "Still needed:",
+    "move_up": "Mema up",
+    "move_down": "Mema down",
+    "click_to_insert": "Finá to insert oyo transition maloba",
+    "edit_illustration": "Bongisá illustration with AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

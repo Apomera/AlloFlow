@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744562235",
+  "_version": "20260525T1779747885998",
   "tour": {
     "input_panel_title": "Input Panel",
     "input_panel_text": "Begin kaaga casharro creation journey here. tan Input Panel waa foundation u dhammaan soo saaray resources. It serves as central hub meesha adigu define content, context, iyo parameters.\n### Input Options\n• **Text Paste**: Paste content directly from any article, sheeko, ama casharro plan.\n• **fayl Upload**: Upload PDFs, sawir, text fayl, audio (MP3/WAV), ama video u automatic extraction.\n• **URL Fetch**: Paste any article URL ku automatically extract iyo import its content.\n• **AI Resource Raadi**: Describe a topic iyo let AI find grade-appropriate online resources u adigu.\n• **Generate Source Text**: Create asal content by specifying topic, tone, grade level, iyo target standards.\n### Qarni Features\n• **Tone Selection**: Door from Informative, Narrative, Persuasive, Humorous, ama Step-by-Step styles.\n• **Standards Alignment**: Isticmaal AI-powered standard finder ama manually input target standards (up ku 3).\n• **Fact Verification**: Enable web grounding ku verify facts iyo include citations automatically.\n• **Custom Instructions**: Ku dar specific guidance u badan tailored content qarni.\n### System Capabilities\n• **Auto-Detection**: Automatically identifies source luqad.\n• **Chunked Processing**: Audio iyo video fayl over 20MB waa intelligently split u reliable transcription.\n### Important Most tools ku sidebar require source material kahor they wuu kara be used. Paste ama generate kaaga content here first, then explore kale resources.",
@@ -11410,5 +11410,35 @@
     "math_equation": "Mathematical equation",
     "remove_equation": "Saar equation",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Sii wad Where You Left Off?",
+    "start_fresh": "Bilow Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your progress hasn't been exported or saved. Are you sure you want to xidh?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Xidh Anyway",
+    "skip_to_story": "Skip to sheeko",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Set Up Your sheeko",
+    "set_up_story_desc": "magac your sheeko, door a genre, and set your vocabulary ingredients",
+    "story_title_label": "sheeko Title",
+    "write_your_story": "Qor Your sheeko",
+    "writing_coach_tip": "Writing Coach Tip",
+    "illustrate_story": "Illustrate Your sheeko",
+    "illustrate_story_desc": "AI will create artwork for each paragraph",
+    "book_cover": "buug Cover",
+    "empty_paragraph": "Empty paragraph",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Wax ka beddel the prompt below before generating, or riix Generate to proceed.",
+    "vocabulary_used": "Vocabulary Used",
+    "vocab_terms_used": "Vocabulary Terms Used",
+    "still_needed": "Still needed:",
+    "move_up": "Move up",
+    "move_down": "Move down",
+    "click_to_insert": "Riix to insert this transition ereyo",
+    "edit_illustration": "Wax ka beddel illustration with AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

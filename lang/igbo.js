@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744558343",
+  "_version": "20260525T1779747880995",
   "tour": {
     "input_panel_title": "ntinye mbara",
     "input_panel_text": "Begin gị nkuzi creation journey here. nke otu ntinye mbara bụ foundation maka niile mepụtara ihe enyemaka. It serves as central hub ebe gị define ọdịnaya, context, na parameters.\n### ntinye nhọrọ\n• **ederede Mado**: Mado ọdịnaya directly site na any article, akụkọ, maọbụ nkuzi plan.\n• **faịlụ Bulite**: Bulite PDFs, foto, ederede faịlụ, olu (MP3/WAV), maọbụ vidiyo maka akpaaka extraction.\n• **URL Weta**: Mado any article URL na automatically wepụta na bubata its ọdịnaya.\n• **AI ihe enyemaka Chọọ**: Describe otu topic na let AI find klas-appropriate online ihe enyemaka maka gị.\n• **Mepụta ebe sitere ederede**: Kee original ọdịnaya by specifying topic, ụda, ọkwa klas, na target ọkwa.\n### Generation atụmatụ\n• **ụda Selection**: Họrọ site na Informative, Narrative, Persuasive, Humorous, maọbụ nzọụkwụ-by-nzọụkwụ ụdị.\n• **ọkwa Alignment**: Jiri AI-powered ọkwa finder maọbụ manually ntinye target ọkwa (up na 3).\n• **Fact Verification**: Kwado web grounding na verify facts na gụnye citations automatically.\n• **Custom ntuziaka**: Tinye kpọmkwem guidance maka karịotu tailored ọdịnaya generation.\n### usoro Capabilities\n• **Auto-Detection**: Automatically identifies ebe sitere asụsụ.\n• **Chunked Processing**: olu na vidiyo faịlụ over 20MB bụ intelligently split maka reliable transcription.\n### Important Most ngwa na sidebar require ebe sitere material before they nwere ike be ejiri. Mado maọbụ mepụta gị ọdịnaya here mbụ, then nyochaa other ihe enyemaka.",
@@ -11410,5 +11410,35 @@
     "math_equation": "Mathematical nha anya",
     "remove_equation": "Wepụ nha anya",
     "insert_formula": "Insert formula site na library"
+  },
+  "ui_common": {
+    "continue_where_left": "Gaa n'ihu ebe gị Left Off?",
+    "start_fresh": "Bido Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "gị nwere Unsaved Changes",
+    "unsaved_changes_body": "gị ọganihu hasn't been exported maọbụ echekwala. bụ gị sure gị want na mechie?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Mechie Anyway",
+    "skip_to_story": "Wụgharịotu na akụkọ",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Tọọ Up gị akụkọ",
+    "set_up_story_desc": "Name gị akụkọ, họrọ otu genre, na tọọ gị okwu ingredients",
+    "story_title_label": "akụkọ Title",
+    "write_your_story": "Dee gị akụkọ",
+    "writing_coach_tip": "Writing Coach ndụmọdụ",
+    "illustrate_story": "Illustrate gị akụkọ",
+    "illustrate_story_desc": "AI ga- kee artwork maka nke ọ bụla paragraf",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty paragraf",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Dezie prompt below before generating, maọbụ pịotu Mepụta na proceed.",
+    "vocabulary_used": "okwu Used",
+    "vocab_terms_used": "okwu okwu Used",
+    "still_needed": "Still needed:",
+    "move_up": "Bugharịotu up",
+    "move_down": "Bugharịotu down",
+    "click_to_insert": "Pịotu na insert nke otu transition okwu",
+    "edit_illustration": "Dezie illustration na AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

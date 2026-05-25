@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744564355",
+  "_version": "20260525T1779747887825",
   "tour": {
     "input_panel_title": "ingizo paneli",
     "input_panel_text": "Begin yako somo creation journey here. Hii ingizo paneli ni foundation kwa yote imetengenezwa rasilimali. It serves as central hub wapi wewe define maudhui, muktadha, na parameters.\n### ingizo chaguzi\n• **maandishi Bandika**: Bandika maudhui directly kutoka yoyote article, hadithi, au somo mpango.\n• **faili Pakia**: Pakia PDFs, picha, maandishi faili, sauti (MP3/WAV), au video kwa kiotomatiki extraction.\n• **URL Leta**: Bandika yoyote article URL kwa kiotomatiki toa na leta its maudhui.\n• **AI rasilimali Tafuta**: Describe mada na let AI tafuta darasa-inayofaa online rasilimali kwa wewe.\n• **Tengeneza chanzo maandishi**: Unda asili maudhui by specifying mada, mwoneko, kiwango cha darasa, na lengo kiwango.\n### Kizazi vipengele\n• **mwoneko Selection**: Chagua kutoka Informative, Simulizi, Persuasive, Humorous, au hatua-by-hatua mtindo.\n• **kiwango Mpangilio**: Tumia AI-powered kiwango finder au kwa mkono ingizo lengo kiwango (up kwa 3).\n• **Fact Verification**: Wezesha web grounding kwa verify facts na jumuisha citations kiotomatiki.\n• **Custom maagizo**: Ongeza maalum guidance kwa zaidi tailored maudhui kizazi.\n### mfumo Capabilities\n• **Otomatiki-Detection**: kiotomatiki identifies chanzo lugha.\n• **Chunked Processing**: sauti na video faili juu 20MB ni intelligently split kwa reliable transcription.\n### Important Zaidi zana katika sidebar require nyenzo ya chanzo kabla wao inaweza be imetumika. Bandika au tengeneza yako maudhui here ya kwanza, kisha chunguza nyingine rasilimali.",
@@ -11392,5 +11392,35 @@
     "math_equation": "Mathematical mlinganyo",
     "remove_equation": "Ondoa mlinganyo",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Endelea Where You Left Off?",
+    "start_fresh": "Anza Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your maendeleo hasn't been exported or imehifadhiwa. Are you sure you want to funga?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Funga Anyway",
+    "skip_to_story": "Ruka to hadithi",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Weka Up Your hadithi",
+    "set_up_story_desc": "Name your hadithi, chagua a aina, and weka your msamiati ingredients",
+    "story_title_label": "hadithi Title",
+    "write_your_story": "Andika Your hadithi",
+    "writing_coach_tip": "Writing Coach kidokezo",
+    "illustrate_story": "Illustrate Your hadithi",
+    "illustrate_story_desc": "AI will unda artwork for each aya",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty aya",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Hariri the prompt below before kutengeneza, or bofya Tengeneza to proceed.",
+    "vocabulary_used": "msamiati Used",
+    "vocab_terms_used": "msamiati istilahi Used",
+    "still_needed": "Still needed:",
+    "move_up": "Hamisha up",
+    "move_down": "Hamisha down",
+    "click_to_insert": "Bofya to insert hii transition maneno",
+    "edit_illustration": "Hariri mchoro with AI",
+    "regenerate_illustration": "Regenerate mchoro"
   }
 }

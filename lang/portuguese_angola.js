@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744563220",
+  "_version": "20260525T1779747886869",
   "tour": {
     "input_panel_title": "entrada painel",
     "input_panel_text": "Begin seu lição creation journey aqui. este entrada painel é o foundation para todos gerado recursos. ele serves como o central hub onde você define o conteúfaz, context, e parameters.\n### entrada opções\n• **texto Colar**: Colar conteúfaz directly de qualquer article, história, ou lição plan.\n• **ficheiro Carregar**: Carregar PDFs, imagem, texto ficheiro, áudio (MP3/WAV), ou vídeo para automático extraction.\n• **URL Obter**: Colar qualquer article URL para automatically extrair e importar its conteúfaz.\n• **AI recursos Pesquisar**: Describe um topic e let AI find classe-appropriate online recursos para você.\n• **Gerar fonte texto**: Criar original conteúfaz by specifying topic, tom, nível escolar, e target padrão.\n### Geração funcionalidades\n• **tom Selection**: Escolher de Informative, Narrativa, Persuasive, Humorous, ou passo-by-passo estilo.\n• **padrão Alinhamento**: Usar AI-powered padrão finder ou manually entrada target padrão (up para 3).\n• **Fact Verification**: Activar web grounding para verify facts e incluir citations automatically.\n• **Custom instrução**: Adicionar específico guidance para mais tailored conteúfaz geração.\n### sistema Capabilities\n• **Auto-Detection**: Automatically identifies o fonte língua.\n• **Chunked Processing**: áudio e vídeo ficheiro over 20MB são intelligently split para reliable transcription.\n### Important Most ferramentas em o sidebar require fonte material antes they pode ser usado. Colar ou gerar seu conteúfaz aqui primeiro, então explorar o outro recursos.",
@@ -11410,5 +11410,35 @@
     "math_equation": "Mathematical equação",
     "remove_equation": "Remover equação",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Continuar Where You Left Off?",
+    "start_fresh": "Iniciar Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your progresso hasn't been exported or guardado. Are you sure you want to fechar?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Fechar Anyway",
+    "skip_to_story": "Ignorar to história",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Definir Up Your história",
+    "set_up_story_desc": "Name your história, escolher a genre, and definir your vocabulário ingredients",
+    "story_title_label": "história Title",
+    "write_your_story": "Escrever Your história",
+    "writing_coach_tip": "Writing Coach dica",
+    "illustrate_story": "Illustrate Your história",
+    "illustrate_story_desc": "AI will criar artwork for each parágrafo",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty parágrafo",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Editar the prompt below before generating, or clicar Gerar to proceed.",
+    "vocabulary_used": "vocabulário Used",
+    "vocab_terms_used": "vocabulário termo Used",
+    "still_needed": "Still needed:",
+    "move_up": "Mover up",
+    "move_down": "Mover down",
+    "click_to_insert": "Clicar to insert this transition palavra",
+    "edit_illustration": "Editar illustration with AI",
+    "regenerate_illustration": "Regenerate illustration"
   }
 }

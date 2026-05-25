@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744561657",
+  "_version": "20260525T1779747885455",
   "tour": {
     "input_panel_title": "aditus pannus",
     "input_panel_text": "Begin tuus lectiō creation journey here. Hoc aditus pannus est foundation prō omnia generātum subsidia. It serves as central hub ubi tu define contentum, context, et parameters.\n### aditus optiōnēs\n• **textus Adfīge**: Adfīge contentum directly ā any article, fābula, aut lectiō cōnsilium.\n• **tabula Submitte**: Submitte PDFs, imāgō, textus tabula, sonus (MP3/WAV), aut videum prō automaticus extraction.\n• **URL Adfer**: Adfīge any article URL ad automaticē extrahe et importā its contentum.\n• **AI subsidia Quaere**: Describe thema et let AI find gradus-aptus online subsidia prō tu.\n• **Generā fōns textus**: Creā orīginālis contentum by specifying thema, sonus, gradus classis, et scopus norma.\n### Generātiō facultātēs\n• **sonus Selection**: Ēlige ā Informative, Narrātiō, Persuasive, Humorous, aut gradus-by-gradus stilus.\n• **norma Aliniātiō**: Ūtere AI-powered norma finder aut manuāliter aditus scopus norma (up ad 3).\n• **Fact Verification**: Permitte web grounding ad verify facts et inclūde citations automaticē.\n• **Custom īnstrūctiō**: Adde specificus guidance prō plūs tailored contentum generātiō.\n### systēma Capabilities\n• **Auto-Detection**: automaticē identifies fōns lingua.\n• **Chunked Processing**: sonus et videum tabula super 20MB sunt intelligently split prō reliable transcription.\n### Important Most īnstrūmenta in sidebar require fōns material before they potest be ūsus. Adfīge aut generā tuus contentum here prīmus, then explōrā alius subsidia.",
@@ -11410,5 +11410,35 @@
     "math_equation": "Mathematical aequātiō",
     "remove_equation": "Remove aequātiō",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "Continuā Where You Left Off?",
+    "start_fresh": "Incipe Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your prōgressus hasn't been exported or servātum. Are you sure you want to claude?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "Claude Anyway",
+    "skip_to_story": "Omitte to fābula",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "Pōne Up Your fābula",
+    "set_up_story_desc": "Name your fābula, ēlige a genus, and pōne your vocābulārium ingredients",
+    "story_title_label": "fābula Title",
+    "write_your_story": "Scrībe Your fābula",
+    "writing_coach_tip": "Writing Coach cōnsilium",
+    "illustrate_story": "Illustrate Your fābula",
+    "illustrate_story_desc": "AI will creā artwork for each paragraphus",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty paragraphus",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "Recense the prompt below before generandō, or pulsā Generā to proceed.",
+    "vocabulary_used": "vocābulārium Used",
+    "vocab_terms_used": "vocābulārium terminus Used",
+    "still_needed": "Still needed:",
+    "move_up": "Move up",
+    "move_down": "Move down",
+    "click_to_insert": "Pulsā to insert hoc transition verbum",
+    "edit_illustration": "Recense illūstrātiō with AI",
+    "regenerate_illustration": "Regenerate illūstrātiō"
   }
 }

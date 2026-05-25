@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744561397",
+  "_version": "20260525T1779747885072",
   "tour": {
     "input_panel_title": "입력 패널",
     "input_panel_text": "Begin 당신의 수업 creation journey here. 이것 입력 패널 입니다 foundation 위한 모든 생성됨 리소스. It serves as central hub 어디 당신 define 콘텐츠, 맥락, 및 parameters.\n### 입력 옵션\n• **텍스트 붙여넣기**: 붙여넣기 콘텐츠 directly 에서 어떤 article, 이야기, 또는 수업 계획.\n• **파일 업로드**: 업로드 PDFs, 이미지, 텍스트 파일, 오디오 (MP3/WAV), 또는 비디오 위한 자동 extraction.\n• **URL 가져오기**: 붙여넣기 어떤 article URL 에 자동으로 추출 및 가져오기 its 콘텐츠.\n• **AI 리소스 검색**: Describe 주제 및 let AI 찾기 학년-적절 online 리소스 위한 당신.\n• **생성 소스 텍스트**: 만들기 원본 콘텐츠 by specifying 주제, 톤, 학년 수준, 및 대상 표준.\n### 생성 기능\n• **톤 Selection**: 선택 에서 Informative, 서사, Persuasive, Humorous, 또는 단계-by-단계 스타일.\n• **표준 정렬**: 사용 AI-powered 표준 finder 또는 수동으로 입력 대상 표준 (up 에 3).\n• **Fact Verification**: 활성화 web grounding 에 verify facts 및 포함 citations 자동으로.\n• **Custom 지시**: 추가 특정 guidance 위한 더 많이 tailored 콘텐츠 생성.\n### 시스템 Capabilities\n• **자동-Detection**: 자동으로 identifies 소스 언어.\n• **Chunked Processing**: 오디오 및 비디오 파일 위에 20MB 입니다 intelligently split 위한 reliable transcription.\n### Important 가장 도구 안에 sidebar require 소스 자료 이전 그들 수 있습니다 be 사용됨. 붙여넣기 또는 생성 당신의 콘텐츠 here 첫 번째, 그 다음 탐색 다른 리소스.",
@@ -11392,5 +11392,35 @@
     "math_equation": "Mathematical 방정식",
     "remove_equation": "제거 방정식",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "계속 Where You Left Off?",
+    "start_fresh": "시작 Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your 진행 상황 hasn't been exported or 저장됨. Are you sure you want to 닫기?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "닫기 Anyway",
+    "skip_to_story": "건너뛰기 to 이야기",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "설정 Up Your 이야기",
+    "set_up_story_desc": "Name your 이야기, 선택 a 장르, and 설정 your 어휘 ingredients",
+    "story_title_label": "이야기 Title",
+    "write_your_story": "쓰기 Your 이야기",
+    "writing_coach_tip": "Writing Coach 팁",
+    "illustrate_story": "Illustrate Your 이야기",
+    "illustrate_story_desc": "AI will 만들기 artwork for each 단락",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty 단락",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "편집 the prompt below before 생성 중, or 클릭 생성 to proceed.",
+    "vocabulary_used": "어휘 Used",
+    "vocab_terms_used": "어휘 용어 Used",
+    "still_needed": "Still needed:",
+    "move_up": "이동 up",
+    "move_down": "이동 down",
+    "click_to_insert": "클릭 to insert 이것 transition 단어",
+    "edit_illustration": "편집 일러스트 with AI",
+    "regenerate_illustration": "Regenerate 일러스트"
   }
 }

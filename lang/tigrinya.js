@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779744566086",
+  "_version": "20260525T1779747888833",
   "tour": {
     "input_panel_title": "መእተዊ ፓነል",
     "input_panel_text": "Begin ናትካ ትምህርቲ creation journey here. እዚ መእተዊ ፓነል እዩ foundation ንዓ ኩሉ ተፈጢሩ ጸጋታት. It serves as central hub ኣበይ ንስኻ define ትሕዝቶ, ኩነታት, ከምኡውን parameters.\n### መእተዊ ኣማራጺታት\n• **ጽሑፍ ለጥፍ**: ለጥፍ ትሕዝቶ directly ካብ ዝኾነ article, ዛንታ, ወይ ትምህርቲ ውጥን.\n• **ፋይል ስቐል**: ስቐል PDFs, ስእሊ, ጽሑፍ ፋይል, ድምጺ (MP3/WAV), ወይ ቪድዮ ንዓ ናይ ገዛእ extraction.\n• **URL ኣምጽእ**: ለጥፍ ዝኾነ article URL ናብ ብናይ ገዛእ ኣውጽእ ከምኡውን ኣእቱ its ትሕዝቶ.\n• **AI ጸጋታት ድለ**: Describe ሓደ ኣርእስቲ ከምኡውን let AI find ክፍሊ-ግቡእ online ጸጋታት ንዓ ንስኻ.\n• **ፍጠር ምንጪ ጽሑፍ**: ፍጠር ኦርጅናል ትሕዝቶ by specifying ኣርእስቲ, ድምጺ, ደረጃ ክፍሊ, ከምኡውን ዕላማ መዐቀኒ.\n### ወለዶ ባህርያት\n• **ድምጺ Selection**: ምረጽ ካብ Informative, ኣዘንታዊ, Persuasive, Humorous, ወይ ስጉምቲ-by-ስጉምቲ ኣገባብ.\n• **መዐቀኒ ምስራዕ**: ተጠቐም AI-powered መዐቀኒ finder ወይ ብኢድ መእተዊ ዕላማ መዐቀኒ (up ናብ 3).\n• **Fact Verification**: ኣንቅሕ web grounding ናብ verify facts ከምኡውን ኣካትት citations ብናይ ገዛእ.\n• **Custom መምርሒ**: ወስኽ ፍሉይ guidance ንዓ ተወሳኺ tailored ትሕዝቶ ወለዶ.\n### ስርዓት Capabilities\n• **Auto-Detection**: ብናይ ገዛእ identifies ምንጪ ቋንቋ.\n• **Chunked Processing**: ድምጺ ከምኡውን ቪድዮ ፋይል ኣብ ልዕሊ 20MB እዮም intelligently split ንዓ reliable transcription.\n### Important ዝበዝሐ መሳርሒታት ኣብ sidebar require ምንጪ ጽሑፍ ቅድሚ ንሳቶም ይኽእል be ተጠቒሙ. ለጥፍ ወይ ፍጠር ናትካ ትሕዝቶ here ቀዳማይ, ድሕሪኡ ድለ ካልእ ጸጋታት.",
@@ -11402,5 +11402,35 @@
     "math_equation": "Mathematical ምዕሩይነት",
     "remove_equation": "ኣልግስ ምዕሩይነት",
     "insert_formula": "Insert formula from library"
+  },
+  "ui_common": {
+    "continue_where_left": "ቐጽል Where You Left Off?",
+    "start_fresh": "ጀምር Fresh",
+    "restore_draft": "Restore Draft",
+    "unsaved_changes": "You Have Unsaved Changes",
+    "unsaved_changes_body": "Your ዕቤት hasn't been exported or ተቐሚጡ. Are you sure you want to ዕጾ?",
+    "keep_working": "Keep Writing",
+    "close_anyway": "ዕጾ Anyway",
+    "skip_to_story": "ዘል to ዛንታ",
+    "creative_writing_studio": "Creative Writing Studio",
+    "set_up_story": "ኣዳሉ Up Your ዛንታ",
+    "set_up_story_desc": "Name your ዛንታ, ምረጽ a ዘርፊ, and ኣዳሉ your ቃላት ingredients",
+    "story_title_label": "ዛንታ Title",
+    "write_your_story": "ጽሓፍ Your ዛንታ",
+    "writing_coach_tip": "Writing Coach ሓሳብ",
+    "illustrate_story": "Illustrate Your ዛንታ",
+    "illustrate_story_desc": "AI will ፍጠር artwork for each ምዕራፍ",
+    "book_cover": "Book Cover",
+    "empty_paragraph": "Empty ምዕራፍ",
+    "generation_failed": "Generation failed",
+    "edit_prompt_below": "ኣርም the prompt below before ይፍጠር, or ጠውቕ ፍጠር to proceed.",
+    "vocabulary_used": "ቃላት Used",
+    "vocab_terms_used": "ቃላት ቃል Used",
+    "still_needed": "Still needed:",
+    "move_up": "ኣንቀሳቐስ up",
+    "move_down": "ኣንቀሳቐስ down",
+    "click_to_insert": "ጠውቕ to insert እዚ transition ቃላት",
+    "edit_illustration": "ኣርም ስእሊ with AI",
+    "regenerate_illustration": "Regenerate ስእሊ"
   }
 }

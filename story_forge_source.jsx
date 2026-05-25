@@ -2144,7 +2144,7 @@ Return ONLY JSON:
     });
     if (isComic) chaptersHtml += '</div>';
 
-    let vocabHtml = '<div class="vocab-section"><h2 id="vocab-heading">Vocabulary Terms Used</h2><div class="vocab-grid">';
+    let vocabHtml = '<div class="vocab-section"><h2 id="vocab-heading">{t("ui_common.vocab_terms_used")}</h2><div class="vocab-grid">';
     vocabTerms.forEach(v => {
       const used = vocabUsage[v.term];
       vocabHtml += `<div class="vocab-chip ${used ? 'used' : 'unused'}">${used ? '✓' : '✗'} ${escapeHtml(v.term)}</div>`;
@@ -2211,7 +2211,7 @@ main{display:block}
 @media print{.skip-link,.print-btn{display:none}.chapter,.panel{break-inside:avoid}body{background:#fff !important}.cover{background:#fffbeb !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.comic-grid{background:#1e293b !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style></head><body>
-<a class="skip-link" href="#story-content">Skip to story</a>
+<a class="skip-link" href="#story-content">{t("ui_common.skip_to_story")}</a>
 <button class="print-btn" onclick="window.print()" aria-label={t("a11y.story_print")}>🖨️ Print</button>
 <header class="cover" role="banner">
   ${coverArt ? `<img src="${coverArt}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
@@ -2272,7 +2272,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label={t("a11y.teacher_feed
     });
 
     // Vocab slide
-    slidesHtml += `<div class="slide vocab-slide"><h2>Vocabulary Used</h2><div class="vocab-flex">`;
+    slidesHtml += `<div class="slide vocab-slide"><h2>{t("ui_common.vocabulary_used")}</h2><div class="vocab-flex">`;
     vocabTerms.forEach(v => {
       const used = vocabUsage[v.term];
       slidesHtml += `<span class="v-chip ${used ? 'used' : ''}">${used ? '✓' : '✗'} ${escapeHtml(v.term)}</span>`;
@@ -2532,11 +2532,11 @@ show();
         <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby="sf-restore-title">
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
             <div className="text-3xl mb-3" aria-hidden="true">📖</div>
-            <h3 id="sf-restore-title" className="text-lg font-black text-slate-800 mb-2">Continue Where You Left Off?</h3>
+            <h3 id="sf-restore-title" className="text-lg font-black text-slate-800 mb-2">{t("ui_common.continue_where_left")}</h3>
             <p className="text-sm text-slate-600 mb-4">A saved draft was found. Would you like to restore it?</p>
             <div className="flex gap-3 justify-center">
-              <button data-sf-focusable onClick={discardDraft} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Start Fresh</button>
-              <button data-sf-focusable onClick={restoreDraft} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors">Restore Draft</button>
+              <button data-sf-focusable onClick={discardDraft} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.start_fresh")}</button>
+              <button data-sf-focusable onClick={restoreDraft} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors">{t("ui_common.restore_draft")}</button>
             </div>
           </div>
         </div>
@@ -2547,12 +2547,12 @@ show();
         <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby="sf-close-confirm-title">
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
             <div className="text-3xl mb-3">{'\u270F\uFE0F'}</div>
-            <h3 id="sf-close-confirm-title" className="text-lg font-black text-slate-800 mb-2">You Have Unsaved Changes</h3>
+            <h3 id="sf-close-confirm-title" className="text-lg font-black text-slate-800 mb-2">{t("ui_common.unsaved_changes")}</h3>
             <p className="text-sm text-slate-600 mb-4">Your story progress hasn't been exported or saved. Are you sure you want to close?</p>
             <div className="flex gap-3 justify-center">
-              <button data-sf-focusable onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Keep Writing</button>
+              <button data-sf-focusable onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.keep_working")}</button>
               <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language }; localStorage.setItem(SAVE_KEY, JSON.stringify(draft)); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">Save Draft & Close</button>
-              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">Close Anyway</button>
+              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">{t("ui_common.close_anyway")}</button>
             </div>
           </div>
         </div>
@@ -2564,7 +2564,7 @@ show();
           <BookOpen size={24} />
           <div>
             <h2 className="text-xl font-black">StoryForge</h2>
-            <p className="text-rose-200 text-xs font-medium">Creative Writing Studio</p>
+            <p className="text-rose-200 text-xs font-medium">{t("ui_common.creative_writing_studio")}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -2639,7 +2639,7 @@ show();
           {phase === 'configure' && (
             <div className={`space-y-6 ${animClass}`}>
               <div className="text-center mb-6">
-                <h3 className="text-2xl font-black text-slate-800">Set Up Your Story</h3>
+                <h3 className="text-2xl font-black text-slate-800">{t("ui_common.set_up_story")}</h3>
                 <p className="text-slate-600 text-sm mt-1">Name your story, choose a genre, and set your vocabulary ingredients</p>
                 <div className="flex gap-2 justify-center mt-2 flex-wrap">
                   <button onClick={importDraftJSON} className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[11px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1">
@@ -2679,7 +2679,7 @@ show();
               <div className="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="sf-title" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Story Title</label>
+                    <label htmlFor="sf-title" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{t("ui_common.story_title_label")}</label>
                     <input
                       id="sf-title"
                       type="text" value={storyTitle} onChange={(e) => setStoryTitle(e.target.value)}
@@ -2893,7 +2893,7 @@ show();
             <div className={`space-y-4 ${animClass}`}>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-800">Write Your Story</h3>
+                  <h3 className="text-2xl font-black text-slate-800">{t("ui_common.write_your_story")}</h3>
                   <p className="text-slate-600 text-sm mt-1">
                     Use your vocabulary ingredients in each paragraph
                     {revisionSnapshot && <span className="text-indigo-500 ml-2">Draft #{draftCount} — revising!</span>}
@@ -2965,7 +2965,7 @@ show();
                 <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-start gap-2">
                   <Sparkles size={14} className="text-emerald-500 mt-0.5 shrink-0" />
                   <div>
-                    <div className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest">Writing Coach Tip</div>
+                    <div className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest">{t("ui_common.writing_coach_tip")}</div>
                     <p className="text-xs text-emerald-800 mt-0.5">{grammarResults._overallTip}</p>
                   </div>
                   <button onClick={() => setGrammarResults({})} className="text-emerald-700 hover:text-emerald-600 ml-auto shrink-0"><X size={14} /></button>
@@ -3076,8 +3076,8 @@ show();
                       <span className="text-xs font-bold text-slate-600">Paragraph {idx + 1}</span>
                       {/* Reorder buttons */}
                       <div className="flex gap-0.5">
-                        <button onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph up" title="Move up">▲</button>
-                        <button onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph down" title="Move down">▼</button>
+                        <button onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph up" title={t("ui_common.move_up")}>▲</button>
+                        <button onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph down" title={t("ui_common.move_down")}>▼</button>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -3373,7 +3373,7 @@ show();
                     <button
                       onClick={() => updateParagraph(idx + 1, suggestTransition(idx + 1) + ' ')}
                       className="text-[11px] text-indigo-400 hover:text-indigo-600 font-medium hover:bg-indigo-50 px-3 py-1 rounded-full transition-colors"
-                      title="Click to insert this transition word"
+                      title={t("ui_common.click_to_insert")}
                     >
                       Tip: Start next paragraph with "{suggestTransition(idx + 1)}"
                     </button>
@@ -3395,7 +3395,7 @@ show();
             <div className={`space-y-4 ${animClass}`}>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-800">Illustrate Your Story</h3>
+                  <h3 className="text-2xl font-black text-slate-800">{t("ui_common.illustrate_story")}</h3>
                   <p className="text-slate-600 text-sm mt-1">AI will create artwork for each paragraph</p>
                 </div>
                 <div className="flex gap-2">
@@ -3419,7 +3419,7 @@ show();
               {/* Cover Art Preview */}
               {(coverArt || coverArtLoading) && (
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center">
-                  <div className="text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2">Book Cover</div>
+                  <div className="text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2">{t("ui_common.book_cover")}</div>
                   {coverArtLoading ? (
                     <div className="w-48 h-48 mx-auto bg-purple-100 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-300">
                       <RefreshCw size={32} className="text-purple-700 animate-spin" />
@@ -3459,7 +3459,7 @@ show();
                   <div className="flex items-start gap-4">
                     <div className="flex-1">
                       <div className="text-xs font-bold text-purple-600 mb-1">Paragraph {idx + 1}</div>
-                      <p className="text-sm text-slate-700 leading-relaxed">{p.text || <span className="italic text-slate-500">Empty paragraph</span>}</p>
+                      <p className="text-sm text-slate-700 leading-relaxed">{p.text || <span className="italic text-slate-500">{t("ui_common.empty_paragraph")}</span>}</p>
                       {/* Show the prompt used */}
                       {illustrations[p.id]?.prompt && !illustrations[p.id]?.isLoading && (
                         <div className="mt-2 text-[11px] text-purple-700 italic truncate" title={illustrations[p.id].prompt}>
@@ -3489,7 +3489,7 @@ show();
                             <button
                               onClick={() => setImageEditState({ paragraphId: p.id, prompt: '' })}
                               className="p-1.5 bg-white/90 rounded-full shadow-md hover:bg-teal-100"
-                              title="Edit illustration with AI"
+                              title={t("ui_common.edit_illustration")}
                               aria-label="Edit illustration"
                             >
                               <Sparkles size={12} className="text-teal-600" />
@@ -3498,7 +3498,7 @@ show();
                               onClick={() => regenerateIllustration(p.id, p.text, idx)}
                               disabled={isProcessing}
                               className="p-1.5 bg-white/90 rounded-full shadow-md hover:bg-purple-100"
-                              title="Regenerate illustration"
+                              title={t("ui_common.regenerate_illustration")}
                               aria-label="Regenerate illustration"
                             >
                               <RefreshCw size={12} className="text-purple-600" />
@@ -3527,7 +3527,7 @@ show();
                       ) : illustrations[p.id]?.error ? (
                         <div className="w-48 h-28 bg-red-50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-red-200 gap-1">
                           <span className="text-red-600 text-lg">{'\u26A0\uFE0F'}</span>
-                          <span className="text-[11px] font-bold text-red-500">Generation failed</span>
+                          <span className="text-[11px] font-bold text-red-500">{t("ui_common.generation_failed")}</span>
                           <button
                             onClick={() => { setIllustrations(prev => ({ ...prev, [p.id]: {} })); illustrateParagraph(p.id, p.text, idx); }}
                             disabled={isProcessing}
