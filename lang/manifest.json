@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T00:34:43.413Z",
-  "count": 25,
+  "generated": "2026-05-25T00:46:22.756Z",
+  "count": 27,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -65,6 +65,13 @@
       "display": "Hindi",
       "keys": 9968,
       "bytes": 1306014,
+      "updated": "2026-05-25"
+    },
+    {
+      "slug": "hmong",
+      "display": "Hmong",
+      "keys": 9980,
+      "bytes": 1048544,
       "updated": "2026-05-25"
     },
     {
@@ -157,6 +164,13 @@
       "keys": 9953,
       "bytes": 1015158,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "tigrinya",
+      "display": "Tigrinya",
+      "keys": 9976,
+      "bytes": 1117704,
+      "updated": "2026-05-25"
     },
     {
       "slug": "ukrainian",
