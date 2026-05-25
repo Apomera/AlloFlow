@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-25T14:00:56.243Z",
+  "generated": "2026-05-25T14:08:52.916Z",
   "count": 47,
   "total_keys_expected": 9307,
   "available": [
@@ -8,14 +8,14 @@
       "slug": "acholi",
       "display": "Acholi",
       "keys": 9976,
-      "bytes": 968303,
+      "bytes": 964632,
       "updated": "2026-05-25"
     },
     {
       "slug": "amharic",
       "display": "Amharic",
       "keys": 9968,
-      "bytes": 1183008,
+      "bytes": 1233736,
       "updated": "2026-05-25"
     },
     {
@@ -29,28 +29,28 @@
       "slug": "bengali",
       "display": "Bengali",
       "keys": 9988,
-      "bytes": 1451483,
+      "bytes": 1517954,
       "updated": "2026-05-25"
     },
     {
       "slug": "burmese",
       "display": "Burmese",
       "keys": 9976,
-      "bytes": 1582784,
+      "bytes": 1753665,
       "updated": "2026-05-25"
     },
     {
       "slug": "chin_falam",
       "display": "Chin (Falam)",
-      "keys": 1,
-      "bytes": 36,
+      "keys": 979,
+      "bytes": 49594,
       "updated": "2026-05-25"
     },
     {
       "slug": "chin_hakha",
       "display": "Chin (Hakha)",
       "keys": 9976,
-      "bytes": 992915,
+      "bytes": 993857,
       "updated": "2026-05-25"
     },
     {
@@ -92,14 +92,14 @@
       "slug": "german",
       "display": "German",
       "keys": 9974,
-      "bytes": 1066126,
+      "bytes": 1069930,
       "updated": "2026-05-25"
     },
     {
       "slug": "greek",
       "display": "Greek",
       "keys": 9982,
-      "bytes": 1331535,
+      "bytes": 1348900,
       "updated": "2026-05-25"
     },
     {
@@ -120,28 +120,28 @@
       "slug": "hindi",
       "display": "Hindi",
       "keys": 9968,
-      "bytes": 1475412,
+      "bytes": 1503700,
       "updated": "2026-05-25"
     },
     {
       "slug": "hmong",
       "display": "Hmong",
       "keys": 9976,
-      "bytes": 1054669,
+      "bytes": 1063560,
       "updated": "2026-05-25"
     },
     {
       "slug": "indonesian",
       "display": "Indonesian",
       "keys": 9982,
-      "bytes": 1022335,
+      "bytes": 1022962,
       "updated": "2026-05-25"
     },
     {
       "slug": "italian",
       "display": "Italian",
       "keys": 9968,
-      "bytes": 1026144,
+      "bytes": 1029806,
       "updated": "2026-05-25"
     },
     {
@@ -155,35 +155,35 @@
       "slug": "karen",
       "display": "Karen",
       "keys": 9968,
-      "bytes": 1186069,
+      "bytes": 1219762,
       "updated": "2026-05-25"
     },
     {
       "slug": "khmer",
       "display": "Khmer",
       "keys": 9982,
-      "bytes": 1444698,
+      "bytes": 1583973,
       "updated": "2026-05-25"
     },
     {
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
       "keys": 9976,
-      "bytes": 1043644,
+      "bytes": 1038247,
       "updated": "2026-05-25"
     },
     {
       "slug": "kirundi",
       "display": "Kirundi",
       "keys": 9976,
-      "bytes": 1025033,
+      "bytes": 1028770,
       "updated": "2026-05-25"
     },
     {
       "slug": "korean",
       "display": "Korean",
       "keys": 9968,
-      "bytes": 1046320,
+      "bytes": 1047379,
       "updated": "2026-05-25"
     },
     {
@@ -197,14 +197,14 @@
       "slug": "latin",
       "display": "Latin",
       "keys": 9982,
-      "bytes": 1024803,
+      "bytes": 1028746,
       "updated": "2026-05-25"
     },
     {
       "slug": "lingala",
       "display": "Lingala",
       "keys": 9976,
-      "bytes": 1008073,
+      "bytes": 1009272,
       "updated": "2026-05-25"
     },
     {
@@ -225,7 +225,7 @@
       "slug": "nepali",
       "display": "Nepali",
       "keys": 9968,
-      "bytes": 1529137,
+      "bytes": 1628650,
       "updated": "2026-05-25"
     },
     {
@@ -260,7 +260,7 @@
       "slug": "punjabi",
       "display": "Punjabi",
       "keys": 9976,
-      "bytes": 1378803,
+      "bytes": 1461250,
       "updated": "2026-05-25"
     },
     {
@@ -288,14 +288,14 @@
       "slug": "swahili",
       "display": "Swahili",
       "keys": 9968,
-      "bytes": 1006488,
+      "bytes": 1005242,
       "updated": "2026-05-25"
     },
     {
       "slug": "tagalog",
       "display": "Tagalog",
       "keys": 9953,
-      "bytes": 1043484,
+      "bytes": 1048107,
       "updated": "2026-05-25"
     },
     {
@@ -309,14 +309,14 @@
       "slug": "tigrinya",
       "display": "Tigrinya",
       "keys": 9976,
-      "bytes": 1197648,
+      "bytes": 1243876,
       "updated": "2026-05-25"
     },
     {
       "slug": "ukrainian",
       "display": "Ukrainian",
       "keys": 9968,
-      "bytes": 1270137,
+      "bytes": 1287862,
       "updated": "2026-05-25"
     },
     {
