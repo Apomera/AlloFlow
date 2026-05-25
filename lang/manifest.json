@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-25T05:13:37.750Z",
+  "generated": "2026-05-25T13:36:34.424Z",
   "count": 47,
   "total_keys_expected": 9307,
   "available": [
@@ -169,7 +169,7 @@
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
       "keys": 9976,
-      "bytes": 1037892,
+      "bytes": 1038658,
       "updated": "2026-05-25"
     },
     {
