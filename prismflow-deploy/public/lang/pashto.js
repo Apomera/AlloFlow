@@ -626,7 +626,7 @@
     "my_resources": "اوسائلي",
     "tool_note_taking": "قاوالب تداوين الڅخهہیںحظات",
     "tool_anchor_chart": "الرسم البياني المرجعي",
-    "tool_wordsounds": "آاوازیں کلمات",
+    "tool_wordsounds": "Word Sounds",
     "open_storyforge_aria": "کھاولیں StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ساوالات قائمة په الاوثائق",
@@ -2602,7 +2602,7 @@
     "bingo": "مُاولِّد BINGO",
     "play_bingo": "العب BINGO",
     "scramble": "تشاويش کلمات",
-    "word_sounds": "آاوازیں کلمات",
+    "word_sounds": "Word Sounds",
     "add_term_placeholder": "زیات کړئ اصطلاحًا محددًا پورې قاموس...",
     "tooltips": {
       "launch_memory": "إطنهق لعبة الذاكرة",
@@ -2611,7 +2611,7 @@
       "generate_bingo": "إنشاء بطاقات BINGO",
       "launch_bingo": "العب BINGO تفاعليًا",
       "launch_scramble": "إطنهق تشاويش کلمات",
-      "word_sounds": "إطنهق أفعالة الاوعي آاوازي لآاوازیں کلمات",
+      "word_sounds": "إطنهق أفعالة الاوعي آاوازي لWord Sounds",
       "generate_word_search": "إنشاء بحث عن کلمات قابل للچاپ",
       "select_puzzle_lang": "څخهتخب کریں لغة اللغز",
       "select_all_highlight": "تحديد/څخهساوخ کریں تحديد الهر لہاو گیاييز متن المتدرج",
@@ -6422,7 +6422,7 @@
       "waiting": "زه انتظار القصة...",
       "loading_story": "تتاواصل القصة..."
     },
-    "nano_badge": "محرك Nano-Banana",
+    "nano_badge": "محرك Nano Banana",
     "status_messages": {
       "initiating_debate": "جارٍ شراوع النقاش...",
       "starting": "جارٍ شراوع مغامرتك...",

@@ -634,7 +634,7 @@
     "my_resources": "ازابعي",
     "tool_note_taking": "قوالب تدوين المخیرحظات",
     "tool_anchor_chart": "الرسم البياني المرجعي",
-    "tool_wordsounds": "صداها کلمات",
+    "tool_wordsounds": "Word Sounds",
     "open_storyforge_aria": "باز کردن StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "سؤالات قائمة روی الوثائق",
@@ -2610,7 +2610,7 @@
     "bingo": "مُولِّد BINGO",
     "play_bingo": "العب BINGO",
     "scramble": "تشويش کلمات",
-    "word_sounds": "صداها کلمات",
+    "word_sounds": "Word Sounds",
     "add_term_placeholder": "افزودن اصطلاحًا محددًا به واژه‌نامه...",
     "tooltips": {
       "launch_memory": "إطخیرق لعبة الذاكرة",
@@ -2619,7 +2619,7 @@
       "generate_bingo": "إنشاء بطاقات BINGO",
       "launch_bingo": "العب BINGO تفاعليًا",
       "launch_scramble": "إطخیرق تشويش کلمات",
-      "word_sounds": "إطخیرق أفعالة الوعي صداي لصداها کلمات",
+      "word_sounds": "إطخیرق أفعالة الوعي صداي لWord Sounds",
       "generate_word_search": "إنشاء بحث عن کلمات قابل للچاپ",
       "select_puzzle_lang": "انتخاب کنید لغة اللغز",
       "select_all_highlight": "تحديد/لغو تحديد الهر لتمامييز متن المتدرج",
@@ -6430,7 +6430,7 @@
       "waiting": "در انتظار القصة...",
       "loading_story": "تتواصل القصة..."
     },
-    "nano_badge": "محرك Nano-Banana",
+    "nano_badge": "محرك Nano Banana",
     "status_messages": {
       "initiating_debate": "جارٍ شروع النقاش...",
       "starting": "جارٍ شروع مغامرتك...",

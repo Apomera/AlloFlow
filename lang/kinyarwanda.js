@@ -92,7 +92,7 @@
     "exit": "Exit"
   },
   "word_sounds": {
-    "title": "Studio y'Amajwi y'Amagambo",
+    "title": "Word Sounds",
     "subtitle": "Ibikorwa byo Kumenya Utujwi",
     "listen_word": "Tega Amatwi Ijambo",
     "activity_counting": "Kubara Amajwi",
@@ -703,7 +703,7 @@
     "voice_input": "Iyinjira ry'amajwi",
     "volume": "Ijwi",
     "word_count_slider": "Slider y'umubare w'amagambo",
-    "word_sounds_activity": "Igikorwa cy'Amajwi y'Amagambo",
+    "word_sounds_activity": "Igikorwa cy'Word Sounds",
     "your_answer": "Igisubizo cyawe",
     "discard": "Jugunya",
     "reset": "Subiza ku mwimerere",
@@ -1699,7 +1699,7 @@
     "my_resources": "Ibikoresho Byanjye",
     "tool_note_taking": "Intumbero z'Inyandiko",
     "tool_anchor_chart": "Ishusho y'Iremeza",
-    "tool_wordsounds": "Amajwi y'Amagambo",
+    "tool_wordsounds": "Word Sounds",
     "open_storyforge_aria": "Fungura StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Ibibazo Bishingiye ku Nyandiko",
@@ -2176,7 +2176,7 @@
     "bingo": "Inkozi ya Bingo",
     "play_bingo": "Kina Bingo",
     "scramble": "Ivanga ry'Amagambo",
-    "word_sounds": "Amajwi y'Amagambo",
+    "word_sounds": "Word Sounds",
     "add_term_placeholder": "Ongera ijambo ryihariye mu nkoranyamagambo...",
     "tooltips": {
       "launch_memory": "Tangira Umukino w'Umutwe",
@@ -2185,7 +2185,7 @@
       "generate_bingo": "Tunganya Amakarita ya Bingo",
       "launch_bingo": "Kina Bingo Yagati",
       "launch_scramble": "Tangira Ivanga ry'Amagambo",
-      "word_sounds": "Tangira Ibikorwa by'Imenya Amajwi y'Amagambo",
+      "word_sounds": "Tangira Ibikorwa by'Imenya Word Sounds",
       "generate_word_search": "Tunganya Ishakisha ry'Amagambo Yagaragara",
       "select_puzzle_lang": "Hitamo Ururimi rw'Igihembo",
       "select_all_highlight": "Hitamo/Sohora Byose ku Igaragazwa ry'Umwandiko",
@@ -3207,7 +3207,7 @@
       "math_desc": "Tunganya ibibazo by'amagambo n'isano n'ibitekerezo by'imibare.",
       "persona_title": "Imimerere ya AI",
       "persona_desc": "Igira ikiganiro n'umuntu cyangwa abantu bo mu mwandiko.",
-      "wordsounds_title": "Studio y'Amajwi y'Amagambo",
+      "wordsounds_title": "Word Sounds",
       "wordsounds_desc": "Tegura amasomo ya phonics na imenya y'amajwi ukoresheje amagambo y'inkoranyamagambo cyangwa imiryango y'amagambo.",
       "glossary_settings_title": "Igenamiterere ry'Inkoranyamagambo",
       "glossary_settings_desc": "Tegura uburyo amagambo atoranywa kandi ahindurwa. Ushobora kunyiruza ku magambo ya tier cyangwa guhatira indimi zihariye.",
@@ -4822,7 +4822,7 @@
     "plan_hook": "Igikundwa",
     "plan_independent": "Imyitozo Yiyigisha",
     "col_image": "Ishusho",
-    "word_sounds_studio": "Studio y'Amajwi y'Amagambo"
+    "word_sounds_studio": "Word Sounds"
   },
   "persona": {
     "title": "Interview uburyo",
@@ -5650,7 +5650,7 @@
     "tool_analysis": "Isesengura ry'ibikubiyemo riyobowe na AI risuzuma inyandiko yawe y'inkomoko maze rikuremo: ibitekerezo nyamukuru n'insanganyamatsiko, imvugo y'ingenzi hamwe n'ibisobanuro, isuzuma ry'urwego rwo gusoma (Lexile, urwego rw'ishuri), imiterere y'inyandiko (chronological, compare-contrast, cause-effect), bias indicators, na factual claims ku gugenzura. Isesengura rifata amasegonda 15-30. Output itanga: executive summary, kugabanya kurambuye ku gice, n'inama zikoreshwa. Bikoreshwe ku: gutegura amasomo (kumenya teachable moments), kwemeza ibikubiyemo (genzura ukuri), no gutegura gutandukanya (menya reading challenges). Isesengura rishobora kohererezwa nk'raporo. Inama: Kora isesengura mbere y'ibindi byo gukora ku gusobanukirwa inkomoko yawe neza.",
     "tool_glossary": "Kora umutungo wuzuye w'imvugo yo kureba kuva mu bikubiyemo byawe by'inkomoko. AI imenya: imvugo y'amasomo y'ingenzi, imvugo zihariye za context, n'amagambo abanyeshuri b'urwego rwa intego badashobora kumenya. Buri imvugo irimo: igisobanuro gikwiye urwego, ishusho yakozwe na AI, audio ya pronunciation, kugabanya kwa phonetic, interuro z'ingero, n'ubuhinduzi (niba bikoreshwa). Glossary ishyigikira: kwiga kwa flashcard, memory games, word search, crossword, Bingo, n'ibindi. Imvugo zitondetse ku vocabulary tiers. Visual supports zifasha abanyeshuri ba ELL n'abiga bareba. Inama: Kora glossary mbere, hanyuma ukoreshe imvugo mu bindi bikorwa ku coherence y'imvugo hagati y'isomo.",
     "tool_wordsounds": "Fungura Word Sounds Studio ku mabwiriza ya phonics na phonemic awareness afite imiterere. Kora urutonde rw'amagambo rwagabanyijwe ushingiye ku: phoneme families (CVC, CVCE, blends, digraphs), umubare wa syllable, word families (-at, -an, -ig), cyangwa amagambo yawe bwite. Ibikorwa birimo Break It Down (phoneme segmentation), Rhyme Time (kumenya rhyming), na Letter Tracing (gukora imyandikire). Buri ijambo ribona amashusho na audio yakozwe na AI. Byiza ku RTI Tier 2/3 intervention, gahunda za early literacy, na ELL instruction. Bishyigikira Orton-Gillingham na Science of Reading approaches.",
-    "tour-wordsounds-panel": "Gera kuri Studio y'Amajwi y'Amagambo gutunganya no kwitoza imenya ry'utujwi n'ibikorwa bya phonics.",
+    "tour-wordsounds-panel": "Gera kuri Word Sounds gutunganya no kwitoza imenya ry'utujwi n'ibikorwa bya phonics.",
     "wordsounds_open_btn": "Tangiza Word Sounds Studio yuzuye nyuma yo gukora urutonde rwawe rw'amagambo. Studio itanga: ibikorwa bya interactive phonics (Break It Down, Rhyme Time, Letter Tracing), gukurikirana iterambere, pronunciation audio, n'intego z'imbonezamubano ishingiye ku mastery. Ifungura mu modal overlay kugira ngo ushobore gusubira ku bikubiyemo nyamukuru. Studio iri yose ifite navigation yayo hagati y'ibikorwa. Iterambere ry'umunyeshuri rikurikiranwa kandi ribikwa. XP itangwa ku bikorwa byarangiye. Abarimu babona iterambere ku gihe nyacyo muri dashboard. Inama: Kora amagambo mbere ukoresheje paneli y'igenamiterere, hanyuma ukande iyi buto ku kwinjira mu interactive activities.",
     "tool_scaffolds": "Kora imiterere yo kwandika ishyigikira ihujwe n'ibikubiyemo byawe. Amahitamo arimo: sentence starters (bifasha abanyeshuri gutangira kwandika), paragraph frames (templates hamwe na blanks), graphic organizers (imiterere yo kureba yo gutegura), na response guides (imiterere ihujwe ku bwoko bw'inyandiko bwihariye). Igenamiterere rigenzura: ubukomatanye bwa scaffold (byayobowe cyane cyangwa byafunguye), specificity y'ibikubiyemo (rusange cyangwa byibanze ku ngingo), n'intego (brainstorming, gukora draft, gukosora). Scaffolds zigabanya impungenge zo kwandika kandi zitanga amapoint yo kwinjira ku banditsi bafite ibibazo. Gabanya scaffolding buhoro uko abanyeshuri bubaka ubwigenge. Ohereza nka worksheets zacapwa. Inama: Huza urwego rwa scaffold n'icyo umunyeshuri akeneye — inkunga nyinshi mu ntangiriro, ifade uko ubuhanga bukura.",
     "tool_faq": "Kora Q&A sets ziboneka ku banyeshuri ziteguza ibibazo bisanzwe n'ibitekerezo bibi. AI isesengura ibikubiyemo byawe by'inkomoko ku gukora: ibibazo byo gusobanukirwa (Ni iki/Ni nde/Ryari), ibibazo by'isesengura (Kuki/Bigenda gute), n'ibibazo byo gusobanura (Itandukaniro hagati ya...). Buri gisubizo gyandikwa ku rwego rwa intego rw'ishuri hamwe na vocabulary support. Bikoreshwe ku: study guides, reading comprehension checks, gutegura Socratic seminar, cyangwa self-assessment y'umunyeshuri. FAQs zishobora gusomwa mu ijwi rirenga hamwe na karaoke-style highlighting. Ohereza nk'urupapuro rw'igutoza cyangwa interactive web page.",
@@ -6692,7 +6692,7 @@
     "tool_concept_sort": "Igutondeka ry'Ibitekerezo: Kora ibikorwa byo gutondeka mu byiciro byo gufasha abanyeshuri gutondeka no kwiciza ibitekerezo.",
     "tool_lesson_plan": "Inkozi y'Isomo: Tunganya gahunda y'isomo yuzuye n'intego, ibikorwa, n'ipimwa.",
     "tool_udl": "Isesengura rya UDL: Sesengura ibikubiyemo ku mahame ya Universal Design for Learning n'ubuhasanze.",
-    "tool_wordsounds": "Studio y'Amajwi y'Amagambo: Iyigishwa rya phonics n'amajwi y'inyuguti, kuvanga, n'ibikorwa byo gushushanya.",
+    "tool_wordsounds": "Word Sounds: Iyigishwa rya phonics n'amajwi y'inyuguti, kuvanga, n'ibikorwa byo gushushanya.",
     "chat_close": "Funga urubaho y'ikiganiro. Amateka y'ikiganiro arabikwa kugira ngo agarukire.",
     "chat_expand": "Aguza urubaho y'ikiganiro kugira ngo ubone umwanya munini.",
     "chat_voice_mode": "Hindura uburyo bw'iyinjira ry'ijwi. Iyo bwemewe, ushobora kuvuga aho kwandika.",
@@ -6790,7 +6790,7 @@
     "word_sounds_review_distractor_input": "Andika ijambo ryawe cy'urujijo ku bikorwa by'ihuzajwi.",
     "word_sounds_review_phoneme_bank": "Utubati tw'utujwi tw'iri jambo rya none. Kanda umva buri jwi.",
     "word_sounds_loading_minimized": "Word Sounds birakorwa mu mbuga. Kanda kugaragara.",
-    "wordsounds_open_btn": "Fungura Studio y'Amajwi y'Amagambo ku iyigishwa rya phonics.",
+    "wordsounds_open_btn": "Fungura Word Sounds ku iyigishwa rya phonics.",
     "wordsounds_pool_item": "Ijambo riri muri pool y'igikorwa cyawe.",
     "wordsounds_test_sequence": "Pima urutonde rwa phoneme ku cyura ry'ukuri.",
     "ws_gen_close": "Funga urubaho y'inkozi y'amagambo.",
@@ -7006,7 +7006,7 @@
       "waiting": "Bitegereza inkuru...",
       "loading_story": "Inkuru irakomeza..."
     },
-    "nano_badge": "Engine ya Nano-Banana",
+    "nano_badge": "Engine ya Nano Banana",
     "status_messages": {
       "initiating_debate": "Gutangira impaka...",
       "starting": "Gutangira urugendo rwawe...",

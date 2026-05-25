@@ -8138,7 +8138,7 @@
       "waiting": "กำลังรอเรื่อง...",
       "loading_story": "เรื่องดำเนินต่อ..."
     },
-    "nano_badge": "Nano-Banana Engine",
+    "nano_badge": "Nano Banana Engine",
     "status_messages": {
       "initiating_debate": "กำลังเริ่มการโต้แย้ง...",
       "starting": "กำลังเริ่มการผจญภัย...",

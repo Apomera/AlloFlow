@@ -9573,7 +9573,7 @@
       "waiting": "Esperando la historia...",
       "loading_story": "La historia continúa..."
     },
-    "nano_badge": "Motor Nano-Banana",
+    "nano_badge": "Motor Nano Banana",
     "status_messages": {
       "initiating_debate": "Iniciando el debate...",
       "starting": "Comenzando tu aventura...",

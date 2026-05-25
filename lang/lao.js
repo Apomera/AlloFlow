@@ -7221,7 +7221,7 @@
       "waiting": "Waiting for story...",
       "loading_story": "The story continues..."
     },
-    "nano_badge": "Nano-Banana Engine",
+    "nano_badge": "Nano Banana Engine",
     "status_messages": {
       "initiating_debate": "Initiating debate...",
       "starting": "Starting your adventure...",

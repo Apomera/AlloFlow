@@ -2371,7 +2371,7 @@
       "waiting": "En attente de l'histoire...",
       "loading_story": "L'histoire continue..."
     },
-    "nano_badge": "Moteur Nano-Banana",
+    "nano_badge": "Moteur Nano Banana",
     "status_messages": {
       "initiating_debate": "Lancement du débat...",
       "starting": "Démarrage de ton aventure...",

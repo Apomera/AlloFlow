@@ -10086,7 +10086,7 @@
       "waiting": "ストーリーを待っています...",
       "loading_story": "ストーリーが続きます..."
     },
-    "nano_badge": "Nano-Bananaエンジン",
+    "nano_badge": "Nano Bananaエンジン",
     "status_messages": {
       "initiating_debate": "ディベートを開始中...",
       "starting": "アドベンチャーを開始中...",
