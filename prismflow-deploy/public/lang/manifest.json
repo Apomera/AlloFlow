@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T04:11:54.588Z",
-  "count": 41,
+  "generated": "2026-05-25T04:50:00.707Z",
+  "count": 45,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -96,6 +96,13 @@
       "updated": "2026-05-24"
     },
     {
+      "slug": "greek",
+      "display": "Greek",
+      "keys": 9982,
+      "bytes": 1231812,
+      "updated": "2026-05-25"
+    },
+    {
       "slug": "haitian_creole",
       "display": "Haitian Creole",
       "keys": 9955,
@@ -145,10 +152,17 @@
       "updated": "2026-05-24"
     },
     {
+      "slug": "khmer",
+      "display": "Khmer",
+      "keys": 9982,
+      "bytes": 1322676,
+      "updated": "2026-05-25"
+    },
+    {
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
       "keys": 9976,
-      "bytes": 1035775,
+      "bytes": 1037892,
       "updated": "2026-05-25"
     },
     {
@@ -187,6 +201,13 @@
       "updated": "2026-05-25"
     },
     {
+      "slug": "maay_maay",
+      "display": "Maay Maay",
+      "keys": 9982,
+      "bytes": 992529,
+      "updated": "2026-05-25"
+    },
+    {
       "slug": "nepali",
       "display": "Nepali",
       "keys": 9968,
@@ -206,6 +227,13 @@
       "keys": 9968,
       "bytes": 904526,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "portuguese_angola",
+      "display": "Portuguese (Angola)",
+      "keys": 9982,
+      "bytes": 1018652,
+      "updated": "2026-05-25"
     },
     {
       "slug": "portuguese_brazil",
