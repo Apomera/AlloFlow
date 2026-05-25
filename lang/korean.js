@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779719014535",
+  "_version": "20260525T1779731929689",
   "tour": {
     "input_panel_title": "입력 패널",
     "input_panel_text": "Begin 당신의 수업 creation journey here. 이것 입력 패널 입니다 foundation 위한 모든 생성됨 리소스. It serves as central hub 어디 당신 define 콘텐츠, 맥락, 및 parameters. ### 입력 옵션 • **텍스트 붙여넣기**: 붙여넣기 콘텐츠 directly 에서 어떤 article, 이야기, 또는 수업 계획. • **파일 업로드**: 업로드 PDFs, 이미지, 텍스트 파일, 오디오 (MP3/WAV), 또는 비디오 위한 자동 extraction. • **URL 가져오기**: 붙여넣기 어떤 article URL 에 자동으로 추출 및 가져오기 its 콘텐츠. • **AI 리소스 검색**: Describe 주제 및 let AI 찾기 학년-적절 online 리소스 위한 당신. • **생성 소스 텍스트**: 만들기 원본 콘텐츠 by specifying 주제, 톤, 학년 수준, 및 대상 표준. ### 생성 기능 • **톤 Selection**: 선택 에서 Informative, 서사, Persuasive, Humorous, 또는 단계-by-단계 스타일. • **표준 정렬**: 사용 AI-powered 표준 finder 또는 수동으로 입력 대상 표준 (up 에 3). • **Fact Verification**: 활성화 web grounding 에 verify facts 및 포함 citations 자동으로. • **Custom 지시**: 추가 특정 guidance 위한 더 많이 tailored 콘텐츠 생성. ### 시스템 Capabilities • **자동-Detection**: 자동으로 identifies 소스 언어. • **Chunked Processing**: 오디오 및 비디오 파일 위에 20MB 입니다 intelligently split 위한 reliable transcription. ### Important 가장 도구 안에 sidebar require 소스 자료 이전 그들 수 있습니다 be 사용됨. 붙여넣기 또는 생성 당신의 콘텐츠 here 첫 번째, 그 다음 탐색 다른 리소스.",

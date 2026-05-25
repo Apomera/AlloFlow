@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779719022547",
+  "_version": "20260525T1779731924198",
   "tour": {
     "input_panel_title": "ግቤት ፓነል",
     "input_panel_text": "Begin የእርስዎ ትምህርት creation journey here. ይህ ግቤት ፓነል ነው foundation ለ ሁሉም ተመንጭቷል ሀብቶች. It serves as central hub የት እርስዎ define ይዘት, አውድ, እና parameters. ### ግቤት አማራጮች • **ጽሑፍ ለጥፍ**: ለጥፍ ይዘት directly ከ ማንኛውም article, ታሪክ, ወይም ትምህርት ዕቅድ. • **ፋይል ስቀል**: ስቀል PDFs, ምስል, ጽሑፍ ፋይል, ድምጽ (MP3/WAV), ወይም ቪዲዮ ለ ራስ ሰር extraction. • **URL አምጣ**: ለጥፍ ማንኛውም article URL ወደ ራስ ሰር አውጣ እና አስገባ its ይዘት. • **AI ሀብቶች ፈልግ**: Describe አንድ ርዕስ እና let AI find ክፍል-ተገቢ online ሀብቶች ለ እርስዎ. • **አመንጭ ምንጭ ጽሑፍ**: ፍጠር ኦሪጅናል ይዘት by specifying ርዕስ, ቃና, የክፍል ደረጃ, እና ግብ መስፈርት. ### ትውልድ ባህሪያት • **ቃና Selection**: ምረጥ ከ Informative, ትረካ, Persuasive, Humorous, ወይም እርምጃ-by-እርምጃ ዘይቤ. • **መስፈርት ማስተካከያ**: ተጠቀም AI-powered መስፈርት finder ወይም በእጅ ግቤት ግብ መስፈርት (up ወደ 3). • **Fact Verification**: አንቃ web grounding ወደ verify facts እና አካትት citations ራስ ሰር. • **Custom መመሪያ**: ጨምር የተወሰነ guidance ለ ተጨማሪ tailored ይዘት ትውልድ. ### ስርዓት Capabilities • **Auto-Detection**: ራስ ሰር identifies ምንጭ ቋንቋ. • **Chunked Processing**: ድምጽ እና ቪዲዮ ፋይል በላይ 20MB ናቸው intelligently split ለ reliable transcription. ### Important አብዛኛው መሳሪያዎች ውስጥ sidebar require የምንጭ ቁሳቁስ በፊት እነሱ ይችላል be ጥቅም ላይ ውሏል. ለጥፍ ወይም አመንጭ የእርስዎ ይዘት here መጀመሪያ, ከዚያ ቃኝ ሌላ ሀብቶች.",

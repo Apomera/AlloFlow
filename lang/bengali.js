@@ -10830,7 +10830,7 @@
     "loading": "লোড করুনing SEL Hub...",
     "loading_hint": "Module লোড করুনing থেকে CDN. আমিf এই persists, চেক আপনার connection."
   },
-  "_version": "20260525T1779719029276",
+  "_version": "20260525T1779731924603",
   "adventure_title": "অ্যাডভেঞ্চার",
   "cancel": "বাতিল",
   "move_down": "সরান down",

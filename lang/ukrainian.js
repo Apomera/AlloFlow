@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779719015316",
+  "_version": "20260525T1779731923187",
   "tour": {
     "input_panel_title": "ввід панель",
     "input_panel_text": "Begin ваш уроки creation journey here. Це ввід панель є foundation для всі створено ресурси. It serves as central hub де ви define вміст, контекст, та parameters. ### ввід опції • **текст Вставити**: Вставити вміст directly від будь-який article, історія, або уроки план. • **файли Завантажити**: Завантажити PDFs, зображення, текст файли, аудіо (MP3/WAV), або відео для автоматичний extraction. • **URL Отримати**: Вставити будь-який article URL до автоматично витягти та імпортувати its вміст. • **AI ресурси Пошук**: Describe тема та let AI знайти клас-відповідний online ресурси для ви. • **Створити джерело текст**: Створити оригінал вміст by specifying тема, тон, рівень класу, та ціль стандарти. ### Генерація функції • **тон Selection**: Вибрати від Informative, Розповідь, Persuasive, Humorous, або кроки-by-кроки стилі. • **стандарти Вирівнювання**: Використати AI-powered стандарти finder або вручну ввід ціль стандарти (up до 3). • **Fact Verification**: Увімкнути web grounding до verify facts та включити citations автоматично. • **Custom інструкції**: Додати специфічний guidance для більше tailored вміст генерація. ### системи Capabilities • **Авто-Detection**: автоматично identifies джерело мови. • **Chunked Processing**: аудіо та відео файли над 20MB є intelligently split для reliable transcription. ### Important Найбільше інструменти в sidebar require вихідний матеріал перед вони може be використано. Вставити або створити ваш вміст here перший, потім дослідити інший ресурси.",
@@ -148,7 +148,7 @@
     "source_custom": "Custom ручний",
     "source_ai": "AI Тема Gen",
     "preview_title": "уроки Preview",
-    "of_total": "",
+    "of_total": "з",
     "spotlight_message": "{name}, спробувати це функції!",
     "words_selected": "слова вибрано",
     "deselect_all": "Deselect всі",
@@ -2761,7 +2761,7 @@
     "scrambled_letters": "Scrambled letters до unscramble",
     "scramble_sr_desc": "Scrambled letters:",
     "letter": "Letter",
-    "of": "",
+    "of": "з",
     "enter_unscrambled": "Ввести unscrambled слова",
     "scramble_hint_sr": "Тип правильний слова використання scrambled letters показано above",
     "sentence_with_blank": "речення з blank",

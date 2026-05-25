@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779719021787",
+  "_version": "20260525T1779731932648",
   "tour": {
     "input_panel_title": "መእተዊ ፓነል",
     "input_panel_text": "Begin ናትካ ትምህርቲ creation journey here. እዚ መእተዊ ፓነል እዩ foundation ንዓ ኩሉ ተፈጢሩ ጸጋታት. It serves as central hub ኣበይ ንስኻ define ትሕዝቶ, ኩነታት, ከምኡውን parameters. ### መእተዊ ኣማራጺታት • **ጽሑፍ ለጥፍ**: ለጥፍ ትሕዝቶ directly ካብ ዝኾነ article, ዛንታ, ወይ ትምህርቲ ውጥን. • **ፋይል ስቐል**: ስቐል PDFs, ስእሊ, ጽሑፍ ፋይል, ድምጺ (MP3/WAV), ወይ ቪድዮ ንዓ ናይ ገዛእ extraction. • **URL ኣምጽእ**: ለጥፍ ዝኾነ article URL ናብ ብናይ ገዛእ ኣውጽእ ከምኡውን ኣእቱ its ትሕዝቶ. • **AI ጸጋታት ድለ**: Describe ሓደ ኣርእስቲ ከምኡውን let AI find ክፍሊ-ግቡእ online ጸጋታት ንዓ ንስኻ. • **ፍጠር ምንጪ ጽሑፍ**: ፍጠር ኦርጅናል ትሕዝቶ by specifying ኣርእስቲ, ድምጺ, ደረጃ ክፍሊ, ከምኡውን ዕላማ መዐቀኒ. ### ወለዶ ባህርያት • **ድምጺ Selection**: ምረጽ ካብ Informative, ኣዘንታዊ, Persuasive, Humorous, ወይ ስጉምቲ-by-ስጉምቲ ኣገባብ. • **መዐቀኒ ምስራዕ**: ተጠቐም AI-powered መዐቀኒ finder ወይ ብኢድ መእተዊ ዕላማ መዐቀኒ (up ናብ 3). • **Fact Verification**: ኣንቅሕ web grounding ናብ verify facts ከምኡውን ኣካትት citations ብናይ ገዛእ. • **Custom መምርሒ**: ወስኽ ፍሉይ guidance ንዓ ተወሳኺ tailored ትሕዝቶ ወለዶ. ### ስርዓት Capabilities • **Auto-Detection**: ብናይ ገዛእ identifies ምንጪ ቋንቋ. • **Chunked Processing**: ድምጺ ከምኡውን ቪድዮ ፋይል ኣብ ልዕሊ 20MB እዮም intelligently split ንዓ reliable transcription. ### Important ዝበዝሐ መሳርሒታት ኣብ sidebar require ምንጪ ጽሑፍ ቅድሚ ንሳቶም ይኽእል be ተጠቒሙ. ለጥፍ ወይ ፍጠር ናትካ ትሕዝቶ here ቀዳማይ, ድሕሪኡ ድለ ካልእ ጸጋታት.",

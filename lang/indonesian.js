@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779719016856",
+  "_version": "20260525T1779731921709",
   "tour": {
     "input_panel_title": "masukan panel",
     "input_panel_text": "Begin Anda pelajaran creation journey di sini. ini masukan panel adalah foundation untuk semua dihasilkan sumber daya. itu serves sebagai central hub di mana Anda define konten, konteks, dan parameters. ### masukan opsi • **teks Tempel**: Tempel konten directly dari apapun article, cerita, atau pelajaran rencana. • **berkas Unggah**: Unggah PDFs, gambar, teks berkas, audio (MP3/WAV), atau video untuk otomatis extraction. • **URL Ambil**: Tempel apapun article URL ke automatically ekstrak dan impor its konten. • **AI sumber daya Cari**: Describe sebuah topik dan let AI cari kelas-appropriate online sumber daya untuk Anda. • **Hasilkan sumber teks**: Buat asli konten by specifying topik, nada, tingkat kelas, dan target standar. ### Generasi fitur • **nada Selection**: Pilih dari Informative, Narasi, Persuasive, Humorous, atau langkah-by-langkah gaya. • **standar Penyelarasan**: Gunakan AI-powered standar finder atau manually masukan target standar (up ke 3). • **Fact Verification**: Aktifkan web grounding ke verify facts dan sertakan citations automatically. • **Custom instruksi**: Tambah spesifik guidance untuk lebih tailored konten generasi. ### sistem Capabilities • **Otomatis-Detection**: Automatically identifies sumber bahasa. • **Chunked Processing**: audio dan video berkas lebih 20MB adalah intelligently split untuk reliable transcription. ### Important Paling alat di sidebar require sumber material sebelum mereka dapat menjadi digunakan. Tempel atau hasilkan Anda konten di sini pertama, kemudian jelajahi lainnya sumber daya.",
@@ -148,7 +148,7 @@
     "source_custom": "Custom manual",
     "source_ai": "AI Topik Gen",
     "preview_title": "pelajaran Preview",
-    "of_total": "",
+    "of_total": "dari",
     "spotlight_message": "{name}, coba ini fitur!",
     "words_selected": "kata dipilih",
     "deselect_all": "Deselect semua",
@@ -2761,7 +2761,7 @@
     "scrambled_letters": "Scrambled letters ke unscramble",
     "scramble_sr_desc": "Scrambled letters:",
     "letter": "Letter",
-    "of": "",
+    "of": "dari",
     "enter_unscrambled": "Masukkan unscrambled kata",
     "scramble_hint_sr": "Jenis benar kata menggunakan scrambled letters ditampilkan above",
     "sentence_with_blank": "kalimat dengan blank",

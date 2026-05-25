@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779719023338",
+  "_version": "20260525T1779731922119",
   "tour": {
     "input_panel_title": "aditus pannus",
     "input_panel_text": "Begin tuus lectiō creation journey here. Hoc aditus pannus est foundation prō omnia generātum subsidia. It serves as central hub ubi tu define contentum, context, et parameters. ### aditus optiōnēs • **textus Adfīge**: Adfīge contentum directly ā any article, fābula, aut lectiō cōnsilium. • **tabula Submitte**: Submitte PDFs, imāgō, textus tabula, sonus (MP3/WAV), aut videum prō automaticus extraction. • **URL Adfer**: Adfīge any article URL ad automaticē extrahe et importā its contentum. • **AI subsidia Quaere**: Describe thema et let AI find gradus-aptus online subsidia prō tu. • **Generā fōns textus**: Creā orīginālis contentum by specifying thema, sonus, gradus classis, et scopus norma. ### Generātiō facultātēs • **sonus Selection**: Ēlige ā Informative, Narrātiō, Persuasive, Humorous, aut gradus-by-gradus stilus. • **norma Aliniātiō**: Ūtere AI-powered norma finder aut manuāliter aditus scopus norma (up ad 3). • **Fact Verification**: Permitte web grounding ad verify facts et inclūde citations automaticē. • **Custom īnstrūctiō**: Adde specificus guidance prō plūs tailored contentum generātiō. ### systēma Capabilities • **Auto-Detection**: automaticē identifies fōns lingua. • **Chunked Processing**: sonus et videum tabula super 20MB sunt intelligently split prō reliable transcription. ### Important Most īnstrūmenta in sidebar require fōns material before they potest be ūsus. Adfīge aut generā tuus contentum here prīmus, then explōrā alius subsidia.",
@@ -148,7 +148,7 @@
     "source_custom": "Custom manuālis",
     "source_ai": "AI Thema Gen",
     "preview_title": "lectiō Preview",
-    "of_total": "",
+    "of_total": "ex",
     "spotlight_message": "{name}, tentā hoc facultātēs!",
     "words_selected": "verbum ēlectum",
     "deselect_all": "Deselect omnia",
@@ -2761,7 +2761,7 @@
     "scrambled_letters": "Scrambled letters ad unscramble",
     "scramble_sr_desc": "Scrambled letters:",
     "letter": "Letter",
-    "of": "",
+    "of": "ex",
     "enter_unscrambled": "Inscrībe unscrambled verbum",
     "scramble_hint_sr": "Type correct verbum ūtendō scrambled letters shown above",
     "sentence_with_blank": "sententia cum blank",

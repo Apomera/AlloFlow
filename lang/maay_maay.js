@@ -1,5 +1,5 @@
 {
-  "_version": "20260525T1779719030631",
+  "_version": "20260525T1779731922663",
   "tour": {
     "input_panel_title": "Input Panel",
     "input_panel_text": "Begin kaaga casharro creation journey here. tan Input Panel waa foundation u dhammaan soo saaray resources. It serves as central hub meesha adigu define content, context, iyo parameters. ### Input Options • **Text Paste**: Paste content directly from any article, sheeko, ama casharro plan. • **fayl Upload**: Upload PDFs, sawir, text fayl, audio (MP3/WAV), ama video u automatic extraction. • **URL Fetch**: Paste any article URL ku automatically extract iyo import its content. • **AI Resource Raadi**: Describe a topic iyo let AI find grade-appropriate online resources u adigu. • **Generate Source Text**: Create asal content by specifying topic, tone, grade level, iyo target standards. ### Qarni Features • **Tone Selection**: Door from Informative, Narrative, Persuasive, Humorous, ama Step-by-Step styles. • **Standards Alignment**: Isticmaal AI-powered standard finder ama manually input target standards (up ku 3). • **Fact Verification**: Enable web grounding ku verify facts iyo include citations automatically. • **Custom Instructions**: Ku dar specific guidance u badan tailored content qarni. ### System Capabilities • **Auto-Detection**: Automatically identifies source luqad. • **Chunked Processing**: Audio iyo video fayl over 20MB waa intelligently split u reliable transcription. ### Important Most tools ku sidebar require source material kahor they wuu kara be used. Paste ama generate kaaga content here first, then explore kale resources.",
@@ -148,7 +148,7 @@
     "source_custom": "Custom Manual",
     "source_ai": "AI Topic Gen",
     "preview_title": "casharro Preview",
-    "of_total": "",
+    "of_total": "ka",
     "spotlight_message": "{magac}, try tan feature!",
     "words_selected": "ereyo selected",
     "deselect_all": "Deselect dhammaan",
@@ -2761,7 +2761,7 @@
     "scrambled_letters": "Scrambled letters ku unscramble",
     "scramble_sr_desc": "Scrambled letters:",
     "letter": "Letter",
-    "of": "",
+    "of": "ka",
     "enter_unscrambled": "Geli unscrambled ereyo",
     "scramble_hint_sr": "Type correct ereyo using scrambled letters shown above",
     "sentence_with_blank": "Sentence la blank",

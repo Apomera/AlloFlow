@@ -1,5 +1,5 @@
 {
-  "_version": 1,
+  "_version": "20260525T1779731932953",
   "_slug": "vietnamese",
   "_display": "Vietnamese",
   "_generated": "2026-05-19",

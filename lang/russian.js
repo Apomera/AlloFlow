@@ -10808,7 +10808,7 @@
     "loading": "Loading SEL Hub...",
     "loading_hint": "Module loading from CDN. If this persists, check your connection."
   },
-  "_version": "2026-03-29T1774812000",
+  "_version": "20260525T1779731931491",
   "adventure_title": "Приключение",
   "cancel": "Cancel",
   "move_down": "Move down",
