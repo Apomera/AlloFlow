@@ -51,7 +51,31 @@
   var _langMenu = useState(false);
   var langMenuOpen = _langMenu[0];
   var setLangMenuOpen = _langMenu[1];
-  var LAUNCH_PAD_LANGS = ['English', 'Spanish', 'French', 'Arabic', 'Chinese (Simplified)', 'Hebrew', 'Portuguese (Brazil)', 'Somali', 'Vietnamese', 'Haitian Creole'];
+  // Dynamically loaded from the language pack manifest so the list stays in
+  // sync with what's actually deployed. Falls back to a curated default.
+  var _deployedLangs = useState(['English', 'Spanish (Latin America)', 'French', 'Arabic', 'Chinese (Simplified)', 'Hebrew', 'Portuguese (Brazil)', 'Somali', 'Vietnamese', 'Haitian Creole']);
+  var LAUNCH_PAD_LANGS = _deployedLangs[0];
+  var setLaunchPadLangs = _deployedLangs[1];
+  React.useEffect(function () {
+    var cancelled = false;
+    var urls = ['https://alloflow-cdn.pages.dev/lang/manifest.json', 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/manifest.json'];
+    (async function () {
+      for (var i = 0; i < urls.length; i++) {
+        try {
+          var r = await fetch(urls[i], { cache: 'no-cache' });
+          if (!r.ok) continue;
+          var m = await r.json();
+          if (m && Array.isArray(m.available)) {
+            var displays = m.available.map(function (e) { return e && e.display; }).filter(Boolean).sort(function (a, b) { return a.localeCompare(b); });
+            var ordered = ['English'].concat(displays.filter(function (d) { return d !== 'English'; }));
+            if (!cancelled) setLaunchPadLangs(ordered);
+            return;
+          }
+        } catch (_) {}
+      }
+    })();
+    return function () { cancelled = true; };
+  }, []);
   return /*#__PURE__*/React.createElement("div", {
     role: "region",
     "aria-label": "Choose how to use AlloFlow",

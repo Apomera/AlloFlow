@@ -2658,6 +2658,268 @@ var createDocPipeline = function(deps) {
     }
   };
 
+  // ── Document Builder Tier 2: AI theme CSS contrast validator + auto-fixer ──
+  // Sister of sanitizeCustomExportCSS — that one blocks XSS, this one blocks
+  // accessibility regressions. The AI theme generator can return CSS with
+  // color pairs that fail WCAG AA contrast (4.5:1 for body text). Without
+  // validation, a user prompt of "make it look like Sailor Moon" yields
+  // pastel-on-pastel that screen-low-vision users can't read.
+  //
+  // Mechanics: walk the CSS rule-by-rule via a brace-depth state machine
+  // (handles @media + nested rules), parse each rule's `color:` and
+  // `background[-color]:` declarations, compute WCAG contrast ratio, auto-fix
+  // the foreground via iterative darken/lighten until the pair passes the
+  // target ratio. Body-level bg is detected and used as the ambient
+  // background for rules that only set `color:`.
+  //
+  // Returns: { css: <validated and fixed>, fixes: [...], fixCount: N }
+  // Each fix entry: { selector, prop, before, after, ratio (pre-fix) }.
+  const validateAndFixCssContrast = (cssText, options) => {
+    options = options || {};
+    const targetRatio = options.targetRatio || 4.5;
+    const defaultAmbient = options.ambientBg || [255, 255, 255];
+    if (!cssText || typeof cssText !== 'string') return { css: cssText || '', fixes: [], fixCount: 0 };
+
+    // ── Color helpers (intentionally duplicated from sanitizeStyleForWCAG ──
+    // closure to avoid a refactor that would touch the larger sanitizer).
+    const _hexToRgb = (hex) => {
+      const h = String(hex || '').replace('#', '').trim();
+      if (h.length === 3) return [parseInt(h[0]+h[0],16), parseInt(h[1]+h[1],16), parseInt(h[2]+h[2],16)];
+      if (h.length === 6) return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)];
+      return null;
+    };
+    const _rgbToHex = (r, g, b) => '#' + [r, g, b].map(c => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
+    const _luminance = (r, g, b) => {
+      const [rs, gs, bs] = [r/255, g/255, b/255].map(c => c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4));
+      return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+    };
+    const _contrastRatio = (rgb1, rgb2) => {
+      const l1 = _luminance.apply(null, rgb1), l2 = _luminance.apply(null, rgb2);
+      return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    };
+    // Minimal named-color subset (the colors most likely to fail contrast).
+    // Full list lives in sanitizeStyleForWCAG; this is enough for AI output.
+    const _named = {
+      black: '#000000', white: '#ffffff', red: '#ff0000', green: '#008000', blue: '#0000ff',
+      yellow: '#ffff00', cyan: '#00ffff', magenta: '#ff00ff', gray: '#808080', grey: '#808080',
+      silver: '#c0c0c0', maroon: '#800000', olive: '#808000', purple: '#800080', teal: '#008080',
+      navy: '#000080', orange: '#ffa500', pink: '#ffc0cb', gold: '#ffd700', lightgray: '#d3d3d3',
+      lightgrey: '#d3d3d3', darkgray: '#a9a9a9', darkgrey: '#a9a9a9',
+    };
+    const _parseColor = (str) => {
+      if (!str) return null;
+      const s = String(str).trim().toLowerCase();
+      if (s.startsWith('#')) return _hexToRgb(s);
+      const rgbM = s.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+      if (rgbM) return [parseInt(rgbM[1]), parseInt(rgbM[2]), parseInt(rgbM[3])];
+      if (_named[s]) return _hexToRgb(_named[s]);
+      return null;
+    };
+    const _fixToPass = (fgRgb, bgRgb, target) => {
+      let [r, g, b] = fgRgb;
+      const bgLum = _luminance(bgRgb[0], bgRgb[1], bgRgb[2]);
+      const isDarkBg = bgLum < 0.18;
+      for (let i = 0; i < 30; i++) {
+        if (_contrastRatio([r, g, b], bgRgb) >= target) break;
+        if (isDarkBg) {
+          r = Math.min(255, Math.round(r + (255 - r) * 0.15));
+          g = Math.min(255, Math.round(g + (255 - g) * 0.15));
+          b = Math.min(255, Math.round(b + (255 - b) * 0.15));
+        } else {
+          r = Math.max(0, Math.round(r * 0.82));
+          g = Math.max(0, Math.round(g * 0.82));
+          b = Math.max(0, Math.round(b * 0.82));
+        }
+      }
+      return [r, g, b];
+    };
+
+    // ── Brace-depth state-machine parser: walks the CSS, extracting top-level
+    // rule blocks plus any inside @media / @supports etc. Doesn't try to
+    // parse selectors or declarations completely — just chunks into rules
+    // that we can regex on for color/background pairs.
+    const rules = []; // [{ selectorStart, selectorEnd, declStart, declEnd }]
+    let i = 0;
+    const N = cssText.length;
+    while (i < N) {
+      // Skip whitespace
+      while (i < N && /\s/.test(cssText[i])) i++;
+      if (i >= N) break;
+      // @-rule: at-keyword followed by block or semicolon
+      if (cssText[i] === '@') {
+        // Find the @-rule's body: either ends at ; (no block) or matched { }
+        let j = i + 1;
+        while (j < N && cssText[j] !== '{' && cssText[j] !== ';') j++;
+        if (j >= N) break;
+        if (cssText[j] === ';') { i = j + 1; continue; }
+        // Has a block. Recurse into it by treating the inside as more rules.
+        // We skip the @-rule header but parse the block contents.
+        let depth = 1;
+        let k = j + 1;
+        const innerStart = k;
+        while (k < N && depth > 0) {
+          if (cssText[k] === '{') depth++;
+          else if (cssText[k] === '}') depth--;
+          k++;
+        }
+        // Parse the inner content as additional CSS — append rules from there.
+        const innerCss = cssText.slice(innerStart, k - 1);
+        // We'll just rerun the outer logic by string-splicing back to a substring.
+        // For simplicity we capture inner rules into the same rules array with adjusted offsets.
+        let innerI = 0;
+        while (innerI < innerCss.length) {
+          while (innerI < innerCss.length && /\s/.test(innerCss[innerI])) innerI++;
+          if (innerI >= innerCss.length) break;
+          if (innerCss[innerI] === '@') { innerI++; continue; } // skip nested @ (rare)
+          const selStart = innerI;
+          while (innerI < innerCss.length && innerCss[innerI] !== '{') innerI++;
+          if (innerI >= innerCss.length) break;
+          const selEnd = innerI;
+          innerI++; // past {
+          const declStart = innerI;
+          let d = 1;
+          while (innerI < innerCss.length && d > 0) {
+            if (innerCss[innerI] === '{') d++;
+            else if (innerCss[innerI] === '}') d--;
+            innerI++;
+          }
+          const declEnd = innerI - 1;
+          rules.push({
+            selectorStart: innerStart + selStart,
+            selectorEnd: innerStart + selEnd,
+            declStart: innerStart + declStart,
+            declEnd: innerStart + declEnd,
+          });
+        }
+        i = k;
+        continue;
+      }
+      // Regular rule: selector { decls }
+      const selStart = i;
+      while (i < N && cssText[i] !== '{' && cssText[i] !== '}') i++;
+      if (i >= N) break;
+      if (cssText[i] === '}') { i++; continue; }
+      const selEnd = i;
+      i++; // past {
+      const declStart = i;
+      let depth = 1;
+      while (i < N && depth > 0) {
+        if (cssText[i] === '{') depth++;
+        else if (cssText[i] === '}') depth--;
+        i++;
+      }
+      const declEnd = i - 1;
+      rules.push({ selectorStart: selStart, selectorEnd: selEnd, declStart, declEnd });
+    }
+
+    // ── Detect body-level background to use as ambient bg for rules that
+    // only set `color`. Walk rules looking for a body selector with
+    // background or background-color.
+    let ambientBg = defaultAmbient;
+    for (const r of rules) {
+      const sel = cssText.slice(r.selectorStart, r.selectorEnd).trim().toLowerCase();
+      if (sel === 'body' || sel === 'html' || sel === 'html, body' || sel === 'body, html') {
+        const decls = cssText.slice(r.declStart, r.declEnd);
+        const bgM = /\bbackground(?:-color)?\s*:\s*([^;]+)/i.exec(decls);
+        if (bgM) {
+          const firstToken = bgM[1].trim().split(/\s+/)[0];
+          const parsed = _parseColor(firstToken);
+          if (parsed) { ambientBg = parsed; break; }
+        }
+      }
+    }
+
+    // ── Walk rules from end to start so byte offsets stay valid when we splice in fixes.
+    const fixes = [];
+    let out = cssText;
+    for (let r = rules.length - 1; r >= 0; r--) {
+      const rule = rules[r];
+      const selector = out.slice(rule.selectorStart, rule.selectorEnd).trim();
+      const decls = out.slice(rule.declStart, rule.declEnd);
+      const colorM = /(^|;)\s*color\s*:\s*([^;]+);?/i.exec(decls);
+      if (!colorM) continue;
+      const fgStr = colorM[2].trim();
+      const fgRgb = _parseColor(fgStr);
+      if (!fgRgb) continue;
+
+      let bgRgb = ambientBg;
+      const bgM = /(^|;)\s*background(?:-color)?\s*:\s*([^;]+);?/i.exec(decls);
+      if (bgM) {
+        const firstToken = bgM[2].trim().split(/\s+/)[0];
+        const parsed = _parseColor(firstToken);
+        if (parsed) bgRgb = parsed;
+      }
+      const ratio = _contrastRatio(fgRgb, bgRgb);
+      if (ratio >= targetRatio) continue;
+      const fixedRgb = _fixToPass(fgRgb, bgRgb, targetRatio);
+      const fixedHex = _rgbToHex(fixedRgb[0], fixedRgb[1], fixedRgb[2]);
+      if (fixedHex.toLowerCase() === fgStr.toLowerCase()) continue; // no change
+
+      fixes.push({
+        selector: selector.slice(0, 60),
+        prop: 'color',
+        before: fgStr,
+        after: fixedHex,
+        ratio: Math.round(ratio * 10) / 10,
+      });
+
+      // Replace the color value in the original CSS.
+      const before = out.slice(0, rule.declStart);
+      const after = out.slice(rule.declEnd);
+      // Find and replace ONLY this rule's color declaration (first match in decls).
+      const newDecls = decls.replace(colorM[0], colorM[0].replace(fgStr, fixedHex));
+      out = before + newDecls + after;
+    }
+
+    return { css: out, fixes: fixes.reverse(), fixCount: fixes.length };
+  };
+
+  // ── Document Builder Tier 1.1: custom CSS sanitizer ──
+  // User-provided CSS (via the AI theme generator OR a directly-pasted custom
+  // stylesheet) gets injected raw into exported HTML at the bottom of every
+  // theme. That's an XSS surface — most acute when a district admin distributes
+  // a "shared preset" and an attacker compromises the distribution channel.
+  // CSS attack vectors we strip:
+  //   - @import (external resource load, can carry tracking or fetch attacker CSS)
+  //   - expression() (legacy IE script execution in CSS — dead in modern browsers
+  //     but historically real and worth defense-in-depth)
+  //   - javascript:/vbscript:/data:text/html URLs inside url() (script execution
+  //     via background-image, list-style-image, cursor, etc.)
+  //   - behavior: (legacy IE binding loader)
+  //   - -moz-binding (mostly dead, historical XSS vector)
+  //   - On-handler-style attributes in content: values
+  // We don't try to allowlist properties — that's too restrictive for the
+  // legitimate theming use case. Blocklist on known-dangerous patterns instead.
+  // Logged when something gets stripped so users get feedback.
+  const sanitizeCustomExportCSS = (rawCss) => {
+    if (!rawCss || typeof rawCss !== 'string') return '';
+    let out = String(rawCss);
+    const stripped = [];
+    // @import — external resource load
+    if (/@import\s+[^;]+;?/i.test(out)) { stripped.push('@import'); out = out.replace(/@import\s+[^;]+;?/gi, '/* @import stripped — external loads blocked for XSS safety */'); }
+    // expression() — IE script execution
+    if (/expression\s*\(/i.test(out)) { stripped.push('expression()'); out = out.replace(/expression\s*\([^)]*\)/gi, '/* expression() stripped */'); }
+    // Dangerous URL schemes inside url(...)
+    if (/url\s*\(\s*['"]?\s*(?:javascript|vbscript|data\s*:\s*text\/html)/i.test(out)) {
+      stripped.push('dangerous url()');
+      out = out.replace(/url\s*\(\s*['"]?\s*(?:javascript|vbscript|data\s*:\s*text\/html)[^'")]*['"]?\s*\)/gi, 'url("about:blank")');
+    }
+    // behavior: property (IE htc binding)
+    if (/(^|[\s;{])behavior\s*:/i.test(out)) { stripped.push('behavior:'); out = out.replace(/(^|[\s;{])behavior\s*:[^;}]+;?/gi, '$1/* behavior stripped */'); }
+    // -moz-binding (Firefox XBL loader, removed but defense in depth)
+    if (/-moz-binding\s*:/i.test(out)) { stripped.push('-moz-binding:'); out = out.replace(/-moz-binding\s*:[^;}]+;?/gi, '/* -moz-binding stripped */'); }
+    // Inline JS in content: via attr() doesn't execute, but bare javascript:
+    // string in any property is suspicious enough to mention if found.
+    if (/(?<![a-z])javascript\s*:/i.test(out)) {
+      stripped.push('javascript:');
+      out = out.replace(/(?<![a-z])javascript\s*:/gi, 'noop:');
+    }
+    if (stripped.length > 0 && typeof warnLog === 'function') {
+      warnLog('[sanitizeCustomExportCSS] stripped dangerous patterns: ' + stripped.join(', '));
+    }
+    return out;
+  };
+
   // ── Tier 8 follow-up: build heading-aware HTML from extracted text + struct tree ──
   // When the source PDF ships H1/H2/H3 tags, axe-baseline should see real <h1>
   // elements rather than a wall of <p>. We splice the heading texts into the
@@ -13321,9 +13583,48 @@ tr { page-break-inside: avoid; }
   };
 
   // ── AI Custom Export Style Generator ──
+  // Document Builder Tier 1.2 — theme generator cache.
+  // Same prompt + same theme variant should always produce the same CSS, so
+  // we cache by content hash. Long TTL (30 days) because themes don't decay.
+  // Bump _THEME_CACHE_VERSION when the prompt template above materially
+  // changes — invalidates stale cached themes from the old prompt shape.
+  const _THEME_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+  const _THEME_CACHE_VERSION = '20260524-1';
+  const _themeCacheKey = async (promptText) => {
+    if (!promptText) return null;
+    const hash = await _sha256Hex(promptText);
+    return hash ? `pdf_theme_${_THEME_CACHE_VERSION}_${hash}` : null;
+  };
+  const _readThemeCache = async (key) => {
+    if (!key || typeof window === 'undefined' || !window.idbKeyval) return null;
+    try {
+      const cached = await storageDB.get(key);
+      if (!cached || !cached.css || !cached.savedAt) return null;
+      if (Date.now() - cached.savedAt > _THEME_CACHE_TTL_MS) return null;
+      return cached.css;
+    } catch (_) { return null; }
+  };
+  const _writeThemeCache = async (key, css) => {
+    if (!key || typeof window === 'undefined' || !window.idbKeyval || !css) return;
+    try { await storageDB.set(key, { css, savedAt: Date.now() }); } catch (_) {}
+  };
+
   const generateCustomExportStyle = async () => {
     if (!exportStylePrompt.trim() || !callGemini) return;
     setIsGeneratingStyle(true);
+    // Cache check before the Gemini call — instant return on repeat prompts.
+    const _cacheKey = await _themeCacheKey(exportStylePrompt.trim());
+    if (_cacheKey) {
+      const cached = await _readThemeCache(_cacheKey);
+      if (cached) {
+        warnLog('[Export Style] Cache hit — skipping Gemini call');
+        setCustomExportCSS(sanitizeCustomExportCSS(cached));
+        setTimeout(() => updateExportPreview(), 100);
+        addToast && addToast('🎨 Theme loaded from cache (identical prompt seen recently)', 'info');
+        setIsGeneratingStyle(false);
+        return;
+      }
+    }
     try {
       const result = await callGemini(`You are a CSS expert creating a beautiful, accessible stylesheet for an educational document export.
 
@@ -13355,9 +13656,27 @@ Requirements:
 - Include print styles (@media print)
 
 Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
-      setCustomExportCSS(result.trim());
+      // Pipeline: AI output → XSS sanitize → WCAG contrast validate → store.
+      // Each pass is independent and idempotent. The WCAG validator only
+      // adjusts colors when a rule's color+bg pair fails the 4.5:1 target;
+      // safe palettes pass through unchanged.
+      const sanitized = sanitizeCustomExportCSS(result.trim());
+      const wcag = validateAndFixCssContrast(sanitized);
+      const finalCss = wcag.css;
+      setCustomExportCSS(finalCss);
+      // Write VALIDATED output to cache so cache hits replay the corrected
+      // version, not the original Gemini text. Otherwise users could land
+      // on a cached failing-contrast theme.
+      if (_cacheKey) { try { _writeThemeCache(_cacheKey, finalCss); } catch (_) {} }
       setTimeout(() => updateExportPreview(), 100);
-      addToast(t('toasts.custom_style_generated_preview_updated'), 'success');
+      const baseMsg = t('toasts.custom_style_generated_preview_updated') || '🎨 Custom theme generated';
+      const wcagNote = wcag.fixCount > 0
+        ? ` · ${wcag.fixCount} contrast issue${wcag.fixCount === 1 ? '' : 's'} auto-fixed for WCAG AA`
+        : '';
+      addToast(baseMsg + wcagNote, 'success');
+      if (wcag.fixCount > 0) {
+        warnLog('[Export Style] WCAG auto-fixes:', wcag.fixes);
+      }
     } catch (err) {
       warnLog('[Export Style] Failed:', err);
       addToast(t('toasts.style_generation_failed_try_different'), 'error');
@@ -16159,7 +16478,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       ` : '';
       const rawHtml = `
       <!DOCTYPE html>
-      <html lang="${({'English':'en','Spanish':'es','French':'fr','German':'de','Italian':'it','Portuguese':'pt','Chinese':'zh','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Vietnamese':'vi','Haitian Creole':'ht','Somali':'so'})[currentUiLanguage] || 'en'}" dir="${direction}">
+      <html lang="${({'English':'en','Spanish':'es','Spanish (Latin America)':'es','Spanish (Castilian)':'es','French':'fr','French (Canadian)':'fr','German':'de','Italian':'it','Portuguese':'pt','Portuguese (Brazil)':'pt-BR','Portuguese (Angola)':'pt','Chinese':'zh','Chinese (Simplified)':'zh-CN','Chinese (Traditional)':'zh-TW','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Bengali':'bn','Punjabi':'pa','Tamil':'ta','Urdu':'ur','Farsi':'fa','Pashto':'ps','Dari':'fa-AF','Hebrew':'he','Greek':'el','Latin':'la','Indonesian':'id','Thai':'th','Lao':'lo','Khmer':'km','Burmese':'my','Nepali':'ne','Vietnamese':'vi','Tagalog':'tl','Haitian Creole':'ht','Somali':'so','Swahili':'sw','Hausa':'ha','Yoruba':'yo','Igbo':'ig','Amharic':'am','Tigrinya':'ti','Lingala':'ln','Kinyarwanda':'rw','Kirundi':'rn','Acholi':'ach','Karen':'ksw','Chin (Hakha)':'cnh','Chin (Falam)':'cfm','Hmong':'hmn','Polish':'pl','Ukrainian':'uk','Maay Maay':'ymm','Marshallese':'mh'})[currentUiLanguage] || 'en'}" dir="${direction}">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16375,7 +16694,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             .alloflow-section-marker span:last-child { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           }
           ${theme.extraCSS || ''}
-          ${customExportCSS ? `/* Custom AI-generated style */\n${customExportCSS}` : ''}
+          ${customExportCSS ? `/* Custom AI-generated style (sanitized for XSS) */\n${sanitizeCustomExportCSS(customExportCSS)}` : ''}
 
           /* ═══ Reading Tools toolbar + runtime theme switcher ═══
              Lets students flip the exported doc between Light / Dark /
