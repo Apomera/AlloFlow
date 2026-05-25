@@ -1,9 +1,16 @@
 {
   "version": 2,
-  "generated": "2026-05-24T23:33:43.062Z",
-  "count": 21,
+  "generated": "2026-05-25T00:18:20.879Z",
+  "count": 24,
   "total_keys_expected": 9307,
   "available": [
+    {
+      "slug": "amharic",
+      "display": "Amharic",
+      "keys": 9968,
+      "bytes": 1119463,
+      "updated": "2026-05-25"
+    },
     {
       "slug": "arabic",
       "display": "Arabic",
@@ -79,6 +86,20 @@
       "display": "Korean",
       "keys": 9968,
       "bytes": 1012498,
+      "updated": "2026-05-24"
+    },
+    {
+      "slug": "lingala",
+      "display": "Lingala",
+      "keys": 9980,
+      "bytes": 1028252,
+      "updated": "2026-05-25"
+    },
+    {
+      "slug": "nepali",
+      "display": "Nepali",
+      "keys": 9968,
+      "bytes": 1433213,
       "updated": "2026-05-24"
     },
     {
