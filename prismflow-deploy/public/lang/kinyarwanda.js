@@ -1,5 +1,5 @@
 {
-  "_version": "20260525181837T1779733117076",
+  "_version": "20260525182258T1779733378935",
   "tour": {
     "input_panel_title": "Paneli yo Kwinjiza",
     "input_panel_text": "Tangirira hano urugendo rwo gukora isomo. Iyi Paneli yo Kwinjiza ni urufatiro rw'umutungo wose ukozwe. Ikora nk'umutwe nyamukuru aho usobanura ibikubiyemo, context, na parameters.\n### Amahitamo yo Kwinjiza\n• **Gushyira Inyandiko**: Manika ibikubiyemo direct biva mu nkuru iyo ari yo yose, inkuru, cyangwa gahunda y'isomo.\n• **Kohereza Idosiye**: Ohereza PDF, amashusho, idosiye z'inyandiko, audio (MP3/WAV), cyangwa video ku gukuramo byikora.\n• **Kuzana URL**: Manika URL y'inkuru iyo ari yo yose kugira ngo ukuremo ibikubiyemo byayo byikora.\n• **AI Kurikirana Umutungo**: Sobanura ingingo maze AI ibone umutungo wo kuri interineti ukwiye urwego rw'ishuri.\n• **Kora Inyandiko y'Inkomoko**: Kora ibikubiyemo by'umwimerere mu kuvuga ingingo, ijwi, urwego rw'ishuri, n'amahame ya intego.\n### Ibiranga byo Gukora\n• **Guhitamo Ijwi**: Hitamo mu mvugo Informative, Narrative, Persuasive, Humorous, cyangwa Step-by-Step.\n• **Guhuza n'Amahame**: Koresha standard finder ya AI cyangwa winjize amahame mu ntoki (kugeza ku 3).\n• **Kugenzura Ukuri**: Bishyireho web grounding ku gugenzura ibyukuri no gushyiramo citations byikora.\n• **Amabwiriza Yihariye**: Ongeraho ubuyobozi bwihariye ku gukora ibikubiyemo bihujwe.\n### Ubushobozi bwa Sisitemu\n• **Kumenya Byikora**: Imenya ururimi rw'inkomoko byikora.\n• **Gutunganya Mu Bice**: Idosiye z'audio na video zirenze 20MB zigabanyirizwa mu buryo bw'ubwenge ku transcription yizewe.\n### Ay'Ingenzi\nIbikoresho byinshi muri sidebar bisaba inkomoko mbere yo gukoreshwa. Manika cyangwa kora ibikubiyemo byawe hano mbere, hanyuma ushakishe undi mutungo.",
@@ -3711,106 +3711,106 @@
     "image_size_tooltip": "Hindura ingano y'amashusho y'umutaka"
   },
   "pdf_audit": {
-    "view_last_audit": "Reba cya nyuma Audit",
-    "start_new_audit": "Tangira gishya Audit",
-    "apply_and_export": "Apply & Ohereza hanze",
-    "applying_remarkup": "Re-applying kuboneka markup ku cyawe approved inyandiko…",
-    "rejected_count": "{n} rejected",
-    "undo_all_rejections": "undo byose",
-    "granularity_warning": "Changing granularity will subiramo cyawe rejections. Komeza?",
-    "remarkup_failed": "Couldn't reapply full markup — exported plain igika. Retry later niba needed.",
-    "reject_selection": "Reject selection",
-    "keep_selection": "Keep selection",
-    "edits_applied": "Edits applied. Kuboneka HTML updated.",
-    "start_new_confirm": "Tangira gishya audit? cyawe current audit will be cleared — kora sure wowe have downloaded remediated HTML niba wowe need it.",
-    "modal_aria": "PDF Kugerwaho Audit",
+    "view_last_audit": "Reba Audit ya Nyuma",
+    "start_new_audit": "Tangira Audit Nshya",
+    "apply_and_export": "Shyiraho & Ohereza",
+    "applying_remarkup": "Kongera gushyiraho accessible markup ku nyandiko wemeje…",
+    "rejected_count": "{n} byanze",
+    "undo_all_rejections": "subizaho byose",
+    "granularity_warning": "Guhindura granularity bizasubiza zibanze rejections zawe. Komeza?",
+    "remarkup_failed": "Sinashoboye kongera gushyiraho markup yuzuye — kohereza paragraphs zisanzwe. Gerageza nanone niba bikenewe.",
+    "reject_selection": "Ihagarika ihitamo",
+    "keep_selection": "Komeza ihitamo",
+    "edits_applied": "Impinduka zashyizweho. Accessible HTML ivuguruwe.",
+    "start_new_confirm": "Tangira audit nshya? Audit yawe ya none izasibwa — emeza ko wamanuye remediated HTML niba ukeneye.",
+    "modal_aria": "PDF Accessibility Audit",
     "close_modal_aria": "Funga audit modal",
-    "close_wait_title": "Wait kuri remediation ku finish cyangwa kanda Hagarika cya mbere",
+    "close_wait_title": "Tegereza remediation irangire cyangwa kanda Stop mbere",
     "close_esc_title": "Funga (Esc)",
     "web": {
-      "heading": "🌐 Website & HTML Kugerwaho",
-      "subheading": "Audit website URL cyangwa komeza HTML kuri full WCAG 2.1 AA audit + remediation",
-      "url_label": "Website URL",
-      "url_aria": "Website URL ku audit",
-      "fetch_aria": "Zana website HTML",
-      "or_paste_hint": "Cyangwa komeza HTML inkomoko code directly below",
-      "html_label": "HTML inkomoko",
-      "html_placeholder": "Komeza HTML inkomoko code here, cyangwa koresha Zana above...",
-      "html_aria": "HTML inkomoko code ku audit"
+      "heading": "🌐 Accessibility ya Website & HTML",
+      "subheading": "Audit website URL cyangwa manika HTML ku WCAG 2.1 AA audit + remediation yuzuye",
+      "url_label": "URL ya Website",
+      "url_aria": "URL ya website yo gukora audit",
+      "fetch_aria": "Tora HTML ya website",
+      "or_paste_hint": "Cyangwa manika HTML source code direct hepfo",
+      "html_label": "HTML Source",
+      "html_placeholder": "Manika HTML source code hano, cyangwa koresha Fetch hejuru...",
+      "html_aria": "HTML source code yo gukora audit"
     },
     "batch": {
-      "drop_text": "Kurura & reka PDFs here",
-      "browse_files": "Browse dosiye",
-      "clear_all": "Clear byose",
-      "progress_aria": "Batch remediation ihinduka",
+      "drop_text": "Kurura & shyira PDFs hano",
+      "browse_files": "Reba Idosiye",
+      "clear_all": "Sobura Byose",
+      "progress_aria": "Iterambere rya batch remediation",
       "stop_aria": "Hagarika batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "gishya Batch",
+      "avg_improvement": "Kunoza kw'Urugero",
+      "scored_90_plus": "Byabonye 90+",
+      "new_batch": "Batch Nshya",
       "resume": {
-        "title": "cyabanjirije batch interrupted",
-        "summary": "{done}/{total} dosiye(s) completed before tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "dosiye:",
-        "files_more": "+ {n} byinshi",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} ku process"
+        "title": "Batch yabanjirije yarahagaritswe",
+        "summary": "{done}/{total} idosiye zarangiye mbere y'uko tab ifunga.",
+        "remaining": "{n} zisigaye.",
+        "files_label": "Idosiye:",
+        "files_more": "+ {n} zindi",
+        "resume_button": "Komeza Batch",
+        "discard_button": "Vanaho",
+        "toast": "Gukomeza batch · {done} mu cache, {remaining} zo gukora"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} cya {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Yashyizweho flag na {n} muri {total} y'auditors",
+      "unanimous_suffix": " (bose bemeranya)",
+      "minority_suffix": " — igitekerezo cy'abake, kwizera kuke"
     },
     "divergence": {
-      "semantic": "Structurally compliant ariko semantically weak — AI flagged ibirimo quality (alt inyandiko, heading meaning, reading order) icyo axe-core irashobora't detect",
-      "structural": "Code-urwego WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Bihuje ku miterere ariko bidasobanutse — AI yashyizeho flag ku bwiza bw'ibikubiyemo (alt text, igisobanuro cy'imitwe, urutonde rwo gusoma) axe-core itamenya",
+      "structural": "WCAG violations ku rwego rwa code zabonetse — axe-core yabonye machine-checkable failures rubric ya AI yangije buke"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "Iki PDF harimo PDF/UA-imiterere tag tree. Auditors were instructed ku credit existing structure rather than penalize it as missing."
+      "label": "Tag structure yabanjirije",
+      "tooltip": "Iyi PDF irimo tag tree ya PDF/UA-style. Auditors basabwe gushima imiterere ihari aho kuyihana nk'ibura."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} cya {total} umwimerere issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues kuva umwimerere audit no longer found muri verification audit",
-      "persisted_tip": "Issues kuva umwimerere audit still present after fix",
-      "introduced_tip": "gishya issues icyo did ntibi exist before fix"
+      "heading": "Gukemura Ibibazo",
+      "subheading": "Byakemuwe {resolved} muri {total} y'ibibazo by'umwimerere ({pct}%)",
+      "resolved_label": "Byakemuwe",
+      "persisted_label": "Biracyahari",
+      "introduced_label": "Bishya Byinjijwe",
+      "resolved_tip": "Ibibazo by'audit y'umwimerere bitagisha mu verification audit",
+      "persisted_tip": "Ibibazo bya audit y'umwimerere biracyahari nyuma yo gukosora",
+      "introduced_tip": "Ibibazo bishya bitarihari mbere yo gukosora"
     },
     "report": {
-      "download_title": "Manura audit raporo",
-      "text_extract_title": "Kuramo inyandiko kuri ibirimo isekuru"
+      "download_title": "Manura raporo ya audit",
+      "text_extract_title": "Kuramo inyandiko ku gukora ibikubiyemo"
     },
-    "choose_how": "Hitamo gute ku process iki PDF:",
+    "choose_how": "Hitamo uburyo bwo gutunganya iyi PDF:",
     "settings": {
-      "audit_passes_aria": "umubare cya audit passes",
-      "target_score_aria": "Intego kugerwaho amanota",
-      "max_fix_passes_aria": "Max fix pass bara",
-      "auto_continue_aria": "Auto-komeza remediation until intego amanota",
-      "polish_passes_aria": "Polish pass bara"
+      "audit_passes_aria": "Umubare wa audit passes",
+      "target_score_aria": "Amanota ya intego ya accessibility",
+      "max_fix_passes_aria": "Max fix pass count",
+      "auto_continue_aria": "Auto-continue remediation kugeza ku amanota ya intego",
+      "polish_passes_aria": "Umubare wa polish pass"
     },
     "brand": {
-      "heading": "Brand ibara",
-      "where_from": "aho do ibara come kuva?",
-      "match_original": "🎨 Match Umwimerere",
-      "match_original_desc": "Kuramo ibara kuva iki PDF",
+      "heading": "Amabara ya Brand",
+      "where_from": "Amabara aturuka he?",
+      "match_original": "🎨 Huza n'Umwimerere",
+      "match_original_desc": "Kuramo amabara muri iyi PDF",
       "upload_guide": "📎 Ohereza Brand Guide",
-      "upload_guide_desc": "Koresha different doc/logo",
-      "no_branding": "⬜ Oya Branding",
-      "no_branding_desc": "Koresha gisanzwe palette",
-      "tip": "inama: niba wowe pick cyihariye imiterere Seed below (ntibi \"Match Umwimerere\"), icyo seed's ibara override cyawe branding choice. Ku koresha cyawe brand ibara, pair them hamwe na Match Umwimerere seed."
+      "upload_guide_desc": "Koresha doc/logo itandukanye",
+      "no_branding": "⬜ Nta Branding",
+      "no_branding_desc": "Koresha default palette",
+      "tip": "Inama: Niba uhitamo Style Seed yihariye hepfo (atari \"Match Original\"), amabara ya seed asimbura ihitamo ryawe rya branding. Ku gukoresha amabara ya brand yawe, ayihuze na Match Original seed."
     },
     "style": {
-      "heading": "imiterere Seed",
-      "subtext": "iki design imiterere should AI apply? WCAG compliance guaranteed by deterministic sanitizer.",
-      "your_custom": "cyawe Custom imiterere",
-      "name_label": "imiterere Name",
-      "name_placeholder": "My imiterere",
-      "name_aria": "Custom imiterere name",
+      "heading": "Style Seed",
+      "subtext": "Design style iyihe AI igomba gushyiraho? WCAG compliance yemejwe na deterministic sanitizer.",
+      "your_custom": "Custom Styles Zawe",
+      "name_label": "Izina rya Style",
+      "name_placeholder": "Style Yanjye",
+      "name_aria": "Izina rya custom style",
       "font_aria": "Font family",
       "font_inter": "Inter (Clean)",
       "font_georgia": "Georgia (Serif)",
@@ -3818,318 +3818,318 @@
       "font_lexend": "Lexend (Readable)",
       "font_comic": "Comic Sans (Fun)",
       "font_times": "Times (Classic)",
-      "heading_color_label": "Heading ibara",
-      "heading_color_aria": "Heading ibara",
-      "accent_color_label": "Accent ibara",
-      "accent_color_aria": "Accent ibara",
-      "bg_color_aria": "Background ibara"
+      "heading_color_label": "Ibara ry'Umutwe",
+      "heading_color_aria": "Ibara ry'umutwe",
+      "accent_color_label": "Ibara rya Accent",
+      "accent_color_aria": "Ibara rya accent",
+      "bg_color_aria": "Ibara ry'inyuma"
     },
     "triage": {
-      "source_type": "inkomoko type",
-      "issues_to_fix": "Issues ku fix:",
-      "estimated_time": "Estimated remediation time:"
+      "source_type": "Ubwoko bw'inkomoko",
+      "issues_to_fix": "Ibibazo byo gukosora:",
+      "estimated_time": "Igihe gigereranyije cya remediation:"
     },
     "post_fix": {
-      "label": "Post-fix uburyo",
-      "aria": "Post-fix uburyo"
+      "label": "Post-fix mode",
+      "aria": "Post-fix mode"
     },
     "quick_downloads": {
-      "heading": "byihuse downloads (no remediation needed)",
-      "tagged_pdf_title": "Manura Tagged PDF based kuri umwimerere. Kuri richer tagging — extracted headings, properly scoped imbonerahamwe, alt inyandiko — tangiza Fix & Verify cya mbere na manura tagged verisiyo after."
+      "heading": "Quick downloads (nta remediation ikenewe)",
+      "tagged_pdf_title": "Manura Tagged PDF ishingiye ku umwimerere. Ku tagging yuzuye — extracted headings, properly scoped tables, alt text — kora Fix & Verify mbere maze umanure verisiyo ifite tags nyuma."
     },
     "loading": {
-      "title": "Auditing PDF Kugerwaho...",
-      "subtitle": "Running 5 parallel WCAG 2.1 AA audits hamwe na triangulation. Iki may take 15-30 amasegonda.",
-      "progress_aria": "Audit muri ihinduka"
+      "title": "Gukora Audit ya PDF Accessibility...",
+      "subtitle": "Gukora 5 parallel WCAG 2.1 AA audits hamwe na triangulation. Bishobora gufata amasegonda 15-30.",
+      "progress_aria": "Audit irakora"
     },
     "knowbility": {
-      "partner_badge": "Kugerwaho Partner",
-      "mission_lead": "Creating inclusive digital world kuri people hamwe na disabilities",
-      "ada_title": "Americans hamwe na Disabilities Act (ADA) Title II",
-      "wcag_label": "WCAG 2.1 urwego AA",
-      "deadline_range": "April 2026 ku April 2027",
-      "broader_reach_desc": "Kuboneka ibirimo birakora kuri any device, any bandwidth, any assistive technology — reaching byinshi users",
-      "seo_desc": "Structured headings, alt inyandiko, na semantic HTML improve shakisha ranking na ibirimo discovery",
-      "cognitive_desc": "Clear navigation, consistent layouts, na plain ururimi ubufasha byose users — especially muri ihanitse-cognitive-pakira contexts",
-      "future_desc": "WCAG-compliant ibirimo adapts ku gishya devices, AI readers, na emerging assistive technologies",
-      "italic_callout": "WCAG 2.1 AA isn't just ku byerekeye avoiding litigation — it's ku byerekeye building inyandiko icyo ni perceivable, operable, understandable, na robust kuri every human being.",
-      "audit_service_desc": "Expert WCAG audits na inyandiko remediation by certified professionals",
-      "usability_service_desc": "Real-world usability testing by people who koresha assistive technology daily",
-      "docrem_service_desc": "Specialist team kuri PDF na MS Office docs — full usability hamwe na assistive technology",
-      "training_service_desc": "Annual conference na kuri-demand courses — beginner ku cyo hejuru kugerwaho ubumenyi",
-      "mission_strong": "Mission: Rema inclusive digital world kuri people hamwe na disabilities.",
-      "testing_desc": "cy'intoki WCAG audits producing actionable reports na remediation paths kuri websites, apps, na inyandiko",
-      "docrem_full_desc": "Specialist team kuri PDF na MS Office inyandiko — ensuring full usability hamwe na assistive technology",
-      "accessworks_desc": "Real-world usability testing by people hamwe na disabilities who koresha assistive technology daily",
-      "training_full_desc": "Annual conference na kuri-demand courses — kuva beginner ku cyo hejuru kugerwaho ubumenyi"
+      "partner_badge": "Accessibility Partner",
+      "mission_lead": "Gukora isi ya digital ifunguye ku bantu bafite ubumuga",
+      "ada_title": "Americans with Disabilities Act (ADA) Title II",
+      "wcag_label": "WCAG 2.1 Level AA",
+      "deadline_range": "Mata 2026 kugeza Mata 2027",
+      "broader_reach_desc": "Accessible content ikora ku gikoresho icyo ari cyo cyose, bandwidth iyo ari yo yose, assistive technology iyo ari yo yose — yereka abakoresha benshi",
+      "seo_desc": "Structured headings, alt text, na semantic HTML zinoza search ranking no kubona ibikubiyemo",
+      "cognitive_desc": "Navigation isobanutse, layouts ihuje, n'ururimi rusobanutse byifasha abakoresha bose — cyane cyane mu high-cognitive-load contexts",
+      "future_desc": "WCAG-compliant content ihuza n'ibikoresho bishya, AI readers, na assistive technologies zigerwa",
+      "italic_callout": "WCAG 2.1 AA ntiyerekeye gusa kwirinda imanza — yerekeye kubaka inyandiko zumvikana, zikoreshwa, zisobanutse, kandi zikomeye ku muntu wese.",
+      "audit_service_desc": "Expert WCAG audits na document remediation zikorwa n'inzobere zemejwe",
+      "usability_service_desc": "Real-world usability testing ikorwa n'abantu bakoresha assistive technology buri munsi",
+      "docrem_service_desc": "Itsinda ry'inzobere ku PDF na MS Office docs — full usability na assistive technology",
+      "training_service_desc": "Inama ya buri mwaka na on-demand courses — kuva beginner ku advanced accessibility skills",
+      "mission_strong": "Mission: Kora isi ya digital ifunguye ku bantu bafite ubumuga.",
+      "testing_desc": "Manual WCAG audits zikora actionable reports na remediation paths ku websites, apps, n'inyandiko",
+      "docrem_full_desc": "Itsinda ry'inzobere ku PDF na MS Office documents — bemeza full usability na assistive technology",
+      "accessworks_desc": "Real-world usability testing ikorwa n'abantu bafite ubumuga bakoresha assistive technology buri munsi",
+      "training_full_desc": "Inama ya buri mwaka na on-demand courses — kuva ku beginner ku advanced accessibility skills"
     },
     "unavailable": {
-      "title": "Audit ntibihari",
-      "body": "AI kugerwaho audit could ntibi uzuza. Iki ni usually caused by temporary API issue, rate limiting, cyangwa very large/gikomeye PDF.",
-      "proceed_hint": "wowe irashobora still proceed — Fix & Verify will transform inyandiko na tangiza full audit afterward."
+      "title": "Audit Ntiyihari",
+      "body": "AI accessibility audit yarananiwe kurangira. Ibi kenshi biterwa na temporary API issue, rate limiting, cyangwa PDF nini/igoye cyane.",
+      "proceed_hint": "Urashobora gukomeza — Fix & Verify izahindura inyandiko maze ikore audit yuzuye nyuma."
     },
     "tabs": {
-      "aria": "Audit reba",
-      "remediation_results": "Remediation ibyavuye",
-      "original_audit": "Umwimerere Audit"
+      "aria": "Igaragara ry'audit",
+      "remediation_results": "Ibivuye muri Remediation",
+      "original_audit": "Audit y'Umwimerere"
     },
     "doc_props": {
-      "aria": "inyandiko properties",
-      "contains_images": "Contains ifoto",
-      "contains_tables": "Contains imbonerahamwe",
-      "contains_forms": "Contains Forms"
+      "aria": "Imiterere y'inyandiko",
+      "contains_images": "Birimo Amashusho",
+      "contains_tables": "Birimo Tables",
+      "contains_forms": "Birimo Forms"
     },
     "reliability": {
-      "std_dev": "urwego Deviation",
-      "icc_title": "Custom 1−(SD/50) index; ntibi textbook ICC",
+      "std_dev": "Standard Deviation",
+      "icc_title": "Custom 1−(SD/50) index; atari textbook ICC",
       "icc_label": "Auditor Consistency (ICC-like)",
       "cronbach": "Cronbach's α"
     },
     "score": {
-      "total_checks": "Total checks performed",
-      "issues_found": "Issues found",
+      "total_checks": "Total checks zakozwe",
+      "issues_found": "Ibibazo byabonetse",
       "ai_rubric_label": "AI Rubric",
-      "starts_at_100": "Starts at 100, deducts per issue type",
-      "how_ai_scores": "gute AI amanota",
-      "ai_critical_rule": "Critical: -15 buri (lang, title, alt, landmark, contrast)",
-      "ai_major_rule": "Major: -10 buri (headings, imbonerahamwe, forms)",
-      "ai_minor_rule": "Minor: -5 buri (simbuka-nav, landmarks, links, lists)",
-      "ai_passes_rule": "Passes reduce total deductions proportionally",
+      "starts_at_100": "Itangira ku 100, igabanya ku buri ubwoko bw'ikibazo",
+      "how_ai_scores": "Uburyo AI itanga amanota",
+      "ai_critical_rule": "Critical: -15 ku buri (lang, title, alt, landmark, contrast)",
+      "ai_major_rule": "Major: -10 ku buri (headings, tables, forms)",
+      "ai_minor_rule": "Minor: -5 ku buri (skip-nav, landmarks, links, lists)",
+      "ai_passes_rule": "Passes zigabanya gukura amanota proportionally",
       "axe_desc": "Deque automated WCAG 2.1 AA checker",
-      "how_axe_scores": "gute axe-core amanota",
-      "no_violations": "Oya violations detected",
-      "average_both": "Average cya byombi engines (binganye uburemere)"
+      "how_axe_scores": "Uburyo axe-core itanga amanota",
+      "no_violations": "Nta violations zabonetse",
+      "average_both": "Average ya engines zombi (equal weight)"
     },
     "multi_session": {
-      "no_pdf_attached": "Umwimerere PDF isn't attached ku iki igihe — wowe'll be prompted ku re-hitamo it kuva disk igihe wowe tangira fix. (Project dosiye don't shyiramo PDF bytes ku stay small.)",
-      "autosave_aria": "Auto-bika project dosiye after buri completed range",
-      "autosave_label": "Auto-bika project dosiye after buri range"
+      "no_pdf_attached": "PDF y'umwimerere ntiyatanzwe muri iyi mbonezamubano — uzasabwa kuyitoranya nanone kuva ku disk iyo utangije gukosora. (Idosiye z'umushinga ntizirimo PDF bytes ku kubika ingano nto.)",
+      "autosave_aria": "Auto-save idosiye y'umushinga nyuma ya buri range yarangiye",
+      "autosave_label": "Auto-save idosiye y'umushinga nyuma ya buri range"
     },
     "page_range": {
-      "start_aria": "Tangira urupapuro",
-      "end_aria": "End urupapuro",
-      "clear_aria": "Clear urupapuro range na remediate whole inyandiko"
+      "start_aria": "Urupapuro rwo gutangira",
+      "end_aria": "Urupapuro rwo gusoza",
+      "clear_aria": "Sobura page range maze ukore remediation ku nyandiko yose"
     },
     "fix_pass": {
       "additional_sweep": "Additional Sweep",
-      "progress_aria": "Fix na verify ihinduka"
+      "progress_aria": "Iterambere rya Fix and verify"
     },
     "pipeline": {
-      "tracker_aria": "Pipeline ihinduka tracker",
-      "why_matters": "Why iki matters:"
+      "tracker_aria": "Tracker y'iterambere rya Pipeline",
+      "why_matters": "Kuki ibi bigira agaciro:"
     },
     "boring_palette": {
-      "prompt": "Would wowe like ku keep umwimerere look cyangwa apply insanganyamatsiko?"
+      "prompt": "Wifuza kubika isura y'umwimerere cyangwa gushyiraho theme?"
     },
     "live_chunk": {
-      "review_aria": "Mu buryo butaziguye chunk remediation review",
-      "heading_short": "Mu buryo butaziguye Remediation",
-      "no_fixes_title": "Iki igice already meets WCAG kugerwaho urwego — pipeline made no amahinduka because none were needed.",
-      "retried_title": "AI had ku retry iki igice once after cya mbere attempt failed integrity cyangwa token-preservation checks.",
-      "content_verified_title": "AI ibirimo-preservation check passed — igice's inyandiko ibirimo was preserved biciye rewrite.",
-      "ai_skipped_long_title": "AI rewrite failed cyangwa was rejected kuri iki igice — only deterministic (rule-based) fixes were applied. igice ni still byinshi kuboneka than umwimerere, just bike so than successfully AI-fixed igice.",
-      "ai_skipped_rule_only": "AI skipped · rule-based only",
-      "review_heading": "Mu buryo butaziguye Remediation Review",
-      "review_subhead": "Reba buri igice get fixed muri real time — reject cyangwa re-fix anything icyo looks wrong",
-      "progress_aria": "Mu buryo butaziguye remediation ihinduka",
-      "rule_based_title": "Rule-based (deterministic) regex fixes applied — always safe, no AI involved",
-      "targeted_title": "AI-diagnosed targeted micro-fixes applied via deterministic ibikoresho (ibirimo-preserving)",
-      "ai_skipped_short_title": "AI rewrite failed cyangwa was rejected kuri iki igice — only rule-based fixes were applied. Still byinshi kuboneka than umwimerere.",
-      "ai_skipped_short": "AI skipped",
-      "verified_title": "AI verified ibirimo preserved",
-      "integrity_title": "ijambo overlap integrity check passed",
-      "before": "Before (umwimerere)",
-      "after": "After (fixed)",
-      "integrity_note": "Integrity note:",
-      "violations_targeted": "Violations targeted muri iki pass",
-      "clear_history_aria": "Clear mu buryo butaziguye review history"
+      "review_aria": "Suzuma rya live chunk remediation",
+      "heading_short": "Live Remediation",
+      "no_fixes_title": "Iki gice cyamaze guhuza n'amahame ya WCAG accessibility — pipeline ntiyakoze impinduka kuko nta zikenewe.",
+      "retried_title": "AI yagombaga kongera kugerageza iki gice rimwe nyuma yuko igerageza rya mbere ryananiwe integrity cyangwa token-preservation checks.",
+      "content_verified_title": "AI content-preservation check yatsinze — inyandiko y'iki gice yabikiwe binyuze mu rewrite.",
+      "ai_skipped_long_title": "AI rewrite yarananiwe cyangwa yangwa kuri iki gice — gusa deterministic (rule-based) fixes zashyizweho. Igice giracyari accessible kuruta umwimerere, ariko buke kuruta ibice byatsinze AI-fix.",
+      "ai_skipped_rule_only": "AI yasimbutse · rule-based gusa",
+      "review_heading": "Suzuma rya Live Remediation",
+      "review_subhead": "Reba buri gice gikosorwa ku gihe nyacyo — yangira cyangwa subiramo gukosora ikintu icyo ari cyo cyose kigaragara nabi",
+      "progress_aria": "Iterambere rya live remediation",
+      "rule_based_title": "Rule-based (deterministic) regex fixes zashyizweho — buri gihe ni ziziwe, nta AI ikoreshwa",
+      "targeted_title": "AI-diagnosed targeted micro-fixes zashyizweho binyuze mu bikoresho bya deterministic (zibika ibikubiyemo)",
+      "ai_skipped_short_title": "AI rewrite yarananiwe cyangwa yangwa kuri iki gice — gusa rule-based fixes zashyizweho. Iracyari accessible kuruta umwimerere.",
+      "ai_skipped_short": "AI yasimbutse",
+      "verified_title": "AI yemeje ibikubiyemo bibitswe",
+      "integrity_title": "Word overlap integrity check yatsinze",
+      "before": "Mbere (umwimerere)",
+      "after": "Nyuma (yakosowe)",
+      "integrity_note": "Inyandiko ya integrity:",
+      "violations_targeted": "Violations zitezwemo muri iyi pass",
+      "clear_history_aria": "Sobura amateka ya live review"
     },
     "why_matters": {
-      "heading": "Why Kuboneka inyandiko Matter",
-      "udl_part1": "Kuboneka ibikoresho ubufasha Universal Design kuri Learning (UDL) — benefiting",
+      "heading": "Kuki Inyandiko za Accessible Zigira Agaciro",
+      "udl_part1": "Accessible materials zishyigikira Universal Design for Learning (UDL) — bifasha",
       "all": "byose",
-      "udl_part2": "abanyeshuri regardless cya ability, ururimi, cyangwa learning imiterere",
-      "ux_part1": "Clear headings, logical structure, na sufficient contrast kora inyandiko easier ku soma kuri",
-      "ux_part2": "users — harimo kuri mobile na muri bright sunlight",
-      "seo_desc": "Semantic HTML, alt inyandiko, na proper headings ubufasha shakisha engines index ibirimo — boosting discoverability na organic reach",
-      "innovation_desc": "ijwi recognition, closed captioning, na ikadiri readers byose began as kugerwaho ibiranga — then became essential ibikoresho byakoreshejwe by millions"
+      "udl_part2": "biga uko ubushobozi, ururimi, cyangwa imiterere yo kwiga byaba bingana",
+      "ux_part1": "Headings zisobanutse, imiterere ya logique, na contrast ihagije ituma inyandiko zisomeka byoroshye ku",
+      "ux_part2": "bakoresha — harimo kuri mobile no mu zuba ryinshi",
+      "seo_desc": "Semantic HTML, alt text, na headings nyazo bifasha search engines kubona ibikubiyemo — byongera kubonwa na organic reach",
+      "innovation_desc": "Voice recognition, closed captioning, na screen readers byose byatangiye nk'accessibility features — hanyuma byaba ibikoresho by'ingenzi bikoreshwa na miliyoni"
     },
     "ada": {
       "heading": "ADA Title II & WCAG 2.1 AA",
-      "deadline_badge": "Deadline: April 24, 2026",
-      "title_strong": "Title II cya Americans hamwe na Disabilities Act (ADA)",
-      "wcag_strong": "WCAG 2.1 urwego AA",
-      "deadline_50k": "April 24, 2026",
-      "deadline_small": "April 26, 2027",
-      "covered_desc": "Public-facing websites, mobile apps, digital inyandiko (PDFs, ijambo, Excel, PowerPoint), na social media published by government entities",
-      "who_desc": "byose state na local government entities — harimo public schools, universities, courts, libraries, transit agencies, na municipal services",
-      "matters_desc": "Beyond legal compliance: kuboneka inyandiko ensure people hamwe na disabilities irashobora equally injira education, public services, employment, na civic participation",
-      "standard_callout": "urwego AlloFlow targets — WCAG 2.1 urwego AA — ni exact urwego gikenewe by iki federal rule."
+      "deadline_badge": "Deadline: Mata 24, 2026",
+      "title_strong": "Title II ya Americans with Disabilities Act (ADA)",
+      "wcag_strong": "WCAG 2.1 Level AA",
+      "deadline_50k": "Mata 24, 2026",
+      "deadline_small": "Mata 26, 2027",
+      "covered_desc": "Public-facing websites, mobile apps, digital documents (PDFs, Word, Excel, PowerPoint), na social media zitangwa na government entities",
+      "who_desc": "Buri leta na local government entities — harimo amashuri ya leta, kaminuza, courts, libraries, transit agencies, na municipal services",
+      "matters_desc": "Birenze legal compliance: accessible documents zemeza ko abantu bafite ubumuga babasha gufungura kimwe uburezi, public services, akazi, no kwitabira",
+      "standard_callout": "Standard AlloFlow yibanze — WCAG 2.1 Level AA — ni standard nyabyo isabwa n'iri tegeko rya federal."
     },
     "doc_details": {
-      "heading": "inyandiko ibisobanuro"
+      "heading": "Amakuru y'Inyandiko"
     },
     "images": {
-      "review_heading": "Review ifoto Descriptions",
-      "download_all_title": "Manura every extracted ifoto — useful as cy'intoki fallback niba AI reinsertion misplaces cyangwa skips one.",
-      "edit_alt_hint": "Hindura alt inyandiko below — amahinduka apply ku final inyandiko",
-      "download_one_title": "Manura iki ifoto",
-      "ai_generated_badge": "AI Cyakozwe",
-      "alt_placeholder": "Describe iki ifoto kuri ikadiri reader users...",
-      "regen_title": "Regenerate iki ifoto via AI gukoresha stored description",
-      "dropped_by_ai": "Dropped by AI pass",
-      "regen_hint": "Kanda Regenerate ku recreate ifoto via AI gukoresha its stored description, cyangwa koresha Ohereza/Replace inside figure muri preview."
+      "review_heading": "Suzuma Ibisobanuro by'Amashusho",
+      "download_all_title": "Manura amashusho yose yakuwemo — bifasha nk'ubudahangarwa bw'intoki niba AI reinsertion yashyize nabi cyangwa yasimbutse imwe.",
+      "edit_alt_hint": "Hindura alt text hepfo — impinduka zishyirwa ku inyandiko ya nyuma",
+      "download_one_title": "Manura iyi shusho",
+      "ai_generated_badge": "Yakozwe na AI",
+      "alt_placeholder": "Sobanura iyi shusho ku bakoresha screen reader...",
+      "regen_title": "Kora bushya iyi shusho binyuze muri AI ukoresheje ibisobanuro byabitswe",
+      "dropped_by_ai": "Yavanyweho na AI pass",
+      "regen_hint": "Kanda Regenerate ku gukora bushya ishusho binyuze muri AI ukoresheje ibisobanuro byayo byabitswe, cyangwa koresha Upload/Replace muri figure muri preview."
     },
     "integrity": {
-      "verifying": "Verifying ibirimo integrity…",
-      "diff_open_verifying_aria": "Fungura diff reba (verification still running muri background)",
-      "diff_open_verifying_title": "Fungura ijambo-urwego diff reba. integrity verification ni still running muri background, ariko diff itself ni ready ubu.",
-      "unverified": "ibirimo integrity unverified",
-      "diff_open_aria": "Fungura diff reba cya inkomoko PDF inyandiko vs. final HTML",
-      "diff_open_title": "Side-by-side ijambo-urwego diff: reba every insertion, deletion, na paraphrase hagati inkomoko PDF na remediated HTML.",
-      "recheck_aria": "Re-tangiza pdf.js ibirimo integrity check",
-      "recheck_title": "Re-tangiza fidelity recovery ladder (Stages -D) against current remediated HTML."
+      "verifying": "Kwemeza content integrity…",
+      "diff_open_verifying_aria": "Fungura diff view (kwemeza biracyakomeza inyuma)",
+      "diff_open_verifying_title": "Fungura diff view y'urwego rw'ijambo. Kwemeza integrity biracyakomeza inyuma, ariko diff ubwayo iteguye ubu.",
+      "unverified": "Content integrity ntiyemejwe",
+      "diff_open_aria": "Fungura diff view ya source PDF text vs. final HTML",
+      "diff_open_title": "Diff ya side-by-side ku rwego rw'ijambo: reba buri insertion, deletion, na paraphrase hagati ya source PDF na remediated HTML.",
+      "recheck_aria": "Subiramo pdf.js content integrity check",
+      "recheck_title": "Subiramo fidelity recovery ladder (Stages A-D) ku remediated HTML ya none."
     },
     "verification": {
-      "details_heading": "Verification ibisobanuro",
+      "details_heading": "Amakuru ya Verification",
       "char_coverage": "Char coverage",
-      "word_coverage": "ijambo coverage",
-      "source_words": "inkomoko ijambo",
-      "recovery_stages": "Recovery stages applied",
+      "word_coverage": "Word coverage",
+      "source_words": "Source words",
+      "recovery_stages": "Recovery stages zashyizweho",
       "ai_retry": "AI retry",
       "ground_truth": "Ground truth:",
-      "open_diff_title": "Fungura ijambo-urwego diff reba"
+      "open_diff_title": "Fungura diff view ku rwego rw'ijambo"
     },
     "fidelity": {
-      "heading": "Verify inyandiko Fidelity",
-      "run_title": "Gereranya remediated inyandiko against inkomoko inyandiko — flags any ijambo icyo kugaragara muri inkomoko ariko ntibi muri current remediated ibivamo.",
-      "run_aria": "Tangiza inyandiko fidelity check against inkomoko OCR",
-      "restore_title": "Splice missing ijambo gusubira into remediated inyandiko gukoresha fuzzy context-anchor matching. Unplaceable ijambo go ku ibirimo Recovery appendix so nothing ni lost.",
-      "restore_aria": "Restore missing ijambo into remediated inyandiko",
-      "not_ready": "Remediation ntibi ready."
+      "heading": "Emeza Text Fidelity",
+      "run_title": "Gereranya remediated document na source text — yerekana amagambo abonetse mu inkomoko ariko atari muri remediated output ya none.",
+      "run_aria": "Kora text fidelity check ku source OCR",
+      "restore_title": "Subiza amagambo abura mu remediated document ukoresheje fuzzy context-anchor matching. Amagambo adashobora gushyirwa ajya muri Content Recovery appendix kugira ngo nta kintu cyabura.",
+      "restore_aria": "Subiza amagambo abura mu remediated document",
+      "not_ready": "Remediation ntiyiteguye."
     },
     "resume": {
-      "heading": "Saved ihinduka Found"
+      "heading": "Iterambere Ryabitswe Ryabonetse"
     },
-    "start_new_title": "Clear iki audit ibyavuye na tangira fresh hamwe na gishya PDF",
+    "start_new_title": "Sobura iyi audit result maze utangire bushya na PDF nshya",
     "results": {
-      "verified_accessible": "Verified Kuboneka",
-      "zero_violations": "Zero WCAG violations detected"
+      "verified_accessible": "Yemejwe Accessible",
+      "zero_violations": "Nta WCAG violations zabonetse"
     },
     "wcag_report": {
-      "coverage_note": "Coverage may be incomplete — iki reba aggregates axe-core rules by WCAG SC. cy'intoki review still gikenewe kuri bimwe criteria (e.g. semantic meaning, reading order, gikomeye forms)."
+      "coverage_note": "Coverage ishobora kuba itarangije — iyi view ishyira hamwe axe-core rules na WCAG SC. Manual review iracyasabwa ku criteria zimwe (urugero: semantic meaning, reading order, complex forms)."
     },
     "auto_fix": {
-      "stop_aria": "Hagarika auto-komeza remediation",
-      "progress_aria": "Auto-fix ihinduka"
+      "stop_aria": "Hagarika auto-continue remediation",
+      "progress_aria": "Iterambere rya auto-fix"
     },
     "section_map": {
-      "heading": "inyandiko igice Map",
-      "rule_based_title": "Rule-based (deterministic) fixes applied",
+      "heading": "Map y'Ibice by'Inyandiko",
+      "rule_based_title": "Rule-based (deterministic) fixes zashyizweho",
       "targeted_title": "AI-diagnosed targeted micro-fixes",
-      "ai_skipped_title": "AI rewrite was rejected — only rule-based fixes applied",
-      "ai_skipped": "AI skipped"
+      "ai_skipped_title": "AI rewrite yanze — gusa rule-based fixes zashyizweho",
+      "ai_skipped": "AI yasimbutse"
     },
     "expert_referral": {
-      "heading": "Iki inyandiko Needs Expert Kugerwaho Remediation"
+      "heading": "Iyi Nyandiko Ikenera Expert Accessibility Remediation"
     },
     "diff": {
-      "button_aria": "Fungura ijambo-urwego diff reba hagati inkomoko PDF na remediated HTML",
-      "button_title": "Fungura ijambo-urwego diff modal — reba every insertion, deletion, na paraphrase hagati inkomoko PDF inyandiko na remediated HTML, hamwe na kanda-ku-reject na Apply & Ohereza hanze."
+      "button_aria": "Fungura diff view ku rwego rw'ijambo hagati ya source PDF na remediated HTML",
+      "button_title": "Fungura modal ya diff ku rwego rw'ijambo — reba buri insertion, deletion, na paraphrase hagati ya source PDF text na remediated HTML, hamwe na click-to-reject na Apply & Export."
     },
     "pdf_from_html": {
-      "title": "Regenerate PDF kuva remediated HTML. Layout reflows — urupapuro breaks, fonts, na pagination may differ kuva umwimerere. Birakora well kuri byoroshye prose inyandiko."
+      "title": "Kora bushya PDF kuva mu remediated HTML. Layout itembera nanone — page breaks, fonts, na pagination bishobora gutandukana n'umwimerere. Bikora neza ku inyandiko za prose zoroshye."
     },
     "tagged_pdf": {
-      "title": "Preserve umwimerere PDF's ibigaragara layout byte-identical na inject kugerwaho tags into its structure tree. Best kuri textbooks, multi-inkingi inyandiko, na branded PDFs aho ibigaragara fidelity matters."
+      "title": "Bika original PDF's visual layout byte-identical maze ushyiremo accessibility tags muri structure tree yayo. Byiza ku bitabo, multi-column documents, na branded PDFs aho visual fidelity igira agaciro."
     },
     "alt_formats": {
-      "intro": "Manura remediated inyandiko muri kuboneka alternative imiterere"
+      "intro": "Manura remediated document mu accessible alternative formats"
     },
     "expert": {
-      "command_aria": "Expert remediation command",
+      "command_aria": "Command ya expert remediation",
       "log_aria": "Agent activity log"
     },
     "translate": {
-      "lang_aria": "ubusobanuro ururimi — type any ururimi cyangwa pick kuva suggestions",
-      "lang_placeholder": "🌐 Type ururimi (e.g. Spanish, Tagalog, Dari...)"
+      "lang_aria": "Ururimi rw'ubuhinduzi — andika ururimi urwo ari rwo rwose cyangwa hitamo mu nama",
+      "lang_placeholder": "🌐 Andika ururimi (urugero: Spanish, Tagalog, Dari...)"
     },
     "simplify": {
-      "level_aria": "Simplification urwego rw'ishuri"
+      "level_aria": "Urwego rw'ishuri rw'isobanura"
     },
     "plain_summary": {
-      "intro": "Kora byoroshye-ku-soma verisiyo kuri umubyeyi, guardians, cyangwa community members.",
-      "lang_aria": "ubusobanuro ururimi"
+      "intro": "Kora verisiyo isomeka byoroshye ku babyeyi, abarera, cyangwa abagize umuryango.",
+      "lang_aria": "Ururimi rw'ubuhinduzi"
     },
     "close_confirm": {
-      "title": "Funga without saving?",
+      "title": "Funga nta kubika?",
       "save_close": "Bika & funga"
     },
     "preview": {
-      "modal_aria": "Kuboneka inyandiko preview na editor",
+      "modal_aria": "Accessible document preview na editor",
       "close_aria": "Funga preview",
-      "edit_hint": "Kanda anywhere muri preview ku hindura inyandiko directly. Koresha controls below ku hindura uko ushaka appearance.",
-      "wcag_guaranteed": "WCAG compliance guaranteed — sanitizer runs kuri every imiterere guhindura.",
-      "ai_restyle_hint": "One-kanda AI restyling. These override insanganyamatsiko above.",
+      "edit_hint": "Kanda ahantu hose muri preview ku guhindura inyandiko direct. Koresha controls hepfo ku guhuza appearance.",
+      "wcag_guaranteed": "WCAG compliance yemejwe — sanitizer ikora ku buri impinduka ya style.",
+      "ai_restyle_hint": "One-click AI restyling. Bisimbura theme iri hejuru.",
       "body_font_aria": "Body font",
-      "font_system": "sisitemu (gisanzwe)",
+      "font_system": "System (Default)",
       "font_georgia": "Georgia (Serif)",
-      "font_times_new": "Times gishya Roman",
+      "font_times_new": "Times New Roman",
       "font_atkinson_hyper": "Atkinson Hyperlegible",
       "font_comic_short": "Comic Sans",
       "font_courier": "Courier (Mono)",
-      "font_size_aria": "Font size",
-      "live_preview": "Mu buryo butaziguye Preview",
-      "iframe_title": "Kuboneka inyandiko preview"
+      "font_size_aria": "Ingano ya font",
+      "live_preview": "Live Preview",
+      "iframe_title": "Accessible document preview"
     },
     "wordart": {
-      "text_placeholder": "cyawe ijambo art inyandiko...",
-      "text_aria": "ijambo art inyandiko"
+      "text_placeholder": "Inyandiko yawe ya word art...",
+      "text_aria": "Word art text"
     },
     "a11y_inspect": {
       "headings": "Headings (H1-H6)",
-      "images": "ifoto + alt inyandiko",
-      "tables": "imbonerahamwe + headers",
+      "images": "Amashusho + alt text",
+      "tables": "Tables + headers",
       "figures": "Figures + captions",
       "main_landmark": "Main landmark",
       "aria_roles": "ARIA roles"
     },
     "ai_image": {
-      "prompt_placeholder": "Describe ifoto ku kora...",
-      "prompt_aria": "ifoto isekuru prompt",
-      "select_hint": "Kanda ifoto muri preview ku hitamo it, then:"
+      "prompt_placeholder": "Sobanura ishusho yo gukora...",
+      "prompt_aria": "Prompt yo gukora ishusho",
+      "select_hint": "Kanda ishusho muri preview ku kuyitoranya, hanyuma:"
     },
     "layout": {
-      "insert_blocks": "Insert Blocks",
+      "insert_blocks": "Shyiramo Blocks",
       "header_branding": "Header / Branding"
     },
     "templates": {
-      "aria": "inyandiko template",
-      "apply_placeholder": "Apply template...",
-      "saved_heading": "Saved Kuboneka Templates"
+      "aria": "Template y'Inyandiko",
+      "apply_placeholder": "Shyiraho template...",
+      "saved_heading": "Saved Accessible Templates"
     },
     "version_stamp": {
-      "heading": "verisiyo Stamp"
+      "heading": "Version Stamp"
     },
     "extracted_images": {
-      "drag_hint": "Kurura thumbnail onto any ifoto placeholder muri preview ku insert it, cyangwa kanda \"📷 Ohereza\" inside placeholder na hitamo \"Koresha extracted ifoto\"."
+      "drag_hint": "Kurura thumbnail kuri image placeholder iyo ari yo yose muri preview ku kuyishyiraho, cyangwa kanda \"📷 Upload\" muri placeholder maze uhitemo \"Use extracted image\"."
     },
     "toolbar": {
-      "aria": "inyandiko formatting",
-      "bullet_list": "Bullet urutonde",
-      "numbered_list": "Numbered urutonde",
+      "aria": "Imiterere y'inyandiko",
+      "bullet_list": "Bullet list",
+      "numbered_list": "Numbered list",
       "align_left": "Align left",
       "align_center": "Align center",
       "align_center_title": "Center",
-      "insert_link": "Insert link",
-      "remove_link": "Kuraho link",
-      "clear_formatting": "Clear formatting",
-      "undo": "Undo",
-      "redo": "Redo",
-      "text_color": "inyandiko ibara",
-      "highlight_color": "Highlight ibara",
-      "insert_table_aria": "Insert imbonerahamwe",
-      "insert_table_title": "Insert kuboneka imbonerahamwe"
+      "insert_link": "Shyiramo link",
+      "remove_link": "Vanaho link",
+      "clear_formatting": "Sobura imiterere",
+      "undo": "Subizaho",
+      "redo": "Subiramo",
+      "text_color": "Ibara ry'inyandiko",
+      "highlight_color": "Ibara rya highlight",
+      "insert_table_aria": "Shyiramo table",
+      "insert_table_title": "Shyiramo accessible table"
     }
   },
   "concept_sort": {
