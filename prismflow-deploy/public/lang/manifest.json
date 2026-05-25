@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T03:54:52.837Z",
-  "count": 38,
+  "generated": "2026-05-25T03:57:21.074Z",
+  "count": 41,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -37,6 +37,13 @@
       "display": "Burmese",
       "keys": 9976,
       "bytes": 1418612,
+      "updated": "2026-05-25"
+    },
+    {
+      "slug": "chin_falam",
+      "display": "Chin (Falam)",
+      "keys": 1,
+      "bytes": 36,
       "updated": "2026-05-25"
     },
     {
@@ -141,7 +148,7 @@
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
       "keys": 9976,
-      "bytes": 1033554,
+      "bytes": 1033989,
       "updated": "2026-05-25"
     },
     {
@@ -157,6 +164,13 @@
       "keys": 9968,
       "bytes": 1012498,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "lao",
+      "display": "Lao",
+      "keys": 1,
+      "bytes": 36,
+      "updated": "2026-05-25"
     },
     {
       "slug": "latin",
@@ -241,6 +255,13 @@
       "keys": 9953,
       "bytes": 1015158,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "thai",
+      "display": "Thai",
+      "keys": 1,
+      "bytes": 36,
+      "updated": "2026-05-25"
     },
     {
       "slug": "tigrinya",
