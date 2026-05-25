@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T16:06:30.325Z",
-  "count": 50,
+  "generated": "2026-05-25T16:28:56.678Z",
+  "count": 51,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -110,6 +110,13 @@
       "updated": "2026-05-24"
     },
     {
+      "slug": "hausa",
+      "display": "Hausa",
+      "keys": 9982,
+      "bytes": 989688,
+      "updated": "2026-05-25"
+    },
+    {
       "slug": "hebrew",
       "display": "Hebrew",
       "keys": 9955,
@@ -176,7 +183,7 @@
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
       "keys": 9976,
-      "bytes": 1047339,
+      "bytes": 1047196,
       "updated": "2026-05-25"
     },
     {
