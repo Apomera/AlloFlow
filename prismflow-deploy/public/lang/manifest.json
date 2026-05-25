@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T00:54:07.630Z",
-  "count": 28,
+  "generated": "2026-05-25T01:04:43.487Z",
+  "count": 30,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -17,6 +17,13 @@
       "keys": 9953,
       "bytes": 1318221,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "bengali",
+      "display": "Bengali",
+      "keys": 9988,
+      "bytes": 1418575,
+      "updated": "2026-05-25"
     },
     {
       "slug": "chinese_simplified",
@@ -136,6 +143,13 @@
       "keys": 9953,
       "bytes": 1108495,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "punjabi",
+      "display": "Punjabi",
+      "keys": 9976,
+      "bytes": 1274409,
+      "updated": "2026-05-25"
     },
     {
       "slug": "russian",
