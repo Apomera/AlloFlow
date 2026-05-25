@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T01:54:09.139Z",
-  "count": 35,
+  "generated": "2026-05-25T02:46:32.578Z",
+  "count": 37,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -30,6 +30,13 @@
       "display": "Bengali",
       "keys": 9988,
       "bytes": 1418575,
+      "updated": "2026-05-25"
+    },
+    {
+      "slug": "burmese",
+      "display": "Burmese",
+      "keys": 9976,
+      "bytes": 1418612,
       "updated": "2026-05-25"
     },
     {
@@ -129,6 +136,13 @@
       "keys": 9968,
       "bytes": 1109015,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "kinyarwanda",
+      "display": "Kinyarwanda",
+      "keys": 225,
+      "bytes": 12066,
+      "updated": "2026-05-25"
     },
     {
       "slug": "kirundi",
