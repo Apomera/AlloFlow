@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T00:18:20.879Z",
-  "count": 24,
+  "generated": "2026-05-25T00:43:03.972Z",
+  "count": 26,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -59,6 +59,20 @@
       "keys": 9955,
       "bytes": 1194856,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "hindi",
+      "display": "Hindi",
+      "keys": 9968,
+      "bytes": 1306014,
+      "updated": "2026-05-25"
+    },
+    {
+      "slug": "hmong",
+      "display": "Hmong",
+      "keys": 9980,
+      "bytes": 1048544,
+      "updated": "2026-05-25"
     },
     {
       "slug": "italian",
