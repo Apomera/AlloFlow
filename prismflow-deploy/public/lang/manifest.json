@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-25T17:17:09.813Z",
+  "generated": "2026-05-25T17:20:41.968Z",
   "count": 55,
   "total_keys_expected": 9307,
   "available": [
@@ -92,7 +92,7 @@
       "slug": "french_canadian",
       "display": "French (Canadian)",
       "keys": 9982,
-      "bytes": 1191137,
+      "bytes": 1180300,
       "updated": "2026-05-25"
     },
     {
