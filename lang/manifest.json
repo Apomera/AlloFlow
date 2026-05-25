@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T00:13:14.259Z",
-  "count": 23,
+  "generated": "2026-05-25T00:34:43.413Z",
+  "count": 25,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -61,6 +61,13 @@
       "updated": "2026-05-24"
     },
     {
+      "slug": "hindi",
+      "display": "Hindi",
+      "keys": 9968,
+      "bytes": 1306014,
+      "updated": "2026-05-25"
+    },
+    {
       "slug": "italian",
       "display": "Italian",
       "keys": 9968,
@@ -87,6 +94,13 @@
       "keys": 9968,
       "bytes": 1012498,
       "updated": "2026-05-24"
+    },
+    {
+      "slug": "lingala",
+      "display": "Lingala",
+      "keys": 9980,
+      "bytes": 1028252,
+      "updated": "2026-05-25"
     },
     {
       "slug": "nepali",
