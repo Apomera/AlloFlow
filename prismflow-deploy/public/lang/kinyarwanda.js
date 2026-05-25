@@ -1,5 +1,5 @@
 {
-  "_version": "20260525184014T1779734414796",
+  "_version": "20260525184233T1779734553808",
   "tour": {
     "input_panel_title": "Paneli yo Kwinjiza",
     "input_panel_text": "Tangirira hano urugendo rwo gukora isomo. Iyi Paneli yo Kwinjiza ni urufatiro rw'umutungo wose ukozwe. Ikora nk'umutwe nyamukuru aho usobanura ibikubiyemo, context, na parameters.\n### Amahitamo yo Kwinjiza\n• **Gushyira Inyandiko**: Manika ibikubiyemo direct biva mu nkuru iyo ari yo yose, inkuru, cyangwa gahunda y'isomo.\n• **Kohereza Idosiye**: Ohereza PDF, amashusho, idosiye z'inyandiko, audio (MP3/WAV), cyangwa video ku gukuramo byikora.\n• **Kuzana URL**: Manika URL y'inkuru iyo ari yo yose kugira ngo ukuremo ibikubiyemo byayo byikora.\n• **AI Kurikirana Umutungo**: Sobanura ingingo maze AI ibone umutungo wo kuri interineti ukwiye urwego rw'ishuri.\n• **Kora Inyandiko y'Inkomoko**: Kora ibikubiyemo by'umwimerere mu kuvuga ingingo, ijwi, urwego rw'ishuri, n'amahame ya intego.\n### Ibiranga byo Gukora\n• **Guhitamo Ijwi**: Hitamo mu mvugo Informative, Narrative, Persuasive, Humorous, cyangwa Step-by-Step.\n• **Guhuza n'Amahame**: Koresha standard finder ya AI cyangwa winjize amahame mu ntoki (kugeza ku 3).\n• **Kugenzura Ukuri**: Bishyireho web grounding ku gugenzura ibyukuri no gushyiramo citations byikora.\n• **Amabwiriza Yihariye**: Ongeraho ubuyobozi bwihariye ku gukora ibikubiyemo bihujwe.\n### Ubushobozi bwa Sisitemu\n• **Kumenya Byikora**: Imenya ururimi rw'inkomoko byikora.\n• **Gutunganya Mu Bice**: Idosiye z'audio na video zirenze 20MB zigabanyirizwa mu buryo bw'ubwenge ku transcription yizewe.\n### Ay'Ingenzi\nIbikoresho byinshi muri sidebar bisaba inkomoko mbere yo gukoreshwa. Manika cyangwa kora ibikubiyemo byawe hano mbere, hanyuma ushakishe undi mutungo.",
@@ -11028,9 +11028,9 @@
     "no_xp_hint": "wowe've already earned XP kuva iki entry before. Keep going — gishya improvements earn byinshi XP.",
     "no_ai": "AI feedback ni ntibi kirahari iburyo ubu.",
     "cornell_needs_notes": "Ongeraho nibura imirongo 2 ya notes mbere yo gusaba feedback.",
-    "lab_needs_substance": "Fill muri hypothesis, analysis, cyangwa conclusion before asking kuri feedback.",
+    "lab_needs_substance": "Uzuza muri hypothesis, analysis, cyangwa conclusion mbere yo gusaba feedback.",
     "reading_needs_thinking": "Andika nibura imitekereze yawe cyangwa connection mbere yo gusaba feedback.",
-    "empty": "Fill muri bimwe cya template before asking kuri feedback.",
+    "empty": "Uzuza igice cy'template mbere yo gusaba feedback.",
     "thinking": "Reading cyawe notes...",
     "error": "Could ntibi kora feedback iburyo ubu. Gerageza again muri moment.",
     "loading": "Reading cyawe notes...",
