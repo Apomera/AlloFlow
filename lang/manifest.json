@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T15:12:42.651Z",
-  "count": 49,
+  "generated": "2026-05-25T15:21:55.550Z",
+  "count": 50,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -128,6 +128,13 @@
       "display": "Hmong",
       "keys": 9976,
       "bytes": 1064516,
+      "updated": "2026-05-25"
+    },
+    {
+      "slug": "igbo",
+      "display": "Igbo",
+      "keys": 9982,
+      "bytes": 1051621,
       "updated": "2026-05-25"
     },
     {
@@ -308,8 +315,8 @@
     {
       "slug": "thai",
       "display": "Thai",
-      "keys": 2058,
-      "bytes": 179333,
+      "keys": 2499,
+      "bytes": 229957,
       "updated": "2026-05-25"
     },
     {
