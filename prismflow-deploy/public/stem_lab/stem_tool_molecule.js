@@ -2537,15 +2537,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   // Equation balancer
                   React.createElement("div", { className: "bg-slate-900/60 rounded-xl border border-slate-800 p-4 mb-3" },
-                    React.createElement("div", { className: "flex items-center justify-center gap-2 flex-wrap" }),
-                    
-                    // Visual Molecule Shelf
-                    React.createElement("div", { className: "flex gap-3 justify-center items-center mt-4 border-t border-slate-800 pt-3 flex-wrap" },
-                      drawVisualShelf(r.left, true),
-                      React.createElement("span", { className: "text-lg font-bold text-slate-600 mt-4" }, "→"),
-                      drawVisualShelf(r.right, false)
-                    )
-
+                    React.createElement("div", { className: "flex items-center justify-center gap-2 flex-wrap" },
                       // Left side (reactants)
                       r.left.map((term, i) => React.createElement("div", { key: 'l' + i, className: "flex items-center gap-1" },
                         i > 0 && React.createElement("span", { className: "text-lg font-bold text-slate-600 mx-1" }, "+"),
@@ -2616,6 +2608,13 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                           React.createElement("span", { className: "text-sm font-bold text-slate-700 mt-0.5 bg-slate-50 px-2 py-0.5 rounded border" }, term.formula)
                         )
                       ))
+                    ),
+
+                    // Visual Molecule Shelf
+                    React.createElement("div", { className: "flex gap-3 justify-center items-center mt-4 border-t border-slate-800 pt-3 flex-wrap" },
+                      drawVisualShelf(r.left, true),
+                      React.createElement("span", { className: "text-lg font-bold text-slate-600 mt-4" }, "→"),
+                      drawVisualShelf(r.right, false)
                     )
                   ),
 

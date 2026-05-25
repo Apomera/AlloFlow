@@ -1604,7 +1604,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex gap-2' },
                 h('input', {
                   type: 'text',
-                  placeholder: 'Ask about circuits, Ohm's Law, components...',
+                  placeholder: "Ask about circuits, Ohm's Law, components...",
                   value: aiQuestion,
                   onChange: function(e) { upd('aiQuestion', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter') askAI(); },
@@ -1620,7 +1620,7 @@ window.StemLab = window.StemLab || {
               aiResponse && h('div', { className: 'mt-2 bg-slate-950/80 rounded-lg p-3 border border-blue-900/50 text-xs text-blue-200 whitespace-pre-wrap leading-relaxed' }, aiResponse),
               // Quick-ask suggestions
               h('div', { className: 'flex flex-wrap gap-1.5 mt-2' },
-                ['What is Ohm's Law?', 'Series vs parallel?', 'What is a short circuit?', 'How do capacitors work?', 'What does an ammeter measure?'].map(function(q) {
+                ["What is Ohm's Law?", 'Series vs parallel?', 'What is a short circuit?', 'How do capacitors work?', 'What does an ammeter measure?'].map(function(q) {
                   return h('button', { 'aria-label': 'Ask question',
                     key: q,
                     onClick: function() { updMulti({ aiQuestion: q }); },
