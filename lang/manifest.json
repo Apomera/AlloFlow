@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-25T02:53:00.817Z",
+  "generated": "2026-05-25T02:53:25.537Z",
   "count": 37,
   "total_keys_expected": 9307,
   "available": [
@@ -161,8 +161,8 @@
     {
       "slug": "lingala",
       "display": "Lingala",
-      "keys": 9980,
-      "bytes": 1028252,
+      "keys": 9976,
+      "bytes": 1012853,
       "updated": "2026-05-25"
     },
     {
