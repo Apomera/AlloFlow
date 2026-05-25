@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-25T15:02:57.289Z",
-  "count": 48,
+  "generated": "2026-05-25T15:06:26.001Z",
+  "count": 49,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -169,7 +169,7 @@
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
       "keys": 9976,
-      "bytes": 1044795,
+      "bytes": 1044821,
       "updated": "2026-05-25"
     },
     {
@@ -299,10 +299,17 @@
       "updated": "2026-05-25"
     },
     {
+      "slug": "tamil",
+      "display": "Tamil",
+      "keys": 9982,
+      "bytes": 1564823,
+      "updated": "2026-05-25"
+    },
+    {
       "slug": "thai",
       "display": "Thai",
-      "keys": 1942,
-      "bytes": 170643,
+      "keys": 2058,
+      "bytes": 179333,
       "updated": "2026-05-25"
     },
     {
