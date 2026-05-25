@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-25T17:12:39.362Z",
+  "generated": "2026-05-25T17:17:09.813Z",
   "count": 55,
   "total_keys_expected": 9307,
   "available": [
@@ -43,7 +43,7 @@
       "slug": "chin_falam",
       "display": "Chin (Falam)",
       "keys": 9982,
-      "bytes": 990640,
+      "bytes": 1000100,
       "updated": "2026-05-25"
     },
     {
@@ -92,7 +92,7 @@
       "slug": "french_canadian",
       "display": "French (Canadian)",
       "keys": 9982,
-      "bytes": 1180781,
+      "bytes": 1191137,
       "updated": "2026-05-25"
     },
     {
@@ -190,7 +190,7 @@
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
       "keys": 9976,
-      "bytes": 1047453,
+      "bytes": 1047401,
       "updated": "2026-05-25"
     },
     {
@@ -211,7 +211,7 @@
       "slug": "lao",
       "display": "Lao",
       "keys": 9982,
-      "bytes": 1052943,
+      "bytes": 1062403,
       "updated": "2026-05-25"
     },
     {
@@ -281,7 +281,7 @@
       "slug": "portuguese_portugal",
       "display": "Portuguese (Portugal)",
       "keys": 9982,
-      "bytes": 1111104,
+      "bytes": 1120188,
       "updated": "2026-05-25"
     },
     {
@@ -316,7 +316,7 @@
       "slug": "spanish_castilian",
       "display": "Spanish (Castilian)",
       "keys": 9982,
-      "bytes": 1154606,
+      "bytes": 1164521,
       "updated": "2026-05-25"
     },
     {
@@ -351,7 +351,7 @@
       "slug": "thai",
       "display": "Thai",
       "keys": 10455,
-      "bytes": 1173621,
+      "bytes": 1183734,
       "updated": "2026-05-25"
     },
     {
