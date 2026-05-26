@@ -523,6 +523,55 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('span', { className: 'text-[11px] font-mono text-slate-600' }, '\uD83D\uDCCA ' + getFormula())
               ),
 
+              // \u2500\u2500 Dimensional-analysis cancellation card \u2500\u2500
+              // Shows the canonical chem/physics technique: multiply by (1 toUnit / N fromUnit)
+              // and watch the fromUnit cancel. Skipped for temperature (additive offset).
+              d.category !== 'temperature' && (function() {
+                var fF = cat.units[d.fromUnit] || 1;
+                var tF = cat.units[d.toUnit] || 1;
+                if (fF === tF) return null;
+                // Express conversion factor as (1 toUnit / X fromUnit) when possible.
+                // Find a clean integer "X" such that X fromUnit = 1 toUnit (i.e., X = tF/fF).
+                var ratioOver = tF / fF;
+                var ratioUnder = fF / tF;
+                var topNum, botNum, topUnit, botUnit;
+                if (ratioOver >= 1) {
+                  topNum = '1';
+                  botNum = fmt(ratioOver);
+                  topUnit = d.toUnit;
+                  botUnit = d.fromUnit;
+                } else {
+                  topNum = fmt(1 / ratioOver);
+                  botNum = '1';
+                  topUnit = d.toUnit;
+                  botUnit = d.fromUnit;
+                }
+                return h('div', { className: 'mt-2 bg-cyan-50 rounded-lg p-2.5 border border-cyan-200' },
+                  h('p', { className: 'text-[10px] font-bold text-cyan-700 uppercase tracking-wider text-center mb-1.5' }, '\uD83D\uDD2C Dimensional Analysis'),
+                  h('div', { className: 'flex items-center justify-center gap-2 font-mono text-sm' },
+                    h('span', { className: 'font-bold text-cyan-900' }, d.value),
+                    h('span', { className: 'text-cyan-600 line-through decoration-2 decoration-amber-500' }, d.fromUnit),
+                    h('span', { className: 'text-cyan-600 font-bold' }, '\u00D7'),
+                    h('div', { className: 'inline-flex flex-col items-center' },
+                      h('div', { className: 'flex items-baseline gap-1' },
+                        h('span', { className: 'text-cyan-900 font-bold' }, topNum),
+                        h('span', { className: 'text-cyan-700' }, topUnit)
+                      ),
+                      h('div', { className: 'border-t-2 border-cyan-700 w-full my-0.5' }),
+                      h('div', { className: 'flex items-baseline gap-1' },
+                        h('span', { className: 'text-cyan-900 font-bold' }, botNum),
+                        h('span', { className: 'text-cyan-700 line-through decoration-2 decoration-amber-500' }, botUnit)
+                      )
+                    ),
+                    h('span', { className: 'text-cyan-600 font-bold' }, '='),
+                    h('span', { className: 'font-bold text-emerald-700' }, fmtResult),
+                    h('span', { className: 'text-emerald-700' }, d.toUnit)
+                  ),
+                  h('p', { className: 'text-[10px] text-cyan-600 italic text-center mt-1.5' },
+                    'The "' + d.fromUnit + '" cancels on the diagonal \u2014 only "' + d.toUnit + '" remains.')
+                );
+              })(),
+
               // Save / Pin / AI buttons
               h('div', { className: 'flex justify-center gap-2 mt-3' },
                 h('button', { 'aria-label': 'Save',
@@ -941,6 +990,90 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             h('span', null, 'N Next Quiz'),
             h('span', null, 'B Badges'),
             h('span', null, '? AI Tutor')
+          ),
+
+          // ═══ METRIC PREFIXES ═══
+          h('div', { className: 'mt-5 rounded-2xl border border-blue-300 bg-white p-3 shadow-sm' },
+            h('h4', { className: 'text-sm font-bold text-blue-700 mb-2' }, '🔬 Metric Prefixes — Powers of 10 from atoms to galaxies'),
+            h('div', { className: 'rounded-xl overflow-hidden border border-blue-200', style: { background: '#0c1a2e', aspectRatio: '16/5' } },
+              h('canvas', {
+                ref: function(cvEl) {
+                  if (!cvEl) return;
+                  if (cvEl._mpAnim) return;
+                  var c2 = cvEl.getContext('2d');
+                  var W = cvEl.offsetWidth || 600;
+                  var H = cvEl.offsetHeight || 180;
+                  cvEl.width = W * 2; cvEl.height = H * 2;
+                  c2.scale(2, 2);
+                  var start = performance.now();
+                  var prefixes = [
+                    { sym: 'p', name: 'pico', exp: -12, color: '#a855f7' },
+                    { sym: 'n', name: 'nano', exp: -9, color: '#3b82f6' },
+                    { sym: 'µ', name: 'micro', exp: -6, color: '#22d3ee' },
+                    { sym: 'm', name: 'milli', exp: -3, color: '#86efac' },
+                    { sym: '', name: 'base', exp: 0, color: '#fff' },
+                    { sym: 'k', name: 'kilo', exp: 3, color: '#fde047' },
+                    { sym: 'M', name: 'mega', exp: 6, color: '#fb923c' },
+                    { sym: 'G', name: 'giga', exp: 9, color: '#fb7185' },
+                    { sym: 'T', name: 'tera', exp: 12, color: '#dc2626' }
+                  ];
+                  function drawMp() {
+                    if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._mpAnim); return; }
+                    var t = (performance.now() - start) / 1000;
+                    c2.fillStyle = '#0c1a2e';
+                    c2.fillRect(0, 0, W, H);
+                    var cellW = (W - 30) / prefixes.length;
+                    var blink = Math.floor((t * 0.5) % prefixes.length);
+                    prefixes.forEach(function(p, i) {
+                      var x = 15 + i * cellW;
+                      var y = H * 0.2;
+                      var sel = i === blink;
+                      c2.fillStyle = p.color;
+                      c2.globalAlpha = sel ? 1 : 0.7;
+                      c2.fillRect(x, y, cellW - 4, H * 0.5);
+                      c2.globalAlpha = 1;
+                      c2.fillStyle = sel ? '#0c1a2e' : (p.exp === 0 ? '#0c1a2e' : 'rgba(0,0,0,0.7)');
+                      c2.font = 'bold 14px serif';
+                      c2.textAlign = 'center';
+                      c2.fillText(p.sym || '—', x + cellW / 2, y + 22);
+                      c2.font = 'bold 9px sans-serif';
+                      c2.fillText(p.name, x + cellW / 2, y + 38);
+                      c2.font = 'bold 10px monospace';
+                      c2.fillText('10' + (p.exp >= 0 ? '+' : '') + p.exp, x + cellW / 2, y + 54);
+                    });
+                    // Selected info
+                    var cur = prefixes[blink];
+                    c2.fillStyle = cur.color;
+                    c2.font = 'bold 12px sans-serif';
+                    c2.textAlign = 'center';
+                    var examples = {
+                      'pico': 'pm = bond lengths',
+                      'nano': 'nm = wavelengths',
+                      'micro': 'µm = bacteria',
+                      'milli': 'mm = grains of sand',
+                      'base': 'meter, second, gram, ampere',
+                      'kilo': 'km = walking distance',
+                      'mega': 'Mm = continents',
+                      'giga': 'Gm = Sun-Earth',
+                      'tera': 'Tm = Jupiter-Sun'
+                    };
+                    c2.fillText('Example: ' + (examples[cur.name] || ''), W / 2, H - 24);
+                    c2.fillStyle = 'rgba(0,0,0,0.85)';
+                    c2.fillRect(8, H - 14, W - 16, 12);
+                    c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#93c5fd'; c2.textAlign = 'center';
+                    c2.fillText('SI metric system — every prefix steps by 1000. Used everywhere except weird corners of US measurement.', W / 2, H - 5);
+                    cvEl._mpAnim = requestAnimationFrame(drawMp);
+                  }
+                  drawMp();
+                  var ro = new ResizeObserver(function() {
+                    W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                    cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                  });
+                  ro.observe(cvEl);
+                },
+                style: { width: '100%', height: '100%', display: 'block' }
+              })
+            )
           )
 
         );
