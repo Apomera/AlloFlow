@@ -111,15 +111,15 @@ those reflect intentional content trimming.
 |---|---|---|
 | Hebrew | 23 (all long tour keys) | b779046b, 061f0174, 642397de, a3b50608 |
 | Arabic | 23 (all long tour keys) | b779046b, 061f0174, 642397de, a3b50608 |
-| Farsi | 10 (batch 1 + 2) | 6cc96abb, 5056adb1 |
-| Dari | 10 (batch 1 + 2) | 6cc96abb, 5056adb1 |
+| Farsi | 23 (all long tour keys) | 6cc96abb, 5056adb1, c047e0b7, 2b8d4f24 |
+| Dari | 23 (all long tour keys) | 6cc96abb, 5056adb1, c047e0b7, 2b8d4f24 |
 | Urdu | 10 (batch 1 + 2) | 9447d53f, ab3ae721 |
 | Somali | 10 (batch 1 + 2) | 832bbf98, 469aa645 |
 | Haitian Creole | 10 (batch 1 + 2) | be8db880, b5b7d7ad |
 | Thai | 10 (batch 1 + 2) | be8db880, b5b7d7ad |
 | Pashto | 5 (top tours) | fd064fb0 |
 
-**Total: 111 hand-translated long tour entries across 9 packs**, each with
+**Total: 137 hand-translated long tour entries across 9 packs** (4 packs fully done — Hebrew, Arabic, Farsi, Dari with all 23 long tour keys), each with
 full `### Section` structured content covering input panel, dashboard,
 actions, glossary, history, analysis, adventure, quiz, wordsounds,
 scaffolds, and (for Hebrew/Arabic) all 23 long tour keys.
