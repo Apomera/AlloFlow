@@ -2644,19 +2644,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     }, "\u25BC Descending")
                   ),
                   React.createElement("p", { className: "text-[11px] text-purple-600 mb-1.5" }, SCALES[selectedScale].desc),
-                  React.createElement("div", { className: "flex gap-1" },
+                  React.createElement("div", { className: "flex items-stretch gap-0.5" },
                     SCALES[selectedScale].intervals.map(function (intv, i) {
                       var nIdx = (rootIdx + intv) % 12;
-                      return React.createElement("div", { 
-                        key: i,
-                        onClick: function () { playNoteFor(noteFreq(NOTE_NAMES[nIdx], d.octave || 4), 'scale_note_' + i, 500); },
-                        className: "flex-1 py-2 rounded-lg text-center cursor-pointer transition-all bg-white border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-100"
-                      },
-                        React.createElement("span", { className: "text-xs font-bold text-purple-700 block" }, NOTE_NAMES[nIdx]),
-                        React.createElement("span", { className: "text-[11px] text-purple-400" }, i === 0 ? 'Root' : intv + ' semi')
-                      );
+                      var intervals = SCALES[selectedScale].intervals;
+                      // INTERVAL_FROM_ROOT names — what each scale degree is called from the tonic
+                      var intervalNames = ['R', 'm2', 'M2', 'm3', 'M3', 'P4', 'TT', 'P5', 'm6', 'M6', 'm7', 'M7'];
+                      var degreeLabel = i === 0 ? 'Root' : intervalNames[intv] || (intv + ' semi');
+                      // Gap to next note (W = whole step, H = half step, A = augmented 2nd, etc.)
+                      var gapEl = null;
+                      if (i < intervals.length - 1) {
+                        var gap = intervals[i + 1] - intervals[i];
+                        var gapLabel = gap === 1 ? 'H' : gap === 2 ? 'W' : gap === 3 ? 'A' : gap + 's';
+                        var gapColor = gap === 1 ? 'bg-amber-200 text-amber-900' : gap === 2 ? 'bg-indigo-200 text-indigo-900' : 'bg-rose-200 text-rose-900';
+                        var gapTitle = gap === 1 ? 'Half step (1 semitone)' : gap === 2 ? 'Whole step (2 semitones)' : gap === 3 ? 'Augmented 2nd (3 semitones)' : (gap + ' semitones');
+                        gapEl = React.createElement("div", {
+                          key: 'gap' + i,
+                          className: 'self-center px-1.5 py-1 rounded text-[10px] font-black ' + gapColor,
+                          title: gapTitle
+                        }, gapLabel);
+                      }
+                      return [
+                        React.createElement("div", {
+                          key: i,
+                          onClick: function () { playNoteFor(noteFreq(NOTE_NAMES[nIdx], d.octave || 4), 'scale_note_' + i, 500); },
+                          className: "flex-1 py-2 rounded-lg text-center cursor-pointer transition-all bg-white border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-100"
+                        },
+                          React.createElement("span", { className: "text-xs font-bold text-purple-700 block" }, NOTE_NAMES[nIdx]),
+                          React.createElement("span", { className: "text-[11px] text-purple-400" }, degreeLabel)
+                        ),
+                        gapEl
+                      ];
                     })
-                  )
+                  ),
+                  React.createElement("p", { className: "text-[10px] text-purple-500 italic mt-2 text-center" },
+                    "Tags between notes: ", React.createElement("b", null, "W"), " = whole step · ",
+                    React.createElement("b", null, "H"), " = half step · ",
+                    React.createElement("b", null, "A"), " = augmented 2nd")
                 ),
                 // Science box
                 selectedScale && SCALES[selectedScale] && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-lg p-3 border" },
@@ -4469,6 +4493,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             // ── Snapshot button (bottom) ──
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
               React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: t('stem.synth_ui.synth') + (d.waveType || 'sine'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            ),
+
+            // \u2550\u2550\u2550 HARMONIC SERIES \u2550\u2550\u2550
+            React.createElement('div', { className: 'mt-5 rounded-2xl border border-indigo-300 bg-white p-3 shadow-sm' },
+              React.createElement('h4', { className: 'text-sm font-bold text-indigo-700 mb-2' }, '\uD83C\uDFB5 Harmonic Series \u2014 Why instruments sound different'),
+              React.createElement('div', { className: 'rounded-xl overflow-hidden border border-indigo-200', style: { background: '#1e1b4b', aspectRatio: '16/5' } },
+                React.createElement('canvas', {
+                  ref: function(cvEl) {
+                    if (!cvEl) return;
+                    if (cvEl._hsAnim) return;
+                    var c2 = cvEl.getContext('2d');
+                    var W = cvEl.offsetWidth || 600;
+                    var H = cvEl.offsetHeight || 180;
+                    cvEl.width = W * 2; cvEl.height = H * 2;
+                    c2.scale(2, 2);
+                    var start = performance.now();
+                    function drawHs() {
+                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._hsAnim); return; }
+                      var t = (performance.now() - start) / 1000;
+                      c2.fillStyle = '#1e1b4b';
+                      c2.fillRect(0, 0, W, H);
+                      var harmonics = [
+                        { n: 1, name: 'f (Fundamental)', note: 'C', color: '#fb7185' },
+                        { n: 2, name: '2f (Octave)', note: 'C2', color: '#f97316' },
+                        { n: 3, name: '3f (Fifth)', note: 'G2', color: '#fbbf24' },
+                        { n: 4, name: '4f (Octave)', note: 'C3', color: '#86efac' },
+                        { n: 5, name: '5f (Third)', note: 'E3', color: '#22d3ee' },
+                        { n: 6, name: '6f (Fifth)', note: 'G3', color: '#a855f7' }
+                      ];
+                      var rowH = (H - 30) / harmonics.length;
+                      harmonics.forEach(function(h, i) {
+                        var y = 6 + i * rowH;
+                        c2.strokeStyle = h.color;
+                        c2.lineWidth = 1.2;
+                        c2.beginPath();
+                        var amp = (rowH - 6) / 2 * (1 / h.n);
+                        for (var x = 0; x < W * 0.55; x += 1) {
+                          var yy = y + rowH / 2 + Math.sin((x / W) * Math.PI * 4 * h.n + t * 4) * amp;
+                          if (x === 0) c2.moveTo(x + 80, yy);
+                          else c2.lineTo(x + 80, yy);
+                        }
+                        c2.stroke();
+                        c2.fillStyle = h.color;
+                        c2.font = 'bold 9px monospace';
+                        c2.textAlign = 'right';
+                        c2.fillText(h.n + 'x', 75, y + rowH / 2 + 3);
+                        c2.fillStyle = '#cbd5e1';
+                        c2.font = '8px sans-serif';
+                        c2.textAlign = 'left';
+                        c2.fillText(h.name, W * 0.6, y + rowH / 2);
+                        c2.fillStyle = h.color;
+                        c2.fillText(h.note, W * 0.88, y + rowH / 2);
+                      });
+                      c2.fillStyle = 'rgba(0,0,0,0.85)';
+                      c2.fillRect(8, H - 14, W - 16, 12);
+                      c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#a5b4fc'; c2.textAlign = 'center';
+                      c2.fillText('Timbre = which harmonics dominate. Violin vs flute play same f, but harmonic mix differs.', W / 2, H - 5);
+                      cvEl._hsAnim = requestAnimationFrame(drawHs);
+                    }
+                    drawHs();
+                    var ro = new ResizeObserver(function() {
+                      W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                    });
+                    ro.observe(cvEl);
+                  },
+                  style: { width: '100%', height: '100%', display: 'block' }
+                })
+              )
             )
           );
     }
