@@ -1646,7 +1646,48 @@ window.StemLab = window.StemLab || {
             h('span', { className: 'font-mono font-bold text-emerald-800' }, (SHAPES_META.find(function(m) { return m.id === shape; }) || {}).formula),
             ' gives the exact analytic volume = ',
             h('span', { className: 'font-bold text-emerald-800' }, formatVolumeWithUnit(analyticVolume(shape, dims.l, dims.w, dims.h)))
-          )
+          ),
+          // ── Formula breakdown: shows the formula with current dimensions plugged in ──
+          (function() {
+            var sf = SHAPES_META.find(function(m) { return m.id === shape; });
+            if (!sf) return null;
+            var L = dims.l, W = dims.w, H = dims.h;
+            var rx = (L / 2).toFixed(L % 2 === 0 ? 0 : 1);
+            var ry = (W / 2).toFixed(W % 2 === 0 ? 0 : 1);
+            var rAvg = ((L + W) / 4).toFixed(2);
+            var stepStr, resultStr;
+            if (shape === 'prism') {
+              stepStr = 'V = ' + L + ' × ' + W + ' × ' + H;
+              resultStr = (L * W * H).toFixed(0);
+            } else if (shape === 'cylinder') {
+              stepStr = L === W
+                ? 'V = π × (' + rx + ')² × ' + H
+                : 'V = π × ' + rx + ' × ' + ry + ' × ' + H + '  (elliptical base)';
+              resultStr = (Math.PI * (L / 2) * (W / 2) * H).toFixed(2);
+            } else if (shape === 'cone') {
+              stepStr = L === W
+                ? 'V = ⅓ × π × (' + rx + ')² × ' + H
+                : 'V = ⅓ × π × ' + rx + ' × ' + ry + ' × ' + H;
+              resultStr = ((1 / 3) * Math.PI * (L / 2) * (W / 2) * H).toFixed(2);
+            } else if (shape === 'pyramid') {
+              stepStr = 'V = ⅓ × ' + L + ' × ' + W + ' × ' + H;
+              resultStr = ((1 / 3) * L * W * H).toFixed(2);
+            } else {
+              return null;
+            }
+            return h('div', {
+              className: 'mt-2 bg-emerald-50 border border-emerald-200 rounded-md px-2.5 py-1.5 font-mono text-[11px] text-emerald-900',
+              role: 'note',
+              'aria-label': 'Formula with dimensions substituted'
+            },
+              h('span', { className: 'font-bold text-emerald-700 mr-2' }, sf.formula),
+              h('span', { className: 'text-emerald-600' }, '→ '),
+              h('span', { className: 'text-emerald-800' }, stepStr),
+              h('span', { className: 'text-emerald-600 mx-1' }, '='),
+              h('span', { className: 'font-extrabold text-emerald-900' }, resultStr),
+              h('span', { className: 'text-emerald-700 ml-1 not-italic' }, ' cubic units')
+            );
+          })()
         ),
 
         // Net visualization + same-volume comparison + cross-section toggles
@@ -2028,6 +2069,138 @@ window.StemLab = window.StemLab || {
           h('span', null, '+/- Zoom'),
           h('span', null, 'R Reset view'),
           h('span', null, '? AI')
+        ),
+
+        // ═══════════════════════════════════════════════════════
+        // VOLUME FORMULAS — interactive reference panel
+        // ═══════════════════════════════════════════════════════
+        h('div', { className: 'mt-5 rounded-2xl border border-cyan-300 bg-white p-3 shadow-sm' },
+          h('div', { className: 'flex items-center justify-between mb-2' },
+            h('div', { className: 'flex items-center gap-2' },
+              h('span', { className: 'text-lg' }, '📐'),
+              h('h4', { className: 'text-sm font-bold text-cyan-700' }, 'Volume Formulas in Motion')
+            ),
+            h('span', { className: 'text-[10px] italic text-slate-600' }, '6 solids rotating with live formulas')
+          ),
+          h('div', { className: 'rounded-xl overflow-hidden border border-cyan-200', style: { background: '#020210', aspectRatio: '16/6' } },
+            h('canvas', {
+              ref: function(cvEl) {
+                if (!cvEl) return;
+                if (cvEl._volAnim) return;
+                var c2 = cvEl.getContext('2d');
+                var W = cvEl.offsetWidth || 600;
+                var H = cvEl.offsetHeight || 220;
+                cvEl.width = W * 2; cvEl.height = H * 2;
+                c2.scale(2, 2);
+                var start = performance.now();
+                function drawVol() {
+                  if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._volAnim); return; }
+                  var t = (performance.now() - start) / 1000;
+                  c2.fillStyle = '#020210';
+                  c2.fillRect(0, 0, W, H);
+                  var solids = [
+                    { name: 'Cube', formula: 'V = s³', vol: '64', s: 4, color: '#7dd3fc' },
+                    { name: 'Sphere', formula: 'V = ⁴⁄₃πr³', vol: '113', s: 3, color: '#a78bfa' },
+                    { name: 'Cylinder', formula: 'V = πr²h', vol: '151', s: 3, color: '#f472b6' },
+                    { name: 'Cone', formula: 'V = ⅓πr²h', vol: '50', s: 3, color: '#fbbf24' },
+                    { name: 'Pyramid', formula: 'V = ⅓·b·h', vol: '32', s: 3, color: '#fb923c' },
+                    { name: 'Prism', formula: 'V = b·h', vol: '60', s: 3, color: '#10b981' }
+                  ];
+                  var cols = 3, rows = 2;
+                  var cellW = W / cols, cellH = H / rows;
+                  solids.forEach(function(s, si) {
+                    var col = si % cols;
+                    var row = Math.floor(si / cols);
+                    var cx = col * cellW + cellW / 2;
+                    var cy = row * cellH + cellH / 2;
+                    var rot = t * 0.5;
+                    var sz = 25;
+                    c2.save();
+                    c2.translate(cx, cy - 10);
+                    c2.strokeStyle = s.color; c2.lineWidth = 1.5;
+                    c2.fillStyle = s.color + '40';
+                    // Draw shape (simplified)
+                    if (s.name === 'Cube') {
+                      // Iso cube
+                      var pts = [];
+                      var cos30 = Math.cos(Math.PI / 6 + rot);
+                      var sin30 = Math.sin(Math.PI / 6 + rot);
+                      pts = [
+                        { x: 0, y: -sz }, { x: sz * cos30, y: -sz / 2 }, { x: sz * cos30, y: sz / 2 }, { x: 0, y: sz },
+                        { x: -sz * cos30, y: sz / 2 }, { x: -sz * cos30, y: -sz / 2 }
+                      ];
+                      c2.beginPath();
+                      pts.forEach(function(p, pi) { if (pi === 0) c2.moveTo(p.x, p.y); else c2.lineTo(p.x, p.y); });
+                      c2.closePath();
+                      c2.fill(); c2.stroke();
+                    } else if (s.name === 'Sphere') {
+                      c2.beginPath();
+                      c2.arc(0, 0, sz, 0, Math.PI * 2);
+                      c2.fill(); c2.stroke();
+                      // Equator + meridian
+                      c2.beginPath();
+                      c2.ellipse(0, 0, sz, sz * 0.3, 0, 0, Math.PI * 2);
+                      c2.stroke();
+                      c2.beginPath();
+                      c2.ellipse(0, 0, sz * 0.3 * Math.abs(Math.cos(rot)), sz, 0, 0, Math.PI * 2);
+                      c2.stroke();
+                    } else if (s.name === 'Cylinder') {
+                      c2.beginPath();
+                      c2.ellipse(0, -sz, sz * 0.7, sz * 0.2, 0, 0, Math.PI * 2);
+                      c2.fill(); c2.stroke();
+                      c2.beginPath();
+                      c2.rect(-sz * 0.7, -sz, sz * 1.4, sz * 2);
+                      c2.fill(); c2.stroke();
+                      c2.beginPath();
+                      c2.ellipse(0, sz, sz * 0.7, sz * 0.2, 0, 0, Math.PI * 2);
+                      c2.fill(); c2.stroke();
+                    } else if (s.name === 'Cone') {
+                      c2.beginPath();
+                      c2.moveTo(0, -sz);
+                      c2.lineTo(-sz * 0.7, sz);
+                      c2.lineTo(sz * 0.7, sz);
+                      c2.closePath();
+                      c2.fill(); c2.stroke();
+                      c2.beginPath();
+                      c2.ellipse(0, sz, sz * 0.7, sz * 0.2, 0, 0, Math.PI * 2);
+                      c2.fill(); c2.stroke();
+                    } else if (s.name === 'Pyramid') {
+                      c2.beginPath();
+                      c2.moveTo(0, -sz);
+                      c2.lineTo(-sz * 0.7, sz);
+                      c2.lineTo(sz * 0.7, sz);
+                      c2.closePath();
+                      c2.fill(); c2.stroke();
+                      c2.beginPath();
+                      c2.moveTo(0, -sz); c2.lineTo(0, sz);
+                      c2.stroke();
+                    } else if (s.name === 'Prism') {
+                      // Triangular prism
+                      c2.beginPath();
+                      c2.moveTo(-sz, sz / 2);
+                      c2.lineTo(0, -sz / 2);
+                      c2.lineTo(sz, sz / 2);
+                      c2.closePath();
+                      c2.fill(); c2.stroke();
+                    }
+                    c2.restore();
+                    c2.font = 'bold 10px sans-serif'; c2.fillStyle = s.color; c2.textAlign = 'center';
+                    c2.fillText(s.name, cx, cy + 24);
+                    c2.font = '8px monospace'; c2.fillStyle = '#fde047';
+                    c2.fillText(s.formula, cx, cy + 36);
+                  });
+                  cvEl._volAnim = requestAnimationFrame(drawVol);
+                }
+                drawVol();
+                var ro = new ResizeObserver(function() {
+                  W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                  cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                });
+                ro.observe(cvEl);
+              },
+              style: { width: '100%', height: '100%', display: 'block' }
+            })
+          )
         )
       );
     }
