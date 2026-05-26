@@ -697,6 +697,28 @@ window.StemLab = window.StemLab || {
       var labelElements = gridPoints.map(function(p, i) {
         return h('text', { key: 'lb' + i, x: toSvg(p.x, 'x') + 8, y: toSvg(p.y, 'y') - 8, className: 'text-[11px] fill-cyan-700 font-bold' }, '(' + p.x + ',' + p.y + ')');
       });
+      // Per-point quadrant badge + distance-from-origin — anchors each point in the coordinate system.
+      var quadBadgeElements = gridPoints.map(function(p, i) {
+        var q;
+        if (p.x === 0 && p.y === 0) q = 'O';
+        else if (p.x === 0) q = 'y-axis';
+        else if (p.y === 0) q = 'x-axis';
+        else if (p.x > 0 && p.y > 0) q = 'I';
+        else if (p.x < 0 && p.y > 0) q = 'II';
+        else if (p.x < 0 && p.y < 0) q = 'III';
+        else q = 'IV';
+        var dist = Math.sqrt(p.x * p.x + p.y * p.y);
+        var distStr = dist === 0 ? '0' : (Math.abs(dist - Math.round(dist)) < 0.01 ? dist.toFixed(0) : dist.toFixed(2));
+        var qColors = { I: '#10b981', II: '#f59e0b', III: '#a855f7', IV: '#ec4899', O: '#475569', 'x-axis': '#3b82f6', 'y-axis': '#3b82f6' };
+        var qColor = qColors[q] || '#64748b';
+        var bx = toSvg(p.x, 'x') + 8;
+        var by = toSvg(p.y, 'y') + 8;
+        return h(React.Fragment, { key: 'qb' + i },
+          h('rect', { x: bx - 2, y: by - 3, width: q.length * 7 + 8, height: 12, rx: 3, fill: qColor, opacity: 0.85 }),
+          h('text', { x: bx + 2, y: by + 6, fill: '#fff', fontSize: 8.5, fontWeight: 'bold' }, q),
+          h('text', { x: toSvg(p.x, 'x') + 8, y: toSvg(p.y, 'y') + 24, fill: qColor, fontSize: 9, fontWeight: 'bold', fontFamily: 'monospace', opacity: 0.85 }, '|d|=' + distStr)
+        );
+      });
 
       // ═══ BADGES PANEL ═══
       var renderBadges = function() {
