@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-26T10:55:45.661Z",
+  "generated": "2026-05-26T10:59:45.959Z",
   "count": 56,
   "total_keys_expected": 9307,
   "available": [
@@ -99,8 +99,8 @@
       "slug": "german",
       "display": "German",
       "keys": 9974,
-      "bytes": 1073138,
-      "updated": "2026-05-25"
+      "bytes": 1073486,
+      "updated": "2026-05-26"
     },
     {
       "slug": "greek",
@@ -260,7 +260,7 @@
       "slug": "polish",
       "display": "Polish",
       "keys": 9968,
-      "bytes": 790559,
+      "bytes": 786427,
       "updated": "2026-05-26"
     },
     {
