@@ -2992,6 +2992,58 @@ var d = labToolData.universe || {};
                   React.createElement("div", { className: "text-[11px] font-mono text-indigo-300" }, "z = (\u03BB_observed - \u03BB_emitted) / \u03BB_emitted"),
                   React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, "z > 0 = redshift (receding) \u2022 z < 0 = blueshift (approaching) \u2022 z = 1 means wavelength doubled")
                 ),
+                // \u2500\u2500 Hubble's Law interactive: v = H\u2080 \u00D7 d \u2500\u2500
+                // Empirical foundation of expanding universe. Slider sets distance in Mpc;
+                // recession velocity computed and plotted on the iconic Hubble diagram.
+                (function() {
+                  var H0 = 70; // km/s per Mpc (canonical value)
+                  var distMpc = (d.hubbleDistMpc != null) ? d.hubbleDistMpc : 100;
+                  var velKms = H0 * distMpc;
+                  var distMly = (distMpc * 3.262).toFixed(0);
+                  // Mini Hubble diagram dimensions
+                  var hW = 220, hH = 60, hPad = 18;
+                  var maxD = 400, maxV = H0 * maxD;
+                  var xOf = function(d_) { return hPad + (d_ / maxD) * (hW - 2 * hPad); };
+                  var yOf = function(v_) { return (hH - 8) - (v_ / maxV) * (hH - 16); };
+                  return React.createElement("div", { className: "bg-slate-800 rounded-lg p-2 border border-amber-700 mt-1" },
+                    React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                      React.createElement("span", { className: "text-[11px] font-bold text-amber-300" }, "\uD83D\uDCD0 Hubble's Law: v = H\u2080 \u00D7 d"),
+                      React.createElement("span", { className: "text-[10px] text-slate-400 font-mono" }, "H\u2080 = 70 km/s/Mpc")
+                    ),
+                    React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+                      React.createElement("input", {
+                        type: 'range', min: 1, max: maxD, step: 1, value: distMpc,
+                        onChange: function(e) { upd('hubbleDistMpc', parseInt(e.target.value, 10)); },
+                        'aria-label': "Hubble's Law distance",
+                        style: { flex: 1, accentColor: '#fbbf24' }
+                      }),
+                      React.createElement("span", { className: "text-[10px] font-mono text-amber-300", style: { minWidth: 110 } },
+                        distMpc + ' Mpc (' + distMly + ' Mly)')
+                    ),
+                    React.createElement("div", { className: "text-[11px] font-mono text-slate-200 mb-1.5 text-center" },
+                      "v = 70 \u00D7 ", React.createElement("span", { className: "text-amber-300 font-bold" }, distMpc),
+                      " = ", React.createElement("span", { className: "text-rose-300 font-bold" }, velKms.toLocaleString()),
+                      " km/s",
+                      velKms > 299792 && React.createElement("span", { className: "text-fuchsia-400 ml-2 font-bold" }, "(> c \u2014 superluminal recession!)")
+                    ),
+                    // Mini Hubble diagram
+                    React.createElement("svg", {
+                      viewBox: '0 0 ' + hW + ' ' + hH, width: '100%', height: 70,
+                      'aria-label': "Hubble diagram showing user's point on v = H0 d line"
+                    },
+                      React.createElement("line", { x1: hPad, y1: hH - 8, x2: hW - hPad, y2: hH - 8, stroke: '#64748b', strokeWidth: 0.6 }),
+                      React.createElement("line", { x1: hPad, y1: 6, x2: hPad, y2: hH - 8, stroke: '#64748b', strokeWidth: 0.6 }),
+                      React.createElement("line", { x1: xOf(0), y1: yOf(0), x2: xOf(maxD), y2: yOf(maxV), stroke: '#fbbf24', strokeWidth: 1.4, strokeDasharray: '3 2', opacity: 0.7 }),
+                      React.createElement("line", { x1: xOf(distMpc), y1: hH - 8, x2: xOf(distMpc), y2: yOf(velKms), stroke: 'rgba(244,114,182,0.5)', strokeWidth: 0.6, strokeDasharray: '1 2' }),
+                      React.createElement("line", { x1: hPad, y1: yOf(velKms), x2: xOf(distMpc), y2: yOf(velKms), stroke: 'rgba(244,114,182,0.5)', strokeWidth: 0.6, strokeDasharray: '1 2' }),
+                      React.createElement("circle", { cx: xOf(distMpc), cy: yOf(velKms), r: 3, fill: '#f43f5e', stroke: '#fff', strokeWidth: 0.7 }),
+                      React.createElement("text", { x: hPad - 2, y: 8, fontSize: 5, fill: '#94a3b8', textAnchor: 'end' }, 'v'),
+                      React.createElement("text", { x: hW - hPad, y: hH - 1, fontSize: 5, fill: '#94a3b8', textAnchor: 'end' }, 'd (Mpc)')
+                    ),
+                    React.createElement("div", { className: "text-[10px] text-slate-400 mt-1 italic text-center" },
+                      'Linear relation: every doubling of distance doubles recession velocity. The slope IS the expansion rate of the universe.')
+                  );
+                })(),
                 // Real examples
                 React.createElement("div", { className: "text-[11px] font-bold text-white mt-2 mb-1" }, "Real Examples:"),
                 React.createElement("div", { className: "space-y-1.5" },
