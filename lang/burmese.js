@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813200141",
+  "_version": "20260526T1779815506867",
   "tour": {
     "input_panel_title": "ထည့်သွင်းမှု panel",
     "input_panel_text": "Begin သင်၏ သင်ခန်းစာ creation journey here. ဤ ထည့်သွင်းမှု panel ဖြစ်သည် foundation အတွက် အားလုံး ထုတ်လုပ်ပြီး အရင်းအမြစ်များ. It serves as central hub ဘယ်မှာ သင် define အကြောင်းအရာ, အကြောင်းအရာ, နှင့် parameters.\n### ထည့်သွင်းမှု ရွေးချယ်စရာ\n• **စာသား ကပ်ပါ**: ကပ်ပါ အကြောင်းအရာ directly မှ မည်သည့် article, ပုံပြင်, သို့မဟုတ် သင်ခန်းစာ အစီအစဉ်.\n• **ဖိုင် အပ်လုဒ်လုပ်ပါ**: အပ်လုဒ်လုပ်ပါ PDFs, ပုံ, စာသား ဖိုင်, အသံ (MP3/WAV), သို့မဟုတ် ဗီဒီယို အတွက် အလိုအလျောက် extraction.\n• **URL ရယူပါ**: ကပ်ပါ မည်သည့် article URL သို့ အလိုအလျောက် ထုတ်ယူပါ နှင့် တင်သွင်းပါ its အကြောင်းအရာ.\n• **AI အရင်းအမြစ်များ ရှာဖွေပါ**: Describe အကြောင်းအရာ နှင့် let AI find အတန်း-သင့်လျော် online အရင်းအမြစ်များ အတွက် သင်.\n• **ထုတ်လုပ်ပါ အရင်းအမြစ် စာသား**: ဖန်တီးပါ မူရင်း အကြောင်းအရာ by specifying အကြောင်းအရာ, အသံ, အတန်းအဆင့်, နှင့် ပစ်မှတ် စံချိန်.\n### မျိုးဆက် အင်္ဂါရပ်များ\n• **အသံ Selection**: ရွေးချယ်ပါ မှ Informative, ဇာတ်ကြောင်း, Persuasive, Humorous, သို့မဟုတ် အဆင့်-by-အဆင့် ပုံစံ.\n• **စံချိန် အလိုက်အညီ**: အသုံးပြုပါ AI-powered စံချိန် finder သို့မဟုတ် ကိုယ်တိုင် ထည့်သွင်းမှု ပစ်မှတ် စံချိန် (up သို့ 3).\n• **Fact Verification**: ဖွင့်ပါ web grounding သို့ verify facts နှင့် ထည့်သွင်းပါ citations အလိုအလျောက်.\n• **Custom ညွှန်ကြားချက်**: ထည့်ပါ တိကျသော guidance အတွက် ပိုပြီး tailored အကြောင်းအရာ မျိုးဆက်.\n### စနစ် Capabilities\n• **Auto-Detection**: အလိုအလျောက် identifies အရင်းအမြစ် ဘာသာစကား.\n• **Chunked Processing**: အသံ နှင့် ဗီဒီယို ဖိုင် အပေါ် 20MB ဖြစ်ကြသည် intelligently split အတွက် reliable transcription.\n### Important အများဆုံး ကိရိယာများ တွင် sidebar require အရင်းအမြစ်ပစ္စည်း မတိုင်မီ ၎င်းတို့ နိုင်သည် be အသုံးပြုပြီး. ကပ်ပါ သို့မဟုတ် ထုတ်လုပ်ပါ သင်၏ အကြောင်းအရာ here ပထမ, ထို့နောက် ရှာဖွေပါ အခြား အရင်းအမြစ်များ.",
@@ -53,10 +53,10 @@
     "dbq_text": "စာရွက်စာတမ်း-အပေါ်အခြေခံ မေးခွန်း: ကျောင်းသား ခွဲခြမ်းစိတ်ဖြာပါ primary sources, တည်ဆောက် အထောက်အထား-အပေါ်အခြေခံ arguments, နှင့် လေ့ကျင့်ပါ central ကျွမ်းကျင်မှု ၏ social-studies + ELA အကဲဖြတ်ခြင်း. Generates အရင်းအမြစ် စာရွက်စာတမ်း, scaffolded မေးခွန်း, နှင့် အဖြေ keys aligned သို့ သင်၏ စံချိန်.",
     "quiz_mode_title": "Pick မှန်ကန် စစ်ဆေးခြင်း မုဒ်",
     "quiz_mode_text": "ရွေးချယ်ပါ ဘာ ဤ စစ်ဆေးခြင်း ဖြစ်သည် အတွက်. Exit Ticket checks today’s သင်ယူခြင်း. Pre-စစ်ဆေး probes prior knowledge မတိုင်မီ teaching နှင့် surfaces gaps as အယူအဆ ကတ် ဖြင့် one-နှိပ်ပါ \"Explain သို့ အတန်း\" AI broadcast. Formative စစ်ဆေး ဖြစ်သည် မြန် mid-သင်ခန်းစာ pulse. Spaced ပြန်လည်စိစစ် tracks တစ်ခုစီ ကျောင်းသား’s cross-sessions retention ဖြင့် per-အယူအဆ sparkline. တစ်ခုစီ မုဒ် tunes အချက်ပြ, အရာ-အမျိုးအစား mix, နှင့် တိုက်ရိုက် dashboard layout.",
-    "anchor_chart_title": "Anchor ဇယား",
-    "anchor_chart_text": "ထုတ်လုပ်ပါ အတန်း-ready Anchor ဇယား ထို ပြုလုပ်ပါ concepts, ဝေါဟာရ, and procedures stick. A အမြင် reference ကျောင်းသား can return to throughout a unit. ### panel ရွေးချယ်စရာ • **ဇယား Type**: ရွေးချယ်ပါ from Concept, ဝေါဟာရ, Process, နည်းဗျူဟာ, or Comparison ဇယား. • **ပုံစံ**: Hand-drawn marker look, polished ပုံနှိပ်ပါ ပုံစံ, or kid-ဖော်ရွေ comic ပုံစံ. • **အရောင် Palette**: Pick a high-contrast, dyslexia-ဖော်ရွေ, or themed အရောင် scheme. • **Custom ညွှန်ကြားချက်**: သတ်မှတ်ပါ focal concepts, key ဝေါဟာရ, or နည်းဗျူဟာ အဆင့် to highlight. ### ဇယား အစိတ်အပိုင်း • **Title Banner**: Eye-catching topic header. • **အမြင် Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-ထုတ်လုပ်ပြီး icon reinforcing each idea with dual-coded အမြင် cues. • **ဥပမာ & Non-ဥပမာ**: Side-by-side panel for concept clarity. ### အပြန်အလှန် အင်္ဂါရပ်များ • **တည်းဖြတ်ပါ mode**: Tap any element to rewrite စာသား, swap icon, or recolor အပိုင်း. • **ပုံနှိပ်ပါ-Ready**: High-resolution ထုတ်ယူပါ sized for posters or 8.5×11 handouts. • **Project mode**: Fullscreen ကြည့်ပါ for whole-အတန်း ညွှန်ကြားချက်. ### Pro အကြံပြုချက် • ထုတ်လုပ်ပါ a *နည်းဗျူဟာ ဇယား* before a writing unit and a *ဝေါဟာရ ဇယား* before a science unit — keep both on the အတန်း wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent အမြင် anchors ကျောင်းသား can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates ထို teach ကျောင်းသား *how* to take notes, not just *what* to ရေးပါ. Pick the structure ထို matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-ကော်လံ layout with cues, notes, and bottom summary. • **Two-ကော်လံ Notes**: Main idea / အသေးစိတ် organization for အကြောင်းအရာ-heavy reading. • **T-ဇယား**: နှိုင်းယှဉ်ပါ/contrast or pros/cons side-by-side. • **Sketchnotes**: အမြင် note-taking with prompts for icon, arrows, and အရောင်-coding. • **KWL ဇယား**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook အခန်း. ### Generation အင်္ဂါရပ်များ • **Pre-Filled Prompts**: Each template seeded with cues drawn from your အရင်းအမြစ် စာသား. • **မေးခွန်း Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does ဤ connect to…?\"). • **ဝေါဟာရ Slots**: Pre-populated key ဝေါဟာရ ကျောင်းသား should နားထောင်ပါ/ဖတ်ပါ for. • **Custom ညွှန်ကြားချက်**: Target a တိကျသော cognitive task (synthesis, summary, evaluation). ### ပုံနှိပ်ပါ & Digital • **ပုံနှိပ်နိုင်သော PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: ကျောင်းသား type directly into the template for paperless workflows. • **Editable Headings**: ဆရာ tailor ကော်လံ labels and အပိုင်း titles before sharing. ### Pro အကြံပြုချက် • Pair *Cornell Notes* with the **Leveled Reader**: ကျောင်းသား take notes at their reading အဆင့်, then အသုံးပြုပါ the bottom-summary box as a formative-အကဲဖြတ်ခြင်း check. ### UDL Connection • **Action & ဖော်ပြချက်**: ပံ့ပိုးမှု planning and နည်းဗျူဟာ development (Guideline 6.2) by giving learners explicit structures for organizing အချက်အလက်."
+    "anchor_chart_title": "အ‌ဆောက်အအုံ ဇယားများ",
+    "anchor_chart_text": "အယူအဆများ၊ ဝေါဟာရများနှင့် လုပ်ထုံးလုပ်နည်းများကို စွဲမြဲစေသော စာသင်ခန်းအသင့်အ‌ဆောက်အအုံဇယားများကို ဖန်တီးပါ။ ကျောင်းသားများ ထပ်ခါတလဲလဲ ကိုးကားနိုင်သော အဓိကအယူအဆများ၏ မြင်ကွင်းအကျဉ်းချုပ်။",
+    "note_taking_title": "မှတ်စုယူ ပုံစံများ",
+    "note_taking_text": "ကျောင်းသားများကို *ဘာ* ရေးရမည်သာမက *မည်သို့* မှတ်စုယူရမည်ကို သင်ပေးသော ဖွဲ့စည်းထားသော မှတ်စုယူပုံစံများ။ Cornell, ဂရပ်ဖစ်စီစဉ်သူ, နှစ်ထပ်ဝင်ရောက်မှုနှင့် သင်ယူမှုဂျာနယ်များ ပါဝင်သည်။"
   },
   "launch_pad": {
     "subtitle": "ရွေးချယ်ပါ သင်၏ သင်ယူခြင်း pathway",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, ရမှတ် {ရမှတ်}"
+    "tier_score": "Tier {tier}, ရမှတ် {ရမှတ်}",
+    "draggable_item": "draggable အရာ"
   },
   "games": {
     "syntax": {
@@ -3976,47 +3977,47 @@
       "html_aria": "HTML အရင်းအမြစ် code သို့ audit"
     },
     "batch": {
-      "drop_text": "ဆွဲပါ & ချပါ PDFs here",
-      "browse_files": "Browse ဖိုင်",
-      "clear_all": "Clear အားလုံး",
-      "progress_aria": "Batch remediation တိုးတက်မှု",
-      "stop_aria": "ရပ်ပါ batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "အသစ် Batch",
+      "drop_text": "PDF များကို ဤနေရာသို့ ဆွဲချ၍ ပစ်ချပါ",
+      "browse_files": "ဖိုင်များကို ရှာဖွေပါ",
+      "clear_all": "အားလုံးကို ရှင်းပါ",
+      "progress_aria": "အစုံလိုက် ပြုပြင်ခြင်း တိုးတက်မှု",
+      "stop_aria": "အစုံလိုက် ပြုပြင်ခြင်းကို ရပ်ပါ",
+      "avg_improvement": "ပျမ်းမျှ တိုးတက်မှု",
+      "scored_90_plus": "၉၀+ ရမှတ်ရရှိ",
+      "new_batch": "အစုံ အသစ်",
       "resume": {
-        "title": "ယခင် batch interrupted",
-        "summary": "{done}/{total} ဖိုင်(s) completed မတိုင်မီ tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "ဖိုင်:",
+        "title": "ယခင် အစုံကို ဖြတ်တောက်ခဲ့သည်",
+        "summary": "တက်ဘ်ပိတ်မီ {done}/{total} ဖိုင် ပြီးဆုံးခဲ့သည်။",
+        "remaining": "ကျန် {n}။",
+        "files_label": "ဖိုင်များ:",
         "files_more": "+ {n} ပိုပြီး",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} သို့ process"
+        "resume_button": "အစုံကို ပြန်စပါ",
+        "discard_button": "ပစ်ပယ်ပါ",
+        "toast": "အစုံကို ပြန်စနေ · {done} ကို ကက်ရှ်ထား, {remaining} ကို စီမံရန်"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} ၏ {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "စစ်ဆေးသူ {total} ဦးထဲမှ {n} ဦးက အမှတ်ပြုခဲ့",
+      "unanimous_suffix": " (တညီတညွတ်တည်း)",
+      "minority_suffix": " — လူနည်းစုထင်မြင်ချက်, ယုံကြည်မှု နိမ့်"
     },
     "divergence": {
-      "semantic": "Structurally compliant သို့သော် semantically weak — AI flagged အကြောင်းအရာ အရည်အသွေး (alt စာသား, heading meaning, ဖတ်ခြင်း order) ထို axe-core နိုင်သည်'t detect",
-      "structural": "Code-အဆင့် WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "ဖွဲ့စည်းပုံအရ ကိုက်ညီသော်လည်း အဓိပ္ပာယ်အရ အားနည်း — axe-core မရှာဖွေနိုင်သော အကြောင်းအရာအရည်အသွေးကို AI က အမှတ်ပြုခဲ့",
+      "structural": "ကုဒ်အဆင့် WCAG ချိုးဖောက်မှုများ တွေ့ရှိ — axe-core က စက်ဖြင့်စစ်ဆေးနိုင်သော ပျက်ကွက်မှုများ တွေ့ရှိ"
     },
     "tagtree": {
-      "label": "Pre-existing tag ဖွဲ့စည်းပုံ",
-      "tooltip": "ဤ PDF ပါဝင်သည် PDF/UA-ပုံစံ tag tree. Auditors were instructed သို့ credit existing ဖွဲ့စည်းပုံ rather than penalize it as missing."
+      "label": "ရှိပြီးသား တဂ်ဖွဲ့စည်းပုံ",
+      "tooltip": "ဤ PDF တွင် PDF/UA စတိုင် တဂ်သစ်ပင် ပါဝင်သည်။ စစ်ဆေးသူများသည် ရှိပြီးသား ဖွဲ့စည်းပုံကို အသိအမှတ်ပြုရန် ညွှန်ကြားခံရသည်။"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} ၏ {total} မူရင်း issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues မှ မူရင်း audit no ပိုရှည် found တွင် verification audit",
-      "persisted_tip": "Issues မှ မူရင်း audit still present နောက် fix",
-      "introduced_tip": "အသစ် issues ထို did မ exist မတိုင်မီ fix"
+      "heading": "ပြဿနာ ဖြေရှင်းခြင်း",
+      "subheading": "မူရင်း ပြဿနာ {total} ထဲမှ {resolved} ဖြေရှင်းပြီး ({pct}%)",
+      "resolved_label": "ဖြေရှင်းပြီး",
+      "persisted_label": "ဆက်ရှိနေ",
+      "introduced_label": "အသစ် မိတ်ဆက်ထား",
+      "resolved_tip": "မူရင်း စစ်ဆေးရေးမှ ပြဿနာများ အတည်ပြုစစ်ဆေးရေးတွင် မတွေ့တော့ပါ",
+      "persisted_tip": "မူရင်း စစ်ဆေးရေးမှ ပြဿနာများ ပြုပြင်ပြီးနောက် ဆက်ရှိနေ",
+      "introduced_tip": "ပြုပြင်မှုမတိုင်မီ မရှိခဲ့သော ပြဿနာအသစ်များ"
     },
     "report": {
       "download_title": "ဒေါင်းလုဒ်လုပ်ပါ audit အစီရင်ခံစာ",
@@ -11614,7 +11615,14 @@
     "click_to_insert": "နှိပ်ပါ to insert ဤ transition စကားလုံး",
     "edit_illustration": "တည်းဖြတ်ပါ ပုံပြင် with AI",
     "regenerate_illustration": "Regenerate ပုံပြင်",
-    "close": "ပိတ်ပါ"
+    "close": "ပိတ်ပါ",
+    "cancel": "ဖျက်သိမ်းပါ",
+    "add": "ထည့်ပါ",
+    "done": "Done",
+    "edit": "တည်းဖြတ်ပါ",
+    "reset": "ပြန်လည်သတ်မှတ်ပါ",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "မြင်ကွင်း Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "ပို့ပါ ဤ explainer to every ကျောင်းသား's screen now",
     "one_click_remove_text": "One-နှိပ်ပါ: ဖယ်ရှားပါ စာသား from ဤ ပုံ",
     "rewrite_distractor": "Rewrite ဤ distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "ပုံ too large (max 5MB). ကျေးဇူးပြု၍ အသုံးပြုပါ a smaller ပုံ.",
+    "need_card_front_back": "ထည့်ပါ at least one ကတ် with both a front and back.",
+    "type_word_first": "Type a စကားလုံး or letter sequence ပထမ.",
+    "write_something_first": "ရေးပါ something ပထမ.",
+    "pick_decoration_first": "Pick a decoration to link to ပထမ.",
+    "write_association": "ရေးပါ a တို association — what does ဤ remind you of?",
+    "no_crop_data": "မဟုတ်ပါ crop ဒေတာ ရရှိနိုင် for ဤ ပုံ.",
+    "invalid_crop_data": "Invalid crop ဒေတာ.",
+    "no_full_page_image": "Full page ပုံ not ရရှိနိုင်. Re-လုပ်ဆောင်ပါ remediation to ဖွင့်ပါ cropping.",
+    "selection_too_small": "Selection too small. ဆွဲပါ a larger ဧရိယာ.",
+    "encryption_unavailable": "Encryption not ရရှိနိုင် in ဤ browser. You may need a ပိုပြီး modern browser to သိမ်းပါ submissions.",
+    "voice_unsupported_browser": "အသံ recording is not supported in ဤ browser.",
+    "voice_unsupported_device": "အသံ recording is not supported on ဤ device.",
+    "mic_denied": "Microphone ဝင်ရောက်ခွင့် was denied. Allow microphone ဝင်ရောက်ခွင့် in your browser ဆက်တင်များ to record အသံ notes.",
+    "voice_too_long": "အသံ note too ရှည် to သိမ်းပါ (over 500KB). ကြိုးစားပါ a ပိုတို clip.",
+    "voice_empty": "အသံ recording was empty.",
+    "no_annotations_to_save": "မဟုတ်ပါ annotations to သိမ်းပါ yet — ထည့်ပါ a note or highlight ပထမ.",
+    "could_not_save_annotations": "Could not သိမ်းပါ annotations. ကြိုးစားပါ a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — ကပ်ပါ it into a အသစ် browser tab.",
+    "regenerate_function_missing": "အမှား: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. ကျေးဇူးပြု၍ ပြန်လည်ဆန်းသစ်ပါ and ကြိုးစားပါ again.",
+    "image_too_large_10mb": "ပုံ too large (max 10MB). ကျေးဇူးပြု၍ အသုံးပြုပါ a smaller ပုံ."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing ကတ် with the imported ones?",
+    "delete_voice_note": "ဖျက်ပါ ဤ အသံ note?",
+    "remove_companion": "ဖယ်ရှားပါ your companion?",
+    "delete_goal": "ဖျက်ပါ ဤ ပန်းတိုင်?",
+    "delete_atlas": "ဖျက်ပါ ဤ atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "ဖျက်ပါ ဤ realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "ဖျက်ပါ ဤ entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from ဤ backup? ဤ replaces ALL current ဒေတာ — decorations, journal, tokens, stories, ဆက်တင်များ. Cannot be undone.",
+    "reset_skill_progress": "ပြန်လည်သတ်မှတ်ပါ all ကျွမ်းကျင်မှု တိုးတက်မှု? ဤ cannot be undone.",
+    "remove_my_annotations": "ဖယ်ရှားပါ all your notes and highlights? ဆရာ annotations will stay.",
+    "exit_calibration_full": "Exit calibration mode? တိုးတက်မှု will be discarded.",
+    "exit_calibration_short": "Exit calibration? တိုးတက်မှု discarded.",
+    "discard_session_irreversible": "Discard ဤ in-တိုးတက်မှု sessions? အရာ ရလဒ် will be lost. ဤ cannot be undone.",
+    "delete_template": "ဖျက်ပါ ဤ template? ဤ cannot be undone.",
+    "delete_session": "ဖျက်ပါ ဤ sessions? ဤ cannot be undone.",
+    "discard_session": "Discard ဤ sessions? တိုးတက်မှု will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? တိုးတက်မှု will be lost.",
+    "end_probe_saved": "End probe early? တိုးတက်မှု will be သိမ်းပြီး.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved ဆဲလ် will be lost.",
+    "change_granularity": "Changing granularity will ပြန်လည်သတ်မှတ်ပါ your rejections. ဆက်လုပ်ပါ?",
+    "clear_pdf_progress": "Clear သိမ်းပြီး တိုးတက်မှု for ဤ PDF? ဤ cannot be undone.",
+    "switch_sentence_frame": "ပြောင်းပါ ဝါကျ frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

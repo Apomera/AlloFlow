@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813206056",
+  "_version": "20260526T1779815512158",
   "tour": {
     "input_panel_title": "Paneli yo Kwinjiza",
     "input_panel_text": "Tangirira hano urugendo rwo gukora isomo. Iyi Paneli yo Kwinjiza ni urufatiro rw'umutungo wose ukozwe. Ikora nk'umutwe nyamukuru aho usobanura ibikubiyemo, context, na parameters.\n### Amahitamo yo Kwinjiza\n• **Gushyira Inyandiko**: Manika ibikubiyemo direct biva mu nkuru iyo ari yo yose, inkuru, cyangwa gahunda y'isomo.\n• **Kohereza Idosiye**: Ohereza PDF, amashusho, idosiye z'inyandiko, audio (MP3/WAV), cyangwa video ku gukuramo byikora.\n• **Kuzana URL**: Manika URL y'inkuru iyo ari yo yose kugira ngo ukuremo ibikubiyemo byayo byikora.\n• **AI Kurikirana Umutungo**: Sobanura ingingo maze AI ibone umutungo wo kuri interineti ukwiye urwego rw'ishuri.\n• **Kora Inyandiko y'Inkomoko**: Kora ibikubiyemo by'umwimerere mu kuvuga ingingo, ijwi, urwego rw'ishuri, n'amahame ya intego.\n### Ibiranga byo Gukora\n• **Guhitamo Ijwi**: Hitamo mu mvugo Informative, Narrative, Persuasive, Humorous, cyangwa Step-by-Step.\n• **Guhuza n'Amahame**: Koresha standard finder ya AI cyangwa winjize amahame mu ntoki (kugeza ku 3).\n• **Kugenzura Ukuri**: Bishyireho web grounding ku gugenzura ibyukuri no gushyiramo citations byikora.\n• **Amabwiriza Yihariye**: Ongeraho ubuyobozi bwihariye ku gukora ibikubiyemo bihujwe.\n### Ubushobozi bwa Sisitemu\n• **Kumenya Byikora**: Imenya ururimi rw'inkomoko byikora.\n• **Gutunganya Mu Bice**: Idosiye z'audio na video zirenze 20MB zigabanyirizwa mu buryo bw'ubwenge ku transcription yizewe.\n### Ay'Ingenzi\nIbikoresho byinshi muri sidebar bisaba inkomoko mbere yo gukoreshwa. Manika cyangwa kora ibikubiyemo byawe hano mbere, hanyuma ushakishe undi mutungo.",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, amanota {amanota}"
+    "tier_score": "Tier {tier}, amanota {amanota}",
+    "draggable_item": "draggable ikintu"
   },
   "games": {
     "syntax": {
@@ -11614,7 +11615,14 @@
     "click_to_insert": "Kanda to insert iki transition ijambo",
     "edit_illustration": "Hindura ifoto with AI",
     "regenerate_illustration": "Regenerate ifoto",
-    "close": "Funga"
+    "close": "Funga",
+    "cancel": "Hagarika",
+    "add": "Ongeraho",
+    "done": "Done",
+    "edit": "Hindura",
+    "reset": "Subiramo",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "igice Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "Ohereza iki explainer to every umunyeshuri's screen now",
     "one_click_remove_text": "One-kanda: kuraho inyandiko from iki ifoto",
     "rewrite_distractor": "Rewrite iki distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "ifoto too large (max 5MB). nyamuneka koresha a smaller ifoto.",
+    "need_card_front_back": "Ongeraho at least one ikarita with both a front and back.",
+    "type_word_first": "Type a ijambo or letter sequence cya mbere.",
+    "write_something_first": "Andika something cya mbere.",
+    "pick_decoration_first": "Pick a decoration to link to cya mbere.",
+    "write_association": "Andika a bigufi association — what does iki remind you of?",
+    "no_crop_data": "Oya crop amakuru kirahari for iki ifoto.",
+    "invalid_crop_data": "Invalid crop amakuru.",
+    "no_full_page_image": "Full page ifoto not kirahari. Re-tangiza remediation to bashisha cropping.",
+    "selection_too_small": "Selection too small. Kurura a larger ubuso.",
+    "encryption_unavailable": "Encryption not kirahari in iki browser. You may need a byinshi modern browser to bika submissions.",
+    "voice_unsupported_browser": "ijwi recording is not supported in iki browser.",
+    "voice_unsupported_device": "ijwi recording is not supported on iki device.",
+    "mic_denied": "Microphone injira was denied. Allow microphone injira in your browser igenamiterere to record ijwi notes.",
+    "voice_too_long": "ijwi note too birebire to bika (over 500KB). Gerageza a shorter clip.",
+    "voice_empty": "ijwi recording was empty.",
+    "no_annotations_to_save": "Oya annotations to bika yet — ongeraho a note or highlight cya mbere.",
+    "could_not_save_annotations": "Could not bika annotations. Gerageza a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — komeza it into a gishya browser tab.",
+    "regenerate_function_missing": "ikosa: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. nyamuneka ongera ukore and gerageza again.",
+    "image_too_large_10mb": "ifoto too large (max 10MB). nyamuneka koresha a smaller ifoto."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing ikarita with the imported ones?",
+    "delete_voice_note": "Siba iki ijwi note?",
+    "remove_companion": "Kuraho your companion?",
+    "delete_goal": "Siba iki intego?",
+    "delete_atlas": "Siba iki atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Siba iki realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Siba iki entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from iki backup? Iki replaces ALL current amakuru — decorations, journal, tokens, stories, igenamiterere. Cannot be undone.",
+    "reset_skill_progress": "Subiramo all ubumenyi ihinduka? Iki cannot be undone.",
+    "remove_my_annotations": "Kuraho all your notes and highlights? umwarimu annotations will stay.",
+    "exit_calibration_full": "Exit calibration uburyo? ihinduka will be discarded.",
+    "exit_calibration_short": "Exit calibration? ihinduka discarded.",
+    "discard_session_irreversible": "Discard iki in-ihinduka igihe? ikintu ibyavuye will be lost. Iki cannot be undone.",
+    "delete_template": "Siba iki template? Iki cannot be undone.",
+    "delete_session": "Siba iki igihe? Iki cannot be undone.",
+    "discard_session": "Discard iki igihe? ihinduka will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? ihinduka will be lost.",
+    "end_probe_saved": "End probe early? ihinduka will be byabitswe.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved akagari will be lost.",
+    "change_granularity": "Changing granularity will subiramo your rejections. Komeza?",
+    "clear_pdf_progress": "Clear byabitswe ihinduka for iki PDF? Iki cannot be undone.",
+    "switch_sentence_frame": "Hindura interuro frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

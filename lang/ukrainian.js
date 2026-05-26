@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813215304",
+  "_version": "20260526T1779815518622",
   "tour": {
     "input_panel_title": "ввід панель",
     "input_panel_text": "Begin ваш уроки creation journey here. Це ввід панель є foundation для всі створено ресурси. It serves as central hub де ви define вміст, контекст, та parameters.\n### ввід опції\n• **текст Вставити**: Вставити вміст directly від будь-який article, історія, або уроки план.\n• **файли Завантажити**: Завантажити PDFs, зображення, текст файли, аудіо (MP3/WAV), або відео для автоматичний extraction.\n• **URL Отримати**: Вставити будь-який article URL до автоматично витягти та імпортувати its вміст.\n• **AI ресурси Пошук**: Describe тема та let AI знайти клас-відповідний online ресурси для ви.\n• **Створити джерело текст**: Створити оригінал вміст by specifying тема, тон, рівень класу, та ціль стандарти.\n### Генерація функції\n• **тон Selection**: Вибрати від Informative, Розповідь, Persuasive, Humorous, або кроки-by-кроки стилі.\n• **стандарти Вирівнювання**: Використати AI-powered стандарти finder або вручну ввід ціль стандарти (up до 3).\n• **Fact Verification**: Увімкнути web grounding до verify facts та включити citations автоматично.\n• **Custom інструкції**: Додати специфічний guidance для більше tailored вміст генерація.\n### системи Capabilities\n• **Авто-Detection**: автоматично identifies джерело мови.\n• **Chunked Processing**: аудіо та відео файли над 20MB є intelligently split для reliable transcription.\n### Important Найбільше інструменти в sidebar require вихідний матеріал перед вони може be використано. Вставити або створити ваш вміст here перший, потім дослідити інший ресурси.",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, бали {бали}"
+    "tier_score": "Tier {tier}, бали {бали}",
+    "draggable_item": "draggable елементи"
   },
   "games": {
     "syntax": {
@@ -11614,7 +11615,14 @@
     "click_to_insert": "Натиснути to insert це transition слова",
     "edit_illustration": "Редагувати ілюстрації with AI",
     "regenerate_illustration": "Regenerate ілюстрації",
-    "close": "Закрити"
+    "close": "Закрити",
+    "cancel": "Скасувати",
+    "add": "Додати",
+    "done": "Done",
+    "edit": "Редагувати",
+    "reset": "Скинути",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "сцени Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "Надіслати це explainer to every учні's screen now",
     "one_click_remove_text": "One-натиснути: видалити текст from це зображення",
     "rewrite_distractor": "Rewrite це distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "зображення too large (max 5MB). будь ласка використати a smaller зображення.",
+    "need_card_front_back": "Додати at least one картки with both a front and back.",
+    "type_word_first": "Type a слова or letter sequence перший.",
+    "write_something_first": "Писати something перший.",
+    "pick_decoration_first": "Pick a decoration to link to перший.",
+    "write_association": "Писати a короткий association — what does це remind you of?",
+    "no_crop_data": "No crop дані доступний for це зображення.",
+    "invalid_crop_data": "Invalid crop дані.",
+    "no_full_page_image": "Full page зображення not доступний. Re-запустити remediation to увімкнути cropping.",
+    "selection_too_small": "Selection too small. Перетягнути a larger площа.",
+    "encryption_unavailable": "Encryption not доступний in це browser. You may need a більше modern browser to зберегти submissions.",
+    "voice_unsupported_browser": "голос recording is not supported in це browser.",
+    "voice_unsupported_device": "голос recording is not supported on це device.",
+    "mic_denied": "Microphone доступ was denied. Allow microphone доступ in your browser налаштування to record голос notes.",
+    "voice_too_long": "голос note too довгий to зберегти (over 500KB). Спробувати a коротший clip.",
+    "voice_empty": "голос recording was empty.",
+    "no_annotations_to_save": "No annotations to зберегти yet — додати a note or highlight перший.",
+    "could_not_save_annotations": "Could not зберегти annotations. Спробувати a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — вставити it into a новий browser tab.",
+    "regenerate_function_missing": "помилки: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. будь ласка оновити and спробувати again.",
+    "image_too_large_10mb": "зображення too large (max 10MB). будь ласка використати a smaller зображення."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing картки with the imported ones?",
+    "delete_voice_note": "Видалити це голос note?",
+    "remove_companion": "Видалити your companion?",
+    "delete_goal": "Видалити це цілі?",
+    "delete_atlas": "Видалити це atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Видалити це realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Видалити це entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from це backup? Це replaces ALL current дані — decorations, journal, tokens, stories, налаштування. Cannot be undone.",
+    "reset_skill_progress": "Скинути all навички прогрес? Це cannot be undone.",
+    "remove_my_annotations": "Видалити all your notes and highlights? вчителі annotations will stay.",
+    "exit_calibration_full": "Exit calibration режим? прогрес will be discarded.",
+    "exit_calibration_short": "Exit calibration? прогрес discarded.",
+    "discard_session_irreversible": "Discard це in-прогрес сесії? елементи результати will be lost. Це cannot be undone.",
+    "delete_template": "Видалити це template? Це cannot be undone.",
+    "delete_session": "Видалити це сесії? Це cannot be undone.",
+    "discard_session": "Discard це сесії? прогрес will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? прогрес will be lost.",
+    "end_probe_saved": "End probe early? прогрес will be збережено.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved клітинки will be lost.",
+    "change_granularity": "Changing granularity will скинути your rejections. Продовжити?",
+    "clear_pdf_progress": "Clear збережено прогрес for це PDF? Це cannot be undone.",
+    "switch_sentence_frame": "Перемкнути речення frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

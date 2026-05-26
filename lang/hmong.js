@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813202966",
+  "_version": "20260526T1779815509633",
   "tour": {
     "input_panel_title": "kev nkag phab ntsa",
     "input_panel_text": "Begin koj zaj lus qhia creation journey here. Qhov no kev nkag phab ntsa yog foundation rau tag nrho tau tsim kev pab cuam. It serves as central hub qhov twg koj define cov ntsiab, context, thiab parameters.\n### kev nkag kev xaiv\n• **cov ntawv Muab tso**: Muab tso cov ntsiab directly los ntawm any article, dab neeg, los yog zaj lus qhia kev npaj.\n• **cov ntaub ntawv Xa mus**: Xa mus PDFs, duab, cov ntawv cov ntaub ntawv, suab (MP3/WAV), los yog video rau ua nws tus kheej extraction.\n• **URL Nqa**: Muab tso any article URL mus automatically rho tawm thiab coj los its cov ntsiab.\n• **AI kev pab cuam Nrhiav**: Describe cov ncauj lus thiab let AI find qib-appropriate online kev pab cuam rau koj.\n• **Tsim qhov chaw cov ntawv**: Tsim thawj cov ntsiab by specifying cov ncauj lus, suab, theem qib kawm, thiab lub hom phiaj tus qauv.\n### Tiam cov yam ntxwv\n• **suab Selection**: Xaiv los ntawm Informative, Zaj dab neeg, Persuasive, Humorous, los yog cov theem-by-cov theem hom.\n• **tus qauv Kev sib raug**: Siv AI-powered tus qauv finder los yog manually kev nkag lub hom phiaj tus qauv (up mus 3).\n• **Fact Verification**: Qhib web grounding mus verify facts thiab suav nrog citations automatically.\n• **Custom cov lus qhia**: Ntxiv tshwj xeeb guidance rau ntau tailored cov ntsiab tiam.\n### system Capabilities\n• **Auto-Detection**: Automatically identifies qhov chaw hom lus.\n• **Chunked Processing**: suab thiab video cov ntaub ntawv tshaj 20MB yog intelligently split rau reliable transcription.\n### Important Most cov cuab yeej hauv sidebar require qhov chaw material before they tuaj yeem be tau siv. Muab tso los yog tsim koj cov ntsiab here thawj, then nrhiav xyuas lwm kev pab cuam.",
@@ -53,10 +53,10 @@
     "dbq_text": "cov ntawv-Based lo lus nug: tub ntxhais kawm tshuaj xyuas primary sources, tsim pov thawj-based arguments, thiab xyaum central kev txawj ntawm social-studies + ELA kev ntsuam xyuas. Generates qhov chaw cov ntawv, scaffolded lo lus nug, thiab lo lus teb keys aligned mus koj tus qauv.",
     "quiz_mode_title": "Pick sab xis kev sim hom",
     "quiz_mode_text": "Xaiv dab tsi qhov no kev sim yog rau. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge before teaching thiab surfaces gaps as lub tswv yim daim npav nrog one-nyem \"Explain mus chav kawm\" AI broadcast. Formative Check yog ceev mid-zaj lus qhia pulse. Spaced Review tracks txhua tub ntxhais kawm’s cross-kev sib ntsib retention nrog per-lub tswv yim sparkline. txhua hom tunes cov lus qhia, yam-type mix, thiab ncaj qha dashboard layout.",
-    "anchor_chart_title": "Anchor chart",
-    "anchor_chart_text": "Tsim chav kawm-ready Anchor chart qhov ntawd ua concepts, cov lus, and procedures stick. A kev pom reference tub ntxhais kawm can return to throughout a unit. ### phab ntsa kev xaiv • **chart Type**: Xaiv from Concept, cov lus, Process, tswv yim, or Comparison chart. • **hom**: Hand-drawn marker look, polished luam tawm hom, or kid-friendly comic hom. • **xim Palette**: Pick a high-contrast, dyslexia-friendly, or themed xim scheme. • **Custom cov lus qhia**: Hais kom meej focal concepts, key cov lus, or tswv yim cov theem to highlight. ### chart feem • **Title Banner**: Eye-catching topic header. • **kev pom Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-tau tsim lub cim reinforcing each idea with dual-coded kev pom cues. • **piv txwv & Non-piv txwv**: Side-by-side phab ntsa for concept clarity. ### Interactive cov yam ntxwv • **Kho hom**: Tap any element to rewrite cov ntawv, swap lub cim, or recolor tshooj. • **Luam tawm-Ready**: High-resolution xa tawm sized for posters or 8.5×11 handouts. • **Project hom**: Fullscreen saib for whole-chav kawm cov lus qhia. ### Pro cov lus qhia • Tsim a *tswv yim chart* before a writing unit and a *cov lus chart* before a science unit — keep both on the chav kawm wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent kev pom anchors tub ntxhais kawm can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates qhov ntawd teach tub ntxhais kawm *how* to take notes, not just *what* to sau. Pick the structure qhov ntawd matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-kem layout with cues, notes, and bottom summary. • **Two-kem Notes**: Main idea / kev meej organization for cov ntsiab-heavy reading. • **T-chart**: Sib piv/contrast or pros/cons side-by-side. • **Sketchnotes**: kev pom note-taking with prompts for lub cim, arrows, and xim-coding. • **KWL chart**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook tshooj. ### Generation cov yam ntxwv • **Pre-Filled Prompts**: Each template seeded with cues drawn from your qhov chaw cov ntawv. • **lo lus nug Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does qhov no connect to…?\"). • **cov lus Slots**: Pre-populated key lo lus tub ntxhais kawm should mloog/nyeem for. • **Custom cov lus qhia**: Target a tshwj xeeb cognitive task (synthesis, summary, evaluation). ### Luam tawm & Digital • **PDF luam tau**: Clean handout layout with generous writing space. • **Digital Fillable**: tub ntxhais kawm type directly into the template for paperless workflows. • **Editable Headings**: xib fwb tailor kem labels and tshooj titles before sharing. ### Pro cov lus qhia • Pair *Cornell Notes* with the **Leveled Reader**: tub ntxhais kawm take notes at their reading theem, then siv the bottom-summary box as a formative-kev ntsuam xyuas check. ### UDL Connection • **Action & Expression**: kev txhawb planning and tswv yim development (Guideline 6.2) by giving learners explicit structures for organizing cov ncauj lus."
+    "anchor_chart_title": "Daim duab Anchor",
+    "anchor_chart_text": "Tsim cov daim duab Anchor uas npaj rau hoob kawm ntawv uas ua kom cov ntsiab lus, cov lus, thiab cov txheej txheem kov.",
+    "note_taking_title": "Cov qauv sau ntawv",
+    "note_taking_text": "Cov qauv sau ntawv uas qhia cov tub ntxhais kawm *yuav ua li cas* sau ntawv, tsis yog tsuas yog *yam dab tsi* yuav sau."
   },
   "launch_pad": {
     "subtitle": "Xaiv koj learning pathway",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, qhab nia {qhab nia}"
+    "tier_score": "Tier {tier}, qhab nia {qhab nia}",
+    "draggable_item": "draggable yam"
   },
   "games": {
     "syntax": {
@@ -3976,47 +3977,47 @@
       "html_aria": "HTML qhov chaw code mus audit"
     },
     "batch": {
-      "drop_text": "Rub & tso PDFs here",
-      "browse_files": "Browse cov ntaub ntawv",
-      "clear_all": "Clear tag nrho",
-      "progress_aria": "Batch remediation kev nce qib",
-      "stop_aria": "Nres batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "tshiab Batch",
+      "drop_text": "Cab & tso PDF rau ntawm no",
+      "browse_files": "Saib cov ntaub ntawv",
+      "clear_all": "Tshem tag nrho",
+      "progress_aria": "Kev kho hluav qov thev",
+      "stop_aria": "Tshem tawm kev kho hluav qov",
+      "avg_improvement": "Kev txhim kho nruab nrab",
+      "scored_90_plus": "Tau 90+",
+      "new_batch": "Pawg tshiab",
       "resume": {
-        "title": "dhau los batch interrupted",
-        "summary": "{done}/{total} cov ntaub ntawv(s) completed before tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "cov ntaub ntawv:",
-        "files_more": "+ {n} ntau",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} mus process"
+        "title": "Pawg yav dhau cuam tshuam",
+        "summary": "Tab kaw ua ntej, {done}/{total} cov ntaub ntawv tiav lawm.",
+        "remaining": "{n} tseem tshuav.",
+        "files_label": "Cov ntaub ntawv:",
+        "files_more": "+ {n} ntxiv",
+        "resume_button": "Pib pawg dua",
+        "discard_button": "Tso tseg",
+        "toast": "Pib pawg dua · {done} cached, {remaining} ua haujlwm"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} ntawm {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Cim los ntawm {n} ntawm {total} tus tshuaj xyuas",
+      "unanimous_suffix": " (sib pom zoo)",
+      "minority_suffix": " — kev xav me, kev ntseeg tsawg"
     },
     "divergence": {
-      "semantic": "Structurally compliant tab sis semantically weak — AI flagged cov ntsiab quality (alt cov ntawv, heading meaning, reading order) qhov ntawd axe-core tuaj yeem't detect",
-      "structural": "Code-theem WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Raws li qauv tab sis tsis muaj zog hauv kev xav — AI tau cim qhov zoo ntawm cov ntsiab lus uas axe-core tsis tuaj yeem nrhiav tau",
+      "structural": "WCAG kev txhaum theem code pom — axe-core pom kev tsis ua haujlwm uas tshuab tuaj yeem tshuaj xyuas"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "Qhov no PDF muaj PDF/UA-hom tag tree. Auditors were instructed mus credit existing structure rather than penalize it as missing."
+      "label": "Cov qauv tag muaj tsim ntej",
+      "tooltip": "PDF no muaj tsob ntoo tag style PDF/UA. Cov neeg tshuaj xyuas raug qhia kom paub cov qauv uas muaj."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} ntawm {total} thawj issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues los ntawm thawj audit no longer found hauv verification audit",
-      "persisted_tip": "Issues los ntawm thawj audit still present after fix",
-      "introduced_tip": "tshiab issues qhov ntawd did tsis exist before fix"
+      "heading": "Kev daws teebmeem",
+      "subheading": "Daws tau {resolved} ntawm {total} teebmeem qub ({pct}%)",
+      "resolved_label": "Daws tau",
+      "persisted_label": "Tseem muaj",
+      "introduced_label": "Tshiab tshwm sim",
+      "resolved_tip": "Cov teebmeem los ntawm qhov kev tshuaj xyuas thawj nyob hauv qhov kev tshuaj xyuas yog tsis tshawb tau",
+      "persisted_tip": "Cov teebmeem los ntawm qhov kev tshuaj xyuas thawj tseem muaj tom qab kev kho",
+      "introduced_tip": "Cov teebmeem tshiab uas tsis muaj ua ntej kev kho"
     },
     "report": {
       "download_title": "Rub los audit tsab ntawv ceeb toom",
@@ -11614,7 +11615,14 @@
     "click_to_insert": "Nyem to insert qhov no transition lo lus",
     "edit_illustration": "Kho illustration with AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Kaw"
+    "close": "Kaw",
+    "cancel": "Tso tseg",
+    "add": "Ntxiv",
+    "done": "Done",
+    "edit": "Kho",
+    "reset": "Pib dua",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "qhov chaw Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "Xa qhov no explainer to every tub ntxhais kawm's screen now",
     "one_click_remove_text": "One-nyem: tshem cov ntawv from qhov no duab",
     "rewrite_distractor": "Rewrite qhov no distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "duab too large (max 5MB). thov siv a smaller duab.",
+    "need_card_front_back": "Ntxiv at least one daim npav with both a front and back.",
+    "type_word_first": "Type a lo lus or letter sequence thawj.",
+    "write_something_first": "Sau something thawj.",
+    "pick_decoration_first": "Pick a decoration to link to thawj.",
+    "write_association": "Sau a luv association — what does qhov no remind you of?",
+    "no_crop_data": "Tsis yog crop cov ncauj lus muaj for qhov no duab.",
+    "invalid_crop_data": "Invalid crop cov ncauj lus.",
+    "no_full_page_image": "Full page duab not muaj. Re-khiav remediation to qhib cropping.",
+    "selection_too_small": "Selection too small. Rub a larger thaj av.",
+    "encryption_unavailable": "Encryption not muaj in qhov no browser. You may need a ntau modern browser to khaws submissions.",
+    "voice_unsupported_browser": "suab recording is not supported in qhov no browser.",
+    "voice_unsupported_device": "suab recording is not supported on qhov no device.",
+    "mic_denied": "Microphone kev nkag was denied. Allow microphone kev nkag in your browser kev teeb tsa to record suab notes.",
+    "voice_too_long": "suab note too ntev to khaws (over 500KB). Sim a shorter clip.",
+    "voice_empty": "suab recording was empty.",
+    "no_annotations_to_save": "Tsis yog annotations to khaws yet — ntxiv a note or highlight thawj.",
+    "could_not_save_annotations": "Could not khaws annotations. Sim a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — muab tso it into a tshiab browser tab.",
+    "regenerate_function_missing": "kev yuam kev: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. thov tshiab dua and sim again.",
+    "image_too_large_10mb": "duab too large (max 10MB). thov siv a smaller duab."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing daim npav with the imported ones?",
+    "delete_voice_note": "Lwv qhov no suab note?",
+    "remove_companion": "Tshem your companion?",
+    "delete_goal": "Lwv qhov no lub hom phiaj?",
+    "delete_atlas": "Lwv qhov no atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Lwv qhov no realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Lwv qhov no entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from qhov no backup? Qhov no replaces ALL current cov ncauj lus — decorations, journal, tokens, stories, kev teeb tsa. Cannot be undone.",
+    "reset_skill_progress": "Pib dua all kev txawj kev nce qib? Qhov no cannot be undone.",
+    "remove_my_annotations": "Tshem all your notes and highlights? xib fwb annotations will stay.",
+    "exit_calibration_full": "Exit calibration hom? kev nce qib will be discarded.",
+    "exit_calibration_short": "Exit calibration? kev nce qib discarded.",
+    "discard_session_irreversible": "Discard qhov no in-kev nce qib kev sib ntsib? yam cov txiaj ntsig will be lost. Qhov no cannot be undone.",
+    "delete_template": "Lwv qhov no template? Qhov no cannot be undone.",
+    "delete_session": "Lwv qhov no kev sib ntsib? Qhov no cannot be undone.",
+    "discard_session": "Discard qhov no kev sib ntsib? kev nce qib will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? kev nce qib will be lost.",
+    "end_probe_saved": "End probe early? kev nce qib will be tau khaws.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved lub thawv will be lost.",
+    "change_granularity": "Changing granularity will pib dua your rejections. Mus ntxiv?",
+    "clear_pdf_progress": "Clear tau khaws kev nce qib for qhov no PDF? Qhov no cannot be undone.",
+    "switch_sentence_frame": "Hloov kab lus frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

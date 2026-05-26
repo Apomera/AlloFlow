@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813203336",
+  "_version": "20260526T1779815509942",
   "tour": {
     "input_panel_title": "ntinye mbara",
     "input_panel_text": "Begin gị nkuzi creation journey here. nke otu ntinye mbara bụ foundation maka niile mepụtara ihe enyemaka. It serves as central hub ebe gị define ọdịnaya, context, na parameters.\n### ntinye nhọrọ\n• **ederede Mado**: Mado ọdịnaya directly site na any article, akụkọ, maọbụ nkuzi plan.\n• **faịlụ Bulite**: Bulite PDFs, foto, ederede faịlụ, olu (MP3/WAV), maọbụ vidiyo maka akpaaka extraction.\n• **URL Weta**: Mado any article URL na automatically wepụta na bubata its ọdịnaya.\n• **AI ihe enyemaka Chọọ**: Describe otu topic na let AI find klas-appropriate online ihe enyemaka maka gị.\n• **Mepụta ebe sitere ederede**: Kee original ọdịnaya by specifying topic, ụda, ọkwa klas, na target ọkwa.\n### Generation atụmatụ\n• **ụda Selection**: Họrọ site na Informative, Narrative, Persuasive, Humorous, maọbụ nzọụkwụ-by-nzọụkwụ ụdị.\n• **ọkwa Alignment**: Jiri AI-powered ọkwa finder maọbụ manually ntinye target ọkwa (up na 3).\n• **Fact Verification**: Kwado web grounding na verify facts na gụnye citations automatically.\n• **Custom ntuziaka**: Tinye kpọmkwem guidance maka karịotu tailored ọdịnaya generation.\n### usoro Capabilities\n• **Auto-Detection**: Automatically identifies ebe sitere asụsụ.\n• **Chunked Processing**: olu na vidiyo faịlụ over 20MB bụ intelligently split maka reliable transcription.\n### Important Most ngwa na sidebar require ebe sitere material before they nwere ike be ejiri. Mado maọbụ mepụta gị ọdịnaya here mbụ, then nyochaa other ihe enyemaka.",
@@ -53,10 +53,10 @@
     "dbq_text": "akwụkwọ-Based ajụjụ: nwa akwụkwọ nyochaa primary sources, build evidence-based arguments, na omume central nkà nke social-studies + ELA nyocha. Generates ebe sitere akwụkwọ, scaffolded ajụjụ, na azịza keys aligned na gị ọkwa.",
     "quiz_mode_title": "Pick right ajụjụ ọnụ ọnọdụ",
     "quiz_mode_text": "Họrọ gịnị nke otu ajụjụ ọnụ bụ maka. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge before teaching na surfaces gaps as concept kaadị na otu one-pịotu \"Explain na klas\" AI broadcast. Formative Check bụ otu ngwa ngwa mid-nkuzi pulse. Spaced Review tracks nke ọ bụla nwa akwụkwọ’s cross-nnọkọ retention na otu per-concept sparkline. nke ọ bụla ọnọdụ tunes prompts, ihe-type mix, na live dashboard layout.",
-    "anchor_chart_title": "Anchor eserese",
-    "anchor_chart_text": "Mepụta klas-ready Anchor eserese nke ahụ mee concepts, okwu, na procedures stick. otu ihu reference nwa akwụkwọ nwere ike return na throughout otu unit. ### mbara nhọrọ • **eserese Type**: Họrọ site na Concept, okwu, Process, atụmatụ, maọbụ Comparison eserese. • **ụdị**: Hand-drawn marker look, polished bipụta ụdị, maọbụ kid-enyi comic ụdị. • **agwa Palette**: Pick otu high-contrast, dyslexia-enyi, maọbụ themed agwa scheme. • **Custom ntuziaka**: Kọwapụta focal concepts, key okwu, maọbụ atụmatụ nzọụkwụ na highlight. ### eserese akụkụ • **Title Banner**: Eye-catching topic header. • **ihu Hierarchy**: Headings, bullets, na callouts organized maka skim-reading. • **Iconography**: Auto-mepụtara akara ngosi reinforcing nke ọ bụla idea na dual-coded ihu cues. • **ọmụmaatụ & Non-ọmụmaatụ**: Side-by-side mbara maka concept clarity. ### mmekọrịta atụmatụ • **Dezie ọnọdụ**: Tap any element na rewrite ederede, swap akara ngosi, maọbụ recolor nkebi. • **Bipụta-Ready**: High-resolution bupụ sized maka posters maọbụ 8.5×11 handouts. • **Project ọnọdụ**: Fullscreen lee maka whole-klas ntuziaka. ### Pro ndụmọdụ • Mepụta otu *atụmatụ eserese* before otu writing unit na otu *okwu eserese* before otu science unit — keep both na klas wall maka whole arc. ### UDL Connection • **Representation**: Activate maọbụ supply background knowledge (Guideline 3.1) na persistent ihu anchors nwa akwụkwọ nwere ike revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates nke ahụ teach nwa akwụkwọ *kedu* na take notes, anaghị just *gịnị* na dee. Pick structure nke ahụ matches cognitive task. ### Template Types • **Cornell Notes**: Classic two-kolomn layout na cues, notes, na bottom summary. • **Two-kolomn Notes**: Main idea / nkọwa organization maka ọdịnaya-heavy reading. • **T-eserese**: Tụnyere/contrast maọbụ pros/cons side-by-side. • **Sketchnotes**: ihu note-taking na prompts maka akara ngosi, arrows, na agwa-coding. • **KWL eserese**: Know / Want na know / Learned — perfect maka pre/post-reading. • **Outline Notes**: Hierarchical structure maka lectures maọbụ textbook isi. ### Generation atụmatụ • **Pre-Filled Prompts**: nke ọ bụla template seeded na cues drawn site na gị ebe sitere ederede. • **ajụjụ Stems**: Built-na metacognitive prompts (\"gịnị surprised gị?\", \"kedu does nke otu connect na…?\"). • **okwu Slots**: Pre-populated key okwu nwa akwụkwọ should gee ntị/gụọ maka. • **Custom ntuziaka**: Target otu kpọmkwem cognitive task (synthesis, summary, evaluation). ### Bipụta & Digital • **Printable PDF**: Clean handout layout na generous writing space. • **Digital Fillable**: nwa akwụkwọ type directly into template maka paperless workflows. • **Editable Headings**: onye nkụzi tailor kolomn labels na nkebi titles before sharing. ### Pro ndụmọdụ • Pair *Cornell Notes* na **Leveled Reader**: nwa akwụkwọ take notes at their reading ọkwa, then jiri bottom-summary box as otu formative-nyocha check. ### UDL Connection • **Action & Expression**: nkwado planning na atụmatụ development (Guideline 6.2) by giving learners explicit structures maka organizing ozi."
+    "anchor_chart_title": "Eserese Anchor",
+    "anchor_chart_text": "Mepụta Eserese Anchor dị njikere maka klaasị nke na-eme ka echiche, okwu, na usoro na-anọgide.",
+    "note_taking_title": "Akpa Ide Ihe",
+    "note_taking_text": "Akpa ide ihe e haziri nke na-akụziri ụmụ akwụkwọ *otu esi ede* ihe, ọ bụghị naanị *ihe* a ga-ede."
   },
   "launch_pad": {
     "subtitle": "Họrọ gị learning pathway",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} nke {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, akara {akara}"
+    "tier_score": "Tier {tier}, akara {akara}",
+    "draggable_item": "draggable ihe"
   },
   "games": {
     "syntax": {
@@ -3976,47 +3977,47 @@
       "html_aria": "HTML ebe sitere code na audit"
     },
     "batch": {
-      "drop_text": "Dọrọ & tụpụ PDFs here",
-      "browse_files": "Browse faịlụ",
-      "clear_all": "Clear niile",
-      "progress_aria": "Batch remediation ọganihu",
-      "stop_aria": "Kwụsị batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "ọhụrụ Batch",
+      "drop_text": "Dọkpụrụ ma tụnye PDFs ebe a",
+      "browse_files": "Chọgharịa faịlụ",
+      "clear_all": "Hichapụ niile",
+      "progress_aria": "Ọganihu nrụgharị ngwakọ",
+      "stop_aria": "Kwụsị nrụgharị ngwakọ",
+      "avg_improvement": "Nkwalite nke etiti",
+      "scored_90_plus": "Nwetara 90+",
+      "new_batch": "Ngwakọ ọhụrụ",
       "resume": {
-        "title": "gara aga batch interrupted",
-        "summary": "{done}/{total} faịlụ(s) completed before tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "faịlụ:",
-        "files_more": "+ {n} karịotu",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} na process"
+        "title": "Ngwakọ gara aga gbochiri",
+        "summary": "{done}/{total} faịlụ rụzuru tupu tab mechie.",
+        "remaining": "{n} fọdụrụ.",
+        "files_label": "Faịlụ:",
+        "files_more": "+ {n} ọzọ",
+        "resume_button": "Maliteghachi ngwakọ",
+        "discard_button": "Tụfuo",
+        "toast": "Na-amaliteghachi ngwakọ · {done} echekwara, {remaining} ka a ga-edozi"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} nke {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Akara site n’aka {n} n’ime ndị nyocha {total}",
+      "unanimous_suffix": " (nkwekọrịta zuru oke)",
+      "minority_suffix": " — echiche pere mpe, ntụkwasị obi dị ala"
     },
     "divergence": {
-      "semantic": "Structurally compliant mana semantically weak — AI flagged ọdịnaya quality (alt ederede, heading meaning, reading order) nke ahụ axe-core nwere ike't detect",
-      "structural": "Code-ọkwa WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Kwekọrọ n’usoro mana adịghị ike na nkọwa — AI akara àgwà ọdịnaya nke axe-core enweghị ike ịchọpụta",
+      "structural": "A chọpụtara mmebi WCAG n’ọkwa koodu — axe-core hụrụ ọdịda ndị igwe nwere ike ịkwado"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "nke otu PDF gụnyere otu PDF/UA-ụdị tag tree. Auditors were instructed na credit existing structure rather than penalize it as missing."
+      "label": "Ngwakọta mkpado dị adị",
+      "tooltip": "PDF a gụnyere osisi mkpado dị ka PDF/UA. A nyere ndị nyocha iwu ka ha ghọta usoro dị adị."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} nke {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues site na original audit no longer found na verification audit",
-      "persisted_tip": "Issues site na original audit still present after fix",
-      "introduced_tip": "ọhụrụ issues nke ahụ did anaghị exist before fix"
+      "heading": "Ndozi nsogbu",
+      "subheading": "Edozigharịrị {resolved} n’ime nsogbu mbụ {total} ({pct}%)",
+      "resolved_label": "Edozigharịrị",
+      "persisted_label": "Ka dị",
+      "introduced_label": "Webatara ọhụrụ",
+      "resolved_tip": "Nsogbu sitere na nyocha mbụ na-anaghị achọtachi na nyocha nkwado",
+      "persisted_tip": "Nsogbu sitere na nyocha mbụ ka dị mgbe edozichara",
+      "introduced_tip": "Nsogbu ọhụrụ ndị na-adịghị tupu mgbazi"
     },
     "report": {
       "download_title": "Budata audit report",
@@ -11622,7 +11623,14 @@
     "click_to_insert": "Pịotu na insert nke otu transition okwu",
     "edit_illustration": "Dezie illustration na AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Mechie"
+    "close": "Mechie",
+    "cancel": "Kagbuo",
+    "add": "Tinye",
+    "done": "Done",
+    "edit": "Dezie",
+    "reset": "Tọgharịotu",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "ihe nkiri Visualization",
@@ -11741,5 +11749,60 @@
     "send_explainer_to_students": "Zipu nke otu explainer na every nwa akwụkwọ's screen ugbu a",
     "one_click_remove_text": "One-pịotu: wepụ ederede site na nke otu foto",
     "rewrite_distractor": "Rewrite nke otu distractor na encode otu real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "foto too large (max 5MB). biko jiri otu smaller foto.",
+    "need_card_front_back": "Tinye at least one kaadị na both otu front na back.",
+    "type_word_first": "Type otu okwu maọbụ letter sequence mbụ.",
+    "write_something_first": "Dee something mbụ.",
+    "pick_decoration_first": "Pick otu decoration na link na mbụ.",
+    "write_association": "Dee otu mkpụmkpụ association — gịnị does nke otu remind gị nke?",
+    "no_crop_data": "Mba crop data dị maka nke otu foto.",
+    "invalid_crop_data": "Invalid crop data.",
+    "no_full_page_image": "Full page foto anaghị dị. Re-gbaa ọsọ remediation na kwado cropping.",
+    "selection_too_small": "Selection too small. Dọrọ otu larger mpaghara.",
+    "encryption_unavailable": "Encryption anaghị dị na nke otu browser. gị may need otu karịotu modern browser na chekwaa submissions.",
+    "voice_unsupported_browser": "olu recording bụ anaghị supported na nke otu browser.",
+    "voice_unsupported_device": "olu recording bụ anaghị supported na nke otu device.",
+    "mic_denied": "Microphone nweta was denied. Allow microphone nweta na gị browser ntọala na record olu notes.",
+    "voice_too_long": "olu note too ogologo na chekwaa (over 500KB). Gbalịotu otu shorter clip.",
+    "voice_empty": "olu recording was empty.",
+    "no_annotations_to_save": "Mba annotations na chekwaa yet — tinye otu note maọbụ highlight mbụ.",
+    "could_not_save_annotations": "Could anaghị chekwaa annotations. Gbalịotu otu different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. pre-filled report URL has been copied na gị clipboard — mado it into otu ọhụrụ browser tab.",
+    "regenerate_function_missing": "njehie: Regenerate function missing maọbụ invalid",
+    "crypto_not_loaded": "Submission crypto module anaghị loaded yet. biko megharịotu na gbalịotu again.",
+    "image_too_large_10mb": "foto too large (max 10MB). biko jiri otu smaller foto."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace niile existing kaadị na imported ones?",
+    "delete_voice_note": "Hichapụ nke otu olu note?",
+    "remove_companion": "Wepụ gị companion?",
+    "delete_goal": "Hichapụ nke otu ihe mgbaru ọsọ?",
+    "delete_atlas": "Hichapụ nke otu atlas? Edges na justifications cannot be recovered.",
+    "delete_realm": "Hichapụ nke otu realm? Zones na justifications cannot be recovered.",
+    "delete_entry_tokens": "Hichapụ nke otu entry? Tokens already earned ga- anaghị be refunded.",
+    "restore_backup_destructive": "Restore site na nke otu backup? nke otu replaces niile current data — decorations, journal, tokens, stories, ntọala. Cannot be undone.",
+    "reset_skill_progress": "Tọgharịotu niile nkà ọganihu? nke otu cannot be undone.",
+    "remove_my_annotations": "Wepụ niile gị notes na highlights? onye nkụzi annotations ga- stay.",
+    "exit_calibration_full": "Exit calibration ọnọdụ? ọganihu ga- be discarded.",
+    "exit_calibration_short": "Exit calibration? ọganihu discarded.",
+    "discard_session_irreversible": "Discard nke otu na-ọganihu nnọkọ? ihe nsonaazụ ga- be lost. nke otu cannot be undone.",
+    "delete_template": "Hichapụ nke otu template? nke otu cannot be undone.",
+    "delete_session": "Hichapụ nke otu nnọkọ? nke otu cannot be undone.",
+    "discard_session": "Discard nke otu nnọkọ? ọganihu ga- be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? ọganihu ga- be lost.",
+    "end_probe_saved": "End probe early? ọganihu ga- be echekwala.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace current board? Unsaved sel ga- be lost.",
+    "change_granularity": "Changing granularity ga- tọgharịotu gị rejections. Gaa n'ihu?",
+    "clear_pdf_progress": "Clear echekwala ọganihu maka nke otu PDF? nke otu cannot be undone.",
+    "switch_sentence_frame": "Gbanwee ahịrịokwu frame template? gị edits na blanks ga- be replaced.",
+    "replace_program_with_template": "Replace current program na template?"
   }
 }

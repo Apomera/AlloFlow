@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813206897",
+  "_version": "20260526T1779815512904",
   "tour": {
     "input_panel_title": "aditus pannus",
     "input_panel_text": "Begin tuus lectiō creation journey here. Hoc aditus pannus est foundation prō omnia generātum subsidia. It serves as central hub ubi tu define contentum, context, et parameters.\n### aditus optiōnēs\n• **textus Adfīge**: Adfīge contentum directly ā any article, fābula, aut lectiō cōnsilium.\n• **tabula Submitte**: Submitte PDFs, imāgō, textus tabula, sonus (MP3/WAV), aut videum prō automaticus extraction.\n• **URL Adfer**: Adfīge any article URL ad automaticē extrahe et importā its contentum.\n• **AI subsidia Quaere**: Describe thema et let AI find gradus-aptus online subsidia prō tu.\n• **Generā fōns textus**: Creā orīginālis contentum by specifying thema, sonus, gradus classis, et scopus norma.\n### Generātiō facultātēs\n• **sonus Selection**: Ēlige ā Informative, Narrātiō, Persuasive, Humorous, aut gradus-by-gradus stilus.\n• **norma Aliniātiō**: Ūtere AI-powered norma finder aut manuāliter aditus scopus norma (up ad 3).\n• **Fact Verification**: Permitte web grounding ad verify facts et inclūde citations automaticē.\n• **Custom īnstrūctiō**: Adde specificus guidance prō plūs tailored contentum generātiō.\n### systēma Capabilities\n• **Auto-Detection**: automaticē identifies fōns lingua.\n• **Chunked Processing**: sonus et videum tabula super 20MB sunt intelligently split prō reliable transcription.\n### Important Most īnstrūmenta in sidebar require fōns material before they potest be ūsus. Adfīge aut generā tuus contentum here prīmus, then explōrā alius subsidia.",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, pūnctum {pūnctum}"
+    "tier_score": "Tier {tier}, pūnctum {pūnctum}",
+    "draggable_item": "draggable rēs"
   },
   "games": {
     "syntax": {
@@ -11622,7 +11623,14 @@
     "click_to_insert": "Pulsā to insert hoc transition verbum",
     "edit_illustration": "Recense illūstrātiō with AI",
     "regenerate_illustration": "Regenerate illūstrātiō",
-    "close": "Claude"
+    "close": "Claude",
+    "cancel": "Abrogā",
+    "add": "Adde",
+    "done": "Done",
+    "edit": "Recense",
+    "reset": "Restitue",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "scaena Visualization",
@@ -11741,5 +11749,60 @@
     "send_explainer_to_students": "Mitte hoc explainer to every discipulus's screen now",
     "one_click_remove_text": "One-pulsā: remove textus from hoc imāgō",
     "rewrite_distractor": "Rewrite hoc distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "imāgō too large (max 5MB). amābō ūtere a smaller imāgō.",
+    "need_card_front_back": "Adde at least one schedula with both a front and back.",
+    "type_word_first": "Type a verbum or letter sequence prīmus.",
+    "write_something_first": "Scrībe something prīmus.",
+    "pick_decoration_first": "Pick a decoration to link to prīmus.",
+    "write_association": "Scrībe a brevis association — what does hoc remind you of?",
+    "no_crop_data": "Minimē crop data praestō for hoc imāgō.",
+    "invalid_crop_data": "Invalid crop data.",
+    "no_full_page_image": "Full page imāgō not praestō. Re-exsequere remediation to permitte cropping.",
+    "selection_too_small": "Selection too small. Trahe a larger ārea.",
+    "encryption_unavailable": "Encryption not praestō in hoc browser. You may need a plūs modern browser to servā submissions.",
+    "voice_unsupported_browser": "vōx recording is not supported in hoc browser.",
+    "voice_unsupported_device": "vōx recording is not supported on hoc device.",
+    "mic_denied": "Microphone aditus was denied. Allow microphone aditus in your browser cōnstitūtiōnēs to record vōx notes.",
+    "voice_too_long": "vōx note too longus to servā (over 500KB). Tentā a brevior clip.",
+    "voice_empty": "vōx recording was empty.",
+    "no_annotations_to_save": "Minimē annotations to servā yet — adde a note or highlight prīmus.",
+    "could_not_save_annotations": "Could not servā annotations. Tentā a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — adfīge it into a novus browser tab.",
+    "regenerate_function_missing": "errātum: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. amābō renovā and tentā again.",
+    "image_too_large_10mb": "imāgō too large (max 10MB). amābō ūtere a smaller imāgō."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing schedula with the imported ones?",
+    "delete_voice_note": "Dēlē hoc vōx note?",
+    "remove_companion": "Remove your companion?",
+    "delete_goal": "Dēlē hoc fīnis?",
+    "delete_atlas": "Dēlē hoc atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Dēlē hoc realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Dēlē hoc entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from hoc backup? Hoc replaces ALL current data — decorations, journal, tokens, stories, cōnstitūtiōnēs. Cannot be undone.",
+    "reset_skill_progress": "Restitue all peritia prōgressus? Hoc cannot be undone.",
+    "remove_my_annotations": "Remove all your notes and highlights? magister annotations will stay.",
+    "exit_calibration_full": "Exit calibration modus? prōgressus will be discarded.",
+    "exit_calibration_short": "Exit calibration? prōgressus discarded.",
+    "discard_session_irreversible": "Discard hoc in-prōgressus sessiō? rēs effectus will be lost. Hoc cannot be undone.",
+    "delete_template": "Dēlē hoc template? Hoc cannot be undone.",
+    "delete_session": "Dēlē hoc sessiō? Hoc cannot be undone.",
+    "discard_session": "Discard hoc sessiō? prōgressus will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? prōgressus will be lost.",
+    "end_probe_saved": "End probe early? prōgressus will be servātum.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved cella will be lost.",
+    "change_granularity": "Changing granularity will restitue your rejections. Continuā?",
+    "clear_pdf_progress": "Clear servātum prōgressus for hoc PDF? Hoc cannot be undone.",
+    "switch_sentence_frame": "Commūtā sententia frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

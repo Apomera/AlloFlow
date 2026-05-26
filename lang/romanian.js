@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813210201",
+  "_version": "20260526T1779815515892",
   "tour": {
     "input_panel_title": "intrare panou",
     "input_panel_text": "Begin tău lecție creation journey here. acesta intrare panou este foundation pentru toate generat resurse. It serves as central hub unde tu define conținut, context, și parameters.\n### intrare opțiuni\n• **text Lipește**: Lipește conținut directly din any article, poveste, sau lecție plan.\n• **fișier Încarcă**: Încarcă PDFs, imagine, text fișier, audio (MP3/WAV), sau videoclip pentru automat extraction.\n• **URL Preia**: Lipește any article URL la automatically extrage și importă its conținut.\n• **AI resurse Caută**: Describe un topic și let AI find clasă-appropriate online resurse pentru tu.\n• **Generează sursă text**: Creează original conținut by specifying topic, ton, nivel de clasă, și target standard.\n### Generation caracteristici\n• **ton Selection**: Alege din Informative, Narrative, Persuasive, Humorous, sau pas-by-pas stil.\n• **standard Alignment**: Folosește AI-powered standard finder sau manually intrare target standard (up la 3).\n• **Fact Verification**: Activează web grounding la verify facts și include citations automatically.\n• **Custom instrucțiune**: Adaugă specific guidance pentru mai mult tailored conținut generation.\n### sistem Capabilities\n• **Auto-Detection**: Automatically identifies sursă limbă.\n• **Chunked Processing**: audio și videoclip fișier over 20MB sunt intelligently split pentru reliable transcription.\n### Important Most instrumente în sidebar require sursă material before they poate be folosit. Lipește sau generează tău conținut here primul, then explorează other resurse.",
@@ -53,10 +53,10 @@
     "dbq_text": "document-Based întrebare: elev analizează primary sources, build evidence-based arguments, și exersează central abilitate de social-studies + ELA evaluare. Generates sursă document, scaffolded întrebare, și răspuns keys aligned la tău standard.",
     "quiz_mode_title": "Pick right test mod",
     "quiz_mode_text": "Alege ce acesta test este pentru. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge before teaching și surfaces gaps as concept card cu un one-apasă \"Explain la clasă\" AI broadcast. Formative Check este un rapid mid-lecție pulse. Spaced Review tracks fiecare elev’s cross-sesiune retention cu un per-concept sparkline. fiecare mod tunes prompts, element-type mix, și live dashboard layout.",
-    "anchor_chart_title": "Anchor grafic",
-    "anchor_chart_text": "Generează clasă-ready Anchor grafic acela face concepts, vocabular, și procedures stick. un vizual reference elev poate return la throughout un unit. ### panou opțiuni • **grafic Type**: Alege din Concept, vocabular, Process, strategie, sau Comparison grafic. • **stil**: Hand-drawn marker look, polished sfatărește stil, sau kid-prietenos comic stil. • **culoare Palette**: Pick un high-contrast, dyslexia-prietenos, sau themed culoare scheme. • **Custom instrucțiune**: specifică focal concepts, key vocabular, sau strategie pas la highlight. ### grafic componentă • **Title Banner**: Eye-catching topic header. • **vizual Hierarchy**: Headings, bullets, și callouts organized pentru skim-reading. • **Iconography**: Auto-generat pictogramă reinforcing fiecare idea cu dual-coded vizual cues. • **exemplu & Non-exemplu**: Side-by-side panou pentru concept clarity. ### interactiv caracteristici • **Editează mod**: Tap any element la rewrite text, swap pictogramă, sau recolor secțiune. • **sfatărește-Ready**: High-resolution exportă sized pentru posters sau 8.5×11 handouts. • **Project mod**: Fullscreen vizualizează pentru whole-clasă instrucțiune. ### Pro sfat • Generează un *strategie grafic* before un writing unit și un *vocabular grafic* before un science unit — keep both pe clasă wall pentru whole arc. ### UDL Connection • **Representation**: Activate sau supply background knowledge (Guideline 3.1) cu persistent vizual anchors elev poate revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates acela teach elev *cum* la take notes, nu just *ce* la scrie. Pick structure acela matches cognitive task. ### Template Types • **Cornell Notes**: Classic two-coloană layout cu cues, notes, și bottom summary. • **Two-coloană Notes**: Main idea / detaliu organization pentru conținut-heavy reading. • **T-grafic**: Compară/contrast sau pros/cons side-by-side. • **Sketchnotes**: vizual note-taking cu prompts pentru pictogramă, arrows, și culoare-coding. • **KWL grafic**: Know / Want la know / Learned — perfect pentru pre/post-reading. • **Outline Notes**: Hierarchical structure pentru lectures sau textbook capitol. ### Generation caracteristici • **Pre-Filled Prompts**: fiecare template seeded cu cues drawn din tău sursă text. • **întrebare Stems**: Built-în metacognitive prompts (\"ce surprised tu?\", \"cum does acesta connect la…?\"). • **vocabular Slots**: Pre-populated key termen elev should ascultă/citește pentru. • **Custom instrucțiune**: Target un specific cognitive task (synthesis, summary, evaluation). ### sfatărește & Digital • **Printable PDF**: Clean handout layout cu generous writing space. • **Digital Fillable**: elev type directly into template pentru paperless workflows. • **Editable Headings**: profesor tailor coloană labels și secțiune titles before sharing. ### Pro sfat • Pair *Cornell Notes* cu **Leveled Reader**: elev take notes at their reading nivel, then folosește bottom-summary box as un formative-evaluare check. ### UDL Connection • **Action & Expression**: suport planning și strategie development (Guideline 6.2) by giving learners explicit structures pentru organizing informație."
+    "anchor_chart_title": "Diagrame ancoră",
+    "anchor_chart_text": "Generați Diagrame ancoră gata pentru clasă care fixează concepte, vocabular și proceduri. Un rezumat vizual al ideilor cheie la care elevii pot reveni repetat.",
+    "note_taking_title": "Șabloane pentru notițe",
+    "note_taking_text": "Șabloane structurate de luare a notițelor care învață elevii *cum* să ia notițe, nu doar *ce* să scrie. Include Cornell, organizatori grafici, intrare dublă și jurnale de învățare."
   },
   "launch_pad": {
     "subtitle": "Alege tău learning pathway",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} de {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, punctaj {punctaj}"
+    "tier_score": "Tier {tier}, punctaj {punctaj}",
+    "draggable_item": "draggable element"
   },
   "games": {
     "syntax": {
@@ -3976,47 +3977,47 @@
       "html_aria": "HTML sursă code la audit"
     },
     "batch": {
-      "drop_text": "Trage & plasează PDFs here",
-      "browse_files": "Browse fișier",
-      "clear_all": "Clear toate",
-      "progress_aria": "Batch remediation progres",
-      "stop_aria": "Oprește batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "nou Batch",
+      "drop_text": "Trageți și plasați PDF-uri aici",
+      "browse_files": "Răsfoiți fișiere",
+      "clear_all": "Șterge tot",
+      "progress_aria": "Progres remediere în lot",
+      "stop_aria": "Oprește remedierea în lot",
+      "avg_improvement": "Îmbunătățire medie",
+      "scored_90_plus": "Au obținut 90+",
+      "new_batch": "Lot nou",
       "resume": {
-        "title": "anterior batch interrupted",
-        "summary": "{done}/{total} fișier(s) completed before tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "fișier:",
-        "files_more": "+ {n} mai mult",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} la process"
+        "title": "Lot anterior întrerupt",
+        "summary": "{done}/{total} fișier(e) finalizate înainte de închiderea filei.",
+        "remaining": "{n} rămase.",
+        "files_label": "Fișiere:",
+        "files_more": "+ {n} mai multe",
+        "resume_button": "Reluați lotul",
+        "discard_button": "Renunță",
+        "toast": "Reluare lot · {done} în cache, {remaining} de procesat"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} de {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Semnalat de {n} din {total} auditori",
+      "unanimous_suffix": " (unanim)",
+      "minority_suffix": " — opinie minoritară, încredere mai scăzută"
     },
     "divergence": {
-      "semantic": "Structurally compliant dar semantically weak — AI flagged conținut quality (alt text, heading meaning, reading order) acela axe-core poate't detect",
-      "structural": "Code-nivel WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Conform structural dar slab semantic — AI a marcat calitatea conținutului pe care axe-core nu o poate detecta",
+      "structural": "Încălcări WCAG la nivel de cod detectate — axe-core a găsit eșecuri verificabile mecanic"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "acesta PDF include un PDF/UA-stil tag tree. Auditors were instructed la credit existing structure rather than penalize it as missing."
+      "label": "Structură de etichete preexistentă",
+      "tooltip": "Acest PDF include un arbore de etichete în stil PDF/UA. Auditorii au fost instruiți să recunoască structura existentă."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} de {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues din original audit no longer found în verification audit",
-      "persisted_tip": "Issues din original audit still present after fix",
-      "introduced_tip": "nou issues acela did nu exist before fix"
+      "heading": "Rezolvarea problemelor",
+      "subheading": "Rezolvate {resolved} din {total} probleme originale ({pct}%)",
+      "resolved_label": "Rezolvate",
+      "persisted_label": "Încă prezente",
+      "introduced_label": "Nou introduse",
+      "resolved_tip": "Probleme din auditul original care nu mai sunt găsite în auditul de verificare",
+      "persisted_tip": "Probleme din auditul original încă prezente după corectare",
+      "introduced_tip": "Probleme noi care nu existau înainte de corectare"
     },
     "report": {
       "download_title": "Descarcă audit report",
@@ -11614,7 +11615,14 @@
     "click_to_insert": "Apasă la insert acesta transition cuvânt",
     "edit_illustration": "Editează illustration cu AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Închide"
+    "close": "Închide",
+    "cancel": "Anulează",
+    "add": "Adaugă",
+    "done": "Done",
+    "edit": "Editează",
+    "reset": "Resetează",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "scenă Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "Trimite acesta explainer la every elev's screen acum",
     "one_click_remove_text": "One-apasă: elimină text din acesta imagine",
     "rewrite_distractor": "Rewrite acesta distractor la encode un real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "imagine too large (max 5MB). vă rog folosește un smaller imagine.",
+    "need_card_front_back": "Adaugă at least one card cu both un front și back.",
+    "type_word_first": "Type un cuvânt sau letter sequence primul.",
+    "write_something_first": "Scrie something primul.",
+    "pick_decoration_first": "Pick un decoration la link la primul.",
+    "write_association": "Scrie un scurt association — ce does acesta remind tu de?",
+    "no_crop_data": "Nu crop date disponibil pentru acesta imagine.",
+    "invalid_crop_data": "Invalid crop date.",
+    "no_full_page_image": "Full page imagine nu disponibil. Re-rulează remediation la activează cropping.",
+    "selection_too_small": "Selection too small. Trage un larger arie.",
+    "encryption_unavailable": "Encryption nu disponibil în acesta browser. tu may need un mai mult modern browser la salvează submissions.",
+    "voice_unsupported_browser": "voce recording este nu supported în acesta browser.",
+    "voice_unsupported_device": "voce recording este nu supported pe acesta device.",
+    "mic_denied": "Microphone acces was denied. Allow microphone acces în tău browser setări la record voce notes.",
+    "voice_too_long": "voce note too lung la salvează (over 500KB). Încearcă un shorter clip.",
+    "voice_empty": "voce recording was empty.",
+    "no_annotations_to_save": "Nu annotations la salvează yet — adaugă un note sau highlight primul.",
+    "could_not_save_annotations": "Could nu salvează annotations. Încearcă un different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. pre-filled report URL has been copied la tău clipboard — lipește it into un nou browser tab.",
+    "regenerate_function_missing": "eroare: Regenerate function missing sau invalid",
+    "crypto_not_loaded": "Submission crypto module nu loaded yet. vă rog actualizează și încearcă again.",
+    "image_too_large_10mb": "imagine too large (max 10MB). vă rog folosește un smaller imagine."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace toate existing card cu imported ones?",
+    "delete_voice_note": "Șterge acesta voce note?",
+    "remove_companion": "Elimină tău companion?",
+    "delete_goal": "Șterge acesta obiectiv?",
+    "delete_atlas": "Șterge acesta atlas? Edges și justifications cannot be recovered.",
+    "delete_realm": "Șterge acesta realm? Zones și justifications cannot be recovered.",
+    "delete_entry_tokens": "Șterge acesta entry? Tokens already earned va nu be refunded.",
+    "restore_backup_destructive": "Restore din acesta backup? acesta replaces toate current date — decorations, journal, tokens, stories, setări. Cannot be undone.",
+    "reset_skill_progress": "Resetează toate abilitate progres? acesta cannot be undone.",
+    "remove_my_annotations": "Elimină toate tău notes și highlights? profesor annotations va stay.",
+    "exit_calibration_full": "Exit calibration mod? progres va be discarded.",
+    "exit_calibration_short": "Exit calibration? progres discarded.",
+    "discard_session_irreversible": "Discard acesta în-progres sesiune? element rezultat va be lost. acesta cannot be undone.",
+    "delete_template": "Șterge acesta template? acesta cannot be undone.",
+    "delete_session": "Șterge acesta sesiune? acesta cannot be undone.",
+    "discard_session": "Discard acesta sesiune? progres va be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? progres va be lost.",
+    "end_probe_saved": "End probe early? progres va be salvat.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace current board? Unsaved celulă va be lost.",
+    "change_granularity": "Changing granularity va resetează tău rejections. Continuă?",
+    "clear_pdf_progress": "Clear salvat progres pentru acesta PDF? acesta cannot be undone.",
+    "switch_sentence_frame": "Comută propoziție frame template? tău edits la blanks va be replaced.",
+    "replace_program_with_template": "Replace current program cu template?"
   }
 }

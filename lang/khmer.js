@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813205405",
+  "_version": "20260526T1779815511784",
   "tour": {
     "input_panel_title": "ការបញ្ចូល បន្ទះ",
     "input_panel_text": "Begin របស់អ្នក មេរៀន creation journey here. នេះ ការបញ្ចូល បន្ទះ គឺ foundation សម្រាប់ ទាំងអស់ បានបង្កើត ធនធាន. It serves as central hub កន្លែង អ្នក define មាតិកា, បរិបទ, និង parameters.\n### ការបញ្ចូល ជម្រើស\n• **អត្ថបទ បិទភ្ជាប់**: បិទភ្ជាប់ មាតិកា directly ពី ណាមួយ article, រឿង, ឬ មេរៀន ផែនការ.\n• **ឯកសារ ផ្ទុកឡើង**: ផ្ទុកឡើង PDFs, រូបភាព, អត្ថបទ ឯកសារ, សំឡេង (MP3/WAV), ឬ វីដេអូ សម្រាប់ ស្វ័យប្រវត្តិ extraction.\n• **URL យក**: បិទភ្ជាប់ ណាមួយ article URL ទៅ ដោយស្វ័យប្រវត្តិ ស្រង់ចេញ និង នាំចូល its មាតិកា.\n• **AI ធនធាន ស្វែងរក**: Describe ប្រធានបទ និង let AI find ថ្នាក់-សមរម្យ online ធនធាន សម្រាប់ អ្នក.\n• **បង្កើត ប្រភព អត្ថបទ**: បង្កើត ដើម មាតិកា by specifying ប្រធានបទ, សំឡេង, កម្រិតថ្នាក់, និង គោលដៅ ស្តង់ដារ.\n### ជំនាន់ លក្ខណៈពិសេស\n• **សំឡេង Selection**: ជ្រើសរើស ពី Informative, រឿងនិទាន, Persuasive, Humorous, ឬ ជំហាន-by-ជំហាន រចនាប័ទ្ម.\n• **ស្តង់ដារ ការតម្រឹម**: ប្រើ AI-powered ស្តង់ដារ finder ឬ ដោយដៃ ការបញ្ចូល គោលដៅ ស្តង់ដារ (up ទៅ 3).\n• **Fact Verification**: បើកដំណើរការ web grounding ទៅ verify facts និង រួមបញ្ចូល citations ដោយស្វ័យប្រវត្តិ.\n• **Custom ការណែនាំ**: បន្ថែម ជាក់លាក់ guidance សម្រាប់ ច្រើនទៀត tailored មាតិកា ជំនាន់.\n### ប្រព័ន្ធ Capabilities\n• **Auto-Detection**: ដោយស្វ័យប្រវត្តិ identifies ប្រភព ភាសា.\n• **Chunked Processing**: សំឡេង និង វីដេអូ ឯកសារ លើ 20MB គឺ intelligently split សម្រាប់ reliable transcription.\n### Important ច្រើនបំផុត ឧបករណ៍ ក្នុង sidebar require ប្រភព material មុន ពួកគេ អាច be បានប្រើ. បិទភ្ជាប់ ឬ បង្កើត របស់អ្នក មាតិកា here ដំបូង, បន្ទាប់មក ស្វែងយល់ ផ្សេងទៀត ធនធាន.",
@@ -53,10 +53,10 @@
     "dbq_text": "ឯកសារ-ផ្អែកលើ សំណួរ: សិស្ស វិភាគ primary sources, សាង ភស្តុតាង-ផ្អែកលើ arguments, និង អនុវត្ត central ជំនាញ នៃ social-studies + ELA ការវាយតម្លៃ. Generates ប្រភព ឯកសារ, scaffolded សំណួរ, និង ចម្លើយ keys aligned ទៅ របស់អ្នក ស្តង់ដារ.",
     "quiz_mode_title": "Pick ត្រឹមត្រូវ សំណួរបញ្ហា របៀប",
     "quiz_mode_text": "ជ្រើសរើស អ្វី នេះ សំណួរបញ្ហា គឺ សម្រាប់. Exit Ticket checks today’s ការរៀន. Pre-ពិនិត្យ probes prior knowledge មុន teaching និង surfaces gaps as គំនិត កាត ជាមួយ one-ចុច \"Explain ទៅ ថ្នាក់រៀន\" AI broadcast. Formative ពិនិត្យ គឺ លឿន mid-មេរៀន pulse. Spaced ពិនិត្យឡើងវិញ tracks នីមួយៗ សិស្ស’s cross-វគ្គ retention ជាមួយ per-គំនិត sparkline. នីមួយៗ របៀប tunes ការជំរុញ, ធាតុ-ប្រភេទ mix, និង បន្តផ្ទាល់ dashboard layout.",
-    "anchor_chart_title": "Anchor គំនូសតាង",
-    "anchor_chart_text": "បង្កើត ថ្នាក់រៀន-ready Anchor គំនូសតាង នោះ បង្កើត concepts, វាក្យសព្ទ, and procedures stick. A រូបភាព reference សិស្ស can return to throughout a unit. ### បន្ទះ ជម្រើស • **គំនូសតាង Type**: ជ្រើសរើស from Concept, វាក្យសព្ទ, Process, យុទ្ធសាស្ត្រ, or Comparison គំនូសតាង. • **រចនាប័ទ្ម**: Hand-drawn marker look, polished បោះពុម្ព រចនាប័ទ្ម, or kid-រួសរាយ comic រចនាប័ទ្ម. • **ពណ៌ Palette**: Pick a high-contrast, dyslexia-រួសរាយ, or themed ពណ៌ scheme. • **Custom ការណែនាំ**: បញ្ជាក់ focal concepts, key វាក្យសព្ទ, or យុទ្ធសាស្ត្រ ជំហាន to highlight. ### គំនូសតាង សមាសភាគ • **Title Banner**: Eye-catching topic header. • **រូបភាព Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-បានបង្កើត រូបតំណាង reinforcing each idea with dual-coded រូបភាព cues. • **ឧទាហរណ៍ & Non-ឧទាហរណ៍**: Side-by-side បន្ទះ for concept clarity. ### អន្តរកម្ម លក្ខណៈពិសេស • **កែសម្រួល របៀប**: Tap any element to rewrite អត្ថបទ, swap រូបតំណាង, or recolor ផ្នែក. • **បោះពុម្ព-Ready**: High-resolution នាំចេញ sized for posters or 8.5×11 handouts. • **Project របៀប**: Fullscreen មើល for whole-ថ្នាក់រៀន ការណែនាំ. ### Pro គន្លឹះ • បង្កើត a *យុទ្ធសាស្ត្រ គំនូសតាង* before a writing unit and a *វាក្យសព្ទ គំនូសតាង* before a science unit — keep both on the ថ្នាក់រៀន wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent រូបភាព anchors សិស្ស can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates នោះ teach សិស្ស *how* to take notes, not just *what* to សរសេរ. Pick the structure នោះ matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-ជួរឈរ layout with cues, notes, and bottom summary. • **Two-ជួរឈរ Notes**: Main idea / លម្អិត organization for មាតិកា-heavy reading. • **T-គំនូសតាង**: ប្រៀបធៀប/contrast or pros/cons side-by-side. • **Sketchnotes**: រូបភាព note-taking with prompts for រូបតំណាង, arrows, and ពណ៌-coding. • **KWL គំនូសតាង**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook ជំពូក. ### Generation លក្ខណៈពិសេស • **Pre-Filled Prompts**: Each template seeded with cues drawn from your ប្រភព អត្ថបទ. • **សំណួរ Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does នេះ connect to…?\"). • **វាក្យសព្ទ Slots**: Pre-populated key ពាក្យ សិស្ស should ស្តាប់/អាន for. • **Custom ការណែនាំ**: Target a ជាក់លាក់ cognitive task (synthesis, summary, evaluation). ### បោះពុម្ព & Digital • **PDF អាចបោះពុម្ពបាន**: Clean handout layout with generous writing space. • **Digital Fillable**: សិស្ស type directly into the template for paperless workflows. • **Editable Headings**: គ្រូ tailor ជួរឈរ labels and ផ្នែក titles before sharing. ### Pro គន្លឹះ • Pair *Cornell Notes* with the **Leveled Reader**: សិស្ស take notes at their reading កម្រិត, then ប្រើ the bottom-summary box as a formative-ការវាយតម្លៃ check. ### UDL Connection • **Action & កន្សោម**: ការគាំទ្រ planning and យុទ្ធសាស្ត្រ development (Guideline 6.2) by giving learners explicit structures for organizing ព័ត៌មាន."
+    "anchor_chart_title": "គំនូសតាងយុថ្កា",
+    "anchor_chart_text": "បង្កើតគំនូសតាងយុថ្កាដែលរួចរាល់សម្រាប់ថ្នាក់រៀន ដែលធ្វើឱ្យគំនិត វាក្យសព្ទ និងនីតិវិធីជាប់នៅ។ សេចក្តីសង្ខេបជារូបភាពនៃគំនិតសំខាន់ៗដែលសិស្សអាចយោងម្តងហើយម្តងទៀត។",
+    "note_taking_title": "ទម្រង់សម្រាប់កត់ត្រា",
+    "note_taking_text": "ទម្រង់កត់ត្រាដែលមានរចនាសម្ព័ន្ធដែលបង្រៀនសិស្ស *របៀប* កត់ត្រា មិនមែនគ្រាន់តែ *អ្វី* ដែលត្រូវសរសេរទេ។ រួមមាន Cornell, កម្មវិធីរៀបចំក្រាហ្វិក, ការបញ្ចូលទ្វេ និងកំណត់ហេតុការរៀន។"
   },
   "launch_pad": {
     "subtitle": "ជ្រើសរើស របស់អ្នក ការរៀន pathway",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, ពិន្ទុ {ពិន្ទុ}"
+    "tier_score": "Tier {tier}, ពិន្ទុ {ពិន្ទុ}",
+    "draggable_item": "draggable ធាតុ"
   },
   "games": {
     "syntax": {
@@ -3976,47 +3977,47 @@
       "html_aria": "HTML ប្រភព code ទៅ audit"
     },
     "batch": {
-      "drop_text": "អូស & ទម្លាក់ PDFs here",
-      "browse_files": "Browse ឯកសារ",
-      "clear_all": "Clear ទាំងអស់",
-      "progress_aria": "Batch remediation វឌ្ឍនភាព",
-      "stop_aria": "បញ្ឈប់ batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "ថ្មី Batch",
+      "drop_text": "អូស និងទម្លាក់ PDF នៅទីនេះ",
+      "browse_files": "រកមើលឯកសារ",
+      "clear_all": "លុបទាំងអស់",
+      "progress_aria": "វឌ្ឍនភាពនៃការជួសជុលជាបាច់",
+      "stop_aria": "បញ្ឈប់ការជួសជុលជាបាច់",
+      "avg_improvement": "ការកែលម្អជាមធ្យម",
+      "scored_90_plus": "បានទទួលពិន្ទុ ៩០+",
+      "new_batch": "បាច់ថ្មី",
       "resume": {
-        "title": "មុន batch interrupted",
-        "summary": "{done}/{total} ឯកសារ(s) completed មុន tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "ឯកសារ:",
+        "title": "បាច់មុនត្រូវបានរំខាន",
+        "summary": "{done}/{total} ឯកសារបានបញ្ចប់មុនបិទផ្ទាំង។",
+        "remaining": "នៅសល់ {n}។",
+        "files_label": "ឯកសារ៖",
         "files_more": "+ {n} ច្រើនទៀត",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} ទៅ process"
+        "resume_button": "បន្តបាច់",
+        "discard_button": "បោះបង់",
+        "toast": "កំពុងបន្តបាច់ · {done} នៅក្នុងឃ្លាំងសម្ងាត់, {remaining} ត្រូវដំណើរការ"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} នៃ {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "បានសម្គាល់ដោយ {n} ក្នុងចំណោម {total} អ្នកត្រួតពិនិត្យ",
+      "unanimous_suffix": " (ឯកច្ឆន្ទ)",
+      "minority_suffix": " — មតិភាគតិច ទំនុកចិត្តទាបជាង"
     },
     "divergence": {
-      "semantic": "Structurally compliant ប៉ុន្តែ semantically weak — AI flagged មាតិកា គុណភាព (alt អត្ថបទ, heading meaning, ការអាន order) នោះ axe-core អាច't detect",
-      "structural": "Code-កម្រិត WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "អនុលោមតាមរចនាសម្ព័ន្ធ ប៉ុន្តែខ្សោយខាងអត្ថន័យ — AI បានសម្គាល់គុណភាពមាតិកាដែល axe-core មិនអាចស្វែងរកបាន",
+      "structural": "រកឃើញការរំលោភ WCAG កម្រិតកូដ — axe-core រកឃើញការបរាជ័យដែលអាចផ្ទៀងផ្ទាត់បានដោយម៉ាស៊ីន"
     },
     "tagtree": {
-      "label": "Pre-existing tag រចនាសម្ព័ន្ធ",
-      "tooltip": "នេះ PDF រួមមាន PDF/UA-រចនាប័ទ្ម tag tree. Auditors were instructed ទៅ credit existing រចនាសម្ព័ន្ធ rather than penalize it as missing."
+      "label": "រចនាសម្ព័ន្ធស្លាកដែលមានស្រាប់",
+      "tooltip": "PDF នេះរួមបញ្ចូលដើមឈើស្លាករបៀប PDF/UA។ អ្នកត្រួតពិនិត្យត្រូវបានណែនាំឱ្យទទួលស្គាល់រចនាសម្ព័ន្ធដែលមានស្រាប់។"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} នៃ {total} ដើម issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues ពី ដើម audit no វែងជាង found ក្នុង verification audit",
-      "persisted_tip": "Issues ពី ដើម audit still present បន្ទាប់ fix",
-      "introduced_tip": "ថ្មី issues នោះ did មិន exist មុន fix"
+      "heading": "ការដោះស្រាយបញ្ហា",
+      "subheading": "បានដោះស្រាយ {resolved} ក្នុងចំណោម {total} បញ្ហាដើម ({pct}%)",
+      "resolved_label": "បានដោះស្រាយ",
+      "persisted_label": "នៅតែមាន",
+      "introduced_label": "ត្រូវបានដាក់បញ្ចូលថ្មី",
+      "resolved_tip": "បញ្ហាពីការត្រួតពិនិត្យដើមដែលលែងរកឃើញនៅក្នុងការត្រួតពិនិត្យផ្ទៀងផ្ទាត់",
+      "persisted_tip": "បញ្ហាពីការត្រួតពិនិត្យដើមនៅតែមានបន្ទាប់ពីការកែតម្រូវ",
+      "introduced_tip": "បញ្ហាថ្មីដែលមិនមានមុនការកែតម្រូវ"
     },
     "report": {
       "download_title": "ទាញយក audit របាយការណ៍",
@@ -11622,7 +11623,14 @@
     "click_to_insert": "ចុច to insert នេះ transition ពាក្យ",
     "edit_illustration": "កែសម្រួល រូបភាព with AI",
     "regenerate_illustration": "Regenerate រូបភាព",
-    "close": "បិទ"
+    "close": "បិទ",
+    "cancel": "បោះបង់",
+    "add": "បន្ថែម",
+    "done": "Done",
+    "edit": "កែសម្រួល",
+    "reset": "កំណត់ឡើងវិញ",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "ឈុត Visualization",
@@ -11741,5 +11749,60 @@
     "send_explainer_to_students": "ផ្ញើ នេះ explainer to every សិស្ស's screen now",
     "one_click_remove_text": "One-ចុច: ដក អត្ថបទ from នេះ រូបភាព",
     "rewrite_distractor": "Rewrite នេះ distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "រូបភាព too large (max 5MB). សូម ប្រើ a smaller រូបភាព.",
+    "need_card_front_back": "បន្ថែម at least one កាត with both a front and back.",
+    "type_word_first": "Type a ពាក្យ or letter sequence ដំបូង.",
+    "write_something_first": "សរសេរ something ដំបូង.",
+    "pick_decoration_first": "Pick a decoration to link to ដំបូង.",
+    "write_association": "សរសេរ a ខ្លី association — what does នេះ remind you of?",
+    "no_crop_data": "ទេ crop ទិន្នន័យ អាចប្រើបាន for នេះ រូបភាព.",
+    "invalid_crop_data": "Invalid crop ទិន្នន័យ.",
+    "no_full_page_image": "Full page រូបភាព not អាចប្រើបាន. Re-ដំណើរការ remediation to បើកដំណើរការ cropping.",
+    "selection_too_small": "Selection too small. អូស a larger ផ្ទៃ.",
+    "encryption_unavailable": "Encryption not អាចប្រើបាន in នេះ browser. You may need a ច្រើនទៀត modern browser to រក្សាទុក submissions.",
+    "voice_unsupported_browser": "សំឡេង recording is not supported in នេះ browser.",
+    "voice_unsupported_device": "សំឡេង recording is not supported on នេះ device.",
+    "mic_denied": "Microphone ចូលប្រើ was denied. Allow microphone ចូលប្រើ in your browser ការកំណត់ to record សំឡេង notes.",
+    "voice_too_long": "សំឡេង note too វែង to រក្សាទុក (over 500KB). សាកល្បង a ខ្លីជាង clip.",
+    "voice_empty": "សំឡេង recording was empty.",
+    "no_annotations_to_save": "ទេ annotations to រក្សាទុក yet — បន្ថែម a note or highlight ដំបូង.",
+    "could_not_save_annotations": "Could not រក្សាទុក annotations. សាកល្បង a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — បិទភ្ជាប់ it into a ថ្មី browser tab.",
+    "regenerate_function_missing": "កំហុស: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. សូម ផ្ទុកឡើងវិញ and សាកល្បង again.",
+    "image_too_large_10mb": "រូបភាព too large (max 10MB). សូម ប្រើ a smaller រូបភាព."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing កាត with the imported ones?",
+    "delete_voice_note": "លុប នេះ សំឡេង note?",
+    "remove_companion": "ដក your companion?",
+    "delete_goal": "លុប នេះ គោលដៅ?",
+    "delete_atlas": "លុប នេះ atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "លុប នេះ realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "លុប នេះ entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from នេះ backup? នេះ replaces ALL current ទិន្នន័យ — decorations, journal, tokens, stories, ការកំណត់. Cannot be undone.",
+    "reset_skill_progress": "កំណត់ឡើងវិញ all ជំនាញ វឌ្ឍនភាព? នេះ cannot be undone.",
+    "remove_my_annotations": "ដក all your notes and highlights? គ្រូ annotations will stay.",
+    "exit_calibration_full": "Exit calibration របៀប? វឌ្ឍនភាព will be discarded.",
+    "exit_calibration_short": "Exit calibration? វឌ្ឍនភាព discarded.",
+    "discard_session_irreversible": "Discard នេះ in-វឌ្ឍនភាព វគ្គ? ធាតុ លទ្ធផល will be lost. នេះ cannot be undone.",
+    "delete_template": "លុប នេះ template? នេះ cannot be undone.",
+    "delete_session": "លុប នេះ វគ្គ? នេះ cannot be undone.",
+    "discard_session": "Discard នេះ វគ្គ? វឌ្ឍនភាព will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? វឌ្ឍនភាព will be lost.",
+    "end_probe_saved": "End probe early? វឌ្ឍនភាព will be បានរក្សាទុក.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved ក្រឡា will be lost.",
+    "change_granularity": "Changing granularity will កំណត់ឡើងវិញ your rejections. បន្ត?",
+    "clear_pdf_progress": "Clear បានរក្សាទុក វឌ្ឍនភាព for នេះ PDF? នេះ cannot be undone.",
+    "switch_sentence_frame": "ប្តូរ ប្រយោគ frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

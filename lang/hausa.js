@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813201656",
+  "_version": "20260526T1779815508618",
   "tour": {
     "input_panel_title": "shigarwa panel",
     "input_panel_text": "Begin naka darasi creation journey here. wannan shigarwa panel shi ne foundation don duka samar albarkatu. It serves as central hub ina kai define abun ciki, context, da parameters.\n### shigarwa zaɓi\n• **rubutu Manna**: Manna abun ciki directly daga any article, labari, ko darasi plan.\n• **fayil Loda**: Loda PDFs, hoto, rubutu fayil, sauti (MP3/WAV), ko bidiyo don na atomatik extraction.\n• **URL Kawo**: Manna any article URL zuwa automatically cire da shigo its abun ciki.\n• **AI albarkatu Bincika**: Describe topic da let AI find aji-appropriate online albarkatu don kai.\n• **Samar da tushe rubutu**: Ƙirƙira original abun ciki by specifying topic, sauti, matakin aji, da target mizani.\n### Generation fasaloli\n• **sauti Selection**: Zaɓi daga Informative, Narrative, Persuasive, Humorous, ko mataki-by-mataki salo.\n• **mizani Alignment**: Yi amfani AI-powered mizani finder ko manually shigarwa target mizani (up zuwa 3).\n• **Fact Verification**: Kunna web grounding zuwa verify facts da haɗ citations automatically.\n• **Custom umarni**: Ƙara na musamman guidance don ƙari tailored abun ciki generation.\n### tsarin Capabilities\n• **Auto-Detection**: Automatically identifies tushe harshe.\n• **Chunked Processing**: sauti da bidiyo fayil over 20MB su ne intelligently split don reliable transcription.\n### Important Most kayan aiki sidebar require tushe material before they zai iya be yi amfani. Manna ko samar da naka abun ciki here na farko, then bincika other albarkatu.",
@@ -53,10 +53,10 @@
     "dbq_text": "takarda-Based tambaya: ɗalibi yi nazari primary sources, build evidence-based arguments, da horo central fasaha na social-studies + ELA tantance. Generates tushe takarda, scaffolded tambaya, da amsa keys aligned zuwa naka mizani.",
     "quiz_mode_title": "Pick right gwaji yanayi",
     "quiz_mode_text": "Zaɓi menene wannan gwaji shi ne don. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge before teaching da surfaces gaps as concept kati tare da one-danna \"Explain zuwa aji\" AI broadcast. Formative Check shi ne da sauri mid-darasi pulse. Spaced Review tracks kowane ɗalibi’s cross-zama retention tare da per-concept sparkline. kowane yanayi tunes prompts, abu-type mix, da live dashboard layout.",
-    "anchor_chart_title": "Anchor jadawali",
-    "anchor_chart_text": "Samar da aji-ready Anchor jadawali wancan yi concepts, ƙamus, da procedures stick. gani reference ɗalibi zai iya return zuwa throughout unit. ### panel zaɓi • **jadawali Type**: Zaɓi daga Concept, ƙamus, Process, dabara, ko Comparison jadawali. • **salo**: Hand-drawn marker look, polished buga salo, ko kid-mai abota comic salo. • **launi Palette**: Pick high-contrast, dyslexia-mai abota, ko themed launi scheme. • **Custom umarni**: Bayyana focal concepts, key ƙamus, ko dabara mataki zuwa highlight. ### jadawali kashi • **Title Banner**: Eye-catching topic header. • **gani Hierarchy**: Headings, bullets, da callouts organized don skim-reading. • **Iconography**: Auto- samar alama reinforcing kowane idea tare da dual-coded gani cues. • **misali & Non-misali**: Side-by-side panel don concept clarity. ### mu'amala fasaloli • **Gyara yanayi**: Tap any element zuwa rewrite rubutu, swap alama, ko recolor sashe. • **Buga-Ready**: High-resolution fitar sized don posters ko 8.5×11 handouts. • **Project yanayi**: Fullscreen duba don whole-aji umarni. ### Pro shawara • Samar da *dabara jadawali* before writing unit da *ƙamus jadawali* before science unit — keep both kan aji wall don whole arc. ### UDL Connection • **Representation**: Activate ko supply background knowledge (Guideline 3.1) tare da persistent gani anchors ɗalibi zai iya revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates wancan teach ɗalibi *yaya* zuwa take notes, ba just *menene* zuwa rubuta. Pick structure wancan matches cognitive task. ### Template Types • **Cornell Notes**: Classic two-shafi layout tare da cues, notes, da bottom summary. • **Two-shafi Notes**: Main idea / cikakke organization don abun ciki-heavy reading. • **T-jadawali**: Kwatanta/contrast ko pros/cons side-by-side. • **Sketchnotes**: gani note-taking tare da prompts don alama, arrows, da launi-coding. • **KWL jadawali**: Know / Want zuwa know / Learned — perfect don pre/post-reading. • **Outline Notes**: Hierarchical structure don lectures ko textbook babi. ### Generation fasaloli • **Pre-Filled Prompts**: kowane template seeded tare da cues drawn daga naka tushe rubutu. • **tambaya Stems**: Built- metacognitive prompts (\"menene surprised kai?\", \"yaya does wannan connect zuwa…?\"). • **ƙamus Slots**: Pre-populated key kalma ɗalibi should saurara/karanta don. • **Custom umarni**: Target na musamman cognitive task (synthesis, summary, evaluation). ### Buga & Digital • **Printable PDF**: Clean handout layout tare da generous writing space. • **Digital Fillable**: ɗalibi type directly into template don paperless workflows. • **Editable Headings**: malami tailor shafi labels da sashe titles before sharing. ### Pro shawara • Pair *Cornell Notes* tare da **Leveled Reader**: ɗalibi take notes at their reading matakin, then yi amfani bottom-summary box as formative-tantance check. ### UDL Connection • **Action & Expression**: tallafi planning da dabara development (Guideline 6.2) by giving learners explicit structures don organizing bayani."
+    "anchor_chart_title": "Anchor Charts",
+    "anchor_chart_text": "Ƙirƙira Anchor Charts da suka shirya don aji da ke sa ra’ayoyi, kalmomi, da hanyoyi suke kasancewa cikin tunani.",
+    "note_taking_title": "Samfuran Ɗauke Bayanai",
+    "note_taking_text": "Samfuran ɗauke bayanai masu tsari da suke koyar da ɗalibai *yadda* za su ɗauki bayanai, ba kawai *abin da* za su rubuta ba."
   },
   "launch_pad": {
     "subtitle": "Zaɓi naka learning pathway",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} na {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, maki {maki}"
+    "tier_score": "Tier {tier}, maki {maki}",
+    "draggable_item": "draggable abu"
   },
   "games": {
     "syntax": {
@@ -3976,47 +3977,47 @@
       "html_aria": "HTML tushe code zuwa audit"
     },
     "batch": {
-      "drop_text": "Ja & saka PDFs here",
-      "browse_files": "Browse fayil",
-      "clear_all": "Clear duka",
-      "progress_aria": "Batch remediation ci gaba",
-      "stop_aria": "Tsayar batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "sabon Batch",
+      "drop_text": "Jawo & saka PDFs anan",
+      "browse_files": "Bincika fayiloli",
+      "clear_all": "Share duka",
+      "progress_aria": "Ci gaba na gyaran gungu",
+      "stop_aria": "Tsayar da gyaran gungu",
+      "avg_improvement": "Inganta na matsakaita",
+      "scored_90_plus": "Sun samu 90+",
+      "new_batch": "Sabon gungu",
       "resume": {
-        "title": "na baya batch interrupted",
-        "summary": "{done}/{total} fayil(s) completed before tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "fayil:",
+        "title": "Tsohon gungu ya katse",
+        "summary": "{done}/{total} fayiloli sun cika kafin a rufe shafin.",
+        "remaining": "{n} ya rage.",
+        "files_label": "Fayiloli:",
         "files_more": "+ {n} ƙari",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} zuwa process"
+        "resume_button": "Ci gaba da gungu",
+        "discard_button": "Watsar",
+        "toast": "Yana ci gaba da gungu · {done} a ɓoye, {remaining} don sarrafawa"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} na {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "An yi alama ta {n} cikin {total} masu binciki",
+      "unanimous_suffix": " (gaba ɗaya)",
+      "minority_suffix": " — ra’ayin marasa rinjaye, ƙarancin amincewa"
     },
     "divergence": {
-      "semantic": "Structurally compliant amma semantically weak — AI flagged abun ciki quality (alt rubutu, heading meaning, reading order) wancan axe-core zai iya't detect",
-      "structural": "Code-matakin WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Yana bin tsari amma yana da rauni a ma’ana — AI ya yi alama da ingancin abun ciki da axe-core ba zai iya gano shi ba",
+      "structural": "An gano keta WCAG matakin lambar — axe-core ya sami kasawar da injin zai iya tabbatarwa"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "wannan PDF ya haɗ da PDF/UA-salo tag tree. Auditors were instructed zuwa credit existing structure rather than penalize it as missing."
+      "label": "Tsarin alama da yake wanzu",
+      "tooltip": "Wannan PDF ya ƙunshi itacen alama irin na PDF/UA. An umurci masu bincike su gane tsarin da yake nan."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} na {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues daga original audit no longer found verification audit",
-      "persisted_tip": "Issues daga original audit still present after fix",
-      "introduced_tip": "sabon issues wancan did ba exist before fix"
+      "heading": "Warware matsala",
+      "subheading": "An warware {resolved} daga matsalolin asali {total} ({pct}%)",
+      "resolved_label": "An warware",
+      "persisted_label": "Har yanzu suna nan",
+      "introduced_label": "Sabbi da aka gabatar",
+      "resolved_tip": "Matsaloli daga binciken asali da ba a sake gani a binciken tabbatarwa",
+      "persisted_tip": "Matsaloli daga binciken asali da har yanzu suke nan bayan gyaran",
+      "introduced_tip": "Sabbin matsaloli da ba su wanzu kafin gyaran"
     },
     "report": {
       "download_title": "Sauke audit report",
@@ -11622,7 +11623,14 @@
     "click_to_insert": "Danna zuwa insert wannan transition kalma",
     "edit_illustration": "Gyara illustration tare da AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Rufe"
+    "close": "Rufe",
+    "cancel": "Soke",
+    "add": "Ƙara",
+    "done": "Done",
+    "edit": "Gyara",
+    "reset": "Sake saiti",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "wuri Visualization",
@@ -11741,5 +11749,60 @@
     "send_explainer_to_students": "Aika wannan explainer zuwa every ɗalibi's screen yanzu",
     "one_click_remove_text": "One-danna: cire rubutu daga wannan hoto",
     "rewrite_distractor": "Rewrite wannan distractor zuwa encode real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "hoto too large (max 5MB). don Allah yi amfani smaller hoto.",
+    "need_card_front_back": "Ƙara at least one kati tare da both front da back.",
+    "type_word_first": "Type kalma ko letter sequence na farko.",
+    "write_something_first": "Rubuta something na farko.",
+    "pick_decoration_first": "Pick decoration zuwa link zuwa na farko.",
+    "write_association": "Rubuta gajere association — menene does wannan remind kai na?",
+    "no_crop_data": "A'a crop bayanai akwai don wannan hoto.",
+    "invalid_crop_data": "Invalid crop bayanai.",
+    "no_full_page_image": "Full page hoto ba akwai. Re-gudanar remediation zuwa kunna cropping.",
+    "selection_too_small": "Selection too small. Ja larger fadin.",
+    "encryption_unavailable": "Encryption ba akwai wannan browser. kai may need ƙari modern browser zuwa ajiye submissions.",
+    "voice_unsupported_browser": "murya recording shi ne ba supported wannan browser.",
+    "voice_unsupported_device": "murya recording shi ne ba supported kan wannan device.",
+    "mic_denied": "Microphone shiga was denied. Allow microphone shiga naka browser saiti zuwa record murya notes.",
+    "voice_too_long": "murya note too dogon zuwa ajiye (over 500KB). Gwada shorter clip.",
+    "voice_empty": "murya recording was empty.",
+    "no_annotations_to_save": "A'a annotations zuwa ajiye yet — ƙara note ko highlight na farko.",
+    "could_not_save_annotations": "Could ba ajiye annotations. Gwada different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. pre-filled report URL has been copied zuwa naka clipboard — manna it into sabon browser tab.",
+    "regenerate_function_missing": "kuskure: Regenerate function missing ko invalid",
+    "crypto_not_loaded": "Submission crypto module ba loaded yet. don Allah sabunta da gwada again.",
+    "image_too_large_10mb": "hoto too large (max 10MB). don Allah yi amfani smaller hoto."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace duka existing kati tare da imported ones?",
+    "delete_voice_note": "Goge wannan murya note?",
+    "remove_companion": "Cire naka companion?",
+    "delete_goal": "Goge wannan manufa?",
+    "delete_atlas": "Goge wannan atlas? Edges da justifications cannot be recovered.",
+    "delete_realm": "Goge wannan realm? Zones da justifications cannot be recovered.",
+    "delete_entry_tokens": "Goge wannan entry? Tokens already earned za ba be refunded.",
+    "restore_backup_destructive": "Restore daga wannan backup? wannan replaces duka current bayanai — decorations, journal, tokens, stories, saiti. Cannot be undone.",
+    "reset_skill_progress": "Sake saiti duka fasaha ci gaba? wannan cannot be undone.",
+    "remove_my_annotations": "Cire duka naka notes da highlights? malami annotations za stay.",
+    "exit_calibration_full": "Exit calibration yanayi? ci gaba za be discarded.",
+    "exit_calibration_short": "Exit calibration? ci gaba discarded.",
+    "discard_session_irreversible": "Discard wannan -ci gaba zama? abu sakamako za be lost. wannan cannot be undone.",
+    "delete_template": "Goge wannan template? wannan cannot be undone.",
+    "delete_session": "Goge wannan zama? wannan cannot be undone.",
+    "discard_session": "Discard wannan zama? ci gaba za be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? ci gaba za be lost.",
+    "end_probe_saved": "End probe early? ci gaba za be ajiye.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace current board? Unsaved sel za be lost.",
+    "change_granularity": "Changing granularity za sake saiti naka rejections. Ci gaba?",
+    "clear_pdf_progress": "Clear ajiye ci gaba don wannan PDF? wannan cannot be undone.",
+    "switch_sentence_frame": "Canza jimla frame template? naka edits zuwa blanks za be replaced.",
+    "replace_program_with_template": "Replace current program tare da template?"
   }
 }

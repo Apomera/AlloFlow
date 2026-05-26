@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813210816",
+  "_version": "20260526T1779815516332",
   "tour": {
     "input_panel_title": "ingizo paneli",
     "input_panel_text": "Begin yako somo creation journey here. Hii ingizo paneli ni foundation kwa yote imetengenezwa rasilimali. It serves as central hub wapi wewe define maudhui, muktadha, na parameters.\n### ingizo chaguzi\n• **maandishi Bandika**: Bandika maudhui directly kutoka yoyote article, hadithi, au somo mpango.\n• **faili Pakia**: Pakia PDFs, picha, maandishi faili, sauti (MP3/WAV), au video kwa kiotomatiki extraction.\n• **URL Leta**: Bandika yoyote article URL kwa kiotomatiki toa na leta its maudhui.\n• **AI rasilimali Tafuta**: Describe mada na let AI tafuta darasa-inayofaa online rasilimali kwa wewe.\n• **Tengeneza chanzo maandishi**: Unda asili maudhui by specifying mada, mwoneko, kiwango cha darasa, na lengo kiwango.\n### Kizazi vipengele\n• **mwoneko Selection**: Chagua kutoka Informative, Simulizi, Persuasive, Humorous, au hatua-by-hatua mtindo.\n• **kiwango Mpangilio**: Tumia AI-powered kiwango finder au kwa mkono ingizo lengo kiwango (up kwa 3).\n• **Fact Verification**: Wezesha web grounding kwa verify facts na jumuisha citations kiotomatiki.\n• **Custom maagizo**: Ongeza maalum guidance kwa zaidi tailored maudhui kizazi.\n### mfumo Capabilities\n• **Otomatiki-Detection**: kiotomatiki identifies chanzo lugha.\n• **Chunked Processing**: sauti na video faili juu 20MB ni intelligently split kwa reliable transcription.\n### Important Zaidi zana katika sidebar require nyenzo ya chanzo kabla wao inaweza be imetumika. Bandika au tengeneza yako maudhui here ya kwanza, kisha chunguza nyingine rasilimali.",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, alama {alama}"
+    "tier_score": "Tier {tier}, alama {alama}",
+    "draggable_item": "draggable kipengele"
   },
   "games": {
     "syntax": {
@@ -11614,7 +11615,14 @@
     "click_to_insert": "Bofya to insert hii transition maneno",
     "edit_illustration": "Hariri mchoro with AI",
     "regenerate_illustration": "Regenerate mchoro",
-    "close": "Funga"
+    "close": "Funga",
+    "cancel": "Ghairi",
+    "add": "Ongeza",
+    "done": "Done",
+    "edit": "Hariri",
+    "reset": "Anza upya",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "mandhari Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "Tuma hii explainer to every mwanafunzi's screen now",
     "one_click_remove_text": "One-bofya: ondoa maandishi from hii picha",
     "rewrite_distractor": "Rewrite hii distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "picha too large (max 5MB). tafadhali tumia a smaller picha.",
+    "need_card_front_back": "Ongeza at least one kadi with both a front and back.",
+    "type_word_first": "Type a maneno or letter sequence ya kwanza.",
+    "write_something_first": "Andika something ya kwanza.",
+    "pick_decoration_first": "Pick a decoration to link to ya kwanza.",
+    "write_association": "Andika a fupi association — what does hii remind you of?",
+    "no_crop_data": "No crop data inapatikana for hii picha.",
+    "invalid_crop_data": "Invalid crop data.",
+    "no_full_page_image": "Full page picha not inapatikana. Re-endesha remediation to wezesha cropping.",
+    "selection_too_small": "Selection too small. Buruta a larger eneo.",
+    "encryption_unavailable": "Encryption not inapatikana in hii browser. You may need a zaidi modern browser to hifadhi submissions.",
+    "voice_unsupported_browser": "sauti recording is not supported in hii browser.",
+    "voice_unsupported_device": "sauti recording is not supported on hii device.",
+    "mic_denied": "Microphone fikia was denied. Allow microphone fikia in your browser mipangilio to record sauti notes.",
+    "voice_too_long": "sauti note too ndefu to hifadhi (over 500KB). Jaribu a fupi zaidi clip.",
+    "voice_empty": "sauti recording was empty.",
+    "no_annotations_to_save": "No annotations to hifadhi yet — ongeza a note or highlight ya kwanza.",
+    "could_not_save_annotations": "Could not hifadhi annotations. Jaribu a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — bandika it into a mpya browser tab.",
+    "regenerate_function_missing": "hitilafu: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. tafadhali onyesha upya and jaribu again.",
+    "image_too_large_10mb": "picha too large (max 10MB). tafadhali tumia a smaller picha."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing kadi with the imported ones?",
+    "delete_voice_note": "Futa hii sauti note?",
+    "remove_companion": "Ondoa your companion?",
+    "delete_goal": "Futa hii lengo?",
+    "delete_atlas": "Futa hii atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Futa hii realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Futa hii entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from hii backup? Hii replaces ALL current data — decorations, journal, tokens, stories, mipangilio. Cannot be undone.",
+    "reset_skill_progress": "Anza upya all ujuzi maendeleo? Hii cannot be undone.",
+    "remove_my_annotations": "Ondoa all your notes and highlights? mwalimu annotations will stay.",
+    "exit_calibration_full": "Exit calibration hali? maendeleo will be discarded.",
+    "exit_calibration_short": "Exit calibration? maendeleo discarded.",
+    "discard_session_irreversible": "Discard hii in-maendeleo kipindi? kipengele matokeo will be lost. Hii cannot be undone.",
+    "delete_template": "Futa hii template? Hii cannot be undone.",
+    "delete_session": "Futa hii kipindi? Hii cannot be undone.",
+    "discard_session": "Discard hii kipindi? maendeleo will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? maendeleo will be lost.",
+    "end_probe_saved": "End probe early? maendeleo will be imehifadhiwa.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved kisanduku will be lost.",
+    "change_granularity": "Changing granularity will anza upya your rejections. Endelea?",
+    "clear_pdf_progress": "Clear imehifadhiwa maendeleo for hii PDF? Hii cannot be undone.",
+    "switch_sentence_frame": "Geuza sentensi frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813203980",
+  "_version": "20260526T1779815510551",
   "tour": {
     "input_panel_title": "input pannello",
     "input_panel_text": "Begin tuo lezioni creation journey here. Questo input pannello è il foundation per tutti generato risorse. It serves as il central hub dove tu define il contenuto, contesto, e parameters.\n### input opzioni\n• **testo Incolla**: Incolla contenuto directly da qualsiasi article, storia, o lezioni piano.\n• **file Carica**: Carica PDFs, immagini, testo file, audio (MP3/WAV), o video per automatico extraction.\n• **URL Recupera**: Incolla qualsiasi article URL un automaticamente estrai e importa its contenuto.\n• **AI risorse Cerca**: Describe un argomento e let AI trovare classe-appropriato online risorse per tu.\n• **Genera origine testo**: Crea originale contenuto by specifying argomento, tono, livello scolastico, e obiettivo standard.\n### Generazione funzionalità\n• **tono Selection**: Scegli da Informative, Narrativa, Persuasive, Humorous, o passi-by-passi stili.\n• **standard Allineamento**: Usa AI-powered standard finder o manualmente input obiettivo standard (up un 3).\n• **Fact Verification**: Abilita web grounding un verify facts e includi citations automaticamente.\n• **Custom istruzioni**: Aggiungi specifico guidance per altro tailored contenuto generazione.\n### sistema Capabilities\n• **Auto-Detection**: automaticamente identifies il origine lingue.\n• **Chunked Processing**: audio e video file oltre 20MB sono intelligently split per reliable transcription.\n### Important Più strumenti in il sidebar require materiale di origine prima essi può be usato. Incolla o genera tuo contenuto here primo, poi esplora il altro risorse.",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, punteggio {punteggio}"
+    "tier_score": "Tier {tier}, punteggio {punteggio}",
+    "draggable_item": "draggable elementi"
   },
   "games": {
     "syntax": {
@@ -11614,7 +11615,14 @@
     "click_to_insert": "Clicca to insert questo transition parole",
     "edit_illustration": "Modifica illustrazioni with AI",
     "regenerate_illustration": "Regenerate illustrazioni",
-    "close": "Chiudi"
+    "close": "Chiudi",
+    "cancel": "Annulla",
+    "add": "Aggiungi",
+    "done": "Done",
+    "edit": "Modifica",
+    "reset": "Reimposta",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "scene Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "Invia questo explainer to every studenti's screen now",
     "one_click_remove_text": "One-clicca: rimuovi testo from questo immagini",
     "rewrite_distractor": "Rewrite questo distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "immagini too large (max 5MB). per favore usa a smaller immagini.",
+    "need_card_front_back": "Aggiungi at least one scheda with both a front and back.",
+    "type_word_first": "Type a parole or letter sequence primo.",
+    "write_something_first": "Scrivi something primo.",
+    "pick_decoration_first": "Pick a decoration to link to primo.",
+    "write_association": "Scrivi a corto association — what does questo remind you of?",
+    "no_crop_data": "No crop dati disponibile for questo immagini.",
+    "invalid_crop_data": "Invalid crop dati.",
+    "no_full_page_image": "Full page immagini not disponibile. Re-esegui remediation to abilita cropping.",
+    "selection_too_small": "Selection too small. Trascina a larger area.",
+    "encryption_unavailable": "Encryption not disponibile in questo browser. You may need a altro modern browser to salva submissions.",
+    "voice_unsupported_browser": "voce recording is not supported in questo browser.",
+    "voice_unsupported_device": "voce recording is not supported on questo device.",
+    "mic_denied": "Microphone accesso was denied. Allow microphone accesso in your browser impostazioni to record voce notes.",
+    "voice_too_long": "voce note too lungo to salva (over 500KB). Prova a più corto clip.",
+    "voice_empty": "voce recording was empty.",
+    "no_annotations_to_save": "No annotations to salva yet — aggiungi a note or highlight primo.",
+    "could_not_save_annotations": "Could not salva annotations. Prova a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — incolla it into a nuovo browser tab.",
+    "regenerate_function_missing": "errori: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. per favore aggiorna and prova again.",
+    "image_too_large_10mb": "immagini too large (max 10MB). per favore usa a smaller immagini."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing scheda with the imported ones?",
+    "delete_voice_note": "Elimina questo voce note?",
+    "remove_companion": "Rimuovi your companion?",
+    "delete_goal": "Elimina questo obiettivi?",
+    "delete_atlas": "Elimina questo atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Elimina questo realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Elimina questo entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from questo backup? Questo replaces ALL current dati — decorations, journal, tokens, stories, impostazioni. Cannot be undone.",
+    "reset_skill_progress": "Reimposta all competenze progresso? Questo cannot be undone.",
+    "remove_my_annotations": "Rimuovi all your notes and highlights? insegnanti annotations will stay.",
+    "exit_calibration_full": "Exit calibration modalità? progresso will be discarded.",
+    "exit_calibration_short": "Exit calibration? progresso discarded.",
+    "discard_session_irreversible": "Discard questo in-progresso sessioni? elementi risultati will be lost. Questo cannot be undone.",
+    "delete_template": "Elimina questo template? Questo cannot be undone.",
+    "delete_session": "Elimina questo sessioni? Questo cannot be undone.",
+    "discard_session": "Discard questo sessioni? progresso will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? progresso will be lost.",
+    "end_probe_saved": "End probe early? progresso will be salvato.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved celle will be lost.",
+    "change_granularity": "Changing granularity will reimposta your rejections. Continua?",
+    "clear_pdf_progress": "Clear salvato progresso for questo PDF? Questo cannot be undone.",
+    "switch_sentence_frame": "Cambia frasi frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

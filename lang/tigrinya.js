@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813214783",
+  "_version": "20260526T1779815518261",
   "tour": {
     "input_panel_title": "መእተዊ ፓነል",
     "input_panel_text": "Begin ናትካ ትምህርቲ creation journey here. እዚ መእተዊ ፓነል እዩ foundation ንዓ ኩሉ ተፈጢሩ ጸጋታት. It serves as central hub ኣበይ ንስኻ define ትሕዝቶ, ኩነታት, ከምኡውን parameters.\n### መእተዊ ኣማራጺታት\n• **ጽሑፍ ለጥፍ**: ለጥፍ ትሕዝቶ directly ካብ ዝኾነ article, ዛንታ, ወይ ትምህርቲ ውጥን.\n• **ፋይል ስቐል**: ስቐል PDFs, ስእሊ, ጽሑፍ ፋይል, ድምጺ (MP3/WAV), ወይ ቪድዮ ንዓ ናይ ገዛእ extraction.\n• **URL ኣምጽእ**: ለጥፍ ዝኾነ article URL ናብ ብናይ ገዛእ ኣውጽእ ከምኡውን ኣእቱ its ትሕዝቶ.\n• **AI ጸጋታት ድለ**: Describe ሓደ ኣርእስቲ ከምኡውን let AI find ክፍሊ-ግቡእ online ጸጋታት ንዓ ንስኻ.\n• **ፍጠር ምንጪ ጽሑፍ**: ፍጠር ኦርጅናል ትሕዝቶ by specifying ኣርእስቲ, ድምጺ, ደረጃ ክፍሊ, ከምኡውን ዕላማ መዐቀኒ.\n### ወለዶ ባህርያት\n• **ድምጺ Selection**: ምረጽ ካብ Informative, ኣዘንታዊ, Persuasive, Humorous, ወይ ስጉምቲ-by-ስጉምቲ ኣገባብ.\n• **መዐቀኒ ምስራዕ**: ተጠቐም AI-powered መዐቀኒ finder ወይ ብኢድ መእተዊ ዕላማ መዐቀኒ (up ናብ 3).\n• **Fact Verification**: ኣንቅሕ web grounding ናብ verify facts ከምኡውን ኣካትት citations ብናይ ገዛእ.\n• **Custom መምርሒ**: ወስኽ ፍሉይ guidance ንዓ ተወሳኺ tailored ትሕዝቶ ወለዶ.\n### ስርዓት Capabilities\n• **Auto-Detection**: ብናይ ገዛእ identifies ምንጪ ቋንቋ.\n• **Chunked Processing**: ድምጺ ከምኡውን ቪድዮ ፋይል ኣብ ልዕሊ 20MB እዮም intelligently split ንዓ reliable transcription.\n### Important ዝበዝሐ መሳርሒታት ኣብ sidebar require ምንጪ ጽሑፍ ቅድሚ ንሳቶም ይኽእል be ተጠቒሙ. ለጥፍ ወይ ፍጠር ናትካ ትሕዝቶ here ቀዳማይ, ድሕሪኡ ድለ ካልእ ጸጋታት.",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, ነጥቢ {ነጥቢ}"
+    "tier_score": "Tier {tier}, ነጥቢ {ነጥቢ}",
+    "draggable_item": "draggable ኣቕሓ"
   },
   "games": {
     "syntax": {
@@ -11614,7 +11615,14 @@
     "click_to_insert": "ጠውቕ to insert እዚ transition ቃላት",
     "edit_illustration": "ኣርም ስእሊ with AI",
     "regenerate_illustration": "Regenerate ስእሊ",
-    "close": "ዕጾ"
+    "close": "ዕጾ",
+    "cancel": "ሰርዝ",
+    "add": "ወስኽ",
+    "done": "Done",
+    "edit": "ኣርም",
+    "reset": "መሊስካ ጀምር",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "ትርኢት Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "ላእኽ እዚ explainer to every ተምሃራይ's screen now",
     "one_click_remove_text": "One-ጠውቕ: ኣልግስ ጽሑፍ from እዚ ስእሊ",
     "rewrite_distractor": "Rewrite እዚ distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "ስእሊ too large (max 5MB). በጃኹም ተጠቐም a smaller ስእሊ.",
+    "need_card_front_back": "ወስኽ at least one ካርድ with both a front and back.",
+    "type_word_first": "Type a ቃላት or letter sequence ቀዳማይ.",
+    "write_something_first": "ጽሓፍ something ቀዳማይ.",
+    "pick_decoration_first": "Pick a decoration to link to ቀዳማይ.",
+    "write_association": "ጽሓፍ a ሓጺር association — what does እዚ remind you of?",
+    "no_crop_data": "ኣይኮነን crop ዳታ ዝርከብ for እዚ ስእሊ.",
+    "invalid_crop_data": "Invalid crop ዳታ.",
+    "no_full_page_image": "Full page ስእሊ not ዝርከብ. Re-ኣምራሕ remediation to ኣንቅሕ cropping.",
+    "selection_too_small": "Selection too small. ስሓብ a larger ስፍሓት.",
+    "encryption_unavailable": "Encryption not ዝርከብ in እዚ browser. You may need a ተወሳኺ modern browser to ኣቐምጥ submissions.",
+    "voice_unsupported_browser": "ድምጺ recording is not supported in እዚ browser.",
+    "voice_unsupported_device": "ድምጺ recording is not supported on እዚ device.",
+    "mic_denied": "Microphone መእተዊ was denied. Allow microphone መእተዊ in your browser ስርዓታት to record ድምጺ notes.",
+    "voice_too_long": "ድምጺ note too ነዊሕ to ኣቐምጥ (over 500KB). ፈትን a ዝሓጸረ clip.",
+    "voice_empty": "ድምጺ recording was empty.",
+    "no_annotations_to_save": "ኣይኮነን annotations to ኣቐምጥ yet — ወስኽ a note or highlight ቀዳማይ.",
+    "could_not_save_annotations": "Could not ኣቐምጥ annotations. ፈትን a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — ለጥፍ it into a ሓድሽ browser tab.",
+    "regenerate_function_missing": "ጌጋ: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. በጃኹም ኣሐድስ and ፈትን again.",
+    "image_too_large_10mb": "ስእሊ too large (max 10MB). በጃኹም ተጠቐም a smaller ስእሊ."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing ካርድ with the imported ones?",
+    "delete_voice_note": "ሰርዝ እዚ ድምጺ note?",
+    "remove_companion": "ኣልግስ your companion?",
+    "delete_goal": "ሰርዝ እዚ ዕላማ?",
+    "delete_atlas": "ሰርዝ እዚ atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "ሰርዝ እዚ realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "ሰርዝ እዚ entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from እዚ backup? እዚ replaces ALL current ዳታ — decorations, journal, tokens, stories, ስርዓታት. Cannot be undone.",
+    "reset_skill_progress": "መሊስካ ጀምር all ክእለት ዕቤት? እዚ cannot be undone.",
+    "remove_my_annotations": "ኣልግስ all your notes and highlights? መምህር annotations will stay.",
+    "exit_calibration_full": "Exit calibration ኣገባብ? ዕቤት will be discarded.",
+    "exit_calibration_short": "Exit calibration? ዕቤት discarded.",
+    "discard_session_irreversible": "Discard እዚ in-ዕቤት ኣኼባ? ኣቕሓ ውጽኢት will be lost. እዚ cannot be undone.",
+    "delete_template": "ሰርዝ እዚ template? እዚ cannot be undone.",
+    "delete_session": "ሰርዝ እዚ ኣኼባ? እዚ cannot be undone.",
+    "discard_session": "Discard እዚ ኣኼባ? ዕቤት will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? ዕቤት will be lost.",
+    "end_probe_saved": "End probe early? ዕቤት will be ተቐሚጡ.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved ዋህዮ will be lost.",
+    "change_granularity": "Changing granularity will መሊስካ ጀምር your rejections. ቐጽል?",
+    "clear_pdf_progress": "Clear ተቐሚጡ ዕቤት for እዚ PDF? እዚ cannot be undone.",
+    "switch_sentence_frame": "ቀይር ሓረግ frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

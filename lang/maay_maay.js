@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813207453",
+  "_version": "20260526T1779815513803",
   "tour": {
     "input_panel_title": "Input Panel",
     "input_panel_text": "Begin kaaga casharro creation journey here. tan Input Panel waa foundation u dhammaan soo saaray resources. It serves as central hub meesha adigu define content, context, iyo parameters.\n### Input Options\n• **Text Paste**: Paste content directly from any article, sheeko, ama casharro plan.\n• **fayl Upload**: Upload PDFs, sawir, text fayl, audio (MP3/WAV), ama video u automatic extraction.\n• **URL Fetch**: Paste any article URL ku automatically extract iyo import its content.\n• **AI Resource Raadi**: Describe a topic iyo let AI find grade-appropriate online resources u adigu.\n• **Generate Source Text**: Create asal content by specifying topic, tone, grade level, iyo target standards.\n### Qarni Features\n• **Tone Selection**: Door from Informative, Narrative, Persuasive, Humorous, ama Step-by-Step styles.\n• **Standards Alignment**: Isticmaal AI-powered standard finder ama manually input target standards (up ku 3).\n• **Fact Verification**: Enable web grounding ku verify facts iyo include citations automatically.\n• **Custom Instructions**: Ku dar specific guidance u badan tailored content qarni.\n### System Capabilities\n• **Auto-Detection**: Automatically identifies source luqad.\n• **Chunked Processing**: Audio iyo video fayl over 20MB waa intelligently split u reliable transcription.\n### Important Most tools ku sidebar require source material kahor they wuu kara be used. Paste ama generate kaaga content here first, then explore kale resources.",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, score {score}"
+    "tier_score": "Tier {tier}, score {score}",
+    "draggable_item": "draggable item"
   },
   "games": {
     "syntax": {
@@ -11622,7 +11623,14 @@
     "click_to_insert": "Riix to insert this transition ereyo",
     "edit_illustration": "Wax ka beddel illustration with AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Xidh"
+    "close": "Xidh",
+    "cancel": "Joojin",
+    "add": "Ku dar",
+    "done": "Done",
+    "edit": "Wax ka beddel",
+    "reset": "Reset",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "Scene Visualization",
@@ -11741,5 +11749,60 @@
     "send_explainer_to_students": "Dir this explainer to every arday's screen now",
     "one_click_remove_text": "One-riix: saar text from this sawir",
     "rewrite_distractor": "Rewrite this distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "sawir too large (max 5MB). Please isticmaal a smaller sawir.",
+    "need_card_front_back": "Ku dar at least one card with both a front and back.",
+    "type_word_first": "Type a ereyo or letter sequence first.",
+    "write_something_first": "Qor something first.",
+    "pick_decoration_first": "Pick a decoration to link to first.",
+    "write_association": "Qor a short association — what does this remind you of?",
+    "no_crop_data": "Maya crop data available for this sawir.",
+    "invalid_crop_data": "Invalid crop data.",
+    "no_full_page_image": "Full page sawir not available. Re-run remediation to enable cropping.",
+    "selection_too_small": "Selection too yar. Drag a larger area.",
+    "encryption_unavailable": "Encryption not available in this browser. You may need a more modern browser to kaydi submissions.",
+    "voice_unsupported_browser": "Voice recording is not supported in this browser.",
+    "voice_unsupported_device": "Voice recording is not supported on this device.",
+    "mic_denied": "Microphone access was denied. Allow microphone access in your browser settings to record voice notes.",
+    "voice_too_long": "Voice note too long to kaydi (over 500KB). Try a shorter clip.",
+    "voice_empty": "Voice recording was empty.",
+    "no_annotations_to_save": "Maya annotations to kaydi yet — ku dar a note or highlight first.",
+    "could_not_save_annotations": "Could not kaydi annotations. Try a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a cusub browser tab.",
+    "regenerate_function_missing": "Error: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. Please refresh and try again.",
+    "image_too_large_10mb": "sawir too large (max 10MB). Please isticmaal a smaller sawir."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing cards with the imported ones?",
+    "delete_voice_note": "Tirtir this voice note?",
+    "remove_companion": "Saar your companion?",
+    "delete_goal": "Tirtir this goal?",
+    "delete_atlas": "Tirtir this atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Tirtir this realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Tirtir this entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from this backup? This replaces ALL current data — decorations, journal, tokens, stories, settings. Cannot be undone.",
+    "reset_skill_progress": "Reset all skill progress? This cannot be undone.",
+    "remove_my_annotations": "Saar all your notes and highlights? macallin annotations will stay.",
+    "exit_calibration_full": "Exit calibration mode? Progress will be discarded.",
+    "exit_calibration_short": "Exit calibration? Progress discarded.",
+    "discard_session_irreversible": "Discard this in-progress session? Item results will be lost. This cannot be undone.",
+    "delete_template": "Tirtir this template? This cannot be undone.",
+    "delete_session": "Tirtir this session? This cannot be undone.",
+    "discard_session": "Discard this session? Progress will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? Progress will be lost.",
+    "end_probe_saved": "End probe early? Progress will be saved.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved cells will be lost.",
+    "change_granularity": "Changing granularity will reset your rejections. Sii wad?",
+    "clear_pdf_progress": "Clear saved progress for this PDF? This cannot be undone.",
+    "switch_sentence_frame": "Switch sentence frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

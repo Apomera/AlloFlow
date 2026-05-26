@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813204791",
+  "_version": "20260526T1779815511193",
   "_slug": "japanese",
   "_display": "Japanese",
   "_generated": "2026-05-24",
@@ -975,7 +975,8 @@
     "concept_map_of": "概念 map: {トピック}。",
     "mind_map_branch": "Mind map branch {n} の {total}: {タイトル}。",
     "mind_map_of": "Mind map: {トピック}。",
-    "tier_score": "層 {層}, スコア {スコア}。"
+    "tier_score": "層 {層}, スコア {スコア}。",
+    "draggable_item": "draggable アイテム。"
   },
   "large_file": {
     "modal_title": "大きな音声ファイルをインポート",
@@ -11686,7 +11687,14 @@
     "click_to_insert": "クリック insert この移行単語。",
     "edit_illustration": "編集イラスト AI。",
     "regenerate_illustration": "Regenerate イラスト。",
-    "close": "閉じる。"
+    "close": "閉じる。",
+    "cancel": "キャンセル。",
+    "add": "追加。",
+    "done": "Done。",
+    "edit": "編集。",
+    "reset": "リセット。",
+    "apply": "適用。",
+    "processing": "処理。"
   },
   "alts": {
     "scene_visualization": "シーン Visualization。",
@@ -11805,5 +11813,60 @@
     "send_explainer_to_students": "送信この説明各生徒's 画面今。",
     "one_click_remove_text": "ワンクリック: 削除テキストからこの画像。",
     "rewrite_distractor": "Rewrite このディストラクター encode real 誤解。"
+  },
+  "alerts": {
+    "image_too_large_5mb": "画像 too 大きい (max 5MB)。",
+    "need_card_front_back": "追加 least 一つカード both front と戻る。",
+    "type_word_first": "タイプ単語または文字シーケンス最初の。",
+    "write_something_first": "書く something 最初の。",
+    "pick_decoration_first": "選択 decoration link 最初の。",
+    "write_association": "書く短い association — 何この remind の?。",
+    "no_crop_data": "No crop データ利用可能この画像。",
+    "invalid_crop_data": "Invalid crop データ。",
+    "no_full_page_image": "完全ページ画像ない利用可能。",
+    "selection_too_small": "選択 too 小さい。",
+    "encryption_unavailable": "Encryption ない利用可能このブラウザ。",
+    "voice_unsupported_browser": "音声記録ない対応このブラウザ。",
+    "voice_unsupported_device": "音声記録ない対応このデバイス。",
+    "mic_denied": "Microphone アクセス denied。",
+    "voice_too_long": "音声ノート too 長い保存 (上 500KB)。",
+    "voice_empty": "音声記録空。",
+    "no_annotations_to_save": "No アノテーション保存まだ — 追加ノートまたはハイライト最初の。",
+    "could_not_save_annotations": "できるない保存アノテーション。",
+    "popup_blocked_clipboard": "Pop-上 blocked。",
+    "regenerate_function_missing": "エラー: Regenerate function missing または invalid。",
+    "crypto_not_loaded": "送信 crypto モジュールない読み込みまだ。",
+    "image_too_large_10mb": "画像 too 大きい (max 10MB)。"
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace すべて existing カード imported ones?。",
+    "delete_voice_note": "削除この音声ノート?。",
+    "remove_companion": "削除 companion?。",
+    "delete_goal": "削除この目標?。",
+    "delete_atlas": "削除この atlas? Edges と justifications cannot recovered。",
+    "delete_realm": "削除この realm? ゾーンと justifications cannot recovered。",
+    "delete_entry_tokens": "削除このエントリ? Tokens already earned ない refunded。",
+    "restore_backup_destructive": "復元からこのバックアップ? この replaces すべて現在データ — decorations, ジャーナル, tokens, stories, 設定。",
+    "reset_skill_progress": "リセットすべてスキル進捗? この cannot undone。",
+    "remove_my_annotations": "削除すべてノートとハイライト? 教師アノテーション stay。",
+    "exit_calibration_full": "終了 calibration モード? 進捗 discarded。",
+    "exit_calibration_short": "終了 calibration? 進捗 discarded。",
+    "discard_session_irreversible": "Discard この -進捗セッション? アイテム結果 lost。",
+    "delete_template": "削除このテンプレート? この cannot undone。",
+    "delete_session": "削除このセッション? この cannot undone。",
+    "discard_session": "Discard このセッション? 進捗 lost。",
+    "discard_without_saving": "Discard なし保存中?。",
+    "end_probe_lost": "終了プローブ早期? 進捗 lost。",
+    "end_probe_saved": "終了プローブ早期? 進捗保存。",
+    "end_probe": "終了プローブ早期?。",
+    "end_nwf_probe": "終了 NWF プローブ早期?。",
+    "end_lnf_probe": "終了 LNF プローブ早期?。",
+    "end_ran_probe": "終了 RAN プローブ早期?。",
+    "end_orf_probe": "終了 ORF プローブ早期?。",
+    "replace_board": "Replace 現在 board? 未保存セル lost。",
+    "change_granularity": "変更 granularity リセット rejections。",
+    "clear_pdf_progress": "明確保存進捗この PDF? この cannot undone。",
+    "switch_sentence_frame": "切り替え文 frame テンプレート? edits 空白 replaced。",
+    "replace_program_with_template": "Replace 現在 program テンプレート?。"
   }
 }

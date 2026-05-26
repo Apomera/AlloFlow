@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813206591",
+  "_version": "20260526T1779815512615",
   "tour": {
     "input_panel_title": "입력 패널",
     "input_panel_text": "Begin 당신의 수업 creation journey here. 이것 입력 패널 입니다 foundation 위한 모든 생성됨 리소스. It serves as central hub 어디 당신 define 콘텐츠, 맥락, 및 parameters.\n### 입력 옵션\n• **텍스트 붙여넣기**: 붙여넣기 콘텐츠 directly 에서 어떤 article, 이야기, 또는 수업 계획.\n• **파일 업로드**: 업로드 PDFs, 이미지, 텍스트 파일, 오디오 (MP3/WAV), 또는 비디오 위한 자동 extraction.\n• **URL 가져오기**: 붙여넣기 어떤 article URL 에 자동으로 추출 및 가져오기 its 콘텐츠.\n• **AI 리소스 검색**: Describe 주제 및 let AI 찾기 학년-적절 online 리소스 위한 당신.\n• **생성 소스 텍스트**: 만들기 원본 콘텐츠 by specifying 주제, 톤, 학년 수준, 및 대상 표준.\n### 생성 기능\n• **톤 Selection**: 선택 에서 Informative, 서사, Persuasive, Humorous, 또는 단계-by-단계 스타일.\n• **표준 정렬**: 사용 AI-powered 표준 finder 또는 수동으로 입력 대상 표준 (up 에 3).\n• **Fact Verification**: 활성화 web grounding 에 verify facts 및 포함 citations 자동으로.\n• **Custom 지시**: 추가 특정 guidance 위한 더 많이 tailored 콘텐츠 생성.\n### 시스템 Capabilities\n• **자동-Detection**: 자동으로 identifies 소스 언어.\n• **Chunked Processing**: 오디오 및 비디오 파일 위에 20MB 입니다 intelligently split 위한 reliable transcription.\n### Important 가장 도구 안에 sidebar require 소스 자료 이전 그들 수 있습니다 be 사용됨. 붙여넣기 또는 생성 당신의 콘텐츠 here 첫 번째, 그 다음 탐색 다른 리소스.",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, 점수 {점수}"
+    "tier_score": "Tier {tier}, 점수 {점수}",
+    "draggable_item": "draggable 항목"
   },
   "games": {
     "syntax": {
@@ -11614,7 +11615,14 @@
     "click_to_insert": "클릭 to insert 이것 transition 단어",
     "edit_illustration": "편집 일러스트 with AI",
     "regenerate_illustration": "Regenerate 일러스트",
-    "close": "닫기"
+    "close": "닫기",
+    "cancel": "취소",
+    "add": "추가",
+    "done": "Done",
+    "edit": "편집",
+    "reset": "재설정",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "장면 Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "보내기 이것 explainer to every 학생's screen now",
     "one_click_remove_text": "One-클릭: 제거 텍스트 from 이것 이미지",
     "rewrite_distractor": "Rewrite 이것 distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "이미지 too large (max 5MB). 부디 사용 a smaller 이미지.",
+    "need_card_front_back": "추가 at least one 카드 with both a front and back.",
+    "type_word_first": "Type a 단어 or letter sequence 첫 번째.",
+    "write_something_first": "쓰기 something 첫 번째.",
+    "pick_decoration_first": "Pick a decoration to link to 첫 번째.",
+    "write_association": "쓰기 a 짧은 association — what does 이것 remind you of?",
+    "no_crop_data": "No crop 데이터 사용 가능 for 이것 이미지.",
+    "invalid_crop_data": "Invalid crop 데이터.",
+    "no_full_page_image": "Full page 이미지 not 사용 가능. Re-실행 remediation to 활성화 cropping.",
+    "selection_too_small": "Selection too small. 드래그 a larger 면적.",
+    "encryption_unavailable": "Encryption not 사용 가능 in 이것 browser. You may need a 더 많이 modern browser to 저장 submissions.",
+    "voice_unsupported_browser": "음성 recording is not supported in 이것 browser.",
+    "voice_unsupported_device": "음성 recording is not supported on 이것 device.",
+    "mic_denied": "Microphone 접근 was denied. Allow microphone 접근 in your browser 설정 to record 음성 notes.",
+    "voice_too_long": "음성 note too 긴 to 저장 (over 500KB). 시도 a 더 짧은 clip.",
+    "voice_empty": "음성 recording was empty.",
+    "no_annotations_to_save": "No annotations to 저장 yet — 추가 a note or highlight 첫 번째.",
+    "could_not_save_annotations": "Could not 저장 annotations. 시도 a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — 붙여넣기 it into a 새로운 browser tab.",
+    "regenerate_function_missing": "오류: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. 부디 새로고침 and 시도 again.",
+    "image_too_large_10mb": "이미지 too large (max 10MB). 부디 사용 a smaller 이미지."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing 카드 with the imported ones?",
+    "delete_voice_note": "삭제 이것 음성 note?",
+    "remove_companion": "제거 your companion?",
+    "delete_goal": "삭제 이것 목표?",
+    "delete_atlas": "삭제 이것 atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "삭제 이것 realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "삭제 이것 entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from 이것 backup? 이것 replaces ALL current 데이터 — decorations, journal, tokens, stories, 설정. Cannot be undone.",
+    "reset_skill_progress": "재설정 all 기술 진행 상황? 이것 cannot be undone.",
+    "remove_my_annotations": "제거 all your notes and highlights? 교사 annotations will stay.",
+    "exit_calibration_full": "Exit calibration 모드? 진행 상황 will be discarded.",
+    "exit_calibration_short": "Exit calibration? 진행 상황 discarded.",
+    "discard_session_irreversible": "Discard 이것 in-진행 상황 세션? 항목 결과 will be lost. 이것 cannot be undone.",
+    "delete_template": "삭제 이것 template? 이것 cannot be undone.",
+    "delete_session": "삭제 이것 세션? 이것 cannot be undone.",
+    "discard_session": "Discard 이것 세션? 진행 상황 will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? 진행 상황 will be lost.",
+    "end_probe_saved": "End probe early? 진행 상황 will be 저장됨.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved 셀 will be lost.",
+    "change_granularity": "Changing granularity will 재설정 your rejections. 계속?",
+    "clear_pdf_progress": "Clear 저장됨 진행 상황 for 이것 PDF? 이것 cannot be undone.",
+    "switch_sentence_frame": "전환 문장 frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

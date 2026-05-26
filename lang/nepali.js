@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813208168",
+  "_version": "20260526T1779815514776",
   "tour": {
     "input_panel_title": "इनपुट प्यानल",
     "input_panel_text": "Begin तपाईंको पाठ creation journey here. यो इनपुट प्यानल हो foundation का लागि सबै उत्पन्न भयो स्रोतहरू. It serves as central hub कहाँ तपाईं define सामग्री, सन्दर्भ, र parameters.\n### इनपुट विकल्पहरू\n• **पाठ टाँस्नुहोस्**: टाँस्नुहोस् सामग्री directly बाट कुनै पनि article, कथा, वा पाठ योजना.\n• **फाइल अपलोड गर्नुहोस्**: अपलोड गर्नुहोस् PDFs, तस्वीर, पाठ फाइल, अडियो (MP3/WAV), वा भिडियो का लागि स्वचालित extraction.\n• **URL ल्याउनुहोस्**: टाँस्नुहोस् कुनै पनि article URL मा स्वचालित रूपमा निकाल्नुहोस् र आयात गर्नुहोस् its सामग्री.\n• **AI स्रोतहरू खोज्नुहोस्**: Describe एक विषय र let AI find कक्षा-उपयुक्त online स्रोतहरू का लागि तपाईं.\n• **उत्पन्न गर्नुहोस् स्रोत पाठ**: सिर्जना गर्नुहोस् मूल सामग्री by specifying विषय, स्वर, कक्षा स्तर, र लक्ष्य मानक.\n### पुस्ता सुविधाहरू\n• **स्वर Selection**: छान्नुहोस् बाट Informative, कथा, Persuasive, Humorous, वा चरण-by-चरण शैली.\n• **मानक पङ्क्तिबद्धता**: प्रयोग गर्नुहोस् AI-powered मानक finder वा म्यानुअल रूपमा इनपुट लक्ष्य मानक (up मा 3).\n• **Fact Verification**: सक्षम गर्नुहोस् web grounding मा verify facts र समावेश गर्नुहोस् citations स्वचालित रूपमा.\n• **Custom निर्देशन**: थप्नुहोस् विशिष्ट guidance का लागि थप tailored सामग्री पुस्ता.\n### प्रणाली Capabilities\n• **Auto-Detection**: स्वचालित रूपमा identifies स्रोत भाषा.\n• **Chunked Processing**: अडियो र भिडियो फाइल माथि 20MB छन् intelligently split का लागि reliable transcription.\n### Important सबैभन्दा उपकरणहरू मा sidebar require स्रोत सामग्री पहिले उनीहरू सक्छ be प्रयोग गरिएको. टाँस्नुहोस् वा उत्पन्न गर्नुहोस् तपाईंको सामग्री here पहिलो, त्यसपछि अन्वेषण गर्नुहोस् अन्य स्रोतहरू.",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, अंक {अंक}"
+    "tier_score": "Tier {tier}, अंक {अंक}",
+    "draggable_item": "draggable वस्तु"
   },
   "games": {
     "syntax": {
@@ -11614,7 +11615,14 @@
     "click_to_insert": "क्लिक गर्नुहोस् to insert यो transition शब्दहरू",
     "edit_illustration": "सम्पादन गर्नुहोस् चित्रण with AI",
     "regenerate_illustration": "Regenerate चित्रण",
-    "close": "बन्द गर्नुहोस्"
+    "close": "बन्द गर्नुहोस्",
+    "cancel": "रद्द गर्नुहोस्",
+    "add": "थप्नुहोस्",
+    "done": "Done",
+    "edit": "सम्पादन गर्नुहोस्",
+    "reset": "रिसेट गर्नुहोस्",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "दृश्य Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "पठाउनुहोस् यो explainer to every विद्यार्थी's screen now",
     "one_click_remove_text": "One-क्लिक गर्नुहोस्: हटाउनुहोस् पाठ from यो तस्वीर",
     "rewrite_distractor": "Rewrite यो distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "तस्वीर too large (max 5MB). कृपया प्रयोग गर्नुहोस् a smaller तस्वीर.",
+    "need_card_front_back": "थप्नुहोस् at least one कार्ड with both a front and back.",
+    "type_word_first": "Type a शब्दहरू or letter sequence पहिलो.",
+    "write_something_first": "लेख्नुहोस् something पहिलो.",
+    "pick_decoration_first": "Pick a decoration to link to पहिलो.",
+    "write_association": "लेख्नुहोस् a छोटो association — what does यो remind you of?",
+    "no_crop_data": "No crop डेटा उपलब्ध for यो तस्वीर.",
+    "invalid_crop_data": "Invalid crop डेटा.",
+    "no_full_page_image": "Full page तस्वीर not उपलब्ध. Re-चलाउनुहोस् remediation to सक्षम गर्नुहोस् cropping.",
+    "selection_too_small": "Selection too small. तान्नुहोस् a larger क्षेत्रफल.",
+    "encryption_unavailable": "Encryption not उपलब्ध in यो browser. You may need a थप modern browser to सुरक्षित गर्नुहोस् submissions.",
+    "voice_unsupported_browser": "आवाज recording is not supported in यो browser.",
+    "voice_unsupported_device": "आवाज recording is not supported on यो device.",
+    "mic_denied": "Microphone पहुँच was denied. Allow microphone पहुँच in your browser सेटिङहरू to record आवाज notes.",
+    "voice_too_long": "आवाज note too लामो to सुरक्षित गर्नुहोस् (over 500KB). प्रयास गर्नुहोस् a छोटो clip.",
+    "voice_empty": "आवाज recording was empty.",
+    "no_annotations_to_save": "No annotations to सुरक्षित गर्नुहोस् yet — थप्नुहोस् a note or highlight पहिलो.",
+    "could_not_save_annotations": "Could not सुरक्षित गर्नुहोस् annotations. प्रयास गर्नुहोस् a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — टाँस्नुहोस् it into a नयाँ browser tab.",
+    "regenerate_function_missing": "त्रुटि: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. कृपया ताजा गर्नुहोस् and प्रयास गर्नुहोस् again.",
+    "image_too_large_10mb": "तस्वीर too large (max 10MB). कृपया प्रयोग गर्नुहोस् a smaller तस्वीर."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing कार्ड with the imported ones?",
+    "delete_voice_note": "मेटाउनुहोस् यो आवाज note?",
+    "remove_companion": "हटाउनुहोस् your companion?",
+    "delete_goal": "मेटाउनुहोस् यो लक्ष्य?",
+    "delete_atlas": "मेटाउनुहोस् यो atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "मेटाउनुहोस् यो realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "मेटाउनुहोस् यो entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from यो backup? यो replaces ALL current डेटा — decorations, journal, tokens, stories, सेटिङहरू. Cannot be undone.",
+    "reset_skill_progress": "रिसेट गर्नुहोस् all सीप प्रगति? यो cannot be undone.",
+    "remove_my_annotations": "हटाउनुहोस् all your notes and highlights? शिक्षक annotations will stay.",
+    "exit_calibration_full": "Exit calibration मोड? प्रगति will be discarded.",
+    "exit_calibration_short": "Exit calibration? प्रगति discarded.",
+    "discard_session_irreversible": "Discard यो in-प्रगति सत्र? वस्तु नतिजा will be lost. यो cannot be undone.",
+    "delete_template": "मेटाउनुहोस् यो template? यो cannot be undone.",
+    "delete_session": "मेटाउनुहोस् यो सत्र? यो cannot be undone.",
+    "discard_session": "Discard यो सत्र? प्रगति will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? प्रगति will be lost.",
+    "end_probe_saved": "End probe early? प्रगति will be सुरक्षित भयो.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved सेल will be lost.",
+    "change_granularity": "Changing granularity will रिसेट गर्नुहोस् your rejections. जारी राख्नुहोस्?",
+    "clear_pdf_progress": "Clear सुरक्षित भयो प्रगति for यो PDF? यो cannot be undone.",
+    "switch_sentence_frame": "बदल्नुहोस् वाक्य frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

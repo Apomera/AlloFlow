@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813207789",
+  "_version": "20260526T1779815514344",
   "tour": {
     "input_panel_title": "Input Panel",
     "input_panel_text": "Begin eo am katak creation journey here. in Input Panel ej eo foundation ñan aolep kōṃṃan resources. It serves as eo central hub ia kwe define eo content, context, im parameters.\n### Input Options\n• **Text Paste**: Paste content directly from any article, bwebwenato, ak katak plan.\n• **fail Upload**: Upload PDFs, pija, text fail, audio (MP3/WAV), ak video ñan automatic extraction.\n• **URL Fetch**: Paste any article URL ñan automatically extract im import its content.\n• **AI Resource Pukot**: Describe a topic im let AI find grade-appropriate online resources ñan kwe.\n• **Generate Source Text**: Create jinoin content by specifying topic, tone, grade level, im target standards.\n### Epepen Features\n• **Tone Selection**: Kālōt from Informative, Narrative, Persuasive, Humorous, ak Step-by-Step styles.\n• **Standards Alignment**: Kōjerbal AI-powered standard finder ak manually input target standards (up ñan 3).\n• **Fact Verification**: Enable web grounding ñan verify facts im include citations automatically.\n• **Custom Instructions**: Kobaik specific guidance ñan eḷap ḷọk tailored content epepen.\n### System Capabilities\n• **Auto-Detection**: Automatically identifies eo source kajin.\n• **Chunked Processing**: Audio im video fail over 20MB rej intelligently split ñan reliable transcription.\n### Important Most tools ilo eo sidebar require source material ṃokta they maroñ be used. Paste ak generate eo am content here first, then explore eo bar juon resources.",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, score {score}"
+    "tier_score": "Tier {tier}, score {score}",
+    "draggable_item": "draggable item"
   },
   "games": {
     "syntax": {
@@ -11622,7 +11623,14 @@
     "click_to_insert": "Klik to insert this transition naan",
     "edit_illustration": "Ukot illustration with AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Kiili"
+    "close": "Kiili",
+    "cancel": "Kajeor",
+    "add": "Kobaik",
+    "done": "Done",
+    "edit": "Ukot",
+    "reset": "Reset",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "Scene Visualization",
@@ -11741,5 +11749,60 @@
     "send_explainer_to_students": "Jilkinḷọk this explainer to every rūkkatak's screen now",
     "one_click_remove_text": "One-klik: joḷọk text from this pija",
     "rewrite_distractor": "Rewrite this distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "pija too large (max 5MB). Please kōjerbal a smaller pija.",
+    "need_card_front_back": "Kobaik at least one card with both a front and back.",
+    "type_word_first": "Type a naan or letter sequence first.",
+    "write_something_first": "Jeje something first.",
+    "pick_decoration_first": "Pick a decoration to link to first.",
+    "write_association": "Jeje a short association — what does this remind you of?",
+    "no_crop_data": "Jaab crop data available for this pija.",
+    "invalid_crop_data": "Invalid crop data.",
+    "no_full_page_image": "Full page pija not available. Re-run remediation to enable cropping.",
+    "selection_too_small": "Selection too eḷḷap. Drag a larger area.",
+    "encryption_unavailable": "Encryption not available in this browser. You may need a more modern browser to kōjparok submissions.",
+    "voice_unsupported_browser": "Voice recording is not supported in this browser.",
+    "voice_unsupported_device": "Voice recording is not supported on this device.",
+    "mic_denied": "Microphone access was denied. Allow microphone access in your browser settings to record voice notes.",
+    "voice_too_long": "Voice note too long to kōjparok (over 500KB). Try a shorter clip.",
+    "voice_empty": "Voice recording was empty.",
+    "no_annotations_to_save": "Jaab annotations to kōjparok yet — kobaik a note or highlight first.",
+    "could_not_save_annotations": "Could not kōjparok annotations. Try a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a ekāāl browser tab.",
+    "regenerate_function_missing": "Error: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. Please refresh and try again.",
+    "image_too_large_10mb": "pija too large (max 10MB). Please kōjerbal a smaller pija."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing cards with the imported ones?",
+    "delete_voice_note": "Jolok this voice note?",
+    "remove_companion": "Joḷọk your companion?",
+    "delete_goal": "Jolok this goal?",
+    "delete_atlas": "Jolok this atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Jolok this realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Jolok this entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from this backup? This replaces ALL current data — decorations, journal, tokens, stories, settings. Cannot be undone.",
+    "reset_skill_progress": "Reset all skill progress? This cannot be undone.",
+    "remove_my_annotations": "Joḷọk all your notes and highlights? rūkaki annotations will stay.",
+    "exit_calibration_full": "Exit calibration mode? Progress will be discarded.",
+    "exit_calibration_short": "Exit calibration? Progress discarded.",
+    "discard_session_irreversible": "Discard this in-progress session? Item results will be lost. This cannot be undone.",
+    "delete_template": "Jolok this template? This cannot be undone.",
+    "delete_session": "Jolok this session? This cannot be undone.",
+    "discard_session": "Discard this session? Progress will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? Progress will be lost.",
+    "end_probe_saved": "End probe early? Progress will be saved.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved cells will be lost.",
+    "change_granularity": "Changing granularity will reset your rejections. Wōnṃaanḷọk?",
+    "clear_pdf_progress": "Clear saved progress for this PDF? This cannot be undone.",
+    "switch_sentence_frame": "Switch sentence frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

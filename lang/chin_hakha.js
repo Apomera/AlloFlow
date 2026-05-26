@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813200630",
+  "_version": "20260526T1779815507225",
   "tour": {
     "input_panel_title": "Input Panel",
     "input_panel_text": "Begin nangmah cawnnak creation journey here. hi Input Panel si foundation caah dihlak tuah resources. It serves as central hub khoika nang define content, context, le parameters.\n### Input Options\n• **Text Paste**: Paste content directly from any article, tuanbia, asilole cawnnak taipuelaknak.\n• **file Thlaktan**: Thlaktan PDFs, limceu, text file, audio (MP3/WAV), asilole video caah automatic extraction.\n• **URL Fetch**: Paste any article URL ah automatically extract le import its content.\n• **AI Resource Kawl**: Describe kong le let AI find grade-appropriate online resources caah nang.\n• **Generate Source Text**: Create a sual content by specifying kong, tone, grade level, le tinhmi standards.\n### Chan Features\n• **Tone Selection**: Thim from Informative, Tuanbia, Persuasive, Humorous, asilole Step-by-Step styles.\n• **Standards Rian buatsaihnak**: Hman AI-powered standard finder asilole manually input tinhmi standards (up ah 3).\n• **Fact Verification**: Enable web grounding ah verify facts le include citations automatically.\n• **Custom Instructions**: Tel lakhmi guidance caah tampin tailored content chan.\n### System Capabilities\n• **Auto-Detection**: Automatically identifies source holh.\n• **Chunked Processing**: Audio le video file cunglei 20MB si intelligently split caah reliable transcription.\n### Important Most tools ah sidebar require source material before they can be used. Paste asilole generate nangmah content here first, then explore a dang resources.",
@@ -53,10 +53,10 @@
     "dbq_text": "Document-Based biahalnak: sianginn caa analyze primary sources, tuah tehna-based arguments, le practice central skill i social-studies + ELA assessments. Generates source documents, scaffolded biahalnak, le leihnak keys aligned ah nangmah standards.",
     "quiz_mode_title": "Pick a hman quiz mode",
     "quiz_mode_text": "Thim what hi quiz si caah. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge before teaching le surfaces gaps as ruahnak cards he one-hnen \"Explain ah sianginn\" AI broadcast. Formative Check si quick mid-cawnnak pulse. Spaced Review tracks pakhat fate sianginn caa’s cross-session retention he per-ruahnak sparkline. pakhat fate mode tunes biapenh, thil-type mix, le a nungkho dashboard layout.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate sianginn-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference sianginn caa can return to throughout a unit. ### Panel Options • **Chart Type**: Thim from Concept, Vocabulary, Process, Strategy, or Comparison charts. • **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style. • **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme. • **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight. ### Chart Components • **Title Banner**: Eye-catching topic header. • **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues. • **Examples & Non-Examples**: Side-by-side panels for concept clarity. ### Interactive Features • **Thlen Mode**: Tap any element to rewrite text, swap icons, or recolor sections. • **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts. • **Project Mode**: Fullscreen view for whole-sianginn instruction. ### Pro Tip • Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the sianginn wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors sianginn caa can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach sianginn caa *how* to take notes, not just *what* to tial. Pick the structure that matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary. • **Two-Column Notes**: Main idea / details organization for content-heavy reading. • **T-Chart**: Compare/contrast or pros/cons side-by-side. • **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding. • **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook chapters. ### Generation Features • **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text. • **biahalnak Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\"). • **Vocabulary Slots**: Pre-populated key terms sianginn caa should theih/rel for. • **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation). ### Print & Digital • **Printable PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: sianginn caa type directly into the template for paperless workflows. • **Editable Headings**: sayama tailor column labels and section titles before sharing. ### Pro Tip • Pair *Cornell Notes* with the **Leveled Reader**: sianginn caa take notes at their reading level, then hman the bottom-summary box as a formative-assessment check. ### UDL Connection • **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "Anchor Chart",
+    "anchor_chart_text": "Classroom ah hman dih lai Anchor Chart pia, hin nih concept, biafang le tuahhau pawl thinhring ah a chiahter.",
+    "note_taking_title": "Note Cawnhnak Template",
+    "note_taking_text": "A hringthar mi note cawnhnak template, hin nih sianginn rakkhuh nih *zeitindah* note cawn a si bantuk an cawng kha *zeidah* an ttial a sina lo"
   },
   "launch_pad": {
     "subtitle": "Thim nangmah learning pathway",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, score {score}"
+    "tier_score": "Tier {tier}, score {score}",
+    "draggable_item": "draggable item"
   },
   "games": {
     "syntax": {
@@ -3976,47 +3977,47 @@
       "html_aria": "HTML source code ah audit"
     },
     "batch": {
-      "drop_text": "Drag & drop PDFs here",
-      "browse_files": "Browse file",
-      "clear_all": "Clear dihlak",
-      "progress_aria": "Batch remediation progress",
-      "stop_aria": "Dinh batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "thar Batch",
+      "drop_text": "Hin ah PDF kha drag i drop",
+      "browse_files": "File kha zoh",
+      "clear_all": "Vialte hlavh",
+      "progress_aria": "Batch siamhnak progress",
+      "stop_aria": "Batch siamhnak dirh",
+      "avg_improvement": "A awl ningin tlamtling",
+      "scored_90_plus": "90+ kha an hmuh",
+      "new_batch": "Batch thar",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "file:",
-        "files_more": "+ {n} tampin",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} ah process"
+        "title": "Pakhat dengh batch a dirh",
+        "summary": "Tab hmun lengh hlan ah {done}/{total} file an tlamtling",
+        "remaining": "{n} a tang.",
+        "files_label": "File hna:",
+        "files_more": "+ {n} chin",
+        "resume_button": "Batch siam ṭhan",
+        "discard_button": "Hlavh",
+        "toast": "Batch siam ṭhan · {done} a um, {remaining} siam dih lai"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} i {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "{total} hmunkhuat lakah hmunkhuat {n} nih an chiah",
+      "unanimous_suffix": " (vialte)",
+      "minority_suffix": " — tlawmpi lung, zumnak a tlawm"
     },
     "divergence": {
-      "semantic": "Structurally compliant sihmanhsehlaw semantically weak — AI flagged content quality (alt text, heading meaning, reading order) mah axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Hmunhrang ah a aw nain meaningful ah a tha lo — AI nih axe-core nih a chiah khawh lo content quality kha a chiah",
+      "structural": "Code level WCAG na hra a um — axe-core nih machine nih a check khawh hna a hmuh"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "hi PDF includes PDF/UA-style tag tree. Auditors were instructed ah credit existing structure rather than penalize it as missing."
+      "label": "A um cangmi tag tih hnak",
+      "tooltip": "Hi PDF cu PDF/UA stayle tag thingkung a ngeih. Audit toktu hna nih a um cangmi hmunhrang an thlah"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} i {total} a sual issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from a sual audit no longer found ah verification audit",
-      "persisted_tip": "Issues from a sual audit still present after fix",
-      "introduced_tip": "thar issues mah did si lo exist before fix"
+      "heading": "Buaibainak siamhnak",
+      "subheading": "A original buaibainak {total} ah {resolved} an siam ({pct}%)",
+      "resolved_label": "A siam",
+      "persisted_label": "A um lai",
+      "introduced_label": "Thar a sa",
+      "resolved_tip": "A original audit hmun ah buaibainak hna kha verification audit ah hmuh khawh ti lo",
+      "persisted_tip": "A original audit hmun ah buaibainak hna a siam hnu ah um lai",
+      "introduced_tip": "Siamhnak hlan ah a um lo buaibainak thar hna"
     },
     "choose_how": "Thim how ah process hi PDF:",
     "settings": {
@@ -11614,7 +11615,14 @@
     "click_to_insert": "Hnen to insert this transition biafang",
     "edit_illustration": "Thlen illustration with AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Khar"
+    "close": "Khar",
+    "cancel": "Cawl",
+    "add": "Tel",
+    "done": "Done",
+    "edit": "Thlen",
+    "reset": "Reset",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "Scene Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "Thlah this explainer to every sianginn caa's screen now",
     "one_click_remove_text": "One-hnen: lak text from this limceu",
     "rewrite_distractor": "Rewrite this distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "limceu too large (max 5MB). Please hman a smaller limceu.",
+    "need_card_front_back": "Tel at least one card with both a front and back.",
+    "type_word_first": "Type a biafang or letter sequence first.",
+    "write_something_first": "Tial something first.",
+    "pick_decoration_first": "Pick a decoration to link to first.",
+    "write_association": "Tial a short association — what does this remind you of?",
+    "no_crop_data": "A si lo crop data available for this limceu.",
+    "invalid_crop_data": "Invalid crop data.",
+    "no_full_page_image": "Full page limceu not available. Re-run remediation to enable cropping.",
+    "selection_too_small": "Selection too no. Drag a larger area.",
+    "encryption_unavailable": "Encryption not available in this browser. You may need a more modern browser to khoh submissions.",
+    "voice_unsupported_browser": "Voice recording is not supported in this browser.",
+    "voice_unsupported_device": "Voice recording is not supported on this device.",
+    "mic_denied": "Microphone access was denied. Allow microphone access in your browser settings to record voice notes.",
+    "voice_too_long": "Voice note too long to khoh (over 500KB). Try a shorter clip.",
+    "voice_empty": "Voice recording was empty.",
+    "no_annotations_to_save": "A si lo annotations to khoh yet — tel a note or highlight first.",
+    "could_not_save_annotations": "Could not khoh annotations. Try a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a thar browser tab.",
+    "regenerate_function_missing": "Error: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. Please refresh and try again.",
+    "image_too_large_10mb": "limceu too large (max 10MB). Please hman a smaller limceu."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing cards with the imported ones?",
+    "delete_voice_note": "Hlonh this voice note?",
+    "remove_companion": "Lak your companion?",
+    "delete_goal": "Hlonh this goal?",
+    "delete_atlas": "Hlonh this atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Hlonh this realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Hlonh this entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from this backup? This replaces ALL current data — decorations, journal, tokens, stories, settings. Cannot be undone.",
+    "reset_skill_progress": "Reset all skill progress? This cannot be undone.",
+    "remove_my_annotations": "Lak all your notes and highlights? sayama annotations will stay.",
+    "exit_calibration_full": "Exit calibration mode? Progress will be discarded.",
+    "exit_calibration_short": "Exit calibration? Progress discarded.",
+    "discard_session_irreversible": "Discard this in-progress session? Item results will be lost. This cannot be undone.",
+    "delete_template": "Hlonh this template? This cannot be undone.",
+    "delete_session": "Hlonh this session? This cannot be undone.",
+    "discard_session": "Discard this session? Progress will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? Progress will be lost.",
+    "end_probe_saved": "End probe early? Progress will be a khoh cang.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved cells will be lost.",
+    "change_granularity": "Changing granularity will reset your rejections. Zulh?",
+    "clear_pdf_progress": "Clear a khoh cang progress for this PDF? This cannot be undone.",
+    "switch_sentence_frame": "Switch biacheo frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

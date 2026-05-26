@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813213577",
+  "_version": "20260526T1779815517512",
   "tour": {
     "input_panel_title": "ఇన్‌పుట్ ప్యానెల్",
     "input_panel_text": "Begin మీ పాఠం creation journey here. ఇది ఇన్‌పుట్ ప్యానెల్ ఉంది foundation కోసం అన్నీ రూపొందించబడింది వనరులు. It serves as central hub ఎక్కడ మీరు define కంటెంట్, context, మరియు parameters.\n### ఇన్‌పుట్ ఎంపికలు\n• **వచనం అతికించు**: అతికించు కంటెంట్ directly నుండి any article, కథ, లేదా పాఠం plan.\n• **ఫైల్ అప్‌లోడ్ చేయి**: అప్‌లోడ్ చేయి PDFs, చిత్రం, వచనం ఫైల్, ఆడియో (MP3/WAV), లేదా వీడియో కోసం స్వయంచాలక extraction.\n• **URL తీసుకురా**: అతికించు any article URL కు automatically వెలికితీయి మరియు దిగుమతి చేయి its కంటెంట్.\n• **AI వనరులు వెతుకు**: Describe ఒక topic మరియు let AI find తరగతి-appropriate online వనరులు కోసం మీరు.\n• **రూపొందించు మూలం వచనం**: సృష్టించు original కంటెంట్ by specifying topic, స్వరం, తరగతి స్థాయి, మరియు target ప్రమాణం.\n### Generation లక్షణాలు\n• **స్వరం Selection**: ఎంచుకో నుండి Informative, Narrative, Persuasive, Humorous, లేదా దశ-by-దశ శైలి.\n• **ప్రమాణం Alignment**: ఉపయోగించు AI-powered ప్రమాణం finder లేదా manually ఇన్‌పుట్ target ప్రమాణం (up కు 3).\n• **Fact Verification**: ప్రారంభించు web grounding కు verify facts మరియు చేర్చు citations automatically.\n• **Custom సూచన**: జోడించు నిర్దిష్ట guidance కోసం మరిన్ని tailored కంటెంట్ generation.\n### వ్యవస్థ Capabilities\n• **Auto-Detection**: Automatically identifies మూలం భాష.\n• **Chunked Processing**: ఆడియో మరియు వీడియో ఫైల్ over 20MB ఉన్నాయి intelligently split కోసం reliable transcription.\n### Important Most సాధనాలు లో sidebar require మూలం material before they చేయగలదు be ఉపయోగించబడింది. అతికించు లేదా రూపొందించు మీ కంటెంట్ here మొదటి, then అన్వేషించు other వనరులు.",
@@ -53,10 +53,10 @@
     "dbq_text": "పత్రం-Based ప్రశ్న: విద్యార్థి విశ్లేషించు primary sources, build evidence-based arguments, మరియు అభ్యాసం central నైపుణ్యం యొక్క social-studies + ELA మూల్యాంకనం. Generates మూలం పత్రం, scaffolded ప్రశ్న, మరియు జవాబు keys aligned కు మీ ప్రమాణం.",
     "quiz_mode_title": "Pick right క్విజ్ మోడ్",
     "quiz_mode_text": "ఎంచుకో ఏమి ఇది క్విజ్ ఉంది కోసం. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge before teaching మరియు surfaces gaps as concept కార్డ్ తో ఒక one-క్లిక్ చేయి \"Explain కు తరగతి\" AI broadcast. Formative Check ఉంది ఒక వేగంగా mid-పాఠం pulse. Spaced Review tracks ప్రతి విద్యార్థి’s cross-సెషన్ retention తో ఒక per-concept sparkline. ప్రతి మోడ్ tunes prompts, అంశం-type mix, మరియు live dashboard layout.",
-    "anchor_chart_title": "Anchor చార్ట్",
-    "anchor_chart_text": "రూపొందించు తరగతి-ready Anchor చార్ట్ అది తయారు చేయి concepts, పదజాలం, మరియు procedures stick. ఒక దృశ్య reference విద్యార్థి చేయగలదు return కు throughout ఒక unit. ### ప్యానెల్ ఎంపికలు • **చార్ట్ Type**: ఎంచుకో నుండి Concept, పదజాలం, Process, వ్యూహం, లేదా Comparison చార్ట్. • **శైలి**: Hand-drawn marker look, polished ప్రింట్ చేయి శైలి, లేదా kid-స్నేహపూర్వక comic శైలి. • **రంగు Palette**: Pick ఒక high-contrast, dyslexia-స్నేహపూర్వక, లేదా themed రంగు scheme. • **Custom సూచన**: పేర్కొను focal concepts, key పదజాలం, లేదా వ్యూహం దశ కు highlight. ### చార్ట్ భాగం • **Title Banner**: Eye-catching topic header. • **దృశ్య Hierarchy**: Headings, bullets, మరియు callouts organized కోసం skim-reading. • **Iconography**: Auto-రూపొందించబడింది చిహ్నం reinforcing ప్రతి idea తో dual-coded దృశ్య cues. • **ఉదాహరణ & Non-ఉదాహరణ**: Side-by-side ప్యానెల్ కోసం concept clarity. ### ఇంటరాక్టివ్ లక్షణాలు • **సవరించు మోడ్**: Tap any element కు rewrite వచనం, swap చిహ్నం, లేదా recolor విభాగం. • **ప్రింట్ చేయి-Ready**: High-resolution ఎగుమతి చేయి sized కోసం posters లేదా 8.5×11 handouts. • **Project మోడ్**: Fullscreen చూడు కోసం whole-తరగతి సూచన. ### Pro చిట్కా • రూపొందించు ఒక *వ్యూహం చార్ట్* before ఒక writing unit మరియు ఒక *పదజాలం చార్ట్* before ఒక science unit — keep both పై తరగతి wall కోసం whole arc. ### UDL Connection • **Representation**: Activate లేదా supply background knowledge (Guideline 3.1) తో persistent దృశ్య anchors విద్యార్థి చేయగలదు revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates అది teach విద్యార్థి *ఎలా* కు take notes, కాదు just *ఏమి* కు రాయి. Pick structure అది matches cognitive task. ### Template Types • **Cornell Notes**: Classic two-నిలువు layout తో cues, notes, మరియు bottom summary. • **Two-నిలువు Notes**: Main idea / వివరాలు organization కోసం కంటెంట్-heavy reading. • **T-చార్ట్**: పోల్చు/contrast లేదా pros/cons side-by-side. • **Sketchnotes**: దృశ్య note-taking తో prompts కోసం చిహ్నం, arrows, మరియు రంగు-coding. • **KWL చార్ట్**: Know / Want కు know / Learned — perfect కోసం pre/post-reading. • **Outline Notes**: Hierarchical structure కోసం lectures లేదా textbook అధ్యాయం. ### Generation లక్షణాలు • **Pre-Filled Prompts**: ప్రతి template seeded తో cues drawn నుండి మీ మూలం వచనం. • **ప్రశ్న Stems**: Built-లో metacognitive prompts (\"ఏమి surprised మీరు?\", \"ఎలా does ఇది connect కు…?\"). • **పదజాలం Slots**: Pre-populated key పదం విద్యార్థి should వినండి/చదువు కోసం. • **Custom సూచన**: Target ఒక నిర్దిష్ట cognitive task (synthesis, summary, evaluation). ### ప్రింట్ చేయి & Digital • **Printable PDF**: Clean handout layout తో generous writing space. • **Digital Fillable**: విద్యార్థి type directly into template కోసం paperless workflows. • **Editable Headings**: ఉపాధ్యాయుడు tailor నిలువు labels మరియు విభాగం titles before sharing. ### Pro చిట్కా • Pair *Cornell Notes* తో **Leveled Reader**: విద్యార్థి take notes at their reading స్థాయి, then ఉపయోగించు bottom-summary box as ఒక formative-మూల్యాంకనం check. ### UDL Connection • **Action & Expression**: మద్దతు planning మరియు వ్యూహం development (Guideline 6.2) by giving learners explicit structures కోసం organizing సమాచారం."
+    "anchor_chart_title": "యాంకర్ చార్ట్‌లు",
+    "anchor_chart_text": "భావనలు, పదజాలం మరియు విధానాలను గుర్తుంచుకునే తరగతి-సిద్ధంగా ఉన్న యాంకర్ చార్ట్‌లను రూపొందించండి.",
+    "note_taking_title": "నోట్ తీసుకునే టెంప్లేట్‌లు",
+    "note_taking_text": "విద్యార్థులకు ఏమి వ్రాయాలో మాత్రమే కాదు, *ఎలా* నోట్‌లు తీసుకోవాలో నేర్పించే నిర్మాణాత్మక నోట్ తీసుకునే టెంప్లేట్‌లు."
   },
   "launch_pad": {
     "subtitle": "ఎంచుకో మీ learning pathway",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} యొక్క {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, స్కోర్ {స్కోర్}"
+    "tier_score": "Tier {tier}, స్కోర్ {స్కోర్}",
+    "draggable_item": "draggable అంశం"
   },
   "games": {
     "syntax": {
@@ -3976,47 +3977,47 @@
       "html_aria": "HTML మూలం code కు audit"
     },
     "batch": {
-      "drop_text": "లాగు & వదలు PDFs here",
-      "browse_files": "Browse ఫైల్",
-      "clear_all": "Clear అన్నీ",
-      "progress_aria": "Batch remediation పురోగతి",
-      "stop_aria": "ఆపు batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "కొత్త Batch",
+      "drop_text": "PDFలను ఇక్కడ లాగి విడిచిపెట్టండి",
+      "browse_files": "ఫైళ్ళను బ్రౌజ్ చేయండి",
+      "clear_all": "అన్నీ క్లియర్ చేయండి",
+      "progress_aria": "బ్యాచ్ సవరణ పురోగతి",
+      "stop_aria": "బ్యాచ్ సవరణను ఆపండి",
+      "avg_improvement": "సగటు మెరుగుదల",
+      "scored_90_plus": "90+ స్కోర్",
+      "new_batch": "కొత్త బ్యాచ్",
       "resume": {
-        "title": "మునుపటి batch interrupted",
-        "summary": "{done}/{total} ఫైల్(s) completed before tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "ఫైల్:",
-        "files_more": "+ {n} మరిన్ని",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} కు process"
+        "title": "మునుపటి బ్యాచ్ ఆటంకం",
+        "summary": "ట్యాబ్ మూసివేయబడే ముందు {done}/{total} ఫైళ్ళు పూర్తయ్యాయి.",
+        "remaining": "{n} మిగిలి ఉన్నాయి.",
+        "files_label": "ఫైళ్ళు:",
+        "files_more": "+ మరో {n}",
+        "resume_button": "బ్యాచ్ పునఃప్రారంభించండి",
+        "discard_button": "విస్మరించండి",
+        "toast": "బ్యాచ్ పునఃప్రారంభమవుతోంది · {done} క్యాష్ చేయబడ్డాయి, {remaining} ప్రాసెస్ చేయాలి"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} యొక్క {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "{total}లో {n} ఆడిటర్లచే గుర్తించబడింది",
+      "unanimous_suffix": " (ఏకగ్రీవం)",
+      "minority_suffix": " — మైనారిటీ అభిప్రాయం, తక్కువ విశ్వాసం"
     },
     "divergence": {
-      "semantic": "Structurally compliant కానీ semantically weak — AI flagged కంటెంట్ quality (alt వచనం, heading meaning, reading order) అది axe-core చేయగలదు't detect",
-      "structural": "Code-స్థాయి WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "నిర్మాణాత్మకంగా అనుకూలంగా కానీ సెమాంటిక్‌గా బలహీనం — axe-core గుర్తించలేని కంటెంట్ నాణ్యతను AI గుర్తించింది",
+      "structural": "కోడ్-స్థాయి WCAG ఉల్లంఘనలు గుర్తించబడ్డాయి — axe-core యంత్రం-ధృవీకరించదగిన వైఫల్యాలను కనుగొంది"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "ఇది PDF కలిగి ఉంది ఒక PDF/UA-శైలి tag tree. Auditors were instructed కు credit existing structure rather than penalize it as missing."
+      "label": "ముందుగా ఉన్న ట్యాగ్ నిర్మాణం",
+      "tooltip": "ఈ PDF PDF/UA-శైలి ట్యాగ్ చెట్టును కలిగి ఉంది. ఆడిటర్‌లు ఉన్న నిర్మాణాన్ని గుర్తించడానికి సూచించబడ్డారు."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} యొక్క {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues నుండి original audit no longer found లో verification audit",
-      "persisted_tip": "Issues నుండి original audit still present after fix",
-      "introduced_tip": "కొత్త issues అది did కాదు exist before fix"
+      "heading": "సమస్య పరిష్కారం",
+      "subheading": "అసలు {total} సమస్యలలో {resolved} పరిష్కరించబడ్డాయి ({pct}%)",
+      "resolved_label": "పరిష్కరించబడ్డాయి",
+      "persisted_label": "ఇంకా ఉన్నాయి",
+      "introduced_label": "కొత్తగా ప్రవేశపెట్టబడ్డాయి",
+      "resolved_tip": "అసలు ఆడిట్ నుండి సమస్యలు ధృవీకరణ ఆడిట్‌లో ఇప్పుడు కనుగొనబడలేదు",
+      "persisted_tip": "అసలు ఆడిట్ నుండి సమస్యలు పరిష్కారం తర్వాత ఇంకా ఉన్నాయి",
+      "introduced_tip": "పరిష్కారానికి ముందు లేని కొత్త సమస్యలు"
     },
     "report": {
       "download_title": "డౌన్‌లోడ్ చేయి audit report",
@@ -11622,7 +11623,14 @@
     "click_to_insert": "క్లిక్ చేయి కు insert ఇది transition పదం",
     "edit_illustration": "సవరించు illustration తో AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "మూసివేయి"
+    "close": "మూసివేయి",
+    "cancel": "రద్దు చేయి",
+    "add": "జోడించు",
+    "done": "Done",
+    "edit": "సవరించు",
+    "reset": "రీసెట్ చేయి",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "దృశ్యం Visualization",
@@ -11741,5 +11749,60 @@
     "send_explainer_to_students": "పంపు ఇది explainer కు every విద్యార్థి's screen ఇప్పుడు",
     "one_click_remove_text": "One-క్లిక్ చేయి: తొలగించు వచనం నుండి ఇది చిత్రం",
     "rewrite_distractor": "Rewrite ఇది distractor కు encode ఒక real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "చిత్రం too large (max 5MB). దయచేసి ఉపయోగించు ఒక smaller చిత్రం.",
+    "need_card_front_back": "జోడించు at least one కార్డ్ తో both ఒక front మరియు back.",
+    "type_word_first": "Type ఒక పదం లేదా letter sequence మొదటి.",
+    "write_something_first": "రాయి something మొదటి.",
+    "pick_decoration_first": "Pick ఒక decoration కు link కు మొదటి.",
+    "write_association": "రాయి ఒక చిన్న association — ఏమి does ఇది remind మీరు యొక్క?",
+    "no_crop_data": "కాదు crop డేటా అందుబాటులో కోసం ఇది చిత్రం.",
+    "invalid_crop_data": "Invalid crop డేటా.",
+    "no_full_page_image": "Full page చిత్రం కాదు అందుబాటులో. Re-అమలు చేయి remediation కు ప్రారంభించు cropping.",
+    "selection_too_small": "Selection too small. లాగు ఒక larger వైశాల్యం.",
+    "encryption_unavailable": "Encryption కాదు అందుబాటులో లో ఇది browser. మీరు may need ఒక మరిన్ని modern browser కు సేవ్ చేయి submissions.",
+    "voice_unsupported_browser": "వాయిస్ recording ఉంది కాదు supported లో ఇది browser.",
+    "voice_unsupported_device": "వాయిస్ recording ఉంది కాదు supported పై ఇది device.",
+    "mic_denied": "Microphone ప్రవేశం was denied. Allow microphone ప్రవేశం లో మీ browser సెట్టింగులు కు record వాయిస్ notes.",
+    "voice_too_long": "వాయిస్ note too పొడవైన కు సేవ్ చేయి (over 500KB). ప్రయత్నించు ఒక shorter clip.",
+    "voice_empty": "వాయిస్ recording was empty.",
+    "no_annotations_to_save": "కాదు annotations కు సేవ్ చేయి yet — జోడించు ఒక note లేదా highlight మొదటి.",
+    "could_not_save_annotations": "Could కాదు సేవ్ చేయి annotations. ప్రయత్నించు ఒక different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. pre-filled report URL has been copied కు మీ clipboard — అతికించు it into ఒక కొత్త browser tab.",
+    "regenerate_function_missing": "లోపం: Regenerate function missing లేదా invalid",
+    "crypto_not_loaded": "Submission crypto module కాదు loaded yet. దయచేసి రిఫ్రెష్ చేయి మరియు ప్రయత్నించు again.",
+    "image_too_large_10mb": "చిత్రం too large (max 10MB). దయచేసి ఉపయోగించు ఒక smaller చిత్రం."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace అన్నీ existing కార్డ్ తో imported ones?",
+    "delete_voice_note": "తొలగించు ఇది వాయిస్ note?",
+    "remove_companion": "తొలగించు మీ companion?",
+    "delete_goal": "తొలగించు ఇది లక్ష్యం?",
+    "delete_atlas": "తొలగించు ఇది atlas? Edges మరియు justifications cannot be recovered.",
+    "delete_realm": "తొలగించు ఇది realm? Zones మరియు justifications cannot be recovered.",
+    "delete_entry_tokens": "తొలగించు ఇది entry? Tokens already earned చేస్తుంది కాదు be refunded.",
+    "restore_backup_destructive": "Restore నుండి ఇది backup? ఇది replaces అన్నీ current డేటా — decorations, journal, tokens, stories, సెట్టింగులు. Cannot be undone.",
+    "reset_skill_progress": "రీసెట్ చేయి అన్నీ నైపుణ్యం పురోగతి? ఇది cannot be undone.",
+    "remove_my_annotations": "తొలగించు అన్నీ మీ notes మరియు highlights? ఉపాధ్యాయుడు annotations చేస్తుంది stay.",
+    "exit_calibration_full": "Exit calibration మోడ్? పురోగతి చేస్తుంది be discarded.",
+    "exit_calibration_short": "Exit calibration? పురోగతి discarded.",
+    "discard_session_irreversible": "Discard ఇది లో-పురోగతి సెషన్? అంశం ఫలితం చేస్తుంది be lost. ఇది cannot be undone.",
+    "delete_template": "తొలగించు ఇది template? ఇది cannot be undone.",
+    "delete_session": "తొలగించు ఇది సెషన్? ఇది cannot be undone.",
+    "discard_session": "Discard ఇది సెషన్? పురోగతి చేస్తుంది be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? పురోగతి చేస్తుంది be lost.",
+    "end_probe_saved": "End probe early? పురోగతి చేస్తుంది be సేవ్ చేయబడింది.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace current board? Unsaved సెల్ చేస్తుంది be lost.",
+    "change_granularity": "Changing granularity చేస్తుంది రీసెట్ చేయి మీ rejections. కొనసాగించు?",
+    "clear_pdf_progress": "Clear సేవ్ చేయబడింది పురోగతి కోసం ఇది PDF? ఇది cannot be undone.",
+    "switch_sentence_frame": "మార్చు వాక్యం frame template? మీ edits కు blanks చేస్తుంది be replaced.",
+    "replace_program_with_template": "Replace current program తో template?"
   }
 }

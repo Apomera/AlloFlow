@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813202474",
+  "_version": "20260526T1779815509293",
   "tour": {
     "input_panel_title": "इनपुट पैनल",
     "input_panel_text": "Begin आपका पाठ creation journey here. यह इनपुट पैनल है foundation के लिए सभी उत्पन्न संसाधन. It serves as central hub कहाँ आप define सामग्री, संदर्भ, और parameters.\n### इनपुट विकल्प\n• **पाठ पेस्ट करें**: पेस्ट करें सामग्री directly से कोई भी article, कहानी, या पाठ योजना.\n• **फ़ाइल अपलोड करें**: अपलोड करें PDFs, छवि, पाठ फ़ाइल, ऑडियो (MP3/WAV), या वीडियो के लिए स्वचालित extraction.\n• **URL प्राप्त करें**: पेस्ट करें कोई भी article URL को स्वचालित रूप से निकालें और आयात करें its सामग्री.\n• **AI संसाधन खोजें**: Describe एक विषय और let AI खोजना कक्षा-उपयुक्त online संसाधन के लिए आप.\n• **उत्पन्न करें स्रोत पाठ**: बनाएं मूल सामग्री by specifying विषय, स्वर, कक्षा स्तर, और लक्ष्य मानक.\n### पीढ़ी विशेषताएं\n• **स्वर Selection**: चुनें से Informative, कथा, Persuasive, Humorous, या चरण-by-चरण शैली.\n• **मानक संरेखण**: उपयोग करें AI-powered मानक finder या मैनुअल रूप से इनपुट लक्ष्य मानक (up को 3).\n• **Fact Verification**: सक्षम करें web grounding को verify facts और शामिल करें citations स्वचालित रूप से.\n• **Custom निर्देश**: जोड़ें विशिष्ट guidance के लिए अधिक tailored सामग्री पीढ़ी.\n### सिस्टम Capabilities\n• **स्वतः-Detection**: स्वचालित रूप से identifies स्रोत भाषा.\n• **Chunked Processing**: ऑडियो और वीडियो फ़ाइल के ऊपर 20MB हैं intelligently split के लिए reliable transcription.\n### Important सबसे ज़्यादा उपकरण में sidebar require स्रोत सामग्री पहले वे सकता है be उपयोग किया गया. पेस्ट करें या उत्पन्न करें आपका सामग्री here पहला, फिर अन्वेषण करें अन्य संसाधन.",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, स्कोर {स्कोर}"
+    "tier_score": "Tier {tier}, स्कोर {स्कोर}",
+    "draggable_item": "draggable आइटम"
   },
   "games": {
     "syntax": {
@@ -11614,7 +11615,14 @@
     "click_to_insert": "क्लिक करें to insert यह transition शब्द",
     "edit_illustration": "संपादित करें चित्रण with AI",
     "regenerate_illustration": "Regenerate चित्रण",
-    "close": "बंद करें"
+    "close": "बंद करें",
+    "cancel": "रद्द करें",
+    "add": "जोड़ें",
+    "done": "Done",
+    "edit": "संपादित करें",
+    "reset": "रीसेट करें",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "दृश्य Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "भेजें यह explainer to every छात्र's screen now",
     "one_click_remove_text": "One-क्लिक करें: हटाएं पाठ from यह छवि",
     "rewrite_distractor": "Rewrite यह distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "छवि too large (max 5MB). कृपया उपयोग करें a smaller छवि.",
+    "need_card_front_back": "जोड़ें at least one कार्ड with both a front and back.",
+    "type_word_first": "Type a शब्द or letter sequence पहला.",
+    "write_something_first": "लिखें something पहला.",
+    "pick_decoration_first": "Pick a decoration to link to पहला.",
+    "write_association": "लिखें a छोटा association — what does यह remind you of?",
+    "no_crop_data": "नहीं crop डेटा उपलब्ध for यह छवि.",
+    "invalid_crop_data": "Invalid crop डेटा.",
+    "no_full_page_image": "Full page छवि not उपलब्ध. Re-चलाएं remediation to सक्षम करें cropping.",
+    "selection_too_small": "Selection too small. खींचें a larger क्षेत्रफल.",
+    "encryption_unavailable": "Encryption not उपलब्ध in यह browser. You may need a अधिक modern browser to सहेजें submissions.",
+    "voice_unsupported_browser": "आवाज़ recording is not supported in यह browser.",
+    "voice_unsupported_device": "आवाज़ recording is not supported on यह device.",
+    "mic_denied": "Microphone पहुंच was denied. Allow microphone पहुंच in your browser सेटिंग्स to record आवाज़ notes.",
+    "voice_too_long": "आवाज़ note too लंबा to सहेजें (over 500KB). प्रयास करें a छोटा clip.",
+    "voice_empty": "आवाज़ recording was empty.",
+    "no_annotations_to_save": "नहीं annotations to सहेजें yet — जोड़ें a note or highlight पहला.",
+    "could_not_save_annotations": "Could not सहेजें annotations. प्रयास करें a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — पेस्ट करें it into a नया browser tab.",
+    "regenerate_function_missing": "त्रुटि: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. कृपया ताज़ा करें and प्रयास करें again.",
+    "image_too_large_10mb": "छवि too large (max 10MB). कृपया उपयोग करें a smaller छवि."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing कार्ड with the imported ones?",
+    "delete_voice_note": "हटाएं यह आवाज़ note?",
+    "remove_companion": "हटाएं your companion?",
+    "delete_goal": "हटाएं यह लक्ष्य?",
+    "delete_atlas": "हटाएं यह atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "हटाएं यह realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "हटाएं यह entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from यह backup? यह replaces ALL current डेटा — decorations, journal, tokens, stories, सेटिंग्स. Cannot be undone.",
+    "reset_skill_progress": "रीसेट करें all कौशल प्रगति? यह cannot be undone.",
+    "remove_my_annotations": "हटाएं all your notes and highlights? शिक्षक annotations will stay.",
+    "exit_calibration_full": "Exit calibration मोड? प्रगति will be discarded.",
+    "exit_calibration_short": "Exit calibration? प्रगति discarded.",
+    "discard_session_irreversible": "Discard यह in-प्रगति सत्र? आइटम परिणाम will be lost. यह cannot be undone.",
+    "delete_template": "हटाएं यह template? यह cannot be undone.",
+    "delete_session": "हटाएं यह सत्र? यह cannot be undone.",
+    "discard_session": "Discard यह सत्र? प्रगति will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? प्रगति will be lost.",
+    "end_probe_saved": "End probe early? प्रगति will be सहेजा गया.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved सेल will be lost.",
+    "change_granularity": "Changing granularity will रीसेट करें your rejections. जारी रखें?",
+    "clear_pdf_progress": "Clear सहेजा गया प्रगति for यह PDF? यह cannot be undone.",
+    "switch_sentence_frame": "बदलें वाक्य frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

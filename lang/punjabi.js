@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813209283",
+  "_version": "20260526T1779815515538",
   "tour": {
     "input_panel_title": "ਇਨਪੁੱਟ ਪੈਨਲ",
     "input_panel_text": "Begin ਤੁਹਾਡਾ ਪਾਠ creation journey here. ਇਹ ਇਨਪੁੱਟ ਪੈਨਲ ਹੈ foundation ਲਈ ਸਾਰੇ ਤਿਆਰ ਕੀਤਾ ਗਿਆ ਸਰੋਤ. It serves as central hub ਕਿੱਥੇ ਤੁਸੀਂ define ਸਮੱਗਰੀ, ਪ੍ਰਸੰਗ, ਅਤੇ parameters.\n### ਇਨਪੁੱਟ ਵਿਕਲਪ\n• **ਟੈਕਸਟ ਚਿਪਕਾਓ**: ਚਿਪਕਾਓ ਸਮੱਗਰੀ directly ਤੋਂ ਕੋਈ ਵੀ article, ਕਹਾਣੀ, ਜਾਂ ਪਾਠ ਯੋਜਨਾ.\n• **ਫਾਈਲ ਅੱਪਲੋਡ ਕਰੋ**: ਅੱਪਲੋਡ ਕਰੋ PDFs, ਚਿੱਤਰ, ਟੈਕਸਟ ਫਾਈਲ, ਆਡੀਓ (MP3/WAV), ਜਾਂ ਵੀਡੀਓ ਲਈ ਆਟੋਮੈਟਿਕ extraction.\n• **URL ਪ੍ਰਾਪਤ ਕਰੋ**: ਚਿਪਕਾਓ ਕੋਈ ਵੀ article URL ਨੂੰ ਆਟੋਮੈਟਿਕ ਤੌਰ ਤੇ ਕੱਢੋ ਅਤੇ ਆਯਾਤ ਕਰੋ its ਸਮੱਗਰੀ.\n• **AI ਸਰੋਤ ਖੋਜੋ**: Describe ਇੱਕ ਵਿਸ਼ਾ ਅਤੇ let AI find ਜਮਾਤ-ਉਚਿਤ online ਸਰੋਤ ਲਈ ਤੁਸੀਂ.\n• **ਤਿਆਰ ਕਰੋ ਸਰੋਤ ਟੈਕਸਟ**: ਬਣਾਓ ਮੂਲ ਸਮੱਗਰੀ by specifying ਵਿਸ਼ਾ, ਸੁਰ, ਜਮਾਤ ਪੱਧਰ, ਅਤੇ ਟੀਚਾ ਮਿਆਰ.\n### ਪੀੜ੍ਹੀ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ\n• **ਸੁਰ Selection**: ਚੁਣੋ ਤੋਂ Informative, ਬਿਰਤਾਂਤ, Persuasive, Humorous, ਜਾਂ ਕਦਮ-by-ਕਦਮ ਸ਼ੈਲੀ.\n• **ਮਿਆਰ ਅਲਾਈਨਮੈਂਟ**: ਵਰਤੋ AI-powered ਮਿਆਰ finder ਜਾਂ ਹੱਥੀਂ ਇਨਪੁੱਟ ਟੀਚਾ ਮਿਆਰ (up ਨੂੰ 3).\n• **Fact Verification**: ਯੋਗ ਕਰੋ web grounding ਨੂੰ verify facts ਅਤੇ ਸ਼ਾਮਲ ਕਰੋ citations ਆਟੋਮੈਟਿਕ ਤੌਰ ਤੇ.\n• **Custom ਹਦਾਇਤ**: ਜੋੜੋ ਖਾਸ guidance ਲਈ ਹੋਰ tailored ਸਮੱਗਰੀ ਪੀੜ੍ਹੀ.\n### ਸਿਸਟਮ Capabilities\n• **Auto-Detection**: ਆਟੋਮੈਟਿਕ ਤੌਰ ਤੇ identifies ਸਰੋਤ ਭਾਸ਼ਾ.\n• **Chunked Processing**: ਆਡੀਓ ਅਤੇ ਵੀਡੀਓ ਫਾਈਲ ਉੱਪਰ 20MB ਹਨ intelligently split ਲਈ reliable transcription.\n### Important ਜ਼ਿਆਦਾਤਰ ਔਜ਼ਾਰ ਵਿੱਚ sidebar require ਸਰੋਤ ਸਮੱਗਰੀ ਪਹਿਲਾਂ ਉਹ ਸਕਦਾ ਹੈ be ਵਰਤਿਆ ਗਿਆ. ਚਿਪਕਾਓ ਜਾਂ ਤਿਆਰ ਕਰੋ ਤੁਹਾਡਾ ਸਮੱਗਰੀ here ਪਹਿਲਾ, ਫਿਰ ਪੜਚੋਲ ਕਰੋ ਹੋਰ ਸਰੋਤ.",
@@ -53,10 +53,10 @@
     "dbq_text": "ਦਸਤਾਵੇਜ਼-ਆਧਾਰਿਤ ਸਵਾਲ: ਵਿਦਿਆਰਥੀ ਵਿਸ਼ਲੇਸ਼ਣ ਕਰੋ primary sources, ਬਣਾਓ ਸਬੂਤ-ਆਧਾਰਿਤ arguments, ਅਤੇ ਅਭਿਆਸ ਕਰੋ central ਹੁਨਰ ਦਾ social-studies + ELA ਮੁਲਾਂਕਣ. Generates ਸਰੋਤ ਦਸਤਾਵੇਜ਼, scaffolded ਸਵਾਲ, ਅਤੇ ਜਵਾਬ keys aligned ਨੂੰ ਤੁਹਾਡਾ ਮਿਆਰ.",
     "quiz_mode_title": "Pick ਸਹੀ ਕਵਿਜ਼ ਮੋਡ",
     "quiz_mode_text": "ਚੁਣੋ ਕੀ ਇਹ ਕਵਿਜ਼ ਹੈ ਲਈ. Exit Ticket checks today’s ਸਿੱਖਣਾ. Pre-ਜਾਂਚ probes prior knowledge ਪਹਿਲਾਂ teaching ਅਤੇ surfaces gaps as ਸੰਕਲਪ ਕਾਰਡ ਨਾਲ ਇੱਕ one-ਕਲਿੱਕ ਕਰੋ \"Explain ਨੂੰ ਜਮਾਤ\" AI broadcast. Formative ਜਾਂਚ ਹੈ ਇੱਕ ਤੇਜ਼ mid-ਪਾਠ pulse. Spaced ਸਮੀਖਿਆ tracks ਹਰ ਵਿਦਿਆਰਥੀ’s cross-ਸੈਸ਼ਨ retention ਨਾਲ ਇੱਕ per-ਸੰਕਲਪ sparkline. ਹਰ ਮੋਡ tunes ਪ੍ਰੋਂਪਟ, ਆਈਟਮ-ਕਿਸਮ mix, ਅਤੇ ਲਾਈਵ dashboard layout.",
-    "anchor_chart_title": "Anchor ਚਾਰਟ",
-    "anchor_chart_text": "ਤਿਆਰ ਕਰੋ ਜਮਾਤ-ready Anchor ਚਾਰਟ ਉਹ ਬਣਾਓ concepts, ਸ਼ਬਦਾਵਲੀ, and procedures stick. A ਦ੍ਰਿਸ਼ਟੀ reference ਵਿਦਿਆਰਥੀ can return to throughout a unit. ### ਪੈਨਲ ਵਿਕਲਪ • **ਚਾਰਟ Type**: ਚੁਣੋ from Concept, ਸ਼ਬਦਾਵਲੀ, Process, ਰਣਨੀਤੀ, or Comparison ਚਾਰਟ. • **ਸ਼ੈਲੀ**: Hand-drawn marker look, polished ਛਾਪੋ ਸ਼ੈਲੀ, or kid-ਦੋਸਤਾਨਾ comic ਸ਼ੈਲੀ. • **ਰੰਗ Palette**: Pick a high-contrast, dyslexia-ਦੋਸਤਾਨਾ, or themed ਰੰਗ scheme. • **Custom ਹਦਾਇਤ**: ਨਿਰਧਾਰਿਤ ਕਰੋ focal concepts, key ਸ਼ਬਦਾਵਲੀ, or ਰਣਨੀਤੀ ਕਦਮ to highlight. ### ਚਾਰਟ ਭਾਗ • **Title Banner**: Eye-catching topic header. • **ਦ੍ਰਿਸ਼ਟੀ Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-ਤਿਆਰ ਕੀਤਾ ਗਿਆ ਆਈਕਨ reinforcing each idea with dual-coded ਦ੍ਰਿਸ਼ਟੀ cues. • **ਉਦਾਹਰਨ & Non-ਉਦਾਹਰਨ**: Side-by-side ਪੈਨਲ for concept clarity. ### ਇੰਟਰਐਕਟਿਵ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ • **ਸੰਪਾਦਿਤ ਕਰੋ ਮੋਡ**: Tap any element to rewrite ਟੈਕਸਟ, swap ਆਈਕਨ, or recolor ਭਾਗ. • **ਛਾਪੋ-Ready**: High-resolution ਨਿਰਯਾਤ ਕਰੋ sized for posters or 8.5×11 handouts. • **Project ਮੋਡ**: Fullscreen ਦੇਖੋ for whole-ਜਮਾਤ ਹਦਾਇਤ. ### Pro ਸੁਝਾਅ • ਤਿਆਰ ਕਰੋ a *ਰਣਨੀਤੀ ਚਾਰਟ* before a writing unit and a *ਸ਼ਬਦਾਵਲੀ ਚਾਰਟ* before a science unit — keep both on the ਜਮਾਤ wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent ਦ੍ਰਿਸ਼ਟੀ anchors ਵਿਦਿਆਰਥੀ can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates ਉਹ teach ਵਿਦਿਆਰਥੀ *how* to take notes, not just *what* to ਲਿਖੋ. Pick the structure ਉਹ matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-ਕਾਲਮ layout with cues, notes, and bottom summary. • **Two-ਕਾਲਮ Notes**: Main idea / ਵੇਰਵਾ organization for ਸਮੱਗਰੀ-heavy reading. • **T-ਚਾਰਟ**: ਤੁਲਨਾ ਕਰੋ/contrast or pros/cons side-by-side. • **Sketchnotes**: ਦ੍ਰਿਸ਼ਟੀ note-taking with prompts for ਆਈਕਨ, arrows, and ਰੰਗ-coding. • **KWL ਚਾਰਟ**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook ਅਧਿਆਇ. ### Generation ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ • **Pre-Filled Prompts**: Each template seeded with cues drawn from your ਸਰੋਤ ਟੈਕਸਟ. • **ਸਵਾਲ Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does ਇਹ connect to…?\"). • **ਸ਼ਬਦਾਵਲੀ Slots**: Pre-populated key ਸ਼ਬਦ ਵਿਦਿਆਰਥੀ should ਸੁਣੋ/ਪੜ੍ਹੋ for. • **Custom ਹਦਾਇਤ**: Target a ਖਾਸ cognitive task (synthesis, summary, evaluation). ### ਛਾਪੋ & Digital • **ਛਾਪਣਯੋਗ PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: ਵਿਦਿਆਰਥੀ type directly into the template for paperless workflows. • **Editable Headings**: ਅਧਿਆਪਕ tailor ਕਾਲਮ labels and ਭਾਗ titles before sharing. ### Pro ਸੁਝਾਅ • Pair *Cornell Notes* with the **Leveled Reader**: ਵਿਦਿਆਰਥੀ take notes at their reading ਪੱਧਰ, then ਵਰਤੋ the bottom-summary box as a formative-ਮੁਲਾਂਕਣ check. ### UDL Connection • **Action & ਪ੍ਰਗਟਾਅ**: ਸਹਾਇਤਾ planning and ਰਣਨੀਤੀ development (Guideline 6.2) by giving learners explicit structures for organizing ਜਾਣਕਾਰੀ."
+    "anchor_chart_title": "ਐਂਕਰ ਚਾਰਟ",
+    "anchor_chart_text": "ਕਲਾਸਰੂਮ-ਤਿਆਰ ਐਂਕਰ ਚਾਰਟ ਬਣਾਓ ਜੋ ਸੰਕਲਪ, ਸ਼ਬਦਾਵਲੀ ਅਤੇ ਪ੍ਰਕਿਰਿਆਵਾਂ ਨੂੰ ਯਾਦਗਾਰ ਬਣਾਉਂਦੇ ਹਨ।",
+    "note_taking_title": "ਨੋਟ ਲੈਣ ਦੇ ਟੈਮਪਲੇਟ",
+    "note_taking_text": "ਸਟਰਕਚਰਡ ਨੋਟ ਲੈਣ ਦੇ ਟੈਮਪਲੇਟ ਜੋ ਵਿਦਿਆਰਥੀਆਂ ਨੂੰ ਸਿਖਾਉਂਦੇ ਹਨ ਕਿ *ਕਿਵੇਂ* ਨੋਟ ਲੈਣਾ ਹੈ, ਨਾ ਕਿ ਸਿਰਫ਼ *ਕੀ* ਲਿਖਣਾ ਹੈ।"
   },
   "launch_pad": {
     "subtitle": "ਚੁਣੋ ਤੁਹਾਡਾ ਸਿੱਖਣਾ pathway",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, ਅੰਕ {ਅੰਕ}"
+    "tier_score": "Tier {tier}, ਅੰਕ {ਅੰਕ}",
+    "draggable_item": "draggable ਆਈਟਮ"
   },
   "games": {
     "syntax": {
@@ -3976,47 +3977,47 @@
       "html_aria": "HTML ਸਰੋਤ code ਨੂੰ audit"
     },
     "batch": {
-      "drop_text": "ਖਿੱਚੋ & ਛੱਡੋ PDFs here",
-      "browse_files": "Browse ਫਾਈਲ",
-      "clear_all": "Clear ਸਾਰੇ",
-      "progress_aria": "Batch remediation ਤਰੱਕੀ",
-      "stop_aria": "ਰੋਕੋ batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "ਨਵਾਂ Batch",
+      "drop_text": "ਇੱਥੇ PDFs ਨੂੰ ਖਿੱਚੋ ਅਤੇ ਛੱਡੋ",
+      "browse_files": "ਫਾਈਲਾਂ ਬ੍ਰਾਊਜ਼ ਕਰੋ",
+      "clear_all": "ਸਭ ਸਾਫ਼ ਕਰੋ",
+      "progress_aria": "ਬੈਚ ਸੁਧਾਰ ਦੀ ਪ੍ਰਗਤੀ",
+      "stop_aria": "ਬੈਚ ਸੁਧਾਰ ਨੂੰ ਰੋਕੋ",
+      "avg_improvement": "ਔਸਤ ਸੁਧਾਰ",
+      "scored_90_plus": "90+ ਅੰਕ ਪ੍ਰਾਪਤ ਕੀਤੇ",
+      "new_batch": "ਨਵਾਂ ਬੈਚ",
       "resume": {
-        "title": "ਪਿਛਲਾ batch interrupted",
-        "summary": "{done}/{total} ਫਾਈਲ(s) completed ਪਹਿਲਾਂ tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "ਫਾਈਲ:",
+        "title": "ਪਿਛਲਾ ਬੈਚ ਵਿਚਕਾਰ ਛੱਡਿਆ ਗਿਆ",
+        "summary": "ਟੈਬ ਬੰਦ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ {done}/{total} ਫਾਈਲਾਂ ਪੂਰੀਆਂ ਹੋਈਆਂ।",
+        "remaining": "{n} ਬਾਕੀ।",
+        "files_label": "ਫਾਈਲਾਂ:",
         "files_more": "+ {n} ਹੋਰ",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} ਨੂੰ process"
+        "resume_button": "ਬੈਚ ਮੁੜ ਸ਼ੁਰੂ ਕਰੋ",
+        "discard_button": "ਰੱਦ ਕਰੋ",
+        "toast": "ਬੈਚ ਮੁੜ ਸ਼ੁਰੂ ਕਰ ਰਹੇ ਹਾਂ · {done} ਕੈਸ਼ ਕੀਤੇ ਗਏ, {remaining} ਪ੍ਰੋਸੈਸ ਕਰਨੇ ਹਨ"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} ਦਾ {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "{total} ਵਿੱਚੋਂ {n} ਆਡਿਟਰਾਂ ਦੁਆਰਾ ਚਿੰਨ੍ਹਿਤ",
+      "unanimous_suffix": " (ਸਰਬਸੰਮਤ)",
+      "minority_suffix": " — ਘੱਟ ਗਿਣਤੀ ਰਾਏ, ਘੱਟ ਭਰੋਸਾ"
     },
     "divergence": {
-      "semantic": "Structurally compliant ਪਰ semantically weak — AI flagged ਸਮੱਗਰੀ ਗੁਣਵੱਤਾ (alt ਟੈਕਸਟ, heading meaning, ਪੜ੍ਹਨਾ order) ਉਹ axe-core ਸਕਦਾ ਹੈ't detect",
-      "structural": "Code-ਪੱਧਰ WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "ਢਾਂਚਾਗਤ ਤੌਰ ਤੇ ਅਨੁਕੂਲ ਪਰ ਅਰਥ ਪੱਖੋਂ ਕਮਜ਼ੋਰ — AI ਨੇ ਸਮੱਗਰੀ ਦੀ ਗੁਣਵੱਤਾ ਨੂੰ ਚਿੰਨ੍ਹਿਤ ਕੀਤਾ ਜੋ axe-core ਨਹੀਂ ਖੋਜ ਸਕਦਾ",
+      "structural": "ਕੋਡ-ਪੱਧਰ ਦੀਆਂ WCAG ਉਲੰਘਣਾਵਾਂ ਮਿਲੀਆਂ — axe-core ਨੇ ਮਸ਼ੀਨ-ਜਾਂਚਯੋਗ ਅਸਫਲਤਾਵਾਂ ਲੱਭੀਆਂ"
     },
     "tagtree": {
-      "label": "Pre-existing tag ਢਾਂਚਾ",
-      "tooltip": "ਇਹ PDF ਸ਼ਾਮਲ ਹੈ ਇੱਕ PDF/UA-ਸ਼ੈਲੀ tag tree. Auditors were instructed ਨੂੰ credit existing ਢਾਂਚਾ rather than penalize it as missing."
+      "label": "ਪਹਿਲਾਂ ਤੋਂ ਮੌਜੂਦ ਟੈਗ ਢਾਂਚਾ",
+      "tooltip": "ਇਸ PDF ਵਿੱਚ PDF/UA-ਸ਼ੈਲੀ ਦਾ ਟੈਗ ਰੁੱਖ ਸ਼ਾਮਲ ਹੈ। ਆਡਿਟਰਾਂ ਨੂੰ ਮੌਜੂਦਾ ਢਾਂਚੇ ਨੂੰ ਮਾਨਤਾ ਦੇਣ ਦਾ ਨਿਰਦੇਸ਼ ਦਿੱਤਾ ਗਿਆ ਸੀ।"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} ਦਾ {total} ਮੂਲ issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues ਤੋਂ ਮੂਲ audit no ਲੰਬਾ found ਵਿੱਚ verification audit",
-      "persisted_tip": "Issues ਤੋਂ ਮੂਲ audit still present ਬਾਅਦ fix",
-      "introduced_tip": "ਨਵਾਂ issues ਉਹ did ਨਹੀਂ exist ਪਹਿਲਾਂ fix"
+      "heading": "ਮਸਲਾ ਹੱਲ",
+      "subheading": "ਮੂਲ {total} ਮਸਲਿਆਂ ਵਿੱਚੋਂ {resolved} ਹੱਲ ({pct}%)",
+      "resolved_label": "ਹੱਲ ਹੋਏ",
+      "persisted_label": "ਅਜੇ ਵੀ ਮੌਜੂਦ",
+      "introduced_label": "ਨਵੇਂ ਪੇਸ਼ ਕੀਤੇ",
+      "resolved_tip": "ਮੂਲ ਆਡਿਟ ਦੇ ਮਸਲੇ ਹੁਣ ਤਸਦੀਕ ਆਡਿਟ ਵਿੱਚ ਨਹੀਂ ਮਿਲੇ",
+      "persisted_tip": "ਮੂਲ ਆਡਿਟ ਦੇ ਮਸਲੇ ਸੁਧਾਰ ਤੋਂ ਬਾਅਦ ਵੀ ਮੌਜੂਦ ਹਨ",
+      "introduced_tip": "ਨਵੇਂ ਮਸਲੇ ਜੋ ਸੁਧਾਰ ਤੋਂ ਪਹਿਲਾਂ ਮੌਜੂਦ ਨਹੀਂ ਸਨ"
     },
     "choose_how": "ਚੁਣੋ ਕਿਵੇਂ ਨੂੰ process ਇਹ PDF:",
     "settings": {
@@ -11614,7 +11615,14 @@
     "click_to_insert": "ਕਲਿੱਕ ਕਰੋ to insert ਇਹ transition ਸ਼ਬਦ",
     "edit_illustration": "ਸੰਪਾਦਿਤ ਕਰੋ ਚਿੱਤਰਣ with AI",
     "regenerate_illustration": "Regenerate ਚਿੱਤਰਣ",
-    "close": "ਬੰਦ ਕਰੋ"
+    "close": "ਬੰਦ ਕਰੋ",
+    "cancel": "ਰੱਦ ਕਰੋ",
+    "add": "ਜੋੜੋ",
+    "done": "Done",
+    "edit": "ਸੰਪਾਦਿਤ ਕਰੋ",
+    "reset": "ਰੀਸੈੱਟ ਕਰੋ",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "ਦ੍ਰਿਸ਼ Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "ਭੇਜੋ ਇਹ explainer to every ਵਿਦਿਆਰਥੀ's screen now",
     "one_click_remove_text": "One-ਕਲਿੱਕ ਕਰੋ: ਹਟਾਓ ਟੈਕਸਟ from ਇਹ ਚਿੱਤਰ",
     "rewrite_distractor": "Rewrite ਇਹ distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "ਚਿੱਤਰ too large (max 5MB). ਕਿਰਪਾ ਕਰਕੇ ਵਰਤੋ a smaller ਚਿੱਤਰ.",
+    "need_card_front_back": "ਜੋੜੋ at least one ਕਾਰਡ with both a front and back.",
+    "type_word_first": "Type a ਸ਼ਬਦ or letter sequence ਪਹਿਲਾ.",
+    "write_something_first": "ਲਿਖੋ something ਪਹਿਲਾ.",
+    "pick_decoration_first": "Pick a decoration to link to ਪਹਿਲਾ.",
+    "write_association": "ਲਿਖੋ a ਛੋਟਾ association — what does ਇਹ remind you of?",
+    "no_crop_data": "ਨਹੀਂ crop ਡਾਟਾ ਉਪਲਬਧ for ਇਹ ਚਿੱਤਰ.",
+    "invalid_crop_data": "Invalid crop ਡਾਟਾ.",
+    "no_full_page_image": "Full page ਚਿੱਤਰ not ਉਪਲਬਧ. Re-ਚਲਾਓ remediation to ਯੋਗ ਕਰੋ cropping.",
+    "selection_too_small": "Selection too small. ਖਿੱਚੋ a larger ਖੇਤਰਫਲ.",
+    "encryption_unavailable": "Encryption not ਉਪਲਬਧ in ਇਹ browser. You may need a ਹੋਰ modern browser to ਸੰਭਾਲੋ submissions.",
+    "voice_unsupported_browser": "ਆਵਾਜ਼ recording is not supported in ਇਹ browser.",
+    "voice_unsupported_device": "ਆਵਾਜ਼ recording is not supported on ਇਹ device.",
+    "mic_denied": "Microphone ਪਹੁੰਚ was denied. Allow microphone ਪਹੁੰਚ in your browser ਸੈਟਿੰਗਾਂ to record ਆਵਾਜ਼ notes.",
+    "voice_too_long": "ਆਵਾਜ਼ note too ਲੰਬਾ to ਸੰਭਾਲੋ (over 500KB). ਕੋਸ਼ਿਸ਼ ਕਰੋ a ਛੋਟਾ clip.",
+    "voice_empty": "ਆਵਾਜ਼ recording was empty.",
+    "no_annotations_to_save": "ਨਹੀਂ annotations to ਸੰਭਾਲੋ yet — ਜੋੜੋ a note or highlight ਪਹਿਲਾ.",
+    "could_not_save_annotations": "Could not ਸੰਭਾਲੋ annotations. ਕੋਸ਼ਿਸ਼ ਕਰੋ a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — ਚਿਪਕਾਓ it into a ਨਵਾਂ browser tab.",
+    "regenerate_function_missing": "ਗਲਤੀ: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. ਕਿਰਪਾ ਕਰਕੇ ਤਾਜ਼ਾ ਕਰੋ and ਕੋਸ਼ਿਸ਼ ਕਰੋ again.",
+    "image_too_large_10mb": "ਚਿੱਤਰ too large (max 10MB). ਕਿਰਪਾ ਕਰਕੇ ਵਰਤੋ a smaller ਚਿੱਤਰ."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing ਕਾਰਡ with the imported ones?",
+    "delete_voice_note": "ਮਿਟਾਓ ਇਹ ਆਵਾਜ਼ note?",
+    "remove_companion": "ਹਟਾਓ your companion?",
+    "delete_goal": "ਮਿਟਾਓ ਇਹ ਟੀਚਾ?",
+    "delete_atlas": "ਮਿਟਾਓ ਇਹ atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "ਮਿਟਾਓ ਇਹ realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "ਮਿਟਾਓ ਇਹ entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from ਇਹ backup? ਇਹ replaces ALL current ਡਾਟਾ — decorations, journal, tokens, stories, ਸੈਟਿੰਗਾਂ. Cannot be undone.",
+    "reset_skill_progress": "ਰੀਸੈੱਟ ਕਰੋ all ਹੁਨਰ ਤਰੱਕੀ? ਇਹ cannot be undone.",
+    "remove_my_annotations": "ਹਟਾਓ all your notes and highlights? ਅਧਿਆਪਕ annotations will stay.",
+    "exit_calibration_full": "Exit calibration ਮੋਡ? ਤਰੱਕੀ will be discarded.",
+    "exit_calibration_short": "Exit calibration? ਤਰੱਕੀ discarded.",
+    "discard_session_irreversible": "Discard ਇਹ in-ਤਰੱਕੀ ਸੈਸ਼ਨ? ਆਈਟਮ ਨਤੀਜਾ will be lost. ਇਹ cannot be undone.",
+    "delete_template": "ਮਿਟਾਓ ਇਹ template? ਇਹ cannot be undone.",
+    "delete_session": "ਮਿਟਾਓ ਇਹ ਸੈਸ਼ਨ? ਇਹ cannot be undone.",
+    "discard_session": "Discard ਇਹ ਸੈਸ਼ਨ? ਤਰੱਕੀ will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? ਤਰੱਕੀ will be lost.",
+    "end_probe_saved": "End probe early? ਤਰੱਕੀ will be ਸੰਭਾਲਿਆ ਗਿਆ.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved ਸੈੱਲ will be lost.",
+    "change_granularity": "Changing granularity will ਰੀਸੈੱਟ ਕਰੋ your rejections. ਜਾਰੀ ਰੱਖੋ?",
+    "clear_pdf_progress": "Clear ਸੰਭਾਲਿਆ ਗਿਆ ਤਰੱਕੀ for ਇਹ PDF? ਇਹ cannot be undone.",
+    "switch_sentence_frame": "ਬਦਲੋ ਵਾਕ frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

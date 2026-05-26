@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813215889",
+  "_version": "20260526T1779815518940",
   "tour": {
     "input_panel_title": "wọle pẹpẹ",
     "input_panel_text": "Begin rẹ ẹkọ creation journey here. eyi wọle pẹpẹ jẹ foundation fun gbogbo ti ṣẹda awọn ohun elo. It serves as central hub ibi ti iwọ define akoonu, context, ati parameters.\n### wọle ṣayan\n• **ọrọ Lẹ**: Lẹ akoonu directly lati any article, itan, tabi ẹkọ plan.\n• **faili Gbe sori**: Gbe sori PDFs, aworan, ọrọ faili, ohun (MP3/WAV), tabi fidio fun aifọwọyi extraction.\n• **URL Mu wa**: Lẹ any article URL si automatically yọ jade ati mu wa its akoonu.\n• **AI awọn ohun elo Wa**: Describe topic ati let AI find kilasi-appropriate online awọn ohun elo fun iwọ.\n• **Ṣẹda orisun ọrọ**: Ṣẹda original akoonu by specifying topic, ohun, ipele kilasi, ati target eto.\n### Generation awọn ẹya\n• **ohun Selection**: Yan lati Informative, Narrative, Persuasive, Humorous, tabi igbesẹ-by-igbesẹ ọna.\n• **eto Alignment**: Lo AI-powered eto finder tabi manually wọle target eto (up si 3).\n• **Fact Verification**: Mu ṣiṣẹ web grounding si verify facts ati fikun citations automatically.\n• **Custom itọsọna**: Fikun pato guidance fun sii tailored akoonu generation.\n### eto Capabilities\n• **Auto-Detection**: Automatically identifies orisun ede.\n• **Chunked Processing**: ohun ati fidio faili over 20MB jẹ intelligently split fun reliable transcription.\n### Important Most irinṣẹ ninu sidebar require orisun material before they le be lo. Lẹ tabi ṣẹda rẹ akoonu here akọkọ, then wadii other awọn ohun elo.",
@@ -53,10 +53,10 @@
     "dbq_text": "iwe ṣẹ-Based ibeere: akẹkọọ ṣe atupale primary sources, build evidence-based arguments, ati ṣe adaṣe central imọ ti social-studies + ELA idanwo. Generates orisun iwe ṣẹ, scaffolded ibeere, ati idahun keys aligned si rẹ eto.",
     "quiz_mode_title": "Pick right idanwo ọna",
     "quiz_mode_text": "Yan kini eyi idanwo jẹ fun. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge before teaching ati surfaces gaps as concept kaadi pẹlu one-tẹ \"Explain si kilasi\" AI broadcast. Formative Check jẹ yara mid-ẹkọ pulse. Spaced Review tracks kọọkan akẹkọọ’s cross-apejọ retention pẹlu per-concept sparkline. kọọkan ọna tunes prompts, nkan-type mix, ati live dashboard layout.",
-    "anchor_chart_title": "Anchor shati",
-    "anchor_chart_text": "Ṣẹda kilasi-ready Anchor shati iyẹn ṣe concepts, awọn ọrọ, ati procedures stick. oju reference akẹkọọ le return si throughout unit. ### pẹpẹ ṣayan • **shati Type**: Yan lati Concept, awọn ọrọ, Process, ilana, tabi Comparison shati. • **ọna**: Hand-drawn marker look, polished tẹ jade ọna, tabi kid-ọrẹ comic ọna. • **awọ Palette**: Pick high-contrast, dyslexia-ọrẹ, tabi themed awọ scheme. • **Custom itọsọna**: Sọ ni pato focal concepts, key awọn ọrọ, tabi ilana igbesẹ si highlight. ### shati apakan • **Title Banner**: Eye-catching topic header. • **oju Hierarchy**: Headings, bullets, ati callouts organized fun skim-reading. • **Iconography**: Auto-ti ṣẹda aami reinforcing kọọkan idea pẹlu dual-coded oju cues. • **apẹẹrẹ & Non-apẹẹrẹ**: Side-by-side pẹpẹ fun concept clarity. ### ibaraẹnisọrọ awọn ẹya • **Ṣatunṣe ọna**: Tap any element si rewrite ọrọ, swap aami, tabi recolor apakan. • **Tẹ jade-Ready**: High-resolution firanṣẹ sized fun posters tabi 8.5×11 handouts. • **Project ọna**: Fullscreen wo fun whole-kilasi itọsọna. ### Pro imọran • Ṣẹda *ilana shati* before writing unit ati *awọn ọrọ shati* before science unit — keep both lori kilasi wall fun whole arc. ### UDL Connection • **Representation**: Activate tabi supply background knowledge (Guideline 3.1) pẹlu persistent oju anchors akẹkọọ le revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates iyẹn teach akẹkọọ *bawo* si take notes, ko just *kini* si kọ. Pick structure iyẹn matches cognitive task. ### Template Types • **Cornell Notes**: Classic two-iwe layout pẹlu cues, notes, ati bottom summary. • **Two-iwe Notes**: Main idea / awọn alaye organization fun akoonu-heavy reading. • **T-shati**: Fiwera/contrast tabi pros/cons side-by-side. • **Sketchnotes**: oju note-taking pẹlu prompts fun aami, arrows, ati awọ-coding. • **KWL shati**: Know / Want si know / Learned — perfect fun pre/post-reading. • **Outline Notes**: Hierarchical structure fun lectures tabi textbook ori. ### Generation awọn ẹya • **Pre-Filled Prompts**: kọọkan template seeded pẹlu cues drawn lati rẹ orisun ọrọ. • **ibeere Stems**: Built-ninu metacognitive prompts (\"kini surprised iwọ?\", \"bawo does eyi connect si…?\"). • **awọn ọrọ Slots**: Pre-populated key ọrọ akẹkọọ should gbọ/ka fun. • **Custom itọsọna**: Target pato cognitive task (synthesis, summary, evaluation). ### Tẹ jade & Digital • **Printable PDF**: Clean handout layout pẹlu generous writing space. • **Digital Fillable**: akẹkọọ type directly into template fun paperless workflows. • **Editable Headings**: olukọ tailor iwe labels ati apakan titles before sharing. ### Pro imọran • Pair *Cornell Notes* pẹlu **Leveled Reader**: akẹkọọ take notes at their reading ipele, then lo bottom-summary box as formative-idanwo check. ### UDL Connection • **Action & Expression**: atilẹyin planning ati ilana development (Guideline 6.2) by giving learners explicit structures fun organizing alaye."
+    "anchor_chart_title": "Àwòrán Ankor",
+    "anchor_chart_text": "Ṣẹ̀dá Àwòrán Ankor tí ó ṣetán fún kíláàsì tí yóò mú àwọn ọrọ̀-ìmọ̀, àwọn ọ̀rọ̀, àti àwọn ìlànà rọ̀ mọ́.",
+    "note_taking_title": "Àpẹẹrẹ Ìkọsílẹ̀",
+    "note_taking_text": "Àwọn àpẹẹrẹ ìkọsílẹ̀ tó ní àkànṣe tí ó kọ́ àwọn akẹ́kọ̀ọ́ *bí o ṣe lè* gba àkọsílẹ̀, kì í ṣe pé *kí ni* láti kọ."
   },
   "launch_pad": {
     "subtitle": "Yan rẹ learning pathway",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} ti {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, aami {aami}"
+    "tier_score": "Tier {tier}, aami {aami}",
+    "draggable_item": "draggable nkan"
   },
   "games": {
     "syntax": {
@@ -3976,47 +3977,47 @@
       "html_aria": "HTML orisun code si audit"
     },
     "batch": {
-      "drop_text": "Fa & ju PDFs here",
-      "browse_files": "Browse faili",
-      "clear_all": "Clear gbogbo",
-      "progress_aria": "Batch remediation ilọsiwaju",
-      "stop_aria": "Duro batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "titun Batch",
+      "drop_text": "Fa & ju PDFs sí ibi",
+      "browse_files": "Wo awọn faili",
+      "clear_all": "Pa gbogbo rẹ",
+      "progress_aria": "Ìlọsíwájú àtúnṣe ìpín",
+      "stop_aria": "Da àtúnṣe ìpín duro",
+      "avg_improvement": "Ìlọsíwájú àpapọ̀",
+      "scored_90_plus": "Wọ́n gba ọ̀rọ̀ 90+",
+      "new_batch": "Ìpín tuntun",
       "resume": {
-        "title": "ti tẹlẹ batch interrupted",
-        "summary": "{done}/{total} faili(s) completed before tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "faili:",
-        "files_more": "+ {n} sii",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} si process"
+        "title": "Ìpín tó kọjá tó dáwọ́ dúró",
+        "summary": "{done}/{total} faili parí ṣáájú kí tab tó kú.",
+        "remaining": "{n} ṣẹ́kù.",
+        "files_label": "Awọn faili:",
+        "files_more": "+ {n} sí i",
+        "resume_button": "Bẹ̀rẹ̀ ìpín pada",
+        "discard_button": "Ju silẹ",
+        "toast": "Ń bẹ̀rẹ̀ ìpín pada · {done} ti wa nínú kaṣé, {remaining} láti ṣiṣẹ"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} ti {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Ti samisi nipasẹ {n} ninu {total} oluṣayẹwo",
+      "unanimous_suffix": " (ìfọwọ́sí gbogbo)",
+      "minority_suffix": " — èrò ti ọwọ́ kekere, ìgbẹ́kẹ̀lé kekere"
     },
     "divergence": {
-      "semantic": "Structurally compliant ṣugbọn semantically weak — AI flagged akoonu quality (alt ọrọ, heading meaning, reading order) iyẹn axe-core le't detect",
-      "structural": "Code-ipele WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Bámu pẹlu apilẹṣẹ ṣugbọn aláìlera ní àyíká ọ̀rọ̀ — AI samisi ìpele àkóónú tí axe-core kò le rí",
+      "structural": "Ìrẹ́jẹ WCAG níbi kódù tí a rí — axe-core rí àwọn ikùnà tí ẹ̀rọ le ṣẹ̀dá"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "eyi PDF pẹlu PDF/UA-ọna tag tree. Auditors were instructed si credit existing structure rather than penalize it as missing."
+      "label": "Ìṣètò àmì tó ti wà tẹ́lẹ̀",
+      "tooltip": "PDF yìí ní igi àmì onírúurú PDF/UA. A ti dáhùn àwọn oluṣayẹwo láti mọ̀ ìṣètò tí ó ti wà."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} ti {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues lati original audit no longer found ninu verification audit",
-      "persisted_tip": "Issues lati original audit still present after fix",
-      "introduced_tip": "titun issues iyẹn did ko exist before fix"
+      "heading": "Ìpinnu ìṣòro",
+      "subheading": "Yanjú {resolved} nínú {total} ìṣòro tó wà tẹ́lẹ̀ ({pct}%)",
+      "resolved_label": "Yanjú",
+      "persisted_label": "Ṣì wà",
+      "introduced_label": "Tuntun tó dé",
+      "resolved_tip": "Awọn ìṣòro láti inú àyẹ̀wò àkọ́kọ́ tí kò sí mọ́ nínú àyẹ̀wò ìmúdájú",
+      "persisted_tip": "Awọn ìṣòro láti inú àyẹ̀wò àkọ́kọ́ tí ó ṣì wà lẹ́yìn àtúnṣe",
+      "introduced_tip": "Awọn ìṣòro tuntun tí kò sí ṣáájú àtúnṣe"
     },
     "report": {
       "download_title": "Gba sile audit report",
@@ -11622,7 +11623,14 @@
     "click_to_insert": "Tẹ si insert eyi transition ọrọ",
     "edit_illustration": "Ṣatunṣe illustration pẹlu AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Tipa"
+    "close": "Tipa",
+    "cancel": "Fagilee",
+    "add": "Fikun",
+    "done": "Done",
+    "edit": "Ṣatunṣe",
+    "reset": "Tun bẹrẹ",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "iṣẹlẹ Visualization",
@@ -11741,5 +11749,60 @@
     "send_explainer_to_students": "Firanṣẹ eyi explainer si every akẹkọọ's screen bayi",
     "one_click_remove_text": "One-tẹ: yọ kuro ọrọ lati eyi aworan",
     "rewrite_distractor": "Rewrite eyi distractor si encode real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "aworan too large (max 5MB). jọwọ lo smaller aworan.",
+    "need_card_front_back": "Fikun at least one kaadi pẹlu both front ati back.",
+    "type_word_first": "Type ọrọ tabi letter sequence akọkọ.",
+    "write_something_first": "Kọ something akọkọ.",
+    "pick_decoration_first": "Pick decoration si link si akọkọ.",
+    "write_association": "Kọ kuru association — kini does eyi remind iwọ ti?",
+    "no_crop_data": "Rara crop data wa fun eyi aworan.",
+    "invalid_crop_data": "Invalid crop data.",
+    "no_full_page_image": "Full page aworan ko wa. Re-ṣiṣe remediation si mu ṣiṣẹ cropping.",
+    "selection_too_small": "Selection too small. Fa larger agbegbe.",
+    "encryption_unavailable": "Encryption ko wa ninu eyi browser. iwọ may need sii modern browser si pamọ submissions.",
+    "voice_unsupported_browser": "ohun recording jẹ ko supported ninu eyi browser.",
+    "voice_unsupported_device": "ohun recording jẹ ko supported lori eyi device.",
+    "mic_denied": "Microphone iwọle was denied. Allow microphone iwọle ninu rẹ browser eto si record ohun notes.",
+    "voice_too_long": "ohun note too gigun si pamọ (over 500KB). Gbiyanju shorter clip.",
+    "voice_empty": "ohun recording was empty.",
+    "no_annotations_to_save": "Rara annotations si pamọ yet — fikun note tabi highlight akọkọ.",
+    "could_not_save_annotations": "Could ko pamọ annotations. Gbiyanju different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. pre-filled report URL has been copied si rẹ clipboard — lẹ it into titun browser tab.",
+    "regenerate_function_missing": "ṣiṣe: Regenerate function missing tabi invalid",
+    "crypto_not_loaded": "Submission crypto module ko loaded yet. jọwọ sọ di tuntun ati gbiyanju again.",
+    "image_too_large_10mb": "aworan too large (max 10MB). jọwọ lo smaller aworan."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace gbogbo existing kaadi pẹlu imported ones?",
+    "delete_voice_note": "Parẹ eyi ohun note?",
+    "remove_companion": "Yọ kuro rẹ companion?",
+    "delete_goal": "Parẹ eyi ibi-afẹde?",
+    "delete_atlas": "Parẹ eyi atlas? Edges ati justifications cannot be recovered.",
+    "delete_realm": "Parẹ eyi realm? Zones ati justifications cannot be recovered.",
+    "delete_entry_tokens": "Parẹ eyi entry? Tokens already earned yoo ko be refunded.",
+    "restore_backup_destructive": "Restore lati eyi backup? eyi replaces gbogbo current data — decorations, journal, tokens, stories, eto. Cannot be undone.",
+    "reset_skill_progress": "Tun bẹrẹ gbogbo imọ ilọsiwaju? eyi cannot be undone.",
+    "remove_my_annotations": "Yọ kuro gbogbo rẹ notes ati highlights? olukọ annotations yoo stay.",
+    "exit_calibration_full": "Exit calibration ọna? ilọsiwaju yoo be discarded.",
+    "exit_calibration_short": "Exit calibration? ilọsiwaju discarded.",
+    "discard_session_irreversible": "Discard eyi ninu-ilọsiwaju apejọ? nkan abajade yoo be lost. eyi cannot be undone.",
+    "delete_template": "Parẹ eyi template? eyi cannot be undone.",
+    "delete_session": "Parẹ eyi apejọ? eyi cannot be undone.",
+    "discard_session": "Discard eyi apejọ? ilọsiwaju yoo be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? ilọsiwaju yoo be lost.",
+    "end_probe_saved": "End probe early? ilọsiwaju yoo be ti pamọ.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace current board? Unsaved sẹẹli yoo be lost.",
+    "change_granularity": "Changing granularity yoo tun bẹrẹ rẹ rejections. Tẹsiwaju?",
+    "clear_pdf_progress": "Clear ti pamọ ilọsiwaju fun eyi PDF? eyi cannot be undone.",
+    "switch_sentence_frame": "Yipada gbolohun frame template? rẹ edits si blanks yoo be replaced.",
+    "replace_program_with_template": "Replace current program pẹlu template?"
   }
 }

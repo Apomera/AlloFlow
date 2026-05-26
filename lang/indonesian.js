@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813203673",
+  "_version": "20260526T1779815510228",
   "tour": {
     "input_panel_title": "masukan panel",
     "input_panel_text": "Begin Anda pelajaran creation journey di sini. ini masukan panel adalah foundation untuk semua dihasilkan sumber daya. itu serves sebagai central hub di mana Anda define konten, konteks, dan parameters.\n### masukan opsi\n• **teks Tempel**: Tempel konten directly dari apapun article, cerita, atau pelajaran rencana.\n• **berkas Unggah**: Unggah PDFs, gambar, teks berkas, audio (MP3/WAV), atau video untuk otomatis extraction.\n• **URL Ambil**: Tempel apapun article URL ke automatically ekstrak dan impor its konten.\n• **AI sumber daya Cari**: Describe sebuah topik dan let AI cari kelas-appropriate online sumber daya untuk Anda.\n• **Hasilkan sumber teks**: Buat asli konten by specifying topik, nada, tingkat kelas, dan target standar.\n### Generasi fitur\n• **nada Selection**: Pilih dari Informative, Narasi, Persuasive, Humorous, atau langkah-by-langkah gaya.\n• **standar Penyelarasan**: Gunakan AI-powered standar finder atau manually masukan target standar (up ke 3).\n• **Fact Verification**: Aktifkan web grounding ke verify facts dan sertakan citations automatically.\n• **Custom instruksi**: Tambah spesifik guidance untuk lebih tailored konten generasi.\n### sistem Capabilities\n• **Otomatis-Detection**: Automatically identifies sumber bahasa.\n• **Chunked Processing**: audio dan video berkas lebih 20MB adalah intelligently split untuk reliable transcription.\n### Important Paling alat di sidebar require sumber material sebelum mereka dapat menjadi digunakan. Tempel atau hasilkan Anda konten di sini pertama, kemudian jelajahi lainnya sumber daya.",
@@ -53,10 +53,10 @@
     "dbq_text": "dokumen-Berdasarkan pertanyaan: siswa analisis primary sources, membangun bukti-berdasarkan arguments, dan berlatih central keterampilan social-studies + ELA penilaian. Generates sumber dokumen, scaffolded pertanyaan, dan jawaban keys aligned ke Anda standar.",
     "quiz_mode_title": "Pick benar kuis mode",
     "quiz_mode_text": "Pilih apa ini kuis adalah untuk. Exit Ticket checks today’s pembelajaran. Pre-Periksa probes prior knowledge sebelum teaching dan surfaces gaps sebagai konsep kartu dengan sebuah one-klik \"Explain ke kelas\" AI broadcast. Formative Periksa adalah sebuah cepat mid-pelajaran pulse. Spaced Tinjauan tracks setiap siswa’s cross-sesi retention dengan sebuah per-konsep sparkline. setiap mode tunes permintaan, item-jenis mix, dan langsung dasbor layout.",
-    "anchor_chart_title": "Anchor bagan",
-    "anchor_chart_text": "Hasilkan kelas-ready Anchor bagan that buat concepts, kosakata, and procedures stick. A visual reference siswa can return to throughout a unit. ### panel opsi • **bagan Type**: Pilih from Concept, kosakata, Process, strategi, or Comparison bagan. • **gaya**: Hand-drawn marker look, polished cetak gaya, or kid-ramah comic gaya. • **warna Palette**: Pick a high-contrast, dyslexia-ramah, or themed warna scheme. • **Custom instruksi**: Tentukan focal concepts, key kosakata, or strategi langkah to highlight. ### bagan komponen • **Title Banner**: Eye-catching topic header. • **visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-dihasilkan ikon reinforcing each idea with dual-coded visual cues. • **contoh & Non-contoh**: Side-by-side panel for concept clarity. ### interaktif fitur • **Ubah mode**: Tap any element to rewrite teks, swap ikon, or recolor bagian. • **Cetak-Ready**: High-resolution ekspor sized for posters or 8.5×11 handouts. • **Project mode**: Fullscreen lihat for whole-kelas instruksi. ### Pro tip • Hasilkan a *strategi bagan* before a writing unit and a *kosakata bagan* before a science unit — keep both on the kelas wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors siswa can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach siswa *how* to take notes, not just *what* to tulis. Pick the structure that matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-kolom layout with cues, notes, and bottom summary. • **Two-kolom Notes**: Main idea / detail organization for konten-heavy reading. • **T-bagan**: Bandingkan/contrast or pros/cons side-by-side. • **Sketchnotes**: visual note-taking with prompts for ikon, arrows, and warna-coding. • **KWL bagan**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook bab. ### Generation fitur • **Pre-Filled Prompts**: Each template seeded with cues drawn from your sumber teks. • **pertanyaan Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\"). • **kosakata Slots**: Pre-populated key istilah siswa should dengarkan/baca for. • **Custom instruksi**: Target a spesifik cognitive task (synthesis, summary, evaluation). ### Cetak & Digital • **Printable PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: siswa type directly into the template for paperless workflows. • **Editable Headings**: guru tailor kolom labels and bagian titles before sharing. ### Pro tip • Pair *Cornell Notes* with the **Leveled Reader**: siswa take notes at their reading tingkat, then gunakan the bottom-summary box as a formative-penilaian check. ### UDL Connection • **Action & Expression**: dukungan planning and strategi development (Guideline 6.2) by giving learners explicit structures for organizing informasi."
+    "anchor_chart_title": "Bagan Jangkar",
+    "anchor_chart_text": "Hasilkan Bagan Jangkar siap-kelas yang membuat konsep, kosakata, dan prosedur menempel. Ringkasan visual dari ide-ide kunci yang dapat dirujuk siswa berulang kali.",
+    "note_taking_title": "Templat Pencatatan",
+    "note_taking_text": "Templat pencatatan berjenjang yang mengajarkan siswa *bagaimana* mencatat, bukan hanya *apa* yang ditulis. Termasuk Cornell, pengorganisir grafis, entri ganda, dan jurnal pembelajaran."
   },
   "launch_pad": {
     "subtitle": "Pilih Anda pembelajaran pathway",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, skor {skor}"
+    "tier_score": "Tier {tier}, skor {skor}",
+    "draggable_item": "draggable item"
   },
   "games": {
     "syntax": {
@@ -3976,47 +3977,47 @@
       "html_aria": "HTML sumber code ke audit"
     },
     "batch": {
-      "drop_text": "Seret & jatuhkan PDFs di sini",
-      "browse_files": "Browse berkas",
-      "clear_all": "Clear semua",
-      "progress_aria": "Batch remediation kemajuan",
-      "stop_aria": "Berhenti batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "baru Batch",
+      "drop_text": "Seret & lepas PDF di sini",
+      "browse_files": "Telusuri Berkas",
+      "clear_all": "Hapus Semua",
+      "progress_aria": "Progres remediasi batch",
+      "stop_aria": "Hentikan remediasi batch",
+      "avg_improvement": "Peningkatan Rata-rata",
+      "scored_90_plus": "Skor 90+",
+      "new_batch": "Batch Baru",
       "resume": {
-        "title": "sebelumnya batch interrupted",
-        "summary": "{done}/{total} berkas(s) completed sebelum tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "berkas:",
-        "files_more": "+ {n} lebih",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} ke process"
+        "title": "Batch sebelumnya terputus",
+        "summary": "{done}/{total} berkas selesai sebelum tab ditutup.",
+        "remaining": "{n} tersisa.",
+        "files_label": "Berkas:",
+        "files_more": "+ {n} lagi",
+        "resume_button": "Lanjutkan Batch",
+        "discard_button": "Buang",
+        "toast": "Melanjutkan batch · {done} dicache, {remaining} untuk diproses"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Ditandai oleh {n} dari {total} auditor",
+      "unanimous_suffix": " (bulat)",
+      "minority_suffix": " — pendapat minoritas, kepercayaan lebih rendah"
     },
     "divergence": {
-      "semantic": "Structurally compliant tetapi semantically weak — AI flagged konten kualitas (alt teks, heading meaning, membaca order) itu axe-core dapat't detect",
-      "structural": "Code-tingkat WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Sesuai struktur tetapi lemah secara semantik — AI menandai kualitas konten yang tidak dapat dideteksi axe-core",
+      "structural": "Pelanggaran WCAG tingkat kode terdeteksi — axe-core menemukan kegagalan yang dapat diverifikasi mesin"
     },
     "tagtree": {
-      "label": "Pre-existing tag struktur",
-      "tooltip": "ini PDF termasuk sebuah PDF/UA-gaya tag tree. Auditors were instructed ke credit existing struktur rather than penalize itu sebagai missing."
+      "label": "Struktur tag yang sudah ada",
+      "tooltip": "PDF ini menyertakan pohon tag gaya PDF/UA. Auditor diinstruksikan untuk mengakui struktur yang ada."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} {total} asli issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues dari asli audit no longer found di verification audit",
-      "persisted_tip": "Issues dari asli audit still present setelah fix",
-      "introduced_tip": "baru issues itu melakukan tidak exist sebelum fix"
+      "heading": "Penyelesaian Masalah",
+      "subheading": "Diselesaikan {resolved} dari {total} masalah asli ({pct}%)",
+      "resolved_label": "Diselesaikan",
+      "persisted_label": "Masih ada",
+      "introduced_label": "Baru diperkenalkan",
+      "resolved_tip": "Masalah dari audit asli yang tidak lagi ditemukan dalam audit verifikasi",
+      "persisted_tip": "Masalah dari audit asli yang masih ada setelah perbaikan",
+      "introduced_tip": "Masalah baru yang tidak ada sebelum perbaikan"
     },
     "report": {
       "download_title": "Unduh audit laporan",
@@ -11622,7 +11623,14 @@
     "click_to_insert": "Klik to insert this transition kata",
     "edit_illustration": "Ubah illustration with AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Tutup"
+    "close": "Tutup",
+    "cancel": "Batal",
+    "add": "Tambah",
+    "done": "Done",
+    "edit": "Ubah",
+    "reset": "Atur ulang",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "adegan Visualization",
@@ -11741,5 +11749,60 @@
     "send_explainer_to_students": "Kirim this explainer to every siswa's screen now",
     "one_click_remove_text": "One-klik: hapus teks from this gambar",
     "rewrite_distractor": "Rewrite this distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "gambar too large (max 5MB). mohon gunakan a smaller gambar.",
+    "need_card_front_back": "Tambah at least one kartu with both a front and back.",
+    "type_word_first": "Type a kata or letter sequence pertama.",
+    "write_something_first": "Tulis something pertama.",
+    "pick_decoration_first": "Pick a decoration to link to pertama.",
+    "write_association": "Tulis a pendek association — what does this remind you of?",
+    "no_crop_data": "Tidak crop data tersedia for this gambar.",
+    "invalid_crop_data": "Invalid crop data.",
+    "no_full_page_image": "Full page gambar not tersedia. Re-jalankan remediation to aktifkan cropping.",
+    "selection_too_small": "Selection too small. Seret a larger luas.",
+    "encryption_unavailable": "Encryption not tersedia in this browser. You may need a lebih modern browser to simpan submissions.",
+    "voice_unsupported_browser": "suara recording is not supported in this browser.",
+    "voice_unsupported_device": "suara recording is not supported on this device.",
+    "mic_denied": "Microphone akses was denied. Allow microphone akses in your browser pengaturan to record suara notes.",
+    "voice_too_long": "suara note too panjang to simpan (over 500KB). Coba a shorter clip.",
+    "voice_empty": "suara recording was empty.",
+    "no_annotations_to_save": "Tidak annotations to simpan yet — tambah a note or highlight pertama.",
+    "could_not_save_annotations": "Could not simpan annotations. Coba a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — tempel it into a baru browser tab.",
+    "regenerate_function_missing": "kesalahan: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. mohon muat ulang and coba again.",
+    "image_too_large_10mb": "gambar too large (max 10MB). mohon gunakan a smaller gambar."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing kartu with the imported ones?",
+    "delete_voice_note": "Hapus this suara note?",
+    "remove_companion": "Hapus your companion?",
+    "delete_goal": "Hapus this tujuan?",
+    "delete_atlas": "Hapus this atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Hapus this realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Hapus this entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from this backup? This replaces ALL current data — decorations, journal, tokens, stories, pengaturan. Cannot be undone.",
+    "reset_skill_progress": "Atur ulang all keterampilan kemajuan? This cannot be undone.",
+    "remove_my_annotations": "Hapus all your notes and highlights? guru annotations will stay.",
+    "exit_calibration_full": "Exit calibration mode? kemajuan will be discarded.",
+    "exit_calibration_short": "Exit calibration? kemajuan discarded.",
+    "discard_session_irreversible": "Discard this in-kemajuan sesi? item hasil will be lost. This cannot be undone.",
+    "delete_template": "Hapus this template? This cannot be undone.",
+    "delete_session": "Hapus this sesi? This cannot be undone.",
+    "discard_session": "Discard this sesi? kemajuan will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? kemajuan will be lost.",
+    "end_probe_saved": "End probe early? kemajuan will be tersimpan.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved sel will be lost.",
+    "change_granularity": "Changing granularity will atur ulang your rejections. Lanjutkan?",
+    "clear_pdf_progress": "Clear tersimpan kemajuan for this PDF? This cannot be undone.",
+    "switch_sentence_frame": "Ganti kalimat frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

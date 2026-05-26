@@ -1176,7 +1176,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, ציונים {ציונים}"
+    "tier_score": "Tier {tier}, ציונים {ציונים}",
+    "draggable_item": "draggable פריטים"
   },
   "read_this_page": {
     "panel_aria": "פאנל קריאת עמוד זה",
@@ -11294,7 +11295,7 @@
       "structures_layers_count": "{count} structures • {layers} layers"
     }
   },
-  "_version": "20260526T1779813202099",
+  "_version": "20260526T1779815508960",
   "a11y_lab": {
     "tabs": {
       "preview": "Preview as תלמידים",
@@ -11616,7 +11617,14 @@
     "click_to_insert": "לחץ to insert זה transition מילים",
     "edit_illustration": "ערוך איורים with בינה מלאכותית",
     "regenerate_illustration": "Regenerate איורים",
-    "close": "סגור"
+    "close": "סגור",
+    "cancel": "בטל",
+    "add": "הוסף",
+    "done": "Done",
+    "edit": "ערוך",
+    "reset": "אפס",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "סצנות Visualization",
@@ -11735,5 +11743,60 @@
     "send_explainer_to_students": "שלח זה explainer to every תלמידים's screen now",
     "one_click_remove_text": "One-לחץ: הסר טקסט from זה תמונות",
     "rewrite_distractor": "Rewrite זה distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "תמונות too large (max 5MB). נא השתמש a smaller תמונות.",
+    "need_card_front_back": "הוסף at least one כרטיסים with both a front and back.",
+    "type_word_first": "Type a מילים or letter sequence ראשון.",
+    "write_something_first": "כתוב something ראשון.",
+    "pick_decoration_first": "Pick a decoration to link to ראשון.",
+    "write_association": "כתוב a קצר association — what does זה remind you of?",
+    "no_crop_data": "No crop נתונים זמין for זה תמונות.",
+    "invalid_crop_data": "Invalid crop נתונים.",
+    "no_full_page_image": "Full page תמונות not זמין. Re-הפעל remediation to הפעל cropping.",
+    "selection_too_small": "Selection too small. גרור a larger שטח.",
+    "encryption_unavailable": "Encryption not זמין in זה browser. You may need a יותר modern browser to שמור submissions.",
+    "voice_unsupported_browser": "קול recording is not supported in זה browser.",
+    "voice_unsupported_device": "קול recording is not supported on זה device.",
+    "mic_denied": "Microphone גישה was denied. Allow microphone גישה in your browser הגדרות to record קול notes.",
+    "voice_too_long": "קול note too ארוך to שמור (over 500KB). נסה a קצר יותר clip.",
+    "voice_empty": "קול recording was empty.",
+    "no_annotations_to_save": "No annotations to שמור yet — הוסף a note or highlight ראשון.",
+    "could_not_save_annotations": "Could not שמור annotations. נסה a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — הדבק it into a חדש browser tab.",
+    "regenerate_function_missing": "שגיאות: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. נא רענן and נסה again.",
+    "image_too_large_10mb": "תמונות too large (max 10MB). נא השתמש a smaller תמונות."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing כרטיסים with the imported ones?",
+    "delete_voice_note": "מחק זה קול note?",
+    "remove_companion": "הסר your companion?",
+    "delete_goal": "מחק זה מטרות?",
+    "delete_atlas": "מחק זה atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "מחק זה realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "מחק זה entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from זה backup? זה replaces ALL current נתונים — decorations, journal, tokens, stories, הגדרות. Cannot be undone.",
+    "reset_skill_progress": "אפס all מיומנויות התקדמות? זה cannot be undone.",
+    "remove_my_annotations": "הסר all your notes and highlights? מורים annotations will stay.",
+    "exit_calibration_full": "Exit calibration מצב? התקדמות will be discarded.",
+    "exit_calibration_short": "Exit calibration? התקדמות discarded.",
+    "discard_session_irreversible": "Discard זה in-התקדמות מפגשים? פריטים תוצאות will be lost. זה cannot be undone.",
+    "delete_template": "מחק זה template? זה cannot be undone.",
+    "delete_session": "מחק זה מפגשים? זה cannot be undone.",
+    "discard_session": "Discard זה מפגשים? התקדמות will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? התקדמות will be lost.",
+    "end_probe_saved": "End probe early? התקדמות will be נשמר.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved תאים will be lost.",
+    "change_granularity": "Changing granularity will אפס your rejections. המשך?",
+    "clear_pdf_progress": "Clear נשמר התקדמות for זה PDF? זה cannot be undone.",
+    "switch_sentence_frame": "החלף משפטים frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

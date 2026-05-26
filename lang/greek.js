@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813200983",
+  "_version": "20260526T1779815507553",
   "tour": {
     "input_panel_title": "είσοδος πίνακας",
     "input_panel_text": "Begin σας μάθημα creation journey εδώ. αυτό είσοδος πίνακας είναι foundation για όλα δημιουργήθηκε πόροι. αυτό serves ως central hub που εσείς define περιεχόμενο, πλαίσιο, και parameters.\n### είσοδος επιλογές\n• **κείμενο Επικόλληση**: Επικόλληση περιεχόμενο directly από οποιοδήποτε article, ιστορία, ή μάθημα σχέδιο.\n• **αρχείο Μεταφόρτωση**: Μεταφόρτωση PDFs, εικόνα, κείμενο αρχείο, ήχος (MP3/WAV), ή βίντεο για αυτόματο extraction.\n• **URL Λήψη**: Επικόλληση οποιοδήποτε article URL σε automatically εξαγωγή και εισαγωγή its περιεχόμενο.\n• **AI πόροι Αναζήτηση**: Describe θέμα και let AI βρίσκω τάξη-appropriate online πόροι για εσείς.\n• **Δημιουργία πηγή κείμενο**: Δημιουργία πρωτότυπο περιεχόμενο by specifying θέμα, τόνος, επίπεδο τάξης, και στόχος πρότυπο.\n### Γενιά χαρακτηριστικά\n• **τόνος Selection**: Επιλέξτε από Informative, Αφήγηση, Persuasive, Humorous, ή βήμα-by-βήμα στυλ.\n• **πρότυπο Ευθυγράμμιση**: Χρήση AI-powered πρότυπο finder ή manually είσοδος στόχος πρότυπο (up σε 3).\n• **Fact Verification**: Ενεργοποίηση web grounding σε verify facts και συμπερίληψη citations automatically.\n• **Custom οδηγία**: Προσθήκη συγκεκριμένος guidance για περισσότερο tailored περιεχόμενο γενιά.\n### σύστημα Capabilities\n• **Αυτόματο-Detection**: Automatically identifies πηγή γλώσσα.\n• **Chunked Processing**: ήχος και βίντεο αρχείο πάνω 20MB είναι intelligently split για reliable transcription.\n### Important Πιο εργαλεία σε sidebar require πηγή material πριν αυτοί μπορεί είναι χρησιμοποιήθηκε. Επικόλληση ή δημιουργία σας περιεχόμενο εδώ πρώτο, τότε εξερεύνηση άλλος πόροι.",
@@ -53,10 +53,10 @@
     "dbq_text": "έγγραφο-Βασισμένος ερώτηση: μαθητής ανάλυση primary sources, χτίζω στοιχεία-βασισμένος arguments, και εξάσκηση central δεξιότητα του social-studies + ELA αξιολόγηση. Generates πηγή έγγραφο, scaffolded ερώτηση, και απάντηση keys aligned σε σας πρότυπο.",
     "quiz_mode_title": "Pick σωστός κουίζ λειτουργία",
     "quiz_mode_text": "Επιλέξτε τι αυτό κουίζ είναι για. Exit Ticket checks today’s μάθηση. Pre-Έλεγχος probes prior knowledge πριν teaching και surfaces gaps ως έννοια κάρτα με one-κάντε κλικ \"Explain σε τάξη\" AI broadcast. Formative Έλεγχος είναι γρήγορο mid-μάθημα pulse. Spaced Αναθεώρηση tracks κάθε μαθητής’s cross-συνεδρία retention με ανά-έννοια sparkline. κάθε λειτουργία tunes προτροπές, στοιχείο-τύπος mix, και ζωντανά πίνακας ελέγχου layout.",
-    "anchor_chart_title": "Anchor γράφημα",
-    "anchor_chart_text": "Δημιουργία τάξη-ready Anchor γράφημα that δημιουργία concepts, λεξιλόγιο, and procedures stick. A οπτικός reference μαθητής can return to throughout a unit. ### πίνακας επιλογές • **γράφημα Type**: Επιλέξτε from Concept, λεξιλόγιο, Process, στρατηγική, or Comparison γράφημα. • **στυλ**: Hand-drawn marker look, polished εκτύπωση στυλ, or kid-φιλικός comic στυλ. • **χρώμα Palette**: Pick a high-contrast, dyslexia-φιλικός, or themed χρώμα scheme. • **Custom οδηγία**: Καθορισμός focal concepts, key λεξιλόγιο, or στρατηγική βήμα to highlight. ### γράφημα στοιχείο • **Title Banner**: Eye-catching topic header. • **οπτικός Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-δημιουργήθηκε εικονίδιο reinforcing each idea with dual-coded οπτικός cues. • **παράδειγμα & Non-παράδειγμα**: Side-by-side πίνακας for concept clarity. ### διαδραστικός χαρακτηριστικά • **Επεξεργασία λειτουργία**: Tap any element to rewrite κείμενο, swap εικονίδιο, or recolor ενότητα. • **Εκτύπωση-Ready**: High-resolution εξαγωγή sized for posters or 8.5×11 handouts. • **Project λειτουργία**: Fullscreen προβολή for whole-τάξη οδηγία. ### Pro συμβουλή • Δημιουργία a *στρατηγική γράφημα* before a writing unit and a *λεξιλόγιο γράφημα* before a science unit — keep both on the τάξη wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent οπτικός anchors μαθητής can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach μαθητής *how* to take notes, not just *what* to γράψτε. Pick the structure that matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-στήλη layout with cues, notes, and bottom summary. • **Two-στήλη Notes**: Main idea / λεπτομέρεια organization for περιεχόμενο-heavy reading. • **T-γράφημα**: Σύγκριση/contrast or pros/cons side-by-side. • **Sketchnotes**: οπτικός note-taking with prompts for εικονίδιο, arrows, and χρώμα-coding. • **KWL γράφημα**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook κεφάλαιο. ### Generation χαρακτηριστικά • **Pre-Filled Prompts**: Each template seeded with cues drawn from your πηγή κείμενο. • **ερώτηση Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\"). • **λεξιλόγιο Slots**: Pre-populated key όρος μαθητής should ακούστε/διαβάστε for. • **Custom οδηγία**: Target a συγκεκριμένος cognitive task (synthesis, summary, evaluation). ### Εκτύπωση & Digital • **Printable PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: μαθητής type directly into the template for paperless workflows. • **Editable Headings**: δάσκαλος tailor στήλη labels and ενότητα titles before sharing. ### Pro συμβουλή • Pair *Cornell Notes* with the **Leveled Reader**: μαθητής take notes at their reading επίπεδο, then χρήση the bottom-summary box as a formative-αξιολόγηση check. ### UDL Connection • **Action & Expression**: υποστήριξη planning and στρατηγική development (Guideline 6.2) by giving learners explicit structures for organizing πληροφορίες."
+    "anchor_chart_title": "Πίνακες αναφοράς",
+    "anchor_chart_text": "Δημιουργήστε Πίνακες αναφοράς έτοιμους για την τάξη που εδραιώνουν έννοιες, λεξιλόγιο και διαδικασίες. Μια οπτική σύνοψη βασικών ιδεών στις οποίες μπορούν να ανατρέξουν επανειλημμένα οι μαθητές.",
+    "note_taking_title": "Πρότυπα σημειώσεων",
+    "note_taking_text": "Δομημένα πρότυπα σημειώσεων που διδάσκουν στους μαθητές *πώς* να κρατούν σημειώσεις, όχι μόνο *τι* να γράψουν. Περιλαμβάνει Cornell, γραφικούς οργανωτές, διπλή εγγραφή και ημερολόγια μάθησης."
   },
   "launch_pad": {
     "subtitle": "Επιλέξτε σας μάθηση pathway",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, βαθμολογία {βαθμολογία}"
+    "tier_score": "Tier {tier}, βαθμολογία {βαθμολογία}",
+    "draggable_item": "draggable στοιχείο"
   },
   "games": {
     "syntax": {
@@ -3976,47 +3977,47 @@
       "html_aria": "HTML πηγή code σε audit"
     },
     "batch": {
-      "drop_text": "Σύρετε & αποθέστε PDFs εδώ",
-      "browse_files": "Browse αρχείο",
-      "clear_all": "Clear όλα",
-      "progress_aria": "Batch remediation πρόοδος",
-      "stop_aria": "Διακοπή batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "νέος Batch",
+      "drop_text": "Σύρετε & αποθέστε PDF εδώ",
+      "browse_files": "Περιήγηση αρχείων",
+      "clear_all": "Καθαρισμός όλων",
+      "progress_aria": "Πρόοδος αποκατάστασης παρτίδας",
+      "stop_aria": "Διακοπή αποκατάστασης παρτίδας",
+      "avg_improvement": "Μέση βελτίωση",
+      "scored_90_plus": "Βαθμολογία 90+",
+      "new_batch": "Νέα παρτίδα",
       "resume": {
-        "title": "προηγούμενο batch interrupted",
-        "summary": "{done}/{total} αρχείο(s) completed πριν tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "αρχείο:",
-        "files_more": "+ {n} περισσότερο",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} σε process"
+        "title": "Προηγούμενη παρτίδα διακόπηκε",
+        "summary": "{done}/{total} αρχείο(α) ολοκληρώθηκαν πριν κλείσει η καρτέλα.",
+        "remaining": "{n} απομένουν.",
+        "files_label": "Αρχεία:",
+        "files_more": "+ {n} περισσότερα",
+        "resume_button": "Συνέχιση παρτίδας",
+        "discard_button": "Απόρριψη",
+        "toast": "Συνέχιση παρτίδας · {done} στην προσωρινή μνήμη, {remaining} για επεξεργασία"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} του {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Επισημάνθηκε από {n} από {total} ελεγκτές",
+      "unanimous_suffix": " (ομόφωνα)",
+      "minority_suffix": " — γνώμη μειονότητας, χαμηλότερη εμπιστοσύνη"
     },
     "divergence": {
-      "semantic": "Structurally compliant αλλά semantically weak — AI flagged περιεχόμενο ποιότητα (alt κείμενο, heading meaning, ανάγνωση order) αυτό axe-core μπορεί't detect",
-      "structural": "Code-επίπεδο WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Δομικά συμβατό αλλά σημασιολογικά αδύναμο — η AI επισήμανε ποιότητα περιεχομένου που το axe-core δεν μπορεί να εντοπίσει",
+      "structural": "Παραβιάσεις WCAG σε επίπεδο κώδικα εντοπίστηκαν — το axe-core βρήκε επαληθεύσιμα από μηχανή σφάλματα"
     },
     "tagtree": {
-      "label": "Pre-existing tag δομή",
-      "tooltip": "αυτό PDF περιλαμβάνει PDF/UA-στυλ tag tree. Auditors ήταν instructed σε credit existing δομή rather than penalize αυτό ως missing."
+      "label": "Προϋπάρχουσα δομή ετικετών",
+      "tooltip": "Αυτό το PDF περιλαμβάνει δέντρο ετικετών στυλ PDF/UA. Οι ελεγκτές έλαβαν εντολή να αναγνωρίσουν την υπάρχουσα δομή."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} του {total} πρωτότυπο issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues από πρωτότυπο audit no longer found σε verification audit",
-      "persisted_tip": "Issues από πρωτότυπο audit still present μετά fix",
-      "introduced_tip": "νέος issues αυτό έκανε δεν exist πριν fix"
+      "heading": "Επίλυση προβλημάτων",
+      "subheading": "Επιλύθηκαν {resolved} από {total} αρχικά προβλήματα ({pct}%)",
+      "resolved_label": "Επιλύθηκαν",
+      "persisted_label": "Εξακολουθούν να υπάρχουν",
+      "introduced_label": "Νεοεισαχθέντα",
+      "resolved_tip": "Προβλήματα από τον αρχικό έλεγχο που δεν εντοπίζονται πλέον στον έλεγχο επαλήθευσης",
+      "persisted_tip": "Προβλήματα από τον αρχικό έλεγχο που εξακολουθούν να υπάρχουν μετά τη διόρθωση",
+      "introduced_tip": "Νέα προβλήματα που δεν υπήρχαν πριν τη διόρθωση"
     },
     "report": {
       "download_title": "Λήψη audit αναφορά",
@@ -11622,7 +11623,14 @@
     "click_to_insert": "Κάντε κλικ to insert this transition λέξη",
     "edit_illustration": "Επεξεργασία illustration with AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Κλείσιμο"
+    "close": "Κλείσιμο",
+    "cancel": "Ακύρωση",
+    "add": "Προσθήκη",
+    "done": "Done",
+    "edit": "Επεξεργασία",
+    "reset": "Επαναφορά",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "σκηνή Visualization",
@@ -11741,5 +11749,60 @@
     "send_explainer_to_students": "Αποστολή this explainer to every μαθητής's screen now",
     "one_click_remove_text": "One-κάντε κλικ: αφαίρεση κείμενο from this εικόνα",
     "rewrite_distractor": "Rewrite this distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "εικόνα too large (max 5MB). παρακαλώ χρήση a smaller εικόνα.",
+    "need_card_front_back": "Προσθήκη at least one κάρτα with both a front and back.",
+    "type_word_first": "Type a λέξη or letter sequence πρώτο.",
+    "write_something_first": "Γράψτε something πρώτο.",
+    "pick_decoration_first": "Pick a decoration to link to πρώτο.",
+    "write_association": "Γράψτε a σύντομο association — what does this remind you of?",
+    "no_crop_data": "Όχι crop δεδομένα διαθέσιμο for this εικόνα.",
+    "invalid_crop_data": "Invalid crop δεδομένα.",
+    "no_full_page_image": "Full page εικόνα not διαθέσιμο. Re-εκτέλεση remediation to ενεργοποίηση cropping.",
+    "selection_too_small": "Selection too small. Σύρετε a larger εμβαδόν.",
+    "encryption_unavailable": "Encryption not διαθέσιμο in this browser. You may need a περισσότερο modern browser to αποθήκευση submissions.",
+    "voice_unsupported_browser": "φωνή recording is not supported in this browser.",
+    "voice_unsupported_device": "φωνή recording is not supported on this device.",
+    "mic_denied": "Microphone πρόσβαση was denied. Allow microphone πρόσβαση in your browser ρυθμίσεις to record φωνή notes.",
+    "voice_too_long": "φωνή note too μακρύ to αποθήκευση (over 500KB). Δοκιμάστε a shorter clip.",
+    "voice_empty": "φωνή recording was empty.",
+    "no_annotations_to_save": "Όχι annotations to αποθήκευση yet — προσθήκη a note or highlight πρώτο.",
+    "could_not_save_annotations": "Could not αποθήκευση annotations. Δοκιμάστε a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — επικόλληση it into a νέος browser tab.",
+    "regenerate_function_missing": "σφάλμα: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. παρακαλώ ανανέωση and δοκιμάστε again.",
+    "image_too_large_10mb": "εικόνα too large (max 10MB). παρακαλώ χρήση a smaller εικόνα."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing κάρτα with the imported ones?",
+    "delete_voice_note": "Διαγραφή this φωνή note?",
+    "remove_companion": "Αφαίρεση your companion?",
+    "delete_goal": "Διαγραφή this στόχος?",
+    "delete_atlas": "Διαγραφή this atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Διαγραφή this realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Διαγραφή this entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from this backup? This replaces ALL current δεδομένα — decorations, journal, tokens, stories, ρυθμίσεις. Cannot be undone.",
+    "reset_skill_progress": "Επαναφορά all δεξιότητα πρόοδος? This cannot be undone.",
+    "remove_my_annotations": "Αφαίρεση all your notes and highlights? δάσκαλος annotations will stay.",
+    "exit_calibration_full": "Exit calibration λειτουργία? πρόοδος will be discarded.",
+    "exit_calibration_short": "Exit calibration? πρόοδος discarded.",
+    "discard_session_irreversible": "Discard this in-πρόοδος συνεδρία? στοιχείο αποτέλεσμα will be lost. This cannot be undone.",
+    "delete_template": "Διαγραφή this template? This cannot be undone.",
+    "delete_session": "Διαγραφή this συνεδρία? This cannot be undone.",
+    "discard_session": "Discard this συνεδρία? πρόοδος will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? πρόοδος will be lost.",
+    "end_probe_saved": "End probe early? πρόοδος will be αποθηκευμένο.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved κελί will be lost.",
+    "change_granularity": "Changing granularity will επαναφορά your rejections. Συνέχεια?",
+    "clear_pdf_progress": "Clear αποθηκευμένο πρόοδος for this PDF? This cannot be undone.",
+    "switch_sentence_frame": "Εναλλαγή πρόταση frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

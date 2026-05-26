@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813214076",
+  "_version": "20260526T1779815517890",
   "common": {
     "enter_value": "ใส่ค่า",
     "ok": "ตกลง",
@@ -1023,7 +1023,8 @@
     "toggle_theme_full": "Toggle theme (light / dark / high contrast)",
     "edit_math_problems": "Edit math problems",
     "report_problem": "Report a problem or send feedback to Aaron",
-    "curriculum_audit_summary": "Curriculum audit summary"
+    "curriculum_audit_summary": "Curriculum audit summary",
+    "draggable_item": "draggable รายการ"
   },
   "roles": {
     "title": "ยินดีต้อนรับสู่ AlloFlow",
@@ -11984,7 +11985,14 @@
     "move_down": "Move down",
     "click_to_insert": "Click to insert this transition word",
     "edit_illustration": "Edit illustration with AI",
-    "regenerate_illustration": "Regenerate illustration"
+    "regenerate_illustration": "Regenerate illustration",
+    "cancel": "ยกเลิก",
+    "add": "เพิ่ม",
+    "done": "Done",
+    "edit": "แก้ไข",
+    "reset": "รีเซ็ต",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "placeholders": {
     "story_title": "Give your story a title...",
@@ -12201,5 +12209,60 @@
     "send_explainer_to_students": "ส่ง นี่ explainer to every นักเรียน's screen now",
     "one_click_remove_text": "One-คลิก: ลบออก ข้อความ from นี่ รูปภาพ",
     "rewrite_distractor": "Rewrite นี่ distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "รูปภาพ too large (max 5MB). โปรด ใช้ a smaller รูปภาพ.",
+    "need_card_front_back": "เพิ่ม at least one การ์ด with both a front and back.",
+    "type_word_first": "Type a คำ or letter sequence แรก.",
+    "write_something_first": "เขียน something แรก.",
+    "pick_decoration_first": "Pick a decoration to link to แรก.",
+    "write_association": "เขียน a สั้น association — what does นี่ remind you of?",
+    "no_crop_data": "ไม่ crop ข้อมูล มีอยู่ for นี่ รูปภาพ.",
+    "invalid_crop_data": "Invalid crop ข้อมูล.",
+    "no_full_page_image": "Full page รูปภาพ not มีอยู่. Re-รัน remediation to เปิดใช้งาน cropping.",
+    "selection_too_small": "Selection too small. ลาก a larger พื้นที่.",
+    "encryption_unavailable": "Encryption not มีอยู่ in นี่ browser. You may need a มากขึ้น modern browser to บันทึก submissions.",
+    "voice_unsupported_browser": "เสียง recording is not supported in นี่ browser.",
+    "voice_unsupported_device": "เสียง recording is not supported on นี่ device.",
+    "mic_denied": "Microphone เข้าถึง was denied. Allow microphone เข้าถึง in your browser การตั้งค่า to record เสียง notes.",
+    "voice_too_long": "เสียง note too ยาว to บันทึก (over 500KB). ลอง a สั้นกว่า clip.",
+    "voice_empty": "เสียง recording was empty.",
+    "no_annotations_to_save": "ไม่ annotations to บันทึก yet — เพิ่ม a note or highlight แรก.",
+    "could_not_save_annotations": "Could not บันทึก annotations. ลอง a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — วาง it into a ใหม่ browser tab.",
+    "regenerate_function_missing": "ข้อผิดพลาด: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. โปรด รีเฟรช and ลอง again.",
+    "image_too_large_10mb": "รูปภาพ too large (max 10MB). โปรด ใช้ a smaller รูปภาพ."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing การ์ด with the imported ones?",
+    "delete_voice_note": "ลบ นี่ เสียง note?",
+    "remove_companion": "ลบออก your companion?",
+    "delete_goal": "ลบ นี่ เป้าหมาย?",
+    "delete_atlas": "ลบ นี่ atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "ลบ นี่ realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "ลบ นี่ entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from นี่ backup? นี่ replaces ALL current ข้อมูล — decorations, journal, tokens, stories, การตั้งค่า. Cannot be undone.",
+    "reset_skill_progress": "รีเซ็ต all ทักษะ ความก้าวหน้า? นี่ cannot be undone.",
+    "remove_my_annotations": "ลบออก all your notes and highlights? ครู annotations will stay.",
+    "exit_calibration_full": "Exit calibration โหมด? ความก้าวหน้า will be discarded.",
+    "exit_calibration_short": "Exit calibration? ความก้าวหน้า discarded.",
+    "discard_session_irreversible": "Discard นี่ in-ความก้าวหน้า เซสชัน? รายการ ผลลัพธ์ will be lost. นี่ cannot be undone.",
+    "delete_template": "ลบ นี่ template? นี่ cannot be undone.",
+    "delete_session": "ลบ นี่ เซสชัน? นี่ cannot be undone.",
+    "discard_session": "Discard นี่ เซสชัน? ความก้าวหน้า will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? ความก้าวหน้า will be lost.",
+    "end_probe_saved": "End probe early? ความก้าวหน้า will be บันทึกแล้ว.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved เซลล์ will be lost.",
+    "change_granularity": "Changing granularity will รีเซ็ต your rejections. ดำเนินการต่อ?",
+    "clear_pdf_progress": "Clear บันทึกแล้ว ความก้าวหน้า for นี่ PDF? นี่ cannot be undone.",
+    "switch_sentence_frame": "สลับ ประโยค frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

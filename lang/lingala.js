@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813207200",
+  "_version": "20260526T1779815513178",
   "tour": {
     "input_panel_title": "eloko ekoti lopangu",
     "input_panel_text": "Begin yo liteya creation journey here. Oyo eloko ekoti lopangu ezali foundation mpo na nyonso esalemi biloko. It serves as central hub wapi yo define mateya, context, na parameters.\n### eloko ekoti baponi\n• **makomi Pasiká**: Pasiká mateya directly uta any article, lisapo, to liteya mwango.\n• **fichier Tomá**: Tomá PDFs, elilingi, makomi fichier, mongongo (MP3/WAV), to video mpo na ya yango moko extraction.\n• **URL Kamatá**: Pasiká any article URL na automatically bimisá na kotisá its mateya.\n• **AI biloko Lukáká**: Describe ntina na let AI find kelasi-appropriate online biloko mpo na yo.\n• **Sala esika ya kobimisa makomi**: Salá ya liboso mateya by specifying ntina, mongongo, niveau ya kelasi, na mokano mibeko.\n### Ekeke misala\n• **mongongo Selection**: Poná uta Informative, Lisapo, Persuasive, Humorous, to litambe-by-litambe lolenge.\n• **mibeko Kosengisa**: Salelá AI-powered mibeko finder to manually eloko ekoti mokano mibeko (up na 3).\n• **Fact Verification**: Fungolá web grounding na verify facts na bakisá citations automatically.\n• **Custom malako**: Bakisá oyo guidance mpo na mingi tailored mateya ekeke.\n### molongo Capabilities\n• **Auto-Detection**: Automatically identifies esika ya kobimisa monoko.\n• **Chunked Processing**: mongongo na video fichier likoló 20MB ezali intelligently split mpo na reliable transcription.\n### Important Most biloko ya mosala na sidebar require esika ya kobimisa material before they can be esalelami. Pasiká to sala yo mateya here ya liboso, then luka mosusu biloko.",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, matomba {matomba}"
+    "tier_score": "Tier {tier}, matomba {matomba}",
+    "draggable_item": "draggable eloko"
   },
   "games": {
     "syntax": {
@@ -11614,7 +11615,14 @@
     "click_to_insert": "Finá to insert oyo transition maloba",
     "edit_illustration": "Bongisá illustration with AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Kangá"
+    "close": "Kangá",
+    "cancel": "Boyá",
+    "add": "Bakisá",
+    "done": "Done",
+    "edit": "Bongisá",
+    "reset": "Bandá lisusu",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "scène Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "Tindá oyo explainer to every moyekoli's screen now",
     "one_click_remove_text": "One-finá: longolá makomi from oyo elilingi",
     "rewrite_distractor": "Rewrite oyo distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "elilingi too large (max 5MB). nabondeli yo salelá a smaller elilingi.",
+    "need_card_front_back": "Bakisá at least one karte with both a front and back.",
+    "type_word_first": "Type a maloba or letter sequence ya liboso.",
+    "write_something_first": "Komá something ya liboso.",
+    "pick_decoration_first": "Pick a decoration to link to ya liboso.",
+    "write_association": "Komá a mokuse association — what does oyo remind you of?",
+    "no_crop_data": "Te crop bilembo ezali for oyo elilingi.",
+    "invalid_crop_data": "Invalid crop bilembo.",
+    "no_full_page_image": "Full page elilingi not ezali. Re-kimá remediation to fungolá cropping.",
+    "selection_too_small": "Selection too small. Benda a larger surface.",
+    "encryption_unavailable": "Encryption not ezali in oyo browser. You may need a mingi modern browser to bombá submissions.",
+    "voice_unsupported_browser": "mongongo recording is not supported in oyo browser.",
+    "voice_unsupported_device": "mongongo recording is not supported on oyo device.",
+    "mic_denied": "Microphone kokota was denied. Allow microphone kokota in your browser bobongisi to record mongongo notes.",
+    "voice_too_long": "mongongo note too molayi to bombá (over 500KB). Memá a shorter clip.",
+    "voice_empty": "mongongo recording was empty.",
+    "no_annotations_to_save": "Te annotations to bombá yet — bakisá a note or highlight ya liboso.",
+    "could_not_save_annotations": "Could not bombá annotations. Memá a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — pasiká it into a ya sika browser tab.",
+    "regenerate_function_missing": "libunga: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. nabondeli yo bongisá lisusu and memá again.",
+    "image_too_large_10mb": "elilingi too large (max 10MB). nabondeli yo salelá a smaller elilingi."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing karte with the imported ones?",
+    "delete_voice_note": "Bomá oyo mongongo note?",
+    "remove_companion": "Longolá your companion?",
+    "delete_goal": "Bomá oyo tina?",
+    "delete_atlas": "Bomá oyo atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Bomá oyo realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Bomá oyo entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from oyo backup? Oyo replaces ALL current bilembo — decorations, journal, tokens, stories, bobongisi. Cannot be undone.",
+    "reset_skill_progress": "Bandá lisusu all mayele bokoli? Oyo cannot be undone.",
+    "remove_my_annotations": "Longolá all your notes and highlights? molakisi annotations will stay.",
+    "exit_calibration_full": "Exit calibration lolenge? bokoli will be discarded.",
+    "exit_calibration_short": "Exit calibration? bokoli discarded.",
+    "discard_session_irreversible": "Discard oyo in-bokoli tángo? eloko bilembo will be lost. Oyo cannot be undone.",
+    "delete_template": "Bomá oyo template? Oyo cannot be undone.",
+    "delete_session": "Bomá oyo tángo? Oyo cannot be undone.",
+    "discard_session": "Discard oyo tángo? bokoli will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? bokoli will be lost.",
+    "end_probe_saved": "End probe early? bokoli will be ebombami.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved cellule will be lost.",
+    "change_granularity": "Changing granularity will bandá lisusu your rejections. Landá?",
+    "clear_pdf_progress": "Clear ebombami bokoli for oyo PDF? Oyo cannot be undone.",
+    "switch_sentence_frame": "Bongolá fraze frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

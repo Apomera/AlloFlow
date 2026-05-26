@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813213059",
+  "_version": "20260526T1779815517120",
   "tour": {
     "input_panel_title": "உள்ளீடு பலகை",
     "input_panel_text": "Begin உங்கள் பாடம் creation journey here. இது உள்ளீடு பலகை ஆகும் foundation க்கு எல்லாம் உருவாக்கப்பட்டது வளங்கள். It serves as central hub எங்கே நீங்கள் define உள்ளடக்கம், context, மற்றும் parameters.\n### உள்ளீடு விருப்பங்கள்\n• **உரை ஒட்டு**: ஒட்டு உள்ளடக்கம் directly இருந்து any article, கதை, அல்லது பாடம் plan.\n• **கோப்பு பதிவேற்று**: பதிவேற்று PDFs, படம், உரை கோப்பு, ஒலி (MP3/WAV), அல்லது வீடியோ க்கு தானியங்கி extraction.\n• **URL பெறு**: ஒட்டு any article URL க்கு automatically பிரித்தெடு மற்றும் இறக்குமதி its உள்ளடக்கம்.\n• **AI வளங்கள் தேடு**: Describe ஒரு topic மற்றும் let AI find வகுப்பு-appropriate online வளங்கள் க்கு நீங்கள்.\n• **உருவாக்கு மூலம் உரை**: உருவாக்கு original உள்ளடக்கம் by specifying topic, தொனி, வகுப்பு நிலை, மற்றும் target தரநிலை.\n### Generation அம்சங்கள்\n• **தொனி Selection**: தேர்ந்தெடு இருந்து Informative, Narrative, Persuasive, Humorous, அல்லது படி-by-படி பாணி.\n• **தரநிலை Alignment**: பயன்படுத்து AI-powered தரநிலை finder அல்லது manually உள்ளீடு target தரநிலை (up க்கு 3).\n• **Fact Verification**: இயக்கு web grounding க்கு verify facts மற்றும் சேர் citations automatically.\n• **Custom அறிவுறுத்தல்**: சேர் குறிப்பிட்ட guidance க்கு மேலும் tailored உள்ளடக்கம் generation.\n### அமைப்பு Capabilities\n• **Auto-Detection**: Automatically identifies மூலம் மொழி.\n• **Chunked Processing**: ஒலி மற்றும் வீடியோ கோப்பு over 20MB ஆகும் intelligently split க்கு reliable transcription.\n### Important Most கருவிகள் இல் sidebar require மூலம் material before they முடியும் be பயன்படுத்தப்பட்டது. ஒட்டு அல்லது உருவாக்கு உங்கள் உள்ளடக்கம் here முதல், then ஆராய் other வளங்கள்.",
@@ -53,10 +53,10 @@
     "dbq_text": "ஆவணம்-Based கேள்வி: மாணவர் பகுப்பாய் primary sources, build evidence-based arguments, மற்றும் பயிற்சி செய் central திறன் இன் social-studies + ELA மதிப்பீடு. Generates மூலம் ஆவணம், scaffolded கேள்வி, மற்றும் பதில் keys aligned க்கு உங்கள் தரநிலை.",
     "quiz_mode_title": "Pick right வினாடி வினா பயன்முறை",
     "quiz_mode_text": "தேர்ந்தெடு என்ன இது வினாடி வினா ஆகும் க்கு. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge before teaching மற்றும் surfaces gaps as concept அட்டை உடன் ஒரு one-கிளிக் செய் \"Explain க்கு வகுப்பு\" AI broadcast. Formative Check ஆகும் ஒரு விரைவான mid-பாடம் pulse. Spaced Review tracks ஒவ்வொன்றும் மாணவர்’s cross-அமர்வு retention உடன் ஒரு per-concept sparkline. ஒவ்வொன்றும் பயன்முறை tunes prompts, பொருள்-type mix, மற்றும் live dashboard layout.",
-    "anchor_chart_title": "Anchor வரைபடம்",
-    "anchor_chart_text": "உருவாக்கு வகுப்பு-ready Anchor வரைபடம் அது செய் concepts, சொற்களஞ்சியம், மற்றும் procedures stick. ஒரு காட்சி reference மாணவர் முடியும் return க்கு throughout ஒரு unit. ### பலகை விருப்பங்கள் • **வரைபடம் Type**: தேர்ந்தெடு இருந்து Concept, சொற்களஞ்சியம், Process, உத்தி, அல்லது Comparison வரைபடம். • **பாணி**: Hand-drawn marker look, polished அச்சிடு பாணி, அல்லது kid-நட்பான comic பாணி. • **நிறம் Palette**: Pick ஒரு high-contrast, dyslexia-நட்பான, அல்லது themed நிறம் scheme. • **Custom அறிவுறுத்தல்**: குறிப்பிடு focal concepts, key சொற்களஞ்சியம், அல்லது உத்தி படி க்கு highlight. ### வரைபடம் கூறு • **Title Banner**: Eye-catching topic header. • **காட்சி Hierarchy**: Headings, bullets, மற்றும் callouts organized க்கு skim-reading. • **Iconography**: Auto-உருவாக்கப்பட்டது ஐகான் reinforcing ஒவ்வொன்றும் idea உடன் dual-coded காட்சி cues. • **எடுத்துக்காட்டு & Non-எடுத்துக்காட்டு**: Side-by-side பலகை க்கு concept clarity. ### ஊடாடும் அம்சங்கள் • **திருத்து பயன்முறை**: Tap any element க்கு rewrite உரை, swap ஐகான், அல்லது recolor பகுதி. • **அச்சிடு-Ready**: High-resolution ஏற்றுமதி sized க்கு posters அல்லது 8.5×11 handouts. • **Project பயன்முறை**: Fullscreen காண் க்கு whole-வகுப்பு அறிவுறுத்தல். ### Pro குறிப்பு • உருவாக்கு ஒரு *உத்தி வரைபடம்* before ஒரு writing unit மற்றும் ஒரு *சொற்களஞ்சியம் வரைபடம்* before ஒரு science unit — keep both மீது வகுப்பு wall க்கு whole arc. ### UDL Connection • **Representation**: Activate அல்லது supply background knowledge (Guideline 3.1) உடன் persistent காட்சி anchors மாணவர் முடியும் revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates அது teach மாணவர் *எப்படி* க்கு take notes, இல்லை just *என்ன* க்கு எழுது. Pick structure அது matches cognitive task. ### Template Types • **Cornell Notes**: Classic two-பத்தி layout உடன் cues, notes, மற்றும் bottom summary. • **Two-பத்தி Notes**: Main idea / விவரம் organization க்கு உள்ளடக்கம்-heavy reading. • **T-வரைபடம்**: ஒப்பிடு/contrast அல்லது pros/cons side-by-side. • **Sketchnotes**: காட்சி note-taking உடன் prompts க்கு ஐகான், arrows, மற்றும் நிறம்-coding. • **KWL வரைபடம்**: Know / Want க்கு know / Learned — perfect க்கு pre/post-reading. • **Outline Notes**: Hierarchical structure க்கு lectures அல்லது textbook அத்தியாயம். ### Generation அம்சங்கள் • **Pre-Filled Prompts**: ஒவ்வொன்றும் template seeded உடன் cues drawn இருந்து உங்கள் மூலம் உரை. • **கேள்வி Stems**: Built-இல் metacognitive prompts (\"என்ன surprised நீங்கள்?\", \"எப்படி does இது connect க்கு…?\"). • **சொற்களஞ்சியம் Slots**: Pre-populated key சொல் மாணவர் should கேள்/படி க்கு. • **Custom அறிவுறுத்தல்**: Target ஒரு குறிப்பிட்ட cognitive task (synthesis, summary, evaluation). ### அச்சிடு & Digital • **Printable PDF**: Clean handout layout உடன் generous writing space. • **Digital Fillable**: மாணவர் type directly into template க்கு paperless workflows. • **Editable Headings**: ஆசிரியர் tailor பத்தி labels மற்றும் பகுதி titles before sharing. ### Pro குறிப்பு • Pair *Cornell Notes* உடன் **Leveled Reader**: மாணவர் take notes at their reading நிலை, then பயன்படுத்து bottom-summary box as ஒரு formative-மதிப்பீடு check. ### UDL Connection • **Action & Expression**: ஆதரவு planning மற்றும் உத்தி development (Guideline 6.2) by giving learners explicit structures க்கு organizing தகவல்."
+    "anchor_chart_title": "நங்கூரக் கட்டங்கள்",
+    "anchor_chart_text": "வகுப்பறை-தயார் நங்கூரக் கட்டங்களை உருவாக்கவும், அவை கருத்துகள், சொற்களஞ்சியம் மற்றும் நடைமுறைகள் நினைவில் இருக்க உதவுகின்றன.",
+    "note_taking_title": "குறிப்பெடுக்கும் வார்ப்புருக்கள்",
+    "note_taking_text": "மாணவர்களுக்கு *எப்படி* குறிப்பெடுக்க வேண்டும் என்பதைக் கற்பிக்கும் கட்டமைக்கப்பட்ட குறிப்பெடுக்கும் வார்ப்புருக்கள், *என்ன* எழுத வேண்டும் என்பது மட்டுமல்ல."
   },
   "launch_pad": {
     "subtitle": "தேர்ந்தெடு உங்கள் learning pathway",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} இன் {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, மதிப்பெண் {மதிப்பெண்}"
+    "tier_score": "Tier {tier}, மதிப்பெண் {மதிப்பெண்}",
+    "draggable_item": "draggable பொருள்"
   },
   "games": {
     "syntax": {
@@ -3976,47 +3977,47 @@
       "html_aria": "HTML மூலம் code க்கு audit"
     },
     "batch": {
-      "drop_text": "இழு & விடு PDFs here",
-      "browse_files": "Browse கோப்பு",
-      "clear_all": "Clear எல்லாம்",
-      "progress_aria": "Batch remediation முன்னேற்றம்",
-      "stop_aria": "நிறுத்து batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "புதிய Batch",
+      "drop_text": "PDFகளை இங்கே இழுத்து விடவும்",
+      "browse_files": "கோப்புகளை உலாவவும்",
+      "clear_all": "அனைத்தையும் அழி",
+      "progress_aria": "தொகுதி திருத்த முன்னேற்றம்",
+      "stop_aria": "தொகுதி திருத்தத்தை நிறுத்து",
+      "avg_improvement": "சராசரி முன்னேற்றம்",
+      "scored_90_plus": "90+ மதிப்பெண்",
+      "new_batch": "புதிய தொகுதி",
       "resume": {
-        "title": "முந்தைய batch interrupted",
-        "summary": "{done}/{total} கோப்பு(s) completed before tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "கோப்பு:",
-        "files_more": "+ {n} மேலும்",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} க்கு process"
+        "title": "முந்தைய தொகுதி குறுக்கிடப்பட்டது",
+        "summary": "தாவல் மூடப்படுவதற்கு முன் {done}/{total} கோப்புகள் முடிக்கப்பட்டன.",
+        "remaining": "{n} மீதமுள்ளது.",
+        "files_label": "கோப்புகள்:",
+        "files_more": "+ {n} கூடுதலாக",
+        "resume_button": "தொகுதியை மீண்டும் தொடங்கு",
+        "discard_button": "நிராகரி",
+        "toast": "தொகுதியை மீண்டும் தொடங்குகிறது · {done} கேச் செய்யப்பட்டது, {remaining} செயலாக்க"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} இன் {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "{total}-ல் {n} தணிக்கையாளர்களால் குறிக்கப்பட்டது",
+      "unanimous_suffix": " (ஒருமனதாக)",
+      "minority_suffix": " — சிறுபான்மை கருத்து, குறைந்த நம்பகத்தன்மை"
     },
     "divergence": {
-      "semantic": "Structurally compliant ஆனால் semantically weak — AI flagged உள்ளடக்கம் quality (alt உரை, heading meaning, reading order) அது axe-core முடியும்'t detect",
-      "structural": "Code-நிலை WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "கட்டமைப்பு ரீதியாக இணக்கம் ஆனால் சொற்பொருள் ரீதியாக பலவீனம் — axe-core கண்டறிய முடியாத உள்ளடக்க தரத்தை AI குறித்தது",
+      "structural": "குறியீடு நிலை WCAG மீறல்கள் கண்டறியப்பட்டது — axe-core இயந்திரத்தால் சரிபார்க்கக்கூடிய தோல்விகளைக் கண்டறிந்தது"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "இது PDF உள்ளடக்கியது ஒரு PDF/UA-பாணி tag tree. Auditors were instructed க்கு credit existing structure rather than penalize it as missing."
+      "label": "முன்பே இருக்கும் குறிச்சொல் கட்டமைப்பு",
+      "tooltip": "இந்த PDF PDF/UA-பாணி குறிச்சொல் மரத்தை உள்ளடக்கியது. தணிக்கையாளர்கள் இருக்கும் கட்டமைப்பை அங்கீகரிக்க வழிநடத்தப்பட்டனர்."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} இன் {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues இருந்து original audit no longer found இல் verification audit",
-      "persisted_tip": "Issues இருந்து original audit still present after fix",
-      "introduced_tip": "புதிய issues அது did இல்லை exist before fix"
+      "heading": "பிரச்சினை தீர்வு",
+      "subheading": "அசல் {total} பிரச்சினைகளில் {resolved} தீர்க்கப்பட்டது ({pct}%)",
+      "resolved_label": "தீர்க்கப்பட்டது",
+      "persisted_label": "இன்னும் உள்ளது",
+      "introduced_label": "புதிதாக அறிமுகப்படுத்தப்பட்டது",
+      "resolved_tip": "அசல் தணிக்கையில் இருந்த பிரச்சினைகள் சரிபார்ப்பு தணிக்கையில் இல்லை",
+      "persisted_tip": "அசல் தணிக்கையில் இருந்த பிரச்சினைகள் சரிசெய்த பின்னும் உள்ளன",
+      "introduced_tip": "சரிசெய்வதற்கு முன் இல்லாத புதிய பிரச்சினைகள்"
     },
     "report": {
       "download_title": "பதிவிறக்கு audit report",
@@ -11622,7 +11623,14 @@
     "click_to_insert": "கிளிக் செய் க்கு insert இது transition சொல்",
     "edit_illustration": "திருத்து illustration உடன் AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "மூடு"
+    "close": "மூடு",
+    "cancel": "ரத்துசெய்",
+    "add": "சேர்",
+    "done": "Done",
+    "edit": "திருத்து",
+    "reset": "மீட்டமை",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "காட்சி Visualization",
@@ -11741,5 +11749,60 @@
     "send_explainer_to_students": "அனுப்பு இது explainer க்கு every மாணவர்'s screen இப்போது",
     "one_click_remove_text": "One-கிளிக் செய்: அகற்று உரை இருந்து இது படம்",
     "rewrite_distractor": "Rewrite இது distractor க்கு encode ஒரு real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "படம் too large (max 5MB). தயவுசெய்து பயன்படுத்து ஒரு smaller படம்.",
+    "need_card_front_back": "சேர் at least one அட்டை உடன் both ஒரு front மற்றும் back.",
+    "type_word_first": "Type ஒரு சொல் அல்லது letter sequence முதல்.",
+    "write_something_first": "எழுது something முதல்.",
+    "pick_decoration_first": "Pick ஒரு decoration க்கு link க்கு முதல்.",
+    "write_association": "எழுது ஒரு குறுகிய association — என்ன does இது remind நீங்கள் இன்?",
+    "no_crop_data": "இல்லை crop தரவு கிடைக்கும் க்கு இது படம்.",
+    "invalid_crop_data": "Invalid crop தரவு.",
+    "no_full_page_image": "Full page படம் இல்லை கிடைக்கும். Re-இயக்கு remediation க்கு இயக்கு cropping.",
+    "selection_too_small": "Selection too small. இழு ஒரு larger பரப்பளவு.",
+    "encryption_unavailable": "Encryption இல்லை கிடைக்கும் இல் இது browser. நீங்கள் may need ஒரு மேலும் modern browser க்கு சேமி submissions.",
+    "voice_unsupported_browser": "குரல் recording ஆகும் இல்லை supported இல் இது browser.",
+    "voice_unsupported_device": "குரல் recording ஆகும் இல்லை supported மீது இது device.",
+    "mic_denied": "Microphone அணுகல் was denied. Allow microphone அணுகல் இல் உங்கள் browser அமைப்புகள் க்கு record குரல் notes.",
+    "voice_too_long": "குரல் note too நீண்ட க்கு சேமி (over 500KB). முயற்சி ஒரு shorter clip.",
+    "voice_empty": "குரல் recording was empty.",
+    "no_annotations_to_save": "இல்லை annotations க்கு சேமி yet — சேர் ஒரு note அல்லது highlight முதல்.",
+    "could_not_save_annotations": "Could இல்லை சேமி annotations. முயற்சி ஒரு different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. pre-filled report URL has been copied க்கு உங்கள் clipboard — ஒட்டு it into ஒரு புதிய browser tab.",
+    "regenerate_function_missing": "பிழை: Regenerate function missing அல்லது invalid",
+    "crypto_not_loaded": "Submission crypto module இல்லை loaded yet. தயவுசெய்து புதுப்பி மற்றும் முயற்சி again.",
+    "image_too_large_10mb": "படம் too large (max 10MB). தயவுசெய்து பயன்படுத்து ஒரு smaller படம்."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace எல்லாம் existing அட்டை உடன் imported ones?",
+    "delete_voice_note": "நீக்கு இது குரல் note?",
+    "remove_companion": "அகற்று உங்கள் companion?",
+    "delete_goal": "நீக்கு இது இலக்கு?",
+    "delete_atlas": "நீக்கு இது atlas? Edges மற்றும் justifications cannot be recovered.",
+    "delete_realm": "நீக்கு இது realm? Zones மற்றும் justifications cannot be recovered.",
+    "delete_entry_tokens": "நீக்கு இது entry? Tokens already earned விருந்து இல்லை be refunded.",
+    "restore_backup_destructive": "Restore இருந்து இது backup? இது replaces எல்லாம் current தரவு — decorations, journal, tokens, stories, அமைப்புகள். Cannot be undone.",
+    "reset_skill_progress": "மீட்டமை எல்லாம் திறன் முன்னேற்றம்? இது cannot be undone.",
+    "remove_my_annotations": "அகற்று எல்லாம் உங்கள் notes மற்றும் highlights? ஆசிரியர் annotations விருந்து stay.",
+    "exit_calibration_full": "Exit calibration பயன்முறை? முன்னேற்றம் விருந்து be discarded.",
+    "exit_calibration_short": "Exit calibration? முன்னேற்றம் discarded.",
+    "discard_session_irreversible": "Discard இது இல்-முன்னேற்றம் அமர்வு? பொருள் முடிவு விருந்து be lost. இது cannot be undone.",
+    "delete_template": "நீக்கு இது template? இது cannot be undone.",
+    "delete_session": "நீக்கு இது அமர்வு? இது cannot be undone.",
+    "discard_session": "Discard இது அமர்வு? முன்னேற்றம் விருந்து be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? முன்னேற்றம் விருந்து be lost.",
+    "end_probe_saved": "End probe early? முன்னேற்றம் விருந்து be சேமிக்கப்பட்டது.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace current board? Unsaved அறை விருந்து be lost.",
+    "change_granularity": "Changing granularity விருந்து மீட்டமை உங்கள் rejections. தொடர்?",
+    "clear_pdf_progress": "Clear சேமிக்கப்பட்டது முன்னேற்றம் க்கு இது PDF? இது cannot be undone.",
+    "switch_sentence_frame": "மாற்று வாக்கியம் frame template? உங்கள் edits க்கு blanks விருந்து be replaced.",
+    "replace_program_with_template": "Replace current program உடன் template?"
   }
 }

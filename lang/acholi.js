@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813199027",
+  "_version": "20260526T1779815506023",
   "tour": {
     "input_panel_title": "Input Gicaa",
     "input_panel_text": "Begin mamegi pwony creation journey here. man Input Gicaa tye foundation pi ducu yene resources. It serves as central hub kwene in define content, context, ki parameters.\n### Input Options\n• **Text Paste**: Paste content directly ki bot any article, lok ma kicoyo, onyo pwony yub.\n• **buk Cwal malo**: Cwal malo PDFs, cal, text buk, audio (MP3/WAV), onyo video pi automatic extraction.\n• **URL Fetch**: Paste any article URL i automatically extract ki import its content.\n• **AI Resource Yenyo**: Describe lok ki let AI find grade-appropriate online resources pi in.\n• **Generate Source Text**: Create macon content by specifying lok, tone, grade level, ki kit standards.\n### Kwo Features\n• **Tone Selection**: Yer ki bot Informative, Lok ma kicoyo, Persuasive, Humorous, onyo Step-by-Step styles.\n• **Standards Aribo**: Tii AI-powered standard finder onyo manually input kit standards (up i 3).\n• **Fact Verification**: Enable web grounding i verify facts ki include citations automatically.\n• **Custom Instructions**: Med mukene guidance pi mapol tailored content kwo.\n### System Capabilities\n• **Auto-Detection**: Automatically identifies source leb.\n• **Chunked Processing**: Audio ki video buk malo 20MB tye intelligently split pi reliable transcription.\n### Important Most tools i sidebar require source material before they can be used. Paste onyo generate mamegi content here first, then explore okene resources.",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, score {score}"
+    "tier_score": "Tier {tier}, score {score}",
+    "draggable_item": "draggable item"
   },
   "games": {
     "syntax": {
@@ -11614,7 +11615,14 @@
     "click_to_insert": "Dii to insert this transition lok",
     "edit_illustration": "Loko illustration with AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Lor"
+    "close": "Lor",
+    "cancel": "Kwer",
+    "add": "Med",
+    "done": "Done",
+    "edit": "Loko",
+    "reset": "Reset",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "Scene Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "Cwal this explainer to every latin kwan's screen now",
     "one_click_remove_text": "One-dii: kwany text from this cal",
     "rewrite_distractor": "Rewrite this distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "cal too large (max 5MB). Please tii a smaller cal.",
+    "need_card_front_back": "Med at least one card with both a front and back.",
+    "type_word_first": "Type a lok or letter sequence first.",
+    "write_something_first": "Coyo something first.",
+    "pick_decoration_first": "Pick a decoration to link to first.",
+    "write_association": "Coyo a short association — what does this remind you of?",
+    "no_crop_data": "Pe crop data available for this cal.",
+    "invalid_crop_data": "Invalid crop data.",
+    "no_full_page_image": "Full page cal not available. Re-run remediation to enable cropping.",
+    "selection_too_small": "Selection too matidi. Drag a larger area.",
+    "encryption_unavailable": "Encryption not available in this browser. You may need a more modern browser to gwoki submissions.",
+    "voice_unsupported_browser": "Voice recording is not supported in this browser.",
+    "voice_unsupported_device": "Voice recording is not supported on this device.",
+    "mic_denied": "Microphone access was denied. Allow microphone access in your browser settings to record voice notes.",
+    "voice_too_long": "Voice note too long to gwoki (over 500KB). Tem a shorter clip.",
+    "voice_empty": "Voice recording was empty.",
+    "no_annotations_to_save": "Pe annotations to gwoki yet — med a note or highlight first.",
+    "could_not_save_annotations": "Could not gwoki annotations. Tem a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a manyen browser tab.",
+    "regenerate_function_missing": "Error: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. Please refresh and tem again.",
+    "image_too_large_10mb": "cal too large (max 10MB). Please tii a smaller cal."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing cards with the imported ones?",
+    "delete_voice_note": "Wodo this voice note?",
+    "remove_companion": "Kwany your companion?",
+    "delete_goal": "Wodo this goal?",
+    "delete_atlas": "Wodo this atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Wodo this realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Wodo this entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from this backup? This replaces ALL current data — decorations, journal, tokens, stories, settings. Cannot be undone.",
+    "reset_skill_progress": "Reset all skill progress? This cannot be undone.",
+    "remove_my_annotations": "Kwany all your notes and highlights? lapwony annotations will stay.",
+    "exit_calibration_full": "Exit calibration mode? Progress will be discarded.",
+    "exit_calibration_short": "Exit calibration? Progress discarded.",
+    "discard_session_irreversible": "Discard this in-progress session? Item results will be lost. This cannot be undone.",
+    "delete_template": "Wodo this template? This cannot be undone.",
+    "delete_session": "Wodo this session? This cannot be undone.",
+    "discard_session": "Discard this session? Progress will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? Progress will be lost.",
+    "end_probe_saved": "End probe early? Progress will be gigwokki.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved cells will be lost.",
+    "change_granularity": "Changing granularity will reset your rejections. Mede?",
+    "clear_pdf_progress": "Clear gigwokki progress for this PDF? This cannot be undone.",
+    "switch_sentence_frame": "Switch lok madwong frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }
