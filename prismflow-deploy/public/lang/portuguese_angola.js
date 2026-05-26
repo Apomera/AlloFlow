@@ -1,5 +1,5 @@
 {
-  "_version": "20260526100158T1779789718659",
+  "_version": "20260526100743T1779790063198",
   "tour": {
     "input_panel_title": "entrada painel",
     "input_panel_text": "Begin seu lição creation journey aqui. este entrada painel é o foundation para todos gerado recursos. ele serves como o central hub onde você define o conteúfaz, context, e parameters.\n### entrada opções\n• **texto Colar**: Colar conteúfaz directly de qualquer article, história, ou lição plan.\n• **ficheiro Carregar**: Carregar PDFs, imagem, texto ficheiro, áudio (MP3/WAV), ou vídeo para automático extraction.\n• **URL Obter**: Colar qualquer article URL para automatically extrair e importar its conteúfaz.\n• **AI recursos Pesquisar**: Describe um topic e let AI find classe-appropriate online recursos para você.\n• **Gerar fonte texto**: Criar original conteúfaz by specifying topic, tom, nível escolar, e target padrão.\n### Geração funcionalidades\n• **tom Selection**: Escolher de Informative, Narrativa, Persuasive, Humorous, ou passo-by-passo estilo.\n• **padrão Alinhamento**: Usar AI-powered padrão finder ou manually entrada target padrão (up para 3).\n• **Fact Verification**: Activar web grounding para verify facts e incluir citations automatically.\n• **Custom instrução**: Adicionar específico guidance para mais tailored conteúfaz geração.\n### sistema Capabilities\n• **Auto-Detection**: Automatically identifies o fonte língua.\n• **Chunked Processing**: áudio e vídeo ficheiro over 20MB são intelligently split para reliable transcription.\n### Important Most ferramentas em o sidebar require fonte material antes they pode ser usado. Colar ou gerar seu conteúfaz aqui primeiro, então explorar o outro recursos.",
@@ -2040,48 +2040,48 @@
   },
   "games": {
     "syntax": {
-      "title": "Syntax Scramble",
-      "subtitle": "Construct o frase",
-      "progress": "frase {current} de {total}",
-      "check": "Check resposta",
-      "next": "seguinte frase",
-      "complete": "Concluir!",
-      "summary": "você reconstructed {count} frase correctly.",
-      "finish": "Finish",
-      "empty_zone": "Tap palavra below para construir o frase..."
+      "title": "Embaralhador de Sintaxe",
+      "subtitle": "Construa a frase",
+      "progress": "Frase {current} de {total}",
+      "check": "Verificar Resposta",
+      "next": "Próxima Frase",
+      "complete": "Concluído!",
+      "summary": "Reconstruiu {count} frases correctamente.",
+      "finish": "Terminar",
+      "empty_zone": "Toque nas palavras abaixo para construir a frase..."
     },
     "scramble": {
-      "title": "palavra Scramble",
-      "subtitle": "Unscramble o vocabulário termo para win!",
-      "progress": "palavra {current} de {total}",
-      "hint_label": "definição dica",
-      "input_placeholder": "TYPE resposta",
-      "skip": "Ignorar",
-      "submit": "Submit",
-      "score": "Final pontuação",
-      "loading": "jogo loading...",
-      "get_hint_aria": "Get um dica",
-      "hint_button": "dica"
+      "title": "Desembaralhar Palavras",
+      "subtitle": "Desembaralhe os termos do vocabulário para ganhar!",
+      "progress": "Palavra {current} de {total}",
+      "hint_label": "Pista de Definição",
+      "input_placeholder": "ESCREVA A RESPOSTA",
+      "skip": "Saltar",
+      "submit": "Submeter",
+      "score": "Pontuação Final",
+      "loading": "A carregar o jogo...",
+      "get_hint_aria": "Obter uma pista",
+      "hint_button": "Pista"
     },
     "crossword": {
-      "title": "Crossword desafio",
-      "clues": "Clues",
-      "across": "Across",
-      "down": "Down",
-      "check": "Check",
-      "reveal": "Reveal",
-      "direction_toggle": "Direction: {dir}",
-      "selected_cell": "Selected linha {r}, coluna {c}",
-      "footer_tip": "Usar Arrow Keys para navigate • Space/Introduzir para alternar direction",
-      "current_score": "Current pontuação: {score}",
-      "announce_deleted": "Letter deleted",
-      "announce_typed": "Typed {char}",
-      "announce_started": "Crossword started. Usar Arrow Keys para navigate, Type para fill, Space para alternar direction.",
-      "announce_direction_toggle": "Direction toggled para {dir}",
-      "close_puzzle_aria": "Fechar Crossword Puzzle",
-      "grid_capture_aria": "Crossword grelha Keyboard Capture",
-      "reveal_letter_hint_aria": "Reveal one letter dica",
-      "hint_button": "dica"
+      "title": "Desafio de Palavras Cruzadas",
+      "clues": "Pistas",
+      "across": "Horizontal",
+      "down": "Vertical",
+      "check": "Verificar",
+      "reveal": "Revelar",
+      "direction_toggle": "Direcção: {dir}",
+      "selected_cell": "Linha {r} seleccionada, Coluna {c}",
+      "footer_tip": "Use as teclas das setas para navegar • Espaço/Enter para alternar direcção",
+      "current_score": "Pontuação Actual: {score}",
+      "announce_deleted": "Letra apagada",
+      "announce_typed": "Escrito {char}",
+      "announce_started": "Palavras Cruzadas iniciadas. Use as setas para navegar, escreva para preencher, Espaço para alternar direcção.",
+      "announce_direction_toggle": "Direcção alternada para {dir}",
+      "close_puzzle_aria": "Fechar Palavras Cruzadas",
+      "grid_capture_aria": "Captura de Teclado para Grelha de Palavras Cruzadas",
+      "reveal_letter_hint_aria": "Revelar uma pista de letra",
+      "hint_button": "Pista"
     },
     "bingo": {
       "generator_title": "Bingo Generator",
@@ -2131,83 +2131,83 @@
       "card_alt": "memory cartão"
     },
     "fill_blank": {
-      "input_label": "Type seu resposta"
+      "input_label": "Escreva a sua resposta"
     },
-    "crossword_challenge": "Crossword desafio",
-    "crossword_title": "Crossword desafio",
-    "tap_to_pause": "Tap para Pause",
-    "tap_or_space_to_play": "Tap ou Space para Jogar",
+    "crossword_challenge": "Desafio de Palavras Cruzadas",
+    "crossword_title": "Desafio de Palavras Cruzadas",
+    "tap_to_pause": "Toque para Pausar",
+    "tap_or_space_to_play": "Toque ou Espaço para Jogar",
     "ce_sort": {
-      "title": "Cause & Effect Ordenar",
-      "play_btn": "Ordenar Causes & Effects",
-      "causes_label": "Causes",
-      "effects_label": "Effects",
-      "hint_try": "Tentar",
-      "move_title": "Ordenar este item into:",
-      "victory_desc": "você sorted todos causes e effects correctly!",
-      "reset_confirm": "Confirmar repor — clears o whole board",
-      "reset_confirm_label": "Clicar again para confirmar",
-      "reset_confirm_aria": "Press Repor again para confirmar clearing o board, ou wait para cancelar."
+      "title": "Ordenar Causa e Efeito",
+      "play_btn": "Ordenar Causas e Efeitos",
+      "causes_label": "Causas",
+      "effects_label": "Efeitos",
+      "hint_try": "Tente",
+      "move_title": "Ordenar este item em:",
+      "victory_desc": "Ordenou todas as causas e efeitos correctamente!",
+      "reset_confirm": "Confirmar reinício — limpa todo o tabuleiro",
+      "reset_confirm_label": "Clique novamente para confirmar",
+      "reset_confirm_aria": "Pressione Reiniciar novamente para confirmar a limpeza do tabuleiro, ou aguarde para cancelar."
     },
     "pipeline": {
-      "title": "Pipeline Builder",
-      "play_btn": "Construir o Flow",
-      "instruction": "Clicar um passo's saída port, então clicar another passo's entrada port para desenhar um connection.",
+      "title": "Construtor de Pipeline",
+      "play_btn": "Construir o Fluxo",
+      "instruction": "Clique na porta de saída de um passo e depois clique na porta de entrada de outro passo para desenhar uma ligação.",
       "then": "então",
-      "victory_desc": "você built o entire process flow correctly!",
-      "drag_reposition_aria": "Arrastar para reposition"
+      "victory_desc": "Construiu todo o fluxo de processo correctamente!",
+      "drag_reposition_aria": "Arraste para reposicionar"
     },
     "tchart_sort": {
-      "title": "T-gráfico Ordenar",
-      "play_btn": "Ordenar Into coluna",
-      "victory_desc": "você sorted every item into o correct coluna!"
+      "title": "Ordenar Tabela T",
+      "play_btn": "Ordenar em Colunas",
+      "victory_desc": "Ordenou todos os itens na coluna correcta!"
     },
     "fishbone_sort": {
-      "title": "Fishbone Ordenar",
-      "play_btn": "Ordenar Causes Onto Bones",
-      "victory_desc": "você placed every cause into o correct categoria!"
+      "title": "Ordenar Espinha de Peixe",
+      "play_btn": "Ordenar Causas nas Espinhas",
+      "victory_desc": "Colocou cada causa na categoria correcta!"
     },
     "concept_map_sort": {
-      "title": "Concept Map Ordenar",
-      "play_btn": "Ordenar Onto Branches",
-      "victory_desc": "você sorted every item para o correct branch!"
+      "title": "Ordenar Mapa de Conceitos",
+      "play_btn": "Ordenar em Ramos",
+      "victory_desc": "Ordenou cada item no ramo correcto!"
     },
     "outline_sort": {
-      "title": "Outline Ordenar",
-      "play_btn": "Ordenar Under Headings",
-      "victory_desc": "você sorted every detalhe under o right heading!"
+      "title": "Ordenar Esboço",
+      "play_btn": "Ordenar sob Títulos",
+      "victory_desc": "Ordenou cada detalhe sob o título correcto!"
     },
     "problem_solution_sort": {
-      "title": "Prioritize o Solutions",
-      "play_btn": "Prioritize o Solutions",
-      "victory_desc": "você ranked every solution em o recommended order!"
+      "title": "Priorizar as Soluções",
+      "play_btn": "Priorizar as Soluções",
+      "victory_desc": "Classificou cada solução na ordem recomendada!"
     },
     "bucket_sort": {
       "title": "Ordenar",
-      "victory_desc": "você sorted every item correctly!",
-      "bank_empty": "todos item placed.",
-      "all_sorted": "todos sorted!",
-      "final_score_label": "Final pontuação:",
-      "play_again": "Jogar again"
+      "victory_desc": "Ordenou todos os itens correctamente!",
+      "bank_empty": "Todos os itens foram colocados.",
+      "all_sorted": "Tudo ordenado!",
+      "final_score_label": "Pontuação final:",
+      "play_again": "Jogar novamente"
     },
-    "button_hint": "praticar o que você só learned com um rápido arrastar-e-largar sorting jogo. Keyboard amigável: press Introduzir para seleccionar um item, então escolher um destination.",
+    "button_hint": "Pratique o que acaba de aprender com um rápido jogo de ordenação por arrastar e soltar. Compatível com teclado: pressione Enter para seleccionar um item, depois escolha um destino.",
     "frayer_sort": {
-      "play_btn": "Jogar Frayer Ordenar jogo"
+      "play_btn": "Jogar Jogo de Ordenação Frayer"
     },
     "see_think_wonder_sort": {
-      "play_btn": "Jogar Ver-Think-Wonder Ordenar jogo"
+      "play_btn": "Jogar Jogo Ver-Pensar-Imaginar"
     },
     "story_map_sort": {
-      "play_btn": "Jogar história Map Ordenar jogo"
+      "play_btn": "Jogar Jogo de Mapa da História"
     },
-    "theme_toggle_aria": "Alternar tema (light / dark / high contrast)",
-    "read_aloud_title": "Ler aloud",
-    "explain_incorrect_aria": "Explain why este era incorrect",
-    "scroll_deck_left_aria": "Scroll deck left",
-    "scroll_deck_right_aria": "Scroll deck right para ver mais cartão",
-    "choose_zone_aria": "Escolher um zone",
-    "choose_column_aria": "Escolher um coluna",
-    "choose_destination_aria": "Escolher um destination"
+    "theme_toggle_aria": "Alternar tema (claro / escuro / alto contraste)",
+    "read_aloud_title": "Ler em voz alta",
+    "explain_incorrect_aria": "Explicar porque é que isto estava incorrecto",
+    "scroll_deck_left_aria": "Deslocar baralho para a esquerda",
+    "scroll_deck_right_aria": "Deslocar baralho para a direita para ver mais cartões",
+    "choose_zone_aria": "Escolher uma zona",
+    "choose_column_aria": "Escolher uma coluna",
+    "choose_destination_aria": "Escolher um destino"
   },
   "glossary": {
     "title": "glossário & língua Selection",
@@ -5334,76 +5334,76 @@
     "remove": "Remover"
   },
   "modals": {
-    "student_welcome": "aluno Workspace",
-    "student_entry": "Welcome, aluno",
-    "student_entry_sub": "Introduzir seu turma Codename ou Nickname para begin.",
-    "work_summary": "Work Summary",
-    "submit_title": "Submit Work",
-    "submit_ready": "Ready para enviar seu assignment?",
-    "student_name_label": "aluno Name / Nickname",
-    "student_name_placeholder": "Introduzir seu name...",
-    "download_submission": "Descarregar Submission ficheiro",
-    "upload_instruction": "por favor carregar este ficheiro para seu professor's folder.",
-    "summary_quizzes": "questionário",
-    "summary_readings": "Readings",
-    "summary_adventures": "Adventures",
-    "summary_scaffolds": "Scaffolds",
-    "about": "About AlloFlow v1.0",
-    "hints": "Helpful dica",
-    "xp_history": "XP History & nível progresso",
+    "student_welcome": "Espaço de Trabalho do Aluno",
+    "student_entry": "Bem-vindo, Aluno",
+    "student_entry_sub": "Introduza o seu Codinome de Turma ou Alcunha para começar.",
+    "work_summary": "Resumo do Trabalho",
+    "submit_title": "Submeter Trabalho",
+    "submit_ready": "Pronto para enviar a sua tarefa?",
+    "student_name_label": "Nome do Aluno / Alcunha",
+    "student_name_placeholder": "Introduza o seu nome...",
+    "download_submission": "Descarregar Ficheiro de Submissão",
+    "upload_instruction": "Por favor, carregue este ficheiro para a pasta do seu professor.",
+    "summary_quizzes": "Questionários",
+    "summary_readings": "Leituras",
+    "summary_adventures": "Aventuras",
+    "summary_scaffolds": "Suportes",
+    "about": "Sobre o AlloFlow v1.0",
+    "hints": "Dicas Úteis",
+    "xp_history": "Histórico de XP e Progresso de Nível",
     "summary_details": {
-      "empty": "Não activities completed yet.",
-      "quiz": "{count} questionário",
-      "quizzes": "{count} questionário",
-      "adventure": "{count} Adventure",
-      "adventures": "{count} Adventures",
-      "reading": "{count} Reading",
-      "readings": "{count} Readings"
+      "empty": "Ainda não foram concluídas actividades.",
+      "quiz": "{count} Questionário",
+      "quizzes": "{count} Questionários",
+      "adventure": "{count} Aventura",
+      "adventures": "{count} Aventuras",
+      "reading": "{count} Leitura",
+      "readings": "{count} Leituras"
     },
     "save_project": {
-      "title": "Guardar Project",
-      "filename_label": "Filename",
-      "placeholder": "My Awesome lição",
-      "extension_note": ".json extension irá ser added automatically",
+      "title": "Guardar Projecto",
+      "filename_label": "Nome do Ficheiro",
+      "placeholder": "A Minha Lição Fantástica",
+      "extension_note": "A extensão .json será adicionada automaticamente",
       "save_btn": "Guardar",
       "cancel_btn": "Cancelar"
     },
-    "project_settings": "aluno Project definições",
-    "study_timer": "Task Timer",
+    "project_settings": "Definições do Projecto do Aluno",
+    "study_timer": "Temporizador de Tarefas",
     "cloud_sync": {
-      "title": "Activar Cloud Sync?",
-      "privacy_warning": "Privacy aviso",
-      "desc": "este funcionalidades syncs seu recursos history para um cloud base de dados so você pode acesso ele across devices.",
-      "pii_note": "Note: faz não entrada Personally Identifiable informação (PII) such como aluno full names.",
-      "enable_btn": "Activar Sync",
+      "title": "Activar Sincronização na Nuvem?",
+      "privacy_warning": "Aviso de Privacidade",
+      "desc": "Esta funcionalidade sincroniza o seu histórico de recursos com uma base de dados na nuvem para que possa aceder em qualquer dispositivo.",
+      "pii_note": "Nota: Não introduza Informação Pessoal Identificável (PII), como nomes completos de alunos.",
+      "enable_btn": "Activar Sincronização",
       "cancel_btn": "Cancelar"
     },
     "load_project": {
-      "title": "Carregar ficheiro",
-      "select": "Seleccionar ficheiro"
+      "title": "Carregar Ficheiro",
+      "select": "Seleccionar Ficheiro"
     },
     "entry": {
-      "title": "Welcome",
-      "subtitle": "Introduzir seu turma Codename ou Nickname para begin.",
-      "placeholder": "e.g. Red Falcon",
-      "warning": "faz não usar seu real name.",
-      "start": "Iniciar novo Adventure",
-      "load": "Carregar Saved ficheiro",
-      "select_adjective": "Seleccionar Adjective",
+      "title": "Bem-vindo",
+      "subtitle": "Introduza o seu Codinome de Turma ou Alcunha para começar.",
+      "placeholder": "ex.: Falcão Vermelho",
+      "warning": "Não use o seu nome verdadeiro.",
+      "start": "Começar Nova Aventura",
+      "load": "Carregar Ficheiro Guardado",
+      "select_adjective": "Seleccionar Adjectivo",
       "select_animal": "Seleccionar Animal",
-      "randomize_codename": "Randomize Codename"
+      "randomize_codename": "Aleatorizar Codinome"
     },
     "teacher_gate": {
-      "title": "Admin Acesso obrigatório",
-      "helper": "Restricted para professor & encarregado de educação.",
-      "unlock": "Unlock",
-      "access_code_placeholder": "Introduzir Acesso Code...",
-      "error_incorrect": "Incorrect Code"
+      "title": "Acesso de Administrador Necessário",
+      "helper": "Restrito a Professores e Pais.",
+      "unlock": "Desbloquear",
+      "access_code_placeholder": "Introduza o Código de Acesso...",
+      "error_incorrect": "Código Incorrecto"
     },
     "large_file": {
-      "processing": "Transcribing...",
-      "confirm": "Iniciar Chunked Transcription",
-      "select_audio_label": "Seleccionar áudio ficheiro"
+      "processing": "A transcrever...",
+      "confirm": "Iniciar Transcrição em Blocos",
+      "select_audio_label": "Seleccionar ficheiro de áudio"
     }
   },
   "immersive": {
@@ -7872,7 +7872,7 @@
     "title": "Socratic Tutor",
     "thinking": "Thinking...",
     "placeholder": "Ask para um dica...",
-    "welcome": "Hi! I'm seu tutor. I won't give você o resposta, mas I pode ajuda você find them. o que são você working em?",
+    "welcome": "Olá! Sou o seu tutor. Não lhe vou dar as respostas, mas posso ajudá-lo a encontrá-las. Em que está a trabalhar?",
     "ask_for_help": "Ask para ajuda",
     "auto_read": "Auto-Ler Responses",
     "auto_send": "Auto-Enviar voz",
@@ -11115,10 +11115,10 @@
     "source_label": "About o fonte texto",
     "no_xp_hint": "você've already earned XP de este entry antes. Keep going — novo improvements earn mais XP.",
     "no_ai": "AI feedback é não disponível right agora.",
-    "cornell_needs_notes": "Adicionar em least 2 linha de notes antes asking para feedback.",
-    "lab_needs_substance": "Fill em o hipótese, analysis, ou conclusion antes asking para feedback.",
-    "reading_needs_thinking": "Escrever em least seu thinking ou connection antes asking para feedback.",
-    "empty": "Fill em algum de o template antes asking para feedback.",
+    "cornell_needs_notes": "Adicione pelo menos 2 linhas de notas antes de pedir feedback.",
+    "lab_needs_substance": "Preencha a hipótese, análise ou conclusão antes de pedir feedback.",
+    "reading_needs_thinking": "Escreva pelo menos o seu pensamento ou conexão antes de pedir feedback.",
+    "empty": "Preencha alguma parte do modelo antes de pedir feedback.",
     "thinking": "Reading seu notes...",
     "error": "Could não gerar feedback right agora. Tentar again em um moment.",
     "loading": "Reading seu notes...",

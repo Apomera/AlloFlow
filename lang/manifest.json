@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-26T10:02:07.911Z",
+  "generated": "2026-05-26T10:07:54.147Z",
   "count": 56,
   "total_keys_expected": 9307,
   "available": [
@@ -267,7 +267,7 @@
       "slug": "portuguese_angola",
       "display": "Portuguese (Angola)",
       "keys": 10159,
-      "bytes": 1033744,
+      "bytes": 1034223,
       "updated": "2026-05-26"
     },
     {
