@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-26T22:27:04.682Z",
+  "generated": "2026-05-26T22:35:29.784Z",
   "count": 56,
   "total_keys_expected": 9307,
   "available": [
@@ -295,7 +295,7 @@
       "slug": "romanian",
       "display": "Romanian",
       "keys": 10860,
-      "bytes": 1080922,
+      "bytes": 1071289,
       "updated": "2026-05-26"
     },
     {
