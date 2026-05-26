@@ -2184,7 +2184,7 @@
     "paragraph_n": "paragraf {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "audio narration for paragraf {n}",
-    "score_n": "skor: {skor}",
+    "score_n": "skor: {score}",
     "venn_comparing": "Venn diagram comparing {a} and {b}",
     "flow_chart_of": "Flow bagan: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, skor {skor}",
+    "tier_score": "Tier {tier}, skor {score}",
     "draggable_item": "draggable item"
   },
   "games": {

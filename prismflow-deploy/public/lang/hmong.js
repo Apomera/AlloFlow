@@ -2184,7 +2184,7 @@
     "paragraph_n": "nqe lus {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "suab narration for nqe lus {n}",
-    "score_n": "qhab nia: {qhab nia}",
+    "score_n": "qhab nia: {score}",
     "venn_comparing": "Venn duab piav qhia comparing {a} and {b}",
     "flow_chart_of": "Flow chart: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, qhab nia {qhab nia}",
+    "tier_score": "Tier {tier}, qhab nia {score}",
     "draggable_item": "draggable yam"
   },
   "games": {

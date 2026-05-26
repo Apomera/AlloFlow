@@ -2184,7 +2184,7 @@
     "paragraph_n": "កថាខណ្ឌ {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "សំឡេង narration for កថាខណ្ឌ {n}",
-    "score_n": "ពិន្ទុ: {ពិន្ទុ}",
+    "score_n": "ពិន្ទុ: {score}",
     "venn_comparing": "Venn ដ្យាក្រាម comparing {a} and {b}",
     "flow_chart_of": "Flow គំនូសតាង: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, ពិន្ទុ {ពិន្ទុ}",
+    "tier_score": "Tier {tier}, ពិន្ទុ {score}",
     "draggable_item": "draggable ធាតុ"
   },
   "games": {
@@ -8233,7 +8233,7 @@
     "nl_distance": "អ្វី គឺ ចម្ងាយ រវាង {a} និង {b}?",
     "nl_midpoint": "អ្វី គឺ midpoint រវាង {a} និង {b}?",
     "area_question": "អ្វី គឺ {a} • {b}? ប្រើ បន្ទាត់ក្រឡា ទៅ ជំនួយ!",
-    "area_correct": "ត្រឹមត្រូវ! {a} • {b} = {a}",
+    "area_correct": "ត្រឹមត្រូវ! {a} • {b} = {product}",
     "frac_identify": "ដូចម្តេច many pieces គឺ shaded? (ភាគយក)",
     "frac_equivalent": "{n}/{d} = ?/{target} (find missing ភាគយក)",
     "frac_compare": "Which គឺ larger: {n1}/{d1} ឬ {n2}/{d2}? (ប្រភេទ ភាគយក នៃ larger)",

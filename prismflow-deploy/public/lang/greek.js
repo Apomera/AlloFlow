@@ -2184,7 +2184,7 @@
     "paragraph_n": "παράγραφος {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "ήχος narration for παράγραφος {n}",
-    "score_n": "βαθμολογία: {βαθμολογία}",
+    "score_n": "βαθμολογία: {score}",
     "venn_comparing": "Venn διάγραμμα comparing {a} and {b}",
     "flow_chart_of": "Flow γράφημα: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, βαθμολογία {βαθμολογία}",
+    "tier_score": "Tier {tier}, βαθμολογία {score}",
     "draggable_item": "draggable στοιχείο"
   },
   "games": {

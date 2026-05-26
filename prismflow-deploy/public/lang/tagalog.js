@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813212293",
+  "_version": "20260526T1779815516690",
   "tour": {
     "input_panel_title": "input panel",
     "input_panel_text": "Begin iyong aralin creation journey here. Ito input panel ay ang foundation para sa lahat nabuo mga resource. It serves as ang central hub saan ikaw define ang nilalaman, konteksto, at parameters.\n### input mga opsyon\n• **teksto I-paste**: I-paste nilalaman directly mula sa anumang article, kwento, o aralin plano.\n• **file I-upload**: I-upload PDFs, imahe, teksto file, audio (MP3/WAV), o video para sa awtomatiko extraction.\n• **URL Kunin**: I-paste anumang article URL sa awtomatikong i-extract at i-import its nilalaman.\n• **AI mga resource Maghanap**: Describe isang paksa at let AI hanapin grado-angkop online mga resource para sa ikaw.\n• **Bumuo pinagkunan teksto**: Gumawa orihinal nilalaman by specifying paksa, tono, antas ng grado, at target pamantayan.\n### Henerasyon mga feature\n• **tono Selection**: Pumili mula sa Informative, Salaysay, Persuasive, Humorous, o hakbang-by-hakbang estilo.\n• **pamantayan Pagkakahanay**: Gamitin AI-powered pamantayan finder o manwal input target pamantayan (up sa 3).\n• **Fact Verification**: Paganahin web grounding sa verify facts at isama citations awtomatikong.\n• **Custom tagubilin**: Magdagdag tiyak guidance para sa higit pa tailored nilalaman henerasyon.\n### sistema Capabilities\n• **Awtomatiko-Detection**: awtomatikong identifies ang pinagkunan wika.\n• **Chunked Processing**: audio at video file higit 20MB ay intelligently split para sa reliable transcription.\n### Important Pinaka mga tool sa ang sidebar require pinagkunang materyal bago sila maaari be ginamit. I-paste o bumuo iyong nilalaman here una, tapos tuklasin ang iba pa mga resource.",
@@ -2184,7 +2184,7 @@
     "paragraph_n": "talata {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "audio narration for talata {n}",
-    "score_n": "iskor: {iskor}",
+    "score_n": "iskor: {score}",
     "venn_comparing": "Venn diagram comparing {a} and {b}",
     "flow_chart_of": "Flow tsart: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, iskor {iskor}"
+    "tier_score": "Tier {tier}, iskor {score}",
+    "draggable_item": "draggable aytem"
   },
   "games": {
     "syntax": {
@@ -11614,7 +11615,14 @@
     "click_to_insert": "I-i-click to insert ito transition mga salita",
     "edit_illustration": "I-i-edit ilustrasyon with AI",
     "regenerate_illustration": "Regenerate ilustrasyon",
-    "close": "Isara"
+    "close": "Isara",
+    "cancel": "Kanselahin",
+    "add": "Magdagdag",
+    "done": "Done",
+    "edit": "I-i-edit",
+    "reset": "I-i-reset",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "eksena Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "Ipadala ito explainer to every mag-aaral's screen now",
     "one_click_remove_text": "One-i-click: tanggalin teksto from ito imahe",
     "rewrite_distractor": "Rewrite ito distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "imahe too large (max 5MB). pakiusap gamitin a smaller imahe.",
+    "need_card_front_back": "Magdagdag at least one card with both a front and back.",
+    "type_word_first": "Type a mga salita or letter sequence una.",
+    "write_something_first": "Isulat something una.",
+    "pick_decoration_first": "Pick a decoration to link to una.",
+    "write_association": "Isulat a maikli association — what does ito remind you of?",
+    "no_crop_data": "No crop datos magagamit for ito imahe.",
+    "invalid_crop_data": "Invalid crop datos.",
+    "no_full_page_image": "Full page imahe not magagamit. Re-patakbuhin remediation to paganahin cropping.",
+    "selection_too_small": "Selection too small. I-i-drag a larger lugar.",
+    "encryption_unavailable": "Encryption not magagamit in ito browser. You may need a higit pa modern browser to i-save submissions.",
+    "voice_unsupported_browser": "boses recording is not supported in ito browser.",
+    "voice_unsupported_device": "boses recording is not supported on ito device.",
+    "mic_denied": "Microphone access was denied. Allow microphone access in your browser mga setting to record boses notes.",
+    "voice_too_long": "boses note too mahaba to i-save (over 500KB). Subukan a mas maikli clip.",
+    "voice_empty": "boses recording was empty.",
+    "no_annotations_to_save": "No annotations to i-save yet — magdagdag a note or highlight una.",
+    "could_not_save_annotations": "Could not i-save annotations. Subukan a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — i-paste it into a bago browser tab.",
+    "regenerate_function_missing": "error: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. pakiusap i-refresh and subukan again.",
+    "image_too_large_10mb": "imahe too large (max 10MB). pakiusap gamitin a smaller imahe."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing card with the imported ones?",
+    "delete_voice_note": "Burahin ito boses note?",
+    "remove_companion": "Tanggalin your companion?",
+    "delete_goal": "Burahin ito layunin?",
+    "delete_atlas": "Burahin ito atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Burahin ito realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Burahin ito entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from ito backup? Ito replaces ALL current datos — decorations, journal, tokens, stories, mga setting. Cannot be undone.",
+    "reset_skill_progress": "I-i-reset all kasanayan pag-unlad? Ito cannot be undone.",
+    "remove_my_annotations": "Tanggalin all your notes and highlights? guro annotations will stay.",
+    "exit_calibration_full": "Exit calibration mode? pag-unlad will be discarded.",
+    "exit_calibration_short": "Exit calibration? pag-unlad discarded.",
+    "discard_session_irreversible": "Discard ito in-pag-unlad sesyon? aytem resulta will be lost. Ito cannot be undone.",
+    "delete_template": "Burahin ito template? Ito cannot be undone.",
+    "delete_session": "Burahin ito sesyon? Ito cannot be undone.",
+    "discard_session": "Discard ito sesyon? pag-unlad will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? pag-unlad will be lost.",
+    "end_probe_saved": "End probe early? pag-unlad will be na-save.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved cell will be lost.",
+    "change_granularity": "Changing granularity will i-reset your rejections. Magpatuloy?",
+    "clear_pdf_progress": "Clear na-save pag-unlad for ito PDF? Ito cannot be undone.",
+    "switch_sentence_frame": "I-i-switch pangungusap frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

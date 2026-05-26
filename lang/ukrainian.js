@@ -2184,7 +2184,7 @@
     "paragraph_n": "абзац {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "аудіо narration for абзац {n}",
-    "score_n": "бали: {бали}",
+    "score_n": "бали: {score}",
     "venn_comparing": "Venn діаграми comparing {a} and {b}",
     "flow_chart_of": "Flow графіки: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, бали {бали}",
+    "tier_score": "Tier {tier}, бали {score}",
     "draggable_item": "draggable елементи"
   },
   "games": {
@@ -8225,7 +8225,7 @@
     "nl_distance": "що є відстані між {a} та {b}?",
     "nl_midpoint": "що є midpoint між {a} та {b}?",
     "area_question": "що є {a} • {b}? Використати сітка до допомога!",
-    "area_correct": "Правильний! {a} • {b} = {a}",
+    "area_correct": "Правильний! {a} • {b} = {product}",
     "frac_identify": "як many pieces є shaded? (чисельник)",
     "frac_equivalent": "{n}/{d} = ?/{target} (знайти missing чисельник)",
     "frac_compare": "Which є larger: {n1}/{d1} або {n2}/{d2}? (Тип чисельник larger)",

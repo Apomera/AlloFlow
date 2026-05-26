@@ -2184,7 +2184,7 @@
     "paragraph_n": "apakan {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "ohun narration fun apakan {n}",
-    "score_n": "aami: {aami}",
+    "score_n": "aami: {score}",
     "venn_comparing": "Venn aworan comparing {} ati {b}",
     "flow_chart_of": "Flow shati: {topic}",
     "cause_effect_pair": "Cause ati effect pair {n} ti {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} ti {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, aami {aami}",
+    "tier_score": "Tier {tier}, aami {score}",
     "draggable_item": "draggable nkan"
   },
   "games": {

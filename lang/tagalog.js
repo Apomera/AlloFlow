@@ -2184,7 +2184,7 @@
     "paragraph_n": "talata {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "audio narration for talata {n}",
-    "score_n": "iskor: {iskor}",
+    "score_n": "iskor: {score}",
     "venn_comparing": "Venn diagram comparing {a} and {b}",
     "flow_chart_of": "Flow tsart: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, iskor {iskor}",
+    "tier_score": "Tier {tier}, iskor {score}",
     "draggable_item": "draggable aytem"
   },
   "games": {

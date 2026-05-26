@@ -1763,7 +1763,7 @@
     "paragraph_n": "paragraf {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "odyo narration for paragraf {n}",
-    "score_n": "pwen: {pwen}",
+    "score_n": "pwen: {score}",
     "venn_comparing": "Venn dyagram comparing {a} and {b}",
     "flow_chart_of": "Flow tablo: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -1772,7 +1772,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, pwen {pwen}"
+    "tier_score": "Tier {tier}, pwen {score}",
+    "draggable_item": "draggable atik"
   },
   "codenames": {
     "adjectives": [
@@ -11294,7 +11295,7 @@
       "sci_past_400": "Pase pwen ideyal la"
     }
   },
-  "_version": "20260526T1779813201346",
+  "_version": "20260526T1779815508340",
   "a11y_lab": {
     "tabs": {
       "preview": "Prevyou kòm elèv",
@@ -11616,7 +11617,14 @@
     "click_to_insert": "Klike to insert this transition mo",
     "edit_illustration": "Modifye ilistrasyon with AI",
     "regenerate_illustration": "Regenerate ilistrasyon",
-    "close": "Fèmen"
+    "close": "Fèmen",
+    "cancel": "Anile",
+    "add": "Ajoute",
+    "done": "Done",
+    "edit": "Modifye",
+    "reset": "Reyenisye",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "sèn Visualization",
@@ -11735,5 +11743,60 @@
     "send_explainer_to_students": "Voye this explainer to every elèv's screen now",
     "one_click_remove_text": "One-klike: retire tèks from this imaj",
     "rewrite_distractor": "Rewrite this distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "imaj too large (max 5MB). Please itilize a smaller imaj.",
+    "need_card_front_back": "Ajoute at least one kat with both a front and back.",
+    "type_word_first": "Type a mo or letter sequence premye.",
+    "write_something_first": "Ekri something premye.",
+    "pick_decoration_first": "Pick a decoration to link to premye.",
+    "write_association": "Ekri a kout association — what does this remind you of?",
+    "no_crop_data": "No crop done disponib for this imaj.",
+    "invalid_crop_data": "Invalid crop done.",
+    "no_full_page_image": "Full page imaj not disponib. Re-egzekite remediation to aktive cropping.",
+    "selection_too_small": "Selection too small. Trennen a larger zòn.",
+    "encryption_unavailable": "Encryption not disponib in this browser. You may need a plis modern browser to anrejistre submissions.",
+    "voice_unsupported_browser": "vwa recording is not supported in this browser.",
+    "voice_unsupported_device": "vwa recording is not supported on this device.",
+    "mic_denied": "Microphone aksè was denied. Allow microphone aksè in your browser paramèt to record vwa notes.",
+    "voice_too_long": "vwa note too long to anrejistre (over 500KB). Eseye a pi kout clip.",
+    "voice_empty": "vwa recording was empty.",
+    "no_annotations_to_save": "No annotations to anrejistre yet — ajoute a note or highlight premye.",
+    "could_not_save_annotations": "Could not anrejistre annotations. Eseye a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — kole it into a nouvo browser tab.",
+    "regenerate_function_missing": "erè: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. Please refrechi and eseye again.",
+    "image_too_large_10mb": "imaj too large (max 10MB). Please itilize a smaller imaj."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing kat with the imported ones?",
+    "delete_voice_note": "Efase this vwa note?",
+    "remove_companion": "Retire your companion?",
+    "delete_goal": "Efase this goal?",
+    "delete_atlas": "Efase this atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Efase this realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Efase this entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from this backup? This replaces ALL current done — decorations, journal, tokens, stories, paramèt. Cannot be undone.",
+    "reset_skill_progress": "Reyenisye all skill pwogrè? This cannot be undone.",
+    "remove_my_annotations": "Retire all your notes and highlights? pwofesè annotations will stay.",
+    "exit_calibration_full": "Exit calibration mòd? pwogrè will be discarded.",
+    "exit_calibration_short": "Exit calibration? pwogrè discarded.",
+    "discard_session_irreversible": "Discard this in-pwogrè sesyon? atik rezilta will be lost. This cannot be undone.",
+    "delete_template": "Efase this template? This cannot be undone.",
+    "delete_session": "Efase this sesyon? This cannot be undone.",
+    "discard_session": "Discard this sesyon? pwogrè will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? pwogrè will be lost.",
+    "end_probe_saved": "End probe early? pwogrè will be anrejistre.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved selil will be lost.",
+    "change_granularity": "Changing granularity will reyenisye your rejections. Kontinye?",
+    "clear_pdf_progress": "Clear anrejistre pwogrè for this PDF? This cannot be undone.",
+    "switch_sentence_frame": "Chanje fraz frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

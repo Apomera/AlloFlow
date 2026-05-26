@@ -2184,7 +2184,7 @@
     "paragraph_n": "ਪੈਰਾ {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "ਆਡੀਓ narration for ਪੈਰਾ {n}",
-    "score_n": "ਅੰਕ: {ਅੰਕ}",
+    "score_n": "ਅੰਕ: {score}",
     "venn_comparing": "Venn ਚਿੱਤਰ comparing {a} and {b}",
     "flow_chart_of": "Flow ਚਾਰਟ: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, ਅੰਕ {ਅੰਕ}",
+    "tier_score": "Tier {tier}, ਅੰਕ {score}",
     "draggable_item": "draggable ਆਈਟਮ"
   },
   "games": {
@@ -3997,7 +3997,7 @@
       }
     },
     "agreement": {
-      "tooltip": "{total} ਵਿੱਚੋਂ {n} ਆਡਿਟਰਾਂ ਦੁਆਰਾ ਚਿੰਨ੍ਹਿਤ",
+      "tooltip": "{n} ਵਿੱਚੋਂ {total} ਆਡਿਟਰਾਂ ਦੁਆਰਾ ਚਿੰਨ੍ਹਿਤ",
       "unanimous_suffix": " (ਸਰਬਸੰਮਤ)",
       "minority_suffix": " — ਘੱਟ ਗਿਣਤੀ ਰਾਏ, ਘੱਟ ਭਰੋਸਾ"
     },
@@ -4011,7 +4011,7 @@
     },
     "resolution": {
       "heading": "ਮਸਲਾ ਹੱਲ",
-      "subheading": "ਮੂਲ {total} ਮਸਲਿਆਂ ਵਿੱਚੋਂ {resolved} ਹੱਲ ({pct}%)",
+      "subheading": "ਮੂਲ {resolved} ਮਸਲਿਆਂ ਵਿੱਚੋਂ {total} ਹੱਲ ({pct}%)",
       "resolved_label": "ਹੱਲ ਹੋਏ",
       "persisted_label": "ਅਜੇ ਵੀ ਮੌਜੂਦ",
       "introduced_label": "ਨਵੇਂ ਪੇਸ਼ ਕੀਤੇ",

@@ -2184,7 +2184,7 @@
     "paragraph_n": "अनुच्छेद {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "ऑडियो narration for अनुच्छेद {n}",
-    "score_n": "स्कोर: {स्कोर}",
+    "score_n": "स्कोर: {score}",
     "venn_comparing": "Venn आरेख comparing {a} and {b}",
     "flow_chart_of": "Flow चार्ट: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, स्कोर {स्कोर}",
+    "tier_score": "Tier {tier}, स्कोर {score}",
     "draggable_item": "draggable आइटम"
   },
   "games": {
@@ -3997,7 +3997,7 @@
       }
     },
     "agreement": {
-      "tooltip": "{total} में से {n} ऑडिटर द्वारा चिह्नित",
+      "tooltip": "{n} में से {total} ऑडिटर द्वारा चिह्नित",
       "unanimous_suffix": " (सर्वसम्मत)",
       "minority_suffix": " — अल्पमत राय, कम विश्वास"
     },
@@ -4361,7 +4361,7 @@
     },
     "resolution": {
       "heading": "समस्या समाधान",
-      "subheading": "मूल {total} समस्याओं में से {resolved} हल हुईं ({pct}%)",
+      "subheading": "मूल {resolved} समस्याओं में से {total} हल हुईं ({pct}%)",
       "resolved_label": "हल किए गए",
       "persisted_label": "अभी भी मौजूद",
       "introduced_label": "नए पेश किए गए",

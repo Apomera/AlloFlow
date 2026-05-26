@@ -2184,7 +2184,7 @@
     "paragraph_n": "sakin layi {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "sauti narration don sakin layi {n}",
-    "score_n": "maki: {maki}",
+    "score_n": "maki: {score}",
     "venn_comparing": "Venn zanen comparing {} da {b}",
     "flow_chart_of": "Flow jadawali: {topic}",
     "cause_effect_pair": "Cause da effect pair {n} na {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} na {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, maki {maki}",
+    "tier_score": "Tier {tier}, maki {score}",
     "draggable_item": "draggable abu"
   },
   "games": {

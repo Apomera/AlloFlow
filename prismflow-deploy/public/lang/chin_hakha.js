@@ -3997,7 +3997,7 @@
       }
     },
     "agreement": {
-      "tooltip": "{total} hmunkhuat lakah hmunkhuat {n} nih an chiah",
+      "tooltip": "{n} hmunkhuat lakah hmunkhuat {total} nih an chiah",
       "unanimous_suffix": " (vialte)",
       "minority_suffix": " — tlawmpi lung, zumnak a tlawm"
     },
@@ -4011,7 +4011,7 @@
     },
     "resolution": {
       "heading": "Buaibainak siamhnak",
-      "subheading": "A original buaibainak {total} ah {resolved} an siam ({pct}%)",
+      "subheading": "A original buaibainak {resolved} ah {total} an siam ({pct}%)",
       "resolved_label": "A siam",
       "persisted_label": "A um lai",
       "introduced_label": "Thar a sa",

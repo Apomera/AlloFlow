@@ -2184,16 +2184,16 @@
     "paragraph_n": "பத்தி {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "ஒலி narration க்கு பத்தி {n}",
-    "score_n": "மதிப்பெண்: {மதிப்பெண்}",
-    "venn_comparing": "Venn வரைபடம் comparing {ஒரு} மற்றும் {b}",
+    "score_n": "மதிப்பெண்: {score}",
+    "venn_comparing": "Venn வரைபடம் comparing {a} மற்றும் {b}",
     "flow_chart_of": "Flow வரைபடம்: {topic}",
     "cause_effect_pair": "Cause மற்றும் effect pair {n} இன் {total}",
-    "tchart_comparing": "T-வரைபடம் comparing {ஒரு} மற்றும் {b}",
+    "tchart_comparing": "T-வரைபடம் comparing {a} மற்றும் {b}",
     "fishbone_for": "Fishbone வரைபடம் க்கு {topic}",
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} இன் {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, மதிப்பெண் {மதிப்பெண்}",
+    "tier_score": "Tier {tier}, மதிப்பெண் {score}",
     "draggable_item": "draggable பொருள்"
   },
   "games": {
@@ -3997,7 +3997,7 @@
       }
     },
     "agreement": {
-      "tooltip": "{total}-ல் {n} தணிக்கையாளர்களால் குறிக்கப்பட்டது",
+      "tooltip": "{n}-ல் {total} தணிக்கையாளர்களால் குறிக்கப்பட்டது",
       "unanimous_suffix": " (ஒருமனதாக)",
       "minority_suffix": " — சிறுபான்மை கருத்து, குறைந்த நம்பகத்தன்மை"
     },
@@ -4011,7 +4011,7 @@
     },
     "resolution": {
       "heading": "பிரச்சினை தீர்வு",
-      "subheading": "அசல் {total} பிரச்சினைகளில் {resolved} தீர்க்கப்பட்டது ({pct}%)",
+      "subheading": "அசல் {resolved} பிரச்சினைகளில் {total} தீர்க்கப்பட்டது ({pct}%)",
       "resolved_label": "தீர்க்கப்பட்டது",
       "persisted_label": "இன்னும் உள்ளது",
       "introduced_label": "புதிதாக அறிமுகப்படுத்தப்பட்டது",

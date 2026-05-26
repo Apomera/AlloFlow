@@ -1167,7 +1167,7 @@
     "paragraph_n": "פסקאות {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "אודיו narration for פסקאות {n}",
-    "score_n": "ציונים: {ציונים}",
+    "score_n": "ציונים: {score}",
     "venn_comparing": "Venn דיאגרמות comparing {a} and {b}",
     "flow_chart_of": "Flow תרשימים: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -1176,7 +1176,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, ציונים {ציונים}",
+    "tier_score": "Tier {tier}, ציונים {score}",
     "draggable_item": "draggable פריטים"
   },
   "read_this_page": {

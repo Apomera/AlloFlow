@@ -2184,7 +2184,7 @@
     "paragraph_n": "단락 {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "오디오 narration for 단락 {n}",
-    "score_n": "점수: {점수}",
+    "score_n": "점수: {score}",
     "venn_comparing": "Venn 다이어그램 comparing {a} and {b}",
     "flow_chart_of": "Flow 차트: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, 점수 {점수}",
+    "tier_score": "Tier {tier}, 점수 {score}",
     "draggable_item": "draggable 항목"
   },
   "games": {
@@ -3997,7 +3997,7 @@
       }
     },
     "agreement": {
-      "tooltip": "{total}명의 감사관 중 {n}명이 표시",
+      "tooltip": "{n}명의 감사관 중 {total}명이 표시",
       "unanimous_suffix": " (만장일치)",
       "minority_suffix": " — 소수 의견, 신뢰도 낮음"
     },
@@ -4361,7 +4361,7 @@
     },
     "resolution": {
       "heading": "문제 해결",
-      "subheading": "원래 {total}개 문제 중 {resolved}개 해결 ({pct}%)",
+      "subheading": "원래 {resolved}개 문제 중 {total}개 해결 ({pct}%)",
       "resolved_label": "해결됨",
       "persisted_label": "아직 존재",
       "introduced_label": "새로 도입됨",
@@ -8225,7 +8225,7 @@
     "nl_distance": "무엇 입니다 거리 사이 {a} 및 {b}?",
     "nl_midpoint": "무엇 입니다 midpoint 사이 {a} 및 {b}?",
     "area_question": "무엇 입니다 {a} • {b}? 사용 격자 에 도움말!",
-    "area_correct": "올바른! {a} • {b} = {a}",
+    "area_correct": "올바른! {a} • {b} = {product}",
     "frac_identify": "어떻게 many pieces 입니다 shaded? (분자)",
     "frac_equivalent": "{n}/{d} = ?/{target} (찾기 missing 분자)",
     "frac_compare": "Which 입니다 larger: {n1}/{d1} 또는 {n2}/{d2}? (유형 분자 의 larger)",

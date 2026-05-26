@@ -5662,7 +5662,7 @@
       "insert_table_title": "إدراج جداورل مُيسَّر"
     },
     "agreement": {
-      "tooltip": "{total} میں سے {n} آڈیٹرز نے نشان زد کیا",
+      "tooltip": "{n} میں سے {total} آڈیٹرز نے نشان زد کیا",
       "unanimous_suffix": " (متفقہ)",
       "minority_suffix": " — اقلیتی رائے، کم اعتماد"
     },
@@ -5676,7 +5676,7 @@
     },
     "resolution": {
       "heading": "مسئلہ حل",
-      "subheading": "اصل {total} مسائل میں سے {resolved} حل ہوئے ({pct}%)",
+      "subheading": "اصل {resolved} مسائل میں سے {total} حل ہوئے ({pct}%)",
       "resolved_label": "حل شدہ",
       "persisted_label": "ابھی بھی موجود",
       "introduced_label": "نئی متعارف شدہ",

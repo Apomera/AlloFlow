@@ -2184,7 +2184,7 @@
     "paragraph_n": "አንቀጽ {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "ድምጽ narration for አንቀጽ {n}",
-    "score_n": "ውጤት: {ውጤት}",
+    "score_n": "ውጤት: {score}",
     "venn_comparing": "Venn ሥዕላዊ መግለጫ comparing {a} and {b}",
     "flow_chart_of": "Flow ሰንጠረዥ: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, ውጤት {ውጤት}",
+    "tier_score": "Tier {tier}, ውጤት {score}",
     "draggable_item": "draggable እቃ"
   },
   "games": {
@@ -3997,7 +3997,7 @@
       }
     },
     "agreement": {
-      "tooltip": "በ{total} ኦዲተሮች ውስጥ በ{n} ምልክት ተደርጓል",
+      "tooltip": "በ{n} ኦዲተሮች ውስጥ በ{total} ምልክት ተደርጓል",
       "unanimous_suffix": " (በሙሉ ድምፅ)",
       "minority_suffix": " — የጥቂቶች አስተያየት፣ ዝቅተኛ እምነት"
     },
@@ -4361,7 +4361,7 @@
     },
     "resolution": {
       "heading": "ችግር መፍታት",
-      "subheading": "ከ{total} ዋና ችግሮች ውስጥ {resolved} ተፈትተዋል ({pct}%)",
+      "subheading": "ከ{resolved} ዋና ችግሮች ውስጥ {total} ተፈትተዋል ({pct}%)",
       "resolved_label": "ተፈትተዋል",
       "persisted_label": "አሁንም ይገኛሉ",
       "introduced_label": "አዲስ የተዋወቁ",

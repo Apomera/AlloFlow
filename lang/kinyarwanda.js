@@ -2184,7 +2184,7 @@
     "paragraph_n": "igika {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "amajwi narration for igika {n}",
-    "score_n": "amanota: {amanota}",
+    "score_n": "amanota: {score}",
     "venn_comparing": "Venn ishusho comparing {a} and {b}",
     "flow_chart_of": "Flow ishusho: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, amanota {amanota}",
+    "tier_score": "Tier {tier}, amanota {score}",
     "draggable_item": "draggable ikintu"
   },
   "games": {

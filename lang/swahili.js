@@ -2184,7 +2184,7 @@
     "paragraph_n": "aya {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "sauti narration for aya {n}",
-    "score_n": "alama: {alama}",
+    "score_n": "alama: {score}",
     "venn_comparing": "Venn mchoro comparing {a} and {b}",
     "flow_chart_of": "Flow chati: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, alama {alama}",
+    "tier_score": "Tier {tier}, alama {score}",
     "draggable_item": "draggable kipengele"
   },
   "games": {
@@ -8225,7 +8225,7 @@
     "nl_distance": "nini ni umbali kati {a} na {b}?",
     "nl_midpoint": "nini ni midpoint kati {a} na {b}?",
     "area_question": "nini ni {a} • {b}? Tumia gridi kwa msaada!",
-    "area_correct": "Sahihi! {a} • {b} = {a}",
+    "area_correct": "Sahihi! {a} • {b} = {product}",
     "frac_identify": "jinsi many pieces ni shaded? (kihesabu)",
     "frac_equivalent": "{n}/{d} = ?/{target} (tafuta missing kihesabu)",
     "frac_compare": "Which ni larger: {n1}/{d1} au {n2}/{d2}? (Aina kihesabu ya larger)",

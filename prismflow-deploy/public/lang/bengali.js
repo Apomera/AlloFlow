@@ -4008,7 +4008,7 @@
       }
     },
     "agreement": {
-      "tooltip": "{total} জনের মধ্যে {n} জন নিরীক্ষক চিহ্নিত করেছেন",
+      "tooltip": "{n} জনের মধ্যে {total} জন নিরীক্ষক চিহ্নিত করেছেন",
       "unanimous_suffix": " (সর্বসম্মত)",
       "minority_suffix": " — সংখ্যালঘু মতামত, কম আস্থা"
     },
@@ -4022,7 +4022,7 @@
     },
     "resolution": {
       "heading": "সমস্যা সমাধান",
-      "subheading": "মূল {total} সমস্যার মধ্যে {resolved}টি সমাধান হয়েছে ({pct}%)",
+      "subheading": "মূল {resolved} সমস্যার মধ্যে {total}টি সমাধান হয়েছে ({pct}%)",
       "resolved_label": "সমাধান হয়েছে",
       "persisted_label": "এখনও বিদ্যমান",
       "introduced_label": "নতুন চালু হয়েছে",

@@ -2184,7 +2184,7 @@
     "paragraph_n": "अनुच्छेद {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "अडियो narration for अनुच्छेद {n}",
-    "score_n": "अंक: {अंक}",
+    "score_n": "अंक: {score}",
     "venn_comparing": "Venn आरेख comparing {a} and {b}",
     "flow_chart_of": "Flow चार्ट: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, अंक {अंक}",
+    "tier_score": "Tier {tier}, अंक {score}",
     "draggable_item": "draggable वस्तु"
   },
   "games": {
@@ -3997,7 +3997,7 @@
       }
     },
     "agreement": {
-      "tooltip": "{total} मध्ये {n} लेखापरीक्षकले चिन्ह लगाएको",
+      "tooltip": "{n} मध्ये {total} लेखापरीक्षकले चिन्ह लगाएको",
       "unanimous_suffix": " (सर्वसम्मत)",
       "minority_suffix": " — अल्पसंख्यक राय, कम विश्वास"
     },
@@ -4361,7 +4361,7 @@
     },
     "resolution": {
       "heading": "समस्या समाधान",
-      "subheading": "मूल {total} समस्याहरूमध्ये {resolved} समाधान भयो ({pct}%)",
+      "subheading": "मूल {resolved} समस्याहरूमध्ये {total} समाधान भयो ({pct}%)",
       "resolved_label": "समाधान भयो",
       "persisted_label": "अझै पनि उपस्थित",
       "introduced_label": "नयाँ ल्याइएको",

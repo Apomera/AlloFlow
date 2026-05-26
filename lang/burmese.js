@@ -2184,7 +2184,7 @@
     "paragraph_n": "စာပိုဒ် {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "အသံ narration for စာပိုဒ် {n}",
-    "score_n": "ရမှတ်: {ရမှတ်}",
+    "score_n": "ရမှတ်: {score}",
     "venn_comparing": "Venn ပုံ comparing {a} and {b}",
     "flow_chart_of": "Flow ဇယား: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,7 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, ရမှတ် {ရမှတ်}",
+    "tier_score": "Tier {tier}, ရမှတ် {score}",
     "draggable_item": "draggable အရာ"
   },
   "games": {
@@ -3997,7 +3997,7 @@
       }
     },
     "agreement": {
-      "tooltip": "စစ်ဆေးသူ {total} ဦးထဲမှ {n} ဦးက အမှတ်ပြုခဲ့",
+      "tooltip": "စစ်ဆေးသူ {n} ဦးထဲမှ {total} ဦးက အမှတ်ပြုခဲ့",
       "unanimous_suffix": " (တညီတညွတ်တည်း)",
       "minority_suffix": " — လူနည်းစုထင်မြင်ချက်, ယုံကြည်မှု နိမ့်"
     },
@@ -4011,7 +4011,7 @@
     },
     "resolution": {
       "heading": "ပြဿနာ ဖြေရှင်းခြင်း",
-      "subheading": "မူရင်း ပြဿနာ {total} ထဲမှ {resolved} ဖြေရှင်းပြီး ({pct}%)",
+      "subheading": "မူရင်း ပြဿနာ {resolved} ထဲမှ {total} ဖြေရှင်းပြီး ({pct}%)",
       "resolved_label": "ဖြေရှင်းပြီး",
       "persisted_label": "ဆက်ရှိနေ",
       "introduced_label": "အသစ် မိတ်ဆက်ထား",
@@ -8225,7 +8225,7 @@
     "nl_distance": "ဘာ ဖြစ်သည် အကွာအဝေး ကြား {a} နှင့် {b}?",
     "nl_midpoint": "ဘာ ဖြစ်သည် midpoint ကြား {a} နှင့် {b}?",
     "area_question": "ဘာ ဖြစ်သည် {a} • {b}? အသုံးပြုပါ ဇကာ သို့ အကူအညီ!",
-    "area_correct": "မှန်ကန်! {a} • {b} = {a}",
+    "area_correct": "မှန်ကန်! {a} • {b} = {product}",
     "frac_identify": "ဘယ်လို many pieces ဖြစ်ကြသည် shaded? (ပိုင်းဝေ)",
     "frac_equivalent": "{n}/{d} = ?/{target} (find missing ပိုင်းဝေ)",
     "frac_compare": "Which ဖြစ်သည် larger: {n1}/{d1} သို့မဟုတ် {n2}/{d2}? (အမျိုးအစား ပိုင်းဝေ ၏ larger)",

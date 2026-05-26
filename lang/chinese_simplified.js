@@ -3406,7 +3406,7 @@
       "position_aria": "位置 {pos} / {total}",
       "lifted_aria": "已抬起。使用箭头移动。",
       "lift_aria": "按空格键抬起。",
-      "partial_correct": "{total} 个中有 {correct} 个位置正确,继续尝试!",
+      "partial_correct": "{correct} 个中有 {total} 个位置正确,继续尝试!",
       "in_correct_position": "位置正确",
       "best": "最佳",
       "hints_used": "已使用 {n} 个提示",
@@ -3457,7 +3457,7 @@
     },
     "visuals": {
       "generating": "生成顺序视觉中……",
-      "failed": "{total} 个视觉中有 {failed} 个无法生成。卡片仅显示文本。",
+      "failed": "{failed} 个视觉中有 {total} 个无法生成。卡片仅显示文本。",
       "regenerating_batch": "为修订后的项目重新生成视觉……",
       "regen_success": "图片已更新。",
       "regen_failed": "目前无法重新生成图片。",
@@ -3530,7 +3530,7 @@
     "why_hide": "隐藏原因",
     "why_failed": "目前无法生成解释。",
     "why_loading": "思考中……",
-    "visuals_failed": "{total} 个卡片视觉中有 {failed} 个无法生成。卡片仅显示文本。",
+    "visuals_failed": "{failed} 个卡片视觉中有 {total} 个无法生成。卡片仅显示文本。",
     "image_style_label": "图片风格",
     "style_placeholder": "例如:卡通、像素艺术、水彩",
     "image_style_hint": "应用于所有 AI 生成的卡片视觉。",
@@ -3556,7 +3556,7 @@
     },
     "announce": {
       "moved_to": "已移至",
-      "checked": "{total} 个中已正确分类 {correct} 个。还有 {incorrect} 个需要移动。",
+      "checked": "{correct} 个中已正确分类 {total} 个。还有 {incorrect} 个需要移动。",
       "checked_perfect": "所有项目分类正确。活动完成。",
       "reset": "面板已重置。所有项目已返回卡组。"
     },
@@ -5073,7 +5073,7 @@
     "try_again_count": "再试一次。数一数方格!",
     "nl_identify": "数轴上的箭头指向一个位置。这是什么数字?",
     "nl_between": "说出 {a} 和 {b} 之间的一个整数。",
-    "nl_skip_count": "从 {start} 开始,按 {step} 跳数。第 {n} 个数是什么?",
+    "nl_skip_count": "从 {step} 开始,按 {start} 跳数。第 {n} 个数是什么?",
     "nl_estimate": "估算箭头处的值(在 {a} 和 {b} 之间)。",
     "nl_distance": "{a} 和 {b} 之间的距离是多少?",
     "nl_midpoint": "{a} 和 {b} 的中点是什么?",
@@ -6359,7 +6359,7 @@
       "k": "幼儿园"
     },
     "prompts": {
-      "identify_key_standards": "请为 {grade} 识别 2-3 项与此源文本对齐的关键 {framework} 标准。然后,建议具体的 UDL 策略帮助学生达到这些标准。"
+      "identify_key_standards": "请为 {framework} 识别 2-3 项与此源文本对齐的关键 {grade} 标准。然后,建议具体的 UDL 策略帮助学生达到这些标准。"
     },
     "toast_max_limit": "最多允许 3 项标准。",
     "toast_duplicate": "标准已添加。",
@@ -6923,7 +6923,7 @@
     "live": "会话直播中!代码:{code}",
     "error_generic": "无法开始会话。数据可能太大。",
     "error_invalid_code": "请输入有效的 4 字符代码。",
-    "joining": "正在加入主机 {host} 上的会话 {code}……",
+    "joining": "正在加入主机 {code} 上的会话 {host}……",
     "join_panel_title": "加入课堂会话",
     "join_instructions": "输入你老师提供的 4 字符代码以同步。",
     "live_title": "实时课堂会话",

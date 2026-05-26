@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813199525",
+  "_version": "20260526T1779815506463",
   "tour": {
     "input_panel_title": "ግቤት ፓነል",
     "input_panel_text": "Begin የእርስዎ ትምህርት creation journey here. ይህ ግቤት ፓነል ነው foundation ለ ሁሉም ተመንጭቷል ሀብቶች. It serves as central hub የት እርስዎ define ይዘት, አውድ, እና parameters.\n### ግቤት አማራጮች\n• **ጽሑፍ ለጥፍ**: ለጥፍ ይዘት directly ከ ማንኛውም article, ታሪክ, ወይም ትምህርት ዕቅድ.\n• **ፋይል ስቀል**: ስቀል PDFs, ምስል, ጽሑፍ ፋይል, ድምጽ (MP3/WAV), ወይም ቪዲዮ ለ ራስ ሰር extraction.\n• **URL አምጣ**: ለጥፍ ማንኛውም article URL ወደ ራስ ሰር አውጣ እና አስገባ its ይዘት.\n• **AI ሀብቶች ፈልግ**: Describe አንድ ርዕስ እና let AI find ክፍል-ተገቢ online ሀብቶች ለ እርስዎ.\n• **አመንጭ ምንጭ ጽሑፍ**: ፍጠር ኦሪጅናል ይዘት by specifying ርዕስ, ቃና, የክፍል ደረጃ, እና ግብ መስፈርት.\n### ትውልድ ባህሪያት\n• **ቃና Selection**: ምረጥ ከ Informative, ትረካ, Persuasive, Humorous, ወይም እርምጃ-by-እርምጃ ዘይቤ.\n• **መስፈርት ማስተካከያ**: ተጠቀም AI-powered መስፈርት finder ወይም በእጅ ግቤት ግብ መስፈርት (up ወደ 3).\n• **Fact Verification**: አንቃ web grounding ወደ verify facts እና አካትት citations ራስ ሰር.\n• **Custom መመሪያ**: ጨምር የተወሰነ guidance ለ ተጨማሪ tailored ይዘት ትውልድ.\n### ስርዓት Capabilities\n• **Auto-Detection**: ራስ ሰር identifies ምንጭ ቋንቋ.\n• **Chunked Processing**: ድምጽ እና ቪዲዮ ፋይል በላይ 20MB ናቸው intelligently split ለ reliable transcription.\n### Important አብዛኛው መሳሪያዎች ውስጥ sidebar require የምንጭ ቁሳቁስ በፊት እነሱ ይችላል be ጥቅም ላይ ውሏል. ለጥፍ ወይም አመንጭ የእርስዎ ይዘት here መጀመሪያ, ከዚያ ቃኝ ሌላ ሀብቶች.",
@@ -2184,7 +2184,7 @@
     "paragraph_n": "አንቀጽ {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "ድምጽ narration for አንቀጽ {n}",
-    "score_n": "ውጤት: {ውጤት}",
+    "score_n": "ውጤት: {score}",
     "venn_comparing": "Venn ሥዕላዊ መግለጫ comparing {a} and {b}",
     "flow_chart_of": "Flow ሰንጠረዥ: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, ውጤት {ውጤት}"
+    "tier_score": "Tier {tier}, ውጤት {score}",
+    "draggable_item": "draggable እቃ"
   },
   "games": {
     "syntax": {
@@ -3996,7 +3997,7 @@
       }
     },
     "agreement": {
-      "tooltip": "በ{total} ኦዲተሮች ውስጥ በ{n} ምልክት ተደርጓል",
+      "tooltip": "በ{n} ኦዲተሮች ውስጥ በ{total} ምልክት ተደርጓል",
       "unanimous_suffix": " (በሙሉ ድምፅ)",
       "minority_suffix": " — የጥቂቶች አስተያየት፣ ዝቅተኛ እምነት"
     },
@@ -4360,7 +4361,7 @@
     },
     "resolution": {
       "heading": "ችግር መፍታት",
-      "subheading": "ከ{total} ዋና ችግሮች ውስጥ {resolved} ተፈትተዋል ({pct}%)",
+      "subheading": "ከ{resolved} ዋና ችግሮች ውስጥ {total} ተፈትተዋል ({pct}%)",
       "resolved_label": "ተፈትተዋል",
       "persisted_label": "አሁንም ይገኛሉ",
       "introduced_label": "አዲስ የተዋወቁ",
@@ -11614,7 +11615,14 @@
     "click_to_insert": "ጠቅ ያድርጉ to insert ይህ transition ቃላት",
     "edit_illustration": "አስተካክል ስዕል with AI",
     "regenerate_illustration": "Regenerate ስዕል",
-    "close": "ዝጋ"
+    "close": "ዝጋ",
+    "cancel": "ይቅር",
+    "add": "ጨምር",
+    "done": "Done",
+    "edit": "አስተካክል",
+    "reset": "እንደገና አስጀምር",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "ትዕይንት Visualization",
@@ -11733,5 +11741,60 @@
     "send_explainer_to_students": "ላክ ይህ explainer to every ተማሪ's screen now",
     "one_click_remove_text": "One-ጠቅ ያድርጉ: አስወግድ ጽሑፍ from ይህ ምስል",
     "rewrite_distractor": "Rewrite ይህ distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "ምስል too large (max 5MB). እባክዎ ተጠቀም a smaller ምስል.",
+    "need_card_front_back": "ጨምር at least one ካርድ with both a front and back.",
+    "type_word_first": "Type a ቃላት or letter sequence መጀመሪያ.",
+    "write_something_first": "ጻፍ something መጀመሪያ.",
+    "pick_decoration_first": "Pick a decoration to link to መጀመሪያ.",
+    "write_association": "ጻፍ a አጭር association — what does ይህ remind you of?",
+    "no_crop_data": "አይ crop ውሂብ ይገኛል for ይህ ምስል.",
+    "invalid_crop_data": "Invalid crop ውሂብ.",
+    "no_full_page_image": "Full page ምስል not ይገኛል. Re-አሂድ remediation to አንቃ cropping.",
+    "selection_too_small": "Selection too small. ጎትት a larger ስፋት.",
+    "encryption_unavailable": "Encryption not ይገኛል in ይህ browser. You may need a ተጨማሪ modern browser to አስቀምጥ submissions.",
+    "voice_unsupported_browser": "ድምጽ recording is not supported in ይህ browser.",
+    "voice_unsupported_device": "ድምጽ recording is not supported on ይህ device.",
+    "mic_denied": "Microphone መዳረሻ was denied. Allow microphone መዳረሻ in your browser ቅንብሮች to record ድምጽ notes.",
+    "voice_too_long": "ድምጽ note too ረጅም to አስቀምጥ (over 500KB). ሞክር a ይበልጥ አጭር clip.",
+    "voice_empty": "ድምጽ recording was empty.",
+    "no_annotations_to_save": "አይ annotations to አስቀምጥ yet — ጨምር a note or highlight መጀመሪያ.",
+    "could_not_save_annotations": "Could not አስቀምጥ annotations. ሞክር a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — ለጥፍ it into a አዲስ browser tab.",
+    "regenerate_function_missing": "ስህተት: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. እባክዎ አድስ and ሞክር again.",
+    "image_too_large_10mb": "ምስል too large (max 10MB). እባክዎ ተጠቀም a smaller ምስል."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing ካርድ with the imported ones?",
+    "delete_voice_note": "አጥፋ ይህ ድምጽ note?",
+    "remove_companion": "አስወግድ your companion?",
+    "delete_goal": "አጥፋ ይህ ግብ?",
+    "delete_atlas": "አጥፋ ይህ atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "አጥፋ ይህ realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "አጥፋ ይህ entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from ይህ backup? ይህ replaces ALL current ውሂብ — decorations, journal, tokens, stories, ቅንብሮች. Cannot be undone.",
+    "reset_skill_progress": "እንደገና አስጀምር all ክህሎት እድገት? ይህ cannot be undone.",
+    "remove_my_annotations": "አስወግድ all your notes and highlights? መምህር annotations will stay.",
+    "exit_calibration_full": "Exit calibration ሁነታ? እድገት will be discarded.",
+    "exit_calibration_short": "Exit calibration? እድገት discarded.",
+    "discard_session_irreversible": "Discard ይህ in-እድገት ክፍለ ጊዜ? እቃ ውጤት will be lost. ይህ cannot be undone.",
+    "delete_template": "አጥፋ ይህ template? ይህ cannot be undone.",
+    "delete_session": "አጥፋ ይህ ክፍለ ጊዜ? ይህ cannot be undone.",
+    "discard_session": "Discard ይህ ክፍለ ጊዜ? እድገት will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? እድገት will be lost.",
+    "end_probe_saved": "End probe early? እድገት will be ተቀምጧል.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved ሕዋስ will be lost.",
+    "change_granularity": "Changing granularity will እንደገና አስጀምር your rejections. ቀጥል?",
+    "clear_pdf_progress": "Clear ተቀምጧል እድገት for ይህ PDF? ይህ cannot be undone.",
+    "switch_sentence_frame": "ቀይር ዓረፍተ ነገር frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

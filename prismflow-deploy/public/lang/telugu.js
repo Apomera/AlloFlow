@@ -2184,16 +2184,16 @@
     "paragraph_n": "పేరా {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "ఆడియో narration కోసం పేరా {n}",
-    "score_n": "స్కోర్: {స్కోర్}",
-    "venn_comparing": "Venn రేఖాచిత్రం comparing {ఒక} మరియు {b}",
+    "score_n": "స్కోర్: {score}",
+    "venn_comparing": "Venn రేఖాచిత్రం comparing {a} మరియు {b}",
     "flow_chart_of": "Flow చార్ట్: {topic}",
     "cause_effect_pair": "Cause మరియు effect pair {n} యొక్క {total}",
-    "tchart_comparing": "T-చార్ట్ comparing {ఒక} మరియు {b}",
+    "tchart_comparing": "T-చార్ట్ comparing {a} మరియు {b}",
     "fishbone_for": "Fishbone రేఖాచిత్రం కోసం {topic}",
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} యొక్క {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, స్కోర్ {స్కోర్}",
+    "tier_score": "Tier {tier}, స్కోర్ {score}",
     "draggable_item": "draggable అంశం"
   },
   "games": {
@@ -3997,7 +3997,7 @@
       }
     },
     "agreement": {
-      "tooltip": "{total}లో {n} ఆడిటర్లచే గుర్తించబడింది",
+      "tooltip": "{n}లో {total} ఆడిటర్లచే గుర్తించబడింది",
       "unanimous_suffix": " (ఏకగ్రీవం)",
       "minority_suffix": " — మైనారిటీ అభిప్రాయం, తక్కువ విశ్వాసం"
     },
@@ -4011,7 +4011,7 @@
     },
     "resolution": {
       "heading": "సమస్య పరిష్కారం",
-      "subheading": "అసలు {total} సమస్యలలో {resolved} పరిష్కరించబడ్డాయి ({pct}%)",
+      "subheading": "అసలు {resolved} సమస్యలలో {total} పరిష్కరించబడ్డాయి ({pct}%)",
       "resolved_label": "పరిష్కరించబడ్డాయి",
       "persisted_label": "ఇంకా ఉన్నాయి",
       "introduced_label": "కొత్తగా ప్రవేశపెట్టబడ్డాయి",

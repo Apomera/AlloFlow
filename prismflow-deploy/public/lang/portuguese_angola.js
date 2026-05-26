@@ -1,5 +1,5 @@
 {
-  "_version": "20260526T1779813208581",
+  "_version": "20260526T1779815515204",
   "tour": {
     "input_panel_title": "entrada painel",
     "input_panel_text": "Begin seu lição creation journey aqui. este entrada painel é o foundation para todos gerado recursos. ele serves como o central hub onde você define o conteúfaz, context, e parameters.\n### entrada opções\n• **texto Colar**: Colar conteúfaz directly de qualquer article, história, ou lição plan.\n• **ficheiro Carregar**: Carregar PDFs, imagem, texto ficheiro, áudio (MP3/WAV), ou vídeo para automático extraction.\n• **URL Obter**: Colar qualquer article URL para automatically extrair e importar its conteúfaz.\n• **AI recursos Pesquisar**: Describe um topic e let AI find classe-appropriate online recursos para você.\n• **Gerar fonte texto**: Criar original conteúfaz by specifying topic, tom, nível escolar, e target padrão.\n### Geração funcionalidades\n• **tom Selection**: Escolher de Informative, Narrativa, Persuasive, Humorous, ou passo-by-passo estilo.\n• **padrão Alinhamento**: Usar AI-powered padrão finder ou manually entrada target padrão (up para 3).\n• **Fact Verification**: Activar web grounding para verify facts e incluir citations automatically.\n• **Custom instrução**: Adicionar específico guidance para mais tailored conteúfaz geração.\n### sistema Capabilities\n• **Auto-Detection**: Automatically identifies o fonte língua.\n• **Chunked Processing**: áudio e vídeo ficheiro over 20MB são intelligently split para reliable transcription.\n### Important Most ferramentas em o sidebar require fonte material antes they pode ser usado. Colar ou gerar seu conteúfaz aqui primeiro, então explorar o outro recursos.",
@@ -2184,7 +2184,7 @@
     "paragraph_n": "parágrafo {n}",
     "narrative_beat": "Narrative beat: {label}",
     "audio_narration_paragraph": "áudio narration for parágrafo {n}",
-    "score_n": "pontuação: {pontuação}",
+    "score_n": "pontuação: {score}",
     "venn_comparing": "Venn diagrama comparing {a} and {b}",
     "flow_chart_of": "Flow gráfico: {topic}",
     "cause_effect_pair": "Cause and effect pair {n} of {total}",
@@ -2193,7 +2193,8 @@
     "concept_map_of": "Concept map: {topic}",
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
-    "tier_score": "Tier {tier}, pontuação {pontuação}"
+    "tier_score": "Tier {tier}, pontuação {score}",
+    "draggable_item": "draggable item"
   },
   "games": {
     "syntax": {
@@ -11622,7 +11623,14 @@
     "click_to_insert": "Clicar to insert this transition palavra",
     "edit_illustration": "Editar ilustração com IA",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Fechar"
+    "close": "Fechar",
+    "cancel": "Cancelar",
+    "add": "Adicionar",
+    "done": "Done",
+    "edit": "Editar",
+    "reset": "Repor",
+    "apply": "Apply",
+    "processing": "Processing..."
   },
   "alts": {
     "scene_visualization": "cena Visualization",
@@ -11741,5 +11749,60 @@
     "send_explainer_to_students": "Enviar this explainer to every aluno's screen now",
     "one_click_remove_text": "One-clicar: remover texto from this imagem",
     "rewrite_distractor": "Rewrite this distractor to encode a real misconception"
+  },
+  "alerts": {
+    "image_too_large_5mb": "imagem too large (max 5MB). por favor usar a smaller imagem.",
+    "need_card_front_back": "Adicionar at least one cartão with both a front and back.",
+    "type_word_first": "Type a palavra or letter sequence primeiro.",
+    "write_something_first": "Escrever something primeiro.",
+    "pick_decoration_first": "Pick a decoration to link to primeiro.",
+    "write_association": "Escrever a curto association — what does this remind you of?",
+    "no_crop_data": "Não crop dados disponível for this imagem.",
+    "invalid_crop_data": "Invalid crop dados.",
+    "no_full_page_image": "Full page imagem not disponível. Re-executar remediation to activar cropping.",
+    "selection_too_small": "Selection too small. Arrastar a larger área.",
+    "encryption_unavailable": "Encryption not disponível in this browser. You may need a mais modern browser to guardar submissions.",
+    "voice_unsupported_browser": "voz recording is not supported in this browser.",
+    "voice_unsupported_device": "voz recording is not supported on this device.",
+    "mic_denied": "Microphone acesso was denied. Allow microphone acesso in your browser definições to record voz notes.",
+    "voice_too_long": "voz note too longo to guardar (over 500KB). Tentar a shorter clip.",
+    "voice_empty": "voz recording was empty.",
+    "no_annotations_to_save": "Não annotations to guardar yet — adicionar a note or highlight primeiro.",
+    "could_not_save_annotations": "Could not guardar annotations. Tentar a different browser.",
+    "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — colar it into a novo browser tab.",
+    "regenerate_function_missing": "erro: Regenerate function missing or invalid",
+    "crypto_not_loaded": "Submission crypto module not loaded yet. por favor actualizar and tentar again.",
+    "image_too_large_10mb": "imagem too large (max 10MB). por favor usar a smaller imagem."
+  },
+  "confirms": {
+    "replace_imported_cards": "Replace all existing cartão with the imported ones?",
+    "delete_voice_note": "Eliminar this voz note?",
+    "remove_companion": "Remover your companion?",
+    "delete_goal": "Eliminar this objectivo?",
+    "delete_atlas": "Eliminar this atlas? Edges and justifications cannot be recovered.",
+    "delete_realm": "Eliminar this realm? Zones and justifications cannot be recovered.",
+    "delete_entry_tokens": "Eliminar this entry? Tokens already earned will not be refunded.",
+    "restore_backup_destructive": "Restore from this backup? This replaces ALL current dados — decorations, journal, tokens, stories, definições. Cannot be undone.",
+    "reset_skill_progress": "Repor all competência progresso? This cannot be undone.",
+    "remove_my_annotations": "Remover all your notes and highlights? professor annotations will stay.",
+    "exit_calibration_full": "Exit calibration modo? progresso will be discarded.",
+    "exit_calibration_short": "Exit calibration? progresso discarded.",
+    "discard_session_irreversible": "Discard this in-progresso sessão? item resultado will be lost. This cannot be undone.",
+    "delete_template": "Eliminar this template? This cannot be undone.",
+    "delete_session": "Eliminar this sessão? This cannot be undone.",
+    "discard_session": "Discard this sessão? progresso will be lost.",
+    "discard_without_saving": "Discard without saving?",
+    "end_probe_lost": "End probe early? progresso will be lost.",
+    "end_probe_saved": "End probe early? progresso will be guardado.",
+    "end_probe": "End probe early?",
+    "end_nwf_probe": "End NWF probe early?",
+    "end_lnf_probe": "End LNF probe early?",
+    "end_ran_probe": "End RAN probe early?",
+    "end_orf_probe": "End ORF probe early?",
+    "replace_board": "Replace the current board? Unsaved célula will be lost.",
+    "change_granularity": "Changing granularity will repor your rejections. Continuar?",
+    "clear_pdf_progress": "Clear guardado progresso for this PDF? This cannot be undone.",
+    "switch_sentence_frame": "Mudar frase frame template? Your edits to the blanks will be replaced.",
+    "replace_program_with_template": "Replace current program with template?"
   }
 }

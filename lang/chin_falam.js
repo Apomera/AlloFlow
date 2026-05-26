@@ -3534,7 +3534,7 @@
       "k": "Kindergarten"
     },
     "prompts": {
-      "identify_key_standards": "Grade {grade} ti'ah hi source text he aa tlak mi {framework} standard 2-3 identify ko law. Cun, sianginn ngakchia hna nih hi standard hna phak khawh ti'ah specific UDL strategy suggest."
+      "identify_key_standards": "Grade {framework} ti'ah hi source text he aa tlak mi {grade} standard 2-3 identify ko law. Cun, sianginn ngakchia hna nih hi standard hna phak khawh ti'ah specific UDL strategy suggest."
     },
     "toast_max_limit": "Maximum 3 standard a allow.",
     "toast_duplicate": "Standard a tel cang.",
@@ -5243,7 +5243,7 @@
       }
     },
     "agreement": {
-      "tooltip": "{total} ah {n} nih an chiah",
+      "tooltip": "{n} ah {total} nih an chiah",
       "unanimous_suffix": " (vialte)",
       "minority_suffix": " — tlawmpi lung, zumnak a tlawm"
     },
@@ -5257,7 +5257,7 @@
     },
     "resolution": {
       "heading": "Buaibainak siamhnak",
-      "subheading": "Buaibainak {total} ah {resolved} an siam ({pct}%)",
+      "subheading": "Buaibainak {resolved} ah {total} an siam ({pct}%)",
       "resolved_label": "Siam dih",
       "persisted_label": "A um lai",
       "introduced_label": "Thar a sa",

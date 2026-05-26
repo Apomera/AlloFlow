@@ -5662,7 +5662,7 @@
       "insert_table_title": "إدراج جداول مُيسَّر"
     },
     "agreement": {
-      "tooltip": "د {total} پلټونکو څخه د {n} لخوا نښه شوي",
+      "tooltip": "د {n} پلټونکو څخه د {total} لخوا نښه شوي",
       "unanimous_suffix": " (متفقه)",
       "minority_suffix": " — د لږکیو نظر، کم باور"
     },
@@ -5676,7 +5676,7 @@
     },
     "resolution": {
       "heading": "د ستونزو حل",
-      "subheading": "له {total} اصلي ستونزو څخه {resolved} حل شول ({pct}%)",
+      "subheading": "له {resolved} اصلي ستونزو څخه {total} حل شول ({pct}%)",
       "resolved_label": "حل شوي",
       "persisted_label": "لاهم شته",
       "introduced_label": "نوي معرفي شوي",
