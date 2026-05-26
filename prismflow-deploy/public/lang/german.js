@@ -52,10 +52,10 @@
     "dbq_text": "Document-Basierend Frages: Schülers analyze primary sources, bauen Beweis-basierend arguments, und practice die central skill von social-studies + ELA assessments. Generates source documents, scaffalted Frages, und Antwort keys aligned zu dein Standards.",
     "quiz_mode_title": "Wähle den richtigen Quiz-Modus",
     "quiz_mode_text": "Wählen was dies Quiz ist für. Exit Ticket prüfens heute’s Lernen. Pre-Prüfen probes prior kneinwledge vor teaching und surfaces gaps as Konzept cards mit ein one-klicken \"Explain zu Klasse\" AIch broadcast. Formative Prüfen ist ein quick mid-Lektion pulse. Spaced ReAnsicht tracks jeder Schüler’s cross-Sitzung retention mit ein pro-Konzept sparkline. jeder Modus tunes Eingabeaufforderungen, Element-Typ mix, und die live Dashboard ladut.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate classroom-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference students can return to throughout a unit.\n### Panel Options\n• **Chart Type**: Choose from Concept, Vocabulary, Process, Strategy, or Comparison charts.\n• **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style.\n• **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme.\n• **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight.\n### Chart Components\n• **Title Banner**: Eye-catching topic header.\n• **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading.\n• **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues.\n• **Examples & Non-Examples**: Side-by-side panels for concept clarity.\n### Interactive Features\n• **Edit Mode**: Tap any element to rewrite text, swap icons, or recolor sections.\n• **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts.\n• **Project Mode**: Fullscreen view for whole-class instruction.\n### Pro Tip\n• Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the classroom wall for the whole arc.\n### UDL Connection\n• **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors students can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach students *how* to take notes, not just *what* to write. Pick the structure that matches the cognitive task.\n### Template Types\n• **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary.\n• **Two-Column Notes**: Main idea / details organization for content-heavy reading.\n• **T-Chart**: Compare/contrast or pros/cons side-by-side.\n• **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding.\n• **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading.\n• **Outline Notes**: Hierarchical structure for lectures or textbook chapters.\n### Generation Features\n• **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text.\n• **Question Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\").\n• **Vocabulary Slots**: Pre-populated key terms students should listen/read for.\n• **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation).\n### Print & Digital\n• **Printable PDF**: Clean handout layout with generous writing space.\n• **Digital Fillable**: Students type directly into the template for paperless workflows.\n• **Editable Headings**: Teachers tailor column labels and section titles before sharing.\n### Pro Tip\n• Pair *Cornell Notes* with the **Leveled Reader**: students take notes at their reading level, then use the bottom-summary box as a formative-assessment check.\n### UDL Connection\n• **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "Anker-Charts",
+    "anchor_chart_text": "Erstellen Sie klassenbereite Anker-Charts, die Konzepte, Vokabeln und Verfahren festigen. Eine visuelle Zusammenfassung wichtiger Ideen, auf die Schüler immer wieder zurückgreifen können.",
+    "note_taking_title": "Notizvorlagen",
+    "note_taking_text": "Strukturierte Notizvorlagen, die Schülern beibringen, *wie* man Notizen macht, nicht nur *was* zu schreiben ist. Beinhaltet Cornell, grafische Organizer, doppelte Eingabe und Lerntagebücher."
   },
   "launch_pad": {
     "subtitle": "Wählen dein Lernen pathway",
@@ -3981,37 +3981,37 @@
       "html_aria": "HTML source code zu audit"
     },
     "batch": {
-      "drop_text": "Ziehen & ablegen PDFs here",
-      "browse_files": "Browse Dateis",
-      "clear_all": "Leeren alle",
-      "progress_aria": "Batch remediation Fortschritt",
-      "stop_aria": "Stoppenpen batch remediation",
-      "avg_improvement": "Avg Ichmprovement",
-      "scored_90_plus": "Punktzahld 90+",
-      "new_batch": "Neu Batch",
+      "drop_text": "PDFs hierher ziehen & ablegen",
+      "browse_files": "Dateien durchsuchen",
+      "clear_all": "Alles löschen",
+      "progress_aria": "Stapel-Korrekturfortschritt",
+      "stop_aria": "Stapel-Korrektur stoppen",
+      "avg_improvement": "Durchschn. Verbesserung",
+      "scored_90_plus": "90+ erreicht",
+      "new_batch": "Neuer Stapel",
       "resume": {
-        "title": "Vorherige batch interrupted",
-        "summary": "{done}/{total} Datei(s) abschließend vor die tab schließend.",
-        "remaining": "{n} remaining.",
-        "files_label": "Dateis:",
-        "files_more": "+ {n} mehr",
-        "resume_button": "Fortfestlegenzen Batch",
-        "discard_button": "Verwirrfen",
-        "toast": "Resuming batch · {done} cached, {remaining} zu process"
+        "title": "Vorheriger Stapel unterbrochen",
+        "summary": "{done}/{total} Datei(en) vor dem Schließen der Registerkarte abgeschlossen.",
+        "remaining": "{n} verbleibend.",
+        "files_label": "Dateien:",
+        "files_more": "+ {n} weitere",
+        "resume_button": "Stapel fortsetzen",
+        "discard_button": "Verwerfen",
+        "toast": "Stapel wird fortgesetzt · {done} im Cache, {remaining} zu verarbeiten"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} von {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— mineinrity opinion, niedrigirr confidence"
+      "tooltip": "Markiert von {n} von {total} Prüfern",
+      "unanimous_suffix": " (einstimmig)",
+      "minority_suffix": " — Minderheitsmeinung, geringere Konfidenz"
     },
     "divergence": {
-      "semantic": "Structurally compliant aber semantically wirak — AIch flagged Inhalt Qualität (alt Text, heading meaning, lesening order) das axe-core kann't detect",
-      "structural": "Code-Stufe WCAG violations detected — axe-core gefunden machine-prüfenable Fehlers die AIch rubric wirighted hellly"
+      "semantic": "Strukturell konform aber semantisch schwach — die KI markierte Inhaltsqualität (Alt-Text, Überschriftsbedeutung, Lesereihenfolge), die axe-core nicht erkennen kann",
+      "structural": "WCAG-Verletzungen auf Code-Ebene erkannt — axe-core fand maschinell prüfbare Fehler, die die KI-Rubrik leicht gewichtete"
     },
     "tagtree": {
-      "label": "Pre-existing tag Struktur",
-      "tooltip": "dies PDF includes ein PDF/UA-Stil tag tree. Auditors wirre instructed zu crbearbeiten die existing Struktur rather als penalize it as missing."
+      "label": "Vorhandene Tag-Struktur",
+      "tooltip": "Dieses PDF enthält einen Tag-Baum im PDF/UA-Stil. Prüfer wurden angewiesen, die vorhandene Struktur anzuerkennen, statt sie als fehlend zu bestrafen."
     },
     "choose_how": "Wählen how zu process dies PDF:",
     "settings": {
@@ -4364,14 +4364,14 @@
       "insert_table_title": "Ichnsert zugänglich table"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "Problemlösung",
+      "subheading": "{resolved} von {total} ursprünglichen Problemen gelöst ({pct}%)",
+      "resolved_label": "Gelöst",
+      "persisted_label": "Noch vorhanden",
+      "introduced_label": "Neu eingeführt",
+      "resolved_tip": "Probleme aus der ursprünglichen Prüfung, die in der Verifikationsprüfung nicht mehr gefunden werden",
+      "persisted_tip": "Probleme aus der ursprünglichen Prüfung, die nach der Korrektur noch vorhanden sind",
+      "introduced_tip": "Neue Probleme, die vor der Korrektur nicht existierten"
     }
   },
   "concept_sort": {

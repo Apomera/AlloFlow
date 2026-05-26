@@ -53,10 +53,10 @@
     "dbq_text": "문서-기반 질문: 학생 분석 primary sources, 빌드 증거-기반 arguments, 및 연습 central 기술 의 social-studies + ELA 평가. Generates 소스 문서, scaffolded 질문, 및 답변 keys aligned 에 당신의 표준.",
     "quiz_mode_title": "Pick 올바른 퀴즈 모드",
     "quiz_mode_text": "선택 무엇 이것 퀴즈 입니다 위한. Exit Ticket checks today’s 학습. Pre-확인 probes prior knowledge 이전 teaching 및 surfaces gaps as 개념 카드 함께 one-클릭 \"Explain 에 학급\" AI broadcast. Formative 확인 입니다 빠른 mid-수업 pulse. Spaced 검토 tracks 각각 학생’s cross-세션 retention 함께 당-개념 sparkline. 각각 모드 tunes 프롬프트, 항목-유형 mix, 및 실시간 대시보드 layout.",
-    "anchor_chart_title": "Anchor 차트",
-    "anchor_chart_text": "생성 학급-ready Anchor 차트 저것 만들기 concepts, 어휘, and procedures stick. A 시각 reference 학생 can return to throughout a unit. ### 패널 옵션 • **차트 Type**: 선택 from Concept, 어휘, Process, 전략, or Comparison 차트. • **스타일**: Hand-drawn marker look, polished 인쇄 스타일, or kid-친근 comic 스타일. • **색상 Palette**: Pick a high-contrast, dyslexia-친근, or themed 색상 scheme. • **Custom 지시**: 지정 focal concepts, key 어휘, or 전략 단계 to highlight. ### 차트 구성 요소 • **Title Banner**: Eye-catching topic header. • **시각 Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-생성됨 아이콘 reinforcing each idea with dual-coded 시각 cues. • **예 & Non-예**: Side-by-side 패널 for concept clarity. ### 인터랙티브 기능 • **편집 모드**: Tap any element to rewrite 텍스트, swap 아이콘, or recolor 섹션. • **인쇄-Ready**: High-resolution 내보내기 sized for posters or 8.5×11 handouts. • **Project 모드**: Fullscreen 보기 for whole-학급 지시. ### Pro 팁 • 생성 a *전략 차트* before a writing unit and a *어휘 차트* before a science unit — keep both on the 학급 wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent 시각 anchors 학생 can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates 저것 teach 학생 *how* to take notes, not just *what* to 쓰기. Pick the structure 저것 matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-열 layout with cues, notes, and bottom summary. • **Two-열 Notes**: Main idea / 세부 정보 organization for 콘텐츠-heavy reading. • **T-차트**: 비교/contrast or pros/cons side-by-side. • **Sketchnotes**: 시각 note-taking with prompts for 아이콘, arrows, and 색상-coding. • **KWL 차트**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook 장. ### Generation 기능 • **Pre-Filled Prompts**: Each template seeded with cues drawn from your 소스 텍스트. • **질문 Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does 이것 connect to…?\"). • **어휘 Slots**: Pre-populated key 용어 학생 should 듣기/읽기 for. • **Custom 지시**: Target a 특정 cognitive task (synthesis, summary, evaluation). ### 인쇄 & Digital • **인쇄 가능한 PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: 학생 type directly into the template for paperless workflows. • **Editable Headings**: 교사 tailor 열 labels and 섹션 titles before sharing. ### Pro 팁 • Pair *Cornell Notes* with the **Leveled Reader**: 학생 take notes at their reading 수준, then 사용 the bottom-summary box as a formative-평가 check. ### UDL Connection • **Action & 식**: 지원 planning and 전략 development (Guideline 6.2) by giving learners explicit structures for organizing 정보."
+    "anchor_chart_title": "앵커 차트",
+    "anchor_chart_text": "개념, 어휘 및 절차를 고정시키는 교실용 앵커 차트를 생성합니다. 학생들이 반복적으로 참조할 수 있는 핵심 아이디어의 시각적 요약입니다.",
+    "note_taking_title": "노트 작성 템플릿",
+    "note_taking_text": "학생들에게 무엇을 쓸지가 아니라 *어떻게* 노트를 작성할지 가르치는 구조화된 노트 작성 템플릿. 코넬, 그래픽 조직자, 이중 입력 및 학습 일지를 포함합니다."
   },
   "launch_pad": {
     "subtitle": "선택 당신의 학습 pathway",
@@ -3976,37 +3976,37 @@
       "html_aria": "HTML 소스 code 에 audit"
     },
     "batch": {
-      "drop_text": "드래그 & 드롭 PDFs here",
-      "browse_files": "Browse 파일",
-      "clear_all": "Clear 모든",
-      "progress_aria": "Batch remediation 진행 상황",
-      "stop_aria": "중지 batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "새로운 Batch",
+      "drop_text": "여기에 PDF를 끌어다 놓으세요",
+      "browse_files": "파일 찾아보기",
+      "clear_all": "모두 지우기",
+      "progress_aria": "일괄 수정 진행률",
+      "stop_aria": "일괄 수정 중지",
+      "avg_improvement": "평균 개선",
+      "scored_90_plus": "90+ 점수",
+      "new_batch": "새 배치",
       "resume": {
-        "title": "이전 batch interrupted",
-        "summary": "{done}/{total} 파일(s) completed 이전 tab closed.",
-        "remaining": "{n} remaining.",
+        "title": "이전 배치 중단됨",
+        "summary": "탭이 닫히기 전에 {done}/{total} 파일이 완료되었습니다.",
+        "remaining": "{n}개 남음.",
         "files_label": "파일:",
-        "files_more": "+ {n} 더 많이",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} 에 process"
+        "files_more": "+ {n}개 더",
+        "resume_button": "배치 재개",
+        "discard_button": "버리기",
+        "toast": "배치 재개 중 · {done}개 캐시됨, {remaining}개 처리 예정"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} 의 {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "{total}명의 감사관 중 {n}명이 표시",
+      "unanimous_suffix": " (만장일치)",
+      "minority_suffix": " — 소수 의견, 신뢰도 낮음"
     },
     "divergence": {
-      "semantic": "Structurally compliant 하지만 semantically weak — AI flagged 콘텐츠 품질 (alt 텍스트, heading meaning, 읽기 order) 저것 axe-core 수 있습니다't detect",
-      "structural": "Code-수준 WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "구조적으로는 적합하지만 의미적으로 약함 — AI가 axe-core가 감지할 수 없는 콘텐츠 품질(대체 텍스트, 제목 의미, 읽기 순서)을 표시",
+      "structural": "코드 수준 WCAG 위반 감지됨 — axe-core가 AI 평가가 가볍게 가중한 기계 검증 가능한 오류를 발견"
     },
     "tagtree": {
-      "label": "Pre-existing tag 구조",
-      "tooltip": "이것 PDF 포함 PDF/UA-스타일 tag tree. Auditors were instructed 에 credit existing 구조 rather than penalize it as missing."
+      "label": "기존 태그 구조",
+      "tooltip": "이 PDF는 PDF/UA 스타일 태그 트리를 포함합니다. 감사관은 기존 구조를 누락된 것으로 벌점을 주는 대신 인정하도록 지시받았습니다."
     },
     "choose_how": "선택 어떻게 에 process 이것 PDF:",
     "settings": {
@@ -4359,14 +4359,14 @@
       "insert_table_title": "Insert 접근 가능 표"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "문제 해결",
+      "subheading": "원래 {total}개 문제 중 {resolved}개 해결 ({pct}%)",
+      "resolved_label": "해결됨",
+      "persisted_label": "아직 존재",
+      "introduced_label": "새로 도입됨",
+      "resolved_tip": "원래 감사에서 확인된 문제가 검증 감사에서 더 이상 발견되지 않음",
+      "persisted_tip": "수정 후에도 원래 감사의 문제가 여전히 존재",
+      "introduced_tip": "수정 전에는 존재하지 않았던 새로운 문제"
     }
   },
   "concept_sort": {

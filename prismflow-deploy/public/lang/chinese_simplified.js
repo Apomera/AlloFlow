@@ -3981,7 +3981,7 @@
       "html_aria": "要审核的 HTML 源代码"
     },
     "batch": {
-      "drop_text": "将 PDF 拖放到此处",
+      "drop_text": "将 PDF 拖放至此",
       "browse_files": "浏览文件",
       "clear_all": "全部清除",
       "progress_aria": "批量修复进度",
@@ -3990,14 +3990,14 @@
       "scored_90_plus": "得分 90+",
       "new_batch": "新批次",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "上一批次已中断",
+        "summary": "关闭标签页前已完成 {done}/{total} 个文件。",
+        "remaining": "剩余 {n} 个。",
+        "files_label": "文件:",
+        "files_more": "+ {n} 个",
+        "resume_button": "恢复批次",
+        "discard_button": "丢弃",
+        "toast": "正在恢复批次 · {done} 个已缓存,{remaining} 个待处理"
       }
     },
     "choose_how": "选择如何处理此 PDF:",
@@ -4351,27 +4351,27 @@
       "insert_table_title": "插入无障碍表格"
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": " — minority opinion, lower confidence"
+      "tooltip": "由 {n}/{total} 个审计员标记",
+      "unanimous_suffix": "(一致同意)",
+      "minority_suffix": " — 少数意见,置信度较低"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "结构上合规但语义薄弱 — AI 标记了 axe-core 无法检测的内容质量问题(替代文本、标题含义、阅读顺序)",
+      "structural": "检测到代码级 WCAG 违规 — axe-core 发现了 AI 评分较低的机器可验证错误"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "预先存在的标签结构",
+      "tooltip": "此 PDF 包含 PDF/UA 风格的标签树。审计员被指示认可现有结构,而不是将其视为缺失而扣分。"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "问题解决",
+      "subheading": "已解决 {resolved} 个,共 {total} 个原始问题 ({pct}%)",
+      "resolved_label": "已解决",
+      "persisted_label": "仍然存在",
+      "introduced_label": "新引入",
+      "resolved_tip": "原审计中的问题在验证审计中不再发现",
+      "persisted_tip": "原审计中的问题在修复后仍然存在",
+      "introduced_tip": "修复前不存在的新问题"
     }
   },
   "groups": {
@@ -6619,10 +6619,10 @@
     "dbq_text": "基于文献的问题:学生分析一手史料、建立基于证据的论证,并练习社会研究和 ELA 评估的核心技能。生成与你的标准对齐的源文献、带支架的问题和答案密钥。",
     "quiz_mode_title": "选择正确的测验模式",
     "quiz_mode_text": "选择此测验的用途。退场票检查今天的学习。预检查在教学前探测先备知识,并将差距作为概念卡呈现,带一键「向班级解释」AI 广播。形成性检查是课程中段的快速脉冲。间隔复习跟踪每个学生跨会话的保留情况,带每个概念的迷你折线图。每种模式调整提示、项目类型组合和实时面板版式。",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate classroom-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference students can return to throughout a unit.\n### Panel Options\n• **Chart Type**: Choose from Concept, Vocabulary, Process, Strategy, or Comparison charts.\n• **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style.\n• **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme.\n• **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight.\n### Chart Components\n• **Title Banner**: Eye-catching topic header.\n• **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading.\n• **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues.\n• **Examples & Non-Examples**: Side-by-side panels for concept clarity.\n### Interactive Features\n• **Edit Mode**: Tap any element to rewrite text, swap icons, or recolor sections.\n• **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts.\n• **Project Mode**: Fullscreen view for whole-class instruction.\n### Pro Tip\n• Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the classroom wall for the whole arc.\n### UDL Connection\n• **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors students can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach students *how* to take notes, not just *what* to write. Pick the structure that matches the cognitive task.\n### Template Types\n• **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary.\n• **Two-Column Notes**: Main idea / details organization for content-heavy reading.\n• **T-Chart**: Compare/contrast or pros/cons side-by-side.\n• **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding.\n• **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading.\n• **Outline Notes**: Hierarchical structure for lectures or textbook chapters.\n### Generation Features\n• **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text.\n• **Question Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\").\n• **Vocabulary Slots**: Pre-populated key terms students should listen/read for.\n• **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation).\n### Print & Digital\n• **Printable PDF**: Clean handout layout with generous writing space.\n• **Digital Fillable**: Students type directly into the template for paperless workflows.\n• **Editable Headings**: Teachers tailor column labels and section titles before sharing.\n### Pro Tip\n• Pair *Cornell Notes* with the **Leveled Reader**: students take notes at their reading level, then use the bottom-summary box as a formative-assessment check.\n### UDL Connection\n• **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "锚定图表",
+    "anchor_chart_text": "生成可在课堂使用的锚定图表,让概念、词汇和步骤变得难忘。一个学生可以反复参考的关键想法的视觉摘要。",
+    "note_taking_title": "笔记模板",
+    "note_taking_text": "搭建式笔记模板,教学生*如何*做笔记,而不仅仅是*写什么*。包括康奈尔、图形组织者、双重输入和学习日志。"
   },
   "modals": {
     "student_welcome": "学生工作区",

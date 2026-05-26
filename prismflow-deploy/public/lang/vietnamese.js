@@ -56,10 +56,10 @@
     "dbq_text": "Câu hỏi dựa trên tài liệu: học sinh phân tích các nguồn chính, xây dựng các lập luận dựa trên bằng chứng và luyện tập kỹ năng trung tâm của các bài đánh giá nghiên cứu xã hội + ELA. Tạo các tài liệu nguồn, câu hỏi có khung hỗ trợ và đáp án phù hợp với tiêu chuẩn của bạn.",
     "quiz_mode_title": "Chọn đúng chế độ bài kiểm tra",
     "quiz_mode_text": "Chọn bài kiểm tra này dùng để làm gì. Phiếu Thoát Lớp kiểm tra việc học hôm nay. Kiểm tra Trước thăm dò kiến thức nền trước khi giảng dạy và làm nổi bật các lỗ hổng dưới dạng thẻ khái niệm với phát sóng AI \"Giải thích cho lớp\" một cú nhấp. Kiểm tra Hình thành là một bài kiểm tra nhanh giữa bài học. Ôn tập Cách quãng theo dõi khả năng ghi nhớ qua nhiều phiên của mỗi học sinh với mini-biểu đồ cho mỗi khái niệm. Mỗi chế độ điều chỉnh lời nhắc, hỗn hợp loại mục và bố cục bảng điều khiển trực tiếp.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate classroom-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference students can return to throughout a unit.\n### Panel Options\n• **Chart Type**: Choose from Concept, Vocabulary, Process, Strategy, or Comparison charts.\n• **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style.\n• **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme.\n• **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight.\n### Chart Components\n• **Title Banner**: Eye-catching topic header.\n• **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading.\n• **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues.\n• **Examples & Non-Examples**: Side-by-side panels for concept clarity.\n### Interactive Features\n• **Edit Mode**: Tap any element to rewrite text, swap icons, or recolor sections.\n• **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts.\n• **Project Mode**: Fullscreen view for whole-class instruction.\n### Pro Tip\n• Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the classroom wall for the whole arc.\n### UDL Connection\n• **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors students can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach students *how* to take notes, not just *what* to write. Pick the structure that matches the cognitive task.\n### Template Types\n• **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary.\n• **Two-Column Notes**: Main idea / details organization for content-heavy reading.\n• **T-Chart**: Compare/contrast or pros/cons side-by-side.\n• **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding.\n• **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading.\n• **Outline Notes**: Hierarchical structure for lectures or textbook chapters.\n### Generation Features\n• **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text.\n• **Question Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\").\n• **Vocabulary Slots**: Pre-populated key terms students should listen/read for.\n• **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation).\n### Print & Digital\n• **Printable PDF**: Clean handout layout with generous writing space.\n• **Digital Fillable**: Students type directly into the template for paperless workflows.\n• **Editable Headings**: Teachers tailor column labels and section titles before sharing.\n### Pro Tip\n• Pair *Cornell Notes* with the **Leveled Reader**: students take notes at their reading level, then use the bottom-summary box as a formative-assessment check.\n### UDL Connection\n• **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "Biểu đồ neo",
+    "anchor_chart_text": "Tạo Biểu đồ neo sẵn sàng cho lớp học giúp khái niệm, từ vựng và quy trình ghi nhớ. Tóm tắt trực quan các ý tưởng chính mà học sinh có thể tham khảo nhiều lần.",
+    "note_taking_title": "Mẫu ghi chú",
+    "note_taking_text": "Mẫu ghi chú có cấu trúc dạy học sinh *cách* ghi chú, không chỉ *viết gì*. Bao gồm Cornell, sơ đồ tổ chức, hai cột và nhật ký học tập."
   },
   "launch_pad": {
     "subtitle": "Chọn lộ trình học tập của bạn",
@@ -3979,23 +3979,23 @@
       "html_aria": "Mã nguồn HTML để kiểm toán"
     },
     "batch": {
-      "drop_text": "Kéo & thả các tệp PDF vào đây",
+      "drop_text": "Kéo & thả PDF vào đây",
       "browse_files": "Duyệt tệp",
       "clear_all": "Xóa tất cả",
-      "progress_aria": "Tiến độ sửa chữa hàng loạt",
-      "stop_aria": "Dừng sửa chữa hàng loạt",
-      "avg_improvement": "Cải thiện TB",
+      "progress_aria": "Tiến trình khắc phục hàng loạt",
+      "stop_aria": "Dừng khắc phục hàng loạt",
+      "avg_improvement": "Cải thiện trung bình",
       "scored_90_plus": "Đạt 90+",
       "new_batch": "Lô mới",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "Lô trước đã bị gián đoạn",
+        "summary": "{done}/{total} tệp đã hoàn tất trước khi đóng tab.",
+        "remaining": "Còn lại {n}.",
+        "files_label": "Tệp:",
+        "files_more": "+ {n} nữa",
+        "resume_button": "Tiếp tục lô",
+        "discard_button": "Bỏ qua",
+        "toast": "Đang tiếp tục lô · {done} đã lưu, {remaining} cần xử lý"
       }
     },
     "choose_how": "Chọn cách xử lý PDF này:",
@@ -4349,27 +4349,27 @@
       "insert_table_title": "Chèn bảng dễ tiếp cận"
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": " — minority opinion, lower confidence"
+      "tooltip": "Được đánh dấu bởi {n}/{total} kiểm toán viên",
+      "unanimous_suffix": " (nhất trí)",
+      "minority_suffix": " — ý kiến thiểu số, độ tin cậy thấp hơn"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "Tuân thủ về cấu trúc nhưng yếu về ngữ nghĩa — AI đã đánh dấu chất lượng nội dung (văn bản thay thế, ý nghĩa tiêu đề, thứ tự đọc) mà axe-core không thể phát hiện",
+      "structural": "Phát hiện vi phạm WCAG cấp mã — axe-core tìm thấy các lỗi có thể kiểm tra bằng máy mà rubric AI đánh trọng số thấp"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "Cấu trúc thẻ có sẵn",
+      "tooltip": "PDF này bao gồm cây thẻ kiểu PDF/UA. Kiểm toán viên được hướng dẫn ghi nhận cấu trúc hiện có thay vì phạt nó vì thiếu."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "Giải quyết vấn đề",
+      "subheading": "Đã giải quyết {resolved}/{total} vấn đề ban đầu ({pct}%)",
+      "resolved_label": "Đã giải quyết",
+      "persisted_label": "Vẫn còn",
+      "introduced_label": "Mới phát sinh",
+      "resolved_tip": "Các vấn đề từ kiểm toán ban đầu không còn được tìm thấy trong kiểm toán xác minh",
+      "persisted_tip": "Các vấn đề từ kiểm toán ban đầu vẫn còn sau khi sửa",
+      "introduced_tip": "Các vấn đề mới không tồn tại trước khi sửa"
     }
   },
   "concept_sort": {
