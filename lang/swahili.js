@@ -53,10 +53,10 @@
     "dbq_text": "hati-Kulingana maswali: mwanafunzi chambua primary sources, jenga ushahidi-kulingana arguments, na fanya mazoezi central ujuzi ya social-studies + ELA tathmini. Generates chanzo hati, scaffolded maswali, na majibu keys aligned kwa yako kiwango.",
     "quiz_mode_title": "Chagua hali sahihi ya jaribio",
     "quiz_mode_text": "Chagua nini hii jaribio ni kwa. Exit Ticket checks today’s kujifunza. Pre-Angalia probes prior knowledge kabla teaching na surfaces gaps as dhana kadi na one-bofya \"Explain kwa darasa\" AI broadcast. Formative Angalia ni haraka mid-somo pulse. Spaced Kagua tracks kila mwanafunzi’s cross-kipindi retention na kwa-dhana sparkline. kila hali tunes maelekezo, kipengele-aina mix, na moja kwa moja dashibodi layout.",
-    "anchor_chart_title": "Anchor chati",
-    "anchor_chart_text": "Tengeneza darasa-ready Anchor chati hiyo tengeneza concepts, msamiati, and procedures stick. A kuona reference mwanafunzi can return to throughout a unit. ### paneli chaguzi • **chati Type**: Chagua from Concept, msamiati, Process, mkakati, or Comparison chati. • **mtindo**: Hand-drawn marker look, polished chapisha mtindo, or kid-rafiki comic mtindo. • **rangi Palette**: Pick a high-contrast, dyslexia-rafiki, or themed rangi scheme. • **Custom maagizo**: Bainisha focal concepts, key msamiati, or mkakati hatua to highlight. ### chati sehemu • **Title Banner**: Eye-catching topic header. • **kuona Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-imetengenezwa aikoni reinforcing each idea with dual-coded kuona cues. • **mfano & Non-mfano**: Side-by-side paneli for concept clarity. ### mwingiliano vipengele • **Hariri hali**: Tap any element to rewrite maandishi, swap aikoni, or recolor sehemu. • **Chapisha-Ready**: High-resolution hamisha nje sized for posters or 8.5×11 handouts. • **Project hali**: Fullscreen tazama for whole-darasa maagizo. ### Pro kidokezo • Tengeneza a *mkakati chati* before a writing unit and a *msamiati chati* before a science unit — keep both on the darasa wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent kuona anchors mwanafunzi can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates hiyo teach mwanafunzi *how* to take notes, not just *what* to andika. Pick the structure hiyo matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-safuwima layout with cues, notes, and bottom summary. • **Two-safuwima Notes**: Main idea / maelezo organization for maudhui-heavy reading. • **T-chati**: Linganisha/contrast or pros/cons side-by-side. • **Sketchnotes**: kuona note-taking with prompts for aikoni, arrows, and rangi-coding. • **KWL chati**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook sura. ### Generation vipengele • **Pre-Filled Prompts**: Each template seeded with cues drawn from your chanzo maandishi. • **maswali Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does hii connect to…?\"). • **msamiati Slots**: Pre-populated key istilahi mwanafunzi should sikiliza/soma for. • **Custom maagizo**: Target a maalum cognitive task (synthesis, summary, evaluation). ### Chapisha & Digital • **PDF inayoweza kuchapishwa**: Clean handout layout with generous writing space. • **Digital Fillable**: mwanafunzi type directly into the template for paperless workflows. • **Editable Headings**: mwalimu tailor safuwima labels and sehemu titles before sharing. ### Pro kidokezo • Pair *Cornell Notes* with the **Leveled Reader**: mwanafunzi take notes at their reading kiwango, then tumia the bottom-summary box as a formative-tathmini check. ### UDL Connection • **Action & usemi**: msaada planning and mkakati development (Guideline 6.2) by giving learners explicit structures for organizing taarifa."
+    "anchor_chart_title": "Chati za Lengo",
+    "anchor_chart_text": "Tengeneza Chati za Lengo zilizo tayari kwa darasa ambazo hufanya dhana, msamiati, na taratibu zibaki. Muhtasari wa kuona wa mawazo muhimu ambayo wanafunzi wanaweza kurejelea mara kwa mara.",
+    "note_taking_title": "Vitisanifu vya Kuchukua Maelezo",
+    "note_taking_text": "Vitisanifu vyenye muundo vya kuchukua maelezo ambavyo huwafundisha wanafunzi *jinsi* ya kuchukua maelezo, sio tu *nini* cha kuandika. Inajumuisha Cornell, waorodhaji wa picha, ingizo mara mbili, na shajara za kujifunza."
   },
   "launch_pad": {
     "subtitle": "Chagua yako kujifunza pathway",
@@ -3976,37 +3976,37 @@
       "html_aria": "HTML chanzo code kwa audit"
     },
     "batch": {
-      "drop_text": "Buruta & dondosha PDFs here",
-      "browse_files": "Browse faili",
-      "clear_all": "Clear yote",
-      "progress_aria": "Batch remediation maendeleo",
-      "stop_aria": "Simamisha batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "mpya Batch",
+      "drop_text": "Buruta na uangushe PDFs hapa",
+      "browse_files": "Vinjari Faili",
+      "clear_all": "Futa Yote",
+      "progress_aria": "Maendeleo ya urekebishaji wa kundi",
+      "stop_aria": "Simamisha urekebishaji wa kundi",
+      "avg_improvement": "Wastani wa uboreshaji",
+      "scored_90_plus": "Walipata 90+",
+      "new_batch": "Kundi jipya",
       "resume": {
-        "title": "iliyopita batch interrupted",
-        "summary": "{done}/{total} faili(s) completed kabla tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "faili:",
+        "title": "Kundi la awali liliingiliwa",
+        "summary": "{done}/{total} faili zilikamilika kabla ya kichupo kufungwa.",
+        "remaining": "{n} zimebaki.",
+        "files_label": "Faili:",
         "files_more": "+ {n} zaidi",
-        "resume_button": "Endelea Bechi",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} kwa process"
+        "resume_button": "Endelea Kundi",
+        "discard_button": "Tupa",
+        "toast": "Inaendelea kundi · {done} zimecached, {remaining} kuchakata"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} ya {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Imewekewa alama na {n} kati ya {total} wakaguzi",
+      "unanimous_suffix": " (kwa kauli moja)",
+      "minority_suffix": " — maoni ya wachache, uhakika mdogo"
     },
     "divergence": {
-      "semantic": "Structurally compliant lakini semantically weak — AI flagged maudhui ubora (alt maandishi, heading meaning, kusoma order) hiyo axe-core inaweza't detect",
-      "structural": "Code-kiwango WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Inatii kimuundo lakini dhaifu kisemantiki — AI ilionyesha ubora wa maudhui ambao axe-core haiwezi kugundua",
+      "structural": "Ukiukaji wa WCAG katika kiwango cha msimbo umegunduliwa — axe-core ilipata makosa yanayoweza kuthibitishwa na mashine"
     },
     "tagtree": {
-      "label": "Pre-existing tag muundo",
-      "tooltip": "Hii PDF inajumuisha PDF/UA-mtindo tag tree. Auditors were instructed kwa credit existing muundo rather than penalize it as missing."
+      "label": "Muundo wa lebo uliopo",
+      "tooltip": "PDF hii inajumuisha mti wa lebo wa mtindo wa PDF/UA. Wakaguzi waliambiwa kutambua muundo uliopo badala ya kuuadhibu kama uliokosekana."
     },
     "choose_how": "Chagua jinsi kwa process hii PDF:",
     "settings": {
@@ -4359,14 +4359,14 @@
       "insert_table_title": "Insert inapatikana jedwali"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "Utatuzi wa Matatizo",
+      "subheading": "Yametatuliwa {resolved} kati ya {total} matatizo asilia ({pct}%)",
+      "resolved_label": "Yametatuliwa",
+      "persisted_label": "Bado yapo",
+      "introduced_label": "Mapya yaliyoanzishwa",
+      "resolved_tip": "Matatizo kutoka ukaguzi wa asili ambayo hayapatikani tena katika ukaguzi wa uthibitisho",
+      "persisted_tip": "Matatizo kutoka ukaguzi wa asili bado yapo baada ya marekebisho",
+      "introduced_tip": "Matatizo mapya ambayo hayakuwepo kabla ya marekebisho"
     }
   },
   "concept_sort": {

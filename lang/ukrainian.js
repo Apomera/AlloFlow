@@ -53,10 +53,10 @@
     "dbq_text": "документи-На основі питання: учні аналізувати primary sources, будувати докази-на основі arguments, та практика central навички social-studies + ELA оцінювання. Generates джерело документи, scaffolded питання, та відповіді keys aligned до ваш стандарти.",
     "quiz_mode_title": "Pick правильний тест режим",
     "quiz_mode_text": "Вибрати що це тест є для. Exit Ticket checks today’s навчання. Pre-Перевірити probes prior knowledge перед teaching та surfaces gaps as концепція картки з one-натиснути \"Explain до клас\" AI broadcast. Formative Перевірити є швидкий mid-уроки pulse. Spaced Огляд tracks кожен учні’s cross-сесії retention з за-концепція sparkline. кожен режим tunes підказки, елементи-тип mix, та наживо панель layout.",
-    "anchor_chart_title": "Anchor графіки",
-    "anchor_chart_text": "Створити клас-ready Anchor графіки те зробити concepts, словник, and procedures stick. A візуальний reference учні can return to throughout a unit. ### панель опції • **графіки Type**: Вибрати from Concept, словник, Process, стратегія, or Comparison графіки. • **стилі**: Hand-drawn marker look, polished друкувати стилі, or kid-дружній comic стилі. • **кольори Palette**: Pick a high-contrast, dyslexia-дружній, or themed кольори scheme. • **Custom інструкції**: Вказати focal concepts, key словник, or стратегія кроки to highlight. ### графіки компоненти • **Title Banner**: Eye-catching topic header. • **візуальний Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-створено іконки reinforcing each idea with dual-coded візуальний cues. • **приклади & Non-приклади**: Side-by-side панель for concept clarity. ### інтерактивний функції • **Редагувати режим**: Tap any element to rewrite текст, swap іконки, or recolor розділи. • **Друкувати-Ready**: High-resolution експортувати sized for posters or 8.5×11 handouts. • **Project режим**: Fullscreen перегляд for whole-клас інструкції. ### Pro поради • Створити a *стратегія графіки* before a writing unit and a *словник графіки* before a science unit — keep both on the клас wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent візуальний anchors учні can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates те teach учні *how* to take notes, not just *what* to писати. Pick the structure те matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-стовпці layout with cues, notes, and bottom summary. • **Two-стовпці Notes**: Main idea / деталі organization for вміст-heavy reading. • **T-графіки**: Порівняти/contrast or pros/cons side-by-side. • **Sketchnotes**: візуальний note-taking with prompts for іконки, arrows, and кольори-coding. • **KWL графіки**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook розділи. ### Generation функції • **Pre-Filled Prompts**: Each template seeded with cues drawn from your джерело текст. • **питання Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does це connect to…?\"). • **словник Slots**: Pre-populated key терміни учні should слухати/читати for. • **Custom інструкції**: Target a специфічний cognitive task (synthesis, summary, evaluation). ### Друкувати & Digital • **PDF для друку**: Clean handout layout with generous writing space. • **Digital Fillable**: учні type directly into the template for paperless workflows. • **Editable Headings**: вчителі tailor стовпці labels and розділи titles before sharing. ### Pro поради • Pair *Cornell Notes* with the **Leveled Reader**: учні take notes at their reading рівні, then використати the bottom-summary box as a formative-оцінювання check. ### UDL Connection • **Action & вираз**: підтримка planning and стратегія development (Guideline 6.2) by giving learners explicit structures for organizing інформація."
+    "anchor_chart_title": "Опорні плакати",
+    "anchor_chart_text": "Створіть готові для класу опорні плакати, які допомагають закріпити концепції, словник і процедури. Візуальне резюме ключових ідей, до яких учні можуть повертатися багаторазово.",
+    "note_taking_title": "Шаблони ведення нотаток",
+    "note_taking_text": "Структуровані шаблони ведення нотаток, які навчають учнів *як* робити нотатки, а не лише *що* писати. Включає Корнелл, графічні організатори, подвійний запис і журнали навчання."
   },
   "launch_pad": {
     "subtitle": "Вибрати ваш навчання pathway",
@@ -3976,37 +3976,37 @@
       "html_aria": "HTML джерело code до audit"
     },
     "batch": {
-      "drop_text": "Перетягнути & кинути PDFs here",
-      "browse_files": "Browse файли",
-      "clear_all": "Clear всі",
-      "progress_aria": "Batch remediation прогрес",
-      "stop_aria": "Зупинити batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "новий Batch",
+      "drop_text": "Перетягніть PDF сюди",
+      "browse_files": "Огляд файлів",
+      "clear_all": "Очистити все",
+      "progress_aria": "Прогрес пакетної обробки",
+      "stop_aria": "Зупинити пакетну обробку",
+      "avg_improvement": "Середнє покращення",
+      "scored_90_plus": "Набрали 90+",
+      "new_batch": "Нова партія",
       "resume": {
-        "title": "попередній batch interrupted",
-        "summary": "{done}/{total} файли(s) completed перед tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "файли:",
-        "files_more": "+ {n} більше",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} до process"
+        "title": "Попередню партію перервано",
+        "summary": "{done}/{total} файл(ів) завершено до закриття вкладки.",
+        "remaining": "Залишилося {n}.",
+        "files_label": "Файли:",
+        "files_more": "+ ще {n}",
+        "resume_button": "Продовжити партію",
+        "discard_button": "Відхилити",
+        "toast": "Продовження партії · {done} у кеші, {remaining} до обробки"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Позначено {n} з {total} аудиторів",
+      "unanimous_suffix": " (одностайно)",
+      "minority_suffix": " — думка меншості, нижча впевненість"
     },
     "divergence": {
-      "semantic": "Structurally compliant але semantically weak — AI flagged вміст якість (alt текст, heading meaning, читання order) те axe-core може't detect",
-      "structural": "Code-рівні WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Структурно відповідає, але семантично слабко — ШІ позначив якість контенту, яку axe-core не може виявити",
+      "structural": "Виявлено порушення WCAG на рівні коду — axe-core знайшов машинно-перевірні помилки"
     },
     "tagtree": {
-      "label": "Pre-existing tag структура",
-      "tooltip": "Це PDF включає PDF/UA-стилі tag tree. Auditors were instructed до credit existing структура rather than penalize it as missing."
+      "label": "Існуюча структура тегів",
+      "tooltip": "Цей PDF містить дерево тегів у стилі PDF/UA. Аудиторам було наказано визнавати існуючу структуру замість того, щоб карати її як відсутню."
     },
     "choose_how": "Вибрати як до process це PDF:",
     "settings": {
@@ -4359,14 +4359,14 @@
       "insert_table_title": "Insert доступний таблиці"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "Вирішення проблем",
+      "subheading": "Вирішено {resolved} з {total} початкових проблем ({pct}%)",
+      "resolved_label": "Вирішені",
+      "persisted_label": "Все ще присутні",
+      "introduced_label": "Нововведені",
+      "resolved_tip": "Проблеми з початкового аудиту, які більше не виявлено в перевірному аудиті",
+      "persisted_tip": "Проблеми з початкового аудиту все ще присутні після виправлення",
+      "introduced_tip": "Нові проблеми, яких не існувало до виправлення"
     }
   },
   "concept_sort": {

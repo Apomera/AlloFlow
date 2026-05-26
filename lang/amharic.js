@@ -53,10 +53,10 @@
     "dbq_text": "ሰነድ-መሠረት ያደረገ ጥያቄ: ተማሪ ተንትን primary sources, መገንባት ማስረጃ-መሠረት ያደረገ arguments, እና ተለማመድ central ክህሎት የ social-studies + ELA ግምገማ. Generates ምንጭ ሰነድ, scaffolded ጥያቄ, እና መልስ keys aligned ወደ የእርስዎ መስፈርት.",
     "quiz_mode_title": "Pick ትክክለኛ ጥያቄ ሁነታ",
     "quiz_mode_text": "ምረጥ ምን ይህ ጥያቄ ነው ለ. Exit Ticket checks today’s መማር. Pre-ማረጋገጥ probes prior knowledge በፊት teaching እና surfaces gaps as ጽንሰ-ሐሳብ ካርድ ከ አንድ one-ጠቅ ያድርጉ \"Explain ወደ ክፍል\" AI broadcast. Formative ማረጋገጥ ነው አንድ ፈጣን mid-ትምህርት pulse. Spaced ግምገማ tracks እያንዳንዱ ተማሪ’s cross-ክፍለ ጊዜ retention ከ አንድ per-ጽንሰ-ሐሳብ sparkline. እያንዳንዱ ሁነታ tunes ጥቆማዎች, እቃ-ዓይነት mix, እና በቀጥታ dashboard layout.",
-    "anchor_chart_title": "Anchor ሰንጠረዥ",
-    "anchor_chart_text": "አመንጭ ክፍል-ready Anchor ሰንጠረዥ ያ ስራ concepts, ቃላት, and procedures stick. A እይታ reference ተማሪ can return to throughout a unit. ### ፓነል አማራጮች • **ሰንጠረዥ Type**: ምረጥ from Concept, ቃላት, Process, ስልት, or Comparison ሰንጠረዥ. • **ዘይቤ**: Hand-drawn marker look, polished አትም ዘይቤ, or kid-ወዳጃዊ comic ዘይቤ. • **ቀለም Palette**: Pick a high-contrast, dyslexia-ወዳጃዊ, or themed ቀለም scheme. • **Custom መመሪያ**: ግለጽ focal concepts, key ቃላት, or ስልት እርምጃ to highlight. ### ሰንጠረዥ አካል • **Title Banner**: Eye-catching topic header. • **እይታ Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-ተመንጭቷል አዶ reinforcing each idea with dual-coded እይታ cues. • **ምሳሌ & Non-ምሳሌ**: Side-by-side ፓነል for concept clarity. ### መስተጋብራዊ ባህሪያት • **አስተካክል ሁነታ**: Tap any element to rewrite ጽሑፍ, swap አዶ, or recolor ክፍል. • **አትም-Ready**: High-resolution ላክ sized for posters or 8.5×11 handouts. • **Project ሁነታ**: Fullscreen እይታ for whole-ክፍል መመሪያ. ### Pro ምክር • አመንጭ a *ስልት ሰንጠረዥ* before a writing unit and a *ቃላት ሰንጠረዥ* before a science unit — keep both on the ክፍል wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent እይታ anchors ተማሪ can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates ያ teach ተማሪ *how* to take notes, not just *what* to ጻፍ. Pick the structure ያ matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-አምድ layout with cues, notes, and bottom summary. • **Two-አምድ Notes**: Main idea / ዝርዝር organization for ይዘት-heavy reading. • **T-ሰንጠረዥ**: አወዳድር/contrast or pros/cons side-by-side. • **Sketchnotes**: እይታ note-taking with prompts for አዶ, arrows, and ቀለም-coding. • **KWL ሰንጠረዥ**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook ምዕራፍ. ### Generation ባህሪያት • **Pre-Filled Prompts**: Each template seeded with cues drawn from your ምንጭ ጽሑፍ. • **ጥያቄ Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does ይህ connect to…?\"). • **ቃላት Slots**: Pre-populated key ቃል ተማሪ should አዳምጥ/አንብብ for. • **Custom መመሪያ**: Target a የተወሰነ cognitive task (synthesis, summary, evaluation). ### አትም & Digital • **የሚታተም PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: ተማሪ type directly into the template for paperless workflows. • **Editable Headings**: መምህር tailor አምድ labels and ክፍል titles before sharing. ### Pro ምክር • Pair *Cornell Notes* with the **Leveled Reader**: ተማሪ take notes at their reading ደረጃ, then ተጠቀም the bottom-summary box as a formative-ግምገማ check. ### UDL Connection • **Action & አገላለጽ**: ድጋፍ planning and ስልት development (Guideline 6.2) by giving learners explicit structures for organizing መረጃ."
+    "anchor_chart_title": "መልሕቅ ቻርቶች",
+    "anchor_chart_text": "ጽንሰ-ሐሳቦች፣ ቃላት እና ሥርዓቶችን የሚያስታውሱ ለክፍል ዝግጁ የሆኑ መልሕቅ ቻርቶችን ይፍጠሩ።",
+    "note_taking_title": "የማስታወሻ መውሰጃ ቴምፕሌቶች",
+    "note_taking_text": "ተማሪዎችን ምን እንደሚጽፉ ብቻ ሳይሆን *እንዴት* ማስታወሻ መውሰድ እንደሚገባ የሚያስተምሩ የተዋቀሩ የማስታወሻ መውሰጃ ቴምፕሌቶች።"
   },
   "launch_pad": {
     "subtitle": "ምረጥ የእርስዎ መማር pathway",
@@ -3976,37 +3976,37 @@
       "html_aria": "HTML ምንጭ code ወደ audit"
     },
     "batch": {
-      "drop_text": "ጎትት & ጣል PDFs here",
-      "browse_files": "Browse ፋይል",
-      "clear_all": "Clear ሁሉም",
-      "progress_aria": "Batch remediation እድገት",
-      "stop_aria": "አቁም batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "አዲስ Batch",
+      "drop_text": "PDFs ን እዚህ ይጎትቱና ይጣሉ",
+      "browse_files": "ፋይሎችን አስስ",
+      "clear_all": "ሁሉንም አጽዳ",
+      "progress_aria": "የስብስብ ጥገና ሂደት",
+      "stop_aria": "የስብስብ ጥገናን አቁም",
+      "avg_improvement": "አማካይ ማሻሻያ",
+      "scored_90_plus": "90+ አምጥተዋል",
+      "new_batch": "አዲስ ስብስብ",
       "resume": {
-        "title": "ቀዳሚ batch interrupted",
-        "summary": "{done}/{total} ፋይል(s) completed በፊት tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "ፋይል:",
-        "files_more": "+ {n} ተጨማሪ",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} ወደ process"
+        "title": "የቀደመው ስብስብ ተቋርጧል",
+        "summary": "ትር ከመዘጋቱ በፊት {done}/{total} ፋይል(ሎች) ተጠናቅቀዋል።",
+        "remaining": "{n} ይቀራል።",
+        "files_label": "ፋይሎች:",
+        "files_more": "+ ሌላ {n}",
+        "resume_button": "ስብስብ ቀጥል",
+        "discard_button": "አስወግድ",
+        "toast": "ስብስብ እየቀጠለ ነው · {done} በመሸጎጫ ውስጥ፣ {remaining} ለማካሄድ"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} የ {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "በ{total} ኦዲተሮች ውስጥ በ{n} ምልክት ተደርጓል",
+      "unanimous_suffix": " (በሙሉ ድምፅ)",
+      "minority_suffix": " — የጥቂቶች አስተያየት፣ ዝቅተኛ እምነት"
     },
     "divergence": {
-      "semantic": "Structurally compliant ግን semantically weak — AI flagged ይዘት ጥራት (alt ጽሑፍ, heading meaning, ማንበብ order) ያ axe-core ይችላል't detect",
-      "structural": "Code-ደረጃ WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "በመዋቅራዊ መልኩ ተስማሚ ግን በትርጉም ደካማ — AI axe-core ሊያውቀው የማይችለውን የይዘት ጥራት ምልክት አድርጓል",
+      "structural": "የኮድ ደረጃ WCAG ጥሰቶች ተገኝተዋል — axe-core በማሽን ሊረጋገጡ የሚችሉ ስህተቶችን አግኝቷል"
     },
     "tagtree": {
-      "label": "Pre-existing tag መዋቅር",
-      "tooltip": "ይህ PDF ያካትታል አንድ PDF/UA-ዘይቤ tag tree. Auditors were instructed ወደ credit existing መዋቅር rather than penalize it as missing."
+      "label": "አስቀድሞ ያለ የመለያ መዋቅር",
+      "tooltip": "ይህ PDF PDF/UA ስታይል የመለያ ዛፍ ያካትታል። ኦዲተሮች ያለውን መዋቅር እንዲያውቁ ታዘዋል።"
     },
     "choose_how": "ምረጥ እንዴት ወደ process ይህ PDF:",
     "settings": {
@@ -4359,14 +4359,14 @@
       "insert_table_title": "Insert ተደራሽ ሰንጠረዥ"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "ችግር መፍታት",
+      "subheading": "ከ{total} ዋና ችግሮች ውስጥ {resolved} ተፈትተዋል ({pct}%)",
+      "resolved_label": "ተፈትተዋል",
+      "persisted_label": "አሁንም ይገኛሉ",
+      "introduced_label": "አዲስ የተዋወቁ",
+      "resolved_tip": "ከመጀመሪያው ኦዲት ውስጥ ያሉ ችግሮች በማረጋገጫ ኦዲቱ ላይ አይገኙም",
+      "persisted_tip": "ከመጀመሪያው ኦዲት ውስጥ ያሉ ችግሮች ከእርማት በኋላም ይገኛሉ",
+      "introduced_tip": "ከእርማት በፊት ያልነበሩ አዳዲስ ችግሮች"
     }
   },
   "concept_sort": {

@@ -3981,23 +3981,23 @@
       "html_aria": "要審核的 HTML 源代碼"
     },
     "batch": {
-      "drop_text": "將 PDF 拖放到此處",
-      "browse_files": "瀏覽文件",
+      "drop_text": "將 PDF 拖放至此",
+      "browse_files": "瀏覽檔案",
       "clear_all": "全部清除",
-      "progress_aria": "批量修復進度",
-      "stop_aria": "停止批量修復",
+      "progress_aria": "批次修復進度",
+      "stop_aria": "停止批次修復",
       "avg_improvement": "平均改進",
       "scored_90_plus": "得分 90+",
       "new_batch": "新批次",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "上一批次已中斷",
+        "summary": "關閉標籤頁前已完成 {done}/{total} 個檔案。",
+        "remaining": "剩餘 {n} 個。",
+        "files_label": "檔案:",
+        "files_more": "+ {n} 個",
+        "resume_button": "恢復批次",
+        "discard_button": "丟棄",
+        "toast": "正在恢復批次 · {done} 個已快取,{remaining} 個待處理"
       }
     },
     "choose_how": "選擇如何處理此 PDF:",
@@ -4351,27 +4351,27 @@
       "insert_table_title": "插入無障礙錶格"
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": " — minority opinion, lower confidence"
+      "tooltip": "由 {n}/{total} 個審計員標記",
+      "unanimous_suffix": "(一致同意)",
+      "minority_suffix": " — 少數意見,置信度較低"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "結構上合規但語義薄弱 — AI 標記了 axe-core 無法檢測的內容質量問題(替代文字、標題含義、閱讀順序)",
+      "structural": "檢測到代碼級 WCAG 違規 — axe-core 發現了 AI 評分較低的機器可驗證錯誤"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "預先存在的標籤結構",
+      "tooltip": "此 PDF 包含 PDF/UA 風格的標籤樹。審計員被指示認可現有結構,而不是將其視為缺失而扣分。"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "問題解決",
+      "subheading": "已解決 {resolved} 個,共 {total} 個原始問題 ({pct}%)",
+      "resolved_label": "已解決",
+      "persisted_label": "仍然存在",
+      "introduced_label": "新引入",
+      "resolved_tip": "原審計中的問題在驗證審計中不再發現",
+      "persisted_tip": "原審計中的問題在修復後仍然存在",
+      "introduced_tip": "修復前不存在的新問題"
     }
   },
   "groups": {
@@ -6619,10 +6619,10 @@
     "dbq_text": "基于文献的問題:學生分析一手史料、建立基于證據的論證,並練習社會研究和 ELA 評估的核心技能。生成与你的標準對齐的源文献、帶支架的問題和答案密鑰。",
     "quiz_mode_title": "選擇正確的測验模式",
     "quiz_mode_text": "選擇此測验的用途。退場票檢查今天的學習。预檢查在教學前探測先備知識,並將差距作為概念卡呈現,帶一鍵「向班级解釋」AI 廣播。形成性檢查是课程中段的快速脈衝。间隔複習跟蹤每個學生跨會话的保留情况,帶每個概念的迷你折线圖。每種模式调整提示、項目類型組合和實時面板版式。",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate classroom-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference students can return to throughout a unit.\n### Panel Options\n• **Chart Type**: Choose from Concept, Vocabulary, Process, Strategy, or Comparison charts.\n• **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style.\n• **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme.\n• **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight.\n### Chart Components\n• **Title Banner**: Eye-catching topic header.\n• **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading.\n• **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues.\n• **Examples & Non-Examples**: Side-by-side panels for concept clarity.\n### Interactive Features\n• **Edit Mode**: Tap any element to rewrite text, swap icons, or recolor sections.\n• **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts.\n• **Project Mode**: Fullscreen view for whole-class instruction.\n### Pro Tip\n• Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the classroom wall for the whole arc.\n### UDL Connection\n• **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors students can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach students *how* to take notes, not just *what* to write. Pick the structure that matches the cognitive task.\n### Template Types\n• **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary.\n• **Two-Column Notes**: Main idea / details organization for content-heavy reading.\n• **T-Chart**: Compare/contrast or pros/cons side-by-side.\n• **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding.\n• **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading.\n• **Outline Notes**: Hierarchical structure for lectures or textbook chapters.\n### Generation Features\n• **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text.\n• **Question Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\").\n• **Vocabulary Slots**: Pre-populated key terms students should listen/read for.\n• **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation).\n### Print & Digital\n• **Printable PDF**: Clean handout layout with generous writing space.\n• **Digital Fillable**: Students type directly into the template for paperless workflows.\n• **Editable Headings**: Teachers tailor column labels and section titles before sharing.\n### Pro Tip\n• Pair *Cornell Notes* with the **Leveled Reader**: students take notes at their reading level, then use the bottom-summary box as a formative-assessment check.\n### UDL Connection\n• **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "錨定圖表",
+    "anchor_chart_text": "生成可在課堂使用的錨定圖表,讓概念、詞彙和步驟變得難忘。一個學生可以反覆參考的關鍵想法的視覺摘要。",
+    "note_taking_title": "筆記範本",
+    "note_taking_text": "搭建式筆記範本,教學生*如何*做筆記,而不僅僅是*寫什麼*。包括康奈爾、圖形組織者、雙重輸入和學習日誌。"
   },
   "modals": {
     "student_welcome": "學生工作區",

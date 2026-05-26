@@ -52,10 +52,10 @@
     "dbq_text": "Document-Based প্রশ্নs: শিক্ষার্থীs analyze primary sources, তৈরি প্রমাণ-based arguments, এবং practice central skill এর social-studies + ELA assessments. তৈরি করুনs source documents, scaffপুরাতনed প্রশ্নs, এবং উত্তর keys aligned এর আপনার standards.",
     "quiz_mode_title": "Pick ডান কুইজ মোড",
     "quiz_mode_text": "বেছে নিন what এই কুইজ হয় জন্য. Exit Ticket চেকs আজ’s শেখা. Pre-চেক probes prior kনাwledge আগে teaching এবং surfaces gaps as ধারণা cards সাথে এক one-ক্লিক \"Explain এর শ্রেণী\" একআমি broadcast. Formative চেক হয় এক quick mid-পাঠ pulse. Spaced পর্যালোচনা tracks each শিক্ষার্থী’s cross-সেশন retention সাথে এক per-ধারণা sparkline. Each মোড tunes প্রম্পট, আইটেম-ধরন mix, এবং লাইভ dashboard laআপনিt.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate classroom-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference students can return to throughout a unit.\n### Panel Options\n• **Chart Type**: Choose from Concept, Vocabulary, Process, Strategy, or Comparison charts.\n• **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style.\n• **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme.\n• **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight.\n### Chart Components\n• **Title Banner**: Eye-catching topic header.\n• **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading.\n• **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues.\n• **Examples & Non-Examples**: Side-by-side panels for concept clarity.\n### Interactive Features\n• **Edit Mode**: Tap any element to rewrite text, swap icons, or recolor sections.\n• **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts.\n• **Project Mode**: Fullscreen view for whole-class instruction.\n### Pro Tip\n• Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the classroom wall for the whole arc.\n### UDL Connection\n• **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors students can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach students *how* to take notes, not just *what* to write. Pick the structure that matches the cognitive task.\n### Template Types\n• **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary.\n• **Two-Column Notes**: Main idea / details organization for content-heavy reading.\n• **T-Chart**: Compare/contrast or pros/cons side-by-side.\n• **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding.\n• **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading.\n• **Outline Notes**: Hierarchical structure for lectures or textbook chapters.\n### Generation Features\n• **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text.\n• **Question Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\").\n• **Vocabulary Slots**: Pre-populated key terms students should listen/read for.\n• **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation).\n### Print & Digital\n• **Printable PDF**: Clean handout layout with generous writing space.\n• **Digital Fillable**: Students type directly into the template for paperless workflows.\n• **Editable Headings**: Teachers tailor column labels and section titles before sharing.\n### Pro Tip\n• Pair *Cornell Notes* with the **Leveled Reader**: students take notes at their reading level, then use the bottom-summary box as a formative-assessment check.\n### UDL Connection\n• **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "অ্যাঙ্কর চার্ট",
+    "anchor_chart_text": "শ্রেণীকক্ষ-প্রস্তুত অ্যাঙ্কর চার্ট তৈরি করুন যা ধারণা, শব্দভান্ডার এবং পদ্ধতিগুলিকে স্থায়ী করে। মূল ধারণাগুলির একটি ভিজ্যুয়াল সারাংশ যা শিক্ষার্থীরা বারবার উল্লেখ করতে পারে।",
+    "note_taking_title": "নোট নেওয়ার টেমপ্লেট",
+    "note_taking_text": "স্কাফোল্ডেড নোট নেওয়ার টেমপ্লেট যা শিক্ষার্থীদের *কীভাবে* নোট নিতে হয় তা শেখায়, শুধু *কী* লিখতে হবে তা নয়। কর্নেল, গ্রাফিক অর্গানাইজার, ডাবল-এন্ট্রি, এবং শেখার জার্নাল অন্তর্ভুক্ত।"
   },
   "launch_pad": {
     "subtitle": "বেছে নিন আপনার শেখা pathway",
@@ -3987,47 +3987,47 @@
       "html_aria": "HTML source code এর audit"
     },
     "batch": {
-      "drop_text": "টেনে আনুন & ফেলে দিন PDFs here",
-      "browse_files": "Browse ফাইলs",
-      "clear_all": "পরিষ্কার All",
-      "progress_aria": "Batch remediation অগ্রগতি",
-      "stop_aria": "থামান batch remediation",
-      "avg_improvement": "Avg আমিmprovement",
-      "scored_90_plus": "স্কোরd 90+",
-      "new_batch": "নতুন Batch",
+      "drop_text": "এখানে PDF টেনে আনুন",
+      "browse_files": "ফাইল ব্রাউজ করুন",
+      "clear_all": "সব মুছুন",
+      "progress_aria": "ব্যাচ সংশোধন অগ্রগতি",
+      "stop_aria": "ব্যাচ সংশোধন বন্ধ করুন",
+      "avg_improvement": "গড় উন্নতি",
+      "scored_90_plus": "90+ স্কোর",
+      "new_batch": "নতুন ব্যাচ",
       "resume": {
-        "title": "পূর্ববর্তী batch interrupted",
-        "summary": "{done}/{total} ফাইল(s) সম্পূর্ণ করুনd আগে tab বন্ধd.",
-        "remaining": "{n} remaining.",
-        "files_label": "ফাইলs:",
-        "files_more": "+ {n} more",
-        "resume_button": "পুনরায় শুরু Batch",
+        "title": "পূর্ববর্তী ব্যাচ বাধাগ্রস্ত হয়েছিল",
+        "summary": "ট্যাব বন্ধ হওয়ার আগে {done}/{total} ফাইল সম্পন্ন হয়েছে।",
+        "remaining": "{n} বাকি আছে।",
+        "files_label": "ফাইল:",
+        "files_more": "+ আরও {n}",
+        "resume_button": "ব্যাচ পুনরায় শুরু করুন",
         "discard_button": "বাতিল করুন",
-        "toast": "Resuming batch · {done} cached, {remaining} এর process"
+        "toast": "ব্যাচ পুনরায় শুরু হচ্ছে · {done} ক্যাশড, {remaining} প্রক্রিয়াকরণের জন্য"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} এর {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— miনাrity opinion, loআমরাr confidence"
+      "tooltip": "{total} জনের মধ্যে {n} জন নিরীক্ষক চিহ্নিত করেছেন",
+      "unanimous_suffix": " (সর্বসম্মত)",
+      "minority_suffix": " — সংখ্যালঘু মতামত, কম আস্থা"
     },
     "divergence": {
-      "semantic": "Structurally compliant কিন্তু semantically আমরাak — একআমি flagged বিষয়বস্তু quality (alt পাঠ্য, heading meaning, পড়ুনing order) সেই axe-core can't detect",
-      "structural": "Code-স্তর WCAG violations detected — axe-core পাওয়া গেছে machine-চেকable failures একআমি rubric আমরাighted হালকাly"
+      "semantic": "কাঠামোগতভাবে সম্মতিপূর্ণ কিন্তু শব্দার্থগতভাবে দুর্বল — AI কন্টেন্ট মান চিহ্নিত করেছে যা axe-core সনাক্ত করতে পারে না",
+      "structural": "কোড-স্তরের WCAG লঙ্ঘন সনাক্ত করা হয়েছে — axe-core মেশিন-চেকযোগ্য ব্যর্থতা পেয়েছে"
     },
     "tagtree": {
-      "label": "Pre-existing tag গঠন",
-      "tooltip": "এই PDF includes এক PDF/UA-শৈলী tag tree. Auditors আমরাre instructed এর crসম্পাদনা existing গঠন rather than penalize it as missing."
+      "label": "বিদ্যমান ট্যাগ কাঠামো",
+      "tooltip": "এই PDF-এ PDF/UA-স্টাইল ট্যাগ ট্রি রয়েছে। নিরীক্ষকদের বিদ্যমান কাঠামো স্বীকৃতি দিতে নির্দেশ দেওয়া হয়েছিল।"
     },
     "resolution": {
-      "heading": "আমিssue Resolution",
-      "subheading": "Resolved {resolved} এর {total} মূল issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "নতুনly আমিntroduced",
-      "resolved_tip": "আমিssues থেকে মূল audit না longer পাওয়া গেছে মধ্যে verification audit",
-      "persisted_tip": "আমিssues থেকে মূল audit still present পরে fix",
-      "introduced_tip": "নতুন issues সেই did নাt exist আগে fix"
+      "heading": "সমস্যা সমাধান",
+      "subheading": "মূল {total} সমস্যার মধ্যে {resolved}টি সমাধান হয়েছে ({pct}%)",
+      "resolved_label": "সমাধান হয়েছে",
+      "persisted_label": "এখনও বিদ্যমান",
+      "introduced_label": "নতুন চালু হয়েছে",
+      "resolved_tip": "মূল নিরীক্ষায় থাকা সমস্যাগুলি যাচাইকরণ নিরীক্ষায় আর পাওয়া যায়নি",
+      "persisted_tip": "মূল নিরীক্ষায় থাকা সমস্যাগুলি সংশোধনের পরেও বিদ্যমান",
+      "introduced_tip": "সংশোধনের আগে যে নতুন সমস্যাগুলি ছিল না"
     },
     "choose_how": "বেছে নিন how এর process এই PDF:",
     "settings": {

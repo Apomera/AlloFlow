@@ -53,10 +53,10 @@
     "dbq_text": "कागजात-आधारित प्रश्न: विद्यार्थी विश्लेषण गर्नुहोस् primary sources, निर्माण प्रमाण-आधारित arguments, र अभ्यास गर्नुहोस् central सीप को social-studies + ELA मूल्याङ्कन. Generates स्रोत कागजात, scaffolded प्रश्न, र उत्तर keys aligned मा तपाईंको मानक.",
     "quiz_mode_title": "Pick सही क्विज मोड",
     "quiz_mode_text": "छान्नुहोस् के यो क्विज हो का लागि. Exit Ticket checks today’s सिकाइ. Pre-जाँच probes prior knowledge पहिले teaching र surfaces gaps as अवधारणा कार्ड सँग एक one-क्लिक गर्नुहोस् \"Explain मा कक्षा\" AI broadcast. Formative जाँच हो एक छिटो mid-पाठ pulse. Spaced समीक्षा tracks प्रत्येक विद्यार्थी’s cross-सत्र retention सँग एक per-अवधारणा sparkline. प्रत्येक मोड tunes सूचनाहरू, वस्तु-प्रकार mix, र प्रत्यक्ष dashboard layout.",
-    "anchor_chart_title": "Anchor चार्ट",
-    "anchor_chart_text": "उत्पन्न गर्नुहोस् कक्षा-ready Anchor चार्ट त्यो बनाउनुहोस् concepts, शब्दकोश, and procedures stick. A दृश्य reference विद्यार्थी can return to throughout a unit. ### प्यानल विकल्पहरू • **चार्ट Type**: छान्नुहोस् from Concept, शब्दकोश, Process, रणनीति, or Comparison चार्ट. • **शैली**: Hand-drawn marker look, polished छाप्नुहोस् शैली, or kid-मैत्रीपूर्ण comic शैली. • **रङ Palette**: Pick a high-contrast, dyslexia-मैत्रीपूर्ण, or themed रङ scheme. • **Custom निर्देशन**: उल्लेख गर्नुहोस् focal concepts, key शब्दकोश, or रणनीति चरण to highlight. ### चार्ट घटक • **Title Banner**: Eye-catching topic header. • **दृश्य Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-उत्पन्न भयो आइकन reinforcing each idea with dual-coded दृश्य cues. • **उदाहरण & Non-उदाहरण**: Side-by-side प्यानल for concept clarity. ### अन्तरक्रियात्मक सुविधाहरू • **सम्पादन गर्नुहोस् मोड**: Tap any element to rewrite पाठ, swap आइकन, or recolor खण्ड. • **छाप्नुहोस्-Ready**: High-resolution निर्यात गर्नुहोस् sized for posters or 8.5×11 handouts. • **Project मोड**: Fullscreen हेर्नुहोस् for whole-कक्षा निर्देशन. ### Pro सुझाव • उत्पन्न गर्नुहोस् a *रणनीति चार्ट* before a writing unit and a *शब्दकोश चार्ट* before a science unit — keep both on the कक्षा wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent दृश्य anchors विद्यार्थी can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates त्यो teach विद्यार्थी *how* to take notes, not just *what* to लेख्नुहोस्. Pick the structure त्यो matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-स्तम्भ layout with cues, notes, and bottom summary. • **Two-स्तम्भ Notes**: Main idea / विवरण organization for सामग्री-heavy reading. • **T-चार्ट**: तुलना गर्नुहोस्/contrast or pros/cons side-by-side. • **Sketchnotes**: दृश्य note-taking with prompts for आइकन, arrows, and रङ-coding. • **KWL चार्ट**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook अध्याय. ### Generation सुविधाहरू • **Pre-Filled Prompts**: Each template seeded with cues drawn from your स्रोत पाठ. • **प्रश्न Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does यो connect to…?\"). • **शब्दकोश Slots**: Pre-populated key शब्द विद्यार्थी should सुन्नुहोस्/पढ्नुहोस् for. • **Custom निर्देशन**: Target a विशिष्ट cognitive task (synthesis, summary, evaluation). ### छाप्नुहोस् & Digital • **प्रिन्ट योग्य PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: विद्यार्थी type directly into the template for paperless workflows. • **Editable Headings**: शिक्षक tailor स्तम्भ labels and खण्ड titles before sharing. ### Pro सुझाव • Pair *Cornell Notes* with the **Leveled Reader**: विद्यार्थी take notes at their reading स्तर, then प्रयोग गर्नुहोस् the bottom-summary box as a formative-मूल्याङ्कन check. ### UDL Connection • **Action & अभिव्यक्ति**: सहयोग planning and रणनीति development (Guideline 6.2) by giving learners explicit structures for organizing जानकारी."
+    "anchor_chart_title": "एङ्कर चार्ट",
+    "anchor_chart_text": "कक्षाकोठा-तयार एङ्कर चार्ट सिर्जना गर्नुहोस् जसले अवधारणाहरू, शब्दावली, र प्रक्रियाहरूलाई टिकाउँछ। मुख्य विचारहरूको दृश्य सारांश जसलाई विद्यार्थीहरूले बारम्बार सन्दर्भ गर्न सक्छन्।",
+    "note_taking_title": "नोट लिने टेम्प्लेटहरू",
+    "note_taking_text": "संरचित नोट लिने टेम्प्लेटहरू जसले विद्यार्थीहरूलाई *कसरी* नोट लिने भनेर सिकाउँछ, केवल *के* लेख्ने मात्र होइन। कर्नेल, ग्राफिक संगठक, डबल-एन्ट्री, र सिक्ने पत्रिकाहरू समावेश छन्।"
   },
   "launch_pad": {
     "subtitle": "छान्नुहोस् तपाईंको सिकाइ pathway",
@@ -3976,37 +3976,37 @@
       "html_aria": "HTML स्रोत code मा audit"
     },
     "batch": {
-      "drop_text": "तान्नुहोस् & छोड्नुहोस् PDFs here",
-      "browse_files": "Browse फाइल",
-      "clear_all": "Clear सबै",
-      "progress_aria": "Batch remediation प्रगति",
-      "stop_aria": "रोक्नुहोस् batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "नयाँ Batch",
+      "drop_text": "PDF लाई यहाँ तान्नुहोस् र छोड्नुहोस्",
+      "browse_files": "फाइलहरू ब्राउज गर्नुहोस्",
+      "clear_all": "सबै हटाउनुहोस्",
+      "progress_aria": "ब्याच सुधार प्रगति",
+      "stop_aria": "ब्याच सुधार रोक्नुहोस्",
+      "avg_improvement": "औसत सुधार",
+      "scored_90_plus": "९०+ अंक प्राप्त",
+      "new_batch": "नयाँ ब्याच",
       "resume": {
-        "title": "अघिल्लो batch interrupted",
-        "summary": "{done}/{total} फाइल(s) completed पहिले tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "फाइल:",
-        "files_more": "+ {n} थप",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} मा process"
+        "title": "अघिल्लो ब्याच अवरुद्ध भयो",
+        "summary": "ट्याब बन्द हुनुअघि {done}/{total} फाइल(हरू) पूरा भए।",
+        "remaining": "{n} बाँकी।",
+        "files_label": "फाइलहरू:",
+        "files_more": "+ अरू {n}",
+        "resume_button": "ब्याच पुनः सुरु गर्नुहोस्",
+        "discard_button": "त्याग्नुहोस्",
+        "toast": "ब्याच पुनः सुरु हुँदै · {done} क्यास भएको, {remaining} प्रशोधन गर्न बाँकी"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} को {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "{total} मध्ये {n} लेखापरीक्षकले चिन्ह लगाएको",
+      "unanimous_suffix": " (सर्वसम्मत)",
+      "minority_suffix": " — अल्पसंख्यक राय, कम विश्वास"
     },
     "divergence": {
-      "semantic": "Structurally compliant तर semantically weak — AI flagged सामग्री गुणस्तर (alt पाठ, heading meaning, पढाइ order) त्यो axe-core सक्छ't detect",
-      "structural": "Code-स्तर WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "संरचनात्मक रूपमा अनुपालन तर अर्थपूर्ण रूपमा कमजोर — AI ले सामग्रीको गुणस्तर चिन्हित गर्‍यो जुन axe-core ले पत्ता लगाउन सक्दैन",
+      "structural": "कोड-स्तरको WCAG उल्लङ्घन पत्ता लाग्यो — axe-core ले मेसिनद्वारा जाँच गर्न सकिने असफलताहरू भेट्टायो"
     },
     "tagtree": {
-      "label": "Pre-existing tag संरचना",
-      "tooltip": "यो PDF समावेश गर्छ एक PDF/UA-शैली tag tree. Auditors were instructed मा credit existing संरचना rather than penalize it as missing."
+      "label": "पहिले देखि अवस्थित ट्याग संरचना",
+      "tooltip": "यो PDF मा PDF/UA शैलीको ट्याग वृक्ष समावेश छ। लेखापरीक्षकहरूलाई अवस्थित संरचनालाई गुम भएको रूपमा दण्ड दिनुको सट्टा मान्यता दिन निर्देशन दिइएको थियो।"
     },
     "choose_how": "छान्नुहोस् कसरी मा process यो PDF:",
     "settings": {
@@ -4359,14 +4359,14 @@
       "insert_table_title": "Insert पहुँचयोग्य तालिका"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "समस्या समाधान",
+      "subheading": "मूल {total} समस्याहरूमध्ये {resolved} समाधान भयो ({pct}%)",
+      "resolved_label": "समाधान भयो",
+      "persisted_label": "अझै पनि उपस्थित",
+      "introduced_label": "नयाँ ल्याइएको",
+      "resolved_tip": "मूल लेखापरीक्षणका समस्याहरू अब प्रमाणीकरण लेखापरीक्षणमा भेटिएनन्",
+      "persisted_tip": "मूल लेखापरीक्षणका समस्याहरू सुधारपछि पनि उपस्थित छन्",
+      "introduced_tip": "सुधार अघि नभएका नयाँ समस्याहरू"
     }
   },
   "concept_sort": {
