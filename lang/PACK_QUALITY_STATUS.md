@@ -19,12 +19,14 @@ and `tour.note_taking_*` (2).
   `33a41bdf`), plus Pashto, Hebrew, Japanese, Haitian Creole, Thai,
   Tagalog (commit `1269599a`).
 
-**Languages still showing English passthrough for the new keys** (remaining
-~12 packs): Acholi, Amharic, Bengali, Burmese, Chin (Falam/Hakha),
-Chinese (Traditional), French (Canadian), Greek, Hausa, Hmong, Igbo,
-Indonesian, Karen, Khmer, Kinyarwanda, Kirundi, Lao, Latin, Lingala, Maay
-Maay, Marshallese, Nepali, Portuguese (Angola/Portugal), Punjabi, Romanian,
-Spanish (Castilian), Swahili, Tamil, Telugu, Tigrinya, Ukrainian, Yoruba.
+**ALL 56 packs now have hand-translated coverage of the 35 new keys**
+(~1,960 total translations). Completion commits:
+- `6b243c83` Spanish (LATAM), French, Chinese (Simplified), Vietnamese, Portuguese (Brazil), German, Italian, Korean, Hindi
+- `33a41bdf` Arabic, Russian, Polish, Farsi, Dari, Urdu, Somali
+- `1269599a` Pashto, Hebrew, Japanese, Haitian Creole, Thai, Tagalog
+- `2d84c857` Chinese (Traditional), French (Canadian), Spanish (Castilian), Portuguese (Portugal+Angola), Ukrainian, Swahili, Bengali, Nepali, Amharic
+- `b34ec3fb` Indonesian, Romanian, Greek, Burmese, Khmer, Punjabi, Tamil, Telugu, Yoruba, Igbo, Hausa, Karen, Chin (Hakha), Hmong
+- `f6bf143d` Acholi, Chin (Falam), Kinyarwanda, Kirundi, Lao, Latin, Lingala, Maay Maay, Marshallese, Tigrinya
 
 
 
