@@ -103,15 +103,19 @@ legitimate Japanese density, similar to Chinese compactness.
 abbreviated (e.g., `tour.analysis_text` 53 chars vs 1173 source), but
 those reflect intentional content trimming.
 
-## Hebrew / Arabic tour sections — content dropped
+## Hebrew / Arabic tour sections — RESTORED via hand translation
 
-23 long `tour.*` keys per pack have the first paragraph well-translated
-but lost all `### Section` structured content. Examples:
-- `tour.input_panel_text`: source 1,483 chars → Hebrew 139 chars
-- `tour.analysis_text`: source 1,173 chars → Arabic 136 chars
+**Resolved 2026-05-26** (commits b779046b, 061f0174, 642397de, a3b50608):
+All 23 long `tour.*` keys hand-translated to proper Hebrew and Arabic
+with full `### Section` structured content restored. 46 total translations
+across both packs.
 
-This would require ~46,000 chars of hand-translated structured Hebrew/
-Arabic content. Not auto-fixable; needs human translator.
+Keys restored:
+input_panel_text, analysis_text, dashboard_text, actions_text, history_text,
+adventure_text, quiz_text, wordsounds_text, scaffolds_text, glossary_text,
+timeline_text, utils_text, outline_text, simplified_text, persona_text,
+concept_sort_text, brainstorm_text, math_text, fullpack_text, visual_text,
+lesson_plan_text, alignment_text, faq_text.
 
 ## Cross-pack quality summary
 
@@ -123,6 +127,6 @@ Arabic content. Not auto-fixable; needs human translator.
 | Urdu | 3 rounds of Arabic→Urdu cleanup, common UI clean |
 | Pashto | 3 rounds of Arabic→Pashto cleanup, common UI clean |
 | Japanese | Unique tooltips, naturally concise — no fix needed |
-| Hebrew / Arabic | Tour sections dropped — needs human translator |
+| Hebrew / Arabic | Tour sections restored — all 23 long tour keys hand-translated |
 | Chinese (Simp/Trad) | ✓ Legitimate language compactness |
 | All other ~46 packs | ✓ Verified clean — only `stem.galaxy.the` empty (legitimate) |
