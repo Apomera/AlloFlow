@@ -22,10 +22,26 @@ alerts, ui_common, alts, a11y.draggable_item) since session 3.
   Cancel, Add, Done, Edit, Reset, Apply, Processing, etc.), key tooltips
   (save_close, delete, voice_note), and critical alerts.
 
-Remaining work: hand-translate the rest of the 198 keys across other
-languages (currently English passthrough). Most-impactful next targets:
-Italian, Korean, Hindi, Arabic, Russian, Polish, Farsi, Dari, Urdu, Somali,
-Hebrew, Pashto, Haitian Creole, Thai.
+**Continued in session 4:**
+- Hand-translated all 51 `alerts.*` (22) + `confirms.*` (29) across the 6
+  major languages (commit `46bb3e8e`): Spanish (LATAM), French, Chinese
+  (Simplified), Vietnamese, Portuguese (Brazil), German. Total 306 more
+  translations.
+
+**Coverage status for the 6 major languages:**
+| Section | Spanish/French/Chinese/Vietnamese/Portuguese/German |
+|---|---|
+| ui_common (45) | ✓ done |
+| alerts (22) | ✓ done |
+| confirms (29) | ✓ done |
+| top tooltips (8) | ✓ done |
+| Remaining tooltips (~99) | ⏳ English passthrough |
+| placeholders (25) | ⏳ English passthrough |
+| alts (7) | ⏳ English passthrough |
+| a11y.draggable_item | ✓ done |
+
+**Other 50 packs:** all 198 new keys still on English passthrough; need
+hand-translation in future sessions.
 
 
 
