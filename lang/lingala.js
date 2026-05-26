@@ -53,10 +53,10 @@
     "dbq_text": "mokanda-Based motuna: moyekoli tálá malamu primary sources, kotonga elembo-based arguments, na salela central mayele ya social-studies + ELA momekano. Generates esika ya kobimisa mokanda, scaffolded motuna, na eyano keys aligned na yo mibeko.",
     "quiz_mode_title": "Pick sembo momekano lolenge",
     "quiz_mode_text": "Poná nini oyo momekano ezali mpo na. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge before teaching na surfaces gaps as likanisi karte na one-finá \"Explain na kelasi\" AI broadcast. Formative Check ezali noki mid-liteya pulse. Spaced Review tracks mokó mokó moyekoli’s cross-tángo retention na per-likanisi sparkline. mokó mokó lolenge tunes maloba, eloko-type mix, na na sembo dashboard layout.",
-    "anchor_chart_title": "Anchor tableau",
-    "anchor_chart_text": "Sala kelasi-ready Anchor tableau yango salá concepts, maloba, and procedures stick. A elilingi reference moyekoli can return to throughout a unit. ### lopangu baponi • **tableau Type**: Poná from Concept, maloba, Process, stratégie, or Comparison tableau. • **lolenge**: Hand-drawn marker look, polished bimisá lolenge, or kid-friendly comic lolenge. • **langi Palette**: Pick a high-contrast, dyslexia-friendly, or themed langi scheme. • **Custom malako**: Lakisá polélé focal concepts, key maloba, or stratégie litambe to highlight. ### tableau eteni • **Title Banner**: Eye-catching topic header. • **elilingi Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-esalemi elembo reinforcing each idea with dual-coded elilingi cues. • **ndakisa & Non-ndakisa**: Side-by-side lopangu for concept clarity. ### Interactive misala • **Bongisá lolenge**: Tap any element to rewrite makomi, swap elembo, or recolor eteni. • **Bimisá-Ready**: High-resolution bimisá sized for posters or 8.5×11 handouts. • **Project lolenge**: Fullscreen talá for whole-kelasi malako. ### Pro toli • Sala a *stratégie tableau* before a writing unit and a *maloba tableau* before a science unit — keep both on the kelasi wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent elilingi anchors moyekoli can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates yango teach moyekoli *how* to take notes, not just *what* to komá. Pick the structure yango matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-colonne layout with cues, notes, and bottom summary. • **Two-colonne Notes**: Main idea / mike-mike organization for mateya-heavy reading. • **T-tableau**: Kokanisa/contrast or pros/cons side-by-side. • **Sketchnotes**: elilingi note-taking with prompts for elembo, arrows, and langi-coding. • **KWL tableau**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook mokapo. ### Generation misala • **Pre-Filled Prompts**: Each template seeded with cues drawn from your esika ya kobimisa makomi. • **motuna Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does oyo connect to…?\"). • **maloba Slots**: Pre-populated key liloba moyekoli should yoká/tángá for. • **Custom malako**: Target a oyo cognitive task (synthesis, summary, evaluation). ### Bimisá & Digital • **PDF ya kobimisa**: Clean handout layout with generous writing space. • **Digital Fillable**: moyekoli type directly into the template for paperless workflows. • **Editable Headings**: molakisi tailor colonne labels and eteni titles before sharing. ### Pro toli • Pair *Cornell Notes* with the **Leveled Reader**: moyekoli take notes at their reading niveau, then salelá the bottom-summary box as a formative-momekano check. ### UDL Connection • **Action & Expression**: lisalisi planning and stratégie development (Guideline 6.2) by giving learners explicit structures for organizing sango."
+    "anchor_chart_title": "Bilembo ya Lemba",
+    "anchor_chart_text": "Sala Bilembo ya Lemba ya kosalela na kelasi oyo esimbisaka makanisi, maloba, mpe ndenge ya kosala.",
+    "note_taking_title": "Bilembo ya kokoma",
+    "note_taking_text": "Bilembo ya kokoma oyo eteyaka bana ya kelasi *ndenge nini* ya kokoma, te kaka *nini* ya kokoma."
   },
   "launch_pad": {
     "subtitle": "Poná yo learning pathway",
@@ -3977,47 +3977,47 @@
       "html_aria": "HTML esika ya kobimisa code na audit"
     },
     "batch": {
-      "drop_text": "Benda & tika PDFs here",
-      "browse_files": "Browse fichier",
-      "clear_all": "Clear nyonso",
-      "progress_aria": "Batch remediation bokoli",
-      "stop_aria": "Tikalá batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "ya sika Batch",
+      "drop_text": "Benda mpe tika PDFs awa",
+      "browse_files": "Tala bafile",
+      "clear_all": "Longola nyonso",
+      "progress_aria": "Bokoli ya kobongisa lisanga",
+      "stop_aria": "Telemisa kobongisa lisanga",
+      "avg_improvement": "Bokoli ya kati",
+      "scored_90_plus": "Bazwi 90+",
+      "new_batch": "Lisanga ya sika",
       "resume": {
-        "title": "oyo elekaki batch interrupted",
-        "summary": "{done}/{total} fichier(s) completed before tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "fichier:",
-        "files_more": "+ {n} mingi",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} na process"
+        "title": "Lisanga ya liboso elongolama",
+        "summary": "{done}/{total} bafile esilaki liboso ya kokanga tab.",
+        "remaining": "{n} etikali.",
+        "files_label": "Bafile:",
+        "files_more": "+ {n} mosusu",
+        "resume_button": "Lakisa lisanga",
+        "discard_button": "Bwaka",
+        "toast": "Lakisa lisanga · {done} na cache, {remaining} ya kosala"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} ya {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Ezwamaki bilembo na {n} kati na {total} batalami",
+      "unanimous_suffix": " (yoko)",
+      "minority_suffix": " — likanisi ya bato moke, kondima moke"
     },
     "divergence": {
-      "semantic": "Structurally compliant kasi semantically weak — AI flagged mateya quality (alt makomi, heading meaning, reading order) yango axe-core can't detect",
-      "structural": "Code-niveau WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Eyokani na ndenge ya boyokani kasi elemba na ndimbola — AI ezwaki bilembo ya bonzenga ya makambo oyo axe-core akoki kosalela te",
+      "structural": "Mbeba ya WCAG na nzela ya code emonanaki — axe-core ezwaki misala ya mabe oyo mashini ekoki kondima"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "Oyo PDF ezali na PDF/UA-lolenge tag tree. Auditors were instructed na credit existing structure rather than penalize it as missing."
+      "label": "Bopangani ya bilembo oyo ezali liboso",
+      "tooltip": "PDF oyo ezwaki bilembo na ndenge ya PDF/UA. Batalami bapesami mibeko ya komonisa bopangani oyo ezali."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} ya {total} ya liboso issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues uta ya liboso audit no longer found na verification audit",
-      "persisted_tip": "Issues uta ya liboso audit still present after fix",
-      "introduced_tip": "ya sika issues yango did te exist before fix"
+      "heading": "Bosilisi ya mikakatano",
+      "subheading": "Esilisamaki {resolved} kati na {total} mikakatano ya ebandeli ({pct}%)",
+      "resolved_label": "Esilisamaki",
+      "persisted_label": "Ezali kaka",
+      "introduced_label": "Bisika bya sika",
+      "resolved_tip": "Mikakatano ya audit ya ebandeli oyo ezwami lisusu te na audit ya kondima",
+      "persisted_tip": "Mikakatano ya audit ya ebandeli ezali kaka nsima ya kobongisa",
+      "introduced_tip": "Mikakatano ya sika oyo ezalaki te liboso ya kobongisa"
     },
     "report": {
       "download_title": "Kitisá audit lapolo",

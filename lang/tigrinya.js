@@ -53,10 +53,10 @@
     "dbq_text": "ሰነድ-መሰረት ሕቶ: ተምሃራይ ኣጻሪ primary sources, ሃንፅ መርትዖ-መሰረት arguments, ከምኡውን ተለማመድ central ክእለት ናይ social-studies + ELA ግምገማ. Generates ምንጪ ሰነድ, scaffolded ሕቶ, ከምኡውን መልሲ keys aligned ናብ ናትካ መዐቀኒ.",
     "quiz_mode_title": "Pick ቅኑዕ ፈተና ኣገባብ",
     "quiz_mode_text": "ምረጽ እንታይ እዚ ፈተና እዩ ንዓ. Exit Ticket checks today’s ምምሃር. Pre-ምርመራ probes prior knowledge ቅድሚ teaching ከምኡውን surfaces gaps as ሓሳብ ካርድ ምስ ሓደ one-ጠውቕ \"Explain ናብ ክፍሊ\" AI broadcast. Formative ምርመራ እዩ ሓደ ቅልጡፍ mid-ትምህርቲ pulse. Spaced ምግምጋም tracks ነፍሲወከፍ ተምሃራይ’s cross-ኣኼባ retention ምስ ሓደ per-ሓሳብ sparkline. ነፍሲወከፍ ኣገባብ tunes ጥሙዕ, ኣቕሓ-ዓይነት mix, ከምኡውን ብቐጥታ dashboard layout.",
-    "anchor_chart_title": "Anchor ሰንጠረጅ",
-    "anchor_chart_text": "ፍጠር ክፍሊ-ready Anchor ሰንጠረጅ እቲ ግበር concepts, ቃላት, and procedures stick. A ምርኢት reference ተምሃራይ can return to throughout a unit. ### ፓነል ኣማራጺታት • **ሰንጠረጅ Type**: ምረጽ from Concept, ቃላት, Process, ስትራተጂ, or Comparison ሰንጠረጅ. • **ኣገባብ**: Hand-drawn marker look, polished ሕተም ኣገባብ, or kid-ምስ ዝሰማማዕ comic ኣገባብ. • **ሕብሪ Palette**: Pick a high-contrast, dyslexia-ምስ ዝሰማማዕ, or themed ሕብሪ scheme. • **Custom መምርሒ**: ግለጽ focal concepts, key ቃላት, or ስትራተጂ ስጉምቲ to highlight. ### ሰንጠረጅ ኣካል • **Title Banner**: Eye-catching topic header. • **ምርኢት Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-ተፈጢሩ ኣይኮን reinforcing each idea with dual-coded ምርኢት cues. • **ኣብነት & Non-ኣብነት**: Side-by-side ፓነል for concept clarity. ### ምትሕውዋስ ባህርያት • **ኣርም ኣገባብ**: Tap any element to rewrite ጽሑፍ, swap ኣይኮን, or recolor ክፋል. • **ሕተም-Ready**: High-resolution ላእኽ sized for posters or 8.5×11 handouts. • **Project ኣገባብ**: Fullscreen ርአ for whole-ክፍሊ መምርሒ. ### Pro ሓሳብ • ፍጠር a *ስትራተጂ ሰንጠረጅ* before a writing unit and a *ቃላት ሰንጠረጅ* before a science unit — keep both on the ክፍሊ wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent ምርኢት anchors ተምሃራይ can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates እቲ teach ተምሃራይ *how* to take notes, not just *what* to ጽሓፍ. Pick the structure እቲ matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-ዓምዲ layout with cues, notes, and bottom summary. • **Two-ዓምዲ Notes**: Main idea / ዝርዝር organization for ትሕዝቶ-heavy reading. • **T-ሰንጠረጅ**: ኣዛምድ/contrast or pros/cons side-by-side. • **Sketchnotes**: ምርኢት note-taking with prompts for ኣይኮን, arrows, and ሕብሪ-coding. • **KWL ሰንጠረጅ**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook ምዕራፍ. ### Generation ባህርያት • **Pre-Filled Prompts**: Each template seeded with cues drawn from your ምንጪ ጽሑፍ. • **ሕቶ Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does እዚ connect to…?\"). • **ቃላት Slots**: Pre-populated key ቃል ተምሃራይ should ስማዕ/ኣንብብ for. • **Custom መምርሒ**: Target a ፍሉይ cognitive task (synthesis, summary, evaluation). ### ሕተም & Digital • **ዝሕተም PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: ተምሃራይ type directly into the template for paperless workflows. • **Editable Headings**: መምህር tailor ዓምዲ labels and ክፋል titles before sharing. ### Pro ሓሳብ • Pair *Cornell Notes* with the **Leveled Reader**: ተምሃራይ take notes at their reading ደረጃ, then ተጠቐም the bottom-summary box as a formative-ግምገማ check. ### UDL Connection • **Action & መግለጺ**: ደገፍ planning and ስትራተጂ development (Guideline 6.2) by giving learners explicit structures for organizing ሓበሬታ."
+    "anchor_chart_title": "መልሕቕ ግራፋት",
+    "anchor_chart_text": "ሓሳባት፣ ቃላት ከምኡ’ውን ኣገባባት ኣብ ኣእምሮ ዝሕዝሞ ንክፍለ ትምህርቲ ድሉው መልሕቕ ግራፋት ፍጠር።",
+    "note_taking_title": "ናይ ምስፋር መልክዕ ሞዴላት",
+    "note_taking_text": "ተመሃሮ ብኸምይ ኣገባብ ኖት ከም ዝስፍሩ ዝምህሩ ቅርጺ ዘለዎም ሞዴላት፣ እንታይ ጥራይ ኣይኮኑን ዝኽተቡ።"
   },
   "launch_pad": {
     "subtitle": "ምረጽ ናትካ ምምሃር pathway",
@@ -3977,47 +3977,47 @@
       "html_aria": "HTML ምንጪ code ናብ audit"
     },
     "batch": {
-      "drop_text": "ስሓብ & ኣውድቕ PDFs here",
-      "browse_files": "Browse ፋይል",
-      "clear_all": "Clear ኩሉ",
-      "progress_aria": "Batch remediation ዕቤት",
-      "stop_aria": "ደው በል batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "ሓድሽ Batch",
+      "drop_text": "PDFs ኣብዚ ጎቲትካ ኣቐምጥ",
+      "browse_files": "ፋይላት ድለ",
+      "clear_all": "ኩሉ ኣጽርይ",
+      "progress_aria": "ናይ ጥቕል ምዕራይ ዕቤት",
+      "stop_aria": "ናይ ጥቕል ምዕራይ ኣቋርጽ",
+      "avg_improvement": "ኣማእታይ ምምሕያሽ",
+      "scored_90_plus": "90+ ኣምጺኦም",
+      "new_batch": "ሓድሽ ጥቕል",
       "resume": {
-        "title": "ዝሓለፈ batch interrupted",
-        "summary": "{done}/{total} ፋይል(s) completed ቅድሚ tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "ፋይል:",
-        "files_more": "+ {n} ተወሳኺ",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} ናብ process"
+        "title": "ናይ ቅድሚ ሕጂ ጥቕል ተቋሪጹ",
+        "summary": "ታብ ቅድሚ ምዕጻው {done}/{total} ፋይል(ት) ተወዲኦም።",
+        "remaining": "{n} ተሪፉ።",
+        "files_label": "ፋይላት:",
+        "files_more": "+ ካልእ {n}",
+        "resume_button": "ጥቕል ቀጽል",
+        "discard_button": "ጣጥ",
+        "toast": "ጥቕል ይቕጽል · {done} ኣብ መንኮብ፣ {remaining} ንምስራሕ"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} ናይ {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "ካብ {total} ኦዲተራት ብ{n} ምልክት ተኸቲሙ",
+      "unanimous_suffix": " (ብሙሉእነት)",
+      "minority_suffix": " — ናይ ውሕዳት ሓሳብ፣ ዝተሓተ እምነት"
     },
     "divergence": {
-      "semantic": "Structurally compliant ግን semantically weak — AI flagged ትሕዝቶ ጽሬት (alt ጽሑፍ, heading meaning, ምንባብ order) እቲ axe-core ይኽእል't detect",
-      "structural": "Code-ደረጃ WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "ኣብ ቅርጺ ይሰማማዕ እምበር ኣብ ትርጉም ድኹም — AI ኣክስ-ኮር ክፈልጦ ዘይክእል ናይ ትሕዝቶ ጽፈት ምልክት ኣቐሚጡ",
+      "structural": "ናይ ኮድ ደረጃ WCAG ጥሕሰት ተራእዩ — axe-core ብማሺን ክፈትሽ ዝኽእል ጥፍኣት ኣረኪቡ"
     },
     "tagtree": {
-      "label": "Pre-existing tag ቅርጺ",
-      "tooltip": "እዚ PDF የጠቓልል ሓደ PDF/UA-ኣገባብ tag tree. Auditors were instructed ናብ credit existing ቅርጺ rather than penalize it as missing."
+      "label": "ቅድሚ ሕጂ ዝነበረ ምልክት ቅርጺ",
+      "tooltip": "እዚ PDF ብ PDF/UA ዓይነት ናይ ምልክት ኦም ኣሎ። ኦዲተራት ናይቲ ዘሎ ቅርጺ ክፈልጡ ተኣዚዞም።"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} ናይ {total} ኦርጅናል issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues ካብ ኦርጅናል audit no ዝነውሐ found ኣብ verification audit",
-      "persisted_tip": "Issues ካብ ኦርጅናል audit still present ድሕሪ fix",
-      "introduced_tip": "ሓድሽ issues እቲ did ኣይኮነን exist ቅድሚ fix"
+      "heading": "ጸገም ምፍታሕ",
+      "subheading": "ካብ {total} መሰረታዊ ጸገማት {resolved} ተፈቲሖም ({pct}%)",
+      "resolved_label": "ተፈቲሖም",
+      "persisted_label": "ጌና ኣለዉ",
+      "introduced_label": "ሓደሽቲ ኣተኹም",
+      "resolved_tip": "ካብ መጀመርታ ምክትታል ጸገማት ኣብ ምጽራይ ምክትታል ኣይተረኽቡን",
+      "persisted_tip": "ካብ መጀመርታ ምክትታል ጸገማት ድሕሪ ምትዕርራይ ጌና ኣለዉ",
+      "introduced_tip": "ቅድሚ ምትዕርራይ ዘይነበሩ ሓደሽቲ ጸገማት"
     },
     "choose_how": "ምረጽ ብኸመይ ናብ process እዚ PDF:",
     "settings": {

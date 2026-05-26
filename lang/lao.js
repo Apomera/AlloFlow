@@ -3722,10 +3722,10 @@
     "dbq_text": "Document-Based Questions: students analyze primary sources, build evidence-based arguments, and practice the central skill of social-studies + ELA assessments. Generates source documents, scaffolded questions, and answer keys aligned to your standards.",
     "quiz_mode_title": "Pick the right quiz mode",
     "quiz_mode_text": "Choose what this quiz is for. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge before teaching and surfaces gaps as concept cards with a one-click \"Explain to class\" AI broadcast. Formative Check is a quick mid-lesson pulse. Spaced Review tracks each student’s cross-session retention with a per-concept sparkline. Each mode tunes prompts, item-type mix, and the live dashboard layout.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate classroom-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference students can return to throughout a unit.\n### Panel Options\n• **Chart Type**: Choose from Concept, Vocabulary, Process, Strategy, or Comparison charts.\n• **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style.\n• **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme.\n• **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight.\n### Chart Components\n• **Title Banner**: Eye-catching topic header.\n• **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading.\n• **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues.\n• **Examples & Non-Examples**: Side-by-side panels for concept clarity.\n### Interactive Features\n• **Edit Mode**: Tap any element to rewrite text, swap icons, or recolor sections.\n• **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts.\n• **Project Mode**: Fullscreen view for whole-class instruction.\n### Pro Tip\n• Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the classroom wall for the whole arc.\n### UDL Connection\n• **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors students can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach students *how* to take notes, not just *what* to write. Pick the structure that matches the cognitive task.\n### Template Types\n• **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary.\n• **Two-Column Notes**: Main idea / details organization for content-heavy reading.\n• **T-Chart**: Compare/contrast or pros/cons side-by-side.\n• **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding.\n• **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading.\n• **Outline Notes**: Hierarchical structure for lectures or textbook chapters.\n### Generation Features\n• **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text.\n• **Question Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\").\n• **Vocabulary Slots**: Pre-populated key terms students should listen/read for.\n• **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation).\n### Print & Digital\n• **Printable PDF**: Clean handout layout with generous writing space.\n• **Digital Fillable**: Students type directly into the template for paperless workflows.\n• **Editable Headings**: Teachers tailor column labels and section titles before sharing.\n### Pro Tip\n• Pair *Cornell Notes* with the **Leveled Reader**: students take notes at their reading level, then use the bottom-summary box as a formative-assessment check.\n### UDL Connection\n• **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "ແຜນຜັງສະມໍ",
+    "anchor_chart_text": "ສ້າງແຜນຜັງສະມໍທີ່ພ້ອມສຳລັບຫ້ອງຮຽນເຊິ່ງເຮັດໃຫ້ແນວຄິດ, ຄຳສັບ, ແລະຂັ້ນຕອນຕິດ.",
+    "note_taking_title": "ແມ່ແບບການຈົດບັນທຶກ",
+    "note_taking_text": "ແມ່ແບບການຈົດບັນທຶກທີ່ມີໂຄງສ້າງເຊິ່ງສອນນັກຮຽນວ່າ *ວິທີ* ຈົດບັນທຶກ, ບໍ່ໃຊ່ພຽງແຕ່ *ສິ່ງທີ່* ຈະຂຽນ."
   },
   "launch_pad": {
     "subtitle": "Choose your learning pathway",
@@ -5222,47 +5222,47 @@
       "html_aria": "HTML source code to audit"
     },
     "batch": {
-      "drop_text": "Drag & drop PDFs here",
-      "browse_files": "Browse Files",
-      "clear_all": "Clear All",
-      "progress_aria": "Batch remediation progress",
-      "stop_aria": "Stop batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "New Batch",
+      "drop_text": "ລາກ ແລະວາງ PDF ທີ່ນີ້",
+      "browse_files": "ເລືອກໄຟລ໌",
+      "clear_all": "ລ້າງທັງໝົດ",
+      "progress_aria": "ຄວາມຄືບໜ້າຂອງການແກ້ໄຂແບບກຸ່ມ",
+      "stop_aria": "ຢຸດການແກ້ໄຂແບບກຸ່ມ",
+      "avg_improvement": "ການປັບປຸງສະເລ່ຍ",
+      "scored_90_plus": "ໄດ້ຄະແນນ 90+",
+      "new_batch": "ກຸ່ມໃໝ່",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "ກຸ່ມກ່ອນຫນ້ານີ້ຖືກຂັດຂວາງ",
+        "summary": "ໄຟລ໌ {done}/{total} ສຳເລັດກ່ອນແທັບປິດ.",
+        "remaining": "ຍັງເຫລືອ {n}.",
+        "files_label": "ໄຟລ໌:",
+        "files_more": "+ ອີກ {n}",
+        "resume_button": "ສືບຕໍ່ກຸ່ມ",
+        "discard_button": "ຍົກເລີກ",
+        "toast": "ກຳລັງສືບຕໍ່ກຸ່ມ · {done} ໃນແຄຊ, {remaining} ຍັງຕ້ອງປະມວນຜົນ"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": ", minority opinion, lower confidence"
+      "tooltip": "ໝາຍໂດຍ {n} ໃນ {total} ຜູ້ກວດສອບ",
+      "unanimous_suffix": " (ເຫັນດີເປັນເອກກະພາບ)",
+      "minority_suffix": " — ຄວາມຄິດເຫັນຂອງຄົນສ່ວນໜ້ອຍ, ຄວາມເຊື່ອໝັ້ນຕ່ຳ"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak, AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected, axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "ສອດຄ່ອງດ້ານໂຄງສ້າງແຕ່ອ່ອນແອດ້ານຄວາມໝາຍ — AI ໄດ້ໝາຍຄຸນນະພາບເນື້ອຫາທີ່ axe-core ບໍ່ສາມາດກວດພົບ",
+      "structural": "ກວດພົບການລະເມີດ WCAG ໃນລະດັບລະຫັດ — axe-core ພົບຄວາມລົ້ມເຫລວທີ່ສາມາດກວດສອບໂດຍເຄື່ອງຈັກ"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "ໂຄງສ້າງປ້າຍກຳກັບທີ່ມີຢູ່ກ່ອນແລ້ວ",
+      "tooltip": "PDF ນີ້ປະກອບມີຕົ້ນໄມ້ປ້າຍກຳກັບແບບ PDF/UA. ຜູ້ກວດສອບໄດ້ຮັບການແນະນຳໃຫ້ຮັບຮູ້ໂຄງສ້າງທີ່ມີຢູ່."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "ການແກ້ໄຂບັນຫາ",
+      "subheading": "ແກ້ໄຂ {resolved} ຈາກ {total} ບັນຫາຕົ້ນສະບັບ ({pct}%)",
+      "resolved_label": "ແກ້ໄຂແລ້ວ",
+      "persisted_label": "ຍັງມີຢູ່",
+      "introduced_label": "ໃໝ່ທີ່ນຳສະເໜີ",
+      "resolved_tip": "ບັນຫາຈາກການກວດສອບຕົ້ນສະບັບທີ່ບໍ່ພົບໃນການກວດສອບການກວດສອບ",
+      "persisted_tip": "ບັນຫາຈາກການກວດສອບຕົ້ນສະບັບຍັງມີຢູ່ຫລັງຈາກການແກ້ໄຂ",
+      "introduced_tip": "ບັນຫາໃໝ່ທີ່ບໍ່ມີຢູ່ກ່ອນການແກ້ໄຂ"
     },
     "report": {
       "download_title": "Download audit report",

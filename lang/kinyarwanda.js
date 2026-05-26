@@ -53,10 +53,10 @@
     "dbq_text": "Document-Based Questions: abanyeshuri basesengura primary sources, bubaka evidence-based arguments, no kwitoza ubuhanga nyamukuru bwa social-studies + ELA assessments. Ikora source documents, scaffolded questions, n'imfunguzo z'ibisubizo zihujwe n'amahame yawe.",
     "quiz_mode_title": "Hitamo quiz mode ikwiye",
     "quiz_mode_text": "Hitamo icyo iyi quiz iri ku. Exit Ticket igenzura kwiga kw'uyu munsi. Pre-Check isuzuma ubumenyi bwabanjirije mbere yo kwigisha kandi igaragaza ibyaburaga nk'concept cards hamwe na one-click \"Explain to class\" AI broadcast. Formative Check ni quick mid-lesson pulse. Spaced Review ikurikirana cross-session retention ya buri munyeshuri hamwe na per-concept sparkline. Buri mode ihuza prompts, item-type mix, na live dashboard layout.",
-    "anchor_chart_title": "Anchor ishusho",
-    "anchor_chart_text": "Kora ishuri-ready Anchor ishusho icyo kora concepts, amagambo, and procedures stick. A ibigaragara reference umunyeshuri can return to throughout a unit. ### urubaho amahitamo • **ishusho Type**: Hitamo from Concept, amagambo, Process, ingamba, or Comparison ishusho. • **imiterere**: Hand-drawn marker look, polished capa imiterere, or kid-friendly comic imiterere. • **ibara Palette**: Pick a high-contrast, dyslexia-friendly, or themed ibara scheme. • **Custom amabwiriza**: Sobanura focal concepts, key amagambo, or ingamba intambwe to highlight. ### ishusho igice • **Title Banner**: Eye-catching topic header. • **ibigaragara Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-byakozwe ikirango reinforcing each idea with dual-coded ibigaragara cues. • **urugero & Non-urugero**: Side-by-side urubaho for concept clarity. ### Interactive ibiranga • **Hindura uburyo**: Tap any element to rewrite inyandiko, swap ikirango, or recolor igice. • **Capa-Ready**: High-resolution ohereza hanze sized for posters or 8.5×11 handouts. • **Project uburyo**: Fullscreen reba for whole-ishuri amabwiriza. ### Pro inama • Kora a *ingamba ishusho* before a writing unit and a *amagambo ishusho* before a science unit — keep both on the ishuri wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent ibigaragara anchors umunyeshuri can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates icyo teach umunyeshuri *how* to take notes, not just *what* to andika. Pick the structure icyo matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-inkingi layout with cues, notes, and bottom summary. • **Two-inkingi Notes**: Main idea / ibisobanuro organization for ibirimo-heavy reading. • **T-ishusho**: Gereranya/contrast or pros/cons side-by-side. • **Sketchnotes**: ibigaragara note-taking with prompts for ikirango, arrows, and ibara-coding. • **KWL ishusho**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook umutwe. ### Generation ibiranga • **Pre-Filled Prompts**: Each template seeded with cues drawn from your inkomoko inyandiko. • **ikibazo Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does iki connect to…?\"). • **amagambo Slots**: Pre-populated key ijambo umunyeshuri should tega amatwi/soma for. • **Custom amabwiriza**: Target a cyihariye cognitive task (synthesis, summary, evaluation). ### Capa & Digital • **PDF ishobora gucapwa**: Clean handout layout with generous writing space. • **Digital Fillable**: umunyeshuri type directly into the template for paperless workflows. • **Editable Headings**: umwarimu tailor inkingi labels and igice titles before sharing. ### Pro inama • Pair *Cornell Notes* with the **Leveled Reader**: umunyeshuri take notes at their reading urwego, then koresha the bottom-summary box as a formative-isuzuma check. ### UDL Connection • **Action & Expression**: ubufasha planning and ingamba development (Guideline 6.2) by giving learners explicit structures for organizing amakuru."
+    "anchor_chart_title": "Ibishushanyo mbonera",
+    "anchor_chart_text": "Kora ibishushanyo mbonera byiteguye ishuri bituma ibitekerezo, amagambo n’inzira zikomeza.",
+    "note_taking_title": "Inyandiko zandika ibyiciro",
+    "note_taking_text": "Inyandiko zandika ibyiciro zigafasha abanyeshuri *uburyo* bwo kwandika, ntabwo gusa *ibyo* kwandika."
   },
   "launch_pad": {
     "subtitle": "Hitamo inzira yawe yo kwiga",
@@ -3977,47 +3977,47 @@
       "html_aria": "HTML source code yo gukora audit"
     },
     "batch": {
-      "drop_text": "Kurura & shyira PDFs hano",
-      "browse_files": "Reba Idosiye",
-      "clear_all": "Sobura Byose",
-      "progress_aria": "Iterambere rya batch remediation",
-      "stop_aria": "Hagarika batch remediation",
-      "avg_improvement": "Kunoza kw'Urugero",
-      "scored_90_plus": "Byabonye 90+",
-      "new_batch": "Batch Nshya",
+      "drop_text": "Kurura kandi urekure PDF hano",
+      "browse_files": "Reba dosiye",
+      "clear_all": "Siba byose",
+      "progress_aria": "Iterambere ryo gukosora ku gice",
+      "stop_aria": "Hagarika gukosora ku gice",
+      "avg_improvement": "Iterambere risanzwe",
+      "scored_90_plus": "Bakuye 90+",
+      "new_batch": "Igice gishya",
       "resume": {
-        "title": "Batch yabanjirije yarahagaritswe",
-        "summary": "{done}/{total} idosiye zarangiye mbere y'uko tab ifunga.",
-        "remaining": "{n} zisigaye.",
-        "files_label": "Idosiye:",
-        "files_more": "+ {n} zindi",
-        "resume_button": "Komeza Batch",
-        "discard_button": "Vanaho",
-        "toast": "Gukomeza batch · {done} mu cache, {remaining} zo gukora"
+        "title": "Igice cyahise cyahagaritswe",
+        "summary": "{done}/{total} dosiye zarangiye mbere yo gufunga tab.",
+        "remaining": "{n} isigaye.",
+        "files_label": "Dosiye:",
+        "files_more": "+ {n} byinshi",
+        "resume_button": "Komeza Igice",
+        "discard_button": "Reka",
+        "toast": "Gukomeza igice · {done} mu bubiko, {remaining} bigomba gutunganywa"
       }
     },
     "agreement": {
-      "tooltip": "Yashyizweho flag na {n} muri {total} y'auditors",
-      "unanimous_suffix": " (bose bemeranya)",
-      "minority_suffix": " — igitekerezo cy'abake, kwizera kuke"
+      "tooltip": "Bashyize ikimenyetso na {n} kuri {total} bagenzuzi",
+      "unanimous_suffix": " (mu bumwe)",
+      "minority_suffix": " — igitekerezo cy’abake, kwizera bike"
     },
     "divergence": {
-      "semantic": "Bihuje ku miterere ariko bidasobanutse — AI yashyizeho flag ku bwiza bw'ibikubiyemo (alt text, igisobanuro cy'imitwe, urutonde rwo gusoma) axe-core itamenya",
-      "structural": "WCAG violations ku rwego rwa code zabonetse — axe-core yabonye machine-checkable failures rubric ya AI yangije buke"
+      "semantic": "Bihuje n’imiterere ariko bidakomeye mu nsanganyamatsiko — AI yashyize ikimenyetso ku bwiza bw’ibikubiyemo axe-core idashobora kumenya",
+      "structural": "Habonetse ihinduka rya WCAG ku rwego rwa kode — axe-core yabonye ibitageze imashini ishobora kugenzura"
     },
     "tagtree": {
-      "label": "Tag structure yabanjirije",
-      "tooltip": "Iyi PDF irimo tag tree ya PDF/UA-style. Auditors basabwe gushima imiterere ihari aho kuyihana nk'ibura."
+      "label": "Imiterere ya tag isanzwe ibaho",
+      "tooltip": "Iyi PDF irimo igiti cya tag mu buryo bwa PDF/UA. Abagenzuzi bahawe ubwoba bwo kwemera imiterere ihari."
     },
     "resolution": {
-      "heading": "Gukemura Ibibazo",
-      "subheading": "Byakemuwe {resolved} muri {total} y'ibibazo by'umwimerere ({pct}%)",
+      "heading": "Gukemura ikibazo",
+      "subheading": "Bakemuye {resolved} kuri {total} bibazo by’umwimerere ({pct}%)",
       "resolved_label": "Byakemuwe",
-      "persisted_label": "Biracyahari",
-      "introduced_label": "Bishya Byinjijwe",
-      "resolved_tip": "Ibibazo by'audit y'umwimerere bitagisha mu verification audit",
-      "persisted_tip": "Ibibazo bya audit y'umwimerere biracyahari nyuma yo gukosora",
-      "introduced_tip": "Ibibazo bishya bitarihari mbere yo gukosora"
+      "persisted_label": "Bihari",
+      "introduced_label": "Bishya bishyizweho",
+      "resolved_tip": "Ibibazo by’igenzura ry’umwimerere ntibikiboneka mu igenzura ryo kwemeza",
+      "persisted_tip": "Ibibazo by’igenzura ry’umwimerere biracyahari nyuma yo gukosora",
+      "introduced_tip": "Ibibazo bishya bitabaho mbere yo gukosora"
     },
     "report": {
       "download_title": "Manura raporo ya audit",

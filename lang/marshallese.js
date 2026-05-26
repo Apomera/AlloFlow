@@ -53,10 +53,10 @@
     "dbq_text": "Document-Based kajjitōk: rūkkatak analyze primary sources, kalōk kein kemool-based arguments, im practice eo central skill in social-studies + ELA assessments. Generates source documents, scaffolded kajjitōk, im uwaak keys aligned ñan eo am standards.",
     "quiz_mode_title": "Pick eo right quiz mode",
     "quiz_mode_text": "Kālōt ta in quiz ej ñan. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge ṃokta teaching im surfaces gaps as concept cards ippan a one-klik \"Explain ñan kilaaj\" AI broadcast. Formative Check ej a quick mid-katak pulse. Spaced Review tracks kajjojo rūkkatak’s cross-session retention ippan a per-concept sparkline. kajjojo mode tunes naan in jiroñ, men-type mix, im eo mool dashboard layout.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate kilaaj-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference rūkkatak can return to throughout a unit. ### Panel Options • **Chart Type**: Kālōt from Concept, Vocabulary, Process, Strategy, or Comparison charts. • **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style. • **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme. • **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight. ### Chart Components • **Title Banner**: Eye-catching topic header. • **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues. • **Examples & Non-Examples**: Side-by-side panels for concept clarity. ### Interactive Features • **Ukot Mode**: Tap any element to rewrite text, swap icons, or recolor sections. • **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts. • **Project Mode**: Fullscreen view for whole-kilaaj instruction. ### Pro Tip • Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the kilaaj wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors rūkkatak can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach rūkkatak *how* to take notes, not just *what* to jeje. Pick the structure that matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary. • **Two-Column Notes**: Main idea / details organization for content-heavy reading. • **T-Chart**: Compare/contrast or pros/cons side-by-side. • **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding. • **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook chapters. ### Generation Features • **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text. • **kajjitōk Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\"). • **Vocabulary Slots**: Pre-populated key terms rūkkatak should roñjake/riit for. • **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation). ### Print & Digital • **Printable PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: rūkkatak type directly into the template for paperless workflows. • **Editable Headings**: rūkaki tailor column labels and section titles before sharing. ### Pro Tip • Pair *Cornell Notes* with the **Leveled Reader**: rūkkatak take notes at their reading level, then kōjerbal the bottom-summary box as a formative-assessment check. ### UDL Connection • **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "Pij in Pikinpukōt",
+    "anchor_chart_text": "Kōṃanṃan Pij in Pikinpukōt rej dedeḷọk ñan iaḷ in jikuuḷ rej kōṃṃan bwe ḷōmṇak ko, naan ko, im wāween ko ren pād wōt.",
+    "note_taking_title": "Template ko ñan kōṃṃan note",
+    "note_taking_text": "Template ko ñan kōṃṃan note rej katakin ri-jikuuḷ *ekōjkan* aer kōṃṃan note, jab baj wōt *ta* eo aer je."
   },
   "launch_pad": {
     "subtitle": "Kālōt eo am learning pathway",
@@ -3977,47 +3977,47 @@
       "html_aria": "HTML source code ñan audit"
     },
     "batch": {
-      "drop_text": "Drag & drop PDFs here",
-      "browse_files": "Browse fail",
-      "clear_all": "Clear aolep",
-      "progress_aria": "Batch remediation progress",
-      "stop_aria": "Bōjrak batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "ekāāl Batch",
+      "drop_text": "Jolṃake im likūt PDFs ijin",
+      "browse_files": "Lale jet file ko",
+      "clear_all": "Jolok aolep",
+      "progress_aria": "Wōnṃaanḷọk an juon batch eo eñtaan",
+      "stop_aria": "Bōjrak an juon batch eo eñtaan",
+      "avg_improvement": "Eṃṃanḷọk in average",
+      "scored_90_plus": "Reaar bōk 90+",
+      "new_batch": "Batch ekāāl",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} fail(s) completed ṃokta eo tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "fail:",
-        "files_more": "+ {n} eḷap ḷọk",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} ñan process"
+        "title": "Batch eo eṃōj an kar bōjrak",
+        "summary": "{done}/{total} file ko raar ṃōjḷọk ṃokta jen kilōk in tab.",
+        "remaining": "{n} reej pād wōt.",
+        "files_label": "File ko:",
+        "files_more": "+ {n} eṇḷọk",
+        "resume_button": "Bar jino batch",
+        "discard_button": "Joḷọk",
+        "toast": "Ej bar jino batch · {done} ilo cache, {remaining} ñan kōṃṃan"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} in {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Eṃōj kakōḷḷe jen {n} jen {total} ri-jorrāān",
+      "unanimous_suffix": " (aolep)",
+      "minority_suffix": " — ḷōmṇak in jet wōt, edik tōmak"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) eṇ axe-core maroñ't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures eo AI rubric weighted lightly"
+      "semantic": "Ekkar wāween ak ejjab kajoor ilo melele — AI eaar kakōḷḷe joñan eṃṃan in kobban eo axe-core ej jab maroñ kile",
+      "structural": "Eṃōj kajeed bōd ko an WCAG ilo lavel in code — axe-core eaar lo bōd ko māsōl ej maroñ kakōṃṃanmōl"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "in PDF includes a PDF/UA-style tag tree. Auditors were instructed ñan credit eo existing structure rather than penalize it as missing."
+      "label": "Karōkin tag eo ej pād",
+      "tooltip": "PDF in ej kobaik wōjke in tag in wāween PDF/UA. Eṃōj jiroñ ri-jorrāān ro bwe ren kile karōk eo ej pād."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} in {total} jinoin issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from eo jinoin audit no longer found ilo eo verification audit",
-      "persisted_tip": "Issues from eo jinoin audit still present ālikin eo fix",
-      "introduced_tip": "ekāāl issues eṇ did jab exist ṃokta eo fix"
+      "heading": "Karōk apañ ko",
+      "subheading": "Karōk {resolved} jen {total} apañ ko jinoin ({pct}%)",
+      "resolved_label": "Karōk",
+      "persisted_label": "Ej pād wōt",
+      "introduced_label": "Ej kāāl an itok",
+      "resolved_tip": "Apañ ko jen jorrāān eo jinoin im rejjab kar lo ilo jorrāān eo iuwabaaj",
+      "persisted_tip": "Apañ ko jen jorrāān eo jinoin im rej pād wōt ālikin karōk",
+      "introduced_tip": "Apañ ko rekāāl me raar jab pād ṃokta jen karōk"
     },
     "report": {
       "download_title": "Download audit report",

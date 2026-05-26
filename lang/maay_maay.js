@@ -53,10 +53,10 @@
     "dbq_text": "Document-Based su'aalo: arday analyze primary sources, dhis caddayn-based arguments, iyo practice central skill social-studies + ELA assessments. Generates source documents, scaffolded su'aalo, iyo jawaabo keys aligned ku kaaga standards.",
     "quiz_mode_title": "Pick right quiz mode",
     "quiz_mode_text": "Door maxay tan quiz waa u. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge kahor teaching iyo surfaces gaps as concept cards la a one-riix \"Explain ku fasal\" AI broadcast. Formative Check waa a quick mid-casharro pulse. Spaced Review tracks kasta arday’s cross-session retention la a per-concept sparkline. kasta mode tunes tilmaamayaal, shay-type mix, iyo tooska dashboard layout.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate fasal-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference arday can return to throughout a unit. ### Panel Options • **Chart Type**: Door from Concept, Vocabulary, Process, Strategy, or Comparison charts. • **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style. • **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme. • **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight. ### Chart Components • **Title Banner**: Eye-catching topic header. • **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues. • **Examples & Non-Examples**: Side-by-side panels for concept clarity. ### Interactive Features • **Wax ka beddel Mode**: Tap any element to rewrite text, swap icons, or recolor sections. • **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts. • **Project Mode**: Fullscreen view for whole-fasal instruction. ### Pro Tip • Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the fasal wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors arday can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach arday *how* to take notes, not just *what* to qor. Pick the structure that matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary. • **Two-Column Notes**: Main idea / details organization for content-heavy reading. • **T-Chart**: Compare/contrast or pros/cons side-by-side. • **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding. • **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook chapters. ### Generation Features • **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text. • **su'aalo Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\"). • **Vocabulary Slots**: Pre-populated key terms arday should dhageyso/akhri for. • **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation). ### Print & Digital • **Printable PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: arday type directly into the template for paperless workflows. • **Editable Headings**: macallin tailor column labels and section titles before sharing. ### Pro Tip • Pair *Cornell Notes* with the **Leveled Reader**: arday take notes at their reading level, then isticmaal the bottom-summary box as a formative-assessment check. ### UDL Connection • **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "Jaantusyada Goyska",
+    "anchor_chart_text": "Abuur jaantusyo goyska ah oo fasalka diyaar u ah oo ka dhigaya fikradaha, ereyada iyo nidaamyada inay ku xidhmaan.",
+    "note_taking_title": "Qaababka qoraalka",
+    "note_taking_text": "Qaabab qoraal taageero ah oo bara ardayda *sida* loo sameeyo qoraallada, ma aha oo kaliya *waxa* la qori karo."
   },
   "launch_pad": {
     "subtitle": "Door kaaga learning pathway",
@@ -3977,47 +3977,47 @@
       "html_aria": "HTML source code ku audit"
     },
     "batch": {
-      "drop_text": "Drag & drop PDFs here",
-      "browse_files": "Browse fayl",
-      "clear_all": "Clear dhammaan",
-      "progress_aria": "Batch remediation progress",
-      "stop_aria": "Jooji batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "cusub Batch",
+      "drop_text": "PDFs ku jiido oo halkan dhig",
+      "browse_files": "Eeg faylasha",
+      "clear_all": "Tirtir dhammaan",
+      "progress_aria": "Horumarka hagaajinta dufan",
+      "stop_aria": "Jooji hagaajinta dufan",
+      "avg_improvement": "Horumarinta celceliska",
+      "scored_90_plus": "Helay 90+",
+      "new_batch": "Xidhmo cusub",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} fayl(s) completed kahor tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "fayl:",
-        "files_more": "+ {n} badan",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} ku process"
+        "title": "Xidhmadi hore wey go’day",
+        "summary": "Tab-ka ka hor inta uusan xidhmin {done}/{total} fayl ayaa dhammaaday.",
+        "remaining": "{n} ayaa hadhay.",
+        "files_label": "Faylasha:",
+        "files_more": "+ {n} dheeri ah",
+        "resume_button": "Dib u bilow xidhmada",
+        "discard_button": "Tuur",
+        "toast": "Dib u bilaabaya xidhmada · {done} kaydsan, {remaining} la habayn"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Calaamadeyay {n} ka mid ah {total} qof oo hubiya",
+      "unanimous_suffix": " (mid u dhan)",
+      "minority_suffix": " — fikrad tirada yar"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) taas axe-core wuu kara't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Si dhismeed ah u waafaqsan laakiin si macne ah u liita — AI calaamadeysay tayada nuxurka",
+      "structural": "Khilaafadyo WCAG ah oo heer-code ah oo la helay — axe-core wuxuu helay khaladaad"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "tan PDF includes a PDF/UA-style tag tree. Auditors were instructed ku credit existing structure rather than penalize it as missing."
+      "label": "Qaab-dhismeedka calaamadaha hore u jiray",
+      "tooltip": "PDF-kani waxa uu ka kooban yahay geed calaamado ah oo qaab PDF/UA ah."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} {total} asal issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from asal audit no longer found ku verification audit",
-      "persisted_tip": "Issues from asal audit still present kadib fix",
-      "introduced_tip": "cusub issues taas did maaha exist kahor fix"
+      "heading": "Xal u helid arrimaha",
+      "subheading": "Waxaa la xaliyay {resolved} ka {total} arrimo asal ah ({pct}%)",
+      "resolved_label": "La xaliyay",
+      "persisted_label": "Wali waa jira",
+      "introduced_label": "Cusub oo la soo bandhigay",
+      "resolved_tip": "Arrimaha ka soo jeeda hubinta asalka ah ee aan dib looga heli karin hubinta xaqiijinta",
+      "persisted_tip": "Arrimaha hubinta asalka ah ee weli jira hagaajinta ka dib",
+      "introduced_tip": "Arrimo cusub oo aan jirin ka hor hagaajinta"
     },
     "report": {
       "download_title": "Download audit report",

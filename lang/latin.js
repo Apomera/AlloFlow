@@ -53,10 +53,10 @@
     "dbq_text": "documentum-Based quaestiō: discipulus resolve primary sources, aedificāre testimōnium-based arguments, et exercē central peritia social-studies + ELA aestimātiō. Generates fōns documentum, scaffolded quaestiō, et respōnsum keys aligned ad tuus norma.",
     "quiz_mode_title": "Pick rectus quaestiōnārium modus",
     "quiz_mode_text": "Ēlige quid hoc quaestiōnārium est prō. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge before teaching et surfaces gaps as conceptus schedula cum one-pulsā \"Explain ad classis\" AI broadcast. Formative Check est celer mid-lectiō pulse. Spaced Review tracks quisque discipulus’s cross-sessiō retention cum per-conceptus sparkline. quisque modus tunes monita, rēs-type mix, et vīvus dashboard layout.",
-    "anchor_chart_title": "Anchor tabula",
-    "anchor_chart_text": "Generā classis-ready Anchor tabula illud fac concepts, vocābulārium, and procedures stick. A vīsuālis reference discipulus can return to throughout a unit. ### pannus optiōnēs • **tabula Type**: Ēlige from Concept, vocābulārium, Process, cōnsilium, or Comparison tabula. • **stilus**: Hand-drawn marker look, polished imprime stilus, or kid-amīcus comic stilus. • **color Palette**: Pick a high-contrast, dyslexia-amīcus, or themed color scheme. • **Custom īnstrūctiō**: specificusā focal concepts, key vocābulārium, or cōnsilium gradus to highlight. ### tabula pars • **Title Banner**: Eye-catching topic header. • **vīsuālis Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-generātum symbolum reinforcing each idea with dual-coded vīsuālis cues. • **exemplum & Non-exemplum**: Side-by-side pannus for concept clarity. ### interāctīvus facultātēs • **Recense modus**: Tap any element to rewrite textus, swap symbolum, or recolor sectiō. • **Imprime-Ready**: High-resolution exportā sized for posters or 8.5×11 handouts. • **Project modus**: Fullscreen aspice for whole-classis īnstrūctiō. ### Pro cōnsilium • Generā a *cōnsilium tabula* before a writing unit and a *vocābulārium tabula* before a science unit — keep both on the classis wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent vīsuālis anchors discipulus can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates illud teach discipulus *how* to take notes, not just *what* to scrībe. Pick the structure illud matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-columna layout with cues, notes, and bottom summary. • **Two-columna Notes**: Main idea / particula organization for contentum-heavy reading. • **T-tabula**: Comparā/contrast or pros/cons side-by-side. • **Sketchnotes**: vīsuālis note-taking with prompts for symbolum, arrows, and color-coding. • **KWL tabula**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook caput. ### Generation facultātēs • **Pre-Filled Prompts**: Each template seeded with cues drawn from your fōns textus. • **quaestiō Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does hoc connect to…?\"). • **vocābulārium Slots**: Pre-populated key terminus discipulus should audī/lege for. • **Custom īnstrūctiō**: Target a specificus cognitive task (synthesis, summary, evaluation). ### Imprime & Digital • **PDF imprimibilis**: Clean handout layout with generous writing space. • **Digital Fillable**: discipulus type directly into the template for paperless workflows. • **Editable Headings**: magister tailor columna labels and sectiō titles before sharing. ### Pro cōnsilium • Pair *Cornell Notes* with the **Leveled Reader**: discipulus take notes at their reading gradus, then ūtere the bottom-summary box as a formative-aestimātiō check. ### UDL Connection • **Action & expressiō**: subsidium planning and cōnsilium development (Guideline 6.2) by giving learners explicit structures for organizing īnformātiō."
+    "anchor_chart_title": "Tabulae Ancorae",
+    "anchor_chart_text": "Genera Tabulas Ancorae paratas pro classe quae conceptus, vocabularium, et procedures haerere faciunt.",
+    "note_taking_title": "Exempla annotationum",
+    "note_taking_text": "Exempla annotationum structurata quae docent discipulos *quomodo* annotationes capere, non solum *quid* scribere."
   },
   "launch_pad": {
     "subtitle": "Ēlige tuus learning pathway",
@@ -3977,47 +3977,47 @@
       "html_aria": "HTML fōns code ad audit"
     },
     "batch": {
-      "drop_text": "Trahe & dīmitte PDFs here",
-      "browse_files": "Browse tabula",
-      "clear_all": "Clear omnia",
-      "progress_aria": "Batch remediation prōgressus",
-      "stop_aria": "Dēsiste batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "novus Batch",
+      "drop_text": "Trahere et demittere PDF hic",
+      "browse_files": "Sfoliare tabulas",
+      "clear_all": "Omnia delere",
+      "progress_aria": "Progressus emendationis pro turma",
+      "stop_aria": "Sistere emendationem pro turma",
+      "avg_improvement": "Medium emendamentum",
+      "scored_90_plus": "90+ obtinuerunt",
+      "new_batch": "Turma nova",
       "resume": {
-        "title": "prior batch interrupted",
-        "summary": "{done}/{total} tabula(s) completed before tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "tabula:",
-        "files_more": "+ {n} plūs",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} ad process"
+        "title": "Turma prior interrupta",
+        "summary": "{done}/{total} tabula(e) perfecta(e) ante tab clausus.",
+        "remaining": "{n} reliqua(e).",
+        "files_label": "Tabulae:",
+        "files_more": "+ {n} plus",
+        "resume_button": "Renovare turmam",
+        "discard_button": "Reicere",
+        "toast": "Renovare turmam · {done} in cache, {remaining} processandi"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Signata a {n} ex {total} auditoribus",
+      "unanimous_suffix": " (unanime)",
+      "minority_suffix": " — sententia minoritatis, fiducia minor"
     },
     "divergence": {
-      "semantic": "Structurally compliant sed semantically weak — AI flagged contentum quality (alt textus, heading meaning, reading order) illud axe-core potest't detect",
-      "structural": "Code-gradus WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Structuraliter conformis sed semantice debilis — AI signavit qualitatem contentus quam axe-core detegere non potest",
+      "structural": "Violationes WCAG ad codicis gradum detectae — axe-core invenit defectus a machina verificabiles"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "Hoc PDF inclūdit PDF/UA-stilus tag tree. Auditors were instructed ad credit existing structure rather than penalize it as missing."
+      "label": "Structura titulorum praeexistens",
+      "tooltip": "Hic PDF arborem titulorum stilo PDF/UA continet. Auditores instructi sunt ad agnoscendam structuram exsistentem."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} {total} orīginālis issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues ā orīginālis audit no longior found in verification audit",
-      "persisted_tip": "Issues ā orīginālis audit still present after fix",
-      "introduced_tip": "novus issues illud did nōn exist before fix"
+      "heading": "Solutio problematum",
+      "subheading": "Soluta {resolved} ex {total} problematibus originalibus ({pct}%)",
+      "resolved_label": "Soluta",
+      "persisted_label": "Adhuc praesentia",
+      "introduced_label": "Recenter introducta",
+      "resolved_tip": "Problemata ex auditu originali quae non amplius reperiuntur in auditu verificationis",
+      "persisted_tip": "Problemata ex auditu originali adhuc praesentia post correctionem",
+      "introduced_tip": "Problemata nova quae non exsistebant ante correctionem"
     },
     "report": {
       "download_title": "Recipe audit relātiō",

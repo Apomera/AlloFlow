@@ -53,10 +53,10 @@
     "dbq_text": "Document-Based lapeny: latin kwan analyze primary sources, gero caden-based arguments, ki practice central skill pa social-studies + ELA assessments. Generates source documents, scaffolded lapeny, ki doko keys aligned i mamegi standards.",
     "quiz_mode_title": "Pick tung lacuc quiz mode",
     "quiz_mode_text": "Yer ngo man quiz tye pi. Exit Ticket checks today’s learning. Pre-Check probes prior knowledge before teaching ki surfaces gaps as tam cards ki one-dii \"Explain i kilas\" AI broadcast. Formative Check tye quick mid-pwony pulse. Spaced Review tracks lwak latin kwan’s cross-session retention ki per-tam sparkline. lwak mode tunes lok ma tito, jami-type mix, ki matye ka ngolo dashboard layout.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate kilas-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference latin kwan can return to throughout a unit. ### Panel Options • **Chart Type**: Yer from Concept, Vocabulary, Process, Strategy, or Comparison charts. • **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style. • **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme. • **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight. ### Chart Components • **Title Banner**: Eye-catching topic header. • **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues. • **Examples & Non-Examples**: Side-by-side panels for concept clarity. ### Interactive Features • **Loko Mode**: Tap any element to rewrite text, swap icons, or recolor sections. • **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts. • **Project Mode**: Fullscreen view for whole-kilas instruction. ### Pro Tip • Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the kilas wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors latin kwan can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach latin kwan *how* to take notes, not just *what* to coyo. Pick the structure that matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary. • **Two-Column Notes**: Main idea / details organization for content-heavy reading. • **T-Chart**: Compare/contrast or pros/cons side-by-side. • **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding. • **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook chapters. ### Generation Features • **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text. • **lapeny Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\"). • **Vocabulary Slots**: Pre-populated key terms latin kwan should winyo/kwan for. • **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation). ### Print & Digital • **Printable PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: latin kwan type directly into the template for paperless workflows. • **Editable Headings**: lapwony tailor column labels and section titles before sharing. ### Pro Tip • Pair *Cornell Notes* with the **Leveled Reader**: latin kwan take notes at their reading level, then tii the bottom-summary box as a formative-assessment check. ### UDL Connection • **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "Anchor Chart",
+    "anchor_chart_text": "Cak Anchor Chart ma tye ka tic i ot kwan — gimoko cogo, leb, kacel ki tic.",
+    "note_taking_title": "Template me coyo ngec",
+    "note_taking_text": "Template me coyo ngec ma pwonyo jo akwena *kit ma* gicoyo ki ngec, pe ngo ma gicoyo keken."
   },
   "launch_pad": {
     "subtitle": "Yer mamegi learning pathway",
@@ -3977,47 +3977,47 @@
       "html_aria": "HTML source code i audit"
     },
     "batch": {
-      "drop_text": "Drag & drop PDFs here",
-      "browse_files": "Browse buk",
-      "clear_all": "Clear ducu",
-      "progress_aria": "Batch remediation progress",
-      "stop_aria": "Juk batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "manyen Batch",
+      "drop_text": "Wek i ywayo & dyer PDF kany",
+      "browse_files": "Yer file",
+      "clear_all": "Yel ducu",
+      "progress_aria": "Tic me yub me bunch",
+      "stop_aria": "Cwen tic me yub me bunch",
+      "avg_improvement": "Yub i agikki ki dye",
+      "scored_90_plus": "Gucamo 90+",
+      "new_batch": "Bunch manyen",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} buk(s) completed before tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "buk:",
-        "files_more": "+ {n} mapol",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} i process"
+        "title": "Bunch ma okato okwoko",
+        "summary": "{done}/{total} file otum ka peya tab ologo.",
+        "remaining": "{n} odong.",
+        "files_label": "File:",
+        "files_more": "+ {n} mukene",
+        "resume_button": "Cak doki bunch",
+        "discard_button": "Bol",
+        "toast": "Cak doki bunch · {done} icache, {remaining} me yub"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} pa {total} auditors",
-      "unanimous_suffix": "(unanimous)",
-      "minority_suffix": "— minority opinion, lower confidence"
+      "tooltip": "Otemo ki {n} ki i {total} jo me weng",
+      "unanimous_suffix": " (luwato weng)",
+      "minority_suffix": " — tam pa jo manok, gen manok"
     },
     "divergence": {
-      "semantic": "Structurally compliant ento semantically weak — AI flagged content quality (alt text, heading meaning, reading order) meno axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures AI rubric weighted lightly"
+      "semantic": "Lubo cik me yubo ento pe tye matek i tic — AI okelo cogo me content ma axe-core pe romo nongo",
+      "structural": "Tic me peko WCAG i wic me code — axe-core onongo peko ma macine romo neno"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "man PDF includes PDF/UA-style tag tree. Auditors were instructed i credit existing structure rather than penalize it as missing."
+      "label": "Cogo me lanya ma tye",
+      "tooltip": "PDF man dwogo cogo me lanya me PDF/UA. Jo me weng obino ngeyo cogo ma tye."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} pa {total} macon issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues ki bot macon audit no longer found i verification audit",
-      "persisted_tip": "Issues ki bot macon audit still present after fix",
-      "introduced_tip": "manyen issues meno did pe exist before fix"
+      "heading": "Yub me peki",
+      "subheading": "Yub {resolved} ki i {total} peki me cake ({pct}%)",
+      "resolved_label": "Oyub",
+      "persisted_label": "Tye",
+      "introduced_label": "Manyen ma okelo",
+      "resolved_tip": "Peki ki ngec me cake ma kinongo doki i ngec me weng",
+      "persisted_tip": "Peki ki ngec me cake ma pud tye kor yub",
+      "introduced_tip": "Peki manyen ma onongo pe tye ma peya yub"
     },
     "report": {
       "download_title": "Gam piny audit ngec",
