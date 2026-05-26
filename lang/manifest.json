@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-26T10:39:31.751Z",
+  "generated": "2026-05-26T10:44:13.724Z",
   "count": 56,
   "total_keys_expected": 9307,
   "available": [
@@ -260,7 +260,7 @@
       "slug": "polish",
       "display": "Polish",
       "keys": 9968,
-      "bytes": 797975,
+      "bytes": 790559,
       "updated": "2026-05-26"
     },
     {
@@ -337,7 +337,7 @@
       "slug": "tagalog",
       "display": "Tagalog",
       "keys": 10130,
-      "bytes": 1073378,
+      "bytes": 1062867,
       "updated": "2026-05-26"
     },
     {
