@@ -3272,9 +3272,11 @@ const AlloFlowContent = () => {
     { id: 'simplified', label: 'Text Adaptation' },
     { id: 'ui-tool-wordsounds', label: 'Word Sounds' },
     { id: 'outline', label: 'Visual Organizer' },
+    { id: 'anchor-chart', label: 'Anchor Charts' },
     { id: 'image', label: 'Visual Support' },
     { id: 'faq', label: 'FAQ Generator' },
     { id: 'sentence-frames', label: 'Writing Scaffolds' },
+    { id: 'note-taking', label: 'Note-Taking Templates' },
     { id: 'brainstorm', label: 'Brainstorm Activity Ideas' },
     { id: 'persona', label: 'Interview Mode' },
     { id: 'timeline', label: 'Sequence Builder' },
@@ -3283,6 +3285,7 @@ const AlloFlowContent = () => {
     { id: 'math', label: 'STEM Lab' },
     { id: 'adventure', label: 'Adventure Mode' },
     { id: 'quiz', label: 'Exit Ticket' },
+    { id: 'alignment', label: 'Standards & UDL Alignment' },
     { id: 'lesson-plan', label: 'Lesson Plan' },
     { id: '_final', label: 'Full Resource Pack & Standards Report' },
   ];
@@ -3310,9 +3313,11 @@ const AlloFlowContent = () => {
     'simplified': 'ui-tool-simplified',
     'ui-tool-wordsounds': 'tour-tool-wordsounds',
     'outline': 'tour-tool-outline',
+    'anchor-chart': 'tour-tool-anchor-chart',
     'image': 'tour-tool-visual',
     'faq': 'tour-tool-faq',
     'sentence-frames': 'tour-tool-scaffolds',
+    'note-taking': 'tour-tool-note-taking',
     'brainstorm': 'tour-tool-brainstorm',
     'persona': 'tour-tool-persona',
     'timeline': 'tour-tool-timeline',
@@ -3321,6 +3326,7 @@ const AlloFlowContent = () => {
     'math': 'tour-tool-math',
     'adventure': 'tour-tool-adventure',
     'quiz': 'ui-tool-quiz',
+    'alignment': 'tour-tool-alignment',
     'lesson-plan': 'tour-tool-lesson-plan',
     '_final': 'tour-tool-fullpack',
   };
@@ -4071,7 +4077,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'f4d22689';
+    var pluginCdnVersion = '5056adb1';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -6567,9 +6573,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       { id: 'ui-tool-simplified', text: t('tour.simplified_text'), title: t('tour.simplified_title') },
       { id: 'tour-tool-wordsounds', text: t('tour.wordsounds_text'), title: t('tour.wordsounds_title') },
       { id: 'tour-tool-outline', text: t('tour.outline_text'), title: t('tour.outline_title') },
+      { id: 'tour-tool-anchor-chart', text: t('tour.anchor_chart_text'), title: t('tour.anchor_chart_title') },
       { id: 'tour-tool-visual', text: t('tour.visual_text'), title: t('tour.visual_title') },
       { id: 'tour-tool-faq', text: t('tour.faq_text'), title: t('tour.faq_title') },
       { id: 'tour-tool-scaffolds', text: t('tour.scaffolds_text'), title: t('tour.scaffolds_title') },
+      { id: 'tour-tool-note-taking', text: t('tour.note_taking_text'), title: t('tour.note_taking_title') },
       { id: 'ui-tool-quiz', text: t('tour.quiz_text'), title: t('tour.quiz_title') },
       { id: 'quiz-mode-select', text: t('tour.quiz_mode_text') || 'Choose what this quiz is for. Exit Ticket checks today\'s learning. Pre-Check probes prior knowledge before teaching and surfaces gaps as concept cards with a one-click "Explain to class" AI broadcast. Formative Check is a quick mid-lesson pulse. Spaced Review tracks each student\'s cross-session retention with a per-concept sparkline. Each mode tunes prompts, item-type mix, and the live dashboard layout.', title: t('tour.quiz_mode_title') || 'Pick the right quiz mode' },
       { id: 'tour-tool-brainstorm', text: t('tour.brainstorm_text'), title: t('tour.brainstorm_title') },
@@ -23266,7 +23274,7 @@ ${_toolList}
                     <ArrowRight size={16} className="text-indigo-300 group-hover:text-indigo-600" />
                 </button>
             </div>
-            <div style={{display: (!guidedMode || GUIDED_STEPS[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all group">
+            <div style={{display: (!guidedMode || GUIDED_STEPS[guidedStep]?.id === 'alignment' || GUIDED_STEPS[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all group">
                 <button
                     data-help-key="tool_alignment"
                     onClick={() => handleGenerate('alignment-report')}
