@@ -501,6 +501,35 @@ window.StemLab = window.StemLab || {
               );
             });
 
+            // Distance arcs between consecutive markers (sorted by value) — visualizes subtraction
+            var distArcEls = [];
+            if ((markers || []).length >= 2) {
+              var sortedMarkers = (markers || []).slice().sort(function(a, b) { return a.value - b.value; });
+              for (var dmi = 0; dmi < sortedMarkers.length - 1; dmi++) {
+                var a = sortedMarkers[dmi], b = sortedMarkers[dmi + 1];
+                var ax = PAD + (a.value - rMin) / rL * (W - 2 * PAD);
+                var bx = PAD + (b.value - rMin) / rL * (W - 2 * PAD);
+                if (bx - ax < 18) continue; // too cramped to label
+                var midDx = (ax + bx) / 2;
+                var diff = +(b.value - a.value).toFixed(2);
+                var arcPeak = 78 + Math.min(22, (bx - ax) * 0.18);
+                distArcEls.push(h('g', { key: 'dist-' + dmi },
+                  h('path', {
+                    d: 'M ' + ax + ' 75 Q ' + midDx + ' ' + arcPeak + ' ' + bx + ' 75',
+                    fill: 'none', stroke: '#0ea5e9', strokeWidth: 1.6, strokeDasharray: '4 3', opacity: 0.85
+                  }),
+                  h('rect', {
+                    x: midDx - 18, y: arcPeak - 4, width: 36, height: 13, rx: 6,
+                    fill: '#e0f2fe', stroke: '#0ea5e9', strokeWidth: 1
+                  }),
+                  h('text', {
+                    x: midDx, y: arcPeak + 6, textAnchor: 'middle',
+                    fill: '#0369a1', fontSize: 10, fontWeight: 'bold', fontFamily: 'monospace'
+                  }, 'Δ ' + diff)
+                ));
+              }
+            }
+
             // Skip count markers + arc-shaped hops (visual repeated addition)
             var skipEls = [];
             if (skipMarkersList && skipMarkersList.length > 0) {
@@ -574,6 +603,7 @@ window.StemLab = window.StemLab || {
               ticks,
               arrowEl,
               markerEls,
+              distArcEls,
               skipEls,
               h('polygon', { points: (W - PAD) + ',53 ' + (W - PAD + 10) + ',60 ' + (W - PAD) + ',67', fill: '#3b82f6' }),
               h('polygon', { points: PAD + ',53 ' + (PAD - 10) + ',60 ' + PAD + ',67', fill: '#3b82f6' })
@@ -1853,6 +1883,75 @@ window.StemLab = window.StemLab || {
             // Keyboard hints
             h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
               '\u2328\uFE0F 1-4: tabs | N: new challenge | ?: AI tutor | \u2190 \u2192 on marker: nudge | Home/End: ends'
+            ),
+
+            // \u2550\u2550\u2550 INTEGERS & ABSOLUTE VALUE \u2550\u2550\u2550
+            h('div', { className: 'mt-5 rounded-2xl border border-sky-300 bg-white p-3 shadow-sm' },
+              h('h4', { className: 'text-sm font-bold text-sky-700 mb-2' }, '\uD83D\uDD22 Integers \u2014 Absolute value = distance from zero'),
+              h('div', { className: 'rounded-xl overflow-hidden border border-sky-200', style: { background: '#020210', aspectRatio: '16/4' } },
+                h('canvas', {
+                  ref: function(cvEl) {
+                    if (!cvEl) return;
+                    if (cvEl._nlAnim) return;
+                    var c2 = cvEl.getContext('2d');
+                    var W = cvEl.offsetWidth || 600;
+                    var H = cvEl.offsetHeight || 150;
+                    cvEl.width = W * 2; cvEl.height = H * 2;
+                    c2.scale(2, 2);
+                    var start = performance.now();
+                    function drawNl() {
+                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._nlAnim); return; }
+                      var t = (performance.now() - start) / 1000;
+                      c2.fillStyle = '#020210';
+                      c2.fillRect(0, 0, W, H);
+                      var midY = H / 2;
+                      c2.strokeStyle = '#7dd3fc'; c2.lineWidth = 2;
+                      c2.beginPath();
+                      c2.moveTo(20, midY); c2.lineTo(W - 20, midY);
+                      c2.stroke();
+                      var pxPerUnit = (W - 40) / 20;
+                      for (var v = -10; v <= 10; v++) {
+                        var px = (W / 2) + v * pxPerUnit;
+                        c2.beginPath();
+                        c2.moveTo(px, midY - 5); c2.lineTo(px, midY + 5);
+                        c2.stroke();
+                        c2.font = 'bold 9px monospace'; c2.fillStyle = v === 0 ? '#fde047' : '#94a3b8'; c2.textAlign = 'center';
+                        c2.fillText(v, px, midY + 18);
+                      }
+                      var current = Math.round(7 * Math.sin(t * 0.8));
+                      var cpx = (W / 2) + current * pxPerUnit;
+                      // Arrow from 0 to current
+                      c2.strokeStyle = '#fbbf24'; c2.lineWidth = 3;
+                      c2.beginPath();
+                      c2.moveTo(W / 2, midY - 15); c2.lineTo(cpx, midY - 15);
+                      c2.stroke();
+                      var ahx = current > 0 ? -5 : 5;
+                      c2.beginPath();
+                      c2.moveTo(cpx, midY - 15); c2.lineTo(cpx + ahx, midY - 18);
+                      c2.moveTo(cpx, midY - 15); c2.lineTo(cpx + ahx, midY - 12);
+                      c2.stroke();
+                      c2.fillStyle = '#fbbf24'; c2.font = 'bold 10px sans-serif'; c2.textAlign = 'center';
+                      c2.fillText('|' + current + '| = ' + Math.abs(current), (W / 2 + cpx) / 2, midY - 20);
+                      c2.fillStyle = '#dc2626';
+                      c2.beginPath();
+                      c2.arc(cpx, midY, 6, 0, Math.PI * 2);
+                      c2.fill();
+                      c2.fillStyle = 'rgba(0,0,0,0.85)';
+                      c2.fillRect(8, H - 14, W - 16, 12);
+                      c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#fde047'; c2.textAlign = 'center';
+                      c2.fillText('Absolute value strips the sign \u2014 always positive. |\u22125| = |+5| = 5', W / 2, H - 5);
+                      cvEl._nlAnim = requestAnimationFrame(drawNl);
+                    }
+                    drawNl();
+                    var ro = new ResizeObserver(function() {
+                      W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                    });
+                    ro.observe(cvEl);
+                  },
+                  style: { width: '100%', height: '100%', display: 'block' }
+                })
+              )
             )
           );
         }; // End of _NumberLineComponent
