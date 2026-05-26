@@ -18796,19 +18796,25 @@
                   );
                 })
               ),
-              // Atom counts
+              // Atom counts (with delta indicator showing which side needs how many more)
               h('div', { className: 'flex justify-center gap-4 mb-4' },
                 Object.keys(preset.atoms).map(function(atom) {
                   var left = leftAtoms[atom] || 0;
                   var right = rightAtoms[atom] || 0;
                   var match = left === right;
+                  var delta = Math.abs(left - right);
+                  var deficitSide = left < right ? 'L' : right < left ? 'R' : null;
                   return h('div', { key: atom, className: 'flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg border transition-all ' + (match ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200') },
                     h('div', { className: 'w-6 h-6 rounded-full flex items-center justify-center text-white text-[11px] font-black', style: { backgroundColor: atomColors[atom] || '#94a3b8' } }, atom),
                     h('div', { className: 'flex items-center gap-1 text-xs font-bold' },
-                      h('span', { className: match ? 'text-emerald-600' : 'text-red-600' }, left),
+                      h('span', { className: match ? 'text-emerald-600' : (deficitSide === 'L' ? 'text-red-700 underline decoration-wavy' : 'text-red-600') }, left),
                       h('span', { className: 'text-slate-600' }, match ? '=' : '\u2260'),
-                      h('span', { className: match ? 'text-emerald-600' : 'text-red-600' }, right)
-                    )
+                      h('span', { className: match ? 'text-emerald-600' : (deficitSide === 'R' ? 'text-red-700 underline decoration-wavy' : 'text-red-600') }, right)
+                    ),
+                    !match && h('div', { className: 'text-[9px] font-bold text-red-700 leading-tight mt-0.5' },
+                      deficitSide === 'L' ? ('+' + delta + ' need \u2190') : ('\u2192 need +' + delta)
+                    ),
+                    match && h('div', { className: 'text-[9px] font-bold text-emerald-600 leading-tight mt-0.5' }, '\u2713 balanced')
                   );
                 })
               ),
@@ -20369,6 +20375,68 @@
           h('div', { className: 'flex gap-2 mt-4 pt-3 border-t border-slate-200' },
             h('button', { onClick: function() { setStemLabTool('titrationLab'); announceToSR('Opening Titration Lab'); }, className: 'px-3 py-1.5 text-xs font-bold text-lime-600 bg-lime-50 border border-lime-600 rounded-full hover:bg-lime-100' }, '\u2697\uFE0F Titration Lab \u2192'),
             h('button', { 'aria-label': 'Snapshot', onClick: takeSnapshot, className: 'ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all' }, '\uD83D\uDCF8 Snapshot')
+          ),
+          // \u2550\u2550\u2550 PERIODIC TABLE BLOCKS \u2550\u2550\u2550
+          h('div', { className: 'mt-5 rounded-2xl border border-lime-300 bg-white p-3 shadow-sm' },
+            h('h4', { className: 'text-sm font-bold text-lime-700 mb-2' }, '\u269B Periodic Table \u2014 Four major blocks'),
+            h('div', { className: 'rounded-xl overflow-hidden border border-lime-200', style: { background: '#020210', aspectRatio: '16/5' } },
+              h('canvas', {
+                ref: function(cvEl) {
+                  if (!cvEl) return;
+                  if (cvEl._ptAnim) return;
+                  var c2 = cvEl.getContext('2d');
+                  var W = cvEl.offsetWidth || 600;
+                  var H = cvEl.offsetHeight || 180;
+                  cvEl.width = W * 2; cvEl.height = H * 2;
+                  c2.scale(2, 2);
+                  var start = performance.now();
+                  function drawPt() {
+                    if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._ptAnim); return; }
+                    var t = (performance.now() - start) / 1000;
+                    c2.fillStyle = '#020210';
+                    c2.fillRect(0, 0, W, H);
+                    // Simplified periodic table layout
+                    var blocks = [
+                      { name: 's-block', cols: 2, rows: 7, color: '#dc2626', x: 0.05, w: 0.10 },
+                      { name: 'd-block', cols: 10, rows: 4, color: '#fbbf24', x: 0.18, w: 0.40 },
+                      { name: 'p-block', cols: 6, rows: 6, color: '#3b82f6', x: 0.62, w: 0.30 },
+                      { name: 'f-block', cols: 14, rows: 2, color: '#a855f7', x: 0.18, w: 0.74, y: 0.68 }
+                    ];
+                    blocks.forEach(function(b) {
+                      var bx = b.x * W;
+                      var by = (b.y || 0.10) * H;
+                      var bw = b.w * W;
+                      var bh = (b.rows / 7) * H * 0.50;
+                      c2.fillStyle = b.color + '50';
+                      c2.fillRect(bx, by, bw, bh);
+                      c2.strokeStyle = b.color; c2.lineWidth = 1.5;
+                      c2.strokeRect(bx, by, bw, bh);
+                      c2.font = 'bold 10px sans-serif'; c2.fillStyle = b.color; c2.textAlign = 'center';
+                      c2.fillText(b.name, bx + bw / 2, by + bh / 2 + 4);
+                    });
+                    c2.font = 'bold 9px monospace'; c2.fillStyle = '#fde047'; c2.textAlign = 'left';
+                    c2.fillText('s = alkali, alkali earth', 8, H - 38);
+                    c2.fillText('p = nonmetals, halogens, noble gases', 8, H - 28);
+                    c2.fillStyle = '#fbbf24';
+                    c2.fillText('d = transition metals', W * 0.55, H - 38);
+                    c2.fillStyle = '#a855f7';
+                    c2.fillText('f = lanthanides + actinides', W * 0.55, H - 28);
+                    c2.fillStyle = 'rgba(0,0,0,0.85)';
+                    c2.fillRect(8, H - 14, W - 16, 12);
+                    c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#86efac'; c2.textAlign = 'center';
+                    c2.fillText('Mendeleev 1869 \u2014 predicted undiscovered elements from gaps in the table.', W / 2, H - 5);
+                    cvEl._ptAnim = requestAnimationFrame(drawPt);
+                  }
+                  drawPt();
+                  var ro = new ResizeObserver(function() {
+                    W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                    cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                  });
+                  ro.observe(cvEl);
+                },
+                style: { width: '100%', height: '100%', display: 'block' }
+              })
+            )
           )
         );
       })();
