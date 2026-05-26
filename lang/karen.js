@@ -2272,7 +2272,7 @@
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
     "tier_score": "Tier {tier}, score {score}",
-    "draggable_item": "draggable item"
+    "draggable_item": "တၢ်ဘှီထီၣ်တၢ်"
   },
   "games": {
     "syntax": {
@@ -11615,7 +11615,12 @@
     "explain_own_words": "Explain in your own တၢ်ကတိၤ (3-5 တၢ်ကတိၤထူ)…",
     "missing_word_or_phrase": "Type the missing တၢ်ကတိၤ or phrase...",
     "reflection_here": "Type your reflection here…",
-    "english_language": "English"
+    "english_language": "အဲကလံးကျိာ်",
+    "search": "ဃုလၢ...",
+    "loading": "အိၣ်ထၢထီၣ်ဝဲ...",
+    "untitled": "တအိၣ်ဒီးခိၣ်တီ",
+    "optional": "ဃုထၢကသ့",
+    "required": "လိၣ်ဘၣ်"
   },
   "audit": {
     "section_divider": "Section divider",
@@ -11666,7 +11671,7 @@
   },
   "ui_common": {
     "continue_where_left": "ဆဲးလီၤ Where You Left Off?",
-    "start_fresh": "စးထီၣ် Fresh",
+    "start_fresh": "စးထီၣ်အသီ",
     "restore_draft": "Restore Draft",
     "unsaved_changes": "You Have Unsaved Changes",
     "unsaved_changes_body": "Your progress hasn't been exported or ပာ်ဖျါဝံၤ. Are you sure you want to ကးတံၢ်?",
@@ -11681,7 +11686,7 @@
     "writing_coach_tip": "Writing Coach Tip",
     "illustrate_story": "Illustrate Your တၢ်ဂ့ၢ်",
     "illustrate_story_desc": "AI will create artwork for each paragraph",
-    "book_cover": "လံၥ် Cover",
+    "book_cover": "လံာ်ဖီခိၣ်",
     "empty_paragraph": "Empty paragraph",
     "generation_failed": "Generation failed",
     "edit_prompt_below": "ဘှီတၢ် the prompt below before generating, or ဆဲးကၠုၥ် Generate to proceed.",
@@ -11693,23 +11698,24 @@
     "click_to_insert": "ဆဲးကၠုၥ် to insert this transition တၢ်ကတိၤ",
     "edit_illustration": "ဘှီတၢ် illustration with AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "ကးတံၢ်",
-    "cancel": "ပၢ်ကွံာ်",
-    "add": "ထၢနုၥ်",
-    "done": "Done",
-    "edit": "ဘှီတၢ်",
-    "reset": "Reset",
-    "apply": "Apply",
-    "processing": "Processing...",
-    "show_all": "ဒုးနဲၣ် all",
-    "hide_all": "ဘံၣ်တံၥ် all",
+    "close": "ကျုၢ်တံၢ်",
+    "cancel": "ဟးထီၣ်",
+    "add": "ဆီၣ်လီၤ",
+    "done": "ဝံၤ",
+    "edit": "မၤဂ့ၤထီၣ်",
+    "reset": "မၤက္ၤ",
+    "apply": "ဆီၣ်လီၤ",
+    "processing": "အိၣ်မၤဝဲဒၣ်...",
+    "show_all": "ပၢ်ထီၣ်ခဲလၢာ်",
+    "hide_all": "ဘှီထီၣ်ခဲလၢာ်",
     "not_applicable": "Not applicable",
     "remove_text": "ထုးထီၣ်ကွံၥ် text",
     "explain_concept_action": "Explain this concept",
     "explain_to_class": "Explain to ကၠိ",
-    "try_again": "Try again",
+    "try_again": "မၤက္ၤတဘျီ",
     "edit_response": "ဘှီတၢ် response",
-    "submit_reflection": "Submit reflection"
+    "submit_reflection": "Submit reflection",
+    "share_or_print": "ဟ့ၣ်နီၤလီၤ မ့တမ့ၢ် ဒိ"
   },
   "alts": {
     "scene_visualization": "Scene Visualization",
@@ -11808,10 +11814,10 @@
     "toggle_bionic": "Toggle Bionic Reading",
     "toggle_line_guide": "Toggle Line Guide",
     "toggle_dark_mode": "Toggle Dark Mode",
-    "zoom_in": "Zoom In",
-    "zoom_out": "Zoom Out",
+    "zoom_in": "ဒိၣ်ထီၣ်",
+    "zoom_out": "ဖုၣ်လီၤ",
     "download_html": "Download HTML",
-    "print": "Print",
+    "print": "ဒိ",
     "ai_backend_settings": "AI Backend Settings",
     "skip_ai_explain": "Skip — no penalty. The AI will explain.",
     "quick_ai_explanation": "Get a quick AI explanation of this concept",
@@ -11827,7 +11833,10 @@
     "play_explainer_aloud": "ဂဲၤလိၥ် explainer aloud",
     "send_explainer_to_students": "ဆှၢ this explainer to every ဖိသၣ်ကၠိ's screen now",
     "one_click_remove_text": "One-ဆဲးကၠုၥ်: ထုးထီၣ်ကွံၥ် text from this တၢ်ဂီၤ",
-    "rewrite_distractor": "Rewrite this distractor to encode a real misconception"
+    "rewrite_distractor": "Rewrite this distractor to encode a real misconception",
+    "profile_logout": "ဟးထီၣ်",
+    "refresh": "မၤသီထီၣ်",
+    "select_all": "ဃုထၢခဲလၢာ်"
   },
   "alerts": {
     "image_too_large_5mb": "တၢ်ဂီၤ too large (max 5MB). Please use a smaller တၢ်ဂီၤ.",
@@ -11851,7 +11860,10 @@
     "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a အသီ browser tab.",
     "regenerate_function_missing": "Error: Regenerate function missing or invalid",
     "crypto_not_loaded": "Submission crypto module not loaded yet. Please refresh and try again.",
-    "image_too_large_10mb": "တၢ်ဂီၤ too large (max 10MB). Please use a smaller တၢ်ဂီၤ."
+    "image_too_large_10mb": "တၢ်ဂီၤ too large (max 10MB). Please use a smaller တၢ်ဂီၤ.",
+    "error_generic": "တၢ်တနီၤနီၤကမၣ်ဝဲ. ဂုာ်က္ၤတဘျီ.",
+    "success_saved": "ပာ်ဖှိၣ်က့ၤဝံၤ.",
+    "warning_unsaved": "နဆီတလဲတဖၣ်တပာ်ဖှိၣ်ဒံးဘၣ်."
   },
   "confirms": {
     "replace_imported_cards": "Replace all existing cards with the imported ones?",

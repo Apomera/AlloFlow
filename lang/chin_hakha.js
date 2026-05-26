@@ -2272,7 +2272,7 @@
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
     "tier_score": "Tier {tier}, score {score}",
-    "draggable_item": "draggable item"
+    "draggable_item": "a kai khawhmi thil"
   },
   "games": {
     "syntax": {
@@ -11615,7 +11615,12 @@
     "explain_own_words": "Explain in your own biafang (3-5 biacheo)…",
     "missing_word_or_phrase": "Type the missing biafang or phrase...",
     "reflection_here": "Type your reflection here…",
-    "english_language": "English"
+    "english_language": "English",
+    "search": "Zoh...",
+    "loading": "A laak lio...",
+    "untitled": "Min a um lo",
+    "optional": "Thim ding",
+    "required": "A herhmi"
   },
   "audit": {
     "section_divider": "Section divider",
@@ -11666,7 +11671,7 @@
   },
   "ui_common": {
     "continue_where_left": "Zulh Where You Left Off?",
-    "start_fresh": "Thawk Fresh",
+    "start_fresh": "Thar in thok",
     "restore_draft": "Restore Draft",
     "unsaved_changes": "You Have Unsaved Changes",
     "unsaved_changes_body": "Your progress hasn't been exported or a khoh cang. Are you sure you want to khar?",
@@ -11681,7 +11686,7 @@
     "writing_coach_tip": "Writing Coach Tip",
     "illustrate_story": "Illustrate Your tuanbia",
     "illustrate_story_desc": "AI will create artwork for each paragraph",
-    "book_cover": "cauk Cover",
+    "book_cover": "Cauk cohlan",
     "empty_paragraph": "Empty paragraph",
     "generation_failed": "Generation failed",
     "edit_prompt_below": "Thlen the prompt below before generating, or hnen Generate to proceed.",
@@ -11694,22 +11699,23 @@
     "edit_illustration": "Thlen illustration with AI",
     "regenerate_illustration": "Regenerate illustration",
     "close": "Khar",
-    "cancel": "Cawl",
-    "add": "Tel",
-    "done": "Done",
-    "edit": "Thlen",
-    "reset": "Reset",
-    "apply": "Apply",
-    "processing": "Processing...",
-    "show_all": "Langhter all",
-    "hide_all": "Thup all",
+    "cancel": "Hluat",
+    "add": "Telhsia",
+    "done": "A dih cang",
+    "edit": "Remh",
+    "reset": "Tlawmpa pek",
+    "apply": "Hman",
+    "processing": "A tuah lio...",
+    "show_all": "Cu vialte langhter",
+    "hide_all": "Cu vialte thup",
     "not_applicable": "Not applicable",
     "remove_text": "Lak text",
     "explain_concept_action": "Explain this concept",
     "explain_to_class": "Explain to sianginn",
-    "try_again": "Try again",
+    "try_again": "Zaa rian tuah",
     "edit_response": "Thlen response",
-    "submit_reflection": "Submit reflection"
+    "submit_reflection": "Submit reflection",
+    "share_or_print": "Pek asiloah print"
   },
   "alts": {
     "scene_visualization": "Scene Visualization",
@@ -11808,8 +11814,8 @@
     "toggle_bionic": "Toggle Bionic Reading",
     "toggle_line_guide": "Toggle Line Guide",
     "toggle_dark_mode": "Toggle Dark Mode",
-    "zoom_in": "Zoom In",
-    "zoom_out": "Zoom Out",
+    "zoom_in": "Tlangpi",
+    "zoom_out": "Tete",
     "download_html": "Lakhrak HTML",
     "print": "Print",
     "ai_backend_settings": "AI Backend Settings",
@@ -11827,7 +11833,10 @@
     "play_explainer_aloud": "Lentecel explainer aloud",
     "send_explainer_to_students": "Thlah this explainer to every sianginn caa's screen now",
     "one_click_remove_text": "One-hnen: lak text from this limceu",
-    "rewrite_distractor": "Rewrite this distractor to encode a real misconception"
+    "rewrite_distractor": "Rewrite this distractor to encode a real misconception",
+    "profile_logout": "Chuah",
+    "refresh": "Thar pek",
+    "select_all": "Vialte thim"
   },
   "alerts": {
     "image_too_large_5mb": "limceu too large (max 5MB). Please hman a smaller limceu.",
@@ -11851,7 +11860,10 @@
     "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a thar browser tab.",
     "regenerate_function_missing": "Error: Regenerate function missing or invalid",
     "crypto_not_loaded": "Submission crypto module not loaded yet. Please refresh and try again.",
-    "image_too_large_10mb": "limceu too large (max 10MB). Please hman a smaller limceu."
+    "image_too_large_10mb": "limceu too large (max 10MB). Please hman a smaller limceu.",
+    "error_generic": "Khat kaa tlukin pang. Zaa rian tuah.",
+    "success_saved": "Zatpi a dih.",
+    "warning_unsaved": "A nih a thlek ahcun a um lio."
   },
   "confirms": {
     "replace_imported_cards": "Replace all existing cards with the imported ones?",

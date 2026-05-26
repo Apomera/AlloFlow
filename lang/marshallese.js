@@ -2272,7 +2272,7 @@
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
     "tier_score": "Tier {tier}, score {score}",
-    "draggable_item": "draggable item"
+    "draggable_item": "men eo ej maron̄ kanōke"
   },
   "games": {
     "syntax": {
@@ -11623,7 +11623,11 @@
     "explain_own_words": "Explain in your own naan (3-5 sentences)…",
     "missing_word_or_phrase": "Type the missing naan or phrase...",
     "reflection_here": "Type your reflection here…",
-    "english_language": "English"
+    "english_language": "Pālle",
+    "search": "Pukot...",
+    "loading": "Ej bok...",
+    "untitled": "Ejjab kakōn etan",
+    "required": "Aikuj"
   },
   "audit": {
     "section_divider": "Section divider",
@@ -11674,7 +11678,7 @@
   },
   "ui_common": {
     "continue_where_left": "Wōnṃaanḷọk Where You Left Off?",
-    "start_fresh": "Jino Fresh",
+    "start_fresh": "Bar jino",
     "restore_draft": "Restore Draft",
     "unsaved_changes": "You Have Unsaved Changes",
     "unsaved_changes_body": "Your progress hasn't been exported or saved. Are you sure you want to kiili?",
@@ -11689,7 +11693,7 @@
     "writing_coach_tip": "Writing Coach Tip",
     "illustrate_story": "Illustrate Your bwebwenato",
     "illustrate_story_desc": "AI will create artwork for each paragraph",
-    "book_cover": "bok Cover",
+    "book_cover": "Mejen bok",
     "empty_paragraph": "Empty paragraph",
     "generation_failed": "Generation failed",
     "edit_prompt_below": "Ukot the prompt below before generating, or klik Generate to proceed.",
@@ -11701,23 +11705,24 @@
     "click_to_insert": "Klik to insert this transition naan",
     "edit_illustration": "Ukot illustration with AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Kiili",
-    "cancel": "Kajeor",
-    "add": "Kobaik",
-    "done": "Done",
-    "edit": "Ukot",
-    "reset": "Reset",
-    "apply": "Apply",
-    "processing": "Processing...",
-    "show_all": "Kwaḷọk all",
-    "hide_all": "Ṇọṇak all",
+    "close": "Kiil",
+    "cancel": "Kakkure",
+    "add": "Kobaiki",
+    "done": "Emoj",
+    "edit": "Ukote",
+    "reset": "Bar jino",
+    "apply": "Kojerbal",
+    "processing": "Ej jerbal...",
+    "show_all": "Kwalok aolep",
+    "hide_all": "Noniki aolep",
     "not_applicable": "Not applicable",
     "remove_text": "Joḷọk text",
     "explain_concept_action": "Explain this concept",
     "explain_to_class": "Explain to kilaaj",
-    "try_again": "Try again",
+    "try_again": "Bar kajeoñ",
     "edit_response": "Ukot response",
-    "submit_reflection": "Submit reflection"
+    "submit_reflection": "Submit reflection",
+    "share_or_print": "Aikuj ak kein print"
   },
   "alts": {
     "scene_visualization": "Scene Visualization",
@@ -11816,8 +11821,8 @@
     "toggle_bionic": "Toggle Bionic Reading",
     "toggle_line_guide": "Toggle Line Guide",
     "toggle_dark_mode": "Toggle Dark Mode",
-    "zoom_in": "Zoom In",
-    "zoom_out": "Zoom Out",
+    "zoom_in": "Kakileplep",
+    "zoom_out": "Kadidik",
     "download_html": "Download HTML",
     "print": "Print",
     "ai_backend_settings": "AI Backend Settings",
@@ -11835,7 +11840,10 @@
     "play_explainer_aloud": "Ikkure explainer aloud",
     "send_explainer_to_students": "Jilkinḷọk this explainer to every rūkkatak's screen now",
     "one_click_remove_text": "One-klik: joḷọk text from this pija",
-    "rewrite_distractor": "Rewrite this distractor to encode a real misconception"
+    "rewrite_distractor": "Rewrite this distractor to encode a real misconception",
+    "profile_logout": "Diwoj",
+    "refresh": "Karreel",
+    "select_all": "Kalet aolep"
   },
   "alerts": {
     "image_too_large_5mb": "pija too large (max 5MB). Please kōjerbal a smaller pija.",
@@ -11859,7 +11867,10 @@
     "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a ekāāl browser tab.",
     "regenerate_function_missing": "Error: Regenerate function missing or invalid",
     "crypto_not_loaded": "Submission crypto module not loaded yet. Please refresh and try again.",
-    "image_too_large_10mb": "pija too large (max 10MB). Please kōjerbal a smaller pija."
+    "image_too_large_10mb": "pija too large (max 10MB). Please kōjerbal a smaller pija.",
+    "error_generic": "Jet men ear bod. Bar kajeoñ.",
+    "success_saved": "Em̧wij kakōn.",
+    "warning_unsaved": "Eor amim oktak ko jab kakōne."
   },
   "confirms": {
     "replace_imported_cards": "Replace all existing cards with the imported ones?",

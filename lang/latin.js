@@ -2272,7 +2272,7 @@
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
     "tier_score": "Tier {tier}, pūnctum {score}",
-    "draggable_item": "draggable rēs"
+    "draggable_item": "res quae trahi potest"
   },
   "games": {
     "syntax": {
@@ -11623,7 +11623,11 @@
     "explain_own_words": "Explain in your own verbum (3-5 sententia)…",
     "missing_word_or_phrase": "Type the missing verbum or phrase...",
     "reflection_here": "Type your reflection here…",
-    "english_language": "English"
+    "english_language": "Anglice",
+    "search": "Quaerere...",
+    "loading": "Onerans...",
+    "untitled": "Sine titulo",
+    "required": "Requiritur"
   },
   "audit": {
     "section_divider": "sectiō divider",
@@ -11674,7 +11678,7 @@
   },
   "ui_common": {
     "continue_where_left": "Continuā Where You Left Off?",
-    "start_fresh": "Incipe Fresh",
+    "start_fresh": "Incipere de novo",
     "restore_draft": "Restore Draft",
     "unsaved_changes": "You Have Unsaved Changes",
     "unsaved_changes_body": "Your prōgressus hasn't been exported or servātum. Are you sure you want to claude?",
@@ -11689,7 +11693,7 @@
     "writing_coach_tip": "Writing Coach cōnsilium",
     "illustrate_story": "Illustrate Your fābula",
     "illustrate_story_desc": "AI will creā artwork for each paragraphus",
-    "book_cover": "Book Cover",
+    "book_cover": "Tegumen libri",
     "empty_paragraph": "Empty paragraphus",
     "generation_failed": "Generation failed",
     "edit_prompt_below": "Recense the prompt below before generandō, or pulsā Generā to proceed.",
@@ -11701,23 +11705,24 @@
     "click_to_insert": "Pulsā to insert hoc transition verbum",
     "edit_illustration": "Recense illūstrātiō with AI",
     "regenerate_illustration": "Regenerate illūstrātiō",
-    "close": "Claude",
-    "cancel": "Abrogā",
-    "add": "Adde",
-    "done": "Done",
-    "edit": "Recense",
-    "reset": "Restitue",
-    "apply": "Apply",
-    "processing": "Processing...",
-    "show_all": "Mōnstrā all",
-    "hide_all": "Cēlā all",
+    "close": "Claudere",
+    "cancel": "Cancellare",
+    "add": "Addere",
+    "done": "Factum",
+    "edit": "Recensere",
+    "reset": "Restituere",
+    "apply": "Adhibere",
+    "processing": "Procedens...",
+    "show_all": "Omnia ostendere",
+    "hide_all": "Omnia abscondere",
     "not_applicable": "Not applicable",
     "remove_text": "Remove textus",
     "explain_concept_action": "Explain hoc concept",
     "explain_to_class": "Explain to classis",
-    "try_again": "Tentā again",
+    "try_again": "Iterum conari",
     "edit_response": "Recense response",
-    "submit_reflection": "Submit reflection"
+    "submit_reflection": "Submit reflection",
+    "share_or_print": "Communicare aut imprimere"
   },
   "alts": {
     "scene_visualization": "scaena Visualization",
@@ -11816,10 +11821,10 @@
     "toggle_bionic": "Mūtā Bionic Reading",
     "toggle_line_guide": "Mūtā līnea Guide",
     "toggle_dark_mode": "Mūtā Dark modus",
-    "zoom_in": "Zoom In",
-    "zoom_out": "Zoom Out",
+    "zoom_in": "Amplificare",
+    "zoom_out": "Diminuere",
     "download_html": "Recipe HTML",
-    "print": "Imprime",
+    "print": "Imprimere",
     "ai_backend_settings": "AI Backend cōnstitūtiōnēs",
     "skip_ai_explain": "Omitte — no penalty. The AI will explain.",
     "quick_ai_explanation": "Get a celer AI explanation of hoc concept",
@@ -11835,7 +11840,10 @@
     "play_explainer_aloud": "Lūde explainer aloud",
     "send_explainer_to_students": "Mitte hoc explainer to every discipulus's screen now",
     "one_click_remove_text": "One-pulsā: remove textus from hoc imāgō",
-    "rewrite_distractor": "Rewrite hoc distractor to encode a real misconception"
+    "rewrite_distractor": "Rewrite hoc distractor to encode a real misconception",
+    "profile_logout": "Exire",
+    "refresh": "Renovare",
+    "select_all": "Omnia eligere"
   },
   "alerts": {
     "image_too_large_5mb": "imāgō too large (max 5MB). amābō ūtere a smaller imāgō.",
@@ -11859,7 +11867,10 @@
     "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — adfīge it into a novus browser tab.",
     "regenerate_function_missing": "errātum: Regenerate function missing or invalid",
     "crypto_not_loaded": "Submission crypto module not loaded yet. amābō renovā and tentā again.",
-    "image_too_large_10mb": "imāgō too large (max 10MB). amābō ūtere a smaller imāgō."
+    "image_too_large_10mb": "imāgō too large (max 10MB). amābō ūtere a smaller imāgō.",
+    "error_generic": "Aliquid male evenit. Iterum conare.",
+    "success_saved": "Servatum est.",
+    "warning_unsaved": "Mutationes non servatas habes."
   },
   "confirms": {
     "replace_imported_cards": "Replace all existing schedula with the imported ones?",

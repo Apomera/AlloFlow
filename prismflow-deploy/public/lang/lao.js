@@ -1024,7 +1024,7 @@
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
     "tier_score": "Tier {tier}, score {score}",
-    "draggable_item": "draggable item"
+    "draggable_item": "ລາຍການທີ່ສາມາດລາກໄດ້"
   },
   "roles": {
     "title": "ຍິນດີຕ້ອນຮັບສູ່ AlloFlow",
@@ -11545,11 +11545,15 @@
     "explain_own_words": "Explain in your own words (3-5 sentences)…",
     "missing_word_or_phrase": "Type the missing word or phrase...",
     "reflection_here": "Type your reflection here…",
-    "english_language": "English"
+    "english_language": "ອັງກິດ",
+    "search": "ຄົ້ນຫາ...",
+    "loading": "ກຳລັງໂຫຼດ...",
+    "untitled": "ບໍ່ມີຫົວຂໍ້",
+    "required": "ຕ້ອງການ"
   },
   "ui_common": {
     "continue_where_left": "Continue Where You Left Off?",
-    "start_fresh": "Start Fresh",
+    "start_fresh": "ເລີ່ມໃໝ່",
     "restore_draft": "Restore Draft",
     "unsaved_changes": "You Have Unsaved Changes",
     "unsaved_changes_body": "Your progress hasn't been exported or saved. Are you sure you want to close?",
@@ -11564,7 +11568,7 @@
     "writing_coach_tip": "Writing Coach Tip",
     "illustrate_story": "Illustrate Your Story",
     "illustrate_story_desc": "AI will create artwork for each paragraph",
-    "book_cover": "Book Cover",
+    "book_cover": "ປົກໜັງສື",
     "empty_paragraph": "Empty paragraph",
     "generation_failed": "Generation failed",
     "edit_prompt_below": "Edit the prompt below before generating, or click Generate to proceed.",
@@ -11576,14 +11580,18 @@
     "click_to_insert": "Click to insert this transition word",
     "edit_illustration": "Edit illustration with AI",
     "regenerate_illustration": "Regenerate illustration",
-    "close": "Close",
-    "cancel": "Cancel",
-    "add": "Add",
-    "done": "Done",
-    "edit": "Edit",
-    "reset": "Reset",
-    "apply": "Apply",
-    "processing": "Processing..."
+    "close": "ປິດ",
+    "cancel": "ຍົກເລີກ",
+    "add": "ເພີ່ມ",
+    "done": "ສຳເລັດ",
+    "edit": "ແກ້ໄຂ",
+    "reset": "ຣີເຊັດ",
+    "apply": "ນຳໃຊ້",
+    "processing": "ກຳລັງປະມວນຜົນ...",
+    "show_all": "ສະແດງທັງໝົດ",
+    "hide_all": "ຊ່ອນທັງໝົດ",
+    "try_again": "ລອງອີກຄັ້ງ",
+    "share_or_print": "ແບ່ງປັນ ຫຼື ພິມ"
   },
   "audit": {
     "section_divider": "Section divider",
@@ -11729,10 +11737,10 @@
     "toggle_bionic": "Toggle Bionic Reading",
     "toggle_line_guide": "Toggle Line Guide",
     "toggle_dark_mode": "Toggle Dark Mode",
-    "zoom_in": "Zoom In",
-    "zoom_out": "Zoom Out",
+    "zoom_in": "ຂະຫຍາຍ",
+    "zoom_out": "ຫຍໍ້",
     "download_html": "Download HTML",
-    "print": "Print",
+    "print": "ພິມ",
     "ai_backend_settings": "AI Backend Settings",
     "skip_ai_explain": "Skip — no penalty. The AI will explain.",
     "quick_ai_explanation": "Get a quick AI explanation of this concept",
@@ -11748,7 +11756,10 @@
     "play_explainer_aloud": "Play explainer aloud",
     "send_explainer_to_students": "Send this explainer to every student's screen now",
     "one_click_remove_text": "One-click: remove text from this image",
-    "rewrite_distractor": "Rewrite this distractor to encode a real misconception"
+    "rewrite_distractor": "Rewrite this distractor to encode a real misconception",
+    "profile_logout": "ອອກລະບົບ",
+    "refresh": "ໂຫຼດໃໝ່",
+    "select_all": "ເລືອກທັງໝົດ"
   },
   "alerts": {
     "image_too_large_5mb": "Image too large (max 5MB). Please use a smaller image.",
@@ -11772,7 +11783,10 @@
     "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.",
     "regenerate_function_missing": "Error: Regenerate function missing or invalid",
     "crypto_not_loaded": "Submission crypto module not loaded yet. Please refresh and try again.",
-    "image_too_large_10mb": "Image too large (max 10MB). Please use a smaller image."
+    "image_too_large_10mb": "Image too large (max 10MB). Please use a smaller image.",
+    "error_generic": "ມີບາງຢ່າງຜິດພາດ. ກະລຸນາລອງອີກຄັ້ງ.",
+    "success_saved": "ບັນທຶກສຳເລັດ.",
+    "warning_unsaved": "ທ່ານມີການປ່ຽນແປງທີ່ບໍ່ໄດ້ບັນທຶກ."
   },
   "confirms": {
     "replace_imported_cards": "Replace all existing cards with the imported ones?",

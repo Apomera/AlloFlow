@@ -2272,7 +2272,7 @@
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
     "tier_score": "Tier {tier}, score {score}",
-    "draggable_item": "draggable item"
+    "draggable_item": "shay la jiidi karo"
   },
   "games": {
     "syntax": {
@@ -11623,7 +11623,11 @@
     "explain_own_words": "Explain in your own ereyo (3-5 sentences)…",
     "missing_word_or_phrase": "Type the missing ereyo or phrase...",
     "reflection_here": "Type your reflection here…",
-    "english_language": "English"
+    "english_language": "Ingiriisi",
+    "search": "Raadi...",
+    "loading": "Soo dejin...",
+    "untitled": "Cinwaan la'aan",
+    "required": "Loo baahan yahay"
   },
   "audit": {
     "section_divider": "Section divider",
@@ -11674,7 +11678,7 @@
   },
   "ui_common": {
     "continue_where_left": "Sii wad Where You Left Off?",
-    "start_fresh": "Bilow Fresh",
+    "start_fresh": "Bilow cusub",
     "restore_draft": "Restore Draft",
     "unsaved_changes": "You Have Unsaved Changes",
     "unsaved_changes_body": "Your progress hasn't been exported or saved. Are you sure you want to xidh?",
@@ -11689,7 +11693,7 @@
     "writing_coach_tip": "Writing Coach Tip",
     "illustrate_story": "Illustrate Your sheeko",
     "illustrate_story_desc": "AI will create artwork for each paragraph",
-    "book_cover": "buug Cover",
+    "book_cover": "Daboolka buugga",
     "empty_paragraph": "Empty paragraph",
     "generation_failed": "Generation failed",
     "edit_prompt_below": "Wax ka beddel the prompt below before generating, or riix Generate to proceed.",
@@ -11702,22 +11706,23 @@
     "edit_illustration": "Wax ka beddel illustration with AI",
     "regenerate_illustration": "Regenerate illustration",
     "close": "Xidh",
-    "cancel": "Joojin",
-    "add": "Ku dar",
-    "done": "Done",
-    "edit": "Wax ka beddel",
-    "reset": "Reset",
-    "apply": "Apply",
-    "processing": "Processing...",
-    "show_all": "Tus all",
-    "hide_all": "Qari all",
+    "cancel": "Joojiy",
+    "add": "Ku darsiy",
+    "done": "Dhammeey",
+    "edit": "Beddel",
+    "reset": "Dejisiy",
+    "apply": "Codsiy",
+    "processing": "Habeey...",
+    "show_all": "Muujiy dhammaan",
+    "hide_all": "Qariy dhammaan",
     "not_applicable": "Not applicable",
     "remove_text": "Saar text",
     "explain_concept_action": "Explain this concept",
     "explain_to_class": "Explain to fasal",
-    "try_again": "Try again",
+    "try_again": "Mar kale isku day",
     "edit_response": "Wax ka beddel response",
-    "submit_reflection": "Submit reflection"
+    "submit_reflection": "Submit reflection",
+    "share_or_print": "Wadaag ama daabac"
   },
   "alts": {
     "scene_visualization": "Scene Visualization",
@@ -11816,10 +11821,10 @@
     "toggle_bionic": "Toggle Bionic Reading",
     "toggle_line_guide": "Toggle Line Guide",
     "toggle_dark_mode": "Toggle Dark Mode",
-    "zoom_in": "Zoom In",
-    "zoom_out": "Zoom Out",
+    "zoom_in": "Weyneey",
+    "zoom_out": "Yareey",
     "download_html": "Download HTML",
-    "print": "Print",
+    "print": "Daabac",
     "ai_backend_settings": "AI Backend Settings",
     "skip_ai_explain": "Skip — no penalty. The AI will explain.",
     "quick_ai_explanation": "Get a quick AI explanation of this concept",
@@ -11835,7 +11840,10 @@
     "play_explainer_aloud": "Ciyaar explainer aloud",
     "send_explainer_to_students": "Dir this explainer to every arday's screen now",
     "one_click_remove_text": "One-riix: saar text from this sawir",
-    "rewrite_distractor": "Rewrite this distractor to encode a real misconception"
+    "rewrite_distractor": "Rewrite this distractor to encode a real misconception",
+    "profile_logout": "Ka bax",
+    "refresh": "Cusbooneysiiy",
+    "select_all": "Dooro dhammaan"
   },
   "alerts": {
     "image_too_large_5mb": "sawir too large (max 5MB). Please isticmaal a smaller sawir.",
@@ -11859,7 +11867,10 @@
     "popup_blocked_clipboard": "Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a cusub browser tab.",
     "regenerate_function_missing": "Error: Regenerate function missing or invalid",
     "crypto_not_loaded": "Submission crypto module not loaded yet. Please refresh and try again.",
-    "image_too_large_10mb": "sawir too large (max 10MB). Please isticmaal a smaller sawir."
+    "image_too_large_10mb": "sawir too large (max 10MB). Please isticmaal a smaller sawir.",
+    "error_generic": "Wax baa khalday. Mar kale isku day.",
+    "success_saved": "Keyday si guul.",
+    "warning_unsaved": "Waxaad haysataa beddello aan la keydin."
   },
   "confirms": {
     "replace_imported_cards": "Replace all existing cards with the imported ones?",
