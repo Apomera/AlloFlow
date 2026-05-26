@@ -1,5 +1,5 @@
 {
-  "_version": "20260526094306T1779788586437",
+  "_version": "20260526094738T1779788858333",
   "tour": {
     "input_panel_title": "ivyinjira urubaho",
     "input_panel_text": "Begin cawe isomo creation journey here. Iki ivyinjira urubaho ni foundation kuri vyose vyakozwe umutungo. It serves as central hub aho wewe define ibirimwo, context, na parameters.\n### ivyinjira amahitamwo\n• **inyandiko Domeka**: Domeka ibirimwo directly kuva any article, inkuru, canke isomo umugambi.\n• **dosiye Rungika**: Rungika PDFs, ifoto, inyandiko dosiye, ijwi (MP3/WAV), canke video kuri cikora cononyene extraction.\n• **URL Zana**: Domeka any article URL ku automatically kuramwo na zana imbere its ibirimwo.\n• **AI umutungo Rondera**: Describe ikiyago na let AI find ishuri-appropriate online umutungo kuri wewe.\n• **Kora imvo inyandiko**: Rema umwimerere ibirimwo by specifying ikiyago, ijwi, urwego rw'ishuri, na intumbero urwego.\n### Igisekuru ibiranga\n• **ijwi Selection**: Hitamwo kuva Informative, Inkuru, Persuasive, Humorous, canke intambwe-by-intambwe imiterere.\n• **urwego Guhuza**: Koresha AI-powered urwego finder canke manually ivyinjira intumbero urwego (up ku 3).\n• **Fact Verification**: Emerera web grounding ku verify facts na shiramwo citations automatically.\n• **Custom amategeko**: Ongerako kanaka guidance kuri vyinshi tailored ibirimwo igisekuru.\n### sisitemu Capabilities\n• **Auto-Detection**: Automatically identifies imvo ururimi.\n• **Chunked Processing**: ijwi na video dosiye hejuru 20MB ni intelligently split kuri reliable transcription.\n### Important Most ibikoresho muri sidebar require imvo material before they can be vyakoreshejwe. Domeka canke kora cawe ibirimwo here ca mbere, then sesengura ikindi umutungo.",
@@ -2041,47 +2041,47 @@
   "games": {
     "syntax": {
       "title": "Syntax Scramble",
-      "subtitle": "Construct umurongo w'amajambo",
-      "progress": "umurongo w'amajambo {current} ca {total}",
-      "check": "Check inyishu",
-      "next": "cikurikira umurongo w'amajambo",
-      "complete": "Uzuza!",
-      "summary": "wewe reconstructed {count} umurongo w'amajambo correctly.",
-      "finish": "Finish",
-      "empty_zone": "Tap ijambo below ku kwubaka umurongo w'amajambo..."
+      "subtitle": "Yubaka umurongo w'amajambo",
+      "progress": "Umurongo {current} muri {total}",
+      "check": "Genzura Insubizo",
+      "next": "Umurongo Ukurikira",
+      "complete": "Vyarangiye!",
+      "summary": "Wubatse imirongo {count} neza.",
+      "finish": "Soza",
+      "empty_zone": "Kanda amajambo hepfo kugira ngo wubake umurongo..."
     },
     "scramble": {
-      "title": "ijambo Scramble",
-      "subtitle": "Unscramble amajambo ijambo ku win!",
-      "progress": "ijambo {current} ca {total}",
-      "hint_label": "insobanuro impanuro",
-      "input_placeholder": "TYPE inyishu",
+      "title": "Word Scramble",
+      "subtitle": "Tondeka nanone imvugo kugira utsinde!",
+      "progress": "Ijambo {current} muri {total}",
+      "hint_label": "Impanuro y'Insobanuro",
+      "input_placeholder": "ANDIKA INSUBIZO",
       "skip": "Simbuka",
-      "submit": "Submit",
-      "score": "Final amanota",
-      "loading": "umukino loading...",
-      "get_hint_aria": "Get impanuro",
-      "hint_button": "impanuro"
+      "submit": "Ohereza",
+      "score": "Amanota ya Nyuma",
+      "loading": "Imikino iratangira...",
+      "get_hint_aria": "Akira impanuro",
+      "hint_button": "Impanuro"
     },
     "crossword": {
-      "title": "Crossword ingorane",
+      "title": "Crossword Challenge",
       "clues": "Clues",
       "across": "Across",
       "down": "Down",
-      "check": "Check",
-      "reveal": "Reveal",
-      "direction_toggle": "Direction: {dir}",
-      "selected_cell": "Selected umurongo {r}, inkingi {c}",
-      "footer_tip": "Koresha Arrow Keys ku navigate • Space/Injiza ku hindura direction",
-      "current_score": "Current amanota: {score}",
-      "announce_deleted": "Letter deleted",
-      "announce_typed": "Typed {char}",
-      "announce_started": "Crossword started. Koresha Arrow Keys ku navigate, Type ku fill, Space ku hindura direction.",
-      "announce_direction_toggle": "Direction toggled ku {dir}",
-      "close_puzzle_aria": "Yugara Crossword Puzzle",
-      "grid_capture_aria": "Crossword urusobe Keyboard Capture",
-      "reveal_letter_hint_aria": "Reveal one letter impanuro",
-      "hint_button": "impanuro"
+      "check": "Genzura",
+      "reveal": "Erekana",
+      "direction_toggle": "Icerekezo: {dir}",
+      "selected_cell": "Umurongo {r}, Inkingi {c} yatoranyijwe",
+      "footer_tip": "Koresha Arrow Keys ku gutembera • Space/Enter ku guhindura icerekezo",
+      "current_score": "Amanota ya none: {score}",
+      "announce_deleted": "Inyuguti yasibwe",
+      "announce_typed": "Wanditse {char}",
+      "announce_started": "Crossword yatanguye. Koresha Arrow Keys ku gutembera, Type ku kuzuza, Space ku guhindura icerekezo.",
+      "announce_direction_toggle": "Icerekezo cyahinduwe ku {dir}",
+      "close_puzzle_aria": "Funga Crossword Puzzle",
+      "grid_capture_aria": "Crossword Grid Keyboard Capture",
+      "reveal_letter_hint_aria": "Erekana impanuro y'inyuguti imwe",
+      "hint_button": "Impanuro"
     },
     "bingo": {
       "generator_title": "Bingo Generator",
@@ -2131,83 +2131,83 @@
       "card_alt": "memory ikarata"
     },
     "fill_blank": {
-      "input_label": "Type cawe inyishu"
+      "input_label": "Andika insubizo yawe"
     },
-    "crossword_challenge": "Crossword ingorane",
-    "crossword_title": "Crossword ingorane",
-    "tap_to_pause": "Tap ku Pause",
-    "tap_or_space_to_play": "Tap canke Space ku Kina",
+    "crossword_challenge": "Crossword Challenge",
+    "crossword_title": "Crossword Challenge",
+    "tap_to_pause": "Kanda kugira Hagarara",
+    "tap_or_space_to_play": "Kanda canke Space kugira Ukine",
     "ce_sort": {
-      "title": "Cause & Effect Shira mu rutonde",
-      "play_btn": "Shira mu rutonde Causes & Effects",
+      "title": "Cause & Effect Sort",
+      "play_btn": "Tondeka Causes & Effects",
       "causes_label": "Causes",
       "effects_label": "Effects",
       "hint_try": "Gerageza",
-      "move_title": "Shira mu rutonde iki ikintu into:",
-      "victory_desc": "wewe sorted vyose causes na effects correctly!",
-      "reset_confirm": "Emeza tangura kabiri — clears whole board",
-      "reset_confirm_label": "Kanda again ku emeza",
-      "reset_confirm_aria": "Press Tangura kabiri again ku emeza clearing board, canke wait ku hagarika."
+      "move_title": "Tondeka iki kintu muri:",
+      "victory_desc": "Watondetse causes na effects vyose neza!",
+      "reset_confirm": "Emeza reset — bisobura urubaho rwose",
+      "reset_confirm_label": "Kanda nanone kwemeza",
+      "reset_confirm_aria": "Kanda Subiramwo nanone kugira wemeze gusobura urubaho, canke tegereza kugira uhagarike."
     },
     "pipeline": {
       "title": "Pipeline Builder",
-      "play_btn": "Kwubaka Flow",
-      "instruction": "Kanda intambwe's inyishu port, then kanda another intambwe's ivyinjira port ku shushanya connection.",
-      "then": "then",
-      "victory_desc": "wewe built entire process flow correctly!",
-      "drag_reposition_aria": "Kwega ku reposition"
+      "play_btn": "Yubaka Flow",
+      "instruction": "Kanda output port y'intambwe, hanyuma ukande input port y'intambwe yindi kugira ushushanye connection.",
+      "then": "hanyuma",
+      "victory_desc": "Wubatse process flow yose neza!",
+      "drag_reposition_aria": "Kurura kugira wongere gushira"
     },
     "tchart_sort": {
-      "title": "T-ishusho Shira mu rutonde",
-      "play_btn": "Shira mu rutonde Into inkingi",
-      "victory_desc": "wewe sorted every ikintu into correct inkingi!"
+      "title": "T-Chart Sort",
+      "play_btn": "Tondeka mu Nkingi",
+      "victory_desc": "Watondetse buri kintu mu nkingi nyabyo!"
     },
     "fishbone_sort": {
-      "title": "Fishbone Shira mu rutonde",
-      "play_btn": "Shira mu rutonde Causes Onto Bones",
-      "victory_desc": "wewe placed every cause into correct icigwa!"
+      "title": "Fishbone Sort",
+      "play_btn": "Tondeka Causes ku Magufa",
+      "victory_desc": "Washiremwo buri cause mu cyiciro caco!"
     },
     "concept_map_sort": {
-      "title": "Igitekerezo Map Shira mu rutonde",
-      "play_btn": "Shira mu rutonde Onto Branches",
-      "victory_desc": "wewe sorted every ikintu ku correct branch!"
+      "title": "Concept Map Sort",
+      "play_btn": "Tondeka ku Mashami",
+      "victory_desc": "Watondetse buri kintu ku ishami ryaco!"
     },
     "outline_sort": {
-      "title": "Outline Shira mu rutonde",
-      "play_btn": "Shira mu rutonde Under Headings",
-      "victory_desc": "wewe sorted every ibisigura under iburyo heading!"
+      "title": "Outline Sort",
+      "play_btn": "Tondeka Munsi y'Imitwe",
+      "victory_desc": "Watondetse buri detail munsi y'umutwe nyawo!"
     },
     "problem_solution_sort": {
-      "title": "Prioritize Solutions",
-      "play_btn": "Prioritize Solutions",
-      "victory_desc": "wewe ranked every solution muri recommended order!"
+      "title": "Prioritize the Solutions",
+      "play_btn": "Prioritize the Solutions",
+      "victory_desc": "Watondetse buri solution mu butondozi busabwa!"
     },
     "bucket_sort": {
-      "title": "Shira mu rutonde",
-      "victory_desc": "wewe sorted every ikintu correctly!",
-      "bank_empty": "vyose ikintu placed.",
-      "all_sorted": "vyose sorted!",
-      "final_score_label": "Final amanota:",
-      "play_again": "Kina again"
+      "title": "Tondeka",
+      "victory_desc": "Watondetse buri kintu neza!",
+      "bank_empty": "Ibintu vyose vyashiriweho.",
+      "all_sorted": "Vyose vyatondetse!",
+      "final_score_label": "Amanota ya nyuma:",
+      "play_again": "Kina nanone"
     },
-    "button_hint": "kora imyitozo iki wewe just learned hamwe na vyihuta kwega-na-reka sorting umukino. Keyboard friendly: press Injiza ku hitamwo ikintu, then hitamwo destination.",
+    "button_hint": "Witoze ivyo umaze kwiga hamwe na drag-and-drop sorting game yihuse. Keyboard friendly: kanda Enter kugira uhitemwo ikintu, hanyuma uhitemwo aho ujya.",
     "frayer_sort": {
-      "play_btn": "Kina Frayer Shira mu rutonde umukino"
+      "play_btn": "Kina Frayer Sort Game"
     },
     "see_think_wonder_sort": {
-      "play_btn": "Kina Raba-Think-Wonder Shira mu rutonde umukino"
+      "play_btn": "Kina See-Think-Wonder Sort Game"
     },
     "story_map_sort": {
-      "play_btn": "Kina inkuru Map Shira mu rutonde umukino"
+      "play_btn": "Kina Story Map Sort Game"
     },
-    "theme_toggle_aria": "Hindura icigwa (light / dark / rirerire contrast)",
-    "read_aloud_title": "Soma aloud",
-    "explain_incorrect_aria": "Explain why iki was incorrect",
-    "scroll_deck_left_aria": "Scroll deck left",
-    "scroll_deck_right_aria": "Scroll deck iburyo ku raba vyinshi ikarata",
+    "theme_toggle_aria": "Toggle theme (light / dark / high contrast)",
+    "read_aloud_title": "Soma mu ijwi rirenga",
+    "explain_incorrect_aria": "Sobanura impamvu iki cyabaye kibi",
+    "scroll_deck_left_aria": "Zenguruka deck ibumoso",
+    "scroll_deck_right_aria": "Zenguruka deck iburyo kugira urabe cards zindi",
     "choose_zone_aria": "Hitamwo zone",
     "choose_column_aria": "Hitamwo inkingi",
-    "choose_destination_aria": "Hitamwo destination"
+    "choose_destination_aria": "Hitamwo aho ujya"
   },
   "glossary": {
     "title": "inkoranya & ururimi Selection",
@@ -7864,7 +7864,7 @@
     "title": "Socratic Tutor",
     "thinking": "Thinking...",
     "placeholder": "Ask kuri impanuro...",
-    "welcome": "Hi! I'm cawe tutor. I won't give wewe inyishu, ariko I can imfashanyo wewe find them. iki ni wewe working kuri?",
+    "welcome": "Muraho! Ndi tutor yawe. Sinzaguha insubizo, ariko nshobora kugufasha kuzibona. Ni iki uri gukora?",
     "ask_for_help": "Ask kuri imfashanyo",
     "auto_read": "Auto-Soma Responses",
     "auto_send": "Auto-Rungika ijwi",
@@ -7928,7 +7928,7 @@
     "empty_plan": "Oya intambwe muri iki umugambi.",
     "placeholder_instruction": "kanaka amategeko kuri iki intambwe...",
     "remove_step_tooltip": "Kuraho intambwe",
-    "cancel_msg": "Blueprint cancelled. iki would wewe like ku do instead?",
+    "cancel_msg": "Blueprint yahagaritswe. Ni iki wifuza gukora aho?",
     "execution_complete": "Blueprint Uzuza!",
     "execution_error": "Blueprint execution interrupted.",
     "tools": {
@@ -8145,7 +8145,7 @@
     "session_history": "igihe History",
     "word_sounds": "Word Sounds",
     "download_progress_report": "Manura My iterambere Icegeranyo",
-    "report_downloaded": "cawe iterambere icegeranyo has been downloaded!",
+    "report_downloaded": "Raporo yawe y'iterambere yamanuwe!",
     "leave_empty_all_sessions": "Leave empty ku shiramwo vyose igihe"
   },
   "research": {
@@ -10966,7 +10966,7 @@
   "lms": {
     "dismiss_banner_aria": "Dismiss LMS banner",
     "dismiss_button": "Dismiss",
-    "audit_queue_help": "Kanda inyandiko ku zana na pakira it into kugera ho pipeline. Bimwe LMS dosiye may require wewe ku be logged muri ku LMS muri iki browser."
+    "audit_queue_help": "Kanda inyandiko kugira uyizane no kuyishira mu audit pipeline. Bimwe mu LMS idosiye bishobora gusaba ko winjira muri LMS muri iyi browser."
   },
   "annotation": {
     "undo_tooltip": "Undo ca nyuma annotation ({count} kirahari) — Ctrl/Cmd+Z",
@@ -11107,10 +11107,10 @@
     "source_label": "Ku byerekeye imvo inyandiko",
     "no_xp_hint": "wewe've already earned XP kuva iki entry before. Keep going — gisha improvements earn vyinshi XP.",
     "no_ai": "AI feedback ni ntibi kirahari iburyo ubu.",
-    "cornell_needs_notes": "Ongerako at least 2 umurongo ca notes before asking kuri feedback.",
-    "lab_needs_substance": "Fill muri hypothesis, analysis, canke conclusion before asking kuri feedback.",
-    "reading_needs_thinking": "Andika at least cawe thinking canke connection before asking kuri feedback.",
-    "empty": "Fill muri bimwe ca template before asking kuri feedback.",
+    "cornell_needs_notes": "Ongeraho nibura imirongo 2 ya notes mbere yo gusaba feedback.",
+    "lab_needs_substance": "Uzuza muri hypothesis, analysis, canke conclusion mbere yo gusaba feedback.",
+    "reading_needs_thinking": "Andika nibura ivyiyumvo vyawe canke connection mbere yo gusaba feedback.",
+    "empty": "Uzuza igice c'template mbere yo gusaba feedback.",
     "thinking": "Reading cawe notes...",
     "error": "Could ntibi kora feedback iburyo ubu. Gerageza again muri moment.",
     "loading": "Reading cawe notes...",
@@ -11129,7 +11129,7 @@
     "celebration_label": "Keep doing iki",
     "footer": "These kwitegereza ni mirror, ntibi ishuri. Koresha iki's useful, shiraho aside iki isn't.",
     "no_ai": "AI ni ntibi kirahari iburyo ubu.",
-    "need_more_entries": "Bika at least 2 note-taking entries before kurema insights.",
+    "need_more_entries": "Bika nibura note-taking entries 2 mbere yo gukora insights.",
     "error": "Could ntibi kora insights iburyo ubu. Gerageza again muri moment.",
     "button_aria": "Kora note-taking insights across cawe vyabitswe entries",
     "need_more_entries_short": "Bika 2+ entries ku unlock",
