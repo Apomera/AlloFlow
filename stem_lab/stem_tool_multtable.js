@@ -1347,6 +1347,11 @@ window.StemLab = window.StemLab || {
                     var isExact = multTableHover && multTableHover.r === r + 1 && multTableHover.c === c + 1;
                     var isPerfectSquare = r === c;
                     var isHighlighted = highlightCell && highlightCell.r === r + 1 && highlightCell.c === c + 1;
+                    // Commutative pair: when hovering (R, C), also flag cell (C, R) so students
+                    // see that 3×4 and 4×3 give the same product — the commutative property.
+                    var isCommPair = multTableHover && !isExact &&
+                      multTableHover.r === c + 1 && multTableHover.c === r + 1 &&
+                      multTableHover.r !== multTableHover.c;
 
                     return h('td', {
                       key: c,
@@ -1359,16 +1364,19 @@ window.StemLab = window.StemLab || {
                         setHighlightCell(null);
                         setInputDisabled(false);
                       },
+                      title: isCommPair ? 'Commutative pair: ' + (c + 1) + '×' + (r + 1) + ' = ' + (r + 1) + '×' + (c + 1) + ' = ' + val : undefined,
                       className: 'w-8 h-8 text-[11px] font-mono cursor-pointer transition-all border border-slate-100 ' +
                         (isHighlighted
                           ? 'bg-amber-400 text-amber-900 font-bold ring-2 ring-amber-500 ring-offset-1 rounded scale-110 shadow-lg animate-pulse'
                           : isExact
                             ? 'bg-pink-700 text-white font-bold scale-110 shadow-lg rounded'
-                            : isHovered
-                              ? 'bg-pink-50 text-pink-800 font-semibold'
-                              : isPerfectSquare
-                                ? 'bg-indigo-50 text-indigo-700 font-semibold'
-                                : 'text-slate-600 hover:bg-slate-50')
+                            : isCommPair
+                              ? 'bg-emerald-100 text-emerald-800 font-bold ring-1 ring-emerald-400 ring-offset-0 rounded'
+                              : isHovered
+                                ? 'bg-pink-50 text-pink-800 font-semibold'
+                                : isPerfectSquare
+                                  ? 'bg-indigo-50 text-indigo-700 font-semibold'
+                                  : 'text-slate-600 hover:bg-slate-50')
                     }, multTableHidden && !isExact && !isHighlighted && !(multTableRevealed instanceof Set && multTableRevealed.has(r + '-' + c)) ? '?' : val);
                   })
                 );
