@@ -103,26 +103,32 @@ legitimate Japanese density, similar to Chinese compactness.
 abbreviated (e.g., `tour.analysis_text` 53 chars vs 1173 source), but
 those reflect intentional content trimming.
 
-## Hand-translated tour entries across 9 packs
+## Hand-translated tour entries across 9 packs — ALL COMPLETE
 
-**Tour entries restored across multiple packs 2026-05-26:**
+**Tour entries fully restored across 9 packs 2026-05-26:**
 
-| Pack | Tour keys translated | Commit(s) |
+| Pack | Tour keys translated | Status |
 |---|---|---|
-| Hebrew | 23 (all long tour keys) | b779046b, 061f0174, 642397de, a3b50608 |
-| Arabic | 23 (all long tour keys) | b779046b, 061f0174, 642397de, a3b50608 |
-| Farsi | 23 (all long tour keys) | 6cc96abb, 5056adb1, c047e0b7, 2b8d4f24 |
-| Dari | 23 (all long tour keys) | 6cc96abb, 5056adb1, c047e0b7, 2b8d4f24 |
-| Urdu | 23 (all long tour keys) | 9447d53f, ab3ae721, 1439b026, 4b086e8e |
-| Somali | 10 (batch 1 + 2) | 832bbf98, 469aa645 |
-| Haitian Creole | 10 (batch 1 + 2) | be8db880, b5b7d7ad |
-| Thai | 10 (batch 1 + 2) | be8db880, b5b7d7ad |
-| Pashto | 5 (top tours) | fd064fb0 |
+| Hebrew | 23 (all long tour keys) | ✓ Complete |
+| Arabic | 23 (all long tour keys) | ✓ Complete |
+| Farsi | 23 (all long tour keys) | ✓ Complete |
+| Dari | 23 (all long tour keys) | ✓ Complete |
+| Urdu | 23 (all long tour keys) | ✓ Complete |
+| Somali | 23 (all long tour keys) | ✓ Complete |
+| Haitian Creole | 23 (all long tour keys) | ✓ Complete |
+| Thai | 23 (all long tour keys) | ✓ Complete |
+| Pashto | 23 (all long tour keys) | ✓ Complete |
 
-**Total: 150 hand-translated long tour entries across 9 packs** (5 packs fully done — Hebrew, Arabic, Farsi, Dari, Urdu with all 23 long tour keys), each with
-full `### Section` structured content covering input panel, dashboard,
-actions, glossary, history, analysis, adventure, quiz, wordsounds,
-scaffolds, and (for Hebrew/Arabic) all 23 long tour keys.
+**Total: 207 hand-translated long tour entries across 9 packs — 100% complete.**
+
+Every long tour key (≥500 chars source) in all 9 affected packs now has
+proper hand-translated content with full `### Section` structured content
+preserving bullet points, bold feature names, UDL Connection citations,
+Pro Tips, and DNT brand names (AlloFlow, Common Core, NGSS, UDL, LMS,
+FAB, etc.). Covers input_panel, dashboard, actions, glossary, history,
+analysis, adventure, quiz, wordsounds, scaffolds, utils, outline,
+simplified, persona, concept_sort, timeline, brainstorm, math, fullpack,
+visual, lesson_plan, alignment, faq.
 
 ## Hebrew / Arabic tour sections — fully RESTORED via hand translation
 
