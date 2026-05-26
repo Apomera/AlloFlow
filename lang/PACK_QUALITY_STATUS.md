@@ -28,20 +28,32 @@ alerts, ui_common, alts, a11y.draggable_item) since session 3.
   (Simplified), Vietnamese, Portuguese (Brazil), German. Total 306 more
   translations.
 
-**Coverage status for the 6 major languages:**
-| Section | Spanish/French/Chinese/Vietnamese/Portuguese/German |
+**6 major languages are now COMPLETE for all 260 new UI keys:**
+
+| Section | Spanish (LATAM) / French / Chinese (Simp) / Vietnamese / Portuguese (BR) / German |
 |---|---|
 | ui_common (45) | ✓ done |
 | alerts (22) | ✓ done |
 | confirms (29) | ✓ done |
-| top tooltips (8) | ✓ done |
-| Remaining tooltips (~99) | ⏳ English passthrough |
-| placeholders (25) | ⏳ English passthrough |
-| alts (7) | ⏳ English passthrough |
+| tooltips (107) | ✓ done (8 priority + 99 remaining) |
+| placeholders (49) | ✓ done |
+| alts (7) | ✓ done |
 | a11y.draggable_item | ✓ done |
+| **Total per pack** | **260/260** (with 1-6 residuals = brand names like AlloFlow, English) |
 
-**Other 50 packs:** all 198 new keys still on English passthrough; need
-hand-translation in future sessions.
+Session 4 commits for the new keys (these 6 languages):
+- `00c4070e` ui_common + priority tooltips + key alerts
+- `46bb3e8e` all alerts + confirms
+- `bd3f388c` remaining tooltips
+- `30be252a` placeholders
+- `ae785b7d` alts
+
+**Total translations for 6 major languages this session: ~1,490** (260 keys × ~6 langs minus brand-name passthroughs).
+
+**Other 50 packs:** all 260 new keys still on English passthrough; need
+hand-translation in future sessions. Highest-priority remaining: Italian,
+Korean, Hindi, Arabic, Russian, Polish, Farsi, Dari, Urdu, Somali, Hebrew,
+Pashto, Haitian Creole, Thai, Tagalog.
 
 
 
