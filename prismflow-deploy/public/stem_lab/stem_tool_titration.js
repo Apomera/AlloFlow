@@ -1989,6 +1989,21 @@ return React.createElement("div", {
 
 
 
+        // Buffer region (weak acid/base): light purple band from ~10% to ~90% of Veq
+        preset.Ka && React.createElement("rect", {
+          x: xScale(Veq * 0.1), y: pad.top,
+          width: Math.max(0, xScale(Veq * 0.9) - xScale(Veq * 0.1)),
+          height: chartH,
+          fill: 'rgba(167,139,250,0.10)', rx: 2
+        }),
+
+        preset.Ka && React.createElement("text", {
+          x: xScale(Veq * 0.5), y: pad.top + 14,
+          fill: '#a78bfa', fontSize: '10', textAnchor: 'middle', fontWeight: 'bold', opacity: 0.85
+        }, 'Buffer Region'),
+
+
+
         // Grid lines (pH)
 
         [0, 2, 4, 6, 7, 8, 10, 12, 14].map(function (pH) {
@@ -2117,7 +2132,32 @@ return React.createElement("div", {
 
           fill: 'none', stroke: '#f87171', strokeWidth: 1.5, strokeDasharray: '2,2'
 
-        })
+        }),
+
+        // Equivalence pH label (so students see Veq pH at a glance)
+        React.createElement("text", {
+          x: xScale(Veq) + 6, y: yScale(equivPH) - 6,
+          fill: '#f87171', fontSize: '10', fontWeight: 'bold',
+          style: { textShadow: '0 0 4px rgba(15,23,42,0.9)' }
+        }, 'pHₑ ' + equivPH.toFixed(2)),
+
+        // Half-equivalence point (pH = pKa) — only meaningful for weak-acid titrations
+        preset.Ka && React.createElement("line", {
+          x1: xScale(Veq / 2), y1: pad.top, x2: xScale(Veq / 2), y2: pad.top + chartH,
+          stroke: '#a78bfa', strokeWidth: 1, strokeDasharray: '4,3', opacity: 0.7
+        }),
+
+        preset.Ka && React.createElement("circle", {
+          cx: xScale(Veq / 2), cy: yScale(-Math.log10(preset.Ka)), r: 4,
+          fill: '#a78bfa', stroke: '#0f172a', strokeWidth: 1.5,
+          style: { filter: 'drop-shadow(0 0 4px rgba(167,139,250,0.7))' }
+        }),
+
+        preset.Ka && React.createElement("text", {
+          x: xScale(Veq / 2) + 6, y: yScale(-Math.log10(preset.Ka)) - 6,
+          fill: '#a78bfa', fontSize: '10', fontWeight: 'bold',
+          style: { textShadow: '0 0 4px rgba(15,23,42,0.9)' }
+        }, '½ Vₑ → pH=pKₐ (' + (-Math.log10(preset.Ka)).toFixed(2) + ')')
 
       )
 
@@ -2799,7 +2839,136 @@ return React.createElement("div", {
 
       className: "px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full hover:from-cyan-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all"
 
-    }, "\uD83D\uDCF8 Snapshot")
+    }, "\uD83D\uDCF8 Snapshot"),
+
+    // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+    // TITRATION CURVE animation
+    // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+    React.createElement("div", { className: "mt-5 rounded-2xl border border-emerald-300 bg-white p-3 shadow-sm" },
+      React.createElement("div", { className: "flex items-center justify-between mb-2" },
+        React.createElement("div", { className: "flex items-center gap-2" },
+          React.createElement("span", { className: "text-lg" }, "\uD83E\uDDEB"),
+          React.createElement("h4", { className: "text-sm font-bold text-emerald-700" }, "Titration Curve \u2014 Finding the equivalence point")
+        ),
+        React.createElement("span", { className: "text-[10px] italic text-slate-600" }, "strong acid + strong base \u00B7 pH meter shows the jump")
+      ),
+      React.createElement("div", { className: "rounded-xl overflow-hidden border border-emerald-200", style: { background: '#020210', aspectRatio: '16/6' } },
+        React.createElement("canvas", {
+          'data-titration-anim': 'true',
+          ref: function(cvEl) {
+            if (!cvEl) return;
+            if (cvEl._ttAnim) return;
+            var c2 = cvEl.getContext('2d');
+            var W = cvEl.offsetWidth || 600;
+            var H = cvEl.offsetHeight || 220;
+            cvEl.width = W * 2; cvEl.height = H * 2;
+            c2.scale(2, 2);
+            var start = performance.now();
+            function drawTt() {
+              if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._ttAnim); return; }
+              var t = (performance.now() - start) / 1000;
+              var cyc = (t * 0.10) % 1; // 0 = no base added, 1 = excess base
+              // pH at this point: classic S-curve
+              var pH;
+              if (cyc < 0.45) pH = 2 + cyc * 4;
+              else if (cyc < 0.55) pH = 4 + (cyc - 0.45) * 80;
+              else pH = 12 - (1 - cyc) * 3;
+              c2.fillStyle = '#020210';
+              c2.fillRect(0, 0, W, H);
+              // LEFT: beaker + burette
+              var lftW = W * 0.35;
+              var burX = lftW * 0.5;
+              var burY = 20;
+              var burH = 80;
+              // Burette
+              c2.fillStyle = '#7dd3fc';
+              c2.fillRect(burX - 6, burY, 12, burH * (1 - cyc));
+              c2.strokeStyle = '#cbd5e1'; c2.lineWidth = 1.5;
+              c2.strokeRect(burX - 6, burY, 12, burH);
+              c2.font = '8px monospace'; c2.fillStyle = '#7dd3fc'; c2.textAlign = 'left';
+              c2.fillText('NaOH', burX + 10, burY + 12);
+              // Drip
+              for (var dr = 0; dr < 3; dr++) {
+                var drY = burY + burH + 10 + ((t * 50 + dr * 18) % 40);
+                c2.fillStyle = '#7dd3fc';
+                c2.beginPath();
+                c2.arc(burX, drY, 2, 0, Math.PI * 2);
+                c2.fill();
+              }
+              // Beaker
+              var bkY = H * 0.55;
+              var bkW = 70;
+              c2.strokeStyle = '#cbd5e1'; c2.lineWidth = 2;
+              c2.beginPath();
+              c2.moveTo(burX - bkW / 2, bkY);
+              c2.lineTo(burX - bkW / 2, bkY + 60);
+              c2.lineTo(burX + bkW / 2, bkY + 60);
+              c2.lineTo(burX + bkW / 2, bkY);
+              c2.stroke();
+              // Solution color shifts with pH (red\u2192clear\u2192pink for phenolphthalein)
+              var solColor;
+              if (pH < 8.3) solColor = 'rgba(252, 165, 165, 0.6)'; // colorless/pale
+              else solColor = 'rgba(217, 70, 239, 0.7)'; // pink past 8.3
+              c2.fillStyle = solColor;
+              c2.fillRect(burX - bkW / 2 + 2, bkY + 5, bkW - 4, 55);
+              c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#cbd5e1'; c2.textAlign = 'center';
+              c2.fillText('HCl + indicator', burX, bkY + 75);
+              // RIGHT: pH vs volume plot
+              var plotX = lftW + 30, plotY = 20;
+              var plotW = W - plotX - 20, plotH = H - 60;
+              c2.fillStyle = 'rgba(255,255,255,0.04)';
+              c2.fillRect(plotX, plotY, plotW, plotH);
+              c2.strokeStyle = '#475569'; c2.lineWidth = 1; c2.strokeRect(plotX, plotY, plotW, plotH);
+              c2.font = '8px monospace'; c2.fillStyle = '#94a3b8'; c2.textAlign = 'right';
+              c2.fillText('14', plotX - 4, plotY + 8);
+              c2.fillText('7', plotX - 4, plotY + plotH / 2);
+              c2.fillText('0', plotX - 4, plotY + plotH);
+              // Equivalence line
+              c2.strokeStyle = 'rgba(251, 191, 36, 0.4)'; c2.setLineDash([3, 3]);
+              c2.beginPath();
+              c2.moveTo(plotX + plotW * 0.50, plotY); c2.lineTo(plotX + plotW * 0.50, plotY + plotH);
+              c2.stroke();
+              c2.setLineDash([]);
+              c2.font = '7px monospace'; c2.fillStyle = '#fbbf24'; c2.textAlign = 'center';
+              c2.fillText('Equivalence', plotX + plotW * 0.50, plotY + plotH - 4);
+              // Plot curve up to current cyc
+              c2.strokeStyle = '#10b981'; c2.lineWidth = 2;
+              c2.beginPath();
+              for (var px = 0; px <= cyc * plotW; px++) {
+                var prog = px / plotW;
+                var pHere;
+                if (prog < 0.45) pHere = 2 + prog * 4;
+                else if (prog < 0.55) pHere = 4 + (prog - 0.45) * 80;
+                else pHere = 12 - (1 - prog) * 3;
+                var py = plotY + (1 - pHere / 14) * plotH;
+                if (px === 0) c2.moveTo(plotX + px, py);
+                else c2.lineTo(plotX + px, py);
+              }
+              c2.stroke();
+              // Current marker
+              var cpX = plotX + cyc * plotW;
+              var cpY = plotY + (1 - pH / 14) * plotH;
+              c2.fillStyle = '#fde047';
+              c2.beginPath();
+              c2.arc(cpX, cpY, 5, 0, Math.PI * 2);
+              c2.fill();
+              c2.fillStyle = 'rgba(0,0,0,0.85)';
+              c2.fillRect(8, H - 18, W - 16, 16);
+              c2.font = 'bold 9px sans-serif'; c2.fillStyle = '#fde047'; c2.textAlign = 'center';
+              c2.fillText('pH = ' + pH.toFixed(1) + '  \u00B7  At equivalence point: moles acid = moles base, pH jumps from 4 \u2192 10', W / 2, H - 7);
+              cvEl._ttAnim = requestAnimationFrame(drawTt);
+            }
+            drawTt();
+            var ro = new ResizeObserver(function() {
+              W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+              cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+            });
+            ro.observe(cvEl);
+          },
+          style: { width: '100%', height: '100%', display: 'block' }
+        })
+      )
+    )
 
   )
 

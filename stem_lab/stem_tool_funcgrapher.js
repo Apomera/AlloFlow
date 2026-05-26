@@ -234,6 +234,30 @@ window.StemLab = window.StemLab || {
 
           }
 
+          // Critical points (extrema): where f'(x) changes sign — local max/min
+          var critPts = [];
+          for (var cx2 = xR.xMin; cx2 < xR.xMax; cx2 += 0.05) {
+            var d1 = evalDeriv(cx2), d2 = evalDeriv(cx2 + 0.05);
+            if (d1 * d2 < 0) {
+              var cpX = cx2 - d1 * 0.05 / (d2 - d1);
+              var cpY = evalF(cpX);
+              if (cpY >= yR.yMin && cpY <= yR.yMax && cpX >= xR.xMin && cpX <= xR.xMax) {
+                critPts.push({ x: cpX, y: cpY, kind: d1 > 0 ? 'max' : 'min' });
+              }
+            }
+          }
+
+          // Numerical integral of f from 0 to xR.xMax (trapezoidal) — shown when Area is on
+          var integral0ToMax = 0;
+          if (d.showArea && xR.xMax > 0) {
+            var iSteps = 200, iLo = 0, iHi = xR.xMax;
+            var iH = (iHi - iLo) / iSteps;
+            for (var ii = 0; ii < iSteps; ii++) {
+              var xa = iLo + ii * iH, xb = xa + iH;
+              integral0ToMax += (evalF(xa) + evalF(xb)) * iH / 2;
+            }
+          }
+
 
 
           // Y-intercept
@@ -508,6 +532,23 @@ window.StemLab = window.StemLab || {
 
               ),
 
+              // Critical points (local max / min) — violet markers with kind label
+              critPts.map(function (cp, i) {
+                var isMax = cp.kind === 'max';
+                var color = isMax ? '#a855f7' : '#0891b2';
+                return React.createElement("g", { key: 'cp' + i },
+                  React.createElement("circle", {
+                    cx: toSX(cp.x), cy: toSY(cp.y), r: 5,
+                    fill: 'none', stroke: color, strokeWidth: 2
+                  }),
+                  React.createElement("text", {
+                    x: toSX(cp.x), y: toSY(cp.y) + (isMax ? -10 : 16),
+                    textAnchor: 'middle', fill: color,
+                    style: { fontSize: '8px', fontWeight: 'bold' }
+                  }, (isMax ? '▲ max ' : '▼ min ') + '(' + cp.x.toFixed(1) + ', ' + cp.y.toFixed(2) + ')')
+                );
+              }),
+
               // Grid text labels (rendered AFTER curves so they appear on top)
 
               (function () {
@@ -582,6 +623,8 @@ window.StemLab = window.StemLab || {
               React.createElement("button", { onClick: () => upd('showDeriv', !d.showDeriv), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 border border-amber-600') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
 
               React.createElement("button", { onClick: () => upd('showArea', !d.showArea), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-600') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
+
+              d.showArea && React.createElement("span", { className: "px-2 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-[11px] font-mono font-bold border border-indigo-300" }, "\u222B\u2080^" + xR.xMax.toFixed(0) + " f(x)dx \u2248 " + integral0ToMax.toFixed(2)),
 
               React.createElement("button", { onClick: () => upd('showTable', !d.showTable), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showTable ? 'bg-cyan-700 text-white' : 'bg-cyan-50 text-cyan-600 border border-cyan-600') }, d.showTable ? "\u2705 Table" : "\uD83D\uDCCB Table"),
 
@@ -1149,7 +1192,79 @@ window.StemLab = window.StemLab || {
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
                 !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, "Click \u201CExplain\u201D for the AI tutor to describe this function at your chosen reading level.")
               );
-            })()
+            })(),
+
+            // \u2550\u2550\u2550 FUNCTION ZOO \u2550\u2550\u2550
+            React.createElement('div', { className: 'mt-5 rounded-2xl border border-indigo-300 bg-white p-3 shadow-sm' },
+              React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+                React.createElement('span', { className: 'text-lg' }, '\uD83D\uDCCA'),
+                React.createElement('h4', { className: 'text-sm font-bold text-indigo-700' }, 'Function Zoo \u2014 Six common function shapes')
+              ),
+              React.createElement('div', { className: 'rounded-xl overflow-hidden border border-indigo-200', style: { background: '#020210', aspectRatio: '16/6' } },
+                React.createElement('canvas', {
+                  ref: function(cvEl) {
+                    if (!cvEl) return;
+                    if (cvEl._fzAnim) return;
+                    var c2 = cvEl.getContext('2d');
+                    var W = cvEl.offsetWidth || 600;
+                    var H = cvEl.offsetHeight || 220;
+                    cvEl.width = W * 2; cvEl.height = H * 2;
+                    c2.scale(2, 2);
+                    var start = performance.now();
+                    function drawFz() {
+                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._fzAnim); return; }
+                      var t = (performance.now() - start) / 1000;
+                      c2.fillStyle = '#020210';
+                      c2.fillRect(0, 0, W, H);
+                      var funcs = [
+                        { name: 'Linear', f: function(x) { return x; }, color: '#7dd3fc' },
+                        { name: 'Quadratic', f: function(x) { return x * x / 4; }, color: '#fbbf24' },
+                        { name: 'Cubic', f: function(x) { return x * x * x / 16; }, color: '#10b981' },
+                        { name: 'Exponential', f: function(x) { return Math.exp(x / 3) - 1; }, color: '#dc2626' },
+                        { name: 'Log', f: function(x) { return x > 0 ? Math.log(x + 1) * 2 : -Math.log(-x + 1) * 2; }, color: '#a78bfa' },
+                        { name: 'Sine', f: function(x) { return Math.sin(x); }, color: '#f472b6' }
+                      ];
+                      var cols = 3, rows = 2;
+                      var cellW = W / cols, cellH = H / rows;
+                      funcs.forEach(function(fn, fi) {
+                        var col = fi % cols;
+                        var row = Math.floor(fi / cols);
+                        var ox = col * cellW + cellW / 2;
+                        var oy = row * cellH + cellH / 2;
+                        // Axes
+                        c2.strokeStyle = '#475569'; c2.lineWidth = 1;
+                        c2.beginPath();
+                        c2.moveTo(ox - cellW * 0.4, oy); c2.lineTo(ox + cellW * 0.4, oy);
+                        c2.moveTo(ox, oy - cellH * 0.4); c2.lineTo(ox, oy + cellH * 0.4);
+                        c2.stroke();
+                        // Curve
+                        c2.strokeStyle = fn.color; c2.lineWidth = 2;
+                        c2.beginPath();
+                        for (var x = -cellW * 0.4; x <= cellW * 0.4; x++) {
+                          var xv = x / 12;
+                          var yv = fn.f(xv);
+                          var py = oy - yv * 8;
+                          if (x === -Math.floor(cellW * 0.4)) c2.moveTo(ox + x, py);
+                          else c2.lineTo(ox + x, py);
+                        }
+                        c2.stroke();
+                        // Label
+                        c2.font = 'bold 9px sans-serif'; c2.fillStyle = fn.color; c2.textAlign = 'center';
+                        c2.fillText(fn.name, ox, oy + cellH * 0.45);
+                      });
+                      cvEl._fzAnim = requestAnimationFrame(drawFz);
+                    }
+                    drawFz();
+                    var ro = new ResizeObserver(function() {
+                      W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                    });
+                    ro.observe(cvEl);
+                  },
+                  style: { width: '100%', height: '100%', display: 'block' }
+                })
+              )
+            )
 
           )
       })();

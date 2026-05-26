@@ -709,6 +709,70 @@
         // Normal (dashed vertical)
         h('line', { x1: cx, y1: pad.t, x2: cx, y2: H - pad.b, stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 3' }),
         h('text', { x: cx + 4, y: pad.t + 12, fill: '#94a3b8', fontSize: 10 }, 'normal'),
+        // ── Critical-angle reference ray (only when n1 > n2) ──
+        // Dashed line at θ_c on the incident side. Brightens to red when the
+        // student crosses past θ_c — making "the critical angle" a visible threshold.
+        theta_c != null && (function() {
+          var pastCritical = theta1 > theta_c - 1e-6;
+          var cX = cx - rayLen * Math.sin(theta_c);
+          var cY = cy - rayLen * Math.cos(theta_c);
+          var color = pastCritical ? '#ef4444' : '#fbbf24';
+          return [
+            h('line', {
+              key: 'critRay', x1: cX, y1: cY, x2: cx, y2: cy,
+              stroke: color, strokeWidth: pastCritical ? 1.5 : 1.0,
+              strokeDasharray: '6 4', opacity: pastCritical ? 0.85 : 0.45
+            }),
+            h('text', {
+              key: 'critLbl',
+              x: cX + 6, y: cY + 4,
+              fill: color, fontSize: 10, fontWeight: 700, opacity: pastCritical ? 1 : 0.75
+            }, 'θ_c = ' + radToDeg(theta_c).toFixed(1) + '°')
+          ];
+        })(),
+        // ── Angle arcs at the interface (incident + refracted) ──
+        // Shows the angle each ray makes with the normal, the way physics
+        // textbooks draw it — so students see what's being measured.
+        (function() {
+          var arcR = 26;
+          var arcs = [];
+          // Incident angle arc (upper-left from normal)
+          var inAx = cx - arcR * Math.sin(theta1);
+          var inAy = cy - arcR * Math.cos(theta1);
+          arcs.push(h('path', {
+            key: 'arcInc',
+            d: 'M ' + cx + ' ' + (cy - arcR) + ' A ' + arcR + ' ' + arcR + ' 0 0 0 ' + inAx.toFixed(1) + ' ' + inAy.toFixed(1),
+            fill: 'none', stroke: '#fbbf24', strokeWidth: 1, opacity: 0.7
+          }));
+          // Incident angle label (placed at the arc's midpoint, pushed outward a bit)
+          var inLblA = theta1 / 2;
+          var inLblR = arcR + 10;
+          arcs.push(h('text', {
+            key: 'arcIncLbl',
+            x: cx - inLblR * Math.sin(inLblA),
+            y: cy - inLblR * Math.cos(inLblA) + 3,
+            fill: '#fbbf24', fontSize: 9, textAnchor: 'middle', fontWeight: 700
+          }, 'θ₁'));
+          // Refracted angle arc (lower-right from normal) — only when refracted
+          if (!isTIR && theta2 != null) {
+            var rfAx = cx + arcR * Math.sin(theta2);
+            var rfAy = cy + arcR * Math.cos(theta2);
+            arcs.push(h('path', {
+              key: 'arcRfr',
+              d: 'M ' + cx + ' ' + (cy + arcR) + ' A ' + arcR + ' ' + arcR + ' 0 0 0 ' + rfAx.toFixed(1) + ' ' + rfAy.toFixed(1),
+              fill: 'none', stroke: '#06b6d4', strokeWidth: 1, opacity: 0.7
+            }));
+            var rfLblA = theta2 / 2;
+            var rfLblR = arcR + 10;
+            arcs.push(h('text', {
+              key: 'arcRfrLbl',
+              x: cx + rfLblR * Math.sin(rfLblA),
+              y: cy + rfLblR * Math.cos(rfLblA) + 3,
+              fill: '#06b6d4', fontSize: 9, textAnchor: 'middle', fontWeight: 700
+            }, 'θ₂'));
+          }
+          return arcs;
+        })(),
         // Incident ray (yellow, with arrowhead at the interface)
         h('line', { x1: inX, y1: inY, x2: cx, y2: cy, stroke: '#fbbf24', strokeWidth: 2.5 }),
         h('polygon', { points: (cx - 4) + ',' + (cy - 5) + ' ' + (cx + 4) + ',' + (cy - 5) + ' ' + cx + ',' + (cy + 1), fill: '#fbbf24', transform: 'rotate(' + theta1Deg + ' ' + cx + ' ' + cy + ')' }),

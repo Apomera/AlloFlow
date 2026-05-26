@@ -29,6 +29,22 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+
+  // ── Audio (auto-injected) ──
+  var _funcgrAC = null;
+  function getFuncgrAC() { if (!_funcgrAC) { try { _funcgrAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_funcgrAC && _funcgrAC.state === "suspended") { try { _funcgrAC.resume(); } catch(e) {} } return _funcgrAC; }
+  function funcgrTone(f,d,tp,v) { var ac = getFuncgrAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxFuncgrClick() { funcgrTone(600, 0.03, "sine", 0.04); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-funcgrapher')) return;
@@ -98,7 +114,7 @@ window.StemLab = window.StemLab || {
                 aiExplain: '', aiExplainLoading: false
               }});
             });
-            return React.createElement('div', { className: 'p-8 text-center text-slate-400' }, 'Loading...');
+            return React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading...');
           }
 
           const d = labToolData.funcGrapher;
@@ -218,6 +234,30 @@ window.StemLab = window.StemLab || {
 
           }
 
+          // Critical points (extrema): where f'(x) changes sign — local max/min
+          var critPts = [];
+          for (var cx2 = xR.xMin; cx2 < xR.xMax; cx2 += 0.05) {
+            var d1 = evalDeriv(cx2), d2 = evalDeriv(cx2 + 0.05);
+            if (d1 * d2 < 0) {
+              var cpX = cx2 - d1 * 0.05 / (d2 - d1);
+              var cpY = evalF(cpX);
+              if (cpY >= yR.yMin && cpY <= yR.yMax && cpX >= xR.xMin && cpX <= xR.xMax) {
+                critPts.push({ x: cpX, y: cpY, kind: d1 > 0 ? 'max' : 'min' });
+              }
+            }
+          }
+
+          // Numerical integral of f from 0 to xR.xMax (trapezoidal) — shown when Area is on
+          var integral0ToMax = 0;
+          if (d.showArea && xR.xMax > 0) {
+            var iSteps = 200, iLo = 0, iHi = xR.xMax;
+            var iH = (iHi - iLo) / iSteps;
+            for (var ii = 0; ii < iSteps; ii++) {
+              var xa = iLo + ii * iH, xb = xa + iH;
+              integral0ToMax += (evalF(xa) + evalF(xb)) * iH / 2;
+            }
+          }
+
 
 
           // Y-intercept
@@ -332,15 +372,39 @@ window.StemLab = window.StemLab || {
 
 
 
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+          // ── Keyboard shortcuts (WCAG 2.1.1): 1-6 pick function type, D/A/T/L toggle overlays ──
+          function onFgKey(e) {
+            var tgt = e.target || {};
+            var tn = (tgt.tagName || '').toUpperCase();
+            if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
+            var k = e.key;
+            if (k >= '1' && k <= '9') {
+              var idx = parseInt(k, 10) - 1;
+              if (TYPES[idx]) {
+                e.preventDefault();
+                upd('type', TYPES[idx].id);
+                if (typeof announceToSR === 'function') announceToSR(TYPES[idx].label + ' selected.');
+              }
+            } else if (k === 'd' || k === 'D') { e.preventDefault(); upd('showDeriv', !d.showDeriv); }
+            else if (k === 'a' || k === 'A') { e.preventDefault(); upd('showArea', !d.showArea); }
+            else if (k === 't' || k === 'T') { e.preventDefault(); upd('showTable', !d.showTable); }
+            else if (k === 'l' || k === 'L') { e.preventDefault(); upd('showLearn', !d.showLearn); }
+          }
+          return React.createElement("div", {
+              className: "max-w-3xl mx-auto animate-in fade-in duration-200",
+              role: "region",
+              "aria-label": "Function Grapher. Keyboard shortcuts: 1 through 6 pick a function type, D derivative, A area, T table, L learn.",
+              tabIndex: 0,
+              onKeyDown: onFgKey
+            },
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDCC8 Function Grapher"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full" }, "INTERACTIVE")
+              React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[11px] font-bold rounded-full" }, "INTERACTIVE")
 
             ),
 
@@ -348,9 +412,7 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
 
-              TYPES.map(function(tp) { return React.createElement("button", { "aria-label": "Change type",
-
-                key: tp.id, onClick: function() { upd("type", tp.id); },
+              TYPES.map(function(tp) { return React.createElement("button", { key: tp.id, onClick: function() { upd("type", tp.id); },
 
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.type === tp.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50')
 
@@ -470,6 +532,23 @@ window.StemLab = window.StemLab || {
 
               ),
 
+              // Critical points (local max / min) — violet markers with kind label
+              critPts.map(function (cp, i) {
+                var isMax = cp.kind === 'max';
+                var color = isMax ? '#a855f7' : '#0891b2';
+                return React.createElement("g", { key: 'cp' + i },
+                  React.createElement("circle", {
+                    cx: toSX(cp.x), cy: toSY(cp.y), r: 5,
+                    fill: 'none', stroke: color, strokeWidth: 2
+                  }),
+                  React.createElement("text", {
+                    x: toSX(cp.x), y: toSY(cp.y) + (isMax ? -10 : 16),
+                    textAnchor: 'middle', fill: color,
+                    style: { fontSize: '8px', fontWeight: 'bold' }
+                  }, (isMax ? '▲ max ' : '▼ min ') + '(' + cp.x.toFixed(1) + ', ' + cp.y.toFixed(2) + ')')
+                );
+              }),
+
               // Grid text labels (rendered AFTER curves so they appear on top)
 
               (function () {
@@ -519,21 +598,21 @@ window.StemLab = window.StemLab || {
 
             // ── Zoom / Pan Controls ──
             React.createElement("div", { className: "flex items-center gap-1.5 mt-2 mb-1 flex-wrap" },
-              React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1" }, "\uD83D\uDD0D View"),
+              React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1" }, "\uD83D\uDD0D View"),
               React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin) / 4, hh = (yR.yMax - yR.yMin) / 4; upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': 'Zoom in' }, "\u2795 Zoom In"),
               React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin), hh = (yR.yMax - yR.yMin); upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': 'Zoom out' }, "\u2796 Zoom Out"),
               React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin - dx, xMax: xR.xMax - dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': 'Pan left' }, "\u2B05"),
               React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin + dx, xMax: xR.xMax + dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': 'Pan right' }, "\u27A1"),
               React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin + dy, yMax: yR.yMax + dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': 'Pan up' }, "\u2B06"),
               React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin - dy, yMax: yR.yMax - dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': 'Pan down' }, "\u2B07"),
-              React.createElement("button", { onClick: function() { upd('range', { xMin: -10, xMax: 10, yMin: -10, yMax: 10 }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200 transition-all", 'aria-label': 'Reset view' }, "\u21BA Reset"),
-              React.createElement("span", { className: "text-[11px] text-slate-500 ml-1" }, "x:[" + xR.xMin.toFixed(0) + "," + xR.xMax.toFixed(0) + "] y:[" + yR.yMin.toFixed(0) + "," + yR.yMax.toFixed(0) + "]")
+              React.createElement("button", { onClick: function() { upd('range', { xMin: -10, xMax: 10, yMin: -10, yMax: 10 }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-600 transition-all", 'aria-label': 'Reset view' }, "\u21BA Reset"),
+              React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, "x:[" + xR.xMin.toFixed(0) + "," + xR.xMax.toFixed(0) + "] y:[" + yR.yMin.toFixed(0) + "," + yR.yMax.toFixed(0) + "]")
             ),
 
             // ── Transformation Labels ──
             transformLabels.length > 0 && React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-1" },
               transformLabels.map(function(tl, ti) {
-                return React.createElement("span", { key: ti, className: "px-2 py-0.5 rounded-full text-[10px] font-bold border " + tl.color }, tl.text);
+                return React.createElement("span", { key: ti, className: "px-2 py-0.5 rounded-full text-[11px] font-bold border " + tl.color }, tl.text);
               })
             ),
 
@@ -541,17 +620,19 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "flex gap-2 mt-3 mb-2 flex-wrap" },
 
-              React.createElement("button", { "aria-label": "Upd", onClick: () => upd('showDeriv', !d.showDeriv), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 border border-amber-200') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
+              React.createElement("button", { onClick: () => upd('showDeriv', !d.showDeriv), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 border border-amber-600') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
 
-              React.createElement("button", { "aria-label": "Upd", onClick: () => upd('showArea', !d.showArea), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-200') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
+              React.createElement("button", { onClick: () => upd('showArea', !d.showArea), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-600') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
 
-              React.createElement("button", { "aria-label": "Upd", onClick: () => upd('showTable', !d.showTable), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showTable ? 'bg-cyan-700 text-white' : 'bg-cyan-50 text-cyan-600 border border-cyan-200') }, d.showTable ? "\u2705 Table" : "\uD83D\uDCCB Table"),
+              d.showArea && React.createElement("span", { className: "px-2 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-[11px] font-mono font-bold border border-indigo-300" }, "\u222B\u2080^" + xR.xMax.toFixed(0) + " f(x)dx \u2248 " + integral0ToMax.toFixed(2)),
 
-              React.createElement("button", { "aria-label": "Upd", onClick: () => upd('showLearn', !d.showLearn), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-700 text-white' : 'bg-emerald-50 text-emerald-600 border border-emerald-200') }, d.showLearn ? "\u2705 Learn" : "\uD83D\uDCD6 Learn"),
+              React.createElement("button", { onClick: () => upd('showTable', !d.showTable), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showTable ? 'bg-cyan-700 text-white' : 'bg-cyan-50 text-cyan-600 border border-cyan-600') }, d.showTable ? "\u2705 Table" : "\uD83D\uDCCB Table"),
 
-              roots.length > 0 && React.createElement("span", { className: "px-2 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold border border-red-200" }, "\uD83D\uDCCD " + roots.length + " root" + (roots.length > 1 ? 's' : '') + ": x = " + roots.map(r => r.toFixed(2)).join(', ')),
+              React.createElement("button", { onClick: () => upd('showLearn', !d.showLearn), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-700 text-white' : 'bg-emerald-50 text-emerald-600 border border-emerald-600') }, d.showLearn ? "\u2705 Learn" : "\uD83D\uDCD6 Learn"),
 
-              yIntercept >= yR.yMin && yIntercept <= yR.yMax && React.createElement("span", { className: "px-2 py-1.5 bg-green-50 text-green-600 rounded-lg text-[10px] font-bold border border-green-200" }, "\uD83D\uDFE2 y-int: " + yIntercept.toFixed(2))
+              roots.length > 0 && React.createElement("span", { className: "px-2 py-1.5 bg-red-50 text-red-600 rounded-lg text-[11px] font-bold border border-red-200" }, "\uD83D\uDCCD " + roots.length + " root" + (roots.length > 1 ? 's' : '') + ": x = " + roots.map(r => r.toFixed(2)).join(', ')),
+
+              yIntercept >= yR.yMin && yIntercept <= yR.yMax && React.createElement("span", { className: "px-2 py-1.5 bg-green-50 text-green-600 rounded-lg text-[11px] font-bold border border-green-200" }, "\uD83D\uDFE2 y-int: " + yIntercept.toFixed(2))
 
             ),
 
@@ -560,13 +641,13 @@ window.StemLab = window.StemLab || {
               React.createElement("div", { className: "flex items-center gap-2" },
                 React.createElement("span", { className: "text-xs font-bold text-pink-600" }, "\uD83D\uDCCC Trace: x = " + traceX.toFixed(1)),
                 React.createElement("input", { type: "range", min: xR.xMin, max: xR.xMax, step: 0.1, value: traceX, onChange: e => upd('traceX', parseFloat(e.target.value)), className: "flex-1 accent-pink-500", 'aria-label': 'Trace x position' }),
-                tangentInRange && React.createElement("span", { className: "text-[10px] font-mono text-pink-700" }, "f(" + traceX.toFixed(1) + ") = " + traceY.toFixed(2) + ", slope = " + traceSlope.toFixed(2))
+                tangentInRange && React.createElement("span", { className: "text-[11px] font-mono text-pink-700" }, "f(" + traceX.toFixed(1) + ") = " + traceY.toFixed(2) + ", slope = " + traceSlope.toFixed(2))
               )
             ),
 
             // ── Table of Values (collapsible) ──
             d.showTable && React.createElement("div", { className: "mt-2 bg-cyan-50 rounded-xl border border-cyan-200 p-3 overflow-x-auto" },
-              React.createElement("p", { className: "text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCB Table of Values"),
+              React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCB Table of Values"),
               React.createElement("table", { className: "w-full text-xs" },
                 React.createElement("caption", { className: "sr-only" }, "funcgrapher data table"), React.createElement("thead", null,
                   React.createElement("tr", { className: "border-b border-cyan-200" },
@@ -648,10 +729,10 @@ window.StemLab = window.StemLab || {
 
             // ── Compare Mode Toggle + Sliders ──
             React.createElement("div", { className: "mt-2 flex items-center gap-2" },
-              React.createElement("button", { "aria-label": "Change compare", onClick: function() { upd('compare', !d.compare); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.compare ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-600 border border-orange-200') }, d.compare ? '\u2705 Comparing' : '\uD83D\uDD00 Compare'),
+              React.createElement("button", { onClick: function() { upd('compare', !d.compare); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.compare ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-600 border border-orange-600') }, d.compare ? '\u2705 Comparing' : '\uD83D\uDD00 Compare'),
               d.compare && React.createElement("div", { className: "flex gap-1.5" },
                 TYPES.map(function(tp) {
-                  return React.createElement("button", { "aria-label": "Change compare type", key: 'cmp-' + tp.id, onClick: function() { upd('compareType', tp.id); }, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + (d.compareType === tp.id ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-500') }, tp.emoji);
+                  return React.createElement("button", { key: 'cmp-' + tp.id, onClick: function() { upd('compareType', tp.id); }, className: "px-2 py-1 rounded text-[11px] font-bold transition-all " + (d.compareType === tp.id ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600') }, tp.emoji);
                 })
               )
             ),
@@ -666,7 +747,7 @@ window.StemLab = window.StemLab || {
 
             // ── AI Explain Button ──
             callGemini && React.createElement("div", { className: "mt-2" },
-              React.createElement("button", { "aria-label": "Funcgrapher action", onClick: function() {
+              React.createElement("button", { onClick: function() {
                 if (d.aiExplainLoading) return;
                 upd('aiExplainLoading', true);
                 upd('aiExplain', '');
@@ -687,7 +768,7 @@ window.StemLab = window.StemLab || {
               }, disabled: d.aiExplainLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiExplainLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md') }, d.aiExplainLoading ? '\u23F3 Thinking...' : '\u2728 Explain This Graph'),
               d.aiExplain && React.createElement("div", { className: "mt-2 p-3 bg-purple-50 rounded-xl border border-purple-200 text-xs text-purple-900 leading-relaxed" },
                 React.createElement("div", { className: "flex items-center gap-1.5 mb-1" },
-                  React.createElement("span", { className: "text-[10px] font-bold text-purple-600 uppercase tracking-wider" }, "\uD83E\uDDE0 AI Explanation")
+                  React.createElement("span", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-wider" }, "\uD83E\uDDE0 AI Explanation")
                 ),
                 d.aiExplain
               )
@@ -697,7 +778,7 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
 
-              React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, "\u26A1 Quick Presets"),
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\u26A1 Quick Presets"),
 
               React.createElement("div", { className: "flex flex-wrap gap-1.5" },
 
@@ -721,15 +802,13 @@ window.StemLab = window.StemLab || {
 
                 ].map(function (p) {
 
-                  return React.createElement("button", { "aria-label": "Change type",
-
-                    key: p.label, onClick: function () {
+                  return React.createElement("button", { key: p.label, onClick: function () {
 
                       upd('type', p.type); upd('a', p.a); upd('b', p.b); upd('c', p.c);
 
                       addToast('\uD83D\uDCC8 ' + p.tip, 'success');
 
-                    }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all"
+                    }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-600 hover:bg-indigo-100 transition-all"
 
                   }, p.label);
 
@@ -741,7 +820,7 @@ window.StemLab = window.StemLab || {
 
             // Legend
 
-            React.createElement("div", { className: "mt-2 flex items-center gap-4 text-[11px] text-slate-500" },
+            React.createElement("div", { className: "mt-2 flex items-center gap-4 text-[11px] text-slate-600" },
 
               React.createElement("span", null, "\u2014\u2014 f(x)"),
 
@@ -957,11 +1036,9 @@ window.StemLab = window.StemLab || {
 
                     var isActive = challengeMode === cm.id;
 
-                    return React.createElement("button", { "aria-label": "Change fg challenge mode",
+                    return React.createElement("button", { key: cm.id, onClick: function () { upd('fgChallengeMode', cm.id); upd('fgQuiz', null); },
 
-                      key: cm.id, onClick: function () { upd('fgChallengeMode', cm.id); upd('fgQuiz', null); },
-
-                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-' + cm.color + '-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-' + cm.color + '-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
 
                     }, cm.label);
 
@@ -1055,7 +1132,139 @@ window.StemLab = window.StemLab || {
 
             })(),
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
+
+            // ── AI Function Tutor (reading-level aware) ──
+            (function () {
+              var aiLevel = d.aiLevel || 'grade5';
+              var aiText = d.aiExplain || '';
+              var aiLoading = !!d.aiLoading;
+              var aiError = d.aiError || '';
+              var LEVELS = [
+                { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences, no jargon' },
+                { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student' },
+                { id: 'hs', label: 'High School', hint: 'for a high school algebra or pre-calc student, including vocabulary like slope, intercept, vertex, period, amplitude' }
+              ];
+              function explain() {
+                if (typeof callGemini !== 'function') { upd('aiError', 'AI tutor not available.'); return; }
+                upd('aiLoading', true); upd('aiError', ''); upd('aiExplain', '');
+                var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+                var fnDesc = d.type === 'linear' ? 'y = ' + d.a + 'x + ' + d.b
+                  : d.type === 'quadratic' ? 'y = ' + d.a + 'x\u00B2 + ' + d.b + 'x + ' + d.c
+                  : d.type === 'trig' ? 'y = ' + d.a + ' sin(' + d.b + 'x + ' + d.c + ')'
+                  : d.type === 'cubic' ? 'y = ' + d.a + 'x\u00B3 + ' + d.b + 'x + ' + d.c
+                  : d.type === 'exponential' ? 'y = ' + d.a + ' e^(' + d.b + 'x) + ' + d.c
+                  : 'y = ' + d.a + ' |x + ' + d.b + '| + ' + d.c;
+                var prompt = 'Explain this function ' + lv.hint + '. '
+                  + 'Function: ' + fnDesc + '. Type: ' + d.type + '. '
+                  + 'In 3 short sentences: (1) What the graph looks like. (2) Which coefficient changes the graph in what way. (3) One real-world situation this function models. '
+                  + 'No markdown, no bullets, no headings. Plain prose.';
+                callGemini(prompt, false, false, 0.5).then(function (resp) {
+                  upd('aiExplain', String(resp || '').trim()); upd('aiLoading', false);
+                  if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+                }).catch(function () {
+                  upd('aiLoading', false); upd('aiError', 'Could not reach AI tutor. Try again in a moment.');
+                });
+              }
+              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", },
+                React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
+                  React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
+                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+                    LEVELS.map(function (L) {
+                      var active = aiLevel === L.id;
+                      return React.createElement("button", {
+                        key: L.id,
+                        onClick: function () { upd('aiLevel', L.id); },
+                        "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+                        "aria-pressed": active,
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-600 hover:bg-purple-100')
+                      }, L.label);
+                    })
+                  ),
+                  React.createElement("button", {
+                    onClick: explain,
+                    disabled: aiLoading,
+                    "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+                    className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                  }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+                ),
+                aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
+                aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, "Click \u201CExplain\u201D for the AI tutor to describe this function at your chosen reading level.")
+              );
+            })(),
+
+            // \u2550\u2550\u2550 FUNCTION ZOO \u2550\u2550\u2550
+            React.createElement('div', { className: 'mt-5 rounded-2xl border border-indigo-300 bg-white p-3 shadow-sm' },
+              React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+                React.createElement('span', { className: 'text-lg' }, '\uD83D\uDCCA'),
+                React.createElement('h4', { className: 'text-sm font-bold text-indigo-700' }, 'Function Zoo \u2014 Six common function shapes')
+              ),
+              React.createElement('div', { className: 'rounded-xl overflow-hidden border border-indigo-200', style: { background: '#020210', aspectRatio: '16/6' } },
+                React.createElement('canvas', {
+                  ref: function(cvEl) {
+                    if (!cvEl) return;
+                    if (cvEl._fzAnim) return;
+                    var c2 = cvEl.getContext('2d');
+                    var W = cvEl.offsetWidth || 600;
+                    var H = cvEl.offsetHeight || 220;
+                    cvEl.width = W * 2; cvEl.height = H * 2;
+                    c2.scale(2, 2);
+                    var start = performance.now();
+                    function drawFz() {
+                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._fzAnim); return; }
+                      var t = (performance.now() - start) / 1000;
+                      c2.fillStyle = '#020210';
+                      c2.fillRect(0, 0, W, H);
+                      var funcs = [
+                        { name: 'Linear', f: function(x) { return x; }, color: '#7dd3fc' },
+                        { name: 'Quadratic', f: function(x) { return x * x / 4; }, color: '#fbbf24' },
+                        { name: 'Cubic', f: function(x) { return x * x * x / 16; }, color: '#10b981' },
+                        { name: 'Exponential', f: function(x) { return Math.exp(x / 3) - 1; }, color: '#dc2626' },
+                        { name: 'Log', f: function(x) { return x > 0 ? Math.log(x + 1) * 2 : -Math.log(-x + 1) * 2; }, color: '#a78bfa' },
+                        { name: 'Sine', f: function(x) { return Math.sin(x); }, color: '#f472b6' }
+                      ];
+                      var cols = 3, rows = 2;
+                      var cellW = W / cols, cellH = H / rows;
+                      funcs.forEach(function(fn, fi) {
+                        var col = fi % cols;
+                        var row = Math.floor(fi / cols);
+                        var ox = col * cellW + cellW / 2;
+                        var oy = row * cellH + cellH / 2;
+                        // Axes
+                        c2.strokeStyle = '#475569'; c2.lineWidth = 1;
+                        c2.beginPath();
+                        c2.moveTo(ox - cellW * 0.4, oy); c2.lineTo(ox + cellW * 0.4, oy);
+                        c2.moveTo(ox, oy - cellH * 0.4); c2.lineTo(ox, oy + cellH * 0.4);
+                        c2.stroke();
+                        // Curve
+                        c2.strokeStyle = fn.color; c2.lineWidth = 2;
+                        c2.beginPath();
+                        for (var x = -cellW * 0.4; x <= cellW * 0.4; x++) {
+                          var xv = x / 12;
+                          var yv = fn.f(xv);
+                          var py = oy - yv * 8;
+                          if (x === -Math.floor(cellW * 0.4)) c2.moveTo(ox + x, py);
+                          else c2.lineTo(ox + x, py);
+                        }
+                        c2.stroke();
+                        // Label
+                        c2.font = 'bold 9px sans-serif'; c2.fillStyle = fn.color; c2.textAlign = 'center';
+                        c2.fillText(fn.name, ox, oy + cellH * 0.45);
+                      });
+                      cvEl._fzAnim = requestAnimationFrame(drawFz);
+                    }
+                    drawFz();
+                    var ro = new ResizeObserver(function() {
+                      W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                    });
+                    ro.observe(cvEl);
+                  },
+                  style: { width: '100%', height: '100%', display: 'block' }
+                })
+              )
+            )
 
           )
       })();

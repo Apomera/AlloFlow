@@ -438,12 +438,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
   }
 
   function drawSonarPulse(c, cx, cy, radius, maxRadius, isDark) {
-    var alpha = Math.max(0, 1 - radius / maxRadius) * 0.6;
+    // Multi-ring wavefront visualization. A real sonar pulse isn't a single
+    // ring traveling outward — it's a continuous sound wave with a coherent
+    // wavefront. We render the leading edge bright + three trailing
+    // concentric rings spaced behind it to suggest the wave's continuous
+    // emission, plus a soft radial-gradient fill for the "energy zone" the
+    // wave currently occupies. Far more readable than a thin outline at a
+    // glance — students can tell direction of expansion + see how the wave
+    // fades with distance (inverse-square spreading).
+    var lifeFrac = radius / maxRadius;
+    var primaryAlpha = Math.max(0, 1 - lifeFrac) * 0.85;
+    if (primaryAlpha <= 0.01) return;
+    // ── Energy fill: faint radial gradient bounded by the leading wavefront ──
+    // Brightest at the leading edge, fading toward the center. Visualizes the
+    // "where the sound is right now" annulus, not just the front line.
+    var innerR = Math.max(0, radius - 18);
+    var grad = c.createRadialGradient(cx, cy, innerR, cx, cy, radius);
+    var fillBase = isDark ? '165,180,252' : '99,102,241';
+    grad.addColorStop(0, 'rgba(' + fillBase + ',0)');
+    grad.addColorStop(0.85, 'rgba(' + fillBase + ',' + (primaryAlpha * 0.15).toFixed(3) + ')');
+    grad.addColorStop(1, 'rgba(' + fillBase + ',' + (primaryAlpha * 0.30).toFixed(3) + ')');
+    c.fillStyle = grad;
     c.beginPath();
     c.arc(cx, cy, radius, 0, Math.PI * 2);
-    c.strokeStyle = isDark ? 'rgba(165,180,252,' + alpha + ')' : 'rgba(99,102,241,' + alpha + ')';
-    c.lineWidth = 2;
+    c.fill();
+    // ── Leading wavefront — bright, thick line at the current radius ──
+    var ledColor = isDark ? '129,140,248' : '79,70,229';
+    c.strokeStyle = 'rgba(' + ledColor + ',' + primaryAlpha.toFixed(3) + ')';
+    c.lineWidth = 2.4;
+    c.shadowColor = 'rgba(' + ledColor + ',0.6)';
+    c.shadowBlur = 4;
+    c.beginPath();
+    c.arc(cx, cy, radius, 0, Math.PI * 2);
     c.stroke();
+    c.shadowBlur = 0;
+    // ── Trailing rings — three thinner concentric circles spaced 8px behind ──
+    // Suggests the continuous wave emission rather than a single front.
+    for (var ri = 1; ri <= 3; ri++) {
+      var trailR = radius - ri * 8;
+      if (trailR < 4) break;
+      var trailAlpha = primaryAlpha * (0.5 - ri * 0.13);
+      if (trailAlpha <= 0) continue;
+      c.strokeStyle = 'rgba(' + fillBase + ',' + trailAlpha.toFixed(3) + ')';
+      c.lineWidth = 1.2 - ri * 0.2;
+      c.beginPath();
+      c.arc(cx, cy, trailR, 0, Math.PI * 2);
+      c.stroke();
+    }
+    // ── Pulse origin marker (only on first ~20% of expansion) ──
+    // Brief bright dot at the source showing where the pulse came from —
+    // fades quickly so it doesn't distract during the expansion.
+    if (lifeFrac < 0.20) {
+      var originAlpha = (1 - lifeFrac / 0.20) * 0.9;
+      c.fillStyle = 'rgba(' + ledColor + ',' + originAlpha.toFixed(3) + ')';
+      c.beginPath();
+      c.arc(cx, cy, 3, 0, Math.PI * 2);
+      c.fill();
+    }
   }
 
   function drawMoth(c, x, y, radius, phase) {
