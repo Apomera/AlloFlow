@@ -464,7 +464,31 @@
             hh('line', { x1: 4, y1: 56, x2: 96, y2: 56, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.4 }),
             hh('line', { x1: 4, y1: 4, x2: 4, y2: 56, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.4 }),
             hh('line', { x1: 4, y1: 4, x2: 96, y2: 4, stroke: 'rgba(239,68,68,0.20)', strokeWidth: 0.3, strokeDasharray: '1,1' }),
-            history.length > 1 ? hh('polyline', { points: history.map(function(p, i) { var alive = p.sensitive + p.resistant; var pct = alive > 0 ? p.resistant / alive : 0; var x = 4 + (i / Math.max(1, duration)) * 92; var y = 56 - pct * 52; return x + ',' + y; }).concat(['96,56', '4,56']).join(' '), fill: 'rgba(239,68,68,0.20)', stroke: 'none' }) : null,
+            // Absolute-population stacked areas: cyan = sensitive, red = resistant.
+            // Reveals the population crash + slow recovery from resistant survivors —
+            // not just the ratio change captured by the % line.
+            (function() {
+              if (history.length < 2) return null;
+              var popMax = 0;
+              history.forEach(function(p) { var total = p.sensitive + p.resistant; if (total > popMax) popMax = total; });
+              if (popMax < 80) popMax = 80;
+              var xOf = function(i) { return 4 + (i / Math.max(1, duration)) * 92; };
+              var yOfCount = function(count) { return 56 - (count / popMax) * 52; };
+              var sensPts = history.map(function(p, i) { return xOf(i) + ',' + yOfCount(p.sensitive).toFixed(2); });
+              var totalPts = history.map(function(p, i) { return xOf(i) + ',' + yOfCount(p.sensitive + p.resistant).toFixed(2); });
+              var sensClose = xOf(history.length - 1) + ',56 4,56';
+              var resBaseRev = history.slice().reverse().map(function(p, ri) {
+                var i = history.length - 1 - ri;
+                return xOf(i) + ',' + yOfCount(p.sensitive).toFixed(2);
+              });
+              return [
+                hh('polygon', { key: 'sensA', points: sensPts.concat([sensClose]).join(' '), fill: 'rgba(34,211,238,0.30)', stroke: 'none' }),
+                hh('polygon', { key: 'resA', points: totalPts.concat(resBaseRev).join(' '), fill: 'rgba(239,68,68,0.28)', stroke: 'none' }),
+                hh('polyline', { key: 'sensL', points: sensPts.join(' '), fill: 'none', stroke: '#22d3ee', strokeWidth: 0.7, opacity: 0.85 }),
+                hh('polyline', { key: 'totL', points: totalPts.join(' '), fill: 'none', stroke: '#94a3b8', strokeWidth: 0.5, strokeDasharray: '1.5,1', opacity: 0.7 }),
+                hh('text', { key: 'popLbl', x: 94, y: 8, fontSize: 3, fill: '#94a3b8', textAnchor: 'end' }, 'pop ' + popMax)
+              ];
+            })(),
             history.length > 1 ? hh('polyline', { points: history.map(function(p, i) { var alive = p.sensitive + p.resistant; var pct = alive > 0 ? p.resistant / alive : 0; var x = 4 + (i / Math.max(1, duration)) * 92; var y = 56 - pct * 52; return x + ',' + y; }).join(' '), fill: 'none', stroke: '#ef4444', strokeWidth: 1.2 }) : null,
             hh('circle', { cx: 4 + (day / Math.max(1, duration)) * 92, cy: 56 - (pctRes / 100) * 52, r: 1.8, fill: '#ef4444', stroke: '#fff', strokeWidth: 0.4 }),
             hh('text', { x: 6, y: 8, fontSize: 3.5, fill: '#fca5a5' }, '100%'),
