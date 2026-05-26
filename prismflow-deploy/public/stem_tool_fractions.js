@@ -1798,26 +1798,51 @@ window.StemLab = window.StemLab || {
     var drawPie = function(num, den, size, color) {
       if (den <= 0) den = 1;
       var slices = [];
+      var sliceLabels = [];
+      var radius = size / 2 - 2;
       for (var i = 0; i < den; i++) {
         var startAngle = (i / den) * 2 * Math.PI - Math.PI / 2;
         var endAngle = ((i + 1) / den) * 2 * Math.PI - Math.PI / 2;
-        var x1 = (size / 2) + (size / 2 - 2) * Math.cos(startAngle);
-        var y1 = (size / 2) + (size / 2 - 2) * Math.sin(startAngle);
-        var x2 = (size / 2) + (size / 2 - 2) * Math.cos(endAngle);
-        var y2 = (size / 2) + (size / 2 - 2) * Math.sin(endAngle);
+        var x1 = (size / 2) + radius * Math.cos(startAngle);
+        var y1 = (size / 2) + radius * Math.sin(startAngle);
+        var x2 = (size / 2) + radius * Math.cos(endAngle);
+        var y2 = (size / 2) + radius * Math.sin(endAngle);
         var largeArc = (endAngle - startAngle) > Math.PI ? 1 : 0;
         var filled = i < num;
         slices.push(h('path', {
           key: i,
-          d: 'M ' + (size / 2) + ' ' + (size / 2) + ' L ' + x1 + ' ' + y1 + ' A ' + (size / 2 - 2) + ' ' + (size / 2 - 2) + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z',
+          d: 'M ' + (size / 2) + ' ' + (size / 2) + ' L ' + x1 + ' ' + y1 + ' A ' + radius + ' ' + radius + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z',
           fill: filled ? (color || 'hsl(' + (340 + i * 8) + ', 70%, ' + (60 + i * 2) + '%)') : '#fecdd3',
           stroke: '#e11d48', strokeWidth: 1.5,
           className: 'cursor-pointer hover:opacity-80 transition-opacity'
         }));
+        // Slice number — only when the slice is large enough to fit a digit
+        if (filled && den <= 16 && size >= 60) {
+          var midAngle = (startAngle + endAngle) / 2;
+          var labelR = radius * 0.62;
+          var lx = (size / 2) + labelR * Math.cos(midAngle);
+          var ly = (size / 2) + labelR * Math.sin(midAngle);
+          sliceLabels.push(h('text', {
+            key: 'sl' + i,
+            x: lx, y: ly + 3,
+            textAnchor: 'middle',
+            style: { fontSize: Math.max(8, size / 12) + 'px', fontWeight: 800, fill: 'white', pointerEvents: 'none', textShadow: '0 0 3px rgba(0,0,0,0.4)' }
+          }, i + 1));
+        }
       }
-      return h('svg', { viewBox: '0 0 ' + size + ' ' + size, width: size, height: size },
+      // Center "n/d" badge — anchors the visual to the symbolic fraction
+      var centerBadge = (den >= 2 && size >= 56) ? h('g', { key: 'centerBadge', pointerEvents: 'none' },
+        h('circle', { cx: size / 2, cy: size / 2, r: Math.max(10, size * 0.16), fill: 'white', stroke: '#e11d48', strokeWidth: 1.5 }),
+        h('text', {
+          x: size / 2, y: size / 2 + Math.max(3, size * 0.05),
+          textAnchor: 'middle',
+          style: { fontSize: Math.max(9, size / 8) + 'px', fontWeight: 800, fill: '#e11d48' }
+        }, num + '/' + den)
+      ) : null;
+      return h('svg', { viewBox: '0 0 ' + size + ' ' + size, width: size, height: size, 'aria-label': num + ' out of ' + den + ' parts shaded' },
         slices,
-        h('circle', { cx: size / 2, cy: size / 2, r: 3, fill: '#e11d48' })
+        sliceLabels,
+        centerBadge || h('circle', { cx: size / 2, cy: size / 2, r: 3, fill: '#e11d48' })
       );
     };
 
@@ -10277,6 +10302,75 @@ window.StemLab = window.StemLab || {
       // Keyboard shortcuts hint
       h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
         '\u2328\uFE0F 1-6: tabs | N: new challenge | B: benchmarks | P: pie/bar | ?: AI tutor'
+      ),
+
+      // \u2550\u2550\u2550 EQUIVALENT FRACTIONS \u2550\u2550\u2550
+      h('div', { className: 'mt-5 rounded-2xl border border-pink-300 bg-white p-3 shadow-sm' },
+        h('h4', { className: 'text-sm font-bold text-pink-700 mb-2' }, '\uD83C\uDF70 Equivalent Fractions \u2014 Same value, different forms'),
+        h('div', { className: 'rounded-xl overflow-hidden border border-pink-200', style: { background: '#020210', aspectRatio: '16/5' } },
+          h('canvas', {
+            ref: function(cvEl) {
+              if (!cvEl) return;
+              if (cvEl._efAnim) return;
+              var c2 = cvEl.getContext('2d');
+              var W = cvEl.offsetWidth || 600;
+              var H = cvEl.offsetHeight || 180;
+              cvEl.width = W * 2; cvEl.height = H * 2;
+              c2.scale(2, 2);
+              var start = performance.now();
+              function drawEf() {
+                if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._efAnim); return; }
+                var t = (performance.now() - start) / 1000;
+                c2.fillStyle = '#020210';
+                c2.fillRect(0, 0, W, H);
+                var fracs = [
+                  { num: 1, den: 2, color: '#f472b6' },
+                  { num: 2, den: 4, color: '#a78bfa' },
+                  { num: 4, den: 8, color: '#7dd3fc' },
+                  { num: 8, den: 16, color: '#10b981' }
+                ];
+                var cellW = W / fracs.length;
+                fracs.forEach(function(f, fi) {
+                  var cx = fi * cellW + cellW / 2;
+                  var cy = H * 0.40;
+                  var R = 35;
+                  // Pie chart
+                  for (var slc = 0; slc < f.den; slc++) {
+                    var a1 = (slc / f.den) * Math.PI * 2 - Math.PI / 2;
+                    var a2 = ((slc + 1) / f.den) * Math.PI * 2 - Math.PI / 2;
+                    c2.fillStyle = slc < f.num ? f.color : '#1e293b';
+                    c2.beginPath();
+                    c2.moveTo(cx, cy);
+                    c2.arc(cx, cy, R, a1, a2);
+                    c2.closePath();
+                    c2.fill();
+                    c2.strokeStyle = '#020210'; c2.lineWidth = 0.5; c2.stroke();
+                  }
+                  c2.strokeStyle = f.color; c2.lineWidth = 1.5;
+                  c2.beginPath();
+                  c2.arc(cx, cy, R, 0, Math.PI * 2);
+                  c2.stroke();
+                  c2.font = 'bold 13px monospace'; c2.fillStyle = f.color; c2.textAlign = 'center';
+                  c2.fillText(f.num + '/' + f.den, cx, cy + R + 18);
+                  c2.font = '8px monospace'; c2.fillStyle = '#cbd5e1';
+                  c2.fillText('= 0.5', cx, cy + R + 30);
+                });
+                c2.fillStyle = 'rgba(0,0,0,0.85)';
+                c2.fillRect(8, H - 14, W - 16, 12);
+                c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#f472b6'; c2.textAlign = 'center';
+                c2.fillText('Multiply numerator & denominator by same number \u2192 same value, different form', W / 2, H - 5);
+                cvEl._efAnim = requestAnimationFrame(drawEf);
+              }
+              drawEf();
+              var ro = new ResizeObserver(function() {
+                W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+              });
+              ro.observe(cvEl);
+            },
+            style: { width: '100%', height: '100%', display: 'block' }
+          })
+        )
       )
     );
   }
