@@ -11508,12 +11508,12 @@
     "insert_formula": "Insert formula from library"
   },
   "alts": {
-    "scene_visualization": "Scene Visualization",
-    "document_image": "Document image",
-    "boss": "Boss",
-    "cover": "Cover",
-    "book_cover": "Book cover",
-    "visual": "Visual",
+    "scene_visualization": "Visualisation de scène",
+    "document_image": "Image du document",
+    "boss": "Patron",
+    "cover": "Couverture",
+    "book_cover": "Couverture du livre",
+    "visual": "Visuel",
     "alloflow": "AlloFlow"
   },
   "tooltips": {

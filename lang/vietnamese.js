@@ -11511,12 +11511,12 @@
     "insert_formula": "Insert formula from library"
   },
   "alts": {
-    "scene_visualization": "Scene Visualization",
-    "document_image": "Document image",
-    "boss": "Boss",
-    "cover": "Cover",
-    "book_cover": "Book cover",
-    "visual": "Visual",
+    "scene_visualization": "Hình ảnh hóa cảnh",
+    "document_image": "Hình ảnh tài liệu",
+    "boss": "Trùm",
+    "cover": "Bìa",
+    "book_cover": "Bìa sách",
+    "visual": "Hình ảnh",
     "alloflow": "AlloFlow"
   },
   "tooltips": {

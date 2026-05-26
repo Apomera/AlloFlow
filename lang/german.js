@@ -11640,11 +11640,11 @@
     "insert_formula": "Insert formula from library"
   },
   "alts": {
-    "scene_visualization": "Scene Visualization",
-    "document_image": "Document image",
+    "scene_visualization": "Szenenvisualisierung",
+    "document_image": "Dokumentbild",
     "boss": "Boss",
     "cover": "Cover",
-    "book_cover": "Book cover",
+    "book_cover": "Buchcover",
     "visual": "Visual",
     "alloflow": "AlloFlow"
   },
