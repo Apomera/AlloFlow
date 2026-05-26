@@ -1188,7 +1188,24 @@ window.StemLab = window.StemLab || {
 
                       )
 
-                    )
+                    ),
+                    // \u2500\u2500 Row stats: T/F counts + visual ratio bar \u2500\u2500
+                    // Quick read on the table's character: how often the expression is satisfied.
+                    (function() {
+                      var trueCount = table.rows.filter(function(r) { return r.result; }).length;
+                      var falseCount = table.rows.length - trueCount;
+                      var truePct = (trueCount / table.rows.length) * 100;
+                      return React.createElement("div", { className: "mt-3 bg-slate-50 rounded-lg p-2 border border-slate-200" },
+                        React.createElement("div", { className: "flex items-center justify-between text-[11px] font-bold mb-1.5" },
+                          React.createElement("span", { className: "text-emerald-700" }, "\u2713 True: " + trueCount + " / " + table.rows.length + " rows"),
+                          React.createElement("span", { className: "text-slate-500 font-mono" }, truePct.toFixed(0) + "% satisfied"),
+                          React.createElement("span", { className: "text-red-600" }, "\u2717 False: " + falseCount + " / " + table.rows.length + " rows")
+                        ),
+                        React.createElement("div", { className: "h-2 rounded-full overflow-hidden flex bg-red-100" },
+                          React.createElement("div", { className: "bg-gradient-to-r from-emerald-400 to-emerald-500", style: { width: truePct + '%', transition: 'width 0.3s' } })
+                        )
+                      );
+                    })()
 
                   )
 
@@ -2279,6 +2296,125 @@ window.StemLab = window.StemLab || {
 
               }, "\u2190 Back to Tools")
 
+            ),
+
+            // \u2550\u2550\u2550 TRUTH TABLES \u2550\u2550\u2550
+            React.createElement('div', { className: 'mt-5 mx-4 rounded-2xl border border-violet-300 bg-white p-3 shadow-sm' },
+              React.createElement('h4', { className: 'text-sm font-bold text-violet-700 mb-2' }, '\ud83d\udd0d Truth Tables \u2014 Boolean logic at a glance'),
+              React.createElement('div', { className: 'rounded-xl overflow-hidden border border-violet-200', style: { background: '#1e1b4b', aspectRatio: '16/5' } },
+                React.createElement('canvas', {
+                  ref: function(cvEl) {
+                    if (!cvEl) return;
+                    if (cvEl._ttAnim) return;
+                    var c2 = cvEl.getContext('2d');
+                    var W = cvEl.offsetWidth || 600;
+                    var H = cvEl.offsetHeight || 180;
+                    cvEl.width = W * 2; cvEl.height = H * 2;
+                    c2.scale(2, 2);
+                    var start = performance.now();
+                    var ops = [
+                      { name: 'AND', sym: '\u2227', fn: function(a,b){return a&&b;}, color: '#3b82f6' },
+                      { name: 'OR', sym: '\u2228', fn: function(a,b){return a||b;}, color: '#22c55e' },
+                      { name: 'XOR', sym: '\u2295', fn: function(a,b){return a!==b;}, color: '#fbbf24' },
+                      { name: 'NAND', sym: '\u22bc', fn: function(a,b){return !(a&&b);}, color: '#fb7185' }
+                    ];
+                    function drawTt() {
+                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._ttAnim); return; }
+                      var t = (performance.now() - start) / 1000;
+                      c2.fillStyle = '#1e1b4b';
+                      c2.fillRect(0, 0, W, H);
+                      var blink = Math.floor((t * 0.5) % ops.length);
+                      var op = ops[blink];
+                      // Title
+                      c2.fillStyle = op.color;
+                      c2.font = 'bold 14px serif';
+                      c2.textAlign = 'left';
+                      c2.fillText('A ' + op.sym + ' B  (' + op.name + ')', W * 0.06, 24);
+                      // Table
+                      var tx = W * 0.06, ty = 36;
+                      var rowH = 24;
+                      var colW = W * 0.1;
+                      var rows = [
+                        ['A', 'B', op.name],
+                        [0, 0, op.fn(false, false) ? 1 : 0],
+                        [0, 1, op.fn(false, true) ? 1 : 0],
+                        [1, 0, op.fn(true, false) ? 1 : 0],
+                        [1, 1, op.fn(true, true) ? 1 : 0]
+                      ];
+                      rows.forEach(function(r, ri) {
+                        r.forEach(function(cell, ci) {
+                          c2.strokeStyle = '#475569';
+                          c2.strokeRect(tx + ci * colW, ty + ri * rowH, colW, rowH);
+                          c2.fillStyle = ri === 0 ? op.color : (cell === 1 ? '#86efac' : (cell === 0 ? '#cbd5e1' : '#fff'));
+                          c2.font = ri === 0 ? 'bold 11px sans-serif' : 'bold 13px monospace';
+                          c2.textAlign = 'center';
+                          c2.fillText(cell, tx + ci * colW + colW / 2, ty + ri * rowH + 16);
+                        });
+                      });
+                      // Gate symbol
+                      var gx = W * 0.55, gy = H * 0.5;
+                      c2.strokeStyle = op.color;
+                      c2.lineWidth = 2;
+                      // Input lines
+                      c2.beginPath();
+                      c2.moveTo(gx - 60, gy - 12);
+                      c2.lineTo(gx - 20, gy - 12);
+                      c2.moveTo(gx - 60, gy + 12);
+                      c2.lineTo(gx - 20, gy + 12);
+                      c2.stroke();
+                      // Gate body (AND/OR shape)
+                      c2.fillStyle = 'rgba(167,139,250,0.2)';
+                      c2.beginPath();
+                      if (op.name === 'AND' || op.name === 'NAND') {
+                        c2.moveTo(gx - 20, gy - 18);
+                        c2.lineTo(gx, gy - 18);
+                        c2.arc(gx, gy, 18, -Math.PI / 2, Math.PI / 2);
+                        c2.lineTo(gx - 20, gy + 18);
+                        c2.closePath();
+                      } else {
+                        c2.moveTo(gx - 20, gy - 18);
+                        c2.quadraticCurveTo(gx - 5, gy - 18, gx + 18, gy);
+                        c2.quadraticCurveTo(gx - 5, gy + 18, gx - 20, gy + 18);
+                        c2.quadraticCurveTo(gx - 10, gy, gx - 20, gy - 18);
+                        c2.closePath();
+                      }
+                      c2.fill();
+                      c2.stroke();
+                      // NAND bubble
+                      if (op.name === 'NAND') {
+                        c2.beginPath();
+                        c2.arc(gx + 22, gy, 3, 0, Math.PI * 2);
+                        c2.stroke();
+                      }
+                      // Output line
+                      c2.beginPath();
+                      c2.moveTo(gx + (op.name === 'NAND' ? 25 : 20), gy);
+                      c2.lineTo(gx + 60, gy);
+                      c2.stroke();
+                      // Labels
+                      c2.fillStyle = '#fef3c7';
+                      c2.font = 'bold 11px monospace';
+                      c2.textAlign = 'right';
+                      c2.fillText('A', gx - 64, gy - 8);
+                      c2.fillText('B', gx - 64, gy + 16);
+                      c2.textAlign = 'left';
+                      c2.fillText('Out', gx + 64, gy + 4);
+                      c2.fillStyle = 'rgba(0,0,0,0.85)';
+                      c2.fillRect(8, H - 14, W - 16, 12);
+                      c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#c4b5fd'; c2.textAlign = 'center';
+                      c2.fillText('Boole 1854. Every CPU uses these gates. NAND is universal \u2014 you can build anything from just NAND.', W / 2, H - 5);
+                      cvEl._ttAnim = requestAnimationFrame(drawTt);
+                    }
+                    drawTt();
+                    var ro = new ResizeObserver(function() {
+                      W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                    });
+                    ro.observe(cvEl);
+                  },
+                  style: { width: '100%', height: '100%', display: 'block' }
+                })
+              )
             )
 
           );
