@@ -1515,7 +1515,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style: { fontSize: 24 } }, '\uD83C\uDF33'),
                 el('div', { style: { color: '#4ade80', fontSize: 14, fontWeight: 900 } }, 'That\'s like ' + Math.round(ct.total / TREES_PER_YEAR) + ' trees working for a whole year'),
                 el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginTop: 2 } }, 'Each tree absorbs about 22 kg CO\u2082 per year')
-              )
+              ),
+              // \u2500\u2500 Paris-target gap visualization \u2500\u2500
+              // Horizontal scale showing personal footprint against Paris-aligned (2300 kg),
+              // global average (~4800 kg), and high-emitter band (>10000 kg).
+              (function() {
+                var parisKg = 2300;
+                var globalAvgKg = 4800;
+                var scaleMaxKg = Math.max(12000, ct.total * 1.1);
+                var pctOf = function(kg) { return Math.min(100, (kg / scaleMaxKg) * 100); };
+                var youPos = pctOf(ct.total);
+                var status, statusColor;
+                if (ct.total <= parisKg) { status = '\u2713 At or under Paris-aligned target'; statusColor = '#4ade80'; }
+                else if (ct.total <= globalAvgKg) { status = '\u2193 Below global average, still ' + Math.round(ct.total - parisKg) + ' kg over Paris'; statusColor = '#fbbf24'; }
+                else { status = '\u2191 Above global average \u2014 ' + Math.round(ct.total - parisKg).toLocaleString() + ' kg over Paris target'; statusColor = '#fca5a5'; }
+                return el('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(255,255,255,0.08)' } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 } },
+                    el('span', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '\uD83C\uDF0D Your footprint vs benchmarks'),
+                    el('span', { style: { color: statusColor, fontSize: 11, fontWeight: 800 } }, status)
+                  ),
+                  el('div', { style: { position: 'relative', height: 36 } },
+                    // gradient bar
+                    el('div', { style: { position: 'absolute', top: 12, left: 0, right: 0, height: 12, borderRadius: 6, background: 'linear-gradient(90deg, rgba(74,222,128,0.55) 0%, rgba(74,222,128,0.55) ' + pctOf(parisKg) + '%, rgba(251,191,36,0.55) ' + pctOf(parisKg) + '%, rgba(251,191,36,0.55) ' + pctOf(globalAvgKg) + '%, rgba(239,68,68,0.55) ' + pctOf(globalAvgKg) + '%, rgba(239,68,68,0.55) 100%)' } }),
+                    // Paris marker
+                    el('div', { style: { position: 'absolute', top: 6, left: pctOf(parisKg) + '%', transform: 'translateX(-50%)', width: 2, height: 24, background: '#4ade80' } }),
+                    el('div', { style: { position: 'absolute', top: -2, left: pctOf(parisKg) + '%', transform: 'translateX(-50%)', color: '#4ade80', fontSize: 8, fontWeight: 700, whiteSpace: 'nowrap' } }, 'Paris 2.3 t'),
+                    // Global avg marker
+                    el('div', { style: { position: 'absolute', top: 6, left: pctOf(globalAvgKg) + '%', transform: 'translateX(-50%)', width: 2, height: 24, background: '#fbbf24' } }),
+                    el('div', { style: { position: 'absolute', top: -2, left: pctOf(globalAvgKg) + '%', transform: 'translateX(-50%)', color: '#fbbf24', fontSize: 8, fontWeight: 700, whiteSpace: 'nowrap' } }, 'Global ~4.8 t'),
+                    // Your marker (large arrow with value)
+                    el('div', { style: { position: 'absolute', top: 26, left: youPos + '%', transform: 'translateX(-50%)', color: statusColor, fontSize: 10, fontWeight: 900, whiteSpace: 'nowrap' } }, '\u25B2 You ' + (ct.total / 1000).toFixed(2) + ' t')
+                  )
+                );
+              })()
             ),
 
             // Scale toggle
