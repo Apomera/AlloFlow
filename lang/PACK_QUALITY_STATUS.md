@@ -5,16 +5,15 @@
 This file tracks known quality issues across language packs that exist but
 need improvement. Updated when meaningful cleanup happens.
 
-## Polish — 49.2% Cyrillic contamination cleaned (in progress)
+## Polish — 53.0% Cyrillic contamination cleaned (significant progress)
 
 **Original state:** Built via Russian → Polish substitution dictionary at
 commit `cba41c51`. 83.7% of keys (8,339 of 9,965) contained mixed Russian
 + Polish text, with 214,954 stray Cyrillic characters.
 
-**Current state (after commits 861fd209, 0ff2f050, 14012156, 01f5e49a,
-307544d8, 9ac2ed75, 405e4fb3, 190f2ef2):**
-- Contaminated keys: 8,339 → 5,753 (31% fully cleaned)
-- Cyrillic characters: 214,954 → 109,152 (49.2% removed)
+**Current state (after 10 cleanup commits 2026-05-26, ending at 36a27454):**
+- Contaminated keys: 8,339 → 5,505 (34% fully cleaned)
+- Cyrillic characters: 214,954 → 101,120 (53.0% removed)
 - High-visibility surfaces (common, modals, help_mode) are clean.
 
 **Approach taken:** Russian → Polish word dictionary (~800 mappings),
