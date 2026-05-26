@@ -392,20 +392,59 @@ window.StemLab = window.StemLab || {
                 );
               })
             ),
-            h('div', {
-              className: 'grid gap-1 flex-shrink-0',
-              style: (function() {
-                // Fixed width prevents the grid from collapsing inside the flex parent
-                // when the skip-count column is showing. Each cell ends up the same
-                // size as before (aspect-square keeps them proportional).
-                var w = (cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32);
-                return {
-                  gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))',
-                  width: w + 'px',
-                  maxWidth: '100%'
-                };
-              })()
-            }, cells)
+            // Row labels (1..rows) — paired with grid rows
+            h('div', { className: 'flex flex-col gap-1 self-stretch', 'aria-hidden': 'true' },
+              h('div', { className: 'text-[10px] font-bold text-amber-600 mb-0.5 text-center', style: { width: 18 } }, 'r'),
+              Array.from({ length: rows }, function(_, ri) {
+                var isInHL = ri < highlight.rows;
+                return h('div', {
+                  key: 'rl-' + ri,
+                  className: 'aspect-square rounded flex items-center justify-center text-xs font-bold ' +
+                    (isInHL ? 'bg-amber-200 text-amber-900' : 'bg-amber-50 text-amber-500'),
+                  style: { width: 18 }
+                }, ri + 1);
+              })
+            ),
+            // Grid with column-label header
+            h('div', { className: 'flex flex-col gap-1 flex-shrink-0' },
+              // Column labels (1..cols)
+              h('div', {
+                className: 'grid gap-1',
+                'aria-hidden': 'true',
+                style: (function() {
+                  var w = (cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32);
+                  return { gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', width: w + 'px', maxWidth: '100%' };
+                })()
+              },
+                Array.from({ length: cols }, function(_, ci) {
+                  var isInHL = ci < highlight.cols;
+                  return h('div', {
+                    key: 'cl-' + ci,
+                    className: 'text-center text-[11px] font-bold py-0.5 rounded ' +
+                      (isInHL ? 'bg-amber-200 text-amber-900' : 'text-amber-500')
+                  }, ci + 1);
+                })
+              ),
+              h('div', {
+                className: 'grid gap-1',
+                style: (function() {
+                  var w = (cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32);
+                  return {
+                    gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))',
+                    width: w + 'px',
+                    maxWidth: '100%'
+                  };
+                })()
+              }, cells),
+              // Highlight dimension caption shown when student has selected a sub-region
+              (highlight.rows > 0 && highlight.cols > 0) && h('div', {
+                className: 'text-center text-[11px] font-bold text-amber-700 mt-1'
+              },
+                'Highlighted: ', h('span', { className: 'text-amber-900' }, highlight.rows + ' × ' + highlight.cols),
+                ' = ',
+                h('span', { className: 'text-amber-900 text-base' }, highlight.rows * highlight.cols)
+              )
+            )
           ),
           showSkipCount && h('p', { className: 'text-[11px] text-amber-700 italic mt-2 text-center' },
             'Each row adds ' + cols + '. ' + cols + ' + ' + cols + ' + ... (' + rows + ' times) = ' + cols + ' × ' + rows + ' = ' + (rows * cols)
@@ -982,6 +1021,104 @@ window.StemLab = window.StemLab || {
         // Keyboard hints
         h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
           '\u2328\uFE0F B/D/P/W: switch mode | N: new challenge | C: commutative | ?: AI tutor'
+        ),
+
+        // \u2550\u2550\u2550 DISTRIBUTIVE PROPERTY \u2550\u2550\u2550
+        h('div', { className: 'mt-5 rounded-2xl border border-blue-300 bg-white p-3 shadow-sm' },
+          h('h4', { className: 'text-sm font-bold text-blue-700 mb-2' }, '\uD83D\uDD22 Distributive Property \u2014 a(b+c) = ab + ac'),
+          h('div', { className: 'rounded-xl overflow-hidden border border-blue-200', style: { background: '#0f172a', aspectRatio: '16/5' } },
+            h('canvas', {
+              ref: function(cvEl) {
+                if (!cvEl) return;
+                if (cvEl._dpAnim) return;
+                var c2 = cvEl.getContext('2d');
+                var W = cvEl.offsetWidth || 600;
+                var H = cvEl.offsetHeight || 180;
+                cvEl.width = W * 2; cvEl.height = H * 2;
+                c2.scale(2, 2);
+                var start = performance.now();
+                function drawDp() {
+                  if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._dpAnim); return; }
+                  var t = (performance.now() - start) / 1000;
+                  c2.fillStyle = '#0f172a';
+                  c2.fillRect(0, 0, W, H);
+                  // 3 \u00D7 (4 + 2) = 3\u00D74 + 3\u00D72 = 12 + 6 = 18
+                  var unit = 16;
+                  var ox = W * 0.1, oy = H * 0.3;
+                  // Big rectangle 3 \u00D7 6
+                  c2.strokeStyle = '#fbbf24';
+                  c2.lineWidth = 2;
+                  c2.strokeRect(ox, oy, 6 * unit, 3 * unit);
+                  // Left side (3 \u00D7 4) = 12
+                  var phase = (t * 0.4) % 2;
+                  c2.fillStyle = phase < 1 ? 'rgba(34,211,238,0.5)' : '#22d3ee';
+                  c2.fillRect(ox, oy, 4 * unit, 3 * unit);
+                  // Right side (3 \u00D7 2) = 6
+                  c2.fillStyle = phase < 1 ? 'rgba(251,113,133,0.5)' : '#fb7185';
+                  c2.fillRect(ox + 4 * unit, oy, 2 * unit, 3 * unit);
+                  // Grid
+                  c2.strokeStyle = 'rgba(255,255,255,0.3)';
+                  c2.lineWidth = 0.5;
+                  for (var i = 1; i < 6; i++) {
+                    c2.beginPath();
+                    c2.moveTo(ox + i * unit, oy);
+                    c2.lineTo(ox + i * unit, oy + 3 * unit);
+                    c2.stroke();
+                  }
+                  for (var j = 1; j < 3; j++) {
+                    c2.beginPath();
+                    c2.moveTo(ox, oy + j * unit);
+                    c2.lineTo(ox + 6 * unit, oy + j * unit);
+                    c2.stroke();
+                  }
+                  // Divider
+                  c2.strokeStyle = '#fde047';
+                  c2.lineWidth = 3;
+                  c2.beginPath();
+                  c2.moveTo(ox + 4 * unit, oy);
+                  c2.lineTo(ox + 4 * unit, oy + 3 * unit);
+                  c2.stroke();
+                  // Labels
+                  c2.fillStyle = '#22d3ee';
+                  c2.font = 'bold 14px serif';
+                  c2.textAlign = 'center';
+                  c2.fillText('3 \u00D7 4', ox + 2 * unit, oy - 6);
+                  c2.fillStyle = '#fb7185';
+                  c2.fillText('3 \u00D7 2', ox + 5 * unit, oy - 6);
+                  c2.fillStyle = '#fbbf24';
+                  c2.font = '12px sans-serif';
+                  c2.fillText('3', ox - 14, oy + 1.5 * unit + 5);
+                  c2.fillText('6', ox + 3 * unit, oy + 3 * unit + 14);
+                  // Equation
+                  c2.fillStyle = '#fde047';
+                  c2.font = 'bold 18px serif';
+                  c2.textAlign = 'left';
+                  c2.fillText('3 \u00D7 (4 + 2) =', W * 0.55, H * 0.4);
+                  c2.fillStyle = '#22d3ee';
+                  c2.fillText('3\u00D74', W * 0.78, H * 0.4);
+                  c2.fillStyle = '#fde047';
+                  c2.fillText('+', W * 0.86, H * 0.4);
+                  c2.fillStyle = '#fb7185';
+                  c2.fillText('3\u00D72', W * 0.89, H * 0.4);
+                  c2.fillStyle = '#fde047';
+                  c2.font = 'bold 14px serif';
+                  c2.fillText('= 12 + 6 = 18', W * 0.55, H * 0.6);
+                  c2.fillStyle = 'rgba(0,0,0,0.85)';
+                  c2.fillRect(8, H - 14, W - 16, 12);
+                  c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#67e8f9'; c2.textAlign = 'center';
+                  c2.fillText('Distribution lets you break big problems into easy ones. Foundation of algebra.', W / 2, H - 5);
+                  cvEl._dpAnim = requestAnimationFrame(drawDp);
+                }
+                drawDp();
+                var ro = new ResizeObserver(function() {
+                  W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                  cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                });
+                ro.observe(cvEl);
+              },
+              style: { width: '100%', height: '100%', display: 'block' }
+            })
+          )
         )
       );
     }
