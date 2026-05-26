@@ -5003,7 +5003,7 @@
     "fb_try_again": "Tente novamente! Escute com atenção...",
     "fb_one_more_try": "Mais uma tentativa!",
     "fb_text_scaffold": "Vamos colocar um texto para ajudar!",
-    "fb_no_text_mode": "Show! Agora vamos tentar SEM o texto!",
+    "fb_no_text_mode": "Boa! Agora vamos tentar SEM o texto!",
     "fb_spelling_transition": "Você é fera! Agora vou testar a sua ortografia!",
     "fb_nice_try": "Bom esforço!",
     "fb_great_work_next": "Ótimo trabalho!",
@@ -7337,7 +7337,7 @@
     "loading": "Carregando SEL Hub...",
     "loading_hint": "Carregando módulo do CDN. Se persistir, verifique sua conexão."
   },
-  "_version": "2026-05-25T0001",
+  "_version": "20260526105528T1779792928686",
   "adventure_title": "Aventura",
   "cancel": "Cancelar",
   "move_down": "Mover para baixo",
@@ -7934,12 +7934,12 @@
       "scored_90_plus": "Pontuaram 90+",
       "new_batch": "Novo Lote",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
+        "title": "Lote anterior interrompido",
+        "summary": "{done}/{total} ficheiro(s) concluído(s) antes do separador ser fechado.",
         "remaining": "{n} remaining.",
         "files_label": "Files:",
         "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
+        "resume_button": "Retomar lote",
         "discard_button": "Discard",
         "toast": "Resuming batch · {done} cached, {remaining} to process"
       }
@@ -8315,7 +8315,7 @@
       "introduced_label": "Newly Introduced",
       "resolved_tip": "Issues from the original audit no longer found in the verification audit",
       "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "introduced_tip": "Novos problemas que não existiam antes da correcção"
     }
   },
   "stem": {
