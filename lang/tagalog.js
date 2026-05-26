@@ -53,10 +53,10 @@
     "dbq_text": "dokumento-Batay mga tanong: mag-aaral suriin primary sources, bumuo ebidensya-batay arguments, at magsanay ang central kasanayan ng social-studies + ELA pagtatasa. Generates pinagkunan dokumento, scaffolded mga tanong, at mga sagot keys aligned sa iyong pamantayan.",
     "quiz_mode_title": "Piliin ang tamang quiz mode",
     "quiz_mode_text": "Pumili ano ito quiz ay para sa. Exit Ticket checks today’s pag-aaral. Pre-Suriin probes prior knowledge bago teaching at surfaces gaps as konsepto card kasama isang one-i-click \"Explain sa klase\" AI broadcast. Formative Suriin ay isang mabilis mid-aralin pulse. Spaced Pagsusuri tracks bawat mag-aaral’s cross-sesyon retention kasama isang bawat-konsepto sparkline. bawat mode tunes mga prompt, aytem-uri mix, at ang sa direkta dashboard layout.",
-    "anchor_chart_title": "Anchor tsart",
-    "anchor_chart_text": "Bumuo klase-ready Anchor tsart iyan gumawa concepts, bokabularyo, and procedures stick. A visual reference mag-aaral can return to throughout a unit. ### panel mga opsyon • **tsart Type**: Pumili from Concept, bokabularyo, Process, estratehiya, or Comparison tsart. • **estilo**: Hand-drawn marker look, polished i-print estilo, or kid-palakaibigan comic estilo. • **kulay Palette**: Pick a high-contrast, dyslexia-palakaibigan, or themed kulay scheme. • **Custom tagubilin**: Tukuyin focal concepts, key bokabularyo, or estratehiya hakbang to highlight. ### tsart bahagi • **Title Banner**: Eye-catching topic header. • **visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-nabuo icon reinforcing each idea with dual-coded visual cues. • **halimbawa & Non-halimbawa**: Side-by-side panel for concept clarity. ### interactive mga feature • **I-i-edit mode**: Tap any element to rewrite teksto, swap icon, or recolor seksyon. • **I-i-print-Ready**: High-resolution i-export sized for posters or 8.5×11 handouts. • **Project mode**: Fullscreen tingnan for whole-klase tagubilin. ### Pro tip • Bumuo a *estratehiya tsart* before a writing unit and a *bokabularyo tsart* before a science unit — keep both on the klase wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors mag-aaral can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates iyan teach mag-aaral *how* to take notes, not just *what* to isulat. Pick the structure iyan matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-kolum layout with cues, notes, and bottom summary. • **Two-kolum Notes**: Main idea / detalye organization for nilalaman-heavy reading. • **T-tsart**: Ihambing/contrast or pros/cons side-by-side. • **Sketchnotes**: visual note-taking with prompts for icon, arrows, and kulay-coding. • **KWL tsart**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook kabanata. ### Generation mga feature • **Pre-Filled Prompts**: Each template seeded with cues drawn from your pinagkunan teksto. • **mga tanong Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does ito connect to…?\"). • **bokabularyo Slots**: Pre-populated key termino mag-aaral should makinig/basahin for. • **Custom tagubilin**: Target a tiyak cognitive task (synthesis, summary, evaluation). ### I-i-print & Digital • **mai-i-print na PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: mag-aaral type directly into the template for paperless workflows. • **Editable Headings**: guro tailor kolum labels and seksyon titles before sharing. ### Pro tip • Pair *Cornell Notes* with the **Leveled Reader**: mag-aaral take notes at their reading antas, then gamitin the bottom-summary box as a formative-pagtatasa check. ### UDL Connection • **Action & ekspresyon**: suporta planning and estratehiya development (Guideline 6.2) by giving learners explicit structures for organizing impormasyon."
+    "anchor_chart_title": "Anchor Charts",
+    "anchor_chart_text": "Bumuo ng Anchor Charts na handa-classroom na tumutulong sa mga konsepto, bokabularyo, at pamamaraan na manatili. Isang visual na buod ng mga pangunahing ideya na maaaring sumangguni nang paulit-ulit ang mga mag-aaral.",
+    "note_taking_title": "Mga Template sa Pag-take ng Notes",
+    "note_taking_text": "Mga scaffolded na template sa pag-take ng notes na nagtuturo sa mga mag-aaral *paano* mag-take ng notes, hindi lamang *kung ano* ang isulat. Kasama ang Cornell, graphic organizers, double-entry, at learning journals."
   },
   "launch_pad": {
     "subtitle": "Pumili iyong pag-aaral pathway",
@@ -3976,23 +3976,23 @@
       "html_aria": "HTML pinagkunan code sa audit"
     },
     "batch": {
-      "drop_text": "I-drag & i-drop PDFs here",
-      "browse_files": "Browse file",
-      "clear_all": "Clear lahat",
-      "progress_aria": "Batch remediation pag-unlad",
-      "stop_aria": "Itigil batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "bago Batch",
+      "drop_text": "I-drag & i-drop ang mga PDF dito",
+      "browse_files": "Magbrowse ng mga file",
+      "clear_all": "I-clear lahat",
+      "progress_aria": "Pag-unlad ng batch na remediation",
+      "stop_aria": "Itigil ang batch na remediation",
+      "avg_improvement": "Avg na pagpapabuti",
+      "scored_90_plus": "Nakakuha ng 90+",
+      "new_batch": "Bagong batch",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "Naputol ang nakaraang batch",
+        "summary": "{done}/{total} (na) file natapos bago nagsara ang tab.",
+        "remaining": "{n} pa.",
+        "files_label": "Mga File:",
+        "files_more": "+ {n} pa",
+        "resume_button": "Ipagpatuloy ang batch",
+        "discard_button": "Itapon",
+        "toast": "Ipinagpapatuloy ang batch · {done} naka-cache, {remaining} ang ipoproseso"
       }
     },
     "choose_how": "Pumili paano sa process ito PDF:",
@@ -4346,27 +4346,27 @@
       "insert_table_title": "Insert naa-access talahanayan"
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": " — minority opinion, lower confidence"
+      "tooltip": "Nilagyan ng marka ng {n} sa {total} na auditor",
+      "unanimous_suffix": " (nagkakaisa)",
+      "minority_suffix": " — opinyon ng minorya, mas mababang kumpiyansa"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "Sumusunod sa estruktura pero mahina sa semantika — minarkahan ng AI ang kalidad ng nilalaman (alt text, kahulugan ng heading, pagkakasunod-sunod ng pagbabasa) na hindi matutukoy ng axe-core",
+      "structural": "Natuklasan ang mga paglabag sa WCAG sa antas ng code — natagpuan ng axe-core ang mga pagkabigo na maaaring suriin ng makina"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "Kasalukuyang istruktura ng tag",
+      "tooltip": "Ang PDF na ito ay may tag tree na PDF/UA-style. Inutusan ang mga auditor na kilalanin ang umiiral na istruktura sa halip na parusahan ito bilang nawawala."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "Paglutas ng isyu",
+      "subheading": "Nalutas {resolved} sa {total} orihinal na isyu ({pct}%)",
+      "resolved_label": "Nalutas",
+      "persisted_label": "Nananatili",
+      "introduced_label": "Bagong ipinakilala",
+      "resolved_tip": "Mga isyu mula sa orihinal na audit na hindi na nakita sa verification audit",
+      "persisted_tip": "Mga isyu mula sa orihinal na audit na nananatili pagkatapos ng pag-aayos",
+      "introduced_tip": "Mga bagong isyu na hindi nag-exist bago ang pag-aayos"
     }
   },
   "concept_sort": {

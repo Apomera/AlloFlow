@@ -6221,10 +6221,10 @@
     "dbq_text": "שאלות מבוססות מסמך: תלמידים מנתחים מקורות ראשוניים, בונים טיעונים מבוססי הוכחות ומתרגלים את המיומנות המרכזית של הערכות במדעי החברה + אנגלית. מייצר מסמכי מקור, שאלות עם פיגום ומפתחות תשובות מותאמים לתקנים שלך.",
     "quiz_mode_title": "בחר את מצב החידון הנכון",
     "quiz_mode_text": "בחר עבור מה החידון הזה. כרטיס יציאה בודק את הלמידה של היום. בדיקה מקדימה בוחנת ידע קודם לפני הוראה ומציפה פערים כקלפי מושג עם שידור AI \"הסבר לכיתה\" בלחיצה אחת. בדיקה מעצבת היא דופק מהיר באמצע השיעור. חזרה מרווחת עוקבת אחר שמירה חוצת מפגשים של כל תלמיד עם גרף ניצוץ לכל מושג. כל מצב מכוון הנחיות, ערבוב סוגי פריטים ופריסת לוח הבקרה החי.",
-    "anchor_chart_title": "Anchor תרשימים",
-    "anchor_chart_text": "הפק כיתה-ready Anchor תרשימים זה צור concepts, אוצר מילים, and procedures stick. A חזותי reference תלמידים can return to throughout a unit. ### לוחות אפשרויות • **תרשימים Type**: בחר from Concept, אוצר מילים, Process, אסטרטגיה, or Comparison תרשימים. • **סגנונות**: Hand-drawn marker look, polished הדפס סגנונות, or kid-ידידותי comic סגנונות. • **צבעים Palette**: Pick a high-contrast, dyslexia-ידידותי, or themed צבעים scheme. • **Custom הוראות**: ציין focal concepts, key אוצר מילים, or אסטרטגיה שלבים to highlight. ### תרשימים רכיבים • **Title Banner**: Eye-catching topic header. • **חזותי Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-הופק אייקונים reinforcing each idea with dual-coded חזותי cues. • **דוגמאות & Non-דוגמאות**: Side-by-side לוחות for concept clarity. ### אינטראקטיבי תכונות • **ערוך מצב**: Tap any element to rewrite טקסט, swap אייקונים, or recolor מקטעים. • **הדפס-Ready**: High-resolution ייצא sized for posters or 8.5×11 handouts. • **Project מצב**: Fullscreen הצג for whole-כיתה הוראות. ### Pro טיפים • הפק a *אסטרטגיה תרשימים* before a writing unit and a *אוצר מילים תרשימים* before a science unit — keep both on the כיתה wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent חזותי anchors תלמידים can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates זה teach תלמידים *how* to take notes, not just *what* to כתוב. Pick the structure זה matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-עמודות layout with cues, notes, and bottom summary. • **Two-עמודות Notes**: Main idea / פרטים organization for תוכן-heavy reading. • **T-תרשימים**: השווה/contrast or pros/cons side-by-side. • **Sketchnotes**: חזותי note-taking with prompts for אייקונים, arrows, and צבעים-coding. • **KWL תרשימים**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook פרקים. ### Generation תכונות • **Pre-Filled Prompts**: Each template seeded with cues drawn from your מקור טקסט. • **שאלות Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does זה connect to…?\"). • **אוצר מילים Slots**: Pre-populated key מונחים תלמידים should הקשב/קרא for. • **Custom הוראות**: Target a מסוים cognitive task (synthesis, summary, evaluation). ### הדפס & Digital • **Printable PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: תלמידים type directly into the template for paperless workflows. • **Editable Headings**: מורים tailor עמודות labels and מקטעים titles before sharing. ### Pro טיפים • Pair *Cornell Notes* with the **Leveled Reader**: תלמידים take notes at their reading רמות, then השתמש the bottom-summary box as a formative-הערכות check. ### UDL Connection • **Action & ביטויים**: תמיכה planning and אסטרטגיה development (Guideline 6.2) by giving learners explicit structures for organizing מידע."
+    "anchor_chart_title": "עמודי אנקור",
+    "anchor_chart_text": "צור עמודי אנקור מוכנים לכיתה שהופכים מושגים, אוצר מילים ונהלים לזכירים. סיכום חזותי של רעיונות מפתח שתלמידים יכולים לפנות אליהם שוב ושוב.",
+    "note_taking_title": "תבניות רישום הערות",
+    "note_taking_text": "תבניות רישום הערות מובנות המלמדות תלמידים *איך* לרשום הערות, לא רק *מה* לכתוב. כולל קורנל, מארגנים גרפיים, כניסה כפולה ויומני למידה."
   },
   "adventure": {
     "title": "מצב הרפתקה",
@@ -9858,8 +9858,8 @@
       "html_aria": "קוד מקור HTML לבדיקה"
     },
     "batch": {
-      "drop_text": "גרור והשלך PDF-ים כאן",
-      "browse_files": "עיון בקבצים",
+      "drop_text": "גרור ושחרר PDF כאן",
+      "browse_files": "עיין בקבצים",
       "clear_all": "נקה הכל",
       "progress_aria": "התקדמות תיקון אצווה",
       "stop_aria": "עצור תיקון אצווה",
@@ -9867,14 +9867,14 @@
       "scored_90_plus": "ציון 90+",
       "new_batch": "אצווה חדשה",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "האצווה הקודמת הופסקה",
+        "summary": "{done}/{total} קבצים הושלמו לפני סגירת הכרטיסייה.",
+        "remaining": "נותרו {n}.",
+        "files_label": "קבצים:",
+        "files_more": "+ {n} נוספים",
+        "resume_button": "חדש אצווה",
+        "discard_button": "בטל",
+        "toast": "מחדש אצווה · {done} במטמון, {remaining} לעיבוד"
       }
     },
     "choose_how": "בחר כיצד לעבד PDF זה:",
@@ -10228,27 +10228,27 @@
       "drag_hint": "גרור a thumbnail onto any תמונות placeholder in the preview to insert it, or לחץ \"📷 העלה\" inside a placeholder and בחר \"השתמש extracted תמונות\"."
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": " — minority opinion, lower confidence"
+      "tooltip": "סומן על ידי {n} מתוך {total} מבקרים",
+      "unanimous_suffix": " (פה אחד)",
+      "minority_suffix": " — דעת מיעוט, ביטחון נמוך יותר"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "תואם מבנית אך חלש סמנטית — ה-AI סימן את איכות התוכן (טקסט חלופי, משמעות כותרות, סדר קריאה) ש-axe-core לא יכול לזהות",
+      "structural": "הפרות WCAG ברמת קוד זוהו — axe-core מצא כשלים הניתנים לאימות מכונה ש-AI שקלל בקלילות"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "מבנה תגיות קיים",
+      "tooltip": "PDF זה כולל עץ תגיות בסגנון PDF/UA. המבקרים הונחו לזכות את המבנה הקיים במקום להעניש אותו כחסר."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "פתרון בעיות",
+      "subheading": "נפתרו {resolved} מתוך {total} בעיות מקוריות ({pct}%)",
+      "resolved_label": "נפתרו",
+      "persisted_label": "עדיין קיימות",
+      "introduced_label": "הוצגו לאחרונה",
+      "resolved_tip": "בעיות מהביקורת המקורית שלא נמצאו עוד בביקורת האימות",
+      "persisted_tip": "בעיות מהביקורת המקורית שעדיין קיימות לאחר התיקון",
+      "introduced_tip": "בעיות חדשות שלא היו קיימות לפני התיקון"
     }
   },
   "stem": {

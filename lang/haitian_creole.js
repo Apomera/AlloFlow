@@ -1482,10 +1482,10 @@
     "dbq_text": "Kesyon Baze sou Dokiman: elèv yo analize sous prensipal yo, bati agiman baze sou prèv.",
     "quiz_mode_title": "Chwazi bon mòd egzamen an",
     "quiz_mode_text": "Chwazi pou kisa egzamen sa a ye. Tikè Sòti tcheke aprantisaj jodi a. Pre-Tcheke sonde konesans anvan ansèyman.",
-    "anchor_chart_title": "Anchor tablo",
-    "anchor_chart_text": "Jenere klas-ready Anchor tablo that fè concepts, vokabilè, and procedures stick. A vizyèl reference elèv can return to throughout a unit. ### pano opsyon • **tablo Type**: Chwazi from Concept, vokabilè, Process, Strategy, or Comparison tablo. • **estil**: Hand-drawn marker look, polished enprime estil, or kid-sosyab comic estil. • **koulè Palette**: Pick a high-contrast, dyslexia-sosyab, or themed koulè scheme. • **Custom enstriksyon**: Espesifye focal concepts, key vokabilè, or strategy etap to highlight. ### tablo eleman • **Title Banner**: Eye-catching topic header. • **vizyèl Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-jenere ikòn reinforcing each idea with dual-coded vizyèl cues. • **egzanp & Non-egzanp**: Side-by-side pano for concept clarity. ### entèraktif karakteristik • **Modifye mòd**: Tap any element to rewrite tèks, swap ikòn, or recolor seksyon. • **Enprime-Ready**: High-resolution ekspòte sized for posters or 8.5×11 handouts. • **Project mòd**: Fullscreen wè for whole-klas enstriksyon. ### Pro konsèy • Jenere a *Strategy tablo* before a writing unit and a *vokabilè tablo* before a science unit — keep both on the klas wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent vizyèl anchors elèv can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach elèv *how* to take notes, not just *what* to ekri. Pick the structure that matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-kolòn layout with cues, notes, and bottom summary. • **Two-kolòn Notes**: Main idea / detay organization for kontni-heavy reading. • **T-tablo**: Konpare/contrast or pros/cons side-by-side. • **Sketchnotes**: vizyèl note-taking with prompts for ikòn, arrows, and koulè-coding. • **KWL tablo**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook chapit. ### Generation karakteristik • **Pre-Filled Prompts**: Each template seeded with cues drawn from your sous tèks. • **kesyon Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\"). • **vokabilè Slots**: Pre-populated key tèm elèv should koute/li for. • **Custom enstriksyon**: Target a espesifik cognitive task (synthesis, summary, evaluation). ### Enprime & Digital • **Printable PDF**: Clean handout layout with generous writing space. • **Digital Fillable**: elèv type directly into the template for paperless workflows. • **Editable Headings**: pwofesè tailor kolòn labels and seksyon titles before sharing. ### Pro konsèy • Pair *Cornell Notes* with the **Leveled Reader**: elèv take notes at their reading nivo, then itilize the bottom-summary box as a formative-evalyasyon check. ### UDL Connection • **Action & ekspresyon**: sipò planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing enfòmasyon."
+    "anchor_chart_title": "Tablo anchè",
+    "anchor_chart_text": "Jenere Tablo Anchè pare pou klas ki fè konsèp, vokabilè ak pwosedi rete. Yon rezime vizyèl ide kle ki elèv yo ka refere a plizyè fwa.",
+    "note_taking_title": "Modèl pou pran nòt",
+    "note_taking_text": "Modèl pou pran nòt estriktire ki anseye elèv *kijan* pou pran nòt, pa sèlman *kisa* pou ekri. Genyen Cornell, òganizatè grafik, antre doub ak jounal aprantisaj."
   },
   "guided": {
     "indicator_title": "Mòd Gide",
@@ -8656,22 +8656,22 @@
     },
     "batch": {
       "drop_text": "Trennen ak lage PDF isit la",
-      "browse_files": "Navige Fichye",
-      "clear_all": "Efase Tout",
-      "new_batch": "Nouvo Pakèt",
-      "progress_aria": "Pwogrè remedyasyon batch",
-      "stop_aria": "Estope remedyasyon batch",
-      "avg_improvement": "Amelyorasyon Mwayèn",
-      "scored_90_plus": "Skò 90+",
+      "browse_files": "Pakouri fichye",
+      "clear_all": "Efase tout",
+      "new_batch": "Nouvo lo",
+      "progress_aria": "Pwogresyon koreksyon an lo",
+      "stop_aria": "Sispann koreksyon an lo",
+      "avg_improvement": "Amelyorasyon mwayen",
+      "scored_90_plus": "Yo te jwenn 90+",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "Lo anvan an te entewonpi",
+        "summary": "{done}/{total} fichye fini anvan onglè a fèmen.",
+        "remaining": "Rete {n}.",
+        "files_label": "Fichye:",
+        "files_more": "+ {n} plis",
+        "resume_button": "Reprann lo",
+        "discard_button": "Abandone",
+        "toast": "Reprann lo · {done} nan kachè, {remaining} pou trete"
       }
     },
     "loading": {
@@ -9033,27 +9033,27 @@
       "insert_table_title": "Ensere tab aksesib"
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": " — minority opinion, lower confidence"
+      "tooltip": "Make pa {n} sou {total} oditè",
+      "unanimous_suffix": " (inanim)",
+      "minority_suffix": " — opinyon minorite, konfyans pi ba"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "Estriktirèlman konfòm men semantik fèb — AI a make kalite kontni (tèks altènatif, sans tit, lòd lekti) ke axe-core pa ka detekte",
+      "structural": "Vyolasyon WCAG nan nivo kòd detekte — axe-core jwenn echèk machin-verifyab ke ribrik AI a te peze lejèman"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "Estrikti tag ki egziste deja",
+      "tooltip": "PDF sa a gen yon pyebwa tag stil PDF/UA. Oditè yo te jwenn enstriksyon pou yo rekonèt estrikti ki egziste a olye yo penalize li kòm manke."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "Rezolisyon pwoblèm",
+      "subheading": "Rezoud {resolved} sou {total} pwoblèm orijinal ({pct}%)",
+      "resolved_label": "Rezoud",
+      "persisted_label": "Toujou prezan",
+      "introduced_label": "Fèk entwodwi",
+      "resolved_tip": "Pwoblèm yo nan oudit orijinal ki pa jwenn nan oudit verifikasyon",
+      "persisted_tip": "Pwoblèm yo nan oudit orijinal toujou prezan apre koreksyon",
+      "introduced_tip": "Nouvo pwoblèm ki pa t egziste anvan koreksyon"
     }
   },
   "export": {

@@ -8140,10 +8140,10 @@
     "dbq_text": "คำถามอิงเอกสาร: นักเรียนวิเคราะห์แหล่งปฐมภูมิ สร้างข้อโต้แย้งอิงหลักฐาน และฝึกทักษะหลักของการประเมินสังคมศึกษาและ ELA สร้างเอกสารต้นทาง คำถามมีสะพาน และเฉลยที่สอดคล้องมาตรฐาน",
     "quiz_mode_title": "เลือกโหมดแบบทดสอบที่ถูกต้อง",
     "quiz_mode_text": "เลือกว่าแบบทดสอบนี้ใช้เพื่ออะไร Exit Ticket ตรวจการเรียนรู้วันนี้ Pre-Check ทดสอบความรู้เดิมก่อนสอนและเปิดเผยช่องว่างเป็นการ์ดแนวคิด Formative Check เป็นการตรวจกลางบทเรียน Spaced Review ติดตามการคงอยู่ของนักเรียนข้ามเซสชัน",
-    "anchor_chart_title": "Anchor แผนภูมิ",
-    "anchor_chart_text": "สร้าง ห้องเรียน-ready Anchor แผนภูมิ นั่น สร้าง concepts, คำศัพท์, and procedures stick. A ภาพ reference นักเรียน can return to throughout a unit. ### แผง ตัวเลือก • **แผนภูมิ Type**: เลือก from Concept, คำศัพท์, Process, กลยุทธ์, or Comparison แผนภูมิ. • **รูปแบบ**: Hand-drawn marker look, polished พิมพ์ รูปแบบ, or kid-เป็นมิตร comic รูปแบบ. • **สี Palette**: Pick a high-contrast, dyslexia-เป็นมิตร, or themed สี scheme. • **Custom คำแนะนำ**: ระบุ focal concepts, key คำศัพท์, or กลยุทธ์ ขั้นตอน to highlight. ### แผนภูมิ องค์ประกอบ • **Title Banner**: Eye-catching topic header. • **ภาพ Hierarchy**: Headings, bullets, and callouts organized for skim-reading. • **Iconography**: Auto-สร้างแล้ว ไอคอน reinforcing each idea with dual-coded ภาพ cues. • **ตัวอย่าง & Non-ตัวอย่าง**: Side-by-side แผง for concept clarity. ### โต้ตอบ คุณสมบัติ • **แก้ไข โหมด**: Tap any element to rewrite ข้อความ, swap ไอคอน, or recolor ส่วน. • **พิมพ์-Ready**: High-resolution ส่งออก sized for posters or 8.5×11 handouts. • **Project โหมด**: Fullscreen ดู for whole-ห้องเรียน คำแนะนำ. ### Pro เคล็ดลับ • สร้าง a *กลยุทธ์ แผนภูมิ* before a writing unit and a *คำศัพท์ แผนภูมิ* before a science unit — keep both on the ห้องเรียน wall for the whole arc. ### UDL Connection • **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent ภาพ anchors นักเรียน can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates นั่น teach นักเรียน *how* to take notes, not just *what* to เขียน. Pick the structure นั่น matches the cognitive task. ### Template Types • **Cornell Notes**: Classic two-คอลัมน์ layout with cues, notes, and bottom summary. • **Two-คอลัมน์ Notes**: Main idea / รายละเอียด organization for เนื้อหา-heavy reading. • **T-แผนภูมิ**: เปรียบเทียบ/contrast or pros/cons side-by-side. • **Sketchnotes**: ภาพ note-taking with prompts for ไอคอน, arrows, and สี-coding. • **KWL แผนภูมิ**: Know / Want to know / Learned — perfect for pre/post-reading. • **Outline Notes**: Hierarchical structure for lectures or textbook บทที่. ### Generation คุณสมบัติ • **Pre-Filled Prompts**: Each template seeded with cues drawn from your แหล่งที่มา ข้อความ. • **คำถาม Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does นี่ connect to…?\"). • **คำศัพท์ Slots**: Pre-populated key คำศัพท์ นักเรียน should ฟัง/อ่าน for. • **Custom คำแนะนำ**: Target a เฉพาะ cognitive task (synthesis, summary, evaluation). ### พิมพ์ & Digital • **PDF ที่พิมพ์ได้**: Clean handout layout with generous writing space. • **Digital Fillable**: นักเรียน type directly into the template for paperless workflows. • **Editable Headings**: ครู tailor คอลัมน์ labels and ส่วน titles before sharing. ### Pro เคล็ดลับ • Pair *Cornell Notes* with the **Leveled Reader**: นักเรียน take notes at their reading ระดับ, then ใช้ the bottom-summary box as a formative-การประเมิน check. ### UDL Connection • **Action & นิพจน์**: การสนับสนุน planning and กลยุทธ์ development (Guideline 6.2) by giving learners explicit structures for organizing ข้อมูล."
+    "anchor_chart_title": "แผนภูมิยึดเหนี่ยว",
+    "anchor_chart_text": "สร้างแผนภูมิยึดเหนี่ยวพร้อมใช้สำหรับห้องเรียนที่ทำให้แนวคิด คำศัพท์ และกระบวนการติดในใจ สรุปภาพของแนวคิดสำคัญที่นักเรียนสามารถอ้างอิงซ้ำๆ ได้",
+    "note_taking_title": "เทมเพลตการจดบันทึก",
+    "note_taking_text": "เทมเพลตการจดบันทึกที่มีโครงสร้างซึ่งสอนนักเรียน *วิธี* จดบันทึก ไม่ใช่แค่ *สิ่งที่* จะเขียน รวมถึง Cornell, ตัวจัดระเบียบกราฟิก, รายการคู่ และบันทึกการเรียนรู้"
   },
   "adventure": {
     "title": "โหมดผจญภัย",
@@ -8748,47 +8748,47 @@
       "html_aria": "HTML source code to audit"
     },
     "batch": {
-      "drop_text": "Drag & drop PDFs here",
-      "browse_files": "Browse Files",
-      "clear_all": "Clear All",
-      "progress_aria": "Batch remediation progress",
-      "stop_aria": "Stop batch remediation",
-      "avg_improvement": "Avg Improvement",
-      "scored_90_plus": "Scored 90+",
-      "new_batch": "New Batch",
+      "drop_text": "ลากและวาง PDF ที่นี่",
+      "browse_files": "เรียกดูไฟล์",
+      "clear_all": "ล้างทั้งหมด",
+      "progress_aria": "ความคืบหน้าการแก้ไขแบบกลุ่ม",
+      "stop_aria": "หยุดการแก้ไขแบบกลุ่ม",
+      "avg_improvement": "การปรับปรุงโดยเฉลี่ย",
+      "scored_90_plus": "ได้คะแนน 90+",
+      "new_batch": "กลุ่มใหม่",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "กลุ่มก่อนหน้าถูกขัดจังหวะ",
+        "summary": "{done}/{total} ไฟล์เสร็จสมบูรณ์ก่อนที่แท็บจะปิด",
+        "remaining": "เหลือ {n} ไฟล์",
+        "files_label": "ไฟล์:",
+        "files_more": "+ อีก {n}",
+        "resume_button": "ดำเนินการกลุ่มต่อ",
+        "discard_button": "ละทิ้ง",
+        "toast": "กำลังดำเนินการกลุ่มต่อ · แคช {done} แล้ว, ต้องประมวลผล {remaining}"
       }
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": ", minority opinion, lower confidence"
+      "tooltip": "ทำเครื่องหมายโดย {n} จาก {total} ผู้ตรวจสอบ",
+      "unanimous_suffix": " (เป็นเอกฉันท์)",
+      "minority_suffix": " — ความเห็นส่วนน้อย, ความเชื่อมั่นต่ำกว่า"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak, AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected, axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "สอดคล้องด้านโครงสร้างแต่อ่อนด้านความหมาย — AI ทำเครื่องหมายคุณภาพเนื้อหา (ข้อความทางเลือก, ความหมายหัวข้อ, ลำดับการอ่าน) ที่ axe-core ไม่สามารถตรวจจับได้",
+      "structural": "ตรวจพบการละเมิด WCAG ระดับโค้ด — axe-core พบความล้มเหลวที่ตรวจสอบได้โดยเครื่องที่รูบริก AI ให้น้ำหนักเบา"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "โครงสร้างแท็กที่มีอยู่ก่อน",
+      "tooltip": "PDF นี้มีต้นไม้แท็กสไตล์ PDF/UA ผู้ตรวจสอบได้รับคำสั่งให้ยอมรับโครงสร้างที่มีอยู่แทนที่จะลงโทษว่าขาดหายไป"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "การแก้ไขปัญหา",
+      "subheading": "แก้ไขแล้ว {resolved} จากปัญหาดั้งเดิม {total} รายการ ({pct}%)",
+      "resolved_label": "แก้ไขแล้ว",
+      "persisted_label": "ยังคงอยู่",
+      "introduced_label": "เพิ่งเพิ่ม",
+      "resolved_tip": "ปัญหาจากการตรวจสอบเดิมที่ไม่พบในการตรวจสอบยืนยัน",
+      "persisted_tip": "ปัญหาจากการตรวจสอบเดิมที่ยังคงอยู่หลังการแก้ไข",
+      "introduced_tip": "ปัญหาใหม่ที่ไม่มีอยู่ก่อนการแก้ไข"
     },
     "report": {
       "download_title": "Download audit report",

@@ -5291,23 +5291,23 @@
       "html_aria": "كاود HTML المصدر للتدقيق"
     },
     "batch": {
-      "drop_text": "اسحب اوأسقط فایلات PDF هنا",
-      "browse_files": "تټولګیُّح فایلات",
-      "clear_all": "مسح الهر",
-      "progress_aria": "پهمختګ السرهالجة الدفعية",
-      "stop_aria": "راوکیں السرهالجة الدفعية",
-      "avg_improvement": "منځنی التحسُّن",
-      "scored_90_plus": "حصلت په 90+",
-      "new_batch": "دفعة نویة",
+      "drop_text": "PDF فایلونه دلته راکش او پریږدئ",
+      "browse_files": "فایلونه وپلټئ",
+      "clear_all": "ټول پاک کړئ",
+      "progress_aria": "د ډلې اصلاح پرمختګ",
+      "stop_aria": "د ډلې اصلاح ودروئ",
+      "avg_improvement": "منځنۍ ښوالی",
+      "scored_90_plus": "د 90+ پوائنټونه",
+      "new_batch": "نوې ډله",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "پخوانۍ ډله ودرول شوه",
+        "summary": "د ټب د بندیدو دمخه {done}/{total} فایلونه بشپړ شول.",
+        "remaining": "{n} پاتې دي.",
+        "files_label": "فایلونه:",
+        "files_more": "+ {n} نور",
+        "resume_button": "ډله بیا پیل کړئ",
+        "discard_button": "له منځه یوسئ",
+        "toast": "ډله بیا پیل کیږي · {done} کیش شوي، {remaining} پروسس کول"
       }
     },
     "choose_how": "څخهتخب کریں كيزهة سرهالجة دا الـ PDF:",
@@ -5661,27 +5661,27 @@
       "insert_table_title": "إدراج جداول مُيسَّر"
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": " — minority opinion, lower confidence"
+      "tooltip": "د {total} پلټونکو څخه د {n} لخوا نښه شوي",
+      "unanimous_suffix": " (متفقه)",
+      "minority_suffix": " — د لږکیو نظر، کم باور"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "په جوړښت کې مطابقت لري مګر په معنی کې ضعیف — AI د محتوا کیفیت ته اشاره وکړه چې axe-core نه شي موندلی",
+      "structural": "د کوډ په کچه د WCAG سرغړونې وموندل شوې — axe-core داسې ناکامۍ وموندلې چې AI روبریک یې لږ وزن ورکړ"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "د دمخه شته نښې جوړښت",
+      "tooltip": "دا PDF د PDF/UA سټایل نښې ونه لري. پلټونکو ته ښوول شوي چې شته جوړښت ته منښت ورکړي."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "د ستونزو حل",
+      "subheading": "له {total} اصلي ستونزو څخه {resolved} حل شول ({pct}%)",
+      "resolved_label": "حل شوي",
+      "persisted_label": "لاهم شته",
+      "introduced_label": "نوي معرفي شوي",
+      "resolved_tip": "د اصلي پلټنې ستونزې اوس د تایید پلټنې کې نه ښکاري",
+      "persisted_tip": "د اصلي پلټنې ستونزې د اصلاح وروسته لاهم شته دي",
+      "introduced_tip": "نوې ستونزې چې د اصلاح څخه دمخه نه وې"
     }
   },
   "persona": {
@@ -6901,10 +6901,10 @@
     "dbq_text": "ساوالات لیست په الاوثائق: يحلل الطنهب المصادر پہنهية، يبناون حججًا لیست په الأدلة، اويتدرباون په المهارة المركزية لتشخیصونه الدراسات انهجہاو گیااعية + اللغة الإنجليزية. يُنشئ اوثائق المصدر اوساوالات مُدعَّمة بسقانهت اومفاتيح جاوابات متاوافقة سره سرهیاراتك.",
     "quiz_mode_title": "څخهتخب کریں اوضع انهختبار الڅخهاټول",
     "quiz_mode_text": "څخهتخب کریں الغرض څخه دا انهختبار. بطاقة الخراوج تفحص زده کول الياوم. الفحص المدرس يتحقق څخه السرهرفة پچھنهة څخه پہلے ښوونه اويُظهر الثغرات كبطاقات مفاهيم سره بث 'اشرح للټولګی' بالذكاء انهصطناعي بنقرة اواحدة. الفحص التكاويني نبض سريع زه څخهتټولګی درس. المراجعة المتباعدة تتتبع احتفاظ هر زده کوونکی عبر ناستهز بمخطط شعاعي لهر مفهاوم. يضبط هر اوضع المُاوجِّهات اومزيج أناواع العناصر اوچھاوڑیںط لاوحة التحكم المباشرة.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate classroom-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference students can return to throughout a unit.\n### Panel Options\n• **Chart Type**: Choose from Concept, Vocabulary, Process, Strategy, or Comparison charts.\n• **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style.\n• **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme.\n• **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight.\n### Chart Components\n• **Title Banner**: Eye-catching topic header.\n• **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading.\n• **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues.\n• **Examples & Non-Examples**: Side-by-side panels for concept clarity.\n### Interactive Features\n• **Edit Mode**: Tap any element to rewrite text, swap icons, or recolor sections.\n• **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts.\n• **Project Mode**: Fullscreen view for whole-class instruction.\n### Pro Tip\n• Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the classroom wall for the whole arc.\n### UDL Connection\n• **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors students can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach students *how* to take notes, not just *what* to write. Pick the structure that matches the cognitive task.\n### Template Types\n• **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary.\n• **Two-Column Notes**: Main idea / details organization for content-heavy reading.\n• **T-Chart**: Compare/contrast or pros/cons side-by-side.\n• **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding.\n• **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading.\n• **Outline Notes**: Hierarchical structure for lectures or textbook chapters.\n### Generation Features\n• **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text.\n• **Question Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\").\n• **Vocabulary Slots**: Pre-populated key terms students should listen/read for.\n• **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation).\n### Print & Digital\n• **Printable PDF**: Clean handout layout with generous writing space.\n• **Digital Fillable**: Students type directly into the template for paperless workflows.\n• **Editable Headings**: Teachers tailor column labels and section titles before sharing.\n### Pro Tip\n• Pair *Cornell Notes* with the **Leveled Reader**: students take notes at their reading level, then use the bottom-summary box as a formative-assessment check.\n### UDL Connection\n• **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "د لنگر چارټونه",
+    "anchor_chart_text": "د ټولګي لپاره چمتو لنگر چارټونه جوړ کړئ چې مفکورې، لغتونه او طرزالعملونه ساتي. د مهمو نظرونو بصري لنډیز چې زده کوونکي یې څو ځله ته ورتلی شي.",
+    "note_taking_title": "د یادښت اخیستلو ټیمپلیټونه",
+    "note_taking_text": "منظم د یادښت اخیستلو ټیمپلیټونه چې زده کوونکو ته ښیي *څنګه* یادښت واخلي، نه یوازې *څه* ولیکي. کارنیل، ګرافیکي مرتب کونکي، دوه اړخیز داخل او د زده کړې ډایرۍ شاملوي."
   },
   "text_tools": {
     "click_to_add": "کلیک وکړئ للإضافة پورې قاموس",

@@ -7541,10 +7541,10 @@
     "dbq_text": "ドキュメントベースの質問: 生徒は一次資料を分析し、証拠に基づく議論を構築します。",
     "quiz_mode_title": "適切なクイズモードを選択",
     "quiz_mode_text": "このクイズが何のためか選択します。退出チケットは今日の学習を確認、事前確認は事前知識を探り、形成的確認は授業中の素早いパルス、間隔復習は保持を追跡します。",
-    "anchor_chart_title": "アンカーチャート。",
-    "anchor_chart_text": "生成教室-準備完了アンカーチャートその作成概念, 語彙, と手順 stick。",
-    "note_taking_title": "ノート-取得テンプレート。",
-    "note_taking_text": "足場ノート-取得テンプレートその教える生徒 *どのように* take ノート, ないただ *何* 書く。"
+    "anchor_chart_title": "アンカーチャート",
+    "anchor_chart_text": "概念、語彙、手順を定着させる、教室で使えるアンカーチャートを生成します。生徒が繰り返し参照できる重要なアイデアのビジュアルサマリー。",
+    "note_taking_title": "ノート取りテンプレート",
+    "note_taking_text": "生徒に何を書くかではなく *どのように* ノートを取るかを教える、スキャフォールド型ノート取りテンプレート。コーネル、グラフィックオーガナイザー、ダブルエントリ、学習ジャーナルを含みます。"
   },
   "pdf_audit": {
     "view_last_audit": "前回の監査を表示",
@@ -7575,23 +7575,23 @@
       "html_aria": "監査するHTMLソースコード"
     },
     "batch": {
-      "drop_text": "PDFをここにドラッグ＆ドロップ",
+      "drop_text": "PDFをここにドラッグ&ドロップ",
       "browse_files": "ファイルを参照",
       "clear_all": "すべてクリア",
-      "progress_aria": "バッチ修正の進捗",
+      "progress_aria": "バッチ修正の進行状況",
       "stop_aria": "バッチ修正を停止",
       "avg_improvement": "平均改善",
-      "scored_90_plus": "90以上のスコア",
+      "scored_90_plus": "90+ 獲得",
       "new_batch": "新しいバッチ",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "前のバッチが中断されました",
+        "summary": "タブが閉じる前に {done}/{total} ファイルが完了しました。",
+        "remaining": "残り {n}。",
+        "files_label": "ファイル:",
+        "files_more": "+ さらに {n}",
+        "resume_button": "バッチを再開",
+        "discard_button": "破棄",
+        "toast": "バッチを再開中 · {done} キャッシュ済み、{remaining} 処理予定"
       }
     },
     "choose_how": "このPDFの処理方法を選択:",
@@ -7945,27 +7945,27 @@
       "insert_table_title": "アクセシブルな表を挿入"
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": " — minority opinion, lower confidence"
+      "tooltip": "{total} 人中 {n} 人の監査員によりフラグ付け",
+      "unanimous_suffix": "(全会一致)",
+      "minority_suffix": " — 少数意見、信頼度低"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "構造的には準拠していますが意味的に弱い — AIは axe-core が検出できないコンテンツ品質(代替テキスト、見出しの意味、読み取り順序)にフラグを立てました",
+      "structural": "コードレベルのWCAG違反を検出 — axe-core はAI採点が軽く重み付けした機械検証可能な失敗を発見しました"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "既存のタグ構造",
+      "tooltip": "このPDFにはPDF/UAスタイルのタグツリーが含まれています。監査員は既存の構造を欠落として罰するのではなく、評価するように指示されました。"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "問題の解決",
+      "subheading": "元の {total} 問題のうち {resolved} を解決 ({pct}%)",
+      "resolved_label": "解決済み",
+      "persisted_label": "残存",
+      "introduced_label": "新たに導入",
+      "resolved_tip": "元の監査からの問題が検証監査で見つからなくなりました",
+      "persisted_tip": "修正後も元の監査からの問題がまだ残っています",
+      "introduced_tip": "修正前には存在しなかった新しい問題"
     }
   },
   "behavior_lens": {
