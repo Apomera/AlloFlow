@@ -1584,7 +1584,8 @@ window.StemLab = window.StemLab || {
                           ),
                           React.createElement("div", null,
                             React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Change Due"),
-                            React.createElement("p", { className: "text-2xl font-black text-emerald-600" }, "?")
+                            React.createElement("p", { className: "text-2xl font-black text-emerald-600" },
+                              changeFeedback ? fmt(Math.round((changePaid - changePrice) * 100) / 100) : "?")
                           )
                         )
                       ),
@@ -1607,6 +1608,21 @@ window.StemLab = window.StemLab || {
                         }, "\u2714 Check")
                       ),
                       changeFeedback && React.createElement("p", { className: "text-sm font-bold " + (changeFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, changeFeedback.msg),
+                      // \u2500\u2500 Column subtraction worked-example shown after answer is checked \u2500\u2500
+                      // Makes the "paid \u2212 price = change" step visible the way it's done on paper.
+                      changeFeedback && (function() {
+                        var correctChange = Math.round((changePaid - changePrice) * 100) / 100;
+                        return React.createElement("div", { className: "bg-white border-2 border-blue-200 rounded-xl p-3 mt-1" },
+                          React.createElement("p", { className: "text-[11px] font-bold text-blue-700 uppercase tracking-wider mb-2 text-center" }, "\uD83D\uDCD0 Subtraction step"),
+                          React.createElement("div", { className: "flex justify-center font-mono text-base font-bold leading-relaxed" },
+                            React.createElement("div", { className: "text-right" },
+                              React.createElement("div", { className: "text-blue-700" }, "  " + fmt(changePaid)),
+                              React.createElement("div", { className: "text-red-500" }, "\u2212 " + fmt(changePrice)),
+                              React.createElement("div", { className: "border-t-2 border-slate-700 mt-0.5 pt-0.5 text-emerald-700" }, "  " + fmt(correctChange))
+                            )
+                          )
+                        );
+                      })(),
                       React.createElement("button", { "aria-label": "Next Problem", onClick: genChangeProblem,
                         className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs"
                       }, "\u21BB Next Problem")
@@ -3085,9 +3101,92 @@ window.StemLab = window.StemLab || {
               React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 border border-emerald-200 text-center" },
                 React.createElement("p", { className: "text-[11px] text-emerald-600" }, "\uD83C\uDF1F ", React.createElement("strong", null, "Financial literacy"), " is one of the most important life skills. Practice with real-world scenarios to build confidence with money!"),
                 React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, "Exchange rates are approximate and for educational purposes only.")
+              ),
+
+              // ═══ DOLLAR ANATOMY ═══
+              React.createElement('div', { className: 'mt-5 rounded-2xl border border-emerald-300 bg-white p-3 shadow-sm' },
+                React.createElement('h4', { className: 'text-sm font-bold text-emerald-700 mb-2' }, '💵 Dollar Bill — Anti-counterfeit features'),
+                React.createElement('div', { className: 'rounded-xl overflow-hidden border border-emerald-200', style: { background: '#022c22', aspectRatio: '16/5' } },
+                  React.createElement('canvas', {
+                    ref: function(cvEl) {
+                      if (!cvEl) return;
+                      if (cvEl._dbAnim) return;
+                      var c2 = cvEl.getContext('2d');
+                      var W = cvEl.offsetWidth || 600;
+                      var H = cvEl.offsetHeight || 180;
+                      cvEl.width = W * 2; cvEl.height = H * 2;
+                      c2.scale(2, 2);
+                      var start = performance.now();
+                      function drawDb() {
+                        if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._dbAnim); return; }
+                        var t = (performance.now() - start) / 1000;
+                        c2.fillStyle = '#022c22';
+                        c2.fillRect(0, 0, W, H);
+                        var bx = W * 0.08;
+                        var by = H * 0.25;
+                        var bw = W * 0.6;
+                        var bh = H * 0.45;
+                        c2.fillStyle = '#d1fae5';
+                        c2.fillRect(bx, by, bw, bh);
+                        c2.strokeStyle = '#047857';
+                        c2.lineWidth = 1.5;
+                        c2.strokeRect(bx, by, bw, bh);
+                        c2.lineWidth = 0.5;
+                        for (var i = 0; i < 30; i++) {
+                          var ox = bx + i * (bw / 30);
+                          c2.beginPath();
+                          c2.moveTo(ox, by);
+                          c2.lineTo(ox + 5, by + 4);
+                          c2.lineTo(ox, by + 8);
+                          c2.stroke();
+                        }
+                        c2.fillStyle = '#047857';
+                        c2.beginPath();
+                        c2.ellipse(bx + bw / 2, by + bh / 2, 16, 22, 0, 0, Math.PI * 2);
+                        c2.fill();
+                        c2.fillStyle = '#d1fae5';
+                        c2.font = 'bold 8px serif';
+                        c2.textAlign = 'center';
+                        c2.fillText('GW', bx + bw / 2, by + bh / 2 + 4);
+                        c2.fillStyle = '#047857';
+                        c2.font = 'bold 22px serif';
+                        c2.fillText('1', bx + 16, by + 22);
+                        c2.fillText('1', bx + bw - 16, by + bh - 8);
+                        var features = [
+                          { color: '#fb7185', label: 'Microprinting' },
+                          { color: '#fbbf24', label: 'Portrait watermark' },
+                          { color: '#67e8f9', label: 'Color-shifting ink' },
+                          { color: '#a855f7', label: 'Security thread (UV)' }
+                        ];
+                        var blink = Math.floor((t * 0.5) % features.length);
+                        features.forEach(function(f, i) {
+                          var sel = i === blink;
+                          c2.fillStyle = f.color;
+                          c2.fillRect(W * 0.73, 28 + i * 18, 8, 8);
+                          c2.fillStyle = sel ? f.color : '#cbd5e1';
+                          c2.font = (sel ? 'bold ' : '') + '10px sans-serif';
+                          c2.textAlign = 'left';
+                          c2.fillText(f.label, W * 0.76, 36 + i * 18);
+                        });
+                        c2.fillStyle = 'rgba(0,0,0,0.85)';
+                        c2.fillRect(8, H - 14, W - 16, 12);
+                        c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#86efac'; c2.textAlign = 'center';
+                        c2.fillText('U.S. currency has 30+ security features. Counterfeiters spend more to fake $1 than it is worth.', W / 2, H - 5);
+                        cvEl._dbAnim = requestAnimationFrame(drawDb);
+                      }
+                      drawDb();
+                      var ro = new ResizeObserver(function() {
+                        W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                        cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                      });
+                      ro.observe(cvEl);
+                    },
+                    style: { width: '100%', height: '100%', display: 'block' }
+                  })
+                )
               )
             );
-          
+
     }
   });
 })();
