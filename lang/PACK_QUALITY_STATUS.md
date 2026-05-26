@@ -103,24 +103,26 @@ legitimate Japanese density, similar to Chinese compactness.
 abbreviated (e.g., `tour.analysis_text` 53 chars vs 1173 source), but
 those reflect intentional content trimming.
 
-## Hand-translated tour entries across 7 packs
+## Hand-translated tour entries across 9 packs
 
 **Tour entries restored across multiple packs 2026-05-26:**
 
-| Pack | Tour keys translated | Commit |
+| Pack | Tour keys translated | Commit(s) |
 |---|---|---|
 | Hebrew | 23 (all long tour keys) | b779046b, 061f0174, 642397de, a3b50608 |
 | Arabic | 23 (all long tour keys) | b779046b, 061f0174, 642397de, a3b50608 |
-| Farsi | 5 top tour keys | 6cc96abb |
-| Dari | 5 top tour keys | 6cc96abb |
-| Urdu | 5 top tour keys | 9447d53f |
-| Somali | 5 top tour keys | 832bbf98 |
-| Haitian Creole | 5 top tour keys | be8db880 |
-| Thai | 5 top tour keys | be8db880 |
+| Farsi | 10 (batch 1 + 2) | 6cc96abb, 5056adb1 |
+| Dari | 10 (batch 1 + 2) | 6cc96abb, 5056adb1 |
+| Urdu | 10 (batch 1 + 2) | 9447d53f, ab3ae721 |
+| Somali | 10 (batch 1 + 2) | 832bbf98, 469aa645 |
+| Haitian Creole | 10 (batch 1 + 2) | be8db880, b5b7d7ad |
+| Thai | 10 (batch 1 + 2) | be8db880, b5b7d7ad |
+| Pashto | 5 (top tours) | fd064fb0 |
 
-**Total: 76 hand-translated long tour entries across 8 packs**, each with
-full `### Section` structured content (input panel, dashboard, actions,
-glossary, history at minimum, plus 18 more for Hebrew/Arabic).
+**Total: 111 hand-translated long tour entries across 9 packs**, each with
+full `### Section` structured content covering input panel, dashboard,
+actions, glossary, history, analysis, adventure, quiz, wordsounds,
+scaffolds, and (for Hebrew/Arabic) all 23 long tour keys.
 
 ## Hebrew / Arabic tour sections — fully RESTORED via hand translation
 
