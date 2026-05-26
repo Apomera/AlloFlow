@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-26T10:17:03.941Z",
+  "generated": "2026-05-26T10:23:26.445Z",
   "count": 56,
   "total_keys_expected": 9307,
   "available": [
@@ -260,14 +260,14 @@
       "slug": "polish",
       "display": "Polish",
       "keys": 9968,
-      "bytes": 829311,
+      "bytes": 809790,
       "updated": "2026-05-26"
     },
     {
       "slug": "portuguese_angola",
       "display": "Portuguese (Angola)",
       "keys": 10159,
-      "bytes": 1036394,
+      "bytes": 1049158,
       "updated": "2026-05-26"
     },
     {
