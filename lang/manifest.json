@@ -1,70 +1,70 @@
 {
   "version": 2,
-  "generated": "2026-05-26T18:13:59.008Z",
+  "generated": "2026-05-26T22:19:36.398Z",
   "count": 56,
   "total_keys_expected": 9307,
   "available": [
     {
       "slug": "acholi",
       "display": "Acholi",
-      "keys": 10509,
-      "bytes": 989907,
+      "keys": 10671,
+      "bytes": 1011168,
       "updated": "2026-05-26"
     },
     {
       "slug": "amharic",
       "display": "Amharic",
-      "keys": 10509,
-      "bytes": 1276205,
+      "keys": 10860,
+      "bytes": 1310678,
       "updated": "2026-05-26"
     },
     {
       "slug": "arabic",
       "display": "Arabic",
-      "keys": 10509,
-      "bytes": 1397745,
+      "keys": 10518,
+      "bytes": 1402732,
       "updated": "2026-05-26"
     },
     {
       "slug": "bengali",
       "display": "Bengali",
-      "keys": 10521,
-      "bytes": 1577648,
+      "keys": 10739,
+      "bytes": 1597052,
       "updated": "2026-05-26"
     },
     {
       "slug": "burmese",
       "display": "Burmese",
-      "keys": 10509,
-      "bytes": 1823005,
+      "keys": 10860,
+      "bytes": 1866554,
       "updated": "2026-05-26"
     },
     {
       "slug": "chin_falam",
       "display": "Chin (Falam)",
-      "keys": 10515,
-      "bytes": 1016849,
+      "keys": 10528,
+      "bytes": 1017271,
       "updated": "2026-05-26"
     },
     {
       "slug": "chin_hakha",
       "display": "Chin (Hakha)",
-      "keys": 10509,
-      "bytes": 1020798,
+      "keys": 10663,
+      "bytes": 1042003,
       "updated": "2026-05-26"
     },
     {
       "slug": "chinese_simplified",
       "display": "Chinese (Simplified)",
-      "keys": 10509,
-      "bytes": 924897,
+      "keys": 10518,
+      "bytes": 924441,
       "updated": "2026-05-26"
     },
     {
       "slug": "chinese_traditional",
       "display": "Chinese (Traditional)",
-      "keys": 10509,
-      "bytes": 924897,
+      "keys": 10518,
+      "bytes": 924471,
       "updated": "2026-05-26"
     },
     {
@@ -77,323 +77,323 @@
     {
       "slug": "farsi",
       "display": "Farsi",
-      "keys": 10529,
-      "bytes": 1457796,
+      "keys": 10747,
+      "bytes": 1471875,
       "updated": "2026-05-26"
     },
     {
       "slug": "french",
       "display": "French",
-      "keys": 10509,
-      "bytes": 1208926,
+      "keys": 10518,
+      "bytes": 1211421,
       "updated": "2026-05-26"
     },
     {
       "slug": "french_canadian",
       "display": "French (Canadian)",
-      "keys": 10515,
-      "bytes": 1208763,
+      "keys": 10524,
+      "bytes": 1211258,
       "updated": "2026-05-26"
     },
     {
       "slug": "german",
       "display": "German",
-      "keys": 10515,
-      "bytes": 1102496,
+      "keys": 10524,
+      "bytes": 1104700,
       "updated": "2026-05-26"
     },
     {
       "slug": "greek",
       "display": "Greek",
-      "keys": 10515,
-      "bytes": 1401904,
+      "keys": 10866,
+      "bytes": 1439596,
       "updated": "2026-05-26"
     },
     {
       "slug": "haitian_creole",
       "display": "Haitian Creole",
-      "keys": 10511,
-      "bytes": 964561,
+      "keys": 10862,
+      "bytes": 994381,
       "updated": "2026-05-26"
     },
     {
       "slug": "hausa",
       "display": "Hausa",
-      "keys": 10515,
-      "bytes": 1018055,
+      "keys": 10866,
+      "bytes": 1048078,
       "updated": "2026-05-26"
     },
     {
       "slug": "hebrew",
       "display": "Hebrew",
-      "keys": 10511,
-      "bytes": 1272751,
+      "keys": 10862,
+      "bytes": 1304943,
       "updated": "2026-05-26"
     },
     {
       "slug": "hindi",
       "display": "Hindi",
-      "keys": 10509,
-      "bytes": 1561831,
+      "keys": 10651,
+      "bytes": 1594601,
       "updated": "2026-05-26"
     },
     {
       "slug": "hmong",
       "display": "Hmong",
-      "keys": 10509,
-      "bytes": 1093888,
+      "keys": 10860,
+      "bytes": 1124874,
       "updated": "2026-05-26"
     },
     {
       "slug": "igbo",
       "display": "Igbo",
-      "keys": 10515,
-      "bytes": 1081247,
+      "keys": 10866,
+      "bytes": 1112680,
       "updated": "2026-05-26"
     },
     {
       "slug": "indonesian",
       "display": "Indonesian",
-      "keys": 10515,
-      "bytes": 1054703,
+      "keys": 10866,
+      "bytes": 1085001,
       "updated": "2026-05-26"
     },
     {
       "slug": "italian",
       "display": "Italian",
-      "keys": 10509,
-      "bytes": 1063043,
+      "keys": 10651,
+      "bytes": 1074090,
       "updated": "2026-05-26"
     },
     {
       "slug": "japanese",
       "display": "Japanese",
-      "keys": 10581,
-      "bytes": 749073,
+      "keys": 10723,
+      "bytes": 770033,
       "updated": "2026-05-26"
     },
     {
       "slug": "karen",
       "display": "Karen",
-      "keys": 10509,
-      "bytes": 1275750,
+      "keys": 10663,
+      "bytes": 1298381,
       "updated": "2026-05-26"
     },
     {
       "slug": "khmer",
       "display": "Khmer",
-      "keys": 10515,
-      "bytes": 1649143,
+      "keys": 10866,
+      "bytes": 1690128,
       "updated": "2026-05-26"
     },
     {
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
-      "keys": 10509,
-      "bytes": 1077952,
+      "keys": 10860,
+      "bytes": 1108801,
       "updated": "2026-05-26"
     },
     {
       "slug": "kirundi",
       "display": "Kirundi",
-      "keys": 10509,
-      "bytes": 1069083,
+      "keys": 10860,
+      "bytes": 1099948,
       "updated": "2026-05-26"
     },
     {
       "slug": "korean",
       "display": "Korean",
-      "keys": 10509,
-      "bytes": 1078520,
+      "keys": 10651,
+      "bytes": 1101145,
       "updated": "2026-05-26"
     },
     {
       "slug": "lao",
       "display": "Lao",
-      "keys": 10515,
-      "bytes": 1096624,
+      "keys": 10529,
+      "bytes": 1097687,
       "updated": "2026-05-26"
     },
     {
       "slug": "latin",
       "display": "Latin",
-      "keys": 10515,
-      "bytes": 1061759,
+      "keys": 10668,
+      "bytes": 1083294,
       "updated": "2026-05-26"
     },
     {
       "slug": "lingala",
       "display": "Lingala",
-      "keys": 10509,
-      "bytes": 1038508,
+      "keys": 10860,
+      "bytes": 1069007,
       "updated": "2026-05-26"
     },
     {
       "slug": "maay_maay",
       "display": "Maay Maay",
-      "keys": 10515,
-      "bytes": 1013547,
+      "keys": 10668,
+      "bytes": 1034700,
       "updated": "2026-05-26"
     },
     {
       "slug": "marshallese",
       "display": "Marshallese",
-      "keys": 10515,
-      "bytes": 1038722,
+      "keys": 10668,
+      "bytes": 1059870,
       "updated": "2026-05-26"
     },
     {
       "slug": "nepali",
       "display": "Nepali",
-      "keys": 10509,
-      "bytes": 1695837,
+      "keys": 10860,
+      "bytes": 1741032,
       "updated": "2026-05-26"
     },
     {
       "slug": "pashto",
       "display": "Pashto",
-      "keys": 10521,
-      "bytes": 1460842,
+      "keys": 10739,
+      "bytes": 1474020,
       "updated": "2026-05-26"
     },
     {
       "slug": "polish",
       "display": "Polish",
-      "keys": 10509,
-      "bytes": 797179,
+      "keys": 10727,
+      "bytes": 807605,
       "updated": "2026-05-26"
     },
     {
       "slug": "portuguese_angola",
       "display": "Portuguese (Angola)",
-      "keys": 10515,
-      "bytes": 1058595,
+      "keys": 10657,
+      "bytes": 1080311,
       "updated": "2026-05-26"
     },
     {
       "slug": "portuguese_brazil",
       "display": "Portuguese (Brazil)",
-      "keys": 10509,
-      "bytes": 1138588,
+      "keys": 10518,
+      "bytes": 1140126,
       "updated": "2026-05-26"
     },
     {
       "slug": "portuguese_portugal",
       "display": "Portuguese (Portugal)",
-      "keys": 10515,
-      "bytes": 1137503,
+      "keys": 10524,
+      "bytes": 1139044,
       "updated": "2026-05-26"
     },
     {
       "slug": "punjabi",
       "display": "Punjabi",
-      "keys": 10509,
-      "bytes": 1516096,
+      "keys": 10860,
+      "bytes": 1556240,
       "updated": "2026-05-26"
     },
     {
       "slug": "romanian",
       "display": "Romanian",
-      "keys": 10509,
-      "bytes": 1049811,
+      "keys": 10860,
+      "bytes": 1080922,
       "updated": "2026-05-26"
     },
     {
       "slug": "russian",
       "display": "Russian",
-      "keys": 10509,
-      "bytes": 999761,
+      "keys": 10518,
+      "bytes": 1009228,
       "updated": "2026-05-26"
     },
     {
       "slug": "somali",
       "display": "Somali",
-      "keys": 10509,
-      "bytes": 1117865,
+      "keys": 10727,
+      "bytes": 1128178,
       "updated": "2026-05-26"
     },
     {
       "slug": "spanish_castilian",
       "display": "Spanish (Castilian)",
-      "keys": 10515,
-      "bytes": 1181936,
+      "keys": 10524,
+      "bytes": 1183901,
       "updated": "2026-05-26"
     },
     {
       "slug": "spanish_latin_america",
       "display": "Spanish (Latin America)",
-      "keys": 10509,
-      "bytes": 1182757,
+      "keys": 10518,
+      "bytes": 1184722,
       "updated": "2026-05-26"
     },
     {
       "slug": "swahili",
       "display": "Swahili",
-      "keys": 10509,
-      "bytes": 1038029,
+      "keys": 10860,
+      "bytes": 1068626,
       "updated": "2026-05-26"
     },
     {
       "slug": "tagalog",
       "display": "Tagalog",
-      "keys": 10509,
-      "bytes": 1085137,
+      "keys": 10860,
+      "bytes": 1116643,
       "updated": "2026-05-26"
     },
     {
       "slug": "tamil",
       "display": "Tamil",
-      "keys": 10515,
-      "bytes": 1605771,
+      "keys": 10866,
+      "bytes": 1650205,
       "updated": "2026-05-26"
     },
     {
       "slug": "telugu",
       "display": "Telugu",
-      "keys": 10515,
-      "bytes": 1529721,
+      "keys": 10866,
+      "bytes": 1575029,
       "updated": "2026-05-26"
     },
     {
       "slug": "thai",
       "display": "Thai",
-      "keys": 10961,
-      "bytes": 1285140,
+      "keys": 11312,
+      "bytes": 1326121,
       "updated": "2026-05-26"
     },
     {
       "slug": "tigrinya",
       "display": "Tigrinya",
-      "keys": 10509,
-      "bytes": 1284041,
+      "keys": 10860,
+      "bytes": 1318107,
       "updated": "2026-05-26"
     },
     {
       "slug": "ukrainian",
       "display": "Ukrainian",
-      "keys": 10509,
-      "bytes": 1337772,
+      "keys": 10860,
+      "bytes": 1374418,
       "updated": "2026-05-26"
     },
     {
       "slug": "urdu",
       "display": "Urdu",
-      "keys": 10521,
-      "bytes": 1548274,
+      "keys": 10739,
+      "bytes": 1562623,
       "updated": "2026-05-26"
     },
     {
       "slug": "vietnamese",
       "display": "Vietnamese",
-      "keys": 10512,
-      "bytes": 1301810,
+      "keys": 10521,
+      "bytes": 1305232,
       "updated": "2026-05-26"
     },
     {
       "slug": "yoruba",
       "display": "Yoruba",
-      "keys": 10515,
-      "bytes": 1039060,
+      "keys": 10866,
+      "bytes": 1070950,
       "updated": "2026-05-26"
     }
   ]
