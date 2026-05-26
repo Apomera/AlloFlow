@@ -8662,7 +8662,17 @@
       "progress_aria": "Pwogrè remedyasyon batch",
       "stop_aria": "Estope remedyasyon batch",
       "avg_improvement": "Amelyorasyon Mwayèn",
-      "scored_90_plus": "Skò 90+"
+      "scored_90_plus": "Skò 90+",
+      "resume": {
+        "title": "Previous batch interrupted",
+        "summary": "{done}/{total} file(s) completed before the tab closed.",
+        "remaining": "{n} remaining.",
+        "files_label": "Files:",
+        "files_more": "+ {n} more",
+        "resume_button": "Resume Batch",
+        "discard_button": "Discard",
+        "toast": "Resuming batch · {done} cached, {remaining} to process"
+      }
     },
     "loading": {
       "title": "K ap odit Aksesibilite PDF...",
@@ -9021,6 +9031,29 @@
       "highlight_color": "Koulè surliyaj",
       "insert_table_aria": "Ensere tab",
       "insert_table_title": "Ensere tab aksesib"
+    },
+    "agreement": {
+      "tooltip": "Flagged by {n} of {total} auditors",
+      "unanimous_suffix": " (unanimous)",
+      "minority_suffix": " — minority opinion, lower confidence"
+    },
+    "divergence": {
+      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
+      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+    },
+    "tagtree": {
+      "label": "Pre-existing tag structure",
+      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+    },
+    "resolution": {
+      "heading": "Issue Resolution",
+      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
+      "resolved_label": "Resolved",
+      "persisted_label": "Still Present",
+      "introduced_label": "Newly Introduced",
+      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
+      "persisted_tip": "Issues from the original audit still present after the fix",
+      "introduced_tip": "New issues that did not exist before the fix"
     }
   },
   "export": {
