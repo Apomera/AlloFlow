@@ -5279,23 +5279,23 @@
       "html_aria": "كود HTML المصدر للتدقيق"
     },
     "batch": {
-      "drop_text": "اسحب وأسقط ملفات PDF هنا",
-      "browse_files": "تصفُّح الملفات",
+      "drop_text": "اسحب وأفلت ملفات PDF هنا",
+      "browse_files": "تصفح الملفات",
       "clear_all": "مسح الكل",
-      "progress_aria": "تقدم المعالجة الدفعية",
-      "stop_aria": "إيقاف المعالجة الدفعية",
-      "avg_improvement": "متوسط التحسُّن",
-      "scored_90_plus": "حصلت على 90+",
+      "progress_aria": "تقدم معالجة الدفعة",
+      "stop_aria": "إيقاف معالجة الدفعة",
+      "avg_improvement": "متوسط التحسن",
+      "scored_90_plus": "حصل على 90+",
       "new_batch": "دفعة جديدة",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "تمت مقاطعة الدفعة السابقة",
+        "summary": "تم إكمال {done}/{total} ملف قبل إغلاق علامة التبويب.",
+        "remaining": "متبقي {n}.",
+        "files_label": "الملفات:",
+        "files_more": "+ {n} المزيد",
+        "resume_button": "استئناف الدفعة",
+        "discard_button": "تجاهل",
+        "toast": "استئناف الدفعة · {done} مخزن مؤقتًا، {remaining} للمعالجة"
       }
     },
     "choose_how": "اختر كيفية معالجة هذا الـ PDF:",
@@ -5649,27 +5649,27 @@
       "insert_table_title": "إدراج جدول مُيسَّر"
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": " — minority opinion, lower confidence"
+      "tooltip": "تم وضع علامة بواسطة {n} من {total} مدققين",
+      "unanimous_suffix": " (إجماع)",
+      "minority_suffix": " — رأي أقلية، ثقة أقل"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "متوافق هيكليًا ولكن ضعيف دلاليًا — وضع الذكاء الاصطناعي علامة على جودة المحتوى (النص البديل، معنى العناوين، ترتيب القراءة) التي لا يستطيع axe-core اكتشافها",
+      "structural": "تم اكتشاف انتهاكات WCAG على مستوى الكود — وجد axe-core أخطاء يمكن التحقق منها آليًا قيّمها رصيد الذكاء الاصطناعي بشكل خفيف"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "هيكل العلامات الموجود مسبقًا",
+      "tooltip": "يتضمن هذا PDF شجرة علامات على غرار PDF/UA. تم توجيه المدققين إلى الاعتراف بالهيكل الموجود بدلاً من معاقبته باعتباره مفقودًا."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "حل المشكلات",
+      "subheading": "تم حل {resolved} من {total} مشكلة أصلية ({pct}%)",
+      "resolved_label": "تم الحل",
+      "persisted_label": "لا تزال موجودة",
+      "introduced_label": "تم تقديمها حديثًا",
+      "resolved_tip": "المشكلات من التدقيق الأصلي لم تعد موجودة في تدقيق التحقق",
+      "persisted_tip": "المشكلات من التدقيق الأصلي لا تزال موجودة بعد الإصلاح",
+      "introduced_tip": "مشكلات جديدة لم تكن موجودة قبل الإصلاح"
     }
   },
   "persona": {
@@ -6889,10 +6889,10 @@
     "dbq_text": "أسئلة قائمة على الوثائق: يحلل الطلاب المصادر الأولية، يبنون حججًا قائمة على الأدلة، ويتدربون على المهارة المركزية لتقييمات الدراسات الاجتماعية + اللغة الإنجليزية. يُنشئ وثائق المصدر وأسئلة مُدعَّمة بسقالات ومفاتيح إجابات متوافقة مع معاييرك.",
     "quiz_mode_title": "اختر وضع الاختبار المناسب",
     "quiz_mode_text": "اختر الغرض من هذا الاختبار. بطاقة الخروج تفحص تعلم اليوم. الفحص المسبق يتحقق من المعرفة السابقة قبل التدريس ويُظهر الثغرات كبطاقات مفاهيم مع بث 'اشرح للصف' بالذكاء الاصطناعي بنقرة واحدة. الفحص التكويني نبض سريع في منتصف الدرس. المراجعة المتباعدة تتتبع احتفاظ كل طالب عبر الجلسات بمخطط شعاعي لكل مفهوم. يضبط كل وضع المُوجِّهات ومزيج أنواع العناصر وتخطيط لوحة التحكم المباشرة.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate classroom-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference students can return to throughout a unit.\n### Panel Options\n• **Chart Type**: Choose from Concept, Vocabulary, Process, Strategy, or Comparison charts.\n• **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style.\n• **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme.\n• **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight.\n### Chart Components\n• **Title Banner**: Eye-catching topic header.\n• **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading.\n• **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues.\n• **Examples & Non-Examples**: Side-by-side panels for concept clarity.\n### Interactive Features\n• **Edit Mode**: Tap any element to rewrite text, swap icons, or recolor sections.\n• **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts.\n• **Project Mode**: Fullscreen view for whole-class instruction.\n### Pro Tip\n• Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the classroom wall for the whole arc.\n### UDL Connection\n• **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors students can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach students *how* to take notes, not just *what* to write. Pick the structure that matches the cognitive task.\n### Template Types\n• **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary.\n• **Two-Column Notes**: Main idea / details organization for content-heavy reading.\n• **T-Chart**: Compare/contrast or pros/cons side-by-side.\n• **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding.\n• **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading.\n• **Outline Notes**: Hierarchical structure for lectures or textbook chapters.\n### Generation Features\n• **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text.\n• **Question Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\").\n• **Vocabulary Slots**: Pre-populated key terms students should listen/read for.\n• **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation).\n### Print & Digital\n• **Printable PDF**: Clean handout layout with generous writing space.\n• **Digital Fillable**: Students type directly into the template for paperless workflows.\n• **Editable Headings**: Teachers tailor column labels and section titles before sharing.\n### Pro Tip\n• Pair *Cornell Notes* with the **Leveled Reader**: students take notes at their reading level, then use the bottom-summary box as a formative-assessment check.\n### UDL Connection\n• **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "مخططات الإرساء",
+    "anchor_chart_text": "أنشئ مخططات إرساء جاهزة للفصل تجعل المفاهيم والمفردات والإجراءات تترسخ. ملخص بصري للأفكار الرئيسية يمكن للطلاب الرجوع إليه مرارًا وتكرارًا.",
+    "note_taking_title": "قوالب تدوين الملاحظات",
+    "note_taking_text": "قوالب تدوين ملاحظات مدعومة تعلم الطلاب *كيف* يدونون الملاحظات، وليس فقط *ماذا* يكتبون. تتضمن كورنيل والمنظمين البيانيين والإدخال المزدوج ومجلات التعلم."
   },
   "text_tools": {
     "click_to_add": "انقر للإضافة إلى المسرد",

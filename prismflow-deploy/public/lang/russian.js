@@ -52,10 +52,10 @@
     "dbq_text": "Документально-ориентированные вопросы: ученики анализируют первоисточники, строят аргументы на основе доказательств и практикуют центральный навык оценивания по обществознанию + ELA. Создаёт исходные документы, опорные вопросы и ключи ответов, согласованные с вашими стандартами.",
     "quiz_mode_title": "Выберите правильный режим квиза",
     "quiz_mode_text": "Выберите, для чего этот квиз. Exit Ticket проверяет обучение сегодняшнего дня. Pre-Check исследует предыдущие знания до обучения и выводит пробелы как концептуальные карточки с трансляцией «Объяснить классу» одним кликом. Formative Check — это быстрый пульс в середине урока. Spaced Review отслеживает удержание знаний каждым учеником между сессиями с поконцептными спарклайнами. Каждый режим настраивает подсказки, состав типов вопросов и макет живой панели.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate classroom-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference students can return to throughout a unit.\n### Panel Options\n• **Chart Type**: Choose from Concept, Vocabulary, Process, Strategy, or Comparison charts.\n• **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style.\n• **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme.\n• **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight.\n### Chart Components\n• **Title Banner**: Eye-catching topic header.\n• **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading.\n• **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues.\n• **Examples & Non-Examples**: Side-by-side panels for concept clarity.\n### Interactive Features\n• **Edit Mode**: Tap any element to rewrite text, swap icons, or recolor sections.\n• **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts.\n• **Project Mode**: Fullscreen view for whole-class instruction.\n### Pro Tip\n• Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the classroom wall for the whole arc.\n### UDL Connection\n• **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors students can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach students *how* to take notes, not just *what* to write. Pick the structure that matches the cognitive task.\n### Template Types\n• **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary.\n• **Two-Column Notes**: Main idea / details organization for content-heavy reading.\n• **T-Chart**: Compare/contrast or pros/cons side-by-side.\n• **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding.\n• **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading.\n• **Outline Notes**: Hierarchical structure for lectures or textbook chapters.\n### Generation Features\n• **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text.\n• **Question Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\").\n• **Vocabulary Slots**: Pre-populated key terms students should listen/read for.\n• **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation).\n### Print & Digital\n• **Printable PDF**: Clean handout layout with generous writing space.\n• **Digital Fillable**: Students type directly into the template for paperless workflows.\n• **Editable Headings**: Teachers tailor column labels and section titles before sharing.\n### Pro Tip\n• Pair *Cornell Notes* with the **Leveled Reader**: students take notes at their reading level, then use the bottom-summary box as a formative-assessment check.\n### UDL Connection\n• **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "Якорные диаграммы",
+    "anchor_chart_text": "Создавайте готовые для класса якорные диаграммы, которые помогают усваивать концепции, словарь и процедуры. Визуальное обобщение ключевых идей, к которому ученики могут обращаться повторно.",
+    "note_taking_title": "Шаблоны заметок",
+    "note_taking_text": "Структурированные шаблоны заметок, которые учат учеников *как* делать заметки, а не только *что* писать. Включает Корнелл, графические организаторы, двойную запись и журналы обучения."
   },
   "launch_pad": {
     "subtitle": "Выберите свой путь обучения",
@@ -3978,20 +3978,20 @@
       "drop_text": "Перетащите PDF сюда",
       "browse_files": "Обзор файлов",
       "clear_all": "Очистить всё",
-      "progress_aria": "Прогресс пакетного исправления",
-      "stop_aria": "Остановить пакетное исправление",
+      "progress_aria": "Прогресс пакетного устранения",
+      "stop_aria": "Остановить пакетное устранение",
       "avg_improvement": "Среднее улучшение",
-      "scored_90_plus": "Оценка 90+",
-      "new_batch": "Новый пакет",
+      "scored_90_plus": "Набрали 90+",
+      "new_batch": "Новая партия",
       "resume": {
-        "title": "Предыдущий пакет был прерван",
-        "summary": "{done}/{total} файлов было завершено до закрытия вкладки.",
-        "remaining": "{n} осталось.",
+        "title": "Предыдущая партия прервана",
+        "summary": "{done}/{total} файл(ов) завершены до закрытия вкладки.",
+        "remaining": "Осталось {n}.",
         "files_label": "Файлы:",
         "files_more": "+ ещё {n}",
-        "resume_button": "Возобновить пакет",
-        "discard_button": "Отбросить",
-        "toast": "Возобновление пакета · {done} в кэше, {remaining} к обработке"
+        "resume_button": "Возобновить партию",
+        "discard_button": "Отклонить",
+        "toast": "Возобновление партии · {done} в кэше, {remaining} к обработке"
       }
     },
     "choose_how": "Выберите, как обработать этот PDF:",
@@ -4350,22 +4350,22 @@
       "minority_suffix": " — мнение меньшинства, низкая уверенность"
     },
     "divergence": {
-      "semantic": "Структурно соответствует, но семантически слабо — ИИ отметил качество содержимого (alt-текст, значение заголовков, порядок чтения), которое axe-core не может обнаружить",
-      "structural": "Обнаружены нарушения WCAG на уровне кода — axe-core нашёл машинно-проверяемые сбои, которым рубрика ИИ присвоила малый вес"
+      "semantic": "Структурно соответствует, но семантически слабо — ИИ отметил качество контента (alt-текст, смысл заголовков, порядок чтения), которое axe-core не может обнаружить",
+      "structural": "Обнаружены нарушения WCAG на уровне кода — axe-core нашёл машинно-проверяемые ошибки, которые ИИ-рубрика оценила легко"
     },
     "tagtree": {
-      "label": "Существующая структура тегов",
-      "tooltip": "Этот PDF включает дерево тегов в стиле PDF/UA. Аудиторам было поручено зачесть существующую структуру, а не наказывать её как отсутствующую."
+      "label": "Предсуществующая структура тегов",
+      "tooltip": "Этот PDF включает дерево тегов в стиле PDF/UA. Аудиторам было поручено признавать существующую структуру, а не наказывать её как отсутствующую."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "Разрешение проблем",
+      "subheading": "Разрешено {resolved} из {total} исходных проблем ({pct}%)",
+      "resolved_label": "Разрешены",
+      "persisted_label": "Всё ещё присутствуют",
+      "introduced_label": "Новые добавленные",
+      "resolved_tip": "Проблемы из исходного аудита больше не обнаружены при проверке",
+      "persisted_tip": "Проблемы из исходного аудита всё ещё присутствуют после исправления",
+      "introduced_tip": "Новые проблемы, которых не было до исправления"
     }
   },
   "concept_sort": {

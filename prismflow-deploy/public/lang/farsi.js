@@ -5299,23 +5299,23 @@
       "html_aria": "كود HTML المصدر للتدقيق"
     },
     "batch": {
-      "drop_text": "اسحب وأسقط فایلات PDF هنا",
-      "browse_files": "تپایهُّح فایلات",
-      "clear_all": "مسح الهر",
-      "progress_aria": "پیشرفت الباالجة الدفعية",
-      "stop_aria": "ایست الباالجة الدفعية",
-      "avg_improvement": "متوسط التحسُّن",
-      "scored_90_plus": "حصلت روی 90+",
-      "new_batch": "دفعة جدیدة",
+      "drop_text": "PDF را اینجا بکشید و رها کنید",
+      "browse_files": "مرور فایل‌ها",
+      "clear_all": "پاک کردن همه",
+      "progress_aria": "پیشرفت اصلاح دسته‌ای",
+      "stop_aria": "توقف اصلاح دسته‌ای",
+      "avg_improvement": "بهبود متوسط",
+      "scored_90_plus": "امتیاز ۹۰+",
+      "new_batch": "دسته جدید",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "دسته قبلی قطع شد",
+        "summary": "{done}/{total} فایل قبل از بسته شدن تب تکمیل شده‌اند.",
+        "remaining": "{n} باقیمانده.",
+        "files_label": "فایل‌ها:",
+        "files_more": "+ {n} مورد دیگر",
+        "resume_button": "ادامه دسته",
+        "discard_button": "حذف",
+        "toast": "ادامه دسته · {done} در حافظه پنهان، {remaining} برای پردازش"
       }
     },
     "choose_how": "انتخاب کنید كيدرة باالجة این الـ PDF:",
@@ -5669,27 +5669,27 @@
       "insert_table_title": "إدراج جدول مُيسَّر"
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": " — minority opinion, lower confidence"
+      "tooltip": "علامت‌گذاری شده توسط {n} از {total} حسابرس",
+      "unanimous_suffix": " (اجماع)",
+      "minority_suffix": " — نظر اقلیت، اعتماد کمتر"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "از نظر ساختاری منطبق اما از نظر معنایی ضعیف — AI کیفیت محتوا (متن جایگزین، معنی عناوین، ترتیب خواندن) را که axe-core نمی‌تواند تشخیص دهد علامت‌گذاری کرد",
+      "structural": "نقض‌های WCAG در سطح کد شناسایی شد — axe-core خطاهای قابل تأیید توسط ماشین یافت که روبریک AI سبک وزن کرده بود"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "ساختار برچسب از قبل موجود",
+      "tooltip": "این PDF شامل درخت برچسب به سبک PDF/UA است. حسابرسان دستور دادند که ساختار موجود را به‌جای جریمه کردن آن به‌عنوان گمشده، تأیید کنند."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "حل مسئله",
+      "subheading": "{resolved} از {total} مسئله اصلی حل شد ({pct}%)",
+      "resolved_label": "حل شده",
+      "persisted_label": "هنوز موجود",
+      "introduced_label": "تازه معرفی شده",
+      "resolved_tip": "مسائل از حسابرسی اصلی دیگر در حسابرسی تأیید یافت نمی‌شوند",
+      "persisted_tip": "مسائل از حسابرسی اصلی پس از اصلاح هنوز موجود هستند",
+      "introduced_tip": "مسائل جدیدی که قبل از اصلاح وجود نداشتند"
     }
   },
   "persona": {
@@ -6909,10 +6909,10 @@
     "dbq_text": "سؤالات لیست روی الوثائق: يحلل الطخیرب المصادر اولیية، يبنون حججًا لیست روی الأدلة، ويتدربون روی المهارة المركزية لارزیابیات الدراسات اخیرجتماماعية + اللغة الإنجليزية. يُنشئ وثائق المصدر وسؤالات مُدعَّمة بسقاخیرت ومفاتيح پاسخ‌ها متوافقة با استانداردهاك.",
     "quiz_mode_title": "انتخاب کنید وضع اخیرختبار الازاسب",
     "quiz_mode_text": "انتخاب کنید الغرض از این اخیرختبار. بطاقة الخروج تفحص یادگیری امروز. الفحص المسبق يتحقق از البارفة قبل از ازیة قبل از از تدریس ويُظهر الثغرات كبطاقات مفاهيم با بث 'اشرح للپایه' بالذكاء اخیرصطناعي بنقرة واحدة. الفحص التكويني نبض سريع در ازتپایه درس. المراجعة المتباعدة تتتبع احتفاظ هر دانش‌آموز عبر جلسات بمخطط شعاعي لهر مفهوم. يضبط هر وضع المُوجِّهات ومزيج انواع العناصر ورد شدنط پنل التحكم المباشرة.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate classroom-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference students can return to throughout a unit.\n### Panel Options\n• **Chart Type**: Choose from Concept, Vocabulary, Process, Strategy, or Comparison charts.\n• **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style.\n• **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme.\n• **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight.\n### Chart Components\n• **Title Banner**: Eye-catching topic header.\n• **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading.\n• **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues.\n• **Examples & Non-Examples**: Side-by-side panels for concept clarity.\n### Interactive Features\n• **Edit Mode**: Tap any element to rewrite text, swap icons, or recolor sections.\n• **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts.\n• **Project Mode**: Fullscreen view for whole-class instruction.\n### Pro Tip\n• Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the classroom wall for the whole arc.\n### UDL Connection\n• **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors students can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach students *how* to take notes, not just *what* to write. Pick the structure that matches the cognitive task.\n### Template Types\n• **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary.\n• **Two-Column Notes**: Main idea / details organization for content-heavy reading.\n• **T-Chart**: Compare/contrast or pros/cons side-by-side.\n• **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding.\n• **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading.\n• **Outline Notes**: Hierarchical structure for lectures or textbook chapters.\n### Generation Features\n• **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text.\n• **Question Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\").\n• **Vocabulary Slots**: Pre-populated key terms students should listen/read for.\n• **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation).\n### Print & Digital\n• **Printable PDF**: Clean handout layout with generous writing space.\n• **Digital Fillable**: Students type directly into the template for paperless workflows.\n• **Editable Headings**: Teachers tailor column labels and section titles before sharing.\n### Pro Tip\n• Pair *Cornell Notes* with the **Leveled Reader**: students take notes at their reading level, then use the bottom-summary box as a formative-assessment check.\n### UDL Connection\n• **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "نمودارهای لنگری",
+    "anchor_chart_text": "نمودارهای لنگری آماده کلاس درس ایجاد کنید که مفاهیم، واژگان و رویه‌ها را تثبیت می‌کنند. خلاصه‌ای بصری از ایده‌های کلیدی که دانش‌آموزان می‌توانند بارها به آن مراجعه کنند.",
+    "note_taking_title": "الگوهای یادداشت‌برداری",
+    "note_taking_text": "الگوهای یادداشت‌برداری ساختاریافته که به دانش‌آموزان *چگونگی* یادداشت‌برداری را آموزش می‌دهند، نه فقط *چه چیزی* بنویسند. شامل کورنل، سازمان‌دهنده‌های گرافیکی، ورودی دوگانه و دفترچه‌های یادگیری."
   },
   "text_tools": {
     "click_to_add": "کلیک کنید للإضافة به واژه‌نامه",

@@ -5291,23 +5291,23 @@
       "html_aria": "كاورد HTML المصدر للتدقيق"
     },
     "batch": {
-      "drop_text": "اسحب اورأسقط فائلات PDF هنا",
-      "browse_files": "تجماعتُّح فائلات",
-      "clear_all": "مسح الہر",
-      "progress_aria": "پیش رفت الکے ساتھالجة الدفعية",
-      "stop_aria": "راورکیں الکے ساتھالجة الدفعية",
-      "avg_improvement": "درمیانی التحسُّن",
-      "scored_90_plus": "حصلت پر 90+",
-      "new_batch": "دفعة نیاة",
+      "drop_text": "یہاں PDFs کھینچ کر چھوڑیں",
+      "browse_files": "فائلیں براؤز کریں",
+      "clear_all": "سب صاف کریں",
+      "progress_aria": "بیچ ترمیم کی پیش رفت",
+      "stop_aria": "بیچ ترمیم روکیں",
+      "avg_improvement": "اوسط بہتری",
+      "scored_90_plus": "90+ سکور حاصل کیا",
+      "new_batch": "نیا بیچ",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "پچھلا بیچ منقطع ہوگیا",
+        "summary": "ٹیب بند ہونے سے پہلے {done}/{total} فائل(یں) مکمل ہوئیں۔",
+        "remaining": "{n} باقی۔",
+        "files_label": "فائلیں:",
+        "files_more": "+ {n} مزید",
+        "resume_button": "بیچ دوبارہ شروع کریں",
+        "discard_button": "مسترد کریں",
+        "toast": "بیچ دوبارہ شروع ہو رہا ہے · {done} کیشڈ، {remaining} پروسس کرنا ہے"
       }
     },
     "choose_how": "سےتخب کریں كيمیںة کے ساتھالجة یہ الـ PDF:",
@@ -5661,27 +5661,27 @@
       "insert_table_title": "إدراج جداورل مُيسَّر"
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": " — minority opinion, lower confidence"
+      "tooltip": "{total} میں سے {n} آڈیٹرز نے نشان زد کیا",
+      "unanimous_suffix": " (متفقہ)",
+      "minority_suffix": " — اقلیتی رائے، کم اعتماد"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "ساختی طور پر مطابق لیکن معنوی طور پر کمزور — AI نے مواد کے معیار کو نشان زد کیا جسے axe-core نہیں پکڑ سکتا",
+      "structural": "کوڈ سطح کی WCAG خلاف ورزیاں پائی گئیں — axe-core نے ایسی ناکامیاں ڈھونڈیں جنہیں AI روبرک نے ہلکا تولا"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "پہلے سے موجود ٹیگ ڈھانچہ",
+      "tooltip": "یہ PDF PDF/UA طرز کا ٹیگ ٹری شامل کرتا ہے۔ آڈیٹرز کو ہدایت کی گئی کہ موجودہ ڈھانچے کو سزا کے بجائے کریڈٹ دیں۔"
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "مسئلہ حل",
+      "subheading": "اصل {total} مسائل میں سے {resolved} حل ہوئے ({pct}%)",
+      "resolved_label": "حل شدہ",
+      "persisted_label": "ابھی بھی موجود",
+      "introduced_label": "نئی متعارف شدہ",
+      "resolved_tip": "اصل آڈٹ کے مسائل تصدیقی آڈٹ میں اب نہیں ملے",
+      "persisted_tip": "اصل آڈٹ کے مسائل اصلاح کے بعد بھی موجود ہیں",
+      "introduced_tip": "نئے مسائل جو اصلاح سے پہلے موجود نہیں تھے"
     }
   },
   "persona": {
@@ -6901,10 +6901,10 @@
     "dbq_text": "ساورالات فہرست پر الاورثائق: يحلل الطنہیںب المصادر پہنہیںية، يبناورن حججًا فہرست پر الأدلة، اوريتدرباورن پر المهارة المركزية لتشخیصات الدراسات انہیںجہاور گیااعية + اللغة الإنجليزية. يُنشئ اورثائق المصدر اورساورالات مُدعَّمة بسقانہیںت اورمفاتيح جاورابات متاورافقة کے ساتھ کے ساتھیاراتك.",
     "quiz_mode_title": "سےتخب کریں اورضع انہیںختبار السےاسب",
     "quiz_mode_text": "سےتخب کریں الغرض سے یہ انہیںختبار. بطاقة الخراورج تفحص سیکھنا الياورم. الفحص المسبق يتحقق سے الکے ساتھرفة پچھنہیںة سے پہلے تدریس اوريُظهر الثغرات كبطاقات مفاهيم کے ساتھ بث 'اشرح للجماعت' بالذكاء انہیںصطناعي بنقرة اوراحدة. الفحص التكاوريني نبض سريع میں سےتجماعت سبق. المراجعة المتباعدة تتتبع احتفاظ ہر طالب علم علم عبر سیشنز بمخطط شعاعي لہر مفهاورم. يضبط ہر اورضع المُاورجِّهات اورمزيج أناوراع العناصر اورچھاورڑیںط لاورحة التحكم المباشرة.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate classroom-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference students can return to throughout a unit.\n### Panel Options\n• **Chart Type**: Choose from Concept, Vocabulary, Process, Strategy, or Comparison charts.\n• **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style.\n• **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme.\n• **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight.\n### Chart Components\n• **Title Banner**: Eye-catching topic header.\n• **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading.\n• **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues.\n• **Examples & Non-Examples**: Side-by-side panels for concept clarity.\n### Interactive Features\n• **Edit Mode**: Tap any element to rewrite text, swap icons, or recolor sections.\n• **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts.\n• **Project Mode**: Fullscreen view for whole-class instruction.\n### Pro Tip\n• Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the classroom wall for the whole arc.\n### UDL Connection\n• **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors students can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach students *how* to take notes, not just *what* to write. Pick the structure that matches the cognitive task.\n### Template Types\n• **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary.\n• **Two-Column Notes**: Main idea / details organization for content-heavy reading.\n• **T-Chart**: Compare/contrast or pros/cons side-by-side.\n• **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding.\n• **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading.\n• **Outline Notes**: Hierarchical structure for lectures or textbook chapters.\n### Generation Features\n• **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text.\n• **Question Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\").\n• **Vocabulary Slots**: Pre-populated key terms students should listen/read for.\n• **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation).\n### Print & Digital\n• **Printable PDF**: Clean handout layout with generous writing space.\n• **Digital Fillable**: Students type directly into the template for paperless workflows.\n• **Editable Headings**: Teachers tailor column labels and section titles before sharing.\n### Pro Tip\n• Pair *Cornell Notes* with the **Leveled Reader**: students take notes at their reading level, then use the bottom-summary box as a formative-assessment check.\n### UDL Connection\n• **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "اینکر چارٹس",
+    "anchor_chart_text": "کلاس روم کے لیے تیار اینکر چارٹس بنائیں جو تصورات، الفاظ اور طریقہ کار کو پکا کرتے ہیں۔ کلیدی خیالات کا بصری خلاصہ جس کا طلباء بار بار حوالہ دے سکتے ہیں۔",
+    "note_taking_title": "نوٹ لینے کے ٹیمپلیٹس",
+    "note_taking_text": "سکافولڈ شدہ نوٹ لینے کے ٹیمپلیٹس جو طلباء کو *کس طرح* نوٹس لینا ہے سکھاتے ہیں، صرف *کیا* لکھنا ہے نہیں۔ کارنیل، گرافک آرگنائزرز، دوہری اندراج اور سیکھنے کے جرائد شامل ہیں۔"
   },
   "text_tools": {
     "click_to_add": "کلک کریں للإضافة تک لغت",

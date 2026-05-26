@@ -5623,10 +5623,10 @@
     "dbq_text": "Su'aalo ku Saleysan Dukumeentiga: ardaydu waxay falanqeeyaan ilaha aasaasiga ah, dhisaan doodaha caddaymo, oo ku celceliyan xirfadda dhexe ee qiimaynta cilmiga bulshada + ELA.",
     "quiz_mode_title": "Dooro habka quiz-ka saxda ah",
     "quiz_mode_text": "Dooro waxa quiz-kani yahay. Tikidh Bixinta wuxuu hubiyaa waxbarashada maanta. Hubinta-Hore wuxuu hubiyaa aqoonta hore ka hor waxbarashada. Hubinta Formative waa garaaca casharka dhexe. Dib-u-eegista la-kala-fogeeyay waxay raacaan haynta arday kasta.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate classroom-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference students can return to throughout a unit.\n### Panel Options\n• **Chart Type**: Choose from Concept, Vocabulary, Process, Strategy, or Comparison charts.\n• **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style.\n• **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme.\n• **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight.\n### Chart Components\n• **Title Banner**: Eye-catching topic header.\n• **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading.\n• **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues.\n• **Examples & Non-Examples**: Side-by-side panels for concept clarity.\n### Interactive Features\n• **Edit Mode**: Tap any element to rewrite text, swap icons, or recolor sections.\n• **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts.\n• **Project Mode**: Fullscreen view for whole-class instruction.\n### Pro Tip\n• Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the classroom wall for the whole arc.\n### UDL Connection\n• **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors students can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach students *how* to take notes, not just *what* to write. Pick the structure that matches the cognitive task.\n### Template Types\n• **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary.\n• **Two-Column Notes**: Main idea / details organization for content-heavy reading.\n• **T-Chart**: Compare/contrast or pros/cons side-by-side.\n• **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding.\n• **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading.\n• **Outline Notes**: Hierarchical structure for lectures or textbook chapters.\n### Generation Features\n• **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text.\n• **Question Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\").\n• **Vocabulary Slots**: Pre-populated key terms students should listen/read for.\n• **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation).\n### Print & Digital\n• **Printable PDF**: Clean handout layout with generous writing space.\n• **Digital Fillable**: Students type directly into the template for paperless workflows.\n• **Editable Headings**: Teachers tailor column labels and section titles before sharing.\n### Pro Tip\n• Pair *Cornell Notes* with the **Leveled Reader**: students take notes at their reading level, then use the bottom-summary box as a formative-assessment check.\n### UDL Connection\n• **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "Jaantusyada Goyska",
+    "anchor_chart_text": "Abuur jaantusyo goyska ah oo fasalka diyaar u ah oo ka dhigaya fikradaha, ereyada iyo nidaamyada inay ku xidhmaan. Soo koobid muuqaal ah oo fikradaha ugu muhiimsan oo ardayda dib ugu noqon karaan dhowr jeer.",
+    "note_taking_title": "Qaababka qoraalka",
+    "note_taking_text": "Qaabab qoraal taageero ah oo bara ardayda *sida* loo sameeyo qoraallada, ma aha oo kaliya *waxa* la qori karo. Wuxuu ka kooban yahay Cornell, qabsada garaafyada, gelitaanka labanlaaban iyo joornaalada waxbarashada."
   },
   "persona": {
     "title": "Habka Wareysiga",
@@ -6368,23 +6368,23 @@
       "html_aria": "Koodka isha HTML oo la hubinayo"
     },
     "batch": {
-      "drop_text": "Jiid & tuur PDF-yada halkan",
-      "browse_files": "Eeg Faylasha",
-      "clear_all": "Tirtir Dhammaan",
-      "progress_aria": "Horumarka dayactirka xirmada",
-      "stop_aria": "Jooji dayactirka xirmada",
-      "avg_improvement": "Celceliska Hagaajinta",
-      "scored_90_plus": "Buundo 90+",
-      "new_batch": "Xirmo Cusub",
+      "drop_text": "PDF-yada halkan ku jiid oo dhig",
+      "browse_files": "Eeg faylasha",
+      "clear_all": "Tirtir dhammaan",
+      "progress_aria": "Horumarka hagaajinta dufan",
+      "stop_aria": "Jooji hagaajinta dufan",
+      "avg_improvement": "Hagaajinta dhexdhexaadka",
+      "scored_90_plus": "Heleen 90+",
+      "new_batch": "Xidhmo cusub",
       "resume": {
-        "title": "Previous batch interrupted",
-        "summary": "{done}/{total} file(s) completed before the tab closed.",
-        "remaining": "{n} remaining.",
-        "files_label": "Files:",
-        "files_more": "+ {n} more",
-        "resume_button": "Resume Batch",
-        "discard_button": "Discard",
-        "toast": "Resuming batch · {done} cached, {remaining} to process"
+        "title": "Xidhmadii hore waa la jajabay",
+        "summary": "{done}/{total} fayl ayaa dhammaystiray ka hor inta tab-ka aan la xidhin.",
+        "remaining": "{n} ayaa hadhay.",
+        "files_label": "Faylasha:",
+        "files_more": "+ {n} oo dheeri ah",
+        "resume_button": "Dib u bilow xidhmada",
+        "discard_button": "Tuur",
+        "toast": "Dib u bilaabaya xidhmada · {done} keydsan, {remaining} la habayn"
       }
     },
     "choose_how": "Dooro sida loo qabto PDF-kan:",
@@ -6738,27 +6738,27 @@
       "insert_table_title": "Ku geli jaantus la heli karo"
     },
     "agreement": {
-      "tooltip": "Flagged by {n} of {total} auditors",
-      "unanimous_suffix": " (unanimous)",
-      "minority_suffix": " — minority opinion, lower confidence"
+      "tooltip": "Calaamadeyay {n} ka mid ah {total} qof oo hubiya",
+      "unanimous_suffix": " (mid u dhan)",
+      "minority_suffix": " — fikrad tirada yar, kalsoonida hoose"
     },
     "divergence": {
-      "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "semantic": "Si dhismeed ah u waafaqsan laakiin si macne ah u liita — AI calaamadeysay tayada nuxurka (qoraal kale, micnaha cinwaanka, kala daadsanaanta akhriska) oo axe-core uusan ogaan karin",
+      "structural": "Khilaafadyo WCAG ah oo heer-code ah oo la helay — axe-core wuxuu helay khaladaad la xaqiijin karo oo mishiin lagu hubin karo oo qiyaasta AI ay si fudud u miisaantay"
     },
     "tagtree": {
-      "label": "Pre-existing tag structure",
-      "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."
+      "label": "Qaab-dhismeedka calaamadaha hore u jiray",
+      "tooltip": "PDF-kani waxa uu ka kooban yahay geed calaamado ah oo qaab PDF/UA ah. Hubiyayaasha waxaa lagu amray inay aqoonsadaan qaab-dhismeedka hadda jira halkii ay ku ciqaabi lahaayeen sida la waayey."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "Xal u helid arrimaha",
+      "subheading": "Waxaa la xaliyay {resolved} ka mid ah {total} arrimo asal ah ({pct}%)",
+      "resolved_label": "La xaliyay",
+      "persisted_label": "Wali jira",
+      "introduced_label": "Cusub la soo bandhigay",
+      "resolved_tip": "Arrimaha ka soo jeeda hubinta asalka ah ee aan dib looga heli karin hubinta xaqiijinta",
+      "persisted_tip": "Arrimaha hubinta asalka ah ee wali jira hagaajinta ka dib",
+      "introduced_tip": "Arrimo cusub oo aan jirin ka hor hagaajinta"
     }
   },
   "about": {

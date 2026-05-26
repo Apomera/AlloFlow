@@ -52,10 +52,10 @@
     "dbq_text": "Документально-ориентированные pytania: uczniowie analizaируют pierwotne źródła, строят аргументы na podstawie dowodów i практикуют центральный umiejętność oceniania po обществознанию + ELA. Tworzy źródłowe dokumenty, опорные pytania i klucze odpowiedzi, zgodne z twoimi standardami.",
     "quiz_mode_title": "Wybierz poprawny tryb quizu",
     "quiz_mode_text": "Wybierz, dla чего ten quiz. Exit Ticket проверяет nauka сегодняшнего dnia. Pre-Check исследует предыдущие wiedza do nauki i выводит odstępy jak koncepcyjne punkty z трансляцией «Wyjaśnij klasie» jednym kliknięciem. Formative Check — to szybki пульс w środku lekcji. Spaced Review отслеживает удержание wiedzy каждым uczniem między sesjaми z поконцептными спарклайнами. Każdy tryb konfiguruje wskazówki, состав typów pytań i układ na żywo panelu.",
-    "anchor_chart_title": "Anchor Charts",
-    "anchor_chart_text": "Generate classroom-ready Anchor Charts that make concepts, vocabulary, and procedures stick. A visual reference students can return to throughout a unit.\n### Panel Options\n• **Chart Type**: Choose from Concept, Vocabulary, Process, Strategy, or Comparison charts.\n• **Style**: Hand-drawn marker look, polished print style, or kid-friendly comic style.\n• **Color Palette**: Pick a high-contrast, dyslexia-friendly, or themed color scheme.\n• **Custom Instructions**: Specify focal concepts, key vocabulary, or strategy steps to highlight.\n### Chart Components\n• **Title Banner**: Eye-catching topic header.\n• **Visual Hierarchy**: Headings, bullets, and callouts organized for skim-reading.\n• **Iconography**: Auto-generated icons reinforcing each idea with dual-coded visual cues.\n• **Examples & Non-Examples**: Side-by-side panels for concept clarity.\n### Interactive Features\n• **Edit Mode**: Tap any element to rewrite text, swap icons, or recolor sections.\n• **Print-Ready**: High-resolution export sized for posters or 8.5×11 handouts.\n• **Project Mode**: Fullscreen view for whole-class instruction.\n### Pro Tip\n• Generate a *Strategy Chart* before a writing unit and a *Vocabulary Chart* before a science unit — keep both on the classroom wall for the whole arc.\n### UDL Connection\n• **Representation**: Activate or supply background knowledge (Guideline 3.1) with persistent visual anchors students can revisit independently.",
-    "note_taking_title": "Note-Taking Templates",
-    "note_taking_text": "Scaffolded Note-Taking Templates that teach students *how* to take notes, not just *what* to write. Pick the structure that matches the cognitive task.\n### Template Types\n• **Cornell Notes**: Classic two-column layout with cues, notes, and bottom summary.\n• **Two-Column Notes**: Main idea / details organization for content-heavy reading.\n• **T-Chart**: Compare/contrast or pros/cons side-by-side.\n• **Sketchnotes**: Visual note-taking with prompts for icons, arrows, and color-coding.\n• **KWL Chart**: Know / Want to know / Learned — perfect for pre/post-reading.\n• **Outline Notes**: Hierarchical structure for lectures or textbook chapters.\n### Generation Features\n• **Pre-Filled Prompts**: Each template seeded with cues drawn from your source text.\n• **Question Stems**: Built-in metacognitive prompts (\"What surprised you?\", \"How does this connect to…?\").\n• **Vocabulary Slots**: Pre-populated key terms students should listen/read for.\n• **Custom Instructions**: Target a specific cognitive task (synthesis, summary, evaluation).\n### Print & Digital\n• **Printable PDF**: Clean handout layout with generous writing space.\n• **Digital Fillable**: Students type directly into the template for paperless workflows.\n• **Editable Headings**: Teachers tailor column labels and section titles before sharing.\n### Pro Tip\n• Pair *Cornell Notes* with the **Leveled Reader**: students take notes at their reading level, then use the bottom-summary box as a formative-assessment check.\n### UDL Connection\n• **Action & Expression**: Support planning and strategy development (Guideline 6.2) by giving learners explicit structures for organizing information."
+    "anchor_chart_title": "Plakaty kotwicy",
+    "anchor_chart_text": "Generuj gotowe do klasy plakaty kotwicy, które utrwalają pojęcia, słownictwo i procedury. Wizualne podsumowanie kluczowych idei, do których uczniowie mogą wielokrotnie wracać.",
+    "note_taking_title": "Szablony robienia notatek",
+    "note_taking_text": "Strukturalne szablony robienia notatek, które uczą uczniów *jak* robić notatki, a nie tylko *co* pisać. Zawiera Cornell, organizatory graficzne, podwójne wpisy i dzienniki uczenia się."
   },
   "launch_pad": {
     "subtitle": "Wybierz swój ścieżka nauki",
@@ -3975,23 +3975,23 @@
       "html_aria": "Исходный HTML-kod dla audytu"
     },
     "batch": {
-      "drop_text": "Przeciągnij PDF tutaj",
-      "browse_files": "Przegląd plików",
+      "drop_text": "Przeciągnij i upuść PDF tutaj",
+      "browse_files": "Przeglądaj pliki",
       "clear_all": "Wyczyść wszystko",
-      "progress_aria": "Postęp пакетного poprawki",
-      "stop_aria": "Zatrzymaj пакетное poprawka",
-      "avg_improvement": "Średnie ulepszenie",
-      "scored_90_plus": "Ocena 90+",
-      "new_batch": "Nowy pakiet",
+      "progress_aria": "Postęp grupowej naprawy",
+      "stop_aria": "Zatrzymaj grupową naprawę",
+      "avg_improvement": "Średnia poprawa",
+      "scored_90_plus": "Uzyskali 90+",
+      "new_batch": "Nowa partia",
       "resume": {
-        "title": "Poprzedni pakiet był прерван",
-        "summary": "{done}/{total} plików było zakończono do закрытия zakładki.",
-        "remaining": "{n} zostało.",
-        "files_label": "Plikы:",
-        "files_more": "+ jeszcze {n}",
-        "resume_button": "Wznów pakiet",
-        "discard_button": "Отбросить",
-        "toast": "Возобновление pakietu · {done} w кэше, {remaining} do обработке"
+        "title": "Poprzednia partia przerwana",
+        "summary": "{done}/{total} plik(ów) ukończono przed zamknięciem karty.",
+        "remaining": "Pozostało {n}.",
+        "files_label": "Pliki:",
+        "files_more": "+ {n} więcej",
+        "resume_button": "Wznów partię",
+        "discard_button": "Odrzuć",
+        "toast": "Wznawianie partii · {done} w pamięci podręcznej, {remaining} do przetworzenia"
       }
     },
     "choose_how": "Wybierz, jak przetworzyć ten PDF:",
@@ -4345,27 +4345,27 @@
       "insert_table_title": "Wklej доступную таблицу"
     },
     "agreement": {
-      "tooltip": "Отмечено {n} z {total} аудиторов",
-      "unanimous_suffix": " (единогласно)",
-      "minority_suffix": " — opinia меньшинства, niska уверенность"
+      "tooltip": "Oznaczone przez {n} z {total} audytorów",
+      "unanimous_suffix": " (jednogłośnie)",
+      "minority_suffix": " — opinia mniejszości, niższe zaufanie"
     },
     "divergence": {
-      "semantic": "Структурно odpowiada, ale семантически слабо — AI отметил jakość zawartości (alt-tekst, wartość nagłówków, kolejność czytania), które axe-core nie może обнаружить",
-      "structural": "Обнаружены naruszenia WCAG na poziomie kodu — axe-core нашёл машинно-проверяемые сбои, которым rubryka AI присвоила mały вес"
+      "semantic": "Strukturalnie zgodne, ale semantycznie słabe — AI oznaczyło jakość treści (tekst alt, znaczenie nagłówków, kolejność czytania), której axe-core nie może wykryć",
+      "structural": "Wykryto naruszenia WCAG na poziomie kodu — axe-core znalazł błędy weryfikowalne maszynowo, które rubryka AI oceniła lekko"
     },
     "tagtree": {
-      "label": "Существующая struktura тегов",
-      "tooltip": "Ten PDF zawiera drzewo тегов w stylu PDF/UA. Аудиторам było поручено зачесть существующую strukturę, а nie наказывать jej jak отсутствующую."
+      "label": "Wcześniej istniejąca struktura tagów",
+      "tooltip": "Ten PDF zawiera drzewo tagów w stylu PDF/UA. Audytorzy zostali poinstruowani, aby uznać istniejącą strukturę zamiast karać ją jako brakującą."
     },
     "resolution": {
-      "heading": "Issue Resolution",
-      "subheading": "Resolved {resolved} of {total} original issues ({pct}%)",
-      "resolved_label": "Resolved",
-      "persisted_label": "Still Present",
-      "introduced_label": "Newly Introduced",
-      "resolved_tip": "Issues from the original audit no longer found in the verification audit",
-      "persisted_tip": "Issues from the original audit still present after the fix",
-      "introduced_tip": "New issues that did not exist before the fix"
+      "heading": "Rozwiązanie problemów",
+      "subheading": "Rozwiązano {resolved} z {total} pierwotnych problemów ({pct}%)",
+      "resolved_label": "Rozwiązane",
+      "persisted_label": "Nadal obecne",
+      "introduced_label": "Nowo wprowadzone",
+      "resolved_tip": "Problemy z pierwotnego audytu nie znalezione w audycie weryfikacyjnym",
+      "persisted_tip": "Problemy z pierwotnego audytu nadal obecne po naprawie",
+      "introduced_tip": "Nowe problemy, które nie istniały przed naprawą"
     }
   },
   "concept_sort": {
