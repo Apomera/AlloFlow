@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-26T09:53:27.608Z",
+  "generated": "2026-05-26T09:54:47.775Z",
   "count": 56,
   "total_keys_expected": 9307,
   "available": [
@@ -197,7 +197,7 @@
       "slug": "kirundi",
       "display": "Kirundi",
       "keys": 10153,
-      "bytes": 1042310,
+      "bytes": 1042069,
       "updated": "2026-05-26"
     },
     {
