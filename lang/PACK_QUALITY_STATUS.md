@@ -1,6 +1,32 @@
 # Language Pack Quality Status
 
-**Last updated:** 2026-05-26 (session 2)
+**Last updated:** 2026-05-26 (session 3)
+
+## Recent UI string additions — translation coverage
+
+Source files (`ui_strings.js` + `help_strings.js`) had 35 newly-added keys
+across `pdf_audit.batch.*` (16), `pdf_audit.resolution.*` (8),
+`pdf_audit.agreement/divergence/tagtree` (7), `tour.anchor_chart_*` (2),
+and `tour.note_taking_*` (2).
+
+**2026-05-26 session 3 actions:**
+- Filled English-passthrough baseline across 34 lagging packs (7,672 keys
+  total — commit `d8332829`). All 56 packs now have 0 missing keys.
+- Hand-translated all 35 new keys across 22 major languages (~770 total
+  translations): Spanish (LATAM), French, Chinese (Simplified), Vietnamese,
+  Portuguese (Brazil), German, Italian, Korean, Hindi (commit `6b243c83`),
+  plus Arabic, Russian, Polish, Farsi, Dari, Urdu, Somali (commit
+  `33a41bdf`), plus Pashto, Hebrew, Japanese, Haitian Creole, Thai,
+  Tagalog (commit `1269599a`).
+
+**Languages still showing English passthrough for the new keys** (remaining
+~12 packs): Acholi, Amharic, Bengali, Burmese, Chin (Falam/Hakha),
+Chinese (Traditional), French (Canadian), Greek, Hausa, Hmong, Igbo,
+Indonesian, Karen, Khmer, Kinyarwanda, Kirundi, Lao, Latin, Lingala, Maay
+Maay, Marshallese, Nepali, Portuguese (Angola/Portugal), Punjabi, Romanian,
+Spanish (Castilian), Swahili, Tamil, Telugu, Tigrinya, Ukrainian, Yoruba.
+
+
 
 This file tracks known quality issues across language packs that exist
 but need improvement. Updated when meaningful cleanup happens.
