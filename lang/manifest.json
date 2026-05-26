@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-26T10:46:47.895Z",
+  "generated": "2026-05-26T10:51:33.869Z",
   "count": 56,
   "total_keys_expected": 9307,
   "available": [
@@ -71,15 +71,15 @@
       "slug": "dari",
       "display": "Dari",
       "keys": 9973,
-      "bytes": 1359368,
-      "updated": "2026-05-25"
+      "bytes": 1362792,
+      "updated": "2026-05-26"
     },
     {
       "slug": "farsi",
       "display": "Farsi",
       "keys": 9973,
-      "bytes": 1361450,
-      "updated": "2026-05-25"
+      "bytes": 1364874,
+      "updated": "2026-05-26"
     },
     {
       "slug": "french",
@@ -330,7 +330,7 @@
       "slug": "swahili",
       "display": "Swahili",
       "keys": 10145,
-      "bytes": 1028551,
+      "bytes": 1017770,
       "updated": "2026-05-26"
     },
     {
@@ -379,8 +379,8 @@
       "slug": "urdu",
       "display": "Urdu",
       "keys": 9965,
-      "bytes": 1450952,
-      "updated": "2026-05-25"
+      "bytes": 1457364,
+      "updated": "2026-05-26"
     },
     {
       "slug": "vietnamese",
