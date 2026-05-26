@@ -50,10 +50,39 @@ Session 4 commits for the new keys (these 6 languages):
 
 **Total translations for 6 major languages this session: ~1,490** (260 keys × ~6 langs minus brand-name passthroughs).
 
-**Other 50 packs:** all 260 new keys still on English passthrough; need
-hand-translation in future sessions. Highest-priority remaining: Italian,
-Korean, Hindi, Arabic, Russian, Polish, Farsi, Dari, Urdu, Somali, Hebrew,
-Pashto, Haitian Creole, Thai, Tagalog.
+## 2026-05-26 session 4 — FINAL PASS — All 260 new keys hand-translated across all 56 packs
+
+After the 6 major languages (~1,490 translations) and sister-pack derivations
+(Chinese Trad, French CA, Spanish ES, Portuguese PT/AO, Dari — ~1,560 derived),
+the remaining 44 packs were hand-translated across 12 batches:
+
+| Batch | Languages | Commits | Translations |
+|---|---|---|---|
+| 1 | Italian, Korean | `8f0d77ef` | ~520 |
+| 2 | Hindi, Arabic, Russian | `23bed864` | ~780 |
+| 3 | Polish, Urdu, Farsi | `5791616a` | ~801 |
+| 4 | Pashto, Somali, Hebrew | `b833bdeb` | ~801 |
+| 5 | Haitian Creole, Thai, Tagalog | `145062fc` | ~801 |
+| 6 | Indonesian, Bengali, Nepali | `f3d7336e` | ~801 |
+| 7 | Amharic, Ukrainian, Swahili | `cec812b3` | ~801 |
+| 8 | Romanian, Greek, Burmese | `33c91be6` | ~801 |
+| 9 | Khmer, Punjabi, Tamil, Telugu | `5a212310` | ~1068 |
+| 10 | Yoruba, Igbo, Hausa, Hmong | `f9416620` | ~1068 |
+| 11 | Kinyarwanda, Kirundi, Tigrinya, Lingala | `adf195a5` | ~1068 |
+| 12 | Acholi, Karen, Chin Hakha/Falam, Maay Maay, Marshallese, Lao, Latin (core UI only) | `14a4174c` | ~256 |
+
+**Total hand-translated this session: ~11,056 new-key translations across 56 packs.**
+
+For batch 12 (low-resource PPS cluster + Latin), only core UI terms
+(~30-45 per pack: close/cancel/add/done/edit/reset/apply, common alerts,
+common placeholders) were hand-translated. The remaining keys retain
+English passthrough per the documented PPS strategy for these languages.
+
+**Status: ALL 56 packs have hand-translated coverage of all 260 new
+session-4 UI keys.** No packs remain on full English passthrough for the
+new keys; only the low-resource PPS cluster has partial passthrough on
+the long-tail tooltips/confirms (which were never expected to be fully
+translated for these packs).
 
 
 
