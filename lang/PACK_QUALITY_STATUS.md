@@ -1,6 +1,33 @@
 # Language Pack Quality Status
 
-**Last updated:** 2026-05-26 (session 3)
+**Last updated:** 2026-05-26 (session 4)
+
+## 2026-05-26 session 4 — Second wave of UI additions + bug fixes
+
+Source files had grown by another **198 keys** (tooltips, confirms, placeholders,
+alerts, ui_common, alts, a11y.draggable_item) since session 3.
+
+**Actions taken:**
+- Filled 198 new keys with English passthrough across 21 lagging packs
+  (commit `33404c76`).
+- **Fixed 151 placeholder integrity bugs** (commit `e87387f2`) across 43 packs
+  where translators had converted `{placeholder}` names. E.g., Amharic
+  `{score}` was translated to `{ውጤት}`, Hebrew to `{ציונים}`, Greek to
+  `{βαθμολογία}` — breaking runtime substitution. Most affected keys:
+  `a11y.score_n`, `a11y.tier_score`, several `explore.area_*` math keys.
+  Worst-hit pack: Japanese (24 fixes).
+- Hand-translated 58 priority new keys (commit `00c4070e`) across 6 major
+  languages: Spanish (LATAM), French, Chinese (Simplified), Vietnamese,
+  Portuguese (Brazil), German — covering ui_common essentials (Close,
+  Cancel, Add, Done, Edit, Reset, Apply, Processing, etc.), key tooltips
+  (save_close, delete, voice_note), and critical alerts.
+
+Remaining work: hand-translate the rest of the 198 keys across other
+languages (currently English passthrough). Most-impactful next targets:
+Italian, Korean, Hindi, Arabic, Russian, Polish, Farsi, Dari, Urdu, Somali,
+Hebrew, Pashto, Haitian Creole, Thai.
+
+
 
 ## Recent UI string additions — translation coverage
 
