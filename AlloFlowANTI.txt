@@ -4120,7 +4120,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'd7ce0cc9';
+    var pluginCdnVersion = 'e33dfaa0';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -13088,6 +13088,138 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       return executeWithRetry();
     }
   };
+  // Browsers render animated GIFs natively in <img> tags, so panels that
+  // generate process animations just need an "imageUrl" that's a data:image/gif
+  // URL. This encoder is the same GIF89a + 256-color cube palette used by
+  // stem_tool_artstudio's stereogram exporter — copied so visual_panel doesn't
+  // depend on the stem-lab module loading.
+  const encodeFramesToGif = async (framesBase64, width, height, fps = 3) => {
+    if (!framesBase64 || framesBase64.length === 0) throw new Error('encodeFramesToGif: need at least one frame');
+    const canvases = await Promise.all(framesBase64.map((b64) => new Promise((resolve, reject) => {
+      const src = b64.startsWith('data:') ? b64 : 'data:image/png;base64,' + b64;
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = width; c.height = height;
+        c.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(c);
+      };
+      img.onerror = () => reject(new Error('Frame load failed'));
+      img.src = src;
+    })));
+    const W = width, H = height;
+    const delay = Math.round(100 / fps); // centiseconds per frame
+    const parts = [];
+    // GIF89a header + logical screen descriptor
+    parts.push(new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]));
+    const lsd = new Uint8Array(7);
+    lsd[0] = W & 0xFF; lsd[1] = (W >> 8) & 0xFF;
+    lsd[2] = H & 0xFF; lsd[3] = (H >> 8) & 0xFF;
+    lsd[4] = 0xF7; // 256-entry global color table
+    parts.push(lsd);
+    // 6x6x6 RGB cube (216 colors) + 40 grays
+    const gct = new Uint8Array(768);
+    for (let ci = 0; ci < 256; ci++) {
+      if (ci < 216) {
+        gct[ci*3] = Math.floor(ci/36) * 51;
+        gct[ci*3+1] = (Math.floor(ci/6) % 6) * 51;
+        gct[ci*3+2] = (ci % 6) * 51;
+      } else {
+        const gv = Math.round((ci - 216) / 39 * 255);
+        gct[ci*3] = gv; gct[ci*3+1] = gv; gct[ci*3+2] = gv;
+      }
+    }
+    parts.push(gct);
+    // Netscape looping extension (infinite loop)
+    parts.push(new Uint8Array([0x21, 0xFF, 0x0B, 0x4E, 0x45, 0x54, 0x53, 0x43, 0x41, 0x50, 0x45, 0x32, 0x2E, 0x30, 0x03, 0x01, 0x00, 0x00, 0x00]));
+    const nearestColor = (r, g, b) => {
+      const ri = Math.round(r/255*5), gi = Math.round(g/255*5), bi = Math.round(b/255*5);
+      return ri*36 + gi*6 + bi;
+    };
+    const minCodeSize = 8;
+    const lzwEncode = (indexStream) => {
+      const clearCode = 1 << minCodeSize;
+      const eoiCode = clearCode + 1;
+      let codeSize = minCodeSize + 1;
+      let nextCode = eoiCode + 1;
+      let dict = {};
+      for (let di = 0; di < clearCode; di++) dict[String(di)] = di;
+      const out = [];
+      let bitBuf = 0, bitCount = 0;
+      const writeBits = (code, size) => {
+        bitBuf |= (code << bitCount);
+        bitCount += size;
+        while (bitCount >= 8) { out.push(bitBuf & 0xFF); bitBuf >>= 8; bitCount -= 8; }
+      };
+      writeBits(clearCode, codeSize);
+      let cur = String(indexStream[0]);
+      for (let si = 1; si < indexStream.length; si++) {
+        const next = String(indexStream[si]);
+        const combined = cur + ',' + next;
+        if (dict[combined] !== undefined) {
+          cur = combined;
+        } else {
+          writeBits(dict[cur], codeSize);
+          if (nextCode < 4096) {
+            dict[combined] = nextCode++;
+            if (nextCode > (1 << codeSize) && codeSize < 12) codeSize++;
+          } else {
+            // Dict full — emit clear, reset
+            writeBits(clearCode, codeSize);
+            dict = {};
+            for (let dj = 0; dj < clearCode; dj++) dict[String(dj)] = dj;
+            nextCode = eoiCode + 1;
+            codeSize = minCodeSize + 1;
+          }
+          cur = next;
+        }
+      }
+      writeBits(dict[cur], codeSize);
+      writeBits(eoiCode, codeSize);
+      if (bitCount > 0) out.push(bitBuf & 0xFF);
+      return new Uint8Array(out);
+    };
+    for (let fi = 0; fi < canvases.length; fi++) {
+      // Graphic control extension (per-frame delay, no transparency)
+      parts.push(new Uint8Array([0x21, 0xF9, 0x04, 0x00, delay & 0xFF, (delay >> 8) & 0xFF, 0x00, 0x00]));
+      // Image descriptor
+      const imgDesc = new Uint8Array(10);
+      imgDesc[0] = 0x2C;
+      imgDesc[5] = W & 0xFF; imgDesc[6] = (W >> 8) & 0xFF;
+      imgDesc[7] = H & 0xFF; imgDesc[8] = (H >> 8) & 0xFF;
+      parts.push(imgDesc);
+      // Quantize RGBA pixels into palette indices
+      const fData = canvases[fi].getContext('2d').getImageData(0, 0, W, H).data;
+      const indices = new Uint8Array(W * H);
+      for (let pi = 0; pi < W * H; pi++) {
+        indices[pi] = nearestColor(fData[pi*4], fData[pi*4+1], fData[pi*4+2]);
+      }
+      // LZW-encode + emit as sub-blocks (≤255 bytes each)
+      parts.push(new Uint8Array([minCodeSize]));
+      const lzwData = lzwEncode(indices);
+      let pos = 0;
+      while (pos < lzwData.length) {
+        const chunkLen = Math.min(255, lzwData.length - pos);
+        parts.push(new Uint8Array([chunkLen]));
+        parts.push(lzwData.slice(pos, pos + chunkLen));
+        pos += chunkLen;
+      }
+      parts.push(new Uint8Array([0x00])); // block terminator
+    }
+    // Trailer + assemble
+    parts.push(new Uint8Array([0x3B]));
+    const totalLen = parts.reduce((s, p) => s + p.length, 0);
+    const result = new Uint8Array(totalLen);
+    let offset = 0;
+    parts.forEach((p) => { result.set(p, offset); offset += p.length; });
+    // Uint8Array → base64 in 32KB chunks (one big String.fromCharCode would stack-overflow)
+    let binary = '';
+    const CHUNK = 0x8000;
+    for (let i = 0; i < result.length; i += CHUNK) {
+      binary += String.fromCharCode.apply(null, result.subarray(i, Math.min(i + CHUNK, result.length)));
+    }
+    return 'data:image/gif;base64,' + btoa(binary);
+  };
   _personasLiveRef.current = {
       personaState, personaInput, isGeneratingPersona, generatedContent,
       history, inputText, sourceTopic, gradeLevel, leveledTextLanguage,
@@ -13782,6 +13914,7 @@ RULES:
 - Labels should point to specific parts of the image
 - anchorX/anchorY (0-100) indicate where on the image the label's leader line should point to (percentage coordinates)
 - Captions go below each image
+- ANIMATION: For ONE panel that shows DYNAMIC CONTINUOUS MOTION where the motion itself IS the lesson (cell mitosis dividing, water cycle phase transitions looping, wave propagation, blood flow through heart, plate tectonics motion, planetary orbits, mitosis chromosomes separating): set "type": "process_animation" on that panel and add a "motionPrompt" describing the looping motion in one short phrase (e.g. "cell undergoes mitosis", "water evaporates condenses and rains"). Use SPARINGLY — only when the panel would be misleading or incomplete as a still image. Static labeled diagrams remain better for anatomy, structures, vocabulary, comparisons, and any "frozen moment" content. Cognitive-load research (Mayer, Sweller) shows animation HURTS learning of static concepts via the transient-information effect; only animate when motion carries the meaning.
 ${artStyle ? `ART STYLE: Use "${artStyle}" style for ALL panel imagenPrompts. This means each prompt must specify "${artStyle}" style rendering.` : "ART STYLE: Clean educational vector art."}
 ${customInstructions ? `ADDITIONAL INSTRUCTIONS: ${customInstructions}` : ""}
 Return ONLY valid JSON in this format:
@@ -13792,6 +13925,9 @@ Return ONLY valid JSON in this format:
     {
       "id": "unique_id",
       "role": "before" | "after" | "step" | "left" | "right" | "",
+      "type": "image" | "process_animation",
+      "motionPrompt": "Short phrase describing looping motion — REQUIRED only when type is process_animation",
+      "frameCount": 6,
             "title": "Short topic-specific panel header (2-4 words, e.g. Awake Brain, Sleeping Brain)",
       "imagenPrompt": "Detailed prompt for Imagen. Educational vector art, white background, no text.",
       "caption": "Brief descriptive caption for below the image",
@@ -13800,7 +13936,8 @@ Return ONLY valid JSON in this format:
       ]
     }
   ]
-}`;
+}
+Notes on the schema: "type" defaults to "image" if omitted — only specify it as "process_animation" when the panel needs to animate per the ANIMATION rule above. "motionPrompt" is REQUIRED and "frameCount" is OPTIONAL (defaults to 6, max 12) when type is "process_animation"; both can be omitted otherwise.`;
       const result = await callGemini(planPrompt, true);
       try {
           const plan = JSON.parse(cleanJson(result));
@@ -13814,12 +13951,94 @@ Return ONLY valid JSON in this format:
           return { layout: 'single', title: concept, panels: [{ id: 'single', role: '', imagenPrompt: `Educational diagram of "${concept}". Clear vector art, white background, no text.`, caption: concept, labels: [] }] };
       }
   };
+  // Frame-reference animation pipeline for "process_animation" panels.
+  // Anchors visual identity by chaining image-to-image edits off the previous
+  // frame instead of regenerating each frame text-to-image (which drifts).
+  // Failure modes degrade gracefully: a failed edit holds the previous frame
+  // (GIF pauses briefly), and a missing motionPrompt downgrades to static.
+  const generateAnimatedPanel = async (panel, targetWidth = 400, targetQual = 0.8, artStyle = "") => {
+      const frameCount = Math.max(2, Math.min(12, panel.frameCount || 6));
+      const motionPrompt = (panel.motionPrompt || '').trim();
+      const styleSuffix = artStyle ? `. Style: ${artStyle}.` : "";
+      if (!motionPrompt) {
+          warnLog('[ArtDirector] process_animation panel missing motionPrompt — falling back to static');
+          const fallback = await callImagen(panel.imagenPrompt + styleSuffix, targetWidth, targetQual);
+          return { ...panel, imageUrl: fallback };
+      }
+      // Frame 0: anchor frame via text-to-image
+      const frame0 = await callImagen(panel.imagenPrompt + styleSuffix, targetWidth, targetQual);
+      if (!frame0) throw new Error('frame 0 generation failed');
+      // Storyboard the remaining steps so each frame is one INCREMENTAL change
+      const storyboardPrompt =
+          'You are storyboarding a looping ' + frameCount + '-frame educational animation.\n\n' +
+          'Subject: "' + panel.imagenPrompt + '"\n' +
+          'Motion: "' + motionPrompt + '"\n\n' +
+          'Frame 1 is the starting state (already drawn). Plan frames 2 through ' + frameCount + ' as INCREMENTAL changes from the previous frame.\n' +
+          'Rules:\n' +
+          '1. Each step is ONE small, specific visual change (e.g. "the cell begins dividing", "nuclei split apart").\n' +
+          '2. Subject identity must stay IDENTICAL — same style, same colors, same anatomy.\n' +
+          '3. The animation must LOOP — frame ' + frameCount + ' should flow naturally back into frame 1.\n' +
+          '4. No camera moves, no style changes — only the motion itself.\n\n' +
+          'Return ONLY a JSON array of exactly ' + (frameCount - 1) + ' strings, one per step.';
+      let steps;
+      try {
+          const raw = await callGemini(storyboardPrompt, true);
+          let parsed = raw;
+          if (typeof raw === 'string') {
+              parsed = JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim());
+          }
+          if (Array.isArray(parsed)) {
+              steps = parsed;
+          } else if (parsed && typeof parsed === 'object') {
+              steps = parsed.frames || parsed.steps || Object.values(parsed).find((v) => Array.isArray(v));
+          }
+          if (!Array.isArray(steps) || steps.length === 0) throw new Error('storyboard not an array');
+      } catch (e) {
+          warnLog('[ArtDirector] Storyboard parse failed — using uniform motion prompt', e);
+          steps = new Array(frameCount - 1).fill(motionPrompt);
+      }
+      steps = steps.slice(0, frameCount - 1);
+      while (steps.length < frameCount - 1) steps.push(steps[steps.length - 1] || motionPrompt);
+      // Generate frames 1..N-1 sequentially — each anchored to the previous frame
+      const frames = [frame0];
+      let prevFrame = frame0;
+      for (let i = 0; i < steps.length; i++) {
+          try {
+              const editPrompt = 'Keep the subject IDENTICAL in style, anatomy, and color. Only change: ' + steps[i] + '. Educational illustration, no text, no labels.';
+              const prevB64 = prevFrame.split(',')[1];
+              const next = await callGeminiImageEdit(editPrompt, prevB64, targetWidth, targetQual);
+              if (next) {
+                  frames.push(next);
+                  prevFrame = next;
+              } else {
+                  // Edit returned null — hold previous frame so the GIF still loops
+                  frames.push(prevFrame);
+              }
+          } catch (e) {
+              warnLog('[ArtDirector] Frame ' + (i + 1) + ' edit failed, holding previous:', e);
+              frames.push(prevFrame);
+          }
+      }
+      const gifUrl = await encodeFramesToGif(frames, targetWidth, targetWidth, panel.fps || 3);
+      return { ...panel, imageUrl: gifUrl };
+  };
   const executeVisualPlan = async (plan, targetWidth = 400, targetQual = 0.8, artStyle = "") => {
       const panels = [...plan.panels];
       console.log('[ArtDirector] Executing plan:', plan.layout, panels.length, 'panels');
       const imagePromises = panels.map(async (panel, idx) => {
           try {
               setGenerationStep(`Generating panel ${idx + 1}/${panels.length}...`);
+              // Process-animation panels: text-to-image anchor, then image-to-image
+              // chain, then encode to GIF. Falls back to static path on failure so
+              // a single broken animation doesn't take down the whole visual plan.
+              if (panel.type === 'process_animation') {
+                  try {
+                      return await generateAnimatedPanel(panel, targetWidth, targetQual, artStyle);
+                  } catch (animErr) {
+                      warnLog(`[ArtDirector] process_animation panel ${idx} failed, falling back to static:`, animErr);
+                      // fall through to static path
+                  }
+              }
               let imageUrl = await callImagen(panel.imagenPrompt + (artStyle ? `. Style: ${artStyle}.` : ""), targetWidth, targetQual);
               if (imageUrl) {
                   try {
