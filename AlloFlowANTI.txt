@@ -3331,13 +3331,38 @@ const AlloFlowContent = () => {
     '_final': 'tour-tool-fullpack',
   };
   useEffect(() => {
-    const steps = [10, 25, 45, 60, 75, 85, 95, 100];
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i < steps.length) { setLoadingProgress(steps[i]); i++; }
-      else { clearInterval(interval); setTimeout(() => setIsAppReady(true), 400); }
-    }, 350);
-    return () => clearInterval(interval);
+    // Splash screen dismiss: wait for BOTH (a) the first-paint critical modules
+    // to be loaded AND (b) a minimum dwell time so the splash doesn't flicker
+    // on cached reloads. Previously this was a hard 3.2s timer that didn't
+    // verify modules were actually ready — on slow networks the splash
+    // dismissed too early; on fast networks it wasted time.
+    const startTs = Date.now();
+    const MIN_DWELL_MS = 1200;   // minimum splash visibility (UX feel)
+    const MAX_WAIT_MS = 15000;   // hard ceiling so we never hang forever
+    const VISUAL_STEPS = [10, 25, 45, 60, 75, 85, 95, 100];
+    let visualStep = 0;
+    // Animate the progress bar at a steady cadence regardless of actual load.
+    const visualInterval = setInterval(() => {
+      if (visualStep < VISUAL_STEPS.length) { setLoadingProgress(VISUAL_STEPS[visualStep]); visualStep++; }
+    }, 200);
+    // Poll readiness: LaunchPadView is the first screen the user sees after
+    // splash dismisses, so it must be ready. AlloIcons is now populated
+    // synchronously during render, so it's a fast no-op check.
+    const readinessInterval = setInterval(() => {
+      const elapsed = Date.now() - startTs;
+      const launchPadReady = !!(window.AlloModules && window.AlloModules.LaunchPadView);
+      const iconsReady = !!window.AlloIcons;
+      const minDwellMet = elapsed >= MIN_DWELL_MS;
+      const hardTimeout = elapsed >= MAX_WAIT_MS;
+      if ((launchPadReady && iconsReady && minDwellMet) || hardTimeout) {
+        clearInterval(visualInterval);
+        clearInterval(readinessInterval);
+        setLoadingProgress(100);
+        // Brief settle delay so the 100% bar is visible before fade.
+        setTimeout(() => setIsAppReady(true), 250);
+      }
+    }, 100);
+    return () => { clearInterval(visualInterval); clearInterval(readinessInterval); };
   }, []);
   const [canPlayBotIntro, setCanPlayBotIntro] = useState(false);
   useEffect(() => {
@@ -4120,7 +4145,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'f0a51d5f';
+    var pluginCdnVersion = 'b2520270';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
