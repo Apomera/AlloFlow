@@ -134,9 +134,46 @@ Two commits (`531767f8`, `21489e3d`) — total ~60k cleanup operations:
   alignment, lesson_plan, faq, input_panel) now in clean Polish.
 - Polish Cyrillic chars: 69,824 → 61,314 (-12% this pass; -71% from
   original 214,954). Tour entries were the most-contaminated keys, now
-  fully resolved. Remaining 4,684 contaminated keys are short body text
-  (a11y_lab simulators, adventure.persona_*, etc.) — diminishing returns
-  but still cleanable per-key.
+  fully resolved.
+
+### Polish heavy body text — 250 short-form keys hand-translated (5 rounds)
+- Commits `9e99dc02` (round 1, 50 keys), `b5cd7c95` (round 2, 47 keys),
+  `cfe0bcc1` (round 3, 46 keys), `ae47a795` (round 4, 54 keys),
+  `dde4d615` (round 5, 53 keys).
+- Coverage by feature cluster:
+  - a11y_lab.* — simulators, audit rules, screenreader, keyboard, preview
+  - adventure.persona_* — all persona widgets (panel, card, response,
+    custom instructions, reflection, hints, save, generate, etc.)
+  - adventure.roster_* — roster panel, sync, batch generate, timeline,
+    bridge send, error fallback, source verify
+  - adventure.shop_items.*, adventure.escape_room_*, adventure.bingo_*,
+    adventure.diff/story/social_story mode descriptions
+  - pdf_audit.* — ada, knowbility, fidelity, integrity, wcag_report,
+    preview, brand, multi_session, live_chunk, score, style, tagged_pdf,
+    pdf_from_html, extracted_images, diff, why_matters
+  - behavior_lens.* — hub (28 entries), ui (12 entries), ph (placeholders)
+  - help_mode.* — tool_wordsounds, tool_scaffolds, tool_lesson_plan,
+    header_ai_backend, deactivate, global_mute_toggle, header_analytics,
+    glossary_standard_flashcards, wizard_topic/tone/format/dok/lang_common
+  - quiz.* — help.tool_chat/udl/writing, help.sidebar_glossary/adventure/
+    brainstorm/faq, help.header_tools/utils, help.lesson_plan, style,
+    tour.glossary_settings
+  - stem.* — galaxy, periodic, decomposer, dissection, synth, tools_menu,
+    planet_view, rocks
+  - baking.* — leavening (yeast/soda/powder/peak), scaler, browning,
+    subtitle
+  - outline.* — story_map, plot_diagram, frayer_caption
+  - chat_guide, fluency_maze, anchor_chart, groups, large_file,
+    matching, language_selector, immersive, dashboard.class_notebook,
+    bot_events, progression, sidebar, educator_hub, history,
+    glossary.tier2, toasts, bridge, diff_view, timeline.modes, games,
+    launch_pad, tips, volume_builder, dbq
+- Polish Cyrillic: 61,314 → 47,667 chars (-22% across 5 rounds).
+- Contaminated keys: 4,684 → 4,434.
+- Cumulative from refinement session start: -46% Cyrillic; from
+  original (214,954): -78%.
+- Remaining ~140 contaminated keys have ≤40 cyr chars each (very short
+  body text); diminishing returns territory.
 
 
 
