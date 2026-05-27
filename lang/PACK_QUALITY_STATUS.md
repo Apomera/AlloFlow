@@ -84,6 +84,44 @@ new keys; only the low-resource PPS cluster has partial passthrough on
 the long-tail tooltips/confirms (which were never expected to be fully
 translated for these packs).
 
+## 2026-05-26 session 4 — REFINEMENT PASS (commits bffcf29f → 84c981f3)
+
+After completing the 260 new keys across all 56 packs, ran a refinement pass
+on the three documented long-tail issues:
+
+### Polish — Russian→Polish substitution dictionary expanded
+- Applied ~4,800 word-level Russian→Polish substitutions (commit `bffcf29f`)
+- Cyrillic char count: 87,537 → 69,824 (-20% this pass, -67% from original 214,954)
+- Contaminated keys: 4,945 → 4,707
+- Remaining contamination: mostly 1-3 char morphological fragments embedded
+  inside Polish words (e.g. residual й/ы/ам suffixes). Diminishing returns
+  for dictionary-based cleanup; further work would require per-key rewrites.
+
+### Pashto / Urdu / Dari / Farsi — Arabic chain deep cleanup
+Two commits (`531767f8`, `21489e3d`) — total ~60k cleanup operations:
+- Round 1: targeted Arabic→target dictionaries + corrupted-hybrid fixes
+  (al-X → X, e.g. الطخیرب → فیلد). ~22k replacements across 4 packs.
+- Round 2: word-boundary-safe ال prefix stripping + reversal of two
+  prior-session corruption patterns:
+  - "تم" had been over-replaced with "انجام شد", breaking words like
+    سیستم → سیسانجام شد. Reversed 600+ occurrences.
+  - "لا" had been over-replaced with "نه", breaking words like
+    کلاس → کنهس, استدلال → استدنهل. Reversed throughout.
+  - ~38k word-bounded replacements across 4 packs.
+- ال- prefix counts: Farsi 11,947 → 1,534 (-87%), Urdu 17,341 → 2,567
+  (-85%), Pashto 16,187 → 2,441 (-85%).
+- Spot-checked tour.adventure_text, tour.quiz_text — now reading as
+  coherent Persian/Urdu/Pashto.
+
+### Russian / Polish help_mode — 97 templates hand-translated
+- Commit `84c981f3` — 97 high-visibility help_mode tooltips written
+  from scratch for both Polish AND Russian.
+- Coverage: ALL adventure_*, quiz_*, simplified_* keys + key dashboard,
+  settings, glossary widgets.
+- Unique value counts: Polish 254 → 341 (+34%), Russian 257 → 344 (+34%).
+- Remaining template clusters (each 16-21 reuses): dashboard widgets,
+  glossary widgets, settings widgets — lower priority since less visible.
+
 
 
 ## Recent UI string additions — translation coverage
