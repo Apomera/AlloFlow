@@ -267,7 +267,9 @@
       "aria-label": speakerLabel + ' said: ' + msg.text.substring(0, 100)
     }, /*#__PURE__*/React.createElement("div", {
       className: `max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border ${isUser ? 'bg-indigo-100 text-indigo-900 border-indigo-200 rounded-br-none' : isCharB ? 'bg-rose-50 text-slate-800 border-rose-200 rounded-br-none mr-2' : 'bg-white text-slate-700 border-slate-200 rounded-bl-none ml-2'}`,
-      "aria-label": !isUser ? 'Message from ' + speakerLabel + '. Click any sentence to hear it read aloud.' : undefined
+      "aria-label": !isUser ? t('a11y.message_speaker_read_aloud', {
+        name: speakerLabel
+      }) || 'Message from ' + speakerLabel + '. Click any sentence to hear it read aloud.' : undefined
     }, isUser ? msg.text.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1') : (() => {
       const paragraphs = msg.text.split(/\n{2,}/);
       let sentenceCounter = 0;
@@ -302,7 +304,9 @@
             tabIndex: 0,
             className: `transition-colors duration-200 rounded px-1 py-0.5 cursor-pointer hover:bg-yellow-100 ${isActive ? 'bg-yellow-300 text-black shadow-sm' : ''} ${isHeader ? 'font-bold block mt-1' : ''}`,
             title: t('common.click_to_read'),
-            "aria-label": `Sentence ${currentGlobalIdx + 1}. Click to read aloud.`
+            "aria-label": t('a11y.sentence_read_aloud', {
+              num: currentGlobalIdx + 1
+            }) || `Sentence ${currentGlobalIdx + 1}. Click to read aloud.`
           }, formatInteractiveText(cleanText.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')), " ");
         }));
       });

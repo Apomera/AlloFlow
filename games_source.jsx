@@ -79,17 +79,24 @@ const GameThemeToggle = () => {
   );
 };
 
-const SpeakButton = ({ text, size = 13, className = "" }) => (
-  <button
-    onClick={(e) => { e.stopPropagation(); e.preventDefault(); speakText(text); }}
-    className={`inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-600 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${className}`}
-    aria-label={`Read aloud: ${text || ""}`}
-    title="Read aloud"
-    type="button"
-  >
-    <Volume2 size={size} />
-  </button>
-);
+const SpeakButton = ({ text, size = 13, className = "" }) => {
+  const { t } = useContext(LanguageContext);
+  // Falls back to the English template when the locale string is missing so
+  // screen-reader users on packs that haven't translated this key still get
+  // intelligible speech (just in English) instead of the bare key name.
+  const ariaTemplate = t('a11y.read_aloud_with_text', { text: text || '' }) || `Read aloud: ${text || ''}`;
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); e.preventDefault(); speakText(text); }}
+      className={`inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-600 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${className}`}
+      aria-label={ariaTemplate}
+      title={t('a11y.read_aloud') || 'Read aloud'}
+      type="button"
+    >
+      <Volume2 size={size} />
+    </button>
+  );
+};
 
 // ── Post-game review screen ──
 const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t }) => {

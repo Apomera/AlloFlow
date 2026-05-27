@@ -2112,10 +2112,10 @@ Return ONLY JSON:
         const safeThought = panel.thought ? escapeHtml(panel.thought) : '';
         const safeSfx = panel.sfx ? escapeHtml(panel.sfx) : '';
         const sticker = panelStickers[p.id] || '';
-        chaptersHtml += `<article class="panel" aria-label="Comic panel ${idx + 1}">`;
+        chaptersHtml += `<article class="panel" aria-label={t("a11y.comic_panel", { n: idx + 1 })}>`;
         if (img) chaptersHtml += `<div class="panel-img-wrap">`;
         if (img) chaptersHtml += `<img src="${img}" class="panel-img" loading="lazy" alt="Comic panel ${idx + 1} illustration" />`;
-        if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label="Sound effect: ${safeSfx}">${safeSfx}</span>`;
+        if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label={t("a11y.sound_effect", { fx: safeSfx })}>${safeSfx}</span>`;
         if (img && sticker) chaptersHtml += `<span class="panel-sticker" aria-hidden="true">${escapeHtml(sticker)}</span>`;
         if (img) chaptersHtml += `</div>`;
         if (safeSpeech) {
@@ -2128,15 +2128,15 @@ Return ONLY JSON:
         chaptersHtml += `<div class="speech-bubble panel-caption">${safeText.length > 200 ? safeText.substring(0, 200) + '...' : safeText.replace(/\n/g, '<br/>')}</div>`;
         chaptersHtml += `</article>`;
       } else {
-        chaptersHtml += `<article class="chapter" aria-label="Paragraph ${idx + 1}">`;
+        chaptersHtml += `<article class="chapter" aria-label={t("a11y.paragraph_n", { n: idx + 1 })}>`;
         if (img) chaptersHtml += `<img src="${img}" class="scene-img" loading="lazy" alt="Illustration for paragraph ${idx + 1}" />`;
         const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label;
         if (beatLabel && p.plotBeat) {
-          chaptersHtml += `<div class="beat-label" aria-label="Narrative beat: ${escapeHtml(beatLabel)}">${escapeHtml(beatLabel)}</div>`;
+          chaptersHtml += `<div class="beat-label" aria-label={t("a11y.narrative_beat", { label: escapeHtml(beatLabel) })}>${escapeHtml(beatLabel)}</div>`;
         }
         chaptersHtml += `<p class="story-text">${safeText.replace(/\n/g, '<br/>')}</p>`;
         if (audio?.studentAudioBase64) {
-          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label="Audio narration for paragraph ${idx + 1}"></audio>`;
+          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label={t("a11y.audio_narration_paragraph", { n: idx + 1 })}></audio>`;
         }
         chaptersHtml += `</article>`;
         if (idx < paragraphs.length - 1) chaptersHtml += `<div class="separator" aria-hidden="true">&mdash;</div>`;
@@ -2155,7 +2155,7 @@ Return ONLY JSON:
     if (gradingResult) {
       feedbackHtml = `<div class="feedback-section">
         <h2 id="feedback-heading">Teacher Feedback</h2>
-        <div class="score-badge" aria-label="Score: ${escapeHtml(gradingResult.totalScore || '')}">${escapeHtml(gradingResult.totalScore || '')}</div>
+        <div class="score-badge" aria-label={t("a11y.score_n", { score: escapeHtml(gradingResult.totalScore || '') })}>${escapeHtml(gradingResult.totalScore || '')}</div>
         <div class="glow-grow">
           <div class="glow"><strong>✨ Glow:</strong> ${escapeHtml(gradingResult.feedback?.glow || '')}</div>
           <div class="grow"><strong>🌱 Grow:</strong> ${escapeHtml(gradingResult.feedback?.grow || '')}</div>
@@ -2225,7 +2225,7 @@ ${chaptersHtml}
 <aside class="vocab-aside" aria-labelledby="vocab-heading">
 ${vocabHtml}
 </aside>
-${feedbackHtml ? `<aside class="feedback-aside" aria-label={t("a11y.teacher_feedback")}>${feedbackHtml}</aside>` : ''}
+${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${feedbackHtml}</aside>` : ''}
 <footer class="colophon" role="contentinfo">Created with StoryForge · AlloFlow</footer>
 </body></html>`;
 
@@ -2261,7 +2261,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label={t("a11y.teacher_feed
       const img = illustrations[p.id]?.imageUrl;
       const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label;
       const beatHtml = (beatLabel && p.plotBeat)
-        ? `<div class="beat-label" aria-label="Narrative beat: ${escapeHtml(beatLabel)}">${escapeHtml(beatLabel)}</div>`
+        ? `<div class="beat-label" aria-label={t("a11y.narrative_beat", { label: escapeHtml(beatLabel) })}>${escapeHtml(beatLabel)}</div>`
         : '';
       slidesHtml += `<div class="slide">
         ${img ? `<img src="${img}" class="slide-img" alt="Scene ${idx + 1}" />` : ''}
@@ -2551,7 +2551,7 @@ show();
             <p className="text-sm text-slate-600 mb-4">Your story progress hasn't been exported or saved. Are you sure you want to close?</p>
             <div className="flex gap-3 justify-center">
               <button data-sf-focusable onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.keep_working")}</button>
-              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language }; localStorage.setItem(SAVE_KEY, JSON.stringify(draft)); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">Save Draft & Close</button>
+              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language }; localStorage.setItem(SAVE_KEY, JSON.stringify(draft)); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">{t("ui_common.save_draft_close")}</button>
               <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">{t("ui_common.close_anyway")}</button>
             </div>
           </div>
@@ -2563,7 +2563,7 @@ show();
         <div className="flex items-center gap-3">
           <BookOpen size={24} />
           <div>
-            <h2 className="text-xl font-black">StoryForge</h2>
+            <h2 className="text-xl font-black">{t("headings.story_forge")}</h2>
             <p className="text-rose-200 text-xs font-medium">{t("ui_common.creative_writing_studio")}</p>
           </div>
         </div>
@@ -2688,7 +2688,7 @@ show();
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Pen Name</label>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{t("labels.pen_name")}</label>
                     <div className="w-full text-sm p-2.5 border border-slate-400 rounded-lg bg-slate-50 font-bold text-slate-700 flex items-center gap-2">
                       <span className="text-base">✍️</span> {authorName}
                     </div>
@@ -2739,15 +2739,15 @@ show();
                   <input
                     type="text" value={newTerm} onChange={(e) => setNewTerm(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && addVocabTerm()}
-                    placeholder="Add a term..."
-                    aria-label="Vocabulary term"
+                    placeholder={t("placeholders.add_a_term")}
+                    aria-label={t("a11y.vocabulary_term")}
                     className="flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
                   />
                   <input
                     type="text" value={newDef} onChange={(e) => setNewDef(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && addVocabTerm()}
-                    placeholder="Definition (optional)"
-                    aria-label="Term definition"
+                    placeholder={t("placeholders.definition_optional")}
+                    aria-label={t("a11y.term_definition")}
                     className="flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
                   />
                   <button onClick={addVocabTerm} disabled={!newTerm.trim()} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 disabled:opacity-50 transition-colors flex items-center gap-1">
@@ -2798,8 +2798,8 @@ show();
                 {artStyle === 'custom' && (
                   <input
                     type="text" value={customArtStyle} onChange={(e) => setCustomArtStyle(e.target.value)}
-                    placeholder="Describe your custom art style..."
-                    aria-label="Custom art style description"
+                    placeholder={t("placeholders.custom_art_style")}
+                    aria-label={t("a11y.custom_art_style")}
                     className="mt-3 w-full text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
                   />
                 )}
@@ -2826,8 +2826,8 @@ show();
                 {language === 'other' && (
                   <input
                     type="text" value={customLanguage} onChange={(e) => setCustomLanguage(e.target.value)}
-                    placeholder="Type your language (e.g., Swahili, Haitian Creole, Hmong...)"
-                    aria-label="Custom writing language"
+                    placeholder={t("placeholders.type_your_language")}
+                    aria-label={t("a11y.custom_writing_language")}
                     className="mt-3 w-full text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-teal-300 outline-none"
                   />
                 )}
@@ -2842,7 +2842,7 @@ show();
                 <textarea
                   value={storyPrompt} onChange={(e) => setStoryPrompt(e.target.value)}
                   placeholder="Give your students a theme or starting scenario... e.g., 'Write about a scientist who discovers something unexpected'"
-                  aria-label="Story prompt"
+                  aria-label={t("a11y.story_prompt")}
                   className="w-full text-sm p-3 border border-slate-400 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none resize-none h-20"
                 />
 
@@ -2878,7 +2878,7 @@ show();
                   value={rubricText} onChange={(e) => setRubricText(e.target.value)}
                   placeholder={"| Criteria | 1 - Beginning | 3 - Developing | 5 - Exemplary |\n|----------|---------------|----------------|---------------|\n| Vocabulary | Few terms used | Some terms used | All terms used correctly |"}
                   className="w-full text-xs p-3 border border-slate-400 rounded-lg focus:ring-2 focus:ring-emerald-300 outline-none resize-none h-24 font-mono"
-                  aria-label="Custom grading rubric"
+                  aria-label={t("a11y.custom_grading_rubric")}
                 />
               </div>
 
@@ -2904,7 +2904,7 @@ show();
                   {timerActive ? (
                     <div className="flex items-center gap-2 bg-rose-100 border border-rose-300 rounded-full px-3 py-1">
                       <span className={`text-xs font-black tabular-nums ${timerDuration - timerSeconds <= 30 ? 'text-red-600 animate-pulse' : 'text-rose-700'}`}>{formatTime(timerSeconds)}</span>
-                      <button onClick={() => { setTimerActive(false); clearTimeout(timerRef.current); }} className="text-[11px] font-bold text-rose-500 hover:text-rose-700">Stop</button>
+                      <button onClick={() => { setTimerActive(false); clearTimeout(timerRef.current); }} className="text-[11px] font-bold text-rose-500 hover:text-rose-700">{t("ui_common.stop")}</button>
                     </div>
                   ) : (
                     <div className="flex bg-slate-100 rounded-full p-0.5">
@@ -3076,8 +3076,8 @@ show();
                       <span className="text-xs font-bold text-slate-600">Paragraph {idx + 1}</span>
                       {/* Reorder buttons */}
                       <div className="flex gap-0.5">
-                        <button onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph up" title={t("ui_common.move_up")}>▲</button>
-                        <button onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph down" title={t("ui_common.move_down")}>▼</button>
+                        <button onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={t("a11y.move_paragraph_up")} title={t("ui_common.move_up")}>▲</button>
+                        <button onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={t("a11y.move_paragraph_down")} title={t("ui_common.move_down")}>▼</button>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -3096,7 +3096,7 @@ show();
                         onClick={() => helpMeWrite(idx)}
                         disabled={isProcessing}
                         className="text-amber-500 hover:text-amber-700 text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200/50 transition-colors disabled:opacity-40"
-                        aria-label="Get writing suggestions"
+                        aria-label={t("a11y.get_writing_suggestions")}
                       >
                         <Sparkles size={10} /> Help Me
                       </button>
@@ -3146,7 +3146,7 @@ show();
                           </div>
                         ))}
                       </div>
-                      <button onClick={() => { setHelpMeParagraphIdx(-1); setHelpMeResult(null); }} className="mt-2 text-[11px] text-amber-500 hover:text-amber-700 font-bold">Dismiss</button>
+                      <button onClick={() => { setHelpMeParagraphIdx(-1); setHelpMeResult(null); }} className="mt-2 text-[11px] text-amber-500 hover:text-amber-700 font-bold">{t("ui_common.dismiss")}</button>
                     </div>
                   )}
                   {layoutMode === 'comic' ? (
@@ -3162,7 +3162,7 @@ show();
                           onChange={(e) => updateParagraph(idx, e.target.value)}
                           className="w-full p-2.5 text-xs resize-none outline-none border-2 border-amber-200 rounded-lg bg-amber-50 focus:border-amber-400 transition-colors italic"
                           style={{ minHeight: '50px' }}
-                          placeholder="What's happening in this panel? (narrator voice)"
+                          placeholder={t("placeholders.panel_narrator")}
                           aria-label={`Panel ${idx + 1} narration`}
                         />
                       </div>
@@ -3177,7 +3177,7 @@ show();
                             value={(panelDialogue[p.id] || {}).speaker || ''}
                             onChange={(e) => updatePanelDialogue(p.id, 'speaker', e.target.value)}
                             className="w-20 p-1.5 text-[11px] border border-blue-200 rounded-lg outline-none focus:border-blue-400 font-bold text-blue-700"
-                            placeholder="Who?"
+                            placeholder={t("placeholders.who_speaker")}
                             aria-label={`Panel ${idx + 1} speaker name`}
                           />
                           <textarea
@@ -3200,7 +3200,7 @@ show();
                           onChange={(e) => updatePanelDialogue(p.id, 'thought', e.target.value)}
                           className="w-full p-2 text-xs resize-none outline-none border-2 border-purple-200 rounded-xl bg-purple-50/30 focus:border-purple-400 transition-colors italic"
                           style={{ minHeight: '30px', borderRadius: '20px', borderStyle: 'dashed' }}
-                          placeholder="What the character is thinking..."
+                          placeholder={t("placeholders.character_thinking")}
                           aria-label={`Panel ${idx + 1} thought`}
                         />
                       </div>
@@ -3212,7 +3212,7 @@ show();
                           value={(panelDialogue[p.id] || {}).sfx || ''}
                           onChange={(e) => updatePanelDialogue(p.id, 'sfx', e.target.value)}
                           className="flex-1 p-1.5 text-xs border border-red-200 rounded-lg outline-none focus:border-red-400 font-black text-red-600 uppercase"
-                          placeholder="BOOM! CRASH! WHOOSH!"
+                          placeholder={t("placeholders.sound_effect_example")}
                           aria-label={`Panel ${idx + 1} sound effect`}
                         />
                       </div>
@@ -3300,7 +3300,7 @@ show();
                       </div>
                       {hwResult.penmanship.strengths && <p className="text-xs text-green-700 font-medium mb-1">💪 {hwResult.penmanship.strengths}</p>}
                       {hwResult.penmanship.tips && <p className={`text-xs font-medium ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>💡 {hwResult.penmanship.tips}</p>}
-                      <button onClick={() => setHwResult(null)} className="text-[11px] text-slate-500 hover:text-slate-600 font-bold mt-1" aria-label="Dismiss penmanship feedback">Dismiss</button>
+                      <button onClick={() => setHwResult(null)} className="text-[11px] text-slate-500 hover:text-slate-600 font-bold mt-1" aria-label={t("a11y.dismiss_penmanship_feedback")}>{t("ui_common.dismiss")}</button>
                     </div>
                   )}
                   {/* Per-paragraph strength indicator + vocab reminder */}
@@ -3425,7 +3425,7 @@ show();
                       <RefreshCw size={32} className="text-purple-700 animate-spin" />
                     </div>
                   ) : coverArt && (
-                    <img src={coverArt} alt="Book cover" className="max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" />
+                    <img src={coverArt} alt={t("alts.book_cover")} className="max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" />
                   )}
                 </div>
               )}
@@ -3441,7 +3441,7 @@ show();
                     value={promptPreview.prompt}
                     onChange={(e) => setPromptPreview(prev => ({ ...prev, prompt: e.target.value }))}
                     className="w-full text-sm p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none resize-none h-20"
-                    aria-label="Image generation prompt"
+                    aria-label={t("a11y.image_gen_prompt")}
                   />
                   <div className="flex gap-2 mt-3">
                     <button onClick={() => confirmIllustration()} className="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors flex items-center gap-2">
@@ -3480,8 +3480,8 @@ show();
                               <button
                                 onClick={() => undoIllustration(p.id)}
                                 className="p-1.5 bg-white/90 rounded-full shadow-md hover:bg-amber-100"
-                                title="Undo — restore previous illustration"
-                                aria-label="Undo illustration"
+                                title={t("tooltips.undo_illustration")}
+                                aria-label={t("a11y.undo_illustration")}
                               >
                                 <ArrowLeft size={12} className="text-amber-600" />
                               </button>
@@ -3490,7 +3490,7 @@ show();
                               onClick={() => setImageEditState({ paragraphId: p.id, prompt: '' })}
                               className="p-1.5 bg-white/90 rounded-full shadow-md hover:bg-teal-100"
                               title={t("ui_common.edit_illustration")}
-                              aria-label="Edit illustration"
+                              aria-label={t("a11y.edit_illustration")}
                             >
                               <Sparkles size={12} className="text-teal-600" />
                             </button>
@@ -3499,7 +3499,7 @@ show();
                               disabled={isProcessing}
                               className="p-1.5 bg-white/90 rounded-full shadow-md hover:bg-purple-100"
                               title={t("ui_common.regenerate_illustration")}
-                              aria-label="Regenerate illustration"
+                              aria-label={t("a11y.regenerate_illustration")}
                             >
                               <RefreshCw size={12} className="text-purple-600" />
                             </button>
@@ -3514,12 +3514,12 @@ show();
                                 onKeyDown={(e) => { if (e.key === 'Enter' && imageEditState.prompt.trim()) refineIllustration(p.id, imageEditState.prompt); }}
                                 placeholder="e.g., make sky purple, add a dog..."
                                 className="w-full text-[11px] p-1.5 border border-purple-200 rounded-lg outline-none focus:ring-1 focus:ring-purple-300"
-                                aria-label="Describe illustration changes"
+                                aria-label={t("a11y.describe_illustration_changes")}
                                 autoFocus
                               />
                               <div className="flex gap-1 mt-1">
-                                <button onClick={() => { if (imageEditState.prompt.trim()) refineIllustration(p.id, imageEditState.prompt); }} disabled={!imageEditState.prompt.trim()} className="flex-1 text-[11px] font-bold bg-teal-600 text-white rounded py-1 hover:bg-teal-700 disabled:opacity-40">Apply</button>
-                                <button onClick={() => setImageEditState(null)} className="text-[11px] font-bold bg-slate-200 text-slate-600 rounded py-1 px-2 hover:bg-slate-300">Cancel</button>
+                                <button onClick={() => { if (imageEditState.prompt.trim()) refineIllustration(p.id, imageEditState.prompt); }} disabled={!imageEditState.prompt.trim()} className="flex-1 text-[11px] font-bold bg-teal-600 text-white rounded py-1 hover:bg-teal-700 disabled:opacity-40">{t("ui_common.apply")}</button>
+                                <button onClick={() => setImageEditState(null)} className="text-[11px] font-bold bg-slate-200 text-slate-600 rounded py-1 px-2 hover:bg-slate-300">{t("ui_common.cancel")}</button>
                               </div>
                             </div>
                           )}
@@ -3567,7 +3567,7 @@ show();
             <div className={`space-y-4 ${animClass}`}>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-800">Narrate Your Story</h3>
+                  <h3 className="text-2xl font-black text-slate-800">{t("headings.narrate_story")}</h3>
                   <p className="text-slate-600 text-sm mt-1">AI reads your story aloud — or record your own voice</p>
                 </div>
                 <div className="flex gap-2 items-center">
@@ -3663,7 +3663,7 @@ show();
                             className={`text-xs font-bold flex items-center gap-1 transition-colors ${
                               fluencyReadingId === p.id && fluencyRecording ? 'text-orange-600 animate-pulse' : 'text-teal-500 hover:text-teal-700'
                             }`}
-                            aria-label={fluencyReadingId === p.id ? 'Stop fluency reading' : 'Read aloud for fluency practice'}
+                            aria-label={fluencyReadingId === p.id ? (t('a11y.stop_fluency_reading') || 'Stop fluency reading') : (t('a11y.read_aloud_fluency_practice') || 'Read aloud for fluency practice')}
                           >
                             <BookOpen size={12} /> {fluencyReadingId === p.id && fluencyRecording ? 'Stop Reading' : '📖 Read Aloud'}
                           </button>
@@ -3750,7 +3750,7 @@ show();
                         {fluencyResult.feedback && (
                           <div className="mt-2 text-xs text-teal-800 bg-white rounded-lg p-2 border border-teal-200">{fluencyResult.feedback}</div>
                         )}
-                        <button onClick={() => setFluencyResult(null)} className="mt-2 text-[11px] text-slate-500 hover:text-slate-600 font-bold">Dismiss</button>
+                        <button onClick={() => setFluencyResult(null)} className="mt-2 text-[11px] text-slate-500 hover:text-slate-600 font-bold">{t("ui_common.dismiss")}</button>
                       </div>
                     )}
                   </div>
@@ -3764,37 +3764,37 @@ show();
             <div className={`space-y-6 ${animClass}`}>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-800">Review & Feedback</h3>
+                  <h3 className="text-2xl font-black text-slate-800">{t("headings.review_feedback")}</h3>
                   <p className="text-slate-600 text-sm mt-1">Draft #{draftCount} — Get AI feedback on your story</p>
                 </div>
                 <div className="flex gap-2 flex-wrap">
                   {!gradingResult && (
-                    <button onClick={checkSenses} disabled={sensesLoading || isProcessing} className="px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200" title="Check sensory imagery (sight, sound, smell, etc.)">
+                    <button onClick={checkSenses} disabled={sensesLoading || isProcessing} className="px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200" title={t("tooltips.check_sensory")}>
                       🌈 {sensesLoading ? 'Checking...' : 'Senses Check'}
                     </button>
                   )}
                   {!gradingResult && (
-                    <button onClick={findMentorStory} disabled={mentorLoading || isProcessing} className="px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200" title="Find a public-domain master story to study alongside yours">
+                    <button onClick={findMentorStory} disabled={mentorLoading || isProcessing} className="px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200" title={t("tooltips.find_mentor_story")}>
                       🎓 {mentorLoading ? 'Searching...' : (mentorMatch && !mentorMatch.error ? 'Find another' : 'Mentor Match')}
                     </button>
                   )}
                   {!gradingResult && (
-                    <button onClick={analyzeShowTell} disabled={showTellLoading || isProcessing} className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200" title="Find sentences that tell instead of show">
+                    <button onClick={analyzeShowTell} disabled={showTellLoading || isProcessing} className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200" title={t("tooltips.find_telling_sentences")}>
                       🎭 {showTellLoading ? 'Analyzing...' : 'Show vs Tell'}
                     </button>
                   )}
                   {!gradingResult && (
-                    <button onClick={analyzeCharacterArcs} disabled={arcLoading || isProcessing} className="px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200" title="Audit each character's arc: introduction, want, change, resolution">
+                    <button onClick={analyzeCharacterArcs} disabled={arcLoading || isProcessing} className="px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200" title={t("tooltips.audit_character_arc")}>
                       🎬 {arcLoading ? 'Analyzing...' : 'Character Arcs'}
                     </button>
                   )}
                   {!gradingResult && (
-                    <button onClick={analyzeDialogue} disabled={dialogueLoading || isProcessing} className="px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200" title="Tune up dialogue tag variety and speaker clarity">
+                    <button onClick={analyzeDialogue} disabled={dialogueLoading || isProcessing} className="px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200" title={t("tooltips.tune_dialogue")}>
                       💬 {dialogueLoading ? 'Analyzing...' : 'Dialogue Tune-Up'}
                     </button>
                   )}
                   {!gradingResult && helpersAvailableForPlan() && (
-                    <button onClick={synthesizeRevisionPlan} disabled={revisionPlanLoading || isProcessing} className="px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200" title="Synthesize the helpers above into a prioritized 3-task revision plan">
+                    <button onClick={synthesizeRevisionPlan} disabled={revisionPlanLoading || isProcessing} className="px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200" title={t("tooltips.synthesize_revision_plan")}>
                       🗺️ {revisionPlanLoading ? 'Synthesizing...' : 'Revision Plan'}
                     </button>
                   )}
@@ -3868,7 +3868,7 @@ show();
                 <div className="bg-white border-2 border-rose-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-rose-700 uppercase tracking-wider flex items-center gap-2">🌈 Senses & Imagery</h4>
-                    <button onClick={() => setSensesResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss senses result">Dismiss</button>
+                    <button onClick={() => setSensesResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_senses_result")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {(() => {
                     const counts = sensesResult.counts || {};
@@ -3906,10 +3906,10 @@ show();
 
               {/* ═══ Mentor Match Result ═══ */}
               {mentorMatch && (
-                <div role="region" aria-label="Mentor story and analysis" className="bg-white border-2 border-fuchsia-200 rounded-2xl p-5 shadow-sm">
+                <div role="region" aria-label={t("a11y.mentor_story_analysis")} className="bg-white border-2 border-fuchsia-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-fuchsia-700 uppercase tracking-wider flex items-center gap-2">🎓 Mentor Match</h4>
-                    <button onClick={() => setMentorMatch(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss mentor match">Dismiss</button>
+                    <button onClick={() => setMentorMatch(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_mentor_match")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {mentorMatch.error && (
                     <p className="text-xs text-red-600 italic">{mentorMatch.error}</p>
@@ -3970,7 +3970,7 @@ show();
                 <div className="bg-white border-2 border-emerald-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-2">🎭 Show vs Tell</h4>
-                    <button onClick={() => setShowTellResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss show vs tell result">Dismiss</button>
+                    <button onClick={() => setShowTellResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_show_vs_tell")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {showTellResult.summary && (
                     <p className="text-xs text-emerald-800 italic mb-3 leading-relaxed">{showTellResult.summary}</p>
@@ -4002,7 +4002,7 @@ show();
                 <div className="bg-white border-2 border-sky-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-sky-700 uppercase tracking-wider flex items-center gap-2">🎬 Character Arcs</h4>
-                    <button onClick={() => setArcReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss character arcs result">Dismiss</button>
+                    <button onClick={() => setArcReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_character_arcs")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {arcReport.summary && (
                     <p className="text-xs text-sky-800 italic mb-3 leading-relaxed">{arcReport.summary}</p>
@@ -4065,7 +4065,7 @@ show();
                 <div className="bg-white border-2 border-orange-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-orange-700 uppercase tracking-wider flex items-center gap-2">💬 Dialogue Tune-Up</h4>
-                    <button onClick={() => setDialogueReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss dialogue tune-up">Dismiss</button>
+                    <button onClick={() => setDialogueReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_dialogue_tuneup")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {dialogueReport.summary && (
                     <p className="text-xs text-orange-800 italic mb-3 leading-relaxed">{dialogueReport.summary}</p>
@@ -4130,14 +4130,14 @@ show();
                 <div className="bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-300 rounded-2xl p-5 shadow-md">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-base font-black text-purple-800 flex items-center gap-2">🗺️ Your Revision Plan</h4>
-                    <button onClick={() => setRevisionPlan(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss revision plan">Dismiss</button>
+                    <button onClick={() => setRevisionPlan(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_revision_plan")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {revisionPlan.encouragement && (
                     <div className="bg-white border border-green-200 rounded-xl p-3 mb-4 text-xs text-green-900 leading-relaxed">
                       ✨ {revisionPlan.encouragement}
                     </div>
                   )}
-                  <ol className="space-y-3" aria-label="Prioritized revision tasks">
+                  <ol className="space-y-3" aria-label={t("a11y.prioritized_revision_tasks")}>
                     {(revisionPlan.tasks || []).map((t, i) => (
                       <li key={i} className="bg-white border-2 border-purple-200 rounded-xl p-4">
                         <div className="flex items-start gap-3">
@@ -4164,7 +4164,7 @@ show();
               {/* Character Name Consistency */}
               {characterIssues.length > 0 && (
                 <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-4">
-                  <h4 className="text-sm font-bold text-orange-700 uppercase tracking-wider mb-2">Character Name Check</h4>
+                  <h4 className="text-sm font-bold text-orange-700 uppercase tracking-wider mb-2">{t("headings.character_name_check")}</h4>
                   <div className="space-y-1">
                     {characterIssues.map((issue, i) => (
                       <div key={i} className="text-xs text-orange-800">
@@ -4206,7 +4206,7 @@ show();
 
               {/* Writing Analytics */}
               <div className="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm">
-                <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">Writing Analytics</h4>
+                <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">{t("headings.writing_analytics")}</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   <div className="text-center p-3 bg-slate-50 rounded-xl">
                     <div className="text-2xl font-black text-slate-800">{totalWords}</div>
@@ -4267,7 +4267,7 @@ show();
               {/* Word Frequency Analysis */}
               {wordFrequency.length > 0 && (
                 <div className="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm">
-                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">Word Frequency</h4>
+                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">{t("headings.word_frequency")}</h4>
                   <div className="flex flex-wrap gap-2">
                     {wordFrequency.slice(0, 12).map(([word, count]) => (
                       <div key={word} className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 ${
@@ -4328,7 +4328,7 @@ show();
                   {gradingResult.scores && (
                     <div className="bg-white rounded-2xl border-2 border-slate-200 overflow-hidden">
                       <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                        <h4 className="text-sm font-bold text-slate-700">Score Breakdown</h4>
+                        <h4 className="text-sm font-bold text-slate-700">{t("headings.score_breakdown")}</h4>
                         {Object.keys(selfAssessment).length > 0 && (
                           <div className="text-[11px] text-slate-500 flex items-center gap-3">
                             <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-violet-400" /> You</span>
@@ -4353,9 +4353,9 @@ show();
                               </div>
                               {showCompare ? (
                                 <div className="flex items-center gap-2 shrink-0">
-                                  <div className="bg-violet-100 text-violet-800 px-2 py-0.5 rounded-full text-xs font-bold" title="Your self-rating">{selfScore}/5</div>
+                                  <div className="bg-violet-100 text-violet-800 px-2 py-0.5 rounded-full text-xs font-bold" title={t("tooltips.your_self_rating")}>{selfScore}/5</div>
                                   <span className="text-slate-500 text-xs">→</span>
-                                  <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold" title="AI score">{s.score}</div>
+                                  <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold" title={t("tooltips.ai_score")}>{s.score}</div>
                                   {Math.abs(delta) >= 1 && (
                                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${delta > 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`} title={delta > 0 ? 'AI rated higher than you did' : 'AI rated lower than you did'}>
                                       {delta > 0 ? '+' : ''}{delta.toFixed(1)}
@@ -4376,7 +4376,7 @@ show();
                   {gradingResult.vocabScores && (
                     <div className="bg-white rounded-2xl border-2 border-slate-200 overflow-hidden">
                       <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
-                        <h4 className="text-sm font-bold text-slate-700">Vocabulary Usage</h4>
+                        <h4 className="text-sm font-bold text-slate-700">{t("headings.vocab_usage")}</h4>
                       </div>
                       <div className="p-4 flex flex-wrap gap-2">
                         {gradingResult.vocabScores.map((vs, i) => (
@@ -4400,7 +4400,7 @@ show();
           {phase === 'export' && (
             <div className={`space-y-6 ${animClass}`}>
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-black text-slate-800">Your Storybook is Ready!</h3>
+                <h3 className="text-2xl font-black text-slate-800">{t("headings.storybook_ready")}</h3>
                 <p className="text-slate-600 text-sm mt-1">Preview your illustrated story and export it</p>
               </div>
 
@@ -4422,7 +4422,7 @@ show();
               {/* Preview */}
               <div className="bg-gradient-to-b from-amber-50 to-white border-2 border-amber-200 rounded-2xl overflow-hidden shadow-lg">
                 <div className="text-center p-8 border-b border-amber-200 bg-gradient-to-r from-amber-100/50 to-rose-100/50">
-                  {coverArt && <img src={coverArt} alt="Book cover" className="max-w-[200px] mx-auto rounded-xl shadow-lg mb-4 border-2 border-amber-200" />}
+                  {coverArt && <img src={coverArt} alt={t("alts.book_cover")} className="max-w-[200px] mx-auto rounded-xl shadow-lg mb-4 border-2 border-amber-200" />}
                   <h3 className="text-3xl font-black text-amber-900">{storyTitle || storyPrompt || sourceTopic || 'My Story'}</h3>
                   {authorName && <p className="text-amber-800 text-sm mt-1 font-bold">By {authorName}</p>}
                   <p className="text-amber-700 text-sm mt-1 italic">{GENRE_TEMPLATES[genre]?.label || 'Creative Writing'} · {vocabTerms.length} vocabulary terms</p>

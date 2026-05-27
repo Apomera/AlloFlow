@@ -641,8 +641,8 @@ const GlobalMuteButton = React.memo(({ className = '' }) => {
             onClick={toggle}
             className={`flex items-center gap-2 ${className} ${muted ? 'ring-2 ring-red-400 !bg-red-500 !text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]' : ''}`}
             data-help-key="global_mute_toggle"
-            title={muted ? 'Unmute All Audio' : 'Mute All Audio (Classroom Mode)'}
-            aria-label={muted ? 'Unmute all audio' : 'Mute all audio'}
+            title={muted ? t('a11y.unmute_all_audio_title') : t('a11y.mute_all_audio_title')}
+            aria-label={muted ? t('a11y.unmute_all_audio') : t('a11y.mute_all_audio')}
         >
             {muted ? <VolumeX size={18} className="animate-pulse" /> : <Volume2 size={18} />}
         </button>

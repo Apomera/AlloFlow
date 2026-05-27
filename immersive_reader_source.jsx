@@ -853,7 +853,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                         data-help-key="perspective_crawl_ambient_toggle"
                         onClick={() => setAmbientOn(a => !a)}
                         aria-pressed={ambientOn}
-                        aria-label={ambientOn ? 'Mute ambient pad' : 'Unmute ambient pad'}
+                        aria-label={ambientOn ? (t('a11y.mute_ambient_pad') || 'Mute ambient pad') : (t('a11y.unmute_ambient_pad') || 'Unmute ambient pad')}
                         title={ambientOn ? 'Ambient pad on (M to toggle)' : 'Ambient pad muted (M to toggle)'}
                         className="px-3 py-1 rounded text-xs"
                         style={{ background: p.text + '22', color: p.text, opacity: ambientOn ? 1 : 0.55 }}
