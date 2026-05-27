@@ -642,6 +642,147 @@ if (typeof window !== 'undefined' && window.speechSynthesis && !window.speechSyn
     };
     window.speechSynthesis._alloMuteGated = true;
 }
+// ── Centralized TTS player ────────────────────────────────────────────
+// Singleton coordinator for all read-aloud across the app. Replaces the
+// per-site speakText / _kokoroFallback / _browserTTSFallback duplicates that
+// each maintained their own _speakAudio. Gives us:
+//   - one "currently speaking" state, exposed via 'allo-speech-state' events
+//     so any UI (SpeakButton, persona chat, dbq) can show playing/stop state
+//   - click-again-to-stop semantics (matched by session id; stale resolves
+//     after a stop() are discarded)
+//   - global mute respect at every layer (mute-changed event auto-stops)
+//   - user-controlled playback rate via window.__alloPlaybackRate
+//   - language passthrough via window.__alloTextLanguage so ELL content
+//     reaches Gemini TTS with the right phonology hint
+//   - error toast when every fallback fails (silent failures were invisible
+//     to screen-reader users)
+// Stale-result strategy: a stop() bumps the current session id; in-flight
+// callTTS work that resolves afterward checks the id and bails. This avoids
+// modifying tts_source's fetchTTSBytes to accept AbortSignals (deferred).
+if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
+    let _state = { isPlaying: false, currentText: null, currentId: null };
+    let _audio = null;
+    let _sessionCounter = 0;
+    const _emit = () => {
+        try {
+            window.dispatchEvent(new CustomEvent('allo-speech-state', { detail: { ..._state } }));
+        } catch (e) {}
+    };
+    const _toast = (msg, type) => {
+        const fn = window.__alloAddToast;
+        if (typeof fn === 'function') { try { fn(msg, type); } catch (e) {} }
+    };
+    const _localized = (key, fallback) => {
+        const fn = window.__alloT;
+        if (typeof fn === 'function') {
+            const result = fn(key);
+            if (result && result !== key) return result;
+        }
+        return fallback;
+    };
+    const _clearAudio = () => {
+        if (_audio) { try { _audio.pause(); } catch (e) {} _audio = null; }
+        try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+    };
+    const _stop = () => {
+        const wasPlaying = _state.isPlaying;
+        _clearAudio();
+        _state = { isPlaying: false, currentText: null, currentId: null };
+        if (wasPlaying) _emit();
+    };
+    const _finishIfCurrent = (id) => {
+        if (_state.currentId !== id) return;
+        _audio = null;
+        _state = { isPlaying: false, currentText: null, currentId: null };
+        _emit();
+    };
+    const _playAudioUrl = (url, id, rate) => new Promise((resolve) => {
+        if (_state.currentId !== id) { resolve(false); return; }
+        const audio = new Audio(url);
+        audio.playbackRate = rate;
+        _audio = audio;
+        audio.onended = () => _finishIfCurrent(id);
+        audio.onerror = () => { resolve(false); };
+        audio.play().then(() => resolve(true)).catch(() => resolve(false));
+    });
+    const _browserFallback = (text, id, rate) => {
+        if (_state.currentId !== id) return false;
+        if (!window.speechSynthesis) return false;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = rate || 0.9;
+        utterance.pitch = 1;
+        utterance.onend = () => _finishIfCurrent(id);
+        utterance.onerror = () => {
+            if (_state.currentId !== id) return;
+            _stop();
+            _toast(_localized('toasts.tts_failed', 'Read-aloud failed. Please try again.'), 'error');
+        };
+        // The speak call goes through the mute gate installed above, so a
+        // muted user still gets no audio even though we reached this point.
+        window.speechSynthesis.speak(utterance);
+        return true;
+    };
+    const speak = async (text, opts) => {
+        if (!text) return null;
+        if (isGlobalMuted()) return null;
+        const o = opts || {};
+        _stop();
+        const id = ++_sessionCounter;
+        _state = { isPlaying: true, currentText: text, currentId: id };
+        _emit();
+        const voice = o.voice || window.__alloSelectedVoice || 'Kore';
+        const rate = (typeof o.rate === 'number') ? o.rate
+                     : (typeof window.__alloPlaybackRate === 'number' ? window.__alloPlaybackRate : 0.95);
+        const language = o.language || window.__alloTextLanguage || 'English';
+        // Primary: Gemini TTS via callTTS (closure var, hot-swapped after CDN load)
+        try {
+            if (typeof callTTS === 'function') {
+                const url = await callTTS(text, voice, 1, 2, language);
+                if (_state.currentId !== id) return null; // stop() was called mid-fetch
+                if (url) {
+                    const ok = await _playAudioUrl(url, id, rate);
+                    if (ok) return id;
+                }
+            }
+        } catch (e) {
+            if (_state.currentId !== id) return null;
+            console.warn('[AlloSpeechPlayer] Gemini TTS failed, trying fallback:', e && e.message);
+        }
+        // Kokoro fallback (English, offline)
+        if (_state.currentId === id && window._kokoroTTS && typeof window._kokoroTTS.speak === 'function') {
+            try {
+                const url = await window._kokoroTTS.speak(text, voice.startsWith('af_') || voice.startsWith('am_') ? voice : 'af_heart', 1);
+                if (_state.currentId !== id) return null;
+                if (url) {
+                    const ok = await _playAudioUrl(url, id, rate);
+                    if (ok) return id;
+                }
+            } catch (e) {
+                console.warn('[AlloSpeechPlayer] Kokoro failed, trying browser:', e && e.message);
+            }
+        }
+        // Browser SpeechSynthesis fallback (always available, lowest quality)
+        if (_state.currentId === id && _browserFallback(text, id, rate)) return id;
+        // Everything failed — toast and clear state
+        if (_state.currentId === id) {
+            _stop();
+            _toast(_localized('toasts.tts_failed', 'Read-aloud is not available in this browser.'), 'error');
+        }
+        return null;
+    };
+    // Auto-stop on global mute toggle
+    window.addEventListener('alloflow-mute-changed', (e) => {
+        if (e.detail && e.detail.muted) _stop();
+    });
+    window.AlloSpeechPlayer = {
+        speak,
+        stop: _stop,
+        isPlaying: () => _state.isPlaying,
+        getCurrentText: () => _state.currentText,
+        getCurrentId: () => _state.currentId,
+        getState: () => ({ ..._state }),
+    };
+}
 const GlobalMuteButton = React.memo(({ className = '' }) => {
     const [muted, setMuted] = React.useState(isGlobalMuted());
     React.useEffect(() => {
@@ -7161,6 +7302,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   };
   useEffect(() => {
       addToastRef.current = addToast;
+      // Expose for plugin modules and AlloSpeechPlayer (which surfaces error
+      // toasts when every TTS fallback fails) — same shim pattern as
+      // window.__alloCallTTS / __alloSelectedVoice further down in this file.
+      if (typeof window !== 'undefined') window.__alloAddToast = addToast;
   }, []);
 
   // ── window.AlloFlowUX — global polished-UX helper (May 2026 polish pass) ──
@@ -14144,6 +14289,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
   window.__alloCallTTS = callTTS;
   window.__alloSelectedVoice = selectedVoice;
+  // Reads consumed by AlloSpeechPlayer's `speak()` — kept in sync each render
+  // (this whole block re-executes on state change). voiceSpeed is the existing
+  // user-facing playback-speed setting; we mirror it as __alloPlaybackRate so
+  // plugin-module read-aloud (games_source SpeakButton et al) picks it up
+  // without needing to receive it through a prop chain.
+  window.__alloPlaybackRate = (typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1.0;
+  window.__alloTextLanguage = leveledTextLanguage || currentUiLanguage || 'English';
+  window.__alloT = t;
   window.__contentEngineState = {
     inputText, gradeLevel, sourceTopic, generatedContent,
     leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts,
@@ -22500,6 +22653,237 @@ ${_toolList}
          * reduce-motion preference get no animation regardless of what
          * STEM tools attempt — already covered by the global
          * prefers-reduced-motion block above; noted for completeness. */
+
+        /* ──────────────────────────────────────────────────────────────
+         * Light-theme override for STEM Lab tools (Piece C).
+         *
+         * STEM tools were authored with pastel inline colors (#fbbf24
+         * amber-400, #86efac green-300, #5eead4 teal-300, etc.) designed
+         * for dark backgrounds. In light theme the modal interior is
+         * white, so these pastels fail WCAG AA contrast badly (ratios
+         * 1.2–2.5). This block remaps each common pastel `color:` to its
+         * darker family-700 sibling. Scoped to the modal wrapper so it
+         * doesn't bleed into the main app's intentional pastel uses.
+         *
+         * Each color has two spacing variants: `color: #X` and `color:#X`.
+         * Same attribute-selector pattern as .theme-contrast block above.
+         *
+         * Paired with Piece D below: the dark hardcoded backgrounds get
+         * swapped to light backgrounds in the same scope, so a pastel
+         * that was on a dark card now becomes dark-on-light (readable),
+         * not dark-on-dark (invisible from the remap alone).
+         * ──────────────────────────────────────────────────────────────
+         */
+        /* amber-100..500 → amber-700 (#b45309 on white = 4.79:1) */
+        .stem-lab-modal.theme-light [style*="color: #fef3c7"],
+        .stem-lab-modal.theme-light [style*="color:#fef3c7"],
+        .stem-lab-modal.theme-light [style*="color: #fde68a"],
+        .stem-lab-modal.theme-light [style*="color:#fde68a"],
+        .stem-lab-modal.theme-light [style*="color: #fcd34d"],
+        .stem-lab-modal.theme-light [style*="color:#fcd34d"],
+        .stem-lab-modal.theme-light [style*="color: #fbbf24"],
+        .stem-lab-modal.theme-light [style*="color:#fbbf24"],
+        .stem-lab-modal.theme-light [style*="color: #f59e0b"],
+        .stem-lab-modal.theme-light [style*="color:#f59e0b"] {
+            color: #b45309 !important;
+        }
+        /* emerald 200..500 → emerald-700 (#047857 on white = 5.13:1) */
+        .stem-lab-modal.theme-light [style*="color: #a7f3d0"],
+        .stem-lab-modal.theme-light [style*="color:#a7f3d0"],
+        .stem-lab-modal.theme-light [style*="color: #6ee7b7"],
+        .stem-lab-modal.theme-light [style*="color:#6ee7b7"],
+        .stem-lab-modal.theme-light [style*="color: #34d399"],
+        .stem-lab-modal.theme-light [style*="color:#34d399"],
+        .stem-lab-modal.theme-light [style*="color: #10b981"],
+        .stem-lab-modal.theme-light [style*="color:#10b981"] {
+            color: #047857 !important;
+        }
+        /* green 100..500 → green-700 (#15803d on white = 5.36:1) */
+        .stem-lab-modal.theme-light [style*="color: #dcfce7"],
+        .stem-lab-modal.theme-light [style*="color:#dcfce7"],
+        .stem-lab-modal.theme-light [style*="color: #bbf7d0"],
+        .stem-lab-modal.theme-light [style*="color:#bbf7d0"],
+        .stem-lab-modal.theme-light [style*="color: #86efac"],
+        .stem-lab-modal.theme-light [style*="color:#86efac"],
+        .stem-lab-modal.theme-light [style*="color: #4ade80"],
+        .stem-lab-modal.theme-light [style*="color:#4ade80"],
+        .stem-lab-modal.theme-light [style*="color: #22c55e"],
+        .stem-lab-modal.theme-light [style*="color:#22c55e"] {
+            color: #15803d !important;
+        }
+        /* teal 200..500 → teal-700 (#0f766e on white = 5.42:1) */
+        .stem-lab-modal.theme-light [style*="color: #99f6e4"],
+        .stem-lab-modal.theme-light [style*="color:#99f6e4"],
+        .stem-lab-modal.theme-light [style*="color: #5eead4"],
+        .stem-lab-modal.theme-light [style*="color:#5eead4"],
+        .stem-lab-modal.theme-light [style*="color: #2dd4bf"],
+        .stem-lab-modal.theme-light [style*="color:#2dd4bf"],
+        .stem-lab-modal.theme-light [style*="color: #14b8a6"],
+        .stem-lab-modal.theme-light [style*="color:#14b8a6"] {
+            color: #0f766e !important;
+        }
+        /* sky 200..500 → sky-700 (#0369a1 on white = 6.39:1) */
+        .stem-lab-modal.theme-light [style*="color: #bae6fd"],
+        .stem-lab-modal.theme-light [style*="color:#bae6fd"],
+        .stem-lab-modal.theme-light [style*="color: #7dd3fc"],
+        .stem-lab-modal.theme-light [style*="color:#7dd3fc"],
+        .stem-lab-modal.theme-light [style*="color: #38bdf8"],
+        .stem-lab-modal.theme-light [style*="color:#38bdf8"],
+        .stem-lab-modal.theme-light [style*="color: #0ea5e9"],
+        .stem-lab-modal.theme-light [style*="color:#0ea5e9"] {
+            color: #0369a1 !important;
+        }
+        /* cyan 300..500 → cyan-700 (#0e7490 on white = 5.40:1) */
+        .stem-lab-modal.theme-light [style*="color: #67e8f9"],
+        .stem-lab-modal.theme-light [style*="color:#67e8f9"],
+        .stem-lab-modal.theme-light [style*="color: #22d3ee"],
+        .stem-lab-modal.theme-light [style*="color:#22d3ee"],
+        .stem-lab-modal.theme-light [style*="color: #06b6d4"],
+        .stem-lab-modal.theme-light [style*="color:#06b6d4"] {
+            color: #0e7490 !important;
+        }
+        /* blue 300..500 → blue-700 (#1d4ed8 on white = 7.85:1) */
+        .stem-lab-modal.theme-light [style*="color: #93c5fd"],
+        .stem-lab-modal.theme-light [style*="color:#93c5fd"],
+        .stem-lab-modal.theme-light [style*="color: #60a5fa"],
+        .stem-lab-modal.theme-light [style*="color:#60a5fa"],
+        .stem-lab-modal.theme-light [style*="color: #3b82f6"],
+        .stem-lab-modal.theme-light [style*="color:#3b82f6"] {
+            color: #1d4ed8 !important;
+        }
+        /* indigo 200..400 → indigo-700 (#4338ca on white = 7.02:1) */
+        .stem-lab-modal.theme-light [style*="color: #c7d2fe"],
+        .stem-lab-modal.theme-light [style*="color:#c7d2fe"],
+        .stem-lab-modal.theme-light [style*="color: #a5b4fc"],
+        .stem-lab-modal.theme-light [style*="color:#a5b4fc"],
+        .stem-lab-modal.theme-light [style*="color: #818cf8"],
+        .stem-lab-modal.theme-light [style*="color:#818cf8"] {
+            color: #4338ca !important;
+        }
+        /* violet 200..500 → violet-700 (#6d28d9 on white = 6.84:1) */
+        .stem-lab-modal.theme-light [style*="color: #ddd6fe"],
+        .stem-lab-modal.theme-light [style*="color:#ddd6fe"],
+        .stem-lab-modal.theme-light [style*="color: #c4b5fd"],
+        .stem-lab-modal.theme-light [style*="color:#c4b5fd"],
+        .stem-lab-modal.theme-light [style*="color: #a78bfa"],
+        .stem-lab-modal.theme-light [style*="color:#a78bfa"],
+        .stem-lab-modal.theme-light [style*="color: #8b5cf6"],
+        .stem-lab-modal.theme-light [style*="color:#8b5cf6"] {
+            color: #6d28d9 !important;
+        }
+        /* purple 200..500 → purple-700 (#7e22ce on white = 6.27:1) */
+        .stem-lab-modal.theme-light [style*="color: #e9d5ff"],
+        .stem-lab-modal.theme-light [style*="color:#e9d5ff"],
+        .stem-lab-modal.theme-light [style*="color: #d8b4fe"],
+        .stem-lab-modal.theme-light [style*="color:#d8b4fe"],
+        .stem-lab-modal.theme-light [style*="color: #c084fc"],
+        .stem-lab-modal.theme-light [style*="color:#c084fc"],
+        .stem-lab-modal.theme-light [style*="color: #a855f7"],
+        .stem-lab-modal.theme-light [style*="color:#a855f7"] {
+            color: #7e22ce !important;
+        }
+        /* pink 200..500 → pink-700 (#be185d on white = 6.37:1) */
+        .stem-lab-modal.theme-light [style*="color: #fbcfe8"],
+        .stem-lab-modal.theme-light [style*="color:#fbcfe8"],
+        .stem-lab-modal.theme-light [style*="color: #f9a8d4"],
+        .stem-lab-modal.theme-light [style*="color:#f9a8d4"],
+        .stem-lab-modal.theme-light [style*="color: #f472b6"],
+        .stem-lab-modal.theme-light [style*="color:#f472b6"],
+        .stem-lab-modal.theme-light [style*="color: #ec4899"],
+        .stem-lab-modal.theme-light [style*="color:#ec4899"] {
+            color: #be185d !important;
+        }
+        /* rose/red 100..500 → red-700 (#b91c1c on white = 6.18:1) */
+        .stem-lab-modal.theme-light [style*="color: #fee2e2"],
+        .stem-lab-modal.theme-light [style*="color:#fee2e2"],
+        .stem-lab-modal.theme-light [style*="color: #fecaca"],
+        .stem-lab-modal.theme-light [style*="color:#fecaca"],
+        .stem-lab-modal.theme-light [style*="color: #fca5a5"],
+        .stem-lab-modal.theme-light [style*="color:#fca5a5"],
+        .stem-lab-modal.theme-light [style*="color: #f87171"],
+        .stem-lab-modal.theme-light [style*="color:#f87171"],
+        .stem-lab-modal.theme-light [style*="color: #ef4444"],
+        .stem-lab-modal.theme-light [style*="color:#ef4444"] {
+            color: #b91c1c !important;
+        }
+        /* orange 200..500 → orange-700 (#c2410c on white = 5.06:1) */
+        .stem-lab-modal.theme-light [style*="color: #fed7aa"],
+        .stem-lab-modal.theme-light [style*="color:#fed7aa"],
+        .stem-lab-modal.theme-light [style*="color: #fdba74"],
+        .stem-lab-modal.theme-light [style*="color:#fdba74"],
+        .stem-lab-modal.theme-light [style*="color: #fb923c"],
+        .stem-lab-modal.theme-light [style*="color:#fb923c"],
+        .stem-lab-modal.theme-light [style*="color: #f97316"],
+        .stem-lab-modal.theme-light [style*="color:#f97316"] {
+            color: #c2410c !important;
+        }
+        /* var(--allo-stem-text, #cbd5e1/#e2e8f0/#f1f5f9) — already covered
+         * by the variable's :root resolution to #0f172a. But the var()
+         * resolver in browser only sees the fallback if --allo-stem-text
+         * is undefined. In .theme-light the variable IS defined (via
+         * :root.theme-default at line 22387), so the fallback isn't used.
+         * No CSS override needed for var() — they resolve correctly. */
+
+        /* ──────────────────────────────────────────────────────────────
+         * Piece D — Dark-card-background override in light theme.
+         *
+         * STEM tools hardcode dark card backgrounds with rgba(15,23,42,X)
+         * (translucent slate-900) and literals like #0f172a, #0c1929,
+         * #0a0e1a. In light theme these create dark islands on a white
+         * modal — visually jarring AND defeats Piece C's text-color
+         * remap (dark remapped text on dark card stays invisible).
+         *
+         * Remap to slate-100 (#f1f5f9) — a soft gray that:
+         *   - keeps the card visually distinct from the white modal bg
+         *   - lets dark text from Piece C (and var(--allo-stem-text)) be
+         *     fully readable
+         *   - matches the existing .theme-default --allo-stem-panel value
+         * ──────────────────────────────────────────────────────────────
+         */
+        /* Translucent dark slates → light slate-100 with same alpha */
+        .stem-lab-modal.theme-light [style*="background: rgba(15,23,42"],
+        .stem-lab-modal.theme-light [style*="background:rgba(15,23,42"],
+        .stem-lab-modal.theme-light [style*="background: rgba(2,6,23"],
+        .stem-lab-modal.theme-light [style*="background:rgba(2,6,23"],
+        .stem-lab-modal.theme-light [style*="background: rgba(30,41,59"],
+        .stem-lab-modal.theme-light [style*="background:rgba(30,41,59"],
+        .stem-lab-modal.theme-light [style*="background: rgba(0,0,0"],
+        .stem-lab-modal.theme-light [style*="background:rgba(0,0,0"],
+        .stem-lab-modal.theme-light [style*="backgroundColor: rgba(15,23,42"],
+        .stem-lab-modal.theme-light [style*="backgroundColor: rgba(30,41,59"] {
+            background: #f1f5f9 !important;
+            background-color: #f1f5f9 !important;
+        }
+        /* Solid dark canvas hex → slate-100 */
+        .stem-lab-modal.theme-light [style*="background: #0f172a"],
+        .stem-lab-modal.theme-light [style*="background:#0f172a"],
+        .stem-lab-modal.theme-light [style*="background: #1e293b"],
+        .stem-lab-modal.theme-light [style*="background:#1e293b"],
+        .stem-lab-modal.theme-light [style*="background: #020617"],
+        .stem-lab-modal.theme-light [style*="background: #0a0e1a"],
+        .stem-lab-modal.theme-light [style*="background: #0a0a18"],
+        .stem-lab-modal.theme-light [style*="background: #0b1220"],
+        .stem-lab-modal.theme-light [style*="background: #0c1929"],
+        .stem-lab-modal.theme-light [style*="background: #0f1c2f"],
+        .stem-lab-modal.theme-light [style*="background: #162032"],
+        .stem-lab-modal.theme-light [style*="background: #1c1410"],
+        .stem-lab-modal.theme-light [style*="background:#1c1410"],
+        .stem-lab-modal.theme-light [style*="background: #3a2a1a"],
+        .stem-lab-modal.theme-light [style*="backgroundColor: #0f172a"],
+        .stem-lab-modal.theme-light [style*="backgroundColor: #1e293b"] {
+            background: #f1f5f9 !important;
+            background-color: #f1f5f9 !important;
+        }
+        /* Soften the dark-card borders too so they're not jarring */
+        .stem-lab-modal.theme-light [style*="border: 1px solid #334155"],
+        .stem-lab-modal.theme-light [style*="border:1px solid #334155"],
+        .stem-lab-modal.theme-light [style*="borderColor: #334155"],
+        .stem-lab-modal.theme-light [style*="borderColor:#334155"],
+        .stem-lab-modal.theme-light [style*="border: 1px solid #475569"],
+        .stem-lab-modal.theme-light [style*="borderColor: #475569"] {
+            border-color: #cbd5e1 !important;
+        }
+
         .theme-dark .bg-white {
             background-color: #162032 !important; /* Slightly lighter than bg */
             color: #f1f5f9 !important;

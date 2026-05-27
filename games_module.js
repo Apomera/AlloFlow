@@ -98,79 +98,11 @@ var scrambleWord = function(word) {
   return result === word ? scrambleWord(word) : result;
 };
 const useReducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-let _speakAudio = null;
-const _isMuted = () => typeof window !== "undefined" && typeof window.__alloIsGlobalMuted === "function" && window.__alloIsGlobalMuted();
-if (typeof window !== "undefined" && !window.__alloGamesSourceMuteListener) {
-  window.addEventListener("alloflow-mute-changed", (e) => {
-    if (e.detail && e.detail.muted && _speakAudio) {
-      try {
-        _speakAudio.pause();
-        _speakAudio = null;
-      } catch (err) {
-      }
-    }
-  });
-  window.__alloGamesSourceMuteListener = true;
-}
 const speakText = (text) => {
   if (!text) return;
-  if (_isMuted()) return;
-  const str = String(text);
-  try {
-    if (_speakAudio) {
-      try {
-        _speakAudio.pause();
-        _speakAudio = null;
-      } catch (e) {
-      }
-    }
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
-    if (window.__alloCallTTS && typeof window.__alloCallTTS === "function") {
-      const voice = window.__alloSelectedVoice || "Kore";
-      window.__alloCallTTS(str, voice, 1).then((url) => {
-        if (_isMuted()) return;
-        if (url) {
-          _speakAudio = new Audio(url);
-          _speakAudio.playbackRate = 0.95;
-          _speakAudio.play().catch(() => {
-          });
-        } else {
-          _kokoroFallback(str);
-        }
-      }).catch(() => _kokoroFallback(str));
-      return;
-    }
-    _kokoroFallback(str);
-  } catch (e) {
-    console.warn("TTS failed", e);
-  }
-};
-const _kokoroFallback = (str) => {
-  if (_isMuted()) return;
-  if (window._kokoroTTS && typeof window._kokoroTTS.speak === "function") {
-    const voice = window.__alloSelectedVoice || "af_heart";
-    window._kokoroTTS.speak(str, voice, 1).then((url) => {
-      if (_isMuted()) return;
-      if (url) {
-        _speakAudio = new Audio(url);
-        _speakAudio.playbackRate = 0.95;
-        _speakAudio.play().catch(() => {
-        });
-      } else {
-        _browserTTSFallback(str);
-      }
-    }).catch(() => _browserTTSFallback(str));
-    return;
-  }
-  _browserTTSFallback(str);
-};
-const _browserTTSFallback = (text) => {
-  if (_isMuted()) return;
-  if (window.speechSynthesis) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    window.speechSynthesis.speak(utterance);
+  const player = typeof window !== "undefined" ? window.AlloSpeechPlayer : null;
+  if (player && typeof player.speak === "function") {
+    player.speak(String(text));
   }
 };
 const GameThemeToggle = () => {
@@ -197,21 +129,46 @@ const GameThemeToggle = () => {
 };
 const SpeakButton = ({ text, size = 13, className = "" }) => {
   const { t: t2 } = useContext(LanguageContext);
-  const ariaTemplate = t2("a11y.read_aloud_with_text", { text: text || "" }) || `Read aloud: ${text || ""}`;
+  const [isThisPlaying, setIsThisPlaying] = React.useState(false);
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handler = (e) => {
+      const speaking = !!(e.detail && e.detail.isPlaying && e.detail.currentText === String(text || ""));
+      setIsThisPlaying(speaking);
+    };
+    window.addEventListener("allo-speech-state", handler);
+    const player = window.AlloSpeechPlayer;
+    if (player && player.isPlaying() && player.getCurrentText() === String(text || "")) {
+      setIsThisPlaying(true);
+    }
+    return () => window.removeEventListener("allo-speech-state", handler);
+  }, [text]);
+  const handleClick = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const player = typeof window !== "undefined" ? window.AlloSpeechPlayer : null;
+    if (!player) return;
+    if (isThisPlaying) {
+      player.stop();
+    } else {
+      player.speak(String(text));
+    }
+  };
+  const readAriaTemplate = t2("a11y.read_aloud_with_text", { text: text || "" }) || `Read aloud: ${text || ""}`;
+  const stopAria = t2("a11y.stop_reading") || "Stop reading";
+  const ariaLabel = isThisPlaying ? stopAria : readAriaTemplate;
+  const title = isThisPlaying ? stopAria : t2("a11y.read_aloud") || "Read aloud";
   return /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        speakText(text);
-      },
-      className: `inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-600 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${className}`,
-      "aria-label": ariaTemplate,
-      title: t2("a11y.read_aloud") || "Read aloud",
+      onClick: handleClick,
+      className: `inline-flex items-center justify-center w-7 h-7 rounded-full shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors ${isThisPlaying ? "bg-rose-100 hover:bg-rose-200 text-rose-600 animate-pulse" : "bg-indigo-100 hover:bg-indigo-200 text-indigo-600"} ${className}`,
+      "aria-label": ariaLabel,
+      "aria-pressed": isThisPlaying,
+      title,
       type: "button"
     },
-    /* @__PURE__ */ React.createElement(Volume2, { size })
+    isThisPlaying ? /* @__PURE__ */ React.createElement(StopCircle, { size }) : /* @__PURE__ */ React.createElement(Volume2, { size })
   );
 };
 const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t: t2 }) => {

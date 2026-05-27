@@ -1090,6 +1090,7 @@
     "session_complete": "Session Complete! +50 XP",
     "storage_warning": "Warning: Browser storage disabled (Private Mode?). Work will not autosave.",
     "data_load_error": "Error loading save data. Autosave disabled to protect data.",
+    "tts_failed": "Read-aloud failed. Please try again.",
     "click_textbox": "Please click a text box to start typing.",
     "portrait_generated": "Portrait generated!",
     "portrait_failed": "Portrait generation failed. Try again later.",
