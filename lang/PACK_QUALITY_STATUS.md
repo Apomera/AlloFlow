@@ -238,9 +238,48 @@ issues. Findings recorded here for future sessions.
 1. Continue German cleanup: help_mode tooltips (same approach as Polish/
    Russian waves 1-4), more tour entries hand-translated.
 2. Continue Indonesian: same as German.
-3. Audit Italian/Korean/Hindi/Amharic/Bengali/Nepali/Tagalog/Swahili
-   tour.adventure_text — likely all need similar tour hand-translation
-   pass.
+
+## 2026-05-27 — Moderate-contamination packs cleaned
+
+Treated the 8 moderate-contamination packs identified in the audit:
+
+| Pack | Commit | Dict reps | Hand-translated keys |
+|---|---|---|---|
+| Italian | `7d0b7130` + `c77cd145` | ~2,300 | tour.adventure, tour.quiz, sidebar.ai_guide_welcome, launch_pad.subtitle |
+| Korean | `29078a29` | ~2,580 | tour.adventure, tour.quiz, sidebar.ai_guide_welcome, launch_pad.subtitle |
+| Hindi | `613aa56c` | ~2,530 | tour.adventure, sidebar.ai_guide_welcome, launch_pad.subtitle |
+| Bengali | `ac90785c` + `9bdd43ae` | ~1,280 | tour.adventure, sidebar.ai_guide_welcome, launch_pad.subtitle |
+| Nepali | (in ac90785c/9bdd43ae) | ~760 | (same) |
+| Tagalog | (in ac90785c/9bdd43ae) | ~1,470 | (same) |
+| Amharic | (in ac90785c/9bdd43ae) | ~730 | (same) |
+| Swahili | (in ac90785c/9bdd43ae) | ~680 | (same) |
+
+**Approach for each pack:**
+1. Dictionary substitution (~30-100 most common English words → target
+   language equivalents).
+2. Bengali had additional corruption fixes (interসক্রিয় → ইন্টারঅ্যাকটিভ,
+   mulটিপle → একাধিক, আমিnput → ইনপুট — same pattern as German's Ichn).
+3. Hand-translated 3-4 highest-visibility keys per pack
+   (tour.adventure_text, sidebar.ai_guide_welcome, launch_pad.subtitle,
+   sometimes tour.quiz_text).
+
+**Status of all 56 packs after this session:**
+- ✅ **Clean / fully hand-translated**: Arabic, Thai, Vietnamese,
+  Portuguese (Brazil/Portugal/Angola), Chinese (Simp/Trad), French
+  (FR/CA), Spanish (LATAM/Castilian)
+- ✅ **Major cleanup complete**: Polish (Russian), Farsi/Dari/Urdu/Pashto
+  (Arabic), Russian help_mode + Polish help_mode
+- ✅ **Moderate cleanup complete this session**: Italian, Korean, Hindi,
+  Bengali, Nepali, Tagalog, Amharic, Swahili
+- ⚠️ **Partial cleanup, more work possible**: German, Indonesian
+  (started but help_mode + more tour entries not yet addressed)
+- 📝 **Documented English-passthrough strategy** (PPS cluster): Acholi,
+  Karen, Chin Hakha/Falam, Maay Maay, Marshallese, Lao
+- 📋 **Not yet sampled for contamination**: Greek, Romanian, Burmese,
+  Khmer, Punjabi, Tamil, Telugu, Yoruba, Igbo, Hausa, Hmong, Hebrew,
+  Somali, Haitian Creole, Pashto, Hebrew, Japanese, Kinyarwanda, Kirundi,
+  Tigrinya, Lingala — likely have similar English-substitution pattern
+  but lower priority based on usage.
 
 
 
