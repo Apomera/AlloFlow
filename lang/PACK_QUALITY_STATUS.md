@@ -168,12 +168,79 @@ Two commits (`531767f8`, `21489e3d`) — total ~60k cleanup operations:
     bot_events, progression, sidebar, educator_hub, history,
     glossary.tier2, toasts, bridge, diff_view, timeline.modes, games,
     launch_pad, tips, volume_builder, dbq
-- Polish Cyrillic: 61,314 → 47,667 chars (-22% across 5 rounds).
-- Contaminated keys: 4,684 → 4,434.
-- Cumulative from refinement session start: -46% Cyrillic; from
-  original (214,954): -78%.
-- Remaining ~140 contaminated keys have ≤40 cyr chars each (very short
-  body text); diminishing returns territory.
+- Polish Cyrillic: 61,314 → 45,901 chars (-25% across 6 rounds).
+- Contaminated keys: 4,684 → 4,380.
+- Cumulative from refinement session start: -48% Cyrillic; from
+  original (214,954): -79%.
+- Round 6 (commit `4e349baa`): 54 more keys (stem.periodic/galaxy,
+  behavior_lens.hub, baking, toasts) — completes the 6-round run.
+
+## 2026-05-27 — Cross-pack audit + German/Indonesian cleanup
+
+After completing Polish cleanup, audited all 56 packs for contamination
+issues. Findings recorded here for future sessions.
+
+### Audit method
+- Cyrillic chars in non-Russian/Ukrainian packs (Russian contamination)
+- ال- prefixes in non-Arabic-script packs (Arabic contamination)
+- English-passthrough heuristic (ASCII-only text >20 chars)
+- Help_mode template diversity (unique values vs total keys)
+
+### Findings
+- **No unexpected Cyrillic** in any pack other than Polish (already
+  being cleaned).
+- **No unexpected ال-** in any pack other than the Arabic chain (already
+  cleaned).
+- **Help_mode diversity**: 54 of 56 packs have 100% unique values; only
+  Russian and Polish remain at 79.5% (templates still present in
+  long-tail; previous cleanup work addressed high-visibility surfaces).
+- **NEW FINDING — English+target language mixing** in multiple packs:
+  these were generated via partial English→target word substitution,
+  leaving substantial English words embedded in mid-translation text.
+  Similar issue to Polish (Russian contamination) but the source was
+  English, not Russian.
+
+### Severity tiers (English-mix problem)
+
+**Severe** (heavy English embedded, corruption patterns):
+- **German** — Worst case. Corruption: AI→AIch (628×), In→Ichn (1,767×),
+  multiple→mulTipple (87×), Sitzungs (97×), Moduss (42×), Einstellungs
+  (193×). Cleanup commits this session:
+  - `9f353096` — corruption fixes + ~150 English→German word translations
+    (1,693 replacements across 1,259 keys)
+  - `4fa05a1f` — additional dictionary pass (633 replacements across 536
+    keys)
+  - `600b4ddf` — hand-translated 3 worst tour entries (adventure, quiz,
+    wordsounds)
+  - Still needs: ~520 keys with multiple English words remaining; help_mode
+    not yet addressed (similar effort as Polish/Russian needed).
+- **Indonesian** — Severe contamination. Cleanup commits:
+  - `4808e668` — ~3,000 word replacements across 1,598 keys
+  - `374d1f33` — hand-translated 2 worst tour entries (adventure, quiz)
+  - Still needs: most help_mode and many remaining tour/body text keys.
+
+**Moderate** (mixed but readable):
+- Italian, Korean, Hindi, Amharic, Bengali, Nepali, Tagalog, Swahili
+- Same English+target substitution pattern but less severe than German
+  - Italian sample: "Avventura modalità transforms contenuto in immersive"
+  - Korean sample: "모험 모드 transforms 콘텐츠 안으로 immersive 인터랙티브"
+  - All need similar cleanup treatment (dictionary + hand-translated tours)
+
+**Clean** (verified during audit):
+- Arabic, Thai, Vietnamese, Portuguese (Brazil), Chinese Simplified,
+  French, Spanish (LATAM) — all read as fluent native text in sampled
+  tour entries.
+- Low-resource PPS cluster (Acholi, Karen, Chin variants, Maay Maay,
+  Marshallese, Lao) — intentional English-passthrough per documented
+  strategy.
+
+### Recommended next steps for future sessions
+1. Continue German cleanup: help_mode tooltips (same approach as Polish/
+   Russian waves 1-4), more tour entries hand-translated.
+2. Continue Indonesian: same as German.
+3. Audit Italian/Korean/Hindi/Amharic/Bengali/Nepali/Tagalog/Swahili
+   tour.adventure_text — likely all need similar tour hand-translation
+   pass.
 
 
 
