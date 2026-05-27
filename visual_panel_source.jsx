@@ -70,7 +70,7 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onUpdateLabel, 
         if (!file) return;
         if (!file.type.startsWith('image/')) return;
         if (file.size > 10 * 1024 * 1024) {
-            if (window.AlloFlowUX) window.AlloFlowUX.toast('Image too large (max 10MB). Please use a smaller image.', 'error'); else alert('Image too large (max 10MB). Please use a smaller image.');
+            if (window.AlloFlowUX) window.AlloFlowUX.toast('Image too large (max 10MB). Please use a smaller image.', 'error'); else alert(t("alerts.image_too_large_10mb"));
             return;
         }
         const reader = new FileReader();
@@ -970,7 +970,7 @@ Return ONLY valid JSON:
                                      panel.role}
                                 </span>
                             )}
-                            <div style={{ position: 'relative', overflow: 'hidden', background: '#f1f5f9' }} onClick={(e) => addingLabelPanel !== null && (isStudentChallenge ? handleAddStudentLabel(panelIdx, e) : handleAddUserLabel(panelIdx, e))} className={addingLabelPanel !== null ? 'adding-label' : ''}>
+                            <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }} style={{ position: 'relative', overflow: 'hidden', background: '#f1f5f9' }} onClick={(e) => addingLabelPanel !== null && (isStudentChallenge ? handleAddStudentLabel(panelIdx, e) : handleAddUserLabel(panelIdx, e))} className={addingLabelPanel !== null ? 'adding-label' : ''}>
                             {(imageOverrides[panelIdx] || panel.imageUrl) ? (
                                 <img src={imageOverrides[panelIdx] || panel.imageUrl} alt={panel.caption || `Panel ${panelIdx + 1}`} loading="lazy" style={{ width: '100%', display: 'block', maxHeight: '320px', objectFit: 'contain', background: '#f8fafc' }} />
                             ) : (
@@ -1020,6 +1020,7 @@ Return ONLY valid JSON:
                                                 onMouseDown={(e) => e.stopPropagation()}
                                                 onBlur={(e) => handleLabelChange(panelIdx, labelIdx, e.target.value)}
                                                 onKeyDown={(e) => e.key === 'Enter' && handleLabelChange(panelIdx, labelIdx, e.target.value)}
+                                                aria-label={`Edit label ${labelIdx + 1} on panel ${panelIdx + 1}`}
                                             />
                                         ) : <span style={{ pointerEvents: 'none' }}>{label.text}</span>}
                                         {isHovered && <span
@@ -1064,6 +1065,7 @@ Return ONLY valid JSON:
                                             onMouseDown={(e) => e.stopPropagation()}
                                             onBlur={(e) => { handleUserLabelTextChange(panelIdx, uLabel.id, e.target.value); setEditingLabel(null); }}
                                             onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+                                            aria-label={`Edit user label on panel ${panelIdx + 1}`}
                                             style={{ cursor: 'text', border: 'none', background: 'transparent', outline: 'none', fontWeight: 700, fontSize: '13px', color: '#1e1b4b', width: Math.max(50, uLabel.text.length * 9) + 'px', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }}
                                         />
                                     ) : (
@@ -1094,11 +1096,12 @@ Return ONLY valid JSON:
                                         padding: "4px 10px", borderRadius: "8px", fontSize: "13px", fontWeight: 700, color: "#1e1b4b" }}
                                 >
                                     {!challengeSubmitted && (
-                                        <button onClick={() => handleDeleteStudentLabel(panelIdx, sLabel.id)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "10px", padding: 0, color: "#475569" }}>✕</button>
+                                        <button onClick={() => handleDeleteStudentLabel(panelIdx, sLabel.id)} aria-label="Remove student label" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "10px", padding: 0, color: "#475569" }}>✕</button>
                                     )}
                                     {!challengeSubmitted ? (
                                         <input type="text" value={sLabel.text}
                                             onChange={(e) => handleStudentLabelTextChange(panelIdx, sLabel.id, e.target.value)}
+                                            aria-label={`Student label on panel ${panelIdx + 1}`}
                                             style={{ background: "transparent", border: "none", outline: "none", fontWeight: 700, fontSize: "13px", color: "#1e1b4b", width: Math.max(60, sLabel.text.length * 9) + "px", textAlign: "center" }} />
                                     ) : (
                                         <span>{sLabel.text}</span>
@@ -1162,6 +1165,7 @@ Return ONLY valid JSON:
                                         defaultValue={captionOverrides[panelIdx] || panel.caption || ''}
                                         onBlur={(e) => { pushVisualSnapshot(); setCaptionOverrides(prev => ({...prev, [panelIdx]: e.target.value})); setEditingCaptionIdx(null); }}
                                         onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.target.blur(); }}}
+                                        aria-label={`Edit caption for panel ${panelIdx + 1}`}
                                         style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #c7d2fe', fontSize: '12px', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: 'none', resize: 'vertical', minHeight: '40px', textAlign: 'center', color: '#334155', lineHeight: 1.4 }}
                                     />
                                 </div>
@@ -1187,13 +1191,14 @@ Return ONLY valid JSON:
                                     placeholder={`Describe changes for Panel ${panelIdx + 1}...`}
                                     onKeyDown={(e) => e.key === 'Enter' && handleRefineSubmit(panelIdx)}
                                     autoFocus
+                                    aria-label={`Describe changes for Panel ${panelIdx + 1}`}
                                     style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: 'none' }}
                                 />
                                 <button
                                     aria-label={t('common.apply_panel_edit')}
                                     onClick={() => handleRefineSubmit(panelIdx)}
                                     style={{ padding: '6px 14px', borderRadius: 6, background: '#4f46e5', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap' }}
-                                >Apply</button>
+                                >{t("ui_common.apply")}</button>
                                 <button
                                     aria-label={t('common.cancel')}
                                     onClick={() => setRefiningPanelIdx(null)}
@@ -1251,7 +1256,7 @@ Return ONLY valid JSON:
         </div>
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', padding: '16px 20px', borderTop: '1px solid #e2e8f0', background: '#f8fafc' }}>
         <button onClick={() => { setLabelsHidden(false); setShowComparison(false); }} style={{ padding: '10px 24px', borderRadius: '10px', border: '1px solid #6366f1', background: '#4f46e5', color: 'white', fontSize: '14px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>👁️ Show Answer Key</button>
-        <button onClick={() => setShowComparison(false)} style={{ padding: '10px 24px', borderRadius: '10px', border: '1px solid #d1d5db', background: 'white', color: '#374151', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}>Close</button>
+        <button onClick={() => setShowComparison(false)} style={{ padding: '10px 24px', borderRadius: '10px', border: '1px solid #d1d5db', background: 'white', color: '#374151', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}>{t("ui_common.close")}</button>
         </div>
         </div>
         </div>
