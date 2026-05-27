@@ -14,9 +14,28 @@ const useReducedMotion = () => typeof window !== 'undefined' && window.matchMedi
 
 // ── TTS utility for read-aloud accessibility ──
 // TTS priority: Gemini (selected voice) → Kokoro → Browser fallback
+//
+// Mute respect: window.speechSynthesis.speak is gated globally in
+// AlloFlowANTI.txt's setGlobalMute, so the browser-fallback path is muted
+// automatically. The Kokoro and Gemini paths produce HTMLAudioElement
+// playback that can't be gated at the API level, so we (1) early-return when
+// the mute is on at function entry, and (2) listen for the global
+// mute-changed event to pause any in-flight Audio element.
 let _speakAudio = null;
+const _isMuted = () => typeof window !== 'undefined'
+  && typeof window.__alloIsGlobalMuted === 'function'
+  && window.__alloIsGlobalMuted();
+if (typeof window !== 'undefined' && !window.__alloGamesSourceMuteListener) {
+  window.addEventListener('alloflow-mute-changed', (e) => {
+    if (e.detail && e.detail.muted && _speakAudio) {
+      try { _speakAudio.pause(); _speakAudio = null; } catch (err) {}
+    }
+  });
+  window.__alloGamesSourceMuteListener = true;
+}
 const speakText = (text) => {
   if (!text) return;
+  if (_isMuted()) return;
   const str = String(text);
   try {
     if (_speakAudio) { try { _speakAudio.pause(); _speakAudio = null; } catch(e) {} }
@@ -26,6 +45,7 @@ const speakText = (text) => {
     if (window.__alloCallTTS && typeof window.__alloCallTTS === 'function') {
       const voice = window.__alloSelectedVoice || 'Kore';
       window.__alloCallTTS(str, voice, 1).then((url) => {
+        if (_isMuted()) return; // mute toggled while TTS was generating
         if (url) {
           _speakAudio = new Audio(url);
           _speakAudio.playbackRate = 0.95;
@@ -39,9 +59,11 @@ const speakText = (text) => {
   } catch (e) { console.warn('TTS failed', e); }
 };
 const _kokoroFallback = (str) => {
+  if (_isMuted()) return;
   if (window._kokoroTTS && typeof window._kokoroTTS.speak === 'function') {
     const voice = window.__alloSelectedVoice || 'af_heart';
     window._kokoroTTS.speak(str, voice, 1).then((url) => {
+      if (_isMuted()) return;
       if (url) {
         _speakAudio = new Audio(url);
         _speakAudio.playbackRate = 0.95;
@@ -53,6 +75,9 @@ const _kokoroFallback = (str) => {
   _browserTTSFallback(str);
 };
 const _browserTTSFallback = (text) => {
+  // window.speechSynthesis.speak is already mute-gated by the monolith,
+  // but the early return saves the work of constructing the utterance.
+  if (_isMuted()) return;
   if (window.speechSynthesis) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.9;

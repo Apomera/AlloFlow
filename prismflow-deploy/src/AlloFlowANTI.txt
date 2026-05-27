@@ -621,9 +621,27 @@ window.getGlobalAudioContext = getGlobalAudioContext;
 const setGlobalMute = (muted) => {
     globalMuteEnabled = muted;
     safeSetItem('alloflow-global-muted', muted ? 'true' : 'false');
+    if (muted) {
+        // Stop any in-flight browser TTS immediately. HTMLAudioElement playback
+        // (games_source._speakAudio, the kokoro Audio element, etc.) is handled
+        // by the 'alloflow-mute-changed' listeners that the audio sites install.
+        try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+    }
     window.dispatchEvent(new CustomEvent('alloflow-mute-changed', { detail: { muted } }));
 };
 const isGlobalMuted = () => globalMuteEnabled;
+// One-time gate: ~20 call sites in the codebase invoke window.speechSynthesis.speak()
+// directly (allobot, immersive_reader, games_source, adaptive_controller, etc.).
+// Rather than touching each, we wrap the API once so isGlobalMuted() is enforced
+// universally. Idempotent — re-running the monolith (hot reload, double-load) is safe.
+if (typeof window !== 'undefined' && window.speechSynthesis && !window.speechSynthesis._alloMuteGated) {
+    const _alloOriginalSpeak = window.speechSynthesis.speak.bind(window.speechSynthesis);
+    window.speechSynthesis.speak = function alloGatedSpeak(utterance) {
+        if (isGlobalMuted()) return;
+        return _alloOriginalSpeak(utterance);
+    };
+    window.speechSynthesis._alloMuteGated = true;
+}
 const GlobalMuteButton = React.memo(({ className = '' }) => {
     const [muted, setMuted] = React.useState(isGlobalMuted());
     React.useEffect(() => {
@@ -4145,7 +4163,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = './';
-    var pluginCdnVersion = '1779912329361';
+    var pluginCdnVersion = '1779913276568';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these

@@ -99,8 +99,22 @@ var scrambleWord = function(word) {
 };
 const useReducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
 let _speakAudio = null;
+const _isMuted = () => typeof window !== "undefined" && typeof window.__alloIsGlobalMuted === "function" && window.__alloIsGlobalMuted();
+if (typeof window !== "undefined" && !window.__alloGamesSourceMuteListener) {
+  window.addEventListener("alloflow-mute-changed", (e) => {
+    if (e.detail && e.detail.muted && _speakAudio) {
+      try {
+        _speakAudio.pause();
+        _speakAudio = null;
+      } catch (err) {
+      }
+    }
+  });
+  window.__alloGamesSourceMuteListener = true;
+}
 const speakText = (text) => {
   if (!text) return;
+  if (_isMuted()) return;
   const str = String(text);
   try {
     if (_speakAudio) {
@@ -114,6 +128,7 @@ const speakText = (text) => {
     if (window.__alloCallTTS && typeof window.__alloCallTTS === "function") {
       const voice = window.__alloSelectedVoice || "Kore";
       window.__alloCallTTS(str, voice, 1).then((url) => {
+        if (_isMuted()) return;
         if (url) {
           _speakAudio = new Audio(url);
           _speakAudio.playbackRate = 0.95;
@@ -131,9 +146,11 @@ const speakText = (text) => {
   }
 };
 const _kokoroFallback = (str) => {
+  if (_isMuted()) return;
   if (window._kokoroTTS && typeof window._kokoroTTS.speak === "function") {
     const voice = window.__alloSelectedVoice || "af_heart";
     window._kokoroTTS.speak(str, voice, 1).then((url) => {
+      if (_isMuted()) return;
       if (url) {
         _speakAudio = new Audio(url);
         _speakAudio.playbackRate = 0.95;
@@ -148,6 +165,7 @@ const _kokoroFallback = (str) => {
   _browserTTSFallback(str);
 };
 const _browserTTSFallback = (text) => {
+  if (_isMuted()) return;
   if (window.speechSynthesis) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.9;
