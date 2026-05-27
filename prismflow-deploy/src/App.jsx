@@ -4014,7 +4014,50 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [multTableRevealed, setMultTableRevealed] = useState(new Set());
   const [stemLabTab, setStemLabTab] = useState('explore');
   const [modulesReady, setModulesReady] = useState(0);
+  // ── Synchronous global setup: runs DURING render (before first paint) so that
+  // child views using window.AlloIcons / window.<IconName> resolve correctly on
+  // initial render. Previously these lived only in useEffect, which fires AFTER
+  // first paint — leaving _lazyIcon('Filter') etc. returning null on first paint
+  // and not re-rendering when AlloIcons finally arrived (cause of "icons missing
+  // until I click something" UI bug). Guarded so it executes once per session.
+  if (typeof window !== 'undefined' && !window.AlloIcons) {
+    window.React = React;
+    window.ReactDOM = ReactDOM;
+    Object.assign(window, {
+      AlertCircle, AlertTriangle, ArrowLeft, ArrowRight, ArrowUp, ArrowDown,
+      Calculator, Check, CheckCircle, CheckCircle2, CheckSquare, ChevronDown, ChevronLeft, ChevronRight, ChevronUp,
+      CircleHelp, ClipboardList, Clock, Cloud, CloudOff, Code, Copy, Download, Ear, Edit2, ExternalLink, Eye, EyeOff,
+      FileDown, FileQuestion, FileText, Filter, Flag, FolderDown, GitMerge, Globe, GripVertical, Headphones, HelpCircle,
+      ImageIcon, Info, Languages, Layout, Layers, Lightbulb, List, ListOrdered, Lock, MapIcon, Maximize, Maximize2,
+      MessageCircleQuestion, Mic, MicOff, Minimize, Minimize2, Monitor, MonitorPlay, Moon, Music, Palette, Pause, Pencil, Play, PlayCircle,
+      Plus, Printer, Quote, RefreshCw, Save, Search, Settings, Settings2, ShieldCheck, Smile,
+      Sparkles, Star, StopCircle, Sun, Terminal, Trash2, Trophy, Type, Unplug, Unlock, Upload, User, Users,
+      Volume2, VolumeX, Wand2, Wifi, WifiOff, Wrench, X, XCircle, Zap, ZapOff,
+      GraduationCap, School, Brain, Calendar, TrendingUp, BarChart2,
+      BookOpen, Gamepad2, Heart, History, Shuffle, Send, Share2,
+      Activity, AlignJustify, ArrowUpRight, Award, Backpack, Ban, BarChart3, Bold, Cpu, DoorOpen,
+      Folder, FolderInput, FolderOpen, FolderPlus, FolderUp, GalleryHorizontal, GitCompare, GripHorizontal, Highlighter, Inbox, Italic, Key,
+      Link, ListChecks, Loader2, MessageSquare, MousePointerClick, Move, Octagon, Package, PenTool, SaveAll, Scale, ScanLine, ScanSearch, Scissors, ShoppingBag, Target, UserCheck, UserCircle2,
+    });
+    window.AlloIcons = {
+      Activity, AlertCircle, AlignJustify, ArrowDown, ArrowRight, ArrowUp, Award,
+      Backpack, Ban, BarChart3, BookOpen, Brain, Calendar, Check, CheckCircle, CheckCircle2,
+      CheckSquare, ChevronDown, ChevronLeft, ClipboardList, Clock, DoorOpen, Download,
+      Edit2, ExternalLink, Eye, EyeOff, FileDown, Filter, Gamepad2, GitMerge, Globe,
+      GraduationCap, GripVertical, HelpCircle, History, ImageIcon, Key, Languages, Layers,
+      Layout, Lightbulb, Link, ListOrdered, Lock, Loader2, MapIcon, Maximize, Maximize2,
+      MessageSquare, Mic, MicOff, Minimize, MonitorPlay, Palette, Play, PlayCircle,
+      Plus, Printer, Quote, RefreshCw, Search, Send, Settings, Share2, ShieldCheck, ShoppingBag,
+      Sparkles, Star, StopCircle, Target, Trash2, TrendingUp, Trophy, Type, Upload, Users,
+      Volume2, VolumeX, Wrench, X, Zap,
+      ArrowLeft, ChevronRight, FolderOpen, Heart, List, Pause, Pencil,
+      School, Settings2, UserCircle2, XCircle, Unlock, Unplug
+    };
+  }
   React.useEffect(() => {
+    // Backstop: re-assign on mount in case the synchronous block above was
+    // skipped (e.g., on a hot-reload boundary where window.AlloIcons existed
+    // from a previous mount but pointed at stale references).
     window.React = React;
     window.ReactDOM = ReactDOM;
     Object.assign(window, {
@@ -4077,7 +4120,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'cd3d11b6';
+    var pluginCdnVersion = 'd7ce0cc9';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -8639,7 +8682,6 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                               ? `Translate the following text to ${targetLang}. Keep it at ${gradeLevel} reading level. Return ONLY the translation, nothing else:\n\n${bp.text}`
                               : `Explain the following concept at ${gradeLevel} reading level. Also provide a translation in ${targetLang}. Format your response as JSON: {"english": "explanation in English", "translated": "explanation in ${targetLang}", "terms": ["key", "vocabulary", "terms"]}\n\nConcept: ${bp.text}`;
                             const response = await callGemini(prompt, false, false, 0.3);
-                    console.error('[BRIDGE] callGemini response length:', response?.length, 'first 100 chars:', response?.substring?.(0, 100));
                             let parsed;
                             try {
                               const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -8657,7 +8699,6 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                                 imageUrl = await callGeminiImageEdit(`Educational illustration: ${bp.text}. Clear, simple, child-friendly diagram suitable for ${gradeLevel} students.`);
                               } catch(e) { warnLog('Bridge visual generation failed on student device', e); }
                             }
-                            console.error('[BRIDGE] Setting bridgeMessage with:', JSON.stringify({english: (parsed.english || bridgeSendText).substring(0,50), translated: (parsed.translated || '').substring(0,50), language: targetLang, terms: parsed.terms?.length}));
                     setBridgeMessage({
                               english: parsed.english || bp.text,
                               translated: parsed.translated || '',
@@ -13882,14 +13923,16 @@ Return ONLY valid JSON in this format:
       try { return e[name].apply(this, arguments); }
       catch(err) { console.error('[ContentEngine] ' + name + ' threw:', err); addToast(t('toasts.content_engine_error') + err.message, 'error'); }
     } else {
-      console.error('[ContentEngine] ' + name + ': engine=' + !!e + ', fn=' + (e ? typeof e[name] : 'N/A'));
+      console.warn('[ContentEngine] ' + name + ' called before engine ready', { engineLoaded: !!e, fnType: e ? typeof e[name] : 'N/A' });
       return (typeof fallback === 'function' ? fallback.apply(this, arguments) : undefined);
     }
   };
   const handleGenerateSource = _ceFn('handleGenerateSource', async () => {
-    console.error('[ContentEngine] handleGenerateSource FALLBACK hit. State bag keys:', Object.keys(window.__contentEngineState || {}));
-    console.error('[ContentEngine] AlloModules.createContentEngine exists:', !!(window.AlloModules && window.AlloModules.createContentEngine));
-    console.error('[ContentEngine] _contentEngineRef.current:', _contentEngineRef.current);
+    console.warn('[ContentEngine] handleGenerateSource fallback hit — module not loaded yet', {
+      stateBagKeys: Object.keys(window.__contentEngineState || {}),
+      factoryRegistered: !!(window.AlloModules && window.AlloModules.createContentEngine),
+      engineInstanceReady: !!_contentEngineRef.current,
+    });
     addToast(t('toasts.content_engine_loading_try_again'), 'info');
   });
   const addLanguage = _ceFn('addLanguage');
@@ -15917,7 +15960,6 @@ Return ONLY valid JSON in this format:
     }
   };
   const handleRestoreView = (item) => {
-      console.error("[WS-DBG] handleRestoreView CALLED with type:", item?.type, "data length:", item?.data?.length || 0);
       // Phase 2 — DA-generated math manipulative resource. Open the STEM Lab to
       // the right tool with the preset slotted into labToolData. We ALSO set
       // generatedContent so the floating "Return to Dynamic Assessment" pill
@@ -15944,7 +15986,6 @@ Return ONLY valid JSON in this format:
       setActiveView(item.type === 'word-sounds' ? 'word-sounds-generator' : item.type);
       setIsMapLocked(false);
       if (item.type === 'word-sounds') {
-          console.error("[WS-DBG] handleRestoreView: word-sounds detected. Mode:", isTeacherMode ? "teacher" : "student");
           if (item.wsPreloadedWords && Array.isArray(item.wsPreloadedWords) && item.wsPreloadedWords.length > 0) {
               debugLog("📥 Restoring preloaded words from saved wsPreloadedWords:", item.wsPreloadedWords.length);
               const wordsWithFreshTtsFlags = item.wsPreloadedWords.map(w => ({
@@ -15960,12 +16001,10 @@ Return ONLY valid JSON in this format:
           if (isTeacherMode) {
               setIsWordSoundsMode(false);
               setWordSoundsAutoReview(false);
-              console.error("[WS-DBG] Teacher path complete. activeView should now be 'word-sounds'. generatedContent set to:", JSON.stringify({type: item.type, dataLen: item.data?.length, title: item.title}).substring(0, 200));
           } else {
               setIsWordSoundsMode(false);
               setWordSoundsAutoReview(false);
               setTimeout(() => {
-                  console.error("[WS-DBG] Student restore: launching Word Sounds activity directly");
                   setIsWordSoundsMode(true);
                   setCurrentWordSoundsWord(null);
                   setWordSoundsActivity('counting');
@@ -23790,7 +23829,6 @@ ${_toolList}
                     addToast, warnLog,
                     BilingualFieldRenderer, SourceReferencesPanel
                 })}
-                {activeView === 'word-sounds' && !isWordSoundsMode && console.error("[WS-DBG] Preview card branch ENTERED! activeView:", activeView, "isWordSoundsMode:", isWordSoundsMode, "generatedContent type:", generatedContent?.type) && false}
                 {activeView === 'word-sounds' && !isWordSoundsMode && window.AlloModules && window.AlloModules.WordSoundsPreviewView && React.createElement(window.AlloModules.WordSoundsPreviewView, {
                     generatedContent, wsActivitySequence,
                     setWordSoundsActivity, setIsWordSoundsMode, setWordSoundsAutoReview
