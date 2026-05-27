@@ -273,6 +273,41 @@ Treated the 8 moderate-contamination packs identified in the audit:
   Bengali, Nepali, Tagalog, Amharic, Swahili
 - ⚠️ **Partial cleanup, more work possible**: German, Indonesian
   (started but help_mode + more tour entries not yet addressed)
+
+## 2026-05-27 — Partial-cleanup continuation pass
+
+Completed remaining heavy tour translations for German and Indonesian.
+
+### German — ALL 21+ long tour.*_text entries now hand-translated
+Across 4 waves of German tour translation:
+- `600b4ddf` (initial): adventure, quiz, wordsounds
+- `e54521f6` (wave 2): actions, brainstorm, analysis, simplified, outline, persona
+- `53aaa90a` (wave 3): timeline, math, visual, glossary, fullpack, dashboard
+- `15b74543` (wave 4): scaffolds, concept_sort, alignment, lesson_plan, faq, input_panel
+
+**Total: 22 tour entries hand-translated**. Remaining audit "EN-word"
+counts are false positives — German legitimately uses "Live", "Immersive",
+"Multiple" as loanwords (e.g., "Live-Quiz", "Multiple Choice").
+
+### Indonesian — All major tour entries hand-translated
+Across 3 waves:
+- `374d1f33` (initial): adventure, quiz
+- `6417077f` (wave 2): brainstorm, simplified, wordsounds, analysis
+- `190c0ec2` (wave 3): input_panel, visual, math
+
+**Total: 9 tour entries hand-translated.** Other tour entries had only
+1-2 word residual English (cleaned by earlier dictionary pass) and read
+acceptably. Audit shows only 5 Indonesian keys with 4+ residual English
+words.
+
+### Remaining work for German + Indonesian
+- **help_mode tooltips**: Neither has had the Polish/Russian wave 1-4
+  treatment yet. ~415 tooltips × 2 languages = ~830 hand-translations
+  if pursued at the same depth. Currently using English passthrough
+  on long-tail help_mode keys.
+- **Lower-impact body text**: ~120 German keys, ~50 Indonesian keys
+  with residual English mixed into shorter strings. Tour entries (the
+  most-visible long-form content) are all complete.
 - 📝 **Documented English-passthrough strategy** (PPS cluster): Acholi,
   Karen, Chin Hakha/Falam, Maay Maay, Marshallese, Lao
 - 📋 **Not yet sampled for contamination**: Greek, Romanian, Burmese,
