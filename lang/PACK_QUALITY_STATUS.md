@@ -113,14 +113,30 @@ Two commits (`531767f8`, `21489e3d`) — total ~60k cleanup operations:
 - Spot-checked tour.adventure_text, tour.quiz_text — now reading as
   coherent Persian/Urdu/Pashto.
 
-### Russian / Polish help_mode — 97 templates hand-translated
-- Commit `84c981f3` — 97 high-visibility help_mode tooltips written
-  from scratch for both Polish AND Russian.
-- Coverage: ALL adventure_*, quiz_*, simplified_* keys + key dashboard,
-  settings, glossary widgets.
-- Unique value counts: Polish 254 → 341 (+34%), Russian 257 → 344 (+34%).
-- Remaining template clusters (each 16-21 reuses): dashboard widgets,
-  glossary widgets, settings widgets — lower priority since less visible.
+### Russian / Polish help_mode — 415 templates hand-translated (waves 1-4)
+- Commits `84c981f3` (wave 1, 97 tooltips), `29bc8b87` (wave 2, 196 tooltips),
+  `9f29481c` (wave 3, 56 tooltips), `c9e2c2ef` (wave 4, 66 tooltips).
+- Coverage: ALL adventure_*, quiz_*, simplified_*, wizard_*, dashboard_*,
+  glossary_*, header_settings_*, header_view/jump/cloud, close buttons,
+  concept_sort_*, venn_*, escape_room_*, timeline_*, math_*, word_sounds_*,
+  visuals_*, history_*, persona_*, export_*, immersive_*, brainstorm_*,
+  tool_*, toggles, input fields, generate buttons, cards, panels, behavior
+  lens (bl_*), group selects.
+- Unique value counts: Polish 254 → 633 (+149%), Russian 257 → 633 (+146%).
+- 79.5% of help_mode keys now have unique tooltips. Remaining template
+  clusters are 7-9x reuses for less-visible widgets and accepted.
+
+### Polish tour entries — all 22 long tour.*_text keys hand-translated
+- Commits `a591e63d` (top 10) + `1e060056` (next 12).
+- ALL tour.*_text entries (adventure, quiz, wordsounds, outline, utils,
+  timeline, scaffolds, persona, math, simplified, actions, analysis,
+  visual, fullpack, brainstorm, dashboard, glossary, concept_sort,
+  alignment, lesson_plan, faq, input_panel) now in clean Polish.
+- Polish Cyrillic chars: 69,824 → 61,314 (-12% this pass; -71% from
+  original 214,954). Tour entries were the most-contaminated keys, now
+  fully resolved. Remaining 4,684 contaminated keys are short body text
+  (a11y_lab simulators, adventure.persona_*, etc.) — diminishing returns
+  but still cleanable per-key.
 
 
 
