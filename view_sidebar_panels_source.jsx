@@ -1170,16 +1170,16 @@ function DbqPanel(props) {
                                                 const docArea = document.getElementById('dbq-custom-docs');
                                                 const url = urlInput?.value?.trim();
                                                 if (!url || !docArea) return;
-                                                addToast && addToast('Fetching document from URL...', 'info');
+                                                addToast && addToast(t("toasts.fetching_document_url"), 'info');
                                                 try {
                                                     const text = await fetchAndCleanUrl(url, callGemini, addToast);
                                                     if (text) {
                                                         const separator = docArea.value.trim() ? '\n---\n' : '';
                                                         docArea.value += separator + 'Title: (imported from URL)\nSource: ' + url + '\n' + text.replace(/^Source:.*\n\n?/, '');
                                                         urlInput.value = '';
-                                                        addToast && addToast('Document imported! Review and edit the text below.', 'success');
+                                                        addToast && addToast(t("toasts.document_imported"), 'success');
                                                     }
-                                                } catch (e) { addToast && addToast('Import failed: ' + e.message, 'error'); }
+                                                } catch (e) { addToast && addToast(t("errors.import_failed_prefix") + e.message, 'error'); }
                                             }} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-lg transition-all shrink-0"
                                                 aria-label={t('dbq.fetch_url_aria') || 'Fetch URL'}>{t('dbq.fetch_url_button') || '🔗 Fetch'}</button>
                                         </div>
@@ -1192,7 +1192,7 @@ function DbqPanel(props) {
                                                     const file = e.target.files?.[0];
                                                     const docArea = document.getElementById('dbq-custom-docs');
                                                     if (!file || !docArea || !callGeminiVision) return;
-                                                    addToast && addToast('Extracting text from image...', 'info');
+                                                    addToast && addToast(t("toasts.extracting_text_image"), 'info');
                                                     try {
                                                         const reader = new FileReader();
                                                         reader.onload = async () => {
@@ -1204,14 +1204,14 @@ function DbqPanel(props) {
                                                                 if (text && text.trim().length > 10) {
                                                                     const separator = docArea.value.trim() ? '\n---\n' : '';
                                                                     docArea.value += separator + 'Title: (extracted from ' + file.name + ')\nSource: Uploaded document image\n' + text.trim();
-                                                                    addToast && addToast('Text extracted from image! Review and edit below.', 'success');
+                                                                    addToast && addToast(t("toasts.text_extracted_image_long"), 'success');
                                                                 } else {
-                                                                    addToast && addToast('Could not extract readable text from this image.', 'error');
+                                                                    addToast && addToast(t("toasts.extract_readable_failed"), 'error');
                                                                 }
-                                                            } catch (err) { addToast && addToast('OCR failed: ' + err.message, 'error'); }
+                                                            } catch (err) { addToast && addToast(t("errors.ocr_failed_prefix") + err.message, 'error'); }
                                                         };
                                                         reader.readAsDataURL(file);
-                                                    } catch (err) { addToast && addToast('File read failed: ' + err.message, 'error'); }
+                                                    } catch (err) { addToast && addToast(t("errors.file_read_failed") + err.message, 'error'); }
                                                     e.target.value = '';
                                                 }} />
                                             <button onClick={() => document.getElementById('dbq-import-image')?.click()}
@@ -1225,7 +1225,7 @@ function DbqPanel(props) {
                                                     for (const item of items) {
                                                         const imageType = item.types.find(t => t.startsWith('image/'));
                                                         if (imageType) {
-                                                            addToast && addToast('Extracting text from clipboard image...', 'info');
+                                                            addToast && addToast(t("toasts.extracting_clipboard"), 'info');
                                                             const blob = await item.getType(imageType);
                                                             const reader = new FileReader();
                                                             reader.onload = async () => {
@@ -1235,16 +1235,16 @@ function DbqPanel(props) {
                                                                     if (text && text.trim().length > 10) {
                                                                         const separator = docArea.value.trim() ? '\n---\n' : '';
                                                                         docArea.value += separator + 'Title: (pasted from clipboard)\nSource: Clipboard image\n' + text.trim();
-                                                                        addToast && addToast('Text extracted from clipboard image!', 'success');
-                                                                    } else { addToast && addToast('Could not extract text from clipboard image.', 'error'); }
-                                                                } catch (err) { addToast && addToast('OCR failed: ' + err.message, 'error'); }
+                                                                        addToast && addToast(t("toasts.text_extracted_clipboard"), 'success');
+                                                                    } else { addToast && addToast(t("toasts.extract_clipboard_failed"), 'error'); }
+                                                                } catch (err) { addToast && addToast(t("errors.ocr_failed_prefix") + err.message, 'error'); }
                                                             };
                                                             reader.readAsDataURL(blob);
                                                             return;
                                                         }
                                                     }
-                                                    addToast && addToast('No image found in clipboard. Copy an image first (screenshot, right-click copy, etc.)', 'info');
-                                                } catch (err) { addToast && addToast('Clipboard access failed. Try uploading instead.', 'info'); }
+                                                    addToast && addToast(t("toasts.no_clipboard_image"), 'info');
+                                                } catch (err) { addToast && addToast(t("toasts.clipboard_access_failed"), 'info'); }
                                             }} className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold rounded-lg transition-all flex items-center gap-1"
                                                 aria-label={t('dbq.paste_clipboard_aria') || 'Paste image from clipboard'}>{t('dbq.paste_clipboard_button') || '📋 Paste Image'}</button>
                                         </div>
@@ -1443,7 +1443,7 @@ function SourceInputPanel(props) {
                                 if (!blob) return;
                                 setIsExtracting(true);
                                 setGenerationStep('Extracting text from pasted image...');
-                                addToast && addToast('Image detected — extracting text...', 'info');
+                                addToast && addToast(t("toasts.image_detected_extracting"), 'info');
                                 const reader = new FileReader();
                                 reader.onload = async () => {
                                     try {
@@ -1454,11 +1454,11 @@ function SourceInputPanel(props) {
                                         );
                                         if (text && text.trim().length > 10) {
                                             setInputText(prev => prev ? prev + '\n\n' + text.trim() : text.trim());
-                                            addToast && addToast('Text extracted from image!', 'success');
+                                            addToast && addToast(t("toasts.text_extracted_image"), 'success');
                                         } else {
-                                            addToast && addToast('Could not extract readable text from image.', 'error');
+                                            addToast && addToast(t("toasts.extract_readable_failed_short"), 'error');
                                         }
-                                    } catch (err) { addToast && addToast('Image OCR failed: ' + err.message, 'error'); }
+                                    } catch (err) { addToast && addToast(t("errors.image_ocr_failed") + err.message, 'error'); }
                                     setIsExtracting(false); setGenerationStep('');
                                 };
                                 reader.readAsDataURL(blob);
@@ -2224,8 +2224,8 @@ function ImagePanel(props) {
     creativeMode, expandedTools, fillInTheBlank, handleGenerate,
     hasSourceOrAnalysis, isProcessing, noText, setCreativeMode,
     setFillInTheBlank, setNoText, setUseLowQualityVisuals, setVisualCustomInstructions,
-    setVisualLayoutMode, setVisualStyle, t, useLowQualityVisuals,
-    visualCustomInstructions, visualLayoutMode, visualStyle
+    setVisualCustomStyle, setVisualLayoutMode, setVisualStyle, t, useLowQualityVisuals,
+    visualCustomInstructions, visualCustomStyle, visualLayoutMode, visualStyle
   } = props;
   if (!expandedTools || !expandedTools.includes('image')) return null;
   return (
@@ -2271,7 +2271,19 @@ function ImagePanel(props) {
                             <option value="Comic Book Style">{t('visuals.styles.comic')}</option>
                             <option value="Line Art">{t('visuals.styles.line')}</option>
                             <option value="3D Render">{t('visuals.styles.render_3d')}</option>
+                            <option value="custom">{t('visuals.styles.custom') || '✏️ Custom…'}</option>
                         </select>
+                        {visualStyle === 'custom' && (
+                            <input
+                                type="text"
+                                value={visualCustomStyle || ''}
+                                onChange={(e) => setVisualCustomStyle(e.target.value)}
+                                placeholder={t('visuals.styles.custom_placeholder') || 'e.g. Vintage botanical illustration, Crayon drawing, Stained glass…'}
+                                maxLength={120}
+                                aria-label={t('visuals.styles.custom_aria') || 'Custom art style description'}
+                                className="w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-cyan-300 focus:ring focus:ring-cyan-200 p-1 mt-1"
+                            />
+                        )}
                         </div>
                         <div>
                         <label className="block text-xs font-medium text-slate-700 mb-1">🎬 Layout Mode</label>

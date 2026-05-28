@@ -1036,17 +1036,17 @@ function DbqPanel(props) {
         const docArea = document.getElementById("dbq-custom-docs");
         const url = urlInput?.value?.trim();
         if (!url || !docArea) return;
-        addToast && addToast("Fetching document from URL...", "info");
+        addToast && addToast(t("toasts.fetching_document_url"), "info");
         try {
           const text = await fetchAndCleanUrl(url, callGemini, addToast);
           if (text) {
             const separator = docArea.value.trim() ? "\n---\n" : "";
             docArea.value += separator + "Title: (imported from URL)\nSource: " + url + "\n" + text.replace(/^Source:.*\n\n?/, "");
             urlInput.value = "";
-            addToast && addToast("Document imported! Review and edit the text below.", "success");
+            addToast && addToast(t("toasts.document_imported"), "success");
           }
         } catch (e) {
-          addToast && addToast("Import failed: " + e.message, "error");
+          addToast && addToast(t("errors.import_failed_prefix") + e.message, "error");
         }
       },
       className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-lg transition-all shrink-0",
@@ -1064,7 +1064,7 @@ function DbqPanel(props) {
         const file = e.target.files?.[0];
         const docArea = document.getElementById("dbq-custom-docs");
         if (!file || !docArea || !callGeminiVision) return;
-        addToast && addToast("Extracting text from image...", "info");
+        addToast && addToast(t("toasts.extracting_text_image"), "info");
         try {
           const reader = new FileReader();
           reader.onload = async () => {
@@ -1076,17 +1076,17 @@ function DbqPanel(props) {
               if (text && text.trim().length > 10) {
                 const separator = docArea.value.trim() ? "\n---\n" : "";
                 docArea.value += separator + "Title: (extracted from " + file.name + ")\nSource: Uploaded document image\n" + text.trim();
-                addToast && addToast("Text extracted from image! Review and edit below.", "success");
+                addToast && addToast(t("toasts.text_extracted_image_long"), "success");
               } else {
-                addToast && addToast("Could not extract readable text from this image.", "error");
+                addToast && addToast(t("toasts.extract_readable_failed"), "error");
               }
             } catch (err) {
-              addToast && addToast("OCR failed: " + err.message, "error");
+              addToast && addToast(t("errors.ocr_failed_prefix") + err.message, "error");
             }
           };
           reader.readAsDataURL(file);
         } catch (err) {
-          addToast && addToast("File read failed: " + err.message, "error");
+          addToast && addToast(t("errors.file_read_failed") + err.message, "error");
         }
         e.target.value = "";
       }
@@ -1110,7 +1110,7 @@ function DbqPanel(props) {
           for (const item of items) {
             const imageType = item.types.find((t2) => t2.startsWith("image/"));
             if (imageType) {
-              addToast && addToast("Extracting text from clipboard image...", "info");
+              addToast && addToast(t("toasts.extracting_clipboard"), "info");
               const blob = await item.getType(imageType);
               const reader = new FileReader();
               reader.onload = async () => {
@@ -1120,21 +1120,21 @@ function DbqPanel(props) {
                   if (text && text.trim().length > 10) {
                     const separator = docArea.value.trim() ? "\n---\n" : "";
                     docArea.value += separator + "Title: (pasted from clipboard)\nSource: Clipboard image\n" + text.trim();
-                    addToast && addToast("Text extracted from clipboard image!", "success");
+                    addToast && addToast(t("toasts.text_extracted_clipboard"), "success");
                   } else {
-                    addToast && addToast("Could not extract text from clipboard image.", "error");
+                    addToast && addToast(t("toasts.extract_clipboard_failed"), "error");
                   }
                 } catch (err) {
-                  addToast && addToast("OCR failed: " + err.message, "error");
+                  addToast && addToast(t("errors.ocr_failed_prefix") + err.message, "error");
                 }
               };
               reader.readAsDataURL(blob);
               return;
             }
           }
-          addToast && addToast("No image found in clipboard. Copy an image first (screenshot, right-click copy, etc.)", "info");
+          addToast && addToast(t("toasts.no_clipboard_image"), "info");
         } catch (err) {
-          addToast && addToast("Clipboard access failed. Try uploading instead.", "info");
+          addToast && addToast(t("toasts.clipboard_access_failed"), "info");
         }
       },
       className: "px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold rounded-lg transition-all flex items-center gap-1",
@@ -1376,7 +1376,7 @@ function SourceInputPanel(props) {
             if (!blob) return;
             setIsExtracting(true);
             setGenerationStep("Extracting text from pasted image...");
-            addToast && addToast("Image detected \u2014 extracting text...", "info");
+            addToast && addToast(t("toasts.image_detected_extracting"), "info");
             const reader = new FileReader();
             reader.onload = async () => {
               try {
@@ -1388,12 +1388,12 @@ function SourceInputPanel(props) {
                 );
                 if (text && text.trim().length > 10) {
                   setInputText((prev) => prev ? prev + "\n\n" + text.trim() : text.trim());
-                  addToast && addToast("Text extracted from image!", "success");
+                  addToast && addToast(t("toasts.text_extracted_image"), "success");
                 } else {
-                  addToast && addToast("Could not extract readable text from image.", "error");
+                  addToast && addToast(t("toasts.extract_readable_failed_short"), "error");
                 }
               } catch (err) {
-                addToast && addToast("Image OCR failed: " + err.message, "error");
+                addToast && addToast(t("errors.image_ocr_failed") + err.message, "error");
               }
               setIsExtracting(false);
               setGenerationStep("");
@@ -2043,11 +2043,13 @@ function ImagePanel(props) {
     setNoText,
     setUseLowQualityVisuals,
     setVisualCustomInstructions,
+    setVisualCustomStyle,
     setVisualLayoutMode,
     setVisualStyle,
     t,
     useLowQualityVisuals,
     visualCustomInstructions,
+    visualCustomStyle,
     visualLayoutMode,
     visualStyle
   } = props;
@@ -2078,7 +2080,19 @@ function ImagePanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "Technical Blueprint" }, t("visuals.styles.blueprint")),
     /* @__PURE__ */ React.createElement("option", { value: "Comic Book Style" }, t("visuals.styles.comic")),
     /* @__PURE__ */ React.createElement("option", { value: "Line Art" }, t("visuals.styles.line")),
-    /* @__PURE__ */ React.createElement("option", { value: "3D Render" }, t("visuals.styles.render_3d"))
+    /* @__PURE__ */ React.createElement("option", { value: "3D Render" }, t("visuals.styles.render_3d")),
+    /* @__PURE__ */ React.createElement("option", { value: "custom" }, t("visuals.styles.custom") || "\u270F\uFE0F Custom\u2026")
+  ), visualStyle === "custom" && /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "text",
+      value: visualCustomStyle || "",
+      onChange: (e) => setVisualCustomStyle(e.target.value),
+      placeholder: t("visuals.styles.custom_placeholder") || "e.g. Vintage botanical illustration, Crayon drawing, Stained glass\u2026",
+      maxLength: 120,
+      "aria-label": t("visuals.styles.custom_aria") || "Custom art style description",
+      className: "w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-cyan-300 focus:ring focus:ring-cyan-200 p-1 mt-1"
+    }
   )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, "\u{1F3AC} Layout Mode"), /* @__PURE__ */ React.createElement(
     "select",
     {

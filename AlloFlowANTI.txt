@@ -10373,6 +10373,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [singleImageOverride, setSingleImageOverride] = useState(null);
   const singleImageFileRef = React.useRef(null);
   const [visualStyle, setVisualStyle] = useState('Default');
+  // When visualStyle === 'custom', the dropdown reveals a text field and
+  // visualCustomStyle holds the user-typed phrase. The dispatcher reads
+  // both and substitutes the custom string into the Imagen prompt
+  // ('${customStyle} style.') in place of the canned options. Falls back to
+  // 'Default' if the field is empty so the prompt never reads "${''} style."
+  const [visualCustomStyle, setVisualCustomStyle] = useState('');
   const [visualLayoutMode, setVisualLayoutMode] = React.useState('auto');
   const [useLowQualityVisuals, setUseLowQualityVisuals] = useState(false);
   const [isDraftSaving, setIsDraftSaving] = useState(false);
@@ -18557,6 +18563,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   textFormat,
                   dokLevel,
                   visualStyle,
+                  visualCustomStyle,
                   includeSourceCitations,
                   fullPackTargetGroup,
                   differentiationRange,
@@ -18587,6 +18594,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setTextFormat(s.textFormat);
           setDokLevel(s.dokLevel);
           setVisualStyle(s.visualStyle);
+          if (s.visualCustomStyle !== undefined) setVisualCustomStyle(s.visualCustomStyle);
           setIncludeSourceCitations(s.includeSourceCitations);
           setFullPackTargetGroup(s.fullPackTargetGroup);
           setDifferentiationRange(s.differentiationRange);
@@ -19879,6 +19887,7 @@ ${_toolList}
         gradeLevel,
         outlineType,
         visualStyle,
+        visualCustomStyle,
         visualLayoutMode,
         quizMcqCount,
         persistedLessonDNA,
@@ -23637,8 +23646,8 @@ ${_toolList}
                 {expandedTools.includes('image') && window.AlloModules && window.AlloModules.ImagePanel && React.createElement(window.AlloModules.ImagePanel, {
           expandedTools, creativeMode, fillInTheBlank, handleGenerate, hasSourceOrAnalysis,
           isProcessing, noText, setCreativeMode, setFillInTheBlank, setNoText,
-          setUseLowQualityVisuals, setVisualCustomInstructions, setVisualLayoutMode, setVisualStyle, t,
-          useLowQualityVisuals, visualCustomInstructions, visualLayoutMode, visualStyle
+          setUseLowQualityVisuals, setVisualCustomInstructions, setVisualCustomStyle, setVisualLayoutMode, setVisualStyle, t,
+          useLowQualityVisuals, visualCustomInstructions, visualCustomStyle, visualLayoutMode, visualStyle
                 })}
             </div>
             <div style={{display: isGuidedToolVisible('faq') ? undefined : 'none'}} id="tour-tool-faq" data-help-key="tool_faq" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
