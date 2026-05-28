@@ -40,7 +40,7 @@
     "fullpack_title": "Buo Pack",
     "fullpack_text": "Ang universal 'madali mga button' para sa instant, mataas-kalidad nilalaman henerasyon. Perpekto para sa guro, magulang, at sarili-guided mga nag-aaral, ito mga kasangkapan bumubuo every mga mapagkukunan sa sequence kasama intelligent AI configuration.\n### Smart Automation\n• **Awtomatiko-Configuration**: AI analyzes iyong teksto at intelligently configures optimal mga setting para sa every mga kasangkapan.\n• **Konteksto-Aware**: Ensures quiz, scaffolds, at laro ay perfectly aligned sa teksto pagkakomplek at tema.\n• **Custom mga mapagkukunan Bilangin**: Pumili 'Awtomatiko' (AI picks essentials) o 'lahat' (buo 13-mga mapagkukunan suite).\n### Nabuo mga mapagkukunan Batch bumubuo up sa 13 mga mapagkukunan sa intelligent order:\n• **Pagsusuri** (una) ? glosaryo ? Antased teksto ? biswal imahe\n• **Outline** ? FAQ ? pangungusap Frames ? Timeline\n• **Persona Interview** ? Konsepto Ayusin ? Brainstorm ? quiz\n• **aralin Plano** (huli, ginagamit lahat prior mga mapagkukunan para sa konteksto)\n### mode Adaptation\n• **guro mode**: Buo educator mga mapagkukunan kasama pedagogical guidance.\n• **mag-aaral mode**: Sarili-study mga materyales kasama embedded suporta.\n• **magulang mode**: Family-palakaibigan guides para sa home pag-aaral.\n### Pro tip Ipasok custom tagubilin bago i-clicking Buo Pack•AI distributes them intelligently sa kabila lahat nabuo mga mapagkukunan!\n### UDL Connection\n• **Action & ekspresyon**: Streamlines mga mapagkukunan creation (Guideline 5) by awtomatikong bumubuo maramihan format mula sa isang single pinagkunan.",
     "utils_title": "Pagiging madaling magamit Hub",
-    "utils_text": "Ang Pagiging madaling magamit at mga setting Hub. I-customize ang entire application para sa magkakaibang learner needs.\n### Pagbabasa Pagiging madaling magamit\n• **teksto Size**: Isaayos font scale para sa biswal comfort.\n• **Font estilo**: Pumili mula sa dyslexia-palakaibigan at mataas-readability fonts.\n• **linya taas & Spacing**: Increase vertical spacing para sa easier pagbabasa.\n• **Bionic Pagbabasa**: Bold una portion ng mga salita sa guide pagbabasa flow.\n• **kulay Overlay**: Apply tinted overlay sa reduce biswal stress (Irlen-estilo).\n### tema & Pagpapakita\n• **Dark mode**: Low-light interface para sa reduced eye strain.\n• **Mataas Contrast mode**: Maximum contrast kasama bold outlines para sa low vision.\n• **Reduce Animations**: I-toggle off galaw effects para sa vestibular sensitivity.\n### boses & audio\n• **boses Selection**: Pumili mula sa maramihan TTS voices (male/female, accents).\n• **bilis Kontrol**: Isaayos speech rate mula sa 0.5• sa 2• bilis.\n• **volume Kontrol**: Itakda TTS volume independently mula sa sistema audio.\n### AlloBot mga setting\n• **Ipakita/Itago AlloBot**: I-toggle ang animated assistant karakter.\n• **Hindi paganahin tip**: Turn off proactive tip mula sa AlloBot.\n### Profile & sistema\n• **Profile Konteksto**: Magdagdag iyong teaching konteksto (grado, subject) sa improve AI output.\n• **wika Preferences**: Itakda default interface at target pagsasalin wika.\n• **Documentation**: Access user guides, tutorials, at pedagogical mga mapagkukunan.\n### Pro tip Para sa mag-aaral kasama IEPs requiring teksto modifications, configure Pagbabasa Pagiging madaling magamit mga setting once•sila persist sa kabila lahat nabuo nilalaman!\n### UDL Connection\n• **Representation**: Offer alternatives para sa auditory at biswal impormasyon (Guidelines 1.1-1.3).",
+    "utils_text": "Ang Pagiging madaling magamit at mga setting Hub. I-customize ang entire application para sa magkakaibang learner needs.\n### Pagbabasa Pagiging madaling magamit\n• **teksto Size**: Isaayos font scale para sa biswal comfort.\n• **Font estilo**: Pumili mula sa dyslexia-palakaibigan at mataas-readability fonts.\n• **linya taas & Spacing**: Increase vertical spacing para sa easier pagbabasa.\n• **Bionic Pagbabasa**: Bold una portion ng mga salita sa guide pagbabasa flow.\n• **kulay Overlay**: Ilapat tinted overlay sa reduce biswal stress (Irlen-estilo).\n### tema & Pagpapakita\n• **Dark mode**: Low-light interface para sa reduced eye strain.\n• **Mataas Contrast mode**: Maximum contrast kasama bold outlines para sa low vision.\n• **Reduce Animations**: I-toggle off galaw effects para sa vestibular sensitivity.\n### boses & audio\n• **boses Selection**: Pumili mula sa maramihan TTS voices (male/female, accents).\n• **bilis Kontrol**: Isaayos speech rate mula sa 0.5• sa 2• bilis.\n• **volume Kontrol**: Itakda TTS volume independently mula sa sistema audio.\n### AlloBot mga setting\n• **Ipakita/Itago AlloBot**: I-toggle ang animated assistant karakter.\n• **Hindi paganahin tip**: Turn off proactive tip mula sa AlloBot.\n### Profile & sistema\n• **Profile Konteksto**: Magdagdag iyong teaching konteksto (grado, subject) sa improve AI output.\n• **wika Preferences**: Itakda default interface at target pagsasalin wika.\n• **Documentation**: Access user guides, tutorials, at pedagogical mga mapagkukunan.\n### Pro tip Para sa mag-aaral kasama IEPs requiring teksto modifications, configure Pagbabasa Pagiging madaling magamit mga setting once•sila persist sa kabila lahat nabuo nilalaman!\n### UDL Connection\n• **Representation**: Offer alternatives para sa auditory at biswal impormasyon (Guidelines 1.1-1.3).",
     "dashboard_title": "Dashboard / mga kasangkapan",
     "dashboard_text": "Ang mga kasangkapan Navigation bar at guro Dashboard access punto.\n### mga kasangkapan Navigation bar\n• **mga kasangkapan icon**: One-i-i-click jump sa anumang generator (quiz, glosaryo, Pakikipagsapalaran, etc.).\n• **Status Dots**: Green = aktibo nilalaman, Orange = processing, Gray = empty.\n• **Logical Flow**: mga kasangkapan ordered left-sa-tama mula sa input ? Bumuo ? I-export.\n### guro Dashboard mga button I-i-click ang Dashboard icon sa buksan ang **guro Grading Dashboard** - isang dedicated panel para sa pagsubaybay mag-aaral pag-unlad:\n• **I-upload mag-aaral JSONs**: mag-aaral i-export kanilang trabaho as JSON file; i-upload them here para sa batch pagsusuri.\n• **mag-aaral Roster**: Tingnan lahat uploaded mag-aaral kasama nickname, date, quiz pag-unlad, at Pakikipagsapalaran antas.\n• **Indibidwal Pagsusuri**: I-i-click anumang mag-aaral sa tingnan kanilang buo kasaysayan•quiz, adventures, responses.\n• **Mark as Graded**: Checkbox sa track which mag-aaral ikaw've reviewed.\n• **klase Insights Tab**: Pagsusuri tsart nagpapakita karaniwan misconceptions at klase-wide performance.\n• **I-export sa CSV**: I-download klase datos para sa gradebook i-import.\n### Related Header Actions\n• **Jump sa aralin**: mabilis-return sa iyong pinaka recent aralin plano.\n• **Tingnan I-toggle**: I-switch sa pagitan guro at mag-aaral views.\n### Pro tip maaaring mag-aaral i-export kanilang JSON sini-i-save at ang end ng klase, tapos batch-i-upload them here para sa efficient overnight grading!",
     "actions_title": "Action bar",
@@ -88,7 +88,7 @@
     "step_of": "hakbang {current} ng {total}",
     "back": "← Bumalik",
     "skip": "susunod hakbang →",
-    "all_done": "🎉 lahat Done! Tingnan lahat mga kasangkapan",
+    "all_done": "🎉 lahat Tapos na! Tingnan lahat mga kasangkapan",
     "about": "Tungkol",
     "source_prompt": "I-paste o ipasok pinagkunan teksto sa begin",
     "history_hint": "💡 iyong nabuo mga mapagkukunan ay na-i-save sa ang Kasaysayan tab — ikaw maaari revisit at i-export them anytime!",
@@ -776,7 +776,7 @@
     "remove_standard": "Tanggalin pamantayan",
     "remove_concept": "Tanggalin konsepto",
     "choose_overwrite_version": "Pumili whether sa overwrite ang kasalukuyan teksto o gumawa isang bago bersyon",
-    "apply_nano_edit": "Ilapat ang Custom Nano Banana Edit",
+    "apply_nano_edit": "Ilapat ang Custom Nano Banana I-edit",
     "link_opened_copy_paste": "Link binuksan. Kopyahin ang URL at i-paste it here.",
     "find_relevant_standards": "Hanapin relevant pamantayan",
     "export_for_grading": "I-export trabaho para sa guro grading (imahe removed)",
@@ -1636,7 +1636,7 @@
     "image_too_large_10mb_alt": "imahe too large (max 10MB)",
     "kokoro_ready_switching": "Kokoro boses ready! Switching to offline boses.",
     "download_failed_retry": "I-i-download failed — pakiusap subukan again later",
-    "reverted_last_apply": "Reverted to the state before your huli Apply.",
+    "reverted_last_apply": "Reverted to the state before your huli Ilapat.",
     "fetching_document_url": "Fetching dokumento from URL...",
     "document_imported": "dokumento imported! Review and i-edit the teksto below.",
     "extracting_text_image": "Extracting teksto from imahe...",
@@ -2546,7 +2546,7 @@
       "select_all_highlight": "Pumili/Deselect lahat para sa Antased teksto Highlighting",
       "select_highlight": "Isama ito termino sa Antased teksto Highlighting",
       "delete_term": "Burahin termino",
-      "apply_edit": "Ilapat ang Custom Nano Banana Edit",
+      "apply_edit": "Ilapat ang Custom Nano Banana I-edit",
       "generate_icon": "Bumuo isang biswal icon para sa ito termino"
     },
     "auto_remove": "Awtomatiko-Tanggalin mga salita mula sa imahe",
@@ -4367,7 +4367,7 @@
     },
     "diff": {
       "button_aria": "Buksan mga salita-antas diff tingnan sa pagitan pinagkunan PDF at remediated HTML",
-      "button_title": "Buksan ang mga salita-antas diff modal — tingnan every insertion, deletion, at paraphrase sa pagitan ang pinagkunan PDF teksto at ang remediated HTML, kasama i-i-click-sa-reject at Apply & I-export."
+      "button_title": "Buksan ang mga salita-antas diff modal — tingnan every insertion, deletion, at paraphrase sa pagitan ang pinagkunan PDF teksto at ang remediated HTML, kasama i-i-click-sa-reject at Ilapat & I-export."
     },
     "pdf_from_html": {
       "title": "Regenerate isang PDF mula sa ang remediated HTML. Layout reflows — pahina breaks, fonts, at pagination maaaring differ mula sa ang orihinal. Gumagana well para sa simple prose dokumento."
@@ -4976,7 +4976,7 @@
     "remove_button": "Tanggalin pamantayan",
     "add_standard": "Magdagdag pamantayan",
     "remove_standard": "Tanggalin pamantayan",
-    "finder_header": "Hanapin & Apply pamantayan",
+    "finder_header": "Hanapin & Ilapat pamantayan",
     "finder_placeholder": "kasanayan o Code (e.g. \"praksyon\" o \"TEKS 4.2\")",
     "region_framework_placeholder": "Region o Framework (e.g. CASEL, CCSS)...",
     "consult_header": "Consult AI sa estratehiya",
@@ -7203,7 +7203,7 @@
     "group_create_input": "Ipasok isang name para sa ang bago mag-aaral grupo.",
     "group_create_button": "Gumawa isang bago mag-aaral grupo kasama ang entered name.",
     "group_roster_list": "Listahan ng mag-aaral sa ang napili grupo.",
-    "roster_panel_header": "Ang klase Roster Susi ay iyong differentiation command center. Gumawa mag-aaral grupos kasama unique pag-aaral profiles (antas ng grado, wika, pagbabasa antas, interests, DOK), tapos apply those profiles sa anumang generator. Roster datos ay stored sa iyong browser's local storage at never leaves iyong device unless ikaw explicitly i-export o sync sa isang sa direkta sesyon. Gamitin 'Apply sa Generator' sa instantly configure mga setting para sa isang grupo, o 'Ibahin by Grupo' sa batch-bumuo mga mapagkukunan para sa lahat grupos at once.",
+    "roster_panel_header": "Ang klase Roster Susi ay iyong differentiation command center. Gumawa mag-aaral grupos kasama unique pag-aaral profiles (antas ng grado, wika, pagbabasa antas, interests, DOK), tapos apply those profiles sa anumang generator. Roster datos ay stored sa iyong browser's local storage at never leaves iyong device unless ikaw explicitly i-export o sync sa isang sa direkta sesyon. Gamitin 'Ilapat sa Generator' sa instantly configure mga setting para sa isang grupo, o 'Ibahin by Grupo' sa batch-bumuo mga mapagkukunan para sa lahat grupos at once.",
     "roster_import_export": "I-import isang previously exported roster JSON file, o i-export iyong kasalukuyan roster para sa backup o sharing sa pagitan devices. Exported file contain grupo names, kulay, mag-aaral assignments, at lahat profile mga setting.",
     "roster_sync_session": "Push iyong roster grupo metadata sa ang aktibo Firebase sesyon so mag-aaral ay awtomatikong assigned sa kanilang designated grupo kapag sila join. Grupo-tiyak mga setting (TTS bilis, karaoke mode) take effect sa mag-aaral devices.",
     "roster_batch_generate": "Bumuo differentiated mga mapagkukunan para sa every grupo simultaneously. Pumili which mga mapagkukunan types sa gumawa (adapted teksto, glosaryo, quiz, etc.) at ang sistema ay iterate sa pamamagitan bawat grupo, applying kanilang profile mga setting bago bumubuo. mga mapagkukunan ay tagged kasama grupo identifiers para sa madali filtering.",
@@ -8156,7 +8156,7 @@
     "synthesizing": "Synthesizing connections...",
     "generate_extensions": "Bumuo Deep aralin Extensions",
     "save_to_history": "I-i-save sa Kasaysayan",
-    "apply_brainstorm": "Apply sa Brainstorm",
+    "apply_brainstorm": "Ilapat sa Brainstorm",
     "apply_brainstorm_tooltip": "Gamitin ito idea sa bumuo Brainstorm mga aktibidad"
   },
   "mastery": {
@@ -11362,8 +11362,8 @@
     "keep_selection": "Keep selection",
     "dismiss_toolbar_aria": "Dismiss kasangkapanbar",
     "footer_help": "I-i-click spans o i-drag-pumili sa i-edit. Pairs i-toggle together.",
-    "revert_tooltip": "Restore ang naa-access HTML sa ang state bago iyong huli Apply & I-export",
-    "apply_export_tooltip": "Apply rejections via teksto surgery (preserves lahat markup, instant, no Gemini call). Falls bumalik sa Gemini round-trip lamang kung surgery maaari't map ilan chunks."
+    "revert_tooltip": "Restore ang naa-access HTML sa ang state bago iyong huli Ilapat & I-export",
+    "apply_export_tooltip": "Ilapat rejections via teksto surgery (preserves lahat markup, instant, no Gemini call). Falls bumalik sa Gemini round-trip lamang kung surgery maaari't map ilan chunks."
   },
   "volume_builder": {
     "zoom_out_aria": "Zoom out",
@@ -11891,7 +11891,7 @@
     "remove_image": "Tanggalin the imahe (keep the teksto)",
     "auto_remove_text": "Auto-tanggalin teksto from ito imahe",
     "delete_item": "Burahin ito aytem",
-    "apply_edit_prompt": "Apply i-edit prompt to ito imahe",
+    "apply_edit_prompt": "Ilapat i-edit prompt to ito imahe",
     "toggle_bionic": "I-i-toggle Bionic Reading",
     "toggle_line_guide": "I-i-toggle linya Guide",
     "toggle_dark_mode": "I-i-toggle Dark mode",

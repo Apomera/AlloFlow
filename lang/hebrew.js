@@ -2484,7 +2484,7 @@
     "image_too_large_10mb_alt": "תמונות too large (max 10MB)",
     "kokoro_ready_switching": "Kokoro קול ready! Switching to offline קול.",
     "download_failed_retry": "הורד failed — נא נסה again later",
-    "reverted_last_apply": "Reverted to the state before your אחרון Apply.",
+    "reverted_last_apply": "Reverted to the state before your אחרון החל.",
     "fetching_document_url": "Fetching מסמכים from URL...",
     "document_imported": "מסמכים imported! Review and ערוך the טקסט below.",
     "extracting_text_image": "Extracting טקסט from תמונות...",
@@ -4353,7 +4353,7 @@
       "victory_desc": "מיינת את כל הסיבות והתוצאות נכון!",
       "reset_confirm": "אשר איפוס — מנקה את כל הלוח",
       "reset_confirm_label": "לחץ שוב לאישור",
-      "reset_confirm_aria": "לחץ Reset שוב כדי לאשר ניקוי הלוח, או המתן כדי לבטל."
+      "reset_confirm_aria": "לחץ אפס שוב כדי לאשר ניקוי הלוח, או המתן כדי לבטל."
     },
     "pipeline": {
       "title": "בונה צינור",
@@ -10283,7 +10283,7 @@
     },
     "diff": {
       "button_aria": "פתח מילים-רמות diff הצג between מקור PDF and remediated HTML",
-      "button_title": "פתח the מילים-רמות diff modal — ראה every insertion, deletion, and paraphrase between the מקור PDF טקסט and the remediated HTML, with לחץ-to-reject and Apply & ייצא."
+      "button_title": "פתח the מילים-רמות diff modal — ראה every insertion, deletion, and paraphrase between the מקור PDF טקסט and the remediated HTML, with לחץ-to-reject and החל & ייצא."
     },
     "pdf_from_html": {
       "title": "Regenerate a PDF from the remediated HTML. Layout reflows — page breaks, fonts, and pagination may differ from the original. Works well for פשוט prose מסמכים."

@@ -18,7 +18,7 @@
     "faq_title": "Predictive FAQ",
     "faq_text": "Anticipate rūkkatak confusion ṃokta it happens. Automatically generates a predictive FAQ based ioon eo text's complexity, proactively addressing common misconceptions.\n### Panel Options\n• **kajjitōk Count**: Kālōt 3, 5, 8, ak 10 Q&A pairs ñan generate.\n• **Custom Instructions**: Guide epepen ippan specific focus areas (e.g., \"focus ioon vocabulary\" ak \"target common errors\").\n### Key Features\n• **Auto-Epepen**: Instantly creates kajjitōk & uwaak based ioon text analysis.\n• **Audio Support**: Text-ñan-Speech ñan aolep ruo kajjitōk im uwaak; klik any Q ak A ñan hear it aloud.\n• **Bilingual Support**: View im hear translations if a target kajin ej selected.\n• **Klik-ñan-Hear Mode**: Interactive listening station ñan independent study.\n### Pro Tip Kōjerbal eo audio feature ñan create a listening station activity ia rūkkatak check understanding•eḷap ñan centers!\n### UDL Connection\n• **Representation**: Highlights patterns im critical features (Guideline 3) by explicitly addressing common misconceptions.",
     "scaffolds_title": "Writing Scaffolds",
-    "scaffolds_text": "Comprehensive writing support system ippan AI-powered grading im customizable sentence structures. Perfect ñan differentiated writing instruction.\n### Scaffold Types\n• **Sentence Starters**: List-based naan in jiroñ ñan jipañ rūkkatak begin their thoughts.\n• **Paragraph Frames**: Cloze-style fill-ilo-eo-blank paragraphs ñan structured argumentation.\n• **Discussion Naan in jiroñ**: Conversation starters ñan collaborative discussions.\n• **Custom Instructions**: Tailor frames ñan specific rhetorical functions (e.g., 'agreeing/disagreeing', 'cause im effect').\n### Rubric & Assessment System\n• **Auto-Kōṃṃan Rubrics**: AI creates criteria-based rubrics aligned ñan eo am content.\n• **Make-Assessment Checklists**: rūkkatak-facing success criteria ñan make-monitoring.\n• **Mastery Assessment**: Evaluate rūkkatak understanding ippan structured rubric grading.\n• **Rubric Zoom**: Enlarge rubric view ñan detailed criteria review.\n### AI Auto-Grader\n• **Instant Feedback**: Submit rūkkatak drafts ñan immediate AI-powered evaluation.\n• **Criteria-Based Scoring**: Grades kajjojo response against rubric criteria points.\n• **Glow & Grow**: Provides specific praise (\"glow\") im improvement suggestions (\"grow\").\n• **TTS Feedback**: Allobot reads grading results aloud ñan accessibility.\n• **XP Rewards**: rūkkatak earn Mastery XP (100 points) ñan completed drafts.\n### Input Options\n• **Voice Dictation**: rūkkatak maroñ dictate responses using eo FAB microphone button.\n• **Ukot Mode**: rūkaki maroñ customize sentence starters im naan in jiroñ.\n• **Reset & Retry**: Clear rūkkatak work ñan fresh attempts.\n### Pro Tip Kōjerbal eo 'Jino Check' button ñan initiate eo AI grading loop•rūkkatak maroñ revise based ioon feedback im resubmit!\n### UDL Connection\n• **Action & Expression**: Optimized ñan construction im composition (Guideline 5), providing graduated levels in support ñan practice im performance.",
+    "scaffolds_text": "Comprehensive writing support system ippan AI-powered grading im customizable sentence structures. Perfect ñan differentiated writing instruction.\n### Scaffold Types\n• **Sentence Starters**: List-based naan in jiroñ ñan jipañ rūkkatak begin their thoughts.\n• **Paragraph Frames**: Cloze-style fill-ilo-eo-blank paragraphs ñan structured argumentation.\n• **Discussion Naan in jiroñ**: Conversation starters ñan collaborative discussions.\n• **Custom Instructions**: Tailor frames ñan specific rhetorical functions (e.g., 'agreeing/disagreeing', 'cause im effect').\n### Rubric & Assessment System\n• **Auto-Kōṃṃan Rubrics**: AI creates criteria-based rubrics aligned ñan eo am content.\n• **Make-Assessment Checklists**: rūkkatak-facing success criteria ñan make-monitoring.\n• **Mastery Assessment**: Evaluate rūkkatak understanding ippan structured rubric grading.\n• **Rubric Zoom**: Enlarge rubric view ñan detailed criteria review.\n### AI Auto-Grader\n• **Instant Feedback**: Submit rūkkatak drafts ñan immediate AI-powered evaluation.\n• **Criteria-Based Scoring**: Grades kajjojo response against rubric criteria points.\n• **Glow & Grow**: Provides specific praise (\"glow\") im improvement suggestions (\"grow\").\n• **TTS Feedback**: Allobot reads grading results aloud ñan accessibility.\n• **XP Rewards**: rūkkatak earn Mastery XP (100 points) ñan completed drafts.\n### Input Options\n• **Voice Dictation**: rūkkatak maroñ dictate responses using eo FAB microphone button.\n• **Ukot Mode**: rūkaki maroñ customize sentence starters im naan in jiroñ.\n• **Bar jino & Retry**: Clear rūkkatak work ñan fresh attempts.\n### Pro Tip Kōjerbal eo 'Jino Check' button ñan initiate eo AI grading loop•rūkkatak maroñ revise based ioon feedback im resubmit!\n### UDL Connection\n• **Action & Expression**: Optimized ñan construction im composition (Guideline 5), providing graduated levels in support ñan practice im performance.",
     "quiz_title": "Gamified Quiz",
     "quiz_text": "Gamified assessment ippan multiple competitive im immersive modes. From mool kilaaj battles ñan puzzle-based escape rooms.\n### ikkure Modes\n• **Mool Quiz**: Real-iien synchronized sessions ippan score trackings im session codes ñan rūkkatak ñan join.\n• **Team Showdown**: Team-based competition ippan color-coded groups im collaborative scoring.\n• **Boss Battle**: kilaaj vs AI boss•uwaak correctly ñan deal damage im defeat eo boss together!\n• **Escape Room**: Immersive themed puzzles ippan hints, ciphers, locked doors, im a final escape challenge.\n• **Review Mode**: Make-paced practice ippan immediate feedback.\n### kajjitōk Types\n• **Multiple Choice**: Standard MCQ ippan configurable kajjitōk count.\n• **Reflection kajjitōk**: Kapeḷḷọk-ended responses ñan deeper thinking.\n• **Fill-ilo-eo-Blank**: Kadedeḷọk sentences ippan missing key terms.\n• **Matching**: Connect related concepts.\n• **Cipher Puzzles**: Decode encrypted messages ilo Escape Room mode.\n### Gamification Features\n• **Leaderboards**: Real-iien ranking during mool sessions.\n• **Team Colors**: Auto-assigned team identities ñan group competitions.\n• **Hints System**: Spend hint tokens ñan clues ilo Escape Room (limited supply!).\n• **Dedeḷọk Jaake**: Track escape room completions im quiz scores across sessions.\n### AI Auto-Grader\n• **Reflection Grading**: AI evaluates kapeḷḷọk-ended uwaak ippan rubric-based feedback.\n• **Instant Scores**: Automatic scoring ippan personalized feedback ñan kajjojo response.\n### Mool Differentiated Delivery\n• **Group Overrides**: Assign different resources ak kajin versions ñan specific rūkkatak groups mid-session.\n• **Targeted Push**: Jilkinḷọk a scaffolded quiz ñan Tier 3 rūkkatak while eo rest work ioon standard material.\n• **Real-iien Switching**: Jaab need ñan end eo session•differentiate ioon eo fly from eo rūkaki dashboard.\n### rūkaki Features\n• **Presentation Mode**: Project kajjitōk fullscreen ñan whole-kilaaj discussion.\n• **Session Codes**: Generate join codes ñan rūkkatak ñan connect from any device.\n• **Kwaḷọk/Ṇọṇak uwaak**: Toggle uwaak key visibility during review.\n• **DOK Levels**: Align kajjitōk ñan Depth in Knowledge standards.\n### Pro Tip Kōjerbal Escape Room mode ñan boost engagement•rūkkatak solve puzzles ñan 'escape' while demonstrating content mastery.\n### UDL Connection\n• **Engagement**: Optimize challenge (Guideline 8.2) through incremental difficulty im gamified feedback loops.",
     "brainstorm_title": "Idea Engine",
@@ -26,7 +26,7 @@
     "persona_title": "Persona Chat",
     "persona_text": "Persona Interview Mode brings content ñan life through immersive character conversations. Interview historical figures, fictional characters, ak AI-kōṃṃan experts ilo a gamified experience eṇ ej kalōk empathy im deepens understanding.\n### Interview Modes\n• **1-ioon-1 Interview**: Deep conversation ippan a single character ñan focused exploration.\n• **Panel Discussion**: Kālōt multiple personas ñan group debates im diverse perspectives.\n• **Free Response vs Multiple Choice**: Toggle between kapeḷḷọk-ended typing ak guided kajjitōk options.\n### Gamification Features\n• **XP System**: Earn Interview XP ñan quality kajjitōk im thoughtful engagement.\n• **Badges**: Unlock achievements like *Harmonizer*, *First Insight*, *Rapport Builder*, im *Master Interviewer*.\n• **Reflection Grading**: Submit a final reflection ñan earn bonus XP ippan AI-powered feedback.\n• **epen Mode**: Disable hints ñan extra challenge im higher XP rewards.\n### Voice & Accessibility\n• **Auto-Riit**: Personas kōnono their responses aloud using Text-ñan-Speech.\n• **Auto-Jilkinḷọk**: Hands-free mode automatically sends eo am message ālikin a pause.\n• **Custom Instructions**: Shape eo persona's background, era, ak expertise level.\n### Pro Tip\n• Project eo Persona Chat ioon eo board im have eo whole kilaaj vote ioon ta kajjitōk ñan ask next.\n### UDL Connection\n• **Engagement**: Foster collaboration im community (Guideline 8) through simulated social learning interactions.",
     "timeline_title": "Sequence Builder",
-    "timeline_text": "Sequence Builder (Timeline) transforms events into an interactive drag-im-drop ordering activity. Perfect ñan chronological events, process steps, ak cause-im-effect sequences.\n### Content Epepen\n• **Auto-Extraction**: AI identifies dates, events, im milestones from eo am text.\n• **Event Count**: Customize 5-15 events ñan eo am timeline.\n• **Custom Topic**: Override ippan a specific sequence topic.\n• **Process Steps**: Visualize scientific procedures, recipes, ak math steps.\n### Sequence ikkure Mode Launch an interactive ordering challenge ia rūkkatak arrange events chronologically: **Gameplay Features**:\n• **Drag & Drop**: Intuitive event reordering ippan glowing drop zones.\n• **Move Up/Down Buttons**: Alternative navigation ñan accessibility ak motor challenges.\n• **Check Button**: Submit uwaak•correct events lock ippan ?, incorrect ones shake ñan repositioning.\n• **Reset Button**: Scramble events ñan a fresh attempt.\n• **Dedeḷọk Jaake**: Visual feedback ñe aolep events rej correctly ordered. **Accessibility**:\n• **ARIA Labels**: Full screen reader support ippan jokwe announcements.\n• **Keyboard Navigation**: Full keyboard control ñan drag operations.\n• **Visual States**: Lifted, dropped, im locked states clearly indicated.\n### rūkaki Features\n• **Ukot Mode**: Modify event text, dates, ak descriptions ṃokta sharing.\n• **Preview ikkure**: Test eo sequencing activity ṃokta rūkkatak ikkure.\n### Pro Tip Kōjerbal Process Steps mode ñan break down complex lab instructions•rūkkatak practice sequencing while learning eo procedure!\n### UDL Connection\n• **Representation**: Illustrate through multiple media (Guideline 2.5) by converting text sequences into spatial/visual timelines.\n• **Action & Expression**: Physical manipulation in knowledge (Guideline 5) through drag-im-drop interaction.",
+    "timeline_text": "Sequence Builder (Timeline) transforms events into an interactive drag-im-drop ordering activity. Perfect ñan chronological events, process steps, ak cause-im-effect sequences.\n### Content Epepen\n• **Auto-Extraction**: AI identifies dates, events, im milestones from eo am text.\n• **Event Count**: Customize 5-15 events ñan eo am timeline.\n• **Custom Topic**: Override ippan a specific sequence topic.\n• **Process Steps**: Visualize scientific procedures, recipes, ak math steps.\n### Sequence ikkure Mode Launch an interactive ordering challenge ia rūkkatak arrange events chronologically: **Gameplay Features**:\n• **Drag & Drop**: Intuitive event reordering ippan glowing drop zones.\n• **Move Up/Down Buttons**: Alternative navigation ñan accessibility ak motor challenges.\n• **Check Button**: Submit uwaak•correct events lock ippan ?, incorrect ones shake ñan repositioning.\n• **Bar jino Button**: Scramble events ñan a fresh attempt.\n• **Dedeḷọk Jaake**: Visual feedback ñe aolep events rej correctly ordered. **Accessibility**:\n• **ARIA Labels**: Full screen reader support ippan jokwe announcements.\n• **Keyboard Navigation**: Full keyboard control ñan drag operations.\n• **Visual States**: Lifted, dropped, im locked states clearly indicated.\n### rūkaki Features\n• **Ukot Mode**: Modify event text, dates, ak descriptions ṃokta sharing.\n• **Preview ikkure**: Test eo sequencing activity ṃokta rūkkatak ikkure.\n### Pro Tip Kōjerbal Process Steps mode ñan break down complex lab instructions•rūkkatak practice sequencing while learning eo procedure!\n### UDL Connection\n• **Representation**: Illustrate through multiple media (Guideline 2.5) by converting text sequences into spatial/visual timelines.\n• **Action & Expression**: Physical manipulation in knowledge (Guideline 5) through drag-im-drop interaction.",
     "concept_sort_title": "Concept Sort",
     "concept_sort_text": "Reinforce categorization skills im conceptual relationships. rūkkatak drag-im-drop terms into defined categories, actively processing connections between ideas.\n### Panel Options\n• **Category Setup**: Define category bins (e.g., \"Mammals vs Reptiles\", \"Renewable vs Non-Renewable\").\n• **Men Count**: Set how many items ñan generate ñan sorting.\n• **Custom Items**: Kobaik eo am own terms ak ukot AI-kōṃṃan ones.\n### Gameplay Features\n• **Drag-im-Drop**: Interactive sorting ippan visual feedback ioon desktop.\n• **Keyboard Sorting**: Kōjerbal arrow buttons ñan accessible keyboard navigation•no mouse required.\n• **pija Cards**: Items maroñ include AI-kōṃṃan visuals alongside text ñan dual coding.\n• **Instant Feedback**: Immediate validation in correct/incorrect sorts ippan color indicators.\n• **Check uwaak**: Reveal aolep correct placements ñan validate learning.\n### Print & Export\n• **Printable Worksheet**: Generates a cut-im-paste activity layout ñan offline kōjerbal.\n### Accessibility\n• **Screen Reader Support**: Full ARIA labels announce men status (sorted/unsorted) im available actions.\n• **Keyboard Focus**: Tab navigation im visual focus states ñan aolep interactive elements.\n### Pro Tip Kōjerbal pija-based cards ñe introducing visual vocabulary ñan younger rūkkatak ak ELL rūkkatak!\n### UDL Connection\n• **Action & Expression**: Facilitate managing information im resources (Guideline 6) by physically manipulating information.",
     "math_title": "STEM Solver",
@@ -40,7 +40,7 @@
     "fullpack_title": "Full Pack",
     "fullpack_text": "Eo universal 'epidodo Button' ñan instant, high-quality content epepen. Perfect ñan rūkaki, jinen im jemān, im make-guided rūkkatak, in tool generates every resource ilo sequence ippan intelligent AI configuration.\n### Smart Automation\n• **Auto-Configuration**: AI analyzes eo am text im intelligently configures optimal settings ñan every tool.\n• **Context-Aware**: Ensures quizzes, scaffolds, im ikkure rej perfectly aligned ñan text complexity im themes.\n• **Custom Resource Count**: Kālōt 'Auto' (AI picks essentials) ak 'aolep' (full 13-resource suite).\n### Kōṃṃan Resources Batch generates up ñan 13 resources ilo intelligent order:\n• **Analysis** (first) ? Glossary ? Leveled Text ? Visual pija\n• **Outline** ? FAQ ? Sentence Frames ? Timeline\n• **Persona Interview** ? Concept Sort ? Brainstorm ? Quiz\n• **katak Plan** (last, uses aolep prior resources ñan context)\n### Mode Adaptation\n• **rūkaki Mode**: Full educator resources ippan pedagogical guidance.\n• **rūkkatak Mode**: Make-study materials ippan embedded supports.\n• **jinen im jemān Mode**: Family-friendly guides ñan eṃ learning.\n### Pro Tip Deḷọñ custom instructions ṃokta clicking Full Pack•AI distributes them intelligently across aolep kōṃṃan resources!\n### UDL Connection\n• **Action & Expression**: Streamlines resource creation (Guideline 5) by automatically generating multiple formats from a single source.",
     "utils_title": "Accessibility Hub",
-    "utils_text": "Eo Accessibility im Settings Hub. Customize eo entire application ñan diverse learner needs.\n### Reading Accessibility\n• **Text Size**: Adjust font scale ñan visual comfort.\n• **Font Style**: Kālōt from dyslexia-friendly im high-readability fonts.\n• **Line Height & Spacing**: Increase vertical spacing ñan easier reading.\n• **Bionic Reading**: Bold first portion in naan ñan guide reading flow.\n• **Color Overlay**: Apply tinted overlay ñan reduce visual stress (Irlen-style).\n### Theme & Display\n• **Dark Mode**: Low-light interface ñan reduced eye strain.\n• **High Contrast Mode**: Maximum contrast ippan bold outlines ñan low vision.\n• **Reduce Animations**: Toggle off motion effects ñan vestibular sensitivity.\n### Voice & Audio\n• **Voice Selection**: Kālōt from multiple TTS voices (male/female, accents).\n• **Speed Control**: Adjust speech rate from 0.5• ñan 2• speed.\n• **Volume Control**: Set TTS volume independently from system audio.\n### AlloBot Settings\n• **Kwaḷọk/Ṇọṇak AlloBot**: Toggle eo animated assistant character.\n• **Disable Tips**: Turn off proactive tips from AlloBot.\n### Profile & System\n• **Profile Context**: Kobaik eo am teaching context (grade, subject) ñan improve AI output.\n• **kajin Preferences**: Set default interface im target translation kajin.\n• **Documentation**: Access user guides, tutorials, im pedagogical resources.\n### Pro Tip Ñan rūkkatak ippan IEPs requiring text modifications, configure Reading Accessibility settings once•they persist across aolep kōṃṃan content!\n### UDL Connection\n• **Representation**: Offer alternatives ñan auditory im visual information (Guidelines 1.1-1.3).",
+    "utils_text": "Eo Accessibility im Settings Hub. Customize eo entire application ñan diverse learner needs.\n### Reading Accessibility\n• **Text Size**: Adjust font scale ñan visual comfort.\n• **Font Style**: Kālōt from dyslexia-friendly im high-readability fonts.\n• **Line Height & Spacing**: Increase vertical spacing ñan easier reading.\n• **Bionic Reading**: Bold first portion in naan ñan guide reading flow.\n• **Color Overlay**: Kojerbal tinted overlay ñan reduce visual stress (Irlen-style).\n### Theme & Display\n• **Dark Mode**: Low-light interface ñan reduced eye strain.\n• **High Contrast Mode**: Maximum contrast ippan bold outlines ñan low vision.\n• **Reduce Animations**: Toggle off motion effects ñan vestibular sensitivity.\n### Voice & Audio\n• **Voice Selection**: Kālōt from multiple TTS voices (male/female, accents).\n• **Speed Control**: Adjust speech rate from 0.5• ñan 2• speed.\n• **Volume Control**: Set TTS volume independently from system audio.\n### AlloBot Settings\n• **Kwaḷọk/Ṇọṇak AlloBot**: Toggle eo animated assistant character.\n• **Disable Tips**: Turn off proactive tips from AlloBot.\n### Profile & System\n• **Profile Context**: Kobaik eo am teaching context (grade, subject) ñan improve AI output.\n• **kajin Preferences**: Set default interface im target translation kajin.\n• **Documentation**: Access user guides, tutorials, im pedagogical resources.\n### Pro Tip Ñan rūkkatak ippan IEPs requiring text modifications, configure Reading Accessibility settings once•they persist across aolep kōṃṃan content!\n### UDL Connection\n• **Representation**: Offer alternatives ñan auditory im visual information (Guidelines 1.1-1.3).",
     "dashboard_title": "Dashboard / Tools",
     "dashboard_text": "Eo Tool Navigation Bar im rūkaki Dashboard access point.\n### Tool Navigation Bar\n• **Tool Icons**: One-klik jump ñan any generator (Quiz, Glossary, Adventure, etc.).\n• **Status Dots**: Green = active content, Orange = processing, Gray = empty.\n• **Logical Flow**: Tools ordered left-ñan-right from Input ? Generate ? Export.\n### rūkaki Dashboard Button Klik eo Dashboard icon ñan kapeḷḷọk eo **rūkaki Grading Dashboard** - a dedicated panel ñan jaake rūkkatak progress:\n• **Upload rūkkatak JSONs**: rūkkatak export their work as JSON fail; upload them here ñan batch analysis.\n• **rūkkatak Roster**: View aolep uploaded rūkkatak ippan nickname, date, quiz progress, im Adventure level.\n• **Individual Review**: Klik any rūkkatak ñan lo their full history•quizzes, adventures, responses.\n• **Mark as Graded**: Checkbox ñan track which rūkkatak kwe've reviewed.\n• **kilaaj Insights Tab**: Analytics charts kwaḷọk common misconceptions im kilaaj-wide performance.\n• **Export ñan CSV**: Download kilaaj data ñan gradebook import.\n### Related Header Actions\n• **Jump ñan katak**: Quick-return ñan eo am most recent katak plan.\n• **View Toggle**: Switch between rūkaki im rūkkatak views.\n### Pro Tip Have rūkkatak export their JSON saves at eo end in kilaaj, then batch-upload them here ñan efficient overnight grading!",
     "actions_title": "Action Bar",
@@ -88,7 +88,7 @@
     "step_of": "Step {current} in {total}",
     "back": "← Back",
     "skip": "Next Step →",
-    "all_done": "🎉 aolep Done! View aolep Tools",
+    "all_done": "🎉 aolep Emoj! View aolep Tools",
     "about": "About",
     "source_prompt": "Paste ak deḷọñ source text ñan begin",
     "history_hint": "💡 eo am kōṃṃan resources rej saved ilo eo History tab — kwe maroñ revisit im export them anytime!",
@@ -413,7 +413,7 @@
     "adjust_slider_font_size": "Adjust slider font size",
     "adventure_social_story_focus_placeholder": "e.g., Sharing toys, managing frustration, turn-taking...",
     "ai_refine_source": "Ai refine source",
-    "apply_panel_edit": "Apply panel ukot",
+    "apply_panel_edit": "Kojerbal panel ukot",
     "apply_text_revision": "Apply text revision",
     "ask_question": "Ask kajjitōk",
     "auto_correct_selected_errors": "Auto-correct selected errors",
@@ -599,7 +599,7 @@
     "reorder_list": "Reorder list",
     "reset_escape_room": "Reset escape room",
     "reset_presentation": "Reset presentation",
-    "reset_the_challenge_and_try_again": "Reset eo challenge im try again",
+    "reset_the_challenge_and_try_again": "Bar jino eo challenge im try again",
     "reset_venn_diagram": "Reset Venn diagram",
     "restore_image": "Restore pija",
     "resume_saved_adventure": "Resume saved adventure",
@@ -776,7 +776,7 @@
     "remove_standard": "Joḷọk Standard",
     "remove_concept": "Joḷọk concept",
     "choose_overwrite_version": "Kālōt whether ñan overwrite eo current text ak create a ekāāl version",
-    "apply_nano_edit": "Apply Custom Nano Banana Ukot",
+    "apply_nano_edit": "Kojerbal Custom Nano Banana Ukot",
     "link_opened_copy_paste": "Link opened. Copy eo URL im paste it here.",
     "find_relevant_standards": "Find relevant standards",
     "export_for_grading": "Export work ñan rūkaki grading (pija removed)",
@@ -835,7 +835,7 @@
     "auto_play": "Auto Ikkure",
     "ims_content": "IMS Content",
     "randomize": "Randomize",
-    "apply_edit": "Apply ukot",
+    "apply_edit": "Kojerbal ukot",
     "custom_language_input": "Custom kajin",
     "dbq_title": "Document-Based kajjitōk",
     "dismiss": "Dismiss",
@@ -2076,7 +2076,7 @@
     "clear_image": "Clear pija",
     "auto_remove_text": "Auto-joḷọk text from pija",
     "delete_item": "Jolok this item",
-    "apply_edit_prompt": "Apply ukot prompt",
+    "apply_edit_prompt": "Kojerbal ukot prompt",
     "new_item_text": "ekāāl item text",
     "save_note": "Kōjparok and kiili note",
     "delete_note": "Jolok note",
@@ -2422,7 +2422,7 @@
       "victory_desc": "kwe sorted aolep causes im effects correctly!",
       "reset_confirm": "Kapen reset — clears eo whole board",
       "reset_confirm_label": "Klik again ñan kapen",
-      "reset_confirm_aria": "Press Reset again ñan kapen clearing eo board, ak wait ñan kajeor."
+      "reset_confirm_aria": "Press Bar jino again ñan kapen clearing eo board, ak wait ñan kajeor."
     },
     "pipeline": {
       "title": "Pipeline Builder",
@@ -2546,7 +2546,7 @@
       "select_all_highlight": "Kālōt/Deselect aolep ñan Leveled Text Highlighting",
       "select_highlight": "Include in term ilo Leveled Text Highlighting",
       "delete_term": "Jolok Term",
-      "apply_edit": "Apply Custom Nano Banana Ukot",
+      "apply_edit": "Kojerbal Custom Nano Banana Ukot",
       "generate_icon": "Generate a visual icon ñan in term"
     },
     "auto_remove": "Auto-Joḷọk naan from pija",
@@ -2793,7 +2793,7 @@
     "aria_connected": "Connected.",
     "aria_select_first": "Please kālōt a term from eo left column first.",
     "close_aria": "Kiili Matching ikkure",
-    "reset_aria": "Reset Matching ikkure",
+    "reset_aria": "Bar jino Matching ikkure",
     "select_term_aria": "Kālōt term",
     "connect_def_aria": "Connect ñan definition"
   },
@@ -3026,14 +3026,14 @@
     "resume": "Resume Audio",
     "pause": "Pause Audio",
     "speed": "Playback Speed",
-    "stop": "Bōjrak Audio im Reset"
+    "stop": "Bōjrak Audio im Bar jino"
   },
   "review_game": {
     "title": "Review Challenge",
     "subtitle": "Kālōt a tile ñan reveal eo kajjitōk • Earn points ñan eo am team",
     "toggle_sound": "Toggle Sound Effects",
-    "reset": "Reset ikkure",
-    "reset_confirm": "Reset ikkure board im scores?",
+    "reset": "Bar jino ikkure",
+    "reset_confirm": "Bar jino ikkure board im scores?",
     "add_team": "Kobaik Team",
     "reveal_answer": "Reveal uwaak",
     "hide_answer": "Ṇọṇak uwaak",
@@ -3645,7 +3645,7 @@
     "edit_reflection_translation": "Ukot reflection translation",
     "item_mix_help": "Control how many in kajjojo kajjitōk type rej kōṃṃan. MCQ im Reflections rej set above.",
     "item_count_aria": "{type} count",
-    "reset_mix": "↩ Reset ñan mode defaults",
+    "reset_mix": "↩ Bar jino ñan mode defaults",
     "mode_label": "Mode:",
     "mode_aria": "Quiz mode",
     "mode_tooltip": "Quiz mode: kālōt ta in quiz ej ñan. Pre-check probes prerequisites; Exit Ticket assesses today's content; Formative ej a quick mid-katak pulse; Spaced Review re-tests prior content.",
@@ -4390,7 +4390,7 @@
     },
     "diff": {
       "button_aria": "Kapeḷḷọk naan-level diff view between source PDF im remediated HTML",
-      "button_title": "Kapeḷḷọk eo naan-level diff modal — lo every insertion, deletion, im paraphrase between eo source PDF text im eo remediated HTML, ippan klik-ñan-reject im Apply & Export."
+      "button_title": "Kapeḷḷọk eo naan-level diff modal — lo every insertion, deletion, im paraphrase between eo source PDF text im eo remediated HTML, ippan klik-ñan-reject im Kojerbal & Export."
     },
     "pdf_from_html": {
       "title": "Regenerate a PDF from eo remediated HTML. Layout reflows — peba breaks, fonts, im pagination may differ from eo jinoin. Ej jerbal well ñan simple prose documents."
@@ -6828,7 +6828,7 @@
     "unassigned_students": "Unassigned rūkkatak",
     "no_students": "Jaab rūkkatak assigned",
     "students_in_group": "rūkkatak",
-    "apply_to_generator": "Apply ñan Generator",
+    "apply_to_generator": "Kojerbal ñan Generator",
     "applied": "Applied settings ñan generator",
     "synced": "Groups synced ñan mool session",
     "sync_error": "Could jab sync roster ñan session",
@@ -7136,7 +7136,7 @@
     "concept_sort_items": "Eo collection in items ñan be sorted into categories.",
     "concept_sort_game": "Eo active concept sort ikkure interface ñan categorization practice. Drag items into eo correct category buckets ñan demonstrate understanding in classification concepts. Immediate feedback shows correct im incorrect placements. Supports 2-4 categories im any nōṃba in sortable items. Eḷap ñan vocabulary tiers, science classifications, ak grammar sorting.",
     "concept_sort_check_answers": "Check if aolep items rej sorted correctly. Incorrect placements rej highlighted.",
-    "concept_sort_reset": "Reset eo activity. aolep items return ñan eo deck ñan re-sorting.",
+    "concept_sort_reset": "Bar jino eo activity. aolep items return ñan eo deck ñan re-sorting.",
     "concept_sort_generate_button": "Generate a ekāāl concept sort activity based ioon eo am source content.",
     "concept_sort_start_button": "Jino eo sorting activity. Items will shuffle im eo timer begins.",
     "concept_sort_add_item": "Kobaik eo am own custom men ñan sort. Specify which category it belongs ñan.",
@@ -7211,7 +7211,7 @@
     "group_create_input": "Deḷọñ a āt ñan eo ekāāl rūkkatak group.",
     "group_create_button": "Create a ekāāl rūkkatak group ippan eo entered āt.",
     "group_roster_list": "List in rūkkatak ilo eo selected group.",
-    "roster_panel_header": "Eo kilaaj Roster Key ej eo am differentiation command center. Create rūkkatak groups ippan unique learning profiles (grade level, kajin, reading level, interests, DOK), then apply those profiles ñan any generator. Roster data ej stored ilo eo am browser's local storage im never leaves eo am device unless kwe explicitly export ak sync ñan a mool session. Kōjerbal 'Apply ñan Generator' ñan instantly configure settings ñan a group, ak 'Differentiate by Group' ñan batch-generate resources ñan aolep groups at once.",
+    "roster_panel_header": "Eo kilaaj Roster Key ej eo am differentiation command center. Create rūkkatak groups ippan unique learning profiles (grade level, kajin, reading level, interests, DOK), then apply those profiles ñan any generator. Roster data ej stored ilo eo am browser's local storage im never leaves eo am device unless kwe explicitly export ak sync ñan a mool session. Kōjerbal 'Kojerbal ñan Generator' ñan instantly configure settings ñan a group, ak 'Differentiate by Group' ñan batch-generate resources ñan aolep groups at once.",
     "roster_import_export": "Import a previously exported roster JSON fail, ak export eo am current roster ñan backup ak sharing between devices. Exported fail contain group āt, colors, rūkkatak assignments, im aolep profile settings.",
     "roster_sync_session": "Push eo am roster group metadata ñan eo active Firebase session so rūkkatak rej automatically assigned ñan their designated group ñe they join. Group-specific settings (TTS speed, karaoke mode) take effect ioon rūkkatak devices.",
     "roster_batch_generate": "Generate differentiated resources ñan every group simultaneously. Kālōt which resource types ñan create (adapted text, glossary, quiz, etc.) im eo system will iterate through kajjojo group, applying their profile settings ṃokta generating. Resources rej tagged ippan group identifiers ñan epidodo filtering.",
@@ -7365,7 +7365,7 @@
       "detector_desc": "Increases eo chance in finding Gold ilo eo next scene."
     },
     "status": {
-      "reset_prompt": "Reset ñan jino a ekāāl journey.",
+      "reset_prompt": "Bar jino ñan jino a ekāāl journey.",
       "waiting": "Waiting ñan bwebwenato...",
       "loading_story": "Eo bwebwenato continues..."
     },
@@ -7770,7 +7770,7 @@
     "engage_desc": "Tapping into interests ñan challenge im motivate (e.g., Interest-based analogies).",
     "ai_guide_tip": "Kōjerbal eo \"AI UDL & Alignment Guide\" button ilo eo sidebar ñan chat ippan an expert pedagogical bot ñan specific strategy advice.",
     "cast_link_text": "View Full UDL Guidelines (CAST.org)",
-    "reset_wizard": "Reset Quick Jino Wizard",
+    "reset_wizard": "Bar jino Quick Jino Wizard",
     "support_kofi": "Support ioon Ko-fi",
     "features_list": {
       "categories": {
@@ -8093,7 +8093,7 @@
     "legend_hesitation": "Hesitation / Make-Correction",
     "legend_missed": "Missed / Mispronounced",
     "tool_label": "Oral Fluency Check Tool",
-    "reset_label": "Reset im Try Again",
+    "reset_label": "Bar jino im Try Again",
     "close_label": "Kiili Fluency Tool",
     "stop_recording": "Bōjrak Recording",
     "start_recording": "Jino Recording",
@@ -8164,7 +8164,7 @@
     "synthesizing": "Synthesizing connections...",
     "generate_extensions": "Generate Deep katak Extensions",
     "save_to_history": "Kōjparok ñan History",
-    "apply_brainstorm": "Apply ñan Brainstorm",
+    "apply_brainstorm": "Kojerbal ñan Brainstorm",
     "apply_brainstorm_tooltip": "Kōjerbal in idea ñan generate Brainstorm activities"
   },
   "mastery": {
@@ -9315,7 +9315,7 @@
       "peel": "Peel",
       "zoom_out": "Zoom out",
       "zoom_in": "Zoom ilo",
-      "reset_zoom": "Reset ñan 100%",
+      "reset_zoom": "Bar jino ñan 100%",
       "click_reveal": "Klik ñan reveal function",
       "prev": "Prev",
       "next": "Next",
@@ -10358,8 +10358,8 @@
       "reinforcers_recommended": "Reinforcers recommended ✨",
       "replacement_plan_added": "Replacement plan added",
       "report_generated_use_printsave_as_pdf_in_the_new_t": "Report kōṃṃan — kōjerbal Print/Kōjparok as PDF ilo eo ekāāl tab!",
-      "reset_to_default_template": "Reset ñan default template",
-      "reset_to_defaults": "Reset ñan defaults",
+      "reset_to_default_template": "Bar jino ñan default template",
+      "reset_to_defaults": "Bar jino ñan defaults",
       "response_failed_try_again": "Response failed — try again",
       "reverted": "Reverted",
       "reverted_to_previous": "Reverted ñan previous",
@@ -11370,8 +11370,8 @@
     "keep_selection": "Keep selection",
     "dismiss_toolbar_aria": "Dismiss toolbar",
     "footer_help": "Klik spans ak drag-kālōt ñan ukot. Pairs toggle together.",
-    "revert_tooltip": "Restore eo accessible HTML ñan eo state ṃokta eo am last Apply & Export",
-    "apply_export_tooltip": "Apply rejections via text surgery (preserves aolep markup, instant, no Gemini call). Falls back ñan Gemini round-trip only if surgery maroñ't map some chunks."
+    "revert_tooltip": "Restore eo accessible HTML ñan eo state ṃokta eo am last Kojerbal & Export",
+    "apply_export_tooltip": "Kojerbal rejections via text surgery (preserves aolep markup, instant, no Gemini call). Falls back ñan Gemini round-trip only if surgery maroñ't map some chunks."
   },
   "volume_builder": {
     "zoom_out_aria": "Zoom out",
@@ -11453,12 +11453,12 @@
       "read_aloud_error": "Could jab jino riit-aloud:",
       "unmapped_theme_note": "Note: eo app ej currently using a reading theme (warm, blue, green, rose, ak dyslexia overlay) eṇ ej jab represented ilo in preview yet. Switch it ilo eo main accessibility settings ñan preview it accurately.",
       "pane_aria": "rūkkatak preview pane",
-      "apply_button": "Apply these settings ñan eo app",
-      "reset_button": "Reset ñan app defaults",
+      "apply_button": "Kojerbal these settings ñan eo app",
+      "reset_button": "Bar jino ñan app defaults",
       "apply_explanation": "Applies eo font, size, theme, line spacing, im letter spacing above ñan eo mool app ñan aolep rūkkatak using in device.",
       "apply_success": "Applied ñan eo mool app ñan aolep rūkkatak using in device.",
       "apply_error": "Could jab apply settings:",
-      "reset_success": "Reset ñan eo mool app's current settings.",
+      "reset_success": "Bar jino ñan eo mool app's current settings.",
       "tip": "Tip: switch eo theme ñan High contrast im try Extra Large font ñan simulate low-vision usage. Switch eo font ñan OpenDyslexic ñan simulate a dyslexia-friendly view."
     },
     "keyboard": {
@@ -11856,7 +11856,7 @@
     "remove_image": "Joḷọk the pija (keep the text)",
     "auto_remove_text": "Auto-joḷọk text from this pija",
     "delete_item": "Jolok this item",
-    "apply_edit_prompt": "Apply ukot prompt to this pija",
+    "apply_edit_prompt": "Kojerbal ukot prompt to this pija",
     "toggle_bionic": "Toggle Bionic Reading",
     "toggle_line_guide": "Toggle Line Guide",
     "toggle_dark_mode": "Toggle Dark Mode",

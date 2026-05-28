@@ -88,7 +88,7 @@
     "step_of": "चरण {current} का {total}",
     "back": "← वापस",
     "skip": "अगला चरण →",
-    "all_done": "🎉 सभी Done! देखें सभी उपकरण",
+    "all_done": "🎉 सभी हो गया! देखें सभी उपकरण",
     "about": "के बारे में",
     "source_prompt": "पेस्ट करें या दर्ज करें स्रोत पाठ को begin",
     "history_hint": "💡 आपका उत्पन्न संसाधन हैं सहेजा गया में इतिहास tab — आप सकता है revisit और निर्यात करें them anytime!",
@@ -413,8 +413,8 @@
     "adjust_slider_font_size": "समायोजित slider font size",
     "adventure_social_story_focus_placeholder": "साहसिक.सामाजिक_story_focus_placeholder",
     "ai_refine_source": "Ai refine स्रोत",
-    "apply_panel_edit": "Apply पैनल संपादित करें",
-    "apply_text_revision": "Apply पाठ revision",
+    "apply_panel_edit": "लागू करें पैनल संपादित करें",
+    "apply_text_revision": "लागू करें पाठ revision",
     "ask_question": "Ask प्रश्न",
     "auto_correct_selected_errors": "स्वतः-सही चयनित त्रुटि",
     "auto_grade": "स्वतः कक्षा",
@@ -776,7 +776,7 @@
     "remove_standard": "हटाएं मानक",
     "remove_concept": "हटाएं अवधारणा",
     "choose_overwrite_version": "चुनें whether को overwrite वर्तमान पाठ या बनाएं एक नया संस्करण",
-    "apply_nano_edit": "Apply कस्टम Nano Banana संपादित करें",
+    "apply_nano_edit": "लागू करें कस्टम Nano Banana संपादित करें",
     "link_opened_copy_paste": "Link खोला गया. कॉपी करें URL और पेस्ट करें it here.",
     "find_relevant_standards": "खोजना relevant मानक",
     "export_for_grading": "निर्यात करें काम के लिए शिक्षक grading (छवि removed)",
@@ -835,7 +835,7 @@
     "auto_play": "स्वतः चलाएं",
     "ims_content": "IMS सामग्री",
     "randomize": "Randomize",
-    "apply_edit": "Apply संपादित करें",
+    "apply_edit": "लागू करें संपादित करें",
     "custom_language_input": "कस्टम भाषा",
     "dbq_title": "दस्तावेज़-आधारित प्रश्न",
     "dismiss": "Dismiss",
@@ -1636,7 +1636,7 @@
     "image_too_large_10mb_alt": "छवि too large (max 10MB)",
     "kokoro_ready_switching": "Kokoro आवाज़ ready! Switching to offline आवाज़.",
     "download_failed_retry": "डाउनलोड करें failed — कृपया प्रयास करें again later",
-    "reverted_last_apply": "Reverted to the state before your अंतिम Apply.",
+    "reverted_last_apply": "Reverted to the state before your अंतिम लागू करें.",
     "fetching_document_url": "Fetching दस्तावेज़ from URL...",
     "document_imported": "दस्तावेज़ imported! Review and संपादित करें the पाठ below.",
     "extracting_text_image": "Extracting पाठ from छवि...",
@@ -2076,7 +2076,7 @@
     "clear_image": "Clear छवि",
     "auto_remove_text": "Auto-हटाएं पाठ from छवि",
     "delete_item": "हटाएं यह आइटम",
-    "apply_edit_prompt": "Apply संपादित करें prompt",
+    "apply_edit_prompt": "लागू करें संपादित करें prompt",
     "new_item_text": "नया आइटम पाठ",
     "save_note": "सहेजें and बंद करें note",
     "delete_note": "हटाएं note",
@@ -2546,7 +2546,7 @@
       "select_all_highlight": "चुनें/Deselect सभी के लिए स्तर पाठ हाइलाइटिंग",
       "select_highlight": "शामिल करें यह शब्द में स्तर पाठ हाइलाइटिंग",
       "delete_term": "हटाएं शब्द",
-      "apply_edit": "Apply कस्टम Nano Banana संपादित करें",
+      "apply_edit": "लागू करें कस्टम Nano Banana संपादित करें",
       "generate_icon": "उत्पन्न करें एक दृश्य आइकन के लिए यह शब्द"
     },
     "auto_remove": "स्वतः-हटाएं शब्द से छवि",
@@ -4068,7 +4068,7 @@
   "pdf_audit": {
     "view_last_audit": "देखें अंतिम Audit",
     "start_new_audit": "शुरू करें नया Audit",
-    "apply_and_export": "Apply & निर्यात करें",
+    "apply_and_export": "लागू करें & निर्यात करें",
     "applying_remarkup": "Re-applying सुलभ markup को आपका approved पाठ…",
     "rejected_count": "{n} rejected",
     "undo_all_rejections": "undo सभी",
@@ -4380,7 +4380,7 @@
     },
     "diff": {
       "button_aria": "खोलें शब्द-स्तर diff देखें के बीच स्रोत PDF और remediated HTML",
-      "button_title": "खोलें शब्द-स्तर diff modal — देखें every insertion, deletion, और paraphrase के बीच स्रोत PDF पाठ और remediated HTML, के साथ क्लिक करें-को-reject और Apply & निर्यात करें."
+      "button_title": "खोलें शब्द-स्तर diff modal — देखें every insertion, deletion, और paraphrase के बीच स्रोत PDF पाठ और remediated HTML, के साथ क्लिक करें-को-reject और लागू करें & निर्यात करें."
     },
     "pdf_from_html": {
       "title": "Regenerate एक PDF से remediated HTML. Layout reflows — पृष्ठ breaks, fonts, और pagination सकता है differ से मूल. काम करता well के लिए सरल prose दस्तावेज़."
@@ -4976,7 +4976,7 @@
     "remove_button": "हटाएं मानक",
     "add_standard": "जोड़ें मानक",
     "remove_standard": "हटाएं मानक",
-    "finder_header": "खोजना & Apply मानक",
+    "finder_header": "खोजना & लागू करें मानक",
     "finder_placeholder": "कौशल या कोड (e.g. \"भिन्न\" या \"TEKS 4.2\")",
     "region_framework_placeholder": "Region या Framework (e.g. CASEL, CCSS)...",
     "consult_header": "Consult AI पर रणनीति",
@@ -6820,7 +6820,7 @@
     "unassigned_students": "Unassigned छात्र",
     "no_students": "नहीं छात्र assigned",
     "students_in_group": "छात्र",
-    "apply_to_generator": "Apply को Generator",
+    "apply_to_generator": "लागू करें को Generator",
     "applied": "Applied सेटिंग्स को generator",
     "synced": "Groups synced को लाइव सत्र",
     "sync_error": "Could नहीं sync roster को सत्र",
@@ -7203,7 +7203,7 @@
     "group_create_input": "दर्ज करें एक name के लिए नया छात्र समूह.",
     "group_create_button": "बनाएं एक नया छात्र समूह के साथ entered name.",
     "group_roster_list": "सूची का छात्र में चयनित समूह.",
-    "roster_panel_header": "कक्षा Roster कुंजी है आपका differentiation command center. बनाएं छात्र groups के साथ unique सीखना profiles (कक्षा स्तर, भाषा, पढ़ना स्तर, interests, DOK), फिर apply those profiles को कोई भी generator. Roster डेटा है stored में आपका browser's local storage और never leaves आपका device unless आप explicitly निर्यात करें या sync को एक लाइव सत्र. उपयोग करें 'Apply को Generator' को instantly configure सेटिंग्स के लिए एक समूह, या 'विभेदित करें by समूह' को batch-उत्पन्न करें संसाधन के लिए सभी groups at once.",
+    "roster_panel_header": "कक्षा Roster कुंजी है आपका differentiation command center. बनाएं छात्र groups के साथ unique सीखना profiles (कक्षा स्तर, भाषा, पढ़ना स्तर, interests, DOK), फिर apply those profiles को कोई भी generator. Roster डेटा है stored में आपका browser's local storage और never leaves आपका device unless आप explicitly निर्यात करें या sync को एक लाइव सत्र. उपयोग करें 'लागू करें को Generator' को instantly configure सेटिंग्स के लिए एक समूह, या 'विभेदित करें by समूह' को batch-उत्पन्न करें संसाधन के लिए सभी groups at once.",
     "roster_import_export": "आयात करें एक previously निर्यात roster JSON फ़ाइल, या निर्यात करें आपका वर्तमान roster के लिए backup या sharing के बीच devices. निर्यात फ़ाइल contain समूह names, रंग, छात्र assignments, और सभी profile सेटिंग्स.",
     "roster_sync_session": "Push आपका roster समूह metadata को सक्रिय Firebase सत्र so छात्र हैं स्वचालित रूप से assigned को उनका designated समूह जब वे join. समूह-विशिष्ट सेटिंग्स (TTS गति, karaoke मोड) take effect पर छात्र devices.",
     "roster_batch_generate": "उत्पन्न करें विभेदित करें संसाधन के लिए every समूह simultaneously. चुनें which संसाधन टाइप करें को बनाएं (adapted पाठ, शब्दकोश, प्रश्नोत्तरी, etc.) और सिस्टम होगा iterate के माध्यम से प्रत्येक समूह, applying उनका profile सेटिंग्स पहले उत्पन्न हो रहा है. संसाधन हैं tagged के साथ समूह identifiers के लिए आसान filtering.",
@@ -8156,7 +8156,7 @@
     "synthesizing": "Synthesizing connections...",
     "generate_extensions": "उत्पन्न करें Deep पाठ Extensions",
     "save_to_history": "सहेजें को इतिहास",
-    "apply_brainstorm": "Apply को Brainstorm",
+    "apply_brainstorm": "लागू करें को Brainstorm",
     "apply_brainstorm_tooltip": "उपयोग करें यह idea को उत्पन्न करें Brainstorm गतिविधियां"
   },
   "mastery": {
@@ -11362,8 +11362,8 @@
     "keep_selection": "Keep selection",
     "dismiss_toolbar_aria": "Dismiss toolbar",
     "footer_help": "क्लिक करें spans या खींचें-चुनें को संपादित करें. Pairs टॉगल करें together.",
-    "revert_tooltip": "Restore सुलभ HTML को state पहले आपका अंतिम Apply & निर्यात करें",
-    "apply_export_tooltip": "Apply rejections via पाठ surgery (preserves सभी markup, instant, no Gemini call). Falls वापस को Gemini round-trip केवल यदि surgery सकता है't map कुछ chunks."
+    "revert_tooltip": "Restore सुलभ HTML को state पहले आपका अंतिम लागू करें & निर्यात करें",
+    "apply_export_tooltip": "लागू करें rejections via पाठ surgery (preserves सभी markup, instant, no Gemini call). Falls वापस को Gemini round-trip केवल यदि surgery सकता है't map कुछ chunks."
   },
   "volume_builder": {
     "zoom_out_aria": "Zoom out",
@@ -11445,7 +11445,7 @@
       "read_aloud_error": "Could नहीं शुरू करें पढ़ें-जोर से:",
       "unmapped_theme_note": "Note: app है currently उपयोग करते हुए एक पढ़ना विषय (warm, blue, green, rose, या dyslexia overlay) वह है नहीं represented में यह preview yet. बदलें it में main पहुंच सेटिंग्स को preview it accurately.",
       "pane_aria": "छात्र preview pane",
-      "apply_button": "Apply these सेटिंग्स को app",
+      "apply_button": "लागू करें these सेटिंग्स को app",
       "reset_button": "रीसेट करें को app defaults",
       "apply_explanation": "Applies font, size, विषय, रेखा spacing, और letter spacing above को लाइव app के लिए सभी छात्र उपयोग करते हुए यह device.",
       "apply_success": "Applied को लाइव app के लिए सभी छात्र उपयोग करते हुए यह device.",

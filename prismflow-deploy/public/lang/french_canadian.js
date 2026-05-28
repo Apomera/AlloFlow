@@ -9948,7 +9948,7 @@
     "save_drive": "Enregistrer le fichier",
     "load_file": "Charger un fichier",
     "resume_adventure": "Reprendre l'aventure",
-    "resume_adventure_desc": "Continue ton aventure enregistrée",
+    "resume_adventure_desc": "Continuer ton aventure enregistrée",
     "adventure_restored": "Progression de l'aventure restaurée !",
     "adventure_saved": "Progression de l'aventure incluse dans l'enregistrement"
   },

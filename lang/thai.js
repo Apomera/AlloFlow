@@ -2589,7 +2589,7 @@
     "enter_url": "Enter a URL",
     "fetching_website": "Fetching website...",
     "website_fetched": "Website fetched! (",
-    "could_fetch_url_try_pasting": "Could not fetch URL, try pasting the HTML source instead. Error: ",
+    "could_fetch_url_try_pasting": "Could not fetch URL, try pasting the HTML source instead. ข้อผิดพลาด: ",
     "paste_fetch_html_first": "Paste or fetch HTML first",
     "running_accessibility_audit": "Running accessibility audit...",
     "auditing_remediating_html": "Auditing & remediating HTML...",
@@ -2768,7 +2768,7 @@
     "image_too_large_10mb_alt": "รูปภาพ too large (max 10MB)",
     "kokoro_ready_switching": "Kokoro เสียง ready! Switching to offline เสียง.",
     "download_failed_retry": "ดาวน์โหลด failed — โปรด ลอง again later",
-    "reverted_last_apply": "Reverted to the state before your สุดท้าย Apply.",
+    "reverted_last_apply": "Reverted to the state before your สุดท้าย ใช้.",
     "fetching_document_url": "Fetching เอกสาร from URL...",
     "document_imported": "เอกสาร imported! Review and แก้ไข the ข้อความ below.",
     "extracting_text_image": "Extracting ข้อความ from รูปภาพ...",
@@ -4270,7 +4270,7 @@
     "simplified_glossary": "คำอย่าง '{term1}' และ '{term2}' อาจต้องการตัวช่วย อภิธานศัพท์อาจช่วยได้!",
     "simplified_glossary_fallback": "คำเหล่านี้บางคำยาก อภิธานศัพท์จะช่วยสนับสนุนข้อความนี้",
     "simplified_outline": "ผู้เรียนที่ชอบภาพอาจได้ประโยชน์จากผังภาพช่วยจัดระเบียบของเนื้อหานี้",
-    "glossary_bingo": "คุณเปลี่ยนคำเหล่านี้เป็นเกมคำได้ เช่น Bingo, Memory Match, อักษรไขว้ หรือ Word Search!",
+    "glossary_bingo": "คุณเปลี่ยนคำเหล่านี้เป็นเกมคำได้ เช่น Bingo, Memory Match, อักษรไขว้ หรือ Word ค้นหา!",
     "glossary_memory": "ลองเกมความจำเพื่อช่วยให้นักเรียนทบทวน",
     "glossary_visuals": "ไอคอนภาพช่วยยึดคำนิยามเหล่านี้ ลองสร้างภาพ",
     "quiz_presentation": "ใช้ 'โหมดนำเสนอ' เพื่อฉายแบบทดสอบให้ทั้งชั้น",
@@ -4325,7 +4325,7 @@
     "text_generated": "ข้อความที่ปรับเรื่อง {topic} ของคุณพร้อมแล้ว! ลองคลิกคำเพื่อดูคำนิยาม หรือสำรวจเครื่องมืออย่าง Glossary หรือ Quiz",
     "flashcards_created": "สร้างบัตรคำแล้ว! ส่งออกไปยัง Quizlet พิมพ์ หรือลอง Memory Game ได้",
     "quiz_generated": "แบบทดสอบพร้อม! ใช้โหมดนำเสนอสำหรับชั้นเรียน หรือลอง Auto-Grader สำหรับคำตอบเปิด",
-    "glossary_generated": "อภิธานศัพท์เสร็จ! ลองเกมคำ เช่น Bingo, Memory Match, อักษรไขว้, Word Search!",
+    "glossary_generated": "อภิธานศัพท์เสร็จ! ลองเกมคำ เช่น Bingo, Memory Match, อักษรไขว้, Word ค้นหา!",
     "adventure_started": "การผจญภัยของคุณเริ่มแล้ว! พิมพ์การกระทำด้านล่าง หรือใช้ปุ่มเลือกเพื่อตัดสินใจว่าจะเกิดอะไรขึ้น",
     "adventure_scene": "คุณจะทำอย่างไร? ทุกตัวเลือกหล่อหลอมเรื่องของคุณ!",
     "analysis_complete": "วิเคราะห์เสร็จแล้ว! ฉันพบคำศัพท์และแนวคิดหลักที่น่าสำรวจ",
@@ -8962,7 +8962,7 @@
     },
     "quick_downloads": {
       "heading": "Quick downloads (no remediation needed)",
-      "tagged_pdf_title": "Download a Tagged PDF based on the original. For richer tagging, extracted headings, properly scoped tables, alt text, run Fix & Verify first and download the tagged version after."
+      "tagged_pdf_title": "ดาวน์โหลด a Tagged PDF based on the original. For richer tagging, extracted headings, properly scoped tables, alt text, run Fix & Verify first and download the tagged version after."
     },
     "loading": {
       "title": "Auditing PDF Accessibility...",
@@ -9098,8 +9098,8 @@
     },
     "images": {
       "review_heading": "Review Image Descriptions",
-      "download_all_title": "Download every extracted image, useful as a manual fallback if AI reinsertion misplaces or skips one.",
-      "edit_alt_hint": "Edit alt text below, changes apply to the final document",
+      "download_all_title": "ดาวน์โหลด every extracted image, useful as a manual fallback if AI reinsertion misplaces or skips one.",
+      "edit_alt_hint": "แก้ไข alt text below, changes apply to the final document",
       "download_one_title": "Download this image",
       "ai_generated_badge": "AI Generated",
       "alt_placeholder": "Describe this image for screen reader users...",
@@ -9162,7 +9162,7 @@
     },
     "diff": {
       "button_aria": "Open word-level diff view between source PDF and remediated HTML",
-      "button_title": "Open the word-level diff modal, see every insertion, deletion, and paraphrase between the source PDF text and the remediated HTML, with click-to-reject and Apply & Export."
+      "button_title": "Open the word-level diff modal, see every insertion, deletion, and paraphrase between the source PDF text and the remediated HTML, with click-to-reject and ใช้ & Export."
     },
     "pdf_from_html": {
       "title": "Regenerate a PDF from the remediated HTML. Layout reflows, page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents."
@@ -11102,7 +11102,7 @@
       "reinforce_now": "🎉 REINFORCE NOW!",
       "reinforcers_recommended": "Reinforcers recommended ✨",
       "replacement_plan_added": "Replacement plan added",
-      "report_generated_use_printsave_as_pdf_in_the_new_t": "Report generated, use Print/Save as PDF in the new tab!",
+      "report_generated_use_printsave_as_pdf_in_the_new_t": "Report generated, use พิมพ์/Save as PDF in the new tab!",
       "reset_to_default_template": "Reset to default template",
       "reset_to_defaults": "Reset to defaults",
       "response_failed_try_again": "Response failed, try again",
@@ -12359,7 +12359,7 @@
     "remove_image": "ลบออก the รูปภาพ (keep the ข้อความ)",
     "auto_remove_text": "Auto-ลบออก ข้อความ from นี่ รูปภาพ",
     "delete_item": "ลบ นี่ รายการ",
-    "apply_edit_prompt": "Apply แก้ไข prompt to นี่ รูปภาพ",
+    "apply_edit_prompt": "ใช้ แก้ไข prompt to นี่ รูปภาพ",
     "toggle_bionic": "สลับ Bionic Reading",
     "toggle_line_guide": "สลับ เส้น Guide",
     "toggle_dark_mode": "สลับ Dark โหมด",

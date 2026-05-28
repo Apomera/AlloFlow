@@ -2589,7 +2589,7 @@
     "enter_url": "Enter a URL",
     "fetching_website": "Fetching website...",
     "website_fetched": "Website fetched! (",
-    "could_fetch_url_try_pasting": "Could not fetch URL, try pasting the HTML source instead. Error: ",
+    "could_fetch_url_try_pasting": "Could not fetch URL, try pasting the HTML source instead. ຂໍ້ຜິດພາດ: ",
     "paste_fetch_html_first": "Paste or fetch HTML first",
     "running_accessibility_audit": "Running accessibility audit...",
     "auditing_remediating_html": "Auditing & remediating HTML...",
@@ -5436,7 +5436,7 @@
     },
     "quick_downloads": {
       "heading": "Quick downloads (no remediation needed)",
-      "tagged_pdf_title": "Download a Tagged PDF based on the original. For richer tagging, extracted headings, properly scoped tables, alt text, run Fix & Verify first and download the tagged version after."
+      "tagged_pdf_title": "ດາວໂຫລດ a Tagged PDF based on the original. For richer tagging, extracted headings, properly scoped tables, alt text, run Fix & Verify first and download the tagged version after."
     },
     "loading": {
       "title": "Auditing PDF Accessibility...",
@@ -5572,8 +5572,8 @@
     },
     "images": {
       "review_heading": "Review Image Descriptions",
-      "download_all_title": "Download every extracted image, useful as a manual fallback if AI reinsertion misplaces or skips one.",
-      "edit_alt_hint": "Edit alt text below, changes apply to the final document",
+      "download_all_title": "ດາວໂຫລດ every extracted image, useful as a manual fallback if AI reinsertion misplaces or skips one.",
+      "edit_alt_hint": "ແກ້ໄຂ alt text below, changes apply to the final document",
       "download_one_title": "Download this image",
       "ai_generated_badge": "AI Generated",
       "alt_placeholder": "Describe this image for screen reader users...",
@@ -5636,7 +5636,7 @@
     },
     "diff": {
       "button_aria": "Open word-level diff view between source PDF and remediated HTML",
-      "button_title": "Open the word-level diff modal, see every insertion, deletion, and paraphrase between the source PDF text and the remediated HTML, with click-to-reject and Apply & Export."
+      "button_title": "Open the word-level diff modal, see every insertion, deletion, and paraphrase between the source PDF text and the remediated HTML, with click-to-reject and ນຳໃຊ້ & Export."
     },
     "pdf_from_html": {
       "title": "Regenerate a PDF from the remediated HTML. Layout reflows, page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents."
@@ -5809,7 +5809,7 @@
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",
-    "desc": "Generate a complete Document-Based Question activity from your source text, with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric.",
+    "desc": "ສ້າງ a complete Document-Based Question activity from your source text, with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric.",
     "generate": "Generate DBQ Packet",
     "includes": "DBQ Packet Includes",
     "documents_tab": "Documents",
@@ -5864,7 +5864,7 @@
     "mode_links_desc": "Paste URLs to articles, AI builds DBQ around them",
     "mode_custom_label": "✏️ Teacher Docs",
     "mode_custom_desc": "Paste your own document text directly",
-    "focus_label_search": "Search Topic (optional, refines source hunting)",
+    "focus_label_search": "ຄົ້ນຫາ Topic (optional, refines source hunting)",
     "focus_label_links": "Topic Context (helps AI understand the links)",
     "focus_label_perspectives": "Perspectives to Compare (optional)",
     "focus_placeholder_search": "e.g. \"Japanese internment primary sources\"",
@@ -10394,7 +10394,7 @@
       "reinforce_now": "🎉 REINFORCE NOW!",
       "reinforcers_recommended": "Reinforcers recommended ✨",
       "replacement_plan_added": "Replacement plan added",
-      "report_generated_use_printsave_as_pdf_in_the_new_t": "Report generated, use Print/Save as PDF in the new tab!",
+      "report_generated_use_printsave_as_pdf_in_the_new_t": "Report generated, use ພິມ/Save as PDF in the new tab!",
       "reset_to_default_template": "Reset to default template",
       "reset_to_defaults": "Reset to defaults",
       "response_failed_try_again": "Response failed, try again",

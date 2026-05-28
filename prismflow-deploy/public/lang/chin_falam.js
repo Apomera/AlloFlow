@@ -161,7 +161,7 @@
     "enter_custom_revise_instruction": "Custom revise instruction lut",
     "enter_custom_timer_minutes": "Custom timer minute lut",
     "enter_d": "D lut",
-    "enter_edit_title": "Edit title lut",
+    "enter_edit_title": "Thlen title lut",
     "enter_escape_room_state": "Escape Room State lut",
     "enter_g": "G lut",
     "enter_glossary_image_style": "Glossary image style lut",
@@ -428,7 +428,7 @@
     "level_abbrev": "Lvl",
     "venn_sort_title": "Venn Diagram Sort",
     "links_only": "Link lawng",
-    "keep_original": "Original khong (Version Thar in Save)",
+    "keep_original": "Original khong (Version Thar in Khong)",
     "overwrite_version": "Tahchun version cu overwrite",
     "on": "ON",
     "off": "OFF",
@@ -459,7 +459,7 @@
     "remove_standard": "Standard hlonh",
     "remove_concept": "Concept hlonh",
     "choose_overwrite_version": "Tahchun text overwrite asilo version thar chuah cu thim",
-    "apply_nano_edit": "Custom Nano Banana Edit apply",
+    "apply_nano_edit": "Custom Nano Banana Thlen apply",
     "link_opened_copy_paste": "Link a open. URL copy i hi karah paste.",
     "find_relevant_standards": "A pertaining standard kawl",
     "export_for_grading": "Sayama grading ti'ah export (Lim hna a hlonhmi)",
@@ -712,7 +712,7 @@
     "select_audio_label": "Audio file select",
     "supported_formats": "MP3, WAV, OGG, M4A, AAC, FLAC",
     "transcribe_btn": "Transcribe",
-    "cancel_transcription": "Transcription Cancel",
+    "cancel_transcription": "Transcription Bansiar",
     "chunk_info": "Audio 5-minute chunk ah split for processing",
     "chunk_progress": "Chunk {current} / {total}",
     "audio_only_error": "Tahchun audio file (MP3, WAV, etc.) lawng chunked transcription a support."
@@ -758,11 +758,11 @@
   "quick_start": {
     "article_imported": "Article import i clean cang!",
     "copy_paste_instruction": "Tab thar in URL copy i hi karah paste.",
-    "error_auto_search": "Search a tlin lo. Thar in tuah ko law.",
+    "error_auto_search": "Kawl a tlin lo. Thar in tuah ko law.",
     "error_extract": "Text a lak khawh lo. URL a sual asilo access bawng a si khawh.",
     "error_no_urls": "URL specific hmuh khawh lo. Topic dang in tuah ko law.",
     "error_read_file": "Text file rel a tlin lo.",
-    "search_failed": "Search a tlin lo.",
+    "search_failed": "Kawl a tlin lo.",
     "found_resources": "Resource {count} hmuh"
   },
   "splash": {
@@ -1060,7 +1060,7 @@
     "resume": "Audio Tahsong",
     "pause": "Audio Tlap",
     "speed": "Playback Speed",
-    "stop": "Audio Dingh i Reset"
+    "stop": "Audio Dingh i Tlawm pek"
   },
   "read_this_page": {
     "panel_aria": "Read This Page panel",
@@ -2101,7 +2101,7 @@
     "xp_gain": "+{amount} XP hi activity in! Activity hna aw zulh tuah law in level up i feature thar unlock.",
     "mic_access_denied": "Microphone access a deny. Permission allow ko law.",
     "no_sources_found": "Source hmuh khawh lo. Topic a kau deuh in tuah.",
-    "search_failed": "Search a tlin lo. Thar in tuah ko law.",
+    "search_failed": "Kawl a tlin lo. Thar in tuah ko law.",
     "copy_failed": "Text copy a tlin lo.",
     "storage_full_text_only": "Storage a khat. Text lawng save (lim hna hlonh).",
     "resource_not_found": "Resource hmuh khawh lo.",
@@ -3047,7 +3047,7 @@
     "rubric_copy_tooltip": "Rubric Content Copy",
     "reset_confirm": "Hi activity ti'ah na leihnak vialte clear na duh sure maw? Undo khawh lo.",
     "answers_cleared": "Leihnak hna a sulh cang.",
-    "edit": "Scaffolds Edit",
+    "edit": "Scaffolds Thlen",
     "placeholder_instructions": "e.g., Argumentative writing focus...",
     "clear_all": "Hi activity ti'ah leihnak vialte clear",
     "sentence_placeholder": "Biacheo dih ah cawk...",
@@ -3072,7 +3072,7 @@
     "simulation_type": "Simulation Type",
     "teacher_guide": "Sayama Guide",
     "divider_or": "ASILO Digital Simulation Chuah",
-    "edit": "Idea Edit",
+    "edit": "Idea Thlen",
     "generate_guide": "Step-by-Step Guide Chuah",
     "creating_guide": "Guide Tuah lio...",
     "label_connection": "Pehtla",
@@ -3106,7 +3106,7 @@
       "q8": "8 Biahalnak",
       "q10": "10 Biahalnak"
     },
-    "edit": "FAQ Edit",
+    "edit": "FAQ Thlen",
     "placeholder_instructions": "e.g., Common misconception focus...",
     "question_placeholder": "Biahalnak...",
     "answer_placeholder": "Leihnak...",
@@ -3136,7 +3136,7 @@
     "grade_label": "Grade",
     "based_on": "Based on",
     "print": "Cawnnak Plan Print",
-    "edit_plan": "Plan Edit",
+    "edit_plan": "Plan Thlen",
     "tooltip_copy": "Clipboard ah Copy",
     "tooltip_pdf": "PDF Download",
     "extensions_header": "Extension & Custom Idea hna",
@@ -3430,7 +3430,7 @@
       "adjust_definition": "Definition Complexity Adjust",
       "adjust_relative": "Complexity (Relative) Adjust"
     },
-    "reset_activity": "Activity Reset",
+    "reset_activity": "Activity Tlawm pek",
     "exit_cloze": "Cloze Mode in Chuak",
     "revision": {
       "header_simplify": "Adapted Version",
@@ -3485,9 +3485,9 @@
   },
   "history": {
     "load_project": "Project Load",
-    "save_teacher": "Project Save (Sayama Full Backup)",
-    "save_student": "Sianginn Project ah Save (Locked View)",
-    "save_work": "Rian Save",
+    "save_teacher": "Project Khong (Sayama Full Backup)",
+    "save_student": "Sianginn Project ah Khong (Locked View)",
+    "save_work": "Rian Khong",
     "settings": "Project Settings",
     "maximize": "History Maximize",
     "minimize": "History Minimize",
@@ -3544,7 +3544,7 @@
     "placeholder_instructions": "e.g., Cellular structure focus...",
     "download": "Image Download",
     "warning": {
-      "title": "Important: Na Rian Save",
+      "title": "Important: Na Rian Khong",
       "desc": "Page refresh ahcun image cu na history ah <strong>save lo</strong> a si. Khong na duh ahcun image asilo HTML Pack faaite download.",
       "tip": "<strong>Pro Tip:</strong> Diagram chungah AI-generated text cu tahkhat tlawmte sual khawh. Download hmasa ah <strong>Nano Banana Refiner</strong> hman."
     },
@@ -3613,7 +3613,7 @@
     "remove_button": "Standard Hlonh",
     "add_standard": "Standard Tel",
     "remove_standard": "Standard Hlonh",
-    "finder_header": "Standard Kawl & Apply",
+    "finder_header": "Standard Kawl & Hman",
     "finder_placeholder": "Skill asilo Code (e.g. \"Fractions\" asilo \"TEKS 4.2\")",
     "region_framework_placeholder": "Region asilo Framework (e.g. CASEL, CCSS)...",
     "consult_header": "Strategy he AI Consult",
@@ -3625,7 +3625,7 @@
     "manual_placeholder": "e.g. CCSS.ELA-LITERACY.RI.3.1 (Type asilo Paste)",
     "toast_describe_skill": "Skill hmasa in describe ko law.",
     "toast_no_standards": "Matching standard hmuh lo. Broader search in tuah ko law.",
-    "toast_search_failed": "Search a tlin lo. Thar in tuah ko law.",
+    "toast_search_failed": "Kawl a tlin lo. Thar in tuah ko law.",
     "frameworks": {
       "ccss_ela": "Common Core ELA",
       "ccss_math": "Common Core Math",
@@ -3719,7 +3719,7 @@
       "select_all_highlight": "Leveled Text Highlight ti'ah vialte Select/Deselect",
       "select_highlight": "Leveled Text Highlight ah hi term tel",
       "delete_term": "Term Hlonh",
-      "apply_edit": "Custom Nano Banana Edit Apply",
+      "apply_edit": "Custom Nano Banana Thlen Hman",
       "generate_icon": "Hi term ti'ah visual icon chuah"
     },
     "auto_remove": "Lim in Biafang Auto-Remove",
@@ -5573,7 +5573,7 @@
     "images": {
       "review_heading": "Review Image Descriptions",
       "download_all_title": "Download every extracted image, useful as a manual fallback if AI reinsertion misplaces or skips one.",
-      "edit_alt_hint": "Edit alt text below, changes apply to the final document",
+      "edit_alt_hint": "Thlen alt text below, changes apply to the final document",
       "download_one_title": "Download this image",
       "ai_generated_badge": "AI Generated",
       "alt_placeholder": "Describe this image for screen reader users...",
@@ -5636,7 +5636,7 @@
     },
     "diff": {
       "button_aria": "Open word-level diff view between source PDF and remediated HTML",
-      "button_title": "Open the word-level diff modal, see every insertion, deletion, and paraphrase between the source PDF text and the remediated HTML, with click-to-reject and Apply & Export."
+      "button_title": "Open the word-level diff modal, see every insertion, deletion, and paraphrase between the source PDF text and the remediated HTML, with click-to-reject and Hman & Export."
     },
     "pdf_from_html": {
       "title": "Regenerate a PDF from the remediated HTML. Layout reflows, page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents."
@@ -5809,7 +5809,7 @@
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",
-    "desc": "Generate a complete Document-Based Question activity from your source text, with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric.",
+    "desc": "Chuah a complete Document-Based Question activity from your source text, with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric.",
     "generate": "Generate DBQ Packet",
     "includes": "DBQ Packet Includes",
     "documents_tab": "Documents",
@@ -5864,7 +5864,7 @@
     "mode_links_desc": "Paste URLs to articles, AI builds DBQ around them",
     "mode_custom_label": "✏️ Teacher Docs",
     "mode_custom_desc": "Paste your own document text directly",
-    "focus_label_search": "Search Topic (optional, refines source hunting)",
+    "focus_label_search": "Kawl Topic (optional, refines source hunting)",
     "focus_label_links": "Topic Context (helps AI understand the links)",
     "focus_label_perspectives": "Perspectives to Compare (optional)",
     "focus_placeholder_search": "e.g. \"Japanese internment primary sources\"",

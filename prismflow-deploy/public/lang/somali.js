@@ -9705,7 +9705,7 @@
       "reinforce_now": "🎉 HADDA XOOJI!",
       "reinforcers_recommended": "Xoojiyayaasha waa la soo jeediyay ✨",
       "replacement_plan_added": "Qorshaha beddelka waa la daray",
-      "report_generated_use_printsave_as_pdf_in_the_new_t": "Warbixinta waa la soo saaray — adeegso Print/Save as PDF tab cusub!",
+      "report_generated_use_printsave_as_pdf_in_the_new_t": "Warbixinta waa la soo saaray — adeegso Daabac/Save as PDF tab cusub!",
       "reset_to_default_template": "Loo dib u dhigay qaab-dhismeedka asalka ah",
       "reset_to_defaults": "Loo dib u dhigay qiimeyaasha asalka ah",
       "response_failed_try_again": "Jawaabtu way fashilantay — isku day mar kale",

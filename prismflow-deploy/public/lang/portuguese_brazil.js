@@ -3844,7 +3844,7 @@
     "save_drive": "Salvar Arquivo",
     "load_file": "Carregar Arquivo",
     "resume_adventure": "Retomar Aventura",
-    "resume_adventure_desc": "Continue sua aventura salva",
+    "resume_adventure_desc": "Continuar sua aventura salva",
     "adventure_restored": "Progresso da aventura restaurado!",
     "adventure_saved": "Progresso da aventura incluído no salvamento"
   },
@@ -5702,7 +5702,7 @@
     "exit_immersive": "Sair do Modo Imersivo",
     "show_ui": "Mostrar Interface",
     "hide_ui": "Ocultar Interface",
-    "sequel_prompt": "Aventura Concluída! Continue acima ou...",
+    "sequel_prompt": "Aventura Concluída! Continuar acima ou...",
     "start_sequel": "Iniciar Nova História (Continuação)",
     "inventory_fallback_desc": "Um item útil encontrado durante sua aventura. Use com sabedoria!",
     "toasts": {
@@ -6388,7 +6388,7 @@
     "ims_resource_pack": "Pacote de Recursos AlloFlow",
     "generating_pdf": "Gerando PDF...",
     "generating_bundle": "Empacotando pacote de recursos...",
-    "download_complete": "Download concluído!",
+    "download_complete": "Baixar concluído!",
     "bundle_downloaded": "Pacote baixado!",
     "ppt_grade_level": "Nível de Série",
     "ppt_generated": "Gerado",

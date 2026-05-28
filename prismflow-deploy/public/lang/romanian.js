@@ -40,7 +40,7 @@
     "fullpack_title": "Full Pack",
     "fullpack_text": "universal 'ușsau buton' pentru instant, high-quality conținut generation. Perfect pentru profesor, părinte, și self-guided learners, acesta instrumente generează every resurse în sequence cu intelligent AI configuration.\n### Smart Automation\n• **Auto-Configuration**: AI analyzes tău text și intelligently configures optimal setări pentru every instrumente.\n• **Context-Aware**: Ensures test, scaffolds, și joc sunt perfectly aligned la text complexitate și temă.\n• **Custom resurse Numără**: Alege 'Auto' (AI picks essentials) sau 'toate' (full 13-resurse suite).\n### Generated resurse Batch generează up la 13 resurse în intelligent order:\n• **Analysis** (primul) ? glosar ? Niveled text ? vizual imagine\n• **Outline** ? FAQ ? propoziție Frames ? Timeline\n• **Persona Interview** ? Concept Sortează ? Brainstorm ? test\n• **lecție Plan** (ultimul, folosește toate prior resurse pentru context)\n### mod Adaptation\n• **profesor mod**: Full educator resurse cu pedagogical guidance.\n• **elev mod**: Self-study materials cu embedded suport.\n• **părinte mod**: Family-prietenos guides pentru home învățare.\n### Pro sfat Introdu personalizat instrucțiune before clicing Full Pack•AI distributes them intelligently across toate generat resurse!\n### UDL Connection\n• **Action & Expression**: Streamlines resurse creation (Guideline 5) by automatically generating multiple format din un single sursă.",
     "utils_title": "Accessibility Hub",
-    "utils_text": "Accessibility și setări Hub. Personalizează entire application pentru diverse learner needs.\n### Reading Accessibility\n• **text Size**: Adjust font scale pentru vizual comfort.\n• **Font stil**: Alege din dyslexia-prietenos și high-readability fonts.\n• **linie înălțime & Spacing**: Increase vertical spacing pentru easier reading.\n• **Bionic Reading**: Bold primul portion de cuvânt la guide reading flow.\n• **culoare Overlay**: Apply tinted overlay la reduce vizual stress (Irlen-stil).\n### temă & Display\n• **Dark mod**: Low-light interface pentru reduced eye strain.\n• **High Contrast mod**: Maximum contrast cu bold outlines pentru low vision.\n• **Reduce Animations**: Comută off mișcare effects pentru vestibular sensitivity.\n### voce & audio\n• **voce Selection**: Alege din multiple TTS voices (male/female, accents).\n• **viteză Control**: Adjust speech rate din 0.5• la 2• viteză.\n• **volum Control**: Setează TTS volum independently din sistem audio.\n### AlloBot setări\n• **Afișează/Ascunde AlloBot**: Comută animated assistant personaj.\n• **Dezactivează sfat**: Turn off proactive sfat din AlloBot.\n### Profile & sistem\n• **Profile Context**: Adaugă tău teaching context (clasă, subject) la improve AI ieșire.\n• **limbă Preferences**: Setează implicit interface și target traducere limbă.\n• **Documentation**: Acces user guides, tutorials, și pedagogical resurse.\n### Pro sfat Pentru elev cu IEPs requiring text modifications, configure Reading Accessibility setări once•they persist across toate generat conținut!\n### UDL Connection\n• **Representation**: Offer alternatives pentru auditory și vizual informație (Guidelines 1.1-1.3).",
+    "utils_text": "Accessibility și setări Hub. Personalizează entire application pentru diverse learner needs.\n### Reading Accessibility\n• **text Size**: Adjust font scale pentru vizual comfort.\n• **Font stil**: Alege din dyslexia-prietenos și high-readability fonts.\n• **linie înălțime & Spacing**: Increase vertical spacing pentru easier reading.\n• **Bionic Reading**: Bold primul portion de cuvânt la guide reading flow.\n• **culoare Overlay**: Aplică tinted overlay la reduce vizual stress (Irlen-stil).\n### temă & Display\n• **Dark mod**: Low-light interface pentru reduced eye strain.\n• **High Contrast mod**: Maximum contrast cu bold outlines pentru low vision.\n• **Reduce Animations**: Comută off mișcare effects pentru vestibular sensitivity.\n### voce & audio\n• **voce Selection**: Alege din multiple TTS voices (male/female, accents).\n• **viteză Control**: Adjust speech rate din 0.5• la 2• viteză.\n• **volum Control**: Setează TTS volum independently din sistem audio.\n### AlloBot setări\n• **Afișează/Ascunde AlloBot**: Comută animated assistant personaj.\n• **Dezactivează sfat**: Turn off proactive sfat din AlloBot.\n### Profile & sistem\n• **Profile Context**: Adaugă tău teaching context (clasă, subject) la improve AI ieșire.\n• **limbă Preferences**: Setează implicit interface și target traducere limbă.\n• **Documentation**: Acces user guides, tutorials, și pedagogical resurse.\n### Pro sfat Pentru elev cu IEPs requiring text modifications, configure Reading Accessibility setări once•they persist across toate generat conținut!\n### UDL Connection\n• **Representation**: Offer alternatives pentru auditory și vizual informație (Guidelines 1.1-1.3).",
     "dashboard_title": "Dashboard / instrumente",
     "dashboard_text": "instrumente Navigation Bar și profesor Dashboard acces punct.\n### instrumente Navigation Bar\n• **instrumente pictogramă**: One-apasă jump la any generator (test, glosar, Aventură, etc.).\n• **Status Dots**: Green = activ conținut, Orange = processing, Gray = empty.\n• **Logical Flow**: instrumente ordered left-la-right din intrare ? Generează ? Exportă.\n### profesor Dashboard buton Apasă Dashboard pictogramă la deschide **profesor Grading Dashboard** - un dedicated panou pentru urmărire elev progres:\n• **Încarcă elev JSONs**: elev exportă their work as JSON fișier; încarcă them here pentru batch analysis.\n• **elev Roster**: Vizualizează toate uploaded elev cu nickname, date, test progres, și Aventură nivel.\n• **Individual Recenzie**: Apasă any elev la vezi their full history•test, aventurăs, responses.\n• **Mark as Graded**: Checkbox la track which elev tu've recenzieed.\n• **clasă Insights Tab**: Analytics grafic showing common misconceptions și clasă-wide performance.\n• **Exportă la CSV**: Descarcă clasă date pentru gradebook importă.\n### Related Header Actions\n• **Jump la lecție**: rapid-return la tău most recent lecție plan.\n• **Vizualizează Comută**: Comută between profesor și elev views.\n### Pro sfat are elev exportă their JSON salveazăs at end de clasă, then batch-încarcă them here pentru efficient overnight grading!",
     "actions_title": "Action Bar",
@@ -88,7 +88,7 @@
     "step_of": "pas {current} de {total}",
     "back": "← Back",
     "skip": "următor pas →",
-    "all_done": "🎉 toate Done! Vizualizează toate instrumente",
+    "all_done": "🎉 toate Gata! Vizualizează toate instrumente",
     "about": "About",
     "source_prompt": "Lipește sau introdu sursă text la begin",
     "history_hint": "💡 tău generat resurse sunt salvat în History tab — tu poate revisit și exportă them anytime!",
@@ -1636,7 +1636,7 @@
     "image_too_large_10mb_alt": "imagine too large (max 10MB)",
     "kokoro_ready_switching": "Kokoro voce ready! Switching la offline voce.",
     "download_failed_retry": "Descarcă failed — vă rog încearcă again later",
-    "reverted_last_apply": "Reverted la state before tău ultimul Apply.",
+    "reverted_last_apply": "Reverted la state before tău ultimul Aplică.",
     "fetching_document_url": "Fetching document din URL...",
     "document_imported": "document imported! Recenzie și editează text below.",
     "extracting_text_image": "Extracting text din imagine...",
@@ -4390,7 +4390,7 @@
     },
     "diff": {
       "button_aria": "Deschide cuvânt-nivel diff vizualizează between sursă PDF și remediated HTML",
-      "button_title": "Deschide cuvânt-nivel diff modal — vezi every insertion, deletion, și paraphrase between sursă PDF text și remediated HTML, cu apasă-la-reject și Apply & Exportă."
+      "button_title": "Deschide cuvânt-nivel diff modal — vezi every insertion, deletion, și paraphrase between sursă PDF text și remediated HTML, cu apasă-la-reject și Aplică & Exportă."
     },
     "pdf_from_html": {
       "title": "Regenerate un PDF din remediated HTML. Layout reflows — page breaks, fonts, și pagination may differ din original. Works well pentru simplu prose document."
@@ -7203,7 +7203,7 @@
     "group_create_input": "Introdu un name pentru nou elev grup.",
     "group_create_button": "Creează un nou elev grup cu entered name.",
     "group_roster_list": "List de elev în selectat grup.",
-    "roster_panel_header": "clasă Roster Key este tău differentiation command center. Creează elev grups cu unique învățare profiles (nivel de clasă, limbă, reading nivel, interests, DOK), then apply those profiles la any generator. Roster date este stored în tău browser's local storage și never leaves tău device unless tu explicitly exportă sau sync la un în direct sesiune. Folosește 'Apply la Generator' la instantly configure setări pentru un grup, sau 'Differentiate by Grup' la batch-generează resurse pentru toate grups at once.",
+    "roster_panel_header": "clasă Roster Key este tău differentiation command center. Creează elev grups cu unique învățare profiles (nivel de clasă, limbă, reading nivel, interests, DOK), then apply those profiles la any generator. Roster date este stored în tău browser's local storage și never leaves tău device unless tu explicitly exportă sau sync la un în direct sesiune. Folosește 'Aplică la Generator' la instantly configure setări pentru un grup, sau 'Differentiate by Grup' la batch-generează resurse pentru toate grups at once.",
     "roster_import_export": "Importați un fișier JSON de roster exportat anterior, sau exportați rosterul curent pentru backup sau partajare între dispozitive. Fișierul exportat conține nume de grupuri, culori, atribuiri de elevi și toate setările de profil.",
     "roster_sync_session": "Push tău roster grup metadata la activ Firebase sesiune so elev sunt automatically assigned la their designated grup când they join. Grup-specific setări (TTS viteză, karaoke mod) take effect pe elev devices.",
     "roster_batch_generate": "Generează differentiated resurse pentru every grup simultaneously. Selectează which resurse types la creează (adapted text, glosar, test, etc.) și sistem va iterate through fiecare grup, applying their profile setări before generating. resurse sunt tagged cu grup identifiers pentru ușsau filtering.",
@@ -8156,7 +8156,7 @@
     "synthesizing": "Synthesizing connections...",
     "generate_extensions": "Generează Deep lecție Extensions",
     "save_to_history": "Salvează la History",
-    "apply_brainstorm": "Apply la Brainstorm",
+    "apply_brainstorm": "Aplică la Brainstorm",
     "apply_brainstorm_tooltip": "Folosește acesta idea la generează Brainstorm activities"
   },
   "mastery": {
@@ -11362,8 +11362,8 @@
     "keep_selection": "Keep selection",
     "dismiss_toolbar_aria": "Dismiss toolbar",
     "footer_help": "Apasă spans sau trage-selectează la editează. Pairs comută together.",
-    "revert_tooltip": "Restore accessible HTML la state before tău ultimul Apply & Exportă",
-    "apply_export_tooltip": "Apply rejections via text surgery (preserves toate markup, instant, no Gemini call). Falls back la Gemini round-trip only dacă surgery poate't map some chunks."
+    "revert_tooltip": "Restore accessible HTML la state before tău ultimul Aplică & Exportă",
+    "apply_export_tooltip": "Aplică rejections via text surgery (preserves toate markup, instant, no Gemini call). Falls back la Gemini round-trip only dacă surgery poate't map some chunks."
   },
   "volume_builder": {
     "zoom_out_aria": "Zoom out",
@@ -11891,7 +11891,7 @@
     "remove_image": "Elimină imagine (keep text)",
     "auto_remove_text": "Auto-elimină text din acesta imagine",
     "delete_item": "Șterge acesta element",
-    "apply_edit_prompt": "Apply editează prompt la acesta imagine",
+    "apply_edit_prompt": "Aplică editează prompt la acesta imagine",
     "toggle_bionic": "Comută Bionic Reading",
     "toggle_line_guide": "Comută linie Guide",
     "toggle_dark_mode": "Comută Dark mod",

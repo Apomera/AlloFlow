@@ -40,7 +40,7 @@
     "fullpack_title": "Completo Pack",
     "fullpack_text": "Il universal 'facile pulsanti' per instant, alto-qualità contenuto generazione. Perfetto per insegnanti, genitori, e sé-guided studenti, questo strumento genera every risorse in sequence con intelligent AI configuration.\n### Smart Automation\n• **Auto-Configuration**: AI analyzes tuo testo e intelligently configures optimal impostazioni per every strumento.\n• **Contesto-Aware**: Ensures quiz, scaffolds, e giochi sono perfectly aligned un testo complessità e temi.\n• **Custom risorse Conta**: Scegli 'Auto' (AI picks essentials) o 'tutti' (completo 13-risorse suite).\n### Generato risorse Batch genera up un 13 risorse in intelligent order:\n• **Analisi** (primo) ? glossario ? Livelloed testo ? visivo immagini\n• **Outline** ? FAQ ? frasi Frames ? Timeline\n• **Persona Interview** ? Concetto Ordina ? Brainstorm ? quiz\n• **lezioni Piano** (ultimo, usa tutti prior risorse per contesto)\n### modalità Adaptation\n• **insegnanti modalità**: Completo educator risorse con pedagogical guidance.\n• **studenti modalità**: Sé-study materiali con embedded supportoo.\n• **genitori modalità**: Family-amichevole guides per home apprendimento.\n### Pro consigli Inserisci personalizzato istruzioni prima clicking Completo Pack•AI distributes them intelligently attraverso tutti generato risorse!\n### UDL Connection\n• **Action & espressioni**: Streamlines risorse creation (Guideline 5) by automaticamente generazione multiplo formato da un single origine.",
     "utils_title": "Accessibilità Hub",
-    "utils_text": "Il Accessibilità e impostazioni Hub. Personalizza il entire application per diversi learner needs.\n### Lettura Accessibilità\n• **testo Size**: Regolare font scale per visivo comfort.\n• **Font stili**: Scegli da dyslexia-amichevole e alto-readability fonts.\n• **linee altezze & Spacing**: Increase vertical spacing per easier lettura.\n• **Bionic Lettura**: Bold primo portion di parole un guide lettura flow.\n• **colori Overlay**: Apply tinted overlay un reduce visivo stress (Irlen-stili).\n### temi & Visualizzazione\n• **Dark modalità**: Low-light interfaccia per reduced eye strain.\n• **Alto Contrast modalità**: Maximum contrast con bold outlines per low vision.\n• **Reduce Animations**: Attiva/Disattiva off movimento effects per vestibular sensitivity.\n### voce & audio\n• **voce Selection**: Scegli da multiplo TTS voices (male/female, accents).\n• **velocità Controllo**: Regolare speech rate da 0.5• un 2• velocità.\n• **volume Controllo**: Imposta TTS volume independently da sistema audio.\n### AlloBot impostazioni\n• **Mostra/Nascondi AlloBot**: Attiva/Disattiva il animated assistant personaggi.\n• **Disabilita consigli**: Turn off proactive consigli da AlloBot.\n### Profile & sistema\n• **Profile Contesto**: Aggiungi tuo teaching contesto (classe, subject) un improve AI output.\n• **lingue Preferences**: Imposta predefinito interfaccia e obiettivo traduzioni lingue.\n• **Documentation**: Accesso user guides, tutorials, e pedagogical risorse.\n### Pro consigli Per studenti con IEPs requiring testo modifications, configure Lettura Accessibilità impostazioni once•essi persist attraverso tutti generato contenuto!\n### UDL Connection\n• **Representation**: Offer alternatives per auditory e visivo informazioni (Guidelines 1.1-1.3).",
+    "utils_text": "Il Accessibilità e impostazioni Hub. Personalizza il entire application per diversi learner needs.\n### Lettura Accessibilità\n• **testo Size**: Regolare font scale per visivo comfort.\n• **Font stili**: Scegli da dyslexia-amichevole e alto-readability fonts.\n• **linee altezze & Spacing**: Increase vertical spacing per easier lettura.\n• **Bionic Lettura**: Bold primo portion di parole un guide lettura flow.\n• **colori Overlay**: Applica tinted overlay un reduce visivo stress (Irlen-stili).\n### temi & Visualizzazione\n• **Dark modalità**: Low-light interfaccia per reduced eye strain.\n• **Alto Contrast modalità**: Maximum contrast con bold outlines per low vision.\n• **Reduce Animations**: Attiva/Disattiva off movimento effects per vestibular sensitivity.\n### voce & audio\n• **voce Selection**: Scegli da multiplo TTS voices (male/female, accents).\n• **velocità Controllo**: Regolare speech rate da 0.5• un 2• velocità.\n• **volume Controllo**: Imposta TTS volume independently da sistema audio.\n### AlloBot impostazioni\n• **Mostra/Nascondi AlloBot**: Attiva/Disattiva il animated assistant personaggi.\n• **Disabilita consigli**: Turn off proactive consigli da AlloBot.\n### Profile & sistema\n• **Profile Contesto**: Aggiungi tuo teaching contesto (classe, subject) un improve AI output.\n• **lingue Preferences**: Imposta predefinito interfaccia e obiettivo traduzioni lingue.\n• **Documentation**: Accesso user guides, tutorials, e pedagogical risorse.\n### Pro consigli Per studenti con IEPs requiring testo modifications, configure Lettura Accessibilità impostazioni once•essi persist attraverso tutti generato contenuto!\n### UDL Connection\n• **Representation**: Offer alternatives per auditory e visivo informazioni (Guidelines 1.1-1.3).",
     "dashboard_title": "Cruscotto / strumento",
     "dashboard_text": "Il strumento Navigation barre e insegnanti Cruscotto accesso punti.\n### strumento Navigation barre\n• **strumento icone**: One-clicca jump un qualsiasi generator (quiz, glossario, Avventura, etc.).\n• **Status Dots**: Green = attivo contenuto, Orange = processing, Gray = empty.\n• **Logical Flow**: strumento ordered left-un-destra da input ? Genera ? Esporta.\n### insegnanti Cruscotto pulsanti Clicca il Cruscotto icone un apri il **insegnanti Grading Cruscotto** - un dedicated pannello per monitoraggio studenti progressoo:\n• **Carica studenti JSONs**: studenti esporta loro lavoro as JSON file; carica them here per batch analisi.\n• **studenti Roster**: Visualizza tutti uploaded studenti con nickname, date, quiz progressoo, e Avventura livelli.\n• **Individuale Recensione**: Clicca qualsiasi studenti un vedi loro completo storia•quiz, adventures, responses.\n• **Mark as Graded**: Checkbox un track which studenti tu've reviewed.\n• **classe Insights Tab**: Analisi grafici mostrando comune misconceptions e classe-wide performance.\n• **Esporta un CSV**: Scarica classe dati per gradebook importa.\n### Related Header Actions\n• **Jump un lezioni**: rapido-return un tuo più recent lezioni piano.\n• **Visualizza Attiva/Disattiva**: Cambia tra insegnanti e studenti views.\n### Pro consigli ha studenti esporta loro JSON salva at il end di classe, poi batch-carica them here per efficient overnight grading!",
     "actions_title": "Action barre",
@@ -88,7 +88,7 @@
     "step_of": "passi {current} di {total}",
     "back": "← Indietro",
     "skip": "successivo passi →",
-    "all_done": "🎉 tutti Done! Visualizza tutti strumento",
+    "all_done": "🎉 tutti Fatto! Visualizza tutti strumento",
     "about": "Circa",
     "source_prompt": "Incolla o inserisci origine testo un begin",
     "history_hint": "💡 tuo generato risorse sono salvato in il Storia tab — tu può revisit e esporta them anytime!",
@@ -1636,7 +1636,7 @@
     "image_too_large_10mb_alt": "immagini too large (max 10MB)",
     "kokoro_ready_switching": "Kokoro voce ready! Switching to offline voce.",
     "download_failed_retry": "Scarica failed — per favore prova again later",
-    "reverted_last_apply": "Reverted to the state before your ultimo Apply.",
+    "reverted_last_apply": "Reverted to the state before your ultimo Applica.",
     "fetching_document_url": "Fetching documenti from URL...",
     "document_imported": "documenti imported! Revisualizza and modifica the testo below.",
     "extracting_text_image": "Extracting testo from immagini...",
@@ -4380,7 +4380,7 @@
     },
     "diff": {
       "button_aria": "Apri parole-livelli diff visualizza tra origine PDF e remediated HTML",
-      "button_title": "Apri il parole-livelli diff modal — vedi every insertion, deletion, e paraphrase tra il origine PDF testo e il remediated HTML, con clicca-un-reject e Apply & Esporta."
+      "button_title": "Apri il parole-livelli diff modal — vedi every insertion, deletion, e paraphrase tra il origine PDF testo e il remediated HTML, con clicca-un-reject e Applica & Esporta."
     },
     "pdf_from_html": {
       "title": "Regenerare un PDF da il remediated HTML. Layout reflows — pagina breaks, fonts, e pagination può differ da il originale. Funziona well per semplice prose documenti."
@@ -4976,7 +4976,7 @@
     "remove_button": "Rimuovi standard",
     "add_standard": "Aggiungi standard",
     "remove_standard": "Rimuovi standard",
-    "finder_header": "Trovare & Apply standard",
+    "finder_header": "Trovare & Applica standard",
     "finder_placeholder": "competenze o Codice (es. \"frazioni\" o \"TEKS 4.2\")",
     "region_framework_placeholder": "Region o Framework (es. CASEL, CCSS)...",
     "consult_header": "Consult AI su strategia",
@@ -7203,7 +7203,7 @@
     "group_create_input": "Inserisci un nome per il nuovo studenti gruppo.",
     "group_create_button": "Crea un nuovo studenti gruppo con il entered name.",
     "group_roster_list": "Elenco di studenti in il selezionato gruppo.",
-    "roster_panel_header": "Il classe Roster Chiave è tuo differentiation command center. Crea studenti gruppos con unique apprendimento profile (livello scolastico, lingue, lettura livelli, interests, DOK), poi apply those profile un qualsiasi generator. Roster dati è stored in tuo browser's local storage e never leaves tuo device unless tu explicitly esporta o sync un un dal vivo sessioni. Usa 'Apply un Generator' un instantly configure impostazioni per un gruppo, o 'Differenzia by Gruppo' un batch-genera risorse per tutti gruppos at once.",
+    "roster_panel_header": "Il classe Roster Chiave è tuo differentiation command center. Crea studenti gruppos con unique apprendimento profile (livello scolastico, lingue, lettura livelli, interests, DOK), poi apply those profile un qualsiasi generator. Roster dati è stored in tuo browser's local storage e never leaves tuo device unless tu explicitly esporta o sync un un dal vivo sessioni. Usa 'Applica un Generator' un instantly configure impostazioni per un gruppo, o 'Differenzia by Gruppo' un batch-genera risorse per tutti gruppos at once.",
     "roster_import_export": "Importa un previously exported roster JSON file, o esporta tuo attuale roster per backup o sharing tra devices. Exported file contain gruppo names, colori, studenti assignments, e tutti profile impostazioni.",
     "roster_sync_session": "Push tuo roster gruppo metadata un il attivo Firebase sessioni so studenti sono automaticamente assigned un loro designated gruppo quando essi join. Gruppo-specifico impostazioni (TTS velocità, karaoke modalità) take effect su studenti devices.",
     "roster_batch_generate": "Genera differenziared risorse per every gruppo simultaneously. Seleziona which risorse types un crea (adapted testo, glossario, quiz, etc.) e il sistema sarà iterate attraverso ogni gruppo, applying loro profile impostazioni prima generazione. risorse sono tagged con gruppo identifiers per facile filtering.",
@@ -8156,7 +8156,7 @@
     "synthesizing": "Synthesizing connections...",
     "generate_extensions": "Genera Deep lezioni Extensions",
     "save_to_history": "Salva un Storia",
-    "apply_brainstorm": "Apply un Brainstorm",
+    "apply_brainstorm": "Applica un Brainstorm",
     "apply_brainstorm_tooltip": "Usa questo idea un genera Brainstorm attività"
   },
   "mastery": {
@@ -11362,8 +11362,8 @@
     "keep_selection": "Keep selection",
     "dismiss_toolbar_aria": "Dismiss toolbar",
     "footer_help": "Clicca spans o trascina-seleziona un modifica. Pairs attiva/disattiva together.",
-    "revert_tooltip": "Restore il accessibile HTML un il state prima tuo ultimo Apply & Esporta",
-    "apply_export_tooltip": "Apply rejections via testo surgery (preserves tutti markup, instant, no Gemini call). Falls indietro un Gemini round-trip solo se surgery può't map alcuni chunks."
+    "revert_tooltip": "Restore il accessibile HTML un il state prima tuo ultimo Applica & Esporta",
+    "apply_export_tooltip": "Applica rejections via testo surgery (preserves tutti markup, instant, no Gemini call). Falls indietro un Gemini round-trip solo se surgery può't map alcuni chunks."
   },
   "volume_builder": {
     "zoom_out_aria": "Zoom out",

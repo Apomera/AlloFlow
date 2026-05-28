@@ -18,7 +18,7 @@
     "faq_title": "Predictive FAQ",
     "faq_text": "Anticipate sianginn caa confusion before it happens. Automatically generates predictive FAQ based cung text's complexity, proactively addressing cunglei misconceptions.\n### Panel Options\n• **biahalnak Count**: Thim 3, 5, 8, asilole 10 Q& pairs ah generate.\n• **Custom Instructions**: Guide chan he lakhmi focus areas (e.g., \"focus cung vocabulary\" asilole \"tinhmi cunglei errors\").\n### Key Features\n• **Auto-Chan**: Instantly creates biahalnak & leihnak based cung text analysis.\n• **Audio Support**: Text-ah-Speech caah paknih biahalnak le leihnak; hnen any Q asilole ah hear it aloud.\n• **Bilingual Support**: View le hear lehhnak if tinhmi holh si selected.\n• **Hnen-ah-Hear Mode**: Interactive listening station caah independent study.\n### Pro Tip Hman audio feature ah create listening station activity khoika sianginn caa check understanding•a ngan caah centers!\n### UDL Connection\n• **Representation**: Highlights a kah le critical features (Guideline 3) by explicitly addressing cunglei misconceptions.",
     "scaffolds_title": "Tialnak Scaffolds",
-    "scaffolds_text": "Comprehensive tialnak support system he AI-powered grading le customizable biacheo structures. Perfect caah differentiated tialnak instruction.\n### Scaffold Types\n• **biacheo Starters**: Minung-based biapenh ah bawmh sianginn caa begin their thoughts.\n• **Paragraph Frames**: Cloze-style fill-ah--blank paragraphs caah structured argumentation.\n• **Discussion Biapenh**: Conversation starters caah collaborative discussions.\n• **Custom Instructions**: Tailor frames ah lakhmi rhetorical functions (e.g., 'agreeing/disagreeing', 'cause le effect').\n### Rubric & Assessment System\n• **Auto-Tuah Rubrics**: AI creates criteria-based rubrics aligned ah nangmah content.\n• **Mah le mah-Assessment Checklists**: sianginn caa-facing success criteria caah mah le mah-monitoring.\n• **Mastery Assessment**: Evaluate sianginn caa understanding he structured rubric grading.\n• **Rubric Zoom**: Enlarge rubric view caah detailed criteria review.\n### AI Auto-Grader\n• **Instant Feedback**: Submit sianginn caa drafts caah immediate AI-powered evaluation.\n• **Criteria-Based Scoring**: Grades pakhat fate response against rubric criteria points.\n• **Glow & Grow**: Provides lakhmi praise (\"glow\") le improvement suggestions (\"grow\").\n• **TTS Feedback**: Allobot reads grading results aloud caah lutnak ngeih.\n• **XP Rewards**: sianginn caa earn Mastery XP (100 points) caah completed drafts.\n### Input Options\n• **Voice Dictation**: sianginn caa can dictate responses using FAB microphone button.\n• **Thlen Mode**: sayama can customize biacheo starters le biapenh.\n• **Reset & Retry**: Clear sianginn caa work caah fresh attempts.\n### Pro Tip Hman 'Thawk Check' button ah initiate AI grading loop•sianginn caa can revise based cung feedback le resubmit!\n### UDL Connection\n• **Action & Expression**: Optimized caah construction le composition (Guideline 5), providing graduated levels i support caah practice le performance.",
+    "scaffolds_text": "Comprehensive tialnak support system he AI-powered grading le customizable biacheo structures. Perfect caah differentiated tialnak instruction.\n### Scaffold Types\n• **biacheo Starters**: Minung-based biapenh ah bawmh sianginn caa begin their thoughts.\n• **Paragraph Frames**: Cloze-style fill-ah--blank paragraphs caah structured argumentation.\n• **Discussion Biapenh**: Conversation starters caah collaborative discussions.\n• **Custom Instructions**: Tailor frames ah lakhmi rhetorical functions (e.g., 'agreeing/disagreeing', 'cause le effect').\n### Rubric & Assessment System\n• **Auto-Tuah Rubrics**: AI creates criteria-based rubrics aligned ah nangmah content.\n• **Mah le mah-Assessment Checklists**: sianginn caa-facing success criteria caah mah le mah-monitoring.\n• **Mastery Assessment**: Evaluate sianginn caa understanding he structured rubric grading.\n• **Rubric Zoom**: Enlarge rubric view caah detailed criteria review.\n### AI Auto-Grader\n• **Instant Feedback**: Submit sianginn caa drafts caah immediate AI-powered evaluation.\n• **Criteria-Based Scoring**: Grades pakhat fate response against rubric criteria points.\n• **Glow & Grow**: Provides lakhmi praise (\"glow\") le improvement suggestions (\"grow\").\n• **TTS Feedback**: Allobot reads grading results aloud caah lutnak ngeih.\n• **XP Rewards**: sianginn caa earn Mastery XP (100 points) caah completed drafts.\n### Input Options\n• **Voice Dictation**: sianginn caa can dictate responses using FAB microphone button.\n• **Thlen Mode**: sayama can customize biacheo starters le biapenh.\n• **Tlawmpa pek & Retry**: Clear sianginn caa work caah fresh attempts.\n### Pro Tip Hman 'Thawk Check' button ah initiate AI grading loop•sianginn caa can revise based cung feedback le resubmit!\n### UDL Connection\n• **Action & Expression**: Optimized caah construction le composition (Guideline 5), providing graduated levels i support caah practice le performance.",
     "quiz_title": "Gamified Quiz",
     "quiz_text": "Gamified assessment he multiple competitive le immersive modes. From a nungkho sianginn battles ah puzzle-based escape rooms.\n### lentecel Modes\n• **A nungkho Quiz**: Real-caan synchronized sessions he score trackings le session codes caah sianginn caa ah join.\n• **Team Showdown**: Team-based competition he color-coded phun le collaborative scoring.\n• **Boss Battle**: sianginn vs AI boss•leihnak correctly ah deal damage le defeat boss together!\n• **Escape Room**: Immersive themed puzzles he hints, ciphers, locked doors, le final escape challenge.\n• **Review Mode**: Mah le mah-paced practice he immediate feedback.\n### biahalnak Types\n• **Multiple Choice**: Standard MCQ he configurable biahalnak count.\n• **Reflection biahalnak**: Ka-ended responses caah deeper thinking.\n• **Fill-ah--Blank**: Tlangpi biacheo he missing key terms.\n• **Matching**: Connect related ruahnak.\n• **Cipher Puzzles**: Decode encrypted messages ah Escape Room mode.\n### Gamification Features\n• **Leaderboards**: Real-caan ranking during a nungkho sessions.\n• **Team Colors**: Auto-assigned team identities caah phun competitions.\n• **Hints System**: Spend hint tokens caah clues ah Escape Room (limited supply!).\n• **A hman A zulh**: Track escape room completions le quiz scores across sessions.\n### AI Auto-Grader\n• **Reflection Grading**: AI evaluates ka-ended leihnak he rubric-based feedback.\n• **Instant Scores**: Automatic scoring he personalized feedback caah pakhat fate response.\n### A nungkho Differentiated Delivery\n• **phun Overrides**: Assign different resources asilole holh versions ah lakhmi sianginn caa phun mid-session.\n• **Targeted Push**: Thlah scaffolded quiz ah Tier 3 sianginn caa while rest work cung standard material.\n• **Real-caan Switching**: si lo need ah end session•differentiate cung fly from sayama dashboard.\n### sayama Features\n• **Presentation Mode**: Project biahalnak fullscreen caah whole-sianginn discussion.\n• **Session Codes**: Generate join codes caah sianginn caa ah connect from any device.\n• **Langhter/Thup leihnak**: Toggle leihnak key visibility during review.\n• **DOK Levels**: Align biahalnak ah Depth i Knowledge standards.\n### Pro Tip Hman Escape Room mode ah boost engagement•sianginn caa solve puzzles ah 'escape' while demonstrating content mastery.\n### UDL Connection\n• **Engagement**: Optimize challenge (Guideline 8.2) in incremental difficulty le gamified feedback loops.",
     "brainstorm_title": "Idea Engine",
@@ -26,7 +26,7 @@
     "persona_title": "Persona Chat",
     "persona_text": "Persona Interview Mode brings content ah life in immersive character conversations. Interview historical figures, fictional characters, asilole AI-tuah experts ah gamified experience mah tuah empathy le deepens understanding.\n### Interview Modes\n• **1-cung-1 Interview**: Deep conversation he single character caah focused exploration.\n• **Panel Discussion**: Thim multiple personas caah phun debates le diverse perspectives.\n• **Free Response vs Multiple Choice**: Toggle karlak ka-ended typing asilole guided biahalnak options.\n### Gamification Features\n• **XP System**: Earn Interview XP caah quality biahalnak le thoughtful engagement.\n• **Badges**: Unlock achievements like *Harmonizer*, *First Insight*, *Rapport Builder*, le *Master Interviewer*.\n• **Reflection Grading**: Submit final reflection ah earn bonus XP he AI-powered feedback.\n• **Hard Mode**: Disable hints caah extra challenge le higher XP rewards.\n### Voice & Lutnak ngeih\n• **Auto-Rel**: Personas chim their responses aloud using Text-ah-Speech.\n• **Auto-Thlah**: Hands-free mode automatically sends nangmah message after pause.\n• **Custom Instructions**: Shape persona's background, era, asilole expertise level.\n### Pro Tip\n• Project Persona Chat cung board le have whole sianginn vote cung what biahalnak ah ask next.\n### UDL Connection\n• **Engagement**: Foster collaboration le community (Guideline 8) in simulated social learning interactions.",
     "timeline_title": "Sequence Builder",
-    "timeline_text": "Sequence Builder (Timeline) transforms events into interactive drag-le-drop ordering activity. Perfect caah chronological events, process steps, asilole cause-le-effect sequences.\n### Content Chan\n• **Auto-Extraction**: AI identifies dates, events, le milestones from nangmah text.\n• **Event Count**: Customize 5-15 events caah nangmah timeline.\n• **Custom Kong**: Override he lakhmi sequence kong.\n• **Process Steps**: Visualize scientific procedures, recipes, asilole a relnak steps.\n### Sequence lentecel Mode Launch interactive ordering challenge khoika sianginn caa arrange events chronologically: **Gameplay Features**:\n• **Drag & Drop**: Intuitive event reordering he glowing drop zones.\n• **Move Up/Down Buttons**: Alternative navigation caah lutnak ngeih asilole motor challenges.\n• **Check Button**: Submit leihnak•correct events lock he ?, incorrect ones shake caah repositioning.\n• **Reset Button**: Scramble events caah fresh attempt.\n• **A hman A zulh**: Visual feedback when dihlak events si correctly ordered. **Lutnak ngeih**:\n• **ARIA Labels**: Full screen reader support he ah announcements.\n• **Keyboard Navigation**: Full keyboard control caah drag operations.\n• **Visual States**: Lifted, dropped, le locked states clearly indicated.\n### sayama Features\n• **Thlen Mode**: Modify event text, dates, asilole descriptions before sharing.\n• **Preview lentecel**: Test sequencing activity before sianginn caa lentecel.\n### Pro Tip Hman Process Steps mode ah break down complex lab instructions•sianginn caa practice sequencing while learning procedure!\n### UDL Connection\n• **Representation**: Illustrate in multiple media (Guideline 2.5) by converting text sequences into spatial/visual timelines.\n• **Action & Expression**: Physical manipulation i knowledge (Guideline 5) in drag-le-drop interaction.",
+    "timeline_text": "Sequence Builder (Timeline) transforms events into interactive drag-le-drop ordering activity. Perfect caah chronological events, process steps, asilole cause-le-effect sequences.\n### Content Chan\n• **Auto-Extraction**: AI identifies dates, events, le milestones from nangmah text.\n• **Event Count**: Customize 5-15 events caah nangmah timeline.\n• **Custom Kong**: Override he lakhmi sequence kong.\n• **Process Steps**: Visualize scientific procedures, recipes, asilole a relnak steps.\n### Sequence lentecel Mode Launch interactive ordering challenge khoika sianginn caa arrange events chronologically: **Gameplay Features**:\n• **Drag & Drop**: Intuitive event reordering he glowing drop zones.\n• **Move Up/Down Buttons**: Alternative navigation caah lutnak ngeih asilole motor challenges.\n• **Check Button**: Submit leihnak•correct events lock he ?, incorrect ones shake caah repositioning.\n• **Tlawmpa pek Button**: Scramble events caah fresh attempt.\n• **A hman A zulh**: Visual feedback when dihlak events si correctly ordered. **Lutnak ngeih**:\n• **ARIA Labels**: Full screen reader support he ah announcements.\n• **Keyboard Navigation**: Full keyboard control caah drag operations.\n• **Visual States**: Lifted, dropped, le locked states clearly indicated.\n### sayama Features\n• **Thlen Mode**: Modify event text, dates, asilole descriptions before sharing.\n• **Preview lentecel**: Test sequencing activity before sianginn caa lentecel.\n### Pro Tip Hman Process Steps mode ah break down complex lab instructions•sianginn caa practice sequencing while learning procedure!\n### UDL Connection\n• **Representation**: Illustrate in multiple media (Guideline 2.5) by converting text sequences into spatial/visual timelines.\n• **Action & Expression**: Physical manipulation i knowledge (Guideline 5) in drag-le-drop interaction.",
     "concept_sort_title": "Ruahnak Sort",
     "concept_sort_text": "Reinforce categorization skills le conceptual relationships. sianginn caa drag-le-drop terms into defined categories, actively processing connections karlak ideas.\n### Panel Options\n• **Category Setup**: Define category bins (e.g., \"Mammals vs Reptiles\", \"Renewable vs Non-Renewable\").\n• **Thil Count**: Set how many thil ah generate caah sorting.\n• **Custom Thil**: Tel nangmah own terms asilole thlen AI-tuah ones.\n### Gameplay Features\n• **Drag-le-Drop**: Interactive sorting he visual feedback cung desktop.\n• **Keyboard Sorting**: Hman arrow buttons caah i ngeih khawh keyboard navigation•no mouse required.\n• **limceu Cards**: Thil can include AI-tuah visuals alongside text caah dual coding.\n• **Instant Feedback**: Immediate validation i correct/incorrect sorts he color indicators.\n• **Check leihnak**: Reveal dihlak correct placements ah validate learning.\n### Print & Export\n• **Printable Worksheet**: Generates cut-le-paste activity layout caah offline hman.\n### Lutnak ngeih\n• **Screen Reader Support**: Full ARIA labels announce thil status (sorted/unsorted) le available actions.\n• **Keyboard Focus**: Tab navigation le visual focus states caah dihlak interactive elements.\n### Pro Tip Hman limceu-based cards when introducing visual vocabulary ah younger sianginn ca asilole ELL sianginn caa!\n### UDL Connection\n• **Action & Expression**: Facilitate managing information le resources (Guideline 6) by physically manipulating information.",
     "math_title": "STEM Solver",
@@ -40,7 +40,7 @@
     "fullpack_title": "Full Pack",
     "fullpack_text": "universal 'Easy Button' caah instant, sang-quality content chan. Perfect caah sayama, nu le pa, le mah le mah-guided sianginn ca, hi tool generates every resource ah sequence he intelligent AI configuration.\n### Smart Automation\n• **Auto-Configuration**: AI analyzes nangmah text le intelligently configures optimal settings caah every tool.\n• **Context-Aware**: Ensures quizzes, scaffolds, le lentecel si perfectly aligned ah text complexity le themes.\n• **Custom Resource Count**: Thim 'Auto' (AI picks essentials) asilole 'dihlak' (full 13-resource suite).\n### Tuah Resources Batch generates up ah 13 resources ah intelligent order:\n• **Analysis** (first) ? Glossary ? Leveled Text ? Visual limceu\n• **Outline** ? FAQ ? biacheo Frames ? Timeline\n• **Persona Interview** ? Ruahnak Sort ? Brainstorm ? Quiz\n• **cawnnak Taipuelaknak** (last, uses dihlak prior resources caah context)\n### Mode Adaptation\n• **sayama Mode**: Full educator resources he pedagogical guidance.\n• **sianginn caa Mode**: Mah le mah-study thil he embedded supports.\n• **nu le pa Mode**: Family-friendly guides caah inn learning.\n### Pro Tip Lut custom instructions before clicking Full Pack•AI distributes them intelligently across dihlak tuah resources!\n### UDL Connection\n• **Action & Expression**: Streamlines resource creation (Guideline 5) by automatically generating multiple formats from single source.",
     "utils_title": "Lutnak ngeih Hub",
-    "utils_text": "Lutnak ngeih le Settings Hub. Customize entire application caah diverse learner needs.\n### Reading Lutnak ngeih\n• **Text Size**: Remhmi font scale caah visual comfort.\n• **Font Style**: Thim from dyslexia-friendly le sang-readability fonts.\n• **Line Height & Spacing**: Increase vertical spacing caah easier reading.\n• **Bionic Reading**: Bold first portion i biafang ah guide reading flow.\n• **Color Overlay**: Apply tinted overlay ah reduce visual stress (Irlen-style).\n### Theme & Langhter\n• **Dark Mode**: Low-light interface caah reduced eye strain.\n• **Sang Contrast Mode**: Maximum contrast he bold outlines caah low vision.\n• **Reduce Animations**: Toggle off motion effects caah vestibular sensitivity.\n### Voice & Audio\n• **Voice Selection**: Thim from multiple TTS voices (male/female, accents).\n• **Speed Control**: Remhmi speech rate from 0.5• ah 2• speed.\n• **Volume Control**: Set TTS volume independently from system audio.\n### AlloBot Settings\n• **Langhter/Thup AlloBot**: Toggle animated assistant character.\n• **Disable Tips**: Turn off proactive tips from AlloBot.\n### Profile & System\n• **Profile Context**: Tel nangmah teaching context (grade, subject) ah improve AI output.\n• **holh Preferences**: Set default interface le tinhmi lehhnak holh.\n• **Documentation**: Access user guides, tutorials, le pedagogical resources.\n### Pro Tip Caah sianginn caa he IEPs requiring text modifications, configure Reading Lutnak ngeih settings once•they persist across dihlak tuah content!\n### UDL Connection\n• **Representation**: Offer alternatives caah auditory le visual information (Guidelines 1.1-1.3).",
+    "utils_text": "Lutnak ngeih le Settings Hub. Customize entire application caah diverse learner needs.\n### Reading Lutnak ngeih\n• **Text Size**: Remhmi font scale caah visual comfort.\n• **Font Style**: Thim from dyslexia-friendly le sang-readability fonts.\n• **Line Height & Spacing**: Increase vertical spacing caah easier reading.\n• **Bionic Reading**: Bold first portion i biafang ah guide reading flow.\n• **Color Overlay**: Hman tinted overlay ah reduce visual stress (Irlen-style).\n### Theme & Langhter\n• **Dark Mode**: Low-light interface caah reduced eye strain.\n• **Sang Contrast Mode**: Maximum contrast he bold outlines caah low vision.\n• **Reduce Animations**: Toggle off motion effects caah vestibular sensitivity.\n### Voice & Audio\n• **Voice Selection**: Thim from multiple TTS voices (male/female, accents).\n• **Speed Control**: Remhmi speech rate from 0.5• ah 2• speed.\n• **Volume Control**: Set TTS volume independently from system audio.\n### AlloBot Settings\n• **Langhter/Thup AlloBot**: Toggle animated assistant character.\n• **Disable Tips**: Turn off proactive tips from AlloBot.\n### Profile & System\n• **Profile Context**: Tel nangmah teaching context (grade, subject) ah improve AI output.\n• **holh Preferences**: Set default interface le tinhmi lehhnak holh.\n• **Documentation**: Access user guides, tutorials, le pedagogical resources.\n### Pro Tip Caah sianginn caa he IEPs requiring text modifications, configure Reading Lutnak ngeih settings once•they persist across dihlak tuah content!\n### UDL Connection\n• **Representation**: Offer alternatives caah auditory le visual information (Guidelines 1.1-1.3).",
     "dashboard_title": "Dashboard / Tools",
     "dashboard_text": "Tool Navigation Bar le sayama Dashboard access point.\n### Tool Navigation Bar\n• **Tool Icons**: One-hnen jump ah any generator (Quiz, Glossary, Adventure, etc.).\n• **Status Dots**: Green = active content, Orange = processing, Gray = empty.\n• **Logical Flow**: Tools ordered left-ah-a hman from Input ? Generate ? Export.\n### sayama Dashboard Button Hnen Dashboard icon ah ka **sayama Grading Dashboard** - dedicated panel caah a zulh sianginn caa progress:\n• **Thlaktan sianginn caa JSONs**: sianginn caa export their work as JSON file; thlaktan them here caah batch analysis.\n• **sianginn caa Roster**: View dihlak uploaded sianginn caa he nickname, date, quiz progress, le Adventure level.\n• **Mi pakhat Review**: Hnen any sianginn caa ah hmu their full history•quizzes, adventures, responses.\n• **Mark as Graded**: Checkbox ah track which sianginn caa nang've reviewed.\n• **sianginn Insights Tab**: Analytics charts langhter cunglei misconceptions le sianginn-wide performance.\n• **Export ah CSV**: Lakhrak sianginn data caah gradebook import.\n### Related Header Actions\n• **Jump ah cawnnak**: Quick-return ah nangmah most recent cawnnak taipuelaknak.\n• **View Toggle**: Switch karlak sayama le sianginn caa views.\n### Pro Tip Have sianginn caa export their JSON khoh at end i sianginn, then batch-thlaktan them here caah efficient overnight grading!",
     "actions_title": "Action Bar",
@@ -88,7 +88,7 @@
     "step_of": "Step {current} i {total}",
     "back": "← A hnu",
     "skip": "Next Step →",
-    "all_done": "🎉 dihlak Done! View dihlak Tools",
+    "all_done": "🎉 dihlak A dih cang! View dihlak Tools",
     "about": "Kong",
     "source_prompt": "Paste asilole lut source text ah begin",
     "history_hint": "💡 nangmah tuah resources si khoh cang ah History tab — nang can revisit le export them anytime!",
@@ -413,7 +413,7 @@
     "adjust_slider_font_size": "Remhmi slider font size",
     "adventure_social_story_focus_placeholder": "e.g., Sharing toys, managing frustration, turn-taking...",
     "ai_refine_source": "Ai refine source",
-    "apply_panel_edit": "Apply panel thlen",
+    "apply_panel_edit": "Hman panel thlen",
     "apply_text_revision": "Apply text revision",
     "ask_question": "Ask biahalnak",
     "auto_correct_selected_errors": "Auto-correct selected errors",
@@ -599,7 +599,7 @@
     "reorder_list": "Reorder minung",
     "reset_escape_room": "Reset escape room",
     "reset_presentation": "Reset presentation",
-    "reset_the_challenge_and_try_again": "Reset challenge le try again",
+    "reset_the_challenge_and_try_again": "Tlawmpa pek challenge le try again",
     "reset_venn_diagram": "Reset Venn diagram",
     "restore_image": "Restore limceu",
     "resume_saved_adventure": "Resume khoh cang adventure",
@@ -776,7 +776,7 @@
     "remove_standard": "Lak Standard",
     "remove_concept": "Lak ruahnak",
     "choose_overwrite_version": "Thim whether ah overwrite current text asilole create thar version",
-    "apply_nano_edit": "Apply Custom Nano Banana Thlen",
+    "apply_nano_edit": "Hman Custom Nano Banana Thlen",
     "link_opened_copy_paste": "Link opened. Copy URL le paste it here.",
     "find_relevant_standards": "Find relevant standards",
     "export_for_grading": "Export work caah sayama grading (limceu removed)",
@@ -835,7 +835,7 @@
     "auto_play": "Auto Lentecel",
     "ims_content": "IMS Content",
     "randomize": "Randomize",
-    "apply_edit": "Apply thlen",
+    "apply_edit": "Hman thlen",
     "custom_language_input": "Custom holh",
     "dbq_title": "Document-Based biahalnak",
     "dismiss": "Dismiss",
@@ -2076,7 +2076,7 @@
     "clear_image": "Clear limceu",
     "auto_remove_text": "Auto-lak text from limceu",
     "delete_item": "Hlonh this item",
-    "apply_edit_prompt": "Apply thlen prompt",
+    "apply_edit_prompt": "Hman thlen prompt",
     "new_item_text": "thar item text",
     "save_note": "Khoh and khar note",
     "delete_note": "Hlonh note",
@@ -2422,7 +2422,7 @@
       "victory_desc": "nang sorted dihlak causes le effects correctly!",
       "reset_confirm": "Forh reset — clears whole board",
       "reset_confirm_label": "Hnen again ah forh",
-      "reset_confirm_aria": "Press Reset again ah forh clearing board, asilole wait ah cawl."
+      "reset_confirm_aria": "Press Tlawmpa pek again ah forh clearing board, asilole wait ah cawl."
     },
     "pipeline": {
       "title": "Pipeline Builder",
@@ -2546,7 +2546,7 @@
       "select_all_highlight": "Thim/Deselect dihlak caah Leveled Text Highlighting",
       "select_highlight": "Include hi term ah Leveled Text Highlighting",
       "delete_term": "Hlonh Term",
-      "apply_edit": "Apply Custom Nano Banana Thlen",
+      "apply_edit": "Hman Custom Nano Banana Thlen",
       "generate_icon": "Generate visual icon caah hi term"
     },
     "auto_remove": "Auto-Lak biafang from limceu",
@@ -2793,7 +2793,7 @@
     "aria_connected": "Connected.",
     "aria_select_first": "Please thim term from left column first.",
     "close_aria": "Khar Matching lentecel",
-    "reset_aria": "Reset Matching lentecel",
+    "reset_aria": "Tlawmpa pek Matching lentecel",
     "select_term_aria": "Thim term",
     "connect_def_aria": "Connect ah definition"
   },
@@ -3026,14 +3026,14 @@
     "resume": "Resume Audio",
     "pause": "Pause Audio",
     "speed": "Playback Speed",
-    "stop": "Dinh Audio le Reset"
+    "stop": "Dinh Audio le Tlawmpa pek"
   },
   "review_game": {
     "title": "Review Challenge",
     "subtitle": "Thim tile ah reveal biahalnak • Earn points caah nangmah team",
     "toggle_sound": "Toggle Sound Effects",
-    "reset": "Reset lentecel",
-    "reset_confirm": "Reset lentecel board le scores?",
+    "reset": "Tlawmpa pek lentecel",
+    "reset_confirm": "Tlawmpa pek lentecel board le scores?",
     "add_team": "Tel Team",
     "reveal_answer": "Reveal leihnak",
     "hide_answer": "Thup leihnak",
@@ -3645,7 +3645,7 @@
     "edit_reflection_translation": "Thlen reflection lehhnak",
     "item_mix_help": "Control how many i pakhat fate biahalnak type si tuah. MCQ le Reflections si set above.",
     "item_count_aria": "{type} count",
-    "reset_mix": "↩ Reset ah mode defaults",
+    "reset_mix": "↩ Tlawmpa pek ah mode defaults",
     "mode_label": "Mode:",
     "mode_aria": "Quiz mode",
     "mode_tooltip": "Quiz mode: thim what hi quiz si caah. Pre-check probes prerequisites; Exit Ticket assesses today's content; Formative si quick mid-cawnnak pulse; Spaced Review re-tests prior content.",
@@ -4390,7 +4390,7 @@
     },
     "diff": {
       "button_aria": "Ka biafang-level diff view karlak source PDF le remediated HTML",
-      "button_title": "Ka biafang-level diff modal — hmu every insertion, deletion, le paraphrase karlak source PDF text le remediated HTML, he hnen-ah-reject le Apply & Export."
+      "button_title": "Ka biafang-level diff modal — hmu every insertion, deletion, le paraphrase karlak source PDF text le remediated HTML, he hnen-ah-reject le Hman & Export."
     },
     "pdf_from_html": {
       "title": "Regenerate PDF from remediated HTML. Layout reflows — cazin breaks, fonts, le pagination may differ from a sual. A rian a tuah well caah simple prose documents."
@@ -6820,7 +6820,7 @@
     "unassigned_students": "Unassigned sianginn caa",
     "no_students": "si lo sianginn caa assigned",
     "students_in_group": "sianginn caa",
-    "apply_to_generator": "Apply ah Generator",
+    "apply_to_generator": "Hman ah Generator",
     "applied": "Applied settings ah generator",
     "synced": "phun synced ah a nungkho session",
     "sync_error": "Could si lo sync roster ah session",
@@ -7128,7 +7128,7 @@
     "concept_sort_items": "collection i thil ah be sorted into categories.",
     "concept_sort_game": "active ruahnak sort lentecel interface caah categorization practice. Drag thil into correct category buckets ah demonstrate understanding i classification ruahnak. Immediate feedback langhter correct le incorrect placements. Supports 2-4 categories le any number i sortable thil. A ngan caah vocabulary tiers, science classifications, asilole grammar sorting.",
     "concept_sort_check_answers": "Check if dihlak thil si sorted correctly. Incorrect placements si highlighted.",
-    "concept_sort_reset": "Reset activity. dihlak thil return ah deck caah re-sorting.",
+    "concept_sort_reset": "Tlawmpa pek activity. dihlak thil return ah deck caah re-sorting.",
     "concept_sort_generate_button": "Generate thar ruahnak sort activity based cung nangmah source content.",
     "concept_sort_start_button": "Thawk sorting activity. Thil will shuffle le timer begins.",
     "concept_sort_add_item": "Tel nangmah own custom thil ah sort. Specify which category it belongs ah.",
@@ -7203,7 +7203,7 @@
     "group_create_input": "Lut name caah thar sianginn caa phun.",
     "group_create_button": "Create thar sianginn caa phun he entered name.",
     "group_roster_list": "Minung i sianginn caa ah selected phun.",
-    "roster_panel_header": "sianginn Roster Key si nangmah differentiation command center. Create sianginn caa phun he unique learning profiles (grade level, holh, reading level, interests, DOK), then apply those profiles ah any generator. Roster data si stored ah nangmah browser's local storage le never leaves nangmah device unless nang explicitly export asilole sync ah a nungkho session. Hman 'Apply ah Generator' ah instantly configure settings caah phun, asilole 'Differentiate by phun' ah batch-generate resources caah dihlak phun at once.",
+    "roster_panel_header": "sianginn Roster Key si nangmah differentiation command center. Create sianginn caa phun he unique learning profiles (grade level, holh, reading level, interests, DOK), then apply those profiles ah any generator. Roster data si stored ah nangmah browser's local storage le never leaves nangmah device unless nang explicitly export asilole sync ah a nungkho session. Hman 'Hman ah Generator' ah instantly configure settings caah phun, asilole 'Differentiate by phun' ah batch-generate resources caah dihlak phun at once.",
     "roster_import_export": "Import previously exported roster JSON file, asilole export nangmah current roster caah backup asilole sharing karlak devices. Exported file contain phun names, colors, sianginn caa assignments, le dihlak profile settings.",
     "roster_sync_session": "Push nangmah roster phun metadata ah active Firebase session so sianginn caa si automatically assigned ah their designated phun when they join. phun-lakhmi settings (TTS speed, karaoke mode) take effect cung sianginn caa devices.",
     "roster_batch_generate": "Generate differentiated resources caah every phun simultaneously. Thim which resource types ah create (adapted text, glossary, quiz, etc.) le system will iterate in pakhat fate phun, applying their profile settings before generating. Resources si tagged he phun identifiers caah easy filtering.",
@@ -7357,7 +7357,7 @@
       "detector_desc": "Increases chance i finding Gold ah next scene."
     },
     "status": {
-      "reset_prompt": "Reset ah thawk thar journey.",
+      "reset_prompt": "Tlawmpa pek ah thawk thar journey.",
       "waiting": "Waiting caah tuanbia...",
       "loading_story": "tuanbia continues..."
     },
@@ -7762,7 +7762,7 @@
     "engage_desc": "Tapping into interests ah challenge le motivate (e.g., Interest-based analogies).",
     "ai_guide_tip": "Hman \"AI UDL & Rian buatsaihnak Guide\" button ah sidebar ah chat he expert pedagogical bot caah lakhmi strategy advice.",
     "cast_link_text": "View Full UDL Guidelines (CAST.org)",
-    "reset_wizard": "Reset Quick Thawk Wizard",
+    "reset_wizard": "Tlawmpa pek Quick Thawk Wizard",
     "support_kofi": "Support cung Ko-fi",
     "features_list": {
       "categories": {
@@ -8085,7 +8085,7 @@
     "legend_hesitation": "Hesitation / Mah le mah-Correction",
     "legend_missed": "Missed / Mispronounced",
     "tool_label": "Oral Fluency Check Tool",
-    "reset_label": "Reset le Try Again",
+    "reset_label": "Tlawmpa pek le Try Again",
     "close_label": "Khar Fluency Tool",
     "stop_recording": "Dinh Recording",
     "start_recording": "Thawk Recording",
@@ -8156,7 +8156,7 @@
     "synthesizing": "Synthesizing connections...",
     "generate_extensions": "Generate Deep cawnnak Extensions",
     "save_to_history": "Khoh ah History",
-    "apply_brainstorm": "Apply ah Brainstorm",
+    "apply_brainstorm": "Hman ah Brainstorm",
     "apply_brainstorm_tooltip": "Hman hi idea ah generate Brainstorm activities"
   },
   "mastery": {
@@ -9307,7 +9307,7 @@
       "peel": "Peel",
       "zoom_out": "Zoom out",
       "zoom_in": "Zoom ah",
-      "reset_zoom": "Reset ah 100%",
+      "reset_zoom": "Tlawmpa pek ah 100%",
       "click_reveal": "Hnen ah reveal function",
       "prev": "Prev",
       "next": "Next",
@@ -10350,8 +10350,8 @@
       "reinforcers_recommended": "Reinforcers recommended ✨",
       "replacement_plan_added": "Replacement taipuelaknak added",
       "report_generated_use_printsave_as_pdf_in_the_new_t": "Tlangtlanglam tuah — hman Print/Khoh as PDF ah thar tab!",
-      "reset_to_default_template": "Reset ah default template",
-      "reset_to_defaults": "Reset ah defaults",
+      "reset_to_default_template": "Tlawmpa pek ah default template",
+      "reset_to_defaults": "Tlawmpa pek ah defaults",
       "response_failed_try_again": "Response failed — try again",
       "reverted": "Reverted",
       "reverted_to_previous": "Reverted ah previous",
@@ -11362,8 +11362,8 @@
     "keep_selection": "Keep selection",
     "dismiss_toolbar_aria": "Dismiss toolbar",
     "footer_help": "Hnen spans asilole drag-thim ah thlen. Pairs toggle together.",
-    "revert_tooltip": "Restore i ngeih khawh HTML ah state before nangmah last Apply & Export",
-    "apply_export_tooltip": "Apply rejections via text surgery (preserves dihlak markup, instant, no Gemini call). Falls a hnu ah Gemini round-trip only if surgery can't map tlawmpal chunks."
+    "revert_tooltip": "Restore i ngeih khawh HTML ah state before nangmah last Hman & Export",
+    "apply_export_tooltip": "Hman rejections via text surgery (preserves dihlak markup, instant, no Gemini call). Falls a hnu ah Gemini round-trip only if surgery can't map tlawmpal chunks."
   },
   "volume_builder": {
     "zoom_out_aria": "Zoom out",
@@ -11445,12 +11445,12 @@
       "read_aloud_error": "Could si lo thawk rel-aloud:",
       "unmapped_theme_note": "Note: app si currently using reading theme (warm, blue, green, rose, asilole dyslexia overlay) mah si si lo represented ah hi preview yet. Switch it ah main lutnak ngeih settings ah preview it accurately.",
       "pane_aria": "sianginn caa preview pane",
-      "apply_button": "Apply these settings ah app",
-      "reset_button": "Reset ah app defaults",
+      "apply_button": "Hman these settings ah app",
+      "reset_button": "Tlawmpa pek ah app defaults",
       "apply_explanation": "Applies font, size, theme, line spacing, le letter spacing above ah a nungkho app caah dihlak sianginn caa using hi device.",
       "apply_success": "Applied ah a nungkho app caah dihlak sianginn caa using hi device.",
       "apply_error": "Could si lo apply settings:",
-      "reset_success": "Reset ah a nungkho app's current settings.",
+      "reset_success": "Tlawmpa pek ah a nungkho app's current settings.",
       "tip": "Tip: switch theme ah Sang contrast le try Extra Large font ah simulate low-vision usage. Switch font ah OpenDyslexic ah simulate dyslexia-friendly view."
     },
     "keyboard": {
@@ -11849,7 +11849,7 @@
     "remove_image": "Lak the limceu (keep the text)",
     "auto_remove_text": "Auto-lak text from this limceu",
     "delete_item": "Hlonh this item",
-    "apply_edit_prompt": "Apply thlen prompt to this limceu",
+    "apply_edit_prompt": "Hman thlen prompt to this limceu",
     "toggle_bionic": "Toggle Bionic Reading",
     "toggle_line_guide": "Toggle Line Guide",
     "toggle_dark_mode": "Toggle Dark Mode",

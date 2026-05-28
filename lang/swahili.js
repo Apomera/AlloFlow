@@ -40,7 +40,7 @@
     "fullpack_title": "Kamili Pack",
     "fullpack_text": "universal 'rahisi kitufe' kwa instant, juu-ubora maudhui kizazi. Kamili kwa mwalimu, mzazi, na mwenyewe-guided wanafunzi, hii zana inatengeneza every rasilimali katika sequence na intelligent AI configuration.\n### Smart Automation\n• **Otomatiki-Configuration**: AI analyzes yako maandishi na intelligently configures optimal mipangilio kwa every zana.\n• **Muktadha-Aware**: Ensures jaribio, scaffolds, na mchezo ni perfectly aligned kwa maandishi utata na mandhari.\n• **Custom rasilimali Hesabu**: Chagua 'Otomatiki' (AI picks essentials) au 'yote' (kamili 13-rasilimali suite).\n### Imezalishwa rasilimali Batch inatengeneza up kwa 13 rasilimali katika intelligent order:\n• **Uchambuzi** (ya kwanza) ? kamusi ? Kiwangoed maandishi ? kuona picha\n• **Outline** ? FAQ ? sentensi Frames ? Timeline\n• **Persona Interview** ? Dhana Panga ? Brainstorm ? jaribio\n• **somo Mpango** (ya mwisho, inatumia yote prior rasilimali kwa muktadha)\n### hali Adaptation\n• **mwalimu hali**: Kamili educator rasilimali na pedagogical guidance.\n• **mwanafunzi hali**: Mwenyewe-study vifaa na embedded msaada.\n• **mzazi hali**: Family-rafiki guides kwa home kujifunza.\n### Pro kidokezo Ingiza ya kibinafsi maagizo kabla bofyaing Kamili Pack•AI distributes them intelligently kuvuka yote imetengenezwa rasilimali!\n### UDL Connection\n• **Action & usemi**: Streamlines rasilimali creation (Guideline 5) by kiotomatiki kutengeneza nyingi muundo kutoka single chanzo.",
     "utils_title": "Ufikivu Hub",
-    "utils_text": "Ufikivu na mipangilio Hub. Badilisha entire application kwa tofauti learner needs.\n### Kusoma Ufikivu\n• **maandishi Size**: Rekebisha font scale kwa kuona comfort.\n• **Font mtindo**: Chagua kutoka dyslexia-rafiki na juu-readability fonts.\n• **mstari urefu & Spacing**: Increase vertical spacing kwa easier kusoma.\n• **Bionic Kusoma**: Bold ya kwanza portion ya maneno kwa guide kusoma flow.\n• **rangi Overlay**: Apply tinted overlay kwa reduce kuona stress (Irlen-mtindo).\n### mandhari & Onyesho\n• **Dark hali**: Low-light kiolesura kwa reduced eye strain.\n• **Juu Contrast hali**: Maximum contrast na bold outlines kwa low vision.\n• **Reduce Animations**: Geuza off mwendo effects kwa vestibular sensitivity.\n### sauti & sauti\n• **sauti Selection**: Chagua kutoka nyingi TTS voices (male/female, accents).\n• **kasi Udhibiti**: Rekebisha speech rate kutoka 0.5• kwa 2• kasi.\n• **ujazo Udhibiti**: Weka TTS ujazo independently kutoka mfumo sauti.\n### AlloBot mipangilio\n• **Onyesha/Ficha AlloBot**: Geuza animated assistant mhusika.\n• **Zima kidokezo**: Turn off proactive kidokezo kutoka AlloBot.\n### Profile & mfumo\n• **Profile Muktadha**: Ongeza yako teaching muktadha (darasa, subject) kwa improve AI matokeo.\n• **lugha Preferences**: Weka chaguo-msingi kiolesura na lengo tafsiri lugha.\n• **Documentation**: Fikia user guides, tutorials, na pedagogical rasilimali.\n### Pro kidokezo Kwa mwanafunzi na IEPs requiring maandishi modifications, configure Kusoma Ufikivu mipangilio once•wao persist kuvuka yote imetengenezwa maudhui!\n### UDL Connection\n• **Representation**: Offer alternatives kwa auditory na kuona taarifa (Guidelines 1.1-1.3).",
+    "utils_text": "Ufikivu na mipangilio Hub. Badilisha entire application kwa tofauti learner needs.\n### Kusoma Ufikivu\n• **maandishi Size**: Rekebisha font scale kwa kuona comfort.\n• **Font mtindo**: Chagua kutoka dyslexia-rafiki na juu-readability fonts.\n• **mstari urefu & Spacing**: Increase vertical spacing kwa easier kusoma.\n• **Bionic Kusoma**: Bold ya kwanza portion ya maneno kwa guide kusoma flow.\n• **rangi Overlay**: Tumia tinted overlay kwa reduce kuona stress (Irlen-mtindo).\n### mandhari & Onyesho\n• **Dark hali**: Low-light kiolesura kwa reduced eye strain.\n• **Juu Contrast hali**: Maximum contrast na bold outlines kwa low vision.\n• **Reduce Animations**: Geuza off mwendo effects kwa vestibular sensitivity.\n### sauti & sauti\n• **sauti Selection**: Chagua kutoka nyingi TTS voices (male/female, accents).\n• **kasi Udhibiti**: Rekebisha speech rate kutoka 0.5• kwa 2• kasi.\n• **ujazo Udhibiti**: Weka TTS ujazo independently kutoka mfumo sauti.\n### AlloBot mipangilio\n• **Onyesha/Ficha AlloBot**: Geuza animated assistant mhusika.\n• **Zima kidokezo**: Turn off proactive kidokezo kutoka AlloBot.\n### Profile & mfumo\n• **Profile Muktadha**: Ongeza yako teaching muktadha (darasa, subject) kwa improve AI matokeo.\n• **lugha Preferences**: Weka chaguo-msingi kiolesura na lengo tafsiri lugha.\n• **Documentation**: Fikia user guides, tutorials, na pedagogical rasilimali.\n### Pro kidokezo Kwa mwanafunzi na IEPs requiring maandishi modifications, configure Kusoma Ufikivu mipangilio once•wao persist kuvuka yote imetengenezwa maudhui!\n### UDL Connection\n• **Representation**: Offer alternatives kwa auditory na kuona taarifa (Guidelines 1.1-1.3).",
     "dashboard_title": "Dashibodi / zana",
     "dashboard_text": "zana Navigation baa na mwalimu Dashibodi fikia nukta.\n### zana Navigation baa\n• **zana aikoni**: One-bofya jump kwa yoyote generator (jaribio, kamusi, Safari, etc.).\n• **Status Dots**: Green = inafanya kazi maudhui, Orange = processing, Gray = empty.\n• **Logical Flow**: zana ordered left-kwa-sahihi kutoka ingizo ? Tengeneza ? Hamisha nje.\n### mwalimu Dashibodi kitufe Bofya Dashibodi aikoni kwa fungua **mwalimu Grading Dashibodi** - dedicated paneli kwa kufuatilia mwanafunzi maendeleo:\n• **Pakia mwanafunzi JSONs**: mwanafunzi hamisha nje wao kazi as JSON faili; pakia them here kwa batch uchambuzi.\n• **mwanafunzi Roster**: Tazama yote uploaded mwanafunzi na nickname, date, jaribio maendeleo, na Safari kiwango.\n• **Binafsi Kagua**: Bofya yoyote mwanafunzi kwa ona wao kamili historia•jaribio, adventures, responses.\n• **Mark as Graded**: Checkbox kwa track which mwanafunzi wewe've reviewed.\n• **darasa Insights Tab**: Uchanganuzi chati inaonyesha kawaida misconceptions na darasa-wide performance.\n• **Hamisha nje kwa CSV**: Pakua darasa data kwa gradebook leta.\n### Related Header Actions\n• **Jump kwa somo**: haraka-return kwa yako zaidi recent somo mpango.\n• **Tazama Geuza**: Geuza kati mwalimu na mwanafunzi views.\n### Pro kidokezo ina mwanafunzi hamisha nje wao JSON inahifadhi at end ya darasa, kisha batch-pakia them here kwa efficient overnight grading!",
     "actions_title": "Action baa",
@@ -88,7 +88,7 @@
     "step_of": "hatua {current} ya {total}",
     "back": "← Rudi",
     "skip": "inayofuata hatua →",
-    "all_done": "🎉 yote Done! Tazama yote zana",
+    "all_done": "🎉 yote Imekamilika! Tazama yote zana",
     "about": "Kuhusu",
     "source_prompt": "Bandika au ingiza chanzo maandishi kwa begin",
     "history_hint": "💡 yako imetengenezwa rasilimali ni imehifadhiwa katika Historia tab — wewe inaweza revisit na hamisha nje them anytime!",
@@ -1636,7 +1636,7 @@
     "image_too_large_10mb_alt": "picha too large (max 10MB)",
     "kokoro_ready_switching": "Kokoro sauti ready! Switching to offline sauti.",
     "download_failed_retry": "Pakua failed — tafadhali jaribu again later",
-    "reverted_last_apply": "Reverted to the state before your ya mwisho Apply.",
+    "reverted_last_apply": "Reverted to the state before your ya mwisho Tumia.",
     "fetching_document_url": "Fetching hati from URL...",
     "document_imported": "hati imported! Review and hariri the maandishi below.",
     "extracting_text_image": "Extracting maandishi from picha...",
@@ -4380,7 +4380,7 @@
     },
     "diff": {
       "button_aria": "Fungua maneno-kiwango diff tazama kati chanzo PDF na remediated HTML",
-      "button_title": "Fungua maneno-kiwango diff modal — ona every insertion, deletion, na paraphrase kati chanzo PDF maandishi na remediated HTML, na bofya-kwa-reject na Apply & Hamisha nje."
+      "button_title": "Fungua maneno-kiwango diff modal — ona every insertion, deletion, na paraphrase kati chanzo PDF maandishi na remediated HTML, na bofya-kwa-reject na Tumia & Hamisha nje."
     },
     "pdf_from_html": {
       "title": "Regenerate PDF kutoka remediated HTML. Layout reflows — ukurasa breaks, fonts, na pagination inaweza differ kutoka asili. Inafanya kazi well kwa rahisi prose hati."
@@ -4976,7 +4976,7 @@
     "remove_button": "Ondoa kiwango",
     "add_standard": "Ongeza kiwango",
     "remove_standard": "Ondoa kiwango",
-    "finder_header": "Tafuta & Apply kiwango",
+    "finder_header": "Tafuta & Tumia kiwango",
     "finder_placeholder": "ujuzi au Code (e.g. \"sehemu\" au \"TEKS 4.2\")",
     "region_framework_placeholder": "Region au Framework (e.g. CASEL, CCSS)...",
     "consult_header": "Consult AI juu ya mkakati",
@@ -7203,7 +7203,7 @@
     "group_create_input": "Ingiza name kwa mpya mwanafunzi kikundi.",
     "group_create_button": "Unda mpya mwanafunzi kikundi na entered name.",
     "group_roster_list": "Orodha ya mwanafunzi katika imechaguliwa kikundi.",
-    "roster_panel_header": "darasa Roster Ufunguo ni yako differentiation command center. Unda mwanafunzi kikundis na unique kujifunza profiles (kiwango cha darasa, lugha, kusoma kiwango, interests, DOK), kisha apply those profiles kwa yoyote generator. Roster data ni stored katika yako browser's local storage na never leaves yako device unless wewe explicitly hamisha nje au sync kwa moja kwa moja kipindi. Tumia 'Apply kwa Generator' kwa instantly configure mipangilio kwa kikundi, au 'Tofautisha by Kikundi' kwa batch-tengeneza rasilimali kwa yote kikundis at once.",
+    "roster_panel_header": "darasa Roster Ufunguo ni yako differentiation command center. Unda mwanafunzi kikundis na unique kujifunza profiles (kiwango cha darasa, lugha, kusoma kiwango, interests, DOK), kisha apply those profiles kwa yoyote generator. Roster data ni stored katika yako browser's local storage na never leaves yako device unless wewe explicitly hamisha nje au sync kwa moja kwa moja kipindi. Tumia 'Tumia kwa Generator' kwa instantly configure mipangilio kwa kikundi, au 'Tofautisha by Kikundi' kwa batch-tengeneza rasilimali kwa yote kikundis at once.",
     "roster_import_export": "Leta previously exported roster JSON faili, au hamisha nje yako sasa roster kwa backup au sharing kati devices. Exported faili contain kikundi names, rangi, mwanafunzi assignments, na yote profile mipangilio.",
     "roster_sync_session": "Push yako roster kikundi metadata kwa inafanya kazi Firebase kipindi so mwanafunzi ni kiotomatiki assigned kwa wao designated kikundi wakati wao join. Kikundi-maalum mipangilio (TTS kasi, karaoke hali) take effect juu ya mwanafunzi devices.",
     "roster_batch_generate": "Tengeneza differentiated rasilimali kwa every kikundi simultaneously. Chagua which rasilimali types kwa unda (adapted maandishi, kamusi, jaribio, etc.) na mfumo ita iterate kupitia kila kikundi, applying wao profile mipangilio kabla kutengeneza. rasilimali ni tagged na kikundi identifiers kwa rahisi filtering.",
@@ -8156,7 +8156,7 @@
     "synthesizing": "Synthesizing connections...",
     "generate_extensions": "Tengeneza Deep somo Extensions",
     "save_to_history": "Hifadhi kwa Historia",
-    "apply_brainstorm": "Apply kwa Brainstorm",
+    "apply_brainstorm": "Tumia kwa Brainstorm",
     "apply_brainstorm_tooltip": "Tumia hii idea kwa tengeneza Brainstorm shughuli"
   },
   "mastery": {
@@ -11362,8 +11362,8 @@
     "keep_selection": "Keep selection",
     "dismiss_toolbar_aria": "Dismiss toolbar",
     "footer_help": "Bofya spans au buruta-chagua kwa hariri. Pairs geuza together.",
-    "revert_tooltip": "Restore inapatikana HTML kwa state kabla yako ya mwisho Apply & Hamisha nje",
-    "apply_export_tooltip": "Apply rejections via maandishi surgery (preserves yote markup, instant, no Gemini call). Falls rudi kwa Gemini round-trip tu kama surgery inaweza't map baadhi chunks."
+    "revert_tooltip": "Restore inapatikana HTML kwa state kabla yako ya mwisho Tumia & Hamisha nje",
+    "apply_export_tooltip": "Tumia rejections via maandishi surgery (preserves yote markup, instant, no Gemini call). Falls rudi kwa Gemini round-trip tu kama surgery inaweza't map baadhi chunks."
   },
   "volume_builder": {
     "zoom_out_aria": "Zoom out",
@@ -11891,7 +11891,7 @@
     "remove_image": "Ondoa the picha (keep the maandishi)",
     "auto_remove_text": "Auto-ondoa maandishi from hii picha",
     "delete_item": "Futa hii kipengele",
-    "apply_edit_prompt": "Apply hariri prompt to hii picha",
+    "apply_edit_prompt": "Tumia hariri prompt to hii picha",
     "toggle_bionic": "Geuza Bionic Reading",
     "toggle_line_guide": "Geuza mstari Guide",
     "toggle_dark_mode": "Geuza Dark hali",
