@@ -3147,7 +3147,7 @@
     "time_penalty": "-{seconds} detik!",
     "game_over_time": "? Waktu's Up! Anda ran out waktu.",
     "streak": "Streak",
-    "streak_bonus": "Streak Bonus! x{mulkiatlier}",
+    "streak_bonus": "Streak Bonus! x{multiplier}",
     "streak_lost": "Streak lost!",
     "one_minute_warning": "One minute remaining!",
     "thirty_seconds_warning": "? hanya 30 detik left!",
@@ -3216,7 +3216,7 @@
     "loaded_saved": "Saved Escape Room loaded! Tinjauan dan luncurkan ketika ready.",
     "no_saved": "Tidak tersimpan Escape Room found",
     "preview_confirmed": "? Escape Room locked • ready ke mainkan!",
-    "xp_earned_streak": "+{xp} XP ({mulkiatlier}x streak bonus!)",
+    "xp_earned_streak": "+{xp} XP ({multiplier}x streak bonus!)",
     "loaded_from_resource": "Loaded dari sumber daya."
   },
   "class_analytics": {
@@ -3274,7 +3274,7 @@
     "running_record": "Running Record Ringkasan",
     "benchmark_vs": "vs. Benchmark",
     "sort_asc": "Urutkan ascending",
-    "xp_earned_streak": "+{xp} XP (•{mulkiatlier} streak!)",
+    "xp_earned_streak": "+{xp} XP (•{multiplier} streak!)",
     "sort_desc": "Urutkan descending",
     "live_sync": "Langsung Sync",
     "total_sessions": "Total sesi",
@@ -5339,7 +5339,7 @@
     "toast_mode_teacher": "guru Paced",
     "toast_mode_student": "siswa Paced",
     "toast_mode_fail": "Failed ke perbarui sesi mode.",
-    "toast_vote_cast": "Pilih cast untuk: \"{pilihan}\"",
+    "toast_vote_cast": "Pilih cast untuk: \"{choice}\"",
     "toast_vote_fail": "Failed ke cast vote.",
     "toast_teacher_control": "guru adalah contlemparaning cerita. mohon wait.",
     "toast_economy_active": "kelas Economy aktif: {gold} emas (Avg XP: {xp})",
@@ -7462,7 +7462,7 @@
     },
     "results": {
       "header": "**[hasil]**",
-      "roll_calc": "[Roll: {lemparan}] + [strategi: {strat}] = **Total {total}**",
+      "roll_calc": "[Roll: {roll}] + [strategi: {strat}] = **Total {total}**",
       "perf_score": "**Performance skor: {total}/20**"
     },
     "paused_title": "Petualangan Paused",
@@ -8328,7 +8328,7 @@
     "product_placeholder": "Product...",
     "answer_placeholder": "jawaban...",
     "correct": "Benar!",
-    "answer_was": "jawaban: {jawaban}",
+    "answer_was": "jawaban: {answer}",
     "try_again_count": "Coba again. Hitung persegi!",
     "nl_identify": "sebuah arrow titik ke sebuah spot di garis bilangan. apa angka adalah itu?",
     "nl_between": "Name sebuah whole angka antara {a} dan {b}.",
