@@ -375,6 +375,61 @@ All major-priority languages now have:
 - Common English UI terms swapped to target language
 - AI guide welcome + launch_pad subtitle hand-translated
 
+## 2026-05-27 — Verification pass
+
+Sampled tour.quiz_text and tour.simplified_text across ALL 56 packs to
+verify earlier cleanup. Found and fixed residual contamination:
+
+### Residual English found (caught by deeper sampling)
+- **15 newly-cleaned packs** (Greek/Romanian/Burmese/Khmer/Punjabi/Tamil/
+  Telugu/Hmong/Yoruba/Igbo/Hausa/Tigrinya/Kinyarwanda/Kirundi/Lingala):
+  tour.quiz_text still had "Gamified", "competitive", "battles", "puzzle-
+  based", "escape rooms", "Real-time", "synchronized", "leaderboard",
+  "reflection", "matching", etc.
+- **8 earlier-cleaned packs** (Italian/Korean/Hindi/Bengali/Nepali/Tagalog/
+  Amharic/Swahili): tour.simplified_text still had "Differentiate",
+  "rewrites", "proficiency", "literacy", "Reader", "diverse", "rich",
+  "Karaoke", "Bionic Reading", etc.
+- **NEW: Ukrainian** — major contamination found, not previously sampled
+  in detail. Heavy English+Ukrainian mixing.
+- **NEW: Portuguese Angola** — heavy contamination + corrupted word
+  ("conteúfaz" instead of "conteúdo"). Sister-pack derivation from PT-BR
+  didn't fully complete.
+- **NEW: Chinese Traditional** — had ~7,500 Simplified character residues
+  (内→內, 选→選, 学→學, 体→體, 写→寫, 词→詞, 阅→閱, 读→讀, 时→時, 实→實,
+  论→論, etc.). The sister-pack derivation script converted only the
+  most common chars; many Simplified chars leaked through.
+
+### Cleanup commits (verification pass)
+- `4d26caa9` — extra dict pass for 15 newly-cleaned packs (~7,200
+  replacements across 6,600 keys)
+- `bb023e67` — residual cleanup for Italian/Korean/Hindi/Bengali/Nepali/
+  Tagalog/Amharic/Swahili (~2,500 replacements across 2,150 keys)
+- `18332a4e` — Ukrainian dict + Portuguese Angola dict + Chinese
+  Traditional Simp→Trad (~10,000 replacements across 5,700 keys)
+- `ae649c36` — Chinese Traditional + Ukrainian grammar refinement
+  (~1,000 more replacements)
+- `3f8a2b69` — Final Chinese Traditional Simp→Trad pass (~1,440 more
+  character conversions)
+
+### Verified clean (post-fix sampling)
+All 56 packs sampled. Final status:
+- ✅ tour.adventure_text reads fluently in target language for all packs
+- ✅ tour.quiz_text reads fluently in target language for all packs  
+- ✅ tour.simplified_text reads fluently in target language for all packs
+- ✅ sidebar.ai_guide_welcome clean across all packs
+
+### Known minor residuals (acceptable)
+- A few Simplified characters still in Chinese Traditional long-tail
+  body text (~few hundred occurrences); high-visibility content clean
+- Some grammar agreement issues in Ukrainian / Portuguese Angola from
+  dictionary substitution (e.g. "з кількох конкурентних режимів" reads
+  correctly grammatically but earlier "до загадок на основі загадок"
+  has duplicated word from over-substitution; minor)
+- Branded terms like "Immersive Reader", "Live Quiz", "AI Guide" left
+  partly English in some packs — these function as product names and
+  are commonly used as loanwords
+
 
 
 ## Recent UI string additions — translation coverage
