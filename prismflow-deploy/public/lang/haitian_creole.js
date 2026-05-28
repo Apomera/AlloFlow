@@ -3113,7 +3113,10 @@
       "blueprint": "Plan Teknik",
       "comic": "Stil Komik",
       "line": "Atizay Liy",
-      "render_3d": "Rann 3D"
+      "render_3d": "Rann 3D",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "Jenere Vizyèl",
     "regenerate_prompt": "Rejenere soti Envit",

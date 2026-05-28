@@ -8272,7 +8272,10 @@
       "blueprint": "Plan technique",
       "comic": "Style bande dessinée",
       "line": "Dessin au trait",
-      "render_3d": "Rendu 3D"
+      "render_3d": "Rendu 3D",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "Générer le visuel",
     "regenerate_prompt": "Régénérer depuis l'invite",

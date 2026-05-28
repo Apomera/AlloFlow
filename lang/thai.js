@@ -3599,7 +3599,10 @@
       "blueprint": "แบบเทคนิค",
       "comic": "สไตล์การ์ตูน",
       "line": "ลายเส้น",
-      "render_3d": "เรนเดอร์ 3D"
+      "render_3d": "เรนเดอร์ 3D",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "สร้างภาพ",
     "regenerate_prompt": "สร้างใหม่จากพรอมต์",

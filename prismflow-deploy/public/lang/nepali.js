@@ -3754,7 +3754,10 @@
       "blueprint": "Technical Blueprint",
       "comic": "Comic Book शैली",
       "line": "रेखा Art",
-      "render_3d": "3D Render"
+      "render_3d": "3D Render",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "उत्पन्न गर्नुहोस् दृश्य",
     "regenerate_prompt": "Regenerate बाट Prompt",
@@ -9824,7 +9827,7 @@
       "high_intensity": "उच्च intensity",
       "intensity": "Intensity",
       "mild": "Mild",
-      "moderate": "moderate",
+      "moderate": "Moderate",
       "no_entries": "No ABC entries yet",
       "no_entries_hint": "क्लिक गर्नुहोस्",
       "notes": "टिप्पणीहरू",

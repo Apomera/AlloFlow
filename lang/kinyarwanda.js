@@ -3754,7 +3754,10 @@
       "blueprint": "Igishushanyo cy'Ubuhanga",
       "comic": "Imiterere ya Komiki",
       "line": "Ubuhanzi bw'Imirongo",
-      "render_3d": "Render 3D"
+      "render_3d": "Render 3D",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "Tunganya Ishusho",
     "regenerate_prompt": "Subira Utunganye Kuva ku Prompt",

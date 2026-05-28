@@ -2292,11 +2292,11 @@
     "score_n": "skor: {score}",
     "venn_comparing": "Diagram Venn membandingkan {a} dan {b}",
     "flow_chart_of": "Flow bagan: {topic}",
-    "cause_effect_pair": "Pasangan sebab-akibat",
+    "cause_effect_pair": "Pasangan sebab-akibat {n} dari {total}",
     "tchart_comparing": "T-bagan comparing {a} and {b}",
     "fishbone_for": "Diagram tulang ikan untuk {topic}",
     "concept_map_of": "Peta konsep: {topic}",
-    "mind_map_branch": "Cabang peta pikiran",
+    "mind_map_branch": "Cabang peta pikiran {n} dari {total}: {title}",
     "mind_map_of": "Peta pikiran: {topic}",
     "tier_score": "Tier {tier}, skor {score}",
     "draggable_item": "item yang dapat diseret",
@@ -2310,8 +2310,8 @@
     "unmute_ambient_pad": "Aktifkan suara ambient",
     "stop_fluency_reading": "Hentikan baca kelancaran",
     "read_aloud_fluency_practice": "Baca nyaring untuk latihan kelancaran",
-    "message_speaker_read_aloud": "Bacakan pesan pembicara",
-    "sentence_read_aloud": "Bacakan kalimat"
+    "message_speaker_read_aloud": "Pesan dari {name}. Klik kalimat mana pun untuk mendengarnya dibacakan.",
+    "sentence_read_aloud": "Kalimat {num}. Klik untuk dibacakan."
   },
   "games": {
     "syntax": {
@@ -3754,7 +3754,10 @@
       "blueprint": "Technical Blueprint",
       "comic": "Comic Book gaya",
       "line": "garis Seni",
-      "render_3d": "3D Render"
+      "render_3d": "3D Render",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "Hasilkan visual",
     "regenerate_prompt": "Remenghasilkan dari Prompt",

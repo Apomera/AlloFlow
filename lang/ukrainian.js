@@ -3754,7 +3754,10 @@
       "blueprint": "Technical Blueprint",
       "comic": "Comic Book стилі",
       "line": "лінії Art",
-      "render_3d": "3D Render"
+      "render_3d": "3D Render",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "Створити візуальний",
     "regenerate_prompt": "Regenerate від Prompt",

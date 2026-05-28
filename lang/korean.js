@@ -2292,11 +2292,11 @@
     "score_n": "점수: {score}",
     "venn_comparing": "{a}와(과) {b}를 비교하는 벤 다이어그램",
     "flow_chart_of": "Flow 차트: {topic}",
-    "cause_effect_pair": "원인-결과 쌍",
+    "cause_effect_pair": "원인-결과 쌍 {n}/{total}",
     "tchart_comparing": "T-차트 comparing {a} and {b}",
     "fishbone_for": "Fishbone 다이어그램 for {topic}",
     "concept_map_of": "개념 지도: {topic}",
-    "mind_map_branch": "마인드맵 가지",
+    "mind_map_branch": "마인드맵 가지 {n}/{total}: {title}",
     "mind_map_of": "마인드맵: {topic}",
     "tier_score": "Tier {tier}, 점수 {score}",
     "draggable_item": "드래그 가능한 항목",
@@ -2310,8 +2310,8 @@
     "unmute_ambient_pad": "주변음 음소거 해제",
     "stop_fluency_reading": "유창성 읽기 중지",
     "read_aloud_fluency_practice": "유창성 연습을 위한 소리내어 읽기",
-    "message_speaker_read_aloud": "발신자 메시지 소리내어 읽기",
-    "sentence_read_aloud": "문장 소리내어 읽기"
+    "message_speaker_read_aloud": "{name}의 메시지. 문장을 클릭하면 소리내어 읽어줍니다.",
+    "sentence_read_aloud": "문장 {num}. 클릭하여 소리내어 읽기."
   },
   "games": {
     "syntax": {
@@ -3754,7 +3754,10 @@
       "blueprint": "Technical Blueprint",
       "comic": "Comic Book 스타일",
       "line": "선 Art",
-      "render_3d": "3D Render"
+      "render_3d": "3D Render",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "생성 시각",
     "regenerate_prompt": "Regenerate 에서 Prompt",

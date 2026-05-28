@@ -3102,7 +3102,10 @@
       "blueprint": "مخطط هندسي تقني",
       "comic": "نمط القصص المصورة",
       "line": "فن الخطوط",
-      "render_3d": "تقديم ثلاثي الأبعاد"
+      "render_3d": "تقديم ثلاثي الأبعاد",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "إنشاء المرئيات",
     "regenerate_prompt": "إعادة الإنشاء من الموجِّه",

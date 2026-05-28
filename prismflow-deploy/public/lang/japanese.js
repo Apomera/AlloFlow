@@ -3184,7 +3184,10 @@
       "blueprint": "技術ブループリント",
       "comic": "コミックブックスタイル",
       "line": "線画",
-      "render_3d": "3Dレンダー"
+      "render_3d": "3Dレンダー",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "ビジュアルを生成",
     "regenerate_prompt": "プロンプトから再生成",

@@ -3754,7 +3754,10 @@
       "blueprint": "Technical Blueprint",
       "comic": "Comic Book ኣገባብ",
       "line": "መስመር Art",
-      "render_3d": "3D Render"
+      "render_3d": "3D Render",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "ፍጠር ምርኢት",
     "regenerate_prompt": "Regenerate ካብ Prompt",

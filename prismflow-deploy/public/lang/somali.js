@@ -3343,7 +3343,10 @@
       "blueprint": "Blueprint Farsamo",
       "comic": "Qaabka Buugga Comic-ga",
       "line": "Line Art",
-      "render_3d": "Render 3D"
+      "render_3d": "Render 3D",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "Samee Muuqaal",
     "regenerate_prompt": "Dib u Samee Su'aasha",

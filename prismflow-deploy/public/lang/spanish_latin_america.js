@@ -3355,7 +3355,10 @@
       "blueprint": "Plano Técnico",
       "comic": "Estilo Cómic",
       "line": "Dibujo Lineal",
-      "render_3d": "Render 3D"
+      "render_3d": "Render 3D",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "Generar Elemento Visual",
     "regenerate_prompt": "Regenerar desde la Indicación",

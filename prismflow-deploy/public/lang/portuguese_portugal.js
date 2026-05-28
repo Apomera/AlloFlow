@@ -3091,7 +3091,10 @@
       "blueprint": "Planta Técnica",
       "comic": "Estilo Quadrinhos",
       "line": "Arte de Linhas",
-      "render_3d": "Renderização 3D"
+      "render_3d": "Renderização 3D",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "Gerar Visual",
     "regenerate_prompt": "Regenerar a partir do Prompt",

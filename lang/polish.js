@@ -3753,7 +3753,10 @@
       "blueprint": "Технiczny чертёж",
       "comic": "Styl комикса",
       "line": "Линейny рисунок",
-      "render_3d": "3D-рендер"
+      "render_3d": "3D-рендер",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "Utwórz wizualizacja",
     "regenerate_prompt": "Wygeneruj ponownie z wskazówki",

@@ -2297,11 +2297,11 @@
     "score_n": "Score: {score}",
     "venn_comparing": "Venn-Diagramm vergleicht {a} und {b}",
     "flow_chart_of": "Flow chart: {topic}",
-    "cause_effect_pair": "Ursache-Wirkung-Paar",
+    "cause_effect_pair": "Ursache-Wirkung-Paar {n} von {total}",
     "tchart_comparing": "T-Chart comparing {a} and {b}",
     "fishbone_for": "Fishbone diagram for {topic}",
     "concept_map_of": "Konzeptkarte: {topic}",
-    "mind_map_branch": "Mindmap-Zweig",
+    "mind_map_branch": "Mindmap-Zweig {n} von {total}: {title}",
     "mind_map_of": "Mindmap: {topic}",
     "tier_score": "Tier {tier}, score {score}",
     "draggable_item": "ziehbares Element",
@@ -2315,8 +2315,8 @@
     "unmute_ambient_pad": "Ambient-Klang aktivieren",
     "stop_fluency_reading": "Flüssigkeitslesen stoppen",
     "read_aloud_fluency_practice": "Vorlesen für Leseflüssigkeitsübung",
-    "message_speaker_read_aloud": "Nachricht des Sprechers vorlesen",
-    "sentence_read_aloud": "Satz vorlesen"
+    "message_speaker_read_aloud": "Nachricht von {name}. Klicken Sie auf einen Satz, um ihn vorlesen zu lassen.",
+    "sentence_read_aloud": "Satz {num}. Klicken zum Vorlesen."
   },
   "games": {
     "syntax": {
@@ -3759,7 +3759,10 @@
       "blueprint": "Technical Bluedrucken",
       "comic": "Comic Book Stil",
       "line": "Line Art",
-      "render_3d": "3D Render"
+      "render_3d": "3D Render",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "Generieren Visuell",
     "regenerate_prompt": "Regenerieren von Prompt",

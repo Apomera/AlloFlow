@@ -2292,11 +2292,11 @@
     "score_n": "स्कोर: {score}",
     "venn_comparing": "{a} और {b} की तुलना करने वाला वेन आरेख",
     "flow_chart_of": "Flow चार्ट: {topic}",
-    "cause_effect_pair": "कारण-प्रभाव युग्म",
+    "cause_effect_pair": "कारण-प्रभाव युग्म {n} / {total}",
     "tchart_comparing": "T-चार्ट comparing {a} and {b}",
     "fishbone_for": "Fishbone आरेख for {topic}",
     "concept_map_of": "अवधारणा मानचित्र: {topic}",
-    "mind_map_branch": "माइंड मैप शाखा",
+    "mind_map_branch": "माइंड मैप शाखा {n} / {total}: {title}",
     "mind_map_of": "माइंड मैप: {topic}",
     "tier_score": "Tier {tier}, स्कोर {score}",
     "draggable_item": "खींचने योग्य आइटम",
@@ -2310,8 +2310,8 @@
     "unmute_ambient_pad": "परिवेशी ध्वनि अनम्यूट करें",
     "stop_fluency_reading": "प्रवाहशीलता पठन रोकें",
     "read_aloud_fluency_practice": "प्रवाहशीलता अभ्यास के लिए ज़ोर से पढ़ें",
-    "message_speaker_read_aloud": "वक्ता का संदेश ज़ोर से पढ़ें",
-    "sentence_read_aloud": "वाक्य ज़ोर से पढ़ें"
+    "message_speaker_read_aloud": "{name} का संदेश। किसी भी वाक्य पर क्लिक करके उसे ज़ोर से सुनें।",
+    "sentence_read_aloud": "वाक्य {num}। ज़ोर से पढ़ने के लिए क्लिक करें।"
   },
   "games": {
     "syntax": {
@@ -3754,7 +3754,10 @@
       "blueprint": "Technical Blueprint",
       "comic": "Comic Book शैली",
       "line": "रेखा कला",
-      "render_3d": "3D Render"
+      "render_3d": "3D Render",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "उत्पन्न करें दृश्य",
     "regenerate_prompt": "Regenerate से Prompt",
@@ -9824,7 +9827,7 @@
       "high_intensity": "उच्च intensity",
       "intensity": "Intensity",
       "mild": "Mild",
-      "moderate": "moderate",
+      "moderate": "Moderate",
       "no_entries": "नहीं ABC entries yet",
       "no_entries_hint": "क्लिक करें",
       "notes": "नोट्स",

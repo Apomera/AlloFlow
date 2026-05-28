@@ -3540,7 +3540,10 @@
       "blueprint": "ແບບເຕັກນິກ",
       "comic": "ສະໄຕລ໌ກາຕູນ",
       "line": "ລາຍເສັ້ນ",
-      "render_3d": "ເຣນເດີ 3D"
+      "render_3d": "ເຣນເດີ 3D",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "ສ້າງຮູບ",
     "regenerate_prompt": "ສ້າງໃໝ່ຈາກພຣອມພ໌",

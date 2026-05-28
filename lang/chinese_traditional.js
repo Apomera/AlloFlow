@@ -3102,7 +3102,10 @@
       "blueprint": "技術藍圖",
       "comic": "漫畫風格",
       "line": "线條藝術",
-      "render_3d": "3D 渲染"
+      "render_3d": "3D 渲染",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "生成視覺",
     "regenerate_prompt": "從提示重新生成",

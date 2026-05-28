@@ -3122,7 +3122,10 @@
       "blueprint": "مخطط هندسی تقنی",
       "comic": "نمط قصص متصویر",
       "line": "فن خطوط",
-      "render_3d": "تقدیمی ثخیرثی أبعاد"
+      "render_3d": "تقدیمی ثخیرثی أبعاد",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "ایجاد مرئیات",
     "regenerate_prompt": "دوباره ایجاد از موجِّه",

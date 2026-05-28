@@ -3091,7 +3091,10 @@
       "blueprint": "שרטוט טכני",
       "comic": "סגנון קומיקס",
       "line": "ציור קווי",
-      "render_3d": "הדמיית 3D"
+      "render_3d": "הדמיית 3D",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "ייצר ויזואל",
     "regenerate_prompt": "ייצר מחדש מההנחיה",

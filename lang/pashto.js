@@ -3114,7 +3114,10 @@
       "blueprint": "مخطط هندسي تقني",
       "comic": "نمط قصص متصاویر",
       "line": "فن خطاوط",
-      "render_3d": "تپهانا ثنهثي أبعاد"
+      "render_3d": "تپهانا ثنهثي أبعاد",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "جوړونه مرئيات",
     "regenerate_prompt": "بیا إنشاء څخه ماوجِّه",

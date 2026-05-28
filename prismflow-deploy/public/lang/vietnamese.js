@@ -3757,7 +3757,10 @@
       "blueprint": "Bản vẽ kỹ thuật",
       "comic": "Phong cách Truyện tranh",
       "line": "Vẽ đường nét",
-      "render_3d": "Kết xuất 3D"
+      "render_3d": "Kết xuất 3D",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "Tạo Hình ảnh",
     "regenerate_prompt": "Tạo lại từ Lời nhắc",

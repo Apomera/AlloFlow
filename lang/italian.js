@@ -2292,11 +2292,11 @@
     "score_n": "punteggio: {score}",
     "venn_comparing": "Diagramma di Venn che confronta {a} e {b}",
     "flow_chart_of": "Flow grafici: {topic}",
-    "cause_effect_pair": "Coppia causa-effetto",
+    "cause_effect_pair": "Coppia causa-effetto {n} di {total}",
     "tchart_comparing": "T-grafici comparing {a} and {b}",
     "fishbone_for": "Diagramma a lisca di pesce per {topic}",
     "concept_map_of": "Mappa concettuale: {topic}",
-    "mind_map_branch": "Ramo della mappa mentale",
+    "mind_map_branch": "Ramo della mappa mentale {n} di {total}: {title}",
     "mind_map_of": "Mappa mentale: {topic}",
     "tier_score": "Tier {tier}, punteggio {score}",
     "draggable_item": "elemento trascinabile",
@@ -2310,8 +2310,8 @@
     "unmute_ambient_pad": "Riattiva suono ambient",
     "stop_fluency_reading": "Interrompi lettura di fluenza",
     "read_aloud_fluency_practice": "Lettura ad alta voce per esercizio di fluenza",
-    "message_speaker_read_aloud": "Leggi ad alta voce il messaggio del relatore",
-    "sentence_read_aloud": "Leggi la frase ad alta voce"
+    "message_speaker_read_aloud": "Messaggio da {name}. Clicca su qualsiasi frase per ascoltarla letta ad alta voce.",
+    "sentence_read_aloud": "Frase {num}. Clicca per leggere ad alta voce."
   },
   "games": {
     "syntax": {
@@ -3754,7 +3754,10 @@
       "blueprint": "Technical Blueprint",
       "comic": "Comic Book stili",
       "line": "linee Art",
-      "render_3d": "3D Render"
+      "render_3d": "3D Render",
+      "custom": "✏️ Custom…",
+      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
+      "custom_aria": "Custom art style description"
     },
     "generate": "Genera visivo",
     "regenerate_prompt": "Regenerare da Prompt",
