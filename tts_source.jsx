@@ -56,7 +56,7 @@ const createTTS = (deps) => {
         return buffer;
     };
 
-    const fetchTTSBytes = (text, voiceName = "Puck", speed = 1, language = 'English') => {
+    const fetchTTSBytes = (text, voiceName = "Puck", speed = 1, language = 'English', signal = null) => {
         // Defensive: ensure voiceName is a valid Gemini voice, fall back to Puck if not
         const safeVoice = AVAILABLE_VOICES.map(v => v.toLowerCase()).includes((voiceName || '').toLowerCase()) ? voiceName : 'Puck';
         if (safeVoice !== voiceName) console.warn(`[TTS] Voice "${voiceName}" is not a valid Gemini voice. Falling back to "${safeVoice}".`);
@@ -74,6 +74,21 @@ const createTTS = (deps) => {
             let promptText = text.length <= 2 ? `Say the sound: ${text}` : text;
             promptText = promptText.replace(/^\s*\d+\.\s+/gm, '');
             promptText = promptText.replace(/^\s*[-*•]\s+/gm, '');
+            // Strip markdown emphasis markers — Gemini TTS reads them literally
+            // (`**bold**` becomes "asterisk asterisk bold asterisk asterisk").
+            // Strip in pair-aware order: bold (**…**) before italic (*…*) so
+            // the inner-pair regex doesn't half-consume the outer pair. Same
+            // for underscore-style emphasis. Backtick code spans → drop ticks.
+            promptText = promptText.replace(/\*\*([^*]+)\*\*/g, '$1');
+            promptText = promptText.replace(/__([^_]+)__/g, '$1');
+            promptText = promptText.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1$2');
+            promptText = promptText.replace(/(^|[^_])_([^_\n]+)_(?!_)/g, '$1$2');
+            promptText = promptText.replace(/~~([^~]+)~~/g, '$1');
+            promptText = promptText.replace(/`([^`\n]+)`/g, '$1');
+            // Markdown links [text](url) — read only the visible text
+            promptText = promptText.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+            // Heading hashes at line start (#, ##, ### ...) — drop the marker
+            promptText = promptText.replace(/^#{1,6}\s+/gm, '');
             promptText = promptText.replace(/\n{2,}/g, '. ');
             promptText = promptText.replace(/\n/g, ', ');
             promptText = promptText.replace(/\s{2,}/g, ' ').trim();
@@ -89,11 +104,22 @@ const createTTS = (deps) => {
                 }
               }
             };
+            // Abort fast-path: if the caller already aborted before we got
+            // here (the queue can hold a request behind 10+ Word Sounds
+            // preloads), throw an AbortError immediately rather than starting
+            // a fetch we'll just cancel. The matching check after fetch
+            // catches signals that fire while the fetch is in flight.
+            if (signal && signal.aborted) {
+              const err = new Error('TTS aborted by caller');
+              err.name = 'AbortError';
+              throw err;
+            }
             try {
               const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
+                signal: signal || undefined
               });
               if (!response.ok) {
                 if (response.status === 429) {
@@ -125,7 +151,8 @@ const createTTS = (deps) => {
                           const retryResponse = await fetch(url, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify(retryPayload)
+                              body: JSON.stringify(retryPayload),
+                              signal: signal || undefined
                           });
                           const retryData = await retryResponse.json();
                           const retryBase64 = retryData.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
@@ -171,6 +198,13 @@ const createTTS = (deps) => {
         var _callOpts = (maxRetriesOrOpts && typeof maxRetriesOrOpts === 'object') ? maxRetriesOrOpts : {};
         var _language = languageArg || _callOpts.language || 'English';
         var _isEnglish = typeof _language === 'string' && /^english$/i.test(_language.trim());
+        // Optional AbortSignal for per-call cancellation. AlloSpeechPlayer.stop()
+        // aborts in-flight TTS so a fast click-to-stop doesn't keep burning the
+        // Gemini quota for audio the user already cancelled. fetchTTSBytes
+        // surfaces AbortError; we check it inside each catch and re-throw so
+        // it propagates cleanly (no retry, no fallback) instead of being eaten.
+        var _signal = _callOpts.signal || null;
+        var _isAbortError = (e) => e && (e.name === 'AbortError' || /aborted/i.test(e.message || ''));
         // Canvas: Gemini TTS (primary, expressive, multilingual) → Kokoro/Piper (offline fallback)
         if (_isCanvasEnv) {
             var _kokoroVoicePrefix = /^(af_|am_|bf_|bm_)/i;
@@ -191,7 +225,7 @@ const createTTS = (deps) => {
                 for (let canvasAttempt = 0; canvasAttempt < canvasMaxAttempts; canvasAttempt++) {
                     try {
                         console.log(`[Canvas TTS] Attempting Gemini TTS${canvasAttempt > 0 ? ` (retry ${canvasAttempt})` : ''} for:`, text?.substring(0, 40), 'voice:', voiceName);
-                        const ttsResult = await fetchTTSBytes(text, voiceName, speed, _language);
+                        const ttsResult = await fetchTTSBytes(text, voiceName, speed, _language, _signal);
                         console.log('[Canvas TTS] fetchTTSBytes result:', ttsResult ? 'got audio (' + (ttsResult.bytes?.length || 0) + ' bytes)' : 'null');
                         if (ttsResult) {
                             const { bytes: pcmBytes } = ttsResult;
@@ -207,6 +241,7 @@ const createTTS = (deps) => {
                     } catch (e) {
                         canvasLastErr = e;
                         const msg = e?.message || '';
+                        if (_isAbortError(e)) { throw e; } // caller cancelled — exit cascade
                         if (msg.includes('429') || msg.includes('Rate Limited')) {
                             state.rateLimitedUntil = Date.now() + 60000;
                             window.__ttsGeminiQuotaFailed = true;
@@ -309,7 +344,7 @@ const createTTS = (deps) => {
         let lastError = null;
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
-                const ttsResult = await fetchTTSBytes(text, voiceName, speed, _language);
+                const ttsResult = await fetchTTSBytes(text, voiceName, speed, _language, _signal);
                 if (!ttsResult) { throw new Error("[TTS] fetchTTSBytes returned no audio data"); }
                 const { bytes: pcmBytes } = ttsResult;
                 const wavBuffer = pcmToWav(pcmBytes);
@@ -319,6 +354,7 @@ const createTTS = (deps) => {
                 return url;
             } catch (e) {
                 lastError = e;
+                if (_isAbortError(e)) { throw e; } // caller cancelled — no retry
                 if (e.message?.includes('Missing API Key')) {
                     throw e;
                 }

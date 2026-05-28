@@ -657,12 +657,18 @@ if (typeof window !== 'undefined' && window.speechSynthesis && !window.speechSyn
 //   - error toast when every fallback fails (silent failures were invisible
 //     to screen-reader users)
 // Stale-result strategy: a stop() bumps the current session id; in-flight
-// callTTS work that resolves afterward checks the id and bails. This avoids
-// modifying tts_source's fetchTTSBytes to accept AbortSignals (deferred).
+// callTTS work that resolves afterward checks the id and bails. We also pass
+// an AbortSignal so the in-flight fetch terminates instead of running to
+// completion (saves the Gemini API budget on rapid click-stop sequences).
 if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
     let _state = { isPlaying: false, currentText: null, currentId: null };
     let _audio = null;
     let _sessionCounter = 0;
+    // AbortController per active session — abort()ed on stop() so an in-flight
+    // fetchTTSBytes terminates immediately. callTTS accepts opts.signal and
+    // converts the AbortError into a clean rejection that we recognize below.
+    let _abortController = null;
+    const _isAbortError = (e) => e && (e.name === 'AbortError' || /aborted/i.test(e.message || ''));
     const _emit = () => {
         try {
             window.dispatchEvent(new CustomEvent('allo-speech-state', { detail: { ..._state } }));
@@ -687,6 +693,10 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
     const _stop = () => {
         const wasPlaying = _state.isPlaying;
         _clearAudio();
+        // Abort any in-flight callTTS fetch so we stop burning quota for
+        // audio the user already cancelled. New speak() creates a fresh
+        // controller so this is safe to call without consequences.
+        if (_abortController) { try { _abortController.abort(); } catch (e) {} _abortController = null; }
         _state = { isPlaying: false, currentText: null, currentId: null };
         if (wasPlaying) _emit();
     };
@@ -728,16 +738,20 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
         const o = opts || {};
         _stop();
         const id = ++_sessionCounter;
+        _abortController = new AbortController();
+        const signal = _abortController.signal;
         _state = { isPlaying: true, currentText: text, currentId: id };
         _emit();
         const voice = o.voice || window.__alloSelectedVoice || 'Kore';
         const rate = (typeof o.rate === 'number') ? o.rate
                      : (typeof window.__alloPlaybackRate === 'number' ? window.__alloPlaybackRate : 0.95);
         const language = o.language || window.__alloTextLanguage || 'English';
-        // Primary: Gemini TTS via callTTS (closure var, hot-swapped after CDN load)
+        // Primary: Gemini TTS via callTTS (closure var, hot-swapped after CDN load).
+        // The opts.signal threads down to fetchTTSBytes so stop() actually
+        // terminates the in-flight request instead of just discarding its result.
         try {
             if (typeof callTTS === 'function') {
-                const url = await callTTS(text, voice, 1, 2, language);
+                const url = await callTTS(text, voice, 1, { maxRetries: 2, language, signal });
                 if (_state.currentId !== id) return null; // stop() was called mid-fetch
                 if (url) {
                     const ok = await _playAudioUrl(url, id, rate);
@@ -745,7 +759,7 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
                 }
             }
         } catch (e) {
-            if (_state.currentId !== id) return null;
+            if (_state.currentId !== id || _isAbortError(e)) return null;
             console.warn('[AlloSpeechPlayer] Gemini TTS failed, trying fallback:', e && e.message);
         }
         // Kokoro fallback (English, offline)
@@ -4304,7 +4318,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = './';
-    var pluginCdnVersion = '1779914079480';
+    var pluginCdnVersion = '1779928374504';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -22655,26 +22669,36 @@ ${_toolList}
          * prefers-reduced-motion block above; noted for completeness. */
 
         /* ──────────────────────────────────────────────────────────────
-         * Light-theme override for STEM Lab tools (Piece C).
+         * Light-theme override for STEM Lab dark-designed tools (Piece C).
          *
-         * STEM tools were authored with pastel inline colors (#fbbf24
-         * amber-400, #86efac green-300, #5eead4 teal-300, etc.) designed
-         * for dark backgrounds. In light theme the modal interior is
-         * white, so these pastels fail WCAG AA contrast badly (ratios
-         * 1.2–2.5). This block remaps each common pastel `color:` to its
-         * darker family-700 sibling. Scoped to the modal wrapper so it
-         * doesn't bleed into the main app's intentional pastel uses.
+         * Of 104 stem tools (audit 2026-05-27, see project memory
+         * stem-contrast-audit), 29 use pastels (#fbbf24, #86efac, #5eead4,
+         * etc.) on translucent dark cards, designed for dark backgrounds.
+         * In light theme the modal interior is white, so these pastels
+         * fail WCAG AA contrast (ratios 1.2–2.5).
          *
-         * Each color has two spacing variants: `color: #X` and `color:#X`.
-         * Same attribute-selector pattern as .theme-contrast block above.
+         * This block does TWO things, both scoped to the modal in light
+         * theme so the main app and Groups 1/3/4 tools aren't affected:
+         *   1. Remap pastel `color:` values to family-700 darker variants
+         *      (passes AA on white bg).
+         *   2. Remap translucent `rgba(15,23,42,X)` and `rgba(30,41,59,X)`
+         *      card backgrounds to light slate-100 with same opacity,
+         *      so the pastel-now-dark text reads on a light card instead
+         *      of an invisible dark-on-dark card.
          *
-         * Paired with Piece D below: the dark hardcoded backgrounds get
-         * swapped to light backgrounds in the same scope, so a pastel
-         * that was on a dark card now becomes dark-on-light (readable),
-         * not dark-on-dark (invisible from the remap alone).
+         * Each pastel has two spacing variants `#X` / # X for selector
+         * tolerance, same pattern as the .theme-contrast block above.
+         *
+         * NOT remapped (deliberately, to limit risk):
+         *   - Solid dark hex bg (`#0f172a`, `#0c1929`, etc.) — some tools
+         *     use these for intentional dramatic dark panels (e.g., kitchen
+         *     theme #1c1410). Per-tool review needed for these.
+         *   - Border colors — too easy to accidentally restyle a chart.
+         *
+         * To revert: delete this entire block.
          * ──────────────────────────────────────────────────────────────
          */
-        /* amber-100..500 → amber-700 (#b45309 on white = 4.79:1) */
+        /* amber 100..500 → amber-700 (#b45309 on white = 4.79:1) */
         .stem-lab-modal.theme-light [style*="color: #fef3c7"],
         .stem-lab-modal.theme-light [style*="color:#fef3c7"],
         .stem-lab-modal.theme-light [style*="color: #fde68a"],
@@ -22817,71 +22841,25 @@ ${_toolList}
         .stem-lab-modal.theme-light [style*="color:#f97316"] {
             color: #c2410c !important;
         }
-        /* var(--allo-stem-text, #cbd5e1/#e2e8f0/#f1f5f9) — already covered
-         * by the variable's :root resolution to #0f172a. But the var()
-         * resolver in browser only sees the fallback if --allo-stem-text
-         * is undefined. In .theme-light the variable IS defined (via
-         * :root.theme-default at line 22387), so the fallback isn't used.
-         * No CSS override needed for var() — they resolve correctly. */
-
-        /* ──────────────────────────────────────────────────────────────
-         * Piece D — Dark-card-background override in light theme.
+        /* Translucent dark slate card bg → light slate-100 with same alpha.
+         * This is the most common Group 2 pattern (rgba(15,23,42,X) in 1300+
+         * places). Without this remap, the now-dark-via-Piece-C text would
+         * sit on dark cards = still invisible. With it, dark text on
+         * light-slate card = readable.
          *
-         * STEM tools hardcode dark card backgrounds with rgba(15,23,42,X)
-         * (translucent slate-900) and literals like #0f172a, #0c1929,
-         * #0a0e1a. In light theme these create dark islands on a white
-         * modal — visually jarring AND defeats Piece C's text-color
-         * remap (dark remapped text on dark card stays invisible).
-         *
-         * Remap to slate-100 (#f1f5f9) — a soft gray that:
-         *   - keeps the card visually distinct from the white modal bg
-         *   - lets dark text from Piece C (and var(--allo-stem-text)) be
-         *     fully readable
-         *   - matches the existing .theme-default --allo-stem-panel value
-         * ──────────────────────────────────────────────────────────────
-         */
-        /* Translucent dark slates → light slate-100 with same alpha */
+         * Solid dark-hex backgrounds (#0f172a, #0c1929, etc.) are NOT
+         * remapped — those tend to be intentional decorative panels and
+         * deserve per-tool review. */
         .stem-lab-modal.theme-light [style*="background: rgba(15,23,42"],
         .stem-lab-modal.theme-light [style*="background:rgba(15,23,42"],
         .stem-lab-modal.theme-light [style*="background: rgba(2,6,23"],
         .stem-lab-modal.theme-light [style*="background:rgba(2,6,23"],
         .stem-lab-modal.theme-light [style*="background: rgba(30,41,59"],
         .stem-lab-modal.theme-light [style*="background:rgba(30,41,59"],
-        .stem-lab-modal.theme-light [style*="background: rgba(0,0,0"],
-        .stem-lab-modal.theme-light [style*="background:rgba(0,0,0"],
         .stem-lab-modal.theme-light [style*="backgroundColor: rgba(15,23,42"],
         .stem-lab-modal.theme-light [style*="backgroundColor: rgba(30,41,59"] {
-            background: #f1f5f9 !important;
-            background-color: #f1f5f9 !important;
-        }
-        /* Solid dark canvas hex → slate-100 */
-        .stem-lab-modal.theme-light [style*="background: #0f172a"],
-        .stem-lab-modal.theme-light [style*="background:#0f172a"],
-        .stem-lab-modal.theme-light [style*="background: #1e293b"],
-        .stem-lab-modal.theme-light [style*="background:#1e293b"],
-        .stem-lab-modal.theme-light [style*="background: #020617"],
-        .stem-lab-modal.theme-light [style*="background: #0a0e1a"],
-        .stem-lab-modal.theme-light [style*="background: #0a0a18"],
-        .stem-lab-modal.theme-light [style*="background: #0b1220"],
-        .stem-lab-modal.theme-light [style*="background: #0c1929"],
-        .stem-lab-modal.theme-light [style*="background: #0f1c2f"],
-        .stem-lab-modal.theme-light [style*="background: #162032"],
-        .stem-lab-modal.theme-light [style*="background: #1c1410"],
-        .stem-lab-modal.theme-light [style*="background:#1c1410"],
-        .stem-lab-modal.theme-light [style*="background: #3a2a1a"],
-        .stem-lab-modal.theme-light [style*="backgroundColor: #0f172a"],
-        .stem-lab-modal.theme-light [style*="backgroundColor: #1e293b"] {
-            background: #f1f5f9 !important;
-            background-color: #f1f5f9 !important;
-        }
-        /* Soften the dark-card borders too so they're not jarring */
-        .stem-lab-modal.theme-light [style*="border: 1px solid #334155"],
-        .stem-lab-modal.theme-light [style*="border:1px solid #334155"],
-        .stem-lab-modal.theme-light [style*="borderColor: #334155"],
-        .stem-lab-modal.theme-light [style*="borderColor:#334155"],
-        .stem-lab-modal.theme-light [style*="border: 1px solid #475569"],
-        .stem-lab-modal.theme-light [style*="borderColor: #475569"] {
-            border-color: #cbd5e1 !important;
+            background: rgba(241,245,249,0.85) !important;
+            background-color: rgba(241,245,249,0.85) !important;
         }
 
         .theme-dark .bg-white {
