@@ -14260,11 +14260,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const gifUrl = await encodeFramesToGif(frames, targetWidth, targetWidth, fps);
       // Frames kept on the panel (alongside the rendered GIF) so the frame-edit
       // UI in visual_panel can show thumbnails and re-encode after a delete or
-      // single-frame regenerate. Without this, the frame data is gone the moment
-      // the GIF is encoded and any per-frame editing requires a full regen.
+      // single-frame regenerate. motionSteps preserves the Gemini-storyboarded
+      // descriptions so handleRegeneratePanelFrame can cascade through frames
+      // 1..N-1 when the user adjusts the anchor (frame 0) — otherwise the
+      // downstream chain would still reference the old anchor and look broken.
       // frameWidth/Height pin the canvas size for re-encoding so we don't need
       // to re-measure when the user only edits frames (not the panel).
-      return { ...panel, frames, fps, frameWidth: targetWidth, frameHeight: targetWidth, imageUrl: gifUrl };
+      return { ...panel, frames, motionSteps: steps, fps, frameWidth: targetWidth, frameHeight: targetWidth, imageUrl: gifUrl };
   };
   // ── Visual-panel user-driven mutations (animate/regen-frame/delete-frame) ──
   // Three handlers wired through to VisualPanelGrid so teachers can: (1) flip
@@ -14313,27 +14315,63 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const plan = generatedContent && generatedContent.data && generatedContent.data.visualPlan;
       const panel = plan && plan.panels && plan.panels[panelIdx];
       if (!panel || !panel.frames || !panel.frames[frameIdx]) return;
-      if (frameIdx === 0) {
-          addToast(t('toasts.cant_regenerate_anchor_frame') || 'Frame 1 anchors the animation — regenerate the whole panel to change it.', 'info');
-          return;
-      }
-      const anchor = panel.frames[frameIdx - 1];
-      if (!anchor) return;
       const desc = (motionDesc || '').trim() || (panel.motionPrompt || 'subtle motion');
+      const w = panel.frameWidth || 400;
+      const h = panel.frameHeight || 400;
       setIsProcessing(true);
-      setGenerationStep(t('toasts.regenerating_frame') || 'Regenerating frame…');
       try {
-          const editPrompt = 'Keep the subject IDENTICAL in style, anatomy, and color. Only change: ' + desc + '. Educational illustration, no text, no labels.';
-          const anchorB64 = anchor.split(',')[1];
-          const w = panel.frameWidth || 400;
-          const h = panel.frameHeight || 400;
-          const next = await callGeminiImageEdit(editPrompt, anchorB64, w, 0.9);
-          if (!next) throw new Error('Frame regeneration returned no image');
-          const newFrames = [...panel.frames];
-          newFrames[frameIdx] = next;
-          const gifUrl = await encodeFramesToGif(newFrames, w, h, panel.fps || 3);
-          _updatePanelInPlan(panelIdx, (p) => ({ ...p, frames: newFrames, imageUrl: gifUrl }));
-          addToast(t('toasts.frame_regenerated') || 'Frame regenerated.', 'success');
+          if (frameIdx === 0) {
+              // Anchor edit: rewrite frame 0 via image-edit, then cascade through
+              // the rest of the chain so frames 1..N-1 don't keep referencing the
+              // old anchor (which would make them visually mismatched). We replay
+              // the original motionSteps from the storyboard; if the panel was
+              // generated before motionSteps was kept (or storyboard fell back to
+              // uniform motionPrompt), use motionPrompt for every step instead.
+              setGenerationStep(t('toasts.regenerating_anchor') || 'Regenerating anchor + cascading…');
+              const anchorEditPrompt = 'Apply this change while keeping the educational illustration style and clarity: ' + desc + '. No text, no labels.';
+              const oldFrame0B64 = panel.frames[0].split(',')[1];
+              const newFrame0 = await callGeminiImageEdit(anchorEditPrompt, oldFrame0B64, w, 0.9);
+              if (!newFrame0) throw new Error('Anchor regeneration returned no image');
+              const steps = (Array.isArray(panel.motionSteps) && panel.motionSteps.length > 0)
+                  ? panel.motionSteps
+                  : new Array(Math.max(0, panel.frames.length - 1)).fill(panel.motionPrompt || 'subtle motion');
+              const newFrames = [newFrame0];
+              let prevFrame = newFrame0;
+              for (let i = 0; i < panel.frames.length - 1; i++) {
+                  const stepDesc = steps[i] || steps[steps.length - 1] || panel.motionPrompt || 'subtle motion';
+                  try {
+                      const stepPrompt = 'Keep the subject IDENTICAL in style, anatomy, and color. Only change: ' + stepDesc + '. Educational illustration, no text, no labels.';
+                      const next = await callGeminiImageEdit(stepPrompt, prevFrame.split(',')[1], w, 0.9);
+                      if (next) { newFrames.push(next); prevFrame = next; }
+                      else { newFrames.push(prevFrame); } // hold previous on failure so GIF still loops
+                  } catch (stepErr) {
+                      warnLog('[VisualPanel] Cascade step ' + (i + 1) + ' failed, holding previous:', stepErr);
+                      newFrames.push(prevFrame);
+                  }
+              }
+              const gifUrl = await encodeFramesToGif(newFrames, w, h, panel.fps || 3);
+              _updatePanelInPlan(panelIdx, (p) => ({ ...p, frames: newFrames, imageUrl: gifUrl }));
+              addToast(t('toasts.anchor_regenerated') || 'Anchor frame regenerated and chain rebuilt.', 'success');
+          } else {
+              // Mid-chain regen: edit just this frame off its predecessor.
+              // Downstream frames keep their old visuals — they were edited off
+              // the OLD frameIdx, not the new one, so a slight discontinuity at
+              // frameIdx → frameIdx+1 is possible. Cascading from mid-chain is
+              // not worth the extra cost for most edits; user can re-regen the
+              // next frame manually if needed.
+              setGenerationStep(t('toasts.regenerating_frame') || 'Regenerating frame…');
+              const anchor = panel.frames[frameIdx - 1];
+              if (!anchor) throw new Error('Missing predecessor frame');
+              const editPrompt = 'Keep the subject IDENTICAL in style, anatomy, and color. Only change: ' + desc + '. Educational illustration, no text, no labels.';
+              const anchorB64 = anchor.split(',')[1];
+              const next = await callGeminiImageEdit(editPrompt, anchorB64, w, 0.9);
+              if (!next) throw new Error('Frame regeneration returned no image');
+              const newFrames = [...panel.frames];
+              newFrames[frameIdx] = next;
+              const gifUrl = await encodeFramesToGif(newFrames, w, h, panel.fps || 3);
+              _updatePanelInPlan(panelIdx, (p) => ({ ...p, frames: newFrames, imageUrl: gifUrl }));
+              addToast(t('toasts.frame_regenerated') || 'Frame regenerated.', 'success');
+          }
       } catch (e) {
           warnLog('[VisualPanel] handleRegeneratePanelFrame failed:', e);
           addToast((t('toasts.frame_regen_failed') || 'Frame regeneration failed') + ': ' + (e && e.message || ''), 'error');

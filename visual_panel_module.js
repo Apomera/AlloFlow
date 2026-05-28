@@ -1353,25 +1353,24 @@ Return ONLY valid JSON:
       "button",
       {
         onClick: () => {
-          if (!onRegenerateFrame || isAnchor) return;
+          if (!onRegenerateFrame) return;
           setRegenFrame({ panelIdx, frameIdx: fIdx });
           setRegenInput("");
         },
-        "aria-label": isAnchor ? t("common.frame_anchor_aria") || `Frame ${fIdx + 1} (anchor \u2014 regenerate the whole panel to change this)` : t("common.frame_regen_aria") || `Regenerate frame ${fIdx + 1}`,
-        title: isAnchor ? t("common.frame_anchor_title") || "Anchor frame \u2014 fixed" : t("common.frame_regen_title") || "Click to regenerate this frame",
+        "aria-label": isAnchor ? t("common.frame_anchor_aria") || `Frame ${fIdx + 1} (anchor \u2014 editing this cascades through the chain)` : t("common.frame_regen_aria") || `Regenerate frame ${fIdx + 1}`,
+        title: isAnchor ? t("common.frame_anchor_title") || "Anchor frame \u2014 edits cascade through the rest of the animation" : t("common.frame_regen_title") || "Click to regenerate this frame",
         style: {
           padding: 0,
-          border: isRegenOpen ? "2px solid #7c3aed" : "1px solid #cbd5e1",
+          border: isRegenOpen ? "2px solid #7c3aed" : isAnchor ? "2px solid #fbbf24" : "1px solid #cbd5e1",
           borderRadius: 6,
           overflow: "hidden",
-          cursor: isAnchor ? "default" : "pointer",
-          opacity: isAnchor ? 0.7 : 1,
+          cursor: "pointer",
           background: "white",
           position: "relative"
         }
       },
       /* @__PURE__ */ React.createElement("img", { src, alt: `Frame ${fIdx + 1}`, style: { display: "block", width: 56, height: 56, objectFit: "cover" } }),
-      /* @__PURE__ */ React.createElement("span", { style: { position: "absolute", bottom: 1, left: 2, fontSize: 9, fontWeight: 700, color: "white", textShadow: "0 1px 2px rgba(0,0,0,0.6)" } }, fIdx + 1)
+      /* @__PURE__ */ React.createElement("span", { style: { position: "absolute", bottom: 1, left: 2, fontSize: 9, fontWeight: 700, color: "white", textShadow: "0 1px 2px rgba(0,0,0,0.6)" } }, isAnchor ? "\u2693" : fIdx + 1)
     ), !isAnchor && onDeleteFrame && /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -1382,12 +1381,12 @@ Return ONLY valid JSON:
       },
       "\u2715"
     ));
-  })), regenFrame && regenFrame.panelIdx === panelIdx && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, marginTop: 6 } }, /* @__PURE__ */ React.createElement(
+  })), regenFrame && regenFrame.panelIdx === panelIdx && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4, marginTop: 6 } }, regenFrame.frameIdx === 0 && /* @__PURE__ */ React.createElement("p", { style: { fontSize: 10, color: "#92400e", margin: "0 2px", lineHeight: 1.4, background: "#fef3c7", padding: "4px 8px", borderRadius: 4 } }, t("common.anchor_cascade_warning") || "\u2693 Editing the anchor cascades through every frame \u2014 the whole animation will rebuild."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement(
     "input",
     {
       value: regenInput,
       onChange: (e) => setRegenInput(e.target.value),
-      placeholder: t("common.regen_frame_placeholder") || `What should change in frame ${regenFrame.frameIdx + 1}? (blank = re-roll with default motion)`,
+      placeholder: regenFrame.frameIdx === 0 ? t("common.regen_anchor_placeholder") || 'What should change in the anchor? e.g. "make it nighttime"' : t("common.regen_frame_placeholder") || `What should change in frame ${regenFrame.frameIdx + 1}? (blank = re-roll with default motion)`,
       onKeyDown: (e) => e.key === "Enter" && handleRegenFrameSubmit(),
       autoFocus: true,
       "aria-label": t("common.regen_frame_aria") || `Describe motion for frame ${regenFrame.frameIdx + 1}`,
@@ -1413,7 +1412,7 @@ Return ONLY valid JSON:
       style: { padding: "6px 10px", borderRadius: 6, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", cursor: "pointer", fontSize: 12 }
     },
     "\u2715"
-  ))), visualPlan.layout === "sequence" && panelIdx < orderedPanels.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "visual-sequence-arrow" }, "\u2022 \u2022 \u2022")))), showComparison && challengeResult && /* @__PURE__ */ React.createElement(
+  )))), visualPlan.layout === "sequence" && panelIdx < orderedPanels.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "visual-sequence-arrow" }, "\u2022 \u2022 \u2022")))), showComparison && challengeResult && /* @__PURE__ */ React.createElement(
     "div",
     {
       style: { position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", animation: "fadeIn 0.2s ease-out" },

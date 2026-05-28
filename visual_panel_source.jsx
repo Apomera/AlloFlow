@@ -1321,24 +1321,25 @@ Return ONLY valid JSON:
                                             <div key={fIdx} style={{ position: 'relative', flexShrink: 0 }}>
                                                 <button
                                                     onClick={() => {
-                                                        if (!onRegenerateFrame || isAnchor) return;
+                                                        if (!onRegenerateFrame) return;
                                                         setRegenFrame({ panelIdx, frameIdx: fIdx });
                                                         setRegenInput('');
                                                     }}
                                                     aria-label={isAnchor
-                                                        ? (t('common.frame_anchor_aria') || `Frame ${fIdx + 1} (anchor — regenerate the whole panel to change this)`)
+                                                        ? (t('common.frame_anchor_aria') || `Frame ${fIdx + 1} (anchor — editing this cascades through the chain)`)
                                                         : (t('common.frame_regen_aria') || `Regenerate frame ${fIdx + 1}`)}
                                                     title={isAnchor
-                                                        ? (t('common.frame_anchor_title') || 'Anchor frame — fixed')
+                                                        ? (t('common.frame_anchor_title') || 'Anchor frame — edits cascade through the rest of the animation')
                                                         : (t('common.frame_regen_title') || 'Click to regenerate this frame')}
                                                     style={{
-                                                        padding: 0, border: isRegenOpen ? '2px solid #7c3aed' : '1px solid #cbd5e1',
-                                                        borderRadius: 6, overflow: 'hidden', cursor: isAnchor ? 'default' : 'pointer',
-                                                        opacity: isAnchor ? 0.7 : 1, background: 'white', position: 'relative'
+                                                        padding: 0,
+                                                        border: isRegenOpen ? '2px solid #7c3aed' : (isAnchor ? '2px solid #fbbf24' : '1px solid #cbd5e1'),
+                                                        borderRadius: 6, overflow: 'hidden', cursor: 'pointer',
+                                                        background: 'white', position: 'relative'
                                                     }}
                                                 >
                                                     <img src={src} alt={`Frame ${fIdx + 1}`} style={{ display: 'block', width: 56, height: 56, objectFit: 'cover' }} />
-                                                    <span style={{ position: 'absolute', bottom: 1, left: 2, fontSize: 9, fontWeight: 700, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{fIdx + 1}</span>
+                                                    <span style={{ position: 'absolute', bottom: 1, left: 2, fontSize: 9, fontWeight: 700, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{isAnchor ? '⚓' : (fIdx + 1)}</span>
                                                 </button>
                                                 {!isAnchor && onDeleteFrame && (
                                                     <button
@@ -1353,11 +1354,19 @@ Return ONLY valid JSON:
                                     })}
                                 </div>
                                 {regenFrame && regenFrame.panelIdx === panelIdx && (
-                                    <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>
+                                        {regenFrame.frameIdx === 0 && (
+                                            <p style={{ fontSize: 10, color: '#92400e', margin: '0 2px', lineHeight: 1.4, background: '#fef3c7', padding: '4px 8px', borderRadius: 4 }}>
+                                                {t('common.anchor_cascade_warning') || '⚓ Editing the anchor cascades through every frame — the whole animation will rebuild.'}
+                                            </p>
+                                        )}
+                                        <div style={{ display: 'flex', gap: 6 }}>
                                         <input
                                             value={regenInput}
                                             onChange={(e) => setRegenInput(e.target.value)}
-                                            placeholder={t('common.regen_frame_placeholder') || `What should change in frame ${regenFrame.frameIdx + 1}? (blank = re-roll with default motion)`}
+                                            placeholder={regenFrame.frameIdx === 0
+                                                ? (t('common.regen_anchor_placeholder') || 'What should change in the anchor? e.g. "make it nighttime"')
+                                                : (t('common.regen_frame_placeholder') || `What should change in frame ${regenFrame.frameIdx + 1}? (blank = re-roll with default motion)`)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleRegenFrameSubmit()}
                                             autoFocus
                                             aria-label={t('common.regen_frame_aria') || `Describe motion for frame ${regenFrame.frameIdx + 1}`}
@@ -1373,6 +1382,7 @@ Return ONLY valid JSON:
                                             aria-label={t('common.cancel')}
                                             style={{ padding: '6px 10px', borderRadius: 6, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 12 }}
                                         >✕</button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
