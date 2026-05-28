@@ -11433,7 +11433,7 @@
       "summary_no_label": "Missing names",
       "tab_order_heading": "Tab order",
       "fakes_heading": "⚠ Fake kitufe",
-      "fakes_help": "Elements na cursor:pointer hiyo look bofyaable lakini cannot be reached by kibodi. Kawaida cause: div na onBofya instead ya real <kitufe>. Fix: convert kwa <kitufe>, OR ongeza tabindex=\"0\" + role=\"kitufe\" + kibodi event handlers.",
+      "fakes_help": "Elements na cursor:pointer hiyo look bofyaable lakini cannot be reached by kibodi. Kawaida cause: div na onBofya instead ya real <button>. Fix: convert kwa <button>, OR ongeza tabindex=\"0\" + role=\"kitufe\" + kibodi event handlers.",
       "pos_heading": "⚠ Positive tabindex",
       "pos_help": "Elements na tabindex > 0 break natural hati tab order na confuse kibodi users. Fix: tumia tabindex=\"0\" (chaguo-msingi order) au rely juu ya chaguo-msingi focusability kwa kitufe/links.",
       "no_label_heading": "🔴 Missing inapatikana names",

@@ -11459,7 +11459,7 @@
       "summary_no_label": "Missing names",
       "tab_order_heading": "Tab order",
       "fakes_heading": "⚠ Fake buton",
-      "fakes_help": "Elements cu cursor:pointer acela look clicable dar cannot be reached by keyboard. Common cause: un div cu onClic instead de un real <buton>. Fix: convert la <buton>, OR adaugă tabindex=\"0\" + role=\"buton\" + keyboard event handlers.",
+      "fakes_help": "Elements cu cursor:pointer acela look clicable dar cannot be reached by keyboard. Common cause: un div cu onClic instead de un real <button>. Fix: convert la <button>, OR adaugă tabindex=\"0\" + role=\"buton\" + keyboard event handlers.",
       "pos_heading": "⚠ Positive tabindex",
       "pos_help": "Elements cu tabindex > 0 break natural document tab order și confuse keyboard users. Fix: folosește tabindex=\"0\" (implicit order) sau rely pe implicit focusability pentru buton/links.",
       "no_label_heading": "🔴 Missing accessible names",

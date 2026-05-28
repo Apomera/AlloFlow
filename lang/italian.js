@@ -11459,7 +11459,7 @@
       "summary_no_label": "Missing names",
       "tab_order_heading": "Tab order",
       "fakes_heading": "⚠ Fake pulsanti",
-      "fakes_help": "Elements con cursor:pointer quello look clickable ma cannot be reached by tastiera. Comune cause: un div con onClicca instead di un reale <pulsanti>. Fix: convert un <pulsanti>, OR aggiungi tabindex=\"0\" + role=\"pulsanti\" + tastiera event handlers.",
+      "fakes_help": "Elements con cursor:pointer quello look clickable ma cannot be reached by tastiera. Comune cause: un div con onClicca instead di un reale <button>. Fix: convert un <button>, OR aggiungi tabindex=\"0\" + role=\"pulsanti\" + tastiera event handlers.",
       "pos_heading": "⚠ Positive tabindex",
       "pos_help": "Elements con tabindex > 0 break natural documenti tab order e confusa tastiera users. Fix: usa tabindex=\"0\" (predefinito order) o rely su predefinito focusability per pulsanti/links.",
       "no_label_heading": "🔴 Missing accessibile names",

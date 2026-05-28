@@ -11441,7 +11441,7 @@
       "summary_no_label": "Missing names",
       "tab_order_heading": "Tab order",
       "fakes_heading": "⚠ Fake maɓalli",
-      "fakes_help": "Elements tare da cursor:pointer wancan look dannaable amma cannot be reached by keyboard. Common cause: div tare da onClick instead na real <maɓalli>. Fix: convert zuwa <maɓalli>, OR ƙara tabindex=\"0\" + role=\"maɓalli\" + keyboard event handlers.",
+      "fakes_help": "Elements tare da cursor:pointer wancan look dannaable amma cannot be reached by keyboard. Common cause: div tare da onClick instead na real <button>. Fix: convert zuwa <button>, OR ƙara tabindex=\"0\" + role=\"maɓalli\" + keyboard event handlers.",
       "pos_heading": "⚠ Positive tabindex",
       "pos_help": "Elements tare da tabindex > 0 break natural takarda tab order da confuse keyboard users. Fix: yi amfani tabindex=\"0\" (tsohuwa order) ko rely kan tsohuwa focusability don maɓalli/links.",
       "no_label_heading": "🔴 Missing accessible names",

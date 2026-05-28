@@ -11441,7 +11441,7 @@
       "summary_no_label": "Missing names",
       "tab_order_heading": "Tab order",
       "fakes_heading": "⚠ Fake bọtịnụ",
-      "fakes_help": "Elements na cursor:pointer nke ahụ look pịaable mana cannot be reached by keyboard. Common cause: otu div na onClick instead nke otu real <bọtịnụ>. Fix: convert na <bọtịnụ>, OR tinye tabindex=\"0\" + role=\"bọtịnụ\" + keyboard event handlers.",
+      "fakes_help": "Elements na cursor:pointer nke ahụ look pịaable mana cannot be reached by keyboard. Common cause: otu div na onClick instead nke otu real <button>. Fix: convert na <button>, OR tinye tabindex=\"0\" + role=\"bọtịnụ\" + keyboard event handlers.",
       "pos_heading": "⚠ Positive tabindex",
       "pos_help": "Elements na tabindex > 0 break natural akwụkwọ tab order na confuse keyboard users. Fix: jiri tabindex=\"0\" (ndabara order) maọbụ rely na ndabara focusability maka bọtịnụ/links.",
       "no_label_heading": "🔴 Missing accessible names",

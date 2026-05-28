@@ -11441,7 +11441,7 @@
       "summary_no_label": "Missing names",
       "tab_order_heading": "Tab order",
       "fakes_heading": "⚠ Fake bọtini",
-      "fakes_help": "Elements pẹlu cursor:pointer iyẹn look tẹable ṣugbọn cannot be reached by keyboard. Common cause: div pẹlu onClick instead ti real <bọtini>. Fix: convert si <bọtini>, OR fikun tabindex=\"0\" + role=\"bọtini\" + keyboard event handlers.",
+      "fakes_help": "Elements pẹlu cursor:pointer iyẹn look tẹable ṣugbọn cannot be reached by keyboard. Common cause: div pẹlu onClick instead ti real <button>. Fix: convert si <button>, OR fikun tabindex=\"0\" + role=\"bọtini\" + keyboard event handlers.",
       "pos_heading": "⚠ Positive tabindex",
       "pos_help": "Elements pẹlu tabindex > 0 break natural iwe ṣẹ tab order ati confuse keyboard users. Fix: lo tabindex=\"0\" (aiyipada order) tabi rely lori aiyipada focusability fun bọtini/links.",
       "no_label_heading": "🔴 Missing accessible names",

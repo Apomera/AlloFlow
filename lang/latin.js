@@ -11441,7 +11441,7 @@
       "summary_no_label": "Missing names",
       "tab_order_heading": "Tab order",
       "fakes_heading": "⚠ Fake pulsātor",
-      "fakes_help": "Elements cum cursor:pointer illud look clickable sed cannot be reached by keyboard. Commūnis cause: div cum onClick instead real <pulsātor>. Fix: convert ad <pulsātor>, OR adde tabindex=\"0\" + role=\"pulsātor\" + keyboard event handlers.",
+      "fakes_help": "Elements cum cursor:pointer illud look clickable sed cannot be reached by keyboard. Commūnis cause: div cum onClick instead real <button>. Fix: convert ad <button>, OR adde tabindex=\"0\" + role=\"pulsātor\" + keyboard event handlers.",
       "pos_heading": "⚠ Positive tabindex",
       "pos_help": "Elements cum tabindex > 0 break natural documentum tab order et confuse keyboard users. Fix: ūtere tabindex=\"0\" (praedēfīnītus order) aut rely in praedēfīnītus focusability prō pulsātor/links.",
       "no_label_heading": "🔴 Missing accessibilis names",

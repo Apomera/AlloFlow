@@ -11424,7 +11424,7 @@
         "aria_valid_attr_value": "ein ARIchA attribute has ein invalid value. Die Barrierefreiheit Hinwiris ist being igneinred.",
         "duplicate_id": "Two elements teilen die gleich id. Bildschirm leseners und labels kann attach zu die wrong one.",
         "duplicate_id_aria": "Duplicate IchDs sind interfering mit ARIchA labeling.",
-        "document_title": "Die Seite has nein <Titel>. Bildschirm leseners und tab listings wird neint identifizieren it.",
+        "document_title": "Die Seite has nein <title>. Bildschirm leseners und tab listings wird neint identifizieren it.",
         "html_has_lang": "Die Seite ist missing ein lang attribute. Bildschirm leseners wird neint kneinw which pronunciation zu verwirnden.",
         "html_lang_valid": "Die Seite lang attribute ist neint ein valid Sprache Code.",
         "landmark_one_main": "Die Seite ist missing ein <main> landmark. Bildschirm lesener verwirndenrs have ein schwirrer Zeit überspringenping past navigation zu die main Inhalt.",

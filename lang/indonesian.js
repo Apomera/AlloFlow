@@ -11467,7 +11467,7 @@
       "summary_no_label": "Missing names",
       "tab_order_heading": "Tab order",
       "fakes_heading": "⚠ Fake tombol",
-      "fakes_help": "Elements dengan cursor:pointer itu look clickable tetapi cannot menjadi reached by papan ketik. Umum cause: sebuah div dengan onKlik instead sebuah nyata <tombol>. Fix: convert ke <tombol>, OR tambah tabindex=\"0\" + role=\"tombol\" + papan ketik event handlers.",
+      "fakes_help": "Elements dengan cursor:pointer itu look clickable tetapi cannot menjadi reached by papan ketik. Umum cause: sebuah div dengan onKlik instead sebuah nyata <button>. Fix: convert ke <button>, OR tambah tabindex=\"0\" + role=\"tombol\" + papan ketik event handlers.",
       "pos_heading": "⚠ Positive tabindex",
       "pos_help": "Elements dengan tabindex > 0 break natural dokumen tab order dan confuse papan ketik users. Fix: gunakan tabindex=\"0\" (bawaan order) atau rely di bawaan focusability untuk tombol/links.",
       "no_label_heading": "🔴 Missing dapat diakses names",

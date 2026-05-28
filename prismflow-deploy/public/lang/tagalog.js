@@ -11433,7 +11433,7 @@
       "summary_no_label": "Missing names",
       "tab_order_heading": "Tab order",
       "fakes_heading": "⚠ Fake mga button",
-      "fakes_help": "Elements kasama cursor:pointer iyan look i-clickable ngunit cannot be reached by keyboard. Karaniwan cause: isang div kasama onI-click instead ng isang real <mga button>. Fix: convert sa <mga button>, OR magdagdag tabindex=\"0\" + role=\"mga button\" + keyboard event handlers.",
+      "fakes_help": "Elements kasama cursor:pointer iyan look i-clickable ngunit cannot be reached by keyboard. Karaniwan cause: isang div kasama onI-click instead ng isang real <button>. Fix: convert sa <button>, OR magdagdag tabindex=\"0\" + role=\"mga button\" + keyboard event handlers.",
       "pos_heading": "⚠ Positive tabindex",
       "pos_help": "Elements kasama tabindex > 0 break natural dokumento tab order at confuse keyboard users. Fix: gamitin tabindex=\"0\" (default order) o rely sa default focusability para sa mga button/links.",
       "no_label_heading": "🔴 Missing naa-access names",

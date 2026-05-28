@@ -11433,7 +11433,7 @@
       "summary_no_label": "Missing names",
       "tab_order_heading": "Tab order",
       "fakes_heading": "⚠ Fake bouton",
-      "fakes_help": "Elements na cursor:pointer yango look finaable kasi cannot be reached by keyboard. Na bokó cause: div na onClick instead ya real <bouton>. Fix: convert na <bouton>, OR bakisá tabindex=\"0\" + role=\"bouton\" + keyboard event handlers.",
+      "fakes_help": "Elements na cursor:pointer yango look finaable kasi cannot be reached by keyboard. Na bokó cause: div na onClick instead ya real <button>. Fix: convert na <button>, OR bakisá tabindex=\"0\" + role=\"bouton\" + keyboard event handlers.",
       "pos_heading": "⚠ Positive tabindex",
       "pos_help": "Elements na tabindex > 0 break natural mokanda tab order na confuse keyboard users. Fix: salelá tabindex=\"0\" (ya ebandeli order) to rely likoló ya ebandeli focusability mpo na bouton/links.",
       "no_label_heading": "🔴 Missing epesami names",

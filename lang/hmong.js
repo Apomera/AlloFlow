@@ -11433,7 +11433,7 @@
       "summary_no_label": "Missing names",
       "tab_order_heading": "Tab order",
       "fakes_heading": "⚠ Fake pob nias",
-      "fakes_help": "Elements nrog cursor:pointer qhov ntawd look nyemable tab sis cannot be reached by keyboard. Feem ntau cause: div nrog onClick instead ntawm real <pob nias>. Fix: convert mus <pob nias>, OR ntxiv tabindex=\"0\" + role=\"pob nias\" + keyboard event handlers.",
+      "fakes_help": "Elements nrog cursor:pointer qhov ntawd look nyemable tab sis cannot be reached by keyboard. Feem ntau cause: div nrog onClick instead ntawm real <button>. Fix: convert mus <button>, OR ntxiv tabindex=\"0\" + role=\"pob nias\" + keyboard event handlers.",
       "pos_heading": "⚠ Positive tabindex",
       "pos_help": "Elements nrog tabindex > 0 break natural cov ntawv tab order thiab confuse keyboard users. Fix: siv tabindex=\"0\" (default order) los yog rely rau saum default focusability rau pob nias/links.",
       "no_label_heading": "🔴 Missing pom tau names",

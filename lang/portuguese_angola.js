@@ -11441,7 +11441,7 @@
       "summary_no_label": "Missing names",
       "tab_order_heading": "Ordem de tabulação",
       "fakes_heading": "⚠ Fake botão",
-      "fakes_help": "Elements com cursor:pointer esse look clicarable mas cannot ser reached by keyboard. Common cause: um div com onClick instead de um real <botão>. Fix: convert para <botão>, OR adicionar tabindex=\"0\" + role=\"botão\" + keyboard event handlers.",
+      "fakes_help": "Elements com cursor:pointer esse look clicarable mas cannot ser reached by keyboard. Common cause: um div com onClick instead de um real <button>. Fix: convert para <button>, OR adicionar tabindex=\"0\" + role=\"botão\" + keyboard event handlers.",
       "pos_heading": "⚠ Positive tabindex",
       "pos_help": "Elements com tabindex > 0 break natural documento tab order e confuse keyboard users. Fix: usar tabindex=\"0\" (predefinição order) ou rely em predefinição focusability para botão/links.",
       "no_label_heading": "🔴 Missing acessível names",
