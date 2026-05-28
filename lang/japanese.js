@@ -2394,7 +2394,7 @@
     "discrepancies": "矛盾 / エラー",
     "verification_details": "検証の詳細",
     "fix_button": "選択を修正",
-    "header_description": "<strong>ソース資料分析:</strong> スキャフォールドの決定を通知するために、ソーステキストの複雑さと主要なコンポーネントをレビューします。",
+    "header_description": "<strong>ソース資料分析：</strong> スキャフォールドの決定を通知するために、ソーステキストの複雑さと主要なコンポーネントをレビューします。",
     "readability": {
       "formula": "公式",
       "words": "単語",
@@ -2801,7 +2801,7 @@
   },
   "udl_advice": {
     "title": "UDL戦略",
-    "header_description": "<strong>UDL戦略:</strong> 差別化と包括のための教育的アドバイス。"
+    "header_description": "<strong>UDL戦略：</strong> 差別化と包括のための教育的アドバイス。"
   },
   "lesson_plan": {
     "toast_drafting_plan": "授業計画を下書き中...",
@@ -3199,7 +3199,7 @@
     "warning": {
       "title": "重要： 作品を保存してください",
       "desc": "ページを更新すると画像は履歴に<strong>保存されません</strong>。保存したい場合は、画像またはHTMLパックをすぐにダウンロードしてください。",
-      "tip": "<strong>プロのヒント:</strong> 図のAI生成テキストは不正確な場合があります。ダウンロードする前に、上の<strong>Nano Banana リファイナー</strong>を使用して「スペルを修正」または「テキストラベルを削除」してください。"
+      "tip": "<strong>プロのヒント：</strong> 図のAI生成テキストは不正確な場合があります。ダウンロードする前に、上の<strong>Nano Banana リファイナー</strong>を使用して「スペルを修正」または「テキストラベルを削除」してください。"
     },
     "actions": {
       "refining_icon": "アイコンを洗練中...",
@@ -4915,7 +4915,7 @@
     "synthesis_prompt": "統合エッセイのプロンプト",
     "thesis_starter": "テーマの出だし",
     "evidence_tracker": "証拠トラッカー",
-    "evidence_tracker_hint": "エッセイでドキュメントを参照 (例:「ドキュメントAは...を示す」) して追跡。",
+    "evidence_tracker_hint": "エッセイでドキュメントを参照 (例：「ドキュメントAは...を示す」) して追跡。",
     "get_ai_feedback": "AIフィードバックを取得",
     "ai_feedback_title": "AI作文フィードバック",
     "strengths": "強み",
@@ -4951,9 +4951,9 @@
     "focus_label_search": "検索トピック (オプション — ソース検索を絞り込み)",
     "focus_label_links": "トピック文脈 (AIがリンクを理解するのに役立つ)",
     "focus_label_perspectives": "比較する視点 (オプション)",
-    "focus_placeholder_search": "例:「日系人収容の一次資料」",
-    "focus_placeholder_links": "例:「公民権運動」",
-    "focus_placeholder_perspectives": "例:「連邦主義者対反連邦主義者」",
+    "focus_placeholder_search": "例：「日系人収容の一次資料」",
+    "focus_placeholder_links": "例：「公民権運動」",
+    "focus_placeholder_perspectives": "例：「連邦主義者対反連邦主義者」",
     "focus_aria_search": "一次資料検索のための検索トピック",
     "focus_aria_links": "AIリンク分析のためのトピック文脈",
     "focus_aria_perspectives": "DBQで比較する視点",
@@ -4976,7 +4976,7 @@
     "paste_clipboard_button": "📋 画像を貼り付け",
     "custom_docs_placeholder": "ドキュメントをここに貼り付け、独立した行の --- で区切り...",
     "custom_docs_aria": "DBQ用のカスタムドキュメント",
-    "custom_essay_placeholder": "エッセイ焦点質問 (オプション) — 例:「1776年の異なるグループはどのように自由を定義したか？」",
+    "custom_essay_placeholder": "エッセイ焦点質問 (オプション) — 例：「1776年の異なるグループはどのように自由を定義したか？」",
     "custom_essay_aria": "カスタムエッセイ焦点質問",
     "need_source_hint": "⬆️ まず上にソーステキストを貼り付け — DBQはそこから構築されます。",
     "generate_aria": "DBQを生成"
@@ -5341,7 +5341,7 @@
     "generate_image_button": "画像を生成",
     "remove_text_from_image": "画像からテキストを削除",
     "image_refine_placeholder": "例： もっとかわいくして、バナナを追加",
-    "nano_mode_hint": "✨ ナノモード:「青くして」「帽子を追加」のようなカスタム編集を入力",
+    "nano_mode_hint": "✨ ナノモード：「青くして」「帽子を追加」のようなカスタム編集を入力",
     "back_to_setup": "セットアップに戻る",
     "start_activity": "アクティビティ開始",
     "kokoro_recommended": "Word Sounds推奨： Kokoroローカル音声",
@@ -5685,17 +5685,17 @@
     "flow": {
       "fetching_source": "ソースコンテンツを取得中... お待ちください。",
       "url_error": "そのURLを解析できませんでした。もう一度貼り付けてみてください。",
-      "topic_detected": "トピックを検出:「{topic}」。包括的なソーステキストを生成中...",
+      "topic_detected": "トピックを検出：「{topic}」。包括的なソーステキストを生成中...",
       "source_prompt": "続行するにはURLを貼り付けるか、トピックを入力してください。",
       "running_analysis": "分析を実行中... (事実と難易度を検証)。",
       "skipping_analysis": "分析をスキップします。代わりに**用語集**を作成しますか？",
       "offer_analysis": "テキストを分析できます。「はい」で開始、または「スキップ」と入力。",
       "generating_glossary": "用語集とアイコンを生成中 (少々お待ちください)...",
-      "no_langs_warning": "対象言語が選択されていないようです。用語集を生成する前に追加しますか (例:「スペイン語」)？",
+      "no_langs_warning": "対象言語が選択されていないようです。用語集を生成する前に追加しますか (例：「スペイン語」)？",
       "added_lang": "{lang} を追加しました。用語集を生成中...",
       "offer_glossary": "用語集を作成する準備はできましたか？(はい/スキップ)",
       "adapting_text": "{grade} 向けにテキストを適応中...",
-      "interest_check": "テキストを適応する準備ができました。より魅力的にするため、特定の生徒の興味 (例:「マインクラフト」、「サッカー」) を組み込みますか？",
+      "interest_check": "テキストを適応する準備ができました。より魅力的にするため、特定の生徒の興味 (例：「マインクラフト」、「サッカー」) を組み込みますか？",
       "integrating_interest": "「{interest}」を統合中。テキストを生成中...",
       "offer_text": "{grade} 向けにテキストを適応しますか？(はい/スキップ)",
       "skipping_text": "テキストの適応をスキップします。**ビジュアルオーガナイザー**はいかがですか？",
@@ -5719,11 +5719,11 @@
       "history_saved_toast": "完全な会話を履歴に保存しました！",
       "advice_title": "差別化戦略",
       "advice_saved_raw": "アドバイスを保存しました (生)。",
-      "start_scratch": "ゼロから始めるようですね！どのようなレッスンを構築しますか？\n\n**トピック**、**学年**、**スタイル** を教えてください (例:「1年生向けの重力に関する楽しい物語」または「高校向けの南北戦争に関する厳密な記事」)。\n\nソースジェネレーターを設定します。"
+      "start_scratch": "ゼロから始めるようですね！どのようなレッスンを構築しますか？\n\n**トピック**、**学年**、**スタイル** を教えてください (例：「1年生向けの重力に関する楽しい物語」または「高校向けの南北戦争に関する厳密な記事」)。\n\nソースジェネレーターを設定します。"
     },
     "blueprint": {
       "analyzing": "コンテキストを分析してレッスンの設計図を作成中... (リソースを生成する前にプランを確認・変更できます)。",
-      "presented": "レッスン設計図です。下に入力 (例:「クイズを追加」、「学年を5年生に変更」) するかプラン生成をクリックして変更できます。",
+      "presented": "レッスン設計図です。下に入力 (例：「クイズを追加」、「学年を5年生に変更」) するかプラン生成をクリックして変更できます。",
       "updated": "設計図を更新しました！さらに変更を提案するか、「行く」と入力して開始してください。",
       "error": "設計図を生成できませんでした。ステップバイステップで進めましょう。",
       "change_fail": "その変更ができませんでした。「クイズを追加」または「タイムラインを削除」と言ってみてください。",
@@ -5732,7 +5732,7 @@
       "auto_fill_stop": "自動入力フローを停止しました。"
     },
     "pack": {
-      "count_selection": "了解。このレッスンはどの程度の範囲にしますか？\n\n- **自動:** AIが最適と判断。\n- **すべて:** すべて生成。\n- **カスタム:** 数字を入力 (例:「10」)。",
+      "count_selection": "了解。このレッスンはどの程度の範囲にしますか？\n\n- **自動：** AIが最適と判断。\n- **すべて：** すべて生成。\n- **カスタム：** 数字を入力 (例：「10」)。",
       "designing": "{count} 個のリソースのレッスン設計図を設計中... 生成したらプランの修正を提案できます。",
       "error": "設計図の設計中にエラーが発生しました。ステップバイステップで試しましょう。",
       "comprehensive": "包括的"
@@ -5855,7 +5855,7 @@
     "wizard_lang_input_title": "言語入力",
     "wizard_interest_input": "生徒の興味 (例： サッカー、恐竜、宇宙) を追加して生成されたコンテンツをパーソナライズ。AIはこれらを例や類推に織り込んでエンゲージメントを高めます。",
     "wizard_interest_input_title": "生徒の興味",
-    "wizard_topic_input": "AI生成ソース素材の主題またはトピックを入力。より良い結果のために具体的に (例:「植物」より「砂漠植物の光合成」)。",
+    "wizard_topic_input": "AI生成ソース素材の主題またはトピックを入力。より良い結果のために具体的に (例：「植物」より「砂漠植物の光合成」)。",
     "wizard_topic_input_title": "トピック入力",
     "wizard_url_input": "URLを貼り付けてウェブコンテンツをソース素材としてインポート。システムが取得、クリーニングし、メイン記事テキストを抽出します。",
     "wizard_url_input_title": "URL入力",
@@ -7154,7 +7154,7 @@
       "pos_heading": "⚠ 正のtabindex",
       "pos_help": "tabindex > 0の要素は自然なドキュメントタブ順を壊し、キーボードユーザーを混乱させます。修正： tabindex=\"0\" (デフォルトの順序) を使用するか、ボタン/リンクのデフォルトのフォーカス可能性に依存。",
       "no_label_heading": "🔴 アクセシブル名が欠けている",
-      "no_label_help": "テキスト、aria-label、aria-labelledby、またはtitleのないフォーカス可能な要素。スクリーンリーダーユーザーはタグ名のみを聞きます (例:「ボタン」)、コンテキストなし。修正： aria-labelまたは可視テキストを追加。",
+      "no_label_help": "テキスト、aria-label、aria-labelledby、またはtitleのないフォーカス可能な要素。スクリーンリーダーユーザーはタグ名のみを聞きます (例：「ボタン」)、コンテキストなし。修正： aria-labelまたは可視テキストを追加。",
       "tip": "ヒント： Tab、Shift+Tab、Enter、Escのみを使用してラボの背後にあるページをナビゲート。上のリストの要素名をクリックしてフォーカス (必要に応じてページがスクロール)。"
     },
     "audit": {
@@ -7548,10 +7548,10 @@
     "no_activities": "まだ完了したアクティビティがありません。"
   },
   "prompts": {
-    "verified_correct": "**検証済みの正解:**",
-    "actual_correct": "**実際の正解:**",
-    "correction_warning": "**修正 / 警告:**",
-    "why_incorrect": "**他のオプションが不正解な理由:**"
+    "verified_correct": "**検証済みの正解：**",
+    "actual_correct": "**実際の正解：**",
+    "correction_warning": "**修正 / 警告：**",
+    "why_incorrect": "**他のオプションが不正解な理由：**"
   },
   "error": {
     "syntax_scramble": "シンタックススクランブルでエラーが発生しました。"
@@ -8179,8 +8179,8 @@
     "quiz_fba_purpose": "FBAの主な目的は何ですか？",
     "quiz_replacement": "代替行動とは何ですか？",
     "search_placeholder": "先行事象、行動、結果、メモ、場所で検索...",
-    "quick_fill_placeholder": "例:「生徒が数学で作業を見せるように頼まれた時に紙を投げた、教師が再誘導した」",
-    "nl_edit_placeholder": "例:「結果を教師の再誘導に変更」",
+    "quick_fill_placeholder": "例：「生徒が数学で作業を見せるように頼まれた時に紙を投げた、教師が再誘導した」",
+    "nl_edit_placeholder": "例：「結果を教師の再誘導に変更」",
     "now": "今",
     "low": "低",
     "med": "中",
@@ -8903,7 +8903,7 @@
       "optional_message": "オプションのメッセージ",
       "or_explore_the_pd_learning_path": "またはPD学習パスを探索 →",
       "parent": "親",
-      "paste_one_value_per_line_supports_formats_5_sessio": "1行ごとに1つの値を貼り付け。サポート形式:「5」、「セッション1: 5」、または「1,5」",
+      "paste_one_value_per_line_supports_formats_5_sessio": "1行ごとに1つの値を貼り付け。サポート形式：「5」、「セッション1: 5」、または「1,5」",
       "pba": "P(B|A)",
       "pba_2": "P(B|¬A)",
       "pbapba": "P(B|A)/P(B|¬A)",
