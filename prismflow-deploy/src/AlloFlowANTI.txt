@@ -52,6 +52,25 @@ let onAuthStateChanged = (auth, cb) => _fbOnAuthStateChanged(auth, cb);
 let WebSearchProvider = null;
 let AIProvider = null;
 
+// ── Module-level t() shim ──────────────────────────────────────────
+// Components defined at module top-level (before AlloFlowContent at
+// line ~2986) can't use `const { t } = useContext(LanguageContext)`
+// because that hook only works inside a React component body. But
+// some of those module-level components (e.g. GlobalMuteButton,
+// StudentSubmitModal, NotebookOverlay placeholders) still need to
+// render translated strings. This shim routes through window.__alloT
+// which AlloFlowContent populates on every render (line ~14313).
+// Before AlloFlowContent has rendered once, returns undefined so the
+// caller's `|| 'English fallback'` syntax kicks in.
+function t(key, params) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloT === 'function') {
+      return window.__alloT(key, params);
+    }
+  } catch (_) {}
+  return undefined;
+}
+
 function _upgradeAIBackend() {
     if (window._alloShimInit) {
         const s = window._alloShimInit(
@@ -4318,7 +4337,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'cd74431f';
+    var pluginCdnVersion = '9e5fa137';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
