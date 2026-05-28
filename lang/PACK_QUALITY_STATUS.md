@@ -668,3 +668,49 @@ lesson_plan_text, alignment_text, faq_text.
 | Hebrew / Arabic | Tour sections restored — all 23 long tour keys hand-translated |
 | Chinese (Simp/Trad) | ✓ Legitimate language compactness |
 | All other ~46 packs | ✓ Verified clean — only `stem.galaxy.the` empty (legitimate) |
+
+## 2026-05-27 — Structural integrity audit + targeted fixes (56-pack sweep)
+
+Performed comprehensive structural audit across all 56 packs (604,099 keys
+flattened). Detected and fixed **six classes** of structural defects that
+would have caused runtime breakage or visible bugs:
+
+| Defect class | Count | Affected packs | Commit |
+|---|---:|---|---|
+| Self-referencing key aliases (value was a dotted path) | 568 | 56 | `386aa095` |
+| Broken `{placeholder}` names (e.g., `{레벨}`, `{कोड}`, `{Niveau}`) | 481 | 27 | `7e006f57` |
+| HTML tag corruption (`<title>` → `<Titel>` etc.) | 13 | 13 | `29dd3284` |
+| Missing keys filled with English passthrough | 4,846 | 56 | `d85bc225` |
+| Unresolved key paths (dictionary translated a path) | 124 | 18 | `01caac53` |
+| Same-as-key duplicate values | 49 | 9 | `01caac53` |
+| Trailing whitespace | 4 | 3 | `01caac53` |
+| Restored `<button>` literals + emoji passthrough + Bengali `<title>` + zh markdown→HTML + `{a}` placeholder + `{start}` Hindi/Indonesian | 67 | 26 | `8f41bebc` |
+
+**Final state — all 56 packs:**
+- 0 unresolved key paths
+- 0 same-as-key duplicates
+- 0 empty strings (where source has content)
+- 0 missing keys (every source key present in every pack)
+- 0 broken `{X}` placeholders (no `{}` empty braces, no translated names)
+- 0 broken HTML tag names
+
+The audit still surfaces 22 "placeholder mismatches" + 1 "HTML mismatch"
+that are confirmed legitimate, not bugs:
+1. **`toasts.1f4ca_progress_report_has_been`** (56 packs): source has literal
+   text `\u{1F4CA}` (unescaped unicode escape — a source-side encoding artifact);
+   all 56 packs correctly render the actual emoji 📊.
+2. **`explore.nl_skip_count`** (4 Romance packs): Spanish/Portuguese idiom
+   "de {step} en {step}" repeats `{step}` deliberately for natural phrasing.
+3. **`visuals.warning.tip`** (Lao): condensed Lao translation drops the second
+   `<strong>Nano Banana Refiner</strong>` reference — intentional brevity.
+
+50,259 "unknown" keys (in packs but not in current `ui_strings.js`) are
+legacy keys not yet pruned by `check-source-pair-drift.js`; these are not
+structural defects.
+
+**Audit scripts retained in `C:/tmp/` for re-running:**
+- `audit_empty_dup.cjs` — empty strings + same-as-key duplicates
+- `audit_keypath_values.cjs` — unresolved key-path values
+- `audit_misc.cjs` — whitespace, parens, double-spaces
+- `final_integrity_audit.cjs` — comprehensive summary
+- `refined_audit.cjs` — excludes source-side key-path aliases
