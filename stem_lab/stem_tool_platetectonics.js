@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -8,17 +8,1006 @@
   if (document.head) document.head.appendChild(st);
 })();
 
-// ── Plate Tectonics Plugin (extracted from stem_tool_science.js) ──
+// -- Plate Tectonics Plugin (extracted from stem_tool_science.js) --
   // Audio system
   var _tectAC = null;
   function getTectAC() { if (!_tectAC) { try { _tectAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_tectAC && _tectAC.state === 'suspended') { try { _tectAC.resume(); } catch(e) {} } return _tectAC; }
   function tectTone(f,d,tp,v) { var ac = getTectAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
-  function sfxTectQuake() { tectTone(80, 0.3, 'sawtooth', 0.08); setTimeout(function() { tectTone(100, 0.2, 'sawtooth', 0.06); }, 100); if (window._alloHaptic) window._alloHaptic('bump'); }
-  function sfxTectShift() { tectTone(200, 0.15, 'sine', 0.05); }
-  function sfxTectErupt() { tectTone(60, 0.4, 'sawtooth', 0.09); setTimeout(function() { tectTone(100, 0.3, 'sawtooth', 0.07); }, 150); if (window._alloHaptic) window._alloHaptic('launch'); }
+
+  var _noiseBuffer = null;
+  function getNoiseBuffer(ac) {
+    if (_noiseBuffer) return _noiseBuffer;
+    try {
+      var bufferSize = ac.sampleRate * 2;
+      var buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
+      var data = buffer.getChannelData(0);
+      for (var i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      _noiseBuffer = buffer;
+    } catch(e) {}
+    return _noiseBuffer;
+  }
+
+  function playQuakeRumble() {
+    var ac = getTectAC();
+    if (!ac) return;
+    try {
+      var now = ac.currentTime;
+      var osc = ac.createOscillator();
+      var lfo = ac.createOscillator();
+      var lfoGain = ac.createGain();
+      var filter = ac.createBiquadFilter();
+      var gainNode = ac.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(60, now);
+
+      lfo.type = 'sine';
+      lfo.frequency.setValueAtTime(12, now);
+      lfoGain.gain.setValueAtTime(25, now);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(120, now);
+
+      gainNode.gain.setValueAtTime(0.12, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+      osc.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(ac.destination);
+
+      lfo.start(now);
+      osc.start(now);
+      lfo.stop(now + 0.6);
+      osc.stop(now + 0.6);
+
+      if (window._alloHaptic) window._alloHaptic('bump');
+    } catch(e) {}
+  }
+
+  function playVolcanoBlast() {
+    var ac = getTectAC();
+    if (!ac) return;
+    try {
+      var now = ac.currentTime;
+      var noise = ac.createBufferSource();
+      var nb = getNoiseBuffer(ac);
+      if (nb) {
+        noise.buffer = nb;
+        var filter = ac.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(400, now);
+        filter.frequency.exponentialRampToValueAtTime(50, now + 0.8);
+        filter.Q.setValueAtTime(5.0, now);
+
+        var gainNode = ac.createGain();
+        gainNode.gain.setValueAtTime(0.15, now);
+        gainNode.gain.linearRampToValueAtTime(0.08, now + 0.2);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+        noise.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(ac.destination);
+
+        noise.start(now);
+        noise.stop(now + 0.8);
+      }
+
+      var subOsc = ac.createOscillator();
+      var subGain = ac.createGain();
+      subOsc.type = 'sawtooth';
+      subOsc.frequency.setValueAtTime(80, now);
+      subOsc.frequency.linearRampToValueAtTime(40, now + 0.4);
+      subGain.gain.setValueAtTime(0.15, now);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      subOsc.connect(subGain);
+      subGain.connect(ac.destination);
+      subOsc.start(now);
+      subOsc.stop(now + 0.5);
+
+      if (window._alloHaptic) window._alloHaptic('launch');
+    } catch(e) {}
+  }
+
+  function playPlateScrape(intensity) {
+    var ac = getTectAC();
+    if (!ac) return;
+    try {
+      var now = ac.currentTime;
+      var osc = ac.createOscillator();
+      var filter = ac.createBiquadFilter();
+      var gainNode = ac.createGain();
+
+      var pitch = 150 + (intensity || 1) * 30;
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(pitch, now);
+      osc.frequency.linearRampToValueAtTime(pitch + (Math.random() - 0.5) * 40, now + 0.08);
+
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(pitch * 1.5, now);
+      filter.Q.setValueAtTime(3.0, now);
+
+      var vol = 0.03 * Math.min(1.5, intensity || 1);
+      gainNode.gain.setValueAtTime(vol, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+      osc.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(ac.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } catch(e) {}
+  }
+
+  function sfxTectQuake() { playQuakeRumble(); }
+  function sfxTectShift() { playPlateScrape(1.0); }
+  function sfxTectErupt() { playVolcanoBlast(); }
   function sfxTectClick() { tectTone(600, 0.03, 'sine', 0.04); }
   function sfxTectCorrect() { tectTone(523, 0.08, 'sine', 0.07); setTimeout(function() { tectTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { tectTone(784, 0.1, 'sine', 0.08); }, 140); }
-  if (!document.getElementById('tect-a11y')) { var _s = document.createElement('style'); _s.id = 'tect-a11y'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }'; document.head.appendChild(_s); }
+
+  if (!document.getElementById('tect-a11y')) {
+    var _s = document.createElement('style');
+    _s.id = 'tect-a11y';
+    _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; } ' +
+      '.plate-tectonics-container button:focus, .plate-tectonics-container input:focus, .plate-tectonics-container select:focus, .plate-tectonics-container textarea:focus, .plate-tectonics-container canvas:focus, .plate-tectonics-container [tabindex]:focus { outline: 3px solid #facc15 !important; outline-offset: 2px !important; box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.4) !important; } ' +
+      '.plate-tectonics-container.dark { color: #e2e8f0 !important; } .plate-tectonics-container.dark h2, .plate-tectonics-container.dark h3, .plate-tectonics-container.dark h4 { color: #f1f5f9 !important; } ' +
+      '.plate-tectonics-container.dark .bg-white { background-color: rgba(15, 23, 42, 0.6) !important; border-color: rgba(51, 65, 85, 0.5) !important; color: #f1f5f9 !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); } ' +
+      '.plate-tectonics-container.dark .bg-red-50 { background-color: rgba(220, 38, 38, 0.1) !important; border-color: rgba(220, 38, 38, 0.25) !important; } ' +
+      '.plate-tectonics-container.dark .bg-orange-50 { background-color: rgba(249, 115, 22, 0.1) !important; border-color: rgba(249, 115, 22, 0.25) !important; } ' +
+      '.plate-tectonics-container.dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.1) !important; border-color: rgba(59, 130, 246, 0.25) !important; } ' +
+      '.plate-tectonics-container.dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.1) !important; border-color: rgba(16, 185, 129, 0.25) !important; } ' +
+      '.plate-tectonics-container.dark .text-red-900, .plate-tectonics-container.dark .text-orange-900, .plate-tectonics-container.dark .text-amber-900 { color: #f87171 !important; } ' +
+      '.plate-tectonics-container.dark .text-red-750, .plate-tectonics-container.dark .text-red-700, .plate-tectonics-container.dark .text-orange-700, .plate-tectonics-container.dark .text-amber-700 { color: #fca5a5 !important; } ' +
+      '.plate-tectonics-container.dark .text-slate-750, .plate-tectonics-container.dark .text-slate-700, .plate-tectonics-container.dark .text-slate-600 { color: #94a3b8 !important; } ' +
+      '.plate-tectonics-container.dark .text-slate-500 { color: #64748b !important; } ' +
+      '.plate-tectonics-container.dark .border-red-200, .plate-tectonics-container.dark .border-orange-200, .plate-tectonics-container.dark .border-amber-200, .plate-tectonics-container.dark .border-slate-200 { border-color: rgba(51, 65, 85, 0.5) !important; } ' +
+      '.plate-tectonics-container.dark .bg-slate-100 { background-color: #1e293b !important; color: #e2e8f0 !important; border-color: #334155 !important; } ' +
+      '.plate-tectonics-container.dark .bg-slate-50 { background-color: #0f172a !important; color: #e2e8f0 !important; border-color: #1e293b !important; } ' +
+      '.plate-tectonics-container.dark .text-red-600 { color: #ef4444 !important; } .plate-tectonics-container.dark .text-red-200 { color: #fecaca !important; } ' +
+      '.plate-tectonics-container.dark input[type="text"] { background-color: #0f172a !important; border-color: #334155 !important; color: #f1f5f9 !important; }';
+    document.head.appendChild(_s);
+  }
+
+  // ===============================================================
+  // -- INTERACTIVE EPICENTER (TRIANGULATION) --
+  // Three seismograph stations report S-P time differences after a
+  // quake. distance = (S-P seconds) * (Vp * Vs) / (Vp - Vs) where
+  // Vp ~ 6 km/s, Vs ~ 3.5 km/s -> ~8.4 km per second of S-P delay.
+  // Drawing a circle of that radius around each station and finding
+  // the common intersection locates the epicenter -- the actual
+  // method used to locate 1906 San Francisco, 1989 Loma Prieta,
+  // 2011 Tohoku, etc. before GPS-based methods.
+  // ===============================================================
+  window.AlloTectonicsEpicenter = function(props) {
+    var React = window.React;
+    if (!React) return null;
+    var h = React.createElement;
+    var isDark = !!(props && props.darkMode);
+    var announceToSR = props && props.announceToSR;
+    var useState = React.useState;
+    var useRef = React.useRef;
+    var useEffect = React.useEffect;
+
+    // Real seismic velocities for continental crust (km/s)
+    var VP = 6.0;
+    var VS = 3.5;
+    // Distance per second of S-P delay: (Vp * Vs) / (Vp - Vs)
+    var KM_PER_SP = (VP * VS) / (VP - VS); // ~8.4 km/s
+
+    var W_CANVAS = 540, H_CANVAS = 360;
+    // Each canvas pixel = 4 km (so the 540x360 canvas covers ~2160x1440 km)
+    var KM_PER_PX = 4;
+
+    // Three stations - inspired by USGS California seismic network layout
+    var STATIONS_INIT = [
+      { id: 'BRK', name: 'Berkeley',   x:  90, y:  90, color: '#0ea5e9' },
+      { id: 'PAS', name: 'Pasadena',   x: 450, y: 260, color: '#a855f7' },
+      { id: 'MHC', name: 'Mt Hamilton', x: 120, y: 300, color: '#f59e0b' }
+    ];
+
+    var st = useState({
+      epicenter: { x: 280, y: 180 },
+      dragging: null, // 'epicenter' or station id
+      showCircles: true,
+      showFit: true
+    });
+    var s = st[0];
+    var setS = st[1];
+    var update = function(p) { setS(function(prev) { return Object.assign({}, prev, p); }); };
+    var sRef = useRef(s); sRef.current = s;
+    var stationsRef = useRef(STATIONS_INIT.map(function(st){ return Object.assign({}, st); }));
+
+    var canvasRef = useRef(null);
+    var animRef = useRef(null);
+
+    // S-P time for a station given current epicenter
+    function spTime(station, epi) {
+      var dx = (station.x - epi.x) * KM_PER_PX;
+      var dy = (station.y - epi.y) * KM_PER_PX;
+      var distKm = Math.sqrt(dx * dx + dy * dy);
+      return distKm / KM_PER_SP; // seconds
+    }
+
+    // Find best-fit epicenter from three station readings (least-squares).
+    // Each station knows distance d_i = (S-P)_i * KM_PER_SP. Solve
+    // linear system from differences of two squared-distance equations.
+    function trilaterate(stations, distances) {
+      var x1 = stations[0].x * KM_PER_PX, y1 = stations[0].y * KM_PER_PX;
+      var x2 = stations[1].x * KM_PER_PX, y2 = stations[1].y * KM_PER_PX;
+      var x3 = stations[2].x * KM_PER_PX, y3 = stations[2].y * KM_PER_PX;
+      var r1 = distances[0], r2 = distances[1], r3 = distances[2];
+      // Subtract eq1 from eq2 and eq1 from eq3 -> linear system Ax = b
+      var A11 = 2 * (x2 - x1), A12 = 2 * (y2 - y1);
+      var A21 = 2 * (x3 - x1), A22 = 2 * (y3 - y1);
+      var b1 = (r1*r1 - r2*r2) + (x2*x2 - x1*x1) + (y2*y2 - y1*y1);
+      var b2 = (r1*r1 - r3*r3) + (x3*x3 - x1*x1) + (y3*y3 - y1*y1);
+      var det = A11 * A22 - A12 * A21;
+      if (Math.abs(det) < 1e-6) return null;
+      var xKm = (b1 * A22 - b2 * A12) / det;
+      var yKm = (A11 * b2 - A21 * b1) / det;
+      return { x: xKm / KM_PER_PX, y: yKm / KM_PER_PX };
+    }
+
+    useEffect(function() {
+      var canvas = canvasRef.current;
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = W_CANVAS * dpr; canvas.height = H_CANVAS * dpr;
+      canvas.style.width = W_CANVAS + 'px'; canvas.style.height = H_CANVAS + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      var prefersReduced = false;
+      try { prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) {}
+
+      function frame() {
+        if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; }
+        draw(ctx, sRef.current);
+        if (!prefersReduced) animRef.current = requestAnimationFrame(frame);
+      }
+      frame();
+      return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
+    }, []);
+
+    function draw(ctx, cur) {
+      // Map background -- soft topographic look
+      var bg = ctx.createLinearGradient(0, 0, 0, H_CANVAS);
+      if (isDark) {
+        bg.addColorStop(0, '#0b1220');
+        bg.addColorStop(1, '#1e293b');
+      } else {
+        bg.addColorStop(0, '#ecfdf5');
+        bg.addColorStop(1, '#d1fae5');
+      }
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W_CANVAS, H_CANVAS);
+
+      // Grid (each cell = 100 km)
+      ctx.strokeStyle = isDark ? 'rgba(148,163,184,0.18)' : 'rgba(15,118,110,0.18)';
+      ctx.lineWidth = 1;
+      var stepPx = 100 / KM_PER_PX; // 25 px = 100 km
+      for (var gx = 0; gx <= W_CANVAS; gx += stepPx) {
+        ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H_CANVAS); ctx.stroke();
+      }
+      for (var gy = 0; gy <= H_CANVAS; gy += stepPx) {
+        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W_CANVAS, gy); ctx.stroke();
+      }
+      // Scale bar
+      ctx.fillStyle = isDark ? 'rgba(226,232,240,0.7)' : 'rgba(15,23,42,0.7)';
+      ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('100 km', 12, H_CANVAS - 10);
+      ctx.strokeStyle = isDark ? '#e2e8f0' : '#0f172a'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(50, H_CANVAS - 14); ctx.lineTo(50 + stepPx, H_CANVAS - 14); ctx.stroke();
+
+      var stations = stationsRef.current;
+
+      // Distance circles for each station
+      if (cur.showCircles) {
+        stations.forEach(function(stn) {
+          var sp = spTime(stn, cur.epicenter);
+          var distKm = sp * KM_PER_SP;
+          var rPx = distKm / KM_PER_PX;
+          ctx.strokeStyle = stn.color;
+          ctx.lineWidth = 2;
+          ctx.globalAlpha = 0.8;
+          ctx.beginPath();
+          ctx.arc(stn.x, stn.y, rPx, 0, Math.PI * 2);
+          ctx.stroke();
+          // Faint fill
+          ctx.globalAlpha = 0.06;
+          ctx.fillStyle = stn.color;
+          ctx.beginPath();
+          ctx.arc(stn.x, stn.y, rPx, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        });
+      }
+
+      // Best-fit epicenter (from the three readings)
+      if (cur.showFit) {
+        var dists = stations.map(function(stn) {
+          return spTime(stn, cur.epicenter) * KM_PER_SP;
+        });
+        var fit = trilaterate(stations, dists);
+        if (fit) {
+          // Crosshair at fit location
+          ctx.strokeStyle = isDark ? '#22d3ee' : '#0891b2';
+          ctx.lineWidth = 1.5;
+          ctx.globalAlpha = 0.85;
+          ctx.beginPath();
+          ctx.moveTo(fit.x - 10, fit.y); ctx.lineTo(fit.x + 10, fit.y);
+          ctx.moveTo(fit.x, fit.y - 10); ctx.lineTo(fit.x, fit.y + 10);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(fit.x, fit.y, 6, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = isDark ? '#22d3ee' : '#0891b2';
+          ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'left';
+          ctx.fillText('triangulated', fit.x + 12, fit.y - 6);
+        }
+      }
+
+      // Stations
+      stations.forEach(function(stn) {
+        // Triangle marker
+        ctx.fillStyle = stn.color;
+        ctx.strokeStyle = isDark ? '#e2e8f0' : '#0f172a';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(stn.x, stn.y - 9);
+        ctx.lineTo(stn.x - 8, stn.y + 6);
+        ctx.lineTo(stn.x + 8, stn.y + 6);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        // Label
+        ctx.fillStyle = isDark ? '#e2e8f0' : '#0f172a';
+        ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(stn.id, stn.x, stn.y + 20);
+        ctx.font = '9px sans-serif';
+        ctx.fillText(stn.name, stn.x, stn.y + 31);
+      });
+
+      // True epicenter (draggable)
+      var ex = cur.epicenter.x, ey = cur.epicenter.y;
+      ctx.fillStyle = '#dc2626';
+      ctx.strokeStyle = '#fef2f2';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(ex, ey, 9, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      // Star center
+      ctx.fillStyle = '#fde047';
+      ctx.beginPath(); ctx.arc(ex, ey, 3, 0, Math.PI * 2); ctx.fill();
+      // Label
+      ctx.fillStyle = isDark ? '#fecaca' : '#7f1d1d';
+      ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('epicenter (drag)', ex, ey - 14);
+
+      // HUD: readings table
+      var hudH = 16 + stations.length * 14;
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.fillRect(W_CANVAS - 178, 8, 170, hudH);
+      ctx.fillStyle = '#fde047';
+      ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('Station   S-P     distance', W_CANVAS - 172, 20);
+      ctx.font = 'bold 10px monospace'; ctx.fillStyle = 'white';
+      stations.forEach(function(stn, i) {
+        var sp = spTime(stn, cur.epicenter);
+        var d = sp * KM_PER_SP;
+        ctx.fillStyle = stn.color;
+        ctx.fillRect(W_CANVAS - 172, 26 + i * 14, 6, 6);
+        ctx.fillStyle = 'white';
+        ctx.fillText(stn.id + '   ' + sp.toFixed(1) + 's   ' + d.toFixed(0) + ' km', W_CANVAS - 162, 32 + i * 14);
+      });
+    }
+
+    function pointAt(e) {
+      var canvas = canvasRef.current;
+      var rect = canvas.getBoundingClientRect();
+      var mx = (e.clientX - rect.left) * (W_CANVAS / rect.width);
+      var my = (e.clientY - rect.top) * (H_CANVAS / rect.height);
+      return { x: mx, y: my };
+    }
+
+    function hitTest(pt) {
+      // Stations first (smaller)
+      var stations = stationsRef.current;
+      for (var i = 0; i < stations.length; i++) {
+        var stn = stations[i];
+        var dx = pt.x - stn.x, dy = pt.y - stn.y;
+        if (dx * dx + dy * dy < 14 * 14) return stn.id;
+      }
+      var ex = sRef.current.epicenter.x, ey = sRef.current.epicenter.y;
+      var ddx = pt.x - ex, ddy = pt.y - ey;
+      if (ddx * ddx + ddy * ddy < 18 * 18) return 'epicenter';
+      return null;
+    }
+
+    function onDown(e) {
+      e.preventDefault();
+      var pt = pointAt(e.touches ? e.touches[0] : e);
+      var hit = hitTest(pt);
+      if (hit) {
+        update({ dragging: hit });
+        if (typeof announceToSR === 'function') {
+          announceToSR(hit === 'epicenter' ? 'Dragging epicenter' : 'Dragging station ' + hit);
+        }
+      }
+    }
+    function onMove(e) {
+      var cur = sRef.current;
+      if (!cur.dragging) return;
+      e.preventDefault();
+      var pt = pointAt(e.touches ? e.touches[0] : e);
+      var nx = Math.max(8, Math.min(W_CANVAS - 8, pt.x));
+      var ny = Math.max(8, Math.min(H_CANVAS - 8, pt.y));
+      if (cur.dragging === 'epicenter') {
+        update({ epicenter: { x: nx, y: ny } });
+      } else {
+        // move a station
+        var stations = stationsRef.current;
+        for (var i = 0; i < stations.length; i++) {
+          if (stations[i].id === cur.dragging) {
+            stations[i].x = nx; stations[i].y = ny;
+            break;
+          }
+        }
+        // trigger re-render so HUD refreshes
+        setS(function(prev){ return Object.assign({}, prev); });
+      }
+    }
+    function onUp() {
+      if (sRef.current.dragging) update({ dragging: null });
+    }
+
+    function reset() {
+      stationsRef.current = STATIONS_INIT.map(function(st){ return Object.assign({}, st); });
+      update({ epicenter: { x: 280, y: 180 } });
+      if (typeof announceToSR === 'function') announceToSR('Reset epicenter and stations');
+    }
+
+    // Move epicenter via keyboard for a11y
+    function onKey(e) {
+      var step = e.shiftKey ? 20 : 6;
+      var cur = sRef.current;
+      var ep = cur.epicenter;
+      var nx = ep.x, ny = ep.y;
+      var moved = false;
+      if (e.key === 'ArrowLeft')  { nx = Math.max(8, ep.x - step); moved = true; }
+      else if (e.key === 'ArrowRight') { nx = Math.min(W_CANVAS - 8, ep.x + step); moved = true; }
+      else if (e.key === 'ArrowUp')    { ny = Math.max(8, ep.y - step); moved = true; }
+      else if (e.key === 'ArrowDown')  { ny = Math.min(H_CANVAS - 8, ep.y + step); moved = true; }
+      if (moved) {
+        e.preventDefault();
+        update({ epicenter: { x: nx, y: ny } });
+        if (typeof announceToSR === 'function') {
+          var stations = stationsRef.current;
+          var msg = stations.map(function(stn){
+            var sp = spTime(stn, { x: nx, y: ny });
+            return stn.id + ' ' + sp.toFixed(1) + ' seconds';
+          }).join(', ');
+          announceToSR('Epicenter moved. S-P readings: ' + msg);
+        }
+      }
+    }
+
+    var stations = stationsRef.current;
+    var readings = stations.map(function(stn) {
+      var sp = spTime(stn, s.epicenter);
+      return { id: stn.id, name: stn.name, color: stn.color, sp: sp, dist: sp * KM_PER_SP };
+    });
+
+    var containerClass = 'rounded-2xl border-2 overflow-hidden mt-5 ' + (isDark ? 'border-slate-800' : 'border-emerald-400');
+    var containerStyle = isDark
+      ? { background: 'linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.7) 100%)' }
+      : { background: 'linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 100%)' };
+    var headerStyle = isDark ? { background: 'rgba(16,185,129,0.15)' } : { background: 'rgba(16,185,129,0.2)' };
+    var titleClass = 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-900');
+    var subtitleClass = 'text-[11px] ' + (isDark ? 'text-slate-400' : 'text-emerald-800');
+
+    return h('div', { className: containerClass, style: containerStyle, role: 'region', 'aria-label': 'Interactive epicenter triangulation' },
+      h('div', { className: 'px-3 py-2 flex items-center gap-2 border-b ' + (isDark ? 'border-slate-800' : 'border-emerald-300'), style: headerStyle },
+        h('span', { className: 'px-2 py-0.5 rounded-full text-[10px] font-bold text-white', style: { background: '#059669' } }, '🎮 INTERACTIVE'),
+        h('span', { className: titleClass }, 'Epicenter Triangulation'),
+        h('span', { className: subtitleClass }, '- drag the red star; three stations triangulate the epicenter from S-P times')
+      ),
+      h('div', { className: 'p-3 grid grid-cols-1 md:grid-cols-3 gap-3' },
+        h('div', { className: 'md:col-span-2 rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-emerald-400 bg-white') },
+          h('canvas', {
+            ref: canvasRef,
+            role: 'img',
+            tabIndex: 0,
+            'aria-label': 'Map with three seismograph stations (Berkeley, Pasadena, Mt Hamilton) and a draggable epicenter. Each station shows a distance circle; their intersection is the triangulated location. Use arrow keys to move the epicenter; hold Shift for larger steps. Current S-P readings: ' + readings.map(function(r){ return r.id + ' ' + r.sp.toFixed(1) + ' seconds, ' + r.dist.toFixed(0) + ' kilometers'; }).join('; ') + '.',
+            style: { width: W_CANVAS, height: H_CANVAS, display: 'block', cursor: s.dragging ? 'grabbing' : 'grab', maxWidth: '100%', touchAction: 'none' },
+            onMouseDown: onDown, onMouseMove: onMove, onMouseUp: onUp, onMouseLeave: onUp,
+            onTouchStart: onDown, onTouchMove: onMove, onTouchEnd: onUp,
+            onKeyDown: onKey
+          })
+        ),
+        h('div', { className: 'flex flex-col gap-2' },
+          // Readings card
+          h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-emerald-300') },
+            h('div', { className: 'text-[10px] font-bold uppercase mb-1 ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, 'Station readings'),
+            readings.map(function(r) {
+              return h('div', { key: r.id, className: 'flex items-center gap-2 text-[11px] py-0.5' },
+                h('span', { style: { width: 8, height: 8, borderRadius: '50%', background: r.color, display: 'inline-block' } }),
+                h('span', { style: { fontWeight: 'bold', width: 36 } }, r.id),
+                h('span', { className: 'font-mono', style: { width: 48 } }, r.sp.toFixed(1) + 's'),
+                h('span', { className: 'font-mono ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, r.dist.toFixed(0) + ' km')
+              );
+            })
+          ),
+          // Toggles
+          h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-emerald-300') },
+            h('label', { className: 'flex items-center gap-2 text-[11px] cursor-pointer' },
+              h('input', { type: 'checkbox', checked: s.showCircles, onChange: function(e) { update({ showCircles: e.target.checked }); } }),
+              'Show distance circles'
+            ),
+            h('label', { className: 'flex items-center gap-2 text-[11px] cursor-pointer mt-1' },
+              h('input', { type: 'checkbox', checked: s.showFit, onChange: function(e) { update({ showFit: e.target.checked }); } }),
+              'Show triangulated fit'
+            )
+          ),
+          h('button', {
+            onClick: reset,
+            className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-emerald-200 text-emerald-900 hover:bg-emerald-300')
+          }, '↻ Reset stations & epicenter'),
+          h('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-400' : 'text-emerald-800') },
+            'Tip: stations are also draggable. Arrow keys move the epicenter when canvas is focused.'
+          )
+        )
+      ),
+      // Educational cards
+      h('div', { className: 'mx-3 mb-3 grid grid-cols-1 md:grid-cols-2 gap-2' },
+        h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-emerald-300') },
+          h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '📐 The math'),
+          h('div', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+            h('div', { className: 'font-mono mb-1' }, 'distance = (S-P seconds) × Vp·Vs / (Vp − Vs)'),
+            'P-waves race through continental crust at ~' + VP.toFixed(1) + ' km/s; slower S-waves trail at ~' + VS.toFixed(1) + ' km/s. The lag between them grows by ~' + KM_PER_SP.toFixed(1) + ' km for every second of S-P time (≈ 8 s per 100 km, the rule of thumb students memorize). One station gives you a circle of possible locations; two narrow it to two intersection points; three pin down the epicenter. This is exactly how the 1906 San Francisco, 1989 Loma Prieta, and 2011 Tōhoku epicenters were located before GPS-based methods.'
+          )
+        ),
+        h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-emerald-300') },
+          h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '🎯 Try this'),
+          h('ul', { className: 'text-[11px] space-y-0.5 list-disc pl-4 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+            h('li', null, 'Drag the red star directly on top of a station  -  its S-P time drops to 0 (you are AT the epicenter).'),
+            h('li', null, 'Move the star far away  -  every S-P time grows by ~8 seconds per 100 km. Triple-check by counting grid squares (100 km each).'),
+            h('li', null, 'Drag the stations into a straight line  -  triangulation becomes unstable (the math has no unique answer when stations are collinear).'),
+            h('li', null, 'Turn off "Show circles" and rebuild them mentally from the readings  -  this is the job real analysts did with paper and compass before computers.')
+          )
+        )
+      )
+    );
+  };
+  // Spec asks for window.AlloX namespace too
+  try { window.AlloX = window.AlloX || {}; window.AlloX.InteractiveEpicenter = window.AlloTectonicsEpicenter; } catch(e) {}
+
+  // ===============================================================
+  // -- INTERACTIVE PLATE BOUNDARY SIMULATOR --
+  // Drag two continental plates apart, together, or past each other
+  // to spawn the three boundary types (divergent / convergent /
+  // transform) with live earthquake markers, mountain uplift, and
+  // mid-ocean rift formation.
+  // ===============================================================
+  window.AlloTectonicsInteractive = function(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var isDark = !!(props && props.darkMode);
+    var announceToSR = props && props.announceToSR;
+    var useState = React.useState;
+    var useRef = React.useRef;
+    var useEffect = React.useEffect;
+
+    var st = useState({
+      mode: 'convergent',  // 'divergent' | 'convergent' | 'transform'
+      rate: 5,             // cm/year (simulation accelerates)
+      running: true,
+      years: 0,
+      quakes: [],
+      mountainHeight: 0,
+      rift: 0,
+      offset: 0
+    });
+    var s = st[0];
+    var setS = st[1];
+    var update = function(patch) { setS(function(prev) { return Object.assign({}, prev, patch); }); };
+
+    var canvasRef = useRef(null);
+    var animRef = useRef(null);
+    var sRef = useRef(s);
+    sRef.current = s;
+
+    var BOUNDARY = {
+      convergent: { name: 'Convergent', color: '#dc2626', icon: '🗻', desc: 'Plates collide -> mountains rise. Andes, Himalayas, Cascades.' },
+      divergent:  { name: 'Divergent',  color: '#0ea5e9', icon: '🌊', desc: 'Plates separate -> magma fills rift -> new crust. Mid-Atlantic Ridge.' },
+      transform:  { name: 'Transform',  color: '#f59e0b', icon: '⚡', desc: 'Plates slide past -> friction -> quakes. San Andreas Fault.' }
+    };
+
+    useEffect(function() {
+      var canvas = canvasRef.current;
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var W = 540, H = 300;
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      var lastT = performance.now();
+      function frame(now) {
+        if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; }
+        var dt = (now - lastT) / 1000;
+        lastT = now;
+        var cur = sRef.current;
+        if (cur.running) {
+          // Advance simulated years per second of real time scaled by rate
+          var yearsDelta = cur.rate * 50 * dt;  // 50x speed-up
+          var newYears = cur.years + yearsDelta;
+          var patch = { years: newYears };
+          if (cur.mode === 'convergent') {
+            patch.mountainHeight = Math.min(8000, cur.mountainHeight + (cur.rate * 0.6) * dt);
+          } else if (cur.mode === 'divergent') {
+            patch.rift = Math.min(180, cur.rift + (cur.rate * 0.6) * dt);
+          } else if (cur.mode === 'transform') {
+            patch.offset = cur.offset + (cur.rate * 0.5) * dt;
+          }
+          // Earthquakes: probability scaled by rate; convergent + transform higher rate
+          var quakeProb = cur.mode === 'transform' ? 0.06 : cur.mode === 'convergent' ? 0.04 : 0.012;
+          quakeProb *= (cur.rate / 5);
+          if (Math.random() < quakeProb) {
+            var magnitude = cur.mode === 'transform' ? 4 + Math.random() * 3.5
+                          : cur.mode === 'convergent' ? 3.5 + Math.random() * 4.5
+                          : 2 + Math.random() * 2;
+            var qx = 220 + (Math.random() - 0.5) * 100;
+            var qy = 150 + (Math.random() - 0.5) * 40;
+            var newQ = (cur.quakes || []).slice();
+            newQ.push({ x: qx, y: qy, m: magnitude, age: 0 });
+            if (newQ.length > 40) newQ.shift();
+            patch.quakes = newQ;
+            // Play rumble sound
+            playQuakeRumble();
+          } else if (cur.quakes && cur.quakes.length) {
+            patch.quakes = cur.quakes.map(function(q) { return Object.assign({}, q, { age: q.age + dt }); }).filter(function(q) { return q.age < 3; });
+          }
+          update(patch);
+        }
+
+        draw(ctx, W, H, cur);
+        animRef.current = requestAnimationFrame(frame);
+      }
+      animRef.current = requestAnimationFrame(frame);
+      return function() { cancelAnimationFrame(animRef.current); };
+    }, []);
+
+    function draw(ctx, W, H, cur) {
+      // Sky
+      var sky = ctx.createLinearGradient(0, 0, 0, H * 0.5);
+      if (isDark) {
+        sky.addColorStop(0, '#090d16');
+        sky.addColorStop(1, '#1e1b4b');
+      } else {
+        sky.addColorStop(0, '#bfdbfe');
+        sky.addColorStop(1, '#fde68a');
+      }
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, W, H * 0.5);
+
+      // Mantle (below)
+      var mantle = ctx.createLinearGradient(0, H * 0.5, 0, H);
+      if (isDark) {
+        mantle.addColorStop(0, '#450a0a');
+        mantle.addColorStop(0.5, '#7f1d1d');
+        mantle.addColorStop(1, '#991b1b');
+      } else {
+        mantle.addColorStop(0, '#7c2d12');
+        mantle.addColorStop(0.5, '#dc2626');
+        mantle.addColorStop(1, '#fef3c7');
+      }
+      ctx.fillStyle = mantle;
+      ctx.fillRect(0, H * 0.5, W, H * 0.5);
+
+      // Convection currents (subtle arrows)
+      ctx.strokeStyle = isDark ? 'rgba(239, 68, 68, 0.3)' : 'rgba(254, 215, 170, 0.4)';
+      ctx.lineWidth = 1;
+      for (var c = 0; c < 4; c++) {
+        var cx = 100 + c * 110;
+        var cy = H * 0.78 + Math.sin(cur.years * 0.01 + c) * 5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 25, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Boundary line at x=270
+      var bx = 270;
+
+      // Plates (continental crust)
+      ctx.save();
+      var plateY = H * 0.4;
+      var plateH = H * 0.18;
+
+      var leftOff = 0, rightOff = 0;
+      if (cur.mode === 'divergent') {
+        leftOff = -cur.rift / 2;
+        rightOff = cur.rift / 2;
+      }
+
+      // Left plate
+      if (isDark) {
+        var leftGrad = ctx.createLinearGradient(0, plateY, 0, plateY + plateH);
+        leftGrad.addColorStop(0, '#3f3f46');
+        leftGrad.addColorStop(1, '#18181b');
+        ctx.fillStyle = leftGrad;
+      } else {
+        ctx.fillStyle = '#92400e';
+      }
+      ctx.beginPath();
+      ctx.rect(0, plateY, bx + leftOff, plateH);
+      ctx.fill();
+      ctx.strokeStyle = isDark ? '#d946ef' : '#451a03';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(0, plateY, bx + leftOff, plateH);
+
+      // Right plate
+      if (isDark) {
+        var rightGrad = ctx.createLinearGradient(0, plateY, 0, plateY + plateH);
+        rightGrad.addColorStop(0, '#52525b');
+        rightGrad.addColorStop(1, '#27272a');
+        ctx.fillStyle = rightGrad;
+      } else {
+        ctx.fillStyle = '#a16207';
+      }
+      ctx.fillRect(bx + rightOff, plateY, W - (bx + rightOff), plateH);
+      ctx.strokeStyle = isDark ? '#8b5cf6' : '#451a03';
+      ctx.strokeRect(bx + rightOff, plateY, W - (bx + rightOff), plateH);
+
+      // Continental labels
+      ctx.fillStyle = isDark ? '#e0e7ff' : '#fef3c7';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('PLATE A ->', (bx + leftOff) / 2, plateY + plateH / 2 + 4);
+      ctx.fillText('<- PLATE B', bx + rightOff + (W - bx - rightOff) / 2, plateY + plateH / 2 + 4);
+
+      // Mode-specific rendering on top of plates
+      if (cur.mode === 'convergent') {
+        // Mountain triangle at boundary; grows over time
+        var mH = Math.min(70, cur.mountainHeight / 100);
+        ctx.fillStyle = isDark ? '#27272a' : '#78350f';
+        ctx.beginPath();
+        ctx.moveTo(bx - 40, plateY);
+        ctx.lineTo(bx, plateY - mH);
+        ctx.lineTo(bx + 40, plateY);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = isDark ? '#ec4899' : '#1e1b4b';
+        ctx.stroke();
+        // Snow cap if tall
+        if (mH > 25) {
+          ctx.fillStyle = 'white';
+          ctx.beginPath();
+          ctx.moveTo(bx - 12, plateY - mH + 12);
+          ctx.lineTo(bx, plateY - mH);
+          ctx.lineTo(bx + 12, plateY - mH + 12);
+          ctx.closePath();
+          ctx.fill();
+        }
+        // Subduction: show one plate diving down into mantle
+        ctx.strokeStyle = isDark ? '#d946ef' : '#451a03';
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.moveTo(bx, plateY + plateH);
+        ctx.lineTo(bx + 30, plateY + plateH + 50);
+        ctx.lineTo(bx + 35, plateY + plateH + 80);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else if (cur.mode === 'divergent') {
+        // Magma in the gap
+        var gapW = cur.rift;
+        if (gapW > 4) {
+          var magma = ctx.createLinearGradient(bx - gapW / 2, plateY, bx + gapW / 2, plateY + plateH);
+          magma.addColorStop(0, '#fef3c7');
+          magma.addColorStop(0.5, '#f97316');
+          magma.addColorStop(1, '#7c2d12');
+          ctx.fillStyle = magma;
+          ctx.fillRect(bx - gapW / 2, plateY, gapW, plateH);
+          // Magma fountains
+          for (var f = 0; f < 5; f++) {
+            ctx.fillStyle = 'rgba(252,165,165,' + (0.4 + 0.3 * Math.sin(cur.years * 0.02 + f * 0.7)) + ')';
+            ctx.beginPath();
+            ctx.arc(bx - gapW / 2 + (f + 0.5) * gapW / 5, plateY - 8 + Math.sin(cur.years * 0.03 + f) * 4, 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      } else if (cur.mode === 'transform') {
+        // Friction zone (vertical hatch line)
+        ctx.strokeStyle = isDark ? '#f43f5e' : '#dc2626';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(bx, plateY);
+        ctx.lineTo(bx, plateY + plateH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // Offset marker - show a "road" that is broken
+        var roadY = plateY + plateH * 0.3;
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(bx - 60, roadY);
+        ctx.lineTo(bx - 5, roadY);
+        ctx.moveTo(bx + 5, roadY + (cur.offset % 30));
+        ctx.lineTo(bx + 60, roadY + (cur.offset % 30));
+        ctx.stroke();
+      }
+
+      // Earthquake markers
+      (cur.quakes || []).forEach(function(q) {
+        var alpha = Math.max(0, 1 - q.age / 3);
+        var radius = 4 + q.m * 2 + q.age * 8;
+        ctx.save();
+        if (isDark) {
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = '#ef4444';
+        }
+        ctx.strokeStyle = isDark ? 'rgba(244,63,94,' + alpha + ')' : 'rgba(220,38,38,' + alpha + ')';
+        ctx.lineWidth = 2 - q.age * 0.5;
+        ctx.beginPath();
+        ctx.arc(q.x, q.y, radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = isDark ? 'rgba(244,63,94,' + alpha * 0.4 + ')' : 'rgba(220,38,38,' + alpha * 0.4 + ')';
+        ctx.beginPath();
+        ctx.arc(q.x, q.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Sun / Moon
+      if (isDark) {
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath();
+        ctx.arc(W - 50, 35, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#090d16'; // crescent cutout
+        ctx.beginPath();
+        ctx.arc(W - 58, 30, 18, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = '#fde047';
+        ctx.beginPath();
+        ctx.arc(W - 50, 35, 18, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+
+      // HUD
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.fillRect(8, 8, 180, 56);
+      ctx.fillStyle = '#fef3c7';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(BOUNDARY[cur.mode].name + ' boundary', 14, 22);
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = '10px monospace';
+      ctx.fillText('Years: ' + Math.round(cur.years).toLocaleString(), 14, 36);
+      ctx.fillText('Rate: ' + cur.rate + ' cm/yr', 14, 48);
+      ctx.fillText('Quakes: ' + (cur.quakes ? cur.quakes.length : 0), 14, 60);
+
+      // Mode-specific stat
+      ctx.fillStyle = '#a3e635';
+      if (cur.mode === 'convergent') {
+        ctx.fillText('Mountain: ' + Math.round(cur.mountainHeight) + ' m', W - 130, 22);
+      } else if (cur.mode === 'divergent') {
+        ctx.fillText('Rift width: ' + Math.round(cur.rift) + ' km', W - 130, 22);
+      } else if (cur.mode === 'transform') {
+        ctx.fillText('Offset: ' + Math.round(cur.offset) + ' m', W - 130, 22);
+      }
+    }
+  }
+
+  function reset() {
+    update({ years: 0, quakes: [], mountainHeight: 0, rift: 0, offset: 0 });
+  }
+
+  var info = BOUNDARY[s.mode];
+
+  var containerClass = 'rounded-2xl border-2 overflow-hidden mt-5 plate-tectonics-container ' + (isDark ? 'border-slate-800 text-slate-200' : 'border-orange-400');
+  var containerStyle = isDark ? { background: 'linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(30,41,59,0.7) 100%)', backdropFilter: 'blur(12px)' } : { background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)' };
+  var headerStyle = isDark ? { background: 'rgba(30,41,59,0.5)' } : { background: 'rgba(234,88,12,0.15)' };
+  var headerBorderClass = isDark ? 'px-3 py-2 flex items-center gap-2 border-b border-slate-800' : 'px-3 py-2 flex items-center gap-2 border-b border-orange-300';
+  var badgeClass = 'px-2 py-0.5 rounded-full text-[10px] font-bold text-white';
+  var badgeStyle = { background: '#ea580c' };
+  var titleClass = 'text-sm font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-900');
+  var subtitleClass = 'text-[11px] ' + (isDark ? 'text-slate-400' : 'text-orange-800');
+
+  return h('div', { className: containerClass, style: containerStyle },
+    h('div', { className: headerBorderClass, style: headerStyle },
+      h('span', { className: badgeClass, style: badgeStyle }, '🎮 INTERACTIVE'),
+      h('span', { className: titleClass }, 'Plate Boundary Simulator'),
+      h('span', { className: subtitleClass }, '- pick a boundary type and watch geology happen in fast-forward')
+    ),
+    h('div', { className: 'p-3 grid grid-cols-1 md:grid-cols-3 gap-3' },
+      h('div', { className: 'md:col-span-2 rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-orange-400 bg-white') },
+        h('canvas', { ref: canvasRef, style: { width: 540, height: 300, display: 'block', maxWidth: '100%' } })
+      ),
+      h('div', { className: 'flex flex-col gap-2' },
+        // Mode selector
+        h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-orange-300') },
+          h('div', { className: 'text-[10px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, 'Boundary type'),
+          ['convergent', 'divergent', 'transform'].map(function(k) {
+            var b = BOUNDARY[k];
+            return h('button', {
+              key: k,
+              onClick: function() {
+                update({ mode: k });
+                reset();
+                if (typeof announceToSR === 'function') announceToSR('Switched boundary type to ' + b.name);
+              },
+              className: 'w-full px-2 py-1.5 mb-1 text-[11px] text-left rounded transition-colors focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (s.mode === k ? 'text-white font-bold' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-orange-50 text-orange-800 hover:bg-orange-100')),
+              style: { background: s.mode === k ? b.color : undefined }
+            }, b.icon + ' ' + b.name);
+          })
+        ),
+        // Rate slider
+        h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-orange-300') },
+          h('label', { className: 'text-[10px] font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-700') + ' uppercase' }, 'Plate rate: ' + s.rate + ' cm/year'),
+          h('input', {
+            type: 'range', min: 1, max: 15, step: 1, value: s.rate,
+            onChange: function(e) {
+              var newRate = parseInt(e.target.value);
+              update({ rate: newRate });
+              if (typeof announceToSR === 'function') announceToSR('Plate rate changed to ' + newRate + ' centimeters per year');
+            },
+            className: 'focus:ring-2 focus:ring-yellow-500 focus:outline-none',
+            style: { width: '100%', accentColor: '#ea580c' }
+          }),
+          h('div', { className: 'text-[10px] ' + (isDark ? 'text-orange-300' : 'text-orange-700') },
+            s.rate <= 3 ? 'Slow (like NA plate)' : s.rate <= 7 ? 'Medium (like Africa)' : 'Fast (like Pacific)'
+          )
+        ),
+        // Controls
+        h('div', { className: 'grid grid-cols-2 gap-1' },
+          h('button', {
+            onClick: function() {
+              var nextRunning = !s.running;
+              update({ running: nextRunning });
+              if (typeof announceToSR === 'function') announceToSR(nextRunning ? 'Simulation playing' : 'Simulation paused');
+            },
+            className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (s.running ? 'bg-amber-500 text-slate-900' : 'bg-emerald-500 text-white')
+          }, s.running ? '⏸ Pause' : '▶ Play'),
+          h('button', {
+            onClick: function() {
+              reset();
+              if (typeof announceToSR === 'function') announceToSR('Simulation reset');
+            },
+            className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-orange-200 text-orange-900 hover:bg-orange-300')
+          }, '↻ Reset')
+        ),
+        h('div', { className: 'text-[10px] px-1 italic ' + (isDark ? 'text-slate-400' : 'text-orange-800') }, info.desc)
+      )
+    ),
+    // Educational cards
+    h('div', { className: 'mx-3 mb-3 grid grid-cols-1 md:grid-cols-2 gap-2' },
+      h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-orange-300') },
+        h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, '📐 The math'),
+        h('div', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+          'Plates move 2-15 cm/year - roughly the speed your fingernails grow. Over 10 million years (almost nothing geologically) that is 200-1500 km of motion. India crashed into Asia at 15 cm/yr starting ~50 Ma ago - that is how the Himalayas got to 8800 m. Earthquake magnitude is logarithmic: each whole-number step on the Richter scale = 10x shaking amplitude and ~32x energy.'
+        )
+      ),
+      h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-orange-300') },
+        h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, '🎯 Try this'),
+        h('ul', { className: 'text-[11px] space-y-0.5 list-disc pl-4 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+          h('li', null, 'Switch to Convergent at max rate - watch a mountain grow from 0 to Himalayan in seconds (sim years = real seconds x 250).'),
+          h('li', null, 'Switch to Divergent - see the mid-ocean ridge open and magma fill in (this is happening at the Mid-Atlantic Ridge right now).'),
+          h('li', null, 'Switch to Transform - most earthquakes fire here. That is the San Andreas (CA), North Anatolian (Turkey), Alpine Fault (NZ).'),
+          h('li', null, 'Compare quake frequency: divergent boundaries are quietest; transform faults are loudest.')
+        )
+      )
+    )
+  );
+};
   // â•â•â• ðŸ”¬ plateTectonics (plateTectonics) â•â•â•
   window.StemLab.registerTool('plateTectonics', {
     icon: '\uD83C\uDF0B',
@@ -183,7 +1172,7 @@ var d = labToolData.plateTectonics || {};
 
 
           // ═══════════════════════════════════════════════════════════
-          // PLATE ENCYCLOPEDIA — 100 plates (major + minor + microplate)
+          // PLATE ENCYCLOPEDIA - 100 plates (major + minor + microplate)
           // ═══════════════════════════════════════════════════════════
           var PLATE_DB = [
             {
@@ -427,7 +1416,7 @@ var d = labToolData.plateTectonics || {};
               type: "oceanic",
               area: "small",
               motion: "~5 cm/yr",
-              notes: "NW Pacific. Hosts Challenger Deep — deepest point."
+              notes: "NW Pacific. Hosts Challenger Deep - deepest point."
             },
             {
               id: 28,
@@ -1139,7 +2128,7 @@ var d = labToolData.plateTectonics || {};
               id: 4,
               name: "Convergent (continental-continental)",
               description: "Two continents collide",
-              process: "Neither subducts — crumple + thicken",
+              process: "Neither subducts - crumple + thicken",
               features: "Mountain belts + plateaus",
               examples: "Himalayas (Indian + Eurasian); Alps (African + Eurasian); Zagros (Arabian + Eurasian)",
               hazards: "Thickened crust, intermediate-depth earthquakes, no volcanism (mostly)"
@@ -1155,7 +2144,7 @@ var d = labToolData.plateTectonics || {};
             }
           ];
 
-          // EARTHQUAKE ENCYCLOPEDIA — 60 famous events
+          // EARTHQUAKE ENCYCLOPEDIA - 60 famous events
           var EARTHQUAKE_DB = [
             {
               id: 1,
@@ -1655,7 +2644,7 @@ var d = labToolData.plateTectonics || {};
             }
           ];
 
-          // VOLCANO ENCYCLOPEDIA — 60 active + famous
+          // VOLCANO ENCYCLOPEDIA - 60 active + famous
           var VOLCANO_DB = [
             {
               id: 1,
@@ -2262,7 +3251,7 @@ var d = labToolData.plateTectonics || {};
             }
           ];
 
-          // MOUNTAIN RANGES — 50 major ranges
+          // MOUNTAIN RANGES - 50 major ranges
           var MOUNTAIN_DB = [
             {
               id: 1,
@@ -2806,7 +3795,7 @@ var d = labToolData.plateTectonics || {};
               name: "Lord Kelvin",
               years: "1824-1907",
               country: "UK",
-              contribution: "Estimated Earth's age (initially incorrect — too short)."
+              contribution: "Estimated Earth's age (initially incorrect - too short)."
             },
             {
               id: 21,
@@ -3414,7 +4403,7 @@ var d = labToolData.plateTectonics || {};
             }
           ];
 
-          // LESSON PLANS — 30 classroom activities
+          // LESSON PLANS - 30 classroom activities
           var GEO_LESSONS = [
             {
               id: 1,
@@ -3679,7 +4668,7 @@ var d = labToolData.plateTectonics || {};
           { year: 1854, place: "Ansei Nankai, Japan", mag: 8.4, source: 8.4, deaths: 3000, notes: "Hamaguchi Goryo's burning rice straw saved village; tsunami stones inscribed" },
           { year: 2018, place: "Sulawesi (Palu)", mag: 7.5, source: 7.5, deaths: 4340, notes: "Strike-slip fault triggered unusual tsunami; bay geometry funneled wave 11m" },
           { year: 2018, place: "Anak Krakatau", mag: 0, source: 0, deaths: 437, notes: "Volcanic flank collapse; no warning; sound system failure exposed" },
-          { year: 1992, place: "Nicaragua", mag: 7.7, source: 7.7, deaths: 170, notes: "Tsunami earthquake — slow rupture produced bigger wave than shaking suggested" },
+          { year: 1992, place: "Nicaragua", mag: 7.7, source: 7.7, deaths: 170, notes: "Tsunami earthquake - slow rupture produced bigger wave than shaking suggested" },
           { year: 1991, place: "Costa Rica (Limon)", mag: 7.6, source: 7.6, deaths: 47, notes: "Modest tsunami; Atlantic side rare events" },
           { year: 2007, place: "Solomon Islands", mag: 8.1, source: 8.1, deaths: 52, notes: "Megathrust at junction of 3 plates" },
           { year: 2009, place: "Samoa", mag: 8.1, source: 8.1, deaths: 189, notes: "Doublet earthquake; waves 14m at Tafahi" },
@@ -3699,7 +4688,7 @@ var d = labToolData.plateTectonics || {};
           { year: 1857, place: "Fort Tejon, California", mag: 7.9, source: 7.9, deaths: 2, notes: "350km surface rupture; smallest casualty count for that magnitude" },
           { year: 1906, place: "San Francisco", mag: 7.9, source: 7.9, deaths: 3000, notes: "Firestorm caused most deaths; sparked elastic rebound theory (Reid)" },
           { year: 1989, place: "Loma Prieta", mag: 6.9, source: 6.9, deaths: 63, notes: "Bay Bridge collapse during World Series broadcast" },
-          { year: 1994, place: "Northridge, CA", mag: 6.7, source: 6.7, deaths: 60, notes: "Hidden fault — surprise; freeway collapses; $20B+ damage" },
+          { year: 1994, place: "Northridge, CA", mag: 6.7, source: 6.7, deaths: 60, notes: "Hidden fault - surprise; freeway collapses; $20B+ damage" },
           { year: 2014, place: "South Napa, CA", mag: 6, source: 6, deaths: 1, notes: "Brick chimney damage; Napa Wine Train derailed casks" },
           { year: 1923, place: "Charleston, SC", mag: 7.3, source: 7.3, deaths: 60, notes: "Far from any plate boundary; East Coast quake" },
           { year: 1811, place: "New Madrid, MO", mag: 7.7, source: 7.7, deaths: 1, notes: "Mississippi flowed backward briefly; rang church bells in Boston" },
@@ -3780,9 +4769,9 @@ var d = labToolData.plateTectonics || {};
         var HOTSPOT_DB = [
           { name: "Hawaiian", plate: "Pacific", volcanoes: "Mauna Loa, Kilauea", notes: "Classic textbook plume; Emperor seamount bend at 47 Ma showed Pacific plate direction change" },
           { name: "Yellowstone", plate: "N America", volcanoes: "Yellowstone caldera", notes: "Continental hotspot; track from Oregon (16 Ma) to current location" },
-          { name: "Iceland", plate: "N Atlantic", volcanoes: "Eyjafjallajökull, Hekla, Grímsvötn", notes: "On the mid-ocean ridge — combination plume + ridge" },
+          { name: "Iceland", plate: "N Atlantic", volcanoes: "Eyjafjallajökull, Hekla, Grímsvötn", notes: "On the mid-ocean ridge - combination plume + ridge" },
           { name: "Galapagos", plate: "Pacific", volcanoes: "Wolf, Cerro Azul", notes: "Created Galapagos archipelago; Darwin observed; Charles Island volcanism" },
-          { name: "Reunion", plate: "Indian Ocean", volcanoes: "Piton de la Fournaise", notes: "Track back to Deccan Traps (66 Ma) — caused mass extinction debate" },
+          { name: "Reunion", plate: "Indian Ocean", volcanoes: "Piton de la Fournaise", notes: "Track back to Deccan Traps (66 Ma) - caused mass extinction debate" },
           { name: "Tristan da Cunha", plate: "S Atlantic", volcanoes: "Queen Mary's Peak", notes: "World's most remote inhabited island; track to Walvis Ridge" },
           { name: "Easter Island", plate: "Pacific", volcanoes: "Terevaka", notes: "Rapa Nui; track to Sala y Gomez" },
           { name: "Macdonald", plate: "Pacific", volcanoes: "Macdonald Seamount", notes: "South Pacific superplume region" },
@@ -4016,23 +5005,23 @@ var d = labToolData.plateTectonics || {};
 
 
 
-          // —— Timeline eras (8 geological periods) ——
+          // -- Timeline eras (8 geological periods) --
 
           var ERAS = [
-            { name: 'Hadean', mya: '4,600 Ma', icon: '\uD83D\uDD25', keyEvent: 'Earth is a molten ball of magma — no solid crust exists yet.',
-              desc: 'The Hadean Eon (4.6–4.0 Ga). Earth formed from solar nebula accretion. The surface was a magma ocean bombarded by meteorites. The Moon formed from a giant impact. No tectonic plates existed.',
+            { name: 'Hadean', mya: '4,600 Ma', icon: '\uD83D\uDD25', keyEvent: 'Earth is a molten ball of magma - no solid crust exists yet.',
+              desc: 'The Hadean Eon (4.6-4.0 Ga). Earth formed from solar nebula accretion. The surface was a magma ocean bombarded by meteorites. The Moon formed from a giant impact. No tectonic plates existed.',
               offsets: [0,0,0,0,0,0,0] },
             { name: 'Archean', mya: '3,500 Ma', icon: '\uD83E\uDEA8', keyEvent: 'First rocks and proto-continents (cratons) emerge from cooling crust.',
-              desc: 'The Archean Eon (4.0–2.5 Ga). Earth\'s crust solidified. Small protocontinents called cratons formed the first stable landmasses. Plate tectonics may have begun. Oceans covered most of the surface.',
+              desc: 'The Archean Eon (4.0-2.5 Ga). Earth\'s crust solidified. Small protocontinents called cratons formed the first stable landmasses. Plate tectonics may have begun. Oceans covered most of the surface.',
               offsets: [0,0,0.02,0.01,0,-0.01,0] },
-            { name: 'Rodinia', mya: '1,100 Ma', icon: '\uD83C\uDF0D', keyEvent: 'First known supercontinent assembles — all cratons merge into Rodinia.',
+            { name: 'Rodinia', mya: '1,100 Ma', icon: '\uD83C\uDF0D', keyEvent: 'First known supercontinent assembles - all cratons merge into Rodinia.',
               desc: 'The Mesoproterozoic Era. Rodinia was Earth\'s first supercontinent, assembling ~1.1 Ga. All major cratons were joined. Its breakup (~750 Ma) triggered Snowball Earth glaciations and eventually led to the Cambrian explosion of life.',
               offsets: [0,0.05,0.14,0.14,0.10,0.04,0.02] },
-            { name: 'Pangaea', mya: '335 Ma', icon: '\uD83C\uDFDE\uFE0F', keyEvent: 'All continents unite into the supercontinent Pangaea — one giant landmass.',
-              desc: 'The late Paleozoic (Carboniferous–Permian). Pangaea ("All Earth") was the most recent supercontinent. It stretched from pole to pole. The Tethys Sea separated its eastern margins. Coal swamps covered equatorial regions.',
+            { name: 'Pangaea', mya: '335 Ma', icon: '\uD83C\uDFDE\uFE0F', keyEvent: 'All continents unite into the supercontinent Pangaea - one giant landmass.',
+              desc: 'The late Paleozoic (Carboniferous-Permian). Pangaea ("All Earth") was the most recent supercontinent. It stretched from pole to pole. The Tethys Sea separated its eastern margins. Coal swamps covered equatorial regions.',
               offsets: [0,0.10,0.22,0.18,0.08,-0.04,-0.08] },
             { name: 'Breakup', mya: '200 Ma', icon: '\uD83D\uDD00', keyEvent: 'Pangaea splits into Laurasia (north) and Gondwana (south).',
-              desc: 'The Triassic–Jurassic boundary. Pangaea began rifting ~200 Ma. The central Atlantic opened as North America separated from Africa. Dinosaurs dominated both halves. Laurasia = N. America + Eurasia. Gondwana = S. America + Africa + India + Antarctica + Australia.',
+              desc: 'The Triassic-Jurassic boundary. Pangaea began rifting ~200 Ma. The central Atlantic opened as North America separated from Africa. Dinosaurs dominated both halves. Laurasia = N. America + Eurasia. Gondwana = S. America + Africa + India + Antarctica + Australia.',
               offsets: [0,0.06,0.12,0.10,0.04,-0.01,-0.04] },
             { name: 'Cretaceous', mya: '100 Ma', icon: '\uD83E\uDD95', keyEvent: 'Atlantic Ocean widens; India breaks free and races north toward Asia.',
               desc: 'The Cretaceous Period. South America separated from Africa. India detached from Antarctica and began its northward journey at ~15 cm/year. The Atlantic Ocean widened significantly. Sea levels were 200m higher than today. Dinosaurs still ruled.',
@@ -4041,7 +5030,7 @@ var d = labToolData.plateTectonics || {};
               desc: 'The early Cenozoic (Eocene). India\'s collision with Eurasia created the Himalayas and Tibetan Plateau. Australia separated from Antarctica. The Alps formed as Africa pushed into Europe. Mammals diversified after the dinosaur extinction.',
               offsets: [0,0.01,0.02,0.02,0.01,0.02,-0.01] },
             { name: 'Modern', mya: 'Present', icon: '\uD83C\uDF0E', keyEvent: 'Seven major plates in their current configuration.',
-              desc: 'The present day. Seven major tectonic plates move at 2–10 cm/year. The Atlantic continues to widen. The Pacific Ring of Fire hosts 75% of the world\'s volcanoes. The Himalayas still rise ~5mm/year as India pushes into Eurasia.',
+              desc: 'The present day. Seven major tectonic plates move at 2-10 cm/year. The Atlantic continues to widen. The Pacific Ring of Fire hosts 75% of the world\'s volcanoes. The Himalayas still rise ~5mm/year as India pushes into Eurasia.',
               offsets: [0,0,0,0,0,0,0] }
           ];
 
@@ -4049,7 +5038,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-          // ———— Quiz data ————
+          // ---- Quiz data ----
 
           var QUIZZES = [
             {
@@ -4160,9 +5149,93 @@ var d = labToolData.plateTectonics || {};
 
 
 
-          var _gRed = 'linear-gradient(135deg, #dc2626, #ef4444, #f87171)';
+          var isDark = !!(props && props.darkMode);
+          var _gRed = isDark ? 'linear-gradient(135deg, #991b1b, #7f1d1d, #450a0a)' : 'linear-gradient(135deg, #dc2626, #ef4444, #f87171)';
+          var _gCard = isDark ? 'linear-gradient(135deg, rgba(30,41,59,0.7) 0%, rgba(15,23,42,0.85) 100%)' : 'linear-gradient(135deg, #fef2f2, #fee2e2, #fef2f2)';
 
-          var _gCard = 'linear-gradient(135deg, #fef2f2, #fee2e2, #fef2f2)';
+          // Sonification refs & helpers
+          var sonifyOscRef = React.useRef(null);
+          var sonifyGainRef = React.useRef(null);
+          var sonifyIntervalRef = React.useRef(null);
+
+          function toggleSonify() {
+            var ac = getTectAC();
+            if (!ac) return;
+            var active = !d.sonifyActive;
+            upd({ sonifyActive: active });
+
+            if (active) {
+              try {
+                var now = ac.currentTime;
+                var osc = ac.createOscillator();
+                var gainNode = ac.createGain();
+                var filter = ac.createBiquadFilter();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(90, now);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(150, now);
+
+                gainNode.gain.setValueAtTime(0.04, now);
+
+                osc.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(ac.destination);
+
+                osc.start(now);
+
+                sonifyOscRef.current = osc;
+                sonifyGainRef.current = gainNode;
+
+                var step = 0;
+                sonifyIntervalRef.current = setInterval(function() {
+                  if (!getTectAC()) return;
+                  var tNow = getTectAC().currentTime;
+                  step++;
+                  var modFreq = 90 + Math.sin(step * 0.2) * 15 + Math.cos(step * 0.05) * 5;
+                  var modVol = 0.03 + Math.sin(step * 0.1) * 0.015;
+                  try {
+                    if (sonifyOscRef.current) sonifyOscRef.current.frequency.setValueAtTime(modFreq, tNow);
+                    if (sonifyGainRef.current) sonifyGainRef.current.gain.setValueAtTime(modVol, tNow);
+                  } catch(e) {}
+                }, 100);
+
+                if (typeof announceToSR === 'function') announceToSR('Sonification sweep active. Playing geological friction hum.');
+              } catch(e) {}
+            } else {
+              stopSonify();
+            }
+          }
+
+          function stopSonify() {
+            if (sonifyIntervalRef.current) { clearInterval(sonifyIntervalRef.current); sonifyIntervalRef.current = null; }
+            if (sonifyOscRef.current) {
+              try {
+                sonifyOscRef.current.stop();
+                sonifyOscRef.current.disconnect();
+              } catch(e) {}
+              sonifyOscRef.current = null;
+            }
+            if (sonifyGainRef.current) {
+              try { sonifyGainRef.current.disconnect(); } catch(e) {}
+              sonifyGainRef.current = null;
+            }
+            if (typeof announceToSR === 'function') announceToSR('Sonification sweep stopped.');
+          }
+
+          React.useEffect(function() {
+            return function() {
+              stopSonify();
+            };
+          }, []);
+
+          React.useEffect(function() {
+            if (simTab !== 'sim' && d.sonifyActive) {
+              stopSonify();
+              upd({ sonifyActive: false });
+            }
+          }, [simTab]);
 
 
 
@@ -4425,52 +5498,55 @@ var d = labToolData.plateTectonics || {};
 
 
 
-              // â”€â”€ Sky / Atmosphere â”€â”€
+              // ── Sky / Atmosphere ──
 
               var skyGrad = ctx.createLinearGradient(0, 0, 0, crustY - 60);
 
-              skyGrad.addColorStop(0, '#87CEEB');
-
-              skyGrad.addColorStop(0.4, '#b0d4f1');
-
-              skyGrad.addColorStop(1, '#d4edfc');
-
+              if (isDark) {
+                skyGrad.addColorStop(0, '#090d16');
+                skyGrad.addColorStop(0.4, '#0f172a');
+                skyGrad.addColorStop(1, '#1e1b4b');
+              } else {
+                skyGrad.addColorStop(0, '#87CEEB');
+                skyGrad.addColorStop(0.4, '#b0d4f1');
+                skyGrad.addColorStop(1, '#d4edfc');
+              }
               ctx.fillStyle = skyGrad;
-
               ctx.fillRect(0, 0, cW, crustY - 60);
 
 
 
-              // clouds
+              // clouds or stars
 
-              ctx.fillStyle = 'rgba(255,255,255,0.6)';
-
-              for (var cl = 0; cl < 5; cl++) {
-
-                var cx = ((cl * cW / 4) + tick * 0.2 * speed) % (cW + 100) - 50;
-
-                var cy = 15 + cl * 12;
-
-                ctx.beginPath();
-
-                ctx.ellipse(cx, cy, 30 + cl * 5, 8 + cl * 2, 0, 0, Math.PI * 2);
-
-                ctx.fill();
-
+              if (isDark) {
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                for (var si = 0; si < 20; si++) {
+                  var starX = (si * 37 + tick * 0.05) % cW;
+                  var starY = (si * 17) % (crustY - 60);
+                  ctx.beginPath();
+                  ctx.arc(starX, starY, Math.sin(tick * 0.05 + si) * 0.7 + 1.0, 0, Math.PI * 2);
+                  ctx.fill();
+                }
+              } else {
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                for (var cl = 0; cl < 5; cl++) {
+                  var cx = ((cl * cW / 4) + tick * 0.2 * speed) % (cW + 100) - 50;
+                  var cy = 15 + cl * 12;
+                  ctx.beginPath();
+                  ctx.ellipse(cx, cy, 30 + cl * 5, 8 + cl * 2, 0, 0, Math.PI * 2);
+                  ctx.fill();
+                }
               }
 
 
 
-              // â”€â”€ Ocean surface â”€â”€
+              // ── Ocean surface ──
 
-              ctx.fillStyle = 'rgba(30,90,160,0.4)';
-
+              ctx.fillStyle = isDark ? 'rgba(30,58,138,0.3)' : 'rgba(30,90,160,0.4)';
               ctx.fillRect(0, crustY - 60, cW, 60);
-
               // Animated waves
 
-              ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-
+              ctx.strokeStyle = isDark ? 'rgba(147,197,253,0.35)' : 'rgba(255,255,255,0.3)';
               ctx.lineWidth = 1.5;
 
               for (var wv = 0; wv < 3; wv++) {
@@ -4491,7 +5567,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-              // —— Earth layers (bottom up) ——
+              // -- Earth layers (bottom up) --
 
               // Inner core
               var icGrad = ctx.createRadialGradient(cW / 2, cH + cH * 0.1, 0, cW / 2, cH + cH * 0.1, cH * 0.35);
@@ -4512,21 +5588,33 @@ var d = labToolData.plateTectonics || {};
 
               // Lower mantle
               var lmGrad = ctx.createLinearGradient(0, cH * 0.50, 0, cH * 0.68);
-              lmGrad.addColorStop(0, '#7a2000');
-              lmGrad.addColorStop(0.5, '#8B2500');
-              lmGrad.addColorStop(1, '#a03000');
+              if (isDark) {
+                lmGrad.addColorStop(0, '#0f172a');
+                lmGrad.addColorStop(0.5, '#020617');
+                lmGrad.addColorStop(1, '#020617');
+              } else {
+                lmGrad.addColorStop(0, '#7a2000');
+                lmGrad.addColorStop(0.5, '#8B2500');
+                lmGrad.addColorStop(1, '#a03000');
+              }
               ctx.fillStyle = lmGrad;
               ctx.fillRect(0, cH * 0.50, cW, cH * 0.18);
 
               // Upper mantle
               var umGrad = ctx.createLinearGradient(0, crustY, 0, cH * 0.50);
-              umGrad.addColorStop(0, '#5a3018');
-              umGrad.addColorStop(0.5, '#6b3a1f');
-              umGrad.addColorStop(1, '#7a3520');
+              if (isDark) {
+                umGrad.addColorStop(0, '#27272a');
+                umGrad.addColorStop(0.5, '#1e293b');
+                umGrad.addColorStop(1, '#0f172a');
+              } else {
+                umGrad.addColorStop(0, '#5a3018');
+                umGrad.addColorStop(0.5, '#6b3a1f');
+                umGrad.addColorStop(1, '#7a3520');
+              }
               ctx.fillStyle = umGrad;
               ctx.fillRect(0, crustY, cW, cH * 0.20);
 
-              // —— Stipple texture on mantle layers ——
+              // -- Stipple texture on mantle layers --
               if (tick % 3 === 0 || !canvasEl._stippleCache) {
                 canvasEl._stippleCache = [];
                 for (var stI = 0; stI < 80; stI++) {
@@ -4535,20 +5623,20 @@ var d = labToolData.plateTectonics || {};
               }
               for (var stJ = 0; stJ < canvasEl._stippleCache.length; stJ++) {
                 var st = canvasEl._stippleCache[stJ];
-                ctx.fillStyle = 'rgba(255,180,80,' + st.a + ')';
+                ctx.fillStyle = isDark ? 'rgba(239,68,68,' + st.a + ')' : 'rgba(255,180,80,' + st.a + ')';
                 ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2); ctx.fill();
               }
 
-              // —— Heat shimmer effect in upper mantle ——
+              // -- Heat shimmer effect in upper mantle --
               for (var shI = 0; shI < 12; shI++) {
                 var shX = (shI / 12) * cW + Math.sin(tick * 0.02 + shI * 0.8) * 8;
                 var shY = crustY + cH * 0.04 + Math.cos(tick * 0.015 + shI * 1.2) * 6;
-                ctx.fillStyle = 'rgba(255,120,40,' + (0.06 + 0.04 * Math.sin(tick * 0.04 + shI)) + ')';
+                ctx.fillStyle = isDark ? 'rgba(239,68,68,' + (0.06 + 0.04 * Math.sin(tick * 0.04 + shI)) + ')' : 'rgba(255,120,40,' + (0.06 + 0.04 * Math.sin(tick * 0.04 + shI)) + ')';
                 ctx.beginPath(); ctx.arc(shX, shY, 4 + Math.sin(tick * 0.03 + shI) * 2, 0, Math.PI * 2); ctx.fill();
               }
 
-              // —— Lithosphere demarcation line ——
-              ctx.strokeStyle = 'rgba(255,200,130,0.3)';
+              // -- Lithosphere demarcation line --
+              ctx.strokeStyle = isDark ? 'rgba(217,70,239,0.3)' : 'rgba(255,200,130,0.3)';
               ctx.lineWidth = 1.5;
               ctx.setLineDash([6, 4]);
               ctx.beginPath(); ctx.moveTo(0, crustY + 2); ctx.lineTo(cW, crustY + 2); ctx.stroke();
@@ -4628,17 +5716,22 @@ var d = labToolData.plateTectonics || {};
 
 
 
-              // â”€â”€ Tectonic plates â”€â”€
+              // ── Tectonic plates ──
 
               for (var pi = 0; pi < plates.length; pi++) {
 
                 var pl = plates[pi];
 
+                var baseColor = pl.color;
+                if (isDark) {
+                  baseColor = pl.type === 'continental' ? '#3f3f46' : '#27272a';
+                }
+
                 var pGrad = ctx.createLinearGradient(pl.x, crustY - pl.thick, pl.x, crustY);
 
-                pGrad.addColorStop(0, pl.color);
+                pGrad.addColorStop(0, baseColor);
 
-                pGrad.addColorStop(1, '#333');
+                pGrad.addColorStop(1, isDark ? '#090d16' : '#333');
 
                 ctx.fillStyle = pGrad;
 
@@ -4648,6 +5741,16 @@ var d = labToolData.plateTectonics || {};
 
                 ctx.fillRect(pl.x + 2, crustY - pl.thick, pl.w - 4, pl.thick);
 
+                if (isDark) {
+                  ctx.save();
+                  ctx.shadowBlur = 4;
+                  ctx.shadowColor = pl.type === 'continental' ? '#d946ef' : '#8b5cf6';
+                  ctx.strokeStyle = pl.type === 'continental' ? 'rgba(217,70,239,0.7)' : 'rgba(139,92,246,0.7)';
+                  ctx.lineWidth = 1;
+                  ctx.strokeRect(pl.x + 2, crustY - pl.thick, pl.w - 4, pl.thick);
+                  ctx.restore();
+                }
+
 
 
                 // Surface features
@@ -4655,7 +5758,7 @@ var d = labToolData.plateTectonics || {};
                 if (pl.type === 'continental') {
 
                   // Rough terrain contour along top edge
-                  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+                  ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)';
                   ctx.lineWidth = 1;
                   ctx.beginPath();
                   for (var tc = 0; tc < pl.w - 4; tc += 3) {
@@ -4673,7 +5776,7 @@ var d = labToolData.plateTectonics || {};
                     var mw = 12 + Math.sin(mt * 2.3 + pi * 0.5) * 4;
 
                     // Mountain shadow
-                    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+                    ctx.fillStyle = isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.12)';
                     ctx.beginPath();
                     ctx.moveTo(mx2 - mw - 2, crustY - pl.thick);
                     ctx.lineTo(mx2 + 2, crustY - pl.thick - mh + 1);
@@ -4682,9 +5785,15 @@ var d = labToolData.plateTectonics || {};
 
                     // Mountain body
                     var mtGrad = ctx.createLinearGradient(mx2, crustY - pl.thick - mh, mx2, crustY - pl.thick);
-                    mtGrad.addColorStop(0, '#7a6b52');
-                    mtGrad.addColorStop(0.4, pl.color);
-                    mtGrad.addColorStop(1, '#4a3a28');
+                    if (isDark) {
+                      mtGrad.addColorStop(0, '#71717a');
+                      mtGrad.addColorStop(0.4, '#3f3f46');
+                      mtGrad.addColorStop(1, '#090d16');
+                    } else {
+                      mtGrad.addColorStop(0, '#7a6b52');
+                      mtGrad.addColorStop(0.4, pl.color);
+                      mtGrad.addColorStop(1, '#4a3a28');
+                    }
                     ctx.fillStyle = mtGrad;
                     ctx.beginPath();
                     ctx.moveTo(mx2 - mw, crustY - pl.thick);
@@ -4695,7 +5804,7 @@ var d = labToolData.plateTectonics || {};
                     ctx.fill();
 
                     // Snow cap (proportional)
-                    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                    ctx.fillStyle = isDark ? 'rgba(244,244,245,0.9)' : 'rgba(255,255,255,0.9)';
                     ctx.beginPath();
                     ctx.moveTo(mx2 - mw * 0.2, crustY - pl.thick - mh + mh * 0.2);
                     ctx.lineTo(mx2, crustY - pl.thick - mh);
@@ -4704,7 +5813,7 @@ var d = labToolData.plateTectonics || {};
                   }
 
                   // Vegetation dots on continental surface
-                  ctx.fillStyle = 'rgba(60,140,50,0.35)';
+                  ctx.fillStyle = isDark ? 'rgba(34,197,94,0.25)' : 'rgba(60,140,50,0.35)';
                   for (var vg = 0; vg < Math.floor(pl.w / 8); vg++) {
                     var vgX = pl.x + 6 + Math.random() * (pl.w - 12);
                     var vgY = crustY - pl.thick + 2 + Math.random() * (pl.thick * 0.2);
@@ -4797,7 +5906,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-              // â”€â”€ Earthquake particles â”€â”€
+              // ── Earthquake particles ──
 
               for (var ei = quakeParticles.length - 1; ei >= 0; ei--) {
 
@@ -4809,7 +5918,7 @@ var d = labToolData.plateTectonics || {};
 
                 if (ep.alpha <= 0) { quakeParticles.splice(ei, 1); continue; }
 
-                ctx.strokeStyle = 'rgba(255,255,0,' + ep.alpha + ')';
+                ctx.strokeStyle = isDark ? 'rgba(34,211,238,' + ep.alpha + ')' : 'rgba(255,255,0,' + ep.alpha + ')';
 
                 ctx.lineWidth = 2;
 
@@ -4879,9 +5988,15 @@ var d = labToolData.plateTectonics || {};
 
                 // Draw volcano cone (trapezoid with crater)
                 var coneGrad = ctx.createLinearGradient(eCX, eCY - eCH2, eCX, eCY);
-                coneGrad.addColorStop(0, '#4a3528');
-                coneGrad.addColorStop(0.5, '#5c4233');
-                coneGrad.addColorStop(1, '#3a2a1e');
+                if (isDark) {
+                  coneGrad.addColorStop(0, '#27272a');
+                  coneGrad.addColorStop(0.5, '#1e293b');
+                  coneGrad.addColorStop(1, '#090d16');
+                } else {
+                  coneGrad.addColorStop(0, '#4a3528');
+                  coneGrad.addColorStop(0.5, '#5c4233');
+                  coneGrad.addColorStop(1, '#3a2a1e');
+                }
                 ctx.fillStyle = coneGrad;
                 ctx.beginPath();
                 ctx.moveTo(eCX - eCW2 * 0.7, eCY);
@@ -4892,7 +6007,7 @@ var d = labToolData.plateTectonics || {};
                 ctx.fill();
 
                 // Crater depression
-                ctx.fillStyle = '#2a1a10';
+                ctx.fillStyle = isDark ? '#020617' : '#2a1a10';
                 ctx.beginPath();
                 ctx.ellipse(eCX, eCY - eCH2 + 2, eCW2 * 0.14, 4, 0, 0, Math.PI * 2);
                 ctx.fill();
@@ -4900,15 +6015,24 @@ var d = labToolData.plateTectonics || {};
                 // Magma glow inside crater
                 var mgAlpha2 = 0.4 + 0.3 * Math.sin(eT * 0.08);
                 var craterGlow = ctx.createRadialGradient(eCX, eCY - eCH2 + 2, 0, eCX, eCY - eCH2 + 2, eCW2 * 0.2);
-                craterGlow.addColorStop(0, 'rgba(255,140,0,' + mgAlpha2 + ')');
-                craterGlow.addColorStop(0.5, 'rgba(255,60,0,' + (mgAlpha2 * 0.5) + ')');
+                if (isDark) {
+                  craterGlow.addColorStop(0, 'rgba(244,63,94,' + mgAlpha2 + ')');
+                  craterGlow.addColorStop(0.5, 'rgba(239,68,68,' + (mgAlpha2 * 0.5) + ')');
+                } else {
+                  craterGlow.addColorStop(0, 'rgba(255,140,0,' + mgAlpha2 + ')');
+                  craterGlow.addColorStop(0.5, 'rgba(255,60,0,' + (mgAlpha2 * 0.5) + ')');
+                }
                 craterGlow.addColorStop(1, 'rgba(200,30,0,0)');
                 ctx.fillStyle = craterGlow;
                 ctx.beginPath(); ctx.arc(eCX, eCY - eCH2 + 2, eCW2 * 0.2, 0, Math.PI * 2); ctx.fill();
 
                 // Magma chamber glow below cone
                 var chamberGlow = ctx.createRadialGradient(eCX, eCY + 15, 0, eCX, eCY + 15, 40);
-                chamberGlow.addColorStop(0, 'rgba(255,80,0,' + (0.3 + 0.15 * Math.sin(eT * 0.05)) + ')');
+                if (isDark) {
+                  chamberGlow.addColorStop(0, 'rgba(244,63,94,' + (0.3 + 0.15 * Math.sin(eT * 0.05)) + ')');
+                } else {
+                  chamberGlow.addColorStop(0, 'rgba(255,80,0,' + (0.3 + 0.15 * Math.sin(eT * 0.05)) + ')');
+                }
                 chamberGlow.addColorStop(1, 'rgba(255,40,0,0)');
                 ctx.fillStyle = chamberGlow;
                 ctx.beginPath(); ctx.arc(eCX, eCY + 15, 40, 0, Math.PI * 2); ctx.fill();
@@ -5059,13 +6183,13 @@ var d = labToolData.plateTectonics || {};
 
               sTick++;
 
-              sCtx.fillStyle = '#fefce8';
+              sCtx.fillStyle = isDark ? '#090d16' : '#fefce8';
 
               sCtx.fillRect(0, 0, sW, sH);
 
               // Grid lines
 
-              sCtx.strokeStyle = 'rgba(0,0,0,0.08)';
+              sCtx.strokeStyle = isDark ? 'rgba(99,102,241,0.15)' : 'rgba(0,0,0,0.08)';
 
               sCtx.lineWidth = 1;
 
@@ -5079,9 +6203,15 @@ var d = labToolData.plateTectonics || {};
 
               var freq = 0.02 + (mag / 9) * 0.06;
 
-              sCtx.strokeStyle = '#dc2626';
+              sCtx.strokeStyle = isDark ? '#f43f5e' : '#dc2626';
 
               sCtx.lineWidth = 2;
+
+              sCtx.save();
+              if (isDark) {
+                sCtx.shadowBlur = 8;
+                sCtx.shadowColor = '#f43f5e';
+              }
 
               sCtx.beginPath();
 
@@ -5207,7 +6337,7 @@ var d = labToolData.plateTectonics || {};
                 els.push(React.createElement("div", { key: "top", className: "flex flex-wrap items-center gap-2 w-full mb-3 justify-center" },
                   React.createElement("button", {
                     onClick: function() { setCat(null); upd({ _ptPicked: false }); },
-                    className: "px-3 py-1 rounded-lg text-xs font-bold " + (atHub ? "bg-red-700 text-white" : "bg-slate-100 text-red-700 hover:bg-red-50 border border-red-300")
+                    className: "px-3 py-1 rounded-lg text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (atHub ? "bg-red-700 text-white" : (isDark ? "bg-slate-900 text-red-400 hover:bg-slate-800 border border-slate-700" : "bg-slate-100 text-red-700 hover:bg-red-50 border border-red-300"))
                   }, "🏠 Hub"),
                   activeCat && !atHub && React.createElement("span", { className: "text-xs text-slate-400" }, "/"),
                   activeCat && !atHub && React.createElement("span", { className: "px-2 py-1 rounded-lg text-xs font-bold bg-slate-50 text-red-700 border border-red-200" }, activeCat.icon + " " + activeCat.label),
@@ -5216,7 +6346,7 @@ var d = labToolData.plateTectonics || {};
                     placeholder: "Search tools...",
                     value: d._ptSearch || "",
                     onChange: function(e) { upd({ _ptSearch: e.target.value, _ptCategory: null }); },
-                    className: "px-2 py-1 text-xs border border-slate-300 rounded"
+                    className: "px-2 py-1 text-xs border rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "border-slate-700 bg-slate-900 text-slate-200" : "border-slate-300 bg-white text-slate-700")
                   })
                 ));
                 if (searchResults) {
@@ -5227,7 +6357,7 @@ var d = labToolData.plateTectonics || {};
                           return React.createElement("button", {
                             key: m,
                             onClick: function() { setTab(m); upd({ _ptSearch: "" }); },
-                            className: "px-2 py-1 rounded text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-red-50 hover:border-red-500"
+                            className: "px-2 py-1 rounded text-xs font-bold hover:bg-red-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-900 border border-slate-700 text-slate-200 hover:text-red-400 hover:border-red-500" : "bg-white border border-slate-300 text-slate-700 hover:border-red-500")
                           }, PT_TAB_LABELS[m] || m);
                         })
                   ));
@@ -5238,11 +6368,11 @@ var d = labToolData.plateTectonics || {};
                       return React.createElement("button", {
                         key: c.id,
                         onClick: function() { setCat(c.id); setTab(c.tabs[0]); },
-                        className: "text-left p-3 rounded-xl bg-white border-2 border-" + c.color + "-200 hover:border-" + c.color + "-500 hover:bg-" + c.color + "-50 transition-all"
+                        className: "text-left p-3 rounded-xl transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-950/60 border-2 border-slate-800 hover:border-" + c.color + "-500 hover:bg-slate-900/60" : "bg-white border-2 border-" + c.color + "-200 hover:border-" + c.color + "-500 hover:bg-" + c.color + "-50")
                       },
                         React.createElement("div", { className: "text-2xl mb-1" }, c.icon),
                         React.createElement("div", { className: "text-sm font-bold text-" + c.color + "-700 mb-1" }, c.label),
-                        React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-1" }, c.desc),
+                        React.createElement("div", { className: "text-[10px] italic mb-1 " + (isDark ? "text-slate-400" : "text-slate-500") }, c.desc),
                         React.createElement("div", { className: "text-[10px] text-" + c.color + "-600 font-mono" }, c.tabs.length + " tools")
                       );
                     })
@@ -5255,10 +6385,10 @@ var d = labToolData.plateTectonics || {};
                       return React.createElement("button", {
                         key: m,
                         onClick: function() { setTab(m); },
-                        className: "px-3 py-1 rounded-lg text-xs font-bold " +
+                        className: "px-3 py-1 rounded-lg text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none " +
                           (isActive
                             ? "bg-" + activeCat.color + "-700 text-white"
-                            : "bg-slate-100 text-slate-600 hover:bg-" + activeCat.color + "-50")
+                            : (isDark ? "bg-slate-900 text-slate-400 hover:bg-slate-800" : "bg-slate-100 text-slate-600 hover:bg-" + activeCat.color + "-50"))
                       }, PT_TAB_LABELS[m] || m);
                     })
                   ));
@@ -5336,19 +6466,19 @@ var d = labToolData.plateTectonics || {};
 
               // Controls
 
-              React.createElement("div", { className: "flex flex-wrap gap-3 items-center justify-center p-3 rounded-xl border border-red-200 bg-red-50" },
+              React.createElement("div", { className: "flex flex-wrap gap-3 items-center justify-center p-3 rounded-xl border " + (isDark ? "border-slate-800 bg-slate-950/60" : "border-red-200 bg-red-50") },
 
-                React.createElement("label", { className: "text-xs font-bold text-red-700" }, "\u23F1 Speed:"),
+                React.createElement("label", { className: "text-xs font-bold " + (isDark ? "text-red-400" : "text-red-700") }, "\u23F1 Speed:"),
 
-                React.createElement("input", { type: "range", "aria-label": "Simulation speed multiplier", min: "0.5", max: "4", step: "0.5", value: speed, onChange: function(e) { upd({ speed: parseFloat(e.target.value) }); }, className: "w-24 accent-red-500" }),
+                React.createElement("input", { type: "range", "aria-label": "Simulation speed multiplier", min: "0.5", max: "4", step: "0.5", value: speed, onChange: function(e) { upd({ speed: parseFloat(e.target.value) }); }, className: "w-24 accent-red-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none" }),
 
-                React.createElement("span", { className: "text-xs font-bold text-red-500" }, speed + "\u00D7"),
+                React.createElement("span", { className: "text-xs font-bold " + (isDark ? "text-red-400" : "text-red-500") }, speed + "\u00D7"),
 
                 React.createElement("button", { "aria-label": "Labels",
 
                   onClick: function() { upd({ showLabels: !showLabels }); },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (showLabels ? "bg-red-600 text-white" : "bg-white text-red-600 border border-red-200")
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (showLabels ? "bg-red-600 text-white" : (isDark ? "bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800" : "bg-white text-red-600 border border-red-200 hover:bg-red-50"))
 
                 }, "\uD83C\uDFF7 Labels"),
 
@@ -5356,7 +6486,7 @@ var d = labToolData.plateTectonics || {};
 
                   onClick: function() { upd({ showConvection: !showConvection }); },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (showConvection ? "bg-red-600 text-white" : "bg-white text-red-600 border border-red-200")
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (showConvection ? "bg-red-600 text-white" : (isDark ? "bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800" : "bg-white text-red-600 border border-red-200 hover:bg-red-50"))
 
                 }, "\uD83C\uDF00 Currents"),
 
@@ -5368,7 +6498,7 @@ var d = labToolData.plateTectonics || {};
                       canvasRef._last.dispatchEvent(new CustomEvent('triggerEruption'));
                     }
                   },
-                  className: "px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700",
+                  className: "px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700",
                   style: { animation: 'pulse 2s infinite', boxShadow: '0 0 12px rgba(255,100,0,0.4)' }
                 }, "\uD83C\uDF0B Erupt!")
 
@@ -5403,11 +6533,11 @@ var d = labToolData.plateTectonics || {};
                   });
                 }
                 return React.createElement("div", {
-                  className: "p-4 rounded-xl border-2 border-purple-200 bg-purple-50/60",
+                  className: "p-4 rounded-xl border-2 " + (isDark ? "border-purple-900/60 bg-purple-950/20" : "border-purple-200 bg-purple-50/60"),
                   role: "region", "aria-label": "AI tectonics tutor"
                 },
                   React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-2" },
-                    React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
+                    React.createElement("span", { className: "text-sm font-bold " + (isDark ? "text-purple-300" : "text-purple-700") }, "\u2728 Explain at my level"),
                     React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
                       LEVELS.map(function (L) {
                         var active = aiLevel === L.id;
@@ -5416,7 +6546,7 @@ var d = labToolData.plateTectonics || {};
                           onClick: function () { upd({ aiLevel: L.id }); },
                           "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
                           "aria-pressed": active,
-                          className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                          className: "px-2 py-0.5 rounded text-[10px] font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (active ? 'bg-purple-600 text-white' : (isDark ? 'bg-slate-900 text-purple-300 border border-purple-800 hover:bg-slate-800' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100'))
                         }, L.label);
                       })
                     ),
@@ -5424,11 +6554,11 @@ var d = labToolData.plateTectonics || {};
                       onClick: explain,
                       disabled: aiLoading,
                       "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
-                      className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                      className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                     }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
                   ),
                   aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
-                  aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-3 border border-purple-100" }, aiText),
+                  aiText && React.createElement("p", { className: "text-xs leading-relaxed rounded-lg p-3 border " + (isDark ? "bg-slate-900 text-slate-200 border-purple-900/50" : "bg-white text-slate-700 border-purple-100") }, aiText),
                   !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, "Click \u201CExplain\u201D for the AI tutor to describe the current simulation at your chosen reading level.")
                 );
               })()
@@ -5454,13 +6584,13 @@ var d = labToolData.plateTectonics || {};
                 "feel the Richter scale. It is logarithmic: each whole number is 10x more shaking and about 32x more energy. A 7.0 is not twice a 3.5, it is over 100,000x more energy. Slide through magnitudes and watch the damage tier flip from green to amber to red. P-waves arrive first, S-waves second, surface waves do most of the damage."
               ),
 
-              React.createElement("div", { className: "p-5 rounded-2xl border-2 border-red-200", style: { background: _gCard } },
+              React.createElement("div", { className: "p-5 rounded-2xl border-2 " + (isDark ? "border-slate-800" : "border-red-200"), style: { background: _gCard } },
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-4" },
 
                   React.createElement("span", { style: { fontSize: '24px' } }, "\uD83D\uDCC8"),
 
-                  React.createElement("h3", { className: "font-black text-red-900" }, "Earthquake Magnitude Simulator")
+                  React.createElement("h3", { className: "font-black " + (isDark ? "text-slate-100" : "text-red-900") }, "Earthquake Magnitude Simulator")
 
                 ),
 
@@ -5468,9 +6598,9 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement("div", { className: "flex items-center gap-3 mb-4" },
 
-                  React.createElement("span", { className: "text-xs font-bold text-red-600 w-20" }, "Magnitude:"),
+                  React.createElement("span", { className: "text-xs font-bold w-20 " + (isDark ? "text-red-400" : "text-red-600") }, "Magnitude:"),
 
-                  React.createElement("input", { type: "range", "aria-label": "Earthquake magnitude (Richter scale)", min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); setTimeout(checkChallenges, 50); }, className: "flex-1 accent-red-500" }),
+                  React.createElement("input", { type: "range", "aria-label": "Earthquake magnitude (Richter scale)", min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); setTimeout(checkChallenges, 50); }, className: "flex-1 accent-red-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none" }),
 
                   React.createElement("span", { className: "text-lg font-black px-3 py-1 rounded-lg", style: { background: eqMagnitude >= 7 ? '#dc2626' : eqMagnitude >= 5 ? '#f59e0b' : '#22c55e', color: 'white' } }, eqMagnitude.toFixed(1))
 
@@ -5492,13 +6622,13 @@ var d = labToolData.plateTectonics || {};
 
                     var isActive = (d2.range === '1-3' && eqMagnitude < 4) || (d2.range === '4-5' && eqMagnitude >= 4 && eqMagnitude < 6) || (d2.range === '6-7' && eqMagnitude >= 6);
 
-                    return React.createElement("div", { key: d2.range, className: "p-3 rounded-xl border-2 text-center transition-all " + (isActive ? "shadow-lg scale-105" : "opacity-60"), style: { borderColor: d2.color, background: isActive ? d2.color + '15' : 'white' } },
+                    return React.createElement("div", { key: d2.range, className: "p-3 rounded-xl border-2 text-center transition-all " + (isActive ? "shadow-lg scale-105" : "opacity-60"), style: { borderColor: d2.color, background: isActive ? d2.color + '20' : (isDark ? '#0f172a' : 'white'), color: isDark ? '#e2e8f0' : undefined } },
 
                       React.createElement("div", { className: "text-lg" }, d2.icon),
 
                       React.createElement("div", { className: "text-xs font-black", style: { color: d2.color } }, d2.label + " (" + d2.range + ")"),
 
-                      React.createElement("div", { className: "text-[11px] text-slate-600" }, d2.desc)
+                      React.createElement("div", { className: "text-[11px] " + (isDark ? "text-slate-400" : "text-slate-600") }, d2.desc)
 
                     );
 
@@ -5520,13 +6650,13 @@ var d = labToolData.plateTectonics || {};
 
                   ].map(function(w2) {
 
-                    return React.createElement("div", { key: w2.name, className: "p-3 rounded-xl border text-center", style: { borderColor: w2.color + '44', background: w2.color + '08' } },
+                    return React.createElement("div", { key: w2.name, className: "p-3 rounded-xl border text-center " + (isDark ? "border-slate-800" : ""), style: { borderColor: isDark ? undefined : w2.color + '44', background: isDark ? 'rgba(15,23,42,0.4)' : w2.color + '08' } },
 
                       React.createElement("div", { className: "text-lg font-mono" }, w2.icon),
 
                       React.createElement("div", { className: "text-xs font-black", style: { color: w2.color } }, w2.name),
 
-                      React.createElement("div", { className: "text-[11px] text-slate-600" }, w2.desc)
+                      React.createElement("div", { className: "text-[11px] " + (isDark ? "text-slate-400" : "text-slate-600") }, w2.desc)
 
                     );
 
@@ -5536,7 +6666,7 @@ var d = labToolData.plateTectonics || {};
 
                 // Seismograph
 
-                React.createElement("div", { className: "rounded-xl overflow-hidden border-2 border-red-200" },
+                React.createElement("div", { className: "rounded-xl overflow-hidden border-2 " + (isDark ? "border-slate-800" : "border-red-200") },
 
                   React.createElement("canvas", { ref: seismoRef, 'aria-label': 'Interactive plate tectonics seismograph visualization', role: 'img', className: "w-full", style: { height: '120px', display: 'block' } })
 
@@ -5552,12 +6682,12 @@ var d = labToolData.plateTectonics || {};
 
             simTab === 'timeline' && React.createElement('div', { className: 'space-y-4' },
 
-              React.createElement('div', { className: 'p-5 rounded-2xl border-2 border-red-200', style: { background: _gCard } },
+              React.createElement('div', { className: 'p-5 rounded-2xl border-2 ' + (isDark ? 'border-slate-800' : 'border-red-200'), style: { background: _gCard } },
 
                 // Header
                 React.createElement('div', { className: 'flex items-center gap-2 mb-4' },
                   React.createElement('span', { style: { fontSize: '24px' } }, '\u23F3'),
-                  React.createElement('h3', { className: 'font-black text-red-900' }, 'Continental Drift Timeline'),
+                  React.createElement('h3', { className: 'font-black ' + (isDark ? 'text-slate-100' : 'text-red-900') }, 'Continental Drift Timeline'),
 
                   // Time-lapse controls
                   React.createElement('div', { className: 'ml-auto flex items-center gap-2' },
@@ -5570,7 +6700,7 @@ var d = labToolData.plateTectonics || {};
                           upd({ timelapsePlaying: false });
                         }
                       },
-                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md ' +
+                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none ' +
                         (timelapsePlaying ? 'bg-red-600 text-white' : 'bg-gradient-to-r from-orange-500 to-red-600 text-white'),
                       style: timelapsePlaying ? {} : { animation: 'pulse 2s infinite' }
                     }, timelapsePlaying ? '\u23F8 Pause' : '\u25B6 Time-Lapse'),
@@ -5579,7 +6709,7 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('select', {
                       value: timelapseSpeed,
                       onChange: function(e) { upd({ timelapseSpeed: parseFloat(e.target.value) }); },
-                      className: 'text-[11px] font-bold px-2 py-1 rounded-lg border border-red-200 bg-white text-red-700'
+                      className: 'text-[11px] font-bold px-2 py-1 rounded-lg border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-red-400' : 'border-red-200 bg-white text-red-700')
                     },
                       React.createElement('option', { value: '0.5' }, '0.5\u00D7'),
                       React.createElement('option', { value: '1' }, '1\u00D7'),
@@ -5589,7 +6719,7 @@ var d = labToolData.plateTectonics || {};
                 ),
 
                 // Timeline slider
-                React.createElement('input', { type: 'range', 'aria-label': 'timeline era', min: '0', max: String(ERAS.length - 1), step: '1', value: timelineEra, onChange: function(e) { upd({ timelineEra: parseInt(e.target.value), timelapsePlaying: false }); }, className: 'w-full accent-red-500 mb-2' }),
+                React.createElement('input', { type: 'range', 'aria-label': 'timeline era', min: '0', max: String(ERAS.length - 1), step: '1', value: timelineEra, onChange: function(e) { upd({ timelineEra: parseInt(e.target.value), timelapsePlaying: false }); }, className: 'w-full accent-red-500 mb-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none' }),
 
                 // Geological timescale bar
                 React.createElement('div', { className: 'flex rounded-full overflow-hidden h-2 mb-4 shadow-inner' },
@@ -5728,34 +6858,34 @@ var d = labToolData.plateTectonics || {};
                 var tick = 0;
 
                 var ERA_CONTINENTS = [
-                  // 0: Hadean — no continents, just magma ocean
+                  // 0: Hadean - no continents, just magma ocean
                   { name: 'Hadean', ocean: '#1a0505', land: '#cc3300', continents: [],
                     magma: true, desc: 'Molten magma ocean' },
 
-                  // 1: Archean — small cratons
+                  // 1: Archean - small cratons
                   { name: 'Archean', ocean: '#0a1e4a', land: '#6b7c3f', continents: [
                     { cx: -0.05, cy: 0.05, r: 0.18, shape: 'blob', label: 'Vaalbara', color: '#7a8a40' },
                     { cx: 0.2,  cy: -0.15, r: 0.12, shape: 'blob', label: 'Ur', color: '#8a9050' },
                     { cx: -0.25, cy: -0.1, r: 0.10, shape: 'blob', label: 'Kenorland', color: '#6a7a35' }
                   ] },
 
-                  // 2: Rodinia — first supercontinent
+                  // 2: Rodinia - first supercontinent
                   { name: 'Rodinia', ocean: '#082854', land: '#5a7a30', continents: [
                     { cx: 0, cy: 0.05, r: 0.42, shape: 'pangaea', label: 'Rodinia', color: '#5a7a30' }
                   ] },
 
-                  // 3: Pangaea — all land united
+                  // 3: Pangaea - all land united
                   { name: 'Pangaea', ocean: '#0e4080', land: '#3d8b37', continents: [
                     { cx: 0.05, cy: 0, r: 0.52, shape: 'pangaea', label: 'Pangaea', color: '#3d8b37' }
                   ] },
 
-                  // 4: Breakup — Laurasia + Gondwana
+                  // 4: Breakup - Laurasia + Gondwana
                   { name: 'Breakup', ocean: '#125ea0', land: '#4a9e44', continents: [
                     { cx: -0.08, cy: -0.18, r: 0.30, shape: 'blob', label: 'Laurasia', color: '#5aad50' },
                     { cx: 0.05, cy: 0.18, r: 0.32, shape: 'blob', label: 'Gondwana', color: '#3d8b37' }
                   ], riftLine: { y: 0.02, width: 0.6, color: 'rgba(255,100,0,0.4)' } },
 
-                  // 5: Cretaceous — continents separating
+                  // 5: Cretaceous - continents separating
                   { name: 'Cretaceous', ocean: '#1a70b8', land: '#50b848', continents: [
                     { cx: -0.32, cy: -0.15, r: 0.16, shape: 'blob', label: 'N. America', color: '#4a8040' },
                     { cx: 0.12,  cy: -0.20, r: 0.20, shape: 'blob', label: 'Eurasia', color: '#5a9050' },
@@ -5765,7 +6895,7 @@ var d = labToolData.plateTectonics || {};
                     { cx: 0.15,  cy: 0.38,  r: 0.14, shape: 'blob', label: 'Antarctica+Aus', color: '#90b070' }
                   ], riftLine: { y: 0.0, width: 0.8, color: 'rgba(255,80,0,0.25)' } },
 
-                  // 6: Cenozoic — near-modern arrangement
+                  // 6: Cenozoic - near-modern arrangement
                   { name: 'Cenozoic', ocean: '#1e82cc', land: '#4caf50', continents: [
                     { cx: -0.35, cy: -0.12, r: 0.14, shape: 'blob', label: 'N. America', color: '#558040' },
                     { cx: -0.20, cy: 0.22,  r: 0.11, shape: 'blob', label: 'S. America', color: '#3d7530' },
@@ -5776,7 +6906,7 @@ var d = labToolData.plateTectonics || {};
                     { cx: 0.0,   cy: 0.42,  r: 0.10, shape: 'blob', label: 'Antarctica', color: '#c0d8c0' }
                   ] },
 
-                  // 7: Modern — current configuration
+                  // 7: Modern - current configuration
                   { name: 'Modern', ocean: '#2196f3', land: '#4caf50', continents: [
                     { cx: -0.35, cy: -0.15, r: 0.14, shape: 'blob', label: 'N. America', color: '#558b40' },
                     { cx: -0.22, cy: 0.22,  r: 0.11, shape: 'blob', label: 'S. America', color: '#3d7a30' },
@@ -6086,13 +7216,13 @@ var d = labToolData.plateTectonics || {};
                 chosenOpt = qz.ans;
               }
 
-              return React.createElement("div", { className: "p-6 rounded-2xl border-2 border-red-200", style: { background: _gCard } },
+              return React.createElement("div", { className: "p-6 rounded-2xl border-2 " + (isDark ? "border-slate-800" : "border-red-200"), style: { background: _gCard } },
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-4" },
 
                   React.createElement("span", { className: "text-2xl" }, "❓"),
 
-                  React.createElement("h3", { className: "font-black text-red-900" }, "Plate Tectonics Quiz"),
+                  React.createElement("h3", { className: "font-black " + (isDark ? "text-slate-100" : "text-red-900") }, "Plate Tectonics Quiz"),
 
                   React.createElement("span", { className: "ml-auto text-xs font-bold text-red-500" },
                     "Score: " + (d.quizScore || 0) + " | Question " + (quizIdx % QUIZZES.length + 1) + " / " + QUIZZES.length
@@ -6100,7 +7230,7 @@ var d = labToolData.plateTectonics || {};
 
                 ),
 
-                React.createElement("div", { className: "p-4 bg-white rounded-xl border border-red-200 mb-4 text-sm font-bold text-slate-700" }, qz.q),
+                React.createElement("div", { className: "p-4 rounded-xl border mb-4 text-sm font-bold " + (isDark ? "bg-slate-950 border-slate-800 text-slate-200" : "bg-white border-red-200 text-slate-700") }, qz.q),
 
                 !isAnswered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
@@ -6126,7 +7256,7 @@ var d = labToolData.plateTectonics || {};
 
                       },
 
-                      className: "p-3 rounded-xl text-sm font-bold border-2 border-red-200 bg-white hover:bg-red-50 hover:border-red-400 transition-all text-left text-slate-700"
+                      className: "p-3 rounded-xl text-sm font-bold border-2 transition-all text-left focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "border-slate-800 bg-slate-900 hover:bg-slate-800 hover:border-red-500 text-slate-200" : "border-red-200 bg-white hover:bg-red-50 hover:border-red-400 text-slate-700")
 
                     }, String.fromCharCode(65 + oi) + ". " + opt);
 
@@ -6239,7 +7369,7 @@ var d = labToolData.plateTectonics || {};
 
               ),
 
-              showEdu && React.createElement("div", { className: "mt-2 p-5 rounded-2xl border border-red-200 space-y-4 text-sm text-slate-700 leading-relaxed", style: { background: _gCard } },
+              showEdu && React.createElement("div", { className: "mt-2 p-5 rounded-2xl border space-y-4 text-sm leading-relaxed " + (isDark ? "border-slate-800 text-slate-350" : "border-red-200 text-slate-700"), style: { background: _gCard } },
 
                 React.createElement("div", null,
 
@@ -6299,10 +7429,10 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('div', { className: 'flex flex-wrap gap-2 text-xs mb-3' },
                   ['all', 'major', 'minor', 'micro'].map(function(tier) {
                     var active = (d._plateTier || 'all') === tier;
-                    return React.createElement('button', { key: tier, onClick: function() { upd({ _plateTier: tier }); }, className: 'px-3 py-1 rounded-lg font-bold ' + (active ? 'bg-red-700 text-white' : 'bg-white text-red-700 border border-red-300 hover:bg-red-50') }, tier === 'all' ? 'All Plates' : tier.charAt(0).toUpperCase() + tier.slice(1));
+                    return React.createElement('button', { key: tier, onClick: function() { upd({ _plateTier: tier }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-red-700 text-white' : (isDark ? 'bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800' : 'bg-white text-red-700 border border-red-300 hover:bg-red-50')) }, tier === 'all' ? 'All Plates' : tier.charAt(0).toUpperCase() + tier.slice(1));
                   })
                 ),
-                React.createElement('input', { type: 'text', placeholder: 'Search plates by name or region...', value: d._plateSearch || '', onChange: function(e) { upd({ _plateSearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border border-red-300 rounded-lg mb-3' }),
+                React.createElement('input', { type: 'text', placeholder: 'Search plates by name or region...', value: d._plateSearch || '', onChange: function(e) { upd({ _plateSearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2' },
                   PLATE_DB.filter(function(p) {
                     if (d._plateTier && d._plateTier !== 'all' && p.tier !== d._plateTier) return false;
@@ -6312,7 +7442,7 @@ var d = labToolData.plateTectonics || {};
                     }
                     return true;
                   }).map(function(p) {
-                    return React.createElement('button', { key: p.id, onClick: function() { upd({ _plateFocus: p.id }); }, className: 'text-left p-3 rounded-lg bg-white border border-red-200 hover:border-red-500 hover:bg-red-50' },
+                    return React.createElement('button', { key: p.id, onClick: function() { upd({ _plateFocus: p.id }); }, className: 'text-left p-3 rounded-lg border transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950/60 border-slate-800 hover:border-red-500 hover:bg-slate-900/60 text-slate-300' : 'bg-white border-red-200 hover:border-red-500 hover:bg-red-50 text-slate-700') },
                       React.createElement('div', { className: 'font-bold text-red-800 text-sm' }, p.name),
                       React.createElement('div', { className: 'text-[10px] text-slate-500 italic' }, p.tier + ' / ' + p.type),
                       p.area ? React.createElement('div', { className: 'text-[10px] text-slate-600' }, 'Area: ' + p.area.toLocaleString() + ' km2') : null,
@@ -6332,7 +7462,7 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('div', { className: 'flex flex-wrap gap-2 text-xs mb-3' },
                   ['all', 'transform', 'convergent', 'normal', 'thrust', 'divergent'].map(function(ft) {
                     var active = (d._faultType || 'all') === ft;
-                    return React.createElement('button', { key: ft, onClick: function() { upd({ _faultType: ft }); }, className: 'px-3 py-1 rounded-lg font-bold ' + (active ? 'bg-amber-700 text-white' : 'bg-white text-amber-700 border border-amber-300 hover:bg-amber-50') }, ft);
+                    return React.createElement('button', { key: ft, onClick: function() { upd({ _faultType: ft }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-amber-700 text-white' : (isDark ? 'bg-slate-900 text-amber-400 border border-slate-700 hover:bg-slate-800' : 'bg-white text-amber-700 border border-amber-300 hover:bg-amber-50')) }, ft);
                   })
                 ),
                 React.createElement('div', { className: 'space-y-1' },
@@ -6361,7 +7491,7 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('div', { className: 'flex gap-2 text-xs mb-3' },
                   [['year', 'Year'], ['deaths', 'Deaths'], ['mag', 'Magnitude']].map(function(sm) {
                     var active = (d._tsunamiSort || 'year') === sm[0];
-                    return React.createElement('button', { key: sm[0], onClick: function() { upd({ _tsunamiSort: sm[0] }); }, className: 'px-3 py-1 rounded-lg font-bold ' + (active ? 'bg-blue-700 text-white' : 'bg-white text-blue-700 border border-blue-300 hover:bg-blue-50') }, 'Sort: ' + sm[1]);
+                    return React.createElement('button', { key: sm[0], onClick: function() { upd({ _tsunamiSort: sm[0] }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-blue-700 text-white' : (isDark ? 'bg-slate-900 text-blue-400 border border-slate-700 hover:bg-slate-800' : 'bg-white text-blue-700 border border-blue-300 hover:bg-blue-50')) }, 'Sort: ' + sm[1]);
                   })
                 ),
                 React.createElement('div', { className: 'space-y-1' },
@@ -6412,7 +7542,7 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('div', { className: 'flex flex-wrap gap-2 text-xs mb-3' },
                   ['all', 'igneous', 'sedimentary', 'metamorphic'].map(function(g) {
                     var active = (d._rockGroup || 'all') === g;
-                    return React.createElement('button', { key: g, onClick: function() { upd({ _rockGroup: g }); }, className: 'px-3 py-1 rounded-lg font-bold ' + (active ? 'bg-stone-700 text-white' : 'bg-white text-stone-700 border border-stone-300 hover:bg-stone-50') }, g);
+                    return React.createElement('button', { key: g, onClick: function() { upd({ _rockGroup: g }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-stone-700 text-white' : (isDark ? 'bg-slate-900 text-stone-300 border border-slate-700 hover:bg-slate-850' : 'bg-white text-stone-700 border border-stone-300 hover:bg-stone-50')) }, g);
                   })
                 ),
                 React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
@@ -6493,7 +7623,7 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-red-200 bg-red-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-red-800 mb-2' }, "Volcano Catalog"),
                 React.createElement('p', { className: 'text-xs text-red-700 mb-3' }, "Over 1500 volcanoes have been active in the last 10,000 years. 60 of the most significant and studied volcanoes are here: subduction-zone strato-volcanoes, hotspot shields, and continental calderas."),
-                React.createElement('input', { type: 'text', placeholder: 'Search volcanoes...', value: d._volcanoSearch || '', onChange: function(e) { upd({ _volcanoSearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border border-red-300 rounded-lg mb-3' }),
+                React.createElement('input', { type: 'text', placeholder: 'Search volcanoes...', value: d._volcanoSearch || '', onChange: function(e) { upd({ _volcanoSearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                   VOLCANO_DB.filter(function(v) {
                     if (!d._volcanoSearch) return true;
@@ -6585,7 +7715,7 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-rose-200 bg-rose-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-rose-800 mb-2' }, "Geology Glossary"),
                 React.createElement('p', { className: 'text-xs text-rose-700 mb-3' }, "Quick reference for plate tectonic, seismic, volcanic, and structural terms."),
-                React.createElement('input', { type: 'text', placeholder: 'Search glossary...', value: d._glossarySearch || '', onChange: function(e) { upd({ _glossarySearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border border-rose-300 rounded-lg mb-3' }),
+                React.createElement('input', { type: 'text', placeholder: 'Search glossary...', value: d._glossarySearch || '', onChange: function(e) { upd({ _glossarySearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-rose-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'space-y-1' },
                   (function() {
                     var G = [["Asthenosphere","The plastic, partially molten layer of the upper mantle (~100-350 km depth) where plates move."],["Lithosphere","The rigid outer shell of Earth, including crust and uppermost mantle (~0-100 km)."],["Plate boundary","The edge of a tectonic plate where it meets another plate; can be divergent, convergent, or transform."],["Divergent boundary","Where two plates move apart; produces mid-ocean ridges and continental rifts."],["Convergent boundary","Where two plates push together; produces mountains, trenches, and volcanic arcs."],["Transform boundary","Where two plates slide past each other (e.g., San Andreas Fault)."],["Subduction zone","A convergent boundary where one plate dives beneath another, recycling crust into the mantle."],["Hotspot","A localized region of upwelling mantle that produces volcanism (e.g., Hawaii, Yellowstone)."],["Mantle plume","A column of hot mantle rising from deep within Earth that creates hotspots."],["Magma","Molten rock beneath Earth surface."],["Lava","Molten rock that has reached Earth surface."],["Pyroclastic flow","A fast-moving cloud of hot gas and volcanic debris; one of the deadliest volcanic hazards."],["Caldera","A large, basin-shaped depression formed when a volcano collapses after a major eruption (e.g., Yellowstone, Crater Lake)."],["Stratovolcano","A steep-sided, conical volcano built from alternating layers of lava and ash (e.g., Fuji, Mt St Helens)."],["Shield volcano","A broad, gently sloping volcano built from low-viscosity basaltic lava (e.g., Mauna Loa)."],["Cinder cone","A small, steep volcano built from ejected ash and cinders (e.g., Paricutin, Sunset Crater)."],["Epicenter","The point on Earth surface directly above an earthquake focus."],["Hypocenter (focus)","The actual underground location where an earthquake originates."],["Magnitude","A measure of earthquake size based on the seismic waves it generates. Logarithmic scale."],["Moment magnitude (Mw)","Modern scale used for all earthquake sizes; supplants Richter for large events."],["Richter scale","Original 1935 magnitude scale; works well for small or local quakes; saturates above M7."],["Intensity","A measure of earthquake shaking effects at a location (Mercalli scale); varies by site."],["Aftershock","A smaller earthquake that follows a mainshock in the same area."],["Foreshock","A smaller earthquake that precedes a mainshock in the same area."],["P-wave","Primary wave; compressional; fastest seismic wave; travels through solids and liquids."],["S-wave","Secondary wave; shear; slower than P; travels only through solids."],["Surface wave","Seismic wave traveling along Earth surface; causes most damage (Love, Rayleigh)."],["Seismograph","Instrument that records ground motion during an earthquake."],["Seismic moment","A measure of earthquake size based on fault area times slip times rigidity."],["Fault","A fracture in Earth crust along which rocks have moved."],["Strike-slip fault","A fault where blocks slide horizontally past each other (e.g., San Andreas)."],["Normal fault","A fault where the hanging wall drops down relative to the footwall; tensional."],["Reverse (thrust) fault","A fault where the hanging wall moves up relative to the footwall; compressional."],["Oblique-slip fault","A fault with both horizontal and vertical motion."],["Pangaea","Supercontinent assembled by ~300 million years ago; broke apart starting ~200 Ma."],["Gondwana","Southern supercontinent: Africa, South America, Antarctica, Australia, India."],["Laurasia","Northern supercontinent: North America and Eurasia (minus India)."],["Wilson Cycle","Theory that ocean basins open and close in cycles of ~500 million years."],["Mid-ocean ridge","Underwater mountain range where new ocean crust forms at divergent boundaries."],["Trench","A deep, narrow depression in the ocean floor at a subduction zone."],["Volcanic arc","A chain of volcanoes formed parallel to a subduction zone (e.g., Cascades, Aleutians)."],["Island arc","A volcanic arc formed where two oceanic plates converge (e.g., Mariana, Tonga)."],["Accretionary wedge","Sediment scraped off a subducting plate onto the overriding plate."],["Continental shelf","Submerged extension of a continent; gently sloping."],["Continental slope","Steeper edge of a continent leading from shelf to deep ocean."],["Abyssal plain","Flat, deep-ocean floor."],["Triple junction","Where three plate boundaries meet (e.g., Afar Triangle)."],["Paleomagnetism","The study of ancient magnetic field directions preserved in rocks."],["Magnetic reversal","A complete flip of Earth magnetic field (averages ~250,000 years between reversals)."],["Convection","The transfer of heat by movement of fluid; drives plate motion in the mantle."],["Hotspot track","A chain of progressively older volcanoes formed as a plate moves over a hotspot."],["Mantle wedge","The wedge-shaped piece of mantle between a subducting slab and overriding plate."],["Slab pull","A force from a dense subducting slab pulling the rest of the plate behind it."],["Ridge push","A force from elevated mid-ocean ridges sliding plates away."],["Plate velocity","Speed of plate motion in cm per year; fastest ~24 cm/yr (Pacific-Tonga); slowest ~1 cm/yr."],["Rift","A continental zone where the crust is being pulled apart (e.g., East African Rift)."],["Suture zone","A zone where two continents collided and joined (e.g., Indus-Tsangpo, Urals)."],["Ophiolite","A section of oceanic crust and upper mantle thrust onto a continent during collision."],["Foreland basin","A depression formed in front of an advancing mountain range."],["Backarc basin","An ocean basin formed behind a volcanic arc by extension."],["Fore-arc basin","A sedimentary basin between a trench and volcanic arc."],["Tsunami","A series of ocean waves caused by underwater displacement (quake, landslide, eruption, impact)."],["Seamount","An underwater mountain rising from the seafloor; usually volcanic."],["Guyot","A flat-topped seamount; eroded former island, then subsided."],["Atoll","A ring-shaped coral reef around a sunken volcano."],["Mantle viscosity","Resistance to flow in the mantle; varies with depth and temperature."],["Slab rollback","Backward motion of a subducting slab; causes overriding plate extension."],["Underplating","Addition of magma or sediment to the base of crust."],["Crustal recycling","The process by which crustal material returns to the mantle at subduction zones."],["Plate reconstruction","Models of past plate positions based on geological and paleomagnetic data."],["Euler pole","The point about which a tectonic plate rotates relative to another."],["Diffuse plate boundary","A wide zone where deformation is distributed rather than localized."],["Microplate","A small tectonic plate (e.g., Juan de Fuca, Caribbean)."],["Craton","An ancient and stable interior of a continent (e.g., Canadian Shield, Baltic Shield)."],["Orogeny","Mountain-building episode."],["Terrane","A fragment of crust with a distinct geological history accreted to a larger landmass."],["Exotic terrane","A terrane that originated far from its current location."],["Volcanic gas","Gases released during volcanic eruptions; mainly H2O, CO2, SO2."],["Tephra","Fragmental material ejected by a volcano; ash, lapilli, blocks."],["Lahars","Volcanic mudflows; can travel far and fast, very destructive."],["VEI","Volcanic Explosivity Index; logarithmic 0-8 scale."],["Geyser","A hot spring that periodically erupts steam and hot water."],["Fumarole","A vent emitting steam and volcanic gases."],["Solfatara","A volcanic vent emitting sulfurous gases."],["Hydrothermal vent","Underwater hot spring at mid-ocean ridges; supports chemosynthetic life."],["Continental crust","The lower-density, thicker crust beneath continents; ~30-70 km thick."],["Oceanic crust","The denser, thinner crust beneath oceans; ~5-10 km thick."],["Moho","The Mohorovicic discontinuity; boundary between crust and mantle."],["Outer core","Liquid iron-nickel layer (~2900-5100 km depth); source of magnetic field."],["Inner core","Solid iron-nickel layer (~5100-6371 km depth)."],["Geothermal gradient","Rate of temperature increase with depth in Earth (~25 C/km in crust)."],["Isostasy","The balance between Earth crust and mantle; like icebergs floating in water."],["Glacial isostatic rebound","Land slowly rising after melting of glacial ice loaded it down."],["Eclogite","A high-pressure metamorphic rock formed from subducted oceanic crust."],["Blueschist","A low-temperature high-pressure metamorphic rock; subduction zone marker."],["Decollement","A near-horizontal fault surface separating deformed rocks above from undeformed below."],["Stratovolcano cone","The classic volcanic mountain shape: tall, steep, alternating ash and lava."],["Welded tuff","Pyroclastic rock formed when hot ash particles fuse on landing."],["Pillow lava","Bulbous lava formed when basalt erupts underwater."],["Volcanic neck","Solidified magma in a volcano throat, exposed by erosion (e.g., Devils Tower)."],["Sill","A horizontal intrusion of magma between rock layers."],["Dike","A vertical or steeply-dipping intrusion of magma cutting across rock layers."],["Batholith","A very large intrusive igneous body (e.g., Sierra Nevada batholith)."],["Pluton","A smaller igneous intrusion than a batholith."],["Xenolith","A foreign rock fragment incorporated into magma; samples the deep crust or mantle."],["Volcanic bomb","A blob of molten rock ejected during an eruption."]];
@@ -6628,10 +7758,10 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-red-200 bg-red-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-red-800 mb-2' }, "Earthquake Case Studies"),
                 React.createElement('p', { className: 'text-xs text-red-700 mb-3' }, "Ten major historical earthquakes in depth: what happened, what evidence remains, and what we learned. From the 1700 Cascadia event recorded in Japanese orphan tsunami records to modern instrumented megathrusts."),
-                React.createElement('input', { type: 'text', placeholder: 'Search...', value: d['_quakeStoriesSearch'] || '', onChange: function(e) { var u = {}; u['_quakeStoriesSearch'] = e.target.value; upd(u); }, className: 'w-full px-3 py-2 text-sm border border-red-300 rounded-lg mb-3' }),
+                React.createElement('input', { type: 'text', placeholder: 'Search...', value: d['_quakeStoriesSearch'] || '', onChange: function(e) { var u = {}; u['_quakeStoriesSearch'] = e.target.value; upd(u); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'space-y-2' },
                   (function() {
-                    var ENTRIES = [{"name":"1700 Cascadia M9","date":"January 26, 1700","region":"Pacific Northwest, USA/Canada","magnitude":"M9.0 (estimated)","boundary":"Cascadia Subduction Zone (Juan de Fuca plate diving under North American plate)","deaths":"Unknown (precontact)","duration":"~5-7 minutes (estimated)","evidence":"Ghost forests of drowned cedars dated by tree rings to 1699-1700; Japan's 'orphan tsunami' records pinpoint the date and time; Native American oral histories describe a great shaking","impact":"Tsunami waves up to 30m on local shore reached Japan ~10 hours later. Land subsided 1-2m along 1000km of coast.","legacy":"First confirmed in the 1980s by Brian Atwater (USGS) combining sediment cores, tree-ring dating, and Japanese tsunami records. Now drives Pacific Northwest building codes, ShakeAlert system, school drills.","lesson":"Pre-instrumental megaquakes leave detectable signatures in trees, soils, and oral history. Aaron Bock (Quileute), Mary Kallappa (Hoh), and Henry Adams (Quinault) had recorded oral histories long before scientific confirmation."},{"name":"1755 Lisbon M8.7","date":"November 1, 1755","region":"Atlantic Ocean off Portugal","magnitude":"M8.5-9.0 (estimated)","boundary":"Africa-Eurasia plate boundary (Azores-Gibraltar fracture zone)","deaths":"30,000-60,000 in Lisbon alone, more across Iberia and Morocco","duration":"3-5 minutes","evidence":"Contemporary descriptions by survivors including Voltaire's correspondence, Marquês de Pombal's reconstruction records, geological evidence in deep sea sediments and uplifted coral.","impact":"Tsunami swept up Tagus River into central Lisbon. Six-day fires destroyed remaining structures. Felt as far as Sweden and the Caribbean.","legacy":"Catalyzed European Enlightenment philosophy: Voltaire's Poem on the Lisbon Disaster (1756) and Candide (1759) challenged Leibniz's optimism. Pombal's interview-based recovery (the 'Pombaline' rebuild with quake-resistant timber cages) was the first systematic engineering response.","lesson":"Atlantic Ocean is not exempt from megaquake hazards. Catholic Portugal's All Saints Day liturgy meant churches were packed, multiplying casualties."},{"name":"1811-12 New Madrid","date":"December 16, 1811 - February 7, 1812","region":"New Madrid, Missouri","magnitude":"M7.5, M7.3, M7.5 (three main shocks)","boundary":"Intraplate (Reelfoot Rift, Mississippi embayment)","deaths":"Few documented (sparsely settled)","duration":"Multiple events over 2 months","evidence":"Eli Bowman, John James Audubon, Tecumseh's people, riverboat pilots all left accounts. Sand blows preserved geologic record.","impact":"Mississippi River briefly reversed course; created Reelfoot Lake; church bells rang in Boston and Charleston; chimneys fell as far as Cincinnati.","legacy":"Largest intraplate earthquake sequence in continental US history. Defined the New Madrid Seismic Zone, which would devastate modern Memphis, St Louis, and Little Rock if repeated.","lesson":"Far-from-plate-boundary regions can produce major quakes. Tecumseh allegedly predicted the shaking, using it to rally indigenous resistance."},{"name":"1857 Fort Tejon M7.9","date":"January 9, 1857","region":"Southern California (San Andreas Fault)","magnitude":"M7.9","boundary":"Pacific-North American transform (San Andreas)","deaths":"2","duration":"~2-3 minutes","evidence":"350km surface rupture from Cholame to Wrightwood. Trees along Carrizo Plain offset by ~9m. Mission San Fernando reportedly damaged.","impact":"Largest historical California quake. The Kern River reportedly flowed backward briefly.","legacy":"Together with the 1906 SF quake, defined two great segments of the southern San Andreas. Pallett Creek paleoseismology shows ~150-year intervals for southern segment, so it is 'overdue.'","lesson":"Quiet centuries on a fault do not mean safety. The San Andreas accumulates strain steadily."},{"name":"1886 Charleston M7.3","date":"August 31, 1886","region":"Charleston, South Carolina","magnitude":"M7.3 (estimated)","boundary":"Intraplate (Atlantic margin)","deaths":"60","duration":"~1 minute","evidence":"60% of Charleston buildings damaged. Earthquake of August 31, 1886 (Dutton 1889) — first major US earthquake studied with modern scientific methods.","impact":"Felt from Cuba to NY to Bermuda to Wisconsin. Sand boils, liquefaction, cracked plaster as far as Boston.","legacy":"Showed eastern US faults remain seismically dangerous. Helped found USGS earthquake studies. Maine and other east-coast cities lack code preparation for similar events.","lesson":"East coast quakes are infrequent but possible. Buildings shake longer because crust transmits seismic waves more efficiently than the more fractured west."},{"name":"1906 San Francisco M7.9","date":"April 18, 1906","region":"San Francisco, California","magnitude":"M7.9 (Mw)","boundary":"Pacific-North American transform (San Andreas)","deaths":"~3000 (recent revised estimates; original count was 700)","duration":"~45-60 seconds","evidence":"G.K. Gilbert and H.F. Reid (Carnegie) led the State Earthquake Investigation Commission, which produced the foundational geological survey of any earthquake. Reid's elastic rebound theory was born here.","impact":"Three-day firestorm destroyed 80% of San Francisco. Chinatown leveled. Estimated $400 million 1906 damage ($11 billion 2020).","legacy":"Established that earthquakes are caused by rapid slip on faults, not vice versa. Reid's elastic rebound theory remains the basic model. The San Andreas Fault entered popular consciousness.","lesson":"Earthquakes do not kill: collapsed buildings and post-quake fires do. Modern California is more resilient but still vulnerable to fire after large quakes."},{"name":"1923 Great Kanto M7.9","date":"September 1, 1923","region":"Sagami Bay, Japan","magnitude":"M7.9","boundary":"Sagami Trough (Philippine Sea plate under Okhotsk plate)","deaths":"142,000 (most from fire)","duration":"4-10 minutes (multiple sub-events)","evidence":"Imperial Earthquake Investigation Committee detailed records. Hongo Tokyo seismograph trace.","impact":"Tokyo and Yokohama both devastated. Fires consumed 38% of Tokyo. Tsunami in Sagami Bay. Korean residents falsely blamed for fires, leading to a massacre of 6,000+.","legacy":"Drove Japanese seismic engineering revolution. Spurred building code reforms that made modern Japanese buildings among the most quake-resistant globally.","lesson":"Quake disasters can amplify pre-existing prejudices. Japanese government has formally acknowledged the 1923 Korean massacre."},{"name":"1933 Long Beach M6.4","date":"March 10, 1933","region":"Long Beach, California (Newport-Inglewood Fault)","magnitude":"M6.4","boundary":"Strike-slip fault east of Pacific margin","deaths":"120","duration":"~10 seconds","evidence":"70 schools were severely damaged or destroyed. Catalyzed California's Field Act (1933) requiring all California schools meet earthquake standards.","impact":"If the quake had struck during school hours, casualties would have been catastrophic.","legacy":"Field Act remains a model for life-safety legislation. Modern California schools survived the 1994 Northridge quake with no fatalities.","lesson":"Building codes save lives when enforced before the next event. Charles Richter developed his magnitude scale partly with Long Beach data."},{"name":"1960 Valdivia M9.5","date":"May 22, 1960","region":"Valdivia, Chile","magnitude":"M9.5 (Mw) — largest ever recorded","boundary":"Peru-Chile Trench (Nazca plate under South American plate)","deaths":"5700 (Chile), plus deaths from tsunami across Pacific basin","duration":"10-15 minutes","evidence":"Pacific-wide tsunami; Cintura Volcano triggered eruption 2 days later. Modern instrumental record.","impact":"Coastal subsidence up to 5m. Tsunami waves reached Hawaii (14m), Japan (5m), Philippines. Earth's free oscillations measurable for weeks.","legacy":"Defined the upper limit of earthquake size in the modern record. Sparked global Pacific Tsunami Warning System founding (Pacific Tsunami Warning Center, Honolulu).","lesson":"Subduction megathrusts dominate the largest earthquakes. South America's western edge remains active and produces ~M8+ quakes every few decades."},{"name":"1964 Alaska Good Friday M9.2","date":"March 27, 1964","region":"Prince William Sound, Alaska","magnitude":"M9.2 (Mw)","boundary":"Aleutian Trench (Pacific under North American)","deaths":"139 (most from tsunami)","duration":"4-5 minutes","evidence":"First systematic megathrust study. George Plafker (USGS) walked the coast measuring uplift and subsidence. Established the subduction-zone earthquake mechanism.","impact":"Coast uplifted 11m in places, subsided 2m elsewhere. Tsunami struck Crescent City, California (11 deaths). Anchorage Turnagain Heights neighborhood slid into the sea.","legacy":"Plafker's 1965 paper definitively linked great earthquakes to subduction. This finding revolutionized understanding of plate tectonics.","lesson":"Megathrust earthquakes shape entire coastlines in minutes. Native Alaskan villages (especially Chenega Bay) suffered catastrophic damage and tsunami."}];
+                    var ENTRIES = [{"name":"1700 Cascadia M9","date":"January 26, 1700","region":"Pacific Northwest, USA/Canada","magnitude":"M9.0 (estimated)","boundary":"Cascadia Subduction Zone (Juan de Fuca plate diving under North American plate)","deaths":"Unknown (precontact)","duration":"~5-7 minutes (estimated)","evidence":"Ghost forests of drowned cedars dated by tree rings to 1699-1700; Japan's 'orphan tsunami' records pinpoint the date and time; Native American oral histories describe a great shaking","impact":"Tsunami waves up to 30m on local shore reached Japan ~10 hours later. Land subsided 1-2m along 1000km of coast.","legacy":"First confirmed in the 1980s by Brian Atwater (USGS) combining sediment cores, tree-ring dating, and Japanese tsunami records. Now drives Pacific Northwest building codes, ShakeAlert system, school drills.","lesson":"Pre-instrumental megaquakes leave detectable signatures in trees, soils, and oral history. Aaron Bock (Quileute), Mary Kallappa (Hoh), and Henry Adams (Quinault) had recorded oral histories long before scientific confirmation."},{"name":"1755 Lisbon M8.7","date":"November 1, 1755","region":"Atlantic Ocean off Portugal","magnitude":"M8.5-9.0 (estimated)","boundary":"Africa-Eurasia plate boundary (Azores-Gibraltar fracture zone)","deaths":"30,000-60,000 in Lisbon alone, more across Iberia and Morocco","duration":"3-5 minutes","evidence":"Contemporary descriptions by survivors including Voltaire's correspondence, Marquês de Pombal's reconstruction records, geological evidence in deep sea sediments and uplifted coral.","impact":"Tsunami swept up Tagus River into central Lisbon. Six-day fires destroyed remaining structures. Felt as far as Sweden and the Caribbean.","legacy":"Catalyzed European Enlightenment philosophy: Voltaire's Poem on the Lisbon Disaster (1756) and Candide (1759) challenged Leibniz's optimism. Pombal's interview-based recovery (the 'Pombaline' rebuild with quake-resistant timber cages) was the first systematic engineering response.","lesson":"Atlantic Ocean is not exempt from megaquake hazards. Catholic Portugal's All Saints Day liturgy meant churches were packed, multiplying casualties."},{"name":"1811-12 New Madrid","date":"December 16, 1811 - February 7, 1812","region":"New Madrid, Missouri","magnitude":"M7.5, M7.3, M7.5 (three main shocks)","boundary":"Intraplate (Reelfoot Rift, Mississippi embayment)","deaths":"Few documented (sparsely settled)","duration":"Multiple events over 2 months","evidence":"Eli Bowman, John James Audubon, Tecumseh's people, riverboat pilots all left accounts. Sand blows preserved geologic record.","impact":"Mississippi River briefly reversed course; created Reelfoot Lake; church bells rang in Boston and Charleston; chimneys fell as far as Cincinnati.","legacy":"Largest intraplate earthquake sequence in continental US history. Defined the New Madrid Seismic Zone, which would devastate modern Memphis, St Louis, and Little Rock if repeated.","lesson":"Far-from-plate-boundary regions can produce major quakes. Tecumseh allegedly predicted the shaking, using it to rally indigenous resistance."},{"name":"1857 Fort Tejon M7.9","date":"January 9, 1857","region":"Southern California (San Andreas Fault)","magnitude":"M7.9","boundary":"Pacific-North American transform (San Andreas)","deaths":"2","duration":"~2-3 minutes","evidence":"350km surface rupture from Cholame to Wrightwood. Trees along Carrizo Plain offset by ~9m. Mission San Fernando reportedly damaged.","impact":"Largest historical California quake. The Kern River reportedly flowed backward briefly.","legacy":"Together with the 1906 SF quake, defined two great segments of the southern San Andreas. Pallett Creek paleoseismology shows ~150-year intervals for southern segment, so it is 'overdue.'","lesson":"Quiet centuries on a fault do not mean safety. The San Andreas accumulates strain steadily."},{"name":"1886 Charleston M7.3","date":"August 31, 1886","region":"Charleston, South Carolina","magnitude":"M7.3 (estimated)","boundary":"Intraplate (Atlantic margin)","deaths":"60","duration":"~1 minute","evidence":"60% of Charleston buildings damaged. Earthquake of August 31, 1886 (Dutton 1889) - first major US earthquake studied with modern scientific methods.","impact":"Felt from Cuba to NY to Bermuda to Wisconsin. Sand boils, liquefaction, cracked plaster as far as Boston.","legacy":"Showed eastern US faults remain seismically dangerous. Helped found USGS earthquake studies. Maine and other east-coast cities lack code preparation for similar events.","lesson":"East coast quakes are infrequent but possible. Buildings shake longer because crust transmits seismic waves more efficiently than the more fractured west."},{"name":"1906 San Francisco M7.9","date":"April 18, 1906","region":"San Francisco, California","magnitude":"M7.9 (Mw)","boundary":"Pacific-North American transform (San Andreas)","deaths":"~3000 (recent revised estimates; original count was 700)","duration":"~45-60 seconds","evidence":"G.K. Gilbert and H.F. Reid (Carnegie) led the State Earthquake Investigation Commission, which produced the foundational geological survey of any earthquake. Reid's elastic rebound theory was born here.","impact":"Three-day firestorm destroyed 80% of San Francisco. Chinatown leveled. Estimated $400 million 1906 damage ($11 billion 2020).","legacy":"Established that earthquakes are caused by rapid slip on faults, not vice versa. Reid's elastic rebound theory remains the basic model. The San Andreas Fault entered popular consciousness.","lesson":"Earthquakes do not kill: collapsed buildings and post-quake fires do. Modern California is more resilient but still vulnerable to fire after large quakes."},{"name":"1923 Great Kanto M7.9","date":"September 1, 1923","region":"Sagami Bay, Japan","magnitude":"M7.9","boundary":"Sagami Trough (Philippine Sea plate under Okhotsk plate)","deaths":"142,000 (most from fire)","duration":"4-10 minutes (multiple sub-events)","evidence":"Imperial Earthquake Investigation Committee detailed records. Hongo Tokyo seismograph trace.","impact":"Tokyo and Yokohama both devastated. Fires consumed 38% of Tokyo. Tsunami in Sagami Bay. Korean residents falsely blamed for fires, leading to a massacre of 6,000+.","legacy":"Drove Japanese seismic engineering revolution. Spurred building code reforms that made modern Japanese buildings among the most quake-resistant globally.","lesson":"Quake disasters can amplify pre-existing prejudices. Japanese government has formally acknowledged the 1923 Korean massacre."},{"name":"1933 Long Beach M6.4","date":"March 10, 1933","region":"Long Beach, California (Newport-Inglewood Fault)","magnitude":"M6.4","boundary":"Strike-slip fault east of Pacific margin","deaths":"120","duration":"~10 seconds","evidence":"70 schools were severely damaged or destroyed. Catalyzed California's Field Act (1933) requiring all California schools meet earthquake standards.","impact":"If the quake had struck during school hours, casualties would have been catastrophic.","legacy":"Field Act remains a model for life-safety legislation. Modern California schools survived the 1994 Northridge quake with no fatalities.","lesson":"Building codes save lives when enforced before the next event. Charles Richter developed his magnitude scale partly with Long Beach data."},{"name":"1960 Valdivia M9.5","date":"May 22, 1960","region":"Valdivia, Chile","magnitude":"M9.5 (Mw) - largest ever recorded","boundary":"Peru-Chile Trench (Nazca plate under South American plate)","deaths":"5700 (Chile), plus deaths from tsunami across Pacific basin","duration":"10-15 minutes","evidence":"Pacific-wide tsunami; Cintura Volcano triggered eruption 2 days later. Modern instrumental record.","impact":"Coastal subsidence up to 5m. Tsunami waves reached Hawaii (14m), Japan (5m), Philippines. Earth's free oscillations measurable for weeks.","legacy":"Defined the upper limit of earthquake size in the modern record. Sparked global Pacific Tsunami Warning System founding (Pacific Tsunami Warning Center, Honolulu).","lesson":"Subduction megathrusts dominate the largest earthquakes. South America's western edge remains active and produces ~M8+ quakes every few decades."},{"name":"1964 Alaska Good Friday M9.2","date":"March 27, 1964","region":"Prince William Sound, Alaska","magnitude":"M9.2 (Mw)","boundary":"Aleutian Trench (Pacific under North American)","deaths":"139 (most from tsunami)","duration":"4-5 minutes","evidence":"First systematic megathrust study. George Plafker (USGS) walked the coast measuring uplift and subsidence. Established the subduction-zone earthquake mechanism.","impact":"Coast uplifted 11m in places, subsided 2m elsewhere. Tsunami struck Crescent City, California (11 deaths). Anchorage Turnagain Heights neighborhood slid into the sea.","legacy":"Plafker's 1965 paper definitively linked great earthquakes to subduction. This finding revolutionized understanding of plate tectonics.","lesson":"Megathrust earthquakes shape entire coastlines in minutes. Native Alaskan villages (especially Chenega Bay) suffered catastrophic damage and tsunami."}];
                     var s = (d['_quakeStoriesSearch'] || '').toLowerCase();
                     return ENTRIES.filter(function(e) {
                       if (!s) return true;
@@ -6660,10 +7790,10 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-orange-200 bg-orange-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-orange-800 mb-2' }, "Volcano Eruption Case Studies"),
                 React.createElement('p', { className: 'text-xs text-orange-700 mb-3' }, "Ten devastating eruptions from Vesuvius 79 CE to Hunga Tonga 2022, with phase-by-phase eruption narratives, eyewitness accounts, and modern context."),
-                React.createElement('input', { type: 'text', placeholder: 'Search...', value: d['_eruptionsSearch'] || '', onChange: function(e) { var u = {}; u['_eruptionsSearch'] = e.target.value; upd(u); }, className: 'w-full px-3 py-2 text-sm border border-orange-300 rounded-lg mb-3' }),
+                React.createElement('input', { type: 'text', placeholder: 'Search...', value: d['_eruptionsSearch'] || '', onChange: function(e) { var u = {}; u['_eruptionsSearch'] = e.target.value; upd(u); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-orange-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'space-y-2' },
                   (function() {
-                    var ENTRIES = [{"name":"Vesuvius (79 CE)","region":"Italy","date":"August 24, 79 CE (traditional) or October-November 79 CE (recent)","VEI":"5","deaths":"~16,000","phase1":"Plinian eruption phase: 18-hour ash and pumice column rose 32 km. Pumice fell at 15 cm/hour. Roofs collapsed under accumulated weight.","phase2":"Pyroclastic phase: 6 surges and flows raced down Vesuvius, reaching Pompeii (8 km away), Herculaneum (6 km), and Stabiae. Surges traveled at ~700°C and 100 km/h.","witnesses":"Pliny the Younger described his uncle Pliny the Elder's death (asphyxiated rescuing fleeing locals). Gave us the term 'Plinian eruption.'","legacy":"Pompeii and Herculaneum preserve daily Roman life under 4-6m of ash. Excavation began in 1748 and continues today.","modern":"3 million people live in the red zone today. Vesuvius is monitored continuously; evacuation plans target the 700,000 nearest residents."},{"name":"Tambora (1815)","region":"Sumbawa, Indonesia","date":"April 10, 1815","VEI":"7","deaths":"71,000 (direct + global famine)","phase1":"Two months of preliminary tremors. Major Plinian phase ejected 150 km³ of material. Eruption column reached 43 km.","phase2":"Climate impact: '1816 Year Without a Summer.' New England saw June frosts; crops failed across Europe; the Pacific Northwest had snow in July. Estimated 1°C global cooling.","witnesses":"Sir Stamford Raffles ordered immediate investigation. Lieutenant Owen Phillips reached Tambora 10 days post-eruption, finding the volcano's elevation had dropped from 4300m to 2800m.","legacy":"Frankenstein (Mary Shelley, 1816) and 'Darkness' (Lord Byron, 1816) were written during the volcanic winter. Birth of the bicycle (Karl Drais, 1817) attributed to horse-feed shortages.","modern":"Indonesia's volcanic explosivity remains a global climate concern. Modern monitoring includes ground deformation, gas chemistry, and seismicity at all 130 Indonesian active volcanoes."},{"name":"Krakatoa (1883)","region":"Sunda Strait, Indonesia","date":"August 26-27, 1883","VEI":"6","deaths":"36,000 (mostly tsunami)","phase1":"Initial activity began May 1883. August 26 Plinian eruption ejected 20 km³. Climactic eruption August 27 at 10:02 AM heard 4800 km away in Perth and Mauritius — loudest sound in recorded history.","phase2":"Caldera collapse generated 30m tsunami; reached Calcutta, Japan, and Britain (as small wave). Aerial waves circled Earth 3-4 times, recorded on barometers.","witnesses":"Telegraph and steamship era allowed first global news coverage of disaster. Royal Society of London compiled the most detailed account.","legacy":"Spectacular sunsets globally for 2 years (Edvard Munch's The Scream 1893 is sometimes attributed to such after-glows). Stratospheric aerosols cooled the planet 1.2°C.","modern":"Anak Krakatau (Child of Krakatoa) emerged 1927, collapsed in 2018 generating a 5m tsunami that killed 437 people."},{"name":"Mt Pelée (1902)","region":"Martinique, Caribbean","date":"May 8, 1902","VEI":"4","deaths":"29,000 (St-Pierre)","phase1":"Months of premonitory activity. On May 8, a nuee ardente (glowing cloud, pyroclastic surge) raced down the mountain, reached St-Pierre in 1 minute, killing everyone except 2 survivors. Lava temperature: ~1075°C; speed: 670 km/h.","phase2":"One famous survivor: Louis-Auguste Cyparis (Ludger Sylbaris), imprisoned in a partially underground stone cell. He toured with the Barnum & Bailey Circus afterward as 'the man who lived through Doomsday.'","witnesses":"Geologist Alfred Lacroix published the foundational study, coining 'nuée ardente' (glowing cloud). Established pyroclastic flows as the deadliest volcanic hazard.","legacy":"St-Pierre had been the cultural capital of Martinique. The disaster shifted economic and political power to Fort-de-France permanently.","modern":"Pelée is monitored continuously. The 1929-32 eruption built a new lava dome; the volcano is considered active. Caribbean monitoring through Université des Antilles."},{"name":"Novarupta (1912)","region":"Alaska Peninsula","date":"June 6-9, 1912","VEI":"6","deaths":"0","phase1":"Largest 20th century eruption. 13 km³ of magma erupted (3x more than Pinatubo 1991). Sucked magma from Mt Katmai 10 km away, leaving Katmai's caldera collapsed.","phase2":"Valley of Ten Thousand Smokes formed: 100m thick pyroclastic flow deposits steaming for years afterward. Visible from Kodiak, 100 miles away.","witnesses":"Remote location meant few direct witnesses. Robert F. Griggs led 1916 National Geographic expedition that named the Valley of Ten Thousand Smokes.","legacy":"Established Katmai National Monument (1918), now Katmai National Park (1980). Type locality for explosive eruption mechanics.","modern":"Alaska Peninsula has 40+ active volcanoes monitored by Alaska Volcano Observatory (AVO). Eruptions threaten Anchorage and trans-Pacific aviation."},{"name":"Mt St Helens (1980)","region":"Washington State, USA","date":"May 18, 1980","VEI":"5","deaths":"57","phase1":"After 2 months of bulging (1.5m/day on the north flank) and earthquakes, a M5.1 earthquake at 8:32 AM triggered the largest landslide in recorded history (2.3 km³). The depressurized magma exploded laterally.","phase2":"Lateral blast flattened 600 km² of forest. Plinian column reached 24 km. Lahars destroyed 200 homes and 27 bridges down the Toutle River. Ash fell as far as Minnesota.","witnesses":"USGS volcanologist David Johnston, monitoring from Coldwater II ridge, transmitted 'Vancouver! Vancouver! This is it!' before dying. His memorial Johnston Ridge Observatory now sits where he stood.","legacy":"First major US eruption with continuous instrumental monitoring. Mt St Helens National Volcanic Monument established 1982. Active eruption resumed 2004-2008, building a new lava dome.","modern":"Cascade Volcano Observatory (USGS Vancouver, WA) monitors all Cascade volcanoes. Rainier remains the highest-threat Cascade volcano due to glacier-fed lahar risk for Tacoma."},{"name":"Nevado del Ruiz (1985)","region":"Colombia","date":"November 13, 1985","VEI":"3","deaths":"23,000 (Armero)","phase1":"Modest eruption of small VEI 3 magnitude. The summit ice cap (covering an active glacier) melted partially.","phase2":"Resulting lahars surged down the Lagunilla River, reaching Armero (50 km away) at 11:30 PM. Town of 29,000 buried in 5m of mud.","witnesses":"Tragically, Colombian government scientists had warned officials and INGEOMINAS had published hazard maps showing exactly this scenario, but warnings were dismissed in political turmoil. Omayra Sánchez, a 13-year-old girl trapped for 60 hours before dying on live TV, became the disaster's tragic face.","legacy":"Driver of modern hazard communication research. The Armero disaster prompted UN designation of the 1990s as the International Decade for Natural Disaster Reduction.","modern":"Colombia has dramatically improved hazard monitoring. INGEOMINAS (now Colombian Geological Service) maintains volcano observatories. Lessons applied at Mt Pinatubo (1991) and Soufrière Hills (1995)."},{"name":"Pinatubo (1991)","region":"Philippines (Luzon)","date":"June 15, 1991","VEI":"6","deaths":"847 (847 direct, 1991-92 famine added more)","phase1":"Largely dormant 600 years. Months of preparation: USGS-PHIVOLCS team led by Chris Newhall and Ray Punongbayan installed monitoring network. Forecasted the climactic eruption.","phase2":"10 km³ ejected; column 35 km high. SO2 release of 17 million tonnes cooled global climate by ~0.5°C. Successful evacuation of 200,000 people. US Clark Air Base permanently closed (decommissioned anyway, but accelerated).","witnesses":"Newhall, Punongbayan, and Sandy Brantley led the warning effort. The successful prediction-evacuation is considered volcanology's greatest triumph.","legacy":"Validated modern volcano monitoring (seismic, deformation, gas, thermal). PHIVOLCS hazard maps. Cooled Earth enough to mask anthropogenic warming briefly.","modern":"Pinatubo's caldera now hosts a deep crater lake. Active monitoring continues. Aerosol-engineering geoengineering proposals draw on Pinatubo's atmospheric chemistry data."},{"name":"Eyjafjallajökull (2010)","region":"Iceland","date":"March-October 2010","VEI":"4","deaths":"0","phase1":"Initial fissure eruption March 20 was tourist-friendly. April 14 phreatomagmatic phase (under the glacier) produced a fine ash plume reaching jet-stream altitudes.","phase2":"European airspace closed for 6 days (April 15-21), grounding 100,000+ flights and 10 million passengers. Cost $1.7 billion in aviation losses.","witnesses":"Real-time webcams and social media made this the most documented eruption in history. Pronunciation videos went viral.","legacy":"First major demonstration of volcanic ash's modern transportation cost. London Volcanic Ash Advisory Centre (VAAC) protocols revised.","modern":"Iceland sits on the Mid-Atlantic Ridge; eruptions are frequent (~30 in past century). 2021 Fagradalsfjall and 2022 Reykjanes Peninsula activity sparked ongoing concern for nearby Grindavik town."},{"name":"Hunga Tonga (2022)","region":"Tonga","date":"January 15, 2022","VEI":"5-6","deaths":"6 (Tonga + Peru tsunami)","phase1":"Submarine eruption built up over 2 months. January 15 climactic eruption was largest atmospheric explosion ever recorded by modern instruments. Plume reached 58 km, entering the mesosphere.","phase2":"Tsunamis raced across the Pacific. Tonga cable-cut and ash-coated. Audible 10,000 km away. Atmospheric pressure waves circled Earth multiple times.","witnesses":"Satellite imagery (Himawari-8, GOES-17) caught the eruption from above. Tonga Geological Services worked under enormous strain.","legacy":"Largest recorded eruption since Pinatubo 1991. Injected ~150 million tonnes of water vapor into the stratosphere — a unique chemistry given the submarine source.","modern":"Tonga rebuilt; underwater volcano now restless again. Submarine volcanoes globally need better monitoring; many are unstudied."}];
+                    var ENTRIES = [{"name":"Vesuvius (79 CE)","region":"Italy","date":"August 24, 79 CE (traditional) or October-November 79 CE (recent)","VEI":"5","deaths":"~16,000","phase1":"Plinian eruption phase: 18-hour ash and pumice column rose 32 km. Pumice fell at 15 cm/hour. Roofs collapsed under accumulated weight.","phase2":"Pyroclastic phase: 6 surges and flows raced down Vesuvius, reaching Pompeii (8 km away), Herculaneum (6 km), and Stabiae. Surges traveled at ~700°C and 100 km/h.","witnesses":"Pliny the Younger described his uncle Pliny the Elder's death (asphyxiated rescuing fleeing locals). Gave us the term 'Plinian eruption.'","legacy":"Pompeii and Herculaneum preserve daily Roman life under 4-6m of ash. Excavation began in 1748 and continues today.","modern":"3 million people live in the red zone today. Vesuvius is monitored continuously; evacuation plans target the 700,000 nearest residents."},{"name":"Tambora (1815)","region":"Sumbawa, Indonesia","date":"April 10, 1815","VEI":"7","deaths":"71,000 (direct + global famine)","phase1":"Two months of preliminary tremors. Major Plinian phase ejected 150 km³ of material. Eruption column reached 43 km.","phase2":"Climate impact: '1816 Year Without a Summer.' New England saw June frosts; crops failed across Europe; the Pacific Northwest had snow in July. Estimated 1°C global cooling.","witnesses":"Sir Stamford Raffles ordered immediate investigation. Lieutenant Owen Phillips reached Tambora 10 days post-eruption, finding the volcano's elevation had dropped from 4300m to 2800m.","legacy":"Frankenstein (Mary Shelley, 1816) and 'Darkness' (Lord Byron, 1816) were written during the volcanic winter. Birth of the bicycle (Karl Drais, 1817) attributed to horse-feed shortages.","modern":"Indonesia's volcanic explosivity remains a global climate concern. Modern monitoring includes ground deformation, gas chemistry, and seismicity at all 130 Indonesian active volcanoes."},{"name":"Krakatoa (1883)","region":"Sunda Strait, Indonesia","date":"August 26-27, 1883","VEI":"6","deaths":"36,000 (mostly tsunami)","phase1":"Initial activity began May 1883. August 26 Plinian eruption ejected 20 km³. Climactic eruption August 27 at 10:02 AM heard 4800 km away in Perth and Mauritius - loudest sound in recorded history.","phase2":"Caldera collapse generated 30m tsunami; reached Calcutta, Japan, and Britain (as small wave). Aerial waves circled Earth 3-4 times, recorded on barometers.","witnesses":"Telegraph and steamship era allowed first global news coverage of disaster. Royal Society of London compiled the most detailed account.","legacy":"Spectacular sunsets globally for 2 years (Edvard Munch's The Scream 1893 is sometimes attributed to such after-glows). Stratospheric aerosols cooled the planet 1.2°C.","modern":"Anak Krakatau (Child of Krakatoa) emerged 1927, collapsed in 2018 generating a 5m tsunami that killed 437 people."},{"name":"Mt Pelée (1902)","region":"Martinique, Caribbean","date":"May 8, 1902","VEI":"4","deaths":"29,000 (St-Pierre)","phase1":"Months of premonitory activity. On May 8, a nuee ardente (glowing cloud, pyroclastic surge) raced down the mountain, reached St-Pierre in 1 minute, killing everyone except 2 survivors. Lava temperature: ~1075°C; speed: 670 km/h.","phase2":"One famous survivor: Louis-Auguste Cyparis (Ludger Sylbaris), imprisoned in a partially underground stone cell. He toured with the Barnum & Bailey Circus afterward as 'the man who lived through Doomsday.'","witnesses":"Geologist Alfred Lacroix published the foundational study, coining 'nuée ardente' (glowing cloud). Established pyroclastic flows as the deadliest volcanic hazard.","legacy":"St-Pierre had been the cultural capital of Martinique. The disaster shifted economic and political power to Fort-de-France permanently.","modern":"Pelée is monitored continuously. The 1929-32 eruption built a new lava dome; the volcano is considered active. Caribbean monitoring through Université des Antilles."},{"name":"Novarupta (1912)","region":"Alaska Peninsula","date":"June 6-9, 1912","VEI":"6","deaths":"0","phase1":"Largest 20th century eruption. 13 km³ of magma erupted (3x more than Pinatubo 1991). Sucked magma from Mt Katmai 10 km away, leaving Katmai's caldera collapsed.","phase2":"Valley of Ten Thousand Smokes formed: 100m thick pyroclastic flow deposits steaming for years afterward. Visible from Kodiak, 100 miles away.","witnesses":"Remote location meant few direct witnesses. Robert F. Griggs led 1916 National Geographic expedition that named the Valley of Ten Thousand Smokes.","legacy":"Established Katmai National Monument (1918), now Katmai National Park (1980). Type locality for explosive eruption mechanics.","modern":"Alaska Peninsula has 40+ active volcanoes monitored by Alaska Volcano Observatory (AVO). Eruptions threaten Anchorage and trans-Pacific aviation."},{"name":"Mt St Helens (1980)","region":"Washington State, USA","date":"May 18, 1980","VEI":"5","deaths":"57","phase1":"After 2 months of bulging (1.5m/day on the north flank) and earthquakes, a M5.1 earthquake at 8:32 AM triggered the largest landslide in recorded history (2.3 km³). The depressurized magma exploded laterally.","phase2":"Lateral blast flattened 600 km² of forest. Plinian column reached 24 km. Lahars destroyed 200 homes and 27 bridges down the Toutle River. Ash fell as far as Minnesota.","witnesses":"USGS volcanologist David Johnston, monitoring from Coldwater II ridge, transmitted 'Vancouver! Vancouver! This is it!' before dying. His memorial Johnston Ridge Observatory now sits where he stood.","legacy":"First major US eruption with continuous instrumental monitoring. Mt St Helens National Volcanic Monument established 1982. Active eruption resumed 2004-2008, building a new lava dome.","modern":"Cascade Volcano Observatory (USGS Vancouver, WA) monitors all Cascade volcanoes. Rainier remains the highest-threat Cascade volcano due to glacier-fed lahar risk for Tacoma."},{"name":"Nevado del Ruiz (1985)","region":"Colombia","date":"November 13, 1985","VEI":"3","deaths":"23,000 (Armero)","phase1":"Modest eruption of small VEI 3 magnitude. The summit ice cap (covering an active glacier) melted partially.","phase2":"Resulting lahars surged down the Lagunilla River, reaching Armero (50 km away) at 11:30 PM. Town of 29,000 buried in 5m of mud.","witnesses":"Tragically, Colombian government scientists had warned officials and INGEOMINAS had published hazard maps showing exactly this scenario, but warnings were dismissed in political turmoil. Omayra Sánchez, a 13-year-old girl trapped for 60 hours before dying on live TV, became the disaster's tragic face.","legacy":"Driver of modern hazard communication research. The Armero disaster prompted UN designation of the 1990s as the International Decade for Natural Disaster Reduction.","modern":"Colombia has dramatically improved hazard monitoring. INGEOMINAS (now Colombian Geological Service) maintains volcano observatories. Lessons applied at Mt Pinatubo (1991) and Soufrière Hills (1995)."},{"name":"Pinatubo (1991)","region":"Philippines (Luzon)","date":"June 15, 1991","VEI":"6","deaths":"847 (847 direct, 1991-92 famine added more)","phase1":"Largely dormant 600 years. Months of preparation: USGS-PHIVOLCS team led by Chris Newhall and Ray Punongbayan installed monitoring network. Forecasted the climactic eruption.","phase2":"10 km³ ejected; column 35 km high. SO2 release of 17 million tonnes cooled global climate by ~0.5°C. Successful evacuation of 200,000 people. US Clark Air Base permanently closed (decommissioned anyway, but accelerated).","witnesses":"Newhall, Punongbayan, and Sandy Brantley led the warning effort. The successful prediction-evacuation is considered volcanology's greatest triumph.","legacy":"Validated modern volcano monitoring (seismic, deformation, gas, thermal). PHIVOLCS hazard maps. Cooled Earth enough to mask anthropogenic warming briefly.","modern":"Pinatubo's caldera now hosts a deep crater lake. Active monitoring continues. Aerosol-engineering geoengineering proposals draw on Pinatubo's atmospheric chemistry data."},{"name":"Eyjafjallajökull (2010)","region":"Iceland","date":"March-October 2010","VEI":"4","deaths":"0","phase1":"Initial fissure eruption March 20 was tourist-friendly. April 14 phreatomagmatic phase (under the glacier) produced a fine ash plume reaching jet-stream altitudes.","phase2":"European airspace closed for 6 days (April 15-21), grounding 100,000+ flights and 10 million passengers. Cost $1.7 billion in aviation losses.","witnesses":"Real-time webcams and social media made this the most documented eruption in history. Pronunciation videos went viral.","legacy":"First major demonstration of volcanic ash's modern transportation cost. London Volcanic Ash Advisory Centre (VAAC) protocols revised.","modern":"Iceland sits on the Mid-Atlantic Ridge; eruptions are frequent (~30 in past century). 2021 Fagradalsfjall and 2022 Reykjanes Peninsula activity sparked ongoing concern for nearby Grindavik town."},{"name":"Hunga Tonga (2022)","region":"Tonga","date":"January 15, 2022","VEI":"5-6","deaths":"6 (Tonga + Peru tsunami)","phase1":"Submarine eruption built up over 2 months. January 15 climactic eruption was largest atmospheric explosion ever recorded by modern instruments. Plume reached 58 km, entering the mesosphere.","phase2":"Tsunamis raced across the Pacific. Tonga cable-cut and ash-coated. Audible 10,000 km away. Atmospheric pressure waves circled Earth multiple times.","witnesses":"Satellite imagery (Himawari-8, GOES-17) caught the eruption from above. Tonga Geological Services worked under enormous strain.","legacy":"Largest recorded eruption since Pinatubo 1991. Injected ~150 million tonnes of water vapor into the stratosphere - a unique chemistry given the submarine source.","modern":"Tonga rebuilt; underwater volcano now restless again. Submarine volcanoes globally need better monitoring; many are unstudied."}];
                     var s = (d['_eruptionsSearch'] || '').toLowerCase();
                     return ENTRIES.filter(function(e) {
                       if (!s) return true;
@@ -6691,7 +7821,7 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-red-200 bg-red-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-red-800 mb-2' }, "Plate Deep Profiles"),
                 React.createElement('p', { className: 'text-xs text-red-700 mb-3' }, "In-depth profile of 15 major and minor plates: area, motion, boundaries, history, key features, and an interesting fact each. Reading these in sequence helps build a mental model of the global plate system."),
-                React.createElement('input', { type: 'text', placeholder: 'Search...', value: d['_plateProfilesSearch'] || '', onChange: function(e) { var u = {}; u['_plateProfilesSearch'] = e.target.value; upd(u); }, className: 'w-full px-3 py-2 text-sm border border-red-300 rounded-lg mb-3' }),
+                React.createElement('input', { type: 'text', placeholder: 'Search...', value: d['_plateProfilesSearch'] || '', onChange: function(e) { var u = {}; u['_plateProfilesSearch'] = e.target.value; upd(u); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'space-y-2' },
                   (function() {
                     var ENTRIES = [{"name":"Pacific Plate","area":"103,000,000 km²","motion":"WNW at 7-11 cm/yr","boundaries":"Pacific Plate is bordered by the East Pacific Rise (divergent), Aleutian + Japan + Tonga + Kermadec trenches (convergent), San Andreas + Queen Charlotte faults (transform), and many smaller boundaries.","history":"Originated ~190 Ma from breakup of larger Farallon Plate. Has been the dominant Pacific Basin plate for the last 50+ Ma.","features":"Hosts most of the world's seafloor, Hawaiian-Emperor seamount chain, Pacific Ring of Fire on its borders. Mostly oceanic crust.","interesting":"The Hawaiian-Emperor bend at 47 Ma records a major change in Pacific Plate motion direction. Why? Active research."},{"name":"North American Plate","area":"75,900,000 km²","motion":"SW at 1-2 cm/yr (relative to Pacific)","boundaries":"Bounded by Mid-Atlantic Ridge (divergent, east), Caribbean and Cocos plates (south), San Andreas Fault and Cascadia subduction (west), Aleutian Trench (NW), Eurasian convergence (Arctic).","history":"Includes continental North America plus surrounding ocean floor. Has been a distinct plate since the breakup of Pangaea ~200 Ma.","features":"Stable craton (Canadian Shield) in the interior, mobile Cordillera in the west, Atlantic passive margin in the east, Greenland on its NE.","interesting":"The Yellowstone hotspot track records ~16 Ma of NA Plate motion. Future hotspot positions will be in Wyoming-Montana."},{"name":"Eurasian Plate","area":"67,800,000 km²","motion":"Variable; very slow","boundaries":"Mid-Atlantic Ridge (W), Indian-Eurasian collision (S), Pacific subduction zones (E), Arctic Ocean (N), African convergence (SE).","history":"Formed by long process of accretion. India docked ~55 Ma, building the Himalaya. Pacific Plate has been subducting beneath the eastern margin for over 100 Ma.","features":"Contains 90% of world population and most of Earth's continental land area. Major mountain ranges: Himalaya, Alps, Caucasus, Ural Mountains.","interesting":"The Tethys Ocean once separated Eurasia from Africa-India-Australia. Its closure created the Alpide belt of mountains from Spain to Indonesia."},{"name":"African Plate","area":"61,300,000 km²","motion":"N-NE at 2 cm/yr","boundaries":"Mid-Atlantic Ridge (W), Carlsberg Ridge (E), East African Rift (E, internal), Eurasian convergence (N).","history":"Has been moving north for over 100 Ma. Closing the Tethys/Mediterranean. Will eventually push into Europe entirely.","features":"Contains Africa, the eastern Atlantic, much of the Mediterranean and Red Sea, parts of the Arabian Sea.","interesting":"The East African Rift is splitting the African Plate. Somalia is moving away from Nubia at ~7 mm/yr. In ~10 million years there will be a new ocean basin."},{"name":"Antarctic Plate","area":"60,900,000 km²","motion":"Very slow, fragmented motion","boundaries":"Mid-ocean ridges on all sides (Pacific-Antarctic, Southwest Indian, Southeast Indian, American-Antarctic).","history":"Has been mostly stationary since Eocene. Antarctica was at the South Pole by 35 Ma, leading to glaciation.","features":"Continental Antarctica, surrounding ocean floor including the Southern Ocean. Almost no convergent boundaries.","interesting":"The Antarctic Plate's relative stillness shaped Earth's modern climate by trapping ice at the pole. Continental glaciation began ~35 Ma."},{"name":"South American Plate","area":"43,600,000 km²","motion":"W at 3-4 cm/yr","boundaries":"Mid-Atlantic Ridge (E), Nazca-Cocos subduction (W), Caribbean-Scotia plates (N+S), Antarctic ridge (S).","history":"Separated from Africa ~110 Ma during Gondwana breakup. Andean orogeny ongoing for 50+ Ma.","features":"Continental South America + surrounding ocean. Andes Mountains run the entire west coast.","interesting":"The Andes are the longest continental mountain range. They control South American weather, biology, and water resources."},{"name":"Indo-Australian Plate","area":"58,900,000 km²","motion":"NE at 5-7 cm/yr","boundaries":"Sunda Trench (N), Mid-Indian Ridge (S+W), Tonga + Hikurangi (E), Carlsberg Ridge (W).","history":"India broke from Antarctica ~130 Ma, then collided with Asia ~55 Ma. Australia later docked with India ~40 Ma forming a single plate.","features":"Subcontinent India, Australia, much of the Indian Ocean.","interesting":"Some researchers argue India and Australia are slowly splitting along a diffuse boundary in the Indian Ocean. Could be re-divided into 2 plates eventually."},{"name":"Nazca Plate","area":"15,600,000 km²","motion":"E at 6-8 cm/yr","boundaries":"East Pacific Rise (W), Peru-Chile Trench (E), Galapagos-Cocos junction (N), Antarctic ridge (S).","history":"Formed by breakup of the Farallon Plate (~25 Ma). Continues to be consumed by South American Plate subduction.","features":"Almost entirely oceanic crust. Hosts the Easter, San Felix, Juan Fernandez, and Galapagos hotspot tracks.","interesting":"Will entirely subduct beneath South America in ~30 Ma if current motion continues. The Nazca Plate has fueled Andean volcanism for 50+ Ma."},{"name":"Cocos Plate","area":"2,900,000 km²","motion":"NE at 7-8 cm/yr","boundaries":"East Pacific Rise (W), Middle America Trench (E), Galapagos junction (S).","history":"Sibling of the Nazca Plate, formed simultaneously from Farallon Plate breakup.","features":"Small but volcanically prolific. Drives Central American volcanism + earthquakes.","interesting":"1985 Mexico City quake (M8.0) was a subduction-zone Cocos event 350 km away. Site-effect amplification in Mexico City's lake-bed soil multiplied damage."},{"name":"Juan de Fuca Plate","area":"200,000 km²","motion":"E at 4-5 cm/yr","boundaries":"Juan de Fuca Ridge (W), Cascadia subduction (E), Mendocino fracture zone (S), Explorer microplate (N).","history":"Remnant of the larger Farallon Plate. Originally extended along all of N America's west coast but most has been consumed.","features":"Drives Pacific Northwest geology: Cascade volcanoes, Cascadia earthquakes, Puget Sound geology.","interesting":"Smallest plate not classified as a microplate. Will eventually be consumed entirely; in ~10 Ma there will be no more subduction in the Pacific Northwest."},{"name":"Caribbean Plate","area":"3,200,000 km²","motion":"E at 2 cm/yr (slow)","boundaries":"Cocos subduction (W), Lesser Antilles subduction (E, Atlantic side), N+S American transform/diffuse boundaries.","history":"Formed by complex interactions of Pacific, Atlantic, N and S American plates. Origin debated (in-place vs Pacific-origin).","features":"Caribbean Sea, Central American isthmus + Greater + Lesser Antilles arcs.","interesting":"Hosts Hispaniola (Haiti, DR), site of 2010 quake. Cuba, Jamaica, Puerto Rico are on small attached fragments."},{"name":"Arabian Plate","area":"5,000,000 km²","motion":"N at 2 cm/yr","boundaries":"Red Sea Rift (SW), Gulf of Aden Ridge (S), Owen Fracture Zone (E), Zagros suture (N, with Eurasia).","history":"Broke from Africa ~25 Ma when Red Sea rift opened. Continues northward, colliding with Asia.","features":"Saudi Arabia, Yemen, Oman, Iraq, Kuwait, Iran's Zagros foothills.","interesting":"The Zagros Mountains are an active continent-continent collision zone like a young Himalaya. Iran experiences M7+ earthquakes regularly."},{"name":"Philippine Sea Plate","area":"5,500,000 km²","motion":"NW at 5 cm/yr","boundaries":"Mariana + Izu-Bonin trenches (E), Japan Trench (NE), Philippine + Nankai trenches (W).","history":"Surrounded by subduction zones on all sides. Internal hotspots, no spreading ridges.","features":"Mostly oceanic. Bounded by some of the world's deepest trenches (Mariana, Philippine).","interesting":"The Mariana Trench (deepest point on Earth, ~11 km) is on its eastern boundary. Hosts incredibly deep earthquakes (down to 660 km depth)."},{"name":"Scotia Plate","area":"1,600,000 km²","motion":"E at 2 cm/yr","boundaries":"South Sandwich Trench (E), Shackleton fracture zone (W), American-Antarctic Ridge (S).","history":"Formed ~30 Ma as the South American + Antarctic plates separated. Houses the most remote islands on Earth.","features":"Mostly oceanic. South Sandwich volcanic arc on eastern margin.","interesting":"South Georgia, South Sandwich, Falklands all in this region. Ernest Shackleton's 1916 voyage took him across this plate."},{"name":"Burma Microplate (Sunda Trench Sliver)","area":"Small","motion":"Complex","boundaries":"Sunda Trench (W), Sagaing Fault (E), Andaman spreading center.","history":"Microplate slivered off Sunda Plate. Hosts active strike-slip fault and Andaman backarc spreading.","features":"Includes Burma (Myanmar), Andaman + Nicobar islands.","interesting":"The 2004 Sumatra-Andaman quake (M9.1) ruptured along its western edge, generating the deadliest tsunami in modern history."}];
@@ -7794,7 +8924,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-emerald-700' }, "Discovery: "),
-                      "Cleveland-Lloyd Quarry (UT) preserves 46 individuals — possible mass death from drought."
+                      "Cleveland-Lloyd Quarry (UT) preserves 46 individuals - possible mass death from drought."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-emerald-200' },
@@ -7851,7 +8981,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-emerald-700' }, "Discovery: "),
-                      "Bernissart, Belgium quarry yielded 38 individuals (1878) — first dinosaur mass-skeleton find."
+                      "Bernissart, Belgium quarry yielded 38 individuals (1878) - first dinosaur mass-skeleton find."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-emerald-200' },
@@ -8060,7 +9190,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-emerald-700' }, "Discovery: "),
-                      "Some preserved with juvenile bones in gut — once thought cannibalism but now likely lizards."
+                      "Some preserved with juvenile bones in gut - once thought cannibalism but now likely lizards."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-emerald-200' },
@@ -8079,7 +9209,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-emerald-700' }, "Discovery: "),
-                      "Trossingen, Germany quarry yielded 50+ specimens — possible drought victims at watering hole."
+                      "Trossingen, Germany quarry yielded 50+ specimens - possible drought victims at watering hole."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-emerald-200' },
@@ -8136,7 +9266,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-emerald-700' }, "Discovery: "),
-                      "Jurassic Park depicted spitting + frill — no fossil evidence for either. Real animal was much larger."
+                      "Jurassic Park depicted spitting + frill - no fossil evidence for either. Real animal was much larger."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-emerald-200' },
@@ -8231,7 +9361,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-emerald-700' }, "Discovery: "),
-                      "Pipestone Creek bonebed (AB) yielded 100+ individuals — herd died crossing flooded river."
+                      "Pipestone Creek bonebed (AB) yielded 100+ individuals - herd died crossing flooded river."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-emerald-200' },
@@ -8265,7 +9395,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-emerald-700' }, "Description: "),
-                      "9m long, 4 tonnes, hadrosaur. 'Good mother lizard' — nest sites found with babies."
+                      "9m long, 4 tonnes, hadrosaur. 'Good mother lizard' - nest sites found with babies."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-emerald-700' }, "Discovery: "),
@@ -8383,7 +9513,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-emerald-700' }, "Discovery: "),
-                      "Multiple individuals found together — first evidence of pack-hunting in carcharodontosaurs."
+                      "Multiple individuals found together - first evidence of pack-hunting in carcharodontosaurs."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-emerald-200' },
@@ -8646,7 +9776,7 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('div', { className: 'font-bold text-amber-800 text-sm mb-1' }, "End-Permian (252 Ma)"),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Scale: "),
-                      "96% of marine + 70% of land species died — the Great Dying"
+                      "96% of marine + 70% of land species died - the Great Dying"
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Causes: "),
@@ -8658,7 +9788,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Recovery: "),
-                      "Recovery took 10+ million years — longest of any mass extinction. Triassic life genuinely new."
+                      "Recovery took 10+ million years - longest of any mass extinction. Triassic life genuinely new."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-amber-200' },
@@ -8696,7 +9826,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Recovery: "),
-                      "Tanis fossil site (ND, 2019) preserves the very day of impact — debris-encrusted fish."
+                      "Tanis fossil site (ND, 2019) preserves the very day of impact - debris-encrusted fish."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-amber-200' },
@@ -8734,7 +9864,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Recovery: "),
-                      "Anthropocene context — likely first extinction substantially driven by humans."
+                      "Anthropocene context - likely first extinction substantially driven by humans."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-amber-200' },
@@ -8845,7 +9975,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Key events: "),
-                      "Snowball Earth glaciations ~720-635 Ma. Boring Billion (1800-800 Ma) — relatively stable era."
+                      "Snowball Earth glaciations ~720-635 Ma. Boring Billion (1800-800 Ma) - relatively stable era."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
@@ -9040,7 +10170,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Key events: "),
-                      "5.96-5.33 Ma: Messinian Salinity Crisis — Mediterranean dried up, recovered with Atlantic flood."
+                      "5.96-5.33 Ma: Messinian Salinity Crisis - Mediterranean dried up, recovered with Atlantic flood."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
@@ -9111,7 +10241,7 @@ var d = labToolData.plateTectonics || {};
             simTab === "parks" && React.createElement('div', { className: 'space-y-4' },
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-green-200 bg-green-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-green-800 mb-2' }, "National Parks Geology"),
-                React.createElement('p', { className: 'text-xs text-green-700 mb-3' }, "20 US national parks with their geological highlights. Visit these to see plate tectonics in action — from mid-ocean basalts (Hawaii) to active subduction zones (Olympic) to ancient stable cratons (Acadia)."),
+                React.createElement('p', { className: 'text-xs text-green-700 mb-3' }, "20 US national parks with their geological highlights. Visit these to see plate tectonics in action - from mid-ocean basalts (Hawaii) to active subduction zones (Olympic) to ancient stable cratons (Acadia)."),
                 React.createElement('div', { className: 'space-y-2' },
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-green-200' },
                     React.createElement('div', { className: 'font-bold text-green-800 text-sm mb-1' }, "Grand Canyon NP (Arizona)"),
@@ -9159,7 +10289,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Geology: "),
-                      "Klamath Tribe oral history records the eruption — confirmed by tephra dating + radiocarbon."
+                      "Klamath Tribe oral history records the eruption - confirmed by tephra dating + radiocarbon."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Key features: "),
@@ -9235,7 +10365,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Geology: "),
-                      "Cadillac Mountain (1530 ft) is highest point on US Atlantic coast — first place to see sunrise in US for half the year."
+                      "Cadillac Mountain (1530 ft) is highest point on US Atlantic coast - first place to see sunrise in US for half the year."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Key features: "),
@@ -9250,7 +10380,7 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('div', { className: 'font-bold text-green-800 text-sm mb-1' }, "Shenandoah NP (Virginia)"),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "About: "),
-                      "Blue Ridge Mountains — Precambrian granite + Paleozoic sedimentary cover."
+                      "Blue Ridge Mountains - Precambrian granite + Paleozoic sedimentary cover."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Geology: "),
@@ -9300,7 +10430,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Visiting: "),
-                      "Visit: Santa Elena Canyon by canoe. Remote — fill gas tank in Marathon or Terlingua."
+                      "Visit: Santa Elena Canyon by canoe. Remote - fill gas tank in Marathon or Terlingua."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-green-200' },
@@ -9319,7 +10449,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Visiting: "),
-                      "Visit: Badwater Basin, Zabriskie Point, Mesquite Flat Dunes. Summer heat is dangerous — limit activity 10am-6pm."
+                      "Visit: Badwater Basin, Zabriskie Point, Mesquite Flat Dunes. Summer heat is dangerous - limit activity 10am-6pm."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-green-200' },
@@ -9338,7 +10468,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Visiting: "),
-                      "Visit: Skull Rock, Hidden Valley, Keys View. Climbing destination — 8000+ established routes."
+                      "Visit: Skull Rock, Hidden Valley, Keys View. Climbing destination - 8000+ established routes."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-green-200' },
@@ -9357,7 +10487,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Visiting: "),
-                      "Visit: 28-mile loop drive through park. Do not take petrified wood — felony with steep fine."
+                      "Visit: 28-mile loop drive through park. Do not take petrified wood - felony with steep fine."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-green-200' },
@@ -9387,7 +10517,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Geology: "),
-                      "Cave continues to be mapped — every year adds new passages."
+                      "Cave continues to be mapped - every year adds new passages."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Key features: "),
@@ -9433,7 +10563,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Visiting: "),
-                      "Visit: Riverside Walk, Emerald Pools, The Narrows (slot canyon hike — check flash flood forecast)."
+                      "Visit: Riverside Walk, Emerald Pools, The Narrows (slot canyon hike - check flash flood forecast)."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-green-200' },
@@ -9448,7 +10578,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Key features: "),
-                      "Delicate Arch — symbol of Utah license plates."
+                      "Delicate Arch - symbol of Utah license plates."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Visiting: "),
@@ -9478,7 +10608,7 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('div', { className: 'font-bold text-green-800 text-sm mb-1' }, "Capitol Reef NP (Utah)"),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "About: "),
-                      "Waterpocket Fold — 100-mile-long monocline. Hidden gem of the Mighty 5."
+                      "Waterpocket Fold - 100-mile-long monocline. Hidden gem of the Mighty 5."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Geology: "),
@@ -9486,7 +10616,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Key features: "),
-                      "Fruita orchards still produce cherries, apples, peaches — pick-your-own seasonally."
+                      "Fruita orchards still produce cherries, apples, peaches - pick-your-own seasonally."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Visiting: "),
@@ -9525,7 +10655,7 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('div', { className: 'font-bold text-blue-800 text-sm mb-1' }, "East Pacific Rise"),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Description: "),
-                      "Spreading at ~15 cm/yr — fastest on Earth. Causes high-volume volcanic activity."
+                      "Spreading at ~15 cm/yr - fastest on Earth. Causes high-volume volcanic activity."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Tectonics: "),
@@ -9552,7 +10682,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Significance: "),
-                      "Pressure at bottom: 1100 atm. Yet, life exists — amphipods, tiny snailfish, microbial mats."
+                      "Pressure at bottom: 1100 atm. Yet, life exists - amphipods, tiny snailfish, microbial mats."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Access: "),
@@ -9567,7 +10697,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Tectonics: "),
-                      "Tsunami hazard for Caribbean basin — historically active."
+                      "Tsunami hazard for Caribbean basin - historically active."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Significance: "),
@@ -9590,7 +10720,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Significance: "),
-                      "Mauna Kea on Hawaii Island rises 10,000 m from seafloor — tallest mountain on Earth by some measures."
+                      "Mauna Kea on Hawaii Island rises 10,000 m from seafloor - tallest mountain on Earth by some measures."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Access: "),
@@ -9761,7 +10891,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Significance: "),
-                      "Remote — few visits ever logged."
+                      "Remote - few visits ever logged."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Access: "),
@@ -9907,7 +11037,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      "Tanis fossil site (North Dakota) preserves the day of the impact — fish + dinosaur bones encased in spherules."
+                      "Tanis fossil site (North Dakota) preserves the day of the impact - fish + dinosaur bones encased in spherules."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -9956,7 +11086,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Energy or scale: "),
-                      "Eocene impact disrupted aquifers — still affecting groundwater chemistry today."
+                      "Eocene impact disrupted aquifers - still affecting groundwater chemistry today."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Discovery: "),
@@ -9975,15 +11105,15 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Energy or scale: "),
-                      "Triassic impact — one of largest in last 250 Ma. May have contributed to End-Triassic extinction."
+                      "Triassic impact - one of largest in last 250 Ma. May have contributed to End-Triassic extinction."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Discovery: "),
-                      "Visible from space — distinctive ring-shape."
+                      "Visible from space - distinctive ring-shape."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      "Visit: Daniel-Johnson Dam tour; remote — fly into Baie-Comeau."
+                      "Visit: Daniel-Johnson Dam tour; remote - fly into Baie-Comeau."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -10131,7 +11261,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Discovery: "),
-                      "Aboriginal Walmajarri name: Kandimalal — Australian Aboriginal oral traditions reference 'star fell.'"
+                      "Aboriginal Walmajarri name: Kandimalal - Australian Aboriginal oral traditions reference 'star fell.'"
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
@@ -10184,7 +11314,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Energy or scale: "),
-                      "Impact into Deccan Traps basalt. Unusual — most impacts are on sedimentary rocks."
+                      "Impact into Deccan Traps basalt. Unusual - most impacts are on sedimentary rocks."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Discovery: "),
@@ -10241,7 +11371,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Energy or scale: "),
-                      "Carbonaceous chondrite meteorites recovered from frozen lake surface — keptcold to preserve organic compounds."
+                      "Carbonaceous chondrite meteorites recovered from frozen lake surface - keptcold to preserve organic compounds."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Discovery: "),
@@ -10292,7 +11422,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Significance: "),
-                      "Convergence rate: ~4 cm/yr — moderate compared to Pacific-N American (Pacific Plate)."
+                      "Convergence rate: ~4 cm/yr - moderate compared to Pacific-N American (Pacific Plate)."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Source: "),
@@ -10391,7 +11521,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Source: "),
-                      "Seconds of warning — can stop trains, surgery, alert school children to drop-cover-hold."
+                      "Seconds of warning - can stop trains, surgery, alert school children to drop-cover-hold."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-blue-200' },
@@ -10406,7 +11536,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Significance: "),
-                      "Many small towns: only one road inland — vertical evacuation refuges being built."
+                      "Many small towns: only one road inland - vertical evacuation refuges being built."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Source: "),
@@ -10440,11 +11570,11 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Detail: "),
-                      "Ghost forests preserve the event — cedars died when their roots got salted."
+                      "Ghost forests preserve the event - cedars died when their roots got salted."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Significance: "),
-                      "Same subsidence expected in next event — coast will move inland permanently."
+                      "Same subsidence expected in next event - coast will move inland permanently."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-blue-700' }, "Source: "),
@@ -10492,7 +11622,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Visit: "),
-                      "Trip with John Playfair + James Hall — Playfair later wrote: 'the mind seemed to grow giddy by looking so far into the abyss of time.'"
+                      "Trip with John Playfair + James Hall - Playfair later wrote: 'the mind seemed to grow giddy by looking so far into the abyss of time.'"
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-amber-200' },
@@ -10559,7 +11689,7 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('div', { className: 'font-bold text-amber-800 text-sm mb-1' }, "Jack Hills Zircons (Australia)"),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Significance: "),
-                      "Detrital zircons dated 4.4 Ga — oldest known terrestrial materials."
+                      "Detrital zircons dated 4.4 Ga - oldest known terrestrial materials."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Geology: "),
@@ -10574,7 +11704,7 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('div', { className: 'font-bold text-amber-800 text-sm mb-1' }, "Lomagundi Carbon Isotopes (Zimbabwe)"),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Significance: "),
-                      "2.2-2.0 Ga sediments record positive δ13C excursion — Great Oxygenation Event signal."
+                      "2.2-2.0 Ga sediments record positive δ13C excursion - Great Oxygenation Event signal."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Geology: "),
@@ -10992,7 +12122,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-stone-700' }, "Geology: "),
-                      "Gypsum karst — unusual."
+                      "Gypsum karst - unusual."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-stone-700' }, "Visit: "),
@@ -11052,7 +12182,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-stone-700' }, "Geology: "),
-                      "Boxwork formations — calcite-fin walls."
+                      "Boxwork formations - calcite-fin walls."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-stone-700' }, "Visit: "),
@@ -11569,7 +12699,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Fate: "),
-                      "Likely never fully connected — controversial reconstruction."
+                      "Likely never fully connected - controversial reconstruction."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-amber-200' },
@@ -11818,7 +12948,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-cyan-700' }, "Application: "),
-                      "Sensitive to fluids — used for geothermal + groundwater."
+                      "Sensitive to fluids - used for geothermal + groundwater."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-cyan-200' },
@@ -11964,7 +13094,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-cyan-700' }, "How it works: "),
-                      "Spectral element method (SEM) — Komatitsch + Tromp."
+                      "Spectral element method (SEM) - Komatitsch + Tromp."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-cyan-700' }, "Application: "),
@@ -12023,7 +13153,7 @@ var d = labToolData.plateTectonics || {};
             simTab === "geothermal" && React.createElement('div', { className: 'space-y-4' },
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-orange-200 bg-orange-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-orange-800 mb-2' }, "Geothermal Power Sites"),
-                React.createElement('p', { className: 'text-xs text-orange-700 mb-3' }, "20 major geothermal power plants worldwide. Geothermal harvests plate-tectonic heat — divergent and subduction-zone settings dominate."),
+                React.createElement('p', { className: 'text-xs text-orange-700 mb-3' }, "20 major geothermal power plants worldwide. Geothermal harvests plate-tectonic heat - divergent and subduction-zone settings dominate."),
                 React.createElement('div', { className: 'space-y-2' },
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-orange-200' },
                     React.createElement('div', { className: 'font-bold text-orange-800 text-sm mb-1' }, "Iceland"),
@@ -12153,7 +13283,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-orange-700' }, "Source: "),
-                      "Drilled into magma chamber 2009 — accidental."
+                      "Drilled into magma chamber 2009 - accidental."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-orange-700' }, "Status: "),
@@ -12563,7 +13693,7 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, "Mid-Ocean Ridge mapping (Tharp + Heezen)"),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "When: "),
-                      "1957 — first detailed bathymetric map."
+                      "1957 - first detailed bathymetric map."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "What: "),
@@ -13256,7 +14386,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Resources: "),
-                      "Gold (Homestake — Lead, SD); coal."
+                      "Gold (Homestake - Lead, SD); coal."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-green-200' },
@@ -13860,7 +14990,7 @@ var d = labToolData.plateTectonics || {};
             simTab === "critical_minerals" && React.createElement('div', { className: 'space-y-4' },
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-amber-200 bg-amber-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-amber-800 mb-2' }, "Critical Minerals + Mining"),
-                React.createElement('p', { className: 'text-xs text-amber-700 mb-3' }, "30 critical minerals — the materials energy transition and electronics require. Plate tectonic settings concentrate them (orogens, hydrothermal, layered intrusions, evaporites). Supply chain concentration is a major geopolitical issue."),
+                React.createElement('p', { className: 'text-xs text-amber-700 mb-3' }, "30 critical minerals - the materials energy transition and electronics require. Plate tectonic settings concentrate them (orogens, hydrothermal, layered intrusions, evaporites). Supply chain concentration is a major geopolitical issue."),
                 React.createElement('div', { className: 'space-y-2' },
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-amber-200' },
                     React.createElement('div', { className: 'font-bold text-amber-800 text-sm mb-1' }, "Lithium"),
@@ -14672,7 +15802,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-emerald-700' }, "Modern context: "),
-                      "Recently dated by zircon to ~36 ka — among the oldest accurately preserved oral histories."
+                      "Recently dated by zircon to ~36 ka - among the oldest accurately preserved oral histories."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-emerald-200' },
@@ -14713,7 +15843,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-emerald-700' }, "Description: "),
-                      "Pele moved from island to island in correct geological order — Kauai oldest, Big Island youngest."
+                      "Pele moved from island to island in correct geological order - Kauai oldest, Big Island youngest."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-emerald-700' }, "Modern context: "),
@@ -15161,7 +16291,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-cyan-700' }, "Notable events: "),
-                      "Major sections — Mojave, SF Bay — overdue or due."
+                      "Major sections - Mojave, SF Bay - overdue or due."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-cyan-200' },
@@ -15980,7 +17110,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-rose-700' }, "Contributions: "),
-                      "Discovered T. rex Sue (1990, SD) — most complete T. rex ever."
+                      "Discovered T. rex Sue (1990, SD) - most complete T. rex ever."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-rose-700' }, "Legacy: "),
@@ -18646,7 +19776,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Detail: "),
-                      "volcano.si.edu — database of all known volcanoes."
+                      "volcano.si.edu - database of all known volcanoes."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Access: "),
@@ -18661,7 +19791,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Detail: "),
-                      "iris.edu — seismic data + tools."
+                      "iris.edu - seismic data + tools."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Access: "),
@@ -18676,7 +19806,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Detail: "),
-                      "unavco.org — plate motion data + tools."
+                      "unavco.org - plate motion data + tools."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Access: "),
@@ -18691,7 +19821,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Detail: "),
-                      "iodp.org — drilling cores + data."
+                      "iodp.org - drilling cores + data."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Access: "),
@@ -18706,7 +19836,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Detail: "),
-                      "icdp-online.org — continental cores."
+                      "icdp-online.org - continental cores."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Access: "),
@@ -18751,7 +19881,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Detail: "),
-                      "scotese.com — visualize past + future plate motion."
+                      "scotese.com - visualize past + future plate motion."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Access: "),
@@ -18811,7 +19941,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Detail: "),
-                      "earthbyte.org — open plate models."
+                      "earthbyte.org - open plate models."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Access: "),
@@ -18871,7 +20001,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Detail: "),
-                      "agu.org — Eos magazine, fall + spring meetings."
+                      "agu.org - Eos magazine, fall + spring meetings."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-indigo-700' }, "Access: "),
@@ -19661,7 +20791,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-sky-700' }, "Mechanism: "),
-                      "Warming releases CH4 — strong greenhouse gas."
+                      "Warming releases CH4 - strong greenhouse gas."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-sky-700' }, "Detail: "),
@@ -19974,7 +21104,7 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('div', { className: 'font-bold text-amber-800 text-sm mb-1' }, "What is a fault line?"),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Answer: "),
-                      "Surface trace of a fault — fracture in Earth's crust where motion has occurred."
+                      "Surface trace of a fault - fracture in Earth's crust where motion has occurred."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-amber-200' },
@@ -20093,7 +21223,7 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('div', { className: 'font-bold text-amber-800 text-sm mb-1' }, "Where did Mary Anning find fossils?"),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Answer: "),
-                      "Lyme Regis, England — Jurassic Coast. Discovered first ichthyosaur, plesiosaur, pterosaur."
+                      "Lyme Regis, England - Jurassic Coast. Discovered first ichthyosaur, plesiosaur, pterosaur."
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-amber-200' },
@@ -20197,7 +21327,7 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('div', { className: 'font-bold text-green-800 text-sm mb-1' }, "Maine focus"),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Detail: "),
-                      "AlloFlow is developed in Maine, USA. Special attention given to Maine geology — pegmatite gems, Acadia + Katahdin, glacial features."
+                      "AlloFlow is developed in Maine, USA. Special attention given to Maine geology - pegmatite gems, Acadia + Katahdin, glacial features."
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-green-700' }, "Context: "),
@@ -20236,11 +21366,217 @@ var d = labToolData.plateTectonics || {};
 
                 onClick: function() { setStemLabTool(null); },
 
-                className: "px-6 py-2.5 text-sm font-bold text-red-800 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-all"
+                className: "px-6 py-2.5 text-sm font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "text-red-400 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl" : "text-red-800 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl")
 
               }, "\u2190 Back to Tools")
 
-            )
+            ),
+
+            // \u2550\u2550\u2550 TECTONIC BOUNDARIES \u2550\u2550\u2550
+            React.createElement('div', { className: 'mt-5 mx-4 rounded-2xl border border-red-300 bg-white p-3 shadow-sm' },
+              React.createElement('h4', { className: 'text-sm font-bold text-red-700 mb-2' }, '\ud83c\udf0b Three Boundary Types - Where plates meet'),
+              React.createElement('div', { className: 'rounded-xl overflow-hidden border border-red-200', style: { background: '#1c1410', aspectRatio: '16/5' } },
+                React.createElement('canvas', {
+                  ref: function(cvEl) {
+                    if (!cvEl) return;
+                    if (cvEl._tbAnim) return;
+                    var c2 = cvEl.getContext('2d');
+                    var W = cvEl.offsetWidth || 600;
+                    var H = cvEl.offsetHeight || 180;
+                    cvEl.width = W * 2; cvEl.height = H * 2;
+                    c2.scale(2, 2);
+                    var start = performance.now();
+                    function drawTb() {
+                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._tbAnim); return; }
+                      var t = (performance.now() - start) / 1000;
+                      c2.fillStyle = '#1c1410';
+                      c2.fillRect(0, 0, W, H);
+                      var anim = Math.sin(t * 0.8) * 8;
+                      // 3 columns
+                      var cols = [W * 0.16, W * 0.5, W * 0.84];
+                      var cy = H * 0.45;
+                      // CONVERGENT (left)
+                      c2.fillStyle = '#92400e';
+                      c2.fillRect(cols[0] - 35 - anim, cy, 35, 20);
+                      c2.fillRect(cols[0] + 0 + anim, cy, 35, 20);
+                      // Subduction
+                      c2.fillStyle = '#dc2626';
+                      c2.beginPath();
+                      c2.moveTo(cols[0], cy);
+                      c2.lineTo(cols[0] + anim, cy + 25);
+                      c2.lineTo(cols[0] + 10 + anim, cy + 30);
+                      c2.lineTo(cols[0] + 10, cy + 8);
+                      c2.closePath();
+                      c2.fill();
+                      // Mountain rise
+                      c2.fillStyle = '#fef3c7';
+                      c2.beginPath();
+                      c2.moveTo(cols[0] - 18, cy);
+                      c2.lineTo(cols[0] - 3, cy - 20);
+                      c2.lineTo(cols[0] + 12, cy);
+                      c2.closePath();
+                      c2.fill();
+                      // Volcano
+                      var volSmoke = (t * 30) % 50;
+                      c2.fillStyle = 'rgba(127,127,127,' + (1 - volSmoke / 50) + ')';
+                      c2.beginPath();
+                      c2.arc(cols[0] - 3, cy - 25 - volSmoke, 5, 0, Math.PI * 2);
+                      c2.fill();
+                      // DIVERGENT (mid)
+                      c2.fillStyle = '#92400e';
+                      c2.fillRect(cols[1] - 40 - anim, cy, 35, 20);
+                      c2.fillRect(cols[1] + 5 + anim, cy, 35, 20);
+                      // Magma upwelling
+                      var mag = Math.sin(t * 3) * 4;
+                      c2.fillStyle = '#fbbf24';
+                      c2.beginPath();
+                      c2.moveTo(cols[1] - 6, cy + 30);
+                      c2.lineTo(cols[1] + 6, cy + 30);
+                      c2.lineTo(cols[1] + 4 + mag, cy + 5);
+                      c2.lineTo(cols[1] - 4 - mag, cy + 5);
+                      c2.closePath();
+                      c2.fill();
+                      // New crust
+                      c2.fillStyle = '#ef4444';
+                      c2.fillRect(cols[1] - 6, cy, 12, 4);
+                      // TRANSFORM (right)
+                      var slip = Math.sin(t * 1.5) * 8;
+                      c2.fillStyle = '#92400e';
+                      c2.fillRect(cols[2] - 35, cy - slip, 35, 20);
+                      c2.fillRect(cols[2] + 0, cy + slip, 35, 20);
+                      // Crack
+                      c2.strokeStyle = '#fbbf24';
+                      c2.lineWidth = 2;
+                      c2.beginPath();
+                      c2.moveTo(cols[2], cy - 12);
+                      c2.lineTo(cols[2], cy + 32);
+                      c2.stroke();
+                      // Earthquake epicenter
+                      var quake = Math.abs(Math.sin(t * 4));
+                      c2.strokeStyle = '#dc2626';
+                      c2.lineWidth = 1;
+                      for (var ring = 0; ring < 3; ring++) {
+                        c2.beginPath();
+                        c2.arc(cols[2], cy + 8, 5 + ring * 8 + quake * 15, 0, Math.PI * 2);
+                        c2.stroke();
+                      }
+                      // Labels
+                      var labels = [
+                        { x: cols[0], color: '#dc2626', name: 'CONVERGENT', desc: 'Plates collide', extra: '\u2192 mountains + volcanoes' },
+                        { x: cols[1], color: '#fbbf24', name: 'DIVERGENT', desc: 'Plates separate', extra: '\u2192 ridges + rifts' },
+                        { x: cols[2], color: '#a855f7', name: 'TRANSFORM', desc: 'Plates slide', extra: '\u2192 earthquakes' }
+                      ];
+                      c2.textAlign = 'center';
+                      labels.forEach(function(l) {
+                        c2.fillStyle = l.color;
+                        c2.font = 'bold 10px sans-serif';
+                        c2.fillText(l.name, l.x, H - 38);
+                        c2.fillStyle = '#fef3c7';
+                        c2.font = '8.5px sans-serif';
+                        c2.fillText(l.desc, l.x, H - 28);
+                        c2.fillStyle = '#fbbf24';
+                        c2.fillText(l.extra, l.x, H - 19);
+                      });
+                      c2.fillStyle = 'rgba(0,0,0,0.85)';
+                      c2.fillRect(8, H - 14, W - 16, 12);
+                      c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#fb7185'; c2.textAlign = 'center';
+                      c2.fillText('Wegener 1912 proposed continental drift. Plate tectonics confirmed 1960s via seafloor magnetic stripes.', W / 2, H - 5);
+                      cvEl._tbAnim = requestAnimationFrame(drawTb);
+                    }
+                    drawTb();
+                    var ro = new ResizeObserver(function() {
+                      W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                    });
+                    ro.observe(cvEl);
+                  },
+                  style: { width: '100%', height: '100%', display: 'block' }
+                })
+              )
+            ),
+
+            // \u2550\u2550\u2550 MERCALLI vs RICHTER \u2550\u2550\u2550
+            React.createElement('div', { className: 'mt-5 mx-4 rounded-2xl border border-orange-300 bg-white p-3 shadow-sm' },
+              React.createElement('h4', { className: 'text-sm font-bold text-orange-700 mb-2' }, '\ud83d\udccf Earthquake Scales - Magnitude vs Intensity'),
+              React.createElement('div', { className: 'rounded-xl overflow-hidden border border-orange-200', style: { background: '#0a0410', aspectRatio: '16/5' } },
+                React.createElement('canvas', {
+                  ref: function(cvEl) {
+                    if (!cvEl) return;
+                    if (cvEl._eqAnim) return;
+                    var c2 = cvEl.getContext('2d');
+                    var W = cvEl.offsetWidth || 600;
+                    var H = cvEl.offsetHeight || 180;
+                    cvEl.width = W * 2; cvEl.height = H * 2;
+                    c2.scale(2, 2);
+                    var start = performance.now();
+                    function drawEq() {
+                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._eqAnim); return; }
+                      var t = (performance.now() - start) / 1000;
+                      c2.fillStyle = '#0a0410';
+                      c2.fillRect(0, 0, W, H);
+                      // Magnitudes
+                      var mags = [
+                        { m: 2, name: '2.0', desc: 'Barely felt', color: '#84cc16' },
+                        { m: 4, name: '4.0', desc: 'Mild shaking', color: '#facc15' },
+                        { m: 6, name: '6.0', desc: 'Damage to weak buildings', color: '#fb923c' },
+                        { m: 7, name: '7.0', desc: 'Major damage', color: '#ef4444' },
+                        { m: 8, name: '8.0', desc: 'Severe destruction', color: '#dc2626' },
+                        { m: 9, name: '9.0', desc: 'Devastating (T\u014dhoku 2011)', color: '#7f1d1d' }
+                      ];
+                      var barX = 30;
+                      var rowH = (H - 50) / mags.length;
+                      mags.forEach(function(mg, i) {
+                        var y = 20 + i * rowH;
+                        // Magnitude label
+                        c2.fillStyle = mg.color;
+                        c2.font = 'bold 11px sans-serif';
+                        c2.textAlign = 'left';
+                        c2.fillText('M ' + mg.name, barX, y + 12);
+                        // Animated waveform
+                        c2.strokeStyle = mg.color;
+                        c2.lineWidth = 1;
+                        c2.beginPath();
+                        var amp = Math.pow(2, mg.m - 2);
+                        for (var x = 80; x < W * 0.6; x += 2) {
+                          var freq = 5 + mg.m * 2;
+                          var yy = y + 8 + Math.sin((x * 0.1 + t * 4 + mg.m) * freq) * Math.min(amp * 0.8, rowH / 2 - 2);
+                          if (x === 80) c2.moveTo(x, yy);
+                          else c2.lineTo(x, yy);
+                        }
+                        c2.stroke();
+                        // Description
+                        c2.fillStyle = '#cbd5e1';
+                        c2.font = '8.5px sans-serif';
+                        c2.textAlign = 'right';
+                        c2.fillText(mg.desc, W - 10, y + 12);
+                      });
+                      c2.fillStyle = '#fef3c7';
+                      c2.font = 'italic 9px sans-serif';
+                      c2.textAlign = 'left';
+                      c2.fillText('Each whole number = 10\u00d7 shake amplitude, ~32\u00d7 energy', 30, 12);
+                      c2.fillStyle = 'rgba(0,0,0,0.85)';
+                      c2.fillRect(8, H - 14, W - 16, 12);
+                      c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#fb923c'; c2.textAlign = 'center';
+                      c2.fillText('Richter: magnitude (energy released). Mercalli: intensity (what people feel + damage caused).', W / 2, H - 5);
+                      cvEl._eqAnim = requestAnimationFrame(drawEq);
+                    }
+                    drawEq();
+                    var ro = new ResizeObserver(function() {
+                      W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                    });
+                    ro.observe(cvEl);
+                  },
+                  style: { width: '100%', height: '100%', display: 'block' }
+                })
+              )
+            ),
+
+            // ═══ INTERACTIVE PLATE BOUNDARY SIMULATOR ═══
+            React.createElement(window.AlloTectonicsInteractive),
+
+            // ═══ INTERACTIVE EPICENTER TRIANGULATION ═══
+            React.createElement(window.AlloTectonicsEpicenter)
 
           );
       })();
