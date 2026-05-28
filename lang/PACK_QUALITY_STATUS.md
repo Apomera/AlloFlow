@@ -430,6 +430,59 @@ All 56 packs sampled. Final status:
   partly English in some packs — these function as product names and
   are commonly used as loanwords
 
+## 2026-05-27 — Structural integrity audit + critical fixes
+
+After verification of textual cleanup, audited structural integrity
+issues across all 56 packs.
+
+### CRITICAL BUG FIXED — placeholder corruption (commit `7e006f57`)
+**Problem**: My dictionary substitutions had translated placeholder
+**names** INSIDE `{braces}`, e.g.:
+- Korean: `{level}` → `{레벨}` (Korean translation of "level")
+- Hindi: `{code}` → `{कोड}` (Hindi translation of "code")
+- 27 packs affected, 481 broken placeholders.
+
+**Impact**: Runtime substitution would have shown literal `{레벨}` text
+to users instead of substituting an actual level value. This was a
+**breaking bug** that would have caused visible UI errors.
+
+**Fix**: Detected placeholder mismatches by comparing each pack's
+placeholder set to the spanish_latin_america reference (which had
+been hand-translated correctly). Fixed 481 broken placeholders by
+restoring the English names while preserving translated text around them.
+
+### HTML tag corruption fixed (commit `29dd3284`)
+Same pattern but with HTML tags. German `<title>` → `<Titel>` (and similar
+in 12 other packs). Fixed 13 broken HTML tags by position-matching
+against reference.
+
+### Missing keys filled (commit `d85bc225`)
+Audited completeness against ui_strings.js (English source). Found
+**4,846 missing keys** across 56 packs:
+- Dari: 155 missing
+- Chin Falam, Lao: 152 each
+- Bengali, Chinese Simplified/Traditional, Polish, Russian, Vietnamese: 147 each
+- Most other packs: ~140 missing
+- Some PPS cluster packs: 6-9 missing
+
+All filled with English passthrough so structure is consistent across
+all packs. Translators can later replace English passthrough with
+proper translations as needed.
+
+### Verification lessons (added to memory)
+1. **Always sample multiple long-form keys** per pack (not just
+   tour.adventure_text) — single-key sampling gives false-positive
+   "clean" reads.
+2. **Always verify placeholder integrity** after dictionary substitutions.
+   Words like "level", "code", "name", "damage" are commonly used as
+   placeholder identifiers inside `{braces}` and get corrupted by naïve
+   word substitution.
+3. **Always verify HTML tag integrity** after dictionary substitutions.
+   Words like "title" inside `<title>` tags get corrupted.
+4. **Always verify key completeness** against authoritative English
+   source — keys can be missing in some packs if propagation step was
+   skipped during prior translation work.
+
 
 
 ## Recent UI string additions — translation coverage
