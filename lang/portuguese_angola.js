@@ -4613,7 +4613,7 @@
     "mode_perspectives_label": "⚔️ Competing Perspectives",
     "mode_perspectives_desc": "AI finds 2+ viewpoints esse agree e disagree",
     "mode_search_label": "🔍 Web-Enhanced",
-    "mode_search_desc": "Encontrar fontes primárias reais em arquivos (LOC, NARA, etc.)",
+    "mode_search_desc": "Encontrar fontes primárias reais em ficheiros (LOC, NARA, etc.)",
     "mode_links_label": "🔗 professor Links",
     "mode_links_desc": "Colar URLs para articles — AI constrói DBQ around them",
     "mode_custom_label": "✏️ professor Docs",
