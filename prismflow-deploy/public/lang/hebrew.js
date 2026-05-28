@@ -1180,7 +1180,19 @@
     "mind_map_branch": "Mind map branch {n} of {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
     "tier_score": "Tier {tier}, ציונים {score}",
-    "draggable_item": "פריט הניתן לגרירה"
+    "draggable_item": "פריט הניתן לגרירה",
+    "read_aloud_with_text": "Read aloud: {text}",
+    "stop_reading": "Stop reading",
+    "mute_all_audio": "Mute all audio",
+    "unmute_all_audio": "Unmute all audio",
+    "mute_all_audio_title": "Mute All Audio (Classroom Mode)",
+    "unmute_all_audio_title": "Unmute All Audio",
+    "mute_ambient_pad": "Mute ambient pad",
+    "unmute_ambient_pad": "Unmute ambient pad",
+    "stop_fluency_reading": "Stop fluency reading",
+    "read_aloud_fluency_practice": "Read aloud for fluency practice",
+    "message_speaker_read_aloud": "Message from {name}. Click any sentence to hear it read aloud.",
+    "sentence_read_aloud": "Sentence {num}. Click to read aloud."
   },
   "read_this_page": {
     "panel_aria": "פאנל קריאת עמוד זה",
@@ -2527,7 +2539,8 @@
     "whisper_load_failed": "Whisper טען failed. Falling back to other engines.",
     "backup_failed": "Backup failed. נסה again.",
     "invalid_backup_file": "Not a valid AlloHaven backup קבצים.",
-    "could_not_read_file": "Could not קרא זה קבצים. Is it a JSON backup?"
+    "could_not_read_file": "Could not קרא זה קבצים. Is it a JSON backup?",
+    "tts_failed": "Read-aloud failed. Please try again."
   },
   "analysis": {
     "title": "ניתוח חומר מקור",

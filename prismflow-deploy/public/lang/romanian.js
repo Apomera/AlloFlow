@@ -1691,7 +1691,8 @@
     "whisper_load_failed": "Whisper încarcă failed. Falling back la other engines.",
     "backup_failed": "Backup failed. Încearcă again.",
     "invalid_backup_file": "nu un valid AlloHaven backup fișier.",
-    "could_not_read_file": "Could nu citește acela fișier. este it un JSON backup?"
+    "could_not_read_file": "Could nu citește acela fișier. este it un JSON backup?",
+    "tts_failed": "Read-aloud failed. Please try again."
   },
   "large_file": {
     "modal_title": "Importă Large audio fișier",
@@ -2298,7 +2299,19 @@
     "mind_map_branch": "Mind map branch {n} de {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
     "tier_score": "Tier {tier}, punctaj {score}",
-    "draggable_item": "element care poate fi tras"
+    "draggable_item": "element care poate fi tras",
+    "read_aloud_with_text": "Read aloud: {text}",
+    "stop_reading": "Stop reading",
+    "mute_all_audio": "Mute all audio",
+    "unmute_all_audio": "Unmute all audio",
+    "mute_all_audio_title": "Mute All Audio (Classroom Mode)",
+    "unmute_all_audio_title": "Unmute All Audio",
+    "mute_ambient_pad": "Mute ambient pad",
+    "unmute_ambient_pad": "Unmute ambient pad",
+    "stop_fluency_reading": "Stop fluency reading",
+    "read_aloud_fluency_practice": "Read aloud for fluency practice",
+    "message_speaker_read_aloud": "Message from {name}. Click any sentence to hear it read aloud.",
+    "sentence_read_aloud": "Sentence {num}. Click to read aloud."
   },
   "games": {
     "syntax": {
@@ -8741,7 +8754,7 @@
       "crab_nebula": "Crab Nebula",
       "carina_nebula": "Carina Nebula",
       "helix_nebula": "Helix Nebula",
-      "the": "",
+      "the": "The ",
       "ring_nebula": "Ring Nebula",
       "horsehead_nebula": "Horsehead Nebula",
       "lagoon_nebula": "Lagoon Nebula",

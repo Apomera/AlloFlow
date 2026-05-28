@@ -1665,7 +1665,34 @@
     "no_graded_submissions": "కాదు graded submissions కు సేవ్ చేయి yet.",
     "removed_from_gradebook": "Removed నుండి gradebook.",
     "gradebook_empty": "Gradebook ఉంది empty.",
-    "nothing_to_save": "Nothing కు సేవ్ చేయి yet — జోడించు ఒక rubric లేదా anchors మొదటి."
+    "nothing_to_save": "Nothing కు సేవ్ చేయి yet — జోడించు ఒక rubric లేదా anchors మొదటి.",
+    "tts_failed": "Read-aloud failed. Please try again.",
+    "polish_skipped": "Polish skipped — your text is unchanged.",
+    "break_over": "Break over. Ready for the next focus session?",
+    "saved_to_journal": "Saved to your journal. (Daily reflection token already earned.)",
+    "memory_removed": "Memory content removed.",
+    "no_decks_due": "No decks due for review right now.",
+    "goal_removed": "Goal removed.",
+    "story_removed": "Story removed.",
+    "decoration_removed": "Decoration removed.",
+    "room_full": "Room is full. Save the gift for later by clearing a slot.",
+    "caption_removed": "Caption removed.",
+    "no_empty_cells": "No empty cells in this room to place a similar one. Try removing or moving something first.",
+    "no_image_to_save": "No image to save.",
+    "export_image_failed": "Could not export image. Try Print instead.",
+    "image_unavailable": "Image unavailable. Try again later.",
+    "nothing_to_export": "Nothing to export.",
+    "export_failed_browser": "Export failed. Try a different browser.",
+    "print_unavailable": "Print not available in this browser.",
+    "past_encounters_cleared": "Past encounters cleared.",
+    "pick_section_print": "Pick at least one section to print.",
+    "pick_section_preview": "Pick at least one section to preview.",
+    "companion_removed": "Companion removed.",
+    "voice_pref_save_failed": "Could not save voice preference.",
+    "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
+    "backup_failed": "Backup failed. Try again.",
+    "invalid_backup_file": "Not a valid AlloHaven backup file.",
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
   },
   "large_file": {
     "modal_title": "దిగుమతి చేయి Large ఆడియో ఫైల్",
@@ -2272,7 +2299,19 @@
     "mind_map_branch": "Mind map branch {n} యొక్క {total}: {title}",
     "mind_map_of": "Mind map: {topic}",
     "tier_score": "Tier {tier}, స్కోర్ {score}",
-    "draggable_item": "లాగగల అంశం"
+    "draggable_item": "లాగగల అంశం",
+    "read_aloud_with_text": "Read aloud: {text}",
+    "stop_reading": "Stop reading",
+    "mute_all_audio": "Mute all audio",
+    "unmute_all_audio": "Unmute all audio",
+    "mute_all_audio_title": "Mute All Audio (Classroom Mode)",
+    "unmute_all_audio_title": "Unmute All Audio",
+    "mute_ambient_pad": "Mute ambient pad",
+    "unmute_ambient_pad": "Unmute ambient pad",
+    "stop_fluency_reading": "Stop fluency reading",
+    "read_aloud_fluency_practice": "Read aloud for fluency practice",
+    "message_speaker_read_aloud": "Message from {name}. Click any sentence to hear it read aloud.",
+    "sentence_read_aloud": "Sentence {num}. Click to read aloud."
   },
   "games": {
     "syntax": {
@@ -8723,7 +8762,7 @@
       "crab_nebula": "Crab Nebula",
       "carina_nebula": "Carina Nebula",
       "helix_nebula": "Helix Nebula",
-      "the": "",
+      "the": "The ",
       "ring_nebula": "Ring Nebula",
       "horsehead_nebula": "Horsehead Nebula",
       "lagoon_nebula": "Lagoon Nebula",
@@ -12116,5 +12155,26 @@
     "cloud_voice_unavailable": "Cloud వాయిస్ అందుబాటులో లేదు",
     "allohaven": "AlloHaven",
     "tts": "వచనం-కు-Speech"
+  },
+  "th": {
+    "status": "Status",
+    "document": "Document",
+    "key_claim": "Key Claim",
+    "agrees_with": "Agrees With",
+    "disagrees_with": "Disagrees With",
+    "gain": "Gain",
+    "after": "After",
+    "before": "Before"
+  },
+  "options": {
+    "default": "Default",
+    "golden": "Golden",
+    "aqua": "Aqua",
+    "paper": "Paper",
+    "opendyslexic": "OpenDyslexic",
+    "monospace": "Monospace"
+  },
+  "labels": {
+    "pen_name": "Pen Name"
   }
 }
