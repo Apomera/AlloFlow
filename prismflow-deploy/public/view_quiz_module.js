@@ -301,7 +301,7 @@ function SequenceSenseCard(p) {
     onClick: markIDK,
     className: "px-3 py-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors",
     "aria-label": "I don't know — skip without penalty",
-    title: "Skip — no penalty. The AI will explain."
+    title: t("tooltips.skip_ai_explain")
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "🤔 "), "I don't know"))), step === 2 && /*#__PURE__*/React.createElement("div", {
@@ -356,12 +356,16 @@ function SequenceSenseCard(p) {
   }, explainer.error), explainer.text && typeof p.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
+      // p.callTTS returns the audio URL without playing — never wired up
+      // a playback step here, so the original button silently fetched and
+      // discarded the audio. Route through AlloSpeechPlayer instead: it
+      // plays, respects mute, allows click-stop, and toasts on failure.
       try {
-        p.callTTS(explainer.text);
+        if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainer.text);else p.callTTS(explainer.text);
       } catch (e) {}
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
-    "aria-label": "Read aloud"
+    "aria-label": t("a11y.read_aloud")
   }, "🔊 Read aloud")));
 }
 function RelationMismatchCard(p) {
@@ -559,10 +563,10 @@ function RelationMismatchCard(p) {
     onClick: markIDK,
     className: "px-2 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors",
     "aria-label": "I don't know — skip without penalty",
-    title: "Skip — no penalty. The AI will explain."
+    title: t("tooltips.skip_ai_explain")
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🤔 "), "I don't know"))), step === 2 && /*#__PURE__*/React.createElement("div", {
+  }, "🤔 "), t("ui_common.i_dont_know")))), step === 2 && /*#__PURE__*/React.createElement("div", {
     className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm font-semibold text-indigo-900 mb-2"
@@ -610,12 +614,16 @@ function RelationMismatchCard(p) {
   }, explainer.error), explainer.text && typeof p.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
+      // p.callTTS returns the audio URL without playing — never wired up
+      // a playback step here, so the original button silently fetched and
+      // discarded the audio. Route through AlloSpeechPlayer instead: it
+      // plays, respects mute, allows click-stop, and toasts on failure.
       try {
-        p.callTTS(explainer.text);
+        if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainer.text);else p.callTTS(explainer.text);
       } catch (e) {}
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
-    "aria-label": "Read aloud"
+    "aria-label": t("a11y.read_aloud")
   }, "🔊 Read aloud")));
 }
 function McqEnhancements(p) {
@@ -700,11 +708,11 @@ function McqEnhancements(p) {
     type: "button",
     onClick: requestExplainer,
     className: "text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors",
-    "aria-label": "Explain this concept",
-    title: "Get a quick AI explanation of this concept"
+    "aria-label": t("a11y.explain_concept"),
+    title: t("tooltips.quick_ai_explanation")
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🤖 "), "Explain this concept"), allowIDK && !idkMarked && /*#__PURE__*/React.createElement("button", {
+  }, "🤖 "), t("ui_common.explain_concept_action")), allowIDK && !idkMarked && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: markIDK,
     className: "text-xs font-semibold px-2.5 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 transition-colors",
@@ -727,10 +735,11 @@ function McqEnhancements(p) {
   }, explainer.error), explainer.text && typeof p.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
-      p.callTTS(explainer.text);
+      // Route through AlloSpeechPlayer for mute respect / click-stop / toast.
+      if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainer.text);else p.callTTS(explainer.text);
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
-    "aria-label": "Read aloud"
+    "aria-label": t("a11y.read_aloud")
   }, "🔊 Read aloud")), allowConfidence && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 flex-wrap text-xs"
   }, /*#__PURE__*/React.createElement("span", {
@@ -1049,7 +1058,7 @@ function LiveResultsDashboard(p) {
   function playExplainer() {
     if (!explainerModal.text || typeof p.callTTS !== 'function') return;
     try {
-      p.callTTS(explainerModal.text);
+      if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainerModal.text);else p.callTTS(explainerModal.text);
     } catch (e) {}
   }
   var pushStateState = React.useState({
@@ -1231,7 +1240,7 @@ function LiveResultsDashboard(p) {
     var statusBadge = function (cell) {
       if (!cell) return /*#__PURE__*/React.createElement("span", {
         className: "text-slate-600",
-        title: "No response"
+        title: t("tooltips.no_response")
       }, "—");
       if (cell.status === 'correct') return /*#__PURE__*/React.createElement("span", {
         className: "text-emerald-600",
@@ -1243,15 +1252,15 @@ function LiveResultsDashboard(p) {
       }, "✗");
       if (cell.status === 'idk') return /*#__PURE__*/React.createElement("span", {
         className: "text-sky-600",
-        title: "Marked I don't know"
+        title: t("tooltips.marked_unknown")
       }, "🤔");
       if (cell.status === 'partially-correct') return /*#__PURE__*/React.createElement("span", {
         className: "text-amber-600",
-        title: "Partially correct"
+        title: t("tooltips.partially_correct")
       }, "◐");
       return /*#__PURE__*/React.createElement("span", {
         className: "text-slate-600",
-        title: "Submitted (ungraded)"
+        title: t("tooltips.submitted_ungraded")
       }, "·");
     };
     body = /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
@@ -1260,12 +1269,12 @@ function LiveResultsDashboard(p) {
       type: "button",
       onClick: exportCsv,
       className: "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 transition-colors",
-      "aria-label": "Export gradebook as CSV",
+      "aria-label": t("a11y.export_gradebook_csv"),
       "data-help-key": "quiz_csv_export_btn",
-      title: "Download gradebook as CSV — opens in Excel / Google Sheets / Numbers"
+      title: t("tooltips.download_gradebook_csv")
     }, /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
-    }, "📥 "), "Export CSV")), /*#__PURE__*/React.createElement("div", {
+    }, "📥 "), t("ui_common.export_csv"))), /*#__PURE__*/React.createElement("div", {
       className: "overflow-x-auto"
     }, /*#__PURE__*/React.createElement("table", {
       className: "w-full text-sm border-collapse"
@@ -1273,7 +1282,7 @@ function LiveResultsDashboard(p) {
       className: "bg-slate-100"
     }, /*#__PURE__*/React.createElement("th", {
       className: "w-7 px-1 py-1.5",
-      "aria-label": "Expand row"
+      "aria-label": t("a11y.expand_row")
     }), /*#__PURE__*/React.createElement("th", {
       className: "text-left px-2 py-1.5 font-bold text-slate-700"
     }, "Student"), /*#__PURE__*/React.createElement("th", {
@@ -1411,8 +1420,8 @@ function LiveResultsDashboard(p) {
             setTeacherOverride(row.uid, qIdx, null);
           },
           className: "text-xs font-bold px-2 h-6 rounded bg-white text-slate-700 border border-slate-300 hover:bg-slate-100",
-          "aria-label": "Remove teacher override and revert to AI or deterministic grade",
-          title: "Remove teacher override (revert to AI / deterministic grade)"
+          "aria-label": t("a11y.remove_teacher_override"),
+          title: t("tooltips.remove_teacher_override")
         }, /*#__PURE__*/React.createElement("span", {
           "aria-hidden": "true"
         }, "↺ "), "undo")));
@@ -1449,12 +1458,12 @@ function LiveResultsDashboard(p) {
           openExplainer(card.questionIdx, card.conceptText);
         },
         className: "ml-auto inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors",
-        "aria-label": "Explain this concept to the class",
+        "aria-label": t("a11y.explain_to_class"),
         "data-help-key": "quiz_explain_to_class_btn",
-        title: "Generate a 60-90 word concept explainer for the class"
+        title: t("tooltips.generate_concept_explainer")
       }, /*#__PURE__*/React.createElement("span", {
         "aria-hidden": "true"
-      }, "🎓 "), "Explain to class")));
+      }, "🎓 "), t("ui_common.explain_to_class"))));
     }));
   } else if (variant === 'retentionCurve') {
     body = /*#__PURE__*/React.createElement("div", {
@@ -1626,7 +1635,7 @@ function LiveResultsDashboard(p) {
           className: "text-slate-600"
         }, "(no text)")), s.aiGraded && /*#__PURE__*/React.createElement("span", {
           className: "flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-1 py-0.5 rounded bg-indigo-100 text-indigo-800",
-          title: "AI-graded"
+          title: t("tooltips.ai_graded")
         }, "✨"), confidenceChip(s.confidence, s.status), s.aiFeedback && /*#__PURE__*/React.createElement("span", {
           className: "flex-shrink-0 italic text-[10px] text-indigo-800 truncate max-w-[12rem]",
           title: s.aiFeedback
@@ -1638,7 +1647,7 @@ function LiveResultsDashboard(p) {
     className: "fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 p-4",
     role: "dialog",
     "aria-modal": "true",
-    "aria-label": "Concept explainer",
+    "aria-label": t("a11y.concept_explainer"),
     onClick: function (e) {
       if (e.target === e.currentTarget) closeExplainer();
     }
@@ -1658,7 +1667,7 @@ function LiveResultsDashboard(p) {
     type: "button",
     ref: explainerCloseBtnRef,
     onClick: closeExplainer,
-    "aria-label": "Close concept explainer",
+    "aria-label": t("a11y.close_concept_explainer"),
     className: "flex-shrink-0 text-slate-600 hover:text-slate-700 text-xl leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded"
   }, "×")), explainerModal.loading ? /*#__PURE__*/React.createElement("div", {
     className: "p-4 text-center text-sm text-slate-600"
@@ -1685,7 +1694,7 @@ function LiveResultsDashboard(p) {
     type: "button",
     onClick: playExplainer,
     className: "text-xs font-bold px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100",
-    title: "Play explainer aloud"
+    title: t("tooltips.play_explainer_aloud")
   }, "🔊 Play aloud"), !explainerModal.loading && !explainerModal.error && p.activeSessionCode && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: pushExplainerToStudents,
@@ -1693,7 +1702,7 @@ function LiveResultsDashboard(p) {
     className: 'text-xs font-bold px-3 py-1.5 rounded ' + (pushState.pushed ? 'bg-emerald-600 text-white' : 'bg-amber-500 hover:bg-amber-600 text-white') + ' disabled:opacity-50',
     "aria-label": pushState.pushed ? 'Explainer pushed to all students' : 'Push this explainer to every student\'s screen',
     "data-help-key": "quiz_push_to_students_btn",
-    title: "Send this explainer to every student's screen now"
+    title: t("tooltips.send_explainer_to_students")
   }, pushState.pushing ? 'Pushing…' : pushState.pushed ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "✓ "), "Pushed to students") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
@@ -1705,7 +1714,7 @@ function LiveResultsDashboard(p) {
     type: "button",
     onClick: closeExplainer,
     className: "ml-auto text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700"
-  }, "Close")))) : null;
+  }, t("ui_common.close"))))) : null;
   var reflectionsData = null;
   try {
     reflectionsData = aggsMod.aggregateReflections && aggsMod.aggregateReflections(quizState, generatedContent, roster);
@@ -1754,7 +1763,7 @@ function LiveResultsDashboard(p) {
   return /*#__PURE__*/React.createElement("div", {
     className: "p-5 rounded-xl border-2 border-indigo-300 bg-white mb-4 shadow-sm",
     role: "region",
-    "aria-label": "Live Results Dashboard"
+    "aria-label": t("a11y.live_results_dashboard")
   }, header, body, reflectionsEl, explainerModalEl);
 }
 function FreeformItemsBlock(p) {
@@ -1982,10 +1991,10 @@ function FreeformItemCard(p) {
         submitGrade();
       }
     },
-    placeholder: "Type the missing word or phrase...",
+    placeholder: t("placeholders.missing_word_or_phrase"),
     disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk',
     className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50",
-    "aria-label": "Fill in the blank"
+    "aria-label": t("a11y.fill_in_blank")
   }) : /*#__PURE__*/React.createElement("textarea", {
     value: response,
     onChange: function (ev) {
@@ -2010,10 +2019,10 @@ function FreeformItemCard(p) {
     onClick: markIDK,
     className: "px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors",
     "aria-label": "I don't know — skip without penalty",
-    title: "Skip — no penalty. The AI will explain the concept."
+    title: t("tooltips.skip_ai_explain_concept")
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🤔 "), "I don't know")), grade.status && grade.status !== 'correct' && grade.status !== 'idk' && /*#__PURE__*/React.createElement("button", {
+  }, "🤔 "), t("ui_common.i_dont_know"))), grade.status && grade.status !== 'correct' && grade.status !== 'idk' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       setGrade({
@@ -2030,7 +2039,7 @@ function FreeformItemCard(p) {
       });
     },
     className: "px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
-  }, "Try again")), grade.status && /*#__PURE__*/React.createElement("div", {
+  }, t("ui_common.try_again"))), grade.status && /*#__PURE__*/React.createElement("div", {
     className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
     role: "status",
     "aria-live": "polite"
@@ -2042,7 +2051,7 @@ function FreeformItemCard(p) {
     type: "button",
     onClick: requestExplainer,
     className: "ml-auto text-xs font-bold px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors",
-    title: "Get a quick AI explanation of this concept"
+    title: t("tooltips.quick_ai_explanation")
   }, "🤖 Explain this")), grade.feedback && /*#__PURE__*/React.createElement("p", {
     className: 'text-sm text-' + statusColor + '-900 mb-2'
   }, grade.feedback), explainer.open && /*#__PURE__*/React.createElement("div", {
@@ -2058,10 +2067,10 @@ function FreeformItemCard(p) {
   }, explainer.error), explainer.text && typeof p.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
-      p.callTTS(explainer.text);
+      if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainer.text);else p.callTTS(explainer.text);
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
-    "aria-label": "Read aloud"
+    "aria-label": t("a11y.read_aloud")
   }, "🔊 Read aloud"))), allowConfidence && grade.status && grade.status !== 'idk' && /*#__PURE__*/React.createElement("div", {
     className: "mt-2 flex items-center gap-2 flex-wrap text-xs"
   }, /*#__PURE__*/React.createElement("span", {
@@ -2396,7 +2405,7 @@ function QuizView(props) {
       disabled: isLoading,
       className: 'absolute top-1 right-1 ' + btnSize + ' rounded-full bg-white/90 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors disabled:opacity-50',
       title: isLoading ? 'Refining…' : 'Refine this image',
-      "aria-label": "Refine image",
+      "aria-label": t("a11y.refine_image"),
       "data-help-key": "quiz_image_refine_btn"
     }, isLoading ? '⋯' : '✏️'), isOpen && /*#__PURE__*/React.createElement("div", {
       className: "mt-2 p-2 rounded border border-indigo-200 bg-indigo-50 text-xs"
@@ -2410,10 +2419,10 @@ function QuizView(props) {
       disabled: isLoading,
       className: "text-xs font-bold px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-50",
       "aria-label": "Remove text from this image",
-      title: "One-click: remove text from this image"
+      title: t("tooltips.one_click_remove_text")
     }, /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
-    }, "🧹 "), "Remove text")), /*#__PURE__*/React.createElement("textarea", {
+    }, "🧹 "), t("ui_common.remove_text"))), /*#__PURE__*/React.createElement("textarea", {
       value: inputValue,
       onChange: function (e) {
         var v = e.target.value;
@@ -2450,7 +2459,7 @@ function QuizView(props) {
       },
       disabled: isLoading,
       className: "text-xs font-semibold px-2.5 py-1 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-    }, "Cancel"))));
+    }, t("ui_common.cancel")))));
   }
   var isPresentationMode = props.isPresentationMode;
   var isReviewGame = props.isReviewGame;
@@ -2618,11 +2627,11 @@ function QuizView(props) {
     type: "button",
     onClick: function () {
       try {
-        props.callTTS(_pushedExplainer.text);
+        if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(_pushedExplainer.text);else props.callTTS(_pushedExplainer.text);
       } catch (e) {}
     },
     className: "text-xs font-bold px-3 py-1 rounded bg-white border border-amber-300 text-amber-900 hover:bg-amber-100",
-    "aria-label": "Read aloud"
+    "aria-label": t("a11y.read_aloud")
   }, "🔊 Read aloud"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
@@ -2728,10 +2737,10 @@ function QuizView(props) {
   }, explainerData.response), typeof props.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
-      props.callTTS(explainerData.response);
+      if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainerData.response);else props.callTTS(explainerData.response);
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
-    "aria-label": "Read aloud"
+    "aria-label": t("a11y.read_aloud")
   }, "🔊 Read aloud")), explainerData.error && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 p-2 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800"
   }, explainerData.error)) : null;
@@ -3349,7 +3358,7 @@ function QuizView(props) {
       disabled: !!isImprovingDistractor[i + ':' + optIdx],
       className: "text-xs font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50",
       "aria-label": isImprovingDistractor[i + ':' + optIdx] ? 'Rewriting distractor' : 'Rewrite this distractor to encode a real misconception',
-      title: "Rewrite this distractor to encode a real misconception"
+      title: t("tooltips.rewrite_distractor")
     }, /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
     }, "✨ "), isImprovingDistractor[i + ':' + optIdx] ? 'rewriting…' : 'improve')));
@@ -3444,7 +3453,7 @@ function QuizView(props) {
         reopenReflection(i);
       },
       className: "mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900"
-    }, "Edit response")) : /*#__PURE__*/React.createElement("div", {
+    }, t("ui_common.edit_response"))) : /*#__PURE__*/React.createElement("div", {
       className: "mt-2"
     }, /*#__PURE__*/React.createElement("textarea", {
       "aria-label": "Your reflection",
@@ -3452,7 +3461,7 @@ function QuizView(props) {
       onChange: function (e) {
         setReflectionDraft(i, e.target.value);
       },
-      placeholder: "Type your reflection here…",
+      placeholder: t("placeholders.reflection_here"),
       className: "w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-y transition-all",
       rows: 4
     }), /*#__PURE__*/React.createElement("div", {
@@ -3464,7 +3473,7 @@ function QuizView(props) {
       },
       disabled: !refDraft.trim(),
       className: "text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-    }, "Submit reflection"), !refDraft.trim() && /*#__PURE__*/React.createElement("span", {
+    }, t("ui_common.submit_reflection")), !refDraft.trim() && /*#__PURE__*/React.createElement("span", {
       className: "text-[11px] italic text-slate-600"
     }, "Type a response to enable submit")))));
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
@@ -3487,7 +3496,7 @@ function QuizView(props) {
         reopenReflection(0);
       },
       className: "mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900"
-    }, "Edit response")) : /*#__PURE__*/React.createElement("div", {
+    }, t("ui_common.edit_response"))) : /*#__PURE__*/React.createElement("div", {
       className: "mt-2"
     }, /*#__PURE__*/React.createElement("textarea", {
       "aria-label": "Your reflection",
@@ -3495,7 +3504,7 @@ function QuizView(props) {
       onChange: function (e) {
         setReflectionDraft(0, e.target.value);
       },
-      placeholder: "Type your reflection here…",
+      placeholder: t("placeholders.reflection_here"),
       className: "w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-y transition-all",
       rows: 4
     }), /*#__PURE__*/React.createElement("div", {
@@ -3507,7 +3516,7 @@ function QuizView(props) {
       },
       disabled: !refDraft.trim(),
       className: "text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-    }, "Submit reflection"), !refDraft.trim() && /*#__PURE__*/React.createElement("span", {
+    }, t("ui_common.submit_reflection")), !refDraft.trim() && /*#__PURE__*/React.createElement("span", {
       className: "text-[11px] italic text-slate-600"
     }, "Type a response to enable submit")));
   }())))));

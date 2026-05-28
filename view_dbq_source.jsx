@@ -314,42 +314,41 @@ function DbqView(props) {
                     addToast && addToast(t("toasts.select_text_to_annotate"));
                   }
                 }} className="text-[11px] font-bold bg-yellow-200 hover:bg-yellow-300 text-yellow-800 px-2 py-1 rounded-full">🖍️ Highlight</button><button onClick={() => {
+                  // Migrated to AlloSpeechPlayer (May 2026) — was 35 lines of
+                  // duplicated callTTS → Audio element → SpeechSynthesis cascade,
+                  // each branch maintaining its own _docSpeaking_${id} flag and
+                  // doing its own end-of-speech reset. Now: a single speak()
+                  // (or stop() when already playing) and the player handles
+                  // mute respect, AbortSignal, fallback toast, and the
+                  // currently-speaking state we still need for the button
+                  // colour, surfaced via the 'allo-speech-state' event below.
                   const text = activeDoc.excerpt || '';
                   if (!text) return;
+                  const player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null;
                   if (r[`_docSpeaking_${activeDoc.id}`]) {
-                    window.speechSynthesis && window.speechSynthesis.cancel();
+                    if (player) player.stop(); else if (window.speechSynthesis) window.speechSynthesis.cancel();
                     setDbq(`_docSpeaking_${activeDoc.id}`, false);
                     return;
                   }
-                  setDbq(`_docSpeaking_${activeDoc.id}`, true);
-                  if (callTTS) {
-                    callTTS(text, selectedVoice || 'Kore', 0.9).then(url => {
-                      if (url) {
-                        const a = new Audio(url);
-                        a.onended = () => setDbq(`_docSpeaking_${activeDoc.id}`, false);
-                        a.play().catch(() => setDbq(`_docSpeaking_${activeDoc.id}`, false));
-                      } else {
+                  if (player) {
+                    setDbq(`_docSpeaking_${activeDoc.id}`, true);
+                    const onState = (e) => {
+                      const speaking = !!(e.detail && e.detail.isPlaying && e.detail.currentText === text);
+                      if (!speaking) {
                         setDbq(`_docSpeaking_${activeDoc.id}`, false);
+                        window.removeEventListener('allo-speech-state', onState);
                       }
-                    }).catch(() => {
-                      if (window.speechSynthesis) {
-                        window.speechSynthesis.cancel();
-                        const u = new SpeechSynthesisUtterance(text);
-                        u.rate = 0.9;
-                        u.onend = () => setDbq(`_docSpeaking_${activeDoc.id}`, false);
-                        window.speechSynthesis.speak(u);
-                      } else {
-                        setDbq(`_docSpeaking_${activeDoc.id}`, false);
-                      }
-                    });
+                    };
+                    window.addEventListener('allo-speech-state', onState);
+                    player.speak(text, { voice: selectedVoice || 'Kore', rate: 0.9 });
                   } else if (window.speechSynthesis) {
+                    // Cold-boot fallback: player module not yet loaded.
+                    setDbq(`_docSpeaking_${activeDoc.id}`, true);
                     window.speechSynthesis.cancel();
                     const u = new SpeechSynthesisUtterance(text);
                     u.rate = 0.9;
                     u.onend = () => setDbq(`_docSpeaking_${activeDoc.id}`, false);
                     window.speechSynthesis.speak(u);
-                  } else {
-                    setDbq(`_docSpeaking_${activeDoc.id}`, false);
                   }
                 }} className={`text-[11px] font-bold px-2 py-1 rounded-full ${r[`_docSpeaking_${activeDoc.id}`] ? 'bg-red-200 hover:bg-red-300 text-red-800' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'}`} aria-label={r[`_docSpeaking_${activeDoc.id}`] ? (t('a11y.stop_reading') || 'Stop reading') : (t('a11y.read_aloud') || 'Read aloud')}>{r[`_docSpeaking_${activeDoc.id}`] ? '⏹️ Stop' : '🔊 Listen'}</button><button onClick={async () => {
                   if (r[`_docVocab_${activeDoc.id}`]) {
