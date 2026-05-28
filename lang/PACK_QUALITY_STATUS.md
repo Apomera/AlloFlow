@@ -714,3 +714,82 @@ structural defects.
 - `audit_misc.cjs` — whitespace, parens, double-spaces
 - `final_integrity_audit.cjs` — comprehensive summary
 - `refined_audit.cjs` — excludes source-side key-path aliases
+
+## 2026-05-27 — Accuracy enhancement sweep (post-structural-integrity)
+
+After structural integrity reached 100% clean, performed targeted accuracy work
+across all 56 packs in 7 phases:
+
+**Phase A: latent corruption reversal (3,400+ keys / 11 packs)** — commit `9e5fa137`
+- Phase 1: canonical-term corruptions (Dari/Farsi `انجام شدام→انجام شد`,
+  German `Ichn→In` & `mulTipple→Multiple`, Bengali `একআমি→AI` & `Mulটিপle→Multiple`)
+- Phase 2: Dari/Farsi `انجام شدام` mid-word artifacts replaced with English passthrough
+  for 944 keys/pack (unrecoverable Persian)
+- Phase 3: 598 severely-garbled values (≥3 Latin↔native script junctions) replaced
+  with English passthrough across 10 packs
+- Phase 4: 7,449 stuck-on English suffixes stripped (`শিক্ষার্থীs→শিক্ষার্থী`, etc.)
+- Phase 5/6: 1,637 partial-substitution corruptions reversed via curated dictionaries
+  (`feedপিছনে→feedback`, `stकला→start`, `Mमोडl→modal`, etc.)
+
+Net: Bengali Latin+Bengali mid-word 3841→1613 (−58%), Hindi 1345→346 (−74%).
+
+**Phase B: Urdu/Persian لا→نه corruption reversal (166 keys)** — part of `3962048d`
+- `تنہیںش→تلاش` (Search, 114 keys Urdu), `کنہیںس→کلاس` (Class, 52 keys)
+- Same patterns reversed in Farsi/Dari/Pashto where applicable
+
+**Phase C: terminology consistency pass (768 fixes / 45 packs)** — part of `3962048d`
+For each high-priority UI verb/noun (Delete, Save, Cancel, Done, Close, Edit, Apply,
+Reset, Download, Print, Search, Filter, etc.) with a canonical translation in the
+pack's `common.*` keys, applied that translation to all other keys leaking English.
+Protected brand phrases (Google Search, Adventure Mode, Anchor Chart, Save as PDF,
+Reset Password) and pure-English-passthrough lines to avoid awkward mixed values.
+
+**Phase D: mid-tier passthrough reduction (113 keys × 5 packs = 565 translations)**
+- Commit `837d3f29` wave 1: 54 high-vis keys (launch_pad badges, tour titles,
+  common UI labels, toasts notifications, a11y read-aloud labels) hand-translated
+  for German + Korean + Hindi + Indonesian + Italian.
+- Commit `dd427c90` wave 2: 59 more keys (a11y highlights/notes/canvas, sidebar
+  tool labels, more toasts) hand-translated same 5 packs.
+
+Audit impact: German high-vis passthrough 14% → 9%.
+
+**Phase E: Polish/Russian help_mode stub diversification (34 keys × 2 = 68)** — commit `a068845a`
+Hand-translated 34 specific help_mode tooltips that were sharing generic stubs
+("Dashboard button.", "UI element: word sounds.", etc.), inferring intent from
+the key path. Coverage: dashboard buttons, ws_gen controls, wizard steps,
+bridge buttons, timeline controls, scaffolds panel. Diversity 80% → 81%.
+
+**Phase F: sister-pack regional differentiation (110 keys)** — commit `a4bf0ef0`
+- PT Portugal / Angola (74): tela→ecrã, arquivo→ficheiro, ônibus→autocarro,
+  celular→telemóvel, geladeira→frigorífico, esporte→desporto, usuário→utilizador
+- ES Castilian (31): computadora→ordenador, celular→móvil, carro→coche,
+  boleto→billete, estacionamiento→aparcamiento, palta→aguacate, video→vídeo
+- FR Canadian (6): weekend→fin de semaine, email→courriel, shopping→magasinage,
+  parking→stationnement
+All substitutions use word-boundary regex with case preservation and brand protection.
+
+**Phase G: PPS cluster high-visibility labels (25 keys × 7 packs = 175)** — commit `70dee2bf`
+Hand-translated 25 most-visible UI button labels and badges for Acholi, Karen,
+Maay Maay, Marshallese, Chin Hakha, Chin Falam, Lao. Coverage: Continue/Next/Back,
+Yes/No/OK/Confirm, Loading/Processing/Saving/Saved/Error/Warning/Success, Search/
+Preview/Generate/Copy/Help/Settings/Add/Remove, launch_pad Recommended/Educator
+badges. PPS English-passthrough strategy remains for long-tail body text.
+
+---
+
+## Remaining native-speaker review gaps
+
+Quality work that automation cannot replicate — would benefit from native review:
+
+| Area | Affected packs | Notes |
+|---|---|---|
+| Mid-tier long-tour entries | Hindi (14 tour.*_text @ ~1700 chars each), German, Korean, Indonesian, Italian | English passthrough in tour entries; needs prose translation |
+| help_mode diversity long-tail | Polish/Russian (154 shared stubs remaining), German, Indonesian | Each tooltip needs key-specific translation; ui_strings.js has empty source values |
+| Persian/Arabic chain residual ال/ا prefix | Farsi, Dari, Urdu, Pashto, Arabic | ~1100 mid-word Latin+Persian adjacencies remain; many are legitimate brand-name + Persian "و" prefix, but a native review would distinguish corruption from idiom |
+| Polish Cyrillic+Latin mid-word | Polish (~1690) | Russian-stem + Polish-suffix partials; unsalvageable without Russian→Polish dictionary expansion or native rewrite |
+| Honorific/register consistency | Japanese (formal vs informal mixing), Korean (가요체 vs 합쇼체), Vietnamese (formal addressing) | Software UI should pick one register and stay consistent |
+| Arabic dialect | Arabic (MSA vs colloquial mixing) | Pack is MSA-leaning but some auto-translations introduced dialect variants |
+| Number/date formatting | All packs | Hardcoded "10:00 AM", "Jan 1, 2026" formats — should use locale-aware formatters |
+| RTL bidirectional text | Hebrew, Arabic, Farsi, Dari, Urdu, Pashto | Mixed-direction strings with embedded English brand names may render with awkward direction marks; visual review needed |
+| Idiomatic phrasing | All | "Drag and drop" → literal translations may be awkward; "{n} more" plural forms may break in fusional languages |
+| Educational terminology | All | "IEP", "RTI", "ELL", "504", "CCSS" are US-specific; cultural adaptation needed for non-US deployments |
