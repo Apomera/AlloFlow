@@ -61,7 +61,7 @@ const LABEL_POSITIONS = {
   "bottom-center": { position: "absolute", top: "85%", left: "50%", transform: "translateX(-50%)", zIndex: 4 },
   "bottom-right": { position: "absolute", top: "85%", right: "6%", zIndex: 4 }
 };
-const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onUpdateLabel, onSpeak, t, initialAnnotations, onAnnotationsChange, isTeacherMode, onChallengeSubmit, callGemini }) => {
+const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel, onRegenerateFrame, onDeleteFrame, onUpdateLabel, onSpeak, t, initialAnnotations, onAnnotationsChange, isTeacherMode, onChallengeSubmit, callGemini }) => {
   const [labelsHidden, setLabelsHidden] = React.useState(false);
   const [editingLabel, setEditingLabel] = React.useState(null);
   const [refiningPanelIdx, setRefiningPanelIdx] = React.useState(null);
@@ -99,6 +99,10 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onUpdateLabel, 
   const [drawingStart, setDrawingStart] = React.useState(null);
   const [refineInput, setRefineInput] = React.useState("");
   const [imageOverrides, setImageOverrides] = React.useState(initialAnnotations?.imageOverrides || {});
+  const [animatingPanelIdx, setAnimatingPanelIdx] = React.useState(null);
+  const [animateInput, setAnimateInput] = React.useState("");
+  const [regenFrame, setRegenFrame] = React.useState(null);
+  const [regenInput, setRegenInput] = React.useState("");
   const fileInputRefs = React.useRef({});
   const handleImageUpload = (panelIdx, e) => {
     const file = e.target.files?.[0];
@@ -302,6 +306,29 @@ Return ONLY valid JSON:
       setRefineInput("");
       setRefiningPanelIdx(null);
     }
+  };
+  const handleDownloadGif = (panel, panelIdx) => {
+    if (!panel || !panel.imageUrl) return;
+    const safeTitle = (visualPlan && visualPlan.title || "animation").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "animation";
+    const a = document.createElement("a");
+    a.href = panel.imageUrl;
+    a.download = `${safeTitle}-panel-${panelIdx + 1}.gif`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+  const handleAnimateSubmit = (panelIdx) => {
+    const text = animateInput.trim();
+    if (!text || !onAnimatePanel) return;
+    onAnimatePanel(panelIdx, text);
+    setAnimateInput("");
+    setAnimatingPanelIdx(null);
+  };
+  const handleRegenFrameSubmit = () => {
+    if (!regenFrame || !onRegenerateFrame) return;
+    onRegenerateFrame(regenFrame.panelIdx, regenFrame.frameIdx, regenInput.trim());
+    setRegenInput("");
+    setRegenFrame(null);
   };
   const handleAddUserLabel = (panelIdx, e) => {
     if (addingLabelPanel === null) return;
@@ -1176,6 +1203,22 @@ Return ONLY valid JSON:
       title: t("common.download_annotated_diagram_as_png")
     },
     "\u{1F4BE}"
+  ), (panel.type === "process_animation" || panel.imageUrl && panel.imageUrl.startsWith && panel.imageUrl.startsWith("data:image/gif")) && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      "aria-label": t("common.download_gif") || "Download GIF",
+      onClick: () => handleDownloadGif(panel, panelIdx),
+      title: t("common.download_gif") || "Download GIF"
+    },
+    "\u{1F39E}\uFE0F"
+  ), onAnimatePanel && panel.type !== "process_animation" && !(panel.imageUrl && panel.imageUrl.startsWith && panel.imageUrl.startsWith("data:image/gif")) && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      "aria-label": t("common.animate_this_panel") || "Animate this panel",
+      onClick: () => setAnimatingPanelIdx(animatingPanelIdx === panelIdx ? null : panelIdx),
+      title: t("common.animate_this_panel_title") || "Turn this panel into an animated GIF"
+    },
+    "\u{1F3AC}"
   ), isTeacherMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -1271,7 +1314,106 @@ Return ONLY valid JSON:
       style: { padding: "6px 10px", borderRadius: 6, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", cursor: "pointer", fontSize: 12 }
     },
     "\u2715"
-  )), visualPlan.layout === "sequence" && panelIdx < orderedPanels.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "visual-sequence-arrow" }, "\u2022 \u2022 \u2022")))), showComparison && challengeResult && /* @__PURE__ */ React.createElement(
+  )), animatingPanelIdx === panelIdx && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6, padding: "6px 8px", background: "#fafafe", borderRadius: "8px", border: "1px solid #e0e7ff" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      value: animateInput,
+      onChange: (e) => setAnimateInput(e.target.value),
+      placeholder: t("common.animate_input_placeholder") || 'What should animate? e.g. "cell divides" or "water cycles"',
+      onKeyDown: (e) => e.key === "Enter" && handleAnimateSubmit(panelIdx),
+      autoFocus: true,
+      "aria-label": t("common.animate_input_aria") || `Motion description for Panel ${panelIdx + 1}`,
+      style: { flex: 1, padding: "6px 10px", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: "none" }
+    }
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      "aria-label": t("common.animate_panel") || "Animate panel",
+      onClick: () => handleAnimateSubmit(panelIdx),
+      style: { padding: "6px 14px", borderRadius: 6, background: "#7c3aed", color: "white", border: "none", fontWeight: 600, cursor: "pointer", fontSize: 12, whiteSpace: "nowrap" }
+    },
+    "\u{1F3AC} ",
+    t("common.animate") || "Animate"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      "aria-label": t("common.cancel"),
+      onClick: () => {
+        setAnimatingPanelIdx(null);
+        setAnimateInput("");
+      },
+      style: { padding: "6px 10px", borderRadius: 6, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", cursor: "pointer", fontSize: 12 }
+    },
+    "\u2715"
+  )), /* @__PURE__ */ React.createElement("p", { style: { fontSize: 10, color: "#64748b", margin: "4px 2px 0", lineHeight: 1.4 } }, t("common.animate_hint") || "Best for processes \u2014 mitosis, water cycle, motion. Static images stay clearer for anatomy or vocabulary.")), panel.frames && panel.frames.length > 1 && (onRegenerateFrame || onDeleteFrame) && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6, padding: "6px 8px", background: "#fafafe", borderRadius: "8px", border: "1px solid #e0e7ff" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10, fontWeight: 600, color: "#475569", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" } }, t("common.frames_label") || "Frames", " (", panel.frames.length, ")"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, overflowX: "auto", paddingBottom: 4 } }, panel.frames.map((frameUrl, fIdx) => {
+    const src = typeof frameUrl === "string" && frameUrl.startsWith("data:") ? frameUrl : "data:image/png;base64," + frameUrl;
+    const isAnchor = fIdx === 0;
+    const isRegenOpen = regenFrame && regenFrame.panelIdx === panelIdx && regenFrame.frameIdx === fIdx;
+    return /* @__PURE__ */ React.createElement("div", { key: fIdx, style: { position: "relative", flexShrink: 0 } }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => {
+          if (!onRegenerateFrame || isAnchor) return;
+          setRegenFrame({ panelIdx, frameIdx: fIdx });
+          setRegenInput("");
+        },
+        "aria-label": isAnchor ? t("common.frame_anchor_aria") || `Frame ${fIdx + 1} (anchor \u2014 regenerate the whole panel to change this)` : t("common.frame_regen_aria") || `Regenerate frame ${fIdx + 1}`,
+        title: isAnchor ? t("common.frame_anchor_title") || "Anchor frame \u2014 fixed" : t("common.frame_regen_title") || "Click to regenerate this frame",
+        style: {
+          padding: 0,
+          border: isRegenOpen ? "2px solid #7c3aed" : "1px solid #cbd5e1",
+          borderRadius: 6,
+          overflow: "hidden",
+          cursor: isAnchor ? "default" : "pointer",
+          opacity: isAnchor ? 0.7 : 1,
+          background: "white",
+          position: "relative"
+        }
+      },
+      /* @__PURE__ */ React.createElement("img", { src, alt: `Frame ${fIdx + 1}`, style: { display: "block", width: 56, height: 56, objectFit: "cover" } }),
+      /* @__PURE__ */ React.createElement("span", { style: { position: "absolute", bottom: 1, left: 2, fontSize: 9, fontWeight: 700, color: "white", textShadow: "0 1px 2px rgba(0,0,0,0.6)" } }, fIdx + 1)
+    ), !isAnchor && onDeleteFrame && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => onDeleteFrame(panelIdx, fIdx),
+        "aria-label": t("common.frame_delete_aria") || `Delete frame ${fIdx + 1}`,
+        title: t("common.frame_delete_title") || "Delete this frame",
+        style: { position: "absolute", top: -4, right: -4, width: 16, height: 16, borderRadius: "50%", background: "#ef4444", color: "white", border: "none", fontSize: 10, lineHeight: 1, cursor: "pointer", padding: 0 }
+      },
+      "\u2715"
+    ));
+  })), regenFrame && regenFrame.panelIdx === panelIdx && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, marginTop: 6 } }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      value: regenInput,
+      onChange: (e) => setRegenInput(e.target.value),
+      placeholder: t("common.regen_frame_placeholder") || `What should change in frame ${regenFrame.frameIdx + 1}? (blank = re-roll with default motion)`,
+      onKeyDown: (e) => e.key === "Enter" && handleRegenFrameSubmit(),
+      autoFocus: true,
+      "aria-label": t("common.regen_frame_aria") || `Describe motion for frame ${regenFrame.frameIdx + 1}`,
+      style: { flex: 1, padding: "6px 10px", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: "none" }
+    }
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handleRegenFrameSubmit,
+      style: { padding: "6px 14px", borderRadius: 6, background: "#7c3aed", color: "white", border: "none", fontWeight: 600, cursor: "pointer", fontSize: 12, whiteSpace: "nowrap" },
+      "aria-label": t("common.regen_frame_apply") || "Regenerate frame"
+    },
+    "\u21BB ",
+    t("common.regenerate") || "Regenerate"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => {
+        setRegenFrame(null);
+        setRegenInput("");
+      },
+      "aria-label": t("common.cancel"),
+      style: { padding: "6px 10px", borderRadius: 6, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", cursor: "pointer", fontSize: 12 }
+    },
+    "\u2715"
+  ))), visualPlan.layout === "sequence" && panelIdx < orderedPanels.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "visual-sequence-arrow" }, "\u2022 \u2022 \u2022")))), showComparison && challengeResult && /* @__PURE__ */ React.createElement(
     "div",
     {
       style: { position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", animation: "fadeIn 0.2s ease-out" },

@@ -49,6 +49,9 @@
   var handleRestoreImage = props.handleRestoreImage;
   var handleRefineImage = props.handleRefineImage;
   var handleDownloadImage = props.handleDownloadImage;
+  var handleAnimatePanel = props.handleAnimatePanel;
+  var handleRegeneratePanelFrame = props.handleRegeneratePanelFrame;
+  var handleDeletePanelFrame = props.handleDeletePanelFrame;
   var callGemini = props.callGemini;
   var addToast = props.addToast;
   var VisualPanelGrid = props.VisualPanelGrid;
@@ -68,6 +71,9 @@
     key: generatedContent?.id || "default",
     visualPlan: generatedContent?.data.visualPlan,
     onRefinePanel: handleRefinePanel,
+    onAnimatePanel: handleAnimatePanel,
+    onRegenerateFrame: handleRegeneratePanelFrame,
+    onDeleteFrame: handleDeletePanelFrame,
     onUpdateLabel: handleUpdateVisualLabel,
     onSpeak: handleSpeak,
     t: t,
@@ -136,7 +142,7 @@
       const file = e.target.files?.[0];
       if (!file || !file.type.startsWith('image/')) return;
       if (file.size > 10 * 1024 * 1024) {
-        addToast('Image too large (max 10MB)', 'warning');
+        addToast(t("toasts.image_too_large_10mb_alt"), 'warning');
         return;
       }
       const reader = new FileReader();

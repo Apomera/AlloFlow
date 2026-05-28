@@ -26,7 +26,7 @@ const LABEL_POSITIONS = {
     'bottom-right': { position: 'absolute', top: '85%', right: '6%', zIndex: 4 },
 };
 
-const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onUpdateLabel, onSpeak, t, initialAnnotations, onAnnotationsChange, isTeacherMode, onChallengeSubmit, callGemini }) => {
+const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel, onRegenerateFrame, onDeleteFrame, onUpdateLabel, onSpeak, t, initialAnnotations, onAnnotationsChange, isTeacherMode, onChallengeSubmit, callGemini }) => {
     const [labelsHidden, setLabelsHidden] = React.useState(false);
     const [editingLabel, setEditingLabel] = React.useState(null);
     const [refiningPanelIdx, setRefiningPanelIdx] = React.useState(null);
@@ -64,6 +64,14 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onUpdateLabel, 
     const [drawingStart, setDrawingStart] = React.useState(null);
     const [refineInput, setRefineInput] = React.useState('');
     const [imageOverrides, setImageOverrides] = React.useState(initialAnnotations?.imageOverrides || {});
+    // Inline animate/regen prompt UI state — uses the same single-input pattern
+    // as the refine input so we don't introduce a modal surface. animatingPanelIdx
+    // tracks which panel has the "What should animate?" input open; regenFrame
+    // tracks { panelIdx, frameIdx } for the per-frame regenerate input.
+    const [animatingPanelIdx, setAnimatingPanelIdx] = React.useState(null);
+    const [animateInput, setAnimateInput] = React.useState('');
+    const [regenFrame, setRegenFrame] = React.useState(null);
+    const [regenInput, setRegenInput] = React.useState('');
     const fileInputRefs = React.useRef({});
     const handleImageUpload = (panelIdx, e) => {
         const file = e.target.files?.[0];
@@ -270,6 +278,35 @@ Return ONLY valid JSON:
             setRefineInput('');
             setRefiningPanelIdx(null);
         }
+    };
+    // ── GIF download for animated panels ──
+    // panel.imageUrl is a data:image/gif;base64,... URL produced by
+    // encodeFramesToGif. Browsers handle data-URL downloads natively via the
+    // anchor `download` attribute, so we don't need to round-trip through a
+    // Blob/createObjectURL. Strip non-filename-safe characters from the title.
+    const handleDownloadGif = (panel, panelIdx) => {
+        if (!panel || !panel.imageUrl) return;
+        const safeTitle = ((visualPlan && visualPlan.title) || 'animation')
+            .toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'animation';
+        const a = document.createElement('a');
+        a.href = panel.imageUrl;
+        a.download = `${safeTitle}-panel-${panelIdx + 1}.gif`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+    const handleAnimateSubmit = (panelIdx) => {
+        const text = animateInput.trim();
+        if (!text || !onAnimatePanel) return;
+        onAnimatePanel(panelIdx, text);
+        setAnimateInput('');
+        setAnimatingPanelIdx(null);
+    };
+    const handleRegenFrameSubmit = () => {
+        if (!regenFrame || !onRegenerateFrame) return;
+        onRegenerateFrame(regenFrame.panelIdx, regenFrame.frameIdx, regenInput.trim());
+        setRegenInput('');
+        setRegenFrame(null);
     };
     const handleAddUserLabel = (panelIdx, e) => {
         if (addingLabelPanel === null) return;
@@ -1126,6 +1163,29 @@ Return ONLY valid JSON:
                                 >
                                     💾
                                 </button>
+                                {/* Animated-panel actions: download the GIF directly, or animate a
+                                    static panel on demand. The "type === 'process_animation'" check
+                                    is the canonical signal, but we also accept any panel whose
+                                    imageUrl is a data:image/gif (handles hand-edited frames or
+                                    legacy data without a type field). */}
+                                {(panel.type === 'process_animation' || (panel.imageUrl && panel.imageUrl.startsWith && panel.imageUrl.startsWith('data:image/gif'))) && (
+                                    <button
+                                        aria-label={t('common.download_gif') || 'Download GIF'}
+                                        onClick={() => handleDownloadGif(panel, panelIdx)}
+                                        title={t('common.download_gif') || 'Download GIF'}
+                                    >
+                                        🎞️
+                                    </button>
+                                )}
+                                {onAnimatePanel && panel.type !== 'process_animation' && !(panel.imageUrl && panel.imageUrl.startsWith && panel.imageUrl.startsWith('data:image/gif')) && (
+                                    <button
+                                        aria-label={t('common.animate_this_panel') || 'Animate this panel'}
+                                        onClick={() => setAnimatingPanelIdx(animatingPanelIdx === panelIdx ? null : panelIdx)}
+                                        title={t('common.animate_this_panel_title') || 'Turn this panel into an animated GIF'}
+                                    >
+                                        🎬
+                                    </button>
+                                )}
                                 {isTeacherMode && (
                                     <>
                                         <input
@@ -1204,6 +1264,117 @@ Return ONLY valid JSON:
                                     onClick={() => setRefiningPanelIdx(null)}
                                     style={{ padding: '6px 10px', borderRadius: 6, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 12 }}
                                 >✕</button>
+                            </div>
+                        )}
+                        {/* Inline animate prompt — opened by the 🎬 button in the panel-actions toolbar.
+                            Uses the same one-input pattern as the refine input, plus a pedagogical hint
+                            so teachers know animation helps for process-y content and hurts for static.
+                            (Mayer/Sweller transient-information effect — same guidance the art-director
+                            prompt has internally.) */}
+                        {animatingPanelIdx === panelIdx && (
+                            <div style={{ marginTop: 6, padding: '6px 8px', background: '#fafafe', borderRadius: '8px', border: '1px solid #e0e7ff' }}>
+                                <div style={{ display: 'flex', gap: 6 }}>
+                                    <input
+                                        value={animateInput}
+                                        onChange={(e) => setAnimateInput(e.target.value)}
+                                        placeholder={t('common.animate_input_placeholder') || 'What should animate? e.g. "cell divides" or "water cycles"'}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAnimateSubmit(panelIdx)}
+                                        autoFocus
+                                        aria-label={t('common.animate_input_aria') || `Motion description for Panel ${panelIdx + 1}`}
+                                        style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: 'none' }}
+                                    />
+                                    <button
+                                        aria-label={t('common.animate_panel') || 'Animate panel'}
+                                        onClick={() => handleAnimateSubmit(panelIdx)}
+                                        style={{ padding: '6px 14px', borderRadius: 6, background: '#7c3aed', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap' }}
+                                    >🎬 {t('common.animate') || 'Animate'}</button>
+                                    <button
+                                        aria-label={t('common.cancel')}
+                                        onClick={() => { setAnimatingPanelIdx(null); setAnimateInput(''); }}
+                                        style={{ padding: '6px 10px', borderRadius: 6, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 12 }}
+                                    >✕</button>
+                                </div>
+                                <p style={{ fontSize: 10, color: '#64748b', margin: '4px 2px 0', lineHeight: 1.4 }}>
+                                    {t('common.animate_hint') || 'Best for processes — mitosis, water cycle, motion. Static images stay clearer for anatomy or vocabulary.'}
+                                </p>
+                            </div>
+                        )}
+                        {/* Frame thumbnail strip for animated panels — only renders when the parent
+                            wired up onRegenerateFrame/onDeleteFrame AND the panel actually has the
+                            individual frames preserved (process_animation panels post-2026-05). Each
+                            thumbnail is its own button: click → open inline "describe new motion"
+                            input that regenerates just that frame anchored to the previous one. The
+                            ✕ on hover deletes the frame. Frame 1 (the anchor) can't be regenerated
+                            in place (would break identity for everything after) — clicking it shows
+                            an info toast in the parent handler. */}
+                        {panel.frames && panel.frames.length > 1 && (onRegenerateFrame || onDeleteFrame) && (
+                            <div style={{ marginTop: 6, padding: '6px 8px', background: '#fafafe', borderRadius: '8px', border: '1px solid #e0e7ff' }}>
+                                <div style={{ fontSize: 10, fontWeight: 600, color: '#475569', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    {t('common.frames_label') || 'Frames'} ({panel.frames.length})
+                                </div>
+                                <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 4 }}>
+                                    {panel.frames.map((frameUrl, fIdx) => {
+                                        const src = typeof frameUrl === 'string' && frameUrl.startsWith('data:') ? frameUrl : ('data:image/png;base64,' + frameUrl);
+                                        const isAnchor = fIdx === 0;
+                                        const isRegenOpen = regenFrame && regenFrame.panelIdx === panelIdx && regenFrame.frameIdx === fIdx;
+                                        return (
+                                            <div key={fIdx} style={{ position: 'relative', flexShrink: 0 }}>
+                                                <button
+                                                    onClick={() => {
+                                                        if (!onRegenerateFrame || isAnchor) return;
+                                                        setRegenFrame({ panelIdx, frameIdx: fIdx });
+                                                        setRegenInput('');
+                                                    }}
+                                                    aria-label={isAnchor
+                                                        ? (t('common.frame_anchor_aria') || `Frame ${fIdx + 1} (anchor — regenerate the whole panel to change this)`)
+                                                        : (t('common.frame_regen_aria') || `Regenerate frame ${fIdx + 1}`)}
+                                                    title={isAnchor
+                                                        ? (t('common.frame_anchor_title') || 'Anchor frame — fixed')
+                                                        : (t('common.frame_regen_title') || 'Click to regenerate this frame')}
+                                                    style={{
+                                                        padding: 0, border: isRegenOpen ? '2px solid #7c3aed' : '1px solid #cbd5e1',
+                                                        borderRadius: 6, overflow: 'hidden', cursor: isAnchor ? 'default' : 'pointer',
+                                                        opacity: isAnchor ? 0.7 : 1, background: 'white', position: 'relative'
+                                                    }}
+                                                >
+                                                    <img src={src} alt={`Frame ${fIdx + 1}`} style={{ display: 'block', width: 56, height: 56, objectFit: 'cover' }} />
+                                                    <span style={{ position: 'absolute', bottom: 1, left: 2, fontSize: 9, fontWeight: 700, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{fIdx + 1}</span>
+                                                </button>
+                                                {!isAnchor && onDeleteFrame && (
+                                                    <button
+                                                        onClick={() => onDeleteFrame(panelIdx, fIdx)}
+                                                        aria-label={t('common.frame_delete_aria') || `Delete frame ${fIdx + 1}`}
+                                                        title={t('common.frame_delete_title') || 'Delete this frame'}
+                                                        style={{ position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: '50%', background: '#ef4444', color: 'white', border: 'none', fontSize: 10, lineHeight: 1, cursor: 'pointer', padding: 0 }}
+                                                    >✕</button>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                {regenFrame && regenFrame.panelIdx === panelIdx && (
+                                    <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                                        <input
+                                            value={regenInput}
+                                            onChange={(e) => setRegenInput(e.target.value)}
+                                            placeholder={t('common.regen_frame_placeholder') || `What should change in frame ${regenFrame.frameIdx + 1}? (blank = re-roll with default motion)`}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleRegenFrameSubmit()}
+                                            autoFocus
+                                            aria-label={t('common.regen_frame_aria') || `Describe motion for frame ${regenFrame.frameIdx + 1}`}
+                                            style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: 'none' }}
+                                        />
+                                        <button
+                                            onClick={handleRegenFrameSubmit}
+                                            style={{ padding: '6px 14px', borderRadius: 6, background: '#7c3aed', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap' }}
+                                            aria-label={t('common.regen_frame_apply') || 'Regenerate frame'}
+                                        >↻ {t('common.regenerate') || 'Regenerate'}</button>
+                                        <button
+                                            onClick={() => { setRegenFrame(null); setRegenInput(''); }}
+                                            aria-label={t('common.cancel')}
+                                            style={{ padding: '6px 10px', borderRadius: 6, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 12 }}
+                                        >✕</button>
+                                    </div>
+                                )}
                             </div>
                         )}
                         {visualPlan.layout === 'sequence' && panelIdx < orderedPanels.length - 1 && (

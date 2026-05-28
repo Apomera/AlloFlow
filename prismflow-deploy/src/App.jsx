@@ -4337,7 +4337,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = './';
-    var pluginCdnVersion = '1779935139494';
+    var pluginCdnVersion = '1779935918569';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -14246,8 +14246,110 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               frames.push(prevFrame);
           }
       }
-      const gifUrl = await encodeFramesToGif(frames, targetWidth, targetWidth, panel.fps || 3);
-      return { ...panel, imageUrl: gifUrl };
+      const fps = panel.fps || 3;
+      const gifUrl = await encodeFramesToGif(frames, targetWidth, targetWidth, fps);
+      // Frames kept on the panel (alongside the rendered GIF) so the frame-edit
+      // UI in visual_panel can show thumbnails and re-encode after a delete or
+      // single-frame regenerate. Without this, the frame data is gone the moment
+      // the GIF is encoded and any per-frame editing requires a full regen.
+      // frameWidth/Height pin the canvas size for re-encoding so we don't need
+      // to re-measure when the user only edits frames (not the panel).
+      return { ...panel, frames, fps, frameWidth: targetWidth, frameHeight: targetWidth, imageUrl: gifUrl };
+  };
+  // ── Visual-panel user-driven mutations (animate/regen-frame/delete-frame) ──
+  // Three handlers wired through to VisualPanelGrid so teachers can: (1) flip
+  // a static panel to animated on demand, (2) regenerate a single frame in an
+  // existing animation without rebuilding the whole thing, and (3) delete a
+  // bad frame and re-encode the GIF without that frame. Each one mutates the
+  // current generatedContent.data.visualPlan in place.
+  const _updatePanelInPlan = (panelIdx, mutator) => {
+      const plan = generatedContent && generatedContent.data && generatedContent.data.visualPlan;
+      if (!plan || !plan.panels || !plan.panels[panelIdx]) return null;
+      const updatedPanels = [...plan.panels];
+      const before = updatedPanels[panelIdx];
+      const after = mutator(before);
+      if (!after) return null;
+      updatedPanels[panelIdx] = after;
+      const updatedPlan = { ...plan, panels: updatedPanels };
+      setGeneratedContent((prev) => ({ ...prev, data: { ...prev.data, visualPlan: updatedPlan } }));
+      return after;
+  };
+  const handleAnimatePanel = async (panelIdx, motionPrompt, frameCount) => {
+      if (!motionPrompt || !motionPrompt.trim()) {
+          addToast(t('toasts.animation_prompt_required') || 'Describe the motion before animating.', 'warning');
+          return;
+      }
+      const plan = generatedContent && generatedContent.data && generatedContent.data.visualPlan;
+      const panel = plan && plan.panels && plan.panels[panelIdx];
+      if (!panel) return;
+      setIsProcessing(true);
+      setGenerationStep(t('toasts.animating_panel') || 'Animating panel…');
+      try {
+          const animatedPanel = await generateAnimatedPanel(
+              { ...panel, type: 'process_animation', motionPrompt: motionPrompt.trim(), frameCount: frameCount || 6 },
+              400, 0.9, visualStyle === 'custom' ? (visualCustomStyle || '') : (visualStyle === 'Default' ? '' : visualStyle)
+          );
+          _updatePanelInPlan(panelIdx, () => animatedPanel);
+          addToast(t('toasts.panel_animated') || 'Panel animated.', 'success');
+      } catch (e) {
+          warnLog('[VisualPanel] handleAnimatePanel failed:', e);
+          addToast((t('toasts.animation_failed') || 'Animation failed') + ': ' + (e && e.message || ''), 'error');
+      } finally {
+          setIsProcessing(false);
+          setGenerationStep('');
+      }
+  };
+  const handleRegeneratePanelFrame = async (panelIdx, frameIdx, motionDesc) => {
+      const plan = generatedContent && generatedContent.data && generatedContent.data.visualPlan;
+      const panel = plan && plan.panels && plan.panels[panelIdx];
+      if (!panel || !panel.frames || !panel.frames[frameIdx]) return;
+      if (frameIdx === 0) {
+          addToast(t('toasts.cant_regenerate_anchor_frame') || 'Frame 1 anchors the animation — regenerate the whole panel to change it.', 'info');
+          return;
+      }
+      const anchor = panel.frames[frameIdx - 1];
+      if (!anchor) return;
+      const desc = (motionDesc || '').trim() || (panel.motionPrompt || 'subtle motion');
+      setIsProcessing(true);
+      setGenerationStep(t('toasts.regenerating_frame') || 'Regenerating frame…');
+      try {
+          const editPrompt = 'Keep the subject IDENTICAL in style, anatomy, and color. Only change: ' + desc + '. Educational illustration, no text, no labels.';
+          const anchorB64 = anchor.split(',')[1];
+          const w = panel.frameWidth || 400;
+          const h = panel.frameHeight || 400;
+          const next = await callGeminiImageEdit(editPrompt, anchorB64, w, 0.9);
+          if (!next) throw new Error('Frame regeneration returned no image');
+          const newFrames = [...panel.frames];
+          newFrames[frameIdx] = next;
+          const gifUrl = await encodeFramesToGif(newFrames, w, h, panel.fps || 3);
+          _updatePanelInPlan(panelIdx, (p) => ({ ...p, frames: newFrames, imageUrl: gifUrl }));
+          addToast(t('toasts.frame_regenerated') || 'Frame regenerated.', 'success');
+      } catch (e) {
+          warnLog('[VisualPanel] handleRegeneratePanelFrame failed:', e);
+          addToast((t('toasts.frame_regen_failed') || 'Frame regeneration failed') + ': ' + (e && e.message || ''), 'error');
+      } finally {
+          setIsProcessing(false);
+          setGenerationStep('');
+      }
+  };
+  const handleDeletePanelFrame = async (panelIdx, frameIdx) => {
+      const plan = generatedContent && generatedContent.data && generatedContent.data.visualPlan;
+      const panel = plan && plan.panels && plan.panels[panelIdx];
+      if (!panel || !panel.frames || !panel.frames[frameIdx]) return;
+      if (panel.frames.length <= 2) {
+          addToast(t('toasts.cant_delete_below_two_frames') || 'An animation needs at least 2 frames.', 'warning');
+          return;
+      }
+      try {
+          const newFrames = panel.frames.filter((_, i) => i !== frameIdx);
+          const w = panel.frameWidth || 400;
+          const h = panel.frameHeight || 400;
+          const gifUrl = await encodeFramesToGif(newFrames, w, h, panel.fps || 3);
+          _updatePanelInPlan(panelIdx, (p) => ({ ...p, frames: newFrames, imageUrl: gifUrl }));
+      } catch (e) {
+          warnLog('[VisualPanel] handleDeletePanelFrame failed:', e);
+          addToast((t('toasts.frame_delete_failed') || 'Could not delete frame') + ': ' + (e && e.message || ''), 'error');
+      }
   };
   const executeVisualPlan = async (plan, targetWidth = 400, targetQual = 0.8, artStyle = "") => {
       const panels = [...plan.panels];
@@ -24913,6 +25015,7 @@ ${_toolList}
                     setGeneratedContent, setImageRefinementInput,
                     handleRefinePanel, handleUpdateVisualLabel, handleSpeak, handleScoreUpdate,
                     handleRestoreImage, handleRefineImage, handleDownloadImage,
+                    handleAnimatePanel, handleRegeneratePanelFrame, handleDeletePanelFrame,
                     callGemini, addToast, VisualPanelGrid
                 })}
                 {activeView === 'alignment-report' && isTeacherMode && (
