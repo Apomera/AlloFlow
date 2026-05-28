@@ -411,7 +411,7 @@
     "adjust_line_height": "Ajustar linha altura",
     "adjust_settings": "Ajustar definições",
     "adjust_slider_font_size": "Ajustar slider font size",
-    "adventure_social_story_focus_placeholder": "aventura.social_story_focus_placeholder",
+    "adventure_social_story_focus_placeholder": "e.g., Sharing toys, managing frustration, turn-taking...",
     "ai_refine_source": "Ai refine fonte",
     "apply_panel_edit": "Apply painel editar",
     "apply_text_revision": "Apply texto revision",
@@ -521,7 +521,7 @@
     "enter_wiz_interest_input": "Introduzir Wiz Interest entrada",
     "enter_wiz_lang_input": "Introduzir Wiz Lang entrada",
     "enter_word": "Introduzir palavra",
-    "escape_room_enter_answer": "escape_room.enter_resposta",
+    "escape_room_enter_answer": "Introduzir seu resposta...",
     "escape_room_unscramble_placeholder": "Type o unscrambled palavra...",
     "expand": "Expand",
     "export_all_panels_as_png_images": "Exportar todos painel como PNG imagemm",
@@ -545,7 +545,7 @@
     "grade": "classee",
     "grade_level_selector": "nível escolar selector",
     "groups": "Groups",
-    "groups_new_group_placeholder": "grupos.new_grupo_placeholder",
+    "groups_new_group_placeholder": "Nome do novo grupo",
     "hear_all_words": "Hear todos palavra",
     "help": "ajuda",
     "hidden_input": "Hidden entrada",
@@ -703,9 +703,9 @@
     "use_current_generated_text": "Usar current gerado texto",
     "use_item": "Usar item",
     "visual_density": "visual Density",
-    "visuals_refiner_placeholder": "visual.refiner_placeholder",
+    "visuals_refiner_placeholder": "Describe alterações (e.g., 'Adicionar mais labels', 'Fazer background blue')...",
     "voice_input": "voz entrada",
-    "volume": "volume",
+    "volume": "Volume",
     "word_count_slider": "palavra contar slider",
     "word_sounds_activity": "Word Sounds Activity",
     "your_answer": "seu resposta",
@@ -4971,7 +4971,7 @@
     "target_standard": "Target padrão",
     "ai_match": "AI Match",
     "browse": "Browse",
-    "manual": "manual",
+    "manual": "Manual",
     "add_button": "Adicionar padrão",
     "remove_button": "Remover padrão",
     "add_standard": "Adicionar padrão",
@@ -8461,7 +8461,7 @@
       "explore": "Explorar",
       "operation": "Operation",
       "difficulty": "dificuldade",
-      "volume": "volume",
+      "volume": "Volume",
       "surface_area": "Surface área",
       "enter_volume": "Introduzir volume..."
     },
@@ -9496,7 +9496,7 @@
     },
     "layers_slider": "Layers",
     "surface_area": "Surface área",
-    "volume": "volume"
+    "volume": "Volume"
   },
   "glossary_health": {
     "composite_accuracy": "Composite Accuracy",
@@ -11089,7 +11089,7 @@
       "tip_last_entry_ago": "último entry era recorded um while ago.",
       "tip_missing_fields": "algum entries são missing obrigatório fields.",
       "tip_spread_days": "Entries são well spread across days.",
-      "volume": "volume"
+      "volume": "Volume"
     },
     "fba": {
       "open_tool": "Abrir ferramentas",

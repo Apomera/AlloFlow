@@ -521,7 +521,7 @@
     "enter_wiz_interest_input": "Kotisá Wiz Interest eloko ekoti",
     "enter_wiz_lang_input": "Kotisá Wiz Lang eloko ekoti",
     "enter_word": "Kotisá maloba",
-    "escape_room_enter_answer": "escape_room.enter_eyano",
+    "escape_room_enter_answer": "Kotisá yo eyano...",
     "escape_room_unscramble_placeholder": "Type unscrambled maloba...",
     "expand": "Expand",
     "export_all_panels_as_png_images": "Bimisá nyonso lopangu as PNG elilingi",
@@ -545,7 +545,7 @@
     "grade": "kelasi",
     "grade_level_selector": "niveau ya kelasi selector",
     "groups": "Groups",
-    "groups_new_group_placeholder": "lisangas.new_lisanga_placeholder",
+    "groups_new_group_placeholder": "ya sika Group Name",
     "hear_all_words": "Hear nyonso maloba",
     "help": "lisalisi",
     "hidden_input": "Hidden eloko ekoti",
@@ -626,8 +626,8 @@
     "socratic_submit": "Socratic submit",
     "speed": "mbangu",
     "spelling_session_goal_slider": "Spelling tángo tina slider",
-    "standards_region_framework_placeholder": "mibeko.region_framework_placeholder",
-    "standards_region_optional": "mibeko.region_boponial",
+    "standards_region_framework_placeholder": "Region to Framework (e.g. CASEL, CCSS)...",
+    "standards_region_optional": "Region (ya kopona)...",
     "start_adventure": "Bandá mobembo",
     "start_game": "Bandá lisano",
     "start_new_adventure": "Bandá ya sika mobembo",
@@ -703,9 +703,9 @@
     "use_current_generated_text": "Salelá current esalemi makomi",
     "use_item": "Salelá eloko",
     "visual_density": "elilingi Density",
-    "visuals_refiner_placeholder": "elilingi.refiner_placeholder",
+    "visuals_refiner_placeholder": "Describe mbongwana (e.g., 'Bakisá mingi labels', 'Salá background blue')...",
     "voice_input": "mongongo eloko ekoti",
-    "volume": "volume",
+    "volume": "Volume",
     "word_count_slider": "maloba tángá slider",
     "word_sounds_activity": "Word Sounds Activity",
     "your_answer": "yo eyano",
@@ -8453,7 +8453,7 @@
       "explore": "Luka",
       "operation": "Operation",
       "difficulty": "mpasi",
-      "volume": "volume",
+      "volume": "Volume",
       "surface_area": "Surface surface",
       "enter_volume": "Kotisá volume..."
     },
@@ -9488,7 +9488,7 @@
     },
     "layers_slider": "Layers",
     "surface_area": "Surface surface",
-    "volume": "volume"
+    "volume": "Volume"
   },
   "glossary_health": {
     "composite_accuracy": "Composite Bosolo",
@@ -11081,7 +11081,7 @@
       "tip_last_entry_ago": "ya nsuka entry was recorded while ago.",
       "tip_missing_fields": "Mosusu entries ezali missing esengeli fields.",
       "tip_spread_days": "Entries ezali well spread across days.",
-      "volume": "volume"
+      "volume": "Volume"
     },
     "fba": {
       "open_tool": "Fungolá biloko ya mosala",

@@ -2265,7 +2265,7 @@
     "invalid_fct_template": "Tusmada FCT ma sax aha",
     "enter_communication_goal_first": "Marka hore geli hadafka isgaadhsiinta",
     "ai_goal_parser_unavailable_blank": "Falanqeeyaha hadafka AI lama heli karo — looxa banaan ee 6-unugood ayaa diyaar u ah tafatirka",
-    "planning_symbols": "🧠 Qorsheeyaha calaamadaha ",
+    "planning_symbols": "🧠 Qorsheeyaha calaamadaha",
     "goal_parser_returned_unexpected_output": "Falanqeeyaha hadafka wuxuu soo celiyay wax aan la filayn — isku day mar kale",
     "usable_labels_from_goal_try": "Ma jiraan calaamado la isticmaali karo oo hadafka ka yimid — isku day mar kale",
     "board_ready": "🗣 Looxa wuu diyaar yahay",

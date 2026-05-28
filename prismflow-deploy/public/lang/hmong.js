@@ -545,7 +545,7 @@
     "grade": "qib",
     "grade_level_selector": "theem qib kawm selector",
     "groups": "Groups",
-    "groups_new_group_placeholder": "pawgs.new_pawg_placeholder",
+    "groups_new_group_placeholder": "tshiab Group Name",
     "hear_all_words": "Hear tag nrho lo lus",
     "help": "kev pab",
     "hidden_input": "Hidden kev nkag",
@@ -705,7 +705,7 @@
     "visual_density": "kev pom Density",
     "visuals_refiner_placeholder": "kev pom.refiner_placeholder",
     "voice_input": "suab kev nkag",
-    "volume": "volume",
+    "volume": "Volume",
     "word_count_slider": "lo lus suav slider",
     "word_sounds_activity": "lo lus Word Sounds Activity",
     "your_answer": "koj lo lus teb",
@@ -8453,7 +8453,7 @@
       "explore": "Nrhiav xyuas",
       "operation": "Operation",
       "difficulty": "kev nyuaj",
-      "volume": "volume",
+      "volume": "Volume",
       "surface_area": "Surface thaj av",
       "enter_volume": "Sau volume..."
     },
@@ -9488,7 +9488,7 @@
     },
     "layers_slider": "Layers",
     "surface_area": "Surface thaj av",
-    "volume": "volume"
+    "volume": "Volume"
   },
   "glossary_health": {
     "composite_accuracy": "Composite Qhov tseeb",
@@ -11081,7 +11081,7 @@
       "tip_last_entry_ago": "kawg entry was recorded while ago.",
       "tip_missing_fields": "Qee entries yog missing yuav tsum tau fields.",
       "tip_spread_days": "Entries yog well spread across days.",
-      "volume": "volume"
+      "volume": "Volume"
     },
     "fba": {
       "open_tool": "Qhib cov cuab yeej",
