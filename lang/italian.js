@@ -1240,7 +1240,7 @@
     "probe_words_available": "No probe parole disponibile per",
     "subtests_available_grade": "No subtests disponibile per classe",
     "select_student_first": "per favore seleziona un studenti primo",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} tuo progressoo rapporto has been downloaded!",
+    "1f4ca_progress_report_has_been": "📊 tuo progressoo rapporto has been downloaded!",
     "now_assessing": "ora assessing:",
     "screening_queue_started_with": "Screening queue started con",
     "math_probes_loaded_yet_wait": "Matematica probes non loaded yet — per favore wait e prova again",

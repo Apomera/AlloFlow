@@ -11474,7 +11474,7 @@
       "summary_no_label": "Non ki manke",
       "tab_order_heading": "Lòd onglè",
       "fakes_heading": "⚠ Fo bouton",
-      "fakes_help": "Eleman ak cursor:pointer ki sanble klikab men pa kapab rive pa klavye. Kòz komen: yon div ak onClick olye yon vrè <button>. Solisyon: konvèti an <button>, OSWA ajoute tabindex=\"0\" + role=\"button\" + jesyonè evènman klavye.",
+      "fakes_help": "Eleman ak cursor:pointer ki sanble klikab men pa kapab rive pa klavye. Kòz komen: yon div ak onClick olye yon vrè <button>. Solisyon: konvèti an <button>, OSWA ajoute tabindex=\"0\" + role=\"button\" + jesyonClick evènman klavye.",
       "pos_heading": "⚠ Tabindex pozitif",
       "pos_help": "Eleman ak tabindex > 0 kraze lòd onglè natirèl dokiman epi konfonn itilizatè klavye. Solisyon: itilize tabindex=\"0\" (lòd default) oswa konte sou kapasite fokis default pou bouton/lyen.",
       "no_label_heading": "🔴 Non aksesib ki manke",

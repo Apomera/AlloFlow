@@ -1240,7 +1240,7 @@
     "probe_words_available": "No probe maneno inapatikana kwa",
     "subtests_available_grade": "No subtests inapatikana kwa darasa",
     "select_student_first": "tafadhali chagua mwanafunzi ya kwanza",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} yako maendeleo ripoti has been downloaded!",
+    "1f4ca_progress_report_has_been": "📊 yako maendeleo ripoti has been downloaded!",
     "now_assessing": "sasa assessing:",
     "screening_queue_started_with": "Screening queue started na",
     "math_probes_loaded_yet_wait": "Hesabu probes sio loaded yet — tafadhali wait na jaribu again",

@@ -3113,7 +3113,7 @@
     "download": "下载圖片",
     "warning": {
       "title": "重要:儲存你的作業",
-      "desc": "如果你刷新頁面,圖片**不會**儲存到歷史記录。如果你想保留,请立即下载圖片或 HTML 包。",
+      "desc": "如果你刷新頁面,圖片<strong>不會</strong>儲存到歷史記录。如果你想保留,请立即下载圖片或 HTML 包。",
       "tip": "<strong>專業提示:</strong>圖錶中 AI 生成的文字有時可能不準確。下载前使用上方的 <strong>Nano Banana 優化器</strong>「修正拼寫」或「移除文字標簽」。"
     },
     "actions": {

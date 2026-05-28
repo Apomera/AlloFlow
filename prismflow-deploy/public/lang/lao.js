@@ -2372,7 +2372,7 @@
     "probe_words_available": "No probe words available for ",
     "subtests_available_grade": "No subtests available for grade ",
     "select_student_first": "Please select a student first",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} Your progress report has been downloaded!",
+    "1f4ca_progress_report_has_been": "📊 Your progress report has been downloaded!",
     "now_assessing": "Now assessing: ",
     "screening_queue_started_with": "Screening queue started with ",
     "math_probes_loaded_yet_wait": "Math probes not loaded yet, please wait and try again",

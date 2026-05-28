@@ -1240,7 +1240,7 @@
     "probe_words_available": "Pe probe lok available pi",
     "subtests_available_grade": "Pe subtests available pi grade",
     "select_student_first": "Please yer latin kwan first",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} mamegi progress ngec has been downloaded!",
+    "1f4ca_progress_report_has_been": "📊 mamegi progress ngec has been downloaded!",
     "now_assessing": "kombedi assessing:",
     "screening_queue_started_with": "Screening queue started ki",
     "math_probes_loaded_yet_wait": "Kwan kit probes pe loaded yet — please wait ki tem again",

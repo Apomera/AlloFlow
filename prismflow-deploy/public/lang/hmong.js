@@ -1240,7 +1240,7 @@
     "probe_words_available": "Tsis yog probe lo lus muaj rau",
     "subtests_available_grade": "Tsis yog subtests muaj rau qib",
     "select_student_first": "thov xaiv tub ntxhais kawm thawj",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} koj kev nce qib tsab ntawv ceeb toom has been downloaded!",
+    "1f4ca_progress_report_has_been": "📊 koj kev nce qib tsab ntawv ceeb toom has been downloaded!",
     "now_assessing": "tam sim no assessing:",
     "screening_queue_started_with": "Screening queue started nrog",
     "math_probes_loaded_yet_wait": "Lej probes tsis loaded yet — thov wait thiab sim again",

@@ -1240,7 +1240,7 @@
     "probe_words_available": "No probe mga salita magagamit para sa",
     "subtests_available_grade": "No subtests magagamit para sa grado",
     "select_student_first": "pakiusap pumili isang mag-aaral una",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} iyong pag-unlad ulat has been downloaded!",
+    "1f4ca_progress_report_has_been": "📊 iyong pag-unlad ulat has been downloaded!",
     "now_assessing": "ngayon assessing:",
     "screening_queue_started_with": "Screening queue started kasama",
     "math_probes_loaded_yet_wait": "Matematika probes hindi loaded yet — pakiusap wait at subukan again",

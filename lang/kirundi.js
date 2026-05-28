@@ -1240,7 +1240,7 @@
     "probe_words_available": "Oya probe ijambo kirahari kuri",
     "subtests_available_grade": "Oya subtests kirahari kuri ishuri",
     "select_student_first": "nakwinginze hitamwo umunyeshure ca mbere",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} cawe iterambere icegeranyo has been downloaded!",
+    "1f4ca_progress_report_has_been": "📊 cawe iterambere icegeranyo has been downloaded!",
     "now_assessing": "ubu assessing:",
     "screening_queue_started_with": "Screening queue started hamwe na",
     "math_probes_loaded_yet_wait": "Imibare probes ntibi loaded yet — nakwinginze wait na gerageza again",

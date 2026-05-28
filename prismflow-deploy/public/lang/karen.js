@@ -1240,7 +1240,7 @@
     "probe_words_available": "တမ့ၢ်ဘၣ် probe တၢ်ကတိၤ available လ၁်",
     "subtests_available_grade": "တမ့ၢ်ဘၣ် subtests available လ၁် grade",
     "select_student_first": "Please ဃုထၢ ဖိသၣ်ကၠိ first",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} နၤအ progress ပှၤစံၣ်တဲၤ has been downloaded!",
+    "1f4ca_progress_report_has_been": "📊 နၤအ progress ပှၤစံၣ်တဲၤ has been downloaded!",
     "now_assessing": "Now assessing:",
     "screening_queue_started_with": "Screening queue started ဒီး",
     "math_probes_loaded_yet_wait": "နီၢ်ဂံၢ် probes တ loaded yet — please wait ဒီး try again",

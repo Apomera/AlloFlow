@@ -1240,7 +1240,7 @@
     "probe_words_available": "Te probe maloba ezali mpo na",
     "subtests_available_grade": "Te subtests ezali mpo na kelasi",
     "select_student_first": "nabondeli yo poná moyekoli ya liboso",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} yo bokoli lapolo has been downloaded!",
+    "1f4ca_progress_report_has_been": "📊 yo bokoli lapolo has been downloaded!",
     "now_assessing": "sik'oyo assessing:",
     "screening_queue_started_with": "Screening queue started na",
     "math_probes_loaded_yet_wait": "Mituya probes te loaded yet — nabondeli yo wait na memá again",

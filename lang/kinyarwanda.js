@@ -1240,7 +1240,7 @@
     "probe_words_available": "Nta magambo y'ipimwa ahari ku",
     "subtests_available_grade": "Nta ipimwa rito rihari ku rwego",
     "select_student_first": "Banza uhitamo umunyeshuri",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} Raporo y'iterambere ryawe yaramanuwe!",
+    "1f4ca_progress_report_has_been": "📊 Raporo y'iterambere ryawe yaramanuwe!",
     "now_assessing": "Ubu birasuzumwa:",
     "screening_queue_started_with": "Urutonde rw'iboneza rwatangiranye na",
     "math_probes_loaded_yet_wait": "Ipimwa ry'imibare ntirirapakirwa — tegereza wongere ugerageze",

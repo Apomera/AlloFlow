@@ -1240,7 +1240,7 @@
     "probe_words_available": "Nu probe cuvânt disponibil pentru",
     "subtests_available_grade": "Nu subtests disponibil pentru clasă",
     "select_student_first": "vă rog selectează un elev primul",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} tău progres report has been downloaded!",
+    "1f4ca_progress_report_has_been": "📊 tău progres report has been downloaded!",
     "now_assessing": "acum assessing:",
     "screening_queue_started_with": "Screening queue started cu",
     "math_probes_loaded_yet_wait": "Math probes nu loaded yet — vă rog wait și încearcă again",

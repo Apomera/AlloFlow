@@ -3113,7 +3113,7 @@
     "download": "下载图片",
     "warning": {
       "title": "重要:保存你的作业",
-      "desc": "如果你刷新页面,图片**不会**保存到历史记录。如果你想保留,请立即下载图片或 HTML 包。",
+      "desc": "如果你刷新页面,图片<strong>不会</strong>保存到历史记录。如果你想保留,请立即下载图片或 HTML 包。",
       "tip": "<strong>专业提示:</strong>图表中 AI 生成的文字有时可能不准确。下载前使用上方的 <strong>Nano Banana 优化器</strong>「修正拼写」或「移除文字标签」。"
     },
     "actions": {

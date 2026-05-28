@@ -1240,7 +1240,7 @@
     "probe_words_available": "Maya probe ereyo available u",
     "subtests_available_grade": "Maya subtests available u grade",
     "select_student_first": "Please door a arday first",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} kaaga progress report has been downloaded!",
+    "1f4ca_progress_report_has_been": "📊 kaaga progress report has been downloaded!",
     "now_assessing": "hadda assessing:",
     "screening_queue_started_with": "Screening queue started la",
     "math_probes_loaded_yet_wait": "Math probes maaha loaded yet — please wait iyo try again",

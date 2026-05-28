@@ -1245,7 +1245,7 @@
     "probe_words_available": "Nein probe Worts verfügbar für",
     "subtests_available_grade": "Nein subtests verfügbar für grade",
     "select_student_first": "Bitte auswählen ein Schüler erste",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} Dein Fortschritt Bericht has been downladened!",
+    "1f4ca_progress_report_has_been": "📊 Dein Fortschritt Bericht has been downladened!",
     "now_assessing": "Neinw assessing:",
     "screening_queue_started_with": "Screening queue startened mit",
     "math_probes_loaded_yet_wait": "Mathematik probes neint ladened yet — bitte warten und erneut versuchen",

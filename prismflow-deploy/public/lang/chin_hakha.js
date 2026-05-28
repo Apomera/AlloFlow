@@ -1240,7 +1240,7 @@
     "probe_words_available": "si lo probe biafang available caah",
     "subtests_available_grade": "si lo subtests available caah grade",
     "select_student_first": "Please thim sianginn caa first",
-    "1f4ca_progress_report_has_been": "\\u{1F4CA} nangmah progress tlangtlanglam has been downloaded!",
+    "1f4ca_progress_report_has_been": "📊 nangmah progress tlangtlanglam has been downloaded!",
     "now_assessing": "atu assessing:",
     "screening_queue_started_with": "Screening queue started he",
     "math_probes_loaded_yet_wait": "A relnak probes si lo loaded yet — please wait le try again",
