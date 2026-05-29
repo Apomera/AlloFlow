@@ -11030,6 +11030,95 @@
           );
         })(),
 
+        // ─── Phase CC — Within-student longitudinal trajectory ───
+        // The local-norm card compares THIS session against ALL students. For
+        // progress monitoring, what a clinician actually wants is THIS student
+        // over time. Group prior completed sessions by the (PII-free) nickname,
+        // append the current session live as the latest point, and plot the
+        // Modifiability Index across sessions. Descriptive only — and because
+        // MI is construct-relative, cross-domain points are not directly
+        // comparable, which the caveat states explicitly.
+        (function () {
+          var nick = (s.studentNickname || "").trim();
+          if (!nick) return null; // anonymous sessions can't be grouped meaningfully
+          var nickKey = nick.toLowerCase();
+          var prior = (state.sessions || []).filter(function (ss) {
+            return ss && typeof ss.modifiabilityIndex === "number"
+              && (ss.studentNickname || "").trim().toLowerCase() === nickKey
+              && ss.id !== s.id;
+          });
+          var pts = prior.map(function (ss) {
+            return {
+              mi: ss.modifiabilityIndex,
+              domain: ss.domain || "custom",
+              date: ss.dateCompleted || ss.dateStarted || "",
+              items: Array.isArray(ss.sessionItemIds) ? ss.sessionItemIds.length : null,
+              current: false
+            };
+          });
+          pts.sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); });
+          pts.push({ mi: modIdx, domain: s.domain || "custom", date: s.dateStarted || "", items: s.sessionItemIds.length, current: true });
+          if (pts.length < 2) return null; // need ≥2 points for a trajectory
+
+          var miColor = function (v) { return v >= 0.6 ? "#16a34a" : v >= 0.3 ? "#a16207" : v >= 0 ? "#1e3a8a" : "#b91c1c"; };
+          var fmtDate = function (iso) { var d = String(iso).slice(0, 10); return d || "—"; };
+          var domainLabels = { math: "Math", reading: "Reading", "working-memory": "Working memory", wm: "Working memory", language: "Language", custom: "Custom" };
+          var domainsPresent = {};
+          pts.forEach(function (p) { domainsPresent[p.domain] = 1; });
+          var multiDomain = Object.keys(domainsPresent).length > 1;
+
+          // SVG geometry — MI in [-1, 1] mapped to a compact sparkline.
+          var W = 300, H = 70, padL = 8, padR = 8, padT = 8, padB = 8;
+          var innerW = W - padL - padR, innerH = H - padT - padB;
+          var xAt = function (i) { return pts.length === 1 ? padL + innerW / 2 : padL + (i * innerW) / (pts.length - 1); };
+          var yAt = function (mi) { var v = Math.max(-1, Math.min(1, mi)); return padT + (1 - (v + 1) / 2) * innerH; };
+          var zeroY = yAt(0);
+          var polyPoints = pts.map(function (p, i) { return xAt(i).toFixed(1) + "," + yAt(p.mi).toFixed(1); }).join(" ");
+
+          var first = pts[0], last = pts[pts.length - 1];
+          var delta = last.mi - first.mi;
+          var direction = Math.abs(delta) < 0.15 ? "held about steady" : (delta > 0 ? "trended upward" : "trended downward");
+          var ariaSummary = "This student's Modifiability Index across " + pts.length + " sessions, from " + first.mi.toFixed(2) + " to " + last.mi.toFixed(2) + ", " + direction + ".";
+
+          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#f0f9ff", borderColor: "#7dd3fc" } },
+            h("div", { style: { fontSize: 11, color: "#0369a1", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
+              "📈 " + nick + " over time · " + pts.length + " sessions"),
+            // Inline SVG sparkline
+            h("svg", {
+              viewBox: "0 0 " + W + " " + H, width: "100%", height: H,
+              role: "img", "aria-label": ariaSummary,
+              style: { display: "block", maxWidth: W, marginBottom: 6 }
+            },
+              // zero baseline
+              h("line", { x1: padL, y1: zeroY.toFixed(1), x2: (W - padR).toFixed(1), y2: zeroY.toFixed(1), stroke: "#cbd5e1", strokeWidth: 1, strokeDasharray: "3 3" }),
+              // top/bottom guide labels
+              h("text", { x: padL, y: padT + 3, fontSize: 7, fill: "#94a3b8" }, "+1"),
+              h("text", { x: padL, y: (H - padB + 1).toFixed(1), fontSize: 7, fill: "#94a3b8" }, "-1"),
+              // trend line
+              h("polyline", { points: polyPoints, fill: "none", stroke: "#0ea5e9", strokeWidth: 2, strokeLinejoin: "round", strokeLinecap: "round" }),
+              // dots
+              pts.map(function (p, i) {
+                return h("circle", {
+                  key: "da-traj-" + i,
+                  cx: xAt(i).toFixed(1), cy: yAt(p.mi).toFixed(1),
+                  r: p.current ? 4.5 : 3.5,
+                  fill: miColor(p.mi),
+                  stroke: p.current ? "#0f172a" : "#ffffff", strokeWidth: p.current ? 1.5 : 1
+                }, h("title", null, fmtDate(p.date) + " · " + (domainLabels[p.domain] || p.domain) + " · MI " + (p.mi >= 0 ? "+" : "") + p.mi.toFixed(2) + (p.current ? " (this session)" : "")));
+              })
+            ),
+            h("div", { style: { fontSize: 13, color: "#0f172a", lineHeight: 1.55 } },
+              "Across these sessions the index has ",
+              h("strong", null, direction),
+              " (" + (first.mi >= 0 ? "+" : "") + first.mi.toFixed(2) + " → " + (last.mi >= 0 ? "+" : "") + last.mi.toFixed(2) + "). The filled dark-ringed dot is this session."),
+            h("div", { style: { fontSize: 11, color: "#0369a1", fontStyle: "italic", marginTop: 4, lineHeight: 1.5 } },
+              multiDomain
+                ? "⚠ These sessions span more than one domain (" + Object.keys(domainsPresent).map(function (d) { return domainLabels[d] || d; }).join(", ") + "). The Modifiability Index is construct-relative — compare points WITHIN the same domain, not across. Descriptive trajectory, not a growth norm."
+                : "Descriptive trajectory across the sessions you've run with this student — not a standardized growth norm."
+            )
+          );
+        })(),
+
         // ─── Phase W — Outputs dashboard ───
         // Surfaces all five output channels at a glance with status badges
         // and jump-to-section / quick-generate buttons. Solves discoverability:

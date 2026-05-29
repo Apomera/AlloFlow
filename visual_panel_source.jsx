@@ -26,7 +26,7 @@ const LABEL_POSITIONS = {
     'bottom-right': { position: 'absolute', top: '85%', right: '6%', zIndex: 4 },
 };
 
-const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel, onRegenerateFrame, onDeleteFrame, onUpdateLabel, onSpeak, t, initialAnnotations, onAnnotationsChange, isTeacherMode, onChallengeSubmit, callGemini }) => {
+const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel, onRegenerateFrame, onDeleteFrame, onDuplicateFrame, onReorderFrame, onSetPanelFps, onUpdateLabel, onSpeak, t, initialAnnotations, onAnnotationsChange, isTeacherMode, onChallengeSubmit, callGemini }) => {
     const [labelsHidden, setLabelsHidden] = React.useState(false);
     const [editingLabel, setEditingLabel] = React.useState(null);
     const [refiningPanelIdx, setRefiningPanelIdx] = React.useState(null);
@@ -72,6 +72,17 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
     const [animateInput, setAnimateInput] = React.useState('');
     const [regenFrame, setRegenFrame] = React.useState(null);
     const [regenInput, setRegenInput] = React.useState('');
+    // Manual-playback state for animated panels: when pausedFrames[panelIdx] is
+    // a number, render that frame as a still <img> instead of the looping GIF
+    // (so users can step through). null = auto-loop GIF, 0 = paused on first
+    // frame. prefersReducedMotion forces every animated panel into paused
+    // mode by default so the OS-level accessibility preference is honoured —
+    // see WCAG 2.1 SC 2.3.3 (Animation from Interactions).
+    const [pausedFrames, setPausedFrames] = React.useState({});
+    const prefersReducedMotion = React.useMemo(() => {
+        if (typeof window === 'undefined' || !window.matchMedia) return false;
+        try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+    }, []);
     const fileInputRefs = React.useRef({});
     const handleImageUpload = (panelIdx, e) => {
         const file = e.target.files?.[0];
@@ -307,6 +318,51 @@ Return ONLY valid JSON:
         onRegenerateFrame(regenFrame.panelIdx, regenFrame.frameIdx, regenInput.trim());
         setRegenInput('');
         setRegenFrame(null);
+    };
+    // Animated panels render in one of two modes:
+    //   playing → <img src={gifUrl}> auto-loops via browser
+    //   paused  → <img src={frames[idx]}> still, controlled by ▶ ◀ → buttons
+    // The shared isAnimated() check accepts panel.type or the imageUrl prefix
+    // so legacy panels without a type field still get the player UI.
+    const isAnimatedPanel = (panel) => {
+        if (!panel || !panel.imageUrl) return false;
+        if (panel.type === 'process_animation') return true;
+        if (typeof panel.imageUrl === 'string' && panel.imageUrl.startsWith('data:image/gif')) return true;
+        return false;
+    };
+    const isPanelPaused = (panelIdx) => {
+        const v = pausedFrames[panelIdx];
+        // prefers-reduced-motion treats every animated panel as paused-on-frame-0
+        // until the user explicitly hits ▶. The user override (a number value)
+        // takes precedence over the OS preference once they've chosen.
+        if (typeof v === 'number') return true;
+        return prefersReducedMotion && v !== 'playing';
+    };
+    const getPausedFrameIdx = (panelIdx) => {
+        const v = pausedFrames[panelIdx];
+        return typeof v === 'number' ? v : 0;
+    };
+    const togglePlayPause = (panelIdx, panel) => {
+        if (!panel || !panel.frames || panel.frames.length < 2) return;
+        setPausedFrames((prev) => {
+            const next = { ...prev };
+            if (typeof prev[panelIdx] === 'number' || (prefersReducedMotion && prev[panelIdx] !== 'playing')) {
+                // Currently paused → play (sentinel 'playing' wins over OS pref)
+                next[panelIdx] = 'playing';
+            } else {
+                next[panelIdx] = 0; // Pause on first frame
+            }
+            return next;
+        });
+    };
+    const stepFrame = (panelIdx, panel, delta) => {
+        if (!panel || !panel.frames || panel.frames.length < 2) return;
+        setPausedFrames((prev) => {
+            const next = { ...prev };
+            const current = typeof prev[panelIdx] === 'number' ? prev[panelIdx] : 0;
+            next[panelIdx] = (current + delta + panel.frames.length) % panel.frames.length;
+            return next;
+        });
     };
     const handleAddUserLabel = (panelIdx, e) => {
         if (addingLabelPanel === null) return;
@@ -1009,7 +1065,49 @@ Return ONLY valid JSON:
                             )}
                             <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }} style={{ position: 'relative', overflow: 'hidden', background: '#f1f5f9' }} onClick={(e) => addingLabelPanel !== null && (isStudentChallenge ? handleAddStudentLabel(panelIdx, e) : handleAddUserLabel(panelIdx, e))} className={addingLabelPanel !== null ? 'adding-label' : ''}>
                             {(imageOverrides[panelIdx] || panel.imageUrl) ? (
-                                <img src={imageOverrides[panelIdx] || panel.imageUrl} alt={panel.caption || `Panel ${panelIdx + 1}`} loading="lazy" style={{ width: '100%', display: 'block', maxHeight: '320px', objectFit: 'contain', background: '#f8fafc' }} />
+                                (() => {
+                                    // Animated panel: render either looping GIF or a paused
+                                    // single-frame depending on the playback state.
+                                    // imageOverrides (teacher-uploaded replacement) always
+                                    // takes priority and shouldn't go through the player.
+                                    const overrideUrl = imageOverrides[panelIdx];
+                                    const animated = !overrideUrl && isAnimatedPanel(panel);
+                                    if (animated && panel.frames && panel.frames.length > 1) {
+                                        const paused = isPanelPaused(panelIdx);
+                                        const frameIdx = getPausedFrameIdx(panelIdx);
+                                        const displayUrl = paused ? panel.frames[frameIdx] : panel.imageUrl;
+                                        const motionDesc = panel.motionPrompt || (panel.caption || 'Animated panel');
+                                        const altText = `${t('common.animated_panel_alt') || 'Animated panel'}: ${motionDesc}, ${panel.frames.length} ${t('common.frames_label') || 'frames'}${paused ? ` — ${t('common.paused_at_frame') || 'paused at frame'} ${frameIdx + 1}` : ''}`;
+                                        return (
+                                            <>
+                                                <img src={displayUrl} alt={altText} loading="lazy" style={{ width: '100%', display: 'block', maxHeight: '320px', objectFit: 'contain', background: '#f8fafc' }} />
+                                                {/* Player overlay: ▶/⏸ in the centre when paused (so it doesn't
+                                                    cover the animation when playing), plus a small frame strip
+                                                    of ◀ N/M ▶ controls at bottom-left for stepping. */}
+                                                {paused && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); togglePlayPause(panelIdx, panel); }}
+                                                        aria-label={t('common.play_animation') || 'Play animation'}
+                                                        title={t('common.play_animation') || 'Play animation'}
+                                                        style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(15,23,42,0.7)', color: 'white', border: '2px solid white', borderRadius: '50%', width: 48, height: 48, fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}
+                                                    >▶</button>
+                                                )}
+                                                <div style={{ position: 'absolute', bottom: 6, left: 6, display: 'flex', gap: 2, background: 'rgba(15,23,42,0.65)', color: 'white', borderRadius: 12, padding: '2px 4px', alignItems: 'center', fontSize: 10, fontWeight: 600, zIndex: 5 }}>
+                                                    {paused ? (
+                                                        <>
+                                                            <button onClick={(e) => { e.stopPropagation(); stepFrame(panelIdx, panel, -1); }} aria-label={t('common.previous_frame') || 'Previous frame'} title={t('common.previous_frame') || 'Previous frame'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '2px 6px', fontSize: 12 }}>◀</button>
+                                                            <span aria-live="polite">{frameIdx + 1}/{panel.frames.length}</span>
+                                                            <button onClick={(e) => { e.stopPropagation(); stepFrame(panelIdx, panel, +1); }} aria-label={t('common.next_frame') || 'Next frame'} title={t('common.next_frame') || 'Next frame'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '2px 6px', fontSize: 12 }}>▶</button>
+                                                        </>
+                                                    ) : (
+                                                        <button onClick={(e) => { e.stopPropagation(); togglePlayPause(panelIdx, panel); }} aria-label={t('common.pause_animation') || 'Pause animation'} title={t('common.pause_animation') || 'Pause animation'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '2px 8px', fontSize: 12 }}>⏸ {panel.frames.length}f</button>
+                                                    )}
+                                                </div>
+                                            </>
+                                        );
+                                    }
+                                    return <img src={overrideUrl || panel.imageUrl} alt={panel.caption || `Panel ${panelIdx + 1}`} loading="lazy" style={{ width: '100%', display: 'block', maxHeight: '320px', objectFit: 'contain', background: '#f8fafc' }} />;
+                                })()
                             ) : (
                                 <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', color: '#475569' }}>
                                     <div className="animate-spin" style={{ width: 24, height: 24, border: '3px solid #cbd5e1', borderTopColor: '#6366f1', borderRadius: '50%' }} />
@@ -1157,11 +1255,11 @@ Return ONLY valid JSON:
                                     ✏️
                                 </button>
                                 <button
-                                    aria-label={t('common.export_panel_as_png')}
+                                    aria-label={isAnimatedPanel(panel) ? (t('common.export_first_frame_as_png') || 'Export first frame as PNG') : t('common.export_panel_as_png')}
                                     onClick={() => handleExportPanel(panelIdx)}
-                                    title={t('common.download_annotated_diagram_as_png')}
+                                    title={isAnimatedPanel(panel) ? (t('common.export_first_frame_as_png_title') || 'Saves the first frame as a PNG. Use 🎞️ to download the full animation.') : t('common.download_annotated_diagram_as_png')}
                                 >
-                                    💾
+                                    {isAnimatedPanel(panel) ? '🖼️' : '💾'}
                                 </button>
                                 {/* Animated-panel actions: download the GIF directly, or animate a
                                     static panel on demand. The "type === 'process_animation'" check
@@ -1177,11 +1275,17 @@ Return ONLY valid JSON:
                                         🎞️
                                     </button>
                                 )}
-                                {onAnimatePanel && panel.type !== 'process_animation' && !(panel.imageUrl && panel.imageUrl.startsWith && panel.imageUrl.startsWith('data:image/gif')) && (
+                                {onAnimatePanel && (
                                     <button
-                                        aria-label={t('common.animate_this_panel') || 'Animate this panel'}
-                                        onClick={() => setAnimatingPanelIdx(animatingPanelIdx === panelIdx ? null : panelIdx)}
-                                        title={t('common.animate_this_panel_title') || 'Turn this panel into an animated GIF'}
+                                        aria-label={isAnimatedPanel(panel) ? (t('common.reanimate_panel') || 'Re-animate panel with new motion') : (t('common.animate_this_panel') || 'Animate this panel')}
+                                        onClick={() => {
+                                            if (animatingPanelIdx === panelIdx) { setAnimatingPanelIdx(null); return; }
+                                            // Pre-fill with the existing motion prompt so teachers can tweak
+                                            // rather than retype. Empty when going from static → animated.
+                                            setAnimateInput(isAnimatedPanel(panel) ? (panel.motionPrompt || '') : '');
+                                            setAnimatingPanelIdx(panelIdx);
+                                        }}
+                                        title={isAnimatedPanel(panel) ? (t('common.reanimate_panel_title') || 'Change the motion — regenerates the whole animation') : (t('common.animate_this_panel_title') || 'Turn this panel into an animated GIF')}
                                     >
                                         🎬
                                     </button>
@@ -1349,10 +1453,62 @@ Return ONLY valid JSON:
                                                         style={{ position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: '50%', background: '#ef4444', color: 'white', border: 'none', fontSize: 10, lineHeight: 1, cursor: 'pointer', padding: 0 }}
                                                     >✕</button>
                                                 )}
+                                                {/* Reorder + duplicate row beneath each thumbnail. ← → swap with
+                                                    the neighbouring frame; + duplicates the frame in place (good
+                                                    for holding a key moment longer without per-frame timing). The
+                                                    anchor (frame 1) can't be reordered left into nothing, and we
+                                                    don't reorder past the last frame. */}
+                                                <div style={{ display: 'flex', gap: 1, marginTop: 2, justifyContent: 'center' }}>
+                                                    {onReorderFrame && fIdx > 0 && (
+                                                        <button
+                                                            onClick={() => onReorderFrame(panelIdx, fIdx, fIdx - 1)}
+                                                            aria-label={t('common.frame_move_left_aria') || `Move frame ${fIdx + 1} earlier`}
+                                                            title={t('common.frame_move_left_title') || 'Move earlier'}
+                                                            style={{ background: '#e2e8f0', color: '#475569', border: 'none', cursor: 'pointer', fontSize: 9, lineHeight: 1, padding: '1px 4px', borderRadius: 3 }}
+                                                        >◀</button>
+                                                    )}
+                                                    {onDuplicateFrame && (
+                                                        <button
+                                                            onClick={() => onDuplicateFrame(panelIdx, fIdx)}
+                                                            aria-label={t('common.frame_duplicate_aria') || `Duplicate frame ${fIdx + 1}`}
+                                                            title={t('common.frame_duplicate_title') || 'Duplicate this frame'}
+                                                            style={{ background: '#e2e8f0', color: '#475569', border: 'none', cursor: 'pointer', fontSize: 9, lineHeight: 1, padding: '1px 4px', borderRadius: 3 }}
+                                                        >+</button>
+                                                    )}
+                                                    {onReorderFrame && fIdx < panel.frames.length - 1 && (
+                                                        <button
+                                                            onClick={() => onReorderFrame(panelIdx, fIdx, fIdx + 1)}
+                                                            aria-label={t('common.frame_move_right_aria') || `Move frame ${fIdx + 1} later`}
+                                                            title={t('common.frame_move_right_title') || 'Move later'}
+                                                            style={{ background: '#e2e8f0', color: '#475569', border: 'none', cursor: 'pointer', fontSize: 9, lineHeight: 1, padding: '1px 4px', borderRadius: 3 }}
+                                                        >▶</button>
+                                                    )}
+                                                </div>
                                             </div>
                                         );
                                     })}
                                 </div>
+                                {/* FPS slider — the GIF format supports per-frame delays in the
+                                    Graphic Control Extension, but for now we use a uniform value.
+                                    3 fps default suits "watch the cell divide" pacing; teachers
+                                    can bump to 8-12 fps for "water cycling" if they want it
+                                    smoother. onSetPanelFps re-encodes the GIF without re-fetching
+                                    frames so the round-trip is fast. */}
+                                {onSetPanelFps && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, fontSize: 11, color: '#475569' }}>
+                                        <label htmlFor={`fps-slider-${panelIdx}`} style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('common.speed_label') || 'Speed'}</label>
+                                        <input
+                                            id={`fps-slider-${panelIdx}`}
+                                            type="range"
+                                            min="2" max="12" step="1"
+                                            value={panel.fps || 3}
+                                            onChange={(e) => onSetPanelFps(panelIdx, parseInt(e.target.value, 10))}
+                                            aria-label={t('common.speed_aria') || `Animation speed in frames per second, currently ${panel.fps || 3}`}
+                                            style={{ flex: 1, accentColor: '#7c3aed' }}
+                                        />
+                                        <span style={{ fontVariantNumeric: 'tabular-nums', minWidth: 36, textAlign: 'right' }}>{panel.fps || 3} fps</span>
+                                    </div>
+                                )}
                                 {regenFrame && regenFrame.panelIdx === panelIdx && (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>
                                         {regenFrame.frameIdx === 0 && (

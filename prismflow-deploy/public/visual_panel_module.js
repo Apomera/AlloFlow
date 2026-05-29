@@ -61,7 +61,7 @@ const LABEL_POSITIONS = {
   "bottom-center": { position: "absolute", top: "85%", left: "50%", transform: "translateX(-50%)", zIndex: 4 },
   "bottom-right": { position: "absolute", top: "85%", right: "6%", zIndex: 4 }
 };
-const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel, onRegenerateFrame, onDeleteFrame, onUpdateLabel, onSpeak, t, initialAnnotations, onAnnotationsChange, isTeacherMode, onChallengeSubmit, callGemini }) => {
+const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel, onRegenerateFrame, onDeleteFrame, onDuplicateFrame, onReorderFrame, onSetPanelFps, onUpdateLabel, onSpeak, t, initialAnnotations, onAnnotationsChange, isTeacherMode, onChallengeSubmit, callGemini }) => {
   const [labelsHidden, setLabelsHidden] = React.useState(false);
   const [editingLabel, setEditingLabel] = React.useState(null);
   const [refiningPanelIdx, setRefiningPanelIdx] = React.useState(null);
@@ -103,6 +103,15 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
   const [animateInput, setAnimateInput] = React.useState("");
   const [regenFrame, setRegenFrame] = React.useState(null);
   const [regenInput, setRegenInput] = React.useState("");
+  const [pausedFrames, setPausedFrames] = React.useState({});
+  const prefersReducedMotion = React.useMemo(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return false;
+    try {
+      return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    } catch (e) {
+      return false;
+    }
+  }, []);
   const fileInputRefs = React.useRef({});
   const handleImageUpload = (panelIdx, e) => {
     const file = e.target.files?.[0];
@@ -329,6 +338,42 @@ Return ONLY valid JSON:
     onRegenerateFrame(regenFrame.panelIdx, regenFrame.frameIdx, regenInput.trim());
     setRegenInput("");
     setRegenFrame(null);
+  };
+  const isAnimatedPanel = (panel) => {
+    if (!panel || !panel.imageUrl) return false;
+    if (panel.type === "process_animation") return true;
+    if (typeof panel.imageUrl === "string" && panel.imageUrl.startsWith("data:image/gif")) return true;
+    return false;
+  };
+  const isPanelPaused = (panelIdx) => {
+    const v = pausedFrames[panelIdx];
+    if (typeof v === "number") return true;
+    return prefersReducedMotion && v !== "playing";
+  };
+  const getPausedFrameIdx = (panelIdx) => {
+    const v = pausedFrames[panelIdx];
+    return typeof v === "number" ? v : 0;
+  };
+  const togglePlayPause = (panelIdx, panel) => {
+    if (!panel || !panel.frames || panel.frames.length < 2) return;
+    setPausedFrames((prev) => {
+      const next = { ...prev };
+      if (typeof prev[panelIdx] === "number" || prefersReducedMotion && prev[panelIdx] !== "playing") {
+        next[panelIdx] = "playing";
+      } else {
+        next[panelIdx] = 0;
+      }
+      return next;
+    });
+  };
+  const stepFrame = (panelIdx, panel, delta) => {
+    if (!panel || !panel.frames || panel.frames.length < 2) return;
+    setPausedFrames((prev) => {
+      const next = { ...prev };
+      const current = typeof prev[panelIdx] === "number" ? prev[panelIdx] : 0;
+      next[panelIdx] = (current + delta + panel.frames.length) % panel.frames.length;
+      return next;
+    });
   };
   const handleAddUserLabel = (panelIdx, e) => {
     if (addingLabelPanel === null) return;
@@ -1024,7 +1069,40 @@ Return ONLY valid JSON:
       e.preventDefault();
       e.target.click();
     }
-  }, style: { position: "relative", overflow: "hidden", background: "#f1f5f9" }, onClick: (e) => addingLabelPanel !== null && (isStudentChallenge ? handleAddStudentLabel(panelIdx, e) : handleAddUserLabel(panelIdx, e)), className: addingLabelPanel !== null ? "adding-label" : "" }, imageOverrides[panelIdx] || panel.imageUrl ? /* @__PURE__ */ React.createElement("img", { src: imageOverrides[panelIdx] || panel.imageUrl, alt: panel.caption || `Panel ${panelIdx + 1}`, loading: "lazy", style: { width: "100%", display: "block", maxHeight: "320px", objectFit: "contain", background: "#f8fafc" } }) : /* @__PURE__ */ React.createElement("div", { style: { height: 120, display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9", color: "#475569" } }, /* @__PURE__ */ React.createElement("div", { className: "animate-spin", style: { width: 24, height: 24, border: "3px solid #cbd5e1", borderTopColor: "#6366f1", borderRadius: "50%" } })), !labelsHidden && (!isStudentChallenge || isFillBlank) && renderLeaderLines(panel, panelIdx), renderDrawingSVG(panelIdx), isStudentChallenge && renderStudentLeaderLines(panelIdx), panel.labels && panel.labels.map((label, labelIdx) => {
+  }, style: { position: "relative", overflow: "hidden", background: "#f1f5f9" }, onClick: (e) => addingLabelPanel !== null && (isStudentChallenge ? handleAddStudentLabel(panelIdx, e) : handleAddUserLabel(panelIdx, e)), className: addingLabelPanel !== null ? "adding-label" : "" }, imageOverrides[panelIdx] || panel.imageUrl ? (() => {
+    const overrideUrl = imageOverrides[panelIdx];
+    const animated = !overrideUrl && isAnimatedPanel(panel);
+    if (animated && panel.frames && panel.frames.length > 1) {
+      const paused = isPanelPaused(panelIdx);
+      const frameIdx = getPausedFrameIdx(panelIdx);
+      const displayUrl = paused ? panel.frames[frameIdx] : panel.imageUrl;
+      const motionDesc = panel.motionPrompt || (panel.caption || "Animated panel");
+      const altText = `${t("common.animated_panel_alt") || "Animated panel"}: ${motionDesc}, ${panel.frames.length} ${t("common.frames_label") || "frames"}${paused ? ` \u2014 ${t("common.paused_at_frame") || "paused at frame"} ${frameIdx + 1}` : ""}`;
+      return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("img", { src: displayUrl, alt: altText, loading: "lazy", style: { width: "100%", display: "block", maxHeight: "320px", objectFit: "contain", background: "#f8fafc" } }), paused && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: (e) => {
+            e.stopPropagation();
+            togglePlayPause(panelIdx, panel);
+          },
+          "aria-label": t("common.play_animation") || "Play animation",
+          title: t("common.play_animation") || "Play animation",
+          style: { position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "rgba(15,23,42,0.7)", color: "white", border: "2px solid white", borderRadius: "50%", width: 48, height: 48, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 5 }
+        },
+        "\u25B6"
+      ), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", bottom: 6, left: 6, display: "flex", gap: 2, background: "rgba(15,23,42,0.65)", color: "white", borderRadius: 12, padding: "2px 4px", alignItems: "center", fontSize: 10, fontWeight: 600, zIndex: 5 } }, paused ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
+        e.stopPropagation();
+        stepFrame(panelIdx, panel, -1);
+      }, "aria-label": t("common.previous_frame") || "Previous frame", title: t("common.previous_frame") || "Previous frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", padding: "2px 6px", fontSize: 12 } }, "\u25C0"), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite" }, frameIdx + 1, "/", panel.frames.length), /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
+        e.stopPropagation();
+        stepFrame(panelIdx, panel, 1);
+      }, "aria-label": t("common.next_frame") || "Next frame", title: t("common.next_frame") || "Next frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", padding: "2px 6px", fontSize: 12 } }, "\u25B6")) : /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
+        e.stopPropagation();
+        togglePlayPause(panelIdx, panel);
+      }, "aria-label": t("common.pause_animation") || "Pause animation", title: t("common.pause_animation") || "Pause animation", style: { background: "none", border: "none", color: "white", cursor: "pointer", padding: "2px 8px", fontSize: 12 } }, "\u23F8 ", panel.frames.length, "f")));
+    }
+    return /* @__PURE__ */ React.createElement("img", { src: overrideUrl || panel.imageUrl, alt: panel.caption || `Panel ${panelIdx + 1}`, loading: "lazy", style: { width: "100%", display: "block", maxHeight: "320px", objectFit: "contain", background: "#f8fafc" } });
+  })() : /* @__PURE__ */ React.createElement("div", { style: { height: 120, display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9", color: "#475569" } }, /* @__PURE__ */ React.createElement("div", { className: "animate-spin", style: { width: 24, height: 24, border: "3px solid #cbd5e1", borderTopColor: "#6366f1", borderRadius: "50%" } })), !labelsHidden && (!isStudentChallenge || isFillBlank) && renderLeaderLines(panel, panelIdx), renderDrawingSVG(panelIdx), isStudentChallenge && renderStudentLeaderLines(panelIdx), panel.labels && panel.labels.map((label, labelIdx) => {
     const defaultPos = LABEL_POSITIONS[label.position] || LABEL_POSITIONS["bottom-center"];
     const overridePos = aiLabelPositions[panelIdx + "-" + labelIdx];
     const pos = overridePos ? { position: "absolute", left: overridePos.left, top: overridePos.top } : defaultPos;
@@ -1198,11 +1276,11 @@ Return ONLY valid JSON:
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
-      "aria-label": t("common.export_panel_as_png"),
+      "aria-label": isAnimatedPanel(panel) ? t("common.export_first_frame_as_png") || "Export first frame as PNG" : t("common.export_panel_as_png"),
       onClick: () => handleExportPanel(panelIdx),
-      title: t("common.download_annotated_diagram_as_png")
+      title: isAnimatedPanel(panel) ? t("common.export_first_frame_as_png_title") || "Saves the first frame as a PNG. Use \u{1F39E}\uFE0F to download the full animation." : t("common.download_annotated_diagram_as_png")
     },
-    "\u{1F4BE}"
+    isAnimatedPanel(panel) ? "\u{1F5BC}\uFE0F" : "\u{1F4BE}"
   ), (panel.type === "process_animation" || panel.imageUrl && panel.imageUrl.startsWith && panel.imageUrl.startsWith("data:image/gif")) && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1211,12 +1289,19 @@ Return ONLY valid JSON:
       title: t("common.download_gif") || "Download GIF"
     },
     "\u{1F39E}\uFE0F"
-  ), onAnimatePanel && panel.type !== "process_animation" && !(panel.imageUrl && panel.imageUrl.startsWith && panel.imageUrl.startsWith("data:image/gif")) && /* @__PURE__ */ React.createElement(
+  ), onAnimatePanel && /* @__PURE__ */ React.createElement(
     "button",
     {
-      "aria-label": t("common.animate_this_panel") || "Animate this panel",
-      onClick: () => setAnimatingPanelIdx(animatingPanelIdx === panelIdx ? null : panelIdx),
-      title: t("common.animate_this_panel_title") || "Turn this panel into an animated GIF"
+      "aria-label": isAnimatedPanel(panel) ? t("common.reanimate_panel") || "Re-animate panel with new motion" : t("common.animate_this_panel") || "Animate this panel",
+      onClick: () => {
+        if (animatingPanelIdx === panelIdx) {
+          setAnimatingPanelIdx(null);
+          return;
+        }
+        setAnimateInput(isAnimatedPanel(panel) ? panel.motionPrompt || "" : "");
+        setAnimatingPanelIdx(panelIdx);
+      },
+      title: isAnimatedPanel(panel) ? t("common.reanimate_panel_title") || "Change the motion \u2014 regenerates the whole animation" : t("common.animate_this_panel_title") || "Turn this panel into an animated GIF"
     },
     "\u{1F3AC}"
   ), isTeacherMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
@@ -1380,8 +1465,48 @@ Return ONLY valid JSON:
         style: { position: "absolute", top: -4, right: -4, width: 16, height: 16, borderRadius: "50%", background: "#ef4444", color: "white", border: "none", fontSize: 10, lineHeight: 1, cursor: "pointer", padding: 0 }
       },
       "\u2715"
-    ));
-  })), regenFrame && regenFrame.panelIdx === panelIdx && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4, marginTop: 6 } }, regenFrame.frameIdx === 0 && /* @__PURE__ */ React.createElement("p", { style: { fontSize: 10, color: "#92400e", margin: "0 2px", lineHeight: 1.4, background: "#fef3c7", padding: "4px 8px", borderRadius: 4 } }, t("common.anchor_cascade_warning") || "\u2693 Editing the anchor cascades through every frame \u2014 the whole animation will rebuild."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 1, marginTop: 2, justifyContent: "center" } }, onReorderFrame && fIdx > 0 && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => onReorderFrame(panelIdx, fIdx, fIdx - 1),
+        "aria-label": t("common.frame_move_left_aria") || `Move frame ${fIdx + 1} earlier`,
+        title: t("common.frame_move_left_title") || "Move earlier",
+        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 9, lineHeight: 1, padding: "1px 4px", borderRadius: 3 }
+      },
+      "\u25C0"
+    ), onDuplicateFrame && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => onDuplicateFrame(panelIdx, fIdx),
+        "aria-label": t("common.frame_duplicate_aria") || `Duplicate frame ${fIdx + 1}`,
+        title: t("common.frame_duplicate_title") || "Duplicate this frame",
+        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 9, lineHeight: 1, padding: "1px 4px", borderRadius: 3 }
+      },
+      "+"
+    ), onReorderFrame && fIdx < panel.frames.length - 1 && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => onReorderFrame(panelIdx, fIdx, fIdx + 1),
+        "aria-label": t("common.frame_move_right_aria") || `Move frame ${fIdx + 1} later`,
+        title: t("common.frame_move_right_title") || "Move later",
+        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 9, lineHeight: 1, padding: "1px 4px", borderRadius: 3 }
+      },
+      "\u25B6"
+    )));
+  })), onSetPanelFps && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6, marginTop: 6, fontSize: 11, color: "#475569" } }, /* @__PURE__ */ React.createElement("label", { htmlFor: `fps-slider-${panelIdx}`, style: { fontWeight: 600, whiteSpace: "nowrap" } }, t("common.speed_label") || "Speed"), /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      id: `fps-slider-${panelIdx}`,
+      type: "range",
+      min: "2",
+      max: "12",
+      step: "1",
+      value: panel.fps || 3,
+      onChange: (e) => onSetPanelFps(panelIdx, parseInt(e.target.value, 10)),
+      "aria-label": t("common.speed_aria") || `Animation speed in frames per second, currently ${panel.fps || 3}`,
+      style: { flex: 1, accentColor: "#7c3aed" }
+    }
+  ), /* @__PURE__ */ React.createElement("span", { style: { fontVariantNumeric: "tabular-nums", minWidth: 36, textAlign: "right" } }, panel.fps || 3, " fps")), regenFrame && regenFrame.panelIdx === panelIdx && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4, marginTop: 6 } }, regenFrame.frameIdx === 0 && /* @__PURE__ */ React.createElement("p", { style: { fontSize: 10, color: "#92400e", margin: "0 2px", lineHeight: 1.4, background: "#fef3c7", padding: "4px 8px", borderRadius: 4 } }, t("common.anchor_cascade_warning") || "\u2693 Editing the anchor cascades through every frame \u2014 the whole animation will rebuild."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement(
     "input",
     {
       value: regenInput,

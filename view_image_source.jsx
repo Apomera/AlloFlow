@@ -24,6 +24,9 @@ function ImageView(props) {
   var handleAnimatePanel = props.handleAnimatePanel;
   var handleRegeneratePanelFrame = props.handleRegeneratePanelFrame;
   var handleDeletePanelFrame = props.handleDeletePanelFrame;
+  var handleDuplicatePanelFrame = props.handleDuplicatePanelFrame;
+  var handleReorderPanelFrame = props.handleReorderPanelFrame;
+  var handleSetPanelFps = props.handleSetPanelFps;
   var callGemini = props.callGemini;
   var addToast = props.addToast;
   var VisualPanelGrid = props.VisualPanelGrid;
@@ -42,6 +45,9 @@ function ImageView(props) {
                                     onAnimatePanel={handleAnimatePanel}
                                     onRegenerateFrame={handleRegeneratePanelFrame}
                                     onDeleteFrame={handleDeletePanelFrame}
+                                    onDuplicateFrame={handleDuplicatePanelFrame}
+                                    onReorderFrame={handleReorderPanelFrame}
+                                    onSetPanelFps={handleSetPanelFps}
                                     onUpdateLabel={handleUpdateVisualLabel}
                                     onSpeak={handleSpeak}
                                     t={t}

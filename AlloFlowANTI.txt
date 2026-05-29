@@ -14327,7 +14327,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               // the original motionSteps from the storyboard; if the panel was
               // generated before motionSteps was kept (or storyboard fell back to
               // uniform motionPrompt), use motionPrompt for every step instead.
-              setGenerationStep(t('toasts.regenerating_anchor') || 'Regenerating anchor + cascading…');
+              const total = panel.frames.length;
+              setGenerationStep((t('toasts.regenerating_anchor') || 'Regenerating anchor') + ' (1/' + total + ')…');
               const anchorEditPrompt = 'Apply this change while keeping the educational illustration style and clarity: ' + desc + '. No text, no labels.';
               const oldFrame0B64 = panel.frames[0].split(',')[1];
               const newFrame0 = await callGeminiImageEdit(anchorEditPrompt, oldFrame0B64, w, 0.9);
@@ -14338,6 +14339,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               const newFrames = [newFrame0];
               let prevFrame = newFrame0;
               for (let i = 0; i < panel.frames.length - 1; i++) {
+                  setGenerationStep((t('toasts.cascading_frame') || 'Cascading frame') + ' (' + (i + 2) + '/' + total + ')…');
                   const stepDesc = steps[i] || steps[steps.length - 1] || panel.motionPrompt || 'subtle motion';
                   try {
                       const stepPrompt = 'Keep the subject IDENTICAL in style, anatomy, and color. Only change: ' + stepDesc + '. Educational illustration, no text, no labels.';
@@ -14390,13 +14392,89 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
       try {
           const newFrames = panel.frames.filter((_, i) => i !== frameIdx);
+          // motionSteps[i] describes the transition INTO frame i+1. Deleting
+          // frame i means the step that led to it is gone too — slice the
+          // matching index out so the cascade-regen still has the right
+          // per-step descriptions if the anchor gets edited later.
+          const newSteps = Array.isArray(panel.motionSteps)
+              ? panel.motionSteps.filter((_, i) => i !== Math.max(0, frameIdx - 1))
+              : panel.motionSteps;
           const w = panel.frameWidth || 400;
           const h = panel.frameHeight || 400;
           const gifUrl = await encodeFramesToGif(newFrames, w, h, panel.fps || 3);
-          _updatePanelInPlan(panelIdx, (p) => ({ ...p, frames: newFrames, imageUrl: gifUrl }));
+          _updatePanelInPlan(panelIdx, (p) => ({ ...p, frames: newFrames, motionSteps: newSteps, imageUrl: gifUrl }));
       } catch (e) {
           warnLog('[VisualPanel] handleDeletePanelFrame failed:', e);
           addToast((t('toasts.frame_delete_failed') || 'Could not delete frame') + ': ' + (e && e.message || ''), 'error');
+      }
+  };
+  const handleDuplicatePanelFrame = async (panelIdx, frameIdx) => {
+      // Holds the chosen frame longer by inserting a copy right after it.
+      // motionSteps gets a passthrough entry ("hold previous") so anchor
+      // cascade-regen later doesn't try to mutate the duplicated frame.
+      const plan = generatedContent && generatedContent.data && generatedContent.data.visualPlan;
+      const panel = plan && plan.panels && plan.panels[panelIdx];
+      if (!panel || !panel.frames || !panel.frames[frameIdx]) return;
+      try {
+          const newFrames = [...panel.frames.slice(0, frameIdx + 1), panel.frames[frameIdx], ...panel.frames.slice(frameIdx + 1)];
+          const newSteps = Array.isArray(panel.motionSteps)
+              ? [...panel.motionSteps.slice(0, frameIdx), 'hold previous frame (no motion)', ...panel.motionSteps.slice(frameIdx)]
+              : panel.motionSteps;
+          const w = panel.frameWidth || 400;
+          const h = panel.frameHeight || 400;
+          const gifUrl = await encodeFramesToGif(newFrames, w, h, panel.fps || 3);
+          _updatePanelInPlan(panelIdx, (p) => ({ ...p, frames: newFrames, motionSteps: newSteps, imageUrl: gifUrl }));
+      } catch (e) {
+          warnLog('[VisualPanel] handleDuplicatePanelFrame failed:', e);
+          addToast((t('toasts.frame_duplicate_failed') || 'Could not duplicate frame') + ': ' + (e && e.message || ''), 'error');
+      }
+  };
+  const handleReorderPanelFrame = async (panelIdx, fromIdx, toIdx) => {
+      // Swap adjacent frames (UI only sends ±1 moves). motionSteps also swaps
+      // so future anchor cascades replay the right step into the right slot.
+      const plan = generatedContent && generatedContent.data && generatedContent.data.visualPlan;
+      const panel = plan && plan.panels && plan.panels[panelIdx];
+      if (!panel || !panel.frames) return;
+      if (fromIdx < 0 || fromIdx >= panel.frames.length || toIdx < 0 || toIdx >= panel.frames.length || fromIdx === toIdx) return;
+      try {
+          const newFrames = [...panel.frames];
+          const moved = newFrames.splice(fromIdx, 1)[0];
+          newFrames.splice(toIdx, 0, moved);
+          let newSteps = panel.motionSteps;
+          if (Array.isArray(panel.motionSteps)) {
+              // step[i] describes the transition INTO frame i+1, so a frame
+              // move at frame index F shifts the step at F-1 (or F if F===0).
+              newSteps = [...panel.motionSteps];
+              const stepFrom = Math.max(0, fromIdx - 1);
+              const stepTo = Math.max(0, toIdx - 1);
+              if (stepFrom < newSteps.length && stepTo < newSteps.length) {
+                  const movedStep = newSteps.splice(stepFrom, 1)[0];
+                  newSteps.splice(stepTo, 0, movedStep);
+              }
+          }
+          const w = panel.frameWidth || 400;
+          const h = panel.frameHeight || 400;
+          const gifUrl = await encodeFramesToGif(newFrames, w, h, panel.fps || 3);
+          _updatePanelInPlan(panelIdx, (p) => ({ ...p, frames: newFrames, motionSteps: newSteps, imageUrl: gifUrl }));
+      } catch (e) {
+          warnLog('[VisualPanel] handleReorderPanelFrame failed:', e);
+          addToast((t('toasts.frame_reorder_failed') || 'Could not reorder frame') + ': ' + (e && e.message || ''), 'error');
+      }
+  };
+  const handleSetPanelFps = async (panelIdx, fps) => {
+      // Re-encodes the GIF with a new delay per Graphic Control Extension
+      // entry. Frames themselves don't change so this is cheap (no API calls).
+      const plan = generatedContent && generatedContent.data && generatedContent.data.visualPlan;
+      const panel = plan && plan.panels && plan.panels[panelIdx];
+      if (!panel || !panel.frames || panel.frames.length < 2) return;
+      const safeFps = Math.max(2, Math.min(24, parseInt(fps, 10) || 3));
+      try {
+          const w = panel.frameWidth || 400;
+          const h = panel.frameHeight || 400;
+          const gifUrl = await encodeFramesToGif(panel.frames, w, h, safeFps);
+          _updatePanelInPlan(panelIdx, (p) => ({ ...p, fps: safeFps, imageUrl: gifUrl }));
+      } catch (e) {
+          warnLog('[VisualPanel] handleSetPanelFps failed:', e);
       }
   };
   const executeVisualPlan = async (plan, targetWidth = 400, targetQual = 0.8, artStyle = "") => {
@@ -25064,6 +25142,7 @@ ${_toolList}
                     handleRefinePanel, handleUpdateVisualLabel, handleSpeak, handleScoreUpdate,
                     handleRestoreImage, handleRefineImage, handleDownloadImage,
                     handleAnimatePanel, handleRegeneratePanelFrame, handleDeletePanelFrame,
+                    handleDuplicatePanelFrame, handleReorderPanelFrame, handleSetPanelFps,
                     callGemini, addToast, VisualPanelGrid
                 })}
                 {activeView === 'alignment-report' && isTeacherMode && (
