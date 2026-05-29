@@ -815,11 +815,19 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         effectiveVisualStyle = visualStyle;
     }
     const effectiveQuizCount = configOverride.quizCount || quizMcqCount;
-    const lessonDNA = configOverride.lessonDNA || persistedLessonDNA || null;
+    // isolatedContext: when set (e.g. by Dynamic Assessment), generate PURELY
+    // from the passed directive (textOverride) and suppress ALL ambient
+    // lesson/curriculum context — Lesson DNA, target standards, roster-group
+    // differentiation, selected concepts, source topic, and main-app custom
+    // instructions. This keeps a DA support self-contained to the assessment
+    // item so no outside topic/vocabulary leaks into the measure. Absent the
+    // flag, behavior is unchanged for every main-app generation path.
+    const isolated = !!(configOverride && configOverride.isolatedContext);
+    const lessonDNA = isolated ? null : (configOverride.lessonDNA || persistedLessonDNA || null);
     const dnaPromptBlock = formatLessonDNA(lessonDNA);
     const effCustomInstructions = (configOverride && configOverride.customInstructions)
         ? configOverride.customInstructions
-        : (
+        : isolated ? '' : (
             type === 'simplified' ? leveledTextCustomInstructions :
             type === 'quiz' ? quizCustomInstructions :
             type === 'glossary' ? glossaryCustomInstructions :
@@ -893,7 +901,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     setIsReviewGame(false);
     setReviewGameState({ claimed: new Set(), activeQuestion: null, showAnswer: false });
     const effectiveLanguage = langOverride || leveledTextLanguage;
-    const differentiationContext = getGroupDifferentiationContext();
+    const differentiationContext = isolated ? '' : getGroupDifferentiationContext();
     const dialectInstruction = effectiveLanguage !== 'English' ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions." : "";
     if (effectiveLanguage === 'All Selected Languages' && !langOverride) {
         if (type === 'glossary') {
@@ -1567,7 +1575,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${structureHint}
           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
           Adapt the language to ${effectiveLanguage} and the complexity to ${gradeLevel}.
-          ${standardsPromptString ? `Ensure the structure supports the cognitive requirements of Standards: "${standardsPromptString}".` : ''}
+          ${(!isolated && standardsPromptString) ? `Ensure the structure supports the cognitive requirements of Standards: "${standardsPromptString}".` : ''}
           ${useEmojis ? 'Include a relevant emoji at the start of every "main", "title", and "item" field to serve as a visual anchor.' : 'Do not use emojis.'}
           ${dialectInstruction}
           Return ONLY JSON matching this structure exactly (conceptually map the requested type to this hierarchy):
@@ -3043,7 +3051,11 @@ ${_itemsBlock}`;
       } else if (type === 'timeline') {
          setGenerationStep(t('status_steps.extracting_sequence'));
          const effectiveCount = configOverride.timelineCount || timelineItemCount;
-         const effectiveTopic = effCustomInstructions || timelineTopic || sourceTopic || "General Sequence";
+         // isolated: derive the sequence purely from the directive (textToProcess),
+         // never the main-app timelineTopic/sourceTopic.
+         const effectiveTopic = isolated
+             ? (effCustomInstructions || "the sequence described in the text below")
+             : (effCustomInstructions || timelineTopic || sourceTopic || "General Sequence");
          const effectiveMode = configOverride.timelineMode || timelineMode || 'auto';
          const isAutoMode = effectiveMode === 'auto';
          const modeDef = !isAutoMode ? TIMELINE_MODE_DEFINITIONS[effectiveMode] : null;
@@ -3355,7 +3367,7 @@ ${modeListForAuto}
             ? `2. Generate items (cards) for students to sort into these categories. *** ITEM COUNT RULE *** Generate ONLY as many items as the source text can clearly support — items must be unambiguous, distinctive, and sortable into exactly ONE of the categories. Minimum 6 items. Maximum 30 items. Preferred: 12-18 items if the text supports it (richer texts can support more). Do NOT pad with weak or ambiguous items just to reach a count.`
             : `2. Generate exactly ${conceptItemCount} items (cards) that students must sort into these categories.`;
          let categoryInstruction = "1. Identify 2 or 3 contrasting categories, concepts, or themes central to the text (e.g., \"Renewable vs Non-Renewable\", \"Federalist vs Anti-Federalist\", \"Input vs Output\").";
-         if (selectedConcepts.length > 0) {
+         if (!isolated && selectedConcepts.length > 0) {
              categoryInstruction = `1. Use these specific categories: ${selectedConcepts.join(', ')}. Ensure items fit clearly into exactly one of these categories.`;
          }
          const prompt = `

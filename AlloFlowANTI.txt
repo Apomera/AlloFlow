@@ -26821,11 +26821,13 @@ ${_toolList}
                             // path: instead of DA-specific render code, route through
                             // the SAME shared dispatcher (handleGenerate) the main app
                             // uses for outline/concept-map/mind-map/timeline/concept-sort.
-                            // This inherits the Lesson DNA golden thread + prompt
-                            // machinery for free, mints a standard history entry, and
-                            // handleRestoreView opens it via its default branch (no new
-                            // restore code). toolType picks the organizer; directive is
-                            // the source text the generator visualizes.
+                            // Reuses the generator + parsing + minting + restore machinery
+                            // for free. CRITICAL: passes isolatedContext so the dispatcher
+                            // suppresses ALL ambient lesson context (Lesson DNA, standards,
+                            // differentiation, selected concepts, source topic) — the
+                            // organizer stays self-contained to the DA item so no outside
+                            // topic/vocabulary contaminates the assessment. toolType picks
+                            // the organizer; directive is the sole source content.
                             onGenerateVisualOrganizer: async (toolType, directive, title, provenance) => {
                                 const TOOLTYPE_MAP = {
                                     'outline':      { type: 'outline', outlineType: 'Standard Outline' },
@@ -26838,7 +26840,10 @@ ${_toolList}
                                 if (!mapping) throw new Error('Unsupported visual organizer type: ' + toolType);
                                 const safeDirective = String(directive || '').trim();
                                 if (safeDirective.length < 8) throw new Error('Visual organizer directive too thin to generate.');
-                                const cfg = {};
+                                // isolatedContext keeps the organizer self-contained to the DA
+                                // item — the dispatcher generates purely from safeDirective and
+                                // injects no ambient lesson topic/vocabulary/standards.
+                                const cfg = { isolatedContext: true };
                                 if (mapping.outlineType) cfg.outlineType = mapping.outlineType;
                                 // switchView=false so the main view doesn't change while DA is open.
                                 // handleGenerate returns the newly-minted history item.
