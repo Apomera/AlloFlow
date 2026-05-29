@@ -798,6 +798,142 @@ both forms valid, 复 compound/restore needing context). Combined with Phase A's
 compound-level fixes (錶情→表情, 詞匯→詞彙, 周期→週期, etc.), pack now passes
 for Taiwan/HK readers.
 
+### Phase H — Tooltips bulk translation via workflow (commit `3e6eb7f8`)
+Workflow `wf_661eefb5-e71` (34 agents, 4 min, 0 parse failures) translated
+**1,431 tooltip strings across 33 packs** from English source. Per-pack
+counts: somali/urdu/pashto/polish/dari at 99-103 each (largely English
+before); farsi 96; bengali 67; chin_hakha 56; latin 33; haitian_creole 32;
+others 24-30 each. Each agent used pack-specific register notes.
+
+### Phase I — Hebrew/HC a11y Spanglish remediation (commit `daed2b4f`)
+Workflow `wf_73568a10-c03` (3 agents, 1 min). Re-translated 87 broken
+Spanglish a11y entries (Hebrew 56, HC 31) that survived Phase B because
+they LOOKED translated but had English content words embedded mid-sentence.
+
+### Phase J — Alerts/confirms bulk translation (commit `bffbb4a2`)
+Workflow `wf_21f81808-c6b` (26 agents, 2 min). Translated **376 alerts/
+confirms strings across 25 packs**. Safety-critical destructive-action
+confirmations. Per-pack: somali/urdu/pashto 51 each; farsi/dari 46 each;
+others 6-8 each. Addresses Priority P6 from audit synthesis.
+
+### Phase K — Comprehensive a11y v2 spanglish cleanup (commit `ac7b73e6`)
+Workflow `wf_0a997730-bdc` (21 agents, 7 min). **2,102 a11y strings
+re-translated across 20 packs** that had English content words embedded
+in otherwise-native-script text. Per-pack: tamil/telugu 150 each, korean
+148, hindi/ukrainian 147 each, nepali/amharic 144 each, punjabi/khmer/
+tigrinya 142 each, greek 141, burmese 138, hebrew 90, japanese 88,
+thai 82, bengali 52, others ≤20.
+
+This addresses the "hidden Spanglish" gap that structural-count audits
+couldn't detect — strings where v !== en[k] but v still contained
+embedded English.
+
+### Phase L — Toasts comprehensive Spanglish cleanup (commit `374f5b86`)
+Workflow `wf_7d74ba7d-5ab` (20 agents, 24 min, 0 parse failures).
+**8,020 toast notification strings re-translated across 19 packs** —
+the largest single surface of broken MT output in the entire corpus.
+
+Per-pack: greek 581, amharic 579, khmer/burmese/tigrinya 576 each,
+punjabi 577, nepali 574, ukrainian 575, korean 558, hindi 557,
+tamil 550, telugu 549, bengali 477, hebrew 388, japanese 109, thai 79,
+chinese_simplified 47, arabic 46, russian 46.
+
+Toast messages are extremely high-frequency UX surface (every save,
+error, success, sync event). Now fluent native target language.
+
+### Phase M — common.* spanglish cleanup (commit `c5df364c`)
+Workflow `wf_f31209e7-951` (14 agents, 9 min). **3,261 core UI button
+labels, placeholders, and short prompts re-translated across 13 packs**.
+Per-pack: tamil/telugu 278 each, burmese 257, khmer 256, tigrinya/
+punjabi 255 each, amharic 254, nepali 253, ukrainian 244, hindi 242,
+korean 240, greek 239, bengali 210.
+
+### Phase N — Comprehensive passthrough cleanup (commits `6551dc1e` + `f6864706`)
+Two-stage workflow (`wf_d7698ae9-9ad` initial + `wf_9a29180c-cb6` resume
+after session limit hit at 13/33 packs). **11,189 English-passthrough
+strings translated across 34 packs.**
+
+Top per-pack: marshallese 778, maay_maay 777, thai 655, dari 605,
+farsi 602, polish 472, urdu/pashto 400 each, portuguese_portugal 357,
+arabic 351, igbo/yoruba 310 each, tamil/telugu 306 each, lingala 297,
+tagalog 285, kirundi 274, romanian 273, portuguese_angola 266,
+nepali 263, burmese 262, greek 260, tigrinya/punjabi/khmer 257 each,
+ukrainian 256, amharic 253, hausa 307, others 112-160.
+
+This wave covered surfaces NOT targeted by earlier phases (every
+namespace except tour: a11y, common, toasts, alerts, confirms, tooltips,
+sidebar, header, launch_pad, modals, placeholders, errors, success).
+
+## Net Result: Massive Quality Transformation
+
+**Before this rebuild (workflow audit baseline 2026-05-28 AM):**
+
+| Cluster | Packs |
+|---|---|
+| excellent (≤10% high-vis passthrough) | 7 |
+| good (10-20%) | 25-32 |
+| moderate (20-50%) | 13 |
+| heavy passthrough (PPS strategy) | 2 |
+| issues (structural or jumbles) | 2-9 |
+
+**After (post-Phase N, 2026-05-29):**
+
+| Cluster | Packs |
+|---|---|
+| **excellent (≤10% high-vis passthrough)** | **45** |
+| good (10-20%) | 5 |
+| moderate (20-50%) | 3 |
+| heavy passthrough (PPS strategy) | 2 (lao, chin_falam — documented) |
+| issues (structural or jumbles) | 1 (bengali residual jumbles) |
+
+**45 of 56 packs now sit at excellent quality (HVPT% ≤7%)**, up from 7.
+Most packs went from 14-46% HVPT down to 0-2%.
+
+## Rebuild Totals (cumulative across all phases)
+
+| Phase | Type | Keys Touched |
+|---|---|---|
+| A | Corruption reversal | 4,570 |
+| B | a11y bulk translate | 2,336 |
+| B.1 | Spanish diacritics | 41 |
+| C | Trailing namespaces | 208 |
+| D | Tour body retranslation | 360 |
+| F | Chinese Trad S→T cleanup | 1,441 (2,521 char conversions) |
+| H | Tooltips bulk translate | 1,431 |
+| I | Hebrew/HC a11y v1 | 87 |
+| J | Alerts/confirms bulk | 376 |
+| K | a11y v2 spanglish | 2,102 |
+| L | Toasts spanglish | 8,020 |
+| M | common.* spanglish | 3,261 |
+| N | Passthrough comprehensive | 11,189 |
+| **Total** | | **~35,400 keys** |
+
+Across ~245 parallel-agent operations (10 workflow waves + 4 direct scripts),
+~12M subagent tokens consumed, 0 parse failures, 0 structural regressions.
+
+## Remaining Long-Tail Work (for future sessions)
+
+- **Bengali residual jumbles** (~1,200 cross-script tokens) — needs targeted
+  reversal table or native review
+- **Japanese 22 ASCII-punctuation-after-CJK hits** — minor cleanup
+- **Persian-chain (arabic/dari/farsi/pashto/urdu) 350-365 Latin+Persian
+  adjacencies each** — mostly legitimate brand-name + Persian connector و,
+  needs native review to distinguish
+- **Korean 467 cross-script adjacencies** — most likely partial-substitution
+  long-tail not caught by earlier reversals
+- **Polish/Russian 90% help_mode diversity** — non-blocking; documented stubs
+  remain in long-tail tooltip surface
+- **PPS cluster** (lao, chin_falam) — documented English-passthrough strategy
+  for long-tail; high-frequency surfaces translated
+
+All structural integrity audits remain clean throughout: 0 missing keys,
+0 placeholder mismatches (53 surfaced are confirmed false positives — source-
+side `\u{1F4CA}` literal, Romance idiomatic `{step}…{step}`), 0 HTML mismatches,
+0 empty strings, 0 unresolved key paths, 0 same-as-key duplicates.
+
+Audit/translation infrastructure retained in `C:/tmp/` and workflow scripts
+in `~/.claude/projects/.../workflows/scripts/` for re-running.
+
 After structural integrity reached 100% clean, performed targeted accuracy work
 across all 56 packs in 7 phases:
 
