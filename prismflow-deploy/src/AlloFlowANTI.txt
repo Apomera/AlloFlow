@@ -4337,7 +4337,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '9a89119d';
+    var pluginCdnVersion = '987f03ef';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -26667,7 +26667,7 @@ ${_toolList}
                             // DA resources only, max 20 entries to keep the prompt compact.
                             daResourceManifest: Array.isArray(history)
                                 ? history
-                                    .filter(e => e && e.fromDA && (e.type === 'glossary' || e.type === 'manipulative-resource' || e.type === 'word-sounds' || e.type === 'outline' || e.type === 'timeline' || e.type === 'concept-sort'))
+                                    .filter(e => e && e.fromDA && (e.type === 'glossary' || e.type === 'manipulative-resource' || e.type === 'word-sounds' || e.type === 'outline' || e.type === 'timeline' || e.type === 'concept-sort' || e.type === 'sentence-frames'))
                                     .slice(-20)
                                     .reverse()
                                     .map(e => {
@@ -26690,6 +26690,9 @@ ${_toolList}
                                                 ? (e.data && e.data.structureType ? e.data.structureType : 'outline')
                                                 : e.type;
                                             return { ...base, kind: 'visual-organizer', toolType: e.type, summary: vo };
+                                        }
+                                        if (e.type === 'sentence-frames') {
+                                            return { ...base, kind: 'sentence-frames', summary: 'expressive sentence frames' };
                                         }
                                         return null;
                                     })
@@ -26931,6 +26934,27 @@ ${_toolList}
                                 // handleGenerate doesn't set DA provenance — patch it in so the
                                 // "🔬 DA · item N" badge + "Return to Dynamic Assessment" pill work
                                 // exactly as they do for glossary/manipulative/word-sounds.
+                                const daMeta = 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : '');
+                                setHistory(prev => prev.map(it => it.id === newItem.id ? Object.assign({}, it, {
+                                    fromDA: true,
+                                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
+                                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null,
+                                    meta: daMeta,
+                                    title: title ? String(title).slice(0, 80) : it.title
+                                }) : it));
+                                return { id: newItem.id };
+                            },
+                            // Sentence-frames host callback — the expressive/output scaffold.
+                            // Same shared pipeline as visual organizers: route through
+                            // handleGenerate('sentence-frames', directive, {isolatedContext})
+                            // so it stays self-contained to the DA item, mint a standard
+                            // 'sentence-frames' history entry, and let handleRestoreView's
+                            // default branch open it. directive is the sole source content.
+                            onGenerateSentenceFrames: async (directive, title, provenance) => {
+                                const safeDirective = String(directive || '').trim();
+                                if (safeDirective.length < 8) throw new Error('Sentence-frames directive too thin to generate.');
+                                const newItem = await handleGenerate('sentence-frames', null, false, safeDirective, { isolatedContext: true }, false);
+                                if (!newItem || !newItem.id) throw new Error('Sentence-frames generation returned no resource.');
                                 const daMeta = 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : '');
                                 setHistory(prev => prev.map(it => it.id === newItem.id ? Object.assign({}, it, {
                                     fromDA: true,
