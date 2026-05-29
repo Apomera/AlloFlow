@@ -1262,11 +1262,17 @@
   // promptLevelReached = 0 → solved unprompted → 5 pts
   // promptLevelReached = 1 → solved with L1 cue → 4 pts
   // promptLevelReached = 4 → still wrong after direct teach → 0 pts
-  function scoreForLevel(promptLevelReached, finalCorrect) {
+  function scoreForLevel(promptLevelReached, finalCorrect, scaffoldLeaked) {
     if (!finalCorrect) return 0;
     var l = promptLevelReached || 0;
     if (l < 0) l = 0;
     if (l > 4) l = 4;
+    // A4 — a "leaky" rung (one the clinician judged gave away the answer) means
+    // success at that rung is NOT valid evidence of competence there. Conservative
+    // correction: credit one level higher (the student needed at least the next
+    // level of support). L4 leaks are expected — direct teach states the answer
+    // by design — so they carry no extra penalty.
+    if (scaffoldLeaked && l < 4) l = l + 1;
     return Math.max(0, 5 - l);
   }
 
@@ -3814,7 +3820,7 @@
     // What scaffolds actually worked
     var workedAt = { cue: 0, leading: 0, model: 0, directTeach: 0 };
     mediationResults.forEach(function (r) {
-      if (r.finalCorrect && r.supportType in workedAt) workedAt[r.supportType] = workedAt[r.supportType] + 1;
+      if (r.finalCorrect && !r.scaffoldLeaked && r.supportType in workedAt) workedAt[r.supportType] = workedAt[r.supportType] + 1;
     });
 
     // Tag patterns
@@ -3972,7 +3978,7 @@
     // Which scaffold levels enabled correct response — this is the key signal.
     var workedAt = { cue: 0, leading: 0, model: 0, directTeach: 0 };
     mediationResults.forEach(function (r) {
-      if (r.finalCorrect && r.supportType in workedAt) workedAt[r.supportType] = workedAt[r.supportType] + 1;
+      if (r.finalCorrect && !r.scaffoldLeaked && r.supportType in workedAt) workedAt[r.supportType] = workedAt[r.supportType] + 1;
     });
 
     // Tag patterns suggest specific accommodations (e.g. wait time → timing accom)
@@ -4171,7 +4177,9 @@
       if (supps.length === 0) return;
       var med = medById[it.id];
       var outcome = med
-        ? (med.finalCorrect ? ("succeeded at L" + (med.promptLevelReached || 0)) : ("still needed more support after L" + (med.promptLevelReached || 0)))
+        ? (med.scaffoldLeaked
+            ? ("scaffold gave away the answer at L" + (med.promptLevelReached || 0) + " — not valid evidence of competence at that rung")
+            : (med.finalCorrect ? ("succeeded at L" + (med.promptLevelReached || 0)) : ("still needed more support after L" + (med.promptLevelReached || 0))))
         : "not administered in mediation";
       var construct = it.construct || (Array.isArray(it.constructTags) ? it.constructTags.slice(0, 2).join("/") : "") || ("item " + (idx + 1));
       rows.push({
@@ -4212,7 +4220,7 @@
     // What scaffolds worked
     var workedAt = { cue: 0, leading: 0, model: 0, directTeach: 0 };
     mediationResults.forEach(function (r) {
-      if (r.finalCorrect && r.supportType in workedAt) workedAt[r.supportType] = workedAt[r.supportType] + 1;
+      if (r.finalCorrect && !r.scaffoldLeaked && r.supportType in workedAt) workedAt[r.supportType] = workedAt[r.supportType] + 1;
     });
     var bestSupport = "leading questions"; // default
     var bestCount = workedAt.leading;
@@ -4344,9 +4352,10 @@
     var name = studentName || session.studentNickname || "the student";
     var workedAt = { cue: 0, leading: 0, model: 0, directTeach: 0 };
     mediationResults.forEach(function (r) {
-      if (r.finalCorrect && r.supportType in workedAt) workedAt[r.supportType] = workedAt[r.supportType] + 1;
+      if (r.finalCorrect && !r.scaffoldLeaked && r.supportType in workedAt) workedAt[r.supportType] = workedAt[r.supportType] + 1;
     });
     var didNotWork = mediationResults.filter(function (r) { return !r.finalCorrect; }).length;
+    var leakedCount = mediationResults.filter(function (r) { return r.scaffoldLeaked; }).length;
     var tagAgg = aggregateObservationTags(session.itemResults);
     var tagSummary = tagAgg.slice(0, 5).map(function (t) { return t.label + " (" + t.count + ")"; }).join("; ");
     var constructs = {};
@@ -4381,6 +4390,7 @@
       "  - L3 modeling: " + workedAt.model + " items",
       "  - L4 direct teaching: " + workedAt.directTeach + " items",
       "Items where mediation did NOT produce success: " + didNotWork,
+      (leakedCount > 0 ? ("NOTE: on " + leakedCount + " item(s) the clinician flagged that the scaffold inadvertently gave away the answer — those responses are NOT counted as the scaffold 'working,' and were scored one level higher. Do not over-credit a scaffold level the student may not actually respond to.") : ""),
       formatSupportsForTeacherPrompt(daSupportsUsedInSession(session)),
       tagSummary ? ("Observation patterns: " + tagSummary) : "Observation patterns: (none recorded)",
       session.sessionNote && session.sessionNote.trim() ? ("Session-level clinician notes: " + session.sessionNote.trim()) : "Session-level clinician notes: (none recorded)",
@@ -4831,6 +4841,11 @@
     var observationTagsDraftTuple = useState([]);
     var observationTagsDraft = observationTagsDraftTuple[0];
     var setObservationTagsDraft = observationTagsDraftTuple[1];
+    // A4 — clinician flag: the revealed scaffold rung gave away the answer.
+    // Resets on item advance (alongside the other per-item drafts).
+    var scaffoldLeakedDraftTuple = useState(false);
+    var scaffoldLeakedDraft = scaffoldLeakedDraftTuple[0];
+    var setScaffoldLeakedDraft = scaffoldLeakedDraftTuple[1];
     function toggleObservationTag(tagId) {
       setObservationTagsDraft(function (prev) {
         if (prev.indexOf(tagId) >= 0) return prev.filter(function (t) { return t !== tagId; });
@@ -5346,6 +5361,7 @@
       patch({ activeSession: session });
       setResponseDraft("");
       setObservationDraft("");
+      setScaffoldLeakedDraft(false);
       announce("Session started. Pretest phase, item 1.");
     }
 
@@ -6361,7 +6377,8 @@
           : [],
         supportType: args.supportType || null,
         finalCorrect: !!args.finalCorrect,
-        scoreAwarded: scoreForLevel(args.levelReached || 0, !!args.finalCorrect),
+        scaffoldLeaked: !!args.scaffoldLeaked,
+        scoreAwarded: scoreForLevel(args.levelReached || 0, !!args.finalCorrect, !!args.scaffoldLeaked),
         attemptedAt: nowIso
       };
       var prev = state.activeSession;
@@ -6396,6 +6413,7 @@
       setResponseDraft("");
       setObservationDraft("");
       setObservationTagsDraft([]);
+      setScaffoldLeakedDraft(false);
       if (advanced) {
         announce(nextPhase === "summary"
           ? "All phases complete. Results ready."
@@ -8427,7 +8445,23 @@
             "aria-label": "Open population statistics — effect sizes and MI distribution across your caseload",
             title: "Cohen's d, MI distribution, tier breakdown, local-norm reference data",
             style: { padding: "6px 12px", borderRadius: 8, border: "1px solid #6d28d9", background: "#faf5ff", color: "#6d28d9", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
-          }, "📈 Population stats") : null
+          }, "📈 Population stats") : null,
+          // Phase EE — back up all sessions to a JSON file (guards the trajectory
+          // + local-norm data against a cache clear / device change).
+          allSessions.length >= 1 ? h("button", {
+            onClick: function () { exportAllSessionsAsJson(); },
+            "aria-label": "Back up all sessions to a JSON file",
+            title: "Save a JSON backup of your entire session history (protects trajectory + local-norm data)",
+            style: { padding: "6px 12px", borderRadius: 8, border: "1px solid #15803d", background: "#f0fdf4", color: "#15803d", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+          }, "💾 Back up") : null,
+          // Phase EE — restore from a JSON backup (always available — this is the
+          // recovery path after a cache clear or on a new device).
+          h("button", {
+            onClick: function () { importSessionsFromFile(); },
+            "aria-label": "Restore sessions from a JSON backup file",
+            title: "Load a previously saved backup; merges in any sessions you don't already have",
+            style: { padding: "6px 12px", borderRadius: 8, border: "1px solid #b45309", background: "#fffbeb", color: "#92400e", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+          }, "📂 Restore")
         ),
 
         // Empty state
@@ -8727,7 +8761,7 @@
                   h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", color: "#64748b" } }, r.phase),
                   h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", fontFamily: "ui-monospace, monospace" } }, "L" + r.promptLevelReached),
                   h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", fontFamily: "ui-monospace, monospace", fontWeight: 700 } },
-                    r.scoreAwarded + (r.finalCorrect ? "" : " ✗"))
+                    r.scoreAwarded + (r.finalCorrect ? "" : " ✗") + (r.scaffoldLeaked ? " ⚠leak" : ""))
                 );
               })
             )
@@ -8950,6 +8984,92 @@
         addToast("📥 Downloaded da-session-" + safeName + "-" + dateStr + ".json");
       } catch (e) {
         addToast("JSON export failed: " + (e && e.message ? e.message : "unknown error"));
+      }
+    }
+
+    // ─── Phase EE — Full-history backup + restore (JSON, clinician-controlled) ───
+    // localStorage is the ONLY home for the session history, and the within-
+    // student trajectory (Phase CC) + local-norm context (Phase BB) both depend
+    // on it surviving. A cleared cache or a new device wipes everything. These
+    // reuse the existing per-session JSON machinery to save/restore the WHOLE
+    // history — no cloud, no privacy tradeoff (the clinician owns the file, the
+    // same trust model as the per-session export).
+    function exportAllSessionsAsJson() {
+      try {
+        var sessions = state.sessions || [];
+        if (sessions.length === 0) { addToast("No saved sessions to back up yet."); return; }
+        var payload = {
+          _exportFormat: "alloflow-da-session-backup",
+          _exportVersion: "1.0.0",
+          _exportedAt: new Date().toISOString(),
+          sessionCount: sessions.length,
+          sessions: sessions
+        };
+        var json = JSON.stringify(payload, null, 2);
+        var blob = new Blob([json], { type: "application/json" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "da-sessions-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) { /* ignore */ } }, 100);
+        addToast("📥 Backed up " + sessions.length + " session" + (sessions.length === 1 ? "" : "s") + ".");
+      } catch (e) {
+        addToast("Backup failed: " + (e && e.message ? e.message : "unknown error"));
+      }
+    }
+
+    // Merge imported sessions into state.sessions. Dedup by id; EXISTING local
+    // sessions always win (a restore never overwrites what you already have).
+    function mergeImportedSessions(imported) {
+      var existing = state.sessions || [];
+      var seen = {};
+      existing.forEach(function (s) { if (s && s.id) seen[s.id] = true; });
+      var added = 0, skipped = 0, toAdd = [];
+      imported.forEach(function (s) {
+        if (!s || typeof s !== "object" || !s.id) { skipped++; return; }
+        // Looks-like-a-session guard: must carry a score or item results.
+        if (typeof s.modifiabilityIndex !== "number" && !Array.isArray(s.itemResults)) { skipped++; return; }
+        if (seen[s.id]) { skipped++; return; }
+        seen[s.id] = true;
+        toAdd.push(s);
+        added++;
+      });
+      if (added > 0) patch({ sessions: existing.concat(toAdd) });
+      return { added: added, skipped: skipped };
+    }
+
+    function importSessionsFromFile() {
+      try {
+        var input = document.createElement("input");
+        input.type = "file";
+        input.accept = "application/json,.json";
+        input.onchange = function (ev) {
+          var file = ev.target && ev.target.files && ev.target.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function () {
+            try {
+              var parsed = JSON.parse(String(reader.result || ""));
+              // Accept a full backup {sessions:[...]}, a raw array, or a single-session export.
+              var arr = null;
+              if (parsed && Array.isArray(parsed.sessions)) arr = parsed.sessions;
+              else if (Array.isArray(parsed)) arr = parsed;
+              else if (parsed && parsed.id) arr = [parsed];
+              if (!arr) { addToast("That file doesn't look like a DA session backup."); return; }
+              var res = mergeImportedSessions(arr);
+              addToast("📂 Restored " + res.added + " session" + (res.added === 1 ? "" : "s")
+                + (res.skipped > 0 ? " (" + res.skipped + " already present or invalid, skipped)" : "") + ".");
+            } catch (e) {
+              addToast("Restore failed: that file isn't valid JSON.");
+            }
+          };
+          reader.readAsText(file);
+        };
+        input.click();
+      } catch (e) {
+        addToast("Restore failed: " + (e && e.message ? e.message : "unknown error"));
       }
     }
 
@@ -10567,6 +10687,30 @@
           )
         ),
 
+        // ─── A4: leaky-rung flag ───
+        // Only meaningful once a scaffold rung has been revealed (L1+). Lets the
+        // clinician mark that the shown rung gave away the answer; submitResponse
+        // then credits one level higher (the rung isn't valid evidence of
+        // competence at that level). Keeps the Modifiability/mediation read honest.
+        (canScaffold && (s.currentLadderLevel >= 1) ? h("div", {
+          role: "button", tabIndex: 0,
+          "aria-pressed": scaffoldLeakedDraft ? "true" : "false",
+          "aria-label": "Flag that the current scaffold gave away the answer",
+          onClick: function () { setScaffoldLeakedDraft(!scaffoldLeakedDraft); },
+          onKeyDown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setScaffoldLeakedDraft(!scaffoldLeakedDraft); } },
+          style: {
+            display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
+            borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
+            border: "1px solid " + (scaffoldLeakedDraft ? "#d97706" : "#e2e8f0"),
+            background: scaffoldLeakedDraft ? "#fffbeb" : "#f8fafc"
+          }
+        },
+          h("span", { "aria-hidden": "true", style: { fontSize: 14, lineHeight: 1.3 } }, scaffoldLeakedDraft ? "☑" : "☐"),
+          h("span", { style: { fontSize: 11.5, color: scaffoldLeakedDraft ? "#92400e" : "#475569", lineHeight: 1.45 } },
+            h("strong", null, "⚠ This scaffold gave away the answer"),
+            " — if checked, a correct response is credited one level higher (this rung isn't valid evidence of competence here).")
+        ) : null),
+
         // ─── SCORING ROW ───
         h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" } },
           h("div", { style: { fontSize: 12, color: "#475569" } },
@@ -10589,6 +10733,7 @@
                   finalCorrect: correct,
                   examinerObservation: observationDraft,
                   observationTags: observationTagsDraft,
+                  scaffoldLeaked: scaffoldLeakedDraft,
                   supportType: canScaffold ? (item.promptLadder[level - 1] ? item.promptLadder[level - 1].type : "none") : "none"
                 });
               },
@@ -10608,6 +10753,7 @@
                   finalCorrect: true,
                   examinerObservation: observationDraft,
                   observationTags: observationTagsDraft,
+                  scaffoldLeaked: scaffoldLeakedDraft,
                   supportType: canScaffold ? (item.promptLadder[level - 1] ? item.promptLadder[level - 1].type : "none") : "none"
                 });
               },
@@ -11159,7 +11305,7 @@
                   h("td", null, it ? it.construct : r.itemId),
                   h("td", null, r.phase),
                   h("td", null, "L" + r.promptLevelReached),
-                  h("td", null, r.scoreAwarded + (r.finalCorrect ? "" : " ✗")),
+                  h("td", null, r.scoreAwarded + (r.finalCorrect ? "" : " ✗") + (r.scaffoldLeaked ? " ⚠leak" : "")),
                   h("td", { style: { fontSize: "8pt" } }, combined)
                 );
               })
@@ -11689,7 +11835,7 @@
                   h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", color: "#64748b" } }, r.phase),
                   h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", fontFamily: "ui-monospace, monospace" } }, "L" + r.promptLevelReached),
                   h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", fontFamily: "ui-monospace, monospace", fontWeight: 700 } },
-                    r.scoreAwarded + (r.finalCorrect ? "" : " ✗"))
+                    r.scoreAwarded + (r.finalCorrect ? "" : " ✗") + (r.scaffoldLeaked ? " ⚠leak" : ""))
                 );
               })
             )
