@@ -4337,7 +4337,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'fbfb9912';
+    var pluginCdnVersion = 'b127d44f';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -26588,7 +26588,7 @@ ${_toolList}
                             // DA resources only, max 20 entries to keep the prompt compact.
                             daResourceManifest: Array.isArray(history)
                                 ? history
-                                    .filter(e => e && e.fromDA && (e.type === 'glossary' || e.type === 'manipulative-resource' || e.type === 'word-sounds'))
+                                    .filter(e => e && e.fromDA && (e.type === 'glossary' || e.type === 'manipulative-resource' || e.type === 'word-sounds' || e.type === 'outline' || e.type === 'timeline' || e.type === 'concept-sort'))
                                     .slice(-20)
                                     .reverse()
                                     .map(e => {
@@ -26603,6 +26603,14 @@ ${_toolList}
                                         if (e.type === 'word-sounds' && e.isProbeMode) {
                                             const wcount = Array.isArray(e.wsPreloadedWords) ? e.wsPreloadedWords.length : (Array.isArray(e.data) ? e.data.length : 0);
                                             return { ...base, kind: 'word-sounds-probe', activity: e.probeActivity, summary: (e.probeActivity || 'probe') + ' · ' + wcount + ' words' };
+                                        }
+                                        if (e.type === 'outline' || e.type === 'timeline' || e.type === 'concept-sort') {
+                                            // Visual organizers (Phase 4). structureType distinguishes
+                                            // concept-map / mind-map / outline within the 'outline' type.
+                                            const vo = e.type === 'outline'
+                                                ? (e.data && e.data.structureType ? e.data.structureType : 'outline')
+                                                : e.type;
+                                            return { ...base, kind: 'visual-organizer', toolType: e.type, summary: vo };
                                         }
                                         return null;
                                     })
@@ -26808,6 +26816,46 @@ ${_toolList}
                                 };
                                 setHistory(prev => [...prev, newItem]);
                                 return { id: newId };
+                            },
+                            // Phase 4 — Visual organizer host callback. The elegant
+                            // path: instead of DA-specific render code, route through
+                            // the SAME shared dispatcher (handleGenerate) the main app
+                            // uses for outline/concept-map/mind-map/timeline/concept-sort.
+                            // This inherits the Lesson DNA golden thread + prompt
+                            // machinery for free, mints a standard history entry, and
+                            // handleRestoreView opens it via its default branch (no new
+                            // restore code). toolType picks the organizer; directive is
+                            // the source text the generator visualizes.
+                            onGenerateVisualOrganizer: async (toolType, directive, title, provenance) => {
+                                const TOOLTYPE_MAP = {
+                                    'outline':      { type: 'outline', outlineType: 'Standard Outline' },
+                                    'concept-map':  { type: 'outline', outlineType: 'Key Concept Map' },
+                                    'mind-map':     { type: 'outline', outlineType: 'Mind Map' },
+                                    'timeline':     { type: 'timeline' },
+                                    'concept-sort': { type: 'concept-sort' }
+                                };
+                                const mapping = TOOLTYPE_MAP[toolType];
+                                if (!mapping) throw new Error('Unsupported visual organizer type: ' + toolType);
+                                const safeDirective = String(directive || '').trim();
+                                if (safeDirective.length < 8) throw new Error('Visual organizer directive too thin to generate.');
+                                const cfg = {};
+                                if (mapping.outlineType) cfg.outlineType = mapping.outlineType;
+                                // switchView=false so the main view doesn't change while DA is open.
+                                // handleGenerate returns the newly-minted history item.
+                                const newItem = await handleGenerate(mapping.type, null, false, safeDirective, cfg, false);
+                                if (!newItem || !newItem.id) throw new Error('Visual organizer generation returned no resource.');
+                                // handleGenerate doesn't set DA provenance — patch it in so the
+                                // "🔬 DA · item N" badge + "Return to Dynamic Assessment" pill work
+                                // exactly as they do for glossary/manipulative/word-sounds.
+                                const daMeta = 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : '');
+                                setHistory(prev => prev.map(it => it.id === newItem.id ? Object.assign({}, it, {
+                                    fromDA: true,
+                                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
+                                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null,
+                                    meta: daMeta,
+                                    title: title ? String(title).slice(0, 80) : it.title
+                                }) : it));
+                                return { id: newItem.id };
                             },
                             onOpenResource: (resourceId) => {
                                 const item = (Array.isArray(history) ? history : []).find(h => h && h.id === resourceId);
