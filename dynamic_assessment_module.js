@@ -4032,6 +4032,92 @@
     "what_helps", "next_steps", "questions_for_team"
   ];
 
+  // ─── Phase DD — Support-usage evidence for reports ───
+  // The Phase 1–4 inline supports (glossary / manipulative / word-sounds probe
+  // / visual organizer) record the CONCRETE materials a student worked with —
+  // the richest, most actionable clinical signal DA produces. Previously this
+  // dead-ended: the family letter and teacher handoff only saw scaffold-LEVEL
+  // counts (cue/leading/model/directTeach), never the actual materials. These
+  // helpers surface "responded when given a number line at L3" into both
+  // reports so the handoff's evidence-anchored strategies and the family
+  // letter's "what helps" are grounded in what really helped.
+  function _daResolveSessionItems(session) {
+    var ids = Array.isArray(session.sessionItemIds) ? session.sessionItemIds : [];
+    // Prefer the snapshot stored on the session record (works for historical
+    // sessions); fall back to ITEMS_BY_ID (active session / prebuilt banks).
+    var snap = Array.isArray(session.customBankSnapshot) ? session.customBankSnapshot : null;
+    var byId = {};
+    if (snap) snap.forEach(function (it) { if (it && it.id) byId[it.id] = it; });
+    return ids.map(function (id) { return byId[id] || ITEMS_BY_ID[id] || null; }).filter(Boolean);
+  }
+  function _daSupportLabels(sr) {
+    var k = sr.kind === "reuse" ? (sr._reusedKind || "reuse") : sr.kind;
+    if (k === "glossary") {
+      var terms = (Array.isArray(sr.seedTerms) && sr.seedTerms.length) ? " [" + sr.seedTerms.slice(0, 4).join(", ") + "]" : "";
+      return { clinical: "vocabulary glossary" + terms, family: "picture word-cards for the tricky words" };
+    }
+    if (k === "math-manipulative") {
+      return ({
+        numberline: { clinical: "an interactive number line", family: "a number line they could count along" },
+        fractions: { clinical: "a fraction-bar manipulative", family: "fraction bars they could see and compare" },
+        areamodel: { clinical: "an area-model manipulative", family: "a grid that shows how numbers group together" }
+      })[sr.toolId] || { clinical: "a math manipulative", family: "a hands-on math tool" };
+    }
+    if (k === "word-sounds-probe") {
+      return { clinical: (String(sr.activity || "").replace(/_/g, " ").trim() || "phonics") + " phonics probe",
+               family: "sound games that break words into smaller parts" };
+    }
+    if (k === "visual-organizer") {
+      return ({
+        "concept-map": { clinical: "a concept map", family: "a picture-map showing how the ideas connect" },
+        "mind-map": { clinical: "a mind map", family: "a picture-map of the topic and its parts" },
+        "outline": { clinical: "a structured outline", family: "a step-by-step list of the main ideas" },
+        "timeline": { clinical: "a timeline organizer", family: "a timeline showing the order things happen" },
+        "concept-sort": { clinical: "a concept-sort activity", family: "a sorting game to group ideas" }
+      })[sr.toolType] || { clinical: "a graphic organizer", family: "a picture that organizes the ideas" };
+    }
+    return { clinical: "a support resource", family: "an extra support" };
+  }
+  function daSupportsUsedInSession(session) {
+    var items = _daResolveSessionItems(session);
+    var medById = {};
+    (session.itemResults || []).forEach(function (r) { if (r.phase === "mediation") medById[r.itemId] = r; });
+    var rows = [];
+    items.forEach(function (it, idx) {
+      var supps = Array.isArray(it.supplementaryResources)
+        ? it.supplementaryResources.filter(function (sr) { return sr && sr.status === "generated"; })
+        : [];
+      if (supps.length === 0) return;
+      var med = medById[it.id];
+      var outcome = med
+        ? (med.finalCorrect ? ("succeeded at L" + (med.promptLevelReached || 0)) : ("still needed more support after L" + (med.promptLevelReached || 0)))
+        : "not administered in mediation";
+      var construct = it.construct || (Array.isArray(it.constructTags) ? it.constructTags.slice(0, 2).join("/") : "") || ("item " + (idx + 1));
+      rows.push({
+        construct: construct,
+        outcome: outcome,
+        supports: supps.map(function (sr) { return { labels: _daSupportLabels(sr), anchorRung: sr.anchorRung }; })
+      });
+    });
+    return rows;
+  }
+  function formatSupportsForTeacherPrompt(rows) {
+    if (!rows || !rows.length) return "Inline supports attached to items: (none — this probe used scaffold prompts only)";
+    var lines = ["Inline supports the student actually worked with during mediation — these are CONCRETE materials; anchor whatWorks strategies to them where the evidence supports it (e.g., recommend a number line if a number-line manipulative helped):"];
+    rows.forEach(function (row) {
+      var sup = row.supports.map(function (s) { return s.labels.clinical + " (offered at L" + (s.anchorRung || "?") + ")"; }).join("; ");
+      lines.push("  - " + row.construct + ": " + sup + " — student " + row.outcome + ".");
+    });
+    return lines.join("\n");
+  }
+  function formatSupportsForFamilyPrompt(rows) {
+    if (!rows || !rows.length) return "";
+    var seen = {}, fam = [];
+    rows.forEach(function (row) { row.supports.forEach(function (s) { var f = s.labels.family; if (!seen[f]) { seen[f] = 1; fam.push(f); } }); });
+    if (!fam.length) return "";
+    return "Specific hands-on supports that helped your child today (weave these into 'what_helps' in plain words — they are the concrete things that made a difference): " + fam.join("; ") + ".";
+  }
+
   function buildFamilySummaryPrompt(session, studentName, outputLanguage) {
     var pretestResults = (session.itemResults || []).filter(function (r) { return r.phase === "pretest"; });
     var posttestResults = (session.itemResults || []).filter(function (r) { return r.phase === "posttest"; });
@@ -4083,6 +4169,7 @@
       "After working together, tried alone again — solved: " + posttestSum + " out of " + max,
       "Change after we worked together: " + (posttestSum - pretestSum >= 0 ? "+" : "") + (posttestSum - pretestSum) + " points (overall pattern: " + tier.id + " responsiveness)",
       "What helped most during our time together: " + bestSupport,
+      formatSupportsForFamilyPrompt(daSupportsUsedInSession(session)),
       "Things we noticed about how the child works: " + (tagSummary || "(none recorded)"),
       session.sessionNote && session.sessionNote.trim() ? ("Clinician's overall impression of the session: " + session.sessionNote.trim()) : "",
       "",
@@ -4213,6 +4300,7 @@
       "  - L3 modeling: " + workedAt.model + " items",
       "  - L4 direct teaching: " + workedAt.directTeach + " items",
       "Items where mediation did NOT produce success: " + didNotWork,
+      formatSupportsForTeacherPrompt(daSupportsUsedInSession(session)),
       tagSummary ? ("Observation patterns: " + tagSummary) : "Observation patterns: (none recorded)",
       session.sessionNote && session.sessionNote.trim() ? ("Session-level clinician notes: " + session.sessionNote.trim()) : "Session-level clinician notes: (none recorded)",
       "",
