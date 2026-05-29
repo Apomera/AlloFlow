@@ -4468,22 +4468,73 @@
     };
   }
 
-  // Lightweight answer-matching: case-insensitive, whitespace-trim,
-  // and any acceptable variant counts as correct.
+  // Answer-matching for the clinician "Auto-check" convenience scorer.
+  // Conservative by design: a false NEGATIVE (clinician overrides via "Mark
+  // correct") is clinically safer than a false POSITIVE, which would silently
+  // inflate the item score and therefore the Modifiability Index.
+  //
+  // Earlier this used raw substring containment (r.indexOf(target) !== -1),
+  // which mis-scored answers in two common ways:
+  //   • numeric: target "7" matched "17"/"27" (any response containing a 7)
+  //   • lexical: target "no" matched "i know", "school" matched "schooling"
+  // Now: numeric targets compare NUMERICALLY (with simple fraction/decimal
+  // support); non-numeric targets require WHOLE-WORD/phrase containment.
+  // The intended loose case still works ("I think 7 apples" == "7").
+  function _daNormalizeAnswer(s) {
+    return String(s == null ? "" : s)
+      .toLowerCase()
+      .replace(/[‘’]/g, "'")   // curly → straight apostrophe
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+  function _daNumbersIn(s) {
+    var nums = [], m;
+    // simple fractions a/b first
+    var fracRe = /(-?\d+)\s*\/\s*(\d+)/g;
+    while ((m = fracRe.exec(s)) !== null) {
+      var den = parseFloat(m[2]);
+      if (den !== 0) nums.push(parseFloat(m[1]) / den);
+    }
+    // strip fractions so the integer/decimal scan doesn't re-read num/denom
+    var work = s.replace(fracRe, " ");
+    var numRe = /-?\d+(?:\.\d+)?/g;
+    while ((m = numRe.exec(work)) !== null) nums.push(parseFloat(m[0]));
+    return nums.filter(function (n) { return isFinite(n); });
+  }
   function matchAnswer(itemDef, response) {
     if (!response) return false;
-    var r = String(response).trim().toLowerCase();
+    var r = _daNormalizeAnswer(response);
     if (!r) return false;
     var pool = (itemDef.acceptableAnswers || [])
       .concat([itemDef.correctAnswer || ""])
-      .map(function (a) { return String(a).trim().toLowerCase(); })
+      .map(_daNormalizeAnswer)
       .filter(function (a) { return a.length > 0; });
+    var EPS = 1e-9;
+    var respNums = null; // lazily computed
     for (var i = 0; i < pool.length; i++) {
       var target = pool[i];
+      // 1. Exact (normalized) match — always wins.
       if (r === target) return true;
-      // Allow loose matches where the response contains the canonical answer
-      // (e.g., "I think 7 apples" matches "7"). Avoid trivial single-char.
-      if (target.length >= 2 && r.indexOf(target) !== -1) return true;
+      // 2. Pure-numeric target (no letters): compare numerically so "7" does
+      //    NOT match "17", but DOES match "I think 7 apples".
+      var targetIsPureNumber = /^[^a-z]+$/.test(target) && _daNumbersIn(target).length === 1;
+      if (targetIsPureNumber) {
+        if (respNums === null) respNums = _daNumbersIn(r);
+        var tgtNum = _daNumbersIn(target)[0];
+        for (var n = 0; n < respNums.length; n++) {
+          if (Math.abs(respNums[n] - tgtNum) < EPS) return true;
+        }
+        continue; // numeric targets never fall through to lexical containment
+      }
+      // 3. Non-numeric target: WHOLE-WORD / phrase containment (boundary on
+      //    non-alphanumeric or string edge). Prevents "no"⊂"know" etc. For
+      //    scripts without spaces (CJK) the boundaries collapse to substring,
+      //    which is the correct behavior there.
+      if (target.length >= 2) {
+        var esc = target.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        var wordRe = new RegExp("(?:^|[^a-z0-9])" + esc + "(?:[^a-z0-9]|$)");
+        if (wordRe.test(r)) return true;
+      }
     }
     return false;
   }
@@ -10920,7 +10971,17 @@
               (modIdx >= 0 ? "+" : "") + modIdx.toFixed(2)),
             h("div", { style: { fontSize: 16, fontWeight: 700, color: "#0f172a" } }, tier.label)
           ),
-          h("p", { style: { margin: "10px 0 0", fontSize: 13, color: "#334155", lineHeight: 1.65 } }, tier.desc)
+          h("p", { style: { margin: "10px 0 0", fontSize: 13, color: "#334155", lineHeight: 1.65 } }, tier.desc),
+          // A1 — small-N measurement-error caution. The MI is a ratio of two
+          // small score sums; with few items per phase one mis-scored item
+          // swings it substantially. Present it as a direction, not a precise
+          // value, so the 2-decimal figure isn't read as more exact than the
+          // data can support. Threshold: < 5 items/phase (default is 3).
+          (s.sessionItemIds.length < 5 ? h("div", {
+            style: { marginTop: 10, padding: "7px 11px", background: "rgba(180,83,9,0.08)", border: "1px solid rgba(180,83,9,0.28)", borderRadius: 8, fontSize: 11.5, color: "#92400e", lineHeight: 1.55 }
+          },
+            "⚠ Based on " + s.sessionItemIds.length + " item" + (s.sessionItemIds.length === 1 ? "" : "s") + " per phase. At this length the index carries substantial measurement error — read it as a broad direction (clear gain / little change / regression), not a precise number. Run more items for a more stable estimate."
+          ) : null)
         ),
 
         // ─── Phase BB — Contextual mini-card: this MI vs population ───
@@ -10941,16 +11002,24 @@
             h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" } },
               h("div", null,
                 h("div", { style: { fontSize: 11, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } },
-                  "Local-norm context · n = " + stats.n + " prior sessions"),
+                  "Compared to your own sessions · n = " + stats.n),
+                // A2 — descriptive framing first. "Percentile" / "z" read as a
+                // standardized norm; this is only a comparison against sessions
+                // the clinician has personally run. Lead with plain language,
+                // demote the statistic to a parenthetical, and ALWAYS state it
+                // is not an external norm.
                 h("div", { style: { fontSize: 13.5, color: "#0f172a", marginTop: 4, lineHeight: 1.55 } },
-                  "This MI is ",
-                  h("strong", { style: { color: color } }, "z = " + zStr),
-                  " · ",
-                  h("strong", { style: { color: color } }, pctStr + " percentile"),
-                  " of your saved sessions (mean MI = " + stats.miMean.toFixed(2) + ", SD = " + (stats.miSD || 0).toFixed(2) + ")."
+                  "This result is higher than about ",
+                  h("strong", { style: { color: color } }, pct + "%"),
+                  " of the sessions you've run in this tool",
+                  h("span", { style: { color: "#64748b", fontSize: 11.5 } },
+                    " (z = " + zStr + " vs your mean " + stats.miMean.toFixed(2) + ", SD = " + (stats.miSD || 0).toFixed(2) + ")."
+                  )
                 ),
-                stats.n < 30 ? h("div", { style: { fontSize: 11, color: "#7c3aed", fontStyle: "italic", marginTop: 4 } },
-                  "⚠ Local norms are exploratory below n = 30; treat as descriptive context, not normative comparison.") : null
+                h("div", { style: { fontSize: 11, color: "#7c3aed", fontStyle: "italic", marginTop: 4, lineHeight: 1.5 } },
+                  "This compares only against your own saved sessions — it is NOT a percentile against any standardized or external norm."
+                  + (stats.n < 30 ? " Below ~30 sessions, treat it as exploratory context only." : "")
+                )
               ),
               h("button", {
                 onClick: function () { setStartScreenView("population"); },
