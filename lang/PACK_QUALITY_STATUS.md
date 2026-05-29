@@ -715,7 +715,88 @@ structural defects.
 - `final_integrity_audit.cjs` — comprehensive summary
 - `refined_audit.cjs` — excludes source-side key-path aliases
 
-## 2026-05-27 — Accuracy enhancement sweep (post-structural-integrity)
+## 2026-05-28 — Multi-agent audit + systematic rebuild
+
+A comprehensive multi-agent audit was performed: **56 per-pack deep auditors +
+12 cross-cutting dimension sweeps + adversarial verification** (workflow
+`wf_24599765-054`, 410 agents, 11.6M tokens). Result: 300 verified findings,
+70% critical or high severity.
+
+The audit revealed that prior structural-count checks had been passing because
+they verified placeholder/HTML/key-path INTEGRITY, but missed pervasive
+**substring-substitution corruption** (find-replace pipelines that ignored
+word boundaries) and **broken machine-translation output** that monolingual
+speakers cannot read. 35 of 56 packs were rated "poor" quality.
+
+Following the audit, executed a multi-phase systematic rebuild:
+
+### Phase A — Comprehensive corruption reversal (commit `6fbf2aa8`)
+4,570 keys / 12 packs / 5,494 individual fix occurrences. Every pattern was
+adversarially verified by the audit at ≥0.6 confidence.
+
+| Pack | Keys | Notable patterns |
+|---|---:|---|
+| German | 1,070 | BIchNGO→BINGO, Besteätigen→Bestätigen, Wirrkzeug→Werkzeug, verwirrfen→verwerfen (`Ich` insertion) |
+| Pashto | 844 | تحلينهت→تحلیلات, نهوحة→لوحة (`ل→نهو` substitution, 1,268 occurrences) |
+| Urdu | 832 | اورضع→وضع, اوراجهة→واجهة, duplicate حذف کریں کریں→حذف کریں (`و→اور` substitution) |
+| Chinese Traditional | 607 | 錶→表 watchstrap/table, 詞匯→詞彙, plus character compounds |
+| Tagalog | 436 | I-i-/i-i-/Nai-i-→I-/i-/Nai- (436 double-prefix occurrences) |
+| Portuguese Angola | 317 | imagemm→imagem (307 occurrences), modolo→modelo, modorno→moderno |
+| Indonesian | 220 | Smseni→Smart, kseniu→kartu (`art→seni` and `card→kseniu` mid-Latin) |
+| Korean | 133 | clip보드→clipboard, inter액션→interaction, de코드→decode, chrono논리→chronological |
+| Bengali | 42 | BআমিNGO→BINGO, Pআমিআমি→PII, QTআমি→QTI, PoআমরাrPoint→PowerPoint (`I→আমি` inside Latin) |
+| Hindi | 46 | Kindergकलाen→Kindergarten (grade picker!), Smकला→Smart, stकला→start, distrक्रिया, deकोड |
+| Ukrainian | 11 | режимrn→сучасний, "ви Do"→"You Do" framework label |
+| amharic/greek/nepali/swahili/german/tagalog | 12 | callGeminiImageEdit symbol restored (JS function name was translated mid-symbol) |
+
+### Phase B — a11y bulk translation via workflow (commit `b127d44f`)
+**2,336 ARIA labels translated across 11 packs** via a parallel-agent workflow
+(`wf_fb21fcba-96e`, 12 agents, 2.8 min, 0 parse failures).
+
+Packs and counts: french 245, french_canadian 224, russian 233, spanish_castilian 233,
+spanish_latin_america 245, portuguese_brazil 245, somali 245, vietnamese 229,
+chinese_simplified 245, hebrew 68, haitian_creole 71.
+
+Each agent used pack-specific register notes (Castilian vs LATAM Spanish vocabulary,
+Québec vs metropolitan French, formal вы-form Russian, full-width CJK punctuation
+for Chinese). Validated placeholder integrity per-string before commit. Catastrophic
+accessibility regression on these 11 packs is now resolved — screen-reader users hear
+target language instead of English.
+
+Subsequent fix `90e80b18` restored 41 missing Spanish diacritics (estatico→estático,
+categoria→categoría, evaluacion→evaluación, etc.) in the workflow output.
+
+### Phase C — Trailing namespace translation (commit `b127d44f` bundled)
+208 keys × 8 packs (french, french_canadian, russian, spanish_castilian,
+spanish_latin_america, portuguese_brazil, chinese_simplified, vietnamese).
+
+Coverage: headings.* (narrate_story, review_feedback, writing_analytics, score_breakdown,
+storybook_ready, tts/Text-to-Speech, etc.), th.* (status, document, key_claim,
+agrees_with, gain, after, before), options.* (default, golden, aqua, paper, monospace),
+labels.pen_name. Brand names (StoryForge, AlloHaven, OpenDyslexic) preserved English.
+Regional vocabulary respected (BR vs PT, Castilian vs LATAM, Québec vs metropolitan).
+
+### Phase D — Tour body retranslation via workflow (in progress)
+Tour bodies for 30 catastrophic packs being retranslated from English source via
+parallel-agent workflow. 12 highest-visibility tour entries per pack × 30 packs
+= 360 long-form translations (each 1000-2400 chars).
+
+### Phase E — Adventure Mode policy decision
+Audit identified the "Adventure Mode" DNT inconsistency: docs treat as DNT but
+51 of 56 packs translate it (Mode aventure, Abenteuermodus, モード, 모험 모드, etc.).
+DECISION: Accept de-facto policy. Adventure Mode IS translatable.
+This avoids reverting 51 packs and matches universal practice.
+
+### Phase F — Chinese Traditional comprehensive S→T cleanup (commit `35f46d57`)
+**2,521 character conversions across 1,441 keys** in chinese_traditional.js.
+
+Top conversions: 间→間 (609x), 话→話 (534x), 錶→表 (315x), 经→經 (268x),
+录→錄 (235x), 误→誤 (154x), 虑→慮 (86x), 围→圍 (73x), 启→啟 (70x), 发→發 (52x).
+Plus 24 other less-frequent Simplified residuals (订, 虚, 国, 标, 笔, 锚, 进, 觉,
+证, 备, 节, 报, 给, 长). Skipped ambiguous cases (面 surface vs 麵 noodle, 群
+both forms valid, 复 compound/restore needing context). Combined with Phase A's
+compound-level fixes (錶情→表情, 詞匯→詞彙, 周期→週期, etc.), pack now passes
+for Taiwan/HK readers.
 
 After structural integrity reached 100% clean, performed targeted accuracy work
 across all 56 packs in 7 phases:
