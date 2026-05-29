@@ -2611,10 +2611,11 @@
       "SUPPLEMENTARY RESOURCES (REQUIRED for most items — Phase Z):",
       "Every item gets a `supplementaryResources` array. The host auto-generates the resource (a glossary card, an interactive number line, etc.) and injects an inline clickable link into the named scaffold rung, alongside a one-line usage hint the host writes for the clinician.",
       "",
-      "THREE SUPPORTED KINDS:",
+      "FOUR SUPPORTED KINDS:",
       "  1. kind=\"glossary\" — vocabulary preview card (one per item max)",
       "  2. kind=\"math-manipulative\" — interactive STEM Lab tool preset to specific state (one per item max)",
       "  3. kind=\"word-sounds-probe\" — Word Sounds Studio probe with target words + activity (one per item max). Use for reading-intervention items targeting phonological awareness.",
+      "  4. kind=\"visual-organizer\" — a generated graphic organizer (concept map, mind map, outline, timeline, or concept sort) the student can see/fill while reasoning (one per item max).",
       "An item can have multiple supports of DIFFERENT kinds — e.g., a reading-intervention item might have a glossary AND a word-sounds-probe.",
       "",
       "─── GLOSSARY GUIDANCE ───",
@@ -2678,9 +2679,30 @@
       "  - anchorRung: 1-4. Default 1.",
       "  - title: concise label like 'CVC Segmentation Probe' or 'Initial-Sound Isolation'.",
       "",
+      "─── VISUAL-ORGANIZER GUIDANCE ───",
+      "USE WHEN: the construct involves RELATIONSHIPS, STRUCTURE, or SEQUENCE that a graphic would make concrete — comparing/contrasting, categorizing, showing cause/effect, mapping how ideas connect, or ordering events. Especially valuable for reading-comprehension, science, and social-studies items where the answer depends on seeing how parts relate.",
+      "toolType selection (pick the ONE that fits the cognitive demand):",
+      "  - \"concept-map\" — interconnections radiating from a central idea (how concepts link to a hub). Best for 'how does X relate to Y and Z' items.",
+      "  - \"mind-map\" — hierarchical branching from one topic into sub-branches. Best for brainstorming/organizing a topic's parts.",
+      "  - \"outline\" — ordered hierarchical structure (main ideas + supporting details). Best for 'identify main idea and details' items.",
+      "  - \"timeline\" — chronological sequence of events. Best for ordering, cause-and-effect-over-time, or historical-sequence items.",
+      "  - \"concept-sort\" — categorize items into groups. Best for classification / 'which group does this belong to' items.",
+      "directive field: a clear instruction describing WHAT to visualize, written as source content the generator will turn into the organizer (e.g., 'Compare photosynthesis and cellular respiration: their inputs, outputs, and where each happens in the cell.'). 1–3 sentences. Anchor it to the item's actual content. REQUIRED, min 8 chars.",
+      "Anchor rung guidance for visual organizers:",
+      "  - L1: show the organizer's structure so the student orients before attempting.",
+      "  - L2: have the student add to / trace the organizer as they answer the leading question.",
+      "  - L3 (most common): model your reasoning by filling the organizer step-by-step.",
+      "  - L4: lay out the full answer visually on the organizer while explaining.",
+      "  Default: 3 (model rung).",
+      "Visual-organizer fields:",
+      "  - toolType: ONE of \"concept-map\", \"mind-map\", \"outline\", \"timeline\", \"concept-sort\". Do not invent others.",
+      "  - directive: 1–3 sentences of source content to visualize (see above).",
+      "  - anchorRung: 1-4. Default 3.",
+      "  - title: concise label like 'Concept Map: Water Cycle' or 'Timeline: Steps of Mitosis'.",
+      "",
       "─── GENERAL RULES ───",
-      "- AT MOST 1 entry PER KIND per item. So max 3 supports per item (one glossary + one manipulative + one word-sounds-probe).",
-      "- Do not invent new kinds. The three above are the only ones supported.",
+      "- AT MOST 1 entry PER KIND per item. So max 4 supports per item (one glossary + one manipulative + one word-sounds-probe + one visual-organizer).",
+      "- Do not invent new kinds. The four above are the only ones supported.",
       "- If the item truly needs no support, omit the field or send an empty array. Do not pad.",
       "- REUSE existing resources where possible. If an item's needs match an EXISTING INVENTORY entry below, emit { \"existingResourceId\": \"<id>\", \"anchorRung\": <1|2|3|4> } instead of generating a new entry. The host will skip regeneration and link to the existing resource.",
     ]
@@ -2763,6 +2785,7 @@
       var hasGlossary = false;
       var hasManipulative = false;
       var hasWordSoundsProbe = false;
+      var hasVisualOrganizer = false;
       raw.supplementaryResources.forEach(function (sr) {
         if (!sr || typeof sr !== "object") return;
         var kind = String(sr.kind || "").trim().toLowerCase();
@@ -2857,10 +2880,42 @@
           hasWordSoundsProbe = true;
           return;
         }
+
+        if (kind === "visual-organizer") {
+          if (hasVisualOrganizer) return; // one organizer per item max
+          // toolType picks WHICH organizer; the host maps these to the shared
+          // resource-generation pipeline (handleGenerate) — no DA-specific
+          // render code. Reuses the same Lesson-DNA-aware generators the main
+          // app uses, so a DA organizer aligns to the active lesson's thread.
+          var toolType = String(sr.toolType || "").trim().toLowerCase();
+          var ALLOWED_ORGANIZERS = { "outline": 1, "concept-map": 1, "mind-map": 1, "timeline": 1, "concept-sort": 1 };
+          if (!ALLOWED_ORGANIZERS[toolType]) return; // unknown organizer → drop silently (model invented one)
+          // directive = what to visualize. Becomes the source text the host
+          // feeds the generator. Required and non-trivial.
+          var directive = String(sr.directive || sr.prompt || sr.seedPrompt || "").trim();
+          if (directive.length < 8) return; // too thin to generate a meaningful organizer
+          directive = directive.slice(0, 600);
+          var voTitle = String(sr.title || "").trim().slice(0, 80) || defaultVisualOrganizerTitle(toolType, directive);
+          // Default anchor rung 3 (model rung) — organizers are most useful when
+          // the clinician walks the student through the visualization while modeling.
+          if (!(anchorRung >= 1 && anchorRung <= 4)) anchorRung = 3;
+          suppResources.push({
+            kind: "visual-organizer",
+            toolType: toolType,
+            directive: directive,
+            title: voTitle,
+            anchorRung: anchorRung,
+            status: "suggested",
+            resourceId: null
+          });
+          hasVisualOrganizer = true;
+          return;
+        }
         // Unknown kind → ignore (don't crash, don't pad)
       });
-      // Safety cap: max 3 resources per item (1 of each kind)
-      if (suppResources.length > 3) suppResources = suppResources.slice(0, 3);
+      // Safety cap: max 4 resources per item (1 of each kind:
+      // glossary + manipulative + word-sounds-probe + visual-organizer)
+      if (suppResources.length > 4) suppResources = suppResources.slice(0, 4);
     }
 
     var item = {
@@ -2979,6 +3034,20 @@
     return "Manipulative";
   }
 
+  // Fallback title for a visual organizer when Gemini didn't supply one.
+  function defaultVisualOrganizerTitle(toolType, directive) {
+    var labels = {
+      "outline": "Outline",
+      "concept-map": "Concept Map",
+      "mind-map": "Mind Map",
+      "timeline": "Timeline",
+      "concept-sort": "Concept Sort"
+    };
+    var base = labels[toolType] || "Visual Organizer";
+    var hint = String(directive || "").split(/[.:;\n]/)[0].trim().slice(0, 40);
+    return hint ? (base + ": " + hint) : base;
+  }
+
   // Markdown-link-token format reused from Lesson Plan: [title](resource:id)
   function makeResourceLinkToken(title, resourceId) {
     var safeTitle = String(title || "Resource").replace(/[\[\]\(\)]/g, "").slice(0, 80);
@@ -3009,6 +3078,13 @@
       if (level === 3) return "💡 Use these terms in the model alongside the example:";
       if (level === 4) return "💡 Reinforce these terms as you give the direct answer:";
       return "💡 Use this resource with the student:";
+    }
+    if (kind === "visual-organizer") {
+      if (level === 1) return "🗺️ Show this organizer so the student can see the structure before answering:";
+      if (level === 2) return "🗺️ Have the student add to or trace this organizer as they answer the leading question:";
+      if (level === 3) return "🗺️ Model your thinking by filling in this organizer step-by-step:";
+      if (level === 4) return "🗺️ Use this organizer to lay out the full answer visually as you explain:";
+      return "🗺️ Use this organizer with the student:";
     }
     return "💡 Use this resource with the student:";
   }
@@ -3097,6 +3173,7 @@
     var onGenerateGlossary = hostCallbacks && hostCallbacks.onGenerateGlossary;
     var onGenerateManipulative = hostCallbacks && hostCallbacks.onGenerateManipulative;
     var onGenerateWordSoundsProbe = hostCallbacks && hostCallbacks.onGenerateWordSoundsProbe;
+    var onGenerateVisualOrganizer = hostCallbacks && hostCallbacks.onGenerateVisualOrganizer;
     var supps = Array.isArray(item.supplementaryResources) ? item.supplementaryResources : [];
     if (supps.length === 0) return Promise.resolve(item);
     // If NO generator callback wired AND no reuse entries present, no-op.
@@ -3104,6 +3181,7 @@
     if (typeof onGenerateGlossary !== "function"
         && typeof onGenerateManipulative !== "function"
         && typeof onGenerateWordSoundsProbe !== "function"
+        && typeof onGenerateVisualOrganizer !== "function"
         && !anyReuseHere) {
       return Promise.resolve(item);
     }
@@ -3202,6 +3280,32 @@
             })
             .catch(function (err) {
               try { console.warn("[DA Phase Z] Word Sounds probe generation failed for item " + idx + ":", err && err.message); } catch (_) {}
+              var failSupps = currentItem.supplementaryResources.slice();
+              failSupps[si] = Object.assign({}, sr, { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
+              return Object.assign({}, currentItem, { supplementaryResources: failSupps });
+            });
+        }
+
+        // Visual organizer kind (Phase 4). The host routes this through the
+        // SAME shared resource-generation pipeline (handleGenerate) the main app
+        // uses for outline/concept-map/mind-map/timeline/concept-sort — no
+        // DA-specific render code. The host maps toolType → generator + mints a
+        // standard history entry, so handleRestoreView opens it for free.
+        if (sr.kind === "visual-organizer") {
+          if (typeof onGenerateVisualOrganizer !== "function") return currentItem;
+          var voProv = { fromDA: true, daItemIndex: idx, daItemPrompt: String(currentItem.prompt || "").slice(0, 80) };
+          return Promise.resolve()
+            .then(function () { return onGenerateVisualOrganizer(sr.toolType, sr.directive, sr.title, voProv); })
+            .then(function (res) {
+              if (!res || !res.id) throw new Error("Visual organizer callback returned no id.");
+              var token = makeResourceLinkToken(sr.title, res.id);
+              var nextSupps = currentItem.supplementaryResources.slice();
+              nextSupps[si] = Object.assign({}, sr, { status: "generated", resourceId: res.id });
+              var withSupps = Object.assign({}, currentItem, { supplementaryResources: nextSupps });
+              return appendLinkTokenToRung(withSupps, sr.anchorRung, token, res.id, sr.kind);
+            })
+            .catch(function (err) {
+              try { console.warn("[DA Phase Z] Visual organizer generation failed for item " + idx + ":", err && err.message); } catch (_) {}
               var failSupps = currentItem.supplementaryResources.slice();
               failSupps[si] = Object.assign({}, sr, { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
               return Object.assign({}, currentItem, { supplementaryResources: failSupps });
@@ -9410,6 +9514,89 @@
         });
     }
 
+    // Phase 4 — Manual "+ Add inline organizer" for items Gemini didn't auto-
+    // attach one to. Asks the AI to pick the best organizer type + write the
+    // directive for THIS item, then routes through the same host callback
+    // (which uses the shared handleGenerate pipeline). Falls back to an outline.
+    function addManualVisualOrganizerToItem(idx) {
+      var item = generatedItems[idx];
+      if (!item) return;
+      if (typeof props.onGenerateVisualOrganizer !== "function") {
+        addToast("Visual organizer generation isn't wired in this host.");
+        return;
+      }
+      if (typeof callGeminiFn !== "function") {
+        addToast("AI is not available in this host — cannot pick an organizer.");
+        return;
+      }
+      var promptText = String(item.prompt || "");
+      var pickPrompt = [
+        "You are picking ONE graphic organizer to support a Dynamic Assessment item.",
+        "Allowed toolType: concept-map (interconnections from a hub), mind-map (hierarchical branches), outline (main idea + details), timeline (chronological sequence), concept-sort (categorize into groups).",
+        "Pick the type that best fits the cognitive demand of the item, then write a directive: 1-3 sentences of source content the generator will turn into the organizer. Anchor the directive to the item's actual content.",
+        "",
+        "Item prompt: " + promptText,
+        "",
+        "Output STRICT JSON only (no fences, no prose): { \"toolType\": \"<one of the five>\", \"directive\": \"<1-3 sentences>\", \"title\": \"<short label>\", \"anchorRung\": <1|2|3|4> }"
+      ].join("\n");
+      addToast("Picking the right organizer…");
+      var placeholder = {
+        kind: "visual-organizer",
+        toolType: "pending",
+        title: "Picking organizer…",
+        directive: "",
+        anchorRung: 3,
+        status: "generating",
+        resourceId: null
+      };
+      editGeneratedItem(idx, function (i) {
+        var existing = Array.isArray(i.supplementaryResources) ? i.supplementaryResources : [];
+        return Object.assign({}, i, { supplementaryResources: existing.concat([placeholder]) });
+      });
+      Promise.resolve()
+        .then(function () { return callGeminiFn(pickPrompt, true); })
+        .then(function (raw) {
+          var cleaned = String(raw || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+          var parsed = null;
+          try { parsed = JSON.parse(cleaned); } catch (_) {}
+          if (!parsed || typeof parsed !== "object") throw new Error("AI did not return valid JSON.");
+          var ALLOWED = { "concept-map": 1, "mind-map": 1, "outline": 1, "timeline": 1, "concept-sort": 1 };
+          var toolType = String(parsed.toolType || "").toLowerCase();
+          if (!ALLOWED[toolType]) toolType = "outline"; // safe default
+          var directive = String(parsed.directive || "").trim().slice(0, 600);
+          if (directive.length < 8) directive = promptText.slice(0, 300); // fall back to the item prompt itself
+          var anchorRung = parseInt(parsed.anchorRung, 10);
+          if (!(anchorRung >= 1 && anchorRung <= 4)) anchorRung = 3;
+          var title = String(parsed.title || "").trim().slice(0, 80) || defaultVisualOrganizerTitle(toolType, directive);
+          var provenance = { fromDA: true, daItemIndex: idx, daItemPrompt: promptText.slice(0, 80) };
+          return props.onGenerateVisualOrganizer(toolType, directive, title, provenance)
+            .then(function (res) {
+              if (!res || !res.id) throw new Error("Visual organizer callback returned no id.");
+              var token = makeResourceLinkToken(title, res.id);
+              editGeneratedItem(idx, function (i) {
+                var supps = (i.supplementaryResources || []).slice();
+                var sIdx = supps.findIndex(function (s) { return s && s.status === "generating" && s.toolType === "pending"; });
+                if (sIdx < 0) sIdx = supps.length - 1;
+                supps[sIdx] = { kind: "visual-organizer", toolType: toolType, directive: directive, title: title, anchorRung: anchorRung, status: "generated", resourceId: res.id };
+                var withSupps = Object.assign({}, i, { supplementaryResources: supps });
+                return appendLinkTokenToRung(withSupps, anchorRung, token, res.id, "visual-organizer");
+              });
+              addToast("Inline organizer attached: " + title);
+            });
+        })
+        .catch(function (err) {
+          editGeneratedItem(idx, function (i) {
+            var supps = (i.supplementaryResources || []).slice();
+            var sIdx = supps.findIndex(function (s) { return s && s.status === "generating" && s.toolType === "pending"; });
+            if (sIdx >= 0) {
+              supps[sIdx] = Object.assign({}, supps[sIdx], { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
+            }
+            return Object.assign({}, i, { supplementaryResources: supps });
+          });
+          addToast("Organizer generation failed: " + (err && err.message ? err.message : "unknown"));
+        });
+    }
+
     // Phase Z++ — Kind-specific inline editor that opens BELOW a chip when
     // the user clicks "✏️ Edit". Renders a minimal form for each kind; on
     // Save, calls the matching save* helper which patches the resource in
@@ -9660,6 +9847,7 @@
           var hasActiveGlossary = supps.some(function (sr) { return sr && sr.kind === "glossary" && (sr.status === "generated" || sr.status === "generating"); });
           var hasActiveManipulative = supps.some(function (sr) { return sr && sr.kind === "math-manipulative" && (sr.status === "generated" || sr.status === "generating"); });
           var hasActiveWordSounds = supps.some(function (sr) { return sr && sr.kind === "word-sounds-probe" && (sr.status === "generated" || sr.status === "generating"); });
+          var hasActiveVisualOrganizer = supps.some(function (sr) { return sr && sr.kind === "visual-organizer" && (sr.status === "generated" || sr.status === "generating"); });
           var iconForKind = function (kind, toolId) {
             if (kind === "glossary") return "📚";
             if (kind === "math-manipulative") {
@@ -9669,6 +9857,7 @@
               return "🧮";
             }
             if (kind === "word-sounds-probe") return "🔤";
+            if (kind === "visual-organizer") return "🗺️";
             if (kind === "reuse") return "♻️"; // reused from inventory
             return "🔗";
           };
@@ -9710,7 +9899,18 @@
                   fontSize: 10, fontWeight: 800, cursor: typeof props.onGenerateWordSoundsProbe === "function" ? "pointer" : "not-allowed",
                   fontFamily: "inherit"
                 }
-              }, "+ Add inline phonics probe") : null
+              }, "+ Add inline phonics probe") : null,
+              !hasActiveVisualOrganizer ? h("button", {
+                onClick: function () { addManualVisualOrganizerToItem(idx); },
+                disabled: typeof props.onGenerateVisualOrganizer !== "function",
+                title: typeof props.onGenerateVisualOrganizer === "function" ? "Attach a graphic organizer (concept map, mind map, outline, timeline, or concept sort)" : "Host visual-organizer callback not wired",
+                style: {
+                  padding: "2px 10px", borderRadius: 4,
+                  border: "1px solid #0d9488", background: "#ffffff", color: "#0f766e",
+                  fontSize: 10, fontWeight: 800, cursor: typeof props.onGenerateVisualOrganizer === "function" ? "pointer" : "not-allowed",
+                  fontFamily: "inherit"
+                }
+              }, "+ Add inline organizer") : null
             ),
             supps.length > 0
               ? h("div", null, supps.map(function (sr, sri) {
@@ -9762,7 +9962,7 @@
                   );
                 }))
               : h("div", { style: { color: "#64748b", fontSize: 10.5, fontStyle: "italic" } },
-                  "No inline supports attached. Add a ", h("strong", null, "glossary"), " (vocabulary), ", h("strong", null, "manipulative"), " (math tool), or ", h("strong", null, "phonics probe"), " (Word Sounds Studio).")
+                  "No inline supports attached. Add a ", h("strong", null, "glossary"), " (vocabulary), ", h("strong", null, "manipulative"), " (math tool), ", h("strong", null, "phonics probe"), " (Word Sounds Studio), or ", h("strong", null, "organizer"), " (concept map / timeline / sort).")
           );
         })(),
         // Correct answer field
