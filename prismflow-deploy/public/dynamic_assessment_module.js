@@ -2611,11 +2611,12 @@
       "SUPPLEMENTARY RESOURCES (REQUIRED for most items — Phase Z):",
       "Every item gets a `supplementaryResources` array. The host auto-generates the resource (a glossary card, an interactive number line, etc.) and injects an inline clickable link into the named scaffold rung, alongside a one-line usage hint the host writes for the clinician.",
       "",
-      "FOUR SUPPORTED KINDS:",
+      "FIVE SUPPORTED KINDS:",
       "  1. kind=\"glossary\" — vocabulary preview card (one per item max)",
       "  2. kind=\"math-manipulative\" — interactive STEM Lab tool preset to specific state (one per item max)",
       "  3. kind=\"word-sounds-probe\" — Word Sounds Studio probe with target words + activity (one per item max). Use for reading-intervention items targeting phonological awareness.",
       "  4. kind=\"visual-organizer\" — a generated graphic organizer (concept map, mind map, outline, timeline, or concept sort) the student can see/fill while reasoning (one per item max).",
+      "  5. kind=\"sentence-frames\" — fill-in sentence starters/frames that scaffold the student PRODUCING a response (one per item max). The ONLY support that scaffolds OUTPUT; the other four scaffold input.",
       "An item can have multiple supports of DIFFERENT kinds — e.g., a reading-intervention item might have a glossary AND a word-sounds-probe.",
       "",
       "─── GLOSSARY GUIDANCE ───",
@@ -2700,9 +2701,23 @@
       "  - anchorRung: 1-4. Default 3.",
       "  - title: concise label like 'Concept Map: Water Cycle' or 'Timeline: Steps of Mitosis'.",
       "",
+      "─── SENTENCE-FRAMES GUIDANCE ───",
+      "USE WHEN: the bottleneck is EXPRESSION / OUTPUT, not understanding — the student may grasp the idea but struggle to PRODUCE a response. Classic signs: one-word answers, 'I don't know' when they likely do, difficulty starting, disorganized verbal/written output. Especially valuable for the LANGUAGE domain (oral narrative, explanation) and for any item asking the student to JUSTIFY, EXPLAIN, COMPARE, or SUMMARIZE in their own words. This is the only support that scaffolds the student's response itself.",
+      "directive field: describe the expressive task to scaffold + the kind of frame that fits, as source content the generator turns into fill-in frames (e.g., 'Frames to help the student explain why a character felt a certain way, citing evidence: I think ___ felt ___ because ___.'). 1–3 sentences. Anchor it to the item's actual response demand. REQUIRED, min 8 chars.",
+      "Anchor rung guidance for sentence frames:",
+      "  - L1: offer frames up front so the student has language to begin.",
+      "  - L2 (most common): invite the student to answer the leading question using a frame.",
+      "  - L3: model completing one frame aloud, then have the student do the next.",
+      "  - L4: complete a frame together while giving the answer, then have them restate it.",
+      "  Default: 2 (invite production).",
+      "Sentence-frames fields:",
+      "  - directive: 1–3 sentences describing the response demand + frame style (see above).",
+      "  - anchorRung: 1-4. Default 2.",
+      "  - title: concise label like 'Frames: Explain a Character's Feelings' or 'Frames: Justify a Math Step'.",
+      "",
       "─── GENERAL RULES ───",
-      "- AT MOST 1 entry PER KIND per item. So max 4 supports per item (one glossary + one manipulative + one word-sounds-probe + one visual-organizer).",
-      "- Do not invent new kinds. The four above are the only ones supported.",
+      "- AT MOST 1 entry PER KIND per item. So max 5 supports per item (one each: glossary + manipulative + word-sounds-probe + visual-organizer + sentence-frames).",
+      "- Do not invent new kinds. The five above are the only ones supported.",
       "- If the item truly needs no support, omit the field or send an empty array. Do not pad.",
       "- REUSE existing resources where possible. If an item's needs match an EXISTING INVENTORY entry below, emit { \"existingResourceId\": \"<id>\", \"anchorRung\": <1|2|3|4> } instead of generating a new entry. The host will skip regeneration and link to the existing resource.",
     ]
@@ -2786,6 +2801,7 @@
       var hasManipulative = false;
       var hasWordSoundsProbe = false;
       var hasVisualOrganizer = false;
+      var hasSentenceFrames = false;
       raw.supplementaryResources.forEach(function (sr) {
         if (!sr || typeof sr !== "object") return;
         var kind = String(sr.kind || "").trim().toLowerCase();
@@ -2911,11 +2927,39 @@
           hasVisualOrganizer = true;
           return;
         }
+
+        if (kind === "sentence-frames") {
+          if (hasSentenceFrames) return; // one per item max
+          // EXPRESSIVE / OUTPUT scaffold — the only support kind that helps the
+          // student PRODUCE a response (the other four scaffold input). Frames
+          // the student fills in ("First ___, then ___ because ___"). Routed
+          // through the shared sentence-frames generator (isolatedContext), so
+          // it stays internal to the DA item. directive = the expressive task
+          // to scaffold; becomes the source the generator builds frames from.
+          var sfDirective = String(sr.directive || sr.prompt || sr.seedPrompt || "").trim();
+          if (sfDirective.length < 8) return; // too thin to scaffold
+          sfDirective = sfDirective.slice(0, 600);
+          var sfHint = sfDirective.split(/[.:;\n]/)[0].trim().slice(0, 40);
+          var sfTitle = String(sr.title || "").trim().slice(0, 80) || ("Sentence Frames: " + (sfHint || "response"));
+          // Default anchor rung 2 — frames are most useful as the student is
+          // invited to produce a response (leading-question rung).
+          if (!(anchorRung >= 1 && anchorRung <= 4)) anchorRung = 2;
+          suppResources.push({
+            kind: "sentence-frames",
+            directive: sfDirective,
+            title: sfTitle,
+            anchorRung: anchorRung,
+            status: "suggested",
+            resourceId: null
+          });
+          hasSentenceFrames = true;
+          return;
+        }
         // Unknown kind → ignore (don't crash, don't pad)
       });
-      // Safety cap: max 4 resources per item (1 of each kind:
-      // glossary + manipulative + word-sounds-probe + visual-organizer)
-      if (suppResources.length > 4) suppResources = suppResources.slice(0, 4);
+      // Safety cap: max 5 resources per item (1 of each kind: glossary +
+      // manipulative + word-sounds-probe + visual-organizer + sentence-frames)
+      if (suppResources.length > 5) suppResources = suppResources.slice(0, 5);
     }
 
     var item = {
@@ -3086,6 +3130,13 @@
       if (level === 4) return "🗺️ Use this organizer to lay out the full answer visually as you explain:";
       return "🗺️ Use this organizer with the student:";
     }
+    if (kind === "sentence-frames") {
+      if (level === 1) return "✍️ Offer these frames up front so the student has language to start their response:";
+      if (level === 2) return "✍️ Invite the student to answer the leading question using one of these frames:";
+      if (level === 3) return "✍️ Model completing a frame aloud, then have the student try the next one:";
+      if (level === 4) return "✍️ Fill in a frame together as you give the answer, then have them restate it:";
+      return "✍️ Use these sentence frames with the student:";
+    }
     return "💡 Use this resource with the student:";
   }
 
@@ -3174,6 +3225,7 @@
     var onGenerateManipulative = hostCallbacks && hostCallbacks.onGenerateManipulative;
     var onGenerateWordSoundsProbe = hostCallbacks && hostCallbacks.onGenerateWordSoundsProbe;
     var onGenerateVisualOrganizer = hostCallbacks && hostCallbacks.onGenerateVisualOrganizer;
+    var onGenerateSentenceFrames = hostCallbacks && hostCallbacks.onGenerateSentenceFrames;
     var supps = Array.isArray(item.supplementaryResources) ? item.supplementaryResources : [];
     if (supps.length === 0) return Promise.resolve(item);
     // If NO generator callback wired AND no reuse entries present, no-op.
@@ -3182,6 +3234,7 @@
         && typeof onGenerateManipulative !== "function"
         && typeof onGenerateWordSoundsProbe !== "function"
         && typeof onGenerateVisualOrganizer !== "function"
+        && typeof onGenerateSentenceFrames !== "function"
         && !anyReuseHere) {
       return Promise.resolve(item);
     }
@@ -3306,6 +3359,31 @@
             })
             .catch(function (err) {
               try { console.warn("[DA Phase Z] Visual organizer generation failed for item " + idx + ":", err && err.message); } catch (_) {}
+              var failSupps = currentItem.supplementaryResources.slice();
+              failSupps[si] = Object.assign({}, sr, { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
+              return Object.assign({}, currentItem, { supplementaryResources: failSupps });
+            });
+        }
+
+        // Sentence-frames kind (expressive/output scaffold). Same shared
+        // pipeline: host calls handleGenerate('sentence-frames', directive,
+        // {isolatedContext}) → mints a standard 'sentence-frames' history entry
+        // → handleRestoreView opens it via its default branch (no new code).
+        if (sr.kind === "sentence-frames") {
+          if (typeof onGenerateSentenceFrames !== "function") return currentItem;
+          var sfProv = { fromDA: true, daItemIndex: idx, daItemPrompt: String(currentItem.prompt || "").slice(0, 80) };
+          return Promise.resolve()
+            .then(function () { return onGenerateSentenceFrames(sr.directive, sr.title, sfProv); })
+            .then(function (res) {
+              if (!res || !res.id) throw new Error("Sentence-frames callback returned no id.");
+              var token = makeResourceLinkToken(sr.title, res.id);
+              var nextSupps = currentItem.supplementaryResources.slice();
+              nextSupps[si] = Object.assign({}, sr, { status: "generated", resourceId: res.id });
+              var withSupps = Object.assign({}, currentItem, { supplementaryResources: nextSupps });
+              return appendLinkTokenToRung(withSupps, sr.anchorRung, token, res.id, sr.kind);
+            })
+            .catch(function (err) {
+              try { console.warn("[DA Phase Z] Sentence-frames generation failed for item " + idx + ":", err && err.message); } catch (_) {}
               var failSupps = currentItem.supplementaryResources.slice();
               failSupps[si] = Object.assign({}, sr, { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
               return Object.assign({}, currentItem, { supplementaryResources: failSupps });
@@ -4075,6 +4153,9 @@
         "timeline": { clinical: "a timeline organizer", family: "a timeline showing the order things happen" },
         "concept-sort": { clinical: "a concept-sort activity", family: "a sorting game to group ideas" }
       })[sr.toolType] || { clinical: "a graphic organizer", family: "a picture that organizes the ideas" };
+    }
+    if (k === "sentence-frames") {
+      return { clinical: "sentence frames (fill-in starters scaffolding the response)", family: "fill-in sentence starters to help them put their answer into words" };
     }
     return { clinical: "a support resource", family: "an extra support" };
   }
@@ -9736,6 +9817,85 @@
         });
     }
 
+    // Manual "+ Add inline frames" — for items Gemini didn't auto-attach an
+    // expressive scaffold to. Asks the AI to write a directive describing the
+    // response demand + frame style for THIS item, then routes through the
+    // same host callback. Falls back to the item prompt as the directive.
+    function addManualSentenceFramesToItem(idx) {
+      var item = generatedItems[idx];
+      if (!item) return;
+      if (typeof props.onGenerateSentenceFrames !== "function") {
+        addToast("Sentence-frames generation isn't wired in this host.");
+        return;
+      }
+      if (typeof callGeminiFn !== "function") {
+        addToast("AI is not available in this host — cannot draft frames.");
+        return;
+      }
+      var promptText = String(item.prompt || "");
+      var pickPrompt = [
+        "You are designing fill-in SENTENCE FRAMES to scaffold a student's spoken or written RESPONSE to a Dynamic Assessment item.",
+        "Frames help a student who understands the idea but struggles to PRODUCE a response (e.g., 'I think ___ because ___.').",
+        "Write a directive: 1-3 sentences describing the response demand of this item + the kind of frame that fits. Anchor it to the item's actual content.",
+        "",
+        "Item prompt: " + promptText,
+        "",
+        "Output STRICT JSON only (no fences, no prose): { \"directive\": \"<1-3 sentences>\", \"title\": \"<short label>\", \"anchorRung\": <1|2|3|4> }"
+      ].join("\n");
+      addToast("Drafting sentence frames…");
+      var placeholder = {
+        kind: "sentence-frames",
+        directive: "pending",
+        title: "Drafting frames…",
+        anchorRung: 2,
+        status: "generating",
+        resourceId: null
+      };
+      editGeneratedItem(idx, function (i) {
+        var existing = Array.isArray(i.supplementaryResources) ? i.supplementaryResources : [];
+        return Object.assign({}, i, { supplementaryResources: existing.concat([placeholder]) });
+      });
+      Promise.resolve()
+        .then(function () { return callGeminiFn(pickPrompt, true); })
+        .then(function (raw) {
+          var cleaned = String(raw || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+          var parsed = null;
+          try { parsed = JSON.parse(cleaned); } catch (_) {}
+          if (!parsed || typeof parsed !== "object") throw new Error("AI did not return valid JSON.");
+          var directive = String(parsed.directive || "").trim().slice(0, 600);
+          if (directive.length < 8) directive = promptText.slice(0, 300); // fall back to the item prompt
+          var anchorRung = parseInt(parsed.anchorRung, 10);
+          if (!(anchorRung >= 1 && anchorRung <= 4)) anchorRung = 2;
+          var title = String(parsed.title || "").trim().slice(0, 80) || "Sentence Frames";
+          var provenance = { fromDA: true, daItemIndex: idx, daItemPrompt: promptText.slice(0, 80) };
+          return props.onGenerateSentenceFrames(directive, title, provenance)
+            .then(function (res) {
+              if (!res || !res.id) throw new Error("Sentence-frames callback returned no id.");
+              var token = makeResourceLinkToken(title, res.id);
+              editGeneratedItem(idx, function (i) {
+                var supps = (i.supplementaryResources || []).slice();
+                var sIdx = supps.findIndex(function (s) { return s && s.status === "generating" && s.directive === "pending"; });
+                if (sIdx < 0) sIdx = supps.length - 1;
+                supps[sIdx] = { kind: "sentence-frames", directive: directive, title: title, anchorRung: anchorRung, status: "generated", resourceId: res.id };
+                var withSupps = Object.assign({}, i, { supplementaryResources: supps });
+                return appendLinkTokenToRung(withSupps, anchorRung, token, res.id, "sentence-frames");
+              });
+              addToast("Inline frames attached: " + title);
+            });
+        })
+        .catch(function (err) {
+          editGeneratedItem(idx, function (i) {
+            var supps = (i.supplementaryResources || []).slice();
+            var sIdx = supps.findIndex(function (s) { return s && s.status === "generating" && s.directive === "pending"; });
+            if (sIdx >= 0) {
+              supps[sIdx] = Object.assign({}, supps[sIdx], { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
+            }
+            return Object.assign({}, i, { supplementaryResources: supps });
+          });
+          addToast("Sentence-frames generation failed: " + (err && err.message ? err.message : "unknown"));
+        });
+    }
+
     // Phase Z++ — Kind-specific inline editor that opens BELOW a chip when
     // the user clicks "✏️ Edit". Renders a minimal form for each kind; on
     // Save, calls the matching save* helper which patches the resource in
@@ -9987,6 +10147,7 @@
           var hasActiveManipulative = supps.some(function (sr) { return sr && sr.kind === "math-manipulative" && (sr.status === "generated" || sr.status === "generating"); });
           var hasActiveWordSounds = supps.some(function (sr) { return sr && sr.kind === "word-sounds-probe" && (sr.status === "generated" || sr.status === "generating"); });
           var hasActiveVisualOrganizer = supps.some(function (sr) { return sr && sr.kind === "visual-organizer" && (sr.status === "generated" || sr.status === "generating"); });
+          var hasActiveSentenceFrames = supps.some(function (sr) { return sr && sr.kind === "sentence-frames" && (sr.status === "generated" || sr.status === "generating"); });
           var iconForKind = function (kind, toolId) {
             if (kind === "glossary") return "📚";
             if (kind === "math-manipulative") {
@@ -9997,6 +10158,7 @@
             }
             if (kind === "word-sounds-probe") return "🔤";
             if (kind === "visual-organizer") return "🗺️";
+            if (kind === "sentence-frames") return "✍️";
             if (kind === "reuse") return "♻️"; // reused from inventory
             return "🔗";
           };
@@ -10049,7 +10211,18 @@
                   fontSize: 10, fontWeight: 800, cursor: typeof props.onGenerateVisualOrganizer === "function" ? "pointer" : "not-allowed",
                   fontFamily: "inherit"
                 }
-              }, "+ Add inline organizer") : null
+              }, "+ Add inline organizer") : null,
+              !hasActiveSentenceFrames ? h("button", {
+                onClick: function () { addManualSentenceFramesToItem(idx); },
+                disabled: typeof props.onGenerateSentenceFrames !== "function",
+                title: typeof props.onGenerateSentenceFrames === "function" ? "Attach fill-in sentence frames that scaffold the student producing a response" : "Host sentence-frames callback not wired",
+                style: {
+                  padding: "2px 10px", borderRadius: 4,
+                  border: "1px solid #db2777", background: "#ffffff", color: "#9d174d",
+                  fontSize: 10, fontWeight: 800, cursor: typeof props.onGenerateSentenceFrames === "function" ? "pointer" : "not-allowed",
+                  fontFamily: "inherit"
+                }
+              }, "+ Add inline frames") : null
             ),
             supps.length > 0
               ? h("div", null, supps.map(function (sr, sri) {
@@ -10101,7 +10274,7 @@
                   );
                 }))
               : h("div", { style: { color: "#64748b", fontSize: 10.5, fontStyle: "italic" } },
-                  "No inline supports attached. Add a ", h("strong", null, "glossary"), " (vocabulary), ", h("strong", null, "manipulative"), " (math tool), ", h("strong", null, "phonics probe"), " (Word Sounds Studio), or ", h("strong", null, "organizer"), " (concept map / timeline / sort).")
+                  "No inline supports attached. Add a ", h("strong", null, "glossary"), " (vocabulary), ", h("strong", null, "manipulative"), " (math tool), ", h("strong", null, "phonics probe"), " (Word Sounds Studio), ", h("strong", null, "organizer"), " (concept map / timeline / sort), or ", h("strong", null, "sentence frames"), " (scaffold the student's response).")
           );
         })(),
         // Correct answer field
