@@ -2754,6 +2754,12 @@ const LearnerProgressView = React.memo(({
 }) => {
   const [showDiagnostics, setShowDiagnostics] = useState(() => isIndependentMode);
   const [selectedChild, setSelectedChild] = useState(null);
+  // gameCompletions arrives as an object keyed by game type ({memory:[...],
+  // matching:[...], ...}); normalize to a flat array of completion entries so
+  // the .length / .filter usages below are safe regardless of array-or-object shape.
+  const gameList = Array.isArray(gameCompletions)
+    ? gameCompletions
+    : Object.values(gameCompletions || {}).flat();
   const childProfiles = useMemo(() => {
     if (!isParentMode || !rosterKey?.students) return [];
     return Object.entries(rosterKey.students).map(([name, groupId]) => ({
@@ -2770,7 +2776,7 @@ const LearnerProgressView = React.memo(({
     const wsAccuracy = wsTotal > 0 ? Math.round(wsCorrect / wsTotal * 100) : 0;
     const masteredPhonemes = Object.entries(phonemeMastery).filter(([_, v]) => v.accuracy >= 80);
     const practicingPhonemes = Object.entries(phonemeMastery).filter(([_, v]) => v.accuracy > 0 && v.accuracy < 80);
-    const totalActivities = history.length + (wsTotal > 0 ? 1 : 0) + (gameCompletions?.length || 0);
+    const totalActivities = history.length + (wsTotal > 0 ? 1 : 0) + gameList.length;
     const recentSessions = studentProgressLog.slice(-5);
     const trend = recentSessions.length >= 2 ? recentSessions[recentSessions.length - 1].xp - recentSessions[0].xp : 0;
     return {
@@ -2781,7 +2787,7 @@ const LearnerProgressView = React.memo(({
       masteredPhonemes,
       practicingPhonemes,
       totalActivities,
-      gamesPlayed: gameCompletions?.length || 0,
+      gamesPlayed: gameList.length,
       fluencyTests: fluencyAssessments?.length || 0,
       labelChallenges: labelChallengeResults?.length || 0,
       sessionCount: studentProgressLog.length,
@@ -2882,7 +2888,7 @@ const LearnerProgressView = React.memo(({
     weekAgo.setDate(now.getDate() - 7);
     const weekXP = pointHistory.filter((e) => e.timestamp && new Date(e.timestamp) >= weekAgo);
     const weekWords = wordSoundsHistory.filter((h) => h.timestamp && new Date(h.timestamp) >= weekAgo);
-    const weekGames = gameCompletions?.filter((g2) => g2.timestamp && new Date(g2.timestamp) >= weekAgo) || [];
+    const weekGames = gameList.filter((g2) => g2.timestamp && new Date(g2.timestamp) >= weekAgo);
     const prevWeekStart = new Date(weekAgo);
     prevWeekStart.setDate(prevWeekStart.getDate() - 7);
     const prevWeekXP = pointHistory.filter((e) => e.timestamp && new Date(e.timestamp) >= prevWeekStart && new Date(e.timestamp) < weekAgo);

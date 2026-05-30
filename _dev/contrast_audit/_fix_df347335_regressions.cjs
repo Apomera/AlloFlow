@@ -1,26 +1,32 @@
 #!/usr/bin/env node
 // Apply reverts for df347335 contrast regressions identified by
-// _audit_df347335_regression_v2.cjs --json --canonical-only.
+// _audit_df347335_regression_v2.cjs or _v3.cjs --json --canonical-only.
 //
 // Strategy: for each (file, lineNumber, beforeColor, afterColor) triple,
 // open the file, swap `after → before` on that exact line. Skip if the
 // line content no longer matches the expected pattern (defensive — keeps
 // us from corrupting unrelated edits).
 //
-// Usage:
-//   node _fix_df347335_regressions.cjs              # dry-run
-//   node _fix_df347335_regressions.cjs --apply      # actually write
+// Usage (run from project root, OR from this directory — paths auto-resolve):
+//   node _dev/contrast_audit/_fix_df347335_regressions.cjs                 # v2 dry-run
+//   node _dev/contrast_audit/_fix_df347335_regressions.cjs --apply         # v2 apply
+//   node _dev/contrast_audit/_fix_df347335_regressions.cjs --v3 --high-only --apply
 
 const fs = require('fs');
+const path = require('path');
 const { execSync } = require('child_process');
 
 const APPLY = process.argv.includes('--apply');
 const USE_V3 = process.argv.includes('--v3');
 const HIGH_ONLY = process.argv.includes('--high-only'); // only confidence === 3 (★)
 
-// Get triage from detector (v2 or v3)
-const detectorScript = USE_V3 ? '_audit_df347335_regression_v3.cjs' : '_audit_df347335_regression_v2.cjs';
-const raw = execSync(`node ${detectorScript} --canonical-only --json`, { encoding: 'utf8', maxBuffer: 64*1024*1024 });
+// Project root = two levels up from this file (.../UDL-Tool-Updated/_dev/contrast_audit/)
+const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
+process.chdir(PROJECT_ROOT);
+
+// Detector script lives alongside this fixer.
+const detectorScript = path.join(__dirname, USE_V3 ? '_audit_df347335_regression_v3.cjs' : '_audit_df347335_regression_v2.cjs');
+const raw = execSync(`node "${detectorScript}" --canonical-only --json`, { encoding: 'utf8', maxBuffer: 64*1024*1024 });
 let triage = JSON.parse(raw);
 
 if (HIGH_ONLY) {

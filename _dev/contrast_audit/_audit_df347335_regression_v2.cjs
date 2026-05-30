@@ -20,6 +20,9 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
+// Auto-chdir to project root (this file lives in _dev/contrast_audit/)
+process.chdir(path.resolve(__dirname, '..', '..'));
+
 const JSON_OUTPUT = process.argv.includes('--json');
 const CANONICAL_ONLY = process.argv.includes('--canonical-only');
 

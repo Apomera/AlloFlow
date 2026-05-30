@@ -548,6 +548,10 @@ const StoryForge = React.memo(({
   // ── Narrate state ──
   const [characters, setCharacters] = useState([]);
   const [audioSegments, setAudioSegments] = useState({});
+  // Live mirror of audioSegments so the unmount cleanup (which must keep [] deps to run
+  // only on unmount) can revoke the CURRENT blob URLs instead of the stale initial {}.
+  const audioSegmentsRef = useRef(audioSegments);
+  useEffect(() => { audioSegmentsRef.current = audioSegments; }, [audioSegments]);
   const [playbackIdx, setPlaybackIdx] = useState(-1);
   const [sentenceIdx, setSentenceIdx] = useState(0);
   const audioRef = useRef(null);
@@ -722,18 +726,25 @@ const StoryForge = React.memo(({
   //    so the host's existing `.theme-dark .bg-white {…}` / `.theme-contrast …` rules apply. ──
   const hostTheme = useHostTheme();
 
-  // ── Cleanup on unmount ──
+  // ── Cleanup on unmount — stop capture and revoke any blob: URLs we created ──
+  // NB: deps MUST stay [] so this runs only on unmount. We read live state via
+  // audioSegmentsRef because a [] closure would otherwise capture the initial empty {}.
   useEffect(() => {
     return () => {
-      // Stop any active dictation
+      // Stop any active dictation / recording
       if (dictation.isDictating) dictation.stopDictation();
-      // Stop any active recording
       if (recorder.isRecording) recorder.stopRecording();
-      // Revoke object URLs from audio segments
-      Object.values(audioSegments).forEach(seg => {
-        if (seg?.studentAudioUrl && seg.studentAudioUrl.startsWith('blob:')) {
-          try { URL.revokeObjectURL(seg.studentAudioUrl); } catch(e) {}
-        }
+      // Release the ORF fluency microphone if a reading is still in progress
+      try { fluencyRecorderRef.current?.stream?.getTracks().forEach(tr => tr.stop()); } catch (e) {}
+      // Revoke every blob: URL held in audioSegments — student recordings AND AI/TTS
+      // narration (legacy aiAudioUrl + the per-sentence sentenceAudios array). These
+      // accumulate across a long writing session and never get freed otherwise.
+      const revoke = (u) => { if (typeof u === 'string' && u.startsWith('blob:')) { try { URL.revokeObjectURL(u); } catch (e) {} } };
+      Object.values(audioSegmentsRef.current || {}).forEach(seg => {
+        if (!seg) return;
+        revoke(seg.studentAudioUrl);
+        revoke(seg.aiAudioUrl);
+        if (Array.isArray(seg.sentenceAudios)) seg.sentenceAudios.forEach(revoke);
       });
     };
   }, []);

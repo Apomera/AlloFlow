@@ -194,38 +194,6 @@
       ]
     },
     {
-      id: 'ballad',
-      name: 'Ballad',
-      icon: '🪕',
-      tagline: 'Tells a story. Quatrains, ABAB or ABCB.',
-      structure: 'Stanzas of 4 lines (quatrains). Common rhyme scheme: ABAB or ABCB. Lines alternate longer (~8 syllables, tetrameter) and shorter (~6 syllables, trimeter). Tells a story, often with refrain.',
-      lineCount: null,
-      syllablesPerLine: null,
-      rhymeScheme: 'ABCB (per stanza)',
-      example: 'It is an ancient Mariner,\nAnd he stoppeth one of three.\n"By thy long grey beard and glittering eye,\nNow wherefore stopp\'st thou me?"\n\n— Coleridge, "The Rime of the Ancient Mariner"',
-      tips: [
-        'A ballad is a poem that tells a story.',
-        'A repeated line or phrase (refrain) gives it a song-like quality.',
-        'Strong nouns and verbs do more work than adjectives.'
-      ],
-      moreExamples: [
-        {
-          title: 'The Three Ravens',
-          author: 'Anonymous (traditional)',
-          year: 1611,
-          text: 'There were three ravens sat on a tree,\nDowne a downe, hay down, hay downe,\nThere were three ravens sat on a tree,\nWith a downe.\nThere were three ravens sat on a tree,\nThey were as blacke as they might be,\nWith a downe derrie, derrie, derrie, downe, downe.',
-          note: 'A traditional folk ballad. The nonsense refrain ("Downe a downe…") was sung — ballads were songs first.'
-        },
-        {
-          title: 'Annabel Lee (excerpt)',
-          author: 'Edgar Allan Poe',
-          year: 1849,
-          text: 'It was many and many a year ago,\n   In a kingdom by the sea,\nThat a maiden there lived whom you may know\n   By the name of Annabel Lee;\nAnd this maiden she lived with no other thought\n   Than to love and be loved by me.',
-          note: 'Poe alternates long and short lines — listen to how the rhythm pulls you into the story.'
-        }
-      ]
-    },
-    {
       id: 'found',
       name: 'Found Poetry',
       icon: '✂️',
@@ -415,6 +383,20 @@
           year: 1700,
           text: '"O where ha\'e ye been, Lord Randall, my son?\nO where ha\'e ye been, my handsome young man?"\n"I ha\'e been to the wild wood; mother, make my bed soon,\nFor I\'m weary wi\' hunting, and fain wad lie down."',
           note: 'Folk ballads often use repeated questions and refrains — "make my bed soon, for I\'m weary." The structure carries the dread.'
+        },
+        {
+          title: 'The Three Ravens',
+          author: 'Anonymous (traditional)',
+          year: 1611,
+          text: 'There were three ravens sat on a tree,\nDowne a downe, hay down, hay downe,\nThere were three ravens sat on a tree,\nWith a downe.\nThere were three ravens sat on a tree,\nThey were as blacke as they might be,\nWith a downe derrie, derrie, derrie, downe, downe.',
+          note: 'A traditional folk ballad. The nonsense refrain ("Downe a downe…") was sung — ballads were songs first.'
+        },
+        {
+          title: 'Annabel Lee (excerpt)',
+          author: 'Edgar Allan Poe',
+          year: 1849,
+          text: 'It was many and many a year ago,\n   In a kingdom by the sea,\nThat a maiden there lived whom you may know\n   By the name of Annabel Lee;\nAnd this maiden she lived with no other thought\n   Than to love and be loved by me.',
+          note: 'Poe alternates long and short lines — listen to how the rhythm pulls you into the story.'
         }
       ]
     },

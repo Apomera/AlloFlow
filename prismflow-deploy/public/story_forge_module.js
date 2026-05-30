@@ -547,6 +547,10 @@ const StoryForge = React.memo(({
   }, [paragraphs]);
   const [characters, setCharacters] = useState([]);
   const [audioSegments, setAudioSegments] = useState({});
+  const audioSegmentsRef = useRef(audioSegments);
+  useEffect(() => {
+    audioSegmentsRef.current = audioSegments;
+  }, [audioSegments]);
   const [playbackIdx, setPlaybackIdx] = useState(-1);
   const [sentenceIdx, setSentenceIdx] = useState(0);
   const audioRef = useRef(null);
@@ -679,13 +683,23 @@ const StoryForge = React.memo(({
     return () => {
       if (dictation.isDictating) dictation.stopDictation();
       if (recorder.isRecording) recorder.stopRecording();
-      Object.values(audioSegments).forEach((seg) => {
-        if (seg?.studentAudioUrl && seg.studentAudioUrl.startsWith("blob:")) {
+      try {
+        fluencyRecorderRef.current?.stream?.getTracks().forEach((tr) => tr.stop());
+      } catch (e) {
+      }
+      const revoke = (u) => {
+        if (typeof u === "string" && u.startsWith("blob:")) {
           try {
-            URL.revokeObjectURL(seg.studentAudioUrl);
+            URL.revokeObjectURL(u);
           } catch (e) {
           }
         }
+      };
+      Object.values(audioSegmentsRef.current || {}).forEach((seg) => {
+        if (!seg) return;
+        revoke(seg.studentAudioUrl);
+        revoke(seg.aiAudioUrl);
+        if (Array.isArray(seg.sentenceAudios)) seg.sentenceAudios.forEach(revoke);
       });
     };
   }, []);

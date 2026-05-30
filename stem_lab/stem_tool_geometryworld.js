@@ -984,6 +984,18 @@
   var LESSON_ORDER = ['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze'];
   var MAX_BLOCKS = 1500; // Performance safety limit
 
+  // Stable chat-key derivation — used by both the read site in engine.loadLesson
+  // and the write site in the NPC chat callback. Returning the same key from both
+  // is what makes chat history actually persist across loadLesson cycles.
+  // For sample lessons, identity-lookup returns the SAMPLE_LESSONS key (matches
+  // activeLesson). For non-sample (AI-generated) lessons, falls back to 'ai_generated'.
+  function gwChatKey(lesson) {
+    if (!lesson) return 'unknown';
+    if (lesson._id) return lesson._id;
+    var k = Object.keys(SAMPLE_LESSONS).find(function(key) { return SAMPLE_LESSONS[key] === lesson; });
+    return k || 'ai_generated';
+  }
+
   // ── Worksheet Generator ──
   // Creates a printable companion worksheet for any lesson
   function generateWorksheetHTML(lesson) {
@@ -2223,7 +2235,7 @@
           try { savedProgress = JSON.parse(localStorage.getItem(progressKey)); } catch(e) {}
           // Restore chat history from localStorage
           var savedChat = null;
-          try { savedChat = JSON.parse(sessionStorage.getItem('gw_chat_' + (lesson._id || Object.keys(SAMPLE_LESSONS).find(function(k) { return SAMPLE_LESSONS[k] === lesson; }) || 'unknown'))); } catch(e) {}
+          try { savedChat = JSON.parse(sessionStorage.getItem('gw_chat_' + gwChatKey(lesson))); } catch(e) {}
           // engine.blocksPlaced was reset to 0 at the top of loadLesson — mirror to React state
           // so the HUD + build_10 quest don't display stale counts from a prior session/lesson.
           if (savedProgress && savedProgress.score > 0) {
