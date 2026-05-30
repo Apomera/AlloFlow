@@ -2454,9 +2454,9 @@ ${_itemsBlock}`;
             Create writing supports (Scaffolds) based on the text below for ${gradeLevel} students.
             Type: ${frameType}
             Language: ${effectiveLanguage}.
-            ${studentInterests.length > 0 ? `Context: Relate to ${studentInterests.join(', ')} if possible.` : ''}
+            ${(!isolated && studentInterests.length > 0) ? `Context: Relate to ${studentInterests.join(', ')} if possible.` : ''}
             ${effCustomInstructions ? `Instructions: ${effCustomInstructions}` : ''}
-            ${standardsPromptString ? `Design scaffolds to support the skills required by Standards: "${standardsPromptString}".` : ''}
+            ${(!isolated && standardsPromptString) ? `Design scaffolds to support the skills required by Standards: "${standardsPromptString}".` : ''}
             ${effectiveLanguage !== 'English' ? 'Provide English translations for all text.' : 'Do NOT provide translations.'}
             ${dialectInstruction}
             ${useEmojis ? 'Include relevant emojis in the sentence starters or prompts.' : 'Do not use emojis.'}

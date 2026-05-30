@@ -4749,7 +4749,11 @@
     var setState = stTuple[1];
     function patch(partial) {
       setState(function (prev) {
-        var next = Object.assign({}, prev, partial);
+        // Accept a partial object OR a (prev)=>partial function. The functional
+        // form lets callers recompute from the freshest state (e.g. restore-merge
+        // dedup against prev.sessions, avoiding a stale-closure clobber).
+        var p = (typeof partial === "function") ? partial(prev) : partial;
+        var next = Object.assign({}, prev, p);
         saveState(next);
         return next;
       });
@@ -5395,6 +5399,12 @@
         onGenerateGlossary: typeof props.onGenerateGlossary === "function" ? props.onGenerateGlossary : null,
         onGenerateManipulative: typeof props.onGenerateManipulative === "function" ? props.onGenerateManipulative : null,
         onGenerateWordSoundsProbe: typeof props.onGenerateWordSoundsProbe === "function" ? props.onGenerateWordSoundsProbe : null,
+        // Phase 4 + sentence-frames: these MUST be bundled too, or the orchestrator
+        // (which reads them off hostCallbacks) silently drops every AI-auto-attached
+        // visual-organizer / sentence-frames support. (The manual "+ Add" buttons
+        // call props.onGenerate* directly, which masked this.)
+        onGenerateVisualOrganizer: typeof props.onGenerateVisualOrganizer === "function" ? props.onGenerateVisualOrganizer : null,
+        onGenerateSentenceFrames: typeof props.onGenerateSentenceFrames === "function" ? props.onGenerateSentenceFrames : null,
         // Manifest of existing DA-generated resources (the same one passed into the prompt).
         // The orchestrator's REUSE branch reads this to confirm the id Gemini referenced
         // still exists and to grab the title for the link chip.
@@ -5410,7 +5420,7 @@
         var anySupps = (items || []).some(function (it) {
           return it && Array.isArray(it.supplementaryResources) && it.supplementaryResources.length > 0;
         });
-        var anyCallback = hostCallbacks.onGenerateGlossary || hostCallbacks.onGenerateManipulative || hostCallbacks.onGenerateWordSoundsProbe;
+        var anyCallback = hostCallbacks.onGenerateGlossary || hostCallbacks.onGenerateManipulative || hostCallbacks.onGenerateWordSoundsProbe || hostCallbacks.onGenerateVisualOrganizer || hostCallbacks.onGenerateSentenceFrames;
         // Reuse entries don't need any host callback — the orchestrator handles
         // them inline. So we should still enter the orchestrator if there's any
         // reuse entry, even if no generator callbacks are wired.
@@ -9023,20 +9033,36 @@
     // Merge imported sessions into state.sessions. Dedup by id; EXISTING local
     // sessions always win (a restore never overwrites what you already have).
     function mergeImportedSessions(imported) {
-      var existing = state.sessions || [];
-      var seen = {};
-      existing.forEach(function (s) { if (s && s.id) seen[s.id] = true; });
-      var added = 0, skipped = 0, toAdd = [];
-      imported.forEach(function (s) {
+      // Validity filter. Require a FINALIZED session (numeric modifiabilityIndex):
+      // accepting an in-progress shape (itemResults but no MI) would render as a
+      // fake "+0.00" measured result in the sessions list. state.sessions is
+      // finalized-only, and finalizeSession always sets a numeric MI.
+      var candidates = [], skipped = 0;
+      (imported || []).forEach(function (s) {
         if (!s || typeof s !== "object" || !s.id) { skipped++; return; }
-        // Looks-like-a-session guard: must carry a score or item results.
-        if (typeof s.modifiabilityIndex !== "number" && !Array.isArray(s.itemResults)) { skipped++; return; }
-        if (seen[s.id]) { skipped++; return; }
-        seen[s.id] = true;
-        toAdd.push(s);
-        added++;
+        if (typeof s.modifiabilityIndex !== "number") { skipped++; return; }
+        candidates.push(s);
       });
-      if (added > 0) patch({ sessions: existing.concat(toAdd) });
+      // Count added-vs-already-present against the current view (for the toast).
+      var existing = state.sessions || [];
+      var existingIds = {};
+      existing.forEach(function (s) { if (s && s.id) existingIds[s.id] = true; });
+      var added = 0;
+      candidates.forEach(function (c) { if (!existingIds[c.id]) added++; });
+      skipped += candidates.length - added; // already-present count as skipped
+      // Apply via the FUNCTIONAL form so a concurrent sessions mutation (e.g. a
+      // delete during the async file read) can't be clobbered by a stale closure.
+      // Dedup is recomputed against prev.sessions inside the updater.
+      if (candidates.length > 0) {
+        patch(function (prev) {
+          var prevSessions = (prev && prev.sessions) || [];
+          var seen = {};
+          prevSessions.forEach(function (s) { if (s && s.id) seen[s.id] = true; });
+          var fresh = [];
+          candidates.forEach(function (c) { if (!seen[c.id]) { seen[c.id] = true; fresh.push(c); } });
+          return fresh.length > 0 ? { sessions: prevSessions.concat(fresh) } : {};
+        });
+      }
       return { added: added, skipped: skipped };
     }
 
