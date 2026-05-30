@@ -76,6 +76,28 @@
     }
   }
 
+  // ── Read-aloud (Gemini TTS via the host's shared AlloSpeechPlayer) ──
+  // DA had no TTS. These delegate to window.AlloSpeechPlayer (Gemini TTS →
+  // Kokoro → browser fallback, mute- and abort-aware) so a student can HEAR
+  // an item/scaffold instead of reading it. This is both an accessibility
+  // feature and the foundation for the "modality" access contrast (does
+  // performance change when the reading demand is removed?).
+  function daSpeak(text) {
+    try {
+      var sp = (typeof window !== "undefined") ? window.AlloSpeechPlayer : null;
+      if (sp && typeof sp.speak === "function") sp.speak(String(text || ""));
+    } catch (_) {}
+  }
+  function daStopSpeak() {
+    try {
+      var sp = (typeof window !== "undefined") ? window.AlloSpeechPlayer : null;
+      if (sp && typeof sp.stop === "function") sp.stop();
+    } catch (_) {}
+  }
+  function daTtsAvailable() {
+    return (typeof window !== "undefined") && !!(window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === "function");
+  }
+
   // ── Module-level style block ──
   (function () {
     if (typeof document === "undefined") return;
@@ -4207,6 +4229,52 @@
     return "Specific hands-on supports that helped your child today (weave these into 'what_helps' in plain words — they are the concrete things that made a difference): " + fam.join("; ") + ".";
   }
 
+  // ─── Tier 1 — Access-condition lens (no theory label; describes observations) ───
+  // GATED on the multilingual/language-context intake field (never appears for a
+  // monolingual student). Classifies the supports that coincided with VALID
+  // mediation successes (excludes leaked rungs) as either reducing LANGUAGE
+  // demand (glossary / sentence-frames / visual-organizer / word-sounds) or
+  // representing the CONSTRUCT (math-manipulative). If successes concentrate on
+  // language-reducing supports, that's a HYPOTHESIS (not a finding) that language
+  // access — not the underlying skill — is gating performance. This is a SOFT,
+  // correlational signal (the supports weren't a controlled manipulation); the
+  // Tier-2 access-contrast probes will test it directly. Returns null when the
+  // gate is off or there isn't enough supported-success data to say anything.
+  var DA_LANG_ACCESS_KINDS = { "glossary": 1, "sentence-frames": 1, "visual-organizer": 1, "word-sounds-probe": 1 };
+  var DA_CONSTRUCT_KINDS = { "math-manipulative": 1 };
+  function analyzeAccessConditions(session) {
+    var lc = (session && session.intake && typeof session.intake.languageContext === "string")
+      ? session.intake.languageContext.trim() : "";
+    if (!lc) return null; // gate: multilingual/language context required
+    var items = _daResolveSessionItems(session);
+    var medById = {};
+    (session.itemResults || []).forEach(function (r) { if (r.phase === "mediation") medById[r.itemId] = r; });
+    var langSucc = 0, constructSucc = 0, supportedSucc = 0;
+    var langConstructs = [];
+    items.forEach(function (it) {
+      var supps = Array.isArray(it.supplementaryResources)
+        ? it.supplementaryResources.filter(function (sr) { return sr && sr.status === "generated"; }) : [];
+      if (!supps.length) return;
+      var med = medById[it.id];
+      if (!med || !med.finalCorrect || med.scaffoldLeaked) return; // valid mediation successes only
+      var hasLang = supps.some(function (sr) { return DA_LANG_ACCESS_KINDS[sr.kind] || (sr.kind === "reuse" && DA_LANG_ACCESS_KINDS[sr._reusedKind]); });
+      var hasConstruct = supps.some(function (sr) { return DA_CONSTRUCT_KINDS[sr.kind] || (sr.kind === "reuse" && DA_CONSTRUCT_KINDS[sr._reusedKind]); });
+      if (hasLang || hasConstruct) supportedSucc++;
+      if (hasLang) { langSucc++; if (it.construct) langConstructs.push(it.construct); }
+      if (hasConstruct) constructSucc++;
+    });
+    if (supportedSucc < 2) return null; // too little to suggest a pattern (small-N discipline)
+    var languageConcentrated = langSucc >= constructSucc && langSucc >= Math.ceil(supportedSucc * 0.5);
+    return {
+      languageContext: lc,
+      langSucc: langSucc,
+      constructSucc: constructSucc,
+      supportedSucc: supportedSucc,
+      languageConcentrated: languageConcentrated,
+      exampleConstructs: langConstructs.slice(0, 3)
+    };
+  }
+
   function buildFamilySummaryPrompt(session, studentName, outputLanguage) {
     var pretestResults = (session.itemResults || []).filter(function (r) { return r.phase === "pretest"; });
     var posttestResults = (session.itemResults || []).filter(function (r) { return r.phase === "posttest"; });
@@ -5131,7 +5199,12 @@
     // Phase V — pre-session intake (component-level so it survives nav to custom-builder)
     var intakeDraftTuple = useState({
       referralReason: "", hypothesizedBottleneck: "", priorInterventions: "",
-      existingAssessmentData: "", specificQuestion: ""
+      existingAssessmentData: "", specificQuestion: "",
+      // Multilingual context — home language(s), English-learner status, years of
+      // English instruction. Kept free-text (so intakeFilledCount stays string-safe).
+      // Non-empty gates the access-condition lens so it never appears for a
+      // monolingual student. (Tier 2 will parse a home language from this for L1 support.)
+      languageContext: ""
     });
     var intakeDraft = intakeDraftTuple[0];
     var setIntakeDraft = intakeDraftTuple[1];
@@ -5359,7 +5432,8 @@
           hypothesizedBottleneck: String(opts.intake.hypothesizedBottleneck || "").slice(0, 2000),
           priorInterventions: String(opts.intake.priorInterventions || "").slice(0, 2000),
           existingAssessmentData: String(opts.intake.existingAssessmentData || "").slice(0, 2000),
-          specificQuestion: String(opts.intake.specificQuestion || "").slice(0, 1000)
+          specificQuestion: String(opts.intake.specificQuestion || "").slice(0, 1000),
+          languageContext: String(opts.intake.languageContext || "").slice(0, 1000)
         } : null
       };
       patch({ activeSession: session });
@@ -6424,6 +6498,7 @@
       setObservationDraft("");
       setObservationTagsDraft([]);
       setScaffoldLeakedDraft(false);
+      daStopSpeak(); // stop any read-aloud when advancing to the next item
       if (advanced) {
         announce(nextPhase === "summary"
           ? "All phases complete. Results ready."
@@ -6919,7 +6994,8 @@
                 { id: "hypothesizedBottleneck",  label: "Hypothesized bottleneck",    placeholder: "Suspected gap in identifying which operation to use; reading the problem appears intact." },
                 { id: "specificQuestion",        label: "Specific question this probe should answer", placeholder: "Does scaffolded operation-selection support produce gains, or is the bottleneck elsewhere?" },
                 { id: "priorInterventions",      label: "Prior interventions tried",  placeholder: "Math fact fluency probes in fall; small-group reteach during Tier 2 block (6 weeks, no measurable change in word-problem accuracy)." },
-                { id: "existingAssessmentData",  label: "Existing assessment data",   placeholder: "WJ-IV Math Calc SS=92 (avg), Applied Problems SS=78 (low avg); AIMSweb math CBM at 25th percentile fall; classroom observation 3/14 noted prolonged decision-making before any number manipulation." }
+                { id: "existingAssessmentData",  label: "Existing assessment data",   placeholder: "WJ-IV Math Calc SS=92 (avg), Applied Problems SS=78 (low avg); AIMSweb math CBM at 25th percentile fall; classroom observation 3/14 noted prolonged decision-making before any number manipulation." },
+                { id: "languageContext",         label: "Multilingual / language background (enables access-condition analysis)", placeholder: "Home language(s): e.g., Somali (primary at home), English at school since K. ~3 years of English instruction. Reading in L1 not yet assessed. — Filling this in turns on the access-condition lens (how performance changes when language/reading demands are reduced). Leave blank for monolingual English students." }
               ].map(function (field) {
                 var showPullButton = field.id === "existingAssessmentData" && mathFluencyProbes.length > 0;
                 return h("div", { key: "da-intake-" + field.id },
@@ -10619,8 +10695,19 @@
 
         // ─── ITEM CARD ───
         h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: 6 } },
-            item.construct + " · " + item.difficulty + " · grades " + item.gradeBand),
+          h("div", { style: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 } },
+            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } },
+              item.construct + " · " + item.difficulty + " · grades " + item.gradeBand),
+            // Read-aloud: lets the student HEAR the item instead of reading it
+            // (accessibility + the modality access lever).
+            daTtsAvailable() ? h("button", {
+              type: "button",
+              onClick: function () { daSpeak(item.prompt); },
+              title: "Read this item aloud (Gemini voice)",
+              "aria-label": "Read this item aloud",
+              style: { flexShrink: 0, padding: "2px 8px", borderRadius: 6, border: "1px solid #c7d2fe", background: "#eef2ff", color: "#3730a3", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+            }, "🔊 Read aloud") : null
+          ),
           h("p", { style: { margin: 0, fontSize: 16, color: "#0f172a", lineHeight: 1.65 } }, item.prompt)
         ),
 
@@ -10652,8 +10739,16 @@
                     }
                   }, hasBeenUsed ? "Re-show" : "Show")
                 ),
-                hasBeenUsed ? h("p", { style: { margin: "6px 0 0", fontSize: 12, color: "#334155", lineHeight: 1.55, paddingLeft: 38 } },
-                  '"' + step.text + '"') : null
+                hasBeenUsed ? h("div", { style: { display: "flex", alignItems: "flex-start", gap: 6, margin: "6px 0 0", paddingLeft: 38 } },
+                  h("p", { style: { margin: 0, flex: 1, fontSize: 12, color: "#334155", lineHeight: 1.55 } }, '"' + step.text + '"'),
+                  daTtsAvailable() ? h("button", {
+                    type: "button",
+                    onClick: function () { daSpeak(step.text); },
+                    title: "Read this scaffold aloud to the student",
+                    "aria-label": "Read this scaffold aloud",
+                    style: { flexShrink: 0, padding: "1px 7px", borderRadius: 6, border: "1px solid #fbbf24", background: "#ffffff", color: "#92400e", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  }, "🔊") : null
+                ) : null
               );
             })
           )
@@ -11548,6 +11643,35 @@
               multiDomain
                 ? "⚠ These sessions span more than one domain (" + Object.keys(domainsPresent).map(function (d) { return domainLabels[d] || d; }).join(", ") + "). The Modifiability Index is construct-relative — compare points WITHIN the same domain, not across. Descriptive trajectory, not a growth norm."
                 : "Descriptive trajectory across the sessions you've run with this student — not a standardized growth norm."
+            )
+          );
+        })(),
+
+        // ─── Tier 1 — Access-condition lens (clinician-facing; gated on language context) ───
+        // Surfaces ONLY when a multilingual/language context was noted at intake.
+        // Describes which supports coincided with mediation successes; if the
+        // language-reducing ones dominate, raises a HYPOTHESIS (not a finding).
+        // Report-facing wording is intentionally NOT wired yet — this card is for
+        // clinician review/sign-off before any of it reaches the family/teacher outputs.
+        (function () {
+          var ac = analyzeAccessConditions(s);
+          if (!ac) return null;
+          var headline = ac.languageConcentrated
+            ? "This student succeeded most often when supports that REDUCE LANGUAGE DEMAND were available"
+            : "Supports that helped were mixed across language-reducing and construct-level types";
+          var egs = ac.exampleConstructs.length ? " (e.g., " + ac.exampleConstructs.join("; ") + ")" : "";
+          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#fdf4ff", borderColor: "#e9d5ff" } },
+            h("div", { style: { fontSize: 11, color: "#86198f", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
+              "🌐 Access-condition lens · exploratory"),
+            h("div", { style: { fontSize: 13, color: "#0f172a", lineHeight: 1.55 } },
+              headline,
+              " — on " + ac.langSucc + " of " + ac.supportedSucc + " supported mediation successes" + egs + "."),
+            ac.languageConcentrated ? h("div", { style: { fontSize: 12.5, color: "#0f172a", lineHeight: 1.55, marginTop: 6 } },
+              "This pattern is worth exploring: it is ",
+              h("strong", null, "consistent with academic-language access — rather than the underlying skill — limiting performance"),
+              ". It is a hypothesis, not a determination.") : null,
+            h("div", { style: { fontSize: 11, color: "#86198f", fontStyle: "italic", marginTop: 6, lineHeight: 1.5 } },
+              "⚠ Exploratory and correlational — these supports were offered as mediation, not as a controlled manipulation, and the item count is small. Interpret only alongside this student's language-proficiency data and the home-language context you noted at intake. A direct, controlled access-contrast (read-aloud / simplified-language / home-language) is the planned next step to test this. This lens appears because a language background was recorded at intake."
             )
           );
         })(),
