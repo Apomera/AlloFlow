@@ -50,7 +50,7 @@
   var warnLog = _shared.warnLog || function() { console.warn.apply(console, arguments); };
   var debugLog = window.__alloDebugLog || function() {};
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
-  var loadPsychometricProbes = window.loadPsychometricProbes || function() {};
+  var loadProbeBanks = window.loadProbeBanks || function() {};
   var getWordSoundsString = window.getWordSoundsString || function(fallback, key, params) { return (params && params.default) || key; };
 
   // ── Probe bank globals (read-only, loaded by host app) ──
@@ -186,8 +186,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [isMinimized, setIsMinimized] = React.useState(false);
   React.useEffect(() => {
-    if (typeof loadPsychometricProbes === "function") {
-      loadPsychometricProbes();
+    if (typeof loadProbeBanks === "function") {
+      loadProbeBanks();
     }
   }, []);
   const [generatedCount, setGeneratedCount] = React.useState(0);
@@ -511,7 +511,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       "Tap to Expand"
     )));
   }
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-400" }, /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-violet-600 to-indigo-600 p-6 flex justify-between items-center text-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 p-3 rounded-2xl backdrop-blur-md" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 32, className: "text-yellow-700 animate-pulse" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black tracking-tight" }, isProbeMode ? `\u{1F4CA} ${(probeActivity || "").charAt(0).toUpperCase() + (probeActivity || "").slice(1)} Probe` : t("word_sounds.title", "Word Sounds Studio")), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-100 font-medium opacity-90" }, t("word_sounds.subtitle", "Design your phonics lesson"), " \u2022 ", gradeLevel || "K-2"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "ws_gen_minimize", onClick: () => {
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-400" }, /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-violet-600 to-indigo-600 p-6 flex justify-between items-center text-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 p-3 rounded-2xl backdrop-blur-md" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 32, className: "text-yellow-300 animate-pulse" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black tracking-tight" }, isProbeMode ? `\u{1F4CA} ${(probeActivity || "").charAt(0).toUpperCase() + (probeActivity || "").slice(1)} Probe` : t("word_sounds.title", "Word Sounds Studio")), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-100 font-medium opacity-90" }, t("word_sounds.subtitle", "Design your phonics lesson"), " \u2022 ", gradeLevel || "K-2"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "ws_gen_minimize", onClick: () => {
     setIsMinimized(true);
     if (onMinimize) onMinimize();
   }, className: "bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors", title: t("common.minimize") }, /* @__PURE__ */ React.createElement(Minimize, { size: 24 })), /* @__PURE__ */ React.createElement("button", { "aria-label": t("common.close_minimize"), "data-help-key": "ws_gen_close", onClick: onClose, className: "bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors", title: t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 })))), preloadedWords && preloadedWords.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200 px-6 py-3 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 rounded-full p-1.5" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16, className: "text-emerald-600" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-800" }, preloadedWords.length, " words ready"), /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600 text-sm ml-2" }, preloadedWords.slice(0, 5).map((w) => w.targetWord || w.word || w).join(", "), preloadedWords.length > 5 && `, +${preloadedWords.length - 5} more`))), /* @__PURE__ */ React.createElement(

@@ -36,7 +36,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
 
   function defaultState() {
     return {
-      view: 'home',
+      view: 'triage',
+      // Triage gate
+      skippedTriage: false,        // remembered: returning users skip the gate
+      triageSuicidal: null,        // 'yes' | 'no' | 'prefer-not'
+      triageIntensity: 5,          // 1-10 slider
+      triageBasicNeeds: null,      // 'yes' | 'somewhat' | 'no'
       // Worry tree state
       worryItem: '',
       worryActionable: null,    // true/false
@@ -19399,7 +19404,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           return Object.assign({}, prev, { anxietyToolkit: next });
         });
       }
-      var view = d.view || 'home';
+      // Triage gate: first-time visitors land on 'triage'; returning users (who explicitly
+      // skipped or completed it) go to their last view or 'home'. Persisted d.skippedTriage
+      // ensures returning users are never re-gated.
+      var initialView = d.view || (d.skippedTriage ? 'home' : 'triage');
+      var view = initialView;
       function goto(v) { setA({ view: v }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
@@ -19444,6 +19453,185 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' }
         },
           'Anxiety that significantly interferes with school, sleep, eating, or relationships for more than a few weeks deserves a clinician. This tool is a companion, not therapy. Crisis Text Line: text HOME to 741741.'
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════
+      // TRIAGE — clinical safety gate (NOT an assessment)
+      // ═══════════════════════════════════════════════════════════
+      // This is a "you might need more than this tool" gate, shown
+      // before users drop into interactive anxiety content. It is
+      // skippable, and the choice is remembered (d.skippedTriage)
+      // so returning users are never re-gated.
+      // ═══════════════════════════════════════════════════════════
+      function renderTriage() {
+        var suicidal = d.triageSuicidal;
+        var intensity = (typeof d.triageIntensity === 'number') ? d.triageIntensity : 5;
+        var basicNeeds = d.triageBasicNeeds;
+
+        // Determine which routing card to show. Only show after enough
+        // is answered to avoid premature/false-positive routing.
+        var answeredEnough = suicidal !== null && basicNeeds !== null;
+        var crisisRoute = suicidal === 'yes';
+        var softRoute = !crisisRoute && answeredEnough && (intensity >= 8 || basicNeeds === 'no');
+
+        function continueToToolkit() {
+          // Mark triage as completed/skipped so the user is never re-gated,
+          // then route to the psychoeducation home view.
+          setA({ skippedTriage: true, view: 'home' });
+        }
+
+        function skipTriage() {
+          setA({ skippedTriage: true, view: 'home' });
+        }
+
+        function openCrisisCompanion() {
+          // Persist skip so they don't see triage again next time they return.
+          setA({ skippedTriage: true });
+          if (setSelHubTool) setSelHubTool('crisiscompanion');
+        }
+
+        function openTipp() {
+          setA({ skippedTriage: true });
+          if (setSelHubTool) setSelHubTool('tipp');
+        }
+
+        // Yes/No/Prefer button — accessible, high-contrast
+        function choiceBtn(label, value, current, onPick, color) {
+          var active = current === value;
+          return h('button', {
+            key: value,
+            onClick: function() { onPick(value); },
+            'aria-pressed': active,
+            'aria-label': label,
+            style: {
+              flex: 1, minWidth: 120, padding: '12px 14px', borderRadius: 8,
+              border: '2px solid ' + (active ? color : '#475569'),
+              background: active ? 'rgba(255,255,255,0.06)' : '#1e293b',
+              color: active ? '#f1f5f9' : '#cbd5e1',
+              cursor: 'pointer', fontSize: 14, fontWeight: 700,
+              boxShadow: active ? ('0 0 0 1px ' + color + ' inset') : 'none'
+            }
+          }, label);
+        }
+
+        return h('div', null,
+          // Intro — gentle, non-alarming framing
+          h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(14,165,233,0.4)', marginBottom: 14 } },
+            h('div', { style: { fontSize: 20, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, 'Before we start — a quick check-in.'),
+            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+              'Three questions, takes about 30 seconds. This is not an assessment — it just helps us point you to the right place. If you have used this tool before, you can ',
+              h('button', {
+                onClick: skipTriage,
+                'aria-label': 'Skip triage — I have used this tool before',
+                style: { background: 'none', border: 'none', padding: 0, color: '#7dd3fc', textDecoration: 'underline', cursor: 'pointer', fontSize: 13.5, fontFamily: 'inherit' }
+              }, 'skip this'),
+              '.'
+            )
+          ),
+
+          // Q1 — suicidality
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+            h('div', { id: 'triage-q1', style: { fontSize: 14, fontWeight: 800, color: '#fecaca', marginBottom: 10, lineHeight: 1.5 } },
+              '1. Are you having thoughts of suicide or hurting yourself right now?'),
+            h('div', { role: 'group', 'aria-labelledby': 'triage-q1', style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              choiceBtn('Yes', 'yes', suicidal, function(v) { setA({ triageSuicidal: v }); }, '#ef4444'),
+              choiceBtn('No', 'no', suicidal, function(v) { setA({ triageSuicidal: v }); }, '#22c55e'),
+              choiceBtn('Prefer not to say', 'prefer-not', suicidal, function(v) { setA({ triageSuicidal: v }); }, '#64748b')
+            )
+          ),
+
+          // Q2 — intensity 1-10
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+            h('label', { htmlFor: 'triage-intensity', style: { display: 'block', fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 10, lineHeight: 1.5 } },
+              '2. On a scale of 1-10, how intense is your anxiety right now?'),
+            h('input', {
+              id: 'triage-intensity',
+              type: 'range', min: 1, max: 10, step: 1, value: intensity,
+              'aria-valuemin': 1, 'aria-valuemax': 10, 'aria-valuenow': intensity,
+              onChange: function(e) { setA({ triageIntensity: parseInt(e.target.value, 10) }); },
+              style: { width: '100%', accentColor: '#f59e0b', cursor: 'pointer' }
+            }),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginTop: 4 } },
+              h('span', null, '1 — calm'),
+              h('span', { style: { color: '#fde68a', fontWeight: 800, fontSize: 14 } }, String(intensity)),
+              h('span', null, '10 — overwhelming')
+            )
+          ),
+
+          // Q3 — basic needs
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 14 } },
+            h('div', { id: 'triage-q3', style: { fontSize: 14, fontWeight: 800, color: '#e9d5ff', marginBottom: 10, lineHeight: 1.5 } },
+              '3. Have you been able to sleep, eat, and care for basic needs this week?'),
+            h('div', { role: 'group', 'aria-labelledby': 'triage-q3', style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              choiceBtn('Yes', 'yes', basicNeeds, function(v) { setA({ triageBasicNeeds: v }); }, '#22c55e'),
+              choiceBtn('Somewhat', 'somewhat', basicNeeds, function(v) { setA({ triageBasicNeeds: v }); }, '#f59e0b'),
+              choiceBtn('No', 'no', basicNeeds, function(v) { setA({ triageBasicNeeds: v }); }, '#ef4444')
+            )
+          ),
+
+          // Routing card — CRISIS (Q1 = yes)
+          crisisRoute ? h('div', { role: 'alert',
+            style: { padding: 18, borderRadius: 12, background: 'linear-gradient(135deg, rgba(239,68,68,0.16) 0%, rgba(15,23,42,0.5) 70%)', border: '2px solid #ef4444', marginBottom: 12 }
+          },
+            h('div', { style: { fontSize: 18, fontWeight: 900, color: '#fecaca', marginBottom: 8 } }, 'What you are feeling matters.'),
+            h('p', { style: { margin: '0 0 10px', color: '#fee2e2', fontSize: 14, lineHeight: 1.7 } },
+              'Please reach out NOW. You do not have to be in a "bad enough" place to call — these lines are for exactly this moment.'),
+            h('ul', { style: { margin: '0 0 12px', padding: '0 0 0 22px', color: '#fef2f2', fontSize: 14, lineHeight: 1.9 } },
+              h('li', null, h('strong', null, '988'), ' — call or text (Suicide & Crisis Lifeline, US)'),
+              h('li', null, 'Text ', h('strong', null, 'HOME'), ' to ', h('strong', null, '741741'), ' (Crisis Text Line)')
+            ),
+            h('p', { style: { margin: '0 0 12px', color: '#fee2e2', fontSize: 13, lineHeight: 1.65 } },
+              'Opening the Crisis Companion tool in this app is also a good step — it has a safety plan template and grounding skills designed for right now.'),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              h('button', { onClick: openCrisisCompanion, 'aria-label': 'Open Crisis Companion tool',
+                style: { padding: '10px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 800 } },
+                'Open Crisis Companion'),
+              h('button', { onClick: openTipp, 'aria-label': 'Open TIPP tool',
+                style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #fca5a5', background: 'rgba(239,68,68,0.18)', color: '#fee2e2', cursor: 'pointer', fontSize: 14, fontWeight: 700 } },
+                'Open TIPP'),
+              h('button', { onClick: continueToToolkit, 'aria-label': 'I am not in crisis — continue to toolkit',
+                style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontSize: 13, fontWeight: 700 } },
+                'I am not in crisis — continue to toolkit')
+            )
+          ) : null,
+
+          // Routing card — SOFT (high intensity or basic needs unmet)
+          softRoute ? h('div', { role: 'status',
+            style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.5)', marginBottom: 12 }
+          },
+            h('div', { style: { fontSize: 16, fontWeight: 900, color: '#fde68a', marginBottom: 6 } }, 'It sounds like you are carrying a lot.'),
+            h('p', { style: { margin: '0 0 12px', color: '#fef3c7', fontSize: 13.5, lineHeight: 1.7 } },
+              'This toolkit can help, AND it is worth thinking about getting human support too — a counselor, a trusted adult, or one of the lines above. You do not have to handle this alone.'),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              h('button', { onClick: openCrisisCompanion, 'aria-label': 'Open Crisis Companion tool',
+                style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #fcd34d', background: 'rgba(245,158,11,0.22)', color: '#fef3c7', cursor: 'pointer', fontSize: 14, fontWeight: 700 } },
+                'Open Crisis Companion'),
+              h('button', { onClick: continueToToolkit, 'aria-label': 'Continue to toolkit',
+                style: { padding: '10px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 800 } },
+                'Continue to toolkit')
+            )
+          ) : null,
+
+          // Default continue — once enough answered and no routing card shown
+          (answeredEnough && !crisisRoute && !softRoute) ? h('div', {
+            style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.4)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }
+          },
+            h('div', { style: { flex: 1, minWidth: 200, fontSize: 13, color: '#bbf7d0', lineHeight: 1.6 } },
+              'Thanks for the check-in. The toolkit is a good fit for what you described.'),
+            h('button', { onClick: continueToToolkit, 'aria-label': 'Continue to toolkit',
+              style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #16a34a 0%, #22c55e 100%)', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 800 } },
+              'Continue to toolkit →')
+          ) : null,
+
+          // Always-visible skip link at bottom for users who don't want to answer
+          h('div', { style: { marginTop: 6, textAlign: 'center' } },
+            h('button', {
+              onClick: skipTriage,
+              'aria-label': 'Skip triage — I have used this tool before',
+              style: { background: 'none', border: 'none', color: '#94a3b8', textDecoration: 'underline', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }
+            }, 'Skip — I have used this tool before')
+          )
         );
       }
 
@@ -20037,7 +20225,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
       }
 
       var body;
-      if (view === 'tree') body = renderTree();
+      if (view === 'triage') body = renderTriage();
+      else if (view === 'tree') body = renderTree();
       else if (view === 'parking') body = renderParking();
       else if (view === 'decat') body = renderDecat();
       else if (view === 'ground') body = renderGround();
@@ -20046,9 +20235,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
       else if (view === 'about') body = renderAbout();
       else body = renderHome();
 
+      // Hide section nav tabs while the user is on the triage gate — the gate
+      // is a focused, single-purpose screen and the tabs would let users bypass
+      // it sideways before they have made a choice.
+      var showNav = view !== 'triage';
+
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Anxiety Toolkit' },
         header(),
-        navTabs(),
+        showNav ? navTabs() : null,
         body
       );
     }

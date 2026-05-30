@@ -1054,7 +1054,8 @@ window.StemLab = window.StemLab || {
                 { type: 'Reflex', range: '180\u00B0 < \u03B8 < 360\u00B0', icon: '\uD83D\uDD34', ex: '270\u00B0', color: 'red' },
                 { type: 'Full', range: '\u03B8 = 360\u00B0', icon: '\u2B55', ex: '360\u00B0', color: 'purple' }
               ].map(function(ref) {
-                return h('div', { key: ref.type, onClick: function() { setAngleValue(parseInt(ref.ex)); if (soundEnabled) sfxClick(); upd('activeTab', 'explore'); },
+                return h('div', { key: ref.type, role: 'button', tabIndex: 0, 'aria-label': 'Set angle to ' + ref.type + ' (' + ref.ex + '°)', onClick: function() { setAngleValue(parseInt(ref.ex)); if (soundEnabled) sfxClick(); upd('activeTab', 'explore'); },
+                  onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setAngleValue(parseInt(ref.ex)); if (soundEnabled) sfxClick(); upd('activeTab', 'explore'); } },
                   className: 'p-3 rounded-xl border cursor-pointer transition-all hover:shadow-md bg-' + ref.color + '-50 border-' + ref.color + '-200'
                 },
                   h('div', { className: 'flex items-center gap-2 mb-1' },

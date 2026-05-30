@@ -23,6 +23,30 @@ set -e          # abort on any error
 set -u          # abort on undefined variables
 set -o pipefail # abort on pipe failure
 
+# ── Step 0: release.json freshness check (advisory only) ──────────
+# Warns if release.json (top-level canonical) was NOT modified in the
+# most recent git commit. Pure advisory — never aborts the deploy.
+{
+  _af_yellow=$'\033[33m'
+  _af_green=$'\033[32m'
+  _af_reset=$'\033[0m'
+  echo ""
+  echo "=== Step 0: release.json freshness check ==="
+  if git rev-parse --git-dir >/dev/null 2>&1; then
+    if git log -1 --name-only --format= 2>/dev/null | grep -q "release.json"; then
+      printf "%s✓ release.json was bumped in last commit%s\n" "$_af_green" "$_af_reset"
+    else
+      printf "%s⚠️  release.json was NOT modified in last commit — did you forget to run bump-link.mjs?%s\n" "$_af_yellow" "$_af_reset"
+      printf "%s   (Continuing anyway — Step 0 is advisory only.)%s\n" "$_af_yellow" "$_af_reset"
+    fi
+  else
+    printf "%s⚠️  Not in a git repo; skipping freshness check.%s\n" "$_af_yellow" "$_af_reset"
+  fi
+  echo "=== end Step 0 ==="
+  echo ""
+} || true
+# === end Step 0 ===
+
 # ── Help ───────────────────────────────────────────────────────────
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   cat <<EOF
@@ -108,6 +132,22 @@ echo ""
 echo "=== Step 3: Run build.js --mode=prod --force ==="
 node build.js --mode=prod --force
 echo "  ✓ build.js complete."
+
+# ── Step 3.5: Mirror link-distribution files into prismflow-deploy/public/ ──
+# The 4 link-distribution files (launch.html, changelog.html, release.json,
+# releases.json) live at the repo root as source-of-truth (served by GitHub
+# Pages). We copy them into prismflow-deploy/public/ so the React build picks
+# them up and Firebase serves them too. cp -p preserves mtimes.
+echo ""
+echo "=== Step 3.5: Mirror link-distribution files to prismflow-deploy/public/ ==="
+for f in launch.html changelog.html release.json releases.json; do
+  if [[ -f "$f" ]]; then
+    cp -p "$f" "prismflow-deploy/public/$f"
+    echo "  ✓ mirrored $f"
+  else
+    echo "  ⚠ $f missing at repo root — skipping"
+  fi
+done
 
 # ── Step 4: npm run build (prismflow-deploy) ──────────────────────
 echo ""

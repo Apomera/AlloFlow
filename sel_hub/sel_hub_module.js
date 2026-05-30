@@ -880,7 +880,7 @@
                           announceToSR('Quest marked complete: ' + q.label);
                         },
                         'aria-label': 'Mark "' + q.label + '" as complete',
-                        style: { fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, border: '1px solid #ec489966', background: '#fff', color: '#be185d', cursor: 'pointer' }
+                        style: { fontSize: 11, fontWeight: 700, padding: '8px 14px', minHeight: 36, borderRadius: 6, border: '1px solid #ec489966', background: '#fff', color: '#be185d', cursor: 'pointer' }
                       }, 'Mark complete')
                     ),
                     !done && q.type === 'freeResponse' && h('textarea', {
@@ -952,7 +952,7 @@
                   announceToSR('Resumed ' + continueTool.label);
                 },
                 'aria-label': 'Continue with ' + continueTool.label,
-                style: { padding: '6px 14px', borderRadius: 10, background: '#f59e0b', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
+                style: { padding: '10px 16px', minHeight: 44, borderRadius: 10, background: '#f59e0b', color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
               },
                 h('span', { 'aria-hidden': 'true' }, continueTool.icon),
                 'Continue \u2192'
@@ -1045,7 +1045,7 @@
                           if (typeof addToast === 'function') addToast('Station removed', 'info');
                         },
                         'aria-label': 'Delete station ' + st.name,
-                        style: { background: 'none', border: 'none', color: '#ef4444', fontSize: 11, fontWeight: 700, cursor: 'pointer', padding: '2px 6px' }
+                        style: { background: 'none', border: 'none', color: '#ef4444', fontSize: 14, fontWeight: 700, cursor: 'pointer', padding: '8px 12px', minWidth: 36, minHeight: 36 }
                       }, '✕')
                     ),
                     h('div', { style: { fontSize: 10, color: _t.textMuted } }, (st.tools || []).length + ' tools' + ((st.quests || []).length > 0 ? ' • ' + st.quests.length + ' quests' : '')),
@@ -1252,7 +1252,9 @@
                   position: 'relative'
                 },
                 onMouseEnter: function(e) { if (isRegistered) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 20px ' + cardColor + '33'; } },
-                onMouseLeave: function(e) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }
+                onMouseLeave: function(e) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; },
+                onTouchStart: function(e) { if (isRegistered) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 20px ' + cardColor + '33'; } },
+                onTouchEnd: function(e) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }
               },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 24 } }, tool.icon),

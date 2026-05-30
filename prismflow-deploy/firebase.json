@@ -8,7 +8,10 @@
         "ignore": [
             "firebase.json",
             "**/.*",
-            "**/node_modules/**"
+            "**/node_modules/**",
+            "**/*.ps1",
+            "stem_lab/*.txt",
+            "stem_lab/_*.js"
         ],
         "rewrites": [
             {

@@ -23066,12 +23066,12 @@ window.SelHub = window.SelHub || {
                 // Practice calendar (28 days with day labels)
                 h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                   h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } }, '\uD83D\uDCC5 Last 28 Days'),
-                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3, marginBottom: 4 } },
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(28px, 1fr))', gap: 3, marginBottom: 4, overflowX: 'auto' } },
                     dayLabels.map(function(lbl, i) {
                       return h('div', { key: 'lbl' + i, style: { textAlign: 'center', fontSize: 11, color: '#475569', fontWeight: 700, padding: '2px 0' } }, lbl);
                     })
                   ),
-                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 } },
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(28px, 1fr))', gap: 3, overflowX: 'auto' } },
                     calDays.map(function(day) {
                       return h('div', {
                         key: day.date, title: day.date,
@@ -25003,7 +25003,7 @@ if (activeTab === 'streak') {
     ),
     h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a' } },
       h('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 10 } }, '8-week practice heatmap'),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 4 } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(28px, 1fr))', gap: 4 } },
         days.map(function(day) {
           return h('div', { key: day.date, title: day.date + ': ' + day.count + ' sessions',
             style: { aspectRatio: '1 / 1', borderRadius: 4, background: _cellColor(day.count), border: day.isToday ? '2px solid #fbbf24' : '1px solid #334155' }
@@ -25139,7 +25139,7 @@ if (activeTab === 'mudra') {
     var common = { fill: '#fef3c7', stroke: '#d97706', strokeWidth: 1.5 };
     var nail = { fill: '#fbbf24' };
     if (id === 'anjali') {
-      return h('svg', { width: 200, height: 200, viewBox: '0 0 200 200' },
+      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
         // two palms together
         h('path', Object.assign({}, common, { d: 'M 60 30 L 80 30 L 90 100 L 90 170 L 50 170 L 50 100 Z' })),
         h('path', Object.assign({}, common, { d: 'M 120 30 L 140 30 L 150 100 L 150 170 L 110 170 L 110 100 Z' })),
@@ -25147,7 +25147,7 @@ if (activeTab === 'mudra') {
       );
     }
     if (id === 'dhyana') {
-      return h('svg', { width: 200, height: 200, viewBox: '0 0 200 200' },
+      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
         // cupped hands
         h('ellipse', Object.assign({}, common, { cx: 100, cy: 130, rx: 60, ry: 25 })),
         h('ellipse', Object.assign({}, common, { cx: 100, cy: 110, rx: 50, ry: 18 })),
@@ -25157,7 +25157,7 @@ if (activeTab === 'mudra') {
     }
     if (id === 'jnana' || id === 'chin') {
       var rotate = id === 'chin' ? 180 : 0;
-      return h('svg', { width: 200, height: 200, viewBox: '0 0 200 200', style: { transform: 'rotate(' + rotate + 'deg)' } },
+      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto', transform: 'rotate(' + rotate + 'deg)' } },
         // hand with circle made by thumb + index
         h('path', Object.assign({}, common, { d: 'M 80 80 Q 60 80 60 100 L 60 160 Q 60 175 75 175 L 130 175 Q 145 175 145 160 L 145 100 Q 145 80 125 80 L 80 80 Z' })),
         // index finger extended down (rotated up via parent rotate for chin)
@@ -25171,7 +25171,7 @@ if (activeTab === 'mudra') {
       );
     }
     if (id === 'prana') {
-      return h('svg', { width: 200, height: 200, viewBox: '0 0 200 200' },
+      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
         h('path', Object.assign({}, common, { d: 'M 80 80 Q 60 80 60 100 L 60 160 Q 60 175 75 175 L 130 175 Q 145 175 145 160 L 145 100 Q 145 80 125 80 L 80 80 Z' })),
         h('rect', Object.assign({}, common, { x: 70, y: 50, width: 10, height: 35, rx: 5 })),
         h('rect', Object.assign({}, common, { x: 85, y: 45, width: 10, height: 40, rx: 5 })),
@@ -25181,7 +25181,7 @@ if (activeTab === 'mudra') {
       );
     }
     if (id === 'surya') {
-      return h('svg', { width: 200, height: 200, viewBox: '0 0 200 200' },
+      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
         h('path', Object.assign({}, common, { d: 'M 80 80 Q 60 80 60 100 L 60 160 Q 60 175 75 175 L 130 175 Q 145 175 145 160 L 145 100 Q 145 80 125 80 L 80 80 Z' })),
         h('rect', Object.assign({}, common, { x: 70, y: 50, width: 10, height: 35, rx: 5 })),
         h('rect', Object.assign({}, common, { x: 85, y: 45, width: 10, height: 40, rx: 5 })),
@@ -25191,7 +25191,7 @@ if (activeTab === 'mudra') {
       );
     }
     if (id === 'open') {
-      return h('svg', { width: 200, height: 200, viewBox: '0 0 200 200' },
+      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
         h('path', Object.assign({}, common, { d: 'M 40 130 L 60 80 Q 70 70 80 75 L 150 75 Q 165 75 170 90 L 170 145 Q 170 160 155 160 L 60 160 Q 40 160 40 145 Z' })),
         // fingers visible
         Array.from({ length: 4 }, function(_, i) {
@@ -25200,7 +25200,7 @@ if (activeTab === 'mudra') {
       );
     }
     if (id === 'heart') {
-      return h('svg', { width: 200, height: 200, viewBox: '0 0 200 200' },
+      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
         // body torso outline (simplified)
         h('rect', { x: 60, y: 60, width: 80, height: 120, rx: 30, fill: '#1e293b', stroke: '#475569', strokeWidth: 1 }),
         // heart

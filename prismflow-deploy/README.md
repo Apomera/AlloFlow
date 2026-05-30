@@ -19,13 +19,13 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 **No subscriptions. No student accounts. No PII collected.**
 
-🔗 **[Launch AlloFlow](https://gemini.google.com/share/c8baf80a46cc)**
+🔗 **[Launch AlloFlow](https://apomera.github.io/AlloFlow/launch.html)**
 
 ---
 
 ## ⚡ Quick Start
 
-1. **[Click to launch](https://gemini.google.com/share/c8baf80a46cc)** — opens directly in Gemini Canvas (free Google account required)
+1. **[Click to launch](https://apomera.github.io/AlloFlow/launch.html)** — opens directly in Gemini Canvas (free Google account required)
 2. **Paste your lesson text** into the Source Material box, or let the AI generate from a topic
 3. **Click Fullpack** — leveled text, glossary, quizzes, and scaffolds generated in one click
 4. **Start a Live Session** to push resources to student devices in real-time
@@ -44,7 +44,7 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 |:-:|:-:|:-:|
 | ![Adventure Mode RPG scene with inventory and dice](docs/screenshots/adventure-mode.png) | ![BehaviorLens ABC data collection form](docs/screenshots/behavior-lens.png) | ![Word Sounds phonemic awareness activity with Elkonin boxes](docs/screenshots/word-sounds.png) |
 
-> To contribute screenshots, place PNGs in `docs/screenshots/` matching the filenames above and open a PR. You can capture them from the [live Canvas deployment](https://gemini.google.com/share/c8baf80a46cc).
+> To contribute screenshots, place PNGs in `docs/screenshots/` matching the filenames above and open a PR. You can capture them from the [live Canvas deployment](https://apomera.github.io/AlloFlow/launch.html).
 
 ---
 

@@ -7,7 +7,7 @@
 
 ## Getting Started in 30 Seconds
 
-1. **Open AlloFlow** → [Canvas link](https://gemini.google.com/share/c8baf80a46cc) or your self-hosted URL
+1. **Open AlloFlow** → [Canvas link](https://apomera.github.io/AlloFlow/launch.html) or your self-hosted URL
 2. **Paste your text** → Any article, chapter, or lesson content
 3. **Click "Fullpack"** → Leveled text, glossary, quiz, and scaffolds generated at once
 4. **Explore** → Use the toolbar to access specific tools

@@ -2009,8 +2009,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         },
         {
           principle: 'Diverse cognitive entry points',
-          implementation: 'Visual learners use the simulator + maps. Auditory learners use captions + TED talks. Kinesthetic learners use mouse + keyboard controls. Reading learners use the deep dives + bibliography.',
-          rationale: 'Students learn differently. Multi-modal access prevents marginalizing any cognitive style.',
+          implementation: 'The simulator + maps, captions + TED talks, hands-on mouse/keyboard controls, and the deep dives + bibliography each present the same content in a different representation.',
+          rationale: 'Offering the same content in multiple representations (UDL / dual coding) supports all learners; it does not assume any student is a fixed visual/auditory/kinesthetic "type" — that meshing claim is unsupported (Pashler 2008).',
           example: 'Student A loves the Visual Field Guide. Student B loves the simulator gameplay. Student C loves the bibliography. All three are engaged by the same content.',
         },
         {
@@ -8590,7 +8590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         },
         ferpa: {
           term: 'FERPA (Family Educational Rights and Privacy Act)',
-          def: 'US law (1974) protecting student educational records. This simulator stores no student PII — all data is local to the browser, no cloud, no analytics. Aligns with FERPA + COPPA + state-level student-data-privacy laws.',
+          def: 'US law (1974) protecting student educational records. This Cephalopod Lab module stores no PII and makes no network calls — its data stays local to the browser. Note: other STEM Lab tools may use cloud AI features, so check each tool individually rather than assuming the whole platform is offline.',
           related: ['privacy', 'student_data'],
           sources: [
             { title: '20 U.S.C. § 1232g', year: 1974 },

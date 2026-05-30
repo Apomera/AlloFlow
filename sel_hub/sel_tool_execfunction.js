@@ -1068,7 +1068,7 @@ window.SelHub = window.SelHub || {
                   h('button', { onClick: function() { removeHabit(hb.id); }, 'aria-label': 'Remove habit', style: { background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 14 } }, '×')
                 )
               ),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(14, 1fr)', gap: 4 } },
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(28px, 1fr))', gap: 4 } },
                 days14.map(function(d2) {
                   var done = !!(hb.days || {})[d2.iso];
                   return h('button', { key: d2.iso, onClick: function() { toggleDay(hb.id, d2.iso); },

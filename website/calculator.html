@@ -743,7 +743,7 @@
 
         // Copy Link
         function copyCanvasLink() {
-            const link = "https://gemini.google.com/share/c8baf80a46cc";
+            const link = new URL("/launch.html", window.location.origin).href;
             navigator.clipboard.writeText(link).then(() => {
                 document.querySelectorAll('.btn-primary span').forEach(s => { const orig = s.textContent; s.textContent = "Copied!"; setTimeout(() => s.textContent = orig, 2000); });
             }).catch(() => alert("Failed to copy. Check permissions."));

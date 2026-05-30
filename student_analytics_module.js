@@ -353,7 +353,7 @@
     mathFluencyTimerRef,
     mathFluencyInputRef,
     finishMathFluencyProbe,
-    loadPsychometricProbes
+    loadProbeBanks
   }) => {
     const [importedStudents, setImportedStudents] = React.useState([]);
     const [selectedStudent, setSelectedStudent] = React.useState(null);
@@ -377,8 +377,8 @@
     const [cqImageGenInput, setCqImageGenInput] = React.useState({ qid: null, idx: null, prompt: '', mode: 'generate' });
     const [cqImageGenBusy, setCqImageGenBusy] = React.useState(false);
     React.useEffect(() => {
-      if (typeof loadPsychometricProbes === 'function') {
-        loadPsychometricProbes();
+      if (typeof loadProbeBanks === 'function') {
+        loadProbeBanks();
       }
     }, []);
     const [importProgress, setImportProgress] = React.useState({
@@ -3206,7 +3206,7 @@
       const f = form || mathProbeForm || 'A';
       if (!window.ORF_SCREENING_PASSAGES || !window.ORF_SCREENING_PASSAGES[g] || !window.ORF_SCREENING_PASSAGES[g][f]) {
         addToast(t('toasts.orf_passages_loaded_yet_loading'), 'error');
-        loadPsychometricProbes();
+        loadProbeBanks();
         return;
       }
       const passages = window.ORF_SCREENING_PASSAGES[g][f];
@@ -4766,7 +4766,7 @@
         const form = mathProbeForm || "A";
         if (!window.MATH_PROBE_BANKS || !window.MATH_PROBE_BANKS[grade] || !window.MATH_PROBE_BANKS[grade][form]) {
           addToast(t('toasts.math_probes_loaded_yet_wait'), "error");
-          loadPsychometricProbes();
+          loadProbeBanks();
           return;
         }
         const probeData = window.MATH_PROBE_BANKS[grade][form];
@@ -4822,7 +4822,7 @@
         const form = nwfForm || 'A';
         if (!window.NWF_PROBE_BANKS || !window.NWF_PROBE_BANKS[grade] || !window.NWF_PROBE_BANKS[grade][form]) {
           addToast(t('toasts.nwf_probes_loaded_yet_loading'), 'error');
-          loadPsychometricProbes();
+          loadProbeBanks();
           return;
         }
         const data = window.NWF_PROBE_BANKS[grade][form];
@@ -4855,7 +4855,7 @@
         const form = lnfForm || 'A';
         if (!window.LNF_PROBE_BANKS || !window.LNF_PROBE_BANKS[grade] || !window.LNF_PROBE_BANKS[grade][form]) {
           addToast(t('toasts.lnf_probes_loaded_yet_loading'), 'error');
-          loadPsychometricProbes();
+          loadProbeBanks();
           return;
         }
         const data = window.LNF_PROBE_BANKS[grade][form];
@@ -4886,7 +4886,7 @@
         const form = ranForm || 'A';
         if (!window.RAN_PROBE_BANKS || !window.RAN_PROBE_BANKS[grade] || !window.RAN_PROBE_BANKS[grade][form]) {
           addToast(t('toasts.ran_probes_loaded_yet_loading'), 'error');
-          loadPsychometricProbes();
+          loadProbeBanks();
           return;
         }
         const data = window.RAN_PROBE_BANKS[grade][form];
@@ -5659,7 +5659,7 @@
         const bank = window.MISSING_NUMBER_PROBES;
         if (!bank || !bank[grade] || !bank[grade][form]) {
           addToast(t('toasts.missing_number_probes_loaded_yet'), "error");
-          loadPsychometricProbes();
+          loadProbeBanks();
           return;
         }
         const data = bank[grade][form];
@@ -5900,7 +5900,7 @@
         const bank = window.QUANTITY_DISCRIMINATION_PROBES;
         if (!bank || !bank[grade] || !bank[grade][form]) {
           addToast(t('toasts.quantity_discrimination_probes_loaded_yet'), "error");
-          loadPsychometricProbes();
+          loadProbeBanks();
           return;
         }
         const data = bank[grade][form];

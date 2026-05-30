@@ -12,9 +12,8 @@
 (function () {
   if (window.AlloModules && window.AlloModules.StemLab) { console.log('[CDN] StemLab already loaded, skipping duplicate'); } else {
     // stem_lab_module.js
-    // Auto-extracted from AlloFlowANTI.txt
+    // Canonical hand-maintained source — edited directly, NOT generated from AlloFlowANTI.txt
     // STEM Lab module for AlloFlow - loaded from GitHub CDN
-    // Version: 1.0.0 (Feb 2026)
 
     // ── AlloStemTheme JS helper (Piece A) ──
     // Exposes the same palette as the --allo-stem-* CSS variables defined

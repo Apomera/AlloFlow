@@ -1147,7 +1147,7 @@ window.QUANTITY_DISCRIMINATION_PROBES = null;
 window.NWF_PROBE_BANKS = null;
 window.LNF_PROBE_BANKS = null;
 window.RAN_PROBE_BANKS = null;
-const loadPsychometricProbes = async () => {
+const loadProbeBanks = async () => {
     loadWordAudioBank(); // Background fetch word audio when probes launch
     if (window.BENCHMARK_PROBE_BANKS && window.ORF_SCREENING_PASSAGES && window.MATH_PROBE_BANKS && window.MISSING_NUMBER_PROBES && window.QUANTITY_DISCRIMINATION_PROBES && window.NWF_PROBE_BANKS && window.LNF_PROBE_BANKS && window.RAN_PROBE_BANKS) return;
     try {
@@ -26314,7 +26314,7 @@ ${_toolList}
               mathFluencyInputRef={mathFluencyInputRef}
               startMathFluencyProbe={startMathFluencyProbe}
               finishMathFluencyProbe={finishMathFluencyProbe}
-              loadPsychometricProbes={loadPsychometricProbes}
+              loadProbeBanks={loadProbeBanks}
               surveyResponses={surveyResponses}
               setSurveyResponses={setSurveyResponses}
               fidelityLog={fidelityLog}

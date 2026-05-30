@@ -19464,6 +19464,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                 style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
                 '+ Start filling my bucket')
             ),
+            h('div', {
+              style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.12)', borderLeft: '3px solid #ef4444', marginTop: 14, fontSize: 12, color: '#fecaca', lineHeight: 1.65 } },
+              h('div', { style: { fontWeight: 800, marginBottom: 4, color: '#fca5a5' } }, '🩺 When the bucket model isn\'t enough'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: '#fed7aa' } },
+                h('li', null, 'Distress lasting most of the day, most days, for 2+ weeks'),
+                h('li', null, 'Coping strategies that used to work no longer do'),
+                h('li', null, 'Functioning declining at school, work, or in relationships'),
+                h('li', null, 'Thoughts of self-harm or suicide — 988 (call/text) or text HOME to 741741 right now'),
+                h('li', null, 'Substance use you can\'t stop'),
+                h('li', null, 'Talk to a school counselor, therapist, or doctor — this tool supports care, not replaces it')
+              )
+            ),
             softPointer()
           );
         }
@@ -19628,6 +19640,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
               style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
             h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
               style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+          ),
+
+          // Escalation callout — naming the bucket is useful, but some buckets need more than self-help
+          h('div', {
+            style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.12)', borderLeft: '3px solid #ef4444', marginTop: 14, fontSize: 12, color: '#fecaca', lineHeight: 1.65 } },
+            h('div', { style: { fontWeight: 800, marginBottom: 4, color: '#fca5a5' } }, '🩺 When the bucket model isn\'t enough'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: '#fed7aa' } },
+              h('li', null, 'Distress lasting most of the day, most days, for 2+ weeks'),
+              h('li', null, 'Coping strategies that used to work no longer do'),
+              h('li', null, 'Functioning declining at school, work, or in relationships'),
+              h('li', null, 'Thoughts of self-harm or suicide — 988 (call/text) or text HOME to 741741 right now'),
+              h('li', null, 'Substance use you can\'t stop'),
+              h('li', null, 'Talk to a school counselor, therapist, or doctor — this tool supports care, not replaces it')
+            )
           ),
 
           softPointer()
@@ -19844,6 +19870,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
             h('div', { style: { fontSize: 13, color: '#fcd34d', fontWeight: 800, marginBottom: 6 } }, '⚖️ Honest reflection question'),
             h('p', { style: { margin: 0, color: '#fde68a', fontSize: 13, lineHeight: 1.65 } },
               'Looking at your inflow side: which of those stressors is yours to act on, and which is structural? Structural stressors (a school policy, a family situation, a financial reality) are not your fault to "cope better" with. The bucket model is honest about this; if a structural stressor is pouring in at a heavy rate, the only real fix is at the source, not at your taps.'
+            )
+          ),
+
+          // Escalation callout — reflecting is a useful step, but some buckets need more than self-help
+          h('div', {
+            style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.12)', borderLeft: '3px solid #ef4444', marginBottom: 10, fontSize: 12, color: '#fecaca', lineHeight: 1.65 } },
+            h('div', { style: { fontWeight: 800, marginBottom: 4, color: '#fca5a5' } }, '🩺 When reflecting isn\'t enough'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: '#fed7aa' } },
+              h('li', null, 'Distress lasting most of the day, most days, for 2+ weeks'),
+              h('li', null, 'Coping strategies that used to work no longer do'),
+              h('li', null, 'Functioning declining at school, work, or in relationships'),
+              h('li', null, 'Thoughts of self-harm or suicide — 988 (call/text) or text HOME to 741741 right now'),
+              h('li', null, 'Substance use you can\'t stop'),
+              h('li', null, 'Talk to a school counselor, therapist, or doctor — this tool supports care, not replaces it')
             )
           ),
 

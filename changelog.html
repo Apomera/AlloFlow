@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlloFlow Changelog</title>
+<meta name="description" content="Release history for AlloFlow — chronological log of versions, notes, and direct links to each shipped canvas.">
+<link rel="icon" type="image/svg+xml" href="allobot.svg">
+<style>
+  :root {
+    --indigo: #4f46e5;
+    --purple: #9333ea;
+    --ink: #0f172a;
+    --slate: #475569;
+    --muted: #64748b;
+    --line: #e2e8f0;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --focus: #4f46e5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Plus Jakarta Sans", system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.55;
+    padding: 32px 20px 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  a { color: var(--indigo); text-decoration: none; }
+  a:hover, a:focus { text-decoration: underline; }
+  a:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--slate);
+    margin-bottom: 24px;
+  }
+  .back:hover { color: var(--indigo); }
+  h1 {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--indigo), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 32px;
+  }
+  ol.releases {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .release {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px 22px;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .release:hover { border-color: #cbd5e1; }
+  .release header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px 14px;
+    margin-bottom: 10px;
+  }
+  .version {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .date {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .notes {
+    color: var(--slate);
+    font-size: 0.97rem;
+    margin-bottom: 12px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .open-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: var(--indigo);
+    font-weight: 500;
+  }
+  .open-link::after {
+    content: "\2197";
+    font-size: 0.9em;
+    line-height: 1;
+  }
+  .empty, .loading {
+    background: var(--card);
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    padding: 32px 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .empty strong { color: var(--ink); display: block; margin-bottom: 4px; font-weight: 600; }
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0);
+    white-space: nowrap; border: 0;
+  }
+  @media (max-width: 480px) {
+    body { padding: 24px 16px 64px; }
+    .release { padding: 16px 18px; }
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #f1f5f9;
+      --slate: #cbd5e1;
+      --muted: #94a3b8;
+      --line: #1e293b;
+      --bg: #0b1120;
+      --card: #111827;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+  <main class="wrap" id="main">
+    <a class="back" href="launch.html" aria-label="Back to launch page">&larr; Back to launch</a>
+    <h1>Changelog</h1>
+    <p class="sub">AlloFlow release history, newest first.</p>
+
+    <div id="status" class="loading" role="status" aria-live="polite">Loading releases&hellip;</div>
+    <ol id="list" class="releases" aria-label="Release history" hidden></ol>
+  </main>
+
+<script>
+(function () {
+  "use strict";
+
+  var statusEl = document.getElementById("status");
+  var listEl = document.getElementById("list");
+
+  function escapeHTML(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function safeURL(u) {
+    if (typeof u !== "string") return null;
+    var t = u.trim();
+    if (!t) return null;
+    // Only allow http(s) URLs to avoid javascript: etc.
+    if (!/^https?:\/\//i.test(t)) return null;
+    return t;
+  }
+
+  function formatDate(iso) {
+    if (!iso) return "";
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return escapeHTML(iso);
+    try {
+      return d.toLocaleDateString(undefined, {
+        year: "numeric", month: "long", day: "numeric"
+      });
+    } catch (e) {
+      return d.toISOString().slice(0, 10);
+    }
+  }
+
+  function timestamp(iso) {
+    if (!iso) return 0;
+    var t = new Date(iso).getTime();
+    return isNaN(t) ? 0 : t;
+  }
+
+  function showEmpty(message) {
+    statusEl.className = "empty";
+    statusEl.setAttribute("role", "status");
+    statusEl.innerHTML =
+      "<strong>No releases yet</strong>" +
+      "<span>" + escapeHTML(message || "Check back soon.") + "</span>";
+  }
+
+  function showError(message) {
+    statusEl.className = "empty";
+    statusEl.setAttribute("role", "alert");
+    statusEl.innerHTML =
+      "<strong>Couldn’t load releases</strong>" +
+      "<span>" + escapeHTML(message || "Please try again later.") + "</span>";
+  }
+
+  function render(entries) {
+    if (!Array.isArray(entries) || entries.length === 0) {
+      showEmpty("No releases have been published yet.");
+      return;
+    }
+
+    var sorted = entries.slice().sort(function (a, b) {
+      return timestamp(b && b.released) - timestamp(a && a.released);
+    });
+
+    var html = sorted.map(function (r) {
+      if (!r || typeof r !== "object") return "";
+      var version = escapeHTML(r.version || r.id || "Unversioned");
+      var dateRaw = r.released || "";
+      var dateText = formatDate(dateRaw);
+      var notes = escapeHTML(r.notes || "");
+      var url = safeURL(r.canvas_url);
+      var dateAttr = dateRaw ? ' datetime="' + escapeHTML(dateRaw) + '"' : "";
+
+      var linkHTML = url
+        ? '<a class="open-link" href="' + escapeHTML(url) + '" target="_blank" rel="noopener noreferrer" aria-label="Open version ' + version + ' in a new tab">Open this version</a>'
+        : "";
+
+      return (
+        '<li class="release">' +
+          '<header>' +
+            '<span class="version">v' + version + '</span>' +
+            (dateText ? '<time class="date"' + dateAttr + '>' + dateText + '</time>' : "") +
+          '</header>' +
+          (notes ? '<p class="notes">' + notes + '</p>' : "") +
+          linkHTML +
+        '</li>'
+      );
+    }).join("");
+
+    statusEl.hidden = true;
+    listEl.hidden = false;
+    listEl.innerHTML = html;
+  }
+
+  function load() {
+    var url = "releases.json?t=" + Date.now();
+    fetch(url, { cache: "no-store" })
+      .then(function (res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.text();
+      })
+      .then(function (text) {
+        var data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error("Invalid JSON");
+        }
+        // Accept either an array or { releases: [...] }
+        if (data && !Array.isArray(data) && Array.isArray(data.releases)) {
+          data = data.releases;
+        }
+        render(data);
+      })
+      .catch(function (err) {
+        showError(err && err.message ? err.message : "Network error.");
+      });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", load);
+  } else {
+    load();
+  }
+})();
+</script>
+</body>
+</html>

@@ -177,7 +177,7 @@ function ConceptSortView(props) {
         }
       },
       className: "flex-1 font-bold text-sm bg-white border border-amber-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-400",
-      "aria-label": "Edit category name"
+      "aria-label": t("a11y.edit_category_name")
     }) : /*#__PURE__*/React.createElement("button", {
       onClick: () => setCsEdit({
         kind: 'category',
@@ -250,7 +250,7 @@ function ConceptSortView(props) {
           }
         },
         className: "flex-1 text-xs bg-white border border-amber-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-400",
-        "aria-label": "Edit item text"
+        "aria-label": t("a11y.edit_item_text")
       }) : /*#__PURE__*/React.createElement("button", {
         onClick: () => setCsEdit({
           kind: 'item',
@@ -265,7 +265,7 @@ function ConceptSortView(props) {
         onChange: e => csMoveItem(item.id, e.target.value),
         className: "text-[11px] bg-white border border-slate-400 rounded px-1.5 py-1 text-slate-600 hover:border-slate-300 max-w-[120px]",
         title: "Move to category",
-        "aria-label": "Move item to a different category",
+        "aria-label": t("a11y.move_item_category"),
         disabled: isBusy
       }, (generatedContent?.data.categories || []).map(c => /*#__PURE__*/React.createElement("option", {
         key: c.id,
@@ -275,17 +275,17 @@ function ConceptSortView(props) {
         disabled: isBusy || csBusyId === '__adding__',
         className: "w-7 h-7 rounded text-sm hover:bg-indigo-50 text-indigo-600 disabled:opacity-30 flex items-center justify-center",
         title: "Regenerate this item (text + image)",
-        "aria-label": "Regenerate this item — text and image"
+        "aria-label": t("a11y.regenerate_item")
       }, isBusy ? '⏳' : '🔄'), /*#__PURE__*/React.createElement("button", {
         onClick: () => csRegenerateItemImage(item),
         disabled: isBusy || csBusyId === '__adding__',
         className: "w-7 h-7 rounded text-sm hover:bg-purple-50 text-purple-600 disabled:opacity-30 flex items-center justify-center",
         title: "Regenerate just the image (keep the text)",
-        "aria-label": "Regenerate image only"
+        "aria-label": t("a11y.regenerate_image")
       }, isBusy ? '⏳' : '🖼️'), /*#__PURE__*/React.createElement("label", {
         className: `w-7 h-7 rounded text-sm hover:bg-emerald-50 text-emerald-600 flex items-center justify-center cursor-pointer ${isBusy || csBusyId === '__adding__' ? 'opacity-30 pointer-events-none' : ''}`,
         title: "Upload your own image (max 5 MB)",
-        "aria-label": "Upload custom image"
+        "aria-label": t("a11y.upload_custom_image")
       }, /*#__PURE__*/React.createElement("input", {
         type: "file",
         accept: "image/*",
@@ -301,19 +301,19 @@ function ConceptSortView(props) {
         disabled: isBusy,
         className: "w-7 h-7 rounded text-sm hover:bg-amber-50 text-amber-600 disabled:opacity-30 flex items-center justify-center",
         title: "Remove the image (keep the text)",
-        "aria-label": "Clear image"
+        "aria-label": t("a11y.clear_image")
       }, "🚫"), item.image && csRefineItemImage && /*#__PURE__*/React.createElement("button", {
         onClick: () => csRefineItemImage(item.id, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
         disabled: isBusy,
         className: "w-7 h-7 rounded text-sm hover:bg-red-50 text-red-600 disabled:opacity-30 flex items-center justify-center",
         title: "Auto-remove text from this image",
-        "aria-label": "Auto-remove text from image"
+        "aria-label": t("a11y.auto_remove_text")
       }, "🔤⃠"), /*#__PURE__*/React.createElement("button", {
         onClick: () => csDeleteItem(item.id),
         disabled: isBusy,
         className: "w-7 h-7 rounded text-sm hover:bg-rose-50 text-rose-500 disabled:opacity-30 flex items-center justify-center",
         title: "Delete this item",
-        "aria-label": "Delete this item"
+        "aria-label": t("a11y.delete_item")
       }, "🗑")), item.image && csRefineItemImage && /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-1 pl-1 pr-1"
       }, /*#__PURE__*/React.createElement("input", {
@@ -336,7 +336,7 @@ function ConceptSortView(props) {
         disabled: isBusy || !refineInput.trim(),
         className: "px-2 py-1 rounded text-[11px] font-bold bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-30",
         title: "Apply edit prompt to this image",
-        "aria-label": "Apply edit prompt"
+        "aria-label": t("a11y.apply_edit_prompt")
       }, "✏️ Send")));
     }), isAddingHere && /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg p-2"
@@ -355,7 +355,7 @@ function ConceptSortView(props) {
         }
       },
       className: "flex-1 text-xs bg-white border border-emerald-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-400",
-      "aria-label": "New item text",
+      "aria-label": t("a11y.new_item_text"),
       disabled: csBusyId === '__adding__'
     }), /*#__PURE__*/React.createElement("button", {
       onClick: () => csAddItem(cat.id, csAddingText, generatedContent?.data.categories || []),

@@ -39,7 +39,7 @@ const entry = `
 /* global Ban, BookOpen, Check, CheckCircle2, ChevronDown, ChevronLeft, Edit2, Eye */
 /* global GripVertical, ImageIcon, Layers, Loader2, Maximize2, Minimize, Palette */
 /* global Play, PlayCircle, RefreshCw, Send, Sparkles, Volume2, X */
-/* global loadPsychometricProbes, getWordSoundsString */
+/* global loadProbeBanks, getWordSoundsString */
 
 ${source}
 
@@ -120,7 +120,7 @@ const outputCode = `/**
   var warnLog = _shared.warnLog || function() { console.warn.apply(console, arguments); };
   var debugLog = window.__alloDebugLog || function() {};
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
-  var loadPsychometricProbes = window.loadPsychometricProbes || function() {};
+  var loadProbeBanks = window.loadProbeBanks || function() {};
   var getWordSoundsString = window.getWordSoundsString || function(fallback, key, params) { return (params && params.default) || key; };
 
   // ── Probe bank globals (read-only, loaded by host app) ──

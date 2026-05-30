@@ -26541,6 +26541,20 @@ window.SelHub = window.SelHub || {
             })
           ),
 
+          // Escalation callout — coping strategies support care, they do not replace it
+          h('div', {
+            style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.12)', borderLeft: '3px solid #ef4444', marginTop: 14, marginBottom: 14, fontSize: 12, color: '#fecaca', lineHeight: 1.65 } },
+            h('div', { style: { fontWeight: 800, marginBottom: 4, color: '#fca5a5' } }, '🩺 When these aren\'t enough'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: '#fed7aa' } },
+              h('li', null, 'Distress lasting most of the day, most days, for 2+ weeks'),
+              h('li', null, 'Coping strategies that used to work no longer do'),
+              h('li', null, 'Functioning declining at school, work, or in relationships'),
+              h('li', null, 'Thoughts of self-harm or suicide — 988 (call/text) or text HOME to 741741 right now'),
+              h('li', null, 'Substance use you can\'t stop'),
+              h('li', null, 'Talk to a school counselor, therapist, or doctor — these tools support care, not replace it')
+            )
+          ),
+
           // Strategy cards
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
             filteredStrats.map(function(strat) {
@@ -26776,6 +26790,18 @@ window.SelHub = window.SelHub || {
                 'Scan your body. Notice the warmth, heaviness, and relaxation. This is your parasympathetic nervous system at work.'
               ),
               h('p', { style: { color: '#94a3b8', fontSize: 12 } }, 'Sessions completed: ' + (pmrComplete + 1)),
+              h('div', {
+                style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.12)', borderLeft: '3px solid #ef4444', marginTop: 14, fontSize: 12, color: '#fecaca', lineHeight: 1.65, textAlign: 'left', maxWidth: 460, marginLeft: 'auto', marginRight: 'auto' } },
+                h('div', { style: { fontWeight: 800, marginBottom: 4, color: '#fca5a5' } }, '\ud83e\ude7a When this isn\'t enough'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: '#fed7aa' } },
+                  h('li', null, 'Distress lasting most of the day, most days, for 2+ weeks'),
+                  h('li', null, 'Coping strategies that used to work no longer do'),
+                  h('li', null, 'Functioning declining at school, work, or in relationships'),
+                  h('li', null, 'Thoughts of self-harm or suicide \u2014 988 (call/text) or text HOME to 741741 right now'),
+                  h('li', null, 'Substance use you can\'t stop'),
+                  h('li', null, 'Talk to a school counselor, therapist, or doctor \u2014 these tools support care, not replace it')
+                )
+              ),
               h('button', { 'aria-label': 'Back to Practice Menu',
                 onClick: function() { upd({ practiceMode: null, pmrStep: 0, pmrPhase: 'tense' }); },
                 style: { marginTop: 16, padding: '10px 24px', borderRadius: 8, border: 'none', background: '#14b8a6', color: '#fff', fontWeight: 700, cursor: 'pointer' }
@@ -27355,7 +27381,17 @@ window.SelHub = window.SelHub || {
                       band === 'elementary' ? 'Take 3 more deep breaths. How do you feel?' :
                       'Notice: your heart rate has slowed. Your prefrontal cortex is back in charge.'
                     ),
-                    h('p', { style: { color: '#94a3b8', fontSize: 12 } }, 'Sessions completed: ' + countComplete)
+                    h('p', { style: { color: '#94a3b8', fontSize: 12 } }, 'Sessions completed: ' + countComplete),
+                    h('div', {
+                      style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.12)', borderLeft: '3px solid #ef4444', marginTop: 14, fontSize: 12, color: '#fecaca', lineHeight: 1.65, textAlign: 'left', maxWidth: 460, marginLeft: 'auto', marginRight: 'auto' } },
+                      h('div', { style: { fontWeight: 800, marginBottom: 4, color: '#fca5a5' } }, '🩺 When counting isn\'t enough'),
+                      h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: '#fed7aa' } },
+                        h('li', null, 'If you needed this 3+ times today, or the count alone isn\'t bringing you down, try the Crisis Companion or TIPP protocol'),
+                        h('li', null, 'If panic, racing thoughts, or dissociation are happening most days for 2+ weeks, talk to a school counselor or doctor'),
+                        h('li', null, 'Thoughts of self-harm or suicide — 988 (call/text) or text HOME to 741741 right now'),
+                        h('li', null, 'These tools support care, not replace it')
+                      )
+                    )
                   ),
                   h('button', { 'aria-label': 'Reset',
                     onClick: function() { upd({ countCurrent: null, countActive: false }); },

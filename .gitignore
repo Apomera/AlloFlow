@@ -4,6 +4,8 @@ node_modules
 
 # Archive: temp/debug/backup files moved here during cleanup
 _archive/
+# Dev scratch: one-off build scripts relocated out of source dirs (kept local)
+_dev_scratch/
 
 # Security: Never commit build artifacts (they contain baked-in API keys)
 prismflow-deploy/build/

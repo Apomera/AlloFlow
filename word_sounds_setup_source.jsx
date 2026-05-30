@@ -83,8 +83,8 @@
         const [isProcessing, setIsProcessing] = React.useState(false);
         const [isMinimized, setIsMinimized] = React.useState(false);
     React.useEffect(() => {
-        if (typeof loadPsychometricProbes === 'function') {
-            loadPsychometricProbes();
+        if (typeof loadProbeBanks === 'function') {
+            loadProbeBanks();
         }
     }, []);
         const [generatedCount, setGeneratedCount] = React.useState(0);
@@ -464,7 +464,7 @@
                     <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-6 flex justify-between items-center text-white shrink-0">
                         <div className="flex items-center gap-4">
                             <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
-                                <Sparkles size={32} className="text-yellow-700 animate-pulse" />
+                                <Sparkles size={32} className="text-yellow-300 animate-pulse" />
                             </div>
                             <div>
                                 <h2 className="text-3xl font-black tracking-tight">{isProbeMode ? `📊 ${(probeActivity || '').charAt(0).toUpperCase() + (probeActivity || '').slice(1)} Probe` : t('word_sounds.title', 'Word Sounds Studio')}</h2>

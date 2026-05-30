@@ -88,7 +88,7 @@ function ExportPreviewView(props) {
       className: "fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4",
       role: "dialog",
       "aria-modal": "true",
-      "aria-label": "Document Builder",
+      "aria-label": t("a11y.doc_builder"),
       onClick: (e) => {
         if (e.target === e.currentTarget) setShowExportPreview(false);
       },
@@ -120,7 +120,7 @@ function ExportPreviewView(props) {
         el.addEventListener("keydown", el.__focusTrap);
       }
     },
-    /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl flex w-full max-w-[95vw] max-h-[95vh] overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200 overflow-y-auto p-4 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("h2", { className: "text-sm font-black text-slate-800 flex items-center gap-2" }, "\u{1F6E0}\uFE0F Document Builder"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowExportPreview(false), className: "p-1 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors", "aria-label": "Close document builder" }, /* @__PURE__ */ React.createElement(X, { size: 16 })))), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Quick Start", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Presets"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl flex w-full max-w-[95vw] max-h-[95vh] overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200 overflow-y-auto p-4 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("h2", { className: "text-sm font-black text-slate-800 flex items-center gap-2" }, "\u{1F6E0}\uFE0F Document Builder"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowExportPreview(false), className: "p-1 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors", "aria-label": t("a11y.close_doc_builder") }, /* @__PURE__ */ React.createElement(X, { size: 16 })))), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Quick Start", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Presets"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key,
@@ -174,7 +174,7 @@ function ExportPreviewView(props) {
         value: exportConfig.fontSize,
         onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, fontSize: parseInt(e.target.value) })),
         className: "flex-1 accent-indigo-600",
-        "aria-label": "Font size"
+        "aria-label": t("a11y.font_size")
       }
     ), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-slate-600 w-8" }, exportConfig.fontSize, "px")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Margins:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 flex-1" }, [
       { label: "Narrow", val: "0.5in" },
@@ -216,7 +216,7 @@ function ExportPreviewView(props) {
         placeholder: "e.g. 500",
         defaultValue: "",
         className: "flex-1 text-[11px] border border-slate-400 rounded px-2 py-1 bg-white",
-        "aria-label": "Target word count goal",
+        "aria-label": t("a11y.target_word_count"),
         onChange: (e) => {
           const goal = parseInt(e.target.value);
           const iframe = exportPreviewRef.current;
@@ -232,7 +232,7 @@ function ExportPreviewView(props) {
           }
         }
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden", role: "progressbar", "aria-label": "Word count progress" }, /* @__PURE__ */ React.createElement("div", { id: "word-goal-bar", className: "h-full rounded-full transition-all duration-300", style: { width: "0%", background: "#d97706" } })), /* @__PURE__ */ React.createElement("div", { id: "word-goal-label", className: "text-[11px] text-slate-600 mt-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "\u2328 Ctrl+1/2/3 = headings \xB7 Ctrl+K = link \xB7 Ctrl+Shift+L = list")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Word Art", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-200 p-2 space-y-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", id: "wordart-text-input", placeholder: "Your word art text...", defaultValue: "", className: "w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none", "aria-label": "Word art text" }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Style"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1", role: "radiogroup", "aria-label": "Word art style" }, [["goldFoil", "\u2728", "Gold"], ["neonGlow", "\u{1F4A1}", "Neon"], ["retroArcade", "\u{1F579}\uFE0F", "Retro"], ["chalkboard", "\u{1F58D}\uFE0F", "Chalk"], ["embossed", "\u{1F3DB}\uFE0F", "3D"], ["rainbow", "\u{1F308}", "Rainbow"]].map(([key, emoji, label], i) => /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden", role: "progressbar", "aria-label": t("a11y.word_count_progress") }, /* @__PURE__ */ React.createElement("div", { id: "word-goal-bar", className: "h-full rounded-full transition-all duration-300", style: { width: "0%", background: "#d97706" } })), /* @__PURE__ */ React.createElement("div", { id: "word-goal-label", className: "text-[11px] text-slate-600 mt-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "\u2328 Ctrl+1/2/3 = headings \xB7 Ctrl+K = link \xB7 Ctrl+Shift+L = list")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Word Art", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-200 p-2 space-y-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", id: "wordart-text-input", placeholder: "Your word art text...", defaultValue: "", className: "w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none", "aria-label": t("a11y.word_art_text") }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Style"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1", role: "radiogroup", "aria-label": t("a11y.word_art_style") }, [["goldFoil", "\u2728", "Gold"], ["neonGlow", "\u{1F4A1}", "Neon"], ["retroArcade", "\u{1F579}\uFE0F", "Retro"], ["chalkboard", "\u{1F58D}\uFE0F", "Chalk"], ["embossed", "\u{1F3DB}\uFE0F", "3D"], ["rainbow", "\u{1F308}", "Rainbow"]].map(([key, emoji, label], i) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key,
@@ -260,7 +260,7 @@ function ExportPreviewView(props) {
       emoji,
       " ",
       label
-    )))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Size"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup", "aria-label": "Word art size" }, ["S", "M", "L", "XL"].map((s) => /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Size"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup", "aria-label": t("a11y.word_art_size") }, ["S", "M", "L", "XL"].map((s) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: s,
@@ -286,7 +286,7 @@ function ExportPreviewView(props) {
         }
       },
       s
-    )))), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Align"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup", "aria-label": "Word art alignment" }, [["left", "\u21E4"], ["center", "\u21D4"], ["right", "\u21E5"]].map(([a, icon]) => /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Align"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup", "aria-label": t("a11y.word_art_alignment") }, [["left", "\u21E4"], ["center", "\u21D4"], ["right", "\u21E5"]].map(([a, icon]) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: a,
@@ -515,7 +515,7 @@ function ExportPreviewView(props) {
         },
         placeholder: "Describe a style or click a preset above...",
         className: "flex-1 text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300",
-        "aria-label": "Custom export style description"
+        "aria-label": t("a11y.custom_export_style")
       }
     ), /* @__PURE__ */ React.createElement(
       "button",
@@ -707,7 +707,7 @@ function ExportPreviewView(props) {
       a.click();
       URL.revokeObjectURL(a.href);
       addToast("Electronic Braille (BRF) downloaded", "success");
-    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u283F Electronic Braille (.brf)"))))), /* @__PURE__ */ React.createElement("div", { className: "px-2 py-1 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0", role: "toolbar", "aria-label": "Text formatting" }, [
+    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u283F Electronic Braille (.brf)"))))), /* @__PURE__ */ React.createElement("div", { className: "px-2 py-1 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0", role: "toolbar", "aria-label": t("a11y.text_formatting") }, [
       { cmd: "bold", icon: "B", label: "Bold", style: "font-bold" },
       { cmd: "italic", icon: "I", label: "Italic", style: "italic" },
       { cmd: "underline", icon: "U", label: "Underline", style: "underline" }
@@ -749,7 +749,7 @@ function ExportPreviewView(props) {
           if (doc) doc.execCommand("insertUnorderedList", false, null);
         },
         className: "w-7 h-7 rounded text-xs text-slate-600 hover:bg-indigo-100 transition-colors",
-        "aria-label": "Bullet list",
+        "aria-label": t("a11y.bullet_list"),
         title: "Bullet list"
       },
       "\u2022"

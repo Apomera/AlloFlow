@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#4f46e5" />
+  <meta name="description" content="AlloFlow launcher - the stable bookmark page for the current AlloFlow release." />
+  <title>Launch AlloFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(ellipse at top, #1e1b4b 0%, #0f172a 60%, #020617 100%);
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      line-height: 1.5;
+    }
+    .card {
+      width: 100%;
+      max-width: 32rem;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 1rem;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      text-align: center;
+    }
+    .brand {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0 0 0.25rem;
+    }
+    .tagline {
+      font-size: 0.875rem;
+      color: #94a3b8;
+      margin: 0 0 2rem;
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 0.375rem 0.875rem;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.15);
+      color: #c7d2fe;
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      margin-bottom: 1.75rem;
+    }
+    .status[data-state="live"] { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.35); }
+    .status[data-state="fallback"] { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border-color: rgba(245, 158, 11, 0.35); }
+    .status .dot {
+      width: 0.5rem; height: 0.5rem; border-radius: 999px; background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+    .launch-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.625rem;
+      width: 100%;
+      padding: 1rem 1.5rem;
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #ffffff;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      border: none;
+      border-radius: 0.75rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+      box-shadow: 0 10px 25px -10px rgba(79, 70, 229, 0.7);
+    }
+    .launch-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .launch-btn:active { transform: translateY(0); }
+    .launch-btn:focus-visible {
+      outline: 3px solid #c7d2fe;
+      outline-offset: 3px;
+    }
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .secondary-btn, .secondary-link {
+      flex: 1 1 auto;
+      min-width: 9rem;
+      padding: 0.625rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #cbd5e1;
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 0.5rem;
+      text-decoration: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .secondary-btn:hover, .secondary-link:hover {
+      background: rgba(148, 163, 184, 0.16);
+      color: #f1f5f9;
+      border-color: rgba(148, 163, 184, 0.45);
+    }
+    .secondary-btn:focus-visible, .secondary-link:focus-visible {
+      outline: 2px solid #c7d2fe;
+      outline-offset: 2px;
+    }
+    .copy-feedback {
+      font-size: 0.75rem;
+      color: #6ee7b7;
+      margin-top: 0.75rem;
+      min-height: 1em;
+    }
+    footer {
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      color: #64748b;
+      text-align: center;
+    }
+    footer a { color: #94a3b8; text-decoration: none; }
+    footer a:hover { color: #e2e8f0; text-decoration: underline; }
+    /* Interstitial */
+    .interstitial-overlay {
+      position: fixed; inset: 0;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem;
+      z-index: 1000;
+    }
+    .interstitial-card {
+      max-width: 28rem;
+      background: #0f172a;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      border-radius: 1rem;
+      padding: 2rem 1.75rem;
+      text-align: center;
+      box-shadow: 0 25px 60px -10px rgba(79, 70, 229, 0.4);
+    }
+    .interstitial-card h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0 0 0.75rem;
+      color: #fcd34d;
+    }
+    .interstitial-card p {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      margin: 0 0 1.25rem;
+    }
+    .interstitial-card strong { color: #fde68a; }
+    .interstitial-countdown {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-bottom: 1rem;
+    }
+    .interstitial-actions { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+    .interstitial-actions button {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-family: inherit;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(148, 163, 184, 0.1);
+      color: #e2e8f0;
+    }
+    .interstitial-actions button:hover { background: rgba(148, 163, 184, 0.2); }
+    .interstitial-actions button:focus-visible { outline: 2px solid #c7d2fe; outline-offset: 2px; }
+    .interstitial-actions .primary {
+      background: #4f46e5; border-color: #4f46e5; color: #ffffff;
+    }
+    .interstitial-actions .primary:hover { background: #4338ca; }
+    .interstitial-overlay[hidden] { display: none; }
+    /* Visually-hidden but screen-reader accessible */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+    @media (max-width: 480px) {
+      .card { padding: 2rem 1.25rem; }
+      .brand { font-size: 1.75rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .launch-btn { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main" aria-labelledby="brand-heading">
+    <h1 id="brand-heading" class="brand">AlloFlow</h1>
+    <p class="tagline">Adaptive Levels, Layers, &amp; Outputs</p>
+
+    <div id="status-pill" class="status" data-state="loading" role="status" aria-live="polite">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="status-text">Checking for latest release...</span>
+    </div>
+
+    <a id="launch-btn" class="launch-btn" href="https://gemini.google.com/share/c8baf80a46cc"
+       target="_blank" rel="noopener noreferrer"
+       aria-label="Launch AlloFlow in a new tab">
+      Launch AlloFlow
+      <span aria-hidden="true">&rarr;</span>
+    </a>
+
+    <div class="actions">
+      <button id="copy-btn" type="button" class="secondary-btn"
+              aria-label="Copy current AlloFlow Canvas link to clipboard">
+        Copy Canvas link
+      </button>
+      <a id="changelog-link" class="secondary-link" href="/changelog.html"
+         aria-label="View AlloFlow changelog">
+        View changelog
+      </a>
+    </div>
+    <div id="copy-feedback" class="copy-feedback" role="status" aria-live="polite"></div>
+
+    <footer>
+      <span>AlloFlow <span id="version-label">v1.1</span></span>
+      <span aria-hidden="true"> &middot; </span>
+      <span>Bookmark this page &mdash; the launch link stays stable across releases.</span>
+    </footer>
+  </main>
+
+  <div id="interstitial" class="interstitial-overlay" hidden role="dialog"
+       aria-modal="true" aria-labelledby="inter-title" aria-describedby="inter-body">
+    <div class="interstitial-card">
+      <h2 id="inter-title">Bookmark THIS page</h2>
+      <p id="inter-body">
+        Each AlloFlow release lives at a <strong>different</strong> Canvas URL. If you bookmark
+        the Canvas page directly, your bookmark will go stale.
+        <br><br>
+        Bookmark <strong>this launcher</strong> instead &mdash; it always points at the current release.
+      </p>
+      <p id="inter-countdown" class="interstitial-countdown" aria-live="polite">Continuing in 3...</p>
+      <div class="interstitial-actions">
+        <button id="inter-continue" type="button" class="primary">Got it, continue</button>
+        <button id="inter-dismiss" type="button">Don't show again</button>
+      </div>
+    </div>
+  </div>
+
+  <span id="sr-announcer" class="sr-only" role="status" aria-live="polite"></span>
+
+  <script>
+    (function () {
+      'use strict';
+      // ---- Fallback constants (regex-rewritten by bump-link.mjs) ----
+      const FALLBACK_CANVAS_URL = "https://gemini.google.com/share/c8baf80a46cc";
+      const FALLBACK_VERSION = "1.1";
+
+      const launchBtn = document.getElementById('launch-btn');
+      const statusPill = document.getElementById('status-pill');
+      const statusText = document.getElementById('status-text');
+      const versionLabel = document.getElementById('version-label');
+      const copyBtn = document.getElementById('copy-btn');
+      const copyFeedback = document.getElementById('copy-feedback');
+      const announcer = document.getElementById('sr-announcer');
+
+      let currentCanvasUrl = FALLBACK_CANVAS_URL;
+      let currentVersion = FALLBACK_VERSION;
+
+      function setStatus(state, text) {
+        statusPill.setAttribute('data-state', state);
+        statusText.textContent = text;
+        announcer.textContent = text;
+      }
+
+      function applyRelease(data, source) {
+        if (data && typeof data.canvas_url === 'string' && data.canvas_url) {
+          currentCanvasUrl = data.canvas_url;
+          launchBtn.setAttribute('href', data.canvas_url);
+        }
+        if (data && typeof data.version === 'string' && data.version) {
+          currentVersion = data.version;
+          versionLabel.textContent = 'v' + data.version;
+        }
+        if (source === 'live') {
+          setStatus('live', 'Live - v' + currentVersion);
+        } else {
+          setStatus('fallback', 'Offline - using bundled v' + currentVersion);
+        }
+      }
+
+      // Fetch release.json with cache-busting
+      function loadRelease() {
+        const url = '/release.json?t=' + Date.now();
+        fetch(url, { cache: 'no-store' })
+          .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+          })
+          .then(function (data) { applyRelease(data, 'live'); })
+          .catch(function (err) {
+            console.warn('[launch] release.json fetch failed, using fallback:', err);
+            applyRelease({ canvas_url: FALLBACK_CANVAS_URL, version: FALLBACK_VERSION }, 'fallback');
+          });
+      }
+      loadRelease();
+
+      // Copy Canvas link
+      copyBtn.addEventListener('click', function () {
+        const text = currentCanvasUrl;
+        const done = function (ok) {
+          copyFeedback.textContent = ok ? 'Copied: ' + text : 'Copy failed - select and copy manually.';
+          announcer.textContent = copyFeedback.textContent;
+          setTimeout(function () { copyFeedback.textContent = ''; }, 4000);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+        } else {
+          // Fallback for older browsers
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.setAttribute('readonly', '');
+            ta.style.position = 'absolute'; ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            done(ok);
+          } catch (e) { done(false); }
+        }
+      });
+
+      // ---- Interstitial (first-visit only) ----
+      const STORAGE_KEY = 'alloflow.launch.interstitialDismissed';
+      let dismissedFlag = false;
+      try { dismissedFlag = localStorage.getItem(STORAGE_KEY) === '1'; } catch (e) { /* private mode */ }
+
+      const overlay = document.getElementById('interstitial');
+      const continueBtn = document.getElementById('inter-continue');
+      const dismissBtn = document.getElementById('inter-dismiss');
+      const countdownEl = document.getElementById('inter-countdown');
+
+      function persistDismiss() {
+        try { localStorage.setItem(STORAGE_KEY, '1'); } catch (e) { /* ignore */ }
+      }
+
+      function hideInterstitial() {
+        overlay.hidden = true;
+        // Restore focus to launch button for keyboard users
+        launchBtn.focus();
+      }
+
+      if (!dismissedFlag) {
+        overlay.hidden = false;
+        // Initial focus for accessibility
+        setTimeout(function () { continueBtn.focus(); }, 50);
+        let remaining = 3;
+        countdownEl.textContent = 'You can continue in ' + remaining + '...';
+        const tick = setInterval(function () {
+          remaining -= 1;
+          if (remaining > 0) {
+            countdownEl.textContent = 'You can continue in ' + remaining + '...';
+          } else {
+            countdownEl.textContent = 'Ready.';
+            clearInterval(tick);
+          }
+        }, 1000);
+
+        continueBtn.addEventListener('click', function () {
+          clearInterval(tick);
+          hideInterstitial();
+        });
+        dismissBtn.addEventListener('click', function () {
+          clearInterval(tick);
+          persistDismiss();
+          hideInterstitial();
+        });
+        // Esc closes (but does NOT persist - it's a one-time view either way)
+        document.addEventListener('keydown', function onKey(e) {
+          if (e.key === 'Escape' && !overlay.hidden) {
+            clearInterval(tick);
+            hideInterstitial();
+            document.removeEventListener('keydown', onKey);
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

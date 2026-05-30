@@ -1549,13 +1549,13 @@ window.SelHub = window.SelHub || {
             // Calendar grid
             h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
               // Day headers
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 8 } },
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(32px, 1fr))', gap: 4, marginBottom: 8, overflowX: 'auto' } },
                 DAY_HEADERS.map(function(dh) {
                   return h('div', { key: dh, style: { textAlign: 'center', fontSize: 10, color: '#94a3b8', fontWeight: 600, padding: 4 } }, dh);
                 })
               ),
               // Day cells
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, justifyItems: 'center' } },
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(32px, 1fr))', gap: 4, justifyItems: 'center', overflowX: 'auto' } },
                 calCells
               )
             ),

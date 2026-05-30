@@ -8125,6 +8125,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(W, H);
+        // sRGB output + cinematic tonemap. Without this, MeshStandardMaterial
+        // colors render in linear space + look washed out; ACES tonemap brings
+        // back the rich highlights/shadows raptor-vision biomes need.
+        if ('outputColorSpace' in renderer) {
+          renderer.outputColorSpace = THREE.SRGBColorSpace || 'srgb';
+        } else if ('outputEncoding' in renderer && THREE.sRGBEncoding !== undefined) {
+          renderer.outputEncoding = THREE.sRGBEncoding;
+        }
+        if (THREE.ACESFilmicToneMapping !== undefined) {
+          renderer.toneMapping = THREE.ACESFilmicToneMapping;
+          renderer.toneMappingExposure = (species.biome === 'forest-night') ? 0.85 : 1.05;
+        }
 
         // ─── Sky + fog (biome-tinted) ───
         var biomeColors = {
@@ -8190,7 +8202,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var ambient = new THREE.AmbientLight(0xffffff, isNight ? 0.25 : 0.55);
         scene.add(ambient);
         var sun = new THREE.DirectionalLight(0xfff8e1, isNight ? 0.4 : 0.95);
-        sun.position.set(80, 120, 50);
+        // Light direction matches the visible sun sprite so highlight/shadow
+        // direction reads as coming *from the sun in the sky*, not from a
+        // random offstage angle.
+        sun.position.set(120, 180, 80);
         scene.add(sun);
         if (isNight) {
           var moonGlow = new THREE.DirectionalLight(0xb0c4ff, 0.35);
@@ -8216,7 +8231,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             starTwinkle.push({ phase: Math.random() * Math.PI * 2, freq: 0.5 + Math.random() * 2.5 });
           }
           starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-          var starMat = new THREE.PointsMaterial({ color: 0xfefce8, size: 1.5, transparent: true, opacity: 0.9, depthWrite: false, sizeAttenuation: true });
+          var starMat = new THREE.PointsMaterial({ color: 0xfefce8, size: 1.5, transparent: true, opacity: 0.9, depthWrite: false, sizeAttenuation: true, fog: false });
           var stars = new THREE.Points(starGeo, starMat);
           scene.add(stars);
           starsList = { points: stars, twinkle: starTwinkle, count: starCount };
@@ -8240,9 +8255,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         sdc.fillStyle = sdGrad;
         sdc.fillRect(0, 0, 128, 128);
         var sunTex = new THREE.CanvasTexture(sunDiscCanvas);
-        var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: sunTex, transparent: true, depthWrite: false }));
-        sunSprite.position.set(120, 180, 80);
-        sunSprite.scale.set(40, 40, 1);
+        var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: sunTex, transparent: true, depthWrite: false, fog: false }));
+        // Sun is conceptually at infinity — store *direction* (unit vector × big
+        // radius) rather than a world-space position. The animation loop
+        // re-anchors it relative to the raptor every frame so the sun never
+        // drifts across the sky as the bird moves, and never enters the fog
+        // band even if the bird flies near the world edge.
+        var sunDir = new THREE.Vector3(120, 180, 80).normalize();
+        var sunDistance = 700;
+        sunSprite.position.copy(sunDir).multiplyScalar(sunDistance);
+        sunSprite.scale.set(70, 70, 1);
         scene.add(sunSprite);
 
         // ─── NEW v0.25: Cloud sprites (skip in night biome) ───
@@ -9783,6 +9805,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             // Keep stars positioned around raptor (so they stay visible)
             starsList.points.position.set(raptor.x, raptor.y - 50, raptor.z);
           }
+
+          // ── Sky-dome + sun follow the raptor horizontally ──
+          // These represent the sky-sphere + the sun-at-infinity, so they must
+          // always be centered on the camera. Otherwise the raptor "flies away"
+          // from the sun (sun visibly moves across the sky) and the sky-dome
+          // becomes asymmetric (one horizon close, the opposite horizon far).
+          // We only follow horizontally — vertical motion would make the
+          // horizon line slide up/down with altitude, which looks broken.
+          skyDome.position.x = raptor.x;
+          skyDome.position.z = raptor.z;
+          sunSprite.position.x = raptor.x + sunDir.x * sunDistance;
+          sunSprite.position.y = sunDir.y * sunDistance;  // sun y stays absolute
+          sunSprite.position.z = raptor.z + sunDir.z * sunDistance;
 
           // ── NEW v0.27: Bird head tracks nearest prey ──
           if (headMesh && preyMeshes.length > 0) {

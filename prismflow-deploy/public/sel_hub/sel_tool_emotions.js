@@ -19722,7 +19722,7 @@ if (activeTab === 'face_builder') {
     var y2 = browY - sign * browTilt;
     return h('line', { key: 'brow' + side, x1: x1, y1: y1, x2: x2, y2: y2, stroke: '#1e293b', strokeWidth: 6, strokeLinecap: 'round' });
   }
-  var faceSvg = h('svg', { width: 220, height: 220, viewBox: '0 0 200 200', style: { display: 'block', margin: '0 auto' } },
+  var faceSvg = h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 220, display: 'block', margin: '0 auto' } },
     // face circle
     h('circle', { cx: 100, cy: 100, r: 88, fill: '#fef3c7', stroke: '#fbbf24', strokeWidth: 2 }),
     // cheeks (visible only with genuine smile / cheekR)
@@ -20309,7 +20309,7 @@ if (activeTab === 'bodymap') {
     );
   }
   var emotionList = ['joy','sadness','fear','anger','love','anxiety','shame','pride','disgust','surprise','grief','overwhelm','calm','excitement'];
-  var bodySvg = h('svg', { width: 200, height: 360, viewBox: '0 0 200 360', style: { display: 'block', margin: '0 auto' } },
+  var bodySvg = h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 360', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
     // body outline
     h('path', { d: 'M 100 30 Q 80 30 80 50 Q 80 70 95 80 L 95 90 L 70 95 Q 50 100 45 130 L 50 200 Q 55 230 65 235 L 60 320 Q 60 340 75 345 L 90 345 Q 95 345 95 340 L 95 250 Q 100 245 105 250 L 105 340 Q 105 345 110 345 L 125 345 Q 140 340 140 320 L 135 235 Q 145 230 150 200 L 155 130 Q 150 100 130 95 L 105 90 L 105 80 Q 120 70 120 50 Q 120 30 100 30 Z',
       fill: '#1e293b', stroke: '#475569', strokeWidth: 1.5 }),

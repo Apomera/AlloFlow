@@ -596,11 +596,13 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
 
   window.SelHub.registerTool('conflicttheater', {
-    name: 'Conflict Theater',
+    name: 'Conflict Theater (Beta)',
     icon: '🎭',
-    desc: 'Mediate a real conflict with two AI characters. Practice restorative principles in an immersive scene.',
+    desc: '(Beta — limited content) Mediate a real conflict with two AI characters. Practice restorative principles in an immersive scene. Currently one scenario; more coming.',
     casel: 'relationship-skills',
     contentWarning: true,
+    beta: true,
+    status: 'beta',
 
     render: function(ctx) {
       var React = ctx.React;
@@ -1021,6 +1023,15 @@ window.SelHub = window.SelHub || {
       if (mode === 'select') {
         var scenarioList = Object.keys(SCENARIOS).map(function(k) { return SCENARIOS[k]; });
         return h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } },
+          // ── Early-preview banner (Tier 1 #7: beta-gate ConflictTheater) ──
+          h('div', {
+            role: 'note',
+            'aria-label': 'Early preview notice',
+            style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.12)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fef3c7', lineHeight: 1.6 }
+          },
+            h('strong', null, '🚧 Early preview. '),
+            'This tool currently has one scenario. More scenes coming. Treat what you find here as a sample, not the complete experience.'
+          ),
           h('div', { style: { textAlign: 'center', marginBottom: 18 } },
             h('div', { style: { fontSize: 48, marginBottom: 4 } }, '🎭'),
             h('h2', { style: { fontSize: 22, fontWeight: 800, color: '#f1f5f9', marginBottom: 4 } }, 'Conflict Theater'),

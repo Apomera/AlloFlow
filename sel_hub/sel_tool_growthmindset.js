@@ -42,16 +42,16 @@ window.SelHub = window.SelHub || {
       '.sel-card:nth-child(3) { animation-delay: 0.12s; }',
       '.sel-card:nth-child(4) { animation-delay: 0.18s; }',
       '.sel-card:nth-child(5) { animation-delay: 0.24s; }',
-      '.sel-tab { transition: all 0.2s ease; position: relative; }',
-      '.sel-tab:hover { transform: translateY(-1px); }',
+      '.sel-tab { transition: all 0.2s ease; position: relative; min-height: 44px; }',
+      '.sel-tab:hover, .sel-tab:focus-visible { transform: translateY(-1px); }',
       '.sel-tab-active { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }',
       '.sel-hero { animation: selFadeInScale 0.5s ease-out both; }',
       '.sel-hero-icon { animation: selFloat 3s ease-in-out infinite; display: inline-block; }',
       '.sel-badge { animation: selBounceIn 0.4s ease-out both; }',
       '.sel-progress-dot { transition: all 0.3s ease; }',
-      '.sel-progress-dot:hover { transform: scale(1.2); }',
-      '.sel-btn { transition: all 0.2s ease; }',
-      '.sel-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }',
+      '.sel-progress-dot:hover, .sel-progress-dot:focus-visible, .sel-progress-dot:active { transform: scale(1.2); }',
+      '.sel-btn { transition: all 0.2s ease; min-height: 44px; }',
+      '.sel-btn:hover, .sel-btn:focus-visible { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }',
       '.sel-btn:active { transform: translateY(0); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }',
       '.sel-glow { animation: selGlow 2s ease-in-out infinite; }',
       '.sel-shimmer { background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.1) 50%, transparent 75%); background-size: 200% 100%; animation: selShimmer 2s linear infinite; }',
@@ -135,8 +135,8 @@ window.SelHub = window.SelHub || {
       { title: 'Neurons That Fire Together', text: 'When you practice something, your brain cells connect to each other. The more you practice, the faster the signals travel. That\u2019s why things get easier!', emoji: '\uD83C\uDF1F' },
     ],
     middle: [
-      { title: 'Neuroplasticity', text: 'Your brain physically changes structure when you learn. New neural pathways form, existing ones strengthen, and myelin sheathing makes signals travel faster. This is called neuroplasticity \u2014 your brain\u2019s ability to rewire itself.', emoji: '\uD83E\uDDE0' },
-      { title: 'The Effort Effect', text: 'Research shows that students who believe intelligence can grow (growth mindset) outperform students of equal ability who believe intelligence is fixed. The belief itself changes the outcome.', emoji: '\uD83D\uDCCA' },
+      { title: 'Neuroplasticity', text: 'The brain shows some plasticity throughout life \u2014 synapses strengthen and weaken with use. Popular claims that your brain "literally rewires itself when you struggle" often overstate what the research shows; the changes are real but slower and more specific than the rewiring metaphor suggests.', emoji: '\uD83E\uDDE0' },
+      { title: 'The Effort Effect', text: 'Early studies linked growth mindset to greater persistence on hard tasks. Whether mindset itself causes higher grades is contested \u2014 a large meta-analysis (Sisk et al., 2018) found average effects on achievement are small, and Dweck herself has acknowledged the impact is smaller than early framing suggested. Persistence is still worth practicing.', emoji: '\uD83D\uDCCA' },
       { title: 'Productive Struggle', text: 'The feeling of struggling with something difficult isn\u2019t failure \u2014 it\u2019s the feeling of your brain growing. Neuroscientists call this "desirable difficulty." Easy tasks don\u2019t build new pathways.', emoji: '\uD83E\uDDD7' },
       { title: 'The Feedback Loop', text: 'When you try, fail, adjust, and try again, you\u2019re running the most powerful learning algorithm nature ever built. Each iteration strengthens the neural pathway. Persistence isn\u2019t just character \u2014 it\u2019s neuroscience.', emoji: '\uD83D\uDD04' },
       { title: 'Myelin: The Speed Coating', text: 'When you repeat a skill, your brain wraps the neural pathway in myelin \u2014 a fatty coating that makes signals travel up to 100x faster. That\u2019s why practice doesn\u2019t just help you remember; it makes you genuinely faster.', emoji: '\u26A1' },
@@ -144,7 +144,7 @@ window.SelHub = window.SelHub || {
     high: [
       { title: 'Neuroplasticity & Identity', text: 'Carol Dweck\u2019s research reveals that mindset isn\u2019t just about academic performance \u2014 it shapes identity. People with growth mindsets don\u2019t just learn more; they respond to setbacks differently, seek harder challenges, and maintain motivation through failure.', emoji: '\uD83E\uDDE0' },
       { title: 'The Neuroscience of Effort', text: 'fMRI studies show that growth-mindset individuals show increased activity in the anterior cingulate cortex (error monitoring) and dorsolateral prefrontal cortex (strategy adjustment) when facing challenges. Fixed-mindset brains disengage.', emoji: '\uD83D\uDCCA' },
-      { title: 'Epigenetics & Learning', text: 'Recent research suggests that intense learning experiences can trigger epigenetic changes \u2014 modifications to gene expression without changing DNA. Your experiences literally shape which genes are active in your brain cells.', emoji: '\uD83E\uDDEC' },
+      { title: 'Experience Shapes the Brain', text: 'Behavior and environment can influence health and gene expression over time, but specific epigenetic claims tied to mindset interventions are not well-supported by current evidence. What is well-established: practice, sleep, and stress regulation measurably affect how your brain learns.', emoji: '\uD83E\uDDEC' },
       { title: 'Transfer & Metacognition', text: 'Growth mindset enables metacognitive monitoring \u2014 the ability to observe your own thinking. This meta-awareness is what allows you to transfer strategies from one domain to another, making you a better learner across every subject.', emoji: '\uD83D\uDD0D' },
       { title: 'The Social Dimension', text: 'Mindset is contagious. Research by Mary Murphy shows that organizations and classrooms develop "mindset cultures." When a teacher communicates growth mindset, students\u2019 stress hormones decrease and performance improves.', emoji: '\uD83C\uDF10' },
     ]
@@ -357,8 +357,8 @@ window.SelHub = window.SelHub || {
       // ── Topic-accent hero band per tab ──
       var heroBand = (function() {
         var TAB_META = {
-          brain:    { accent: '#059669', soft: 'rgba(5,150,105,0.10)',   icon: '\uD83E\uDDE0', title: 'Brain Science \u2014 neurons grow with effort',           hint: 'Neuroplasticity: dendrites branch, synapses strengthen, myelin thickens with practice. Eric Kandel won the 2000 Nobel for proving learning physically changes neurons. \u201CSmart\u201D is built, not born.' },
-          reframe:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83D\uDD04', title: 'Reframe It \u2014 fixed thought \u2192 growth thought',     hint: 'Carol Dweck (Mindset, 2006): \u201CI can\u2019t do this\u201D \u2192 \u201CI can\u2019t do this YET.\u201D Single word, decades of research behind it. The reframe doesn\u2019t make hard easy \u2014 it makes hard worth attempting.' },
+          brain:    { accent: '#059669', soft: 'rgba(5,150,105,0.10)',   icon: '\uD83E\uDDE0', title: 'Brain Science \u2014 the brain changes with practice',     hint: 'Neuroplasticity is real but often oversold: synapses do strengthen with practice, and Kandel\u2019s Nobel work showed learning leaves physical traces in neurons. The popular "rewires itself" framing exceeds what the evidence supports for most everyday learning.' },
+          reframe:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83D\uDD04', title: 'Reframe It \u2014 fixed thought \u2192 growth thought',     hint: 'Carol Dweck (Mindset, 2006): \u201CI can\u2019t do this\u201D \u2192 \u201CI can\u2019t do this YET.\u201D The reframe is a useful self-talk practice. Note: Dweck has acknowledged that achievement effects in replication studies (e.g., Sisk et al., 2018 meta-analysis) are smaller than early popular framing suggested \u2014 the value is in stance toward struggle, not a guaranteed grade boost.' },
           stories:  { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)',  icon: '\uD83C\uDF1F', title: 'Yet Stories \u2014 the world\u2019s late bloomers',         hint: 'Edison\u2019s 10,000 light-bulb attempts, J.K. Rowling\u2019s 12 rejections, Michael Jordan cut from varsity, Einstein didn\u2019t speak till 4. Survivor narratives \u2014 but the pattern (struggle \u2192 persistence \u2192 mastery) is real research too.' },
           map:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83D\uDDFA', title: 'My Growth Map \u2014 your own then-now-next',              hint: 'Pick something you can do now that you couldn\u2019t a year ago. That\u2019s your living evidence of growth-mindset working. Bandura: vicarious self-efficacy is real, but personal mastery experience is the strongest source.' },
           coach:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\uD83E\uDD16', title: 'AI Coach \u2014 reframe partner on demand',                hint: 'Type a stuck thought; the coach helps you find the growth-language version. Repeated exposure builds the habit. NOT a substitute for therapy or hard conversations \u2014 a rehearsal space for the easier reframes.' },

@@ -973,7 +973,7 @@ window.StemLab = window.StemLab || {
             // Data points
             (chartType === 'scatter' || chartType === 'line') && visiblePoints.map(function(p, i) {
               var isOutlier = showOutliers && outlierSet[p.x+','+p.y];
-              return h('g', { key: 'pt'+i, style: { cursor: 'pointer' }, onClick: function(e) { e.stopPropagation(); removePoint(i); } },
+              return h('g', { key: 'pt'+i, tabIndex: 0, role: 'button', 'aria-label': 'Remove point (' + p.x + ', ' + p.y + ')', style: { cursor: 'pointer' }, onClick: function(e) { e.stopPropagation(); removePoint(i); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); removePoint(i); } } },
                 h('circle', { cx: toSX(p.x), cy: toSY(p.y), r: 12, fill: 'transparent' }),
                 h('circle', { cx: toSX(p.x), cy: toSY(p.y), r: isOutlier ? 7 : 5, fill: isOutlier ? '#ef4444' : pal.fill, stroke: isOutlier ? '#fca5a5' : pal.stroke, strokeWidth: isOutlier ? 2 : 1.5 }),
                 showLabels && h('text', { x: toSX(p.x), y: toSY(p.y)-8, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '8px', fontWeight: 'bold' } }, '(' + p.x + ',' + p.y + ')'),
@@ -1169,7 +1169,7 @@ window.StemLab = window.StemLab || {
               h('button', { 'aria-label': '+ Add', onClick: function() { var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { addPoint(parseFloat(xi.value), parseFloat(yi.value)); xi.value = ''; yi.value = ''; } }, className: 'px-3 py-1 bg-teal-700 text-white font-bold rounded text-sm hover:bg-teal-700' }, '+ Add')
             ),
             n > 0 && h('div', { className: 'max-h-24 overflow-y-auto text-xs font-mono text-slate-600' },
-              visiblePoints.map(function(p, i) { return h('span', { key: i, className: 'inline-block mr-2 bg-white px-1.5 py-0.5 rounded border mb-1 cursor-pointer hover:bg-red-50', onClick: function() { removePoint(i); } }, '(' + p.x + ',' + p.y + ')'); })
+              visiblePoints.map(function(p, i) { return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': 'Remove point (' + p.x + ', ' + p.y + ')', className: 'inline-block mr-2 bg-white px-1.5 py-0.5 rounded border mb-1 cursor-pointer hover:bg-red-50', onClick: function() { removePoint(i); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); removePoint(i); } } }, '(' + p.x + ',' + p.y + ')'); })
             )
           ),
 

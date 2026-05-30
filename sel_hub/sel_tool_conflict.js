@@ -1113,7 +1113,7 @@ window.SelHub = window.SelHub || {
       if (showBadgesPanel) {
         badgePopup = h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Badges panel', style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function() { upd('showBadgesPanel', false); } },
           h('div', { onClick: function(e) { e.stopPropagation(); }, style: { position: 'relative', background: '#1e293b', border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
-            h('button', { 'aria-label': 'Close badges panel', onClick: function() { upd('showBadgesPanel', false); }, style: { position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14, background: '#334155', color: '#cbd5e1', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+            h('button', { 'aria-label': 'Close badges panel', onClick: function() { upd('showBadgesPanel', false); }, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: '#334155', color: '#cbd5e1', border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
             h('h3', { style: { textAlign: 'center', color: '#f1f5f9', marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               BADGES.map(function(b) {

@@ -20221,14 +20221,14 @@ if (activeTab === 'timeline') {
       h('p', { style: { color: '#94a3b8', fontSize: 13, lineHeight: 1.55, margin: '8px 0' } }, 'No check-ins yet this quarter. Visit the Rubric or Weekly check-in tab to start.')
     ) : h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a' } },
       // header row
-      h('div', { style: { display: 'grid', gridTemplateColumns: '120px repeat(9, 1fr)', gap: 4, marginBottom: 4 } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(80px, 120px) repeat(9, minmax(24px, 1fr))', gap: 4, marginBottom: 4, overflowX: 'auto' } },
         h('div', null, ''),
         weeks.map(function(w) {
           return h('div', { key: w.week, style: { textAlign: 'center', color: '#94a3b8', fontSize: 10 } }, w.label);
         })
       ),
       howlList.map(function(h2) {
-        return h('div', { key: h2.id, style: { display: 'grid', gridTemplateColumns: '120px repeat(9, 1fr)', gap: 4, marginBottom: 4 } },
+        return h('div', { key: h2.id, style: { display: 'grid', gridTemplateColumns: 'minmax(80px, 120px) repeat(9, minmax(24px, 1fr))', gap: 4, marginBottom: 4, overflowX: 'auto' } },
           h('div', { style: { color: h2.color, fontSize: 11, fontWeight: 700 } }, (h2.icon || '') + ' ' + h2.name.split(' ')[0]),
           weeks.map(function(w) {
             var v = w.avg[h2.id];

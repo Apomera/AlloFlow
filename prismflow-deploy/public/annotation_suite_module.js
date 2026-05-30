@@ -288,7 +288,7 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
           type: "button",
           onClick: commit,
           className: "px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-[10px] font-bold",
-          "aria-label": "Save and close note",
+          "aria-label": t("a11y.save_note"),
           title: "Save & close"
         },
         "\u2713"
@@ -303,7 +303,7 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
             onDelete(a.id);
           },
           className: "px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-[10px] font-bold",
-          "aria-label": "Delete note",
+          "aria-label": t("a11y.delete_note"),
           title: "Delete"
         },
         "\u2715"
@@ -322,7 +322,7 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
         rows: 3,
         className: "w-full p-2 text-xs resize-y bg-transparent outline-none",
         style: { color: palette.text, minHeight: 60 },
-        "aria-label": "Note content"
+        "aria-label": t("a11y.note_content")
       }
     )
   );
@@ -407,7 +407,7 @@ function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
           },
           className: "px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-[10px] font-bold",
           style: { color: accent },
-          "aria-label": "Close voice note",
+          "aria-label": t("a11y.close_voice_note"),
           title: "Close"
         },
         "\u2713"
@@ -420,7 +420,7 @@ function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
           },
           className: "px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-[10px] font-bold",
           style: { color: accent },
-          "aria-label": "Delete voice note",
+          "aria-label": t("a11y.delete_voice_note"),
           title: "Delete"
         },
         "\u2715"
@@ -463,7 +463,7 @@ function RecordingOverlay({ x, y, elapsedSec, onStop, onCancel }) {
         type: "button",
         onClick: onCancel,
         className: "px-2 py-1 rounded text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200",
-        "aria-label": "Cancel recording"
+        "aria-label": t("a11y.cancel_recording")
       },
       "Cancel"
     ), /* @__PURE__ */ React.createElement(
@@ -472,7 +472,7 @@ function RecordingOverlay({ x, y, elapsedSec, onStop, onCancel }) {
         type: "button",
         onClick: onStop,
         className: "px-3 py-1 rounded text-[11px] font-bold text-white bg-red-600 hover:bg-red-700 flex items-center gap-1",
-        "aria-label": "Stop recording and save"
+        "aria-label": t("a11y.stop_save_recording")
       },
       /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 bg-white" }),
       " Stop"
@@ -550,7 +550,7 @@ function HighlightOverlay({ a, onDelete }) {
           lineHeight: 1,
           zIndex: 50
         },
-        "aria-label": "Delete highlight",
+        "aria-label": t("a11y.delete_highlight"),
         title: "Delete highlight"
       },
       "\u2715"
@@ -677,7 +677,7 @@ function DrawingOverlay({ a, onDelete }) {
         onMouseLeave: function(e) {
           e.currentTarget.style.opacity = "0";
         },
-        "aria-label": "Delete drawing",
+        "aria-label": t("a11y.delete_drawing"),
         title: "Delete drawing"
       },
       "\u2715"
@@ -1071,7 +1071,7 @@ function Toolbar(props) {
         onPickTemplate(e.target.value);
       },
       className: "text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400 max-w-[150px]",
-      "aria-label": "Note template",
+      "aria-label": t("a11y.note_template"),
       title: noteTemplate ? "Template active: next note auto-fills" : "Pick a template to auto-fill the next note",
       style: { height: 22 }
     },
@@ -1085,7 +1085,7 @@ function Toolbar(props) {
       onClick: onClear,
       className: "p-1 text-slate-600 hover:text-red-500 rounded-full",
       title: "Clear all annotations",
-      "aria-label": "Clear all annotations"
+      "aria-label": t("a11y.clear_all_annotations")
     },
     Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
   )), mode === "highlight" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, HIGHLIGHT_COLOR_KEYS.map(function(key) {
@@ -1109,7 +1109,7 @@ function Toolbar(props) {
       onClick: onClear,
       className: "p-1 text-slate-600 hover:text-red-500 rounded-full",
       title: "Clear all annotations",
-      "aria-label": "Clear all annotations"
+      "aria-label": t("a11y.clear_all_annotations")
     },
     Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
   )), mode === "draw" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, DRAW_SHAPES.map(function(sh) {
@@ -1205,7 +1205,7 @@ function Toolbar(props) {
       onClick: onClear,
       className: "p-1 text-slate-600 hover:text-red-500 rounded-full",
       title: "Clear all annotations",
-      "aria-label": "Clear all annotations"
+      "aria-label": t("a11y.clear_all_annotations")
     },
     Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
   )));

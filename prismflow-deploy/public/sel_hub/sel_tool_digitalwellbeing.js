@@ -44,7 +44,8 @@
       '.dw-root .dw-card-interactive {',
       '   transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.18s ease;',
       ' }',
-      '.dw-root .dw-card-interactive:hover:not(:disabled) {',
+      '.dw-root .dw-card-interactive:hover:not(:disabled),',
+      '.dw-root .dw-card-interactive:active:not(:disabled) {',
       '   transform: translateY(-1px);',
       '   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);',
       ' }',
@@ -72,7 +73,7 @@
       '   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.05);',
       '   transition: box-shadow 0.2s ease;',
       ' }',
-      '.dw-root .dw-stat-tile:hover { box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.08); }',
+      '.dw-root .dw-stat-tile:hover, .dw-root .dw-stat-tile:active { box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.08); }',
       // Badge popup entrance + sparkle
       '@keyframes dw-badge-pop {',
       '   0%   { transform: scale(0.55); opacity: 0; }',
