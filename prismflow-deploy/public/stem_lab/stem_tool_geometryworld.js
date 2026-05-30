@@ -2223,7 +2223,7 @@
           try { savedProgress = JSON.parse(localStorage.getItem(progressKey)); } catch(e) {}
           // Restore chat history from localStorage
           var savedChat = null;
-          try { savedChat = JSON.parse(localStorage.getItem('gw_chat_' + (lesson._id || Object.keys(SAMPLE_LESSONS).find(function(k) { return SAMPLE_LESSONS[k] === lesson; }) || 'unknown'))); } catch(e) {}
+          try { savedChat = JSON.parse(sessionStorage.getItem('gw_chat_' + (lesson._id || Object.keys(SAMPLE_LESSONS).find(function(k) { return SAMPLE_LESSONS[k] === lesson; }) || 'unknown'))); } catch(e) {}
           // engine.blocksPlaced was reset to 0 at the top of loadLesson — mirror to React state
           // so the HUD + build_10 quest don't display stale counts from a prior session/lesson.
           if (savedProgress && savedProgress.score > 0) {
@@ -6245,13 +6245,15 @@
                     callGemini(npcPrompt, true).then(function(r) {
                       var uh = Object.assign({}, npcChatHistory); uh[dialogNpcIdx] = history.concat([{ role: 'npc', text: r }]);
                       upd({ npcChatHistory: uh, npcChatLoading: false });
-                      try { localStorage.setItem('gw_chat_' + activeLesson, JSON.stringify(uh)); } catch(e) {}
+                      try { sessionStorage.setItem('gw_chat_' + activeLesson, JSON.stringify(uh)); } catch(e) {}
                     }).catch(function() { upd('npcChatLoading', false); });
                   },
                   disabled: npcChatLoading || !npcChatInput.trim(),
                   style: { background: npcChatInput.trim() && !npcChatLoading ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }
                 }, npcChatLoading ? '\u23F3' : '\u2728')
-              )
+              ),
+              el('div', { style: { fontSize: 11, opacity: 0.7, marginTop: 4 } },
+                '\uD83D\uDCA1 Sent to an AI helper \u2014 don\u2019t type your name or personal info.')
             )
             ) // close body content div
           );

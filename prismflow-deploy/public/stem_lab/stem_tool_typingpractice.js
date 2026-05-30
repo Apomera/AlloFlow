@@ -13544,6 +13544,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
             return h('div', {
               key: 'k-' + keyObj.k,
+              title: fingerLabel(finger),
+              'aria-label': (keyObj.label || keyObj.k) + ' — ' + fingerLabel(finger),
               style: {
                 width: keyObj.wide ? ((keyObj.wide * 32) + (keyObj.wide - 1) * 4) + 'px' : '32px',
                 height: '32px',

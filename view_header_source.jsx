@@ -201,7 +201,7 @@ function HeaderBar(props) {
                                                 <button onClick={resetFontSize} data-help-key="header_settings_text_reset" className="text-[11px] text-indigo-500 hover:text-indigo-700 font-bold flex items-center gap-1"><RefreshCw size={10}/> {t('common.reset')}</button>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs font-bold flex items-center gap-1 text-slate-600 dark:text-slate-600">{t('settings.text.font_family')}</label>
+                                                <label className="text-xs font-bold flex items-center gap-1 text-slate-300 dark:text-slate-600">{t('settings.text.font_family')}</label>
                                                 <select aria-label={t('common.selection')}
                                                     value={selectedFont}
                                                     onChange={(e) => setSelectedFont(e.target.value)}
@@ -223,7 +223,7 @@ function HeaderBar(props) {
                                                 className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${focusMode ? 'bg-indigo-50 border-indigo-500 text-indigo-700 dark:bg-indigo-900 dark:border-indigo-400 dark:text-indigo-100' : 'bg-slate-50 border-transparent hover:border-slate-300 dark:bg-slate-700 dark:text-slate-200'}`}
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`p-1.5 rounded-md ${focusMode ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600 dark:bg-slate-600'}`}>
+                                                    <div className={`p-1.5 rounded-md ${focusMode ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-300 dark:bg-slate-600'}`}>
                                                         <Eye size={16} />
                                                     </div>
                                                     <div className="text-left">
@@ -237,7 +237,7 @@ function HeaderBar(props) {
                                             </button>
                                             <div>
                                                 <div className="flex justify-between items-center mb-2">
-                                                    <label className="text-xs font-bold flex items-center gap-1 text-slate-600 dark:text-slate-600">{t('settings.text.size')}</label>
+                                                    <label className="text-xs font-bold flex items-center gap-1 text-slate-300 dark:text-slate-600">{t('settings.text.size')}</label>
                                                     <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{baseFontSize}px</span>
                                                 </div>
                                             <div className="flex items-center gap-3" data-help-key="header_settings_text_size">
@@ -255,7 +255,7 @@ function HeaderBar(props) {
                                             </div>
                                             <div className="border-t border-slate-100 dark:border-slate-700 pt-3 mt-3">
                                                 <div className="flex justify-between items-center mb-2">
-                                                    <label className="text-xs font-bold flex items-center gap-1 text-slate-600 dark:text-slate-600">{t('settings.text.line_height')}</label>
+                                                    <label className="text-xs font-bold flex items-center gap-1 text-slate-300 dark:text-slate-600">{t('settings.text.line_height')}</label>
                                                     <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{lineHeight}</span>
                                                 </div>
                                                 <input aria-label={t('common.adjust_line_height')}
@@ -268,7 +268,7 @@ function HeaderBar(props) {
                                             </div>
                                             <div>
                                                 <div className="flex justify-between items-center mb-2">
-                                                    <label className="text-xs font-bold flex items-center gap-1 text-slate-600 dark:text-slate-600">{t('settings.text.spacing')}</label>
+                                                    <label className="text-xs font-bold flex items-center gap-1 text-slate-300 dark:text-slate-600">{t('settings.text.spacing')}</label>
                                                     <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{letterSpacing}em</span>
                                                 </div>
                                                 <input aria-label={t('common.adjust_letter_spacing')}
@@ -392,14 +392,14 @@ function HeaderBar(props) {
                                                 {/* ── Kokoro Quality Toggle (only visible for Kokoro voices) ── */}
                                                 {_isCanvasEnv && selectedVoice && selectedVoice.includes('_') && window._kokoroTTS && (
                                                     <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600">
-                                                        <label className="text-[11px] uppercase font-bold text-slate-600 block mb-1.5">{t('header.voice_quality_label') || 'Voice Quality'}</label>
+                                                        <label className="text-[11px] uppercase font-bold text-slate-300 block mb-1.5">{t('header.voice_quality_label') || 'Voice Quality'}</label>
                                                         <div className="flex gap-1">
                                                             <button
                                                                 onClick={() => { window._kokoroTTS.setQuality('fast'); }}
                                                                 className={`flex-1 text-[11px] font-bold px-2 py-1.5 rounded-md transition-all ${
                                                                     !window._kokoroTTS.quality || window._kokoroTTS.quality === 'fast'
                                                                         ? 'bg-indigo-500 text-white shadow-sm'
-                                                                        : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-300'
+                                                                        : 'bg-slate-200 dark:bg-slate-600 text-slate-300 dark:text-slate-300 hover:bg-slate-300'
                                                                 }`}
                                                             >
                                                                 ⚡ Fast (~43MB)
@@ -409,7 +409,7 @@ function HeaderBar(props) {
                                                                 className={`flex-1 text-[11px] font-bold px-2 py-1.5 rounded-md transition-all ${
                                                                     window._kokoroTTS.quality === 'high'
                                                                         ? 'bg-emerald-700 text-white shadow-sm'
-                                                                        : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-300'
+                                                                        : 'bg-slate-200 dark:bg-slate-600 text-slate-300 dark:text-slate-300 hover:bg-slate-300'
                                                                 }`}
                                                             >
                                                                 🎵 High Quality (~86MB)

@@ -10945,7 +10945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 style: btn({ padding: '6px 12px', fontSize: 12, opacity: cScenario <= 0 ? 0.4 : 1 }) }, '← Previous'),
               h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } },
                 printerScenarios.map(function(_, i) {
-                  return h('span', { key: i, onClick: function() { setCScenario(i); setCScChoice(null); },
+                  return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': 'Go to scenario ' + (i + 1), 'aria-current': (i === cScenario) ? 'true' : undefined, onClick: function() { setCScenario(i); setCScChoice(null); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCScenario(i); setCScChoice(null); } },
                     style: { cursor: 'pointer', display: 'inline-block', width: 28, height: 22, lineHeight: '22px', textAlign: 'center', borderRadius: 4, margin: '0 2px', background: (i === cScenario) ? T.accent : T.cardAlt, color: (i === cScenario) ? T.ink : T.text, fontWeight: 700 } }, i + 1);
                 })
               ),
@@ -11344,7 +11344,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 style: btn({ padding: '6px 12px', fontSize: 12, opacity: fnEditor <= 0 ? 0.4 : 1 }) }, '← Previous era'),
               h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } },
                 editorScenarios.map(function(_, i) {
-                  return h('span', { key: i, onClick: function() { setFnEditor(i); setFnEditorChoice(null); },
+                  return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': 'Go to era ' + (i + 1), 'aria-current': (i === fnEditor) ? 'true' : undefined, onClick: function() { setFnEditor(i); setFnEditorChoice(null); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFnEditor(i); setFnEditorChoice(null); } },
                     style: { cursor: 'pointer', display: 'inline-block', width: 36, height: 22, lineHeight: '22px', textAlign: 'center', borderRadius: 4, margin: '0 2px', background: (i === fnEditor) ? T.accent : T.cardAlt, color: (i === fnEditor) ? T.ink : T.text, fontWeight: 700, fontSize: 11 } }, editorScenarios[i].year);
                 })
               ),

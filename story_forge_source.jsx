@@ -258,6 +258,38 @@ const useReducedMotion = () => {
   return prefersReduced;
 };
 
+// ── Host theme mirror ──
+// StoryForge renders OUTSIDE the host app's themed <main id="main-content"> (it is a
+// sibling modal), so the host's `.theme-dark` / `.theme-contrast` descendant CSS rules
+// never cascade into it. We read the host's active theme off #main-content's class list
+// and mirror it onto our own modal root, so those existing global rules style StoryForge
+// too. A MutationObserver re-reads on change (e.g. the in-modal theme toggle) so the
+// module restyles live, without needing a `theme` prop threaded from the host.
+const readHostTheme = () => {
+  try {
+    if (typeof document === 'undefined') return 'default';
+    const el = document.getElementById('main-content') || document.body;
+    const cls = (el && el.className) || '';
+    if (/\btheme-contrast\b/.test(cls)) return 'contrast';
+    if (/\btheme-dark\b/.test(cls)) return 'dark';
+  } catch (e) { /* SSR / locked-down DOM — fall through to default */ }
+  return 'default';
+};
+const useHostTheme = () => {
+  const [hostTheme, setHostTheme] = useState(readHostTheme);
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const update = () => setHostTheme(readHostTheme());
+    update();
+    const target = document.getElementById('main-content') || document.body;
+    if (!target || typeof MutationObserver === 'undefined') return undefined;
+    const mo = new MutationObserver(update);
+    mo.observe(target, { attributes: true, attributeFilter: ['class'] });
+    return () => mo.disconnect();
+  }, []);
+  return hostTheme;
+};
+
 const LAYOUT_MODES = {
   'prose': { label: 'Prose', emoji: '📄', desc: 'Traditional paragraph layout', writeBg: 'bg-white', writeBorder: 'border-slate-200', accent: 'rose' },
   'comic': { label: 'Comic', emoji: '💬', desc: 'Panel grid with speech bubbles', writeBg: 'bg-slate-50', writeBorder: 'border-slate-800', accent: 'blue' },
@@ -678,9 +710,17 @@ const StoryForge = React.memo(({
   // ── Phase content ref for focus management ──
   const phaseContentRef = useRef(null);
 
+  // ── Modal focus-management refs (focus trap + restore) ──
+  const modalRootRef = useRef(null);
+  const previouslyFocusedRef = useRef(null);
+
   // ── Accessibility ──
   const prefersReducedMotion = useReducedMotion();
   const animClass = prefersReducedMotion ? '' : 'animate-in fade-in duration-300';
+
+  // ── Theme: mirror the host app's dark / high-contrast theme onto our own modal root,
+  //    so the host's existing `.theme-dark .bg-white {…}` / `.theme-contrast …` rules apply. ──
+  const hostTheme = useHostTheme();
 
   // ── Cleanup on unmount ──
   useEffect(() => {
@@ -907,6 +947,45 @@ const StoryForge = React.memo(({
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [isOpen, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language]);
+
+  // ── Focus management: move focus into the dialog on open, trap Tab inside it, and
+  //    restore focus to the trigger on close (WCAG 2.4.3 Focus Order / 2.1.2 No Keyboard Trap escape). ──
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const root = modalRootRef.current;
+    if (!root || typeof document === 'undefined') return undefined;
+    // Remember what had focus so we can restore it when the dialog closes.
+    previouslyFocusedRef.current = document.activeElement;
+    const FOCUSABLE = 'a[href],area[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+    const getFocusable = () => Array.from(root.querySelectorAll(FOCUSABLE)).filter(el => el.getClientRects().length > 0);
+    // Defer so the first render is committed before we move focus in.
+    const focusTimer = setTimeout(() => {
+      const f = getFocusable();
+      (f[0] || root).focus();
+    }, 0);
+    const onKeyDown = (e) => {
+      if (e.key !== 'Tab') return;
+      const f = getFocusable();
+      if (f.length === 0) { e.preventDefault(); root.focus(); return; }
+      const first = f[0];
+      const last = f[f.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey) {
+        if (active === first || !root.contains(active)) { e.preventDefault(); last.focus(); }
+      } else {
+        if (active === last || !root.contains(active)) { e.preventDefault(); first.focus(); }
+      }
+    };
+    root.addEventListener('keydown', onKeyDown);
+    return () => {
+      clearTimeout(focusTimer);
+      root.removeEventListener('keydown', onKeyDown);
+      const prev = previouslyFocusedRef.current;
+      if (prev && typeof prev.focus === 'function' && document.contains(prev)) {
+        try { prev.focus(); } catch (e) { /* element gone — nothing to restore to */ }
+      }
+    };
+  }, [isOpen]);
 
   // ── Auto-save to localStorage ──
   const saveTimerRef = useRef(null);
@@ -2112,10 +2191,10 @@ Return ONLY JSON:
         const safeThought = panel.thought ? escapeHtml(panel.thought) : '';
         const safeSfx = panel.sfx ? escapeHtml(panel.sfx) : '';
         const sticker = panelStickers[p.id] || '';
-        chaptersHtml += `<article class="panel" aria-label={t("a11y.comic_panel", { n: idx + 1 })}>`;
+        chaptersHtml += `<article class="panel" aria-label="${escapeHtml(t("a11y.comic_panel", { n: idx + 1 }))}">`;
         if (img) chaptersHtml += `<div class="panel-img-wrap">`;
         if (img) chaptersHtml += `<img src="${img}" class="panel-img" loading="lazy" alt="Comic panel ${idx + 1} illustration" />`;
-        if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label={t("a11y.sound_effect", { fx: safeSfx })}>${safeSfx}</span>`;
+        if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label="${escapeHtml(t("a11y.sound_effect", { fx: panel.sfx }))}">${safeSfx}</span>`;
         if (img && sticker) chaptersHtml += `<span class="panel-sticker" aria-hidden="true">${escapeHtml(sticker)}</span>`;
         if (img) chaptersHtml += `</div>`;
         if (safeSpeech) {
@@ -2128,15 +2207,15 @@ Return ONLY JSON:
         chaptersHtml += `<div class="speech-bubble panel-caption">${safeText.length > 200 ? safeText.substring(0, 200) + '...' : safeText.replace(/\n/g, '<br/>')}</div>`;
         chaptersHtml += `</article>`;
       } else {
-        chaptersHtml += `<article class="chapter" aria-label={t("a11y.paragraph_n", { n: idx + 1 })}>`;
+        chaptersHtml += `<article class="chapter" aria-label="${escapeHtml(t("a11y.paragraph_n", { n: idx + 1 }))}">`;
         if (img) chaptersHtml += `<img src="${img}" class="scene-img" loading="lazy" alt="Illustration for paragraph ${idx + 1}" />`;
         const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label;
         if (beatLabel && p.plotBeat) {
-          chaptersHtml += `<div class="beat-label" aria-label={t("a11y.narrative_beat", { label: escapeHtml(beatLabel) })}>${escapeHtml(beatLabel)}</div>`;
+          chaptersHtml += `<div class="beat-label" aria-label="${escapeHtml(t("a11y.narrative_beat", { label: beatLabel }))}">${escapeHtml(beatLabel)}</div>`;
         }
         chaptersHtml += `<p class="story-text">${safeText.replace(/\n/g, '<br/>')}</p>`;
         if (audio?.studentAudioBase64) {
-          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label={t("a11y.audio_narration_paragraph", { n: idx + 1 })}></audio>`;
+          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label="${escapeHtml(t("a11y.audio_narration_paragraph", { n: idx + 1 }))}"></audio>`;
         }
         chaptersHtml += `</article>`;
         if (idx < paragraphs.length - 1) chaptersHtml += `<div class="separator" aria-hidden="true">&mdash;</div>`;
@@ -2144,7 +2223,7 @@ Return ONLY JSON:
     });
     if (isComic) chaptersHtml += '</div>';
 
-    let vocabHtml = '<div class="vocab-section"><h2 id="vocab-heading">{t("ui_common.vocab_terms_used")}</h2><div class="vocab-grid">';
+    let vocabHtml = `<div class="vocab-section"><h2 id="vocab-heading">${escapeHtml(t("ui_common.vocab_terms_used"))}</h2><div class="vocab-grid">`;
     vocabTerms.forEach(v => {
       const used = vocabUsage[v.term];
       vocabHtml += `<div class="vocab-chip ${used ? 'used' : 'unused'}">${used ? '✓' : '✗'} ${escapeHtml(v.term)}</div>`;
@@ -2155,7 +2234,7 @@ Return ONLY JSON:
     if (gradingResult) {
       feedbackHtml = `<div class="feedback-section">
         <h2 id="feedback-heading">Teacher Feedback</h2>
-        <div class="score-badge" aria-label={t("a11y.score_n", { score: escapeHtml(gradingResult.totalScore || '') })}>${escapeHtml(gradingResult.totalScore || '')}</div>
+        <div class="score-badge" aria-label="${escapeHtml(t("a11y.score_n", { score: gradingResult.totalScore || '' }))}">${escapeHtml(gradingResult.totalScore || '')}</div>
         <div class="glow-grow">
           <div class="glow"><strong>✨ Glow:</strong> ${escapeHtml(gradingResult.feedback?.glow || '')}</div>
           <div class="grow"><strong>🌱 Grow:</strong> ${escapeHtml(gradingResult.feedback?.grow || '')}</div>
@@ -2211,8 +2290,8 @@ main{display:block}
 @media print{.skip-link,.print-btn{display:none}.chapter,.panel{break-inside:avoid}body{background:#fff !important}.cover{background:#fffbeb !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.comic-grid{background:#1e293b !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style></head><body>
-<a class="skip-link" href="#story-content">{t("ui_common.skip_to_story")}</a>
-<button class="print-btn" onclick="window.print()" aria-label={t("a11y.story_print")}>🖨️ Print</button>
+<a class="skip-link" href="#story-content">${escapeHtml(t("ui_common.skip_to_story"))}</a>
+<button class="print-btn" onclick="window.print()" aria-label="${escapeHtml(t("a11y.story_print"))}">🖨️ Print</button>
 <header class="cover" role="banner">
   ${coverArt ? `<img src="${coverArt}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
   <h1 id="story-title">${title}</h1>
@@ -2261,7 +2340,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
       const img = illustrations[p.id]?.imageUrl;
       const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label;
       const beatHtml = (beatLabel && p.plotBeat)
-        ? `<div class="beat-label" aria-label={t("a11y.narrative_beat", { label: escapeHtml(beatLabel) })}>${escapeHtml(beatLabel)}</div>`
+        ? `<div class="beat-label" aria-label="${escapeHtml(t("a11y.narrative_beat", { label: beatLabel }))}">${escapeHtml(beatLabel)}</div>`
         : '';
       slidesHtml += `<div class="slide">
         ${img ? `<img src="${img}" class="slide-img" alt="Scene ${idx + 1}" />` : ''}
@@ -2272,7 +2351,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
     });
 
     // Vocab slide
-    slidesHtml += `<div class="slide vocab-slide"><h2>{t("ui_common.vocabulary_used")}</h2><div class="vocab-flex">`;
+    slidesHtml += `<div class="slide vocab-slide"><h2>${escapeHtml(t("ui_common.vocabulary_used"))}</h2><div class="vocab-flex">`;
     vocabTerms.forEach(v => {
       const used = vocabUsage[v.term];
       slidesHtml += `<span class="v-chip ${used ? 'used' : ''}">${used ? '✓' : '✗'} ${escapeHtml(v.term)}</span>`;
@@ -2513,7 +2592,7 @@ show();
   const phaseIcons = [Sparkles, Type, ImageIcon, Volume2, Star, Download];
 
   return (
-    <div className={`sf-modal-root fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`} role="dialog" aria-modal="true" aria-label={t("a11y.story_forge_studio")}>
+    <div ref={modalRootRef} tabIndex={-1} className={`sf-modal-root theme-${hostTheme} fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`} role="dialog" aria-modal="true" aria-label={t("a11y.story_forge_studio")}>
       {/* Hidden audio element for playback */}
       <audio ref={audioRef} onEnded={handleAudioEnded} className="hidden" />
       {/* Screen reader playback announcements */}
@@ -2632,7 +2711,7 @@ show();
       </nav>
 
       {/* ── Phase Content ── */}
-      <div className="flex-grow overflow-y-auto" ref={phaseContentRef} tabIndex={-1} role="region" aria-label={`${PHASE_LABELS[phaseIdx]} phase`} aria-live="polite">
+      <div className="flex-grow overflow-y-auto" ref={phaseContentRef} tabIndex={-1} role="region" aria-label={`${PHASE_LABELS[phaseIdx]} phase`}>
         <div className="max-w-4xl mx-auto p-6">
 
           {/* ═══ CONFIGURE PHASE ═══ */}
@@ -2992,21 +3071,25 @@ show();
                     const used = vocabUsage[v.term];
                     return (
                       <div key={i} className="relative group">
-                        <div
+                        <button
+                          type="button"
+                          data-sf-focusable
+                          aria-describedby={`sf-vocab-tip-${i}`}
+                          aria-label={`${v.term}${used ? ' — used' : ' — not yet used'}. ${t("a11y.copy_vocab_term") || 'Copy term to paste into your story'}`}
                           className={`px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all cursor-pointer select-none ${
                             used ? 'bg-green-100 border-green-400 text-green-800 shadow-sm' : 'bg-white border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-400'
                           }`}
                           onClick={() => { navigator.clipboard?.writeText(v.term).then(() => { if (addToast) addToast(`"${v.term}" copied — paste into your story!`, 'success'); }).catch(() => {}); }}
                         >
-                          {used ? <CheckCircle2 size={11} className="inline mr-1" /> : <span className="inline-block w-2 h-2 rounded-full bg-rose-300 mr-1.5" />}
+                          {used ? <CheckCircle2 size={11} className="inline mr-1" /> : <span aria-hidden="true" className="inline-block w-2 h-2 rounded-full bg-rose-300 mr-1.5" />}
                           {v.term}
-                        </div>
-                        {/* Hover Tooltip Word Bank */}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white rounded-xl p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
-                          <div className="text-xs font-bold text-amber-700 mb-1">{v.term}</div>
-                          {v.definition && <div className="text-[11px] text-slate-600 leading-relaxed mb-1">{v.definition}</div>}
-                          <div className="text-[11px] text-slate-600 italic">Click to copy · Paste into your paragraph</div>
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-slate-800" />
+                        </button>
+                        {/* Word-bank definition — revealed on hover AND keyboard focus */}
+                        <div id={`sf-vocab-tip-${i}`} role="tooltip" className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white rounded-xl p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-50 pointer-events-none">
+                          <div className="text-xs font-bold text-amber-300 mb-1">{v.term}</div>
+                          {v.definition && <div className="text-[11px] text-slate-200 leading-relaxed mb-1">{v.definition}</div>}
+                          <div className="text-[11px] text-slate-300 italic">Click to copy · Paste into your paragraph</div>
+                          <div aria-hidden="true" className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-slate-800" />
                         </div>
                       </div>
                     );
@@ -3141,7 +3224,7 @@ show();
                       <div className="space-y-1.5">
                         {helpMeResult.map((s, si) => (
                           <div key={si} className="text-xs text-amber-800 flex items-start gap-2">
-                            <span className="text-amber-700 mt-0.5">💡</span>
+                            <span className="text-amber-400 mt-0.5">💡</span>
                             <span>{s}</span>
                           </div>
                         ))}
@@ -4495,7 +4578,7 @@ show();
                           <img src={illustrations[p.id].imageUrl} alt={`Scene ${idx + 1}`} className="max-w-md rounded-xl shadow-md" />
                         )}
                         <p className="text-sm text-slate-800 leading-relaxed max-w-lg text-center" style={{ textIndent: '2em', textAlign: 'left' }}>{p.text}</p>
-                        {idx < paragraphs.length - 1 && <div className="text-amber-700 text-lg">—</div>}
+                        {idx < paragraphs.length - 1 && <div className="text-amber-400 text-lg">—</div>}
                       </div>
                     ))}
                   </div>

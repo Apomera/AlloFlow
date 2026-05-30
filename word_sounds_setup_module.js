@@ -1185,11 +1185,11 @@ const WordSoundsReviewPanel = ({
         e.stopPropagation();
         onRetryFailedTTS();
       },
-      className: "px-2 py-0.5 bg-white/90 hover:bg-white text-red-600 font-bold rounded-full text-xs",
+      className: "px-2 py-0.5 bg-white/90 hover:bg-white text-red-300 font-bold rounded-full text-xs",
       title: t("word_sounds.retry_audio_tooltip") || "Retry audio generation for words that failed"
     },
     t("word_sounds.retry_audio_button") || "Retry audio"
-  )))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar" }, preloadedWords.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u23F3"), isLoading ? /* @__PURE__ */ React.createElement("p", { className: "animate-pulse" }, t("word_sounds.generating_new_words") || "Generating new words... this may take a moment") : /* @__PURE__ */ React.createElement("p", null, t("word_sounds.no_words_preloaded") || "No words preloaded yet. Start the activity to generate words.")) : (preloadedWords || []).map((word, idx) => /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar" }, preloadedWords.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-300" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u23F3"), isLoading ? /* @__PURE__ */ React.createElement("p", { className: "animate-pulse" }, t("word_sounds.generating_new_words") || "Generating new words... this may take a moment") : /* @__PURE__ */ React.createElement("p", null, t("word_sounds.no_words_preloaded") || "No words preloaded yet. Start the activity to generate words.")) : (preloadedWords || []).map((word, idx) => /* @__PURE__ */ React.createElement(
     "div",
     {
       key: word.id || `word-${word.targetWord || word.word}-${idx}`,
@@ -1223,7 +1223,7 @@ const WordSoundsReviewPanel = ({
           },
           disabled: regeneratingIndex === idx,
           className: `w-10 h-10 flex items-center justify-center rounded-full transition-colors text-base font-bold border-2
-                                                    ${regeneratingIndex === idx ? "bg-orange-200 border-orange-400 animate-spin text-orange-700" : "bg-orange-50 border-orange-200 text-orange-500 hover:bg-orange-100 hover:border-orange-600 hover:scale-110 shadow-sm"}`,
+                                                    ${regeneratingIndex === idx ? "bg-orange-200 border-orange-400 animate-spin text-orange-300" : "bg-orange-50 border-orange-200 text-orange-500 hover:bg-orange-100 hover:border-orange-600 hover:scale-110 shadow-sm"}`,
           "data-help-key": "word_sounds_review_regen_word",
           title: t("common.regenerate_this_word"),
           style: { pointerEvents: "auto", cursor: "pointer" }
@@ -1238,7 +1238,7 @@ const WordSoundsReviewPanel = ({
             moveWord(idx, "up");
           },
           disabled: idx === 0,
-          className: `w-6 h-6 flex items-center justify-center rounded text-xs ${idx === 0 ? "text-slate-200" : "text-slate-600 hover:bg-slate-100 hover:text-slate-600"}`,
+          className: `w-6 h-6 flex items-center justify-center rounded text-xs ${idx === 0 ? "text-slate-200" : "text-slate-300 hover:bg-slate-100 hover:text-slate-600"}`,
           "data-help-key": "word_sounds_review_move_word",
           title: t("common.move_up")
         },
@@ -1252,7 +1252,7 @@ const WordSoundsReviewPanel = ({
             moveWord(idx, "down");
           },
           disabled: idx === preloadedWords.length - 1,
-          className: `w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? "text-slate-200" : "text-slate-600 hover:bg-slate-100 hover:text-slate-600"}`,
+          className: `w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? "text-slate-200" : "text-slate-300 hover:bg-slate-100 hover:text-slate-600"}`,
           "data-help-key": "word_sounds_review_move_word",
           title: t("common.move_down")
         },

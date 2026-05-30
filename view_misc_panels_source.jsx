@@ -357,9 +357,9 @@ function PdfDiffViewer(props) {
                   </div>
                 )}
               </div>
-              <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 flex items-center gap-3 flex-wrap">
+              <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-300 flex items-center gap-3 flex-wrap">
                 <span>📚 jsdiff@5.2.0</span>
-                <span className="text-slate-600">·</span>
+                <span className="text-slate-400">·</span>
                 <span>{t('diff_view.footer_help') || 'Click spans or drag-select to edit. Pairs toggle together.'}</span>
                 {/* Revert button — only rendered when there's a snapshot
                     to restore (i.e., the user has previously clicked Apply
@@ -369,7 +369,7 @@ function PdfDiffViewer(props) {
                   <button
                     onClick={_revertLastApply}
                     disabled={applyingRemarkup}
-                    className="ml-auto px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-700 rounded-md font-bold inline-flex items-center gap-1.5"
+                    className="ml-auto px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-300 rounded-md font-bold inline-flex items-center gap-1.5"
                     title={t('diff_view.revert_tooltip') || 'Restore the accessible HTML to the state before your last Apply & Export'}
                   >
                     ↶ Revert last Apply
@@ -966,10 +966,10 @@ function FluencyModePanel(props) {
                                 ))}
                             </div>
                             <div className="mt-8 pt-6 border-t border-slate-100 w-full">
-                                <p className="text-[11px] text-slate-600 font-bold uppercase tracking-widest text-center mb-3">
+                                <p className="text-[11px] text-slate-300 font-bold uppercase tracking-widest text-center mb-3">
                                     {t('fluency.analysis_key')}
                                 </p>
-                                <div className="flex flex-wrap justify-center gap-3 sm:gap-5 text-xs font-medium text-slate-600">
+                                <div className="flex flex-wrap justify-center gap-3 sm:gap-5 text-xs font-medium text-slate-300">
                                     <div className="flex items-center gap-1.5">
                                         <span className="px-2 py-0.5 rounded text-green-600 font-medium bg-green-50/50">
                                             {t('fluency.legend_word')}
@@ -977,19 +977,19 @@ function FluencyModePanel(props) {
                                         <span>{t('fluency.legend_correct')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="px-2 py-0.5 rounded bg-yellow-100 text-yellow-700">
+                                        <span className="px-2 py-0.5 rounded bg-yellow-100 text-yellow-300">
                                             {t('fluency.legend_word')}
                                         </span>
                                         <span>{t('fluency.legend_hesitation')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 border-b-2 border-blue-400">
+                                        <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-300 border-b-2 border-blue-400">
                                             {t('fluency.legend_word')}
                                         </span>
                                         <span>{t('fluency.legend_self_corrected')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 border-b-2 border-red-400">
+                                        <span className="px-2 py-0.5 rounded bg-red-100 text-red-300 border-b-2 border-red-400">
                                             {t('fluency.legend_word')}
                                         </span>
                                         <span>{t('fluency.legend_mispronounced')}</span>
@@ -1013,7 +1013,7 @@ function FluencyModePanel(props) {
                                 </button>
                                 <button
                                     onClick={exportFluencyCSV}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-300 border border-emerald-200 hover:bg-emerald-100 transition-colors"
                                     aria-label={t('common.export_fluency_csv')}
                                     data-help-key="fluency_mode_export_csv_btn"
                                 >
@@ -1024,8 +1024,8 @@ function FluencyModePanel(props) {
                     ) : (
                         <div className="max-w-2xl">
                              {fluencyTranscript && (
-                                <div className="mb-8 p-4 bg-white rounded-xl border border-slate-400 shadow-sm text-sm text-slate-600 italic">
-                                    <span className="font-bold uppercase text-xs text-rose-700 block mb-1">{t('fluency.hearing_label')}</span>
+                                <div className="mb-8 p-4 bg-white rounded-xl border border-slate-400 shadow-sm text-sm text-slate-300 italic">
+                                    <span className="font-bold uppercase text-xs text-rose-400 block mb-1">{t('fluency.hearing_label')}</span>
                                     "{fluencyTranscript}"
                                 </div>
                              )}

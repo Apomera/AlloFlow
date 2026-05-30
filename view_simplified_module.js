@@ -907,14 +907,14 @@
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(HelpCircle, {
     size: 12,
-    className: "text-teal-700"
+    className: "text-teal-400"
   }), " ", t('text_tools.explain')), interactionMode === 'revise' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.generate'),
     onClick: () => handleReviseSelection('simplify'),
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 12,
-    className: "text-yellow-700"
+    className: "text-yellow-400"
   }), " ", t('text_tools.simplify')), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-3 bg-slate-600"
   }), /*#__PURE__*/React.createElement("button", {
@@ -929,7 +929,7 @@
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Search, {
     size: 12,
-    className: "text-yellow-700"
+    className: "text-yellow-400"
   }), " ", t('text_tools.define')), interactionMode === 'add-glossary' && /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.add'),
     onClick: () => {
@@ -939,7 +939,7 @@
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Plus, {
     size: 12,
-    className: "text-green-700"
+    className: "text-green-400"
   }), " ", t('text_tools.add_term')))), /*#__PURE__*/React.createElement("div", {
     className: "w-2 h-2 bg-slate-800 rotate-45"
   })), selectionMenu && /*#__PURE__*/React.createElement("div", {

@@ -383,7 +383,7 @@
                 style: { animationDuration: '150ms', display: 'block' }
             },
                 h('span', { className: 'font-bold text-indigo-300 text-[11px] mb-1', style: { display: 'block' } }, `${term} — ${entry.affirming}`),
-                h('span', { className: 'text-amber-700', style: { display: 'block' } }, entry.def),
+                h('span', { className: 'text-amber-200', style: { display: 'block' } }, entry.def),
                 h('span', {
                     className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-s-[6px] border-e-[6px] border-t-[6px] border-s-transparent border-e-transparent border-t-slate-900',
                     style: { display: 'block' }
@@ -1253,7 +1253,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     h('h2', { className: 'text-lg font-black' },
                         '🔍 ', t('behavior_lens.obs.title') || 'Live Observation'
                     ),
-                    studentName && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-slate-600 ms-2' }, `— ${studentName}`)
+                    studentName && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-slate-300 ms-2' }, `— ${studentName}`)
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3' },
                     h('button', { onClick: handleSave,
@@ -1289,7 +1289,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-7xl font-black tabular-nums tracking-tight', style: { fontFamily: 'monospace' } },
                         fmtDuration(timer)
                     ),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-slate-600 mt-1' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-slate-300 mt-1' },
                         t('behavior_lens.obs.elapsed') || 'Elapsed Time'
                     )
                 ),
@@ -1304,7 +1304,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 // Method-specific controls
                 method === 'frequency' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-col items-center gap-4' },
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-5xl font-black text-indigo-400 tabular-nums' }, frequency),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-600' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-300' },
                         t('behavior_lens.obs.occurrences') || 'Occurrences',
                         timer > 0 && ` (${(frequency / (timer / 60)).toFixed(1)}/min)`
                     ),
@@ -1322,7 +1322,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     )
                 ),
                 method === 'duration' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-col items-center gap-4' },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-slate-600' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-slate-300' },
                         durationStart
                             ? (t('behavior_lens.obs.behavior_occurring') || '🔴 Behavior occurring...')
                             : (t('behavior_lens.obs.tap_when_starts') || 'Tap when behavior starts')
@@ -1865,8 +1865,8 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     h(X, { size: 24 })
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center' },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 uppercase' }, studentName || ''),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-600 mt-0.5' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-300 uppercase' }, studentName || ''),
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-300 mt-0.5' },
                         counters.length > 1 ? `${counters.length} behaviors tracked` : 'Frequency Counter'
                     )
                 ),
@@ -1877,8 +1877,8 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 
             // Total counter display (if multiple counters)
             counters.length > 1 && h('div', { className: 'text-center mb-4' },
-                h('div', { className: 'text-6xl font-black tabular-nums tracking-tighter text-slate-600' }, totalCount),
-                h('div', { className: 'text-slate-600 text-xs font-medium mt-1' }, `Total: ${totalRate} / min`)
+                h('div', { className: 'text-6xl font-black tabular-nums tracking-tighter text-slate-300' }, totalCount),
+                h('div', { className: 'text-slate-300 text-xs font-medium mt-1' }, `Total: ${totalRate} / min`)
             ),
 
             // Counter grid
@@ -1903,7 +1903,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                             }),
                             counters.length > 1 && h('button', { "aria-label": "Remove Counter",
                                 onClick: () => removeCounter(counter.id),
-                                className: 'p-0.5 rounded-full hover:bg-white/10 text-slate-600 hover:text-red-400'
+                                className: 'p-0.5 rounded-full hover:bg-white/10 text-slate-300 hover:text-red-400'
                             }, h(X, { size: 12 }))
                         ),
                         // Count display
@@ -1911,7 +1911,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                             className: `${counters.length === 1 ? 'bl-freq-count-solo text-[120px] md:text-[180px]' : 'text-5xl'} font-black tabular-nums leading-none`,
                             style: { color }
                         }, counter.count),
-                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-600' }, `${counterRate} / min`),
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-300' }, `${counterRate} / min`),
                         // Tap button
                         h('button', { "aria-label": "+1",
                             onClick: () => incrementCounter(counter.id),
@@ -1921,7 +1921,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         // Decrement
                         h('button', { "aria-label": "-1",
                             onClick: () => decrementCounter(counter.id),
-                            className: 'text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-600 transition-colors'
+                            className: 'text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 transition-colors'
                         }, '-1')
                     );
                 })
@@ -4350,23 +4350,23 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                             h('input', { value: c.label, onChange: (e) => updateChoice(i, 'label', e.target.value), 'aria-label': 'Choice ' + (i + 1) + ' label', className: 'flex-1 border rounded-lg px-3 py-2 text-sm' }),
                             choices.length > 2 && h('button', { "aria-label": "Toggle choices",
                                 onClick: () => setChoices(prev => prev.filter((_, j) => j !== i)),
-                                className: 'p-1.5 rounded-lg hover:bg-red-100 text-slate-600 hover:text-red-600 transition-colors'
+                                className: 'p-1.5 rounded-lg hover:bg-red-100 text-slate-300 hover:text-red-600 transition-colors'
                             }, h(X, { size: 14 }))
                         )
                     ),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap' },
                         choices.length < 6 && h('button', { "aria-label": "+ Add Choice",
                             onClick: () => setChoices(prev => [...prev, { label: (t('behavior_lens.raw.new_choice') || 'New choice'), emoji: '✨' }]),
-                            className: 'px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-bold'
+                            className: 'px-3 py-2 bg-emerald-100 text-emerald-300 rounded-lg text-sm font-bold'
                         }, '+ Add Choice'),
                         callGemini && h('button', { onClick: handleAiSuggestChoices,
                             disabled: aiChoiceLoading,
-                            className: 'px-3 py-2 bg-purple-100 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-200 disabled:opacity-40 transition-all'
+                            className: 'px-3 py-2 bg-purple-100 text-purple-300 rounded-lg text-sm font-bold hover:bg-purple-200 disabled:opacity-40 transition-all'
                         }, aiChoiceLoading ? '⏳ Thinking...' : '🧠 AI Suggest')
                     ),
                     // First-Then editor
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'border-t border-slate-200 pt-4 mt-2' },
-                        h('h4', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, '⬅️ First-Then Board'),
+                        h('h4', { className: 'text-xs font-bold text-slate-300 uppercase mb-2' }, '⬅️ First-Then Board'),
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
                                 h('input', { value: firstItem.emoji, onChange: (e) => setFirstItem(p => ({ ...p, emoji: e.target.value })), 'aria-label': 'FIRST task emoji', className: 'w-12 text-center text-xl border rounded-lg', maxLength: 2 }),
@@ -6688,34 +6688,34 @@ Respond only with the student's words:`;
                     ),
                     h('div', { className: 'grid grid-cols-2 gap-3' },
                         h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
-                            h('div', { className: 'text-[11px] font-black text-emerald-700 uppercase mb-1.5' }, '✅ Strengths'),
+                            h('div', { className: 'text-[11px] font-black text-emerald-300 uppercase mb-1.5' }, '✅ Strengths'),
                             (aiFeedback.strengths || []).map(function(s, i) { return h('div', { key: i, className: 'text-[11px] text-emerald-800 mb-0.5' }, '• ' + s); })
                         ),
                         h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
-                            h('div', { className: 'text-[11px] font-black text-amber-700 uppercase mb-1.5' }, '📈 Growth Areas'),
+                            h('div', { className: 'text-[11px] font-black text-amber-300 uppercase mb-1.5' }, '📈 Growth Areas'),
                             (aiFeedback.growth_areas || []).map(function(s, i) { return h('div', { key: i, className: 'text-[11px] text-amber-800 mb-0.5' }, '• ' + s); })
                         )
                     ),
                     aiFeedback.suggested_phrases && aiFeedback.suggested_phrases.length > 0 && h('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-200' },
-                        h('div', { className: 'text-[11px] font-black text-blue-700 uppercase mb-1.5' }, '💬 Try These Phrases Next Time'),
+                        h('div', { className: 'text-[11px] font-black text-blue-300 uppercase mb-1.5' }, '💬 Try These Phrases Next Time'),
                         aiFeedback.suggested_phrases.map(function(p, i) { return h('div', { key: i, className: 'text-[11px] text-blue-800 italic mb-1 ps-2 border-s-2 border-blue-300' }, '"' + p + '"'); })
                     ),
-                    aiFeedback.clinical_note && h('div', { className: 'text-xs text-slate-600 italic text-center pt-2 border-t border-slate-200' },
+                    aiFeedback.clinical_note && h('div', { className: 'text-xs text-slate-300 italic text-center pt-2 border-t border-slate-200' },
                         '🧠 ' + aiFeedback.clinical_note
                     )
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-4' },
                     h('div', null,
-                        h('label', { className: 'block text-xs font-bold text-slate-600 uppercase mb-2' }, '🌟 Self-Assessment: How effective was my counseling?'),
+                        h('label', { className: 'block text-xs font-bold text-slate-300 uppercase mb-2' }, '🌟 Self-Assessment: How effective was my counseling?'),
                         h('input', { type: 'range', min: 1, max: 5, value: selfRating, onChange: (e) => setSelfRating(parseInt(e.target.value)), 'aria-label': 'Self-assessment rating 1 to 5', className: 'w-full accent-teal-600' }),
-                        h('div', { className: 'flex justify-between text-[11px] text-slate-600 mt-0.5' },
+                        h('div', { className: 'flex justify-between text-[11px] text-slate-300 mt-0.5' },
                             h('span', null, t('behavior_lens.needs_practice') || 'Needs practice'),
                             h('span', null, t('behavior_lens.getting_there') || 'Getting there'),
                             h('span', null, t('behavior_lens.feeling_confident') || 'Feeling confident')
                         )
                     ),
                     h('div', null,
-                        h('label', { className: 'block text-xs font-bold text-slate-600 uppercase mb-2' }, '📝 What strategies did I use? What would I try differently?'),
+                        h('label', { className: 'block text-xs font-bold text-slate-300 uppercase mb-2' }, '📝 What strategies did I use? What would I try differently?'),
                         h('textarea', {
                             value: strategyNotes,
                             onChange: (e) => setStrategyNotes(e.target.value),
@@ -6728,10 +6728,10 @@ Respond only with the student's words:`;
                 ),
                 // Conversation review
                 h('details', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-4' },
-                    h('summary', { className: 'text-xs font-bold text-slate-600 cursor-pointer' }, '💬 Review Conversation'),
+                    h('summary', { className: 'text-xs font-bold text-slate-300 cursor-pointer' }, '💬 Review Conversation'),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 space-y-2 max-h-64 overflow-y-auto' },
                         messages.filter(m => m.role !== 'system').map((m, i) =>
-                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: `text-xs p-2 rounded-lg ${m.role === 'counselor' ? 'bg-teal-50 text-teal-800 ms-8' : 'bg-white text-slate-700 me-8 border border-slate-400'}` },
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: `text-xs p-2 rounded-lg ${m.role === 'counselor' ? 'bg-teal-50 text-teal-800 ms-8' : 'bg-white text-slate-300 me-8 border border-slate-400'}` },
                                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold' }, m.role === 'counselor' ? '🧑‍⚕️ You: ' : '🧒 Student: '),
                                 m.content
                             )
@@ -6745,12 +6745,12 @@ Respond only with the student's words:`;
                         const lines = messages.filter(m => m.role !== 'system').map(m => `${m.role === 'counselor' ? 'Counselor' : 'Student'}: ${m.content}`);
                         navigator.clipboard.writeText([header, ...lines].join('\n')).then(() => { if (addToast) addToast(t('toasts.transcript_copied'), 'success'); });
                     },
-                    className: 'w-full py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all'
+                    className: 'w-full py-2 bg-slate-50 text-slate-300 border border-slate-400 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all'
                 }, '📋 Export Transcript'),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-3' },
                     h('button', { "aria-label": "New Session",
                         onClick: handleReset,
-                        className: 'flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all'
+                        className: 'flex-1 py-3 bg-slate-100 text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all'
                     }, '🔄 New Session'),
                     h('button', { "aria-label": "Save & Close",
                         onClick: () => { if (addToast) addToast(t('behavior_lens.toast.reflection_saved') || 'Reflection saved ✨', 'success'); handleReset(); },
@@ -8879,7 +8879,7 @@ Rules:
                     h('div', { className: 'font-bold' }, cells[hoveredCell].date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })),
                     h('div', null, `${cells[hoveredCell].count} incident${cells[hoveredCell].count !== 1 ? 's' : ''}`),
                     Object.entries(cells[hoveredCell].functions).length > 0 &&
-                        h('div', { className: 'text-slate-600 mt-0.5' },
+                        h('div', { className: 'text-slate-300 mt-0.5' },
                             Object.entries(cells[hoveredCell].functions).map(([fn, ct]) => `${ct} ${fn}`).join(', ')
                         )
                 )
@@ -8887,18 +8887,18 @@ Rules:
             // Summary stats (non-mini)
             !mini && h('div', { className: 'grid grid-cols-3 gap-3 mt-4' },
                 h('div', { className: 'bg-slate-50 rounded-xl p-3 text-center border border-slate-400' },
-                    h('div', { className: 'text-2xl font-black text-slate-700' }, cells.reduce((s, c) => s + c.count, 0)),
-                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, 'Total Incidents')
+                    h('div', { className: 'text-2xl font-black text-slate-300' }, cells.reduce((s, c) => s + c.count, 0)),
+                    h('div', { className: 'text-[11px] text-slate-300 font-bold' }, 'Total Incidents')
                 ),
                 h('div', { className: 'bg-red-50 rounded-xl p-3 text-center border border-red-200' },
-                    h('div', { className: 'text-2xl font-black text-red-600' },
+                    h('div', { className: 'text-2xl font-black text-red-300' },
                         (() => { const peak = cells.reduce((max, c) => c.count > max.count ? c : max, cells[0]); return peak.count > 0 ? dayNames[peak.dayIdx] : '—'; })()
                     ),
-                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, 'Peak Day')
+                    h('div', { className: 'text-[11px] text-slate-300 font-bold' }, 'Peak Day')
                 ),
                 h('div', { className: 'bg-emerald-50 rounded-xl p-3 text-center border border-emerald-200' },
                     h('div', { className: 'text-2xl font-black text-emerald-600' }, cells.filter(c => c.count === 0).length),
-                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, 'Zero-Incident Days')
+                    h('div', { className: 'text-[11px] text-slate-300 font-bold' }, 'Zero-Incident Days')
                 )
             )
         );

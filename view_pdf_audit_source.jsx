@@ -4428,7 +4428,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               ))}
                             </div>
                             <div className="flex items-center gap-3 mt-1">
-                              <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-700 hover:text-purple-200 underline">
+                              <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-300 hover:text-purple-200 underline">
                                 {agentLogFullView ? 'Show recent only' : `Show full log (${agentActivityLog.length})`}
                               </button>
                               <button type="button" onClick={() => { setAgentActivityLog([]); console.info('[ExpertWorkbench] log cleared'); }} className="text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto">Clear</button>

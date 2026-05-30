@@ -1,0 +1,400 @@
+3177:                 React.createElement("div", { className: "flex items-center gap-2" },
+3178:                   React.createElement("span", { className: "text-xl" }, "\uD83D\uDCA7"),
+3179:                   React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "Journey Mode"),
+3180:                   React.createElement("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[11px] font-bold rounded-full" }, "PLAY AS WATER")
+3181:                 ),
+3182:                 !d.journeyActive
+3183:                   ? React.createElement("button", { "aria-label": "Start Journey mode (shortcut: J)",
+3184:                       onClick: function() {
+3185:                         upd('journeyActive', true);
+3186:                         upd('journeyState', 'ocean');
+3187:                         upd('journeyLoops', d.journeyLoops || 0);
+3188:                         upd('journeyPaths', d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
+3189:                         var cv = document.getElementById('wcCanvas');
+3190:                         if (cv) { cv.dataset.journeyState = 'ocean'; }
+3191:                         if (typeof announceToSR === 'function') announceToSR('Journey started. You are now a water droplet in the ocean.');
+3192:                         addToast('\uD83D\uDCA7 You are now a water droplet in the ocean! Watch and learn as you travel through the water cycle.', 'info');
+3193:                       },
+3194:                       className: "px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold rounded-xl hover:from-cyan-600 hover:to-blue-600 shadow-lg transition-all hover:scale-105"
+3195:                     }, "\uD83C\uDFAE Start Journey (J)")
+3196:                   : React.createElement("div", { className: "flex gap-1.5" },
+3197:                       React.createElement("button", { "aria-label": "End Journey mode (shortcut: J)",
+3198:                         onClick: function() {
+3199:                           upd('journeyActive', false);
+3200:                           upd('journeyState', 'idle');
+3201:                           var cv = document.getElementById('wcCanvas');
+3202:                           if (cv) { cv.dataset.journeyState = 'idle'; }
+3203:                           if (typeof announceToSR === 'function') announceToSR('Journey ended.');
+3204:                         },
+3205:                         className: "px-3 py-1.5 bg-slate-600 text-white text-[11px] font-bold rounded-lg hover:bg-slate-500 transition-all"
+3206:                       }, "\u23F9 End Journey (J)")
+3207:                     )
+3208:               ),
+3209: 
+3210:               !d.journeyActive && React.createElement("div", {
+3211:                 role: "note",
+3212:                 style: {
+3213:                   padding: '8px 12px', borderRadius: 10,
+3214:                   background: 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%)',
+3215:                   borderTop: '1px solid rgba(14,165,233,0.5)', borderRight: '1px solid rgba(14,165,233,0.5)', borderBottom: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
+3216:                   color: '#0c4a6e', fontSize: 12.5, lineHeight: 1.55
+3217:                 }
+3218:               },
+3219:                 React.createElement("strong", { style: { color: '#0369a1' } }, "Goal: "),
+3220:                 "ride one droplet from the ocean back to the ocean. You will start in the ocean, evaporate, drift into a cloud, fall as rain, then pick a path at the ground (river runoff, underground infiltration, or absorbed by a plant). Each path takes a different amount of time. Complete the loop to log a journey; 3 loops unlocks the Journey badge."
+3221:               ),
+3222: 
+3223:               // Journey status
+3224:               d.journeyActive && React.createElement("div", { className: "space-y-2" },
+3225:                 // Current state card
+3226:                 React.createElement("div", { className: "bg-white rounded-lg p-3 border border-cyan-100" },
+3227:                   React.createElement("p", { className: "text-xs font-bold text-cyan-700 mb-1" },
+3228:                     (d.journeyState === 'ground_choice') ? "\uD83E\uDEA8 Choose your path! Click one of the 3 glowing zones on the canvas:" : 
+3229:                     (d.journeyState === 'complete') ? "\u2705 You completed the water cycle! +25 XP" :
+3230:                     "\uD83D\uDCA7 Current: " + (d.journeyState || 'ocean').replace(/_/g, ' ')
+3231:                   ),
+3232:                   d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2", role: "group", },
+3233:                     React.createElement("button", { "aria-label": "Choose River Runoff path (shortcut: R)",
+3234:                       onClick: function() {
+3235:                         upd('journeyState', 'river_runoff');
+3236:                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { runoff: (d.journeyPaths.runoff || 0) + 1 }));
+3237:                         var cv = document.getElementById('wcCanvas');
+3238:                         if (cv) { cv.dataset.journeyState = 'river_runoff'; if (cv._onJourneyTransition) cv._onJourneyTransition('river_runoff'); }
+3239:                         if (typeof announceToSR === 'function') announceToSR('Path chosen: River Runoff.');
+3240:                       },
+3241:                       className: "p-2 rounded-lg text-center bg-blue-50 border-2 border-blue-600 hover:bg-blue-100 transition-all hover:scale-105"
+3242:                     },
+3243:                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
+3244:                       React.createElement("p", { className: "text-[11px] font-bold text-blue-700" }, "River Runoff (R)"),
+3245:                       React.createElement("p", { className: "text-[11px] text-blue-500" }, "Fast path!")
+3246:                     ),
+3247:                     React.createElement("button", { "aria-label": "Choose Underground infiltration path (shortcut: U)",
+3248:                       onClick: function() {
+3249:                         upd('journeyState', 'infiltrating');
+3250:                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { infiltrate: (d.journeyPaths.infiltrate || 0) + 1 }));
+3251:                         var cv = document.getElementById('wcCanvas');
+3252:                         if (cv) { cv.dataset.journeyState = 'infiltrating'; if (cv._onJourneyTransition) cv._onJourneyTransition('infiltrating'); }
+3253:                         if (typeof announceToSR === 'function') announceToSR('Path chosen: Underground infiltration.');
+3254:                       },
+3255:                       className: "p-2 rounded-lg text-center bg-amber-50 border-2 border-amber-600 hover:bg-amber-100 transition-all hover:scale-105"
+3256:                     },
+3257:                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
+3258:                       React.createElement("p", { className: "text-[11px] font-bold text-amber-700" }, "Underground (U)"),
+3259:                       React.createElement("p", { className: "text-[11px] text-amber-500" }, "Slow + deep")
+3260:                     ),
+3261:                     React.createElement("button", { "aria-label": "Choose Plant absorption path (shortcut: P)",
+3262:                       onClick: function() {
+3263:                         upd('journeyState', 'plant_absorb');
+3264:                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { plant: (d.journeyPaths.plant || 0) + 1 }));
+3265:                         var cv = document.getElementById('wcCanvas');
+3266:                         if (cv) { cv.dataset.journeyState = 'plant_absorb'; if (cv._onJourneyTransition) cv._onJourneyTransition('plant_absorb'); }
+3267:                         if (typeof announceToSR === 'function') announceToSR('Path chosen: Plant absorption.');
+3268:                       },
+3269:                       className: "p-2 rounded-lg text-center bg-emerald-50 border-2 border-emerald-600 hover:bg-emerald-100 transition-all hover:scale-105"
+3270:                     },
+3271:                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
+3272:                       React.createElement("p", { className: "text-[11px] font-bold text-emerald-700" }, "Enter Plant (P)"),
+3273:                       React.createElement("p", { className: "text-[11px] text-emerald-500" }, "Transpiration!")
+3274:                     )
+3275:                   ),
+3276:                   d.journeyState === 'complete' && React.createElement("button", { "aria-label": "Start Another Loop",
+3277:                     onClick: function() {
+3278:                       upd('journeyState', 'ocean');
+3279:                       upd('journeyLoops', (d.journeyLoops || 0) + 1);
+3280:                       var cv = document.getElementById('wcCanvas');
+3281:                       if (cv) { cv.dataset.journeyState = 'ocean'; }
+3282:                       awardStemXP('waterCycle', 25, 'Water Cycle journey loop');
+3283:                       stemCelebrate();
+3284:                       addToast('\uD83C\uDF89 Cycle complete! +25 XP. Starting new loop...', 'success');
+3285:                     },
+3286:                     className: "mt-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-xs font-bold rounded-xl hover:from-emerald-600 hover:to-cyan-600 shadow-md transition-all"
+3287:                   }, "\uD83D\uDD04 Start Another Loop")
+3288:                 ),
+3289: 
+3290:                 // Stats bar
+3291:                 (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex gap-3 text-[11px] font-bold" },
+3292:                   React.createElement("span", { className: "text-cyan-600" }, "\uD83D\uDD04 Loops: " + (d.journeyLoops || 0)),
+3293:                   React.createElement("span", { className: "text-blue-600" }, "\uD83C\uDF0A Runoff: " + ((d.journeyPaths && d.journeyPaths.runoff) || 0)),
+3294:                   React.createElement("span", { className: "text-amber-600" }, "\uD83E\uDEB4 Underground: " + ((d.journeyPaths && d.journeyPaths.infiltrate) || 0)),
+3295:                   React.createElement("span", { className: "text-emerald-600" }, "\uD83C\uDF3F Plant: " + ((d.journeyPaths && d.journeyPaths.plant) || 0))
+3296:                 )
+3297:               ),
+3298: 
+3299:               // Inactive description
+3300:               !d.journeyActive && React.createElement("p", { className: "text-[11px] text-cyan-600 mt-1" }, "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation.")
+3301:             ),
+3302: 
+3303:             sel && React.createElement("div", { className: "bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-4 border border-sky-200 mb-3" },
+3304: 
+3305:               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+3306: 
+3307:                 React.createElement("span", { className: "text-2xl" }, sel.emoji),
+3308: 
+3309:                 React.createElement("h4", { className: "text-base font-bold", style: { color: sel.color } }, sel.label)
+3310: 
+3311:               ),
+3312: 
+3313:               React.createElement("p", { className: "text-sm text-slate-600 leading-relaxed mb-2" }, selDesc),
+3314: 
+3315:               selFunFact && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" },
+3316: 
+3317:                 React.createElement("p", { className: "text-[11px] text-amber-700" }, "\uD83D\uDCA1 " + selFunFact)
+3318: 
+3319:               )
+3320: 
+3321:             ),
+3322: 
+3323:             // ═══ AI HYDROLOGIST TUTOR PANEL ═══
+3324:             React.createElement("div", { className: "bg-white rounded-xl border border-sky-200 p-3 mb-3 shadow-sm" },
+3325:               React.createElement("p", { className: "text-xs font-black text-slate-700 mb-1 flex items-center gap-1.5" },
+3326:                 React.createElement("span", null, "🧠"),
+3327:                 React.createElement("span", null, "Ask the AI Hydrologist Tutor")
+3328:               ),
+3329:               React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" },
+3330:                 "Ask questions about the " + (sel ? sel.label : 'water cycle') + " stage, climate feedbacks, or global hydrology."
+3331:               ),
+3332:               React.createElement("div", { className: "flex gap-2" },
+3333:                 React.createElement("input", {
+3334:                   type: "text",
+3335:                   placeholder: "Ask a question (e.g., Why do clouds float?)...",
+3336:                   value: d.hydrologistQuery || '',
+3337:                   onChange: function(e) { upd("hydrologistQuery", e.target.value); },
+3338:                   onKeyDown: function(e) { if (e.key === 'Enter') askHydrologist(); },
+3339:                   className: "flex-1 px-3 py-1.5 text-xs border rounded-lg focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none"
+3340:                 }),
+3341:                 React.createElement("button", {
+3342:                   disabled: d.hydrologistLoading,
+3343:                   onClick: askHydrologist,
+3344:                   className: "px-3 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 transition-all disabled:opacity-50"
+3345:                 }, d.hydrologistLoading ? "Thinking..." : "Ask")
+3346:               ),
+3347:               d.hydrologistReply && React.createElement("div", { className: "mt-2 p-2.5 bg-sky-50 border border-sky-100 rounded-lg animate-in slide-in-from-top-1" },
+3348:                 React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed font-medium" }, d.hydrologistReply)
+3349:               ),
+3350:               d.hydrologistError && React.createElement("p", { className: "text-xs text-red-500 mt-2 font-bold" }, d.hydrologistError)
+3351:             ),
+3352: 
+3353:             // ═══ WATER BUDGET — Live Data Panel ═══
+3354:             React.createElement("div", { className: "bg-gradient-to-r from-slate-50 to-sky-50 rounded-xl p-3 border border-slate-400 mb-3 shadow-sm" },
+3355:               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+3356:                 React.createElement("span", { className: "text-base" }, "\uD83D\uDCCA"),
+3357:                 React.createElement("h4", { className: "text-xs font-bold text-slate-700" }, "Water Budget (Live)"),
+3358:                 React.createElement("span", { className: "px-1.5 py-0.5 bg-sky-100 text-sky-600 text-[11px] font-bold rounded-full" }, "REAL-TIME")
+3359:               ),
+3360:               (function() {
+3361:                 var s2 = d.climSolar != null ? d.climSolar : 1.0;
+3362:                 var t3 = d.climTemp != null ? d.climTemp : 15;
+3363:                 var w2 = d.climWind != null ? d.climWind : 1.0;
+3364:                 var evapRate = Math.max(0, (s2 * 0.5 + Math.max(0, t3) / 30) * (0.8 + w2 * 0.2));
+3365:                 var precipType = t3 < -5 ? '\u2744\uFE0F Snow' : t3 < 2 ? '\uD83E\uDEE7 Sleet' : t3 > 30 ? '\u26A1 Storm' : '\uD83C\uDF27 Rain';
+3366:                 var runoffPct = Math.min(95, Math.max(5, 30 + (t3 > 0 ? t3 * 0.8 : 0) + w2 * 8));
+3367:                 var gwRecharge = Math.max(2, 100 - runoffPct - evapRate * 15);
+3368:                 return React.createElement("div", { className: "grid grid-cols-4 gap-2" },
+3369:                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-amber-100" },
+3370:                     React.createElement("p", { className: "text-lg font-bold text-amber-600" }, (evapRate * 100).toFixed(0) + "%"),
+3371:                     React.createElement("p", { className: "text-[11px] font-bold text-amber-500" }, "Evaporation")
+3372:                   ),
+3373:                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-blue-100" },
+3374:                     React.createElement("p", { className: "text-sm font-bold text-blue-600" }, precipType),
+3375:                     React.createElement("p", { className: "text-[11px] font-bold text-blue-500" }, "Precip Type")
+3376:                   ),
+3377:                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-cyan-100" },
+3378:                     React.createElement("p", { className: "text-lg font-bold text-cyan-600" }, runoffPct.toFixed(0) + "%"),
+3379:                     React.createElement("p", { className: "text-[11px] font-bold text-cyan-500" }, "Runoff")
+3380:                   ),
+3381:                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-emerald-100" },
+3382:                     React.createElement("p", { className: "text-lg font-bold text-emerald-600" }, gwRecharge.toFixed(0) + "%"),
+3383:                     React.createElement("p", { className: "text-[11px] font-bold text-emerald-500" }, "GW Recharge")
+3384:                   )
+3385:                 );
+3386:               })()
+3387:             ),
+3388: 
+3389:             React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+3390: 
+3391:               React.createElement("button", { "aria-label": "Start water cycle quiz",
+3392:                 onClick: function () {
+3393:                   var pool = WATER_CYCLE_QUIZZES[gradeBand] || WATER_CYCLE_QUIZZES['3-5'];
+3394:                   var q = pool[Math.floor(Math.random() * pool.length)];
+3395:                   upd('wcQuiz', {
+3396:                     q: q.q,
+3397:                     a: q.a,
+3398:                     opts: q.opts,
+3399:                     answered: false,
+3400:                     score: (d.wcQuiz && d.wcQuiz.score) || 0,
+3401:                     concept: q.concept,
+3402:                     wrongFeedback: q.wrongFeedback
+3403:                   });
+3404:                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.wcQuiz ? 'bg-sky-100 text-sky-700' : 'bg-sky-600 text-white') + " transition-all"
+3405:               }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz (" + gradeBand + ")"),
+3406: 
+3407:               // ═══ AI GENERATED QUIZ BUTTON ═══
+3408:               callGemini && React.createElement("button", { "aria-label": "Generate AI quiz question",
+3409:                 onClick: function() {
+3410:                   if (d.aiQuizLoading) return;
+3411:                   upd('aiQuizLoading', true);
+3412:                   var stageCtx = sel ? sel.id : 'evaporation';
+3413:                   var climCtx = 'Solar=' + ((d.climSolar != null ? d.climSolar : 1) * 100).toFixed(0) + '%, Temp=' + (d.climTemp != null ? d.climTemp : 15) + '\u00B0C, Wind=' + ((d.climWind != null ? d.climWind : 1)).toFixed(1) + 'x';
+3414:                   var gradeCtx = gradeBand === 'K-2' ? 'kindergarten to 2nd grade (ages 5-7), use very simple words and fun analogies' :
+3415:                     gradeBand === '3-5' ? '3rd to 5th grade (ages 8-10), use clear explanations with some science vocabulary' :
+3416:                     gradeBand === '6-8' ? '6th to 8th grade (ages 11-13), use proper scientific terminology and quantitative data' :
+3417:                     '9th to 12th grade (ages 14-18), use advanced terminology, equations, and real-world data';
+3418:                   var prompt = 'You are a science teacher creating a water cycle quiz question. ' +
+3419:                     'Grade level: ' + gradeCtx + '. ' +
+3420:                     'Current stage being studied: ' + stageCtx + '. ' +
+3421:                     'Current climate simulation settings: ' + climCtx + '. ' +
+3422:                     'Generate exactly ONE multiple-choice question about the water cycle relevant to this stage and conditions. ' +
+3423:                     'Name the core scientific concept (from: evaporation, condensation, precipitation, collection, transpiration, infiltration, aquifer, watershed). ' +
+3424:                     'For each distractor, provide a short 1-sentence explanation of why it is incorrect. ' +
+3425:                     'Ensure all text uses standard hyphens and NO em-dashes or en-dashes. ' +
+3426:                     'Respond ONLY with valid JSON in this exact format (no markdown, no explanation): ' +
+3427:                     '{"question":"...","correct":"...","distractors":["...","...","..."],"concept":"...","wrongFeedback":{"distractor1":"why incorrect","distractor2":"why incorrect","distractor3":"why incorrect"}}';
+3428:                   callGemini(prompt, true, false, 0.7).then(function(resp) {
+3429:                     try {
+3430:                       var clean = (typeof resp === 'string' ? resp : '').replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+3431:                       var parsed = JSON.parse(clean);
+3432:                       if (parsed.question && parsed.correct && parsed.distractors && parsed.distractors.length >= 3) {
+3433:                         var allOpts = [parsed.correct].concat(parsed.distractors.slice(0, 3)).sort(function() { return Math.random() - 0.5; });
+3434:                         upd('wcQuiz', {
+3435:                           q: parsed.question,
+3436:                           a: parsed.correct,
+3437:                           opts: allOpts,
+3438:                           answered: false,
+3439:                           score: (d.wcQuiz && d.wcQuiz.score) || 0,
+3440:                           isAI: true,
+3441:                           concept: parsed.concept || stageCtx,
+3442:                           wrongFeedback: parsed.wrongFeedback || {}
+3443:                         });
+3444:                         upd('aiQuizLoading', false);
+3445:                       } else { throw new Error('bad format'); }
+3446:                     } catch(e) {
+3447:                       addToast('\u26A0\uFE0F AI quiz failed, using static question', 'error');
+3448:                       upd('aiQuizLoading', false);
+3449:                       // Fallback to static
+3450:                       var fb = [{ q: 'What percentage of Earth is covered by water?', a: '71%', opts: ['50%', '60%', '71%', '85%'], concept: 'collection', wrongFeedback: { '50%': 'Too low. Earth is 71% water.', '60%': 'Too low. Earth is 71% water.', '85%': 'Too high. Earth is 71% water.' } }];
+3451:                       var q2 = fb[0];
+3452:                       upd('wcQuiz', { q: q2.q, a: q2.a, opts: q2.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0, concept: q2.concept, wrongFeedback: q2.wrongFeedback });
+3453:                     }
+3454:                   }).catch(function() {
+3455:                     addToast('\u26A0\uFE0F AI unavailable, using static question', 'error');
+3456:                     upd('aiQuizLoading', false);
+3457:                     var fb = [{ q: 'How much of Earth\'s water is freshwater?', a: '3%', opts: ['3%', '10%', '25%', '50%'], concept: 'collection', wrongFeedback: { '10%': 'Too high. Only 3% is fresh.', '25%': 'Too high. Only 3% is fresh.', '50%': 'Too high. Only 3% is fresh.' } }];
+3458:                     var q2 = fb[0];
+3459:                     upd('wcQuiz', { q: q2.q, a: q2.a, opts: q2.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0, concept: q2.concept, wrongFeedback: q2.wrongFeedback });
+3460:                   });
+3461:                 },
+3462:                 disabled: d.aiQuizLoading,
+3463:                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiQuizLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md')
+3464:               }, d.aiQuizLoading ? '\u23F3 Generating...' : '\u2728 AI Question'),
+3465: 
+3466:               d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
+3467:               d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
+3468:               (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
+3469:               (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
+3470: 
+3471:               d.wcQuiz && React.createElement("div", { className: "mt-2 bg-gradient-to-br from-sky-50 to-indigo-50 rounded-xl p-3 border border-sky-200 shadow-sm" },
+3472: 
+3473:                 React.createElement("p", { className: "text-sm font-bold text-sky-800 mb-2" }, d.wcQuiz.q),
+3474: 
+3475:                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+3476: 
+3477:                   d.wcQuiz.opts.map(function (opt) {
+3478: 
+3479:                     var isCorrect = opt === d.wcQuiz.a;
+3480: 
+3481:                     var wasChosen = d.wcQuiz.chosen === opt;
+3482: 
+3483:                     var cls = !d.wcQuiz.answered ? 'bg-white border-slate-200 hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm' : isCorrect ? 'bg-emerald-100 border-emerald-400 shadow-sm' : wasChosen ? 'bg-red-100 border-red-400' : 'bg-slate-50 border-slate-200 opacity-40';
+3484: 
+3485:                     return React.createElement("button", { "aria-label": "Select answer: " + opt,
+3486: 
+3487:                       key: opt, disabled: d.wcQuiz.answered, onClick: function () {
+3488: 
+3489:                         var correct = opt === d.wcQuiz.a;
+3490:                         var newStreak = correct ? (d.wcStreak || 0) + 1 : 0;
+3491:                         var newAttempts = (d.wcAttempts || 0) + 1;
+3492: 
+3493:                         if (correct) {
+3494:                           sfxWcCorrect();
+3495:                           addToast('\u2705 Correct! +5 XP', 'success');
+3496:                           if (typeof awardStemXP === 'function') awardStemXP('waterCycle', 5, 'Water Cycle quiz');
+3497:                           // Streak celebration
+3498:                           if (newStreak >= 3 && newStreak % 3 === 0) {
+3499:                             if (typeof stemCelebrate === 'function') stemCelebrate();
+3500:                             addToast('\uD83D\uDD25 ' + newStreak + '-streak! +10 bonus XP!', 'success');
+3501:                             if (typeof awardStemXP === 'function') awardStemXP('waterCycle', 10, 'Water Cycle streak bonus');
+3502:                           }
+3503:                         } else {
+3504:                           sfxWcIncorrect();
+3505:                           addToast('\u274C The answer is: ' + d.wcQuiz.a, 'error');
+3506:                         }
+3507: 
+3508:                         var nextQuizCorrectCount = (d.quizCorrectCount || 0) + (correct ? 1 : 0);
+3509:                         var nextState = Object.assign({}, d, {
+3510:                           quizCorrectCount: nextQuizCorrectCount,
+3511:                           wcQuiz: Object.assign({}, d.wcQuiz, { answered: true, chosen: opt, score: d.wcQuiz.score + (correct ? 1 : 0) }),
+3512:                           wcStreak: newStreak,
+3513:                           wcAttempts: newAttempts
+3514:                         });
+3515:                         updMulti({
+3516:                           wcQuiz: nextState.wcQuiz,
+3517:                           wcStreak: newStreak,
+3518:                           wcAttempts: newAttempts,
+3519:                           quizCorrectCount: nextQuizCorrectCount
+3520:                         });
+3521:                         setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
+3522: 
+3523:                       }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all cursor-pointer " + cls
+3524: 
+3525:                     }, opt);
+3526: 
+3527:                   })
+3528: 
+3529:                 ),
+3530: 
+3531:                 // Inline wrong-option explanations and vocabulary study cards
+3532:                 d.wcQuiz.answered && React.createElement("div", { className: "mt-3 space-y-2 animate-in fade-in" },
+3533:                   React.createElement("div", {
+3534:                     className: "p-3 rounded-lg text-sm " + (d.wcQuiz.chosen === d.wcQuiz.a ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-600 border border-red-200")
+3535:                   },
+3536:                     React.createElement("p", { className: "font-black text-xs" }, d.wcQuiz.chosen === d.wcQuiz.a ? "✅ Correct answer!" : "❌ Incorrect answer"),
+3537:                     React.createElement("p", { className: "text-xs mt-1 leading-relaxed text-slate-700 font-medium" },
+3538:                       d.wcQuiz.chosen === d.wcQuiz.a
+3539:                         ? "Great job! That is correct."
+3540:                         : (d.wcQuiz.wrongFeedback && d.wcQuiz.wrongFeedback[d.wcQuiz.chosen])
+3541:                           ? d.wcQuiz.wrongFeedback[d.wcQuiz.chosen]
+3542:                           : "That choice is not correct. Study the concept to learn more."
+3543:                     )
+3544:                   ),
+3545: 
+3546:                   // Concept study card
+3547:                   d.wcQuiz.concept && WATER_CYCLE_VOCAB[d.wcQuiz.concept] && (function() {
+3548:                     var concept = d.wcQuiz.concept;
+3549:                     var definition = WATER_CYCLE_VOCAB[concept];
+3550:                     var studied = (d.vocabWordsStudied || []).indexOf(concept) !== -1;
+3551:                     return React.createElement("div", { className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in" },
+3552:                       React.createElement("div", { className: "flex-1" },
+3553:                         React.createElement("p", { className: "text-xs font-bold text-indigo-800" }, "🔍 Concept Focus: " + concept),
+3554:                         React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5 leading-relaxed font-medium" }, definition)
+3555:                       ),
+3556:                       !studied && React.createElement("button", {
+3557:                         onClick: function() {
+3558:                           studyVocab(concept);
+3559:                         },
+3560:                         className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105"
+3561:                       }, "📖 Study Term (+5 RP)")
+3562:                     );
+3563:                   })()
+3564:                 )
+3565: 
+3566:               )
+3567: 
+3568:             ),
+3569: 
+3570:             React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+3571: 
+3572:           );
+3573:       })();
+3574:     }
+3575:   });
+3576: })();

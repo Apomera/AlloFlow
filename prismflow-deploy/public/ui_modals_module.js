@@ -254,7 +254,7 @@ const StudentQuizOverlay = React.memo(({
       width: `${Math.max(0, (bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100) * 100)}%`
     }
   })), phase === 'revealed' && bossStats.lastClassDamage > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "text-orange-700 text-xs font-bold mt-1 animate-pulse text-center"
+    className: "text-orange-400 text-xs font-bold mt-1 animate-pulse text-center"
   }, t('quiz.boss.counter_attack_msg', {
     damage: bossStats.lastClassDamage
   })))), /*#__PURE__*/React.createElement("div", {

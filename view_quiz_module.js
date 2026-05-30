@@ -2898,7 +2898,7 @@ function QuizView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-left"
   }, /*#__PURE__*/React.createElement("h2", {
-    className: "text-3xl font-black text-yellow-700 tracking-widest uppercase drop-shadow-md flex items-center gap-3"
+    className: "text-3xl font-black text-yellow-400 tracking-widest uppercase drop-shadow-md flex items-center gap-3"
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 32
   }), " ", t('review_game.title')), /*#__PURE__*/React.createElement("p", {
@@ -2955,7 +2955,7 @@ function QuizView(props) {
   }), /*#__PURE__*/React.createElement("div", {
     className: "text-3xl font-black text-white drop-shadow-md"
   }, team.score), scoreAnimation.teamId === team.id && /*#__PURE__*/React.createElement("div", {
-    className: "absolute -top-8 left-1/2 -translate-x-1/2 text-yellow-700 font-black text-xl animate-[ping_1s_ease-out_reverse] pointer-events-none z-20 whitespace-nowrap shadow-sm"
+    className: "absolute -top-8 left-1/2 -translate-x-1/2 text-yellow-300 font-black text-xl animate-[ping_1s_ease-out_reverse] pointer-events-none z-20 whitespace-nowrap shadow-sm"
   }, "+", scoreAnimation.points), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 mt-2 opacity-50 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
   }, /*#__PURE__*/React.createElement("button", {
@@ -2966,14 +2966,14 @@ function QuizView(props) {
     className: "text-xs bg-white/10 hover:bg-white/20 text-white px-2 rounded"
   }, "+")), gameTeams.length > 1 && /*#__PURE__*/React.createElement("button", {
     onClick: () => handleRemoveTeam(team.id),
-    className: "absolute -top-2 -right-2 bg-slate-800 text-red-600 rounded-full p-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-slate-700 transition-all shadow-sm",
+    className: "absolute -top-2 -right-2 bg-slate-800 text-red-400 rounded-full p-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-slate-700 transition-all shadow-sm",
     "aria-label": t('common.remove')
   }, /*#__PURE__*/React.createElement(X, {
     size: 10
   })))), gameTeams.length < 6 && /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.add'),
     onClick: handleAddTeam,
-    className: "flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-600 rounded-lg text-slate-600 hover:text-white hover:border-slate-400 transition-colors"
+    className: "flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-600 rounded-lg text-slate-300 hover:text-white hover:border-slate-400 transition-colors"
   }, /*#__PURE__*/React.createElement(Plus, {
     size: 24
   }), /*#__PURE__*/React.createElement("span", {
@@ -3001,7 +3001,7 @@ function QuizView(props) {
         "aria-disabled": isClaimed,
         className: `
                                                             h-24 rounded-lg font-black text-3xl shadow-lg transition-all duration-300 transform flex items-center justify-center border-b-4 relative overflow-hidden group focus:outline-none focus:ring-4 focus:ring-yellow-400 focus:ring-offset-4 focus:ring-offset-slate-900
-                                                            ${isClaimed ? 'bg-slate-800/50 text-slate-700 border-slate-800 cursor-default' : 'bg-gradient-to-b from-blue-500 to-blue-600 text-yellow-300 border-blue-800 hover:from-blue-400 hover:to-blue-500 hover:-translate-y-1 hover:shadow-blue-500/20 hover:shadow-xl cursor-pointer active:scale-95'}
+                                                            ${isClaimed ? 'bg-slate-800/50 text-slate-300 border-slate-800 cursor-default' : 'bg-gradient-to-b from-blue-500 to-blue-600 text-yellow-300 border-blue-800 hover:from-blue-400 hover:to-blue-500 hover:-translate-y-1 hover:shadow-blue-500/20 hover:shadow-xl cursor-pointer active:scale-95'}
                                                         `
       }, !isClaimed && /*#__PURE__*/React.createElement("div", {
         className: "absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1s_infinite]"
@@ -3018,7 +3018,7 @@ function QuizView(props) {
   }, reviewGameState.activeQuestion.points), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.close'),
     onClick: () => closeReviewModal(false),
-    className: "absolute top-4 right-4 text-blue-700 hover:text-white transition-colors"
+    className: "absolute top-4 right-4 text-blue-300 hover:text-white transition-colors"
   }, /*#__PURE__*/React.createElement(X, {
     size: 24
   })), /*#__PURE__*/React.createElement("div", {
@@ -3106,7 +3106,7 @@ function QuizView(props) {
     className: "font-bold text-xl flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(MonitorPlay, {
     size: 24,
-    className: "text-teal-700"
+    className: "text-teal-400"
   }), " ", t('quiz.presentation_board')), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.reset_presentation'),
     onClick: resetPresentation,

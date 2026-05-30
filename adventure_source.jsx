@@ -48,7 +48,7 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
             </div>
             <div className="relative z-20">
                 <div className="flex justify-between text-xs font-bold mb-2">
-                    <span className="text-cyan-700 uppercase">{t('adventure.mission_report.proficiency_rating')}</span>
+                    <span className="text-cyan-400 uppercase">{t('adventure.mission_report.proficiency_rating')}</span>
                     <span className="text-white">{proficiency}/100 ({ratingLabel})</span>
                 </div>
                 <div className="h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700 relative">
@@ -60,13 +60,13 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
             </div>
             <div className="grid grid-cols-2 gap-4 relative z-20">
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
-                    <div className="flex items-center gap-2 mb-2 text-yellow-700">
+                    <div className="flex items-center gap-2 mb-2 text-yellow-400">
                         <Zap size={16} /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.efficiency')}</span>
                     </div>
                     <div className="text-3xl font-black">{efficiency}%</div>
                 </div>
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
-                    <div className="flex items-center gap-2 mb-2 text-green-700">
+                    <div className="flex items-center gap-2 mb-2 text-green-400">
                         <Key size={16} /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.concepts')}</span>
                     </div>
                     <div className="text-3xl font-black">{safeStats.conceptsFound.length}</div>
@@ -710,14 +710,14 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                     <span className="text-2xl">💰</span>
                     <div>
                         <div className="text-[11px] text-slate-600 font-bold uppercase tracking-wider">{t('adventure.gold')}</div>
-                        <div className="text-xl font-black text-yellow-700 leading-none">{gold}</div>
+                        <div className="text-xl font-black text-yellow-400 leading-none">{gold}</div>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 bg-slate-700 px-4 py-2 rounded-xl border border-slate-600">
                     <span className="text-2xl">🏆</span>
                     <div>
                         <div className="text-[11px] text-slate-600 font-bold uppercase tracking-wider">{t('adventure.global_xp')}</div>
-                        <div className="text-xl font-black text-green-700 leading-none">{globalXP}</div>
+                        <div className="text-xl font-black text-green-400 leading-none">{globalXP}</div>
                     </div>
                 </div>
             </div>
@@ -733,7 +733,7 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                             {item.icon}
                         </div>
                         <div className="text-right">
-                            <div className="text-yellow-700 font-black text-lg">{item.cost} G</div>
+                            <div className="text-yellow-400 font-black text-lg">{item.cost} G</div>
                             <span className="text-[11px] font-bold uppercase text-slate-600 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
                                 {t(`adventure.effects.${item.effectType}`) || item.effectType}
                             </span>

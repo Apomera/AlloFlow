@@ -296,6 +296,31 @@ const useReducedMotion = () => {
   }, []);
   return prefersReduced;
 };
+const readHostTheme = () => {
+  try {
+    if (typeof document === "undefined") return "default";
+    const el = document.getElementById("main-content") || document.body;
+    const cls = el && el.className || "";
+    if (/\btheme-contrast\b/.test(cls)) return "contrast";
+    if (/\btheme-dark\b/.test(cls)) return "dark";
+  } catch (e) {
+  }
+  return "default";
+};
+const useHostTheme = () => {
+  const [hostTheme, setHostTheme] = useState(readHostTheme);
+  useEffect(() => {
+    if (typeof document === "undefined") return void 0;
+    const update = () => setHostTheme(readHostTheme());
+    update();
+    const target = document.getElementById("main-content") || document.body;
+    if (!target || typeof MutationObserver === "undefined") return void 0;
+    const mo = new MutationObserver(update);
+    mo.observe(target, { attributes: true, attributeFilter: ["class"] });
+    return () => mo.disconnect();
+  }, []);
+  return hostTheme;
+};
 const LAYOUT_MODES = {
   "prose": { label: "Prose", emoji: "\u{1F4C4}", desc: "Traditional paragraph layout", writeBg: "bg-white", writeBorder: "border-slate-200", accent: "rose" },
   "comic": { label: "Comic", emoji: "\u{1F4AC}", desc: "Panel grid with speech bubbles", writeBg: "bg-slate-50", writeBorder: "border-slate-800", accent: "blue" },
@@ -645,8 +670,11 @@ const StoryForge = React.memo(({
   const [showAdvancedConfig, setShowAdvancedConfig] = useState(false);
   const [promptPreview, setPromptPreview] = useState(null);
   const phaseContentRef = useRef(null);
+  const modalRootRef = useRef(null);
+  const previouslyFocusedRef = useRef(null);
   const prefersReducedMotion = useReducedMotion();
   const animClass = prefersReducedMotion ? "" : "animate-in fade-in duration-300";
+  const hostTheme = useHostTheme();
   useEffect(() => {
     return () => {
       if (dictation.isDictating) dictation.stopDictation();
@@ -838,6 +866,53 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language]);
+  useEffect(() => {
+    if (!isOpen) return void 0;
+    const root = modalRootRef.current;
+    if (!root || typeof document === "undefined") return void 0;
+    previouslyFocusedRef.current = document.activeElement;
+    const FOCUSABLE = 'a[href],area[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+    const getFocusable = () => Array.from(root.querySelectorAll(FOCUSABLE)).filter((el) => el.getClientRects().length > 0);
+    const focusTimer = setTimeout(() => {
+      const f = getFocusable();
+      (f[0] || root).focus();
+    }, 0);
+    const onKeyDown = (e) => {
+      if (e.key !== "Tab") return;
+      const f = getFocusable();
+      if (f.length === 0) {
+        e.preventDefault();
+        root.focus();
+        return;
+      }
+      const first = f[0];
+      const last = f[f.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey) {
+        if (active === first || !root.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (active === last || !root.contains(active)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    root.addEventListener("keydown", onKeyDown);
+    return () => {
+      clearTimeout(focusTimer);
+      root.removeEventListener("keydown", onKeyDown);
+      const prev = previouslyFocusedRef.current;
+      if (prev && typeof prev.focus === "function" && document.contains(prev)) {
+        try {
+          prev.focus();
+        } catch (e) {
+        }
+      }
+    };
+  }, [isOpen]);
   const saveTimerRef = useRef(null);
   useEffect(() => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -1967,10 +2042,10 @@ Return ONLY JSON:
         const safeThought = panel.thought ? escapeHtml(panel.thought) : "";
         const safeSfx = panel.sfx ? escapeHtml(panel.sfx) : "";
         const sticker = panelStickers[p.id] || "";
-        chaptersHtml += `<article class="panel" aria-label={t("a11y.comic_panel", { n: idx + 1 })}>`;
+        chaptersHtml += `<article class="panel" aria-label="${escapeHtml(t("a11y.comic_panel", { n: idx + 1 }))}">`;
         if (img) chaptersHtml += `<div class="panel-img-wrap">`;
         if (img) chaptersHtml += `<img src="${img}" class="panel-img" loading="lazy" alt="Comic panel ${idx + 1} illustration" />`;
-        if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label={t("a11y.sound_effect", { fx: safeSfx })}>${safeSfx}</span>`;
+        if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label="${escapeHtml(t("a11y.sound_effect", { fx: panel.sfx }))}">${safeSfx}</span>`;
         if (img && sticker) chaptersHtml += `<span class="panel-sticker" aria-hidden="true">${escapeHtml(sticker)}</span>`;
         if (img) chaptersHtml += `</div>`;
         if (safeSpeech) {
@@ -1983,22 +2058,22 @@ Return ONLY JSON:
         chaptersHtml += `<div class="speech-bubble panel-caption">${safeText.length > 200 ? safeText.substring(0, 200) + "..." : safeText.replace(/\n/g, "<br/>")}</div>`;
         chaptersHtml += `</article>`;
       } else {
-        chaptersHtml += `<article class="chapter" aria-label={t("a11y.paragraph_n", { n: idx + 1 })}>`;
+        chaptersHtml += `<article class="chapter" aria-label="${escapeHtml(t("a11y.paragraph_n", { n: idx + 1 }))}">`;
         if (img) chaptersHtml += `<img src="${img}" class="scene-img" loading="lazy" alt="Illustration for paragraph ${idx + 1}" />`;
         const beatLabel = (PLOT_BEATS.find((b) => b.value === p.plotBeat) || {}).label;
         if (beatLabel && p.plotBeat) {
-          chaptersHtml += `<div class="beat-label" aria-label={t("a11y.narrative_beat", { label: escapeHtml(beatLabel) })}>${escapeHtml(beatLabel)}</div>`;
+          chaptersHtml += `<div class="beat-label" aria-label="${escapeHtml(t("a11y.narrative_beat", { label: beatLabel }))}">${escapeHtml(beatLabel)}</div>`;
         }
         chaptersHtml += `<p class="story-text">${safeText.replace(/\n/g, "<br/>")}</p>`;
         if (audio?.studentAudioBase64) {
-          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label={t("a11y.audio_narration_paragraph", { n: idx + 1 })}></audio>`;
+          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label="${escapeHtml(t("a11y.audio_narration_paragraph", { n: idx + 1 }))}"></audio>`;
         }
         chaptersHtml += `</article>`;
         if (idx < paragraphs.length - 1) chaptersHtml += `<div class="separator" aria-hidden="true">&mdash;</div>`;
       }
     });
     if (isComic) chaptersHtml += "</div>";
-    let vocabHtml = '<div class="vocab-section"><h2 id="vocab-heading">{t("ui_common.vocab_terms_used")}</h2><div class="vocab-grid">';
+    let vocabHtml = `<div class="vocab-section"><h2 id="vocab-heading">${escapeHtml(t("ui_common.vocab_terms_used"))}</h2><div class="vocab-grid">`;
     vocabTerms.forEach((v) => {
       const used = vocabUsage[v.term];
       vocabHtml += `<div class="vocab-chip ${used ? "used" : "unused"}">${used ? "\u2713" : "\u2717"} ${escapeHtml(v.term)}</div>`;
@@ -2008,7 +2083,7 @@ Return ONLY JSON:
     if (gradingResult) {
       feedbackHtml = `<div class="feedback-section">
         <h2 id="feedback-heading">Teacher Feedback</h2>
-        <div class="score-badge" aria-label={t("a11y.score_n", { score: escapeHtml(gradingResult.totalScore || '') })}>${escapeHtml(gradingResult.totalScore || "")}</div>
+        <div class="score-badge" aria-label="${escapeHtml(t("a11y.score_n", { score: gradingResult.totalScore || "" }))}">${escapeHtml(gradingResult.totalScore || "")}</div>
         <div class="glow-grow">
           <div class="glow"><strong>\u2728 Glow:</strong> ${escapeHtml(gradingResult.feedback?.glow || "")}</div>
           <div class="grow"><strong>\u{1F331} Grow:</strong> ${escapeHtml(gradingResult.feedback?.grow || "")}</div>
@@ -2063,8 +2138,8 @@ main{display:block}
 @media print{.skip-link,.print-btn{display:none}.chapter,.panel{break-inside:avoid}body{background:#fff !important}.cover{background:#fffbeb !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.comic-grid{background:#1e293b !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style></head><body>
-<a class="skip-link" href="#story-content">{t("ui_common.skip_to_story")}</a>
-<button class="print-btn" onclick="window.print()" aria-label={t("a11y.story_print")}>\u{1F5A8}\uFE0F Print</button>
+<a class="skip-link" href="#story-content">${escapeHtml(t("ui_common.skip_to_story"))}</a>
+<button class="print-btn" onclick="window.print()" aria-label="${escapeHtml(t("a11y.story_print"))}">\u{1F5A8}\uFE0F Print</button>
 <header class="cover" role="banner">
   ${coverArt ? `<img src="${coverArt}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ""}
   <h1 id="story-title">${title}</h1>
@@ -2103,7 +2178,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
     paragraphs.forEach((p, idx) => {
       const img = illustrations[p.id]?.imageUrl;
       const beatLabel = (PLOT_BEATS.find((b) => b.value === p.plotBeat) || {}).label;
-      const beatHtml = beatLabel && p.plotBeat ? `<div class="beat-label" aria-label={t("a11y.narrative_beat", { label: escapeHtml(beatLabel) })}>${escapeHtml(beatLabel)}</div>` : "";
+      const beatHtml = beatLabel && p.plotBeat ? `<div class="beat-label" aria-label="${escapeHtml(t("a11y.narrative_beat", { label: beatLabel }))}">${escapeHtml(beatLabel)}</div>` : "";
       slidesHtml += `<div class="slide">
         ${img ? `<img src="${img}" class="slide-img" alt="Scene ${idx + 1}" />` : ""}
         ${beatHtml}
@@ -2111,7 +2186,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
         <div class="slide-num">${idx + 1} / ${paragraphs.length}</div>
       </div>`;
     });
-    slidesHtml += `<div class="slide vocab-slide"><h2>{t("ui_common.vocabulary_used")}</h2><div class="vocab-flex">`;
+    slidesHtml += `<div class="slide vocab-slide"><h2>${escapeHtml(t("ui_common.vocabulary_used"))}</h2><div class="vocab-flex">`;
     vocabTerms.forEach((v) => {
       const used = vocabUsage[v.term];
       slidesHtml += `<span class="v-chip ${used ? "used" : ""}">${used ? "\u2713" : "\u2717"} ${escapeHtml(v.term)}</span>`;
@@ -2337,7 +2412,7 @@ show();
   const earnedCount = useMemo(() => achievements.filter((a) => a.earned).length, [achievements]);
   if (!isOpen) return null;
   const phaseIcons = [Sparkles, Type, ImageIcon, Volume2, Star, Download];
-  return /* @__PURE__ */ React.createElement("div", { className: `sf-modal-root fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`, role: "dialog", "aria-modal": "true", "aria-label": t("a11y.story_forge_studio") }, /* @__PURE__ */ React.createElement("audio", { ref: audioRef, onEnded: handleAudioEnded, className: "hidden" }), /* @__PURE__ */ React.createElement("div", { "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, playbackIdx >= 0 && paragraphs[playbackIdx] ? `Now reading paragraph ${playbackIdx + 1}${audioSegments[paragraphs[playbackIdx].id]?.sentences?.[sentenceIdx] ? ": " + audioSegments[paragraphs[playbackIdx].id].sentences[sentenceIdx] : ""}` : ""), /* @__PURE__ */ React.createElement("div", { id: "allo-live-storyforge", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }), /* @__PURE__ */ React.createElement("style", null, `@media (prefers-reduced-motion: reduce){ .sf-modal-root .animate-pulse,.sf-modal-root .animate-spin,.sf-modal-root .animate-bounce{animation:none!important} }`), showRestorePrompt && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-restore-title" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3", "aria-hidden": "true" }, "\u{1F4D6}"), /* @__PURE__ */ React.createElement("h3", { id: "sf-restore-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.continue_where_left")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "A saved draft was found. Would you like to restore it?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: discardDraft, className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, t("ui_common.start_fresh")), /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: restoreDraft, className: "px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors" }, t("ui_common.restore_draft"))))), showCloseConfirm && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-close-confirm-title" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("h3", { id: "sf-close-confirm-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.unsaved_changes")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "Your story progress hasn't been exported or saved. Are you sure you want to close?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: () => setShowCloseConfirm(false), className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, t("ui_common.keep_working")), /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: () => {
+  return /* @__PURE__ */ React.createElement("div", { ref: modalRootRef, tabIndex: -1, className: `sf-modal-root theme-${hostTheme} fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`, role: "dialog", "aria-modal": "true", "aria-label": t("a11y.story_forge_studio") }, /* @__PURE__ */ React.createElement("audio", { ref: audioRef, onEnded: handleAudioEnded, className: "hidden" }), /* @__PURE__ */ React.createElement("div", { "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, playbackIdx >= 0 && paragraphs[playbackIdx] ? `Now reading paragraph ${playbackIdx + 1}${audioSegments[paragraphs[playbackIdx].id]?.sentences?.[sentenceIdx] ? ": " + audioSegments[paragraphs[playbackIdx].id].sentences[sentenceIdx] : ""}` : ""), /* @__PURE__ */ React.createElement("div", { id: "allo-live-storyforge", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }), /* @__PURE__ */ React.createElement("style", null, `@media (prefers-reduced-motion: reduce){ .sf-modal-root .animate-pulse,.sf-modal-root .animate-spin,.sf-modal-root .animate-bounce{animation:none!important} }`), showRestorePrompt && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-restore-title" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3", "aria-hidden": "true" }, "\u{1F4D6}"), /* @__PURE__ */ React.createElement("h3", { id: "sf-restore-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.continue_where_left")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "A saved draft was found. Would you like to restore it?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: discardDraft, className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, t("ui_common.start_fresh")), /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: restoreDraft, className: "px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors" }, t("ui_common.restore_draft"))))), showCloseConfirm && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-close-confirm-title" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("h3", { id: "sf-close-confirm-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.unsaved_changes")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "Your story progress hasn't been exported or saved. Are you sure you want to close?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: () => setShowCloseConfirm(false), className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, t("ui_common.keep_working")), /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: () => {
     setShowCloseConfirm(false);
     try {
       const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language };
@@ -2391,7 +2466,7 @@ show();
       /* @__PURE__ */ React.createElement(Icon, { size: 14, "aria-hidden": "true" }),
       /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, PHASE_LABELS[i])
     ));
-  })), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto", ref: phaseContentRef, tabIndex: -1, role: "region", "aria-label": `${PHASE_LABELS[phaseIdx]} phase`, "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-6" }, phase === "configure" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, t("ui_common.set_up_story")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Name your story, choose a genre, and set your vocabulary ingredients"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center mt-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { onClick: importDraftJSON, className: "px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[11px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Plus, { size: 10 }), " Import classmate's draft"), onSaveConfig && /* @__PURE__ */ React.createElement("button", { onClick: saveAsConfig, disabled: vocabTerms.length === 0, className: "px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-[11px] font-bold hover:bg-indigo-200 transition-colors inline-flex items-center gap-1 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 10 }), " Save as Assignment"))), lessonResources && lessonResources.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-indigo-50 to-violet-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 12 }), " Import from Lesson Resources"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, lessonResources.filter((r) => ["glossary", "simplified", "sentence-frames", "lesson-plan", "timeline"].includes(r.type)).map((r, ri) => /* @__PURE__ */ React.createElement(
+  })), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto", ref: phaseContentRef, tabIndex: -1, role: "region", "aria-label": `${PHASE_LABELS[phaseIdx]} phase` }, /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-6" }, phase === "configure" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, t("ui_common.set_up_story")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Name your story, choose a genre, and set your vocabulary ingredients"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center mt-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { onClick: importDraftJSON, className: "px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[11px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Plus, { size: 10 }), " Import classmate's draft"), onSaveConfig && /* @__PURE__ */ React.createElement("button", { onClick: saveAsConfig, disabled: vocabTerms.length === 0, className: "px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-[11px] font-bold hover:bg-indigo-200 transition-colors inline-flex items-center gap-1 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 10 }), " Save as Assignment"))), lessonResources && lessonResources.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-indigo-50 to-violet-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 12 }), " Import from Lesson Resources"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, lessonResources.filter((r) => ["glossary", "simplified", "sentence-frames", "lesson-plan", "timeline"].includes(r.type)).map((r, ri) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: ri,
@@ -2581,8 +2656,12 @@ show();
   } })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, vocabTerms.map((v, i) => {
     const used = vocabUsage[v.term];
     return /* @__PURE__ */ React.createElement("div", { key: i, className: "relative group" }, /* @__PURE__ */ React.createElement(
-      "div",
+      "button",
       {
+        type: "button",
+        "data-sf-focusable": true,
+        "aria-describedby": `sf-vocab-tip-${i}`,
+        "aria-label": `${v.term}${used ? " \u2014 used" : " \u2014 not yet used"}. ${t("a11y.copy_vocab_term") || "Copy term to paste into your story"}`,
         className: `px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all cursor-pointer select-none ${used ? "bg-green-100 border-green-400 text-green-800 shadow-sm" : "bg-white border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-400"}`,
         onClick: () => {
           navigator.clipboard?.writeText(v.term).then(() => {
@@ -2591,9 +2670,9 @@ show();
           });
         }
       },
-      used ? /* @__PURE__ */ React.createElement(CheckCircle2, { size: 11, className: "inline mr-1" }) : /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-rose-300 mr-1.5" }),
+      used ? /* @__PURE__ */ React.createElement(CheckCircle2, { size: 11, className: "inline mr-1" }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "inline-block w-2 h-2 rounded-full bg-rose-300 mr-1.5" }),
       v.term
-    ), /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white rounded-xl p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-700 mb-1" }, v.term), v.definition && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-relaxed mb-1" }, v.definition), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic" }, "Click to copy \xB7 Paste into your paragraph"), /* @__PURE__ */ React.createElement("div", { className: "absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-slate-800" })));
+    ), /* @__PURE__ */ React.createElement("div", { id: `sf-vocab-tip-${i}`, role: "tooltip", className: "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white rounded-xl p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-50 pointer-events-none" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-300 mb-1" }, v.term), v.definition && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-200 leading-relaxed mb-1" }, v.definition), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-300 italic" }, "Click to copy \xB7 Paste into your paragraph"), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-slate-800" })));
   }))), focusMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3" }, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -2658,7 +2737,7 @@ show();
       "aria-label": `Plot beat for paragraph ${idx + 1} (optional)`
     },
     PLOT_BEATS.map((b) => /* @__PURE__ */ React.createElement("option", { key: b.value || "none", value: b.value }, b.label))
-  ), p.plotBeat && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-600 italic" }, "tagged")), helpMeParagraphIdx === idx && helpMeResult && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 10 }), " Writing Coach Suggestions"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, helpMeResult.map((s, si) => /* @__PURE__ */ React.createElement("div", { key: si, className: "text-xs text-amber-800 flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-700 mt-0.5" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("span", null, s)))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  ), p.plotBeat && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-600 italic" }, "tagged")), helpMeParagraphIdx === idx && helpMeResult && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 10 }), " Writing Coach Suggestions"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, helpMeResult.map((s, si) => /* @__PURE__ */ React.createElement("div", { key: si, className: "text-xs text-amber-800 flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-400 mt-0.5" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("span", null, s)))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setHelpMeParagraphIdx(-1);
     setHelpMeResult(null);
   }, className: "mt-2 text-[11px] text-amber-500 hover:text-amber-700 font-bold" }, t("ui_common.dismiss"))), layoutMode === "comic" ? (
@@ -3087,7 +3166,7 @@ show();
     /* @__PURE__ */ React.createElement("div", { className: "p-4 grid grid-cols-2 gap-3 bg-slate-900" }, paragraphs.map((p, idx) => /* @__PURE__ */ React.createElement("div", { key: p.id, className: "bg-white rounded-lg overflow-hidden shadow-md relative", style: { border: "3px solid #1e293b" } }, illustrations[p.id]?.imageUrl && /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: `Panel ${idx + 1}`, className: "w-full aspect-square object-cover" }), panelStickers[p.id] && /* @__PURE__ */ React.createElement("div", { className: "absolute top-2 right-2 text-3xl drop-shadow-lg select-none pointer-events-none", style: { transform: "rotate(12deg)" } }, panelStickers[p.id]), (panelDialogue[p.id] || {}).sfx && /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 left-3 font-black text-red-500 text-lg drop-shadow-lg select-none pointer-events-none", style: { transform: "rotate(-8deg)", textShadow: "2px 2px 0 #fff, -1px -1px 0 #fff" } }, panelDialogue[p.id].sfx), /* @__PURE__ */ React.createElement("div", { className: "p-2.5 relative space-y-1.5" }, p.text.trim() && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-md px-2 py-1 text-[11px] text-amber-800 italic leading-snug" }, p.text.length > 200 ? p.text.substring(0, 200) + "..." : p.text), (panelDialogue[p.id] || {}).speech && /* @__PURE__ */ React.createElement("div", { className: "relative" }, (panelDialogue[p.id] || {}).speaker && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-600 mb-0.5" }, panelDialogue[p.id].speaker, ":"), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-2 border-slate-800 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed", style: { borderRadius: "18px" } }, panelDialogue[p.id].speech), /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-1.5 left-4 w-3 h-3 bg-white border-b-2 border-r-2 border-slate-800", style: { transform: "rotate(45deg)" } })), (panelDialogue[p.id] || {}).thought && /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border-2 border-purple-300 rounded-2xl p-2 text-[11px] text-purple-700 italic leading-relaxed", style: { borderRadius: "20px", borderStyle: "dashed" } }, "\u{1F4AD} ", panelDialogue[p.id].thought), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5" }, ["\u{1F4A5}", "\u2764\uFE0F", "\u2B50", "\u{1F602}", "\u{1F631}", "\u{1F525}", "\u{1F480}", "\u{1F31F}"].map((emoji) => /* @__PURE__ */ React.createElement("button", { key: emoji, onClick: () => setPanelStickers((prev) => ({ ...prev, [p.id]: prev[p.id] === emoji ? null : emoji })), className: `text-sm hover:scale-125 transition-transform ${panelStickers[p.id] === emoji ? "scale-125" : "opacity-50 hover:opacity-100"}`, title: `Add ${emoji} sticker` }, emoji))), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-500 font-bold" }, "Panel ", idx + 1))))))
   ) : (
     /* ── Prose Layout ── */
-    /* @__PURE__ */ React.createElement("div", { className: "p-6 space-y-6" }, paragraphs.map((p, idx) => /* @__PURE__ */ React.createElement("div", { key: p.id, className: "flex flex-col items-center gap-4" }, illustrations[p.id]?.imageUrl && /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: `Scene ${idx + 1}`, className: "max-w-md rounded-xl shadow-md" }), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-800 leading-relaxed max-w-lg text-center", style: { textIndent: "2em", textAlign: "left" } }, p.text), idx < paragraphs.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "text-amber-700 text-lg" }, "\u2014"))))
+    /* @__PURE__ */ React.createElement("div", { className: "p-6 space-y-6" }, paragraphs.map((p, idx) => /* @__PURE__ */ React.createElement("div", { key: p.id, className: "flex flex-col items-center gap-4" }, illustrations[p.id]?.imageUrl && /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: `Scene ${idx + 1}`, className: "max-w-md rounded-xl shadow-md" }), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-800 leading-relaxed max-w-lg text-center", style: { textIndent: "2em", textAlign: "left" } }, p.text), idx < paragraphs.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "text-amber-400 text-lg" }, "\u2014"))))
   )), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-amber-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-amber-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 16 }), " Achievements (", earnedCount, "/", achievements.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-2" }, achievements.map((a) => /* @__PURE__ */ React.createElement("div", { key: a.id, className: `text-center p-2.5 rounded-xl border-2 transition-all ${a.earned ? "bg-amber-50 border-amber-300 shadow-sm" : "bg-slate-50 border-slate-200 opacity-50"}`, title: a.desc }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl" }, a.icon), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-700 mt-1" }, a.name))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-3 items-center justify-center" }, /* @__PURE__ */ React.createElement(
     "button",
     {

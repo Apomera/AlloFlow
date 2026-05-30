@@ -12428,7 +12428,9 @@
                             h('line', { x1: objX, y1: cy - hObj, x2: cx + 230, y2: cy - hObj + 230 * (hObj / doDist) + 0, stroke: '#f97316', strokeWidth: 1.5, opacity: 0.7 }),
                             Math.abs(imgX - cx) < 250 && imgX > 0 && imgX < 560 && h('line', { x1: imgX, y1: cy, x2: imgX, y2: cy - hImg, stroke: realImg ? '#dc2626' : '#a78bfa', strokeWidth: 3, strokeDasharray: realImg ? 'none' : '4,2' }),
                             h('text', { x: 280, y: 25, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, converging ? 'Converging Lens (' + (doDist > f ? 'real ' : 'virtual ') + 'image)' : 'Diverging Lens (always virtual image)'),
-                            h('text', { x: 280, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, 'dᵢ=' + di.toFixed(1) + ' • m=' + m.toFixed(2) + ' • hᵢ=' + hImg.toFixed(1))
+                            h('text', { x: 280, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, (!isFinite(di)
+                              ? 'Object at focal point → image at infinity (rays emerge parallel)'
+                              : ('dᵢ=' + di.toFixed(1) + ' • m=' + m.toFixed(2) + ' • hᵢ=' + hImg.toFixed(1))))
                           )
                         ),
                         h('div', { style: { display: 'flex', gap: 6, marginTop: 8 } },
@@ -12529,7 +12531,9 @@
                             h('line', { x1: mx, y1: my - hObj, x2: mx - 200, y2: my + (type === 'concave' ? (hObj * (mx - 200 - mx) / -f) : -(hObj * (mx - 200 - mx) / f)), stroke: '#fde047', strokeWidth: 1.5 }),
                             di > 0 && di < 300 && h('line', { x1: mx - di, y1: my, x2: mx - di, y2: my - hImg, stroke: '#dc2626', strokeWidth: 3 }),
                             h('text', { x: 250, y: 25, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, type === 'concave' ? 'Concave Mirror' : 'Convex Mirror'),
-                            h('text', { x: 250, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, 'dᵢ=' + di.toFixed(1) + ' • m=' + m.toFixed(2))
+                            h('text', { x: 250, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, (!isFinite(di)
+                              ? 'Object at focal point → image at infinity (rays emerge parallel)'
+                              : ('dᵢ=' + di.toFixed(1) + ' • m=' + m.toFixed(2))))
                           )
                         ),
                         h('div', { style: { display: 'flex', gap: 6, marginTop: 8 } },

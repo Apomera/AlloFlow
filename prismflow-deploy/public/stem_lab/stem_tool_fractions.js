@@ -6244,22 +6244,10 @@ window.StemLab = window.StemLab || {
     // ── DIFFERENTIATION TAB — accommodation menu by need ──
     var DIFFERENTIATION_PROFILES = [
       {
-        id: 'visual-learner', label: 'Visual learner',
-        recommended: ['Models tab (pie/bar/number-line)', 'Fraction Wall', 'CRA progression', 'Visual operation proofs'],
-        avoid: ['Pure symbolic procedure without diagrams'],
-        tip: 'Always start with a visual model. Show, then symbolize.'
-      },
-      {
-        id: 'auditory-learner', label: 'Auditory learner',
-        recommended: ['Audio narration on (Settings)', 'Math Talks', 'AI tutor for verbal explanations'],
-        avoid: ['Silent worksheet-only practice'],
-        tip: 'Read fractions aloud. Discuss reasoning out loud.'
-      },
-      {
-        id: 'kinesthetic-learner', label: 'Kinesthetic learner',
-        recommended: ['Hands-on activities (paper folding, pattern blocks)', 'Number line walk', 'Manipulatives tab'],
-        avoid: ['Long screen-only sessions'],
-        tip: 'Physical movement and manipulation reinforce abstract concepts.'
+        id: 'multi-representation', label: 'Multiple representations (UDL)',
+        recommended: ['Models tab (pie / bar / number-line)', 'Audio narration on (Settings)', 'Math Talks', 'Hands-on / manipulatives activities'],
+        avoid: [],
+        tip: 'Show the SAME idea visually, verbally, and physically (dual coding) — this helps ALL students. It does NOT mean a student is a single "visual / auditory / kinesthetic" type; that meshing claim is unsupported (Pashler 2008).'
       },
       {
         id: 'autism-spectrum', label: 'Autism spectrum',
@@ -6323,12 +6311,12 @@ window.StemLab = window.StemLab || {
               profile.recommended.map(function(r, i) { return h('li', { key: 'rec-' + i }, r); })
             )
           ),
-          h('div', { className: 'bg-rose-50 rounded p-2 border border-rose-200' },
+          (profile.avoid && profile.avoid.length) ? h('div', { className: 'bg-rose-50 rounded p-2 border border-rose-200' },
             h('p', { className: 'text-[11px] font-bold text-rose-700' }, '⚠ Avoid'),
             h('ul', { className: 'text-xs list-disc pl-5 text-slate-800 mt-1 space-y-0.5' },
               profile.avoid.map(function(a, i) { return h('li', { key: 'av-' + i }, a); })
             )
-          ),
+          ) : null,
           h('div', { className: 'bg-amber-50 rounded p-2 border border-amber-200' },
             h('p', { className: 'text-[11px] font-bold text-amber-700' }, '💡 Tip'),
             h('p', { className: 'text-xs text-slate-800 mt-1' }, profile.tip)

@@ -3075,8 +3075,8 @@
               readAloudActive && e('div', { style: { width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' } },
                 // Top bar
                 e('div', { onClick: function (ev) { ev.stopPropagation(); }, style: { width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'default' } },
-                  e('span', { style: { color: '#475569', fontSize: '13px', fontFamily: 'system-ui, sans-serif' } }, (poemTitle || 'Untitled') + (studentNickname ? ' · ' + studentNickname : '')),
-                  e('span', { style: { color: '#475569', fontSize: '12px', fontFamily: 'system-ui, sans-serif' } }, currentNonBlankIdx + ' / ' + totalLines)
+                  e('span', { style: { color: '#94a3b8', fontSize: '13px', fontFamily: 'system-ui, sans-serif' } }, (poemTitle || 'Untitled') + (studentNickname ? ' · ' + studentNickname : '')),
+                  e('span', { style: { color: '#cbd5e1', fontSize: '12px', fontFamily: 'system-ui, sans-serif' } }, currentNonBlankIdx + ' / ' + totalLines)
                 ),
                 // Line display
                 e('p', { style: { fontFamily: 'Georgia, serif', fontSize: 'clamp(28px, 5vw, 56px)', color: '#fff', margin: 0, lineHeight: 1.4, textAlign: 'center', maxWidth: '100%', wordWrap: 'break-word' }, 'aria-live': 'polite' },
@@ -3085,16 +3085,16 @@
                 // Hint + controls (don't propagate clicks to advance)
                 e('div', { onClick: function (ev) { ev.stopPropagation(); }, style: { display: 'flex', gap: '14px', alignItems: 'center', cursor: 'default' } },
                   e('button', { onClick: rewindReadAloud, 
-                    style: { padding: '8px 14px', background: 'transparent', color: '#475569', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+                    style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
                   }, '◀ Back'),
                   e('button', { onClick: advanceReadAloud, autoFocus: true, 
                     style: { padding: '12px 28px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }
                   }, 'Next ▶'),
                   e('button', { onClick: stopReadAloud, 'aria-label': 'Exit read-aloud mode',
-                    style: { padding: '8px 14px', background: 'transparent', color: '#475569', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+                    style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
                   }, '✕ Done')
                 ),
-                e('p', { style: { color: '#475569', fontSize: '11px', fontFamily: 'system-ui, sans-serif', margin: 0, textAlign: 'center' } }, 'Tap or press Space to advance · ← / → to step · Esc to exit')
+                e('p', { style: { color: '#cbd5e1', fontSize: '11px', fontFamily: 'system-ui, sans-serif', margin: 0, textAlign: 'center' } }, 'Tap or press Space to advance · ← / → to step · Esc to exit')
               )
             );
           })(),
@@ -3103,7 +3103,7 @@
           activeTab === 'share' && e('div', { role: 'tabpanel', id: 'pt-panel-share', 'aria-labelledby': 'pt-tab-share', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '10px', outline: 'none' } },
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '📚 Library'),
             saved.length === 0
-              ? e('p', { style: { color: '#475569', fontSize: '13px', fontStyle: 'italic' } }, 'No poems saved yet. Save one from the Write tab to see it here.')
+              ? e('p', { style: { color: '#cbd5e1', fontSize: '13px', fontStyle: 'italic' } }, 'No poems saved yet. Save one from the Write tab to see it here.')
               : (function () {
                   // Compute which forms are represented in saved poems for the filter dropdown
                   var formsInLibrary = {};
@@ -3116,7 +3116,7 @@
                       e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
                         e('div', { style: { flex: 1, minWidth: '180px' } },
                           e('h4', { style: { fontSize: '13px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '📖 Print as a chapbook'),
-                          e('p', { style: { fontSize: '11px', color: '#475569', margin: '2px 0 0' } }, 'Cover, table of contents, and one page per poem. Print to paper or save as PDF.')
+                          e('p', { style: { fontSize: '11px', color: '#cbd5e1', margin: '2px 0 0' } }, 'Cover, table of contents, and one page per poem. Print to paper or save as PDF.')
                         ),
                         formIdsRepresented.length > 1 && e('select', { value: chapbookFilter,
                           onChange: function (ev) { setChapbookFilter(ev.target.value); },
@@ -3141,7 +3141,7 @@
                       e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
                         e('div', { style: { flex: 1, minWidth: '180px' } },
                           e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#581c87', margin: 0 } }, '🌿 Patterns across my poems'),
-                          e('p', { style: { fontSize: '11px', color: '#475569', margin: '2px 0 0' } }, saved.length < 3
+                          e('p', { style: { fontSize: '11px', color: '#cbd5e1', margin: '2px 0 0' } }, saved.length < 3
                             ? ('Save at least 3 poems first (' + saved.length + ' so far). Then come back to see what patterns are emerging.')
                             : 'A craft-only reflection: what images, sounds, and forms keep showing up.')
                         ),

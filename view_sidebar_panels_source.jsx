@@ -41,10 +41,10 @@ function AdventurePanel(props) {
                     )}
                     {globalPoints < studentProjectSettings.adventureUnlockXP ? (
                         <div className="bg-slate-800 text-white p-4 rounded-xl text-center shadow-md border border-slate-600 animate-in zoom-in">
-                            <Lock size={32} className="mx-auto mb-2 text-yellow-700"/>
+                            <Lock size={32} className="mx-auto mb-2 text-yellow-400"/>
                             <h4 className="font-bold text-lg mb-1">{t('adventure.locked_title')}</h4>
                             <p className="text-sm text-slate-600 mb-3">
-                                {t('adventure.locked_desc_prefix')} <span className="font-bold text-yellow-700">{studentProjectSettings.adventureUnlockXP} XP</span> {t('adventure.locked_desc_suffix')}
+                                {t('adventure.locked_desc_prefix')} <span className="font-bold text-yellow-400">{studentProjectSettings.adventureUnlockXP} XP</span> {t('adventure.locked_desc_suffix')}
                             </p>
                             <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden border border-slate-600">
                                 <div

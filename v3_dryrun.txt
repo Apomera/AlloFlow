@@ -1,0 +1,9 @@
+═══════════════════════════════════════════════════════════════════
+ df347335 REVERT — DRY RUN
+═══════════════════════════════════════════════════════════════════
+ Files: 13
+ Proposed reverts: 121
+ Applied: 121
+ Skipped: 0
+
+ (dry run — pass --apply to actually write files)

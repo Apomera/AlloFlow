@@ -659,11 +659,14 @@
             localStorage.removeItem("alloflow_audio_" + key);
           } catch (e) { console.warn("[WordSounds] silent catch:", e); }
         };
-    const loadPsychometricProbes =
-      typeof window.loadPsychometricProbes === "function"
-        ? window.loadPsychometricProbes
+    // Loads the fixed (non-AI-generated) probe item banks. NOTE: the effort to
+    // finalize stable, always-the-same probe banks is still IN PROGRESS, so on
+    // the CDN build this is a no-op stub and the banks may be unpopulated.
+    const loadProbeBanks =
+      typeof window.loadProbeBanks === "function"
+        ? window.loadProbeBanks
         : () => {
-          debugLog("loadPsychometricProbes stub (CDN)");
+          debugLog("loadProbeBanks stub (CDN)");
         };
     const ts = typeof window.ts === "function" ? window.ts : (key) => key;
 
@@ -1362,8 +1365,8 @@
       const [isEditing, setIsEditing] = React.useState(false);
       const [isMinimized, setIsMinimized] = React.useState(false);
       React.useEffect(() => {
-        if (typeof loadPsychometricProbes === "function") {
-          loadPsychometricProbes();
+        if (typeof loadProbeBanks === "function") {
+          loadProbeBanks();
         }
       }, []);
       const [activitySequence, setActivitySequence] = React.useState(
@@ -2031,10 +2034,14 @@
           const iso = isolationStateRef.current;
           if (iso && iso.correctSound) return String(iso.correctSound).toLowerCase().trim();
         } catch (_) {}
-        if (data && data.targetPhoneme) return String(data.targetPhoneme).toLowerCase().trim();
-        if (data && data.word) return String(data.word).toLowerCase().trim()[0] || null;
+        // manipulation activity: anchor on the task's target phoneme
+        if (manipulationState && manipulationState.targetPhoneme)
+          return String(manipulationState.targetPhoneme).toLowerCase().trim();
+        // blending / rhyme / other: anchor on the first letter of the current word
+        const curWord = currentWordSoundsWord || (wordSoundsPhonemes && wordSoundsPhonemes.word);
+        if (curWord) return String(curWord).toLowerCase().trim()[0] || null;
         return null;
-      }, [data?.word, data?.targetPhoneme, isolationState?.correctSound]);
+      }, [currentWordSoundsWord, wordSoundsPhonemes, manipulationState, isolationState]);
       // Anchor play handler: speak the key word so the student hears the
       // sound in its keyword context (Jolly-Phonics style). Falls back to
       // attempting to play the phoneme directly if no key word is available.
@@ -4358,8 +4365,16 @@
               );
               onPlayAudio(chip.text);
               if (newSlots.every((s) => s !== null)) {
+                // Validate the arrangement: each placed grapheme must match the
+                // expected grapheme for its position (compare by text so repeated
+                // letters are interchangeable). Previously this auto-passed on fill.
+                const isCorrect = newSlots.every(
+                  (s, i) =>
+                    s && String(s.text) === String((data.graphemes || [])[i]),
+                );
                 setTimeout(() => {
-                  if (isMountedRef.current) onCheckAnswer("correct");
+                  if (isMountedRef.current)
+                    onCheckAnswer(isCorrect ? "correct" : "incorrect");
                 }, 1000);
               }
             }
@@ -9019,7 +9034,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         }
       };
       const checkAnswer = React.useCallback(
-        (answer, expectedAnswer) => {
+        (answer, expectedAnswer, opts) => {
           debugLog("TeacherCheck: checkAnswer called", {
             answer,
             expectedAnswer,
@@ -9239,6 +9254,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 mode: showLetterHints ? "visual" : "sound_only",
                 difficulty: getEffectiveDifficulty(),
                 phonemes: wordSoundsPhonemes?.phonemes || [],
+                ...(opts && typeof opts.formationScore === "number"
+                  ? { formationScore: opts.formationScore }
+                  : {}),
               },
             ]);
             const currentLessonConfig = lessonPlanConfig;
@@ -10103,11 +10121,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           (Date.now() - probeStartTimeRef.current) / 60000,
                           0.01,
                         );
-                        const wcpm = Math.round(
+                        const itemsPerMin = Math.round(
                           wordSoundsScore.correct / elapsedMinutes,
                         );
                         onProbeComplete({
-                          wcpm,
+                          itemsPerMin,
                           correct: wordSoundsScore.correct,
                           total: wordSoundsScore.total,
                           elapsed: Math.round(elapsedMinutes * 60),
@@ -10122,11 +10140,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           (Date.now() - probeStartTimeRef.current) / 60000,
                           0.01,
                         );
-                        const wcpm = Math.round(
+                        const itemsPerMin = Math.round(
                           wordSoundsScore.correct / elapsedMinutes,
                         );
                         onProbeComplete({
-                          wcpm,
+                          itemsPerMin,
                           correct: wordSoundsScore.correct,
                           total: wordSoundsScore.total,
                           elapsed: Math.round(elapsedMinutes * 60),
@@ -10141,11 +10159,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           (Date.now() - probeStartTimeRef.current) / 60000,
                           0.01,
                         );
-                        const wcpm = Math.round(
+                        const itemsPerMin = Math.round(
                           wordSoundsScore.correct / elapsedMinutes,
                         );
                         onProbeComplete({
-                          wcpm,
+                          itemsPerMin,
                           correct: wordSoundsScore.correct,
                           total: wordSoundsScore.total,
                           elapsed: Math.round(elapsedMinutes * 60),
@@ -10446,6 +10464,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         },
         [elkoninBoxes, soundChips, handleAudio],
       );
+      // Keyboard activation for draggable sound chips: Enter/Space performs the
+      // same move as drag-and-drop, so the Elkonin segmentation activity is
+      // operable without a pointer (WCAG 2.1.1). Mirrors the handleMoveKey API.
+      const handleKeyDown = (e, item, action) => {
+        if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+          e.preventDefault();
+          if (typeof action === "function") action();
+        }
+      };
       const handleOptionUpdate = (index, newValue, type) => {
         if (type === "set_correct") {
           if (wordSoundsActivity === "rhyming") {
@@ -10550,6 +10577,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         const canvasRef = React.useRef(null);
         const maskRef = React.useRef(null);
         const localMountedRef = React.useRef(true);
+        const strokesRef = React.useRef([]); // captured user stroke point arrays
         const [isDrawing, setIsDrawing] = React.useState(false);
         const [feedback, setFeedback] = React.useState(null);
         const [resetKey, setResetKey] = React.useState(0);
@@ -10645,6 +10673,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (len === 2) return 150;
           if (len === 3) return 110;
           return 90;
+        }
+        // Total drawn length of a captured stroke (sum of segment distances).
+        function _wsStrokeLen(s) {
+          let L = 0;
+          for (let i = 1; i < s.length; i++) {
+            L += Math.hypot(s[i].x - s[i - 1].x, s[i].y - s[i - 1].y);
+          }
+          return L;
         }
         const samplePathPoints = React.useMemo(() => {
           return (pathD, numPoints = 40) => {
@@ -10755,6 +10791,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           const mCtx = mask.getContext("2d");
           ctx.clearRect(0, 0, width, height);
           mCtx.clearRect(0, 0, width, height);
+          strokesRef.current = []; // reset captured strokes for the new letter/attempt
           // Multi-character graphemes (sh, ch, th, wh, ng, ck, ph, qu, igh,
           // tch, dge) auto-scale the font down so the digraph/trigraph fits
           // inside the 320×320 canvas. Single letters keep the original 200px.
@@ -10865,6 +10902,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           let hits = 0;
           let totalTarget = 0;
           let outsideInk = 0;
+          // Per-cell coverage lets us tell "traced the whole letter" from
+          // "scribbled one region" — a single global coverage % can't.
+          const GRID = 8;
+          const cellW = Math.ceil(width / GRID);
+          const cellH = Math.ceil(height / GRID);
+          const cellTarget = new Array(GRID * GRID).fill(0);
+          const cellHit = new Array(GRID * GRID).fill(0);
           for (let i = 0; i < uData.length; i += 4) {
             const uAlpha = uData[i + 3];
             const mAlpha = mData[i + 3];
@@ -10872,38 +10916,141 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const isTarget = mAlpha > 50;
             if (isTarget) {
               totalTarget++;
-              if (isInk) hits++;
+              const pxIndex = i / 4;
+              const ci =
+                Math.floor(Math.floor(pxIndex / width) / cellH) * GRID +
+                Math.floor((pxIndex % width) / cellW);
+              cellTarget[ci]++;
+              if (isInk) {
+                hits++;
+                cellHit[ci]++;
+              }
             } else if (isInk) {
               outsideInk++;
             }
           }
-          const coverage = hits / (totalTarget || 1);
-          const messiness = outsideInk / (totalTarget || 1);
-          debugLog(
-            "Trace Score:",
-            coverage,
-            messiness,
-            "Hits:",
-            hits,
-            "Target:",
-            totalTarget,
-          );
-          if (coverage > 0.2 || (hits > 300 && messiness < 2.0)) {
-            setFeedback({ type: "success", emoji: "🌟", size: "lg" });
-            setTimeout(() => {
-              if (localMountedRef.current) onComplete(true);
-            }, 800);
-          } else if (coverage > 0.05) {
-            setFeedback({ type: "neutral", emoji: "👆", size: "md" });
-            setTimeout(() => {
-              if (localMountedRef.current) setFeedback(null);
-            }, 2000);
-          } else {
-            setFeedback({ type: "error", emoji: "🔄", size: "md" });
-            setTimeout(() => {
-              if (localMountedRef.current) setFeedback(null);
-            }, 2000);
+          // Completeness: fraction of the glyph's regions that were actually traced.
+          let cellsWithTarget = 0;
+          let cellsCovered = 0;
+          for (let c = 0; c < cellTarget.length; c++) {
+            if (cellTarget[c] >= 12) {
+              cellsWithTarget++;
+              if (cellHit[c] / cellTarget[c] >= 0.35) cellsCovered++;
+            }
           }
+          const completeness = cellsWithTarget
+            ? cellsCovered / cellsWithTarget
+            : 0;
+          // Accuracy / neatness: of all the ink laid down, how much is on the letter.
+          const totalInk = hits + outsideInk;
+          const accuracy = totalInk > 0 ? hits / totalInk : 0;
+          const coverage = hits / (totalTarget || 1); // for the "barely drawn" gate
+          // Stroke-derived signals. Digraphs/trigraphs are M-only anchors (no full
+          // path), so stroke order/count don't apply — they fall back to shape +
+          // neatness + start point only.
+          const svgPath =
+            LETTER_SVG_PATHS[letter] || LETTER_SVG_PATHS[letter.toLowerCase()];
+          const hasFullPath = !!svgPath && /[LQ]/i.test(svgPath);
+          const strokes = (strokesRef.current || []).filter(
+            (s) => s && s.length >= 3 && _wsStrokeLen(s) > 24,
+          );
+          // Did they start at the green dot?
+          let startScore = 1;
+          if (startDotPos && strokes.length) {
+            const f = strokes[0][0];
+            const d = Math.hypot(f.x - startDotPos.x, f.y - startDotPos.y);
+            startScore = d <= 35 ? 1 : d <= 70 ? 0.6 : 0.25;
+          }
+          // Plausible number of strokes? (single letters only)
+          let strokeCountScore = 1;
+          let expectedStrokes = 0;
+          if (hasFullPath) {
+            expectedStrokes = (svgPath.match(/M/g) || []).length || 1;
+            const diff = Math.abs(strokes.length - expectedStrokes);
+            strokeCountScore =
+              diff === 0 ? 1 : diff === 1 ? 0.7 : diff === 2 ? 0.4 : 0.2;
+          }
+          // Soft direction coaching (NOT scored): did the longest stroke run the
+          // same overall way as the reference path?
+          let directionOff = false;
+          if (hasFullPath && strokes.length) {
+            const pts = samplePathPoints(svgPath, 16);
+            if (pts.length > 1) {
+              const refDx = pts[pts.length - 1].x - pts[0].x;
+              const refDy = pts[pts.length - 1].y - pts[0].y;
+              const longest = strokes.reduce(
+                (a, b) => (_wsStrokeLen(b) > _wsStrokeLen(a) ? b : a),
+                strokes[0],
+              );
+              const uDx = longest[longest.length - 1].x - longest[0].x;
+              const uDy = longest[longest.length - 1].y - longest[0].y;
+              const dot = refDx * uDx + refDy * uDy;
+              const mag = Math.hypot(refDx, refDy) * Math.hypot(uDx, uDy);
+              if (mag > 1500 && dot / mag < -0.3) directionOff = true;
+            }
+          }
+          // Composite formation score (0–1), weighted by what matters most.
+          let score;
+          let passFloorOk;
+          if (hasFullPath) {
+            score =
+              0.45 * completeness +
+              0.3 * accuracy +
+              0.15 * startScore +
+              0.1 * strokeCountScore;
+            passFloorOk = completeness >= 0.55 && accuracy >= 0.45;
+          } else {
+            score = 0.55 * completeness + 0.3 * accuracy + 0.15 * startScore;
+            passFloorOk = completeness >= 0.5 && accuracy >= 0.4;
+          }
+          const score100 = Math.round(score * 100);
+          const passThreshold = hasFullPath ? 0.7 : 0.65;
+          debugLog("Trace formation:", {
+            score100,
+            completeness,
+            accuracy,
+            startScore,
+            strokeCountScore,
+            strokes: strokes.length,
+            expectedStrokes,
+            directionOff,
+          });
+          // Hardly anything drawn yet — encourage, don't score.
+          if (totalInk < 200 || coverage < 0.08) {
+            setFeedback({
+              type: "error",
+              emoji: "🔄",
+              size: "md",
+              tip: "Trace the letter!",
+            });
+            setTimeout(() => {
+              if (localMountedRef.current) setFeedback(null);
+            }, 2000);
+            return;
+          }
+          if (score >= passThreshold && passFloorOk) {
+            setFeedback({
+              type: "success",
+              emoji: "🌟",
+              size: "lg",
+              tip: "Great forming! " + score100 + "/100",
+            });
+            setTimeout(() => {
+              if (localMountedRef.current) onComplete(true, score100);
+            }, 800);
+            return;
+          }
+          // Not yet — one targeted, encouraging tip on the weakest thing.
+          let tip;
+          if (startScore <= 0.6) tip = "Start at the green dot!";
+          else if (completeness < 0.55) tip = "Trace the whole letter!";
+          else if (accuracy < 0.5) tip = "Try to stay on the lines!";
+          else if (directionOff) tip = "Follow the letter from the green dot.";
+          else tip = "Almost! Keep tracing.";
+          setFeedback({ type: "neutral", emoji: "👆", size: "md", tip: tip });
+          setTimeout(() => {
+            if (localMountedRef.current) setFeedback(null);
+          }, 2200);
         };
         const getPoint = (e) => {
           const canvas = canvasRef.current;
@@ -10916,6 +11063,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setIsDrawing(true);
           startScratch();
           const { x, y } = getPoint(e);
+          strokesRef.current.push([{ x, y }]); // begin a new captured stroke
           const ctx = canvasRef.current.getContext("2d");
           ctx.setLineDash([]);
           ctx.strokeStyle = "#7c3aed";
@@ -10929,6 +11077,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (!isDrawing) return;
           e.preventDefault();
           const { x, y } = getPoint(e);
+          const curStroke = strokesRef.current[strokesRef.current.length - 1];
+          if (curStroke) curStroke.push({ x, y }); // record point for formation scoring
           const ctx = canvasRef.current.getContext("2d");
           ctx.lineTo(x, y);
           ctx.stroke();
@@ -10999,7 +11149,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               "div",
               {
                 className:
-                  "absolute inset-0 flex items-center justify-center pointer-events-none",
+                  "absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none",
               },
                 /*#__PURE__*/ React.createElement(
                 "div",
@@ -11012,6 +11162,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             `,
                 },
                 feedback.emoji,
+              ),
+              feedback.tip &&
+                /*#__PURE__*/ React.createElement(
+                "span",
+                {
+                  className:
+                    "text-sm font-bold text-slate-700 bg-white/85 px-3 py-1 rounded-full shadow",
+                },
+                feedback.tip,
               ),
             ),
           ),
@@ -12992,7 +13151,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 key: `trace-${displayLetter}-${tracingPhase}`,
                 letter: displayLetter,
                 word: currentWordSoundsWord,
-                onComplete: (success) => {
+                onComplete: (success, formationScore) => {
                   if (success) {
                     playSound("success");
                     if (!isLowercaseBonus) {
@@ -13033,7 +13192,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       setTimeout(() => {
                         if (!isMountedRef.current) return;
                         setTracingPhase("upper");
-                        checkAnswer("correct", "correct");
+                        checkAnswer("correct", "correct", { formationScore });
                       }, 1000);
                     }
                   }
@@ -14751,7 +14910,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         mathFluencyTimerRef,
         mathFluencyInputRef,
         finishMathFluencyProbe,
-        loadPsychometricProbes,
+        loadProbeBanks,
       }) => {
         const [importedStudents, setImportedStudents] = React.useState([]);
         const [selectedStudent, setSelectedStudent] = React.useState(null);
@@ -14766,8 +14925,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         const [researchFirstVisit, setResearchFirstVisit] =
           React.useState(true);
         React.useEffect(() => {
-          if (typeof loadPsychometricProbes === "function") {
-            loadPsychometricProbes();
+          if (typeof loadProbeBanks === "function") {
+            loadProbeBanks();
           }
         }, []);
 
@@ -15150,6 +15309,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   )
                   : 0;
               stats.wsBestStreak = ws.sessionScore.streak || 0;
+            }
+            const _wsFormation = (ws.history || [])
+              .map((h) => h.formationScore)
+              .filter((v) => typeof v === "number");
+            if (_wsFormation.length) {
+              stats.wsFormationAvg = Math.round(
+                _wsFormation.reduce((a, b) => a + b, 0) / _wsFormation.length,
+              );
+              stats.wsFormationCount = _wsFormation.length;
             }
             if (ws.dailyProgress) {
               stats.totalActivities += Object.keys(ws.dailyProgress).length;
@@ -18141,7 +18309,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             denY += dy * dy;
           }
           const den = Math.sqrt(denX * denY);
-          const r = den === 0 ? 0 : num / den;
+          // Zero variance ⇒ correlation is mathematically undefined, not 0.
+          // Return the same "insufficient" shape as the n<3 guard rather than
+          // fabricating a "weak (r=0)" finding from undefined data.
+          if (den === 0) return { r: null, n, insufficient: true };
+          const r = num / den;
           const rounded = Math.round(r * 100) / 100;
           return {
             r: rounded,
@@ -20451,7 +20623,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       className:
                         "text-[11px] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
                     },
-                    "Standardized",
+                    "CBM-style",
                   ),
                 ),
                   /*#__PURE__*/ React.createElement(
@@ -20616,7 +20788,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       className:
                         "text-[11px] font-bold text-orange-800 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
                     },
-                    "Standardized",
+                    "CBM-style",
                   ),
                 ),
                   /*#__PURE__*/ React.createElement(
@@ -20733,7 +20905,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             "Math probes not loaded yet — please wait and try again",
                             "error",
                           );
-                          loadPsychometricProbes();
+                          loadProbeBanks();
                           return;
                         }
                         const probeData =
@@ -20801,7 +20973,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           className:
                             "text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
                         },
-                        "Standardized",
+                        "CBM-style",
                       ),
                     ),
                       /*#__PURE__*/ React.createElement(
@@ -21086,7 +21258,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             "Missing Number probes not loaded yet",
                             "error",
                           );
-                          loadPsychometricProbes();
+                          loadProbeBanks();
                           return;
                         }
                         const data = bank[grade][form];
@@ -21567,7 +21739,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             "Quantity Discrimination probes not loaded yet",
                             "error",
                           );
-                          loadPsychometricProbes();
+                          loadProbeBanks();
                           return;
                         }
                         const data = bank[grade][form];
@@ -21914,7 +22086,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   /*#__PURE__*/ React.createElement(
                   "p",
                   { className: "text-xs text-slate-600 mb-3" },
-                  'Student reads CVC pseudowords aloud (e.g., "sig", "bim", "tob"). Scored as Correct Letter Sounds (CLS) per minute. Tests phonetic decoding.',
+                  'Student reads CVC pseudowords aloud (e.g., "sig", "bim", "tob"); the teacher administers it orally and records Correct Letter Sounds (CLS) per minute. Tests phonetic decoding.',
                 ),
                   /*#__PURE__*/ React.createElement(
                   "div",
@@ -22004,7 +22176,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   /*#__PURE__*/ React.createElement(
                   "p",
                   { className: "text-xs text-slate-600 mb-3" },
-                  "Student names randomly arranged uppercase and lowercase letters. Scored as letters per minute. Tests basic letter recognition.",
+                  "Student names randomly arranged uppercase and lowercase letters; the teacher administers it orally and records correct letters per minute. Tests basic letter recognition.",
                 ),
                   /*#__PURE__*/ React.createElement(
                   "div",
@@ -24223,10 +24395,20 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       typeof getBenchmarkComparison !== "function"
                     )
                       return null;
+                    // Compare against the assessment's ACTUAL grade + season
+                    // (benchmark form A/B/C = fall/winter/spring) instead of a
+                    // hardcoded grade-2/winter reference. If either is unknown,
+                    // show no benchmark rather than score against the wrong one.
+                    const seasonByForm = { A: "fall", B: "winter", C: "spring" };
+                    const benchGrade =
+                      latest.grade != null ? String(latest.grade) : null;
+                    const benchSeason =
+                      seasonByForm[latest.form] || latest.season || null;
+                    if (!benchGrade || !benchSeason) return null;
                     const result = getBenchmarkComparison(
                       latest.wcpm,
-                      "2",
-                      "winter",
+                      benchGrade,
+                      benchSeason,
                     );
                     if (!result) return null;
                     const levelColors = {
@@ -24322,6 +24504,27 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           "div",
                           { className: "text-xs text-slate-600" },
                           "Words Completed",
+                        ),
+                      ),
+                      selectedStudent.stats?.wsFormationAvg > 0 &&
+                            /*#__PURE__*/ React.createElement(
+                        "div",
+                        {
+                          className:
+                            "bg-white rounded-lg p-2 text-center border border-emerald-100",
+                        },
+                              /*#__PURE__*/ React.createElement(
+                          "div",
+                          {
+                            className: "text-lg font-bold text-violet-600",
+                          },
+                          selectedStudent.stats.wsFormationAvg,
+                          "/100",
+                        ),
+                              /*#__PURE__*/ React.createElement(
+                          "div",
+                          { className: "text-xs text-slate-600" },
+                          "Letter Formation",
                         ),
                       ),
                       selectedStudent.stats?.wsBestStreak > 0 &&

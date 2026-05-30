@@ -1295,7 +1295,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                             <div className="absolute left-0 top-8 w-72 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none">
                                 <strong className="block mb-1">📖 Phonics Counting Guide</strong>
                                 <p className="mb-2">R-controlled vowels (ar, er, ir, or, ur) are counted as <strong>single sounds</strong> because the vowel and R blend together.</p>
-                                <p className="text-slate-600">Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.</p>
+                                <p className="text-slate-300">Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.</p>
                             </div>
                         </span>
                     </h2>
@@ -1313,7 +1313,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                     <button
                                         type="button"
                                         onClick={(e) => { e.stopPropagation(); onRetryFailedTTS(); }}
-                                        className="px-2 py-0.5 bg-white/90 hover:bg-white text-red-600 font-bold rounded-full text-xs"
+                                        className="px-2 py-0.5 bg-white/90 hover:bg-white text-red-300 font-bold rounded-full text-xs"
                                         title={t('word_sounds.retry_audio_tooltip') || 'Retry audio generation for words that failed'}
                                     >{t('word_sounds.retry_audio_button') || 'Retry audio'}</button>
                                 )}
@@ -1323,7 +1323,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                     {preloadedWords.length === 0 ? (
-                        <div className="text-center py-12 text-slate-600">
+                        <div className="text-center py-12 text-slate-300">
                             <div className="text-4xl mb-2">⏳</div>
                             {isLoading ? <p className="animate-pulse">{t('word_sounds.generating_new_words') || 'Generating new words... this may take a moment'}</p> : <p>{t('word_sounds.no_words_preloaded') || 'No words preloaded yet. Start the activity to generate words.'}</p>}
                         </div>
@@ -1360,7 +1360,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 disabled={regeneratingIndex === idx}
                                                 className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors text-base font-bold border-2
                                                     ${regeneratingIndex === idx
-                                                        ? 'bg-orange-200 border-orange-400 animate-spin text-orange-700'
+                                                        ? 'bg-orange-200 border-orange-400 animate-spin text-orange-300'
                                                         : 'bg-orange-50 border-orange-200 text-orange-500 hover:bg-orange-100 hover:border-orange-600 hover:scale-110 shadow-sm'
                                                     }`}
                                                 data-help-key="word_sounds_review_regen_word" title={t('common.regenerate_this_word')}

@@ -959,10 +959,10 @@ function ExportPreviewView(props) {
                           <span>{entry.text}</span>
                         </div>
                       ))}
-                      {isAgentRunning && <div className="text-purple-700 animate-pulse">⏳ Processing...</div>}
+                      {isAgentRunning && <div className="text-purple-400 animate-pulse">⏳ Processing...</div>}
                     </div>
                     <div className="flex items-center gap-3 px-2 py-1 border-t border-slate-800">
-                      <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-700 hover:text-purple-200 underline">
+                      <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-300 hover:text-purple-200 underline">
                         {agentLogFullView ? 'Show recent only' : `Show full log (${agentActivityLog.length})`}
                       </button>
                       <button type="button" onClick={() => { setAgentActivityLog([]); console.info('[ExpertWorkbench] log cleared'); }} className="text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto">Clear</button>

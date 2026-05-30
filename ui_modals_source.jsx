@@ -164,7 +164,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                              />
                          ) : (
                              <div className="w-24 h-24 md:w-32 md:h-32 bg-red-900/50 rounded-full border-4 border-red-500/50 flex items-center justify-center text-4xl shadow-xl backdrop-blur-sm">
-                                 {bossStats.isGenerating ? <RefreshCw className="animate-spin text-red-600"/> : "👾"}
+                                 {bossStats.isGenerating ? <RefreshCw className="animate-spin text-red-400"/> : "👾"}
                              </div>
                          )}
                          {phase === 'revealed' && bossStats.lastDamage > 0 && (
@@ -197,7 +197,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                              ></div>
                          </div>
                          {phase === 'revealed' && bossStats.lastClassDamage > 0 && (
-                             <div className="text-orange-700 text-xs font-bold mt-1 animate-pulse text-center">
+                             <div className="text-orange-400 text-xs font-bold mt-1 animate-pulse text-center">
                                  {t('quiz.boss.counter_attack_msg', { damage: bossStats.lastClassDamage })}
                              </div>
                          )}

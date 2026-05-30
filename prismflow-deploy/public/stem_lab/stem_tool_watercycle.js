@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ── Reduced motion CSS (WCAG 2.3.3)  -  shared across all STEM Lab tools ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -30,10 +30,88 @@
   function getWCAC() { if (!_wcAC) { try { _wcAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_wcAC && _wcAC.state === 'suspended') { try { _wcAC.resume(); } catch(e) {} } return _wcAC; }
   function wcTone(f, d2, t, v) { var ac = getWCAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d2||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d2||0.1)); } catch(e) {} }
   function wcNoise(dur, vol, hz, type) { var ac = getWCAC(); if (!ac) return; try { var bs = Math.floor(ac.sampleRate*(dur||0.1)); var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0); for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1)*(1-i/bs); var s = ac.createBufferSource(); s.buffer=b; var f = ac.createBiquadFilter(); f.type=type||'lowpass'; f.frequency.value=hz||600; var g = ac.createGain(); g.gain.setValueAtTime(vol||0.04,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(dur||0.1)); s.connect(f); f.connect(g); g.connect(ac.destination); s.start(); } catch(e) {} }
-  function sfxRain() { for (var i = 0; i < 5; i++) { (function(d3) { setTimeout(function() { wcNoise(0.03, 0.02 + Math.random() * 0.02, 1500 + Math.random() * 1000, 'bandpass'); }, d3); })(i * 25 + Math.random() * 15); } }
-  function sfxEvaporate() { wcTone(400, 0.1, 'sine', 0.05); setTimeout(function() { wcTone(600, 0.08, 'sine', 0.05); }, 60); setTimeout(function() { wcTone(800, 0.12, 'sine', 0.06); }, 120); }
-  function sfxCondense() { wcTone(600, 0.08, 'sine', 0.05); setTimeout(function() { wcTone(400, 0.1, 'sine', 0.05); }, 60); }
-  function sfxCollect() { wcNoise(0.15, 0.05, 300, 'lowpass'); wcTone(200, 0.1, 'sine', 0.04); }
+  
+  function playBubblePop() {
+    var ac = getWCAC(); if (!ac) return;
+    try {
+      var now = ac.currentTime;
+      var o = ac.createOscillator();
+      var g = ac.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(150, now);
+      o.frequency.exponentialRampToValueAtTime(800 + Math.random() * 400, now + 0.08);
+      g.gain.setValueAtTime(0.04, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      o.connect(g); g.connect(ac.destination);
+      o.start(now); o.stop(now + 0.08);
+    } catch(e) {}
+  }
+
+  function sfxEvaporationSizzle() {
+    var ac = getWCAC(); if (!ac) return;
+    try {
+      var bs = ac.sampleRate * 0.5;
+      var b = ac.createBuffer(1, bs, ac.sampleRate);
+      var dd = b.getChannelData(0);
+      for (var i = 0; i < bs; i++) {
+        dd[i] = (Math.random() * 2 - 1) * (1 - i / bs) * (0.8 + 0.2 * Math.sin(i * 0.01));
+      }
+      var s = ac.createBufferSource(); s.buffer = b;
+      var f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 8000;
+      var g = ac.createGain(); g.gain.setValueAtTime(0.015, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.5);
+      s.connect(f); f.connect(g); g.connect(ac.destination);
+      s.start();
+    } catch(e) {}
+  }
+
+  function playInfiltrationSwell() {
+    var ac = getWCAC(); if (!ac) return;
+    try {
+      var bs = ac.sampleRate * 0.6;
+      var b = ac.createBuffer(1, bs, ac.sampleRate);
+      var dd = b.getChannelData(0);
+      for (var i = 0; i < bs; i++) {
+        dd[i] = (Math.random() * 2 - 1) * (1 - i / bs);
+      }
+      var s = ac.createBufferSource(); s.buffer = b;
+      var f = ac.createBiquadFilter(); f.type = 'lowpass';
+      f.frequency.setValueAtTime(300, ac.currentTime);
+      f.frequency.linearRampToValueAtTime(80, ac.currentTime + 0.6);
+      var g = ac.createGain(); g.gain.setValueAtTime(0.05, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.6);
+      s.connect(f); f.connect(g); g.connect(ac.destination);
+      s.start();
+    } catch(e) {}
+  }
+
+  function sfxRain() { 
+    for (var i = 0; i < 8; i++) { 
+      (function(d3) { 
+        setTimeout(function() { 
+          wcNoise(0.03, 0.02 + Math.random() * 0.02, 1500 + Math.random() * 1000, 'bandpass'); 
+          if (Math.random() > 0.4) playBubblePop();
+        }, d3); 
+      })(i * 25 + Math.random() * 15); 
+    } 
+  }
+  function sfxEvaporate() { 
+    sfxEvaporationSizzle();
+    wcTone(400, 0.1, 'sine', 0.05); 
+    setTimeout(function() { wcTone(600, 0.08, 'sine', 0.05); }, 60); 
+    setTimeout(function() { wcTone(800, 0.12, 'sine', 0.06); }, 120); 
+  }
+  function sfxCondense() { 
+    playBubblePop();
+    setTimeout(playBubblePop, 50);
+    wcTone(600, 0.08, 'sine', 0.05); 
+    setTimeout(function() { wcTone(400, 0.1, 'sine', 0.05); }, 60); 
+  }
+  function sfxCollect() { 
+    playInfiltrationSwell();
+    wcNoise(0.15, 0.05, 300, 'lowpass'); 
+    wcTone(200, 0.1, 'sine', 0.04); 
+  }
   function sfxStream() { wcNoise(0.2, 0.04, 400, 'bandpass'); }
   function sfxFreeze() { wcTone(1200, 0.04, 'sine', 0.04); setTimeout(function() { wcTone(1400, 0.03, 'sine', 0.03); }, 30); setTimeout(function() { wcTone(1600, 0.03, 'sine', 0.03); }, 60); }
   function sfxWcCorrect() { wcTone(523, 0.08, 'sine', 0.07); setTimeout(function() { wcTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { wcTone(784, 0.1, 'sine', 0.08); }, 140); }
@@ -56,15 +134,36 @@
       s.connect(f); f.connect(m); m.connect(ac.destination); s.start(); lfo.start();
       _wcAmb = { src:s, lfo:lfo, master:m };
       _wcAmb._int = setInterval(function() {
-        if (Math.random() > 0.5) sfxRain();
+        var cv = document.getElementById('wcCanvas');
+        if (cv) {
+          var t3 = parseFloat(cv.dataset.climTemp || '15');
+          if (Math.random() > (t3 > 25 ? 0.3 : 0.6)) sfxRain();
+        } else {
+          if (Math.random() > 0.5) sfxRain();
+        }
         if (Math.random() > 0.8) wcTone(200 + Math.random() * 100, 0.3, 'sine', 0.01); // distant thunder
       }, 3000 + Math.random() * 4000);
+
+      _wcAmb._updateInterval = setInterval(function() {
+        var cv = document.getElementById('wcCanvas');
+        if (!cv || !_wcAmb) return;
+        var s2 = parseFloat(cv.dataset.climSolar || '1.0');
+        var t3 = parseFloat(cv.dataset.climTemp || '15');
+        var w2 = parseFloat(cv.dataset.climWind || '1.0');
+        var targetFreq = 180 + w2 * 120 + Math.sin(ac.currentTime * 1.5) * 40;
+        var targetGain = 0.003 + w2 * 0.006 + s2 * 0.003;
+        try {
+          f.frequency.setValueAtTime(targetFreq, ac.currentTime);
+          m.gain.setValueAtTime(targetGain, ac.currentTime);
+        } catch(e) {}
+      }, 100);
     } catch(e) {}
   }
   function stopWcAmbient() {
     if (_wcAmb) {
       try { var ac = getWCAC(); if (ac) _wcAmb.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5); } catch(e) {}
       if (_wcAmb._int) clearInterval(_wcAmb._int);
+      if (_wcAmb._updateInterval) clearInterval(_wcAmb._updateInterval);
       var n = _wcAmb; setTimeout(function() { try { n.src.stop(); n.lfo.stop(); } catch(e) {} }, 600);
       _wcAmb = null;
     }
@@ -653,6 +752,7 @@
       var canvasNarrate=ctx.canvasNarrate;
       return (function(){
 const d = labToolData.waterCycle;
+          var isDark = !!(ctx && ctx.darkMode);
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, waterCycle: { ...prev.waterCycle, [key]: val } }));
           const updMulti = (obj) => setLabToolData(prev => ({ ...prev, waterCycle: Object.assign({}, prev.waterCycle, obj) }));
@@ -909,6 +1009,7 @@ const d = labToolData.waterCycle;
               var nextState = Object.assign({}, d, { campaignSuccess: success });
               setSteward({ phase: 'debrief', finalOutcome: outcome, componentsAt75: componentsAt75 });
               upd('campaignSuccess', success);
+              if (typeof announceToSR === 'function') announceToSR('Campaign complete. Final outcome: ' + outcome.label + '. ' + outcome.desc);
               awardStemXP && awardStemXP('steward_complete', 50, outcome.label);
               setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
             } else {
@@ -991,37 +1092,69 @@ const d = labToolData.waterCycle;
             var applicable = STEWARD_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any' || t.appliesTo.indexOf(id) >= 0; });
             return h('div', {
               role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Watershed deep-dive: ' + def.name,
-              style: { background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)', border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color, borderRadius: 14, padding: 18, marginBottom: 16 }
+              style: {
+                background: isDark
+                  ? 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.95) 60%)'
+                  : 'linear-gradient(135deg, ' + def.color + '15 0%, #f8fafc 60%)',
+                border: isDark ? '1px solid ' + def.color + '88' : '1px solid ' + def.color + '55',
+                borderLeft: '4px solid ' + def.color,
+                borderRadius: 14,
+                padding: 18,
+                marginBottom: 16
+              }
             },
               h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
                 h('span', { style: { fontSize: 36 } }, def.icon),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Watershed deep-dive'),
-                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
+                  h('h3', { style: { margin: '2px 0 0', color: isDark ? '#fff' : '#0f172a', fontSize: 20 } }, def.name),
                   h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                 ),
-                h('button', { onClick: closeStewardDeepDive,
-                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ Close')
+                h('button', {
+                  onClick: closeStewardDeepDive,
+                  className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                  style: {
+                    background: isDark ? 'rgba(15,23,42,0.6)' : '#e2e8f0',
+                    border: isDark ? '1px solid #334155' : '1px solid #cbd5e1',
+                    color: isDark ? '#cbd5e1' : '#334155',
+                    cursor: 'pointer',
+                    borderRadius: 8,
+                    padding: '6px 12px',
+                    fontWeight: 700,
+                    fontSize: 13
+                  }
+                }, '✕ Close')
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
-                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '💧 Hydrology'),
-                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
+                h('div', { style: { background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.8)', border: isDark ? '1px solid #1e293b' : '1px solid #cbd5e1', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#22c55e', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '💧 Hydrology'),
+                  h('p', { style: { margin: 0, color: isDark ? '#cbd5e1' : '#334155', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                 ),
-                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                h('div', { style: { background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.8)', border: isDark ? '1px solid #1e293b' : '1px solid #cbd5e1', borderRadius: 10, padding: 12 } },
                   h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📰 Case work'),
-                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
+                  h('p', { style: { margin: 0, color: isDark ? '#cbd5e1' : '#334155', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
                 ),
-                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 Maine context'),
-                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
+                h('div', { style: { background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.8)', border: isDark ? '1px solid #1e293b' : '1px solid #cbd5e1', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#0ea5e9', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 Maine context'),
+                  h('p', { style: { margin: 0, color: isDark ? '#cbd5e1' : '#334155', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                 )
               ),
-              applicable.length > 0 ? h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.4)', borderRight: '1px solid rgba(14,165,233,0.4)', borderBottom: '1px solid rgba(14,165,233,0.4)', borderLeft: '3px solid #0ea5e9', borderRadius: 10 } },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#7dd3fc', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🛠 What you can do for this component'),
+              applicable.length > 0 ? h('div', {
+                style: {
+                  marginTop: 12,
+                  padding: 12,
+                  background: isDark ? 'rgba(14,165,233,0.12)' : 'rgba(14,165,233,0.06)',
+                  borderTop: isDark ? '1px solid rgba(14,165,233,0.4)' : '1px solid rgba(14,165,233,0.3)',
+                  borderRight: isDark ? '1px solid rgba(14,165,233,0.4)' : '1px solid rgba(14,165,233,0.3)',
+                  borderBottom: isDark ? '1px solid rgba(14,165,233,0.4)' : '1px solid rgba(14,165,233,0.3)',
+                  borderLeft: '3px solid #0ea5e9',
+                  borderRadius: 10
+                }
+              },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: isDark ? '#7dd3fc' : '#0369a1', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🛠 What you can do for this component'),
                 applicable.map(function(t, i) {
-                  return h('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: '#bae6fd', lineHeight: 1.5 } },
-                    h('strong', { style: { color: '#e0f2fe' } }, t.icon + ' ' + t.name), ' (' + t.hours + 'h): ', t.desc
+                  return h('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: isDark ? '#bae6fd' : '#0e7490', lineHeight: 1.5 } },
+                    h('strong', { style: { color: isDark ? '#e0f2fe' : '#0c4a6e' } }, t.icon + ' ' + t.name), ' (' + t.hours + 'h): ', t.desc
                   );
                 })
               ) : null
@@ -1045,19 +1178,27 @@ const d = labToolData.waterCycle;
               });
             }
             function pathStr(pts) { return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' '); }
-            return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid var(--allo-stem-border, #1e293b)' } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, '📈 Component quality across the 10-year campaign'),
+            return h('div', {
+              style: {
+                background: isDark ? 'rgba(15,23,42,0.6)' : '#f8fafc',
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 14,
+                border: isDark ? '1px solid #334155' : '1px solid #cbd5e1'
+              }
+            },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: isDark ? '#cbd5e1' : '#334155', marginBottom: 8 } }, '📈 Component quality across the 10-year campaign'),
               h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': 'Year-by-year quality trend chart by watershed component' },
                 [0, 25, 50, 75, 100].map(function(g, gi) {
                   var y = padT + iy - (g / 100) * iy;
                   return h('g', { key: 'g' + gi },
-                    h('line', { x1: padL, y1: y, x2: padL + ix, y2: y, stroke: '#1e293b', strokeWidth: 1 }),
-                    h('text', { x: padL - 4, y: y + 3, fontSize: 9, fill: '#64748b', textAnchor: 'end' }, g)
+                    h('line', { x1: padL, y1: y, x2: padL + ix, y2: y, stroke: isDark ? '#1e293b' : '#cbd5e1', strokeWidth: 1 }),
+                    h('text', { x: padL - 4, y: y + 3, fontSize: 9, fill: isDark ? '#64748b' : '#475569', textAnchor: 'end' }, g)
                   );
                 }),
                 yearLog.map(function(snap, i) {
                   var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
-                  return h('text', { key: 'xl' + i, x: x, y: hgt - 8, fontSize: 9, fill: '#64748b', textAnchor: 'middle' }, 'Y' + snap.year);
+                  return h('text', { key: 'xl' + i, x: x, y: hgt - 8, fontSize: 9, fill: isDark ? '#64748b' : '#475569', textAnchor: 'middle' }, 'Y' + snap.year);
                 }),
                 components.map(function(comp) {
                   var pts = ptsFor(comp.id);
@@ -1068,7 +1209,7 @@ const d = labToolData.waterCycle;
                 components.map(function(comp, ci) {
                   return h('g', { key: 'leg' + comp.id },
                     h('line', { x1: w - padR + 6, y1: padT + 8 + ci * 16, x2: w - padR + 20, y2: padT + 8 + ci * 16, stroke: comp.color, strokeWidth: 2.5 }),
-                    h('text', { x: w - padR + 24, y: padT + 12 + ci * 16, fontSize: 10, fill: '#cbd5e1' }, comp.icon + ' ' + comp.name.split(' ')[0])
+                    h('text', { x: w - padR + 24, y: padT + 12 + ci * 16, fontSize: 10, fill: isDark ? '#cbd5e1' : '#334155' }, comp.icon + ' ' + comp.name.split(' ')[0])
                   );
                 })
               )
@@ -1134,24 +1275,63 @@ const d = labToolData.waterCycle;
           function renderStewardAIPanel() {
             if (steward.aiReadLoading) {
               return h('div', { role: 'status', 'aria-live': 'polite',
-                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
+                style: {
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  marginBottom: 12,
+                  background: isDark ? 'rgba(56,189,248,0.1)' : 'rgba(14,165,233,0.08)',
+                  borderTop: isDark ? '1px solid rgba(56,189,248,0.4)' : '1px solid rgba(14,165,233,0.3)',
+                  borderRight: isDark ? '1px solid rgba(56,189,248,0.4)' : '1px solid rgba(14,165,233,0.3)',
+                  borderBottom: isDark ? '1px solid rgba(56,189,248,0.4)' : '1px solid rgba(14,165,233,0.3)',
+                  borderLeft: '3px solid #38bdf8',
+                  color: isDark ? '#bae6fd' : '#0369a1',
+                  fontSize: 13
+                }
+              },
                 '⏳ AI watershed educator is reading your watershed data...');
             }
             if (!steward.aiReadResponse) return null;
             return h('div', { role: 'region', 'aria-label': 'AI Watershed Reading',
-              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+              style: {
+                padding: 14,
+                borderRadius: 12,
+                marginBottom: 12,
+                background: isDark
+                  ? 'linear-gradient(135deg, rgba(56,189,248,0.1) 0%, rgba(15,23,42,0.85) 100%)'
+                  : 'linear-gradient(135deg, rgba(14,165,233,0.1) 0%, #f8fafc 100%)',
+                borderTop: isDark ? '1px solid rgba(56,189,248,0.5)' : '1px solid rgba(14,165,233,0.3)',
+                borderRight: isDark ? '1px solid rgba(56,189,248,0.5)' : '1px solid rgba(14,165,233,0.3)',
+                borderBottom: isDark ? '1px solid rgba(56,189,248,0.5)' : '1px solid rgba(14,165,233,0.3)',
+                borderLeft: '3px solid #38bdf8'
+              }
+            },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 20 } }, '🔍'),
-                h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Watershed Reading'),
+                h('strong', { style: { color: isDark ? '#38bdf8' : '#0ea5e9', fontSize: 14 } }, 'AI Watershed Reading'),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
-                  h('button', { onClick: readWatershed,
-                    style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '↻ Re-read'),
-                  h('button', { onClick: dismissStewardAIRead,
-                    style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕')
+                  h('button', {
+                    onClick: readWatershed,
+                    className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                    style: { background: 'transparent', border: isDark ? '1px solid #38bdf8' : '1px solid #0ea5e9', color: isDark ? '#38bdf8' : '#0ea5e9', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+                  }, '↻ Re-read'),
+                  h('button', {
+                    onClick: dismissStewardAIRead,
+                    className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                    style: { background: 'transparent', border: isDark ? '1px solid #475569' : '1px solid #cbd5e1', color: isDark ? '#cbd5e1' : '#475569', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+                  }, '✕')
                 )
               ),
-              h('p', { style: { margin: '0 0 10px 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.6 } }, steward.aiReadResponse),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
+              h('p', { style: { margin: '0 0 10px 0', color: isDark ? '#cbd5e1' : '#334155', fontSize: 13.5, lineHeight: 1.6 } }, steward.aiReadResponse),
+              h('div', {
+                style: {
+                  fontSize: 11,
+                  color: isDark ? '#64748b' : '#475569',
+                  lineHeight: 1.5,
+                  paddingTop: 8,
+                  borderTop: isDark ? '1px solid rgba(56,189,248,0.2)' : '1px solid rgba(14,165,233,0.2)',
+                  fontStyle: 'italic'
+                }
+              },
                 'AI watershed-science educator. ',
                 h('strong', null, 'It is not a Wabanaki person, not a real watershed coordinator or hydrologist, and does not speak for any Wabanaki nation, agency, or organization.'),
                 ' For authoritative voices on Maine watershed work, consult Penobscot Nation Cultural and Historic Preservation Department, Wabanaki Public Health and Wellness, Atlantic Salmon Federation, Maine Coast Heritage Trust, Maine Audubon, Maine Soil and Water Conservation Districts, and the Maine Department of Environmental Protection.'
@@ -1165,22 +1345,34 @@ const d = labToolData.waterCycle;
 
             // ── SETUP ──
             if (steward.phase === 'setup') {
-              return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
+              return h('div', { className: 'max-w-3xl mx-auto space-y-4 ' + (isDark ? 'text-slate-100' : 'text-slate-800') },
                 stewardDeepDive,
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                  h('button', { onClick: () => switchMode('explorer'),
-                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
-                  h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Watershed Steward: Maine campaign')
+                  h('button', {
+                    onClick: function() { switchMode('explorer'); },
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
+                  }, '← Water Cycle Explorer'),
+                  h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward: Maine campaign')
                 ),
-                h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(14,165,233,0.18) 0%, rgba(21,128,61,0.06) 100%)', border: '1px solid ' + T_BLUE + '66', borderLeft: '4px solid ' + T_BLUE } },
+                h('div', {
+                  style: {
+                    padding: 18,
+                    borderRadius: 14,
+                    background: isDark
+                      ? 'linear-gradient(135deg, rgba(14,165,233,0.12) 0%, rgba(21,128,61,0.04) 100%)'
+                      : 'linear-gradient(135deg, rgba(14,165,233,0.18) 0%, rgba(21,128,61,0.06) 100%)',
+                    border: isDark ? '1px solid rgba(14,165,233,0.4)' : '1px solid rgba(14,165,233,0.3)',
+                    borderLeft: '4px solid ' + T_BLUE
+                  }
+                },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
                     h('span', { style: { fontSize: 36 } }, '💧'),
                     h('div', null,
-                      h('h3', { style: { margin: 0, color: T_BLUE_HI, fontSize: 22 } }, 'Watershed Steward: 10-year Maine campaign'),
-                      h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, 'You are the Watershed Coordinator for a central Maine river system.')
+                      h('h3', { style: { margin: 0, color: isDark ? T_BLUE_HI : '#0284c7', fontSize: 22 } }, 'Watershed Steward: 10-year Maine campaign'),
+                      h('div', { style: { fontSize: 13, color: isDark ? '#94a3b8' : '#475569', marginTop: 2 } }, 'You are the Watershed Coordinator for a central Maine river system.')
                     )
                   ),
-                  h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
+                  h('p', { style: { margin: '8px 0 0', color: isDark ? '#cbd5e1' : '#334155', fontSize: 14, lineHeight: 1.6 } },
                     'Six watershed components, ten years, real Maine pressures: dam barriers, agricultural runoff, suburban stormwater, climate-driven floods and droughts. ',
                     h('strong', null, 'Hydrological feedback rules tie them together.'),
                     ' Healthy buffers cool headwater streams. Beaver wetlands attenuate floods and clean the mainstem. Low ag runoff lets the river breathe. Connected, shaded rivers bring back salmon and alewife runs.'
@@ -1190,39 +1382,100 @@ const d = labToolData.waterCycle;
                 // Component preview cards
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
                   MAINE_WATERSHED_COMPONENTS.map(function(c) {
-                    return h('div', { key: c.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + c.color, borderRadius: 10, padding: 12 } },
+                    return h('div', {
+                      key: c.id,
+                      style: {
+                        background: isDark ? 'rgba(15,23,42,0.6)' : '#ffffff',
+                        borderLeft: '3px solid ' + c.color,
+                        borderTop: isDark ? '1px solid #1e293b' : '1px solid #e2e8f0',
+                        borderRight: isDark ? '1px solid #1e293b' : '1px solid #e2e8f0',
+                        borderBottom: isDark ? '1px solid #1e293b' : '1px solid #e2e8f0',
+                        borderRadius: 10,
+                        padding: 12
+                      }
+                    },
                       h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                         h('span', { style: { fontSize: 22 } }, c.icon),
                         h('strong', { style: { color: c.color } }, c.name)
                       ),
-                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, c.role),
-                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, c.desc),
-                      c.deepDive ? h('button', { onClick: function() { openStewardDeepDive(c.id); },
+                      h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b', marginBottom: 4 } }, c.role),
+                      h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#475569', lineHeight: 1.5, marginBottom: 8 } }, c.desc),
+                      c.deepDive ? h('button', {
+                        onClick: function() { openStewardDeepDive(c.id); },
                         'aria-label': 'Open deep-dive for ' + c.name,
-                        style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + c.color + '88', background: c.color + '22', color: c.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
+                        className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                        style: {
+                          width: '100%',
+                          padding: '6px 10px',
+                          borderRadius: 8,
+                          border: '1px solid ' + c.color + (isDark ? '88' : '55'),
+                          background: c.color + (isDark ? '22' : '15'),
+                          color: c.color,
+                          cursor: 'pointer',
+                          fontWeight: 700,
+                          fontSize: 11.5
+                        }
                       }, '📚 Watershed deep-dive →') : null
                     );
                   })
                 ),
 
                 // Difficulty
-                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, border: '1px solid var(--allo-stem-border, #1e293b)' } },
-                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+                h('div', {
+                  style: {
+                    background: isDark ? 'rgba(15,23,42,0.6)' : '#f8fafc',
+                    borderRadius: 10,
+                    padding: 12,
+                    border: isDark ? '1px solid #334155' : '1px solid #cbd5e1'
+                  }
+                },
+                  h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
                     Object.keys(STEWARD_DIFFICULTIES).map(function(dkey) {
                       var df = STEWARD_DIFFICULTIES[dkey];
                       var picked = (steward.difficulty || 'coordinator') === dkey;
-                      return h('button', { key: dkey, onClick: function() { setSteward({ difficulty: dkey }); }, 'aria-pressed': picked,
-                        style: { background: picked ? 'rgba(14,165,233,0.20)' : '#1e293b', border: '1px solid ' + (picked ? '#0ea5e9' : '#334155'), color: picked ? '#7dd3fc' : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' } },
+                      return h('button', {
+                        key: dkey,
+                        onClick: function() { setSteward({ difficulty: dkey }); },
+                        'aria-pressed': picked,
+                        className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                        style: {
+                          background: picked
+                            ? (isDark ? 'rgba(14,165,233,0.20)' : 'rgba(14,165,233,0.15)')
+                            : (isDark ? '#0f172a' : '#ffffff'),
+                          border: '1px solid ' + (picked ? '#0ea5e9' : (isDark ? '#334155' : '#cbd5e1')),
+                          color: picked
+                            ? (isDark ? '#7dd3fc' : '#0369a1')
+                            : (isDark ? '#cbd5e1' : '#475569'),
+                          borderRadius: 8,
+                          padding: '8px 12px',
+                          cursor: 'pointer',
+                          textAlign: 'left'
+                        }
+                      },
                         h('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
-                        h('div', { style: { fontSize: 11, color: picked ? '#bae6fd' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, df.desc)
+                        h('div', { style: { fontSize: 11, color: picked ? (isDark ? '#bae6fd' : '#0c4a6e') : (isDark ? '#94a3b8' : '#64748b'), marginTop: 2, lineHeight: 1.4 } }, df.desc)
                       );
                     })
                   )
                 ),
 
-                h('button', { onClick: function() { startStewardCampaign(); },
-                  style: { width: '100%', padding: '14px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_BLUE + ' 0%, #0369a1 100%)', color: '#fff', fontWeight: 800, fontSize: 16, boxShadow: '0 6px 14px rgba(14,165,233,0.35)' } }, '💧 Begin 10-year Watershed Campaign')
+                h('button', {
+                  onClick: function() { startStewardCampaign(); },
+                  className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                  style: {
+                    width: '100%',
+                    padding: '14px 20px',
+                    borderRadius: 12,
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: 'linear-gradient(135deg, ' + T_BLUE + ' 0%, #0369a1 100%)',
+                    color: '#fff',
+                    fontWeight: 800,
+                    fontSize: 16,
+                    boxShadow: '0 6px 14px rgba(14,165,233,0.35)'
+                  }
+                }, '💧 Begin 10-year Watershed Campaign')
               );
             }
 
@@ -1234,17 +1487,29 @@ const d = labToolData.waterCycle;
               var baselineAvgQ = Math.round(baseline.reduce(function(a, c) { return a + c.quality; }, 0) / baseline.length);
               var actualAvgConn = Math.round(steward.components.reduce(function(a, c) { return a + c.connectivity; }, 0) / steward.components.length);
               var baselineAvgConn = Math.round(baseline.reduce(function(a, c) { return a + c.connectivity; }, 0) / baseline.length);
-              return h('div', { className: 'max-w-3xl mx-auto space-y-3' },
+              return h('div', { className: 'max-w-3xl mx-auto space-y-3 ' + (isDark ? 'text-slate-100' : 'text-slate-800') },
                 stewardDeepDive,
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                  h('button', { onClick: () => switchMode('explorer'),
-                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
-                  h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Watershed Steward: Debrief')
+                  h('button', {
+                    onClick: function() { switchMode('explorer'); },
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
+                  }, '← Water Cycle Explorer'),
+                  h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward: Debrief')
                 ),
-                h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
+                h('div', {
+                  style: {
+                    padding: 18,
+                    borderRadius: 14,
+                    background: isDark
+                      ? 'linear-gradient(135deg, ' + o.color + '20 0%, rgba(15,23,42,0.95) 100%)'
+                      : 'linear-gradient(135deg, ' + o.color + '15 0%, #f8fafc 100%)',
+                    border: '1px solid ' + o.color + (isDark ? '88' : '55'),
+                    borderLeft: '4px solid ' + o.color
+                  }
+                },
                   h('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
                   h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
-                  h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, o.desc)
+                  h('p', { style: { margin: '8px 0 0', color: isDark ? '#cbd5e1' : '#334155', fontSize: 14, lineHeight: 1.6 } }, o.desc)
                 ),
 
                 // Year-by-year trend chart
@@ -1255,20 +1520,36 @@ const d = labToolData.waterCycle;
                     var def = getWatershedComponent(c.id);
                     var targetsHit = c.quality >= def.targets.quality && c.connectivity >= def.targets.connectivity && c.support >= def.targets.support;
                     var art = watershedArtifact(c);
-                    return h('div', { key: c.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
+                    return h('div', {
+                      key: c.id,
+                      style: {
+                        background: isDark ? 'rgba(15,23,42,0.6)' : '#ffffff',
+                        borderLeft: '3px solid ' + def.color,
+                        borderTop: isDark ? '1px solid #334155' : '1px solid #cbd5e1',
+                        borderRight: isDark ? '1px solid #334155' : '1px solid #cbd5e1',
+                        borderBottom: isDark ? '1px solid #334155' : '1px solid #cbd5e1',
+                        padding: 10,
+                        borderRadius: 8,
+                        fontSize: 12
+                      }
+                    },
                       h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
                         h('span', null, def.icon + ' ' + def.name + (targetsHit ? ' ✓' : '')),
-                        def.deepDive ? h('button', { onClick: function() { openStewardDeepDive(c.id); }, 'aria-label': 'Deep-dive',
-                          style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '📚') : null
+                        def.deepDive ? h('button', {
+                          onClick: function() { openStewardDeepDive(c.id); },
+                          'aria-label': 'Deep-dive',
+                          className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                          style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 }
+                        }, '📚') : null
                       ),
-                      h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
+                      h('div', { style: { color: isDark ? '#cbd5e1' : '#334155', lineHeight: 1.55 } },
                         'Quality: ' + Math.round(c.quality) + '/' + def.targets.quality,
                         h('br'),
                         'Connectivity: ' + Math.round(c.connectivity) + '/' + def.targets.connectivity,
                         h('br'),
                         'Community support: ' + Math.round(c.support) + '/' + def.targets.support
                       ),
-                      art.text ? h('div', { style: { marginTop: 6, padding: 6, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11.5, color: '#fde68a' } },
+                      art.text ? h('div', { style: { marginTop: 6, padding: 6, background: isDark ? '#1e293b' : '#fef3c7', borderRadius: 6, fontSize: 11.5, color: isDark ? '#fde68a' : '#92400e' } },
                         h('span', { style: { fontSize: 14, marginRight: 4 } }, art.icon), art.text
                       ) : null
                     );
@@ -1276,19 +1557,28 @@ const d = labToolData.waterCycle;
                 ),
 
                 // Do-nothing baseline
-                h('div', { style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
-                  h('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ What if you had done nothing for 10 years?'),
+                h('div', {
+                  style: {
+                    padding: 12,
+                    borderRadius: 12,
+                    background: isDark
+                      ? 'linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(127,29,29,0.2) 100%)'
+                      : 'linear-gradient(135deg, #ffffff 0%, rgba(248,113,113,0.15) 100%)',
+                    border: isDark ? '1px solid rgba(248,113,113,0.4)' : '1px solid rgba(248,113,113,0.3)'
+                  }
+                },
+                  h('strong', { style: { color: isDark ? '#fca5a5' : '#b91c1c', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ What if you had done nothing for 10 years?'),
                   h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
-                    h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
+                    h('div', { style: { background: isDark ? '#0f172a' : '#f8fafc', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
                       h('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, 'Your campaign'),
-                      h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Avg quality ' + actualAvgQ + ' · Avg connectivity ' + actualAvgConn)
+                      h('div', { style: { color: isDark ? '#cbd5e1' : '#334155', fontSize: 13 } }, 'Avg quality ' + actualAvgQ + ' · Avg connectivity ' + actualAvgConn)
                     ),
-                    h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
-                      h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, 'Pure neglect'),
-                      h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Avg quality ' + baselineAvgQ + ' · Avg connectivity ' + baselineAvgConn)
+                    h('div', { style: { background: isDark ? '#0f172a' : '#f8fafc', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: isDark ? '#fca5a5' : '#ef4444', marginBottom: 4 } }, 'Pure neglect'),
+                      h('div', { style: { color: isDark ? '#cbd5e1' : '#334155', fontSize: 13 } }, 'Avg quality ' + baselineAvgQ + ' · Avg connectivity ' + baselineAvgConn)
                     )
                   ),
-                  h('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                  h('div', { style: { marginTop: 8, fontSize: 12, color: isDark ? '#fde68a' : '#854d0e', lineHeight: 1.5, fontStyle: 'italic' } },
                     actualAvgQ > baselineAvgQ + 8 || actualAvgConn > baselineAvgConn + 8
                       ? 'Your stewardship pulled the watershed substantially ahead of where neglect would have left it. That gap is the riparian, beaver, BMP, and connectivity infrastructure you built.'
                       : (actualAvgQ > baselineAvgQ - 2
@@ -1296,18 +1586,23 @@ const d = labToolData.waterCycle;
                           : 'Active stewardship cost more than it returned this run. Look at WHICH techniques you used and whether the community had the trust to make them stick.')
                   )
                 ),
-                h('div', { style: { padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
-                  h('strong', { style: { color: '#7dd3fc' } }, 'Components at 75+ quality: '), steward.componentsAt75 + ' / 6 · ',
-                  h('strong', { style: { color: '#7dd3fc' } }, 'Connectivity boosts: '), (steward.connectivityBoosts || 0)
+                h('div', { style: { padding: 10, background: isDark ? 'rgba(15,23,42,0.6)' : '#f8fafc', border: isDark ? '1px solid #334155' : '1px solid #cbd5e1', borderRadius: 8, fontSize: 12, color: isDark ? '#cbd5e1' : '#334155' } },
+                  h('strong', { style: { color: '#0ea5e9' } }, 'Components at 75+ quality: '), steward.componentsAt75 + ' / 6 · ',
+                  h('strong', { style: { color: '#0ea5e9' } }, 'Connectivity boosts: '), (steward.connectivityBoosts || 0)
                 ),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                  h('button', { onClick: resetSteward, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, '↻ New campaign'),
-                  h('button', { onClick: function() { startStewardCampaign({ seed: steward.seed, difficulty: steward.difficulty }); },
-                    style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '🔁 Replay same conditions')
+                  h('button', {
+                    onClick: resetSteward,
+                    className: "px-4 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-slate-200 hover:bg-slate-700" : "bg-slate-200 text-slate-800 hover:bg-slate-300")
+                  }, '↻ New campaign'),
+                  h('button', {
+                    onClick: function() { startStewardCampaign({ seed: steward.seed, difficulty: steward.difficulty }); },
+                    className: "px-4 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-sky-950/60 text-sky-400 border border-sky-900/50 hover:bg-sky-900/40" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
+                  }, '🔁 Replay same conditions')
                 ),
-                h('div', { style: { padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, monospace' } },
-                  h('span', { style: { color: 'var(--allo-stem-text-soft, #64748b)' } }, 'Campaign seed: '),
-                  h('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, steward.seed)
+                h('div', { style: { padding: 8, background: isDark ? 'rgba(15,23,42,0.6)' : '#f8fafc', border: isDark ? '1px solid #334155' : '1px solid #cbd5e1', borderRadius: 8, fontSize: 11.5, color: isDark ? '#cbd5e1' : '#334155', fontFamily: 'ui-monospace, monospace' } },
+                  h('span', { style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'Campaign seed: '),
+                  h('strong', { style: { color: isDark ? '#cbd5e1' : '#334155' } }, steward.seed)
                 )
               );
             }
@@ -1316,36 +1611,62 @@ const d = labToolData.waterCycle;
             if (steward.phase === 'review') {
               var lastSnap = steward.yearLog[steward.yearLog.length - 1] || {};
               var ev = steward.lastEvent || {};
-              return h('div', { className: 'max-w-3xl mx-auto space-y-3' },
+              return h('div', { className: 'max-w-3xl mx-auto space-y-3 ' + (isDark ? 'text-slate-100' : 'text-slate-800') },
                 stewardDeepDive,
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                  h('button', { onClick: () => switchMode('explorer'),
-                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
-                  h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Year ' + steward.year + ' review')
+                  h('button', {
+                    onClick: function() { switchMode('explorer'); },
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
+                  }, '← Water Cycle Explorer'),
+                  h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Year ' + steward.year + ' review')
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #fbbf24' } },
+                h('div', {
+                  style: {
+                    padding: 14,
+                    borderRadius: 12,
+                    background: isDark ? 'rgba(15,23,42,0.6)' : '#fffbeb',
+                    border: isDark ? '1px solid #334155' : '1px solid #fde68a',
+                    borderLeft: '4px solid #fbbf24'
+                  }
+                },
                   h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '🌿'),
                   h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Year ' + steward.year + ' event: ' + (ev.name || 'quiet year')),
-                  h('p', { style: { margin: '6px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, ev.desc || '')
+                  h('p', { style: { margin: '6px 0 0', color: isDark ? '#cbd5e1' : '#475569', fontSize: 13, lineHeight: 1.55 } }, ev.desc || '')
                 ),
-                (lastSnap.cascades && lastSnap.cascades.length > 0) ? h('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', fontSize: 13, color: '#bae6fd' } },
-                  h('strong', { style: { color: '#38bdf8' } }, '🔄 Hydrological feedback rules this year'),
+                (lastSnap.cascades && lastSnap.cascades.length > 0) ? h('div', {
+                  style: {
+                    padding: 10,
+                    borderRadius: 10,
+                    background: isDark ? 'rgba(56,189,248,0.1)' : 'rgba(56,189,248,0.08)',
+                    borderLeft: '4px solid #38bdf8',
+                    fontSize: 13,
+                    color: isDark ? '#bae6fd' : '#0369a1'
+                  }
+                },
+                  h('strong', { style: { color: isDark ? '#38bdf8' : '#0ea5e9' } }, '🔄 Hydrological feedback rules this year'),
                   lastSnap.cascades.map(function(c, ci) { return h('div', { key: ci, style: { margin: '6px 0 0', fontStyle: 'italic' } }, '· ' + c.msg); })
                 ) : null,
 
                 // Per-component deltas
-                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10 } },
-                  h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 13 } }, 'What changed this year'),
+                h('div', {
+                  style: {
+                    background: isDark ? 'rgba(15,23,42,0.6)' : '#ffffff',
+                    border: isDark ? '1px solid #334155' : '1px solid #cbd5e1',
+                    borderRadius: 10,
+                    padding: 10
+                  }
+                },
+                  h('div', { style: { fontWeight: 700, color: isDark ? '#cbd5e1' : '#334155', marginBottom: 6, fontSize: 13 } }, 'What changed this year'),
                   (lastSnap.pre || []).map(function(preC) {
                     var postC = (lastSnap.post || []).find(function(p) { return p.id === preC.id; }) || preC;
                     var def = getWatershedComponent(preC.id);
                     function delta(label, before, after) {
                       var dlt = Math.round(after - before);
-                      var color = '#64748b'; var arrow = '·';
-                      if (Math.abs(dlt) >= 1) { color = dlt > 0 ? '#86efac' : '#fca5a5'; arrow = dlt > 0 ? '▲' : '▼'; }
+                      var color = isDark ? '#64748b' : '#94a3b8'; var arrow = '·';
+                      if (Math.abs(dlt) >= 1) { color = dlt > 0 ? '#22c55e' : '#ef4444'; arrow = dlt > 0 ? '▲' : '▼'; }
                       return h('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
                     }
-                    return h('div', { key: preC.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid var(--allo-stem-border, #1e293b)' } },
+                    return h('div', { key: preC.id, style: { fontSize: 12, padding: '4px 0', borderTop: isDark ? '1px solid #1e293b' : '1px solid #e2e8f0' } },
                       h('strong', { style: { color: def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
                       delta('Q', preC.quality, postC.quality),
                       delta('Conn', preC.connectivity, postC.connectivity),
@@ -1354,55 +1675,112 @@ const d = labToolData.waterCycle;
                   })
                 ),
 
-                h('button', { onClick: advanceFromStewardReview,
-                  style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_BLUE + ' 0%, #0369a1 100%)', color: '#fff', fontWeight: 700, fontSize: 14 } },
+                h('button', {
+                  onClick: advanceFromStewardReview,
+                  className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                  style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_BLUE + ' 0%, #0369a1 100%)', color: '#fff', fontWeight: 700, fontSize: 14 }
+                },
                   steward.year >= steward.maxYears ? 'See final outcome →' : 'Begin Year ' + (steward.year + 1) + ' →')
               );
             }
 
             // ── YEAR ──
             var coachingTip = (steward.year === 1 && !steward.firstTipDismissed && steward.yearActions.length === 0) ? stewardCoachingTip() : null;
-            return h('div', { className: 'max-w-3xl mx-auto space-y-3' },
+            return h('div', { className: 'max-w-3xl mx-auto space-y-3 ' + (isDark ? 'text-slate-100' : 'text-slate-800') },
               stewardDeepDive,
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                h('button', { onClick: () => switchMode('explorer'),
-                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
-                h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Watershed Steward · Year ' + steward.year)
+                h('button', {
+                  onClick: function() { switchMode('explorer'); },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
+                }, '← Water Cycle Explorer'),
+                h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward · Year ' + steward.year)
               ),
-              coachingTip ? h('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', borderTop: '1px solid rgba(168,85,247,0.6)', borderRight: '1px solid rgba(168,85,247,0.6)', borderBottom: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+              coachingTip ? h('div', {
+                role: 'note',
+                style: {
+                  padding: '10px 14px',
+                  borderRadius: 12,
+                  background: isDark
+                    ? 'linear-gradient(135deg, rgba(168,85,247,0.12) 0%, rgba(15,23,42,0.6) 100%)'
+                    : 'linear-gradient(135deg, rgba(168,85,247,0.15) 0%, #fffbeb 100%)',
+                  border: isDark ? '1px solid rgba(168,85,247,0.4)' : '1px solid rgba(168,85,247,0.3)',
+                  borderLeft: '4px solid #a855f7',
+                  color: isDark ? '#e9d5ff' : '#5b21b6',
+                  fontSize: 13,
+                  lineHeight: 1.55,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10
+                }
+              },
                 h('span', { style: { fontSize: 20, flexShrink: 0 } }, '🪶'),
                 h('div', { style: { flex: 1 } },
-                  h('strong', { style: { color: '#a855f7' } }, 'Year 1 priority: '),
-                  h('span', { style: { color: '#fde68a' } }, coachingTip.priority),
-                  h('div', { style: { marginTop: 4, color: '#e9d5ff' } }, coachingTip.text)
+                  h('strong', { style: { color: isDark ? '#c084fc' : '#6b21a8' } }, 'Year 1 priority: '),
+                  h('span', { style: { color: isDark ? '#fde68a' : '#854d0e' } }, coachingTip.priority),
+                  h('div', { style: { marginTop: 4, color: isDark ? '#cbd5e1' : '#475569' } }, coachingTip.text)
                 ),
-                h('button', { onClick: function() { setSteward({ firstTipDismissed: true }); }, 'aria-label': 'Dismiss tip',
-                  style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 } }, '✕')
+                h('button', {
+                  onClick: function() { setSteward({ firstTipDismissed: true }); },
+                  'aria-label': 'Dismiss tip',
+                  className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                  style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 }
+                }, '✕')
               ) : null,
               // AI panel renders here when active
               renderStewardAIPanel(),
               // HUD
-              h('div', { style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(14,165,233,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_BLUE + '66', borderLeft: '4px solid ' + T_BLUE, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
+              h('div', {
+                style: {
+                  padding: '10px 14px',
+                  borderRadius: 12,
+                  background: isDark
+                    ? 'linear-gradient(135deg, rgba(14,165,233,0.12) 0%, rgba(15,23,42,0.85) 100%)'
+                    : 'linear-gradient(135deg, rgba(14,165,233,0.18) 0%, #f8fafc 100%)',
+                  border: isDark ? '1px solid rgba(14,165,233,0.4)' : '1px solid rgba(14,165,233,0.3)',
+                  borderLeft: '4px solid ' + T_BLUE,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 16,
+                  flexWrap: 'wrap'
+                }
+              },
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Year'),
+                  h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, 'Year'),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: T_BLUE_HI } }, steward.year + ' / ' + steward.maxYears)
                 ),
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Hours left'),
+                  h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, 'Hours left'),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, steward.hoursLeft + ' / ' + steward.hoursPerYear)
                 ),
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Connectivity boosts'),
+                  h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, 'Connectivity boosts'),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, steward.connectivityBoosts || 0)
                 ),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
-                  callGemini ? h('button', { onClick: readWatershed, disabled: steward.aiReadLoading,
+                  callGemini ? h('button', {
+                    onClick: readWatershed,
+                    disabled: steward.aiReadLoading,
                     'aria-label': 'Ask AI watershed educator to read your watershed data',
                     title: 'AI watershed-science educator reads your current state',
-                    style: { padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8', cursor: steward.aiReadLoading ? 'wait' : 'pointer', background: 'rgba(56,189,248,0.10)', color: '#38bdf8', fontWeight: 700, fontSize: 12, opacity: steward.aiReadLoading ? 0.6 : 1 }
+                    className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                    style: {
+                      padding: '8px 12px',
+                      borderRadius: 10,
+                      border: '1px solid #38bdf8',
+                      cursor: steward.aiReadLoading ? 'wait' : 'pointer',
+                      background: isDark ? 'rgba(56,189,248,0.1)' : 'rgba(56,189,248,0.08)',
+                      color: '#38bdf8',
+                      fontWeight: 700,
+                      fontSize: 12,
+                      opacity: steward.aiReadLoading ? 0.6 : 1
+                    }
                   }, steward.aiReadLoading ? '⏳ Reading...' : '🔍 Read the watershed (AI)') : null,
-                  h('button', { onClick: endStewardYear, 'aria-label': 'End this year',
-                    style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, 'End Year →')
+                  h('button', {
+                    onClick: endStewardYear,
+                    'aria-label': 'End this year',
+                    className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all font-bold rounded-lg",
+                    style: { padding: '10px 16px', border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontSize: 13 }
+                  }, 'End Year →')
                 )
               ),
 
@@ -1414,34 +1792,83 @@ const d = labToolData.waterCycle;
                   var applicable = STEWARD_TECHNIQUES.filter(function(t) {
                     return t.appliesTo === 'any' || t.appliesTo.indexOf(c.id) >= 0;
                   });
-                  return h('div', { key: c.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, borderLeft: '3px solid ' + def.color } },
+                  return h('div', {
+                    key: c.id,
+                    style: {
+                      background: isDark ? 'rgba(15,23,42,0.6)' : '#ffffff',
+                      border: isDark ? '1px solid #334155' : '1px solid #cbd5e1',
+                      borderRadius: 12,
+                      padding: 12,
+                      borderLeft: '3px solid ' + def.color
+                    }
+                  },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                       h('span', { style: { fontSize: 22 } }, def.icon),
                       h('div', { style: { flex: 1 } },
                         h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
-                        h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, def.role)
+                        h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, def.role)
                       ),
-                      def.deepDive ? h('button', { onClick: function() { openStewardDeepDive(c.id); }, 'aria-label': 'Deep-dive for ' + def.name, title: 'Watershed deep-dive',
-                        style: { background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '📚') : null
+                      def.deepDive ? h('button', {
+                        onClick: function() { openStewardDeepDive(c.id); },
+                        'aria-label': 'Deep-dive for ' + def.name,
+                        title: 'Watershed deep-dive',
+                        className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                        style: {
+                          background: 'transparent',
+                          border: '1px solid ' + def.color + (isDark ? '88' : '55'),
+                          color: def.color,
+                          cursor: 'pointer',
+                          borderRadius: 6,
+                          padding: '2px 8px',
+                          fontSize: 11,
+                          fontWeight: 700
+                        }
+                      }, '📚') : null
                     ),
                     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
                       [['Q', Math.round(c.quality), c.quality < 40 ? '#ef4444' : c.quality < 65 ? '#f59e0b' : '#22c55e', def.targets.quality],
                        ['Conn', Math.round(c.connectivity), c.connectivity < 40 ? '#ef4444' : c.connectivity < 65 ? '#f59e0b' : '#22c55e', def.targets.connectivity],
                        ['Sup', Math.round(c.support), c.support < 40 ? '#ef4444' : c.support < 60 ? '#f59e0b' : '#22c55e', def.targets.support]
                       ].map(function(st, si) {
-                        return h('div', { key: si, style: { background: 'var(--allo-stem-panel, #1e293b)', padding: 6, borderRadius: 6, textAlign: 'center' } },
-                          h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, st[0]),
+                        return h('div', {
+                          key: si,
+                          style: {
+                            background: isDark ? '#0f172a' : '#f8fafc',
+                            border: isDark ? '1px solid #1e293b' : '1px solid #e2e8f0',
+                            padding: 6,
+                            borderRadius: 6,
+                            textAlign: 'center'
+                          }
+                        },
+                          h('div', { style: { fontSize: 10, color: isDark ? '#64748b' : '#94a3b8' } }, st[0]),
                           h('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
-                          h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)' } }, 'goal ' + st[3])
+                          h('div', { style: { fontSize: 9, color: isDark ? '#475569' : '#64748b' } }, 'goal ' + st[3])
                         );
                       })
                     ),
                     h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                       applicable.filter(function(t) { return t.appliesTo !== 'any'; }).map(function(t) {
                         var disabled = steward.hoursLeft < t.hours;
-                        return h('button', { key: t.id, onClick: function() { applyStewardTech(t.id, c.id); }, disabled: disabled, title: t.desc,
-                          style: { padding: '4px 8px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#0ea5e9', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } },
-                          t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                        return h('button', {
+                          key: t.id,
+                          onClick: function() { applyStewardTech(t.id, c.id); },
+                          disabled: disabled,
+                          title: t.desc,
+                          className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                          style: {
+                            padding: '4px 8px',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            borderRadius: 6,
+                            border: 'none',
+                            cursor: disabled ? 'not-allowed' : 'pointer',
+                            background: disabled ? (isDark ? '#1e293b' : '#f1f5f9') : '#0ea5e9',
+                            color: disabled ? (isDark ? '#475569' : '#94a3b8') : '#fff',
+                            opacity: disabled ? 0.5 : 1
+                          }
+                        },
+                          t.icon + ' ' + t.name + ' (' + t.hours + 'h)'
+                        );
                       })
                     )
                   );
@@ -1449,25 +1876,59 @@ const d = labToolData.waterCycle;
               ),
 
               // Watershed-wide interventions row
-              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, borderLeft: '3px solid #38bdf8' } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#bae6fd', marginBottom: 8 } }, '🛠 Watershed-wide actions'),
+              h('div', {
+                style: {
+                  background: isDark ? 'rgba(15,23,42,0.6)' : '#f8fafc',
+                  border: isDark ? '1px solid #334155' : '1px solid #cbd5e1',
+                  borderRadius: 12,
+                  padding: 12,
+                  borderLeft: '3px solid #38bdf8'
+                }
+              },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#38bdf8', marginBottom: 8 } }, '🛠 Watershed-wide actions'),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   STEWARD_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any'; }).map(function(t) {
                     var disabled = steward.hoursLeft < t.hours;
-                    return h('button', { key: t.id, onClick: function() { applyStewardTech(t.id, null); }, disabled: disabled, title: t.desc,
-                      style: { padding: '6px 10px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#0ea5e9', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } },
-                      t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { applyStewardTech(t.id, null); },
+                      disabled: disabled,
+                      title: t.desc,
+                      className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                      style: {
+                        padding: '6px 10px',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        borderRadius: 6,
+                        border: 'none',
+                        cursor: disabled ? 'not-allowed' : 'pointer',
+                        background: disabled ? (isDark ? '#1e293b' : '#f1f5f9') : '#0ea5e9',
+                        color: disabled ? (isDark ? '#475569' : '#94a3b8') : '#fff',
+                        opacity: disabled ? 0.5 : 1
+                      }
+                    },
+                      t.icon + ' ' + t.name + ' (' + t.hours + 'h)'
+                    );
                   })
                 )
               ),
 
               // Action log
-              steward.yearActions.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
-                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, 'Year ' + steward.year + ' actions'),
+              steward.yearActions.length > 0 ? h('div', {
+                style: {
+                  background: isDark ? 'rgba(15,23,42,0.6)' : '#f8fafc',
+                  border: isDark ? '1px solid #334155' : '1px solid #cbd5e1',
+                  borderRadius: 10,
+                  padding: 10,
+                  fontSize: 12,
+                  color: isDark ? '#cbd5e1' : '#475569'
+                }
+              },
+                h('div', { style: { fontWeight: 700, color: isDark ? '#cbd5e1' : '#334155', marginBottom: 4 } }, 'Year ' + steward.year + ' actions'),
                 steward.yearActions.map(function(a, ai) {
                   return h('div', { key: ai }, '· ' + a.tech + ' → ' + a.target + ' (' + a.hours + 'h)');
                 })
-              ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'No actions yet this year. Pick a component, pick a technique.')
+              ) : h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#64748b', fontStyle: 'italic' } }, 'No actions yet this year. Pick a component, pick a technique.')
             );
           }
 
@@ -1494,21 +1955,21 @@ const d = labToolData.waterCycle;
           // ═══ GRADE-TIERED STAGES ═══
           const STAGES = [
             { id: 'evaporation', label: t('stem.water_cycle.evaporation'), emoji: '\u2600', color: '#f59e0b',
-              desc: { 'K-2': 'The sun heats up water in puddles, lakes, and oceans. The water turns into an invisible gas that floats up into the sky — like when a puddle disappears on a hot day!',
+              desc: { 'K-2': 'The sun heats up water in puddles, lakes, and oceans. The water turns into an invisible gas that floats up into the sky  -  like when a puddle disappears on a hot day!',
                       '3-5': 'Heat from the sun causes water to change from liquid to gas (water vapor). Oceans, lakes, and rivers provide most of the evaporated water. About 90% of evaporation comes from oceans.',
                       '6-8': 'Solar radiation provides thermal energy that increases water molecule kinetic energy until they escape the liquid surface as vapor. The rate depends on temperature, humidity, wind speed, and surface area. Oceans contribute ~90% of atmospheric moisture.',
                       '9-12': 'Evaporation is governed by the Clausius-Clapeyron relation: saturation vapor pressure increases ~7% per \u00B0C. The latent heat of vaporization is 2.45 MJ/kg at 20\u00B0C. Penman-Monteith equations model evapotranspiration using net radiation, soil heat flux, and aerodynamic resistance.' },
-              funFact: { 'K-2': 'If all the water in clouds fell at once, it would only cover the ground with a tiny layer — thinner than your thumb!',
+              funFact: { 'K-2': 'If all the water in clouds fell at once, it would only cover the ground with a tiny layer  -  thinner than your thumb!',
                          '3-5': 'If all the water vapor in the atmosphere rained at once, it would cover Earth with only 2.5 cm of water!',
-                         '6-8': 'The atmosphere holds about 12,900 km\u00B3 of water vapor at any time — but that is only 0.001% of all water on Earth.',
+                         '6-8': 'The atmosphere holds about 12,900 km\u00B3 of water vapor at any time  -  but that is only 0.001% of all water on Earth.',
                          '9-12': 'Global mean evaporation is ~1,200 mm/yr over oceans. The Bowen ratio (sensible/latent heat) determines partitioning of surface energy into evaporation vs heating.' } },
             { id: 'condensation', label: t('stem.water_cycle.condensation'), emoji: '\u2601', color: 'var(--allo-stem-text-soft, #94a3b8)',
               desc: { 'K-2': 'When the warm, wet air goes high up where it is cold, the water vapor turns back into tiny water drops. These tiny drops stick together and make clouds!',
                       '3-5': 'Water vapor cools as it rises, forming tiny droplets around particles of dust, pollen, or pollution, creating clouds. Each cloud droplet is about 10 micrometers wide.',
-                      '6-8': 'As air rises, it cools at ~6.5\u00B0C/km (environmental lapse rate). When temperature reaches the dew point, vapor condenses onto cloud condensation nuclei (CCN) — aerosol particles 0.1\u20131 \u00B5m wide. Cloud droplets are typically 5\u201315 \u00B5m.',
-                      '9-12': 'Heterogeneous nucleation on CCN requires supersaturation of only ~0.1\u20131%. K\u00F6hler theory describes the competition between the Kelvin effect (curvature) and the Raoult effect (solute). The critical supersaturation determines which CCN activate into cloud droplets.' },
+                      '6-8': 'As air rises, it cools at ~6.5\u00B0C/km (environmental lapse rate). When temperature reaches the dew point, vapor condenses onto cloud condensation nuclei (CCN)  -  aerosol particles 0.1-1 \u00B5m wide. Cloud droplets are typically 5-15 \u00B5m.',
+                      '9-12': 'Heterogeneous nucleation on CCN requires supersaturation of only ~0.1-1%. K\u00F6hler theory describes the competition between the Kelvin effect (curvature) and the Raoult effect (solute). The critical supersaturation determines which CCN activate into cloud droplets.' },
               funFact: { 'K-2': 'A big fluffy cloud weighs as much as 100 elephants! But it floats because the tiny drops are spread out.',
-                         '3-5': 'A typical cumulus cloud weighs about 500,000 kg \u2014 as heavy as 100 elephants!',
+                         '3-5': 'A typical cumulus cloud weighs about 500,000 kg - as heavy as 100 elephants!',
                          '6-8': 'Clouds reflect ~30% of incoming solar radiation (albedo), making them one of the biggest factors in Earth\'s energy budget.',
                          '9-12': 'Cloud microphysics distinguishes warm-phase (collision-coalescence) and cold-phase (Bergeron-Findeisen) precipitation processes, with ice nucleation occurring at -10\u00B0C to -40\u00B0C.' } },
             { id: 'precipitation', label: t('stem.water_cycle.precipitation'), emoji: '\uD83C\uDF27', color: '#3b82f6',
@@ -1518,7 +1979,7 @@ const d = labToolData.waterCycle;
                       '9-12': 'The Marshall-Palmer distribution N(D)=N\u2080e^(-\u039BD) models raindrop size spectra. Z-R relationships (Z=aR^b) connect radar reflectivity to precipitation rate. Convective precipitation involves CAPE > 1000 J/kg driving updrafts.' },
               funFact: { 'K-2': 'A single raindrop is made of about a million teeny-tiny cloud drops all stuck together!',
                          '3-5': 'The wettest place on Earth is Mawsynram, India, with ~11,871 mm of rain per year.',
-                         '6-8': 'The largest hailstone ever recorded was 20 cm in diameter — bigger than a softball — and fell in Vivian, South Dakota.',
+                         '6-8': 'The largest hailstone ever recorded was 20 cm in diameter  -  bigger than a softball  -  and fell in Vivian, South Dakota.',
                          '9-12': 'Global mean precipitation is ~990 mm/yr. ENSO cycles can shift tropical precipitation patterns by hundreds of millimeters per year.' } },
             { id: 'collection', label: t('stem.water_cycle.collection'), emoji: '\uD83C\uDF0A', color: '#0ea5e9',
               desc: { 'K-2': 'Rainwater flows into rivers, lakes, and the big ocean. Some soaks into the ground. Almost all of Earth\'s water is in the salty ocean!',
@@ -1530,13 +1991,13 @@ const d = labToolData.waterCycle;
                          '6-8': 'The average water molecule spends about 9 days in the atmosphere before falling as precipitation.',
                          '9-12': 'Antarctic ice cores preserve 800,000 years of climate history, with \u03B4\u00B9\u2078O variations of ~5\u2030 between glacial and interglacial periods.' } },
             { id: 'transpiration', label: t('stem.water_cycle.transpiration'), emoji: '\uD83C\uDF3F', color: '#22c55e',
-              desc: { 'K-2': 'Plants drink water through their roots. Then the water travels up to the leaves and floats away into the air through tiny holes — like the plant is breathing!',
+              desc: { 'K-2': 'Plants drink water through their roots. Then the water travels up to the leaves and floats away into the air through tiny holes  -  like the plant is breathing!',
                       '3-5': 'Plants absorb water through roots and release vapor from tiny pores called stomata in their leaves. A single large oak tree can transpire 150,000 liters per year.',
                       '6-8': 'Transpiration is driven by the soil-plant-atmosphere continuum. Water moves through xylem via cohesion-tension, exiting through ~100,000 stomata per cm\u00B2 of leaf surface. Guard cells regulate stomatal aperture in response to light, CO\u2082, and water stress.',
                       '9-12': 'The Penman-Monteith equation models transpiration: ET = [\u0394(Rn-G) + \u03C1a·cp·VPD/ra] / [\u0394 + \u03B3(1 + rs/ra)]. Stomatal conductance follows the Ball-Berry model linking assimilation, humidity, and CO\u2082 concentration.' },
               funFact: { 'K-2': 'A big oak tree lets out enough water every year to fill a swimming pool!',
                          '3-5': 'An acre of corn transpires about 11,400 liters of water per day!',
-                         '6-8': 'Globally, transpiration accounts for about 10% of atmospheric moisture — forests act as giant water pumps.',
+                         '6-8': 'Globally, transpiration accounts for about 10% of atmospheric moisture  -  forests act as giant water pumps.',
                          '9-12': 'Amazon rainforest transpiration generates ~50% of its own rainfall via atmospheric moisture recycling, a process modeled by the "flying rivers" hypothesis.' } },
             { id: 'infiltration', label: t('stem.water_cycle.infiltration'), emoji: '\uD83E\uDEB4', color: '#92400e',
               desc: { 'K-2': 'Some rainwater soaks into the ground like a sponge! It goes down through dirt and rocks, getting cleaned along the way. This underground water fills wells and springs.',
@@ -1545,7 +2006,7 @@ const d = labToolData.waterCycle;
                       '9-12': 'Richards\' equation extends Darcy\'s Law to unsaturated flow: \u2202\u03B8/\u2202t = \u2207·[K(\u03B8)\u2207(\u03C8+z)]. Van Genuchten parameters characterize soil-water retention curves. Isotope tracers (tritium, \u00B3H) date groundwater residence times from years to millennia.' },
               funFact: { 'K-2': 'Some underground water has been down there longer than the dinosaurs!',
                          '3-5': 'It can take hundreds or thousands of years for water to travel through an aquifer.',
-                         '6-8': 'The Ogallala Aquifer under the US Great Plains holds about 3,000 km\u00B3 of water — enough to cover the entire US in 40 cm of water.',
+                         '6-8': 'The Ogallala Aquifer under the US Great Plains holds about 3,000 km\u00B3 of water  -  enough to cover the entire US in 40 cm of water.',
                          '9-12': 'Groundwater depletion in the Indo-Gangetic Basin exceeds 50 km\u00B3/yr, detectable via GRACE satellite gravity anomalies averaging -2 cm/yr equivalent water height.' } },
           ];
 
@@ -1660,7 +2121,7 @@ const d = labToolData.waterCycle;
 
             }
 
-            // ═══ CLIMATE LAB — dynamic weather particles ═══
+            // ═══ CLIMATE LAB  -  dynamic weather particles ═══
             var snowPs = [];
             for (var si = 0; si < 50; si++) {
               snowPs.push({ x: Math.random() * cW / dpr, y: Math.random() * cH * 0.65 / dpr, size: 1 + Math.random() * 2.5, speed: 0.2 + Math.random() * 0.4, drift: Math.random() * Math.PI * 2, wobble: 0.3 + Math.random() * 0.5 });
@@ -1696,13 +2157,13 @@ const d = labToolData.waterCycle;
             // Science facts shown at each transition
             var JOURNEY_FACTS = {
               ocean:       'You are in the ocean! 97% of Earth\'s water is here. The sun heats you up...',
-              evaporating: 'Solar energy excites your molecules! At 100\u00B0C you become water vapor — invisible gas rising upward.',
+              evaporating: 'Solar energy excites your molecules! At 100\u00B0C you become water vapor  -  invisible gas rising upward.',
               condensing:  'As you rise, temperature drops ~6.5\u00B0C per 1000m. You condense onto tiny dust particles to form a cloud droplet!',
-              precipitating:'Cloud droplets collide and merge. When you reach ~0.5mm, gravity overcomes air resistance — you fall!',
+              precipitating:'Cloud droplets collide and merge. When you reach ~0.5mm, gravity overcomes air resistance  -  you fall!',
               ground_choice:'You hit the ground! Water can take 3 paths from here. Where will you go?',
               river_runoff: 'Surface runoff! You flow downhill over soil and rock, joining streams and rivers back to the ocean.',
               infiltrating: 'You seep through soil pores, filtered naturally. Some water takes hundreds of years to reach the ocean!',
-              aquifer_flow: 'Deep underground in porous rock, you join the aquifer — Earth\'s hidden reservoir.',
+              aquifer_flow: 'Deep underground in porous rock, you join the aquifer  -  Earth\'s hidden reservoir.',
               plant_absorb: 'Roots absorb you via osmosis! You travel up through the xylem to the leaves.',
               transpiring:  'Through tiny stomata pores, you evaporate from the leaf surface back into the atmosphere!'
             };
@@ -1802,18 +2263,49 @@ const d = labToolData.waterCycle;
               // Trail particles
               journey.particleTrail.push({ x: dx, y: dy, age: 0 });
               if (journey.particleTrail.length > 20) journey.particleTrail.shift();
+              
+              var trailColor = 'rgba(147,197,253,';
+              var trailGlow = false;
+              
+              if (state === 'evaporating' || state === 'transpiring') {
+                trailColor = 'rgba(251,191,36,';
+                trailGlow = true;
+              } else if (state === 'condensing') {
+                trailColor = isDark ? 'rgba(203,213,225,' : 'rgba(148,163,184,';
+                trailGlow = true;
+              } else if (state === 'plant_absorb') {
+                trailColor = 'rgba(34,197,94,';
+                trailGlow = true;
+              } else if (state === 'infiltrating' || state === 'aquifer_flow') {
+                trailColor = isDark ? 'rgba(34,211,238,' : 'rgba(120,53,15,';
+                trailGlow = true;
+              } else if (state === 'precipitating') {
+                trailColor = 'rgba(59,130,246,';
+                trailGlow = true;
+              }
+              
+              var isDarkLocal = canvasEl.dataset.darkMode === 'true';
               for (var ti = 0; ti < journey.particleTrail.length; ti++) {
                 var tp2 = journey.particleTrail[ti];
                 tp2.age++;
                 var ta = Math.max(0, 1 - tp2.age / 25);
-                ctx.fillStyle = 'rgba(147,197,253,' + (ta * 0.3) + ')';
-                ctx.beginPath(); ctx.arc(tp2.x * cW, tp2.y * cH, (2 + ta * 3) * dpr, 0, Math.PI * 2); ctx.fill();
+                
+                ctx.save();
+                if (trailGlow && isDarkLocal) {
+                  ctx.shadowBlur = 5 * dpr;
+                  ctx.shadowColor = trailColor.replace(/,$/, ')');
+                }
+                ctx.fillStyle = trailColor + (ta * 0.35) + ')';
+                ctx.beginPath();
+                ctx.arc(tp2.x * cW, tp2.y * cH, (2.5 + ta * 3) * dpr, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
               }
 
               ctx.restore();
             }
 
-            // Click handler for journey decisions — uses shared GROUND_CHOICES for hit zones
+            // Click handler for journey decisions  -  uses shared GROUND_CHOICES for hit zones
             canvasEl.addEventListener('click', function(e) {
               if (journey.state !== 'ground_choice') return;
               var rect = canvasEl.getBoundingClientRect();
@@ -1826,9 +2318,13 @@ const d = labToolData.waterCycle;
                   // Sync canvas-side state
                   journey.state = gc.state; journey.progress = 0; journey.particleTrail = [];
                   canvasEl.dataset.journeyState = gc.state;
-                  if (canvasEl._onJourneyTransition) canvasEl._onJourneyTransition(gc.state);
-                  // Sync React state via upd()
+                  // Sync React state via upd() and play sound
                   if (canvasEl._wcSyncReact) canvasEl._wcSyncReact(gc.state, gc.pathKey);
+                  // Sync active stage on dataset
+                  var stageMap = { ocean: 'collection', evaporating: 'evaporation', condensing: 'condensation', 
+                    precipitating: 'precipitation', river_runoff: 'collection', infiltrating: 'infiltration',
+                    aquifer_flow: 'infiltration', plant_absorb: 'transpiration', transpiring: 'transpiration' };
+                  if (stageMap[gc.state]) canvasEl.dataset.activeStage = stageMap[gc.state];
                   break;
                 }
               }
@@ -1840,7 +2336,7 @@ const d = labToolData.waterCycle;
 
               ctx.clearRect(0, 0, cW, cH);
 
-
+              var isDark = canvasEl.dataset.darkMode === 'true';
 
               // ── Sky gradient with dynamic time + climate response ──
 
@@ -1849,24 +2345,31 @@ const d = labToolData.waterCycle;
               var skyBright = Math.max(0, Math.min(1, cSolar));
 
               var g = ctx.createLinearGradient(0, 0, 0, cH * 0.6);
-              if (skyBright < 0.3) {
-                // Night sky — deep indigo/navy
-                var nf = skyBright / 0.3;
-                g.addColorStop(0, 'hsl(230,' + (40 + nf * 20) + '%,' + (8 + nf * 15) + '%)');
-                g.addColorStop(0.5, 'hsl(220,' + (30 + nf * 15) + '%,' + (12 + nf * 18) + '%)');
-                g.addColorStop(1, 'hsl(210,' + (25 + nf * 20) + '%,' + (15 + nf * 20) + '%)');
-              } else if (skyBright < 0.6) {
-                // Dawn/dusk — warm oranges and purples
-                var df = (skyBright - 0.3) / 0.3;
-                g.addColorStop(0, 'hsl(' + (240 - df * 30) + ',' + (50 + df * 15) + '%,' + (25 + df * 30) + '%)');
-                g.addColorStop(0.5, 'hsl(' + (220 - df * 20) + ',60%,' + (40 + df * 20) + '%)');
-                g.addColorStop(1, 'hsl(' + (210 - df * 15) + ',' + (50 + df * 10) + '%,' + (50 + df * 15) + '%)');
+              if (isDark) {
+                // Deep space dark mode gradient: slate-950 to deep navy/indigo-950
+                g.addColorStop(0, '#020617');
+                g.addColorStop(0.4, '#090d1f');
+                g.addColorStop(1, '#1e1b4b');
               } else {
-                // Bright day
-                var bf = Math.min(1, (skyBright - 0.6) / 0.4);
-                g.addColorStop(0, 'hsl(210,' + (60 + dayPhase * 20 + bf * 10) + '%,' + (50 + dayPhase * 25 + bf * 10) + '%)');
-                g.addColorStop(0.5, 'hsl(200,70%,' + (65 + dayPhase * 15) + '%)');
-                g.addColorStop(1, 'hsl(190,60%,' + (70 + dayPhase * 10) + '%)');
+                if (skyBright < 0.3) {
+                  // Night sky  -  deep indigo/navy
+                  var nf = skyBright / 0.3;
+                  g.addColorStop(0, 'hsl(230,' + (40 + nf * 20) + '%,' + (8 + nf * 15) + '%)');
+                  g.addColorStop(0.5, 'hsl(220,' + (30 + nf * 15) + '%,' + (12 + nf * 18) + '%)');
+                  g.addColorStop(1, 'hsl(210,' + (25 + nf * 20) + '%,' + (15 + nf * 20) + '%)');
+                } else if (skyBright < 0.6) {
+                  // Dawn/dusk  -  warm oranges and purples
+                  var df = (skyBright - 0.3) / 0.3;
+                  g.addColorStop(0, 'hsl(' + (240 - df * 30) + ',' + (50 + df * 15) + '%,' + (25 + df * 30) + '%)');
+                  g.addColorStop(0.5, 'hsl(' + (220 - df * 20) + ',60%,' + (40 + df * 20) + '%)');
+                  g.addColorStop(1, 'hsl(' + (210 - df * 15) + ',' + (50 + df * 10) + '%,' + (50 + df * 15) + '%)');
+                } else {
+                  // Bright day
+                  var bf = Math.min(1, (skyBright - 0.6) / 0.4);
+                  g.addColorStop(0, 'hsl(210,' + (60 + dayPhase * 20 + bf * 10) + '%,' + (50 + dayPhase * 25 + bf * 10) + '%)');
+                  g.addColorStop(0.5, 'hsl(200,70%,' + (65 + dayPhase * 15) + '%)');
+                  g.addColorStop(1, 'hsl(190,60%,' + (70 + dayPhase * 10) + '%)');
+                }
               }
 
               ctx.fillStyle = g;
@@ -1875,130 +2378,111 @@ const d = labToolData.waterCycle;
 
 
 
-              // ── Sun with animated rays ──
+              // ── Sun / Moon with animated rays / glow ──
 
-              var sunX = cW * 0.82;
-
-              var sunY = cH * 0.08 + Math.sin(tick * 0.005) * cH * 0.03;
-
-              // Outer glow
-
-              var sunGlow = ctx.createRadialGradient(sunX, sunY, 8 * dpr, sunX, sunY, 50 * dpr);
-
-              sunGlow.addColorStop(0, 'rgba(251,191,36,0.4)');
-
-              sunGlow.addColorStop(1, 'rgba(251,191,36,0)');
-
-              ctx.fillStyle = sunGlow;
-
-              ctx.fillRect(sunX - 50 * dpr, sunY - 50 * dpr, 100 * dpr, 100 * dpr);
-
-              ctx.beginPath(); ctx.arc(sunX, sunY, 16 * dpr, 0, Math.PI * 2);
-
-              ctx.fillStyle = '#fbbf24'; ctx.fill();
-
-              // Rays
-
-              for (var sr = 0; sr < 12; sr++) {
-
-                var sra = sr * Math.PI / 6 + tick * 0.008;
-
-                var innerR = 20 * dpr;
-
-                var outerR = (28 + Math.sin(tick * 0.05 + sr) * 5) * dpr;
-
+              if (isDark) {
+                // Crescent Moon
+                var moonX = cW * 0.82;
+                var moonY = cH * 0.08 + Math.sin(tick * 0.005) * cH * 0.03;
+                
+                var moonGlow = ctx.createRadialGradient(moonX, moonY, 4 * dpr, moonX, moonY, 45 * dpr);
+                moonGlow.addColorStop(0, 'rgba(125,211,252,0.25)');
+                moonGlow.addColorStop(1, 'rgba(125,211,252,0)');
+                ctx.fillStyle = moonGlow;
                 ctx.beginPath();
+                ctx.arc(moonX, moonY, 45 * dpr, 0, Math.PI * 2);
+                ctx.fill();
 
-                ctx.moveTo(sunX + Math.cos(sra) * innerR, sunY + Math.sin(sra) * innerR);
+                ctx.fillStyle = '#e2e8f0';
+                ctx.beginPath();
+                ctx.arc(moonX, moonY, 14 * dpr, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#090d1f';
+                ctx.beginPath();
+                ctx.arc(moonX - 6 * dpr, moonY - 2 * dpr, 13 * dpr, 0, Math.PI * 2);
+                ctx.fill();
+              } else {
+                // Sun with animated rays
+                var sunX = cW * 0.82;
+                var sunY = cH * 0.08 + Math.sin(tick * 0.005) * cH * 0.03;
 
-                ctx.lineTo(sunX + Math.cos(sra) * outerR, sunY + Math.sin(sra) * outerR);
+                var sunGlow = ctx.createRadialGradient(sunX, sunY, 8 * dpr, sunX, sunY, 50 * dpr);
+                sunGlow.addColorStop(0, 'rgba(251,191,36,0.4)');
+                sunGlow.addColorStop(1, 'rgba(251,191,36,0)');
+                ctx.fillStyle = sunGlow;
+                ctx.fillRect(sunX - 50 * dpr, sunY - 50 * dpr, 100 * dpr, 100 * dpr);
 
-                ctx.strokeStyle = 'rgba(251,191,36,' + (0.3 + Math.sin(tick * 0.03 + sr) * 0.2) + ')';
+                ctx.beginPath(); ctx.arc(sunX, sunY, 16 * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = '#fbbf24'; ctx.fill();
 
-                ctx.lineWidth = 2 * dpr; ctx.stroke();
-
+                for (var sr = 0; sr < 12; sr++) {
+                  var sra = sr * Math.PI / 6 + tick * 0.008;
+                  var innerR = 20 * dpr;
+                  var outerR = (28 + Math.sin(tick * 0.05 + sr) * 5) * dpr;
+                  ctx.beginPath();
+                  ctx.moveTo(sunX + Math.cos(sra) * innerR, sunY + Math.sin(sra) * innerR);
+                  ctx.lineTo(sunX + Math.cos(sra) * outerR, sunY + Math.sin(sra) * outerR);
+                  ctx.strokeStyle = 'rgba(251,191,36,' + (0.3 + Math.sin(tick * 0.03 + sr) * 0.2) + ')';
+                  ctx.lineWidth = 2 * dpr; ctx.stroke();
+                }
               }
 
 
 
-              // ── Mountains (enhanced with rock texture, cracks, snow patches) ──
+              // ── Mountains ──
 
               // Back mountain
-
-              ctx.fillStyle = '#475569';
+              ctx.fillStyle = isDark ? '#1e293b' : '#475569';
 
               ctx.beginPath(); ctx.moveTo(cW * 0.55, cH * 0.65); ctx.lineTo(cW * 0.72, cH * 0.3); ctx.lineTo(cW * 0.9, cH * 0.65); ctx.fill();
 
               // Back mountain rock cracks
-
-              ctx.strokeStyle = 'rgba(30,41,59,0.3)'; ctx.lineWidth = 1 * dpr;
+              ctx.strokeStyle = isDark ? 'rgba(15,23,42,0.6)' : 'rgba(30,41,59,0.3)'; ctx.lineWidth = 1 * dpr;
 
               for (var mci = 0; mci < 5; mci++) {
-
                 var mcx = cW * 0.62 + mci * cW * 0.055;
-
                 var mcy = cH * 0.4 + mci * cH * 0.04;
-
                 ctx.beginPath(); ctx.moveTo(mcx, mcy); ctx.lineTo(mcx + 8 * dpr, mcy + 15 * dpr); ctx.stroke();
-
               }
 
-              // Snow cap (larger, more detailed)
-
-              ctx.fillStyle = '#e2e8f0';
+              // Snow cap
+              ctx.fillStyle = isDark ? '#cbd5e1' : '#e2e8f0';
 
               ctx.beginPath(); ctx.moveTo(cW * 0.685, cH * 0.34); ctx.lineTo(cW * 0.72, cH * 0.3); ctx.lineTo(cW * 0.755, cH * 0.34);
-
               ctx.lineTo(cW * 0.74, cH * 0.37); ctx.lineTo(cW * 0.725, cH * 0.36); ctx.lineTo(cW * 0.71, cH * 0.375); ctx.lineTo(cW * 0.695, cH * 0.355); ctx.closePath(); ctx.fill();
 
               // Snow highlights
-
               ctx.fillStyle = 'rgba(255,255,255,0.5)';
-
               ctx.beginPath(); ctx.arc(cW * 0.72, cH * 0.32, 4 * dpr, 0, Math.PI * 2); ctx.fill();
 
               // Snow melt stream
-
               ctx.strokeStyle = 'rgba(147,197,253,0.4)'; ctx.lineWidth = 1.5 * dpr;
-
               ctx.beginPath(); ctx.moveTo(cW * 0.725, cH * 0.36);
-
               ctx.quadraticCurveTo(cW * 0.73, cH * 0.42, cW * 0.735, cH * 0.48);
-
               ctx.quadraticCurveTo(cW * 0.728, cH * 0.54, cW * 0.74, cH * 0.6);
-
               ctx.stroke();
 
               // Front mountain
-
-              ctx.fillStyle = '#374151';
+              ctx.fillStyle = isDark ? '#0f172a' : '#374151';
 
               ctx.beginPath(); ctx.moveTo(cW * 0.65, cH * 0.65); ctx.lineTo(cW * 0.82, cH * 0.38); ctx.lineTo(cW * 0.98, cH * 0.65); ctx.fill();
 
               // Front mountain rock textures
-
-              ctx.strokeStyle = 'rgba(55,65,81,0.4)'; ctx.lineWidth = 0.8 * dpr;
+              ctx.strokeStyle = isDark ? 'rgba(30,41,59,0.5)' : 'rgba(55,65,81,0.4)'; ctx.lineWidth = 0.8 * dpr;
 
               for (var mti = 0; mti < 6; mti++) {
-
                 var mtx = cW * 0.72 + mti * cW * 0.04;
-
                 var mty = cH * 0.45 + mti * cH * 0.02;
-
                 ctx.beginPath(); ctx.moveTo(mtx, mty);
-
                 ctx.lineTo(mtx + (mti % 2 === 0 ? 6 : -5) * dpr, mty + 12 * dpr);
-
                 ctx.lineTo(mtx + 3 * dpr, mty + 20 * dpr); ctx.stroke();
-
               }
 
               // Front mountain snow patch
-
-              ctx.fillStyle = '#e2e8f0';
+              ctx.fillStyle = isDark ? '#cbd5e1' : '#e2e8f0';
 
               ctx.beginPath(); ctx.moveTo(cW * 0.8, cH * 0.40); ctx.lineTo(cW * 0.82, cH * 0.38); ctx.lineTo(cW * 0.84, cH * 0.41);
-
               ctx.lineTo(cW * 0.83, cH * 0.43); ctx.lineTo(cW * 0.81, cH * 0.42); ctx.closePath(); ctx.fill();
 
 
@@ -2006,12 +2490,15 @@ const d = labToolData.waterCycle;
               // ── Ground ──
 
               var groundGrad = ctx.createLinearGradient(0, cH * 0.62, 0, cH * 0.72);
-
-              groundGrad.addColorStop(0, '#4ade80');
-
-              groundGrad.addColorStop(0.5, '#22c55e');
-
-              groundGrad.addColorStop(1, '#166534');
+              if (isDark) {
+                groundGrad.addColorStop(0, '#064e3b');
+                groundGrad.addColorStop(0.5, '#022c22');
+                groundGrad.addColorStop(1, '#011c15');
+              } else {
+                groundGrad.addColorStop(0, '#4ade80');
+                groundGrad.addColorStop(0.5, '#22c55e');
+                groundGrad.addColorStop(1, '#166534');
+              }
 
               ctx.fillStyle = groundGrad;
 
@@ -2024,7 +2511,6 @@ const d = labToolData.waterCycle;
                 var gbx = (gbi / 80) * cW;
 
                 // Skip water area
-
                 if (gbx < cW * 0.55) continue;
 
                 var gby = cH * 0.62;
@@ -2033,7 +2519,9 @@ const d = labToolData.waterCycle;
 
                 var gbHeight = (4 + Math.random() * 5) * dpr;
 
-                ctx.strokeStyle = gbi % 3 === 0 ? 'rgba(74,222,128,0.6)' : 'rgba(34,197,94,0.5)';
+                ctx.strokeStyle = isDark 
+                  ? (gbi % 3 === 0 ? 'rgba(16,185,129,0.4)' : 'rgba(5,150,105,0.3)')
+                  : (gbi % 3 === 0 ? 'rgba(74,222,128,0.6)' : 'rgba(34,197,94,0.5)');
 
                 ctx.lineWidth = 1 * dpr;
 
@@ -2045,7 +2533,7 @@ const d = labToolData.waterCycle;
 
                 if (gbi % 8 === 0) {
 
-                  ctx.fillStyle = 'rgba(250,204,21,0.4)';
+                  ctx.fillStyle = isDark ? 'rgba(250,204,21,0.25)' : 'rgba(250,204,21,0.4)';
 
                   ctx.beginPath(); ctx.arc(gbx + gbSway, gby - gbHeight, 1.5 * dpr, 0, Math.PI * 2); ctx.fill();
 
@@ -2058,14 +2546,17 @@ const d = labToolData.waterCycle;
               // ── Underground / Aquifer layer ──
 
               var underGrad = ctx.createLinearGradient(0, cH * 0.72, 0, cH);
-
-              underGrad.addColorStop(0, '#78350f');
-
-              underGrad.addColorStop(0.3, '#92400e');
-
-              underGrad.addColorStop(0.6, '#451a03');
-
-              underGrad.addColorStop(1, '#1c1917');
+              if (isDark) {
+                underGrad.addColorStop(0, '#090d16');
+                underGrad.addColorStop(0.3, '#0b0f19');
+                underGrad.addColorStop(0.6, '#020617');
+                underGrad.addColorStop(1, '#000000');
+              } else {
+                underGrad.addColorStop(0, '#78350f');
+                underGrad.addColorStop(0.3, '#92400e');
+                underGrad.addColorStop(0.6, '#451a03');
+                underGrad.addColorStop(1, '#1c1917');
+              }
 
               ctx.fillStyle = underGrad;
 
@@ -2073,7 +2564,7 @@ const d = labToolData.waterCycle;
 
               // Aquifer water table
 
-              ctx.fillStyle = 'rgba(14,165,233,0.15)';
+              ctx.fillStyle = isDark ? 'rgba(6,182,212,0.25)' : 'rgba(14,165,233,0.15)';
 
               ctx.beginPath();
 
@@ -2089,7 +2580,7 @@ const d = labToolData.waterCycle;
 
               // Aquifer shimmer highlights
 
-              ctx.fillStyle = 'rgba(56,189,248,0.08)';
+              ctx.fillStyle = isDark ? 'rgba(34,211,238,0.2)' : 'rgba(56,189,248,0.08)';
 
               for (var ashi = 0; ashi < 8; ashi++) {
 
@@ -2103,7 +2594,7 @@ const d = labToolData.waterCycle;
 
               // Rock layer lines
 
-              ctx.strokeStyle = 'rgba(120,53,15,0.3)';
+              ctx.strokeStyle = isDark ? 'rgba(51,65,85,0.3)' : 'rgba(120,53,15,0.3)';
 
               ctx.lineWidth = 1 * dpr;
 
@@ -2125,7 +2616,7 @@ const d = labToolData.waterCycle;
 
               // Rock pebbles / gravel in underground layers
 
-              ctx.fillStyle = 'rgba(168,130,100,0.25)';
+              ctx.fillStyle = isDark ? 'rgba(71,85,105,0.25)' : 'rgba(168,130,100,0.25)';
 
               for (var rpi2 = 0; rpi2 < 15; rpi2++) {
 
@@ -2147,9 +2638,10 @@ const d = labToolData.waterCycle;
 
                 var aqAlpha = 0.2 + 0.15 * Math.sin(tick * 0.03 + aqi);
 
-                // Tiny worm-like organism
-
-                ctx.strokeStyle = 'rgba(14,165,233,' + aqAlpha + ')'; ctx.lineWidth = 1 * dpr; ctx.lineCap = 'round';
+                ctx.strokeStyle = isDark 
+                  ? 'rgba(34,211,238,' + (aqAlpha * 1.5) + ')' 
+                  : 'rgba(14,165,233,' + aqAlpha + ')';
+                ctx.lineWidth = 1 * dpr; ctx.lineCap = 'round';
 
                 ctx.beginPath(); ctx.moveTo(aqx, aqy);
 
@@ -2168,10 +2660,13 @@ const d = labToolData.waterCycle;
               // ── Water body (ocean/lake) ──
 
               var waterGrad = ctx.createLinearGradient(0, cH * 0.62, 0, cH * 0.72);
-
-              waterGrad.addColorStop(0, 'rgba(14,165,233,0.7)');
-
-              waterGrad.addColorStop(1, 'rgba(3,105,161,0.8)');
+              if (isDark) {
+                waterGrad.addColorStop(0, 'rgba(8,47,73,0.85)');
+                waterGrad.addColorStop(1, 'rgba(3,7,18,0.95)');
+              } else {
+                waterGrad.addColorStop(0, 'rgba(14,165,233,0.7)');
+                waterGrad.addColorStop(1, 'rgba(3,105,161,0.8)');
+              }
 
               ctx.fillStyle = waterGrad;
 
@@ -2189,7 +2684,7 @@ const d = labToolData.waterCycle;
 
               // Wave highlights
 
-              ctx.strokeStyle = 'rgba(186,230,253,0.3)';
+              ctx.strokeStyle = isDark ? 'rgba(34,211,238,0.4)' : 'rgba(186,230,253,0.3)';
 
               ctx.lineWidth = 1.5 * dpr;
 
@@ -2213,7 +2708,7 @@ const d = labToolData.waterCycle;
 
               // ── River from mountain (enhanced with rapids) ──
 
-              ctx.strokeStyle = 'rgba(59,130,246,0.5)';
+              ctx.strokeStyle = isDark ? 'rgba(6,182,212,0.6)' : 'rgba(59,130,246,0.5)';
 
               ctx.lineWidth = 4 * dpr;
 
@@ -2225,7 +2720,7 @@ const d = labToolData.waterCycle;
 
               ctx.stroke();
 
-              ctx.strokeStyle = 'rgba(186,230,253,0.3)';
+              ctx.strokeStyle = isDark ? 'rgba(165,243,252,0.5)' : 'rgba(186,230,253,0.3)';
 
               ctx.lineWidth = 2 * dpr;
 
@@ -2233,7 +2728,7 @@ const d = labToolData.waterCycle;
 
               // River ripple highlights
 
-              ctx.strokeStyle = 'rgba(186,230,253,0.2)'; ctx.lineWidth = 1 * dpr;
+              ctx.strokeStyle = isDark ? 'rgba(165,243,252,0.3)' : 'rgba(186,230,253,0.2)'; ctx.lineWidth = 1 * dpr;
 
               for (var rhi = 0; rhi < 5; rhi++) {
 
@@ -2622,26 +3117,45 @@ const d = labToolData.waterCycle;
               labels.forEach(function (lbl) {
 
                 var isActive = activeId === lbl.id;
+                ctx.save();
+                
+                var lblColor = lbl.color;
+                if (lbl.id === 'condensation' && isDark) {
+                  lblColor = '#cbd5e1';
+                }
 
-                ctx.font = (isActive ? 'bold ' : '') + ((isActive ? 8 : 7) * dpr) + 'px sans-serif';
+                ctx.font = (isActive ? 'bold ' : '') + ((isActive ? 8.5 : 7) * dpr) + 'px sans-serif';
 
-                ctx.fillStyle = isActive ? lbl.color : lbl.color + '80';
+                if (isActive) {
+                  ctx.fillStyle = lblColor;
+                  if (isDark) {
+                    ctx.shadowBlur = 8 * dpr;
+                    ctx.shadowColor = lblColor;
+                  }
+                } else {
+                  ctx.fillStyle = isDark ? (lbl.id === 'condensation' ? '#475569' : lblColor + '90') : lblColor + '80';
+                }
 
                 ctx.fillText(lbl.text, lbl.x * dpr, lbl.y * dpr);
 
                 if (isActive) {
+                  ctx.strokeStyle = lblColor;
+                  ctx.lineWidth = 1.5 * dpr;
+                  
+                  if (isDark) {
+                    ctx.shadowBlur = 10 * dpr;
+                    ctx.shadowColor = lblColor;
+                    ctx.setLineDash([]);
+                  } else {
+                    ctx.strokeStyle = lblColor + '60';
+                    ctx.setLineDash([4, 3]);
+                  }
 
-                  ctx.strokeStyle = lbl.color + '40';
-
-                  ctx.lineWidth = 1 * dpr;
-
-                  ctx.setLineDash([4, 3]);
-
-                  ctx.strokeRect((lbl.x - 2) * dpr, (lbl.y - 10) * dpr, ctx.measureText(lbl.text).width + 6 * dpr, 14 * dpr);
-
-                  ctx.setLineDash([]);
+                  ctx.strokeRect((lbl.x - 4) * dpr, (lbl.y - 11) * dpr, ctx.measureText(lbl.text).width + 8 * dpr, 15 * dpr);
 
                 }
+                
+                ctx.restore();
 
               });
 
@@ -2674,7 +3188,7 @@ const d = labToolData.waterCycle;
               }
 
 
-              // ═══ CLIMATE LAB — Dynamic Weather Effects ═══
+              // ═══ CLIMATE LAB  -  Dynamic Weather Effects ═══
               var climSolar = parseFloat(canvasEl.dataset.climSolar || '1.0');
               var climTemp = parseFloat(canvasEl.dataset.climTemp || '15');
               var climWind = parseFloat(canvasEl.dataset.climWind || '1.0');
@@ -2779,7 +3293,7 @@ const d = labToolData.waterCycle;
                 }
               }
 
-              // ── Rainbow (after rain when sun is out — solar > 0.7 and temp > 10) ──
+              // ── Rainbow (after rain when sun is out  -  solar > 0.7 and temp > 10) ──
               if (climSolar > 0.7 && climTemp > 10 && climTemp < 35) {
                 rainbow.alpha = Math.min(rainbow.alpha + 0.003, 0.25);
                 rainbow.visible = true;
@@ -2803,7 +3317,7 @@ const d = labToolData.waterCycle;
               var rainActivity = climTemp < 0 ? 0.3 : (climTemp > 25 ? 1.5 : 1.0);
 
 
-              // ═══ JOURNEY MODE — Draw droplet + update state ═══
+              // ═══ JOURNEY MODE  -  Draw droplet + update state ═══
               var jState = canvasEl.dataset.journeyState || 'idle';
               if (jState !== 'idle') {
                 journey.state = jState;
@@ -2840,7 +3354,7 @@ const d = labToolData.waterCycle;
                 if (jState === 'ground_choice') {
                   drawDroplet(0.34, 0.62, 'ocean', tick);
                   
-                  // Choice highlight zones — uses shared GROUND_CHOICES array
+                  // Choice highlight zones  -  uses shared GROUND_CHOICES array
                   var choices = GROUND_CHOICES;
                   for (var chi = 0; chi < choices.length; chi++) {
                     var ch = choices[chi];
@@ -2927,14 +3441,20 @@ const d = labToolData.waterCycle;
                 precipitating: 'precipitation', river_runoff: 'collection', infiltrating: 'infiltration',
                 aquifer_flow: 'infiltration', plant_absorb: 'transpiration', transpiring: 'transpiration' };
               if (stageMap[nextState]) canvasEl.dataset.activeStage = stageMap[nextState];
+              if (canvasEl._wcSyncReact) {
+                canvasEl._wcSyncReact(nextState);
+              }
             };
             canvasEl._onJourneyComplete = function(fromState) {
-              // Handled by React UI
+              if (canvasEl._wcSyncReact) {
+                canvasEl._wcSyncReact('complete');
+              }
             };
-            // Bridge canvas clicks to React state (called from click handler)
+            // Bridge canvas clicks and events to React state
             canvasEl._wcSyncReact = function(nextState, pathKey) {
               // Play state-specific water cycle sound
-              if (nextState && nextState.indexOf('evap') >= 0) sfxEvaporate();
+              if (nextState === 'complete') sfxWcCorrect();
+              else if (nextState && nextState.indexOf('evap') >= 0) sfxEvaporate();
               else if (nextState && nextState.indexOf('cloud') >= 0) sfxCondense();
               else if (nextState && (nextState.indexOf('rain') >= 0 || nextState.indexOf('precip') >= 0 || nextState.indexOf('snow') >= 0)) sfxRain();
               else if (nextState && (nextState.indexOf('river') >= 0 || nextState.indexOf('runoff') >= 0 || nextState.indexOf('stream') >= 0)) sfxStream();
@@ -2999,7 +3519,7 @@ const d = labToolData.waterCycle;
           }
 
           return React.createElement("div", {
-              className: "max-w-3xl mx-auto animate-in fade-in duration-200",
+              className: "max-w-3xl mx-auto animate-in fade-in duration-200 " + (isDark ? "text-slate-100" : "text-slate-800"),
               role: "region",
               "aria-label": "Water Cycle. Keyboard shortcuts: 1 through 6 select a stage, J toggles Journey mode, R U P choose your journey path.",
               tabIndex: 0,
@@ -3008,14 +3528,19 @@ const d = labToolData.waterCycle;
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3 flex-wrap" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { 
+                onClick: () => setStemLabTool(null), 
+                className: "p-1.5 rounded-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "hover:bg-slate-800 text-slate-350" : "hover:bg-slate-100 text-slate-600"), 
+                'aria-label': 'Back to tools' 
+              }, React.createElement(ArrowLeft, { size: 18, className: isDark ? "text-slate-350" : "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Water Cycle"),
+              React.createElement("h3", { className: "text-lg font-bold " + (isDark ? "text-slate-100" : "text-slate-800") }, "\uD83C\uDF0A Water Cycle"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "ANIMATED"),
+              React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-sky-950/50 text-sky-400 border border-sky-900/50" : "bg-sky-100 text-sky-700") }, "ANIMATED"),
 
-              React.createElement("button", { onClick: () => switchMode('steward'),
-                className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-sky-500 to-emerald-500 text-white hover:from-sky-600 hover:to-emerald-600 shadow-md",
+              React.createElement("button", { 
+                onClick: () => switchMode('steward'),
+                className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-sky-500 to-emerald-500 text-white hover:from-sky-600 hover:to-emerald-600 shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                 'aria-label': 'Switch to Watershed Steward 10-year campaign'
               }, "\uD83D\uDCA7 Watershed Steward \u2192")
 
@@ -3023,36 +3548,39 @@ const d = labToolData.waterCycle;
 
             // ═══ GRADE LEVEL SELECTOR ═══
             React.createElement("div", { className: "flex items-center gap-1.5 mb-3 flex-wrap" },
-              React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1" }, "\uD83C\uDF93 Grade:"),
+              React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-wider mr-1 " + (isDark ? "text-slate-400" : "text-slate-600") }, "\uD83C\uDF93 Grade:"),
               GRADE_BANDS.map(function(gb) {
-                return React.createElement("button", { key: gb,
+                return React.createElement("button", { 
+                  key: gb,
                   onClick: function() {
                     upd('wcGradeOverride', gb);
                     addToast('\uD83C\uDF93 Grade set to ' + gb + ' - content complexity updated!', 'success');
                   },
-                  className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400')
+                  className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : (isDark ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400'))
                 }, gb);
               }),
-              React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[11px] font-bold rounded-full border border-indigo-200" },
+              React.createElement("span", { className: "ml-auto px-2 py-0.5 text-[11px] font-bold rounded-full border " + (isDark ? "bg-indigo-950/40 text-indigo-400 border-indigo-900/50" : "bg-indigo-50 text-indigo-600 border-indigo-200") },
                 gradeBand === 'K-2' ? '\uD83E\uDDF8 Elementary' : gradeBand === '3-5' ? '\uD83D\uDCDA Upper Elementary' : gradeBand === '6-8' ? '\uD83E\uDD13 Middle School' : '\uD83C\uDF93 High School'
               )
             ),
 
             // ═══ CHALLENGES PROGRESS CARD ═══
-            React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 via-sky-50 to-blue-50 rounded-xl border border-sky-200 p-3 shadow-sm mb-3 flex flex-col gap-2" },
+            React.createElement("div", { 
+              className: "rounded-xl p-3 shadow-md mb-3 flex flex-col gap-2 border " + (isDark ? "bg-slate-950/60 border-slate-800/50 backdrop-blur-md" : "bg-gradient-to-br from-indigo-50 via-sky-50 to-blue-50 border-sky-200") 
+            },
               React.createElement("div", { className: "flex items-center justify-between" },
                 React.createElement("div", { className: "flex items-center gap-2" },
                   React.createElement("span", { style: { fontSize: "18px" } }, "⭐"),
-                  React.createElement("span", { className: "text-sm font-bold text-sky-700" }, (d.researchPoints || 0) + " RP")
+                  React.createElement("span", { className: "text-sm font-bold " + (isDark ? "text-sky-400" : "text-sky-700") }, (d.researchPoints || 0) + " RP")
                 ),
                 React.createElement("span", {
-                  className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-600"
+                  className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full " + (isDark ? "bg-sky-950/50 text-sky-400 border border-sky-900/40" : "bg-sky-100 text-sky-600")
                 }, (d.completedChallenges || []).length + "/" + WATER_CYCLE_CHALLENGES.length + " challenges")
               ),
-              React.createElement("div", { className: "w-full rounded-full h-2.5 bg-sky-100/50", style: { boxShadow: "inset 0 1px 2px rgba(0,0,0,0.1)" } },
+              React.createElement("div", { className: "w-full rounded-full h-2.5 " + (isDark ? "bg-slate-800/50" : "bg-sky-100/50"), style: { boxShadow: "inset 0 1px 2px rgba(0,0,0,0.1)" } },
                 React.createElement("div", {
                   className: "bg-gradient-to-r from-sky-400 to-indigo-500 h-2.5 rounded-full transition-all duration-500",
-                  style: { width: Math.min(100, ((d.completedChallenges || []).length / WATER_CYCLE_CHALLENGES.length) * 100) + "%", boxShadow: "0 0 8px rgba(14,165,233,0.3)" }
+                  style: { width: Math.min(100, ((d.completedChallenges || []).length / WATER_CYCLE_CHALLENGES.length) * 100) + "%", boxShadow: isDark ? "0 0 8px rgba(14,165,233,0.5)" : "0 0 8px rgba(14,165,233,0.3)" }
                 })
               ),
               React.createElement("div", { className: "flex flex-wrap gap-2 mt-2" },
@@ -3067,9 +3595,9 @@ const d = labToolData.waterCycle;
               )
             ),
 
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "420px" } },
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden shadow-lg mb-3 border-2 " + (isDark ? "border-slate-800/80" : "border-sky-300"), style: { height: "420px" } },
 
-              React.createElement("canvas", { ref: canvasRef, id: "wcCanvas", "data-active-stage": d.activeStage || 'evaporation', "data-clim-solar": String(d.climSolar != null ? d.climSolar : 1.0), "data-clim-temp": String(d.climTemp != null ? d.climTemp : 15), "data-clim-wind": String(d.climWind != null ? d.climWind : 1.0), style: { width: "100%", height: "100%", display: "block" } }),
+              React.createElement("canvas", { ref: canvasRef, id: "wcCanvas", "data-active-stage": d.activeStage || 'evaporation', "data-clim-solar": String(d.climSolar != null ? d.climSolar : 1.0), "data-clim-temp": String(d.climTemp != null ? d.climTemp : 15), "data-clim-wind": String(d.climWind != null ? d.climWind : 1.0), "data-dark-mode": String(isDark), style: { width: "100%", height: "100%", display: "block" } }),
 
               // Weather badge overlay
               (d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-1 bg-blue-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "\u2744\uFE0F SNOW"),
@@ -3078,55 +3606,57 @@ const d = labToolData.waterCycle;
 
             ),
 
-            // ═══ CLIMATE LAB — Interactive Controls ═══
-            React.createElement("div", { className: "bg-gradient-to-r from-amber-50 via-sky-50 to-emerald-50 rounded-xl border-2 border-amber-200 p-3 mb-3 shadow-md" },
+            // ═══ CLIMATE LAB  -  Interactive Controls ═══
+            React.createElement("div", { 
+              className: "rounded-xl p-3 mb-3 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-amber-900/40 backdrop-blur-md" : "bg-gradient-to-r from-amber-50 via-sky-50 to-emerald-50 border-amber-200") 
+            },
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-lg" }, "\uD83C\uDF21"),
-                React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "Climate Lab"),
-                React.createElement("span", { className: "px-2 py-0.5 bg-amber-200 text-amber-800 text-[11px] font-bold rounded-full" }, "INTERACTIVE")
+                React.createElement("h4", { className: "text-sm font-bold " + (isDark ? "text-amber-400" : "text-amber-800") }, "Climate Lab"),
+                React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-amber-950/50 text-amber-300 border border-amber-900/30" : "bg-amber-200 text-amber-800") }, "INTERACTIVE")
               ),
               React.createElement("div", { className: "grid grid-cols-3 gap-3" },
                 // Solar Intensity
                 React.createElement("div", { className: "space-y-1" },
-                  React.createElement("label", { className: "text-[11px] font-bold text-amber-700 flex items-center gap-1" }, "\u2600\uFE0F Solar: " + ((d.climSolar != null ? d.climSolar : 1.0) * 100).toFixed(0) + "%"),
+                  React.createElement("label", { className: "text-[11px] font-bold flex items-center gap-1 " + (isDark ? "text-amber-400" : "text-amber-700") }, "\u2600\uFE0F Solar: " + ((d.climSolar != null ? d.climSolar : 1.0) * 100).toFixed(0) + "%"),
                   React.createElement("input", {
                     type: "range", min: "0", max: "2", step: "0.05",
                     value: d.climSolar != null ? d.climSolar : 1.0,
                     onChange: function(e) { upd('climSolar', parseFloat(e.target.value)); var cv = document.getElementById('wcCanvas'); if(cv) cv.dataset.climSolar = e.target.value; },
-                    className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-indigo-300 via-amber-300 to-amber-500 cursor-pointer",
+                    className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-indigo-300 via-amber-300 to-amber-500 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#f59e0b' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[11px] text-amber-500" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] " + (isDark ? "text-amber-500/80" : "text-amber-500") },
                     React.createElement("span", null, "\uD83C\uDF19 Night"),
                     React.createElement("span", null, "\u2600\uFE0F Bright")
                   )
                 ),
                 // Temperature
                 React.createElement("div", { className: "space-y-1" },
-                  React.createElement("label", { className: "text-[11px] font-bold text-sky-700 flex items-center gap-1" }, "\uD83C\uDF21\uFE0F Temp: " + (d.climTemp != null ? d.climTemp : 15) + "\u00B0C"),
+                  React.createElement("label", { className: "text-[11px] font-bold flex items-center gap-1 " + (isDark ? "text-sky-400" : "text-sky-700") }, "\uD83C\uDF21\uFE0F Temp: " + (d.climTemp != null ? d.climTemp : 15) + "\u00B0C"),
                   React.createElement("input", {
                     type: "range", min: "-20", max: "45", step: "1",
                     value: d.climTemp != null ? d.climTemp : 15,
                     onChange: function(e) { upd('climTemp', parseFloat(e.target.value)); var cv = document.getElementById('wcCanvas'); if(cv) cv.dataset.climTemp = e.target.value; },
-                    className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-blue-400 via-emerald-300 to-red-400 cursor-pointer",
+                    className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-blue-400 via-emerald-300 to-red-400 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#0ea5e9' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[11px] text-sky-500" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] " + (isDark ? "text-sky-500/80" : "text-sky-500") },
                     React.createElement("span", null, "\u2744\uFE0F -20\u00B0"),
                     React.createElement("span", null, "\uD83D\uDD25 45\u00B0")
                   )
                 ),
                 // Wind Speed
                 React.createElement("div", { className: "space-y-1" },
-                  React.createElement("label", { className: "text-[11px] font-bold text-emerald-700 flex items-center gap-1" }, "\uD83C\uDF2C\uFE0F Wind: " + ((d.climWind != null ? d.climWind : 1.0)).toFixed(1) + "x"),
+                  React.createElement("label", { className: "text-[11px] font-bold flex items-center gap-1 " + (isDark ? "text-emerald-400" : "text-emerald-700") }, "\uD83C\uDF2C\uFE0F Wind: " + ((d.climWind != null ? d.climWind : 1.0)).toFixed(1) + "x"),
                   React.createElement("input", {
                     type: "range", min: "0", max: "3", step: "0.1",
                     value: d.climWind != null ? d.climWind : 1.0,
                     onChange: function(e) { upd('climWind', parseFloat(e.target.value)); var cv = document.getElementById('wcCanvas'); if(cv) cv.dataset.climWind = e.target.value; },
-                    className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-slate-200 to-emerald-400 cursor-pointer",
+                    className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-slate-200 to-emerald-400 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#22c55e' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[11px] text-emerald-500" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] " + (isDark ? "text-emerald-500/80" : "text-emerald-500") },
                     React.createElement("span", null, "Calm"),
                     React.createElement("span", null, "\uD83C\uDF2A Gale")
                   )
@@ -3134,12 +3664,12 @@ const d = labToolData.waterCycle;
               ),
               // Weather readout
               React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold" },
-                (d.climTemp != null && d.climTemp < 0) && React.createElement("span", { className: "px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded" }, "\u2744\uFE0F Snow active"),
-                (d.climTemp != null && d.climTemp > 30) && React.createElement("span", { className: "px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded" }, "\u26A1 Thunderstorm"),
-                (d.climSolar != null && d.climSolar > 0.7 && d.climTemp > 10 && d.climTemp < 35) && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded" }, "\uD83C\uDF08 Rainbow"),
-                (d.climSolar != null && d.climSolar < 0.3) && React.createElement("span", { className: "px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded" }, "\u2B50 Stars visible"),
-                (d.climTemp != null && d.climTemp > 2 && d.climTemp < 18) && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded" }, "\uD83C\uDF2B\uFE0F Fog"),
-                React.createElement("span", { className: "px-1.5 py-0.5 bg-sky-100 text-sky-600 rounded" },
+                (d.climTemp != null && d.climTemp < 0) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-blue-950/60 text-blue-300 border border-blue-900/50" : "bg-blue-100 text-blue-700") }, "\u2744\uFE0F Snow active"),
+                (d.climTemp != null && d.climTemp > 30) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-amber-950/60 text-amber-300 border border-amber-900/50" : "bg-amber-100 text-amber-700") }, "\u26A1 Thunderstorm"),
+                (d.climSolar != null && d.climSolar > 0.7 && d.climTemp > 10 && d.climTemp < 35) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-purple-950/60 text-purple-300 border border-purple-900/50" : "bg-purple-100 text-purple-700") }, "\uD83C\uDF08 Rainbow"),
+                (d.climSolar != null && d.climSolar < 0.3) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-indigo-950/60 text-indigo-300 border border-indigo-900/50" : "bg-indigo-100 text-indigo-700") }, "\u2B50 Stars visible"),
+                (d.climTemp != null && d.climTemp > 2 && d.climTemp < 18) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-slate-800/80 text-slate-350 border border-slate-700/60" : "bg-slate-100 text-slate-600") }, "\uD83C\uDF2B\uFE0F Fog"),
+                React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-sky-950/60 text-sky-300 border border-sky-900/50" : "bg-sky-100 text-sky-600") },
                   "\uD83D\uDCA7 Evap: " + (Math.max(0.2, Math.min(2, (d.climSolar != null ? d.climSolar : 1) * ((d.climTemp != null ? d.climTemp : 15) / 15))) * 100).toFixed(0) + "%"
                 )
               )
@@ -3164,20 +3694,22 @@ const d = labToolData.waterCycle;
                       }, { debounce: 500 });
                     }
                   },
-                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 " + (isActive ? 'text-white shadow-md' : 'border hover:opacity-80'),
-                  style: { backgroundColor: isActive ? stage.color : stage.color + '15', borderColor: stage.color, color: isActive ? 'white' : stage.color }
+                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isActive ? 'text-white shadow-md' : 'border hover:opacity-80'),
+                  style: { backgroundColor: isActive ? stage.color : (isDark ? stage.color + '25' : stage.color + '15'), borderColor: stage.color, color: isActive ? 'white' : stage.color }
                 },
                   React.createElement("span", { className: "inline-flex items-center justify-center w-4 h-4 rounded text-[9px] font-bold " + (isActive ? "bg-white/25 text-white" : "bg-white/60"), "aria-hidden": "true" }, shortcut),
                   React.createElement("span", null, stage.emoji + " " + stage.label));
               })
             ),
 
-            React.createElement("div", { className: "bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl border-2 border-cyan-300 p-4 mb-3 shadow-md" },
+            React.createElement("div", { 
+              className: "rounded-xl p-4 mb-3 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-cyan-900/40 backdrop-blur-md" : "bg-gradient-to-r from-cyan-50 to-sky-50 border-cyan-300") 
+            },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("div", { className: "flex items-center gap-2" },
                   React.createElement("span", { className: "text-xl" }, "\uD83D\uDCA7"),
-                  React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "Journey Mode"),
-                  React.createElement("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[11px] font-bold rounded-full" }, "PLAY AS WATER")
+                  React.createElement("h4", { className: "text-sm font-bold " + (isDark ? "text-cyan-400" : "text-cyan-800") }, "Journey Mode"),
+                  React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-cyan-950/50 text-cyan-300 border border-cyan-900/30" : "bg-cyan-200 text-cyan-800") }, "PLAY AS WATER")
                 ),
                 !d.journeyActive
                   ? React.createElement("button", { "aria-label": "Start Journey mode (shortcut: J)",
@@ -3191,7 +3723,7 @@ const d = labToolData.waterCycle;
                         if (typeof announceToSR === 'function') announceToSR('Journey started. You are now a water droplet in the ocean.');
                         addToast('\uD83D\uDCA7 You are now a water droplet in the ocean! Watch and learn as you travel through the water cycle.', 'info');
                       },
-                      className: "px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold rounded-xl hover:from-cyan-600 hover:to-blue-600 shadow-lg transition-all hover:scale-105"
+                      className: "px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold rounded-xl hover:from-cyan-600 hover:to-blue-600 shadow-lg transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                     }, "\uD83C\uDFAE Start Journey (J)")
                   : React.createElement("div", { className: "flex gap-1.5" },
                       React.createElement("button", { "aria-label": "End Journey mode (shortcut: J)",
@@ -3202,7 +3734,7 @@ const d = labToolData.waterCycle;
                           if (cv) { cv.dataset.journeyState = 'idle'; }
                           if (typeof announceToSR === 'function') announceToSR('Journey ended.');
                         },
-                        className: "px-3 py-1.5 bg-slate-600 text-white text-[11px] font-bold rounded-lg hover:bg-slate-500 transition-all"
+                        className: "px-3 py-1.5 bg-slate-600 text-white text-[11px] font-bold rounded-lg hover:bg-slate-500 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                       }, "\u23F9 End Journey (J)")
                     )
               ),
@@ -3211,20 +3743,23 @@ const d = labToolData.waterCycle;
                 role: "note",
                 style: {
                   padding: '8px 12px', borderRadius: 10,
-                  background: 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%)',
-                  borderTop: '1px solid rgba(14,165,233,0.5)', borderRight: '1px solid rgba(14,165,233,0.5)', borderBottom: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
-                  color: '#0c4a6e', fontSize: 12.5, lineHeight: 1.55
+                  background: isDark ? 'linear-gradient(135deg, rgba(14,165,233,0.1) 0%, rgba(14,165,233,0.02) 100%)' : 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%)',
+                  borderTop: isDark ? '1px solid rgba(14,165,233,0.3)' : '1px solid rgba(14,165,233,0.5)',
+                  borderRight: isDark ? '1px solid rgba(14,165,233,0.3)' : '1px solid rgba(14,165,233,0.5)',
+                  borderBottom: isDark ? '1px solid rgba(14,165,233,0.3)' : '1px solid rgba(14,165,233,0.5)',
+                  borderLeft: '3px solid #0ea5e9',
+                  color: isDark ? '#bae6fd' : '#0c4a6e', fontSize: 12.5, lineHeight: 1.55
                 }
               },
-                React.createElement("strong", { style: { color: '#0369a1' } }, "Goal: "),
+                React.createElement("strong", { style: { color: isDark ? '#38bdf8' : '#0369a1' } }, "Goal: "),
                 "ride one droplet from the ocean back to the ocean. You will start in the ocean, evaporate, drift into a cloud, fall as rain, then pick a path at the ground (river runoff, underground infiltration, or absorbed by a plant). Each path takes a different amount of time. Complete the loop to log a journey; 3 loops unlocks the Journey badge."
               ),
 
               // Journey status
               d.journeyActive && React.createElement("div", { className: "space-y-2" },
                 // Current state card
-                React.createElement("div", { className: "bg-white rounded-lg p-3 border border-cyan-100" },
-                  React.createElement("p", { className: "text-xs font-bold text-cyan-700 mb-1" },
+                React.createElement("div", { className: "rounded-lg p-3 border " + (isDark ? "bg-slate-900/60 border-cyan-950/50 text-slate-350" : "bg-white border-cyan-100 text-slate-800") },
+                  React.createElement("p", { className: "text-xs font-bold mb-1 " + (isDark ? "text-cyan-400" : "text-cyan-700") },
                     (d.journeyState === 'ground_choice') ? "\uD83E\uDEA8 Choose your path! Click one of the 3 glowing zones on the canvas:" : 
                     (d.journeyState === 'complete') ? "\u2705 You completed the water cycle! +25 XP" :
                     "\uD83D\uDCA7 Current: " + (d.journeyState || 'ocean').replace(/_/g, ' ')
@@ -3238,11 +3773,11 @@ const d = labToolData.waterCycle;
                         if (cv) { cv.dataset.journeyState = 'river_runoff'; if (cv._onJourneyTransition) cv._onJourneyTransition('river_runoff'); }
                         if (typeof announceToSR === 'function') announceToSR('Path chosen: River Runoff.');
                       },
-                      className: "p-2 rounded-lg text-center bg-blue-50 border-2 border-blue-600 hover:bg-blue-100 transition-all hover:scale-105"
+                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-blue-950/40 border-blue-800 hover:bg-blue-900/40 text-blue-300" : "bg-blue-50 border-blue-600 hover:bg-blue-100 text-blue-700")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
-                      React.createElement("p", { className: "text-[11px] font-bold text-blue-700" }, "River Runoff (R)"),
-                      React.createElement("p", { className: "text-[11px] text-blue-500" }, "Fast path!")
+                      React.createElement("p", { className: "text-[11px] font-bold" }, "River Runoff (R)"),
+                      React.createElement("p", { className: "text-[11px] opacity-70" }, "Fast path!")
                     ),
                     React.createElement("button", { "aria-label": "Choose Underground infiltration path (shortcut: U)",
                       onClick: function() {
@@ -3252,11 +3787,11 @@ const d = labToolData.waterCycle;
                         if (cv) { cv.dataset.journeyState = 'infiltrating'; if (cv._onJourneyTransition) cv._onJourneyTransition('infiltrating'); }
                         if (typeof announceToSR === 'function') announceToSR('Path chosen: Underground infiltration.');
                       },
-                      className: "p-2 rounded-lg text-center bg-amber-50 border-2 border-amber-600 hover:bg-amber-100 transition-all hover:scale-105"
+                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-amber-950/40 border-amber-800 hover:bg-amber-900/40 text-amber-300" : "bg-amber-50 border-amber-600 hover:bg-amber-100 text-amber-700")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
-                      React.createElement("p", { className: "text-[11px] font-bold text-amber-700" }, "Underground (U)"),
-                      React.createElement("p", { className: "text-[11px] text-amber-500" }, "Slow + deep")
+                      React.createElement("p", { className: "text-[11px] font-bold" }, "Underground (U)"),
+                      React.createElement("p", { className: "text-[11px] opacity-70" }, "Slow + deep")
                     ),
                     React.createElement("button", { "aria-label": "Choose Plant absorption path (shortcut: P)",
                       onClick: function() {
@@ -3266,11 +3801,11 @@ const d = labToolData.waterCycle;
                         if (cv) { cv.dataset.journeyState = 'plant_absorb'; if (cv._onJourneyTransition) cv._onJourneyTransition('plant_absorb'); }
                         if (typeof announceToSR === 'function') announceToSR('Path chosen: Plant absorption.');
                       },
-                      className: "p-2 rounded-lg text-center bg-emerald-50 border-2 border-emerald-600 hover:bg-emerald-100 transition-all hover:scale-105"
+                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-emerald-950/40 border-emerald-800 hover:bg-emerald-900/40 text-emerald-300" : "bg-emerald-50 border-emerald-600 hover:bg-emerald-100 text-emerald-700")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
-                      React.createElement("p", { className: "text-[11px] font-bold text-emerald-700" }, "Enter Plant (P)"),
-                      React.createElement("p", { className: "text-[11px] text-emerald-500" }, "Transpiration!")
+                      React.createElement("p", { className: "text-[11px] font-bold" }, "Enter Plant (P)"),
+                      React.createElement("p", { className: "text-[11px] opacity-70" }, "Transpiration!")
                     )
                   ),
                   d.journeyState === 'complete' && React.createElement("button", { "aria-label": "Start Another Loop",
@@ -3281,26 +3816,31 @@ const d = labToolData.waterCycle;
                       if (cv) { cv.dataset.journeyState = 'ocean'; }
                       awardStemXP('waterCycle', 25, 'Water Cycle journey loop');
                       stemCelebrate();
+                      if (typeof announceToSR === 'function') {
+                        announceToSR('Starting loop ' + ((d.journeyLoops || 0) + 2) + '. You are now a water droplet in the ocean.');
+                      }
                       addToast('\uD83C\uDF89 Cycle complete! +25 XP. Starting new loop...', 'success');
                     },
-                    className: "mt-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-xs font-bold rounded-xl hover:from-emerald-600 hover:to-cyan-600 shadow-md transition-all"
+                    className: "mt-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-xs font-bold rounded-xl hover:from-emerald-600 hover:to-cyan-600 shadow-md transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                   }, "\uD83D\uDD04 Start Another Loop")
                 ),
 
                 // Stats bar
                 (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex gap-3 text-[11px] font-bold" },
-                  React.createElement("span", { className: "text-cyan-600" }, "\uD83D\uDD04 Loops: " + (d.journeyLoops || 0)),
-                  React.createElement("span", { className: "text-blue-600" }, "\uD83C\uDF0A Runoff: " + ((d.journeyPaths && d.journeyPaths.runoff) || 0)),
-                  React.createElement("span", { className: "text-amber-600" }, "\uD83E\uDEB4 Underground: " + ((d.journeyPaths && d.journeyPaths.infiltrate) || 0)),
-                  React.createElement("span", { className: "text-emerald-600" }, "\uD83C\uDF3F Plant: " + ((d.journeyPaths && d.journeyPaths.plant) || 0))
+                  React.createElement("span", { className: "text-cyan-650 text-cyan-400" }, "\uD83D\uDD04 Loops: " + (d.journeyLoops || 0)),
+                  React.createElement("span", { className: "text-blue-500 text-blue-400" }, "\uD83C\uDF0A Runoff: " + ((d.journeyPaths && d.journeyPaths.runoff) || 0)),
+                  React.createElement("span", { className: "text-amber-500 text-amber-400" }, "\uD83E\uDEB4 Underground: " + ((d.journeyPaths && d.journeyPaths.infiltrate) || 0)),
+                  React.createElement("span", { className: "text-emerald-500 text-emerald-400" }, "\uD83C\uDF3F Plant: " + ((d.journeyPaths && d.journeyPaths.plant) || 0))
                 )
               ),
 
               // Inactive description
-              !d.journeyActive && React.createElement("p", { className: "text-[11px] text-cyan-600 mt-1" }, "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation.")
+              !d.journeyActive && React.createElement("p", { className: "text-[11px] text-cyan-500 mt-1" }, "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation.")
             ),
 
-            sel && React.createElement("div", { className: "bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-4 border border-sky-200 mb-3" },
+            sel && React.createElement("div", { 
+              className: "rounded-xl p-4 border mb-3 " + (isDark ? "bg-gradient-to-r from-sky-950/20 via-slate-900/60 to-blue-950/20 border-sky-900/50 backdrop-blur-md" : "bg-gradient-to-r from-sky-50 to-blue-50 border-sky-200") 
+            },
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
@@ -3310,23 +3850,23 @@ const d = labToolData.waterCycle;
 
               ),
 
-              React.createElement("p", { className: "text-sm text-slate-600 leading-relaxed mb-2" }, selDesc),
+              React.createElement("p", { className: "text-sm leading-relaxed mb-2 " + (isDark ? "text-slate-300" : "text-slate-600") }, selDesc),
 
-              selFunFact && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" },
+              selFunFact && React.createElement("div", { className: "rounded-lg p-2 border " + (isDark ? "bg-amber-950/40 border-amber-900/50 text-amber-300" : "bg-amber-50 border-amber-200 text-amber-700") },
 
-                React.createElement("p", { className: "text-[11px] text-amber-700" }, "\uD83D\uDCA1 " + selFunFact)
+                React.createElement("p", { className: "text-[11px]" }, "\uD83D\uDCA1 " + selFunFact)
 
               )
 
             ),
 
             // ═══ AI HYDROLOGIST TUTOR PANEL ═══
-            React.createElement("div", { className: "bg-white rounded-xl border border-sky-200 p-3 mb-3 shadow-sm" },
-              React.createElement("p", { className: "text-xs font-black text-slate-700 mb-1 flex items-center gap-1.5" },
+            React.createElement("div", { className: "rounded-xl p-3 mb-3 border " + (isDark ? "bg-slate-950/60 border-slate-800/50 backdrop-blur-md" : "bg-white border-sky-200 shadow-sm") },
+              React.createElement("p", { className: "text-xs font-black mb-1 flex items-center gap-1.5 " + (isDark ? "text-slate-200" : "text-slate-700") },
                 React.createElement("span", null, "🧠"),
                 React.createElement("span", null, "Ask the AI Hydrologist Tutor")
               ),
-              React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" },
+              React.createElement("p", { className: "text-[10px] mb-2 " + (isDark ? "text-slate-400" : "text-slate-500") },
                 "Ask questions about the " + (sel ? sel.label : 'water cycle') + " stage, climate feedbacks, or global hydrology."
               ),
               React.createElement("div", { className: "flex gap-2" },
@@ -3336,26 +3876,26 @@ const d = labToolData.waterCycle;
                   value: d.hydrologistQuery || '',
                   onChange: function(e) { upd("hydrologistQuery", e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter') askHydrologist(); },
-                  className: "flex-1 px-3 py-1.5 text-xs border rounded-lg focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none"
+                  className: "flex-1 px-3 py-1.5 text-xs border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-900 border-slate-800 text-slate-100 focus:border-yellow-500" : "bg-white border-slate-300 text-slate-900 focus:border-yellow-500")
                 }),
                 React.createElement("button", {
                   disabled: d.hydrologistLoading,
                   onClick: askHydrologist,
-                  className: "px-3 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 transition-all disabled:opacity-50"
+                  className: "px-3 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 transition-all disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                 }, d.hydrologistLoading ? "Thinking..." : "Ask")
               ),
-              d.hydrologistReply && React.createElement("div", { className: "mt-2 p-2.5 bg-sky-50 border border-sky-100 rounded-lg animate-in slide-in-from-top-1" },
-                React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed font-medium" }, d.hydrologistReply)
+              d.hydrologistReply && React.createElement("div", { className: "mt-2 p-2.5 rounded-lg border animate-in slide-in-from-top-1 " + (isDark ? "bg-sky-950/40 border-sky-900/50 text-slate-200" : "bg-sky-50 border-sky-100 text-slate-700") },
+                React.createElement("p", { className: "text-xs leading-relaxed font-medium" }, d.hydrologistReply)
               ),
               d.hydrologistError && React.createElement("p", { className: "text-xs text-red-500 mt-2 font-bold" }, d.hydrologistError)
             ),
 
-            // ═══ WATER BUDGET — Live Data Panel ═══
-            React.createElement("div", { className: "bg-gradient-to-r from-slate-50 to-sky-50 rounded-xl p-3 border border-slate-400 mb-3 shadow-sm" },
+            // ═══ WATER BUDGET  -  Live Data Panel ═══
+            React.createElement("div", { className: "rounded-xl p-3 mb-3 border " + (isDark ? "bg-slate-950/60 border-slate-800/50 backdrop-blur-md" : "bg-gradient-to-r from-slate-50 to-sky-50 border-slate-400 shadow-sm") },
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-base" }, "\uD83D\uDCCA"),
-                React.createElement("h4", { className: "text-xs font-bold text-slate-700" }, "Water Budget (Live)"),
-                React.createElement("span", { className: "px-1.5 py-0.5 bg-sky-100 text-sky-600 text-[11px] font-bold rounded-full" }, "REAL-TIME")
+                React.createElement("h4", { className: "text-xs font-bold " + (isDark ? "text-slate-200" : "text-slate-700") }, "Water Budget (Live)"),
+                React.createElement("span", { className: "px-1.5 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-sky-950/60 text-sky-400 border border-sky-900/40" : "bg-sky-100 text-sky-600") }, "REAL-TIME")
               ),
               (function() {
                 var s2 = d.climSolar != null ? d.climSolar : 1.0;
@@ -3366,21 +3906,21 @@ const d = labToolData.waterCycle;
                 var runoffPct = Math.min(95, Math.max(5, 30 + (t3 > 0 ? t3 * 0.8 : 0) + w2 * 8));
                 var gwRecharge = Math.max(2, 100 - runoffPct - evapRate * 15);
                 return React.createElement("div", { className: "grid grid-cols-4 gap-2" },
-                  React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-amber-100" },
-                    React.createElement("p", { className: "text-lg font-bold text-amber-600" }, (evapRate * 100).toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[11px] font-bold text-amber-500" }, "Evaporation")
+                  React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-amber-950/50" : "bg-white border-amber-100") },
+                    React.createElement("p", { className: "text-lg font-bold text-amber-500" }, (evapRate * 100).toFixed(0) + "%"),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-amber-600" : "text-amber-500") }, "Evaporation")
                   ),
-                  React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-blue-100" },
-                    React.createElement("p", { className: "text-sm font-bold text-blue-600" }, precipType),
-                    React.createElement("p", { className: "text-[11px] font-bold text-blue-500" }, "Precip Type")
+                  React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-blue-950/50" : "bg-white border-blue-100") },
+                    React.createElement("p", { className: "text-sm font-bold text-blue-500" }, precipType),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-blue-600" : "text-blue-500") }, "Precip Type")
                   ),
-                  React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-cyan-100" },
-                    React.createElement("p", { className: "text-lg font-bold text-cyan-600" }, runoffPct.toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-500" }, "Runoff")
+                  React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-cyan-950/50" : "bg-white border-cyan-100") },
+                    React.createElement("p", { className: "text-lg font-bold text-cyan-500" }, runoffPct.toFixed(0) + "%"),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-cyan-600" : "text-cyan-500") }, "Runoff")
                   ),
-                  React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-emerald-100" },
-                    React.createElement("p", { className: "text-lg font-bold text-emerald-600" }, gwRecharge.toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[11px] font-bold text-emerald-500" }, "GW Recharge")
+                  React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-emerald-950/50" : "bg-white border-emerald-100") },
+                    React.createElement("p", { className: "text-lg font-bold text-emerald-500" }, gwRecharge.toFixed(0) + "%"),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-emerald-600" : "text-emerald-500") }, "GW Recharge")
                   )
                 );
               })()
@@ -3401,7 +3941,7 @@ const d = labToolData.waterCycle;
                     concept: q.concept,
                     wrongFeedback: q.wrongFeedback
                   });
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.wcQuiz ? 'bg-sky-100 text-sky-700' : 'bg-sky-600 text-white') + " transition-all"
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (d.wcQuiz ? (isDark ? 'bg-slate-800 text-sky-400 border border-slate-700' : 'bg-sky-100 text-sky-700') : 'bg-sky-600 text-white')
               }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz (" + gradeBand + ")"),
 
               // ═══ AI GENERATED QUIZ BUTTON ═══
@@ -3460,7 +4000,7 @@ const d = labToolData.waterCycle;
                   });
                 },
                 disabled: d.aiQuizLoading,
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiQuizLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (d.aiQuizLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md')
               }, d.aiQuizLoading ? '\u23F3 Generating...' : '\u2728 AI Question'),
 
               d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
@@ -3468,9 +4008,9 @@ const d = labToolData.waterCycle;
               (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
               (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
 
-              d.wcQuiz && React.createElement("div", { className: "mt-2 bg-gradient-to-br from-sky-50 to-indigo-50 rounded-xl p-3 border border-sky-200 shadow-sm" },
+              d.wcQuiz && React.createElement("div", { className: "mt-2 rounded-xl p-3 border shadow-sm " + (isDark ? "bg-slate-950/60 border-sky-900/40 backdrop-blur-md" : "bg-gradient-to-br from-sky-50 to-indigo-50 border-sky-200") },
 
-                React.createElement("p", { className: "text-sm font-bold text-sky-800 mb-2" }, d.wcQuiz.q),
+                React.createElement("p", { className: "text-sm font-bold mb-2 " + (isDark ? "text-sky-400" : "text-sky-800") }, d.wcQuiz.q),
 
                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
@@ -3480,7 +4020,15 @@ const d = labToolData.waterCycle;
 
                     var wasChosen = d.wcQuiz.chosen === opt;
 
-                    var cls = !d.wcQuiz.answered ? 'bg-white border-slate-200 hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm' : isCorrect ? 'bg-emerald-100 border-emerald-400 shadow-sm' : wasChosen ? 'bg-red-100 border-red-400' : 'bg-slate-50 border-slate-200 opacity-40';
+                    var cls = !d.wcQuiz.answered
+                      ? (isDark
+                         ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-sky-550 hover:bg-sky-950/40 hover:shadow-sm'
+                         : 'bg-white border-slate-200 hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm text-slate-800')
+                      : isCorrect
+                        ? (isDark ? 'bg-emerald-950/60 border-emerald-800 text-emerald-400 shadow-sm' : 'bg-emerald-100 border-emerald-400 shadow-sm text-emerald-900')
+                        : wasChosen
+                          ? (isDark ? 'bg-red-950/60 border-red-800 text-red-400' : 'bg-red-100 border-red-400 text-red-900')
+                          : (isDark ? 'bg-slate-950/40 border-slate-900 opacity-40 text-slate-500' : 'bg-slate-50 border-slate-200 opacity-40 text-slate-550');
 
                     return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
@@ -3520,7 +4068,7 @@ const d = labToolData.waterCycle;
                         });
                         setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
 
-                      }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all cursor-pointer " + cls
+                      }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none " + cls
 
                     }, opt);
 
@@ -3531,10 +4079,12 @@ const d = labToolData.waterCycle;
                 // Inline wrong-option explanations and vocabulary study cards
                 d.wcQuiz.answered && React.createElement("div", { className: "mt-3 space-y-2 animate-in fade-in" },
                   React.createElement("div", {
-                    className: "p-3 rounded-lg text-sm " + (d.wcQuiz.chosen === d.wcQuiz.a ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-600 border border-red-200")
+                    className: "p-3 rounded-lg text-sm " + (isDark
+                      ? (d.wcQuiz.chosen === d.wcQuiz.a ? "bg-emerald-950/40 text-emerald-400 border border-emerald-900/50" : "bg-red-950/40 text-red-400 border border-red-900/50")
+                      : (d.wcQuiz.chosen === d.wcQuiz.a ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-600 border border-red-200"))
                   },
                     React.createElement("p", { className: "font-black text-xs" }, d.wcQuiz.chosen === d.wcQuiz.a ? "✅ Correct answer!" : "❌ Incorrect answer"),
-                    React.createElement("p", { className: "text-xs mt-1 leading-relaxed text-slate-700 font-medium" },
+                    React.createElement("p", { className: "text-xs mt-1 leading-relaxed font-medium " + (isDark ? "text-slate-350" : "text-slate-700") },
                       d.wcQuiz.chosen === d.wcQuiz.a
                         ? "Great job! That is correct."
                         : (d.wcQuiz.wrongFeedback && d.wcQuiz.wrongFeedback[d.wcQuiz.chosen])
@@ -3548,16 +4098,16 @@ const d = labToolData.waterCycle;
                     var concept = d.wcQuiz.concept;
                     var definition = WATER_CYCLE_VOCAB[concept];
                     var studied = (d.vocabWordsStudied || []).indexOf(concept) !== -1;
-                    return React.createElement("div", { className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in" },
+                    return React.createElement("div", { className: "p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in " + (isDark ? "bg-indigo-950/40 border border-indigo-900/50" : "bg-indigo-50 border border-indigo-200") },
                       React.createElement("div", { className: "flex-1" },
-                        React.createElement("p", { className: "text-xs font-bold text-indigo-800" }, "🔍 Concept Focus: " + concept),
-                        React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5 leading-relaxed font-medium" }, definition)
+                        React.createElement("p", { className: "text-xs font-bold " + (isDark ? "text-indigo-400" : "text-indigo-800") }, "🔍 Concept Focus: " + concept),
+                        React.createElement("p", { className: "text-[11px] mt-0.5 leading-relaxed font-medium " + (isDark ? "text-slate-350" : "text-slate-600") }, definition)
                       ),
                       !studied && React.createElement("button", {
                         onClick: function() {
                           studyVocab(concept);
                         },
-                        className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105"
+                        className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                       }, "📖 Study Term (+5 RP)")
                     );
                   })()
@@ -3567,7 +4117,7 @@ const d = labToolData.waterCycle;
 
             ),
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none" }, "\uD83D\uDCF8 Snapshot")
 
           );
       })();

@@ -5554,7 +5554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           },
             hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 } },
               hh('div', { style: { fontSize: 14, fontWeight: 800, color: '#67e8f9' } }, '🃏 ' + deckName),
-              deckName !== 'Default' ? hh('span', { onClick: function(e) { e.stopPropagation(); removeDeck(deckName); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕') : null
+              deckName !== 'Default' ? hh('span', { role: 'button', tabIndex: 0, 'aria-label': 'Delete deck ' + deckName, onClick: function(e) { e.stopPropagation(); removeDeck(deckName); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); removeDeck(deckName); } }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕') : null
             ),
             hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, dCards.length + ' card' + (dCards.length !== 1 ? 's' : '')),
             hh('div', { style: { marginTop: 8, padding: '6px 10px', borderRadius: 6, background: dDue.length > 0 ? 'rgba(6,182,212,0.20)' : 'rgba(100,116,139,0.10)', color: dDue.length > 0 ? '#06b6d4' : '#64748b', fontSize: 10, fontWeight: 800, textAlign: 'center' } },
