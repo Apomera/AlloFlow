@@ -1147,7 +1147,7 @@ window.QUANTITY_DISCRIMINATION_PROBES = null;
 window.NWF_PROBE_BANKS = null;
 window.LNF_PROBE_BANKS = null;
 window.RAN_PROBE_BANKS = null;
-const loadPsychometricProbes = async () => {
+const loadProbeBanks = async () => {
     loadWordAudioBank(); // Background fetch word audio when probes launch
     if (window.BENCHMARK_PROBE_BANKS && window.ORF_SCREENING_PASSAGES && window.MATH_PROBE_BANKS && window.MISSING_NUMBER_PROBES && window.QUANTITY_DISCRIMINATION_PROBES && window.NWF_PROBE_BANKS && window.LNF_PROBE_BANKS && window.RAN_PROBE_BANKS) return;
     try {
@@ -4337,7 +4337,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'a2cd9dd5';
+    var pluginCdnVersion = 'b9a8aab5';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -26314,7 +26314,7 @@ ${_toolList}
               mathFluencyInputRef={mathFluencyInputRef}
               startMathFluencyProbe={startMathFluencyProbe}
               finishMathFluencyProbe={finishMathFluencyProbe}
-              loadPsychometricProbes={loadPsychometricProbes}
+              loadProbeBanks={loadProbeBanks}
               surveyResponses={surveyResponses}
               setSurveyResponses={setSurveyResponses}
               fidelityLog={fidelityLog}
