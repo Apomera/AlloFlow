@@ -4337,7 +4337,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '00a565e0';
+    var pluginCdnVersion = '48f83d0b';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -4494,6 +4494,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js');
     loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js');
     loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js');
+    // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
+    // don't pay the cost at boot. Report Writer's generateReport() calls
+    // window.__alloLazyPyodide() as soon as the user clicks Generate.
+    window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
     window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js'); }; })();
     window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
