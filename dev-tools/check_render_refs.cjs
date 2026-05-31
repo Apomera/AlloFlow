@@ -119,14 +119,23 @@ function scanFile(file) {
 
 let targets;
 if (fileArgs.length) targets = fileArgs.map(f => path.isAbsolute(f) ? f : path.join(ROOT, f));
-else targets = fs.readdirSync(ROOT).filter(f => /_module\.js$/.test(f) && !f.startsWith('_')).map(f => path.join(ROOT, f)); // skip _build_* intermediates
+else {
+  // Default coverage: every directly-maintained CDN JS module — root *_module.js
+  // plus the STEM Lab + SEL Hub tools. Excludes _build_* intermediates.
+  targets = fs.readdirSync(ROOT).filter(f => /_module\.js$/.test(f) && !f.startsWith('_')).map(f => path.join(ROOT, f));
+  for (const sub of ['stem_lab', 'sel_hub']) {
+    const dir = path.join(ROOT, sub);
+    if (fs.existsSync(dir)) targets = targets.concat(
+      fs.readdirSync(dir).filter(f => f.endsWith('.js') && !f.startsWith('_')).map(f => path.join(dir, f)));
+  }
+}
 
 let totalErrors = 0, totalWarns = 0, parseErrors = 0;
 for (const file of targets) {
   if (!fs.existsSync(file)) { console.error(`  (missing: ${path.relative(ROOT, file)})`); continue; }
   const r = scanFile(file);
   const rel = path.relative(ROOT, file);
-  if (r.parseError) { parseErrors++; if (!QUIET) console.log(`  ⚠ parse-skip ${rel}: ${r.parseError.split('\n')[0]}`); continue; }
+  if (r.parseError) { parseErrors++; console.log(`\n❌ ${rel}: does NOT parse — ${r.parseError.split('\n')[0]} (module won't load)`); continue; }
   totalErrors += r.errors.length; totalWarns += r.warns.length;
   if (r.errors.length && !QUIET) {
     console.log(`\n❌ ${rel}`);
@@ -138,9 +147,11 @@ for (const file of targets) {
   }
 }
 
-if (totalErrors > 0) {
-  console.log(`\n❌ check_render_refs: ${totalErrors} render-crash candidate(s) in hook dependency arrays. Fix before deploy.`);
+if (totalErrors > 0 || parseErrors > 0) {
+  if (totalErrors) console.log(`\n❌ ${totalErrors} render-crash candidate(s) in hook dependency arrays.`);
+  if (parseErrors) console.log(`❌ ${parseErrors} module(s) fail to parse (won't load).`);
+  console.log('check_render_refs: fix before deploy (bypass: SKIP_RENDER_CHECK=1).');
   process.exit(1);
 }
-console.log(`✓ check_render_refs: no dep-array free vars across ${targets.length} module(s)` + (totalWarns ? ` (${totalWarns} useMemo-body advisories — run --verbose)` : '') + (parseErrors ? ` (${parseErrors} parse-skipped)` : ''));
+console.log(`✓ check_render_refs: ${targets.length} module(s) parse + no dep-array free vars` + (totalWarns ? ` (${totalWarns} useMemo-body advisories — run --verbose)` : '') + '.');
 process.exit(0);
