@@ -2370,7 +2370,21 @@ Return ONLY valid JSON:
                                     h('p', { className: 'font-medium text-slate-800 break-words' }, r.claim),
                                     h('p', { className: 'text-slate-600 mt-0.5' }, r.explanation || ''),
                                     r.confidence && h('span', { className: 'inline-block mt-0.5 text-[11px] px-1.5 py-0.5 rounded-full ' + (r.confidence === 'high' ? 'bg-green-100 text-green-700' : r.confidence === 'needs-review' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600') }, r.confidence === 'high' ? 'High Confidence' : r.confidence === 'needs-review' ? 'Needs Review' : 'Medium'),
-                                    r.auditSource && r.auditSource.startsWith('dual') && h('span', { className: 'inline-block mt-0.5 ms-1 text-[11px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-600' }, 'Dual-Pass')
+                                    // Phase 4: Provenance chip — distinguishes Python (deterministic) from
+                                    // LLM-A/B (semantic). Tells the clinician at-a-glance how the finding was reached.
+                                    (function() {
+                                        const src = r.auditSource || '';
+                                        const chip = (label, cls, title) => h('span', { title, className: 'inline-block mt-0.5 ms-1 text-[11px] px-1.5 py-0.5 rounded-full ' + cls }, label);
+                                        if (src === 'python')                   return chip('🐍 Python',      'bg-fuchsia-100 text-fuchsia-700', 'Deterministic check — score classification, math, or fact-chunk lookup');
+                                        if (src === 'self-healed')              return chip('✨ Self-healed', 'bg-emerald-100 text-emerald-700', 'Was flagged as a contradiction; fixed by an automated regeneration pass');
+                                        if (src === 'dual-pass-agree')          return chip('🤝 Dual-Pass',   'bg-indigo-100 text-indigo-700',   'Both LLM audit passes (Claim Verifier + Contradiction Hunter) agreed');
+                                        if (src === 'dual-pass-disagree')       return chip('⚠️ LLM Conflict', 'bg-rose-100 text-rose-700', 'The two LLM audit passes disagreed — review carefully');
+                                        if (src === 'dual-pass-minor-disagree') return chip('~ Minor diff',   'bg-amber-100 text-amber-700',     'Minor disagreement between LLM passes');
+                                        if (src === 'single-pass')              return chip('🔍 Pass A',      'bg-slate-100 text-slate-600',     'Seen only by the Claim Verifier pass');
+                                        if (src === 'pass-b-only')              return chip('🔍 Pass B',      'bg-slate-100 text-slate-600',     'Seen only by the Contradiction Hunter pass');
+                                        if (src === 'post-fix-verification')    return chip('🔁 Re-checked',  'bg-sky-100 text-sky-700',         'Re-verified after self-heal regeneration');
+                                        return null;
+                                    })()
                                 )
                             )
                         )

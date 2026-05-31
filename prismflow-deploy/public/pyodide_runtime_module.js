@@ -761,6 +761,136 @@ def check_citations(text, fact_chunks):
     return findings
 
 
+# ─── Check: SMART goal heuristic ────────────────────────────────────────
+#
+# Phase 4b. Opt-in: only runs on sections whose name matches a "goals" /
+# "objectives" / "recommendations" heuristic. False-positive cost is high
+# here — flagging a paragraph that's NOT meant to be an IEP goal as "missing
+# components" annoys the clinician. So:
+#   • We only look at sentences that look LIKE a goal: starts with "By [time],"
+#     or "[Student] / Student / he / she will" — i.e., the canonical SMART
+#     opening.
+#   • We score Specific / Measurable / Time-bound only. Achievable and Relevant
+#     aren't programmatically checkable without external context.
+#   • Findings are severity:medium (advisory) — never high. The clinician is
+#     the final judge.
+
+# A sentence is a goal candidate if it has [Student]/student + will + an
+# action verb. We're generous with what counts as a "goal sentence".
+GOAL_SENTENCE_PAT = re.compile(
+    r"(?:^|[.!?]\s+|\n+\s*[-•\*]?\s*)"             # sentence/list-item boundary
+    r"((?:[Bb]y\s+[^.,;]{4,80}?,\s+)?"             # optional "By [time],"
+    r"(?:\[Student\]|[Tt]he\s+student|[Ss]tudent|[Hh]e|[Ss]he|[Tt]hey)\s+"  # subject
+    r"will\s+"                                      # auxiliary
+    r"[^.!?]{8,400})"                              # rest of goal (8-400 chars)
+    r"(?=[.!?]|$)"                                  # ends at sentence boundary
+)
+
+# Specific: action verb after "will". Generous list — anything in this set
+# counts as specific enough to not flag.
+SPECIFIC_VERBS = {
+    "identify", "demonstrate", "produce", "write", "read", "decode", "encode",
+    "blend", "segment", "solve", "compute", "calculate", "explain", "describe",
+    "compare", "contrast", "summarize", "predict", "use", "apply", "select",
+    "complete", "construct", "draw", "label", "match", "sort", "classify",
+    "respond", "follow", "initiate", "request", "name", "list", "recall",
+    "recognize", "decode", "encode", "increase", "decrease", "maintain",
+    "spell", "pronounce", "argue", "discuss", "evaluate", "analyze",
+    "ask", "answer", "indicate", "show", "express", "share", "participate",
+    "transition", "regulate", "manage", "track", "monitor", "graph",
+    "raise", "wait", "take", "give", "share", "engage", "complete",
+}
+
+# Measurable: numeric criterion like "80% accuracy", "4 of 5 trials",
+# "WPM > 100", "≥ 90% over 4 consecutive sessions".
+MEASURABLE_PAT = re.compile(
+    r"\b\d{1,3}\s*%"                                # 80%, 90 %
+    r"|"
+    r"\b\d{1,3}\s*(?:percent|out\s+of|/)\s*\d{0,3}" # 8 out of 10, 4/5
+    r"|"
+    r"\b\d{1,3}\s+(?:of|out\s+of)\s+\d{1,3}"        # 4 of 5
+    r"|"
+    r"\b(?:WPM|WCPM|DCPM|wpm|wcpm)\s*[><=≥≤]?\s*\d+"  # WPM > 80
+    r"|"
+    r"\bwith\s+(?:at\s+least\s+)?\d+\s*(?:%|percent)"
+    r"|"
+    r"\b(?:at\s+least|no\s+more\s+than|fewer\s+than|more\s+than)\s+\d+"
+    r"|"
+    r"\b\d+\s+(?:consecutive|out\s+of\s+the\s+last|of\s+the\s+last)\s+\d+",
+    re.I,
+)
+
+# Time-bound: explicit deadline or duration.
+TIMEBOUND_PAT = re.compile(
+    r"\bby\s+(?:the\s+end\s+of\s+)?(?:the\s+)?"
+    r"(?:\d{1,2}/\d{1,2}/\d{2,4}|\d{4}|[Jj]an\w*|[Ff]eb\w*|[Mm]ar\w*|[Aa]pr\w*|"
+    r"[Mm]ay|[Jj]un\w*|[Jj]ul\w*|[Aa]ug\w*|[Ss]ep\w*|[Oo]ct\w*|[Nn]ov\w*|[Dd]ec\w*|"
+    r"quarter|trimester|semester|IEP\s+year|school\s+year|academic\s+year|"
+    r"reporting\s+period|grading\s+period|annual\s+review|year)\b"
+    r"|"
+    r"\bwithin\s+\d+\s+(?:day|week|month|year)s?\b"
+    r"|"
+    r"\bin\s+\d+\s+(?:day|week|month|year)s?\b"
+    r"|"
+    r"\bover\s+(?:the\s+)?(?:next|coming|following)\s+\d+\s+(?:day|week|month|year)s?\b",
+    re.I,
+)
+
+
+def _is_goal_section(section_name):
+    """True if the section name suggests IEP-style goals/objectives/recs."""
+    if not section_name:
+        return False
+    s = str(section_name).lower()
+    return any(k in s for k in ("goal", "objective", "recommend", "iep"))
+
+
+def check_smart_goal(text):
+    """Find goal-shaped sentences and flag any missing SMART components.
+
+    Returns one finding per goal sentence, listing the missing components.
+    Never returns 'absence of goals' findings — silence = no goals to check.
+    """
+    findings = []
+    text_str = text or ""
+    for gm in GOAL_SENTENCE_PAT.finditer(text_str):
+        goal_text = gm.group(1).strip()
+        if len(goal_text) < 15:
+            continue
+        # SPECIFIC: action verb anywhere after the first "will"
+        will_idx = goal_text.lower().find("will")
+        rest = goal_text[will_idx + 4:] if will_idx >= 0 else goal_text
+        words_after_will = re.findall(r"\b([A-Za-z']+)\b", rest)[:10]
+        has_specific = any(w.lower() in SPECIFIC_VERBS for w in words_after_will)
+        # MEASURABLE: numeric criterion
+        has_measurable = bool(MEASURABLE_PAT.search(goal_text))
+        # TIME-BOUND: deadline / duration anywhere in the goal sentence
+        has_timebound = bool(TIMEBOUND_PAT.search(goal_text))
+        missing = []
+        if not has_specific:
+            missing.append("Specific (no clear action verb)")
+        if not has_measurable:
+            missing.append("Measurable (no numeric criterion like '80%', '4 of 5 trials')")
+        if not has_timebound:
+            missing.append("Time-bound (no target date, duration, or 'by [period]')")
+        if not missing:
+            continue
+        snippet = goal_text[:120] + ("…" if len(goal_text) > 120 else "")
+        findings.append({
+            "source": "python",
+            "severity": "medium",
+            "section": None,
+            "claim": f"Goal: \"{snippet}\"",
+            "finding": (
+                "Goal-shaped sentence is missing SMART component(s): "
+                + "; ".join(missing) + "."
+            ),
+            "status": "info",
+            "fix_hint": "Add the missing component(s) — or, if this isn't intended as a SMART goal, rephrase so it doesn't start with '[Student] will'.",
+        })
+    return findings
+
+
 # ─── Audit entry point ─────────────────────────────────────────────────
 
 def smoke_test():
@@ -852,6 +982,19 @@ def audit(report_sections_json, fact_chunks_json, score_entries_json,
                 findings.append({
                     "source": "python", "severity": "low",
                     "section": section_name, "claim": "check_reading_level",
+                    "finding": f"Check failed: {e}", "status": "error", "fix_hint": None,
+                })
+        # Phase 4b: SMART goal heuristic — opt-in by section name only, so
+        # narrative sections don't get false-positive flagged.
+        if _is_goal_section(section_name):
+            try:
+                for f in check_smart_goal(section_text):
+                    f["section"] = section_name
+                    findings.append(f)
+            except Exception as e:
+                findings.append({
+                    "source": "python", "severity": "low",
+                    "section": section_name, "claim": "check_smart_goal",
                     "finding": f"Check failed: {e}", "status": "error", "fix_hint": None,
                 })
 
