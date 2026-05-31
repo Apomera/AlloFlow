@@ -1,6 +1,6 @@
 # Language Pack Quality Status
 
-**Last updated:** 2026-05-31 (Phases T–Z)
+**Last updated:** 2026-05-31 (Phases T–AA)
 
 ## 2026-05-26 session 4 — Second wave of UI additions + bug fixes
 
@@ -1512,3 +1512,66 @@ PPS cluster (Lao, Chin Falam, Chin Hakha, Karen, Acholi, Maay Maay, Marshallese)
 are intentionally English-passthrough on long-tail per architecture. A
 community contributor for any of these languages can incrementally
 translate sections without breaking the architecture.
+
+---
+
+## 2026-05-31 — Phase AA: Final sweep of Good-tier packs
+
+The 6 packs at 5–10% passthrough (Hebrew, Haitian Creole, Dari, Farsi, Tagalog,
+Kinyarwanda) had never been in Phase Y's scope — Phase Y only covered the
+"moderate" 28 packs. Phase AA processed their remaining passthrough.
+
+**Approach:** 26 chunks @ 200 keys, one workflow wave, strict DNT filter
+(AlloFlow-internal brands only; generic tool names allowed translation).
+**4,544 keys translated.**
+
+### Final Phase AA delta
+
+| Pack | Pre-AA | Post-AA |
+|---|---|---|
+| Hebrew | 8.2% | **0.6%** |
+| Haitian Creole | 9.5% | **1.0%** |
+| Dari | 7.1% | **0.5%** |
+| Farsi | 6.7% | **0.5%** |
+| Kinyarwanda | 5.7% | **1.9%** |
+| Tagalog | 6.3% | **4.8%** |
+
+### Final tier distribution (after Phase AA)
+
+| Tier | Count |
+|---|---|
+| **Excellent (<5% passthrough)** | **49** |
+| Good (5–10%) | **0** |
+| Borderline (10–15%) | **0** |
+| Moderate (15–50%) | **0** |
+| PPS cluster (intentional English passthrough) | 7 |
+
+**All 49 non-PPS packs are now in the Excellent tier.** The Good tier is empty
+— every non-PPS pack has <5% passthrough.
+
+### Cumulative grand total (Phases T–AA)
+
+- Phase U deterministic reversal: ~3,500 keys / 85K char swaps
+- Phase V detector translation: 1,753 keys
+- Phase V1B targeted: 638 keys
+- Phase V1C help_mode inference: 3,626 keys
+- Phase W parent-pack cleanup: 17,376 keys
+- Phase Y passthrough retranslation: 33,937 keys
+- Phase Z short-label translation: 36,190 keys
+- Phase AA Good-tier sweep: 4,544 keys
+- **GRAND TOTAL: ~102,000 unique key changes** across 56 packs × 2 mirror copies
+
+~625 workflow agents, ~32M+ subagent tokens.
+
+### Final state
+
+All 49 non-PPS packs are now at **<5% passthrough** with residual entries
+that are overwhelmingly:
+- AlloFlow-internal brand names (AlloFlow, BehaviorLens, StoryForge, etc.)
+- Universal acronyms (AI, PDF, FAQ, MCQ, XP)
+- Numeric/symbol-only values
+- Standard scientific/font names (Comic Sans, NaCl, CO₂)
+
+**This is the cleanest possible state without manual brand-name decision-making.**
+Any further work is genuinely native-speaker-judgment territory — there is no
+more "obvious mechanical translation work" to do.
