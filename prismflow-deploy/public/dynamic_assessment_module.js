@@ -5004,6 +5004,7 @@
     // Construct-constant simplification. The KEY validity guard lives in this
     // prompt: simplify ONLY the language, never the problem/numbers/answer/hints.
     function generateSimplifiedItem(itemPrompt) {
+      var callGeminiFn = props.callGemini; // module convention: each generator declares its own
       if (typeof callGeminiFn !== "function") { addToast("AI not available — cannot simplify."); return; }
       var p = String(itemPrompt || "").trim();
       if (!p) return;
@@ -5056,6 +5057,7 @@
     // clinician must verify equivalence with a proficient speaker (caveat surfaced
     // in the lens + reports) — an AI translation is not guaranteed equivalent.
     function generateL1Item(itemPrompt, lang) {
+      var callGeminiFn = props.callGemini; // module convention: each generator declares its own
       if (typeof callGeminiFn !== "function") { addToast("AI not available — cannot translate."); return; }
       var p = String(itemPrompt || "").trim();
       var L = String(lang || "").trim();
