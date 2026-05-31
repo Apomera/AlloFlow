@@ -4263,15 +4263,26 @@
       if (hasLang) { langSucc++; if (it.construct) langConstructs.push(it.construct); }
       if (hasConstruct) constructSucc++;
     });
-    if (supportedSucc < 2) return null; // too little to suggest a pattern (small-N discipline)
-    var languageConcentrated = langSucc >= constructSucc && langSucc >= Math.ceil(supportedSucc * 0.5);
+    // Tier-2 MODALITY axis: count distinct items the clinician flagged as
+    // "succeeded only when read aloud" (a contemporaneous controlled contrast —
+    // direct evidence that reading/decoding access, not the construct, gated it).
+    var raItems = {};
+    (session.itemResults || []).forEach(function (r) {
+      if (r && r.accessReadAloudHelped && r.itemId) raItems[r.itemId] = true;
+    });
+    var readAloudFlips = Object.keys(raItems).length;
+    // Surface the lens if there's EITHER a support-coincidence pattern OR direct
+    // modality evidence. (Small-N discipline still applies to the support pattern.)
+    if (supportedSucc < 2 && readAloudFlips < 1) return null;
+    var languageConcentrated = supportedSucc >= 2 && langSucc >= constructSucc && langSucc >= Math.ceil(supportedSucc * 0.5);
     return {
       languageContext: lc,
       langSucc: langSucc,
       constructSucc: constructSucc,
       supportedSucc: supportedSucc,
       languageConcentrated: languageConcentrated,
-      exampleConstructs: langConstructs.slice(0, 3)
+      exampleConstructs: langConstructs.slice(0, 3),
+      readAloudFlips: readAloudFlips
     };
   }
 
@@ -4918,6 +4929,14 @@
     var scaffoldLeakedDraftTuple = useState(false);
     var scaffoldLeakedDraft = scaffoldLeakedDraftTuple[0];
     var setScaffoldLeakedDraft = scaffoldLeakedDraftTuple[1];
+    // Access-contrast (modality): clinician flag that the student succeeded on
+    // this item ONLY when it was read aloud (reading demand removed), not when
+    // reading it themselves. A contemporaneous, controlled modality contrast —
+    // direct evidence about whether reading/decoding access gates performance.
+    // Resets on item advance.
+    var accessReadAloudDraftTuple = useState(false);
+    var accessReadAloudDraft = accessReadAloudDraftTuple[0];
+    var setAccessReadAloudDraft = accessReadAloudDraftTuple[1];
     function toggleObservationTag(tagId) {
       setObservationTagsDraft(function (prev) {
         if (prev.indexOf(tagId) >= 0) return prev.filter(function (t) { return t !== tagId; });
@@ -5440,6 +5459,7 @@
       setResponseDraft("");
       setObservationDraft("");
       setScaffoldLeakedDraft(false);
+      setAccessReadAloudDraft(false);
       announce("Session started. Pretest phase, item 1.");
     }
 
@@ -6462,6 +6482,7 @@
         supportType: args.supportType || null,
         finalCorrect: !!args.finalCorrect,
         scaffoldLeaked: !!args.scaffoldLeaked,
+        accessReadAloudHelped: !!args.accessReadAloudHelped,
         scoreAwarded: scoreForLevel(args.levelReached || 0, !!args.finalCorrect, !!args.scaffoldLeaked),
         attemptedAt: nowIso
       };
@@ -6498,6 +6519,7 @@
       setObservationDraft("");
       setObservationTagsDraft([]);
       setScaffoldLeakedDraft(false);
+      setAccessReadAloudDraft(false);
       daStopSpeak(); // stop any read-aloud when advancing to the next item
       if (advanced) {
         announce(nextPhase === "summary"
@@ -10832,6 +10854,31 @@
             " — if checked, a correct response is credited one level higher (this rung isn't valid evidence of competence here).")
         ) : null),
 
+        // ─── Tier-2 access contrast (modality): read-aloud flip flag ───
+        // A contemporaneous controlled contrast — same item, reading demand removed.
+        // Use the 🔊 button above to read the item to the student; if they get it
+        // only when they HEAR it (not when reading it themselves), check this. It
+        // feeds the access-condition lens as direct evidence that reading/decoding
+        // access — not the construct — gated this item. Shown whenever TTS is available.
+        (daTtsAvailable() ? h("div", {
+          role: "button", tabIndex: 0,
+          "aria-pressed": accessReadAloudDraft ? "true" : "false",
+          "aria-label": "Flag that the student succeeded only when the item was read aloud",
+          onClick: function () { setAccessReadAloudDraft(!accessReadAloudDraft); },
+          onKeyDown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAccessReadAloudDraft(!accessReadAloudDraft); } },
+          style: {
+            display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
+            borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
+            border: "1px solid " + (accessReadAloudDraft ? "#7c3aed" : "#e2e8f0"),
+            background: accessReadAloudDraft ? "#faf5ff" : "#f8fafc"
+          }
+        },
+          h("span", { "aria-hidden": "true", style: { fontSize: 14, lineHeight: 1.3 } }, accessReadAloudDraft ? "☑" : "☐"),
+          h("span", { style: { fontSize: 11.5, color: accessReadAloudDraft ? "#6b21a8" : "#475569", lineHeight: 1.45 } },
+            h("strong", null, "🔊 Succeeded only when read aloud"),
+            " — check if the student got this right when they HEARD it but not when reading it themselves. (Access-contrast evidence; does not change the score.)")
+        ) : null),
+
         // ─── SCORING ROW ───
         h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" } },
           h("div", { style: { fontSize: 12, color: "#475569" } },
@@ -10855,6 +10902,7 @@
                   examinerObservation: observationDraft,
                   observationTags: observationTagsDraft,
                   scaffoldLeaked: scaffoldLeakedDraft,
+                  accessReadAloudHelped: accessReadAloudDraft,
                   supportType: canScaffold ? (item.promptLadder[level - 1] ? item.promptLadder[level - 1].type : "none") : "none"
                 });
               },
@@ -10875,6 +10923,7 @@
                   examinerObservation: observationDraft,
                   observationTags: observationTagsDraft,
                   scaffoldLeaked: scaffoldLeakedDraft,
+                  accessReadAloudHelped: accessReadAloudDraft,
                   supportType: canScaffold ? (item.promptLadder[level - 1] ? item.promptLadder[level - 1].type : "none") : "none"
                 });
               },
@@ -11656,24 +11705,36 @@
         (function () {
           var ac = analyzeAccessConditions(s);
           if (!ac) return null;
-          var headline = ac.languageConcentrated
-            ? "This student succeeded most often when supports that REDUCE LANGUAGE DEMAND were available"
-            : "Supports that helped were mixed across language-reducing and construct-level types";
           var egs = ac.exampleConstructs.length ? " (e.g., " + ac.exampleConstructs.join("; ") + ")" : "";
-          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#fdf4ff", borderColor: "#e9d5ff" } },
-            h("div", { style: { fontSize: 11, color: "#86198f", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
-              "🌐 Access-condition lens · exploratory"),
-            h("div", { style: { fontSize: 13, color: "#0f172a", lineHeight: 1.55 } },
-              headline,
-              " — on " + ac.langSucc + " of " + ac.supportedSucc + " supported mediation successes" + egs + "."),
-            ac.languageConcentrated ? h("div", { style: { fontSize: 12.5, color: "#0f172a", lineHeight: 1.55, marginTop: 6 } },
-              "This pattern is worth exploring: it is ",
-              h("strong", null, "consistent with academic-language access — rather than the underlying skill — limiting performance"),
-              ". It is a hypothesis, not a determination.") : null,
-            h("div", { style: { fontSize: 11, color: "#86198f", fontStyle: "italic", marginTop: 6, lineHeight: 1.5 } },
-              "⚠ Exploratory and correlational — these supports were offered as mediation, not as a controlled manipulation, and the item count is small. Interpret only alongside this student's language-proficiency data and the home-language context you noted at intake. A direct, controlled access-contrast (read-aloud / simplified-language / home-language) is the planned next step to test this. This lens appears because a language background was recorded at intake."
-            )
-          );
+          var children = [
+            h("div", { key: "hdr", style: { fontSize: 11, color: "#86198f", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
+              "🌐 Access-condition lens · exploratory")
+          ];
+          // (a) Support-coincidence signal (correlational; needs >=2 supported successes).
+          if (ac.supportedSucc >= 2) {
+            children.push(h("div", { key: "supp", style: { fontSize: 13, color: "#0f172a", lineHeight: 1.55 } },
+              (ac.languageConcentrated
+                ? "This student succeeded most often when supports that REDUCE LANGUAGE DEMAND were available"
+                : "Supports that helped were mixed across language-reducing and construct-level types"),
+              " — on " + ac.langSucc + " of " + ac.supportedSucc + " supported mediation successes" + egs + "."));
+            if (ac.languageConcentrated) {
+              children.push(h("div", { key: "hyp", style: { fontSize: 12.5, color: "#0f172a", lineHeight: 1.55, marginTop: 6 } },
+                "This pattern is worth exploring: it is ",
+                h("strong", null, "consistent with academic-language access — rather than the underlying skill — limiting performance"),
+                ". It is a hypothesis, not a determination."));
+            }
+          }
+          // (b) Direct MODALITY contrast (controlled: same item, reading demand removed).
+          if (ac.readAloudFlips >= 1) {
+            children.push(h("div", { key: "mod", style: { fontSize: 12.5, color: "#0f172a", lineHeight: 1.55, marginTop: 6 } },
+              "🔊 On ",
+              h("strong", null, ac.readAloudFlips + " item" + (ac.readAloudFlips === 1 ? "" : "s")),
+              ", the student succeeded ", h("strong", null, "only when it was read aloud"),
+              " — a direct contrast (same item, reading demand removed) indicating reading/decoding access, rather than the underlying skill, was the barrier on those items."));
+          }
+          children.push(h("div", { key: "cav", style: { fontSize: 11, color: "#86198f", fontStyle: "italic", marginTop: 6, lineHeight: 1.5 } },
+            "⚠ Exploratory, small-N. The read-aloud contrast is a controlled manipulation; the support-coincidence pattern is correlational (supports were offered as mediation, not a controlled trial). Interpret only alongside this student's language-proficiency data and the home-language context noted at intake. Simplified-language and home-language (L1) contrasts are planned next. This lens appears because a language background was recorded at intake."));
+          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#fdf4ff", borderColor: "#e9d5ff" } }, children);
         })(),
 
         // ─── Phase W — Outputs dashboard ───
