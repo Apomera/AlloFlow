@@ -14939,7 +14939,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         const [sortColumn, setSortColumn] = React.useState(null);
         const [sortDirection, setSortDirection] = React.useState("asc");
         const [searchQuery, setSearchQuery] = React.useState("");
-        const [showRTISettings, setShowRTISettings] = React.useState(false);
+        const [showGroupSettings, setShowGroupSettings] = React.useState(false);
         const [mathProbeGrade, setMathProbeGrade] = React.useState("1");
         const [mathProbeForm, setMathProbeForm] = React.useState("A");
         const [mathProbeStudent, setMathProbeStudent] = React.useState(null);
@@ -15029,10 +15029,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setImportedStudents((prev) =>
             prev.map((s) => {
               if ((s.nickname || s.name) !== targetName) return s;
-              const history = s.screeningHistory || [];
+              const history = s.practiceCheckHistory || [];
               return {
                 ...s,
-                screeningHistory: [...history, latestProbeResult],
+                practiceCheckHistory: [...history, latestProbeResult],
               };
             }),
           );
@@ -15042,7 +15042,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         const [isLiveListening, setIsLiveListening] = React.useState(false);
         const [liveSyncCode, setLiveSyncCode] = React.useState("");
         const [showLiveSyncInput, setShowLiveSyncInput] = React.useState(false);
-        const [rtiThresholds, setRtiThresholds] = React.useState(() => {
+        const [groupThresholds, setGroupThresholds] = React.useState(() => {
           try {
             const saved = safeGetItem("alloflow_rti_thresholds");
             if (saved) return JSON.parse(saved);
@@ -15063,12 +15063,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           try {
             safeSetItem(
               "alloflow_rti_thresholds",
-              JSON.stringify(rtiThresholds),
+              JSON.stringify(groupThresholds),
             );
           } catch (e) {
             /* ignore */
           }
-        }, [rtiThresholds]);
+        }, [groupThresholds]);
         const quizChartRef = React.useRef(null);
         const quizChartInstance = React.useRef(null);
         const flagsChartRef = React.useRef(null);
@@ -15110,8 +15110,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 valA = a.safetyFlags.length;
                 valB = b.safetyFlags.length;
               } else if (sortColumn === "rtiTier") {
-                valA = classifyRTITier(a.stats).tier;
-                valB = classifyRTITier(b.stats).tier;
+                valA = classifyPracticeGroup(a.stats).tier;
+                valB = classifyPracticeGroup(b.stats).tier;
               } else {
                 valA = a.stats[sortColumn] || 0;
                 valB = b.stats[sortColumn] || 0;
@@ -15366,9 +15366,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }
           return stats;
         };
-        const classifyRTITier = (stats, thresholds) => {
+        const classifyPracticeGroup = (stats, thresholds) => {
           const t3 = thresholds ||
-            rtiThresholds || {
+            groupThresholds || {
             quizTier3: 50,
             quizTier2: 80,
             wsTier3: 50,
@@ -15470,23 +15470,28 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               "Ready for increased challenge, reduced scaffolding, or peer tutoring roles",
             );
           }
+          // Practice-group labels — formative practice data, NOT validated screening output.
+          // Use alongside (not in place of) the district's validated screening tools.
           const tierLabels = {
             1: {
-              label: "Tier 1 — On Track",
+              label: "Group A — Independent practice",
+              letter: "A",
               color: "#16a34a",
               bg: "#dcfce7",
               border: "#86efac",
               emoji: "🟢",
             },
             2: {
-              label: "Tier 2 — Strategic",
+              label: "Group B — Guided practice",
+              letter: "B",
               color: "#d97706",
               bg: "#fef9c3",
               border: "#fcd34d",
               emoji: "🟡",
             },
             3: {
-              label: "Tier 3 — Intensive",
+              label: "Group C — Targeted support",
+              letter: "C",
               color: "#dc2626",
               bg: "#fee2e2",
               border: "#fca5a5",
@@ -15522,13 +15527,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 ],
               ];
               importedStudents.forEach((s) => {
-                (s.screeningHistory || []).forEach((h) => {
+                (s.practiceCheckHistory || []).forEach((h) => {
                   const risk =
                     h.accuracy >= 80
                       ? "Low"
                       : h.accuracy >= 60
                         ? "Some"
-                        : "At Risk";
+                        : "Needs targeted support";
                   rows.push([
                     s.nickname || s.name,
                     h.grade || "",
@@ -15557,14 +15562,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               const a = document.createElement("a");
               a.href = url;
               a.download =
-                "screening_results_" +
+                "practice_check_results_" +
                 new Date().toISOString().slice(0, 10) +
                 ".csv";
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
-              addToast("Screening CSV exported", "success");
+              addToast("Practice check CSV exported", "success");
             };
             const avgAccuracy = Math.round(
               results.reduce((s, r) => s + (r.accuracy || 0), 0) /
@@ -15602,23 +15607,24 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 );
               }
             });
+            // Formative practice signal, NOT clinical risk classification.
             const labels = {
               1: {
-                label: "Low Risk",
+                label: "On track in practice",
                 color: "#16a34a",
                 bg: "#dcfce7",
                 border: "#86efac",
                 emoji: "🟢",
               },
               2: {
-                label: "Some Risk",
+                label: "Mixed practice signal",
                 color: "#d97706",
                 bg: "#fef9c3",
                 border: "#fcd34d",
                 emoji: "🟡",
               },
               3: {
-                label: "At Risk",
+                label: "Needs targeted support",
                 color: "#dc2626",
                 bg: "#fee2e2",
                 border: "#fca5a5",
@@ -15633,7 +15639,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           const headers = [
             "Student",
             "Date",
-            "RTI Tier",
+            "Practice Group",
             "Quiz Avg",
             "WS Accuracy",
             "WS Words",
@@ -15642,15 +15648,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             "Total Activities",
             "Label Challenge Avg",
             "Time on Task (min)",
-            "Recommendations",
+            "Suggestions",
           ];
           const rows = importedStudents.map((s) => {
-            const rti = classifyRTITier(s.stats);
+            const rti = classifyPracticeGroup(s.stats);
             const tot = s.data?.timeOnTask?.totalSessionMinutes || 0;
             return [
               s.name,
               new Date().toLocaleDateString(),
-              "Tier " + rti.tier,
+              "Group " + rti.letter,
               s.stats.quizAvg + "%",
               s.stats.wsAccuracy + "%",
               s.stats.wsWordsCompleted,
@@ -16415,7 +16421,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           score: "",
           date: "",
           percentile: "",
-          benchmark: "",
+          target: "",
         });
         const renderCBMImportModal = () => {
           if (!showCBMModal) return null;
@@ -16631,19 +16637,19 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       {
                         className: "text-xs font-bold text-slate-600 uppercase",
                       },
-                      "Benchmark Status",
+                      "Target Status",
                     ),
                     React.createElement(
                       "select",
                       {
-                        "aria-label": "Benchmark status",
+                        "aria-label": "Target status",
                         className:
                           "w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm",
-                        value: cbmForm.benchmark,
+                        value: cbmForm.target,
                         onChange: (e) =>
                           setCBMForm((p) => ({
                             ...p,
-                            benchmark: e.target.value,
+                            target: e.target.value,
                           })),
                       },
                       React.createElement(
@@ -16654,22 +16660,22 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       React.createElement(
                         "option",
                         { value: "Above" },
-                        "Above Benchmark",
+                        "Above target",
                       ),
                       React.createElement(
                         "option",
                         { value: "At" },
-                        "At Benchmark",
+                        "Meeting target",
                       ),
                       React.createElement(
                         "option",
                         { value: "Below" },
-                        "Below Benchmark",
+                        "Approaching target",
                       ),
                       React.createElement(
                         "option",
                         { value: "Well Below" },
-                        "Well Below Benchmark",
+                        "Below target",
                       ),
                     ),
                   ),
@@ -16692,7 +16698,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         score: "",
                         date: "",
                         percentile: "",
-                        benchmark: "",
+                        target: "",
                       });
                     },
                   },
@@ -16714,7 +16720,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         percentile: cbmForm.percentile
                           ? parseInt(cbmForm.percentile)
                           : null,
-                        benchmark: cbmForm.benchmark || null,
+                        target: cbmForm.target || null,
                       });
                       setShowCBMModal(false);
                       setCBMForm({
@@ -16724,7 +16730,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         score: "",
                         date: "",
                         percentile: "",
-                        benchmark: "",
+                        target: "",
                       });
                     },
                   },
@@ -16870,7 +16876,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             },
             {
               id: "satisfaction",
-              text: "Overall, how satisfied are you with AlloFlow as an RTI tool?",
+              text: "Overall, how satisfied are you with AlloFlow as a practice-monitoring tool?",
               labels: [
                 "Very dissatisfied",
                 "Dissatisfied",
@@ -18464,9 +18470,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             id: "orf-screening-" + Date.now(),
             text: passage,
             title:
-              "ORF Screening Passage \u2014 Grade " + grade + " Form " + form,
+              "ORF practice passage \u2014 Grade " + grade + " Form " + form,
             sourceText: passage,
-            isScreeningORF: true,
+            isPracticeCheckORF: true,
           }));
           setIsFluencyMode(true);
           setFluencyStatus("ready");
@@ -18476,8 +18482,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         };
         const launchBenchmarkProbe = (grade, activity, form = "A") => {
           const gradeBank =
-            typeof BENCHMARK_PROBE_BANKS !== "undefined" &&
-            BENCHMARK_PROBE_BANKS[grade];
+            typeof PRACTICE_PROBE_BANKS !== "undefined" &&
+            PRACTICE_PROBE_BANKS[grade];
           const bank = gradeBank ? gradeBank[form] : null;
           if (activity === "orf") {
             if (typeof onLaunchORF === "function") {
@@ -18563,7 +18569,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setIsWordSoundsMode(true);
           setActiveView("word-sounds");
         };
-        const launchScreeningSession = (grade, form, student) => {
+        const launchPracticeCheckSession = (grade, form, student) => {
           const subtests = GRADE_SUBTEST_BATTERIES[grade];
           if (!subtests || subtests.length === 0) {
             addToast("No subtests available for grade " + grade, "warning");
@@ -18592,7 +18598,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setRosterQueue(rest);
           setScreenerSession(null);
           setTimeout(() => {
-            launchScreeningSession(probeGradeLevel, probeForm, nextStudent);
+            launchPracticeCheckSession(probeGradeLevel, probeForm, nextStudent);
           }, 500);
         };
         const generateFluencyScoreSheet = (result, sourceText) => {
@@ -18647,7 +18653,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Oral Fluency Score Sheet</title>
 <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;color:#1e293b;padding:24px;line-height:1.4}@media print{body{padding:12px}}.sheet{max-width:750px;margin:0 auto;border:2px solid #e2e8f0;border-radius:12px;overflow:hidden}.hdr{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:20px 24px;display:flex;justify-content:space-between;align-items:center}.hdr h1{font-size:18px;font-weight:800}.fields{padding:16px 24px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.field{font-size:12px}.field label{font-weight:700;color:#64748b;display:block;margin-bottom:2px}.field .val{font-weight:600;color:#1e293b;padding:4px 0;border-bottom:1px dashed #cbd5e1;min-height:24px}.words{padding:20px 24px;line-height:2.2}.metrics{padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr;gap:16px}.mcol{padding:12px;background:white;border-radius:8px;border:1px solid #e2e8f0}.mcol h3{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}.mrow{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}.mrow .lbl{color:#475569}.mrow .vl{font-weight:700}.override{padding:16px 24px;border-top:1px solid #e2e8f0}.override h3{font-size:12px;font-weight:800;color:#4338ca;margin-bottom:8px}.ofields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.ofield{font-size:11px}.ofield label{font-weight:700;color:#64748b;display:block;margin-bottom:2px}.ofield input{width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:6px 8px;font-size:13px;font-weight:600}.notes{padding:16px 24px;border-top:1px solid #e2e8f0}.notes textarea{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:8px;font-size:12px;min-height:60px;resize:vertical}.sig{padding:16px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;gap:24px}.sig .sigf{flex:1}.sig .sigf label{font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px}.sig .sigf .line{border-bottom:1px solid #1e293b;min-height:28px}.legend{padding:12px 24px;background:#faf5ff;border-top:1px solid #e2e8f0;display:flex;gap:16px;flex-wrap:wrap;font-size:10px;font-weight:600;color:#475569}@media print{.no-print{display:none!important}}</style></head><body>
 <div class="sheet"><div class="hdr"><div><h1>\ud83d\udcca Oral Fluency Score Sheet</h1><p>AlloFlow Assessment Record</p></div><div style="text-align:right;font-size:11px;"><div>Generated: ${new Date().toLocaleDateString()}</div></div></div>
-<div class="fields"><div class="field"><label>Student</label><div class="val">${studentNickname || "________________"}</div></div><div class="field"><label>Date</label><div class="val">${new Date().toLocaleDateString()}</div></div><div class="field"><label>Grade / Benchmark</label><div class="val">${fluencyBenchmarkGrade} / ${fluencyBenchmarkSeason}</div></div></div>
+<div class="fields"><div class="field"><label>Student</label><div class="val">${studentNickname || "________________"}</div></div><div class="field"><label>Date</label><div class="val">${new Date().toLocaleDateString()}</div></div><div class="field"><label>Grade / Target</label><div class="val">${fluencyBenchmarkGrade} / ${fluencyBenchmarkSeason}</div></div></div>
 <div class="words">${wordMarkup}</div>
 <div class="legend"><span>\u2713 = Correct</span><span>\u2717 = Substitution/Stumbled</span><span>— = Omission</span><span>SC = Self-Corrected</span></div>
 <div class="metrics"><div class="mcol"><h3>{t('common.ai_calculated_metrics')}</h3><div class="mrow"><span class="lbl">WCPM</span><span class="vl">${result.wcpm || 0}</span></div><div class="mrow"><span class="lbl">Accuracy</span><span class="vl">${result.accuracy || 0}%</span></div><div class="mrow"><span class="lbl">Substitutions</span><span class="vl">${rrm.substitutions || 0}</span></div><div class="mrow"><span class="lbl">Omissions</span><span class="vl">${rrm.omissions || 0}</span></div><div class="mrow"><span class="lbl">Insertions</span><span class="vl">${rrm.insertions || 0}</span></div><div class="mrow"><span class="lbl">Self-Corrections</span><span class="vl">${rrm.selfCorrections || 0}</span></div><div class="mrow"><span class="lbl">Error Rate</span><span class="vl">1:${rrm.errorRate || 0}</span></div><div class="mrow"><span class="lbl">Reading Level</span><span class="vl">${readingLevelLabel}</span></div></div>
@@ -18664,7 +18670,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         };
         const generateStudentProgressReport = (student) => {
           if (!student) return;
-          const rti = classifyRTITier(student.stats);
+          const rti = classifyPracticeGroup(student.stats);
           const s = student.stats;
           const date = new Date().toLocaleDateString("en-US", {
             year: "numeric",
@@ -18810,8 +18816,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             <div class="tier-badge" style="background: ${tc.bg}; border: 2px solid ${tc.border};">
                 <span style="font-size: 28px;">${rti.emoji}</span>
                 <div>
-                    <div style="font-size: 16px; font-weight: 800; color: ${tc.color};">Tier ${rti.tier} — ${tc.label}</div>
-                    <div style="font-size: 11px; color: #64748b;">RTI Classification</div>
+                    <div style="font-size: 16px; font-weight: 800; color: ${tc.color};">${tc.label}</div>
+                    <div style="font-size: 11px; color: #64748b;">Practice grouping &mdash; formative only, not validated screening</div>
                 </div>
             </div>
 
@@ -18836,7 +18842,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             ${runningRecordHtml}
         </div>
         <div class="footer">
-            Generated ${date} &bull; Created with AlloFlow &bull; RTI Progress Monitoring System
+            Generated ${date} &bull; Created with AlloFlow &bull; Practice Progress Monitor
         </div>
     </div>
     <button class="print-btn" onclick="window.print()">🖨️ Print This Report</button>
@@ -19047,10 +19053,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               );
               return bd;
             })(),
-            rtiDistribution: (() => {
+            groupDistribution: (() => {
               const dist = { 1: [], 2: [], 3: [] };
               importedStudents.forEach((s) => {
-                const rti = classifyRTITier(s.stats);
+                const rti = classifyPracticeGroup(s.stats);
                 dist[rti.tier].push(s.name);
               });
               return dist;
@@ -19548,7 +19554,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 {
                   id: "assessments",
                   label: "🎯 Assessments",
-                  desc: "Probes & benchmarks",
+                  desc: "Probes & targets",
                 },
                 {
                   id: "research",
@@ -20123,7 +20129,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ),
                 ),
               ),
-              classSummary?.rtiDistribution &&
+              classSummary?.groupDistribution &&
                   /*#__PURE__*/ React.createElement(
                 "div",
                 {
@@ -20140,7 +20146,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       className:
                         "font-bold text-slate-700 flex items-center gap-2",
                     },
-                    "\uD83C\uDFAF RTI Tier Distribution",
+                    "\uD83C\uDFAF Practice Group distribution",
                   ),
                       /*#__PURE__*/ React.createElement(
                     "div",
@@ -20155,7 +20161,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       "button",
                       {
                         "aria-label": t("common.configure_rti_thresholds"),
-                        onClick: () => setShowRTISettings(true),
+                        onClick: () => setShowGroupSettings(true),
                         className:
                           "p-1.5 rounded-lg hover:bg-white/80 text-slate-600 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200",
                         title: t("common.configure_rti_thresholds"),
@@ -20172,7 +20178,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   [
                     {
                       tier: 1,
-                      label: "Tier 1 — On Track",
+                      label: "Group A — Independent practice",
                       emoji: "🟢",
                       color: "#16a34a",
                       bg: "#dcfce7",
@@ -20180,7 +20186,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     },
                     {
                       tier: 2,
-                      label: "Tier 2 — Strategic",
+                      label: "Group B — Guided practice",
                       emoji: "🟡",
                       color: "#d97706",
                       bg: "#fef9c3",
@@ -20188,7 +20194,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     },
                     {
                       tier: 3,
-                      label: "Tier 3 — Intensive",
+                      label: "Group C — Targeted support",
                       emoji: "🔴",
                       color: "#dc2626",
                       bg: "#fee2e2",
@@ -20196,7 +20202,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     },
                   ].map((t) => {
                     const students =
-                      classSummary.rtiDistribution[t.tier] || [];
+                      classSummary.groupDistribution[t.tier] || [];
                     const pct =
                       classSummary.totalStudents > 0
                         ? Math.round(
@@ -20268,7 +20274,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     { tier: 3, color: "#dc2626" },
                   ].map((t) => {
                     const count = (
-                      classSummary.rtiDistribution[t.tier] || []
+                      classSummary.groupDistribution[t.tier] || []
                     ).length;
                     const pct =
                       classSummary.totalStudents > 0
@@ -20285,12 +20291,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     });
                   }),
                 ),
-                ((classSummary.rtiDistribution[2] || []).length > 0 ||
-                  (classSummary.rtiDistribution[3] || []).length > 0) &&
+                ((classSummary.groupDistribution[2] || []).length > 0 ||
+                  (classSummary.groupDistribution[3] || []).length > 0) &&
                       /*#__PURE__*/ React.createElement(
                     "div",
                     { className: "mt-3 grid grid-cols-2 gap-2" },
-                    (classSummary.rtiDistribution[3] || []).length > 0 &&
+                    (classSummary.groupDistribution[3] || []).length > 0 &&
                           /*#__PURE__*/ React.createElement(
                       "div",
                       {
@@ -20312,7 +20318,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             /*#__PURE__*/ React.createElement(
                         "div",
                         { className: "flex flex-wrap gap-1" },
-                        classSummary.rtiDistribution[3].map((name, i) =>
+                        classSummary.groupDistribution[3].map((name, i) =>
                                 /*#__PURE__*/ React.createElement(
                           "span",
                           {
@@ -20325,7 +20331,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         ),
                       ),
                     ),
-                    (classSummary.rtiDistribution[2] || []).length > 0 &&
+                    (classSummary.groupDistribution[2] || []).length > 0 &&
                           /*#__PURE__*/ React.createElement(
                       "div",
                       {
@@ -20347,7 +20353,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             /*#__PURE__*/ React.createElement(
                         "div",
                         { className: "flex flex-wrap gap-1" },
-                        classSummary.rtiDistribution[2].map((name, i) =>
+                        classSummary.groupDistribution[2].map((name, i) =>
                                 /*#__PURE__*/ React.createElement(
                           "span",
                           {
@@ -20362,13 +20368,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     ),
                   ),
               ),
-              showRTISettings &&
+              showGroupSettings &&
                   /*#__PURE__*/ React.createElement(
                 "div",
                 {
                   className:
                     "fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in",
-                  onClick: () => setShowRTISettings(false),
+                  onClick: () => setShowGroupSettings(false),
                 },
                     /*#__PURE__*/ React.createElement(
                   "div",
@@ -20396,12 +20402,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           size: 18,
                         }),
                       ),
-                      "RTI Threshold Configuration",
+                      "Group cutoff settings",
                     ),
                         /*#__PURE__*/ React.createElement(
                       "button",
                       {
-                        onClick: () => setShowRTISettings(false),
+                        onClick: () => setShowGroupSettings(false),
                         className:
                           "p-2 rounded-full hover:bg-slate-100 text-slate-600",
                         "aria-label": t("common.close"),
@@ -20412,7 +20418,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       /*#__PURE__*/ React.createElement(
                     "p",
                     { className: "text-xs text-slate-600 mb-4" },
-                    "Adjust classification cutoffs to match your grade level, district benchmarks, or screening tool norms. Changes apply immediately to all student classifications.",
+                    "Adjust group cutoffs to fit your classroom. These are formative practice thresholds — they do not replace your district's validated screening tools. Changes apply immediately to all student groupings.",
                   ),
                       /*#__PURE__*/ React.createElement(
                     "div",
@@ -20420,8 +20426,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     [
                       {
                         key: "quizTier3",
-                        label: "🔴 Quiz — Tier 3 cutoff",
-                        desc: "Below this → Intensive",
+                        label: "🔴 Quiz — Group C cutoff",
+                        desc: "Below this → Targeted support",
                         unit: "%",
                         min: 10,
                         max: 80,
@@ -20429,8 +20435,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       },
                       {
                         key: "quizTier2",
-                        label: "🟡 Quiz — Tier 2 cutoff",
-                        desc: "Below this → Strategic",
+                        label: "🟡 Quiz — Group B cutoff",
+                        desc: "Below this → Guided practice",
                         unit: "%",
                         min: 40,
                         max: 100,
@@ -20438,8 +20444,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       },
                       {
                         key: "wsTier3",
-                        label: "🔴 Word Sounds — Tier 3 cutoff",
-                        desc: "Below this → Intensive",
+                        label: "🔴 Word Sounds — Group C cutoff",
+                        desc: "Below this → Targeted support",
                         unit: "%",
                         min: 10,
                         max: 80,
@@ -20447,8 +20453,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       },
                       {
                         key: "wsTier2",
-                        label: "🟡 Word Sounds — Tier 2 cutoff",
-                        desc: "Below this → Strategic",
+                        label: "🟡 Word Sounds — Group B cutoff",
+                        desc: "Below this → Guided practice",
                         unit: "%",
                         min: 30,
                         max: 100,
@@ -20513,9 +20519,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           min: item.min,
                           max: item.max,
                           step: item.step,
-                          value: rtiThresholds[item.key],
+                          value: groupThresholds[item.key],
                           onChange: (e) =>
-                            setRtiThresholds((prev) => ({
+                            setGroupThresholds((prev) => ({
                               ...prev,
                               [item.key]: Number(e.target.value),
                             })),
@@ -20528,7 +20534,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             className:
                               "text-sm font-bold text-indigo-600 w-16 text-right",
                           },
-                          rtiThresholds[item.key],
+                          groupThresholds[item.key],
                           item.unit,
                         ),
                       ),
@@ -20545,7 +20551,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       "button",
                       {
                         onClick: () =>
-                          setRtiThresholds({
+                          setGroupThresholds({
                             quizTier3: 50,
                             quizTier2: 80,
                             wsTier3: 50,
@@ -20562,7 +20568,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         /*#__PURE__*/ React.createElement(
                       "button",
                       {
-                        onClick: () => setShowRTISettings(false),
+                        onClick: () => setShowGroupSettings(false),
                         className:
                           "px-5 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-md text-sm",
                       },
@@ -20617,7 +20623,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     /*#__PURE__*/ React.createElement(
                     "h3",
                     { className: "text-sm font-bold text-slate-700" },
-                    "Benchmark Probe Battery",
+                    "Practice probe set",
                   ),
                     /*#__PURE__*/ React.createElement(
                     "span",
@@ -22329,12 +22335,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     className:
                       "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-bold text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md",
                   },
-                  "\uD83D\uDCCA Export RTI Report",
+                  "\uD83D\uDCCA Export practice grouping (CSV)",
                 ),
                     /*#__PURE__*/ React.createElement(
                   "span",
                   { className: "text-xs text-slate-600" },
-                  "Download CSV with tier classifications, metrics, and recommendations",
+                  "Download CSV with practice group, metrics, and suggestions",
                 ),
               ),
               importedStudents.length === 0
@@ -22378,7 +22384,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             align: "left",
                             round: "rounded-l-lg",
                           },
-                          { key: "rtiTier", label: "RTI" },
+                          { key: "rtiTier", label: "Group" },
                           {
                             key: "quizAvg",
                             label: t("class_analytics.quiz_avg"),
@@ -22467,7 +22473,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           "td",
                           { className: "p-2 text-center" },
                           (() => {
-                            const rti = classifyRTITier(student.stats);
+                            const rti = classifyPracticeGroup(student.stats);
                             return /*#__PURE__*/ React.createElement(
                               "span",
                               {
@@ -22483,7 +22489,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                               },
                               rti.emoji,
                               " ",
-                              rti.tier,
+                              rti.letter,
                             );
                           })(),
                         ),
@@ -22697,7 +22703,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "div",
                 { className: "flex-1 overflow-y-auto p-4" },
                 (() => {
-                  const rti = classifyRTITier(selectedStudent.stats);
+                  const rti = classifyPracticeGroup(selectedStudent.stats);
                   const s = selectedStudent.stats;
                   const metrics = [
                     {
@@ -22931,7 +22937,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                 fontWeight: 600,
                               },
                             },
-                            "RTI Progress Monitor",
+                            "Practice progress monitor",
                           ),
                         ),
                       ),
@@ -23370,7 +23376,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                 "aria-label": "Baseline WCPM",
                                 placeholder: latestWCPM || "—",
                                 defaultValue: studentGoal?.baseline || "",
-                                id: `rti-baseline-${selectedStudent.name}`,
+                                id: `practice-baseline-${selectedStudent.name}`,
                                 style: {
                                   width: "100%",
                                   border: "1px solid #e2e8f0",
@@ -23402,7 +23408,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                 "aria-label": "Target WCPM",
                                 placeholder: "e.g. 72",
                                 defaultValue: studentGoal?.target || "",
-                                id: `rti-target-${selectedStudent.name}`,
+                                id: `practice-target-${selectedStudent.name}`,
                                 style: {
                                   width: "100%",
                                   border: "1px solid #e2e8f0",
@@ -23433,7 +23439,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                 type: "date",
                                 "aria-label": "Target date",
                                 defaultValue: studentGoal?.targetDate || "",
-                                id: `rti-date-${selectedStudent.name}`,
+                                id: `practice-date-${selectedStudent.name}`,
                                 style: {
                                   width: "100%",
                                   border: "1px solid #e2e8f0",
@@ -23450,13 +23456,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             {
                               onClick: () => {
                                 const b = document.getElementById(
-                                  `rti-baseline-${selectedStudent.name}`,
+                                  `practice-baseline-${selectedStudent.name}`,
                                 )?.value;
                                 const t2 = document.getElementById(
-                                  `rti-target-${selectedStudent.name}`,
+                                  `practice-target-${selectedStudent.name}`,
                                 )?.value;
                                 const d = document.getElementById(
-                                  `rti-date-${selectedStudent.name}`,
+                                  `practice-date-${selectedStudent.name}`,
                                 )?.value;
                                 if (b && t2 && d) {
                                   saveRtiGoal(selectedStudent.name, {
@@ -23467,7 +23473,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                     baselineDate: new Date().toISOString(),
                                   });
                                   addToast(
-                                    "RTI goal saved for " +
+                                    "Practice goal saved for " +
                                     selectedStudent.name,
                                     "success",
                                   );
@@ -24430,7 +24436,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         "span",
                         null,
                         t("class_analytics.benchmark_vs") ||
-                        "vs. Benchmark",
+                        "vs. Target",
                         ":",
                       ),
                             /*#__PURE__*/ React.createElement(

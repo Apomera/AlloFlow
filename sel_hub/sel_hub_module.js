@@ -69,6 +69,115 @@
       };
     }
 
+    // ── SelToolDataManager ──
+    // Bridge for individual sel_tool_*.js plugins that previously only
+    // wrote to localStorage and ctx.toolData. localStorage is wiped between
+    // Canvas sessions; ctx.toolData lives in React state and dies with the
+    // hub unmount. Neither survives a project save→load round-trip on its
+    // own. The manager mirrors per-tool state into window.__alloflowSelToolData
+    // so the host's executeSaveFile can serialize it into the project JSON
+    // (which DOES survive Canvas), and re-hydrates from that slot on
+    // 'alloflow-sel-tooldata-restored' so tools refresh after a load.
+    //
+    // Existing tools keep working: ctx.update() / ctx.updateMulti() in
+    // sel_hub_module.js already feed selToolData → window.__alloflowSelToolData
+    // via the React.useEffect mirror below. The manager exposes a flatter API
+    // for tools that want explicit get/set without going through ctx, and
+    // optionally mirrors a per-tool localStorage key so legacy code paths
+    // that read localStorage directly still see restored values.
+    if (!window.SelToolDataManager) {
+      window.SelToolDataManager = {
+        // Get the full slice for a tool, or {} if missing. Reads from the
+        // window slot (populated by hub state on every change), so this is
+        // safe to call before the hub mounts.
+        get: function (toolId) {
+          try {
+            var all = window.__alloflowSelToolData || {};
+            return (all && all[toolId]) || {};
+          } catch (e) { return {}; }
+        },
+        // Set one key for one tool. Writes to the window slot AND fires an
+        // event the hub uses to sync its React state. Tools should still
+        // prefer ctx.update() when they have a ctx in scope — this is the
+        // fallback for tools that need to persist outside a render.
+        set: function (toolId, key, val) {
+          try {
+            var all = window.__alloflowSelToolData || {};
+            var slot = Object.assign({}, all[toolId] || {});
+            slot[key] = val;
+            var patch = {}; patch[toolId] = slot;
+            window.__alloflowSelToolData = Object.assign({}, all, patch);
+            window.dispatchEvent(new CustomEvent('alloflow-sel-tooldata-changed', { detail: { toolId: toolId, key: key } }));
+          } catch (e) {}
+        },
+        // Same as set() but for a batch of keys.
+        merge: function (toolId, obj) {
+          try {
+            var all = window.__alloflowSelToolData || {};
+            var slot = Object.assign({}, all[toolId] || {}, obj || {});
+            var patch = {}; patch[toolId] = slot;
+            window.__alloflowSelToolData = Object.assign({}, all, patch);
+            window.dispatchEvent(new CustomEvent('alloflow-sel-tooldata-changed', { detail: { toolId: toolId, key: '*' } }));
+          } catch (e) {}
+        },
+        // Register a legacy localStorage key for a tool. The host's load
+        // handler uses _lsKey on each tool slot to mirror restored values
+        // back to localStorage, so tools that read localStorage on mount
+        // (e.g. sel_tool_voicedetective.js STORAGE_KEY = 'alloSelVoiceDetective')
+        // still see the restored state.
+        bindLegacyKey: function (toolId, lsKey) {
+          try {
+            var all = window.__alloflowSelToolData || {};
+            var slot = Object.assign({}, all[toolId] || {});
+            slot._lsKey = lsKey;
+            // On bind, snapshot the current localStorage value so the next
+            // save picks it up even if the tool hasn't dirtied state yet.
+            try { slot._lsValue = JSON.parse(localStorage.getItem(lsKey) || 'null'); } catch (e) {}
+            var patch = {}; patch[toolId] = slot;
+            window.__alloflowSelToolData = Object.assign({}, all, patch);
+          } catch (e) {}
+        }
+      };
+    }
+
+    // ── Dev-only diagnostic ──
+    // Gated behind window.DEBUG. Logs which SEL persistence keys are wired
+    // into the host save pipeline (i.e. have a window.__alloflow* slot the
+    // host's executeSaveFile reads) versus which only live in localStorage
+    // and will be silently lost in Canvas. Call from console:
+    //   window.DEBUG = true; alloflowSelSaveDiagnostic();
+    if (typeof window.alloflowSelSaveDiagnostic !== 'function') {
+      window.alloflowSelSaveDiagnostic = function () {
+        if (!window.DEBUG) return;
+        var checks = [
+          { label: 'SEL engagement (streak + toolUsage)', winSlot: '__alloflowSelEngagement', lsKeys: ['alloflow_sel_streak', 'alloflow_sel_tool_usage'] },
+          { label: 'SEL stations',                       winSlot: '__alloflowSelStations',   lsKeys: ['alloflow_sel_stations'] },
+          { label: 'SEL quest progress',                 winSlot: '__alloflowSelProgress',   lsKeys: ['alloflow_sel_station_progress'] },
+          { label: 'SEL per-tool data',                  winSlot: '__alloflowSelToolData',   lsKeys: [] }
+        ];
+        var rows = checks.map(function (c) {
+          var hasWin  = typeof window[c.winSlot] !== 'undefined' && window[c.winSlot] !== null;
+          var lsState = c.lsKeys.map(function (k) {
+            var v = null; try { v = localStorage.getItem(k); } catch (e) {}
+            return { key: k, present: v !== null && v !== '' };
+          });
+          return {
+            slot: c.label,
+            windowSlot: c.winSlot,
+            inSavePayload: hasWin ? 'YES' : 'NO  (host save will skip)',
+            localStorageKeys: lsState
+          };
+        });
+        try { console.group('[alloflowSelSaveDiagnostic]'); } catch (e) {}
+        try { console.table(rows.map(function (r) { return { slot: r.slot, inSave: r.inSavePayload, winSlot: r.windowSlot }; })); } catch (e) { console.log(rows); }
+        rows.forEach(function (r) {
+          try { console.log(r.slot + ' localStorage:', r.localStorageKeys); } catch (e) {}
+        });
+        try { console.groupEnd(); } catch (e) {}
+        return rows;
+      };
+    }
+
     // ── WCAG 2.1 AA: Accessibility CSS ──
     if (!document.getElementById('sel-a11y-css')) {
       var selA11yStyle = document.createElement('style');
@@ -125,6 +234,298 @@
       if (/^[345]/.test(g))             return 'elementary';
       if (/^[678]|middle|6-8/.test(g))  return 'middle';
       return 'high'; // 9-12, high, etc.
+    }
+
+    // ── For-Educators content (inlined from FOR_EDUCATORS.md) ──
+    // Inlined because Gemini Canvas blocks window.fetch() to relative paths;
+    // the file at sel_hub/FOR_EDUCATORS.md is the canonical source and this
+    // const must be kept in sync when that file is edited. See CHANGE 3.
+    var FOR_EDUCATORS_MD = [
+      '# For Educators: Using the SEL Hub Responsibly',
+      '',
+      'A practical guide to what this tool is, how student data flows through it, and what you need to set up before you hand it to a class.',
+      '',
+      '---',
+      '',
+      '## 1. What this Hub is — and what it isn\'t',
+      '',
+      '**What it is:**',
+      '- A **formative practice space** for social-emotional skills: noticing emotions, naming them, practicing regulation strategies, reflecting on choices.',
+      '- A **conversation starter** between you and a student, or between a student and a caregiver.',
+      '- A **low-stakes sandbox** where students can rehearse before situations get hard.',
+      '',
+      '**What it is not:**',
+      '- Not a validated **assessment instrument**. The activities aren\'t normed, scored against a reference population, or psychometrically reliable.',
+      '- Not a **clinical screener** for depression, anxiety, ADHD, trauma, suicidality, or anything else. Nothing a student does here should appear in a referral, an IEP present-levels statement, or a tiered-intervention decision as evidence.',
+      '- Not a **counseling substitute**. If a student needs a counselor, they need a counselor.',
+      '- Not a **behavior surveillance tool**. There is no teacher dashboard tracking who clicked what.',
+      '',
+      'If a colleague treats Hub activity as data for a high-stakes decision, gently push back. The tool isn\'t built for that, and pretending it is harms students.',
+      '',
+      '---',
+      '',
+      '## 2. How student data works',
+      '',
+      'The Hub is designed for the **Canvas runtime** — meaning the app lives inside a chat-style canvas while the student is using it, and **vanishes when the canvas closes**. Read that sentence twice. It is the most important fact on this page.',
+      '',
+      '**Ephemeral by default:**',
+      '- While a student is using the Hub, their answers, reflections, and progress live in the browser tab\'s memory.',
+      '- When they close the tab, refresh, or end the session, **everything is gone**. There is no server-side database storing student work. There is no account, no login, no profile tied to a real identity.',
+      '- You, as the educator, **cannot retrieve** a student\'s session after the fact. Neither can IT. Neither can the vendor. It doesn\'t exist anywhere to retrieve.',
+      '',
+      '**The sneakernet save/load pattern:**',
+      '- If a student wants to keep their work, they click **Export** (or **Save Progress**). The Hub generates a **JSON file** and downloads it to the student\'s own device.',
+      '- That file lives in their Downloads folder — or wherever they save it — on their personal or school-issued device. It does not get uploaded anywhere.',
+      '- To resume later, the student opens the Hub fresh and clicks **Import**, then selects the JSON file from their device. The Hub reads it back into memory and they pick up where they left off.',
+      '- This is called "sneakernet" because the data moves only when a human physically carries it (on a USB stick, a Drive folder they choose, an email attachment, etc.). The Hub itself never transports it.',
+      '',
+      '**What gets saved into the JSON:**',
+      '- Reflections the student typed.',
+      '- Activity progress and choices.',
+      '- Any tags or check-ins the student created during the session.',
+      '',
+      '**What is NOT saved:**',
+      '- The student\'s name (unless they typed it themselves into a reflection).',
+      '- Their device ID, IP, location, or any browser fingerprint.',
+      '- Time-on-task analytics or behavioral telemetry.',
+      '',
+      '**Practical implication for you:**',
+      '- If a student says "I lost my work," and they didn\'t Export, it\'s genuinely gone. Frame this expectation upfront.',
+      '- If a student emails you their JSON, treat it like any other student-generated document under your district\'s records policies. You are now the custodian of that file.',
+      '',
+      '---',
+      '',
+      '## 3. AI features and student safety',
+      '',
+      'Some Hub activities can use a generative AI helper for things like rephrasing a reflection, suggesting coping strategies, or generating a practice scenario. This piece needs careful setup.',
+      '',
+      '**The runtime context:**',
+      '- The Hub is built to run inside a Google Workspace EDU environment with Gemini Canvas. That means AI calls inherit your domain\'s Workspace data-handling terms — student prompts are **not** used to train consumer models, and the data stays inside the EDU tenant\'s contract boundary.',
+      '',
+      '**The 18+ default — and the nuance:**',
+      '- Google\'s default policy restricts Gemini for users under 18.',
+      '- **However**, Workspace EDU admins can enable Gemini for under-18 users in their domain, typically with documented parent consent. If your IT department has done this, AI features work for your students. If they haven\'t, students under 18 will see AI features disabled or get an access error.',
+      '- **You cannot bypass this from inside the Hub.** It\'s an admin-level setting on the Workspace tenant, not a Hub toggle.',
+      '',
+      '**What gets sent to the AI model when a student uses an AI feature:**',
+      '- The specific prompt the activity generates (e.g., "rephrase this reflection in a calmer tone: [student text]").',
+      '- The student\'s free-text input for that prompt.',
+      '',
+      '**What is NOT sent:**',
+      '- The student\'s name or identity (the Hub doesn\'t know it).',
+      '- Previous session history.',
+      '- Other students\' work.',
+      '- Anything from outside the current activity.',
+      '',
+      '**Practical guidance:**',
+      '- Tell students explicitly: "When you use the AI helper, it sees what you type into that box. Don\'t put your full name, address, phone number, or anyone else\'s private information in there."',
+      '- Model this yourself in the first session.',
+      '',
+      '---',
+      '',
+      '## 4. Crisis-flag handling',
+      '',
+      'The Hub has a **safety layer** that watches for language suggesting a student may be in crisis — self-harm, suicidal ideation, abuse disclosures, severe distress.',
+      '',
+      '**What the student sees when the safety layer fires:**',
+      '- The current activity pauses.',
+      '- A modal appears with **988** (Suicide & Crisis Lifeline, call or text) and **741741** (Crisis Text Line, text HOME).',
+      '- A short message encourages them to talk to a trusted adult and lists generic supports.',
+      '- The student can dismiss the modal and return to the activity, or close the Hub entirely.',
+      '',
+      '**What you, the teacher, can and cannot do:**',
+      '- You **cannot** retrieve a transcript of what triggered the modal. Nothing is logged. Nothing is sent to you, to administrators, or to the vendor.',
+      '- You **cannot** get a list of which students saw the modal.',
+      '- This is by design — students need to be able to express distress in a practice space without a paper trail following them.',
+      '',
+      '**What you should do:**',
+      '- If a student tells you the modal appeared, treat that as a disclosure and follow your building\'s standard crisis-response protocol — typically: stay with the student, contact the counselor or designated mental health staff, do not leave them alone, document per your district\'s reporting requirements.',
+      '- Do **not** rely on the Hub to surface at-risk students for you. It won\'t. Your eyes, your relationship with the student, and your colleagues\' observations are still the actual safety net.',
+      '- Before launching the Hub with a class, confirm you know who to call when a student is in crisis and how fast they can respond.',
+      '',
+      '---',
+      '',
+      '## 5. Parent notification',
+      '',
+      'Even though the Hub stores no persistent student data, parents deserve to know their child is using it. Norms vary by district — here is a starting template.',
+      '',
+      '**Sample parent letter (copy and adapt):**',
+      '',
+      '> Dear families,',
+      '>',
+      '> This year, our class will occasionally use an online tool called the SEL Hub. It offers short activities to help students notice their feelings, practice coping strategies, and reflect on social situations.',
+      '>',
+      '> A few things to know:',
+      '>',
+      '> - **It is not a test or assessment.** Nothing students do in the Hub is graded or recorded in their school file.',
+      '> - **No accounts, no stored data.** The Hub does not create a login for your child. When they close the activity, their work disappears unless they choose to save a file to their own device.',
+      '> - **Optional AI helper.** Some activities offer an AI helper to suggest words or coping ideas. This runs inside our school\'s Google Workspace for Education environment, which means student input is not used to train outside AI models. [If your district has not enabled Gemini for under-18 users, delete this paragraph or note that AI features are turned off.]',
+      '> - **Safety support built in.** If a student writes about being in crisis, the activity pauses and shows the 988 Suicide & Crisis Lifeline (call or text 988) and Crisis Text Line (text HOME to 741741), along with a reminder to talk to a trusted adult.',
+      '>',
+      '> If you\'d prefer your child opt out of Hub activities, or if you have questions, please reach out. I\'m happy to walk you through what students will see.',
+      '',
+      '**Add to your AUP / class syllabus:**',
+      '- A line naming the SEL Hub as a tool used in class.',
+      '- A statement that it is formative, not assessed, not a screener.',
+      '- A pointer to the parent contact for opt-out.',
+      '',
+      '**Suggested timing:**',
+      '- Send the notice **before** the first session, not after.',
+      '- Re-send or link it at the start of any term where you reintroduce the tool.',
+      '- Keep the opt-out easy and ungated — no form fees, no required meeting.',
+      '',
+      '---',
+      '',
+      '## 6. Verification checklist',
+      '',
+      'Before you use the Hub with students, walk through this list:',
+      '',
+      '- [ ] **AUP check.** Confirm your district\'s Acceptable Use Policy permits classroom use of third-party SEL tools, and that this tool is covered (either by name or by category).',
+      '- [ ] **IT confirmation on Gemini.** Ask your IT or Workspace admin whether Gemini is enabled for under-18 users in your Organizational Unit. If yes, AI features will work; if no, plan to use the Hub without AI features (most activities still function).',
+      '- [ ] **Parent notice sent.** Either the letter above (adapted) or your district\'s standard family-communication channel — sent before students start.',
+      '- [ ] **Opt-out path clear.** You know how a parent can decline, and you have a non-tech alternative activity ready.',
+      '- [ ] **Crisis-response protocol ready.** You know who to contact, how fast they respond, and where the student should be while you wait.',
+      '- [ ] **Student orientation done.** Students know (a) their work disappears unless they Export, (b) the AI helper sees what they type, and (c) the 988/741741 modal exists and how to use it.',
+      '- [ ] **Your own boundaries set.** You\'ve decided what you will and won\'t ask students to share in reflections, and what you\'ll do with any JSONs they send you.',
+      '',
+      '---',
+      '',
+      '## 7. Limitations to be honest about',
+      '',
+      'The Hub is genuinely useful for what it\'s designed for. It is also genuinely limited. Tell students and colleagues the truth:',
+      '',
+      '- **It does not replace counseling.** A student working through grief, trauma, or chronic anxiety needs a trained mental-health professional, not a web activity.',
+      '- **It does not screen for anything.** It cannot tell you which students are depressed, suicidal, anxious, neurodivergent, abused, or anything else. Activities that look diagnostic are practice scaffolds, not instruments.',
+      '- **It does not produce IEP-quality data.** Nothing from a Hub session belongs in present-levels, goal-progress monitoring, or evaluation reports. If you need progress data, use validated tools.',
+      '- **It cannot verify a student\'s emotional state.** A student can click "I feel great" while feeling terrible, or vice versa. Treat self-report as one data point among many — and a weak one.',
+      '- **It is not a substitute for relationships.** The reason SEL works in schools is that adults notice, name, and respond to what kids are going through. The Hub can rehearse vocabulary. It cannot care about your students. You can.',
+      '',
+      'If you keep that frame, the Hub is a useful piece of a thoughtful SEL practice. If you let it drift into "assessment," "screener," or "early-warning system," it will quietly cause harm. Use it like a journal prompt or a role-play card — supportive, formative, low-stakes — and it will earn its place in your room.'
+    ].join('\n');
+
+    // ── Minimal markdown-to-HTML-element converter ──
+    // Handles: headers (#, ##, ###), bold (**...**), italics (*...*),
+    // unordered lists (- ...), blockquotes (> ...), horizontal rules (---),
+    // checklist items (- [ ]), and paragraph wrapping. Renders as React
+    // elements (no dangerouslySetInnerHTML — XSS-safe by construction).
+    function _selRenderMarkdown(React, md) {
+      var h = React.createElement;
+      var lines = String(md || '').split('\n');
+      var blocks = [];
+      var i = 0;
+      function renderInline(text) {
+        // Split on **bold** then *italic*; return an array of strings + elements.
+        var parts = [text];
+        // Bold
+        var nextParts = [];
+        parts.forEach(function(part) {
+          if (typeof part !== 'string') { nextParts.push(part); return; }
+          var pieces = part.split(/(\*\*[^*]+\*\*)/g);
+          pieces.forEach(function(p) {
+            if (/^\*\*[^*]+\*\*$/.test(p)) {
+              nextParts.push(h('strong', { key: 'b' + nextParts.length }, p.slice(2, -2)));
+            } else if (p) {
+              nextParts.push(p);
+            }
+          });
+        });
+        parts = nextParts;
+        // Italics (single *)
+        nextParts = [];
+        parts.forEach(function(part) {
+          if (typeof part !== 'string') { nextParts.push(part); return; }
+          var pieces = part.split(/(\*[^*]+\*)/g);
+          pieces.forEach(function(p) {
+            if (/^\*[^*]+\*$/.test(p)) {
+              nextParts.push(h('em', { key: 'i' + nextParts.length }, p.slice(1, -1)));
+            } else if (p) {
+              nextParts.push(p);
+            }
+          });
+        });
+        return nextParts;
+      }
+      while (i < lines.length) {
+        var line = lines[i];
+        // Horizontal rule
+        if (/^---+\s*$/.test(line)) {
+          blocks.push(h('hr', { key: 'b' + blocks.length, style: { border: 'none', borderTop: '1px solid #cbd5e1', margin: '16px 0' } }));
+          i++; continue;
+        }
+        // Headers
+        var hMatch = /^(#{1,6})\s+(.+)$/.exec(line);
+        if (hMatch) {
+          var level = hMatch[1].length;
+          var sizes = [0, 22, 18, 16, 15, 14, 13];
+          var weights = [0, 800, 800, 700, 700, 700, 700];
+          var marginTops = [0, 20, 18, 14, 12, 10, 8];
+          blocks.push(h('h' + Math.min(level, 6), {
+            key: 'b' + blocks.length,
+            style: { fontSize: sizes[level], fontWeight: weights[level], marginTop: marginTops[level], marginBottom: 8 }
+          }, renderInline(hMatch[2])));
+          i++; continue;
+        }
+        // Blockquote (consume consecutive > lines)
+        if (/^>\s?/.test(line)) {
+          var quoteLines = [];
+          while (i < lines.length && /^>\s?/.test(lines[i])) {
+            quoteLines.push(lines[i].replace(/^>\s?/, ''));
+            i++;
+          }
+          blocks.push(h('blockquote', {
+            key: 'b' + blocks.length,
+            style: { borderLeft: '3px solid #94a3b8', paddingLeft: 12, margin: '12px 0', color: '#475569', fontStyle: 'italic' }
+          }, quoteLines.map(function(ql, qi) {
+            if (!ql.trim()) return h('br', { key: 'qbr' + qi });
+            return h('div', { key: 'qln' + qi, style: { marginBottom: 4 } }, renderInline(ql));
+          })));
+          continue;
+        }
+        // Unordered list (consume consecutive - lines)
+        if (/^-\s+/.test(line)) {
+          var listItems = [];
+          while (i < lines.length && /^-\s+/.test(lines[i])) {
+            var raw = lines[i].replace(/^-\s+/, '');
+            // Checklist item: "[ ] text" or "[x] text"
+            var checkMatch = /^\[([ xX])\]\s+(.*)$/.exec(raw);
+            if (checkMatch) {
+              var checked = checkMatch[1].toLowerCase() === 'x';
+              listItems.push(h('li', {
+                key: 'li' + listItems.length,
+                style: { listStyle: 'none', marginBottom: 4 }
+              }, h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, checked ? '☑' : '☐'), renderInline(checkMatch[2])));
+            } else {
+              listItems.push(h('li', {
+                key: 'li' + listItems.length,
+                style: { marginBottom: 4 }
+              }, renderInline(raw)));
+            }
+            i++;
+          }
+          blocks.push(h('ul', {
+            key: 'b' + blocks.length,
+            style: { paddingLeft: 22, margin: '8px 0' }
+          }, listItems));
+          continue;
+        }
+        // Blank line
+        if (!line.trim()) {
+          i++; continue;
+        }
+        // Paragraph (consume consecutive non-blank, non-special lines)
+        var paraLines = [];
+        while (i < lines.length && lines[i].trim() && !/^(#{1,6}\s|>\s?|-\s+|---+\s*$)/.test(lines[i])) {
+          paraLines.push(lines[i]);
+          i++;
+        }
+        if (paraLines.length > 0) {
+          blocks.push(h('p', {
+            key: 'b' + blocks.length,
+            style: { margin: '8px 0', lineHeight: 1.55 }
+          }, renderInline(paraLines.join(' '))));
+        }
+      }
+      return blocks;
     }
 
     window.AlloModules = window.AlloModules || {};
@@ -206,6 +607,138 @@
         window.addEventListener('allo-plugins-changed', handler);
         return function() { window.removeEventListener('allo-plugins-changed', handler); };
       }, []);
+
+      // ── CHANGE 1: Ephemerality explainer state ──
+      // Surfaces a first-run modal explaining that work is lost without Export.
+      // Re-shows after 20 min of active use with no export. SessionStorage
+      // tracks whether the user has dismissed it this session; an activity
+      // timestamp ref + 60-sec interval handles the re-prompt.
+      var _showEphemeralExplainer = React.useState(false);
+      var showEphemeralExplainer = _showEphemeralExplainer[0];
+      var setShowEphemeralExplainer = _showEphemeralExplainer[1];
+      var _lastActivityRef = React.useRef(Date.now());
+      var _lastExportRef = React.useRef(0);
+
+      // ── CHANGE 2: Unsaved-changes indicator state ──
+      // True when any tool/snapshot/xp/usage state has changed since the last
+      // export. Cleared on alloflow-sel-exported event. Suppressed for the
+      // first render so a fresh hub-open doesn't immediately flag dirty.
+      var _isDirty = React.useState(false);
+      var isDirty = _isDirty[0];
+      var setIsDirty = _isDirty[1];
+      var _showDirtyTooltip = React.useState(false);
+      var showDirtyTooltip = _showDirtyTooltip[0];
+      var setShowDirtyTooltip = _showDirtyTooltip[1];
+      var _firstRenderRef = React.useRef(true);
+
+      // ── CHANGE 3: For-Educators modal state ──
+      var _showForEducators = React.useState(false);
+      var showForEducators = _showForEducators[0];
+      var setShowForEducators = _showForEducators[1];
+
+      // Mark dirty when any persisted tool state changes (after first render).
+      React.useEffect(function() {
+        if (_firstRenderRef.current) {
+          _firstRenderRef.current = false;
+          return;
+        }
+        setIsDirty(true);
+      }, [selToolData, selSnapshots, selXp, selToolUsage]);
+
+      // Listen for export events fired by either the parent app or our own
+      // Export-now CTA. Clears dirty + resets the 20-min idle-export timer.
+      React.useEffect(function() {
+        function onExported() {
+          setIsDirty(false);
+          _lastExportRef.current = Date.now();
+          try { sessionStorage.setItem('alloflow_sel_last_export_at', String(Date.now())); } catch (e) {}
+        }
+        window.addEventListener('alloflow-sel-exported', onExported);
+        // Also treat the host's project-save event as an export.
+        window.addEventListener('alloflow-project-saved', onExported);
+        return function() {
+          window.removeEventListener('alloflow-sel-exported', onExported);
+          window.removeEventListener('alloflow-project-saved', onExported);
+        };
+      }, []);
+
+      // First-run ephemeral explainer: show on hub open if never seen.
+      React.useEffect(function() {
+        if (!showSelHub) return;
+        var seen = false;
+        try { seen = sessionStorage.getItem('alloflow_sel_seen_ephemeral_explainer') === '1'; } catch (e) {}
+        if (!seen) setShowEphemeralExplainer(true);
+      }, [showSelHub]);
+
+      // Track user activity (pointer / key / touch) so the 20-min idle
+      // check measures *active* use, not wall-clock time.
+      React.useEffect(function() {
+        if (!showSelHub) return;
+        function bump() { _lastActivityRef.current = Date.now(); }
+        window.addEventListener('pointerdown', bump, { passive: true });
+        window.addEventListener('keydown', bump, { passive: true });
+        window.addEventListener('touchstart', bump, { passive: true });
+        return function() {
+          window.removeEventListener('pointerdown', bump);
+          window.removeEventListener('keydown', bump);
+          window.removeEventListener('touchstart', bump);
+        };
+      }, [showSelHub]);
+
+      // 60-sec interval: if 20+ min of active use has elapsed with no export
+      // and the explainer isn't already open, re-surface it.
+      React.useEffect(function() {
+        if (!showSelHub) return;
+        var TWENTY_MIN = 20 * 60 * 1000;
+        var interval = setInterval(function() {
+          if (showEphemeralExplainer) return;
+          var now = Date.now();
+          var sinceActivity = now - _lastActivityRef.current;
+          var sinceExport = now - (_lastExportRef.current || 0);
+          // Active in the last 60 sec AND no export in 20 min
+          if (sinceActivity < 60000 && sinceExport > TWENTY_MIN) {
+            setShowEphemeralExplainer(true);
+          }
+        }, 60000);
+        return function() { clearInterval(interval); };
+      }, [showSelHub, showEphemeralExplainer]);
+
+      // Tab-trap + ESC for the ephemeral explainer + For-Educators modal.
+      React.useEffect(function() {
+        if (!showEphemeralExplainer && !showForEducators) return;
+        function onKey(e) {
+          if (e.key === 'Escape') {
+            if (showForEducators) { setShowForEducators(false); }
+            else if (showEphemeralExplainer) {
+              setShowEphemeralExplainer(false);
+              try { sessionStorage.setItem('alloflow_sel_seen_ephemeral_explainer', '1'); } catch (err) {}
+            }
+            return;
+          }
+          if (e.key === 'Tab') {
+            var modalId = showForEducators ? 'sel-for-educators-modal' : 'sel-ephemeral-explainer-modal';
+            var modal = document.getElementById(modalId);
+            if (!modal) return;
+            var focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusable.length === 0) return;
+            var first = focusable[0];
+            var last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+          }
+        }
+        document.addEventListener('keydown', onKey);
+        // Focus the primary action on open.
+        setTimeout(function() {
+          var modalId = showForEducators ? 'sel-for-educators-modal' : 'sel-ephemeral-explainer-modal';
+          var modal = document.getElementById(modalId);
+          if (modal) {
+            var primary = modal.querySelector('[data-primary-action]') || modal.querySelector('button');
+            if (primary) { try { primary.focus(); } catch (e2) {} }
+          }
+        }, 50);
+        return function() { document.removeEventListener('keydown', onKey); };
+      }, [showEphemeralExplainer, showForEducators]);
 
       function awardSelXP(amount) {
         var pts = amount || 5;
@@ -312,15 +845,69 @@
       var _builderQuests = React.useState([]);
       var builderQuests = _builderQuests[0]; var setBuilderQuests = _builderQuests[1];
 
-      // Persist saved stations to localStorage whenever they change.
+      // Persist saved stations to localStorage AND to the window slot the
+      // host save pipeline reads. Without the window mirror, executeSaveFile
+      // can't include stations in the project JSON, so they vanish whenever
+      // Canvas wipes localStorage between sessions.
       React.useEffect(function () {
         try { localStorage.setItem('alloflow_sel_stations', JSON.stringify(savedStations)); } catch (e) {}
+        try { window.__alloflowSelStations = savedStations; } catch (e) {}
       }, [savedStations]);
 
-      // Persist quest progress to localStorage whenever it changes.
+      // Persist quest progress to localStorage AND to the window slot. Same
+      // Canvas-survival reason as savedStations above.
       React.useEffect(function () {
         try { localStorage.setItem('alloflow_sel_station_progress', JSON.stringify(questProgress)); } catch (e) {}
+        try { window.__alloflowSelProgress = questProgress; } catch (e) {}
       }, [questProgress]);
+
+      // Hot-reload from a project JSON load mid-session for SEL stations:
+      // misc_handlers dispatches this after writing window.__alloflowSelStations.
+      React.useEffect(function () {
+        function onStationsRestore() {
+          try {
+            var w = window.__alloflowSelStations;
+            if (Array.isArray(w)) setSavedStations(w);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-sel-stations-restored', onStationsRestore);
+        return function () { window.removeEventListener('alloflow-sel-stations-restored', onStationsRestore); };
+      }, []);
+
+      // Same hot-reload for quest progress.
+      React.useEffect(function () {
+        function onProgressRestore() {
+          try {
+            var w = window.__alloflowSelProgress;
+            if (w && typeof w === 'object') setQuestProgress(w);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-sel-progress-restored', onProgressRestore);
+        return function () { window.removeEventListener('alloflow-sel-progress-restored', onProgressRestore); };
+      }, []);
+
+      // Hot-reload for per-tool state. The hub keeps an aggregate selToolData
+      // state object that gets pushed into ctx.toolData for each tool render.
+      // When a project loads, window.__alloflowSelToolData has the full map
+      // keyed by toolId — pull it into React state so the next render of any
+      // open tool sees its restored slice.
+      React.useEffect(function () {
+        function onToolDataRestore() {
+          try {
+            var w = window.__alloflowSelToolData;
+            if (w && typeof w === 'object') setSelToolData(w);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-sel-tooldata-restored', onToolDataRestore);
+        return function () { window.removeEventListener('alloflow-sel-tooldata-restored', onToolDataRestore); };
+      }, []);
+
+      // Mirror the hub's aggregate per-tool state into the window slot the
+      // host save pipeline reads. Same Canvas-survival pattern as the
+      // engagement / stations / progress mirrors above.
+      React.useEffect(function () {
+        try { window.__alloflowSelToolData = selToolData; } catch (e) {}
+      }, [selToolData]);
 
       // ── Daily streak tick ──
       // When the SEL Hub opens on a new calendar day, increment the streak
@@ -705,7 +1292,48 @@
             style: { fontSize: 11, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }
           }, gradeBand(gradeLevel) === 'elementary' ? 'Elementary' : gradeBand(gradeLevel) === 'middle' ? 'Middle School' : 'High School')
         ),
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, position: 'relative' } },
+          // CHANGE 2: Unsaved-changes badge \u2014 dot only when dirty
+          isDirty && h('div', { style: { position: 'relative' } },
+            h('button', {
+              onClick: function() { setShowDirtyTooltip(function(v) { return !v; }); },
+              'aria-label': 'You have unsaved changes',
+              title: 'Unsaved changes',
+              style: { background: 'rgba(239, 68, 68, 0.18)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fecaca', cursor: 'pointer', padding: '4px 10px', borderRadius: 16, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }
+            },
+              h('span', { 'aria-hidden': 'true', style: { width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block' } }),
+              h('span', null, 'Unsaved')
+            ),
+            showDirtyTooltip && h('div', {
+              role: 'tooltip',
+              style: { position: 'absolute', top: '110%', right: 0, marginTop: 6, background: '#0f172a', color: '#f1f5f9', border: '1px solid #475569', borderRadius: 10, padding: 12, fontSize: 12, width: 260, zIndex: 10000, boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }
+            },
+              h('div', { style: { marginBottom: 8 } }, 'You have unsaved changes \u2014 tap Export now to save them'),
+              h('button', {
+                onClick: function() {
+                  setShowDirtyTooltip(false);
+                  // Prefer parent-supplied export handler; otherwise dispatch
+                  // a window event that the host app can listen for.
+                  if (typeof props.onExportRequested === 'function') {
+                    try { props.onExportRequested(); } catch (e) {}
+                  } else {
+                    try { window.dispatchEvent(new CustomEvent('alloflow-sel-export-requested')); } catch (e) {}
+                  }
+                  // Optimistically clear dirty (host will confirm with
+                  // alloflow-sel-exported if/when the file actually writes).
+                  if (typeof addToast === 'function') addToast('Exporting your work\u2026', 'info');
+                },
+                style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', width: '100%' }
+              }, '\uD83D\uDCBE Export now')
+            )
+          ),
+          // CHANGE 3: For-Educators link
+          h('button', {
+            onClick: function() { setShowForEducators(true); announceToSR('For Educators guide opened'); },
+            'aria-label': 'For Educators: how to use this Hub responsibly',
+            title: 'For Educators',
+            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }
+          }, '\uD83C\uDF93 ', h('span', null, 'For Educators')),
           // Theme toggle button
           h('button', {
             onClick: function() { if (typeof window.AlloToggleTheme === 'function') { window.AlloToggleTheme(); setTimeout(function() { setSelToolData(function(p) { return Object.assign({}, p); }); }, 50); } },
@@ -724,6 +1352,66 @@
             'aria-label': 'Close SEL Hub',
             style: { background: 'none', border: 'none', color: _t.headerText, cursor: 'pointer', padding: 4 }
           }, X ? h(X, { size: 20 }) : '\u2715')
+        )
+      );
+
+      // \u2500\u2500 CHANGE 1: Ephemerality explainer modal \u2500\u2500
+      var ephemeralExplainerModal = showEphemeralExplainer && h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'sel-ephemeral-title',
+        id: 'sel-ephemeral-explainer-modal',
+        style: { position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }
+      },
+        h('div', {
+          style: { background: _t.bgCard, color: _t.text, borderRadius: 14, border: '1px solid ' + _t.border, maxWidth: 480, width: '100%', padding: 24, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }
+        },
+          h('div', { 'aria-hidden': 'true', style: { fontSize: 36, marginBottom: 12, textAlign: 'center' } }, '\uD83D\uDCBE'),
+          h('h2', { id: 'sel-ephemeral-title', style: { margin: 0, fontSize: 18, fontWeight: 800, textAlign: 'center', marginBottom: 12 } }, 'Your work is not auto-saved'),
+          h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, marginBottom: 20, textAlign: 'center' } },
+            'Close this tab and your work is gone unless you Export. Export saves a file to your computer. Re-open it later with Import. Tap Got it to start.'
+          ),
+          h('div', { style: { display: 'flex', justifyContent: 'center' } },
+            h('button', {
+              'data-primary-action': 'true',
+              onClick: function() {
+                setShowEphemeralExplainer(false);
+                try { sessionStorage.setItem('alloflow_sel_seen_ephemeral_explainer', '1'); } catch (e) {}
+                // Reset the activity timer so the 20-min re-prompt
+                // measures from this dismissal.
+                _lastActivityRef.current = Date.now();
+                _lastExportRef.current = Date.now();
+              },
+              'aria-label': 'Got it, start using the SEL Hub',
+              style: { padding: '10px 28px', minHeight: 44, borderRadius: 10, border: 'none', background: _t.accent, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+            }, 'Got it')
+          )
+        )
+      );
+
+      // \u2500\u2500 CHANGE 3: For-Educators modal \u2500\u2500
+      var forEducatorsModal = showForEducators && h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'sel-for-educators-title',
+        id: 'sel-for-educators-modal',
+        style: { position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }
+      },
+        h('div', {
+          style: { background: _t.bgCard, color: _t.text, borderRadius: 14, border: '1px solid ' + _t.border, maxWidth: 760, width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }
+        },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid ' + _t.border } },
+            h('h2', { id: 'sel-for-educators-title', style: { margin: 0, fontSize: 16, fontWeight: 800 } }, '\uD83C\uDF93 For Educators'),
+            h('button', {
+              'data-primary-action': 'true',
+              onClick: function() { setShowForEducators(false); },
+              'aria-label': 'Close For Educators guide',
+              style: { background: 'none', border: 'none', color: _t.text, cursor: 'pointer', fontSize: 18, padding: 4 }
+            }, '\u2715')
+          ),
+          h('div', { style: { flex: 1, overflow: 'auto', padding: '16px 24px', fontSize: 13, color: _t.text } },
+            _selRenderMarkdown(React, FOR_EDUCATORS_MD)
+          )
         )
       );
 
@@ -1482,7 +2170,10 @@
         },
           toolGrid,
           toolContent
-        )
+        ),
+        // CHANGE 1 + CHANGE 3: stacked above the hub modal via zIndex
+        ephemeralExplainerModal,
+        forEducatorsModal
       );
     };
   }

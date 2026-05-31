@@ -416,6 +416,49 @@ const handleLoadProject = (e, deps) => {
                     window.dispatchEvent(new CustomEvent('alloflow-roadready-restored'));
                 } catch (e) { warnLog && warnLog('RoadReady restore failed:', e); }
             }
+            // SEL Hub teacher-authored Stations (custom curated tool bundles
+            // with quests). Mirror to window slot AND localStorage, then fire
+            // a custom event so an open SEL Hub re-hydrates its savedStations
+            // state from the window slot without remount.
+            if (rawData.selStations && (Array.isArray(rawData.selStations) || typeof rawData.selStations === 'object')) {
+                try {
+                    window.__alloflowSelStations = rawData.selStations;
+                    if (Array.isArray(rawData.selStations)) {
+                        try { localStorage.setItem('alloflow_sel_stations', JSON.stringify(rawData.selStations)); } catch (e) {}
+                    }
+                    window.dispatchEvent(new CustomEvent('alloflow-sel-stations-restored'));
+                } catch (e) { warnLog && warnLog('SEL stations restore failed:', e); }
+            }
+            // SEL Hub per-station quest progress (xpThreshold / timeSpent /
+            // freeResponse / manualComplete tracking). Same restore flow.
+            if (rawData.selProgress && typeof rawData.selProgress === 'object') {
+                try {
+                    window.__alloflowSelProgress = rawData.selProgress;
+                    try { localStorage.setItem('alloflow_sel_station_progress', JSON.stringify(rawData.selProgress)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-sel-progress-restored'));
+                } catch (e) { warnLog && warnLog('SEL progress restore failed:', e); }
+            }
+            // SEL Hub per-tool persistent state (Voice Detective confusion
+            // matrix, Journal entries, etc.). The window slot is keyed by
+            // toolId; individual tools listen for the custom event and pull
+            // their own slice via window.SelToolDataManager.get(toolId).
+            if (rawData.selToolData && typeof rawData.selToolData === 'object') {
+                try {
+                    window.__alloflowSelToolData = rawData.selToolData;
+                    // Also mirror each tool's per-tool localStorage key so
+                    // tools that read directly from localStorage on mount
+                    // (instead of via the manager) pick up the restore.
+                    Object.keys(rawData.selToolData || {}).forEach(function (toolId) {
+                        try {
+                            var slot = rawData.selToolData[toolId];
+                            if (slot && typeof slot === 'object' && slot._lsKey && typeof slot._lsKey === 'string') {
+                                localStorage.setItem(slot._lsKey, JSON.stringify(slot._lsValue !== undefined ? slot._lsValue : slot));
+                            }
+                        } catch (e) {}
+                    });
+                    window.dispatchEvent(new CustomEvent('alloflow-sel-tooldata-restored'));
+                } catch (e) { warnLog && warnLog('SEL tool data restore failed:', e); }
+            }
             // Rehydrate sticker overlays. Stickers are saved into the
             // project JSON by phase_k_helpers.executeSaveFile so a teacher's
             // feedback or a student's marks survive reload. Falls back to

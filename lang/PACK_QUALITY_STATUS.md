@@ -1575,3 +1575,45 @@ that are overwhelmingly:
 **This is the cleanest possible state without manual brand-name decision-making.**
 Any further work is genuinely native-speaker-judgment territory — there is no
 more "obvious mechanical translation work" to do.
+
+---
+
+## 2026-05-31 — Word Sounds clinical-label relabel (Pass 1)
+
+The Word Sounds module's user-facing strings were reframed to remove
+clinical-screening language ("RTI Tier", "Screening", "Benchmark", "At Risk")
+in favor of formative-practice language ("Practice Group A/B/C", "Practice
+check", "Target", "Needs targeted support"). Rationale: the underlying data
+is in-app practice, not validated clinical screening — the framing risked
+misuse for high-stakes decisions the measurement can't support.
+
+**4 i18n keys had their underlying English meaning change:**
+
+| Key | Old English | New English |
+|---|---|---|
+| `common.benchmark_probe_results` | Benchmark Probe Results | Practice probe results |
+| `common.configure_rti_thresholds` | Configure RTI Thresholds | Configure group cutoffs |
+| `common.export_rti_progress_report_as_csv` | Export RTI Progress Report as CSV | Export practice grouping (CSV) |
+| `class_analytics.benchmark_vs` | vs. Benchmark | vs. Target |
+
+**Automated update applied** (script: `_dev/relabel_passthrough_update.cjs`):
+exact-match English-passthrough values in lang packs were updated to the new
+English text. **Hand-translated values were left alone** — they still translate
+the OLD English meaning and need a translator to redo. Counts:
+
+| Key | Passthrough packs updated | Hand-translated packs unchanged |
+|---|---|---|
+| `benchmark_probe_results` | 4 (acholi, chin_falam, chin_hakha, karen) | 52 |
+| `configure_rti_thresholds` | 3 (acholi, chin_hakha, karen) | 53 |
+| `export_rti_progress_report_as_csv` | 0 (all packs had hybrid/partial translations) | 56 |
+| `benchmark_vs` | 9 (acholi, chin_falam, chin_hakha, german, karen, lao, maay_maay, marshallese, tagalog) | 47 |
+
+**Translation team TODO**: re-translate the 4 keys above for hand-translated
+packs. The current translations still reference "RTI", "Screening", or
+"Benchmark" — accurate to old English, but now divergent from the in-app UI.
+Spanish (LATAM), French, Chinese Simplified, Vietnamese, Portuguese (Brazil),
+and German were on the "complete" major-language list before this — they're
+now divergent on these 4 keys.
+
+The `_dev/word_sounds_clinical_label_inventory.md` doc has the full mapping
+table if a translator wants to verify intended meanings.

@@ -3291,7 +3291,7 @@
     "flag_breakdown": "Safety Flag Categories",
     "fluency_trend": "Fluency Progress (WCPM)",
     "running_record": "Running Record Summary",
-    "benchmark_vs": "vs. Benchmark",
+    "benchmark_vs": "vs. Target",
     "sort_asc": "Sort ascending",
     "xp_earned_streak": "+{xp} XP (•{multiplier} streak!)",
     "sort_desc": "Sort descending",

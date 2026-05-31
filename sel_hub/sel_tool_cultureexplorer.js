@@ -988,7 +988,7 @@ window.SelHub = window.SelHub || {
             h('label', { className: 'text-xs font-bold text-cyan-700 block mb-1' }, '\uD83D\uDD0D Search any culture or community:'),
             h('div', { className: 'flex gap-2' },
               h('input', { type: 'text', value: customCulture, onChange: function(e) { upd('customCulture', e.target.value); },
-                placeholder: 'e.g., Hmong, Somali diaspora, Deaf culture, Cajun...',
+                placeholder: 'e.g., Hmong, Somali diaspora, Deaf culture, Cajun... (don’t share personal info)',
                 className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                 onKeyDown: function(e) { if (e.key === 'Enter' && customCulture.trim()) { updMulti({ culture: customCulture.trim(), tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(customCulture.trim(), 'traditions'); } },
                 'aria-label': 'Search for a culture'
@@ -1520,14 +1520,14 @@ window.SelHub = window.SelHub || {
               h('div', null,
                 h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Culture 1'),
                 h('input', { type: 'text', value: compCulture1, onChange: function(e) { upd('compCulture1', e.target.value); },
-                  placeholder: 'e.g., Japanese', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                  placeholder: 'e.g., Japanese (don’t share personal info)', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'First culture to compare'
                 })
               ),
               h('div', null,
                 h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Culture 2'),
                 h('input', { type: 'text', value: compCulture2, onChange: function(e) { upd('compCulture2', e.target.value); },
-                  placeholder: 'e.g., Mexican', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                  placeholder: 'e.g., Mexican (don’t share personal info)', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'Second culture to compare'
                 })
               )
@@ -1709,7 +1709,7 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'flex gap-2' },
                 h('input', { type: 'text', value: d.followUpQ || '', onChange: function(e) { upd('followUpQ', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && d.followUpQ && d.followUpQ.trim()) { askFollowUp(d.followUpQ); upd('followUpQ', ''); } },
-                  placeholder: 'What else would you like to know?',
+                  placeholder: 'What else would you like to know? (don’t share personal info)',
                   className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'Follow-up question'
                 }),

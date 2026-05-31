@@ -54,6 +54,56 @@ const escapeHtml = (str) => {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 };
 
+// ── Defensive normalizers for UNTRUSTED draft data (imported .json files + restored
+//    localStorage). Prevents render crashes from malformed paragraph shapes and closes
+//    the stored-XSS vector where imported image URLs are interpolated into export HTML. ──
+const MAX_DRAFT_PARAGRAPHS = 8; // mirrors the in-app maxParagraphs cap
+const sanitizeParagraphs = (arr) => {
+  if (!Array.isArray(arr)) return null;
+  const cleaned = arr.slice(0, MAX_DRAFT_PARAGRAPHS).map((p, i) => ({
+    id: (p && typeof p.id === 'string' && p.id) ? p.id : `p-${i}`,
+    text: (p && typeof p.text === 'string') ? p.text : '',
+    scaffoldFrame: (p && typeof p.scaffoldFrame === 'string') ? p.scaffoldFrame : '',
+    plotBeat: (p && typeof p.plotBeat === 'string') ? p.plotBeat : '',
+  }));
+  return cleaned.length > 0 ? cleaned : [{ id: 'p-0', text: '', scaffoldFrame: '', plotBeat: '' }];
+};
+// Only inline data-image URIs or http(s) URLs are allowed; everything else (javascript:,
+// quote-bearing breakout attempts, etc.) becomes '' so it can't poison the export <img src>.
+const safeImageUrl = (u) => (typeof u === 'string' && /^(data:image\/|https?:\/\/)/i.test(u)) ? u : '';
+const sanitizeIllustrations = (obj) => {
+  if (!obj || typeof obj !== 'object') return {};
+  const out = {};
+  Object.keys(obj).forEach((k) => {
+    const v = obj[k];
+    if (!v || typeof v !== 'object') return;
+    const url = safeImageUrl(v.imageUrl);
+    if (url) out[k] = { imageUrl: url, prompt: typeof v.prompt === 'string' ? v.prompt : '' };
+  });
+  return out;
+};
+const sanitizeVocabTerms = (arr) => Array.isArray(arr)
+  ? arr.filter((v) => v && typeof v.term === 'string').map((v) => ({ term: v.term, definition: typeof v.definition === 'string' ? v.definition : '' }))
+  : null;
+
+// ── Vocab term detection with word-boundary awareness ──
+// True if `term` appears as a whole word (not a substring) in `text`, case-insensitive —
+// so "cat" no longer matches "category". Term is regex-escaped first.
+const termUsed = (text, term) => {
+  if (!text || !term) return false;
+  const escaped = String(term).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (!escaped) return false;
+  try { return new RegExp(`\\b${escaped}\\b`, 'i').test(text); }
+  catch (e) { return text.toLowerCase().includes(String(term).toLowerCase()); }
+};
+
+// RTL writing-system detection for export <html dir> (only Arabic is selectable in
+// LANG_OPTIONS, but a custom 'other' language could be RTL too).
+const isRtl = (langCode) => {
+  const code = String(langCode || '').split('-')[0].toLowerCase();
+  return ['ar', 'he', 'fa', 'ps', 'ur', 'sd', 'ug', 'yi'].includes(code);
+};
+
 const useAudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
@@ -317,7 +367,7 @@ const GENRE_TEMPLATES = {
   'persuasive': { label: 'Persuasive Narrative', emoji: '💬', scaffoldHint: 'a persuasive narrative that argues a point through a character\'s experience and storytelling' },
 };
 
-const SAVE_KEY = 'alloflow_storyforge_draft';
+const SAVE_KEY_BASE = 'alloflow_storyforge_draft';
 
 // Narrative beat options for the per-paragraph Plot Structure dropdown.
 // Empty value means "unset" — students can leave blank.
@@ -330,6 +380,48 @@ const PLOT_BEATS = [
   { value: 'falling', label: 'Falling Action' },
   { value: 'resolution', label: 'Resolution' },
 ];
+
+// ── Story Shapes (Kurt Vonnegut's "Shapes of Stories" — fortune plotted over time) ──
+// A craft LENS, not a fixed taxonomy. The six below align with both Vonnegut's shapes and
+// the six emotional arcs Reagan et al. (2016) found empirically across ~1,300 stories.
+// `curve` is a 0-1 fortune sparkline (low→high); `scaffoldHint` steers the AI scaffold prompt.
+const STORY_SHAPES = {
+  manInHole:      { label: 'Man in a Hole', emoji: '🕳️', desc: 'Things are okay — then trouble — then the hero climbs out stronger.', curve: [0.65, 0.45, 0.15, 0.5, 0.85], scaffoldHint: 'an emotional shape where the character starts in an okay place, falls into real trouble in the middle, then climbs out better off than they began (a fall, then a rise)' },
+  cinderella:     { label: 'Cinderella', emoji: '👑', desc: 'Up, then a sudden setback, then better than ever.', curve: [0.25, 0.55, 0.8, 0.2, 0.95], scaffoldHint: 'a rise–fall–rise shape: things improve, a sudden setback dashes hopes, then a turnaround ends higher than ever' },
+  boyMeetsGirl:   { label: 'Boy Meets Girl', emoji: '💞', desc: 'Find something wonderful, lose it, then win it back.', curve: [0.45, 0.85, 0.2, 0.9], scaffoldHint: 'the character gains something wonderful, loses it, and finally gets it back (up, down, up)' },
+  ragsToRiches:   { label: 'Rags to Riches', emoji: '📈', desc: 'A steady climb — things keep getting better.', curve: [0.15, 0.4, 0.65, 0.9], scaffoldHint: 'a steady rise from a hard or low start to a happy, successful ending (mostly upward)' },
+  icarus:         { label: 'Icarus', emoji: '🪽', desc: 'A great rise — then a fall. A cautionary tale.', curve: [0.2, 0.55, 0.9, 0.5, 0.15], scaffoldHint: 'a rise then a fall: things soar, but risk or mistakes bring a downturn by the end (up, then down)' },
+  fromBadToWorse: { label: 'From Bad to Worse', emoji: '🌧️', desc: 'A hard start that gets harder — ending on a hard-won lesson.', curve: [0.55, 0.4, 0.25, 0.12], scaffoldHint: 'a downward shape where the situation steadily worsens; end on a reflective, hard-won lesson rather than a tidy happy ending' },
+};
+
+// Resample a 0-1 curve to K points via linear interpolation (so curves of different
+// lengths can be compared point-for-point).
+const _resampleCurve = (curve, K) => {
+  if (!curve || curve.length === 0) return new Array(K).fill(0.5);
+  if (curve.length === 1) return new Array(K).fill(curve[0]);
+  const out = [];
+  for (let i = 0; i < K; i++) {
+    const t = (i / (K - 1)) * (curve.length - 1);
+    const lo = Math.floor(t), hi = Math.ceil(t), frac = t - lo;
+    out.push(curve[lo] * (1 - frac) + curve[hi] * frac);
+  }
+  return out;
+};
+// Match a student's fortune curve (values normalized 0-1) to the nearest named shape.
+// Returns null if too short to judge; flags `weak` when the match is only loose.
+const closestStoryShape = (norm) => {
+  if (!norm || norm.length < 3) return null;
+  const K = 24;
+  const s = _resampleCurve(norm, K);
+  let best = null;
+  Object.entries(STORY_SHAPES).forEach(([key, sh]) => {
+    const r = _resampleCurve(sh.curve, K);
+    const mse = s.reduce((acc, v, i) => acc + Math.pow(v - r[i], 2), 0) / K;
+    if (!best || mse < best.mse) best = { key, label: sh.label, emoji: sh.emoji, mse };
+  });
+  if (!best) return null;
+  return best.mse <= 0.06 ? best : { ...best, weak: true }; // RMSE ~0.24 cutoff for a confident match
+};
 
 const STORY_STARTERS = {
   'adventure': [
@@ -380,11 +472,68 @@ const computeReadingLevel = (text) => {
   const avgSyllablesPerWord = syllables / words.length;
   const fkGrade = 0.39 * avgWordsPerSentence + 11.8 * avgSyllablesPerWord - 15.59;
   return {
-    grade: Math.max(0, Math.round(fkGrade * 10) / 10),
+    grade: Math.max(0, Math.min(18, Math.round(fkGrade * 10) / 10)), // clamp to [0,18]; FK is meaningless past ~grade 18 (matches doc_pipeline)
     sentences: sentences.length,
     words: words.length,
     syllables,
     avgWordsPerSentence: Math.round(avgWordsPerSentence * 10) / 10,
+  };
+};
+
+// Map a grade-level LABEL (e.g. 'Kindergarten', 'K', 'Pre-K', '5th Grade', 'Grade 5', 'College')
+// to a numeric grade for comparison. Returns null when the label can't be interpreted, so
+// callers can omit an on/above-target verdict rather than show a misleading one.
+// (parseInt('Kindergarten') is NaN, which silently broke the old comparison → always "above target".)
+const gradeLevelToNumber = (label) => {
+  if (typeof label !== 'string') return null;
+  const s = label.trim().toLowerCase();
+  if (s.startsWith('pre')) return 0;                 // Pre-K
+  if (s === 'k' || s.startsWith('kinder')) return 0; // Kindergarten
+  if (s.includes('college')) return 13;
+  const m = s.match(/\d+/);                          // '5th Grade', 'Grade 5', '5'
+  return m ? parseInt(m[0], 10) : null;
+};
+
+// ── Penmanship triangulation ──────────────────────────────────────────────
+// Re-applies the document builder's multi-auditor pattern (doc_pipeline_module.js) to
+// handwriting: run N independent vision reviews under different lenses, re-derive each
+// total from its four 0-25 sub-scores (not the model's gestalt number), then report the
+// MEAN with an honest uncertainty band. We deliberately AVOID the labels "SEM"/"ICC"/
+// "Cronbach's α" — agreement across AI re-reads of one sample is not a normed psychometric
+// instrument. This is a formative AI estimate, not a graded/normed measure.
+const PENMANSHIP_LENSES = [
+  'You are an encouraging elementary teacher giving kind, grade-appropriate handwriting feedback.',
+  'You are a pediatric occupational therapist assessing fine-motor handwriting features.',
+  'You are a literacy specialist focused on legibility and correct letter formation.',
+];
+const PENMANSHIP_DIMS = ['letterFormation', 'spacing', 'alignment', 'neatness'];
+const aggregatePenmanship = (penmanshipObjs) => {
+  const valid = (penmanshipObjs || []).filter(a => a && typeof a === 'object');
+  if (valid.length === 0) return null;
+  const clamp25 = (v) => Math.max(0, Math.min(25, Math.round(Number(v) || 0)));
+  // Re-derive each reviewer's total from its four sub-scores (0-100); ignore any self-reported total.
+  const totals = valid.map(a => PENMANSHIP_DIMS.reduce((s, d) => s + clamp25(a[d]), 0));
+  const n = totals.length;
+  const mean = totals.reduce((a, b) => a + b, 0) / n;
+  const sd = n > 1 ? Math.sqrt(totals.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / (n - 1)) : 0;
+  const seMean = n > 1 ? sd / Math.sqrt(n) : 0; // standard error of the MEAN across reviewers (NOT CTT SEM)
+  const dimMeans = {};
+  PENMANSHIP_DIMS.forEach(d => { dimMeans[d] = Math.round(valid.reduce((s, a) => s + clamp25(a[d]), 0) / n); });
+  const pickStr = (k) => { const hit = valid.map(a => a[k]).find(v => typeof v === 'string' && v.trim()); return hit || ''; };
+  return {
+    score: Math.round(mean),                 // kept for backward-compat (e.g. toast)
+    auditorCount: n,
+    sd: Math.round(sd * 10) / 10,
+    ci: [Math.max(0, Math.round(mean - 1.96 * seMean)), Math.min(100, Math.round(mean + 1.96 * seMean))],
+    agreement: n < 2 ? 'single' : sd <= 4 ? 'high' : sd <= 9 ? 'moderate' : 'low',
+    band: mean >= 80 ? 'Strong' : mean >= 60 ? 'On track' : mean >= 40 ? 'Developing' : 'Emerging',
+    letterFormation: dimMeans.letterFormation,
+    spacing: dimMeans.spacing,
+    alignment: dimMeans.alignment,
+    neatness: dimMeans.neatness,
+    strengths: pickStr('strengths'),
+    tips: pickStr('tips'),
+    legibility: pickStr('legibility'),
   };
 };
 
@@ -450,7 +599,13 @@ const StoryForge = React.memo(({
   // ── Configure state ──
   const [storyTitle, setStoryTitle] = useState('');
   const authorName = codename || 'Creative Writer';
+  // Per-student draft key — namespaced by codename so a shared classroom device doesn't
+  // surface another student's in-progress draft (was one global key → cross-student leak).
+  const SAVE_KEY = SAVE_KEY_BASE + '_' + (String(codename || 'anon').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-+|-+$)/g, '') || 'anon');
   const [genre, setGenre] = useState('free');
+  const [storyShape, setStoryShape] = useState(''); // optional Vonnegut-style emotional shape (scaffolding lens)
+  const [valenceByPara, setValenceByPara] = useState({}); // emotional fortune per paragraph id (-5..+5) for the Story Arc curve
+  const [valenceLoading, setValenceLoading] = useState(false);
   const [vocabTerms, setVocabTerms] = useState([]);
   const [artStyle, setArtStyle] = useState('storybook');
   const [customArtStyle, setCustomArtStyle] = useState('');
@@ -502,10 +657,12 @@ const StoryForge = React.memo(({
     return { totalXP: 0, streak: 0, lastWriteDate: null, xpLog: [] };
   });
 
+  // Local calendar day as YYYY-MM-DD (NOT UTC) — so evening sessions don't land on the wrong day.
+  const getLocalDayKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   const awardXP = (amount, reason) => {
     setXpData(prev => {
-      const today = new Date().toISOString().split('T')[0];
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const today = getLocalDayKey(new Date());
+      const yesterday = getLocalDayKey(new Date(Date.now() - 86400000));
       let streak = prev.streak;
       if (prev.lastWriteDate === yesterday) streak += 1;
       else if (prev.lastWriteDate !== today) streak = 1;
@@ -645,46 +802,57 @@ const StoryForge = React.memo(({
       const showPenmanship = hwPenmanshipOn;
       const gl = gradeLevel || '5th Grade';
 
-      let prompt = 'You are an expert at reading student handwriting.\n\n' +
-        'TASK 1 — TRANSCRIBE: Extract ALL handwritten text from this image exactly as written. ' +
-        'Preserve the student\'s original wording, spelling, and punctuation �� do NOT correct anything. ' +
+      const transcribeTask = 'TASK 1 — TRANSCRIBE: Extract ALL handwritten text from this document exactly as written. ' +
+        'Preserve the student\'s original wording, spelling, and punctuation — do NOT correct anything. ' +
         'If text is unclear, make your best guess and note uncertainty with [?].\n\n';
-
-      if (showPenmanship) {
-        prompt += 'TASK 2 — PENMANSHIP EVALUATION:\n' +
-          'This student is in ' + gl + '.\n' +
-          'CRITICAL: Score relative to what is EXPECTED at ' + gl + ' level, NOT against adult writing.\n' +
-          'Score these areas (each 0-25, total 0-100):\n' +
-          '- LETTER FORMATION (0-25): Are letters shaped correctly for this grade level?\n' +
-          '- SPACING (0-25): Appropriate space between words?\n' +
-          '- ALIGNMENT (0-25): Writing follows the line? Consistent baseline?\n' +
-          '- NEATNESS (0-25): Overall legibility? Clean strokes?\n\n' +
-          'Be encouraging and grade-appropriate.\n\n' +
-          'Return ONLY JSON:\n' +
-          '{"text":"the transcribed handwriting exactly as written",' +
-          '"penmanship":{"score":0-100,' +
-          '"letterFormation":0-25,"spacing":0-25,"alignment":0-25,"neatness":0-25,' +
-          '"strengths":"1-2 specific things done well",' +
-          '"tips":"1-2 encouraging suggestions for improvement",' +
-          '"legibility":"easy|moderate|difficult"}}';
-      } else {
-        prompt += 'Return ONLY JSON:\n{"text":"the transcribed handwriting exactly as written"}';
-      }
+      const penmanshipTask = 'TASK 2 — PENMANSHIP EVALUATION:\n' +
+        'This student is in ' + gl + '.\n' +
+        'CRITICAL: Score relative to what is EXPECTED at ' + gl + ' level, NOT against adult writing.\n' +
+        'Score each area 0-25 (do NOT report a total — it is computed from these):\n' +
+        '- LETTER FORMATION (0-25): Are letters shaped correctly for this grade level?\n' +
+        '- SPACING (0-25): Appropriate space between words?\n' +
+        '- ALIGNMENT (0-25): Writing follows the line? Consistent baseline?\n' +
+        '- NEATNESS (0-25): Overall legibility? Clean strokes?\n\n' +
+        'Be encouraging and grade-appropriate.\n\n' +
+        'Return ONLY JSON:\n' +
+        '{"text":"the transcribed handwriting exactly as written",' +
+        '"penmanship":{"letterFormation":0-25,"spacing":0-25,"alignment":0-25,"neatness":0-25,' +
+        '"strengths":"1-2 specific things done well",' +
+        '"tips":"1-2 encouraging suggestions for improvement",' +
+        '"legibility":"easy|moderate|difficult"}}';
+      const parseVision = (raw) => { try { return JSON.parse(cleanJson(raw)); } catch { return { text: (raw || '').trim() }; } };
 
       try {
-        const result = await onCallGeminiVision(prompt, base64, mimeType);
-        let parsed;
-        try {
-          parsed = JSON.parse(cleanJson(result));
-        } catch {
-          parsed = { text: result.trim() };
+        if (!showPenmanship) {
+          // Single transcription pass — penmanship feedback not requested.
+          const result = await onCallGeminiVision('You are an expert at reading student handwriting.\n\n' + transcribeTask + 'Return ONLY JSON:\n{"text":"the transcribed handwriting exactly as written"}', base64, mimeType);
+          const parsed = parseVision(result);
+          if (parsed.text && paragraphIdx != null) updateParagraph(paragraphIdx, parsed.text);
+          setHwResult({ text: parsed.text || '' });
+          setHwLoading(false);
+          if (addToast) addToast(t('toasts.handwriting_converted'), 'success');
+          return;
         }
-        if (parsed.text && paragraphIdx != null) {
-          updateParagraph(paragraphIdx, parsed.text);
-        }
-        setHwResult(parsed);
+        // ── Penmanship requested: triangulate across N independent reviewer lenses ──
+        // (mirrors the document-builder multi-auditor pattern to cut single-pass variance).
+        const reviews = (await Promise.all(
+          PENMANSHIP_LENSES.map(lens =>
+            onCallGeminiVision(lens + '\n\n' + transcribeTask + penmanshipTask, base64, mimeType)
+              .then(parseVision).catch(() => null)
+          )
+        )).filter(Boolean);
+        if (reviews.length === 0) throw new Error('all penmanship reviews failed');
+        const transcription = (reviews.find(r => r.text && r.text.trim()) || {}).text || '';
+        const penmanship = aggregatePenmanship(reviews.map(r => r.penmanship));
+        if (transcription && paragraphIdx != null) updateParagraph(paragraphIdx, transcription);
+        setHwResult({ text: transcription, penmanship });
         setHwLoading(false);
-        if (addToast) addToast(t('toasts.handwriting_converted') + (parsed.penmanship ? ' Penmanship: ' + parsed.penmanship.score + '/100' : ''), 'success');
+        if (addToast) {
+          const suffix = penmanship
+            ? ` Penmanship: ${penmanship.band}` + (penmanship.auditorCount > 1 ? ` (~${penmanship.score}/100 across ${penmanship.auditorCount} reviewers)` : ` (~${penmanship.score}/100)`)
+            : '';
+          addToast(t('toasts.handwriting_converted') + suffix, 'success');
+        }
       } catch {
         setHwLoading(false);
         if (addToast) addToast(t('toasts.could_read_handwriting_try_clearer'), 'error');
@@ -813,10 +981,10 @@ const StoryForge = React.memo(({
 
   // ── Vocab usage tracking ──
   const vocabUsage = useMemo(() => {
-    const fullText = paragraphs.map(p => p.text).join(' ').toLowerCase();
+    const fullText = paragraphs.map(p => p.text).join(' ');
     const usage = {};
     vocabTerms.forEach(v => {
-      usage[v.term] = fullText.includes(v.term.toLowerCase());
+      usage[v.term] = termUsed(fullText, v.term);
     });
     return usage;
   }, [paragraphs, vocabTerms]);
@@ -834,7 +1002,7 @@ const StoryForge = React.memo(({
   const paragraphStats = useMemo(() => paragraphs.map(p => {
     const words = p.text.trim().split(/\s+/).filter(Boolean);
     const sentences = p.text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const pVocab = vocabTerms.filter(v => p.text.toLowerCase().includes(v.term.toLowerCase()));
+    const pVocab = vocabTerms.filter(v => termUsed(p.text, v.term));
     return { wordCount: words.length, sentenceCount: sentences.length, vocabUsed: pVocab.length };
   }), [paragraphs, vocabTerms]);
 
@@ -946,7 +1114,7 @@ const StoryForge = React.memo(({
       if ((e.ctrlKey || e.metaKey) && e.key === 's' && isOpen) {
         e.preventDefault();
         try {
-          const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language };
+          const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara };
           localStorage.setItem(SAVE_KEY, JSON.stringify(draft));
           setIsDirty(false);
           if (addToast) addToast(t('toasts.draft_saved'), 'success');
@@ -1004,7 +1172,7 @@ const StoryForge = React.memo(({
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       try {
-        const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language };
+        const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara };
         localStorage.setItem(SAVE_KEY, JSON.stringify(draft));
       } catch (e) { /* localStorage full or unavailable */ }
     }, 2000);
@@ -1019,7 +1187,7 @@ const StoryForge = React.memo(({
       const saved = localStorage.getItem(SAVE_KEY);
       if (saved) {
         const data = JSON.parse(saved);
-        if (data.paragraphs && data.paragraphs.some(p => p.text.trim().length > 0)) {
+        if (Array.isArray(data.paragraphs) && data.paragraphs.some(p => p && typeof p.text === 'string' && p.text.trim().length > 0)) {
           savedDraftRef.current = data;
           setShowRestorePrompt(true);
         }
@@ -1037,11 +1205,13 @@ const StoryForge = React.memo(({
     if (d.customArtStyle) setCustomArtStyle(d.customArtStyle);
     if (d.storyPrompt) setStoryPrompt(d.storyPrompt);
     if (d.rubricText) setRubricText(d.rubricText);
-    if (d.paragraphs) setParagraphs(d.paragraphs);
+    if (d.paragraphs) { const cp = sanitizeParagraphs(d.paragraphs); if (cp) setParagraphs(cp); }
     if (d.scaffoldsGenerated) setScaffoldsGenerated(true);
     if (d.draftCount) setDraftCount(d.draftCount);
     if (d.phase) setPhase(d.phase);
     if (d.language) setLanguage(d.language);
+    if (d.storyShape) setStoryShape(d.storyShape);
+    if (d.valenceByPara && typeof d.valenceByPara === 'object') setValenceByPara(d.valenceByPara);
     setShowRestorePrompt(false);
     if (addToast) addToast(t('toasts.draft_restored_2'), 'success');
     sfAnnounce('Draft restored');
@@ -1227,6 +1397,20 @@ const StoryForge = React.memo(({
 
   const removeParagraph = (idx) => {
     if (paragraphs.length <= 1) return;
+    const removedId = paragraphs[idx]?.id;
+    if (removedId) {
+      // Revoke this paragraph's audio blob: URLs (same pattern as the unmount cleanup)…
+      const revoke = (u) => { if (typeof u === 'string' && u.startsWith('blob:')) { try { URL.revokeObjectURL(u); } catch (e) {} } };
+      const seg = audioSegments[removedId];
+      if (seg) { revoke(seg.studentAudioUrl); revoke(seg.aiAudioUrl); if (Array.isArray(seg.sentenceAudios)) seg.sentenceAudios.forEach(revoke); }
+      // …then prune every per-paragraph keyed map so deleted data isn't kept or re-serialized.
+      setAudioSegments(prev => { const n = { ...prev }; delete n[removedId]; return n; });
+      setIllustrations(prev => { const n = { ...prev }; delete n[removedId]; return n; });
+      setPanelDialogue(prev => { const n = { ...prev }; delete n[removedId]; return n; });
+      setPanelStickers(prev => { const n = { ...prev }; delete n[removedId]; return n; });
+      setGrammarResults(prev => { const n = { ...prev }; delete n[removedId]; return n; });
+      setValenceByPara(prev => { const n = { ...prev }; delete n[removedId]; return n; });
+    }
     setParagraphs(prev => prev.filter((_, i) => i !== idx));
   };
 
@@ -1247,10 +1431,12 @@ const StoryForge = React.memo(({
     setIsProcessing(true);
     try {
       const genreHint = GENRE_TEMPLATES[genre]?.scaffoldHint;
+      const shapeHint = STORY_SHAPES[storyShape]?.scaffoldHint;
       const prompt = `You are helping a ${gradeLevel || '5th grade'} student write a creative story about "${sourceTopic || 'a topic of their choice'}".
 Required vocabulary terms the student must use: ${vocabTerms.map(v => v.term).join(', ')}.
 ${storyPrompt ? `Story theme/prompt: "${storyPrompt}"` : ''}
 ${genreHint ? `Genre: Write ${genreHint}.` : ''}
+${shapeHint ? `Story shape: Trace the emotional arc as ${shapeHint}. Spread this rise and fall across the frames from beginning to end.` : ''}
 
 Generate exactly ${Math.max(minParagraphs, paragraphs.length)} paragraph scaffold frames (opening sentences that guide the student through a narrative arc: beginning, middle, end).
 Each frame should naturally encourage using 1-2 of the vocabulary terms.
@@ -1689,9 +1875,9 @@ Return ONLY JSON:
     try {
       const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text}`).join('\n\n');
       const vocabReport = vocabTerms.map(v => {
-        const ft = paragraphs.map(p => p.text).join(' ').toLowerCase();
-        const used = ft.includes(v.term.toLowerCase());
-        const sample = paragraphs.find(p => p.text.toLowerCase().includes(v.term.toLowerCase()))?.text.substring(0, 100) || null;
+        const ft = paragraphs.map(p => p.text).join(' ');
+        const used = termUsed(ft, v.term);
+        const sample = paragraphs.find(p => termUsed(p.text, v.term))?.text.substring(0, 100) || null;
         return { term: v.term, used, contextSample: sample };
       });
 
@@ -1857,6 +2043,30 @@ Match register and reading level to a ${targetGrade} student. Be specific, be ho
   };
 
   // ── Senses & Imagery Checker (ported from PoetTree, retargeted for prose) ──
+  // ── AI-suggest the emotional fortune of each paragraph (Story Arc curve) ──
+  const suggestValenceArc = async () => {
+    if (!onCallGemini) return;
+    const written = paragraphs.filter(p => p.text.trim().length > 0);
+    if (written.length < 2) { if (addToast) addToast(t('toasts.write_bit_more_before_checking') || 'Write a bit more first.', 'info'); return; }
+    setValenceLoading(true);
+    try {
+      const numbered = paragraphs.map((p, i) => `[${i + 1}] ${p.text.trim() || '(empty)'}`).join('\n\n');
+      const prompt = `For each numbered paragraph below, rate the main character's FORTUNE / emotional tone on an integer scale from -5 (very bad — lowest point) to +5 (very good — triumphant). Judge the emotional ups and downs of the story, NOT the writing quality.\n\nParagraphs:\n${numbered}\n\nReturn ONLY JSON: {"valence":[n1, n2, ...]} with exactly ${paragraphs.length} integers from -5 to 5, in paragraph order.`;
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      if (Array.isArray(data.valence)) {
+        const next = {};
+        paragraphs.forEach((p, i) => { const v = Number(data.valence[i]); if (!Number.isNaN(v)) next[p.id] = Math.max(-5, Math.min(5, Math.round(v))); });
+        setValenceByPara(next);
+        if (addToast) addToast('Emotional arc suggested — drag any point to match your story.', 'success');
+        sfAnnounce('Emotional arc suggested.');
+      }
+    } catch (e) {
+      if (addToast) addToast('Could not suggest an arc — try again.', 'error');
+    }
+    setValenceLoading(false);
+  };
+
   const checkSenses = async () => {
     if (!onCallGemini) return;
     const fullText = paragraphs.map(p => p.text.trim()).filter(Boolean).join('\n\n');
@@ -2204,7 +2414,7 @@ Return ONLY JSON:
         const sticker = panelStickers[p.id] || '';
         chaptersHtml += `<article class="panel" aria-label="${escapeHtml(t("a11y.comic_panel", { n: idx + 1 }))}">`;
         if (img) chaptersHtml += `<div class="panel-img-wrap">`;
-        if (img) chaptersHtml += `<img src="${img}" class="panel-img" loading="lazy" alt="Comic panel ${idx + 1} illustration" />`;
+        if (img) chaptersHtml += `<img src="${escapeHtml(img)}" class="panel-img" loading="lazy" alt="Comic panel ${idx + 1} illustration" />`;
         if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label="${escapeHtml(t("a11y.sound_effect", { fx: panel.sfx }))}">${safeSfx}</span>`;
         if (img && sticker) chaptersHtml += `<span class="panel-sticker" aria-hidden="true">${escapeHtml(sticker)}</span>`;
         if (img) chaptersHtml += `</div>`;
@@ -2219,7 +2429,7 @@ Return ONLY JSON:
         chaptersHtml += `</article>`;
       } else {
         chaptersHtml += `<article class="chapter" aria-label="${escapeHtml(t("a11y.paragraph_n", { n: idx + 1 }))}">`;
-        if (img) chaptersHtml += `<img src="${img}" class="scene-img" loading="lazy" alt="Illustration for paragraph ${idx + 1}" />`;
+        if (img) chaptersHtml += `<img src="${escapeHtml(img)}" class="scene-img" loading="lazy" alt="Illustration for paragraph ${idx + 1}" />`;
         const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label;
         if (beatLabel && p.plotBeat) {
           chaptersHtml += `<div class="beat-label" aria-label="${escapeHtml(t("a11y.narrative_beat", { label: beatLabel }))}">${escapeHtml(beatLabel)}</div>`;
@@ -2244,8 +2454,8 @@ Return ONLY JSON:
     let feedbackHtml = '';
     if (gradingResult) {
       feedbackHtml = `<div class="feedback-section">
-        <h2 id="feedback-heading">Teacher Feedback</h2>
-        <div class="score-badge" aria-label="${escapeHtml(t("a11y.score_n", { score: gradingResult.totalScore || '' }))}">${escapeHtml(gradingResult.totalScore || '')}</div>
+        <h2 id="feedback-heading">Feedback (AI-generated draft — not a final grade)</h2>
+        <div class="score-badge" aria-label="${escapeHtml(t("a11y.score_n", { score: gradingResult.totalScore || '' }))}" title="AI-generated estimate, not a final grade">${escapeHtml(gradingResult.totalScore || '')}</div>
         <div class="glow-grow">
           <div class="glow"><strong>✨ Glow:</strong> ${escapeHtml(gradingResult.feedback?.glow || '')}</div>
           <div class="grow"><strong>🌱 Grow:</strong> ${escapeHtml(gradingResult.feedback?.grow || '')}</div>
@@ -2253,7 +2463,8 @@ Return ONLY JSON:
       </div>`;
     }
 
-    const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
+    const dirAttr = isRtl(langBcp47) ? 'rtl' : 'ltr';
+    const html = `<!DOCTYPE html><html lang="${langBcp47}" dir="${dirAttr}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
 <meta name="author" content="${author}">
 <meta name="description" content="A storybook by ${author}, made with StoryForge.">
 <style>
@@ -2304,7 +2515,7 @@ main{display:block}
 <a class="skip-link" href="#story-content">${escapeHtml(t("ui_common.skip_to_story"))}</a>
 <button class="print-btn" onclick="window.print()" aria-label="${escapeHtml(t("a11y.story_print"))}">🖨️ Print</button>
 <header class="cover" role="banner">
-  ${coverArt ? `<img src="${coverArt}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
+  ${coverArt ? `<img src="${escapeHtml(coverArt)}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
   <h1 id="story-title">${title}</h1>
   <p class="meta">Written by ${author}</p>
   <p class="meta">${escapeHtml(date)} · ${escapeHtml(GENRE_TEMPLATES[genre]?.label || 'Creative Writing')} · Art style: ${escapeHtml(artStyle)}</p>
@@ -2341,7 +2552,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
 
     // Title slide
     slidesHtml += `<div class="slide title-slide">
-      ${coverArt ? `<img src="${coverArt}" class="cover-img" alt="Cover" />` : ''}
+      ${coverArt ? `<img src="${escapeHtml(coverArt)}" class="cover-img" alt="Cover" />` : ''}
       <h1>${title}</h1>
       <p class="author">By ${author}</p>
     </div>`;
@@ -2354,7 +2565,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
         ? `<div class="beat-label" aria-label="${escapeHtml(t("a11y.narrative_beat", { label: beatLabel }))}">${escapeHtml(beatLabel)}</div>`
         : '';
       slidesHtml += `<div class="slide">
-        ${img ? `<img src="${img}" class="slide-img" alt="Scene ${idx + 1}" />` : ''}
+        ${img ? `<img src="${escapeHtml(img)}" class="slide-img" alt="Scene ${idx + 1}" />` : ''}
         ${beatHtml}
         <div class="slide-text">${escapeHtml(p.text).replace(/\n/g, '<br/>')}</div>
         <div class="slide-num">${idx + 1} / ${paragraphs.length}</div>
@@ -2371,8 +2582,8 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
 
     if (gradingResult) {
       slidesHtml += `<div class="slide feedback-slide">
-        <h2>Feedback</h2>
-        <div class="score">${escapeHtml(gradingResult.totalScore || '')}</div>
+        <h2>Feedback (AI-generated draft — not a final grade)</h2>
+        <div class="score" title="AI-generated estimate, not a final grade">${escapeHtml(gradingResult.totalScore || '')}</div>
         <div class="fb-grid">
           <div class="fb-glow">✨ ${escapeHtml(gradingResult.feedback?.glow || '')}</div>
           <div class="fb-grow">🌱 ${escapeHtml(gradingResult.feedback?.grow || '')}</div>
@@ -2380,7 +2591,8 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
       </div>`;
     }
 
-    const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} — Slideshow</title>
+    const dirAttr = isRtl(langBcp47) ? 'rtl' : 'ltr';
+    const html = `<!DOCTYPE html><html lang="${langBcp47}" dir="${dirAttr}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} — Slideshow</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:white;overflow:hidden;height:100vh}
@@ -2540,19 +2752,21 @@ show();
           // authorName derived from codename prop — no need to restore
           if (d.genre) setGenre(d.genre);
           if (d.language) setLanguage(d.language);
-          if (d.vocabTerms) setVocabTerms(d.vocabTerms);
-          if (d.artStyle) setArtStyle(d.artStyle);
-          if (d.customArtStyle) setCustomArtStyle(d.customArtStyle);
-          if (d.storyPrompt) setStoryPrompt(d.storyPrompt);
-          if (d.rubricText) setRubricText(d.rubricText);
-          if (d.paragraphs) setParagraphs(d.paragraphs);
+          { const cv = sanitizeVocabTerms(d.vocabTerms); if (cv) setVocabTerms(cv); }
+          if (typeof d.artStyle === 'string') setArtStyle(d.artStyle);
+          if (typeof d.customArtStyle === 'string') setCustomArtStyle(d.customArtStyle);
+          if (typeof d.storyPrompt === 'string') setStoryPrompt(d.storyPrompt);
+          if (typeof d.rubricText === 'string') setRubricText(d.rubricText);
+          { const cp = sanitizeParagraphs(d.paragraphs); if (cp) setParagraphs(cp); }
           if (d.scaffoldsGenerated) setScaffoldsGenerated(true);
-          if (d.draftCount) setDraftCount(d.draftCount);
-          if (d.illustrations) setIllustrations(d.illustrations);
-          if (d.coverArt) setCoverArt(d.coverArt);
+          if (typeof d.draftCount === 'number') setDraftCount(d.draftCount);
+          if (d.illustrations) setIllustrations(sanitizeIllustrations(d.illustrations));
+          if (d.coverArt) { const cov = safeImageUrl(d.coverArt); if (cov) setCoverArt(cov); }
           if (d.gradingResult) setGradingResult(d.gradingResult);
           if (d.grammarResults) setGrammarResults(d.grammarResults);
           if (d.characters) setCharacters(d.characters);
+          if (d.storyShape) setStoryShape(d.storyShape);
+          if (d.valenceByPara && typeof d.valenceByPara === 'object') setValenceByPara(d.valenceByPara);
           // If this is a v2 file with analytics, go to review phase so teacher can see progress
           if (d._storyForgeVersion >= 2 && d.analytics) {
             setPhase('review');
@@ -2641,8 +2855,8 @@ show();
             <p className="text-sm text-slate-600 mb-4">Your story progress hasn't been exported or saved. Are you sure you want to close?</p>
             <div className="flex gap-3 justify-center">
               <button data-sf-focusable onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.keep_working")}</button>
-              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language }; localStorage.setItem(SAVE_KEY, JSON.stringify(draft)); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">{t("ui_common.save_draft_close")}</button>
-              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">{t("ui_common.close_anyway")}</button>
+              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara }; localStorage.setItem(SAVE_KEY, JSON.stringify(draft)); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">{t("ui_common.save_draft_close")}</button>
+              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { localStorage.removeItem(SAVE_KEY); } catch(e) {} onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">{t("ui_common.close_anyway")}</button>
             </div>
           </div>
         </div>
@@ -2804,6 +3018,39 @@ show();
                       {g.emoji}<br/>{g.label}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Story Shape Picker — Vonnegut-style emotional shapes (optional craft lens) */}
+              <div className="bg-white rounded-2xl border-2 border-violet-100 p-5 shadow-sm">
+                <h4 className="text-sm font-bold text-violet-700 uppercase tracking-wider mb-1 flex items-center gap-2">
+                  <Sparkles size={16} /> Story Shape <span className="text-[10px] font-medium text-slate-400 normal-case tracking-normal">(optional — the emotional ups &amp; downs)</span>
+                </h4>
+                <p className="text-[11px] text-slate-500 mb-3">Pick the shape of your character's fortune over time — a lens to play with. Great stories bend the rules!</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {Object.entries(STORY_SHAPES).map(([key, sh]) => {
+                    const active = storyShape === key;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        data-sf-focusable
+                        onClick={() => setStoryShape(active ? '' : key)}
+                        aria-pressed={active}
+                        aria-label={`Story shape: ${sh.label}. ${sh.desc}`}
+                        className={`p-2.5 rounded-xl border-2 text-left transition-all ${active ? 'border-violet-500 bg-violet-50 shadow-md' : 'border-slate-200 hover:border-violet-300'}`}
+                      >
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <span className={`text-xs font-bold ${active ? 'text-violet-700' : 'text-slate-600'}`}>{sh.emoji} {sh.label}</span>
+                          <svg viewBox="0 0 48 18" width="48" height="18" aria-hidden="true" className="shrink-0">
+                            <polyline fill="none" stroke={active ? '#7c3aed' : '#94a3b8'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                              points={sh.curve.map((v, i) => `${(i / (sh.curve.length - 1)) * 46 + 1},${(1 - v) * 14 + 2}`).join(' ')} />
+                          </svg>
+                        </div>
+                        <div className="text-[10px] text-slate-500 leading-snug">{sh.desc}</div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -3090,7 +3337,11 @@ show();
                           className={`px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all cursor-pointer select-none ${
                             used ? 'bg-green-100 border-green-400 text-green-800 shadow-sm' : 'bg-white border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-400'
                           }`}
-                          onClick={() => { navigator.clipboard?.writeText(v.term).then(() => { if (addToast) addToast(`"${v.term}" copied — paste into your story!`, 'success'); }).catch(() => {}); }}
+                          onClick={async () => {
+                            if (!navigator.clipboard?.writeText) { if (addToast) addToast(`Copy "${v.term}" manually — clipboard unavailable`, 'error'); return; }
+                            try { await navigator.clipboard.writeText(v.term); if (addToast) addToast(`"${v.term}" copied — paste into your story!`, 'success'); }
+                            catch (err) { console.warn('Clipboard write failed:', err); if (addToast) addToast(`Couldn't copy — please copy "${v.term}" manually`, 'error'); }
+                          }}
                         >
                           {used ? <CheckCircle2 size={11} className="inline mr-1" /> : <span aria-hidden="true" className="inline-block w-2 h-2 rounded-full bg-rose-300 mr-1.5" />}
                           {v.term}
@@ -3177,12 +3428,16 @@ show();
                     <div className="flex gap-2">
                       <button
                         onClick={() => toggleDictation(idx)}
+                        disabled={language === 'other'}
+                        title={language === 'other' ? 'Voice typing works only with the listed languages (it would otherwise transcribe in English). Pick a language from the list to use it.' : 'Start dictation'}
                         className={`text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${
-                          dictation.isDictating && dictatingParagraphIdx === idx
+                          language === 'other'
+                            ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-50'
+                            : dictation.isDictating && dictatingParagraphIdx === idx
                             ? 'bg-red-100 border-red-300 text-red-600 animate-pulse'
                             : 'bg-blue-50 border-blue-200/50 text-blue-500 hover:bg-blue-100 hover:text-blue-700'
                         }`}
-                        aria-label={dictation.isDictating && dictatingParagraphIdx === idx ? 'Stop dictation' : 'Start dictation'}
+                        aria-label={language === 'other' ? 'Voice typing unavailable for a custom language' : (dictation.isDictating && dictatingParagraphIdx === idx ? 'Stop dictation' : 'Start dictation')}
                       >
                         <Mic size={10} /> {dictation.isDictating && dictatingParagraphIdx === idx ? 'Stop' : 'Dictate'}
                       </button>
@@ -3316,6 +3571,7 @@ show();
                     <textarea
                       value={p.text}
                       onChange={(e) => updateParagraph(idx, e.target.value)}
+                      dir="auto"
                       className={`w-full p-4 text-sm resize-none outline-none transition-colors ${
                         layoutMode === 'dark' ? 'bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-750 caret-cyan-400' :
                         layoutMode === 'journal' ? 'bg-amber-50 text-amber-900 placeholder:text-amber-400 focus:bg-amber-100/50' :
@@ -3347,7 +3603,7 @@ show();
                       >
                         <input
                           type="file"
-                          accept="image/*"
+                          accept="image/*,application/pdf"
                           capture="environment"
                           onChange={(e) => handleHandwritingCapture(e, idx)}
                           className="sr-only"
@@ -3372,31 +3628,39 @@ show();
                     </div>
                   )}
                   {/* Penmanship Feedback Card */}
-                  {hwResult?.penmanship && hwTargetParagraph === idx && (
+                  {hwResult?.penmanship && hwTargetParagraph === idx && (() => {
+                    const pm = hwResult.penmanship;
+                    const bandColor = pm.band === 'Strong' ? '#16a34a' : pm.band === 'On track' ? '#7c3aed' : pm.band === 'Developing' ? '#2563eb' : '#64748b';
+                    return (
                     <div className={`px-4 py-3 border-t ${
                       layoutMode === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-violet-50 to-fuchsia-50 border-violet-200'
                     }`} role="region" aria-label="Penmanship feedback">
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center justify-between mb-1">
                         <span className={`text-[11px] font-bold uppercase tracking-widest ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>✏️ Penmanship Feedback</span>
-                        <span className="text-lg font-black" style={{ color: hwResult.penmanship.score >= 75 ? '#eab308' : hwResult.penmanship.score >= 50 ? '#8b5cf6' : hwResult.penmanship.score >= 25 ? '#3b82f6' : '#94a3b8' }}>
-                          {hwResult.penmanship.score}<span className="text-xs opacity-60">/100</span>
-                        </span>
+                        <span className="text-xs font-black px-2 py-0.5 rounded-full text-white" style={{ background: bandColor }}>{pm.band}</span>
                       </div>
+                      <p className="text-[11px] text-slate-500 mb-2">
+                        {pm.auditorCount > 1
+                          ? `AI estimate · ~${pm.score}/100 (likely ${pm.ci[0]}–${pm.ci[1]}) · averaged across ${pm.auditorCount} reviewers · ${pm.agreement} agreement`
+                          : `AI estimate · ~${pm.score}/100 (single pass)`}
+                      </p>
                       <div className="flex gap-2 mb-2">
                         {[['letterFormation', 'Letters'], ['spacing', 'Spacing'], ['alignment', 'Alignment'], ['neatness', 'Neatness']].map(([key, label]) => (
                           <div key={key} className="flex-1 text-center">
-                            <div className={`text-sm font-black ${(hwResult.penmanship[key] || 0) >= 18 ? 'text-green-600' : (hwResult.penmanship[key] || 0) >= 12 ? 'text-amber-600' : 'text-slate-600'}`}>
-                              {hwResult.penmanship[key] || 0}<span className="text-[11px] opacity-60">/25</span>
+                            <div className={`text-sm font-black ${(pm[key] || 0) >= 18 ? 'text-green-600' : (pm[key] || 0) >= 12 ? 'text-amber-600' : 'text-slate-600'}`}>
+                              {pm[key] || 0}<span className="text-[11px] opacity-60">/25</span>
                             </div>
                             <div className="text-[11px] text-slate-500 font-bold uppercase">{label}</div>
                           </div>
                         ))}
                       </div>
-                      {hwResult.penmanship.strengths && <p className="text-xs text-green-700 font-medium mb-1">💪 {hwResult.penmanship.strengths}</p>}
-                      {hwResult.penmanship.tips && <p className={`text-xs font-medium ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>💡 {hwResult.penmanship.tips}</p>}
+                      {pm.strengths && <p className="text-xs text-green-700 font-medium mb-1">💪 {pm.strengths}</p>}
+                      {pm.tips && <p className={`text-xs font-medium ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>💡 {pm.tips}</p>}
+                      <p className="text-[10px] text-slate-400 italic mt-1">Formative AI feedback to guide practice — not a graded or normed score.</p>
                       <button onClick={() => setHwResult(null)} className="text-[11px] text-slate-500 hover:text-slate-600 font-bold mt-1" aria-label={t("a11y.dismiss_penmanship_feedback")}>{t("ui_common.dismiss")}</button>
                     </div>
-                  )}
+                    );
+                  })()}
                   {/* Per-paragraph strength indicator + vocab reminder */}
                   {p.text.length > 0 && (
                     <div className={`px-4 py-1.5 border-t flex flex-wrap items-center gap-3 text-[11px] font-medium ${
@@ -3417,8 +3681,8 @@ show();
                   )}
                   {/* Vocab still needed — shows unused terms as a gentle reminder */}
                   {vocabTerms.length > 0 && (() => {
-                    const allText = paragraphs.map(pp => pp.text).join(' ').toLowerCase();
-                    const unused = vocabTerms.filter(v => !allText.includes(v.term.toLowerCase()));
+                    const allText = paragraphs.map(pp => pp.text).join(' ');
+                    const unused = vocabTerms.filter(v => !termUsed(allText, v.term));
                     if (unused.length === 0 || unused.length === vocabTerms.length) return null;
                     return (
                       <div className={`px-4 py-1.5 border-t text-[11px] ${
@@ -3428,7 +3692,11 @@ show();
                         {unused.map((v, vi) => (
                           <span key={vi}>
                             <button
-                              onClick={() => { navigator.clipboard?.writeText(v.term); if (addToast) addToast(`"${v.term}" copied!`, 'success'); }}
+                              onClick={async () => {
+                                if (!navigator.clipboard?.writeText) { if (addToast) addToast(`Copy "${v.term}" manually — clipboard unavailable`, 'error'); return; }
+                                try { await navigator.clipboard.writeText(v.term); if (addToast) addToast(`"${v.term}" copied!`, 'success'); }
+                                catch (err) { console.warn('Clipboard write failed:', err); if (addToast) addToast(`Couldn't copy — please copy "${v.term}" manually`, 'error'); }
+                              }}
                               className={`font-bold underline decoration-dotted cursor-pointer ${layoutMode === 'dark' ? 'text-cyan-500 hover:text-cyan-300' : 'text-rose-600 hover:text-rose-800'}`}
                               title={v.definition || 'Click to copy'}
                             >{v.term}</button>
@@ -4328,33 +4596,70 @@ show();
                 {readingLevel && (
                   <div className="mt-3 text-xs text-slate-600">
                     Avg {readingLevel.avgWordsPerSentence} words/sentence · Flesch-Kincaid Grade Level: {readingLevel.grade}
-                    {gradeLevel && <span>{readingLevel.grade <= parseInt(gradeLevel) + 1 ? ' · ✓ On target' : ' · ⚠ May be above target level'}</span>}
+                    {(() => {
+                      const target = gradeLevelToNumber(gradeLevel);
+                      if (target == null) return null; // unknown grade label — don't show a misleading verdict
+                      return <span>{readingLevel.grade <= target + 1 ? ' · ✓ On target' : ' · ⚠ May be above target level'}</span>;
+                    })()}
                   </div>
                 )}
 
-                {/* Story Arc Visualization */}
+                {/* Story Arc — emotional fortune curve (Vonnegut shapes) */}
                 <div className="mt-4 pt-4 border-t border-slate-100">
-                  <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2">Story Arc</div>
-                  <div className="flex items-end gap-1 h-16">
-                    {paragraphs.map((p, idx) => {
-                      const wordCount = p.text.trim().split(/\s+/).filter(Boolean).length;
-                      const maxWords = Math.max(...paragraphs.map(pp => pp.text.trim().split(/\s+/).filter(Boolean).length), 1);
-                      const heightPct = Math.max(8, (wordCount / maxWords) * 100);
-                      const isMiddle = idx > 0 && idx < paragraphs.length - 1;
-                      const bgColor = idx === 0 ? 'bg-blue-500' : idx === paragraphs.length - 1 ? 'bg-orange-500' : isMiddle ? 'bg-slate-500' : 'bg-slate-300';
-                      const barLabel = idx === 0 ? 'Beginning' : idx === paragraphs.length - 1 ? 'Resolution' : `Paragraph ${idx + 1}`;
-                      return (
-                        <div key={p.id} className="flex-1 flex flex-col items-center gap-1">
-                          <div className="text-[7px] text-slate-600 font-bold">{wordCount}</div>
-                          <div className={`w-full ${bgColor} rounded-t-md transition-all`} style={{ height: `${heightPct}%` }} title={`${barLabel}: ${wordCount} words`} role="img" aria-label={`${barLabel}: ${wordCount} words`} />
-                          <span className="text-[11px] text-slate-500">{idx === 0 ? 'Start' : idx === paragraphs.length - 1 ? 'End' : `P${idx + 1}`}</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">Story Arc <span className="normal-case tracking-normal text-slate-400 font-medium">· fortune over time</span></div>
+                    {onCallGemini && (
+                      <button type="button" data-sf-focusable onClick={suggestValenceArc} disabled={valenceLoading}
+                        className="text-[11px] font-bold text-violet-600 hover:text-violet-800 disabled:opacity-50 inline-flex items-center gap-1">
+                        {valenceLoading ? <span className="animate-spin">⏳</span> : <Sparkles size={12} />} {valenceLoading ? 'Reading…' : 'Suggest arc'}
+                      </button>
+                    )}
+                  </div>
+                  {(() => {
+                    const n = paragraphs.length;
+                    const W = 280, H = 70, pad = 8;
+                    const vals = paragraphs.map(p => { const v = valenceByPara[p.id]; return typeof v === 'number' ? v : 0; });
+                    const px = (i) => pad + (n <= 1 ? (W - 2 * pad) / 2 : (i / (n - 1)) * (W - 2 * pad));
+                    const py = (v) => pad + (1 - (v + 5) / 10) * (H - 2 * pad);
+                    const pts = vals.map((v, i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
+                    const norm = vals.map(v => (v + 5) / 10);
+                    const anySet = paragraphs.some(p => typeof valenceByPara[p.id] === 'number');
+                    const match = anySet ? closestStoryShape(norm) : null;
+                    return (
+                      <>
+                        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label="Emotional fortune of the story across paragraphs" className="overflow-visible">
+                          <line x1={pad} y1={py(0)} x2={W - pad} y2={py(0)} stroke="#e2e8f0" strokeWidth="1" strokeDasharray="3 3" />
+                          <text x={pad} y={py(5) + 2} fontSize="7" fill="#94a3b8">😀 good</text>
+                          <text x={pad} y={py(-5)} fontSize="7" fill="#94a3b8">😟 bad</text>
+                          <polyline fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={pts} />
+                          {vals.map((v, i) => <circle key={i} cx={px(i)} cy={py(v)} r="3" fill="#7c3aed" />)}
+                        </svg>
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 mt-0.5"><span>Beginning</span><span>End</span></div>
+                        <div className="mt-2 space-y-1">
+                          {paragraphs.map((p, i) => {
+                            const v = typeof valenceByPara[p.id] === 'number' ? valenceByPara[p.id] : 0;
+                            return (
+                              <div key={p.id} className="flex items-center gap-2">
+                                <span className="text-[11px] text-slate-500 font-bold w-7 shrink-0">P{i + 1}</span>
+                                <input type="range" min="-5" max="5" step="1" value={v}
+                                  onChange={(e) => { const nv = parseInt(e.target.value, 10); setValenceByPara(prev => ({ ...prev, [p.id]: nv })); }}
+                                  aria-label={`Fortune for paragraph ${i + 1}, from -5 (bad) to +5 (good)`}
+                                  className="flex-1 accent-violet-600" />
+                                <span className="text-[11px] text-slate-500 w-6 text-right tabular-nums">{v > 0 ? '+' + v : v}</span>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
-                  </div>
-                  <div className="flex justify-between text-[11px] text-slate-500 mt-1">
-                    <span>Beginning</span><span>Rising Action</span><span>Climax</span><span>Resolution</span>
-                  </div>
+                        {anySet && match ? (
+                          <div className="mt-2 text-[11px] text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-2 py-1.5">
+                            {match.weak ? 'Closest shape (loosely): ' : 'Your story looks like a '}<span className="font-black">{match.emoji} {match.label}</span>{match.weak ? '' : '!'} <span className="text-slate-500 font-medium">— a craft lens, not a rule.</span>
+                          </div>
+                        ) : (
+                          <div className="mt-2 text-[11px] text-slate-400 italic">Drag a point or tap "Suggest arc" to map your story's emotional ups &amp; downs.</div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -4397,9 +4702,10 @@ show();
                 <div className="space-y-4">
                   {/* Score Badge */}
                   <div className="text-center">
-                    <div className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg">
+                    <div className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg" title="AI-generated estimate — draft feedback, not a final grade">
                       {gradingResult.totalScore}
                     </div>
+                    <div className="text-[11px] text-slate-500 mt-1.5 font-medium">AI estimate · draft feedback, not a final grade</div>
                   </div>
 
                   {/* Glow / Grow */}
@@ -4564,7 +4870,7 @@ show();
                           )}
                           {/* Thought bubble */}
                           {(panelDialogue[p.id] || {}).thought && (
-                            <div className="bg-purple-50 border-2 border-purple-300 rounded-2xl p-2 text-[11px] text-purple-700 italic leading-relaxed" style={{ borderRadius: '20px', borderStyle: 'dashed' }}>
+                            <div className="bg-purple-50 border-2 border-purple-300 rounded-2xl p-2 text-[11px] text-purple-300 italic leading-relaxed" style={{ borderRadius: '20px', borderStyle: 'dashed' }}>
                               💭 {panelDialogue[p.id].thought}
                             </div>
                           )}
@@ -4598,7 +4904,7 @@ show();
 
               {/* Achievement Badges */}
               <div className="bg-white rounded-2xl border-2 border-amber-200 p-5 shadow-sm">
-                <h4 className="text-sm font-bold text-amber-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <h4 className="text-sm font-bold text-amber-300 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <Star size={16} /> Achievements ({earnedCount}/{achievements.length})
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">

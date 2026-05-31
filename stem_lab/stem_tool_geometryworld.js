@@ -4928,7 +4928,7 @@
               el('div', { style: { fontSize: '9px', fontWeight: 800, color: allDone ? '#4ade80' : '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: '2px' } },
                 (allDone ? '✨ ' : '🎯 ') + 'Objectives'),
               objectives.slice(0, 4).map(function(o, i) {
-                return el('div', { key: i, style: { display: 'flex', alignItems: 'start', gap: '5px', fontSize: '10px', lineHeight: 1.3, marginBottom: '1px' } },
+                return el('div', { key: 'hudobj-' + i + '-' + (o && o.text ? String(o.text).slice(0, 24) : ''), style: { display: 'flex', alignItems: 'start', gap: '5px', fontSize: '10px', lineHeight: 1.3, marginBottom: '1px' } },
                   el('span', { style: { color: o.done ? '#4ade80' : '#94a3b8', flexShrink: 0, fontWeight: 700 } }, o.done ? '☑' : '☐'),
                   el('span', { style: { color: o.done ? '#94a3b8' : '#cbd5e1', textDecoration: o.done ? 'line-through' : 'none' } }, o.text)
                 );
@@ -5300,7 +5300,7 @@
           ),
           currentLesson.objectives && currentLesson.objectives.map(function(obj, i) {
             var isDone = i < score;
-            return el('div', { key: i,
+            return el('div', { key: 'obj-' + i + '-' + (obj && obj.text ? String(obj.text).slice(0, 24) : String(obj).slice(0, 24)),
               onClick: function() {
                 if (isDone) return;
                 // Navigate camera toward the NPC that corresponds to this objective
@@ -5840,7 +5840,7 @@
             currentLesson.objectives && el('div', { style: { textAlign: 'left', background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: '12px', padding: '12px 16px', marginBottom: '16px' } },
               el('div', { style: { fontWeight: 700, color: '#a78bfa', fontSize: '11px', marginBottom: '6px' } }, '\uD83C\uDFAF Objectives'),
               currentLesson.objectives.map(function(obj, i) {
-                return el('div', { key: i, style: { display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '3px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)' } },
+                return el('div', { key: 'objlist-' + i + '-' + String(obj).slice(0, 24), style: { display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '3px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)' } },
                   el('span', { style: { color: '#7c3aed' } }, (i + 1) + '.'),
                   el('span', null, obj)
                 );
@@ -6067,14 +6067,14 @@
                 // Progress dots for multi-step questions
                 totalSteps > 1 && el('div', { style: { display: 'flex', gap: '4px', justifyContent: 'center', marginBottom: '6px' } },
                   Array.apply(null, Array(totalSteps)).map(function(_, di) {
-                    return el('div', { key: di, style: { width: 8, height: 8, borderRadius: '50%', background: di < curStep ? '#22c55e' : di === curStep ? '#7c3aed' : 'rgba(100,116,139,0.4)', transition: 'all 0.3s' } });
+                    return el('div', { key: 'stepdot-' + di, style: { width: 8, height: 8, borderRadius: '50%', background: di < curStep ? '#22c55e' : di === curStep ? '#7c3aed' : 'rgba(100,116,139,0.4)', transition: 'all 0.3s' } });
                   })
                 ),
                 el('div', { style: { fontSize: '11px', fontWeight: 700, color: '#7c3aed', marginBottom: homeLang !== 'en' ? '2px' : '6px' } }, curQ.text),
                 homeLang !== 'en' && translation && translation.question && curStep === 0 && el('div', { style: { fontSize: '11px', color: '#fbbf24', marginBottom: '6px', fontStyle: 'italic' } }, translation.question),
                 curQ.choices.map(function(choice, ci) {
                   return el('button', {
-                    key: ci,
+                    key: 'choice-' + ci + '-' + String(choice).slice(0, 24),
                     'aria-label': 'Answer option ' + (ci + 1) + ': ' + choice,
                     onClick: function() {
                       if (ci === curQ.correct) {

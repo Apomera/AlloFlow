@@ -1049,7 +1049,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
   const allTeams = Object.keys(escapeState.teamProgress || {});
   const puzzles = escapeState.puzzles || [];
   const totalPuzzles = puzzles.length;
-  const escapedTeams = useMemo(() => allTeams.filter((t2) => escapeState.teamProgress?.[t2]?.isEscaped), [allTeams, escapeState, isEscaped, teamProgress]);
+  const escapedTeams = useMemo(() => allTeams.filter((t2) => escapeState.teamProgress?.[t2]?.isEscaped), [allTeams, escapeState]);
   const studentsAssigned = Object.keys(escapeState.teams || {}).length;
   const handlePauseToggle = async () => {
     try {

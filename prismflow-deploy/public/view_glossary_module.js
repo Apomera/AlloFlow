@@ -1105,7 +1105,7 @@
     className: "animate-spin"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 12,
-    className: "text-yellow-700 fill-current"
+    className: "text-yellow-400 fill-current"
   }), isAddingTerm ? t('glossary.defining') : t('glossary.add_term'))), (glossaryHealthCheck || isRunningHealthCheck) && activeView === 'glossary' && /*#__PURE__*/React.createElement("div", {
     className: "mb-4 rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 shadow-sm overflow-hidden",
     "data-help-key": "glossary_health_check"

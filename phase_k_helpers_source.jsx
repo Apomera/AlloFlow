@@ -838,6 +838,20 @@ const executeSaveFile = (deps) => {
       // Assessment Literacy junk-science mastery: per-scenario first-correct
       // log from the "Spot the Junk Science" capstone module.
       const assessmentLiteracy = (typeof window !== 'undefined' && window.__alloflowAssessmentLiteracy) || null;
+      // SEL Hub teacher-authored custom Station bundles (parallel to STEM Lab
+      // Stations). Written to window.__alloflowSelStations by sel_hub_module.js
+      // whenever the savedStations React state changes. Without riding the
+      // project JSON these are wiped between Canvas sessions even though
+      // localStorage holds them within a session.
+      const selStations = (typeof window !== 'undefined' && window.__alloflowSelStations) || null;
+      // Per-station quest progress (xpThreshold / timeSpent / freeResponse /
+      // manualComplete tracking). Same Canvas-survival pattern as selStations.
+      const selProgress = (typeof window !== 'undefined' && window.__alloflowSelProgress) || null;
+      // Per-tool persistent state from individual sel_tool_*.js plugins
+      // (Voice Detective confusion matrix, Journal entries, etc.). Each tool
+      // calls window.SelToolDataManager.set(toolId, key, val) which mirrors
+      // its ctx.toolData state into this slot.
+      const selToolData = (typeof window !== 'undefined' && window.__alloflowSelToolData) || null;
       if (saveType === 'teacher') {
           dataStr = JSON.stringify({
               mode: isIndependentMode ? 'independent' : 'teacher',
@@ -864,6 +878,9 @@ const executeSaveFile = (deps) => {
               playlab: playlab,
               roadReady: roadReady,
               assessmentLiteracy: assessmentLiteracy,
+              selStations: selStations,
+              selProgress: selProgress,
+              selToolData: selToolData,
               // Stickers (annotation overlays placed on the output area) ride
               // the project JSON so a teacher's feedback / a student's marks
               // survive save→load. Without this they're wiped on reload.
@@ -957,6 +974,9 @@ const executeSaveFile = (deps) => {
               playlab: playlab,
               roadReady: roadReady,
               assessmentLiteracy: assessmentLiteracy,
+              selStations: selStations,
+              selProgress: selProgress,
+              selToolData: selToolData,
               // See teacher-save above — stickers persist with the project so
               // a student's marks aren't wiped on reload.
               stickers: Array.isArray(stickers) ? stickers : [],

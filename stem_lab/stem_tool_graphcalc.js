@@ -686,7 +686,7 @@
                 h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '4px', fontWeight: 'bold' } }, 'ZOOM PRESETS'),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
                   ZOOM_PRESETS.map(function(z) {
-                    return h('button', { 'aria-label': 'SLIDERS Use a, b, c', key: z.name, onClick: function() { SOUNDS.zoomPreset(); upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }); }, style: { padding: '3px 7px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', cursor: 'pointer' } }, z.name);
+                    return h('button', { 'aria-label': z.name + ' zoom preset', key: z.name, onClick: function() { SOUNDS.zoomPreset(); upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }); }, style: { padding: '3px 7px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', cursor: 'pointer' } }, z.name);
                   })
                 )
               ),

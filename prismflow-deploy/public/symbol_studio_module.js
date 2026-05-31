@@ -11,6 +11,10 @@
 
   var warnLog = function () { console.warn.apply(console, ["[SymStudio]"].concat(Array.prototype.slice.call(arguments))); };
 
+  // HTML-escape untrusted text/URLs before interpolating into print/export HTML strings
+  // (student names, IEP goals, word labels, AI story text, image URLs all reach document.write).
+  var escHtml = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+
   // ── Print CSS injection ───────────────────────────────────────────────────
   (function injectPrintStyles() {
     var style = document.createElement('style');
@@ -31,6 +35,26 @@
     + ' @media(prefers-reduced-motion:reduce){.fixed.inset-0 *,.fixed.inset-0 *::before,.fixed.inset-0 *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}.ss-garden-seed,.ss-garden-mastered,.ss-garden-tapped,.ss-garden-levelup{animation:none!important}}';
     // Removed: .text-slate-600{color:#64748b!important} — was an unscoped global override that downgraded slate-600 from AAA (#475569, 7.42:1) to AA-borderline (#64748b, 4.59:1) across the entire app whenever Symbol Studio loaded. Tailwind's default slate-600 is AAA-pass.
     document.head.appendChild(style);
+  })();
+
+  // ── Theme (dark / high-contrast) overrides for the modal subtree ──
+  // Symbol Studio uses ~945 inline styles, so we mirror the host theme onto the modal root
+  // (ss-theme-*) and override via stylesheet !important (which beats non-important inline styles).
+  // High contrast is a blanket override (the WCAG low-vision requirement); dark mode is handled
+  // mainly by the theme-derived S chrome object below, refined here.
+  (function injectThemeStyles() {
+    if (typeof document === 'undefined' || document.getElementById('ss-theme-css')) return;
+    var st = document.createElement('style'); st.id = 'ss-theme-css';
+    st.textContent =
+      '.ss-theme-contrast.ss-modal-root,.ss-theme-contrast.ss-modal-root *{background-color:#000 !important;color:#ffff00 !important;border-color:#ffff00 !important;background-image:none !important;box-shadow:none !important}'
+    + '.ss-theme-contrast.ss-modal-root button,.ss-theme-contrast.ss-modal-root [role="button"]{background-color:#000 !important;color:#00ff00 !important;border:2px solid #00ff00 !important}'
+    + '.ss-theme-contrast.ss-modal-root input,.ss-theme-contrast.ss-modal-root textarea,.ss-theme-contrast.ss-modal-root select{background-color:#000 !important;color:#ffff00 !important;border:2px solid #ffff00 !important}'
+    + '.ss-theme-contrast.ss-modal-root img{background:#fff !important;border:1px solid #ffff00 !important}'
+    + '.ss-theme-contrast.ss-modal-root svg{fill:#ffff00 !important}'
+    + '.ss-theme-contrast.ss-modal-root :focus-visible{outline:3px solid #ffff00 !important;outline-offset:2px !important}'
+    + '.ss-theme-dark.ss-modal-root ::placeholder{color:#64748b !important}'
+    + '.ss-theme-dark.ss-modal-root :focus-visible{outline:2px solid #a78bfa !important;outline-offset:2px !important}';
+    if (document.head) document.head.appendChild(st);
   })();
 
   // ── Constants ─────────────────────────────────────────────────────────────
@@ -267,6 +291,21 @@
   // ── Storage helpers ───────────────────────────────────────────────────────
   function store(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
   function load(key, def) { try { return JSON.parse(localStorage.getItem(key) || 'null') || def; } catch (e) { return def; } }
+
+  // Per-profile scoping for student-specific data (gallery/boards/schedules) so a shared
+  // classroom device doesn't surface one student's data under another's profile. A one-time
+  // migration moves any pre-existing GLOBAL data onto the active profile's namespaced key.
+  function profKey(base, pid) { return base + '__' + (pid || 'default'); }
+  function migrateGlobalKey(base, pid) {
+    try {
+      var scoped = profKey(base, pid);
+      if (localStorage.getItem(scoped) == null) {
+        var legacy = localStorage.getItem(base);
+        if (legacy != null) { localStorage.setItem(scoped, legacy); localStorage.removeItem(base); }
+      }
+    } catch (e) {}
+  }
+  function loadScoped(base, def, pid) { migrateGlobalKey(base, pid); return load(profKey(base, pid), def); }
   function uid() { return (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('id-' + Date.now() + '-' + Math.random().toString(36).slice(2)); }
 
   // Load profiles with migration from legacy single-avatar format
@@ -439,6 +478,30 @@
     var useEffect = React.useEffect;
     var useRef = React.useRef;
 
+    // ── Host theme mirror ── This modal renders OUTSIDE the host's themed <main>, so we read
+    // the host's active theme from #main-content's class and mirror it (ss-theme-*) onto our
+    // own modal root, re-reading on change (e.g. the host theme toggle) via a MutationObserver.
+    var readHostTheme = function () {
+      try {
+        if (typeof document === 'undefined') return 'default';
+        var el = document.getElementById('main-content') || document.body;
+        var cls = (el && el.className) || '';
+        if (/\btheme-contrast\b/.test(cls)) return 'contrast';
+        if (/\btheme-dark\b/.test(cls)) return 'dark';
+      } catch (e) {}
+      return 'default';
+    };
+    var _ssTheme = useState(readHostTheme); var ssTheme = _ssTheme[0]; var setSsTheme = _ssTheme[1];
+    useEffect(function () {
+      if (typeof document === 'undefined') return undefined;
+      var upd = function () { setSsTheme(readHostTheme()); }; upd();
+      var target = document.getElementById('main-content') || document.body;
+      if (!target || typeof MutationObserver === 'undefined') return undefined;
+      var mo = new MutationObserver(upd);
+      mo.observe(target, { attributes: true, attributeFilter: ['class'] });
+      return function () { mo.disconnect(); };
+    }, []);
+
     // Shared state
     var _tab = useState('symbols'); var tab = _tab[0]; var setTab = _tab[1];
     var _profiles = useState(function () { return loadProfiles(); });
@@ -450,6 +513,8 @@
       return profs[0] ? profs[0].id : null;
     });
     var activeProfileId = _activeProfileId[0]; var setActiveProfileId = _activeProfileId[1];
+    var activeProfileIdRef = useRef(activeProfileId); activeProfileIdRef.current = activeProfileId;
+    var scopedKey = function (base) { return profKey(base, activeProfileIdRef.current); };
     var activeProfile = profiles.find(function (p) { return p.id === activeProfileId; }) || profiles[0] || { id: null, image: null, name: '', description: '' };
     var _showAvatar = useState(false); var showAvatar = _showAvatar[0]; var setShowAvatar = _showAvatar[1];
     var _avatarGenerating = useState(false); var avatarGenerating = _avatarGenerating[0]; var setAvatarGenerating = _avatarGenerating[1];
@@ -471,7 +536,7 @@
     var pendingFctMetaRef = useRef(null);
 
     // Symbols tab state
-    var _gallery = useState(function () { return load(STORAGE_GALLERY, []); });
+    var _gallery = useState(function () { return loadScoped(STORAGE_GALLERY, [], activeProfileId); });
     var gallery = _gallery[0]; var setGallery = _gallery[1];
     var _selectedId = useState(null); var selectedId = _selectedId[0]; var setSelectedId = _selectedId[1];
     var _symLabel = useState(''); var symLabel = _symLabel[0]; var setSymLabel = _symLabel[1];
@@ -498,7 +563,7 @@
     var _boardGenerating = useState(false); var boardGenerating = _boardGenerating[0]; var setBoardGenerating = _boardGenerating[1];
     var _boardTitle = useState(''); var boardTitle = _boardTitle[0]; var setBoardTitle = _boardTitle[1];
     var _boardColor = useState(true); var boardColor = _boardColor[0]; var setBoardColor = _boardColor[1];
-    var _savedBoards = useState(function () { return load(STORAGE_BOARDS, []); });
+    var _savedBoards = useState(function () { return loadScoped(STORAGE_BOARDS, [], activeProfileId); });
     var savedBoards = _savedBoards[0]; var setSavedBoards = _savedBoards[1];
     var _showBoardGallery = useState(false); var showBoardGallery = _showBoardGallery[0]; var setShowBoardGallery = _showBoardGallery[1];
     var _boardProfileFilter = useState(''); var boardProfileFilter = _boardProfileFilter[0]; var setBoardProfileFilter = _boardProfileFilter[1];
@@ -527,8 +592,16 @@
     var _schedOrientation = useState('horizontal'); var schedOrientation = _schedOrientation[0]; var setSchedOrientation = _schedOrientation[1];
     var _schedTitle = useState(''); var schedTitle = _schedTitle[0]; var setSchedTitle = _schedTitle[1];
     var _schedNowId = useState(null); var schedNowId = _schedNowId[0]; var setSchedNowId = _schedNowId[1];
-    var _savedSchedules = useState(function () { return load(STORAGE_SCHEDULES, []); });
+    var _savedSchedules = useState(function () { return loadScoped(STORAGE_SCHEDULES, [], activeProfileId); });
     var savedSchedules = _savedSchedules[0]; var setSavedSchedules = _savedSchedules[1];
+    // Reload per-profile data when the active student profile changes (skip the initial mount).
+    var ssDidMountRef = useRef(false);
+    useEffect(function () {
+      if (!ssDidMountRef.current) { ssDidMountRef.current = true; return; }
+      setGallery(loadScoped(STORAGE_GALLERY, [], activeProfileId));
+      setSavedBoards(loadScoped(STORAGE_BOARDS, [], activeProfileId));
+      setSavedSchedules(loadScoped(STORAGE_SCHEDULES, [], activeProfileId));
+    }, [activeProfileId]);
     var _showSchedGallery = useState(false); var showSchedGallery = _showSchedGallery[0]; var setShowSchedGallery = _showSchedGallery[1];
 
     // Social Stories state
@@ -932,7 +1005,7 @@
         var imageUrl = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
         var entry = { id: uid(), label: symLabel.trim(), description: symDesc.trim(), image: imageUrl, style: globalStyle || 'flat vector', category: symCategory || 'other', isFavorite: false, createdAt: Date.now() };
         var updated = [entry].concat(gallery);
-        setGallery(updated); store(STORAGE_GALLERY, updated);
+        setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
         setSelectedId(entry.id);
         addToast && addToast(t('toasts.symbol_created'), 'success');
       } catch (e) {
@@ -955,7 +1028,7 @@
       var valid = batchOut.results.filter(function (r) { return r.image; });
       if (valid.length > 0) {
         var updated = valid.concat(gallery);
-        setGallery(updated); store(STORAGE_GALLERY, updated);
+        setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
         setSelectedId(valid[0].id);
         addToast && addToast(valid.length + ' symbol(s) created!', 'success');
       }
@@ -973,7 +1046,7 @@
         var prompt = buildSymbolPrompt(item.label, item.description, item.style, avatarRef ? avatarDesc : '');
         var imageUrl = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
         var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { image: imageUrl }) : i; });
-        setGallery(updated); store(STORAGE_GALLERY, updated);
+        setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
       } catch (e) {
         addToast && addToast(t('toasts.regen_failed'), 'error');
       } finally { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
@@ -993,7 +1066,7 @@
         var refined = await onCallGeminiImageEdit(refinementPrompt, raw, 400, 0.85);
         if (refined) {
           var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { image: refined }) : i; });
-          setGallery(updated); store(STORAGE_GALLERY, updated);
+          setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
           setSymRefine(function (p) { var n = Object.assign({}, p); n[id] = ''; return n; });
           addToast && addToast(t('toasts.icon_refined'), 'success');
         } else {
@@ -1007,7 +1080,7 @@
 
     var deleteSymbol = useCallback(function (id) {
       var updated = gallery.filter(function (i) { return i.id !== id; });
-      setGallery(updated); store(STORAGE_GALLERY, updated);
+      setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
       if (selectedId === id) setSelectedId(updated.length ? updated[0].id : null);
     }, [gallery, selectedId]);
 
@@ -1022,12 +1095,12 @@
 
     var toggleFavorite = useCallback(function (id) {
       var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { isFavorite: !i.isFavorite }) : i; });
-      setGallery(updated); store(STORAGE_GALLERY, updated);
+      setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
     }, [gallery]);
 
     var clearGallery = useCallback(function () {
       if (!window.confirm('Clear all ' + gallery.length + ' symbols from the gallery? This cannot be undone.')) return;
-      setGallery([]); store(STORAGE_GALLERY, []);
+      setGallery([]); store(scopedKey(STORAGE_GALLERY), []);
       setSelectedId(null);
       addToast && addToast(t('toasts.gallery_cleared'), 'info');
     }, [gallery, addToast]);
@@ -1074,21 +1147,21 @@
             var importedIds = {};
             data.gallery.forEach(function (g) { importedIds[g.id] = true; });
             var merged = data.gallery.concat(gallery.filter(function (g) { return !importedIds[g.id]; }));
-            setGallery(merged); store(STORAGE_GALLERY, merged);
+            setGallery(merged); store(scopedKey(STORAGE_GALLERY), merged);
             summary.push(data.gallery.length + ' symbol(s)');
           }
           if (Array.isArray(data.boards) && data.boards.length) {
             var importedBoardIds = {};
             data.boards.forEach(function (b) { importedBoardIds[b.id] = true; });
             var mergedBoards = data.boards.concat(savedBoards.filter(function (b) { return !importedBoardIds[b.id]; }));
-            setSavedBoards(mergedBoards); store(STORAGE_BOARDS, mergedBoards);
+            setSavedBoards(mergedBoards); store(scopedKey(STORAGE_BOARDS), mergedBoards);
             summary.push(data.boards.length + ' board(s)');
           }
           if (Array.isArray(data.schedules) && data.schedules.length) {
             var importedSchedIds = {};
             data.schedules.forEach(function (s) { importedSchedIds[s.id] = true; });
             var mergedScheds = data.schedules.concat(savedSchedules.filter(function (s) { return !importedSchedIds[s.id]; }));
-            setSavedSchedules(mergedScheds); store(STORAGE_SCHEDULES, mergedScheds);
+            setSavedSchedules(mergedScheds); store(scopedKey(STORAGE_SCHEDULES), mergedScheds);
             summary.push(data.schedules.length + ' schedule(s)');
           }
           // New format: profiles array
@@ -1259,7 +1332,7 @@
           var cloudBoardIds = {};
           data.boards.forEach(function (b) { cloudBoardIds[b.id] = true; });
           savedBoards.forEach(function (lb) { if (!cloudBoardIds[lb.id]) mergedBoards.push(lb); });
-          setSavedBoards(mergedBoards); store(STORAGE_BOARDS, mergedBoards);
+          setSavedBoards(mergedBoards); store(scopedKey(STORAGE_BOARDS), mergedBoards);
           summary.push(data.boards.length + ' board(s)');
         }
         // Schedules: same pattern
@@ -1277,7 +1350,7 @@
           var cloudSchedIds = {};
           data.schedules.forEach(function (s) { cloudSchedIds[s.id] = true; });
           savedSchedules.forEach(function (ls) { if (!cloudSchedIds[ls.id]) mergedScheds.push(ls); });
-          setSavedSchedules(mergedScheds); store(STORAGE_SCHEDULES, mergedScheds);
+          setSavedSchedules(mergedScheds); store(scopedKey(STORAGE_SCHEDULES), mergedScheds);
           summary.push(data.schedules.length + ' schedule(s)');
         }
         if (data.lastSynced) setLastSynced(data.lastSynced);
@@ -1518,7 +1591,7 @@
       // doesn't accidentally inherit it.
       pendingFctMetaRef.current = null;
       var updated = [saved].concat(savedBoards);
-      setSavedBoards(updated); store(STORAGE_BOARDS, updated);
+      setSavedBoards(updated); store(scopedKey(STORAGE_BOARDS), updated);
       addToast && addToast(t('toasts.board_saved') + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
       // Garden discovery nudge — fires once when gallery + board create cross-context vocabulary
       if (addToast && gallery.length >= 2 && !load('alloGardenNudgeSeen', false)) {
@@ -1648,7 +1721,7 @@
 
     var deleteSavedBoard = useCallback(function (id) {
       var updated = savedBoards.filter(function (b) { return b.id !== id; });
-      setSavedBoards(updated); store(STORAGE_BOARDS, updated);
+      setSavedBoards(updated); store(scopedKey(STORAGE_BOARDS), updated);
     }, [savedBoards]);
 
     var exportBoard = useCallback(function (board) {
@@ -1686,7 +1759,7 @@
           var desc = w.description ? w.description.replace(/"/g, '&quot;').replace(/</g, '&lt;') : '';
           var altText = desc ? lbl + ': ' + desc : lbl;
           var isFirst = pi === 0 && ci === 0;
-          return '<div role="gridcell" tabindex="' + (isFirst ? '0' : '-1') + '" data-label="' + lbl + '" data-speak="' + (w.translatedLabel || w.label || '').replace(/"/g, '&quot;') + '" aria-label="' + altText + '" style="background:' + bg + ';border:2px solid ' + border + '"><img src="' + w.image + '" alt="' + altText + '" draggable="false"><span aria-hidden="true">' + lbl + '</span>' + (origLbl && w.translatedLabel ? '<span class="orig-label" aria-hidden="true">' + origLbl + '</span>' : '') + '</div>';
+          return '<div role="gridcell" tabindex="' + (isFirst ? '0' : '-1') + '" data-label="' + lbl + '" data-speak="' + (w.translatedLabel || w.label || '').replace(/"/g, '&quot;') + '" aria-label="' + altText + '" style="background:' + bg + ';border:2px solid ' + border + '"><img src="' + escHtml(w.image) + '" alt="' + altText + '" draggable="false"><span aria-hidden="true">' + lbl + '</span>' + (origLbl && w.translatedLabel ? '<span class="orig-label" aria-hidden="true">' + origLbl + '</span>' : '') + '</div>';
         }).join('\n');
         return { cols: pageCols, html: cellsHTML, title: (page.title || 'Page ' + (pi + 1)).replace(/</g, '&lt;'), count: cells.length };
       });
@@ -1961,7 +2034,7 @@
           if (!board || !Array.isArray(board.words)) throw new Error('Not a valid board file');
           var imported = Object.assign({}, board, { id: uid(), importedAt: Date.now() });
           var updated = [imported].concat(savedBoards);
-          setSavedBoards(updated); store(STORAGE_BOARDS, updated);
+          setSavedBoards(updated); store(scopedKey(STORAGE_BOARDS), updated);
           setShowBoardGallery(true);
           addToast && addToast(t('toasts.board_imported') + (imported.title || 'Untitled') + '"', 'success');
         } catch (err) {
@@ -1974,7 +2047,7 @@
 
     var tagBoardProfile = useCallback(function (boardId, profileId) {
       var updated = savedBoards.map(function (b) { return b.id === boardId ? Object.assign({}, b, { profileId: profileId || null }) : b; });
-      setSavedBoards(updated); store(STORAGE_BOARDS, updated);
+      setSavedBoards(updated); store(scopedKey(STORAGE_BOARDS), updated);
     }, [savedBoards]);
 
     var addFromGallery = useCallback(function (item) {
@@ -2047,7 +2120,7 @@
         html += '<div class="board-section"><div class="board-title">' + (board.title || 'Board ' + (idx + 1)) + '</div><div class="board-grid">';
         board.words.forEach(function (w) {
           html += '<div class="ss-board-cell">';
-          if (w.image) html += '<img src="' + w.image + '" alt="' + w.label + '">';
+          if (w.image) html += '<img src="' + escHtml(w.image) + '" alt="' + w.label + '">';
           html += '<span class="cell-label">' + w.label + '</span></div>';
         });
         html += '</div></div>';
@@ -2068,6 +2141,7 @@
     var speakCell = useCallback(function (label) {
       if (!onCallTTS) return;
       recordFamiliarity(label, 'speak');
+      if (ssLiveRef.current) ssLiveRef.current.textContent = label; // announce spoken word to screen readers
       var voice = selectedVoice || 'Kore';
       onCallTTS(label, voice, 1).then(function (url) {
         if (url) { var a = new Audio(url); a.play().catch(function () {}); }
@@ -2115,7 +2189,7 @@
       if (!schedItems.length) return;
       var saved = { id: uid(), title: schedTitle || 'Schedule', items: schedItems, orientation: schedOrientation, createdAt: Date.now() };
       var updated = [saved].concat(savedSchedules);
-      setSavedSchedules(updated); store(STORAGE_SCHEDULES, updated);
+      setSavedSchedules(updated); store(scopedKey(STORAGE_SCHEDULES), updated);
       addToast && addToast(t('toasts.schedule_saved'), 'success');
       if (cloudSync && !isCanvasEnv) setTimeout(function () { syncToCloud(); }, 300);
     }, [schedItems, schedTitle, schedOrientation, savedSchedules, cloudSync, syncToCloud, addToast]);
@@ -2136,7 +2210,7 @@
 
     var deleteSavedSchedule = useCallback(function (id) {
       var updated = savedSchedules.filter(function (s) { return s.id !== id; });
-      setSavedSchedules(updated); store(STORAGE_SCHEDULES, updated);
+      setSavedSchedules(updated); store(scopedKey(STORAGE_SCHEDULES), updated);
     }, [savedSchedules]);
 
     // ── Social Story actions ──────────────────────────────────────────────
@@ -3301,7 +3375,7 @@
           e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
           e('h4', { style: { fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 } }, '🖼️ What symbol is this?'),
           questTarget && e('div', { style: { width: '140px', height: '140px', borderRadius: '16px', overflow: 'hidden', border: '3px solid ' + PURPLE, boxShadow: '0 4px 20px rgba(124,58,237,0.2)' } },
-            e('img', { src: questTarget.image, alt: 'symbol', style: { width: '100%', height: '100%', objectFit: 'contain', background: '#fff' } })
+            e('img', { src: questTarget.image, alt: 'symbol to identify', style: { width: '100%', height: '100%', objectFit: 'contain', background: '#fff' } })
           ),
           feedbackBar,
           e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%', maxWidth: '340px' } },
@@ -3336,7 +3410,7 @@
                 onMouseOver: function (ev) { if (!questFeedback) ev.currentTarget.style.borderColor = PURPLE; },
                 onMouseOut: function (ev) { ev.currentTarget.style.borderColor = '#e5e7eb'; }
               },
-                e('img', { src: opt.image, alt: 'option', style: { width: '70px', height: '70px', objectFit: 'contain', borderRadius: '8px' } })
+                e('img', { src: opt.image, alt: '', style: { width: '70px', height: '70px', objectFit: 'contain', borderRadius: '8px' } })
               );
             })
           )
@@ -3403,7 +3477,7 @@
           e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
           e('h4', { style: { fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 } }, '✏️ Spell this symbol:'),
           questTarget && e('div', { style: { width: '120px', height: '120px', borderRadius: '14px', overflow: 'hidden', border: '3px solid ' + PURPLE } },
-            e('img', { src: questTarget.image, alt: 'symbol', style: { width: '100%', height: '100%', objectFit: 'contain', background: '#fff' } })
+            e('img', { src: questTarget.image, alt: 'symbol to identify', style: { width: '100%', height: '100%', objectFit: 'contain', background: '#fff' } })
           ),
           questTarget && e('div', { style: { fontSize: '11px', color: '#6b7280' } }, questTarget.label.length + ' letters'),
           feedbackBar,
@@ -4380,7 +4454,7 @@
               });
               if (profileWishes.length === 0) return null;
               return e('div', { style: { background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 100%)', borderRadius: '16px', padding: '14px 16px', marginBottom: '10px', textAlign: 'center' } },
-                e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#7e22ce', marginBottom: '8px' } }, '💫 Wishes waiting to grow'),
+                e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#c4b5fd', marginBottom: '8px' } }, '💫 Wishes waiting to grow'),
                 e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' } },
                   profileWishes.map(function (w, i) {
                     return e('span', { key: i, className: 'ss-garden-seed', style: { padding: '4px 12px', background: 'rgba(196,181,253,0.2)', border: '1px solid #7c3aed', borderRadius: '20px', fontSize: '13px', fontWeight: 600, color: '#e0e7ff' } }, '💫 ' + w.label);
@@ -4718,8 +4792,8 @@
 
     function printGardenReport(bank, counts, total) {
       var prof = profiles.find(function (p) { return p.id === activeProfileId; }) || { name: 'Student' };
-      var name = prof.name || 'Student';
-      var codename = prof.codename || '';
+      var name = escHtml(prof.name || 'Student');
+      var codename = escHtml(prof.codename || '');
       var now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
       var rows = bank.slice().sort(function (a, b) { var ai = GROWTH_ORDER.indexOf(a.growth), bi = GROWTH_ORDER.indexOf(b.growth); return bi !== ai ? bi - ai : a.displayLabel.localeCompare(b.displayLabel); });
       var html = '<html><head><title>' + name + '\'s Vocabulary Report</title><style>'
@@ -4790,7 +4864,7 @@
         html += '<h2>🌳 Words ' + name + ' Owns</h2>';
         html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">These words are used spontaneously across boards, schedules, stories, and daily communication.</p>';
         html += '<div class="word-cloud">';
-        masteredWords.forEach(function (w) { html += '<span class="word-chip" style="background:#fefce8;color:#92400e;border:1px solid #facc15">🌳 ' + w.displayLabel + '</span>'; });
+        masteredWords.forEach(function (w) { html += '<span class="word-chip" style="background:#fefce8;color:#92400e;border:1px solid #facc15">🌳 ' + escHtml(w.displayLabel) + '</span>'; });
         html += '</div>';
       }
       // Growing words — progress
@@ -4798,12 +4872,12 @@
         html += '<h2>🌿 Words That Are Growing</h2>';
         html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">These words are developing well — they appear in ' + (growingWords.length > 3 ? 'several' : 'multiple') + ' contexts and are becoming familiar through practice.</p>';
         html += '<div class="word-cloud">';
-        growingWords.forEach(function (w) { var g = GROWTH_LEVELS[w.growth]; html += '<span class="word-chip" style="background:' + g.bg + ';color:' + g.color + ';border:1px solid ' + g.border + '">' + g.icon + ' ' + w.displayLabel + '</span>'; });
+        growingWords.forEach(function (w) { var g = GROWTH_LEVELS[w.growth]; html += '<span class="word-chip" style="background:' + g.bg + ';color:' + g.color + ';border:1px solid ' + g.border + '">' + g.icon + ' ' + escHtml(w.displayLabel) + '</span>'; });
         html += '</div>';
         html += '<table><tr><th>Word</th><th>Stage</th><th>Found In</th></tr>';
         growingWords.forEach(function (w) { var g = GROWTH_LEVELS[w.growth];
           var places = w.contexts.map(function (c) { return c.source; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ');
-          html += '<tr><td><strong>' + w.displayLabel + '</strong></td><td><span class="badge" style="background:' + g.bg + ';color:' + g.color + '">' + g.icon + ' ' + g.label + '</span></td><td style="font-size:11px;color:#6b7280">' + places + '</td></tr>'; });
+          html += '<tr><td><strong>' + escHtml(w.displayLabel) + '</strong></td><td><span class="badge" style="background:' + g.bg + ';color:' + g.color + '">' + g.icon + ' ' + g.label + '</span></td><td style="font-size:11px;color:#6b7280">' + escHtml(places) + '</td></tr>'; });
         html += '</table>';
       }
       // Early words — seeds
@@ -4811,7 +4885,7 @@
         html += '<h2>🌰 Recently Planted</h2>';
         html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">These words are new to ' + name + '\'s vocabulary. Adding them to more boards, schedules, and stories will help them grow.</p>';
         html += '<div class="word-cloud">';
-        earlyWords.forEach(function (w) { var g = GROWTH_LEVELS[w.growth]; html += '<span class="word-chip" style="background:' + g.bg + ';color:' + g.color + ';border:1px solid ' + g.border + '">' + g.icon + ' ' + w.displayLabel + '</span>'; });
+        earlyWords.forEach(function (w) { var g = GROWTH_LEVELS[w.growth]; html += '<span class="word-chip" style="background:' + g.bg + ';color:' + g.color + ';border:1px solid ' + g.border + '">' + g.icon + ' ' + escHtml(w.displayLabel) + '</span>'; });
         html += '</div>';
       }
       // Family voices section
@@ -4820,7 +4894,7 @@
         html += '<h2>❤️ Words With a Loved One\'s Voice</h2>';
         html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">These words have been personally recorded by a family member or caregiver. When ' + name + ' taps these symbols, they hear someone who loves them — not a machine voice.</p>';
         html += '<div class="word-cloud">';
-        voiceWords.forEach(function (w) { html += '<span class="word-chip" style="background:#fce7f3;color:#be185d;border:1px solid #f9a8d4">❤️ ' + w.displayLabel + '</span>'; });
+        voiceWords.forEach(function (w) { html += '<span class="word-chip" style="background:#fce7f3;color:#be185d;border:1px solid #f9a8d4">❤️ ' + escHtml(w.displayLabel) + '</span>'; });
         html += '</div>';
         html += '<p style="font-size:12px;color:#059669;background:#f0fdf4;padding:8px 12px;border-radius:8px;border:1px solid #d1fae5;margin-top:8px"><strong>Family engagement note:</strong> ' + voiceWords.length + ' word' + (voiceWords.length !== 1 ? 's have' : ' has') + ' personal voice recordings. This reflects active family participation in ' + name + '\'s communication development.</p>';
       }
@@ -4834,7 +4908,7 @@
         html += '<div class="word-cloud">';
         activeWishes.forEach(function (w) {
           var dateStr = w.ts ? new Date(w.ts).toLocaleDateString() : '';
-          html += '<span class="word-chip" style="background:#faf5ff;color:#7c3aed;border:1px solid #c4b5fd">💫 ' + w.label + (dateStr ? ' <span style="font-size:9px;opacity:0.7">(' + dateStr + ')</span>' : '') + '</span>';
+          html += '<span class="word-chip" style="background:#faf5ff;color:#7c3aed;border:1px solid #c4b5fd">💫 ' + escHtml(w.label) + (dateStr ? ' <span style="font-size:9px;opacity:0.7">(' + dateStr + ')</span>' : '') + '</span>';
         });
         html += '</div>';
         if (activeWishes.some(function (w) { return w.note; })) {
@@ -4885,7 +4959,7 @@
           });
           var topWords = Object.keys(wordHits).sort(function (a, b) { return wordHits[b] - wordHits[a]; }).slice(0, 4).join(', ') || '—';
           var tc = goalTypeColors[g.type] || '#6b7280';
-          html += '<tr><td>' + g.text + '</td><td><span class="badge" style="background:' + tc + ';color:#fff">' + g.type + '</span></td><td><strong>' + g.currentCount + '/' + g.targetCount + '</strong> (' + pct + '%)</td><td style="font-size:11px;color:#6b7280">' + topWords + '</td></tr>';
+          html += '<tr><td>' + escHtml(g.text) + '</td><td><span class="badge" style="background:' + tc + ';color:#fff">' + escHtml(g.type) + '</span></td><td><strong>' + g.currentCount + '/' + g.targetCount + '</strong> (' + pct + '%)</td><td style="font-size:11px;color:#6b7280">' + escHtml(topWords) + '</td></tr>';
         });
         html += '</table>';
       }
@@ -4899,6 +4973,7 @@
     }
 
     function printGardenPoster(_, grouped, studentName, total) {
+      studentName = escHtml(studentName || 'Student');
       var html = '<html><head><title>' + studentName + '\'s Word Garden</title><style>'
         + 'body{font-family:system-ui,sans-serif;max-width:900px;margin:0 auto;padding:20px;color:#1f2937;background:linear-gradient(180deg,#e0f2fe 0%,#f0fdf4 40%,#fefce8 80%,#fef3c7 100%)}'
         + '.poster{border:4px solid #4ade80;border-radius:24px;padding:30px;background:rgba(255,255,255,0.85);box-shadow:0 0 40px rgba(74,222,128,0.15)}'
@@ -4931,9 +5006,9 @@
         html += '<div class="words">';
         words.forEach(function (w) {
           html += '<div class="word" style="border:2px solid ' + gl.border + '">';
-          if (w.image) html += '<img src="' + w.image + '" alt="' + String(w.displayLabel || w.label || 'word').replace(/"/g, '&quot;') + '" style="width:48px;height:48px;object-fit:contain;border-radius:8px" />';
+          if (w.image) html += '<img src="' + escHtml(w.image) + '" alt="' + String(w.displayLabel || w.label || 'word').replace(/"/g, '&quot;') + '" style="width:48px;height:48px;object-fit:contain;border-radius:8px" />';
           else html += '<div class="icon">' + gl.icon + '</div>';
-          html += '<div class="label">' + w.displayLabel + '</div></div>';
+          html += '<div class="label">' + escHtml(w.displayLabel) + '</div></div>';
         });
         html += '</div></div>';
       });
@@ -4944,8 +5019,8 @@
 
     function printGardenHomeNote(bank, counts, total) {
       var prof = profiles.find(function (p) { return p.id === activeProfileId; }) || { name: 'Student' };
-      var name = prof.name || 'your child';
-      var codename = prof.codename || '';
+      var name = escHtml(prof.name || 'your child');
+      var codename = escHtml(prof.codename || '');
       var now = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
       // Pick 3-5 words to practice at home: prefer growing/sprout words with images
       // Prefer weekly focus words (core, near threshold, fewest contexts) for home practice
@@ -4956,7 +5031,7 @@
           return sb - sa;
         }).slice(0, 4);
       if (practiceWords.length < 2) practiceWords = bank.filter(function (w) { return w.image; }).slice(0, 4);
-      var masteredList = bank.filter(function (w) { return w.growth === 'mastered'; }).map(function (w) { return w.displayLabel; });
+      var masteredList = bank.filter(function (w) { return w.growth === 'mastered'; }).map(function (w) { return escHtml(w.displayLabel); });
       var html = '<html><head><title>Home Note — ' + name + '</title><style>'
         + 'body{font-family:Georgia,serif;max-width:680px;margin:0 auto;padding:24px;color:#1f2937;line-height:1.7}'
         + '.header{background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:2px solid #86efac;border-radius:16px;padding:20px;text-align:center;margin-bottom:20px}'
@@ -4996,12 +5071,12 @@
         html += '<div class="words-row">';
         practiceWords.forEach(function (w) {
           html += '<div class="word-card">';
-          if (w.image) html += '<img src="' + w.image + '" alt="' + w.displayLabel + '" />';
-          html += '<div class="label">' + w.displayLabel + '</div></div>';
+          if (w.image) html += '<img src="' + escHtml(w.image) + '" alt="' + escHtml(w.displayLabel) + '" />';
+          html += '<div class="label">' + escHtml(w.displayLabel) + '</div></div>';
         });
         html += '</div>';
         html += '<div class="tip"><strong>How to help:</strong> When you see ' + name + ' reaching for something or showing a need, <strong>point to the word</strong> and <strong>say it out loud</strong>. Then wait 3-5 seconds for ' + name + ' to try. Respond to any attempt — a look, a point, a sound — as if they said the word. <em>Every response teaches that words work.</em></div>';
-        html += '<div class="tip"><strong>At mealtimes:</strong> Point to "' + practiceWords[0].displayLabel + '" before giving it. <strong>During play:</strong> Model the words naturally: "Oh, you ' + (practiceWords.length > 1 ? practiceWords[1].displayLabel : 'want') + '!" <strong>At bedtime:</strong> Name one thing from the day using a garden word.</div>';
+        html += '<div class="tip"><strong>At mealtimes:</strong> Point to "' + escHtml(practiceWords[0].displayLabel) + '" before giving it. <strong>During play:</strong> Model the words naturally: "Oh, you ' + escHtml(practiceWords.length > 1 ? practiceWords[1].displayLabel : 'want') + '!" <strong>At bedtime:</strong> Name one thing from the day using a garden word.</div>';
       }
       // Phonics play section — bridges vocabulary to literacy at home
       if (practiceWords && practiceWords.length >= 2) {
@@ -5025,7 +5100,7 @@
       // Include garden story if one has been generated
       if (gardenStory) {
         html += '<div class="section"><h2>📖 ' + name + '\'s Garden Story</h2>';
-        html += '<div style="font-family:Georgia,serif;font-size:14px;color:#374151;line-height:1.8;padding:12px 16px;background:#f0fdf4;border-radius:12px;border:1px solid #d1fae5;font-style:italic">' + gardenStory + '</div>';
+        html += '<div style="font-family:Georgia,serif;font-size:14px;color:#374151;line-height:1.8;padding:12px 16px;background:#f0fdf4;border-radius:12px;border:1px solid #d1fae5;font-style:italic">' + escHtml(gardenStory) + '</div>';
         html += '<p style="font-size:11px;color:#6b7280;margin:6px 0 0">Read this story aloud to ' + name + ' — hearing their vocabulary words in a narrative helps them grow!</p></div>';
       }
       html += '<div class="footer">';
@@ -7336,7 +7411,7 @@
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = 'comm_log_' + new Date().toISOString().slice(0, 10) + '.csv';
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
       };
       var useCols = Math.min(usePageData ? (usePageData.cols || useBoard.cols || 4) : 4, useCells.length || 1);
       return e('div', { style: { position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column' } },
@@ -7360,7 +7435,7 @@
             return e('div', { style: { display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 10px', background: '#1a1a2e', borderRadius: '7px', border: '1px solid #312e81' } },
               e('span', { style: { color: '#a78bfa', fontSize: '10px', fontWeight: 600, whiteSpace: 'nowrap' } }, '🌱 Model:'),
               focusOnBoard.map(function (w) {
-                return e('span', { key: w.key, style: { color: '#7e22ce', fontSize: '11px', fontWeight: 700 } }, w.displayLabel);
+                return e('span', { key: w.key, style: { color: '#c4b5fd', fontSize: '11px', fontWeight: 700 } }, w.displayLabel);
               }));
           })(),
           // 💫 Wish Seed — capture the moment a student reaches for a word that doesn't exist
@@ -7386,7 +7461,7 @@
                 onClick: function () { setBoardWishOpen(true); },
                 'aria-label': 'Plant a wish seed — record a word the student wanted',
                 title: 'The student is reaching for a word that isn\'t here. Capture it.',
-                style: { background: '#1e1b4b', color: '#7e22ce', border: '1px solid #4c1d95', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+                style: { background: '#1e1b4b', color: '#c4b5fd', border: '1px solid #4c1d95', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
               }, '💫'),
           e('button', {
             onClick: function () { setShowCommLog(function (v) { return !v; }); },
@@ -7641,6 +7716,13 @@
 
     // Focus trap handler for modal — keep Tab within the dialog
     var modalRef = useRef(null);
+    var ssLiveRef = useRef(null);
+    // Move focus into the dialog on open; restore it to the trigger on close (WCAG 2.4.3 / 2.4.11).
+    useEffect(function () {
+      var prevFocus = (typeof document !== 'undefined') ? document.activeElement : null;
+      var t = setTimeout(function () { try { if (modalRef.current && modalRef.current.focus) modalRef.current.focus(); } catch (e) {} }, 0);
+      return function () { clearTimeout(t); try { if (prevFocus && prevFocus.focus && document.contains(prevFocus)) prevFocus.focus(); } catch (e) {} };
+    }, []);
     var handleModalKeyDown = function (ev) {
       if (ev.key === 'Escape') { onClose && onClose(); return; }
       if (ev.key !== 'Tab') return;
@@ -7663,12 +7745,13 @@
       role: 'dialog',
       'aria-modal': 'true',
       'aria-label': 'Visual Supports Studio',
-      className: 'ss-focus-visible',
+      className: 'ss-focus-visible ss-modal-root ss-theme-' + ssTheme,
       onKeyDown: handleModalKeyDown
     },
       // Spinner keyframes
       e('style', null, '@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}'),
-      e('div', { style: S.modal, onClick: function (ev) { ev.stopPropagation(); }, ref: modalRef },
+      e('div', { style: S.modal, onClick: function (ev) { ev.stopPropagation(); }, ref: modalRef, tabIndex: -1 },
+        e('div', { ref: ssLiveRef, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' } }),
         // Header
         e('div', { style: S.header },
           e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },

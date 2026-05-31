@@ -3285,7 +3285,7 @@
     "flag_breakdown": "Safety Flag mga kategorya",
     "fluency_trend": "Fluency pag-unlad (WCPM)",
     "running_record": "Running Record Buod",
-    "benchmark_vs": "vs. Benchmark",
+    "benchmark_vs": "vs. Target",
     "sort_asc": "Ayusin ascending",
     "xp_earned_streak": "+{xp} XP (•{multiplier} streak!)",
     "sort_desc": "Ayusin descending",

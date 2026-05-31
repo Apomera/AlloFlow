@@ -1038,7 +1038,7 @@ window.StemLab = window.StemLab || {
 
                     return React.createElement("button", { key: cm.id, onClick: function () { upd('fgChallengeMode', cm.id); upd('fgQuiz', null); },
 
-                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-' + cm.color + '-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? (({ indigo: 'bg-indigo-600', violet: 'bg-violet-600', red: 'bg-red-600', emerald: 'bg-emerald-600' }[cm.color]) || 'bg-indigo-600') + ' text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
 
                     }, cm.label);
 

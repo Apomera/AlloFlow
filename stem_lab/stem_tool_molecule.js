@@ -137,7 +137,47 @@ window.StemLab = window.StemLab || {
           // added drawVisualShelf(...) calls for the reactions-mode "Visual Molecule
           // Shelf" but never a definition. Stubbed to null so the tool renders; the
           // per-reaction-side molecule visual still needs to be implemented.
-          const drawVisualShelf = () => null;
+          const drawVisualShelf = (terms, isLeft) => {
+            // Render each reactant/product as a small colored atom cluster.
+            // Honest representation: atoms shown as element-colored circles sized
+            // by count, with the formula label as the source of truth. We do NOT
+            // invent bond geometry we don't have for arbitrary compounds.
+            if (!Array.isArray(terms)) return null;
+            const elColor = (sym) => {
+              const e = ELEMENTS.find(x => x.s === sym);
+              return (e && e.c) || (isDark ? '#94a3b8' : '#64748b');
+            };
+            return React.createElement("div", { className: "flex gap-2 items-end flex-wrap justify-center" },
+              terms.map((term, ti) => React.createElement("div", {
+                key: 'shelf-' + (isLeft ? 'L' : 'R') + '-' + ti + '-' + (term.formula || ti),
+                className: "flex flex-col items-center gap-1"
+              },
+                React.createElement("div", { className: "flex items-center justify-center gap-0.5 flex-wrap", style: { maxWidth: '88px' } },
+                  Object.keys(term.atoms || {}).map((sym) => {
+                    const count = term.atoms[sym];
+                    return Array.apply(null, Array(Math.min(count, 6))).map((_, ai) =>
+                      React.createElement("span", {
+                        key: 'atom-' + sym + '-' + ai,
+                        title: sym,
+                        style: {
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          width: '20px', height: '20px', borderRadius: '50%',
+                          background: elColor(sym), color: '#fff',
+                          fontSize: '9px', fontWeight: 'bold',
+                          border: '1.5px solid ' + (isDark ? '#0f172a' : '#fff'),
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.25)'
+                        }
+                      }, sym)
+                    );
+                  })
+                ),
+                React.createElement("span", {
+                  className: "text-[11px] font-bold " + (isDark ? "text-slate-200" : "text-slate-700")
+                }, term.formula || '')
+              ))
+            );
+          };
+
 
           const W = 400, H = 300;
 

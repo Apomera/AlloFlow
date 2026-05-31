@@ -32,8 +32,13 @@
   // ══════════════════════════════════════════════════════════════
 
   var _consentGiven = false;
-  var _transcriptStore = {}; // flagId → { messages, timestamp }
+  // Transient snapshot of the most recent flagged snippet. Single string,
+  // overwritten each call, never persisted. The crisis modal owns this data;
+  // nothing else stores it. Replaces the prior _transcriptStore Map, which
+  // accumulated student writing in memory for the life of the session.
+  var _lastSnippet = '';
   var _flagLog = [];         // session-scoped audit log
+  var _activeCrisisModal = null; // single-instance guard for the modal
 
   // ══════════════════════════════════════════════════════════════
   // ── Consent ──
@@ -164,18 +169,22 @@
   };
 
   // ══════════════════════════════════════════════════════════════
-  // ── Transcript Store (in-memory, session-scoped) ──
+  // ── Transient Snippet (replaces the old transcript store) ──
+  // The crisis modal owns flagged content. We no longer accumulate
+  // student writing in memory across the session. These shim methods
+  // exist so older callers that referenced storeTranscript do not break;
+  // they intentionally do nothing persistent.
   // ══════════════════════════════════════════════════════════════
 
-  window.SelHub.storeTranscript = function(flagId, messages) {
-    _transcriptStore[flagId] = { messages: messages, storedAt: new Date().toISOString() };
+  window.SelHub.storeTranscript = function(/* flagId, messages */) {
+    // No-op: transcripts are no longer retained. The crisis modal is the
+    // only surface that ever holds flagged text, and only for the duration
+    // of the modal itself.
   };
 
-  window.SelHub.getTranscript = function(flagId) {
-    return _transcriptStore[flagId] || null;
-  };
+  window.SelHub.getTranscript = function() { return null; };
 
-  window.SelHub.getAllTranscripts = function() { return _transcriptStore; };
+  window.SelHub.getAllTranscripts = function() { return {}; };
 
   // ══════════════════════════════════════════════════════════════
   // ── Safe Coach Wrapper ──
@@ -231,18 +240,13 @@
         response = 'I\u2019m having trouble connecting right now. But I\u2019m glad you\u2019re here.';
       }
 
-      // Tier 2+: create flag and store transcript
+      // Tier 2+: create flag (no transcript retention — modal owns snippet)
       if (safety.tier >= 2 && onSafetyFlag) {
         var transcriptId = 'sel_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
 
-        // Store transcript in memory for this session
-        var transcript = history.concat([
-          { role: 'user', text: msg },
-          { role: 'coach', text: response }
-        ]);
-        window.SelHub.storeTranscript(transcriptId, transcript);
-
-        // Push flag through the SAME pipeline as persona/adventure/socratic
+        // Push flag through the SAME pipeline as persona/adventure/socratic.
+        // Educators with a configured counter endpoint still see the event;
+        // we just no longer cache the conversation text alongside it.
         onSafetyFlag({
           category: 'ai_' + (safety.category || 'concerning'),
           match: safety.rationale || 'SEL coach safety concern',
@@ -260,13 +264,16 @@
         _flagLog.push({ time: new Date().toISOString(), tool: toolId, tier: safety.tier, category: safety.category });
       }
 
-      // Tier 3: append crisis info
+      // Tier 3: append crisis info AND show the blocking modal.
       if (safety.tier >= 3) {
         response += '\n\n\u26A0\uFE0F I want to make sure you\u2019re safe. '
           + (band === 'elementary'
             ? 'Please talk to a trusted adult \u2014 a teacher, school counselor, parent, or any grown-up you trust. If you\u2019re in danger right now, tell an adult immediately.'
             : 'If you\u2019re in crisis: 988 Suicide & Crisis Lifeline (call or text 988), Crisis Text Line (text HOME to 741741), or talk to a trusted adult at your school.')
           + ' You don\u2019t have to handle this alone.';
+        try {
+          window.SelHub.showCrisisModal({ toolName: toolId, contentSnippet: msg });
+        } catch (_) { /* swallow \u2014 modal is best-effort */ }
       }
 
       return { response: response, tier: safety.tier, showCrisis: safety.tier >= 3 };
@@ -459,5 +466,256 @@
     setTimeout(function() { try { w.focus(); w.print(); } catch (e) {} }, 250);
   };
 
-  console.log('[SelHub] Safety layer v1.1 loaded (Canvas-compatible, in-memory)');
+  // ══════════════════════════════════════════════════════════════
+  // ── Client-side Crisis Scanner ──
+  // Pure regex, no remote config, no model call. Run on every
+  // student text submission (journal, reflection, story, chat-style
+  // input) BEFORE tool-specific handling. Tools call
+  // SELSafety.showCrisisModal(...) when triggered.
+  // ══════════════════════════════════════════════════════════════
+
+  var _CRISIS_TERMS = /\b(suicide|suicidal|kill myself|killing myself|end my life|ending my life|want to die|wanna die|don'?t want to (?:live|be here)|hurt myself|hurting myself|self.?harm|cut myself|cutting myself|overdose|no reason to live|better off dead|being abused|he hits me|she hits me|they hit me|touched me)\b/i;
+
+  // Deflectors run against the 30 chars immediately preceding the match
+  // PLUS the match itself, so phrases like "gonna kill this homework" or
+  // "dying laughing" don't falsely trigger.
+  var _CRISIS_DEFLECT = /(kill that|kill this|killing it|gonna kill .*(homework|test|game|level|boss|workout|it)|dying laughing|dying of (laughter|boredom))/i;
+
+  window.SelHub.scanForCrisis = function(text) {
+    var out = { triggered: false, matchedTerm: null };
+    if (!text || typeof text !== 'string') return out;
+    var m = _CRISIS_TERMS.exec(text);
+    if (!m) return out;
+    var start = Math.max(0, m.index - 30);
+    var window_ = text.substring(start, m.index + m[0].length);
+    if (_CRISIS_DEFLECT.test(window_)) return out;
+    out.triggered = true;
+    out.matchedTerm = m[0];
+    return out;
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Crisis Modal (blocking, accessible) ──
+  // Single public entry point for every tool. The modal owns the
+  // snippet for the lifetime of the modal only. No persistence.
+  // ══════════════════════════════════════════════════════════════
+
+  function _crisisStyles() {
+    if (document.getElementById('sel-crisis-modal-style')) return;
+    var st = document.createElement('style');
+    st.id = 'sel-crisis-modal-style';
+    st.textContent = ''
+      + '.sel-cf-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.55);'
+      + 'display:flex;align-items:center;justify-content:center;z-index:2147483600;'
+      + 'padding:16px;animation:sel-cf-fade 160ms ease-out}'
+      + '.sel-cf-card{background:#fff;border-radius:18px;max-width:480px;width:100%;'
+      + 'padding:24px;box-shadow:0 24px 60px rgba(15,23,42,0.35);'
+      + 'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1e293b;'
+      + 'animation:sel-cf-pop 180ms ease-out;max-height:90vh;overflow-y:auto}'
+      + '.sel-cf-heart{display:block;margin:0 auto 10px;width:36px;height:36px;color:#64748b}'
+      + '.sel-cf-title{font-size:17px;font-weight:700;line-height:1.4;margin:0 0 12px;text-align:center;color:#0f172a}'
+      + '.sel-cf-body{font-size:14px;line-height:1.6;margin:0 0 18px;color:#334155}'
+      + '.sel-cf-btn{display:block;width:100%;box-sizing:border-box;padding:13px 16px;'
+      + 'border-radius:12px;border:none;font-size:14px;font-weight:600;cursor:pointer;'
+      + 'text-align:center;text-decoration:none;margin-bottom:10px;line-height:1.4;'
+      + 'font-family:inherit}'
+      + '.sel-cf-btn-primary{background:#2563eb;color:#fff;box-shadow:0 2px 8px rgba(37,99,235,0.25)}'
+      + '.sel-cf-btn-primary:focus{outline:3px solid #93c5fd;outline-offset:2px}'
+      + '.sel-cf-btn-secondary{background:#e0f2fe;color:#075985;border:1px solid #bae6fd}'
+      + '.sel-cf-btn-secondary:focus{outline:3px solid #7dd3fc;outline-offset:2px}'
+      + '.sel-cf-btn-save{background:#f1f5f9;color:#1e293b;border:1px solid #cbd5e1}'
+      + '.sel-cf-btn-save:focus{outline:3px solid #94a3b8;outline-offset:2px}'
+      + '.sel-cf-btn-close{background:transparent;color:#475569;text-decoration:underline;'
+      + 'padding:10px 16px;font-weight:500}'
+      + '.sel-cf-btn-close:focus{outline:2px solid #64748b;outline-offset:2px;border-radius:6px}'
+      + '.sel-cf-tertiary{font-size:13px;line-height:1.6;color:#475569;background:#f8fafc;'
+      + 'border-radius:10px;padding:12px 14px;margin:0 0 12px}'
+      + '.sel-cf-sub{font-size:12px;color:#94a3b8;text-align:center;margin:6px 0 0;line-height:1.5}'
+      + '.sel-cf-btn-sub{display:block;font-size:11px;font-weight:400;opacity:0.85;margin-top:3px}'
+      + '@keyframes sel-cf-fade{from{opacity:0}to{opacity:1}}'
+      + '@keyframes sel-cf-pop{from{opacity:0;transform:translateY(8px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}'
+      + '@media (prefers-reduced-motion: reduce){'
+      + '  .sel-cf-overlay,.sel-cf-card{animation:none}'
+      + '}'
+      + '@media (max-width:520px){.sel-cf-card{padding:20px}}';
+    document.head.appendChild(st);
+  }
+
+  function _downloadSnippet(toolName, contentSnippet) {
+    try {
+      var payload = {
+        timestamp: new Date().toISOString(),
+        toolName: toolName || 'AlloFlow SEL Tool',
+        contentSnippet: String(contentSnippet || '').substring(0, 500)
+      };
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      var d = new Date();
+      var yyyy = d.getFullYear();
+      var mm = String(d.getMonth() + 1).padStart(2, '0');
+      var dd = String(d.getDate()).padStart(2, '0');
+      a.href = url;
+      a.download = 'my-note-' + yyyy + '-' + mm + '-' + dd + '.json';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() {
+        try { URL.revokeObjectURL(url); } catch (_) {}
+        try { a.parentNode && a.parentNode.removeChild(a); } catch (_) {}
+      }, 0);
+    } catch (e) {
+      // Best-effort: don't let a download error block the rest of the modal.
+    }
+  }
+
+  window.SelHub.showCrisisModal = function(context) {
+    context = context || {};
+    var toolName = context.toolName || 'AlloFlow SEL Tool';
+    // Transient — overwritten each call, never persisted. The modal closure
+    // is the only consumer.
+    _lastSnippet = String(context.contentSnippet || '').substring(0, 500);
+
+    // Guard: only one modal at a time. If one is open, reuse it.
+    if (_activeCrisisModal && _activeCrisisModal.overlay && document.body.contains(_activeCrisisModal.overlay)) {
+      return _activeCrisisModal;
+    }
+
+    if (typeof document === 'undefined' || !document.body) return null;
+    _crisisStyles();
+
+    var triggerEl = (document.activeElement && document.activeElement !== document.body) ? document.activeElement : null;
+
+    var overlay = document.createElement('div');
+    overlay.className = 'sel-cf-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'cf-title');
+
+    var card = document.createElement('div');
+    card.className = 'sel-cf-card';
+
+    // Small heart outline — calm palette, no alarm icon.
+    card.insertAdjacentHTML('beforeend',
+      '<svg class="sel-cf-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+      + ' stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+      + '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78'
+      + ' l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+    );
+
+    var title = document.createElement('h2');
+    title.id = 'cf-title';
+    title.className = 'sel-cf-title';
+    title.setAttribute('aria-live', 'polite');
+    title.textContent = 'You wrote something that sounds really heavy. I want to make sure you’re okay.';
+    card.appendChild(title);
+
+    var body = document.createElement('p');
+    body.className = 'sel-cf-body';
+    body.textContent = 'What you’re feeling is real, and you don’t have to handle it alone. The people below are trained to listen — they won’t judge you, and you don’t need a reason to reach out. If you can, tell an adult you trust today, even if it feels hard. You matter, and this moment is not the whole story.';
+    card.appendChild(body);
+
+    // Primary: 988 (call + text variant on a second line)
+    var btn988 = document.createElement('a');
+    btn988.className = 'sel-cf-btn sel-cf-btn-primary';
+    btn988.href = 'tel:988';
+    btn988.innerHTML = 'Call 988 — Suicide &amp; Crisis Lifeline'
+      + '<span class="sel-cf-btn-sub">or tap here to text instead: '
+      + '<a href="sms:988" style="color:inherit;text-decoration:underline">Text 988</a></span>';
+    card.appendChild(btn988);
+
+    // Secondary: Crisis Text Line
+    var btn741 = document.createElement('a');
+    btn741.className = 'sel-cf-btn sel-cf-btn-secondary';
+    btn741.href = 'sms:741741?&body=HOME';
+    btn741.textContent = 'Text HOME to 741741 — Crisis Text Line';
+    card.appendChild(btn741);
+
+    // Tertiary text (not a link)
+    var tertiary = document.createElement('p');
+    tertiary.className = 'sel-cf-tertiary';
+    tertiary.textContent = 'Tell a trusted adult right now — a parent, teacher, coach, family friend, or anyone who has your back.';
+    card.appendChild(tertiary);
+
+    // Save button
+    var btnSave = document.createElement('button');
+    btnSave.type = 'button';
+    btnSave.className = 'sel-cf-btn sel-cf-btn-save';
+    btnSave.innerHTML = 'Save what I wrote so I can show someone'
+      + '<span class="sel-cf-btn-sub">Downloads a small file to your device. Nothing is sent anywhere.</span>';
+    btnSave.addEventListener('click', function() {
+      _downloadSnippet(toolName, _lastSnippet);
+    });
+    card.appendChild(btnSave);
+
+    // Close button
+    var btnClose = document.createElement('button');
+    btnClose.type = 'button';
+    btnClose.className = 'sel-cf-btn sel-cf-btn-close';
+    btnClose.textContent = 'Close this — I’m okay';
+    card.appendChild(btnClose);
+
+    var micro = document.createElement('p');
+    micro.className = 'sel-cf-sub';
+    micro.textContent = 'If that changes in the next few minutes, 988 is always there.';
+    card.appendChild(micro);
+
+    overlay.appendChild(card);
+
+    // Focusable order: 988 → 741741 → Save → Close
+    var focusables = [btn988, btn741, btnSave, btnClose];
+
+    function close() {
+      try { document.removeEventListener('keydown', onKey, true); } catch (_) {}
+      try { overlay.parentNode && overlay.parentNode.removeChild(overlay); } catch (_) {}
+      _lastSnippet = ''; // drop the transient snippet immediately on dismiss
+      _activeCrisisModal = null;
+      if (triggerEl && typeof triggerEl.focus === 'function') {
+        try { triggerEl.focus(); } catch (_) {}
+      }
+    }
+
+    btnClose.addEventListener('click', close);
+
+    function onKey(e) {
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        e.preventDefault();
+        e.stopPropagation();
+        close(); // ESC routes through the "I'm okay" dismiss path, not silent close.
+        return;
+      }
+      if (e.key === 'Tab' || e.keyCode === 9) {
+        // Trap focus within the four interactive elements.
+        var current = document.activeElement;
+        var idx = focusables.indexOf(current);
+        if (idx === -1) {
+          e.preventDefault();
+          focusables[0].focus();
+          return;
+        }
+        var nextIdx;
+        if (e.shiftKey) {
+          nextIdx = idx === 0 ? focusables.length - 1 : idx - 1;
+        } else {
+          nextIdx = idx === focusables.length - 1 ? 0 : idx + 1;
+        }
+        e.preventDefault();
+        focusables[nextIdx].focus();
+      }
+    }
+    document.addEventListener('keydown', onKey, true);
+
+    document.body.appendChild(overlay);
+    // Initial focus: primary action.
+    setTimeout(function() { try { btn988.focus(); } catch (_) {} }, 0);
+
+    _activeCrisisModal = { overlay: overlay, close: close };
+    return _activeCrisisModal;
+  };
+
+  // Backwards-compatible alias matching the design's "SELSafety" namespace.
+  window.SELSafety = window.SELSafety || {};
+  window.SELSafety.showCrisisModal = window.SelHub.showCrisisModal;
+  window.SELSafety.scanForCrisis = window.SelHub.scanForCrisis;
+
+  console.log('[SelHub] Safety layer v1.2 loaded (crisis modal + scanForCrisis)');
 })();

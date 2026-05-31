@@ -1007,7 +1007,6 @@
       )
     )
   );
-};
   // â•â•â• ðŸ”¬ plateTectonics (plateTectonics) â•â•â•
   window.StemLab.registerTool('plateTectonics', {
     icon: '\uD83C\uDF0B',

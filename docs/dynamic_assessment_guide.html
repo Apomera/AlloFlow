@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dynamic Assessment Studio — Clinician User Guide | AlloFlow</title>
+<meta name="description" content="A clinician's guide to AlloFlow's Dynamic Assessment Studio: running a pretest-mediation-posttest cycle, interpreting the Modifiability Index, the access-contrast framework for multilingual learners, and responsible-use limitations.">
+<style>
+:root{--ink:#0f172a;--soft:#64748b;--line:#e2e8f0;--accent:#4f46e5;--accent-soft:#eef2ff;--warn-bg:#fffbeb;--warn-bd:#fcd34d;--warn-ink:#92400e;--bg:#f8fafc;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.65;}
+.wrap{max-width:820px;margin:0 auto;padding:32px 22px 80px;}
+.banner{background:var(--accent-soft);border:1px solid #c7d2fe;border-radius:14px;padding:14px 18px;margin:0 0 28px;font-size:14px;color:#3730a3;}
+h1{font-size:30px;font-weight:900;letter-spacing:-0.5px;line-height:1.2;margin:0 0 10px;}
+h2{font-size:22px;font-weight:800;margin:38px 0 10px;padding-top:12px;border-top:1px solid var(--line);}
+h3{font-size:16px;font-weight:800;color:#1e293b;margin:24px 0 6px;}
+p{margin:0 0 14px;color:#1e293b;}
+ul{margin:0 0 16px;padding-left:22px;}
+li{margin:0 0 7px;color:#1e293b;}
+strong{font-weight:700;}
+code{background:#f1f5f9;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.88em;}
+hr{border:0;border-top:1px solid var(--line);margin:30px 0;}
+blockquote{margin:18px 0;padding:12px 16px;background:var(--warn-bg);border:1px solid var(--warn-bd);border-left:4px solid #f59e0b;border-radius:10px;}
+blockquote p{margin:0;color:var(--warn-ink);font-size:14.5px;}
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--soft);font-size:12.5px;}
+@media (max-width:600px){.wrap{padding:20px 16px 60px;}h1{font-size:25px;}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="banner">🔬 <strong>Clinical tool · v1.</strong> Dynamic Assessment is a structured clinical observation of how a student responds to teaching — <strong>not a normed or standardized test</strong>, and not a basis for eligibility on its own. Use it to plan intervention and generate hypotheses, alongside other evidence.</div>
+<article>
+<h1>AlloFlow Dynamic Assessment Studio — Clinician User Guide</h1>
+<h2>What Dynamic Assessment Is</h2>
+<p>Dynamic Assessment (DA) measures <strong>how a student responds to teaching</strong>, not just what they already know. Where a traditional test photographs current performance, DA runs a structured cycle — <strong>pretest → mediation → posttest</strong> (with an optional <strong>transfer</strong> probe) — and watches what changes when you scaffold. The central question is not "Did the student get it right?" but "<strong>How much, and how easily, did performance improve when we mediated learning?</strong>"</p>
+<p>AlloFlow's DA Studio is a technology-supported implementation of this approach. It draws on the established DA tradition — <strong>Vygotsky's</strong> zone of proximal development (the gap between independent performance and what's possible with support) and <strong>Feuerstein's</strong> mediated learning experience — operationalizing that tradition with graduated prompt hierarchies and a descriptive growth metric. It does <strong>not</strong> reproduce or claim equivalence to any specific published instrument (LPAD, ACFS, ARROW, and the like); its methodology is grounded in the tradition but its scoring was designed for this tool and is not normed against any published population.</p>
+<p>The Studio is labeled <strong>"Clinical tool · v1."</strong> It supports both an <strong>examiner-led</strong> path (you control every scaffold) and an <strong>AI-mediated</strong> path (the model decides which pre-authored scaffold comes next). It is not a substitute for training in dynamic-assessment methodology — it assumes you bring the clinical judgment.</p>
+<hr>
+<h2>When to Use It — and When Not To</h2>
+<h3>Use DA when you want to:</h3>
+<ul>
+  <li><strong>Plan intervention.</strong> Find which supports actually move a student and at what intensity.</li>
+  <li><strong>Drive pre-referral / MTSS problem-solving.</strong> Generate and test hypotheses before (or instead of) a formal referral.</li>
+  <li>**Understand <em>how</em> a student learns** — where they get stuck, what kind of scaffold unlocks them, whether learning sticks and generalizes.</li>
+  <li><strong>Add a structured observation</strong> to an existing evaluation, alongside standardized data.</li>
+</ul>
+<h3>Do NOT use DA:</h3>
+<ul>
+  <li><strong>As a normed or standardized test.</strong> It produces descriptive observations, not standard scores or percentiles against any external population.</li>
+  <li><strong>As a basis for eligibility on its own.</strong> Eligibility decisions require standardized batteries with established reliability and validity. DA <em>supplements</em>, never replaces, the standardized component of an evaluation.</li>
+  <li><strong>As your primary progress-monitoring tool.</strong> That role belongs to CBM probes. DA is a hypothesis-testing tool used at <strong>intake and review</strong>, not for frequent progress data.</li>
+  <li><strong>To compare one student against another.</strong> The growth metric is a <em>within-student</em> observation; comparing two students' indices is not meaningful without normative data the tool does not provide.</li>
+  <li><strong>Without parent/guardian consent</strong> for non-standardized procedures, or <strong>when a student is acutely dysregulated.</strong></li>
+</ul>
+<p>Say this plainly in your reports: DA results are <strong>clinical observations of learning behavior, not test scores.</strong></p>
+<hr>
+<h2>The Full Workflow</h2>
+<h3>1. Intake (Referral Context)</h3>
+<p>The start screen opens with an optional, collapsible <strong>"Referral context"</strong> panel — six free-text fields, all stored on the device:</p>
+<ul>
+  <li><strong>Referral reason</strong></li>
+  <li><strong>Hypothesized bottleneck</strong></li>
+  <li><strong>Specific question this probe should answer</strong></li>
+  <li><strong>Prior interventions tried</strong></li>
+  <li><strong>Existing assessment data</strong> (a button can pull in your most recent CBM-Math fluency probes)</li>
+  <li><strong>Multilingual / language background</strong></li>
+</ul>
+<p>The <strong>language-background field is load-bearing.</strong> Filling it in turns on the access-condition lens described later. Leave it blank for monolingual English students; the lens never appears unless a language background was recorded. Everything you type here surfaces <em>first</em> in your reports and exports. Nothing leaves the device until you choose to send to the Report Writer or invoke AI generation.</p>
+<p>You also choose an <strong>output language</strong> (defaults to your host's leveled-text language), which drives all AI-generated output. Note: the built-in item banks remain in English — to assess in another language, use the Custom Probe builder.</p>
+<h3>2. Choose a Domain and Build Items</h3>
+<p>Pick one of four built-in domains, each with banks of 18 items (six easy / six medium / six hard):</p>
+<ul>
+  <li><strong>Math</strong> — word problems, grades 2–3 (one-step) up to 6–7 (percent, ratio, mean).</li>
+  <li><strong>Reading</strong> — short passages with literal and inferential probes.</li>
+  <li><strong>Working memory</strong> — digit span, categorization, set-shifting, inhibition, planning. These are <strong>administered verbally</strong> — the prompt is what you say aloud.</li>
+  <li><strong>Language</strong> — vocabulary-in-sentence, definitions, narration, summarization (open-ended production).</li>
+</ul>
+<p>Choose a <strong>difficulty band</strong> (Easy = grades 2–3, Medium = 4–5, Hard = 6–7) and a <strong>mediation mode</strong> (clinician-led is the default).</p>
+<p><strong>Or build a custom probe.</strong> The AI builder lets you specify a domain (including free-form "other"), grade band, a required <strong>target construct</strong>, an optional suspected bottleneck, number of items (3 ≈ 12 min to 6 ≈ 30 min), and clinical context (obvious name patterns are soft-stripped before anything reaches the model — a defense-in-depth measure, not a guarantee). It runs a <strong>three-pass pipeline</strong> — the AI drafts items, critiques its own draft against five quality criteria (catching answer leakage), then refines only the flagged items. You'll see each stage and the critique notes on the review screen. Custom items can be saved to a device-only <strong>probe library</strong> for reuse.</p>
+<blockquote><p><strong>AI-generated items are not normed or validated. Use them as clinical probes, not standardized measures — and always review before use.</strong></p></blockquote>
+<h3>3. Review and Edit</h3>
+<p>Every generated item is an editable card. You can rewrite the <strong>prompt</strong>, the <strong>correct answer</strong>, and <strong>acceptable variants</strong>, and you can edit each rung of the <strong>scaffold ladder</strong> individually (regenerating a single rung if needed). The <strong>transfer twin</strong> (a novel item testing the same construct) is shown read-only. Heuristic warnings flag weak items; the violet <strong>AI self-critique block</strong> shows the model's own quality verdict, issues, and any refinements (with explicit fallback notices if a critique or refinement pass failed). You can exclude items, regenerate a whole item, and attach <strong>supports</strong> (see the access section). Then choose <strong>Run</strong>, <strong>Save + Run</strong>, or <strong>Save only</strong>.</p>
+<h3>4. Run the Session</h3>
+<p>The session moves through phases automatically:</p>
+<p><strong>Pretest (unprompted).</strong> One attempt per item, <strong>no scaffolds</strong>. Record what the student does alone. Scored binary by design — right at level 0 earns full credit, otherwise zero.</p>
+<p><strong>Mediation — the 4-level scaffold ladder.</strong> This is the heart of DA. When a student struggles, you deliver scaffolds in graduated order, recording the <strong>highest level needed</strong>:</p>
+<ul>
+  <li><strong>L0</strong> — no scaffold (the student solves it alone).</li>
+  <li><strong>L1 — Cue:</strong> a declarative hint that <em>orients attention</em> without giving the answer.</li>
+  <li><strong>L2 — Leading:</strong> an interrogative nudge toward the right strategy (more directive than a cue).</li>
+  <li><strong>L3 — Model:</strong> you demonstrate the move on a parallel example, then redirect the student to do it.</li>
+  <li><strong>L4 — Direct teach:</strong> you give the answer with the reasoning.</li>
+</ul>
+<p>Each rung can be revealed to yourself first and read aloud to the student. In <strong>clinician-led</strong> mode you escalate manually and record the level reached — full clinical control. In <strong>AI-mediated</strong> mode, the model plays examiner: it reads the student's response and decides the <em>next</em> scaffold level, but it always serves the <strong>pre-authored ladder text</strong> (its role is the decision, never content — no improvised hints). It escalates by exactly one level, never skips, and falls back to a built-in deterministic rule if a call fails (flagged when it does). Note that the leaky-rung correction below applies to the clinician-led path.</p>
+<p>Throughout mediation you capture a <strong>free-text examiner observation</strong> (local-only, never synced), <strong>quick-tap observation tags</strong> (ten of them: self-corrected, needed wait time, used self-talk, off-task, frustration, asked clarifying question, changed strategy, perseverated, appeared to guess, fluent+automatic), and a <strong>leaky-rung flag</strong> when a scaffold accidentally gave the answer away.</p>
+<p><strong>Posttest (unprompted).</strong> Re-test the same items alone. Compare directly to pretest — this is where modifiability shows up.</p>
+<p><strong>Transfer (optional).</strong> If any item has a transfer twin, the student attempts <strong>novel items, same construct</strong>, with no scaffolds. This is the test of whether learning <em>generalized</em> rather than was merely memorized.</p>
+<p>Answer matching is forgiving for numbers (matches "7" inside "I think 7 apples" but not "17") and uses whole-word containment for text. You can always override with <strong>Mark correct / Mark wrong / Skip</strong> (or <strong>Auto-check + record</strong>).</p>
+<h3>5. Score</h3>
+<p>Each item scores <strong>5 − (prompt level reached)</strong>: solved alone = 5, after L1 = 4, L2 = 3, L3 = 2, L4 = 1, still wrong after L4 = 0. If you flagged a rung as <strong>leaky</strong>, a correct response is conservatively credited one level <em>higher</em> — that rung isn't valid evidence of competence. (L4 leaks carry no extra penalty; direct teach states the answer by design. The leaky-rung correction applies to the clinician-led path.)</p>
+<h3>6. Interpret</h3>
+<p>The summary screen leads with the <strong>Modifiability Index</strong>, then layers in transfer, score breakdown, per-item detail, scaffold usage, observation patterns, and — when enabled — the access-condition lens. (Detail below.)</p>
+<h3>7. Generate Outputs</h3>
+<p>From the outputs dashboard you can generate a narrative, teacher handoff, family letter, IEP goals, accommodations, and a monitoring plan, then print or export. (Detail below.)</p>
+<hr>
+<h2>Supports and the Access-Contrast Framework for Multilingual Learners</h2>
+<h3>Supports</h3>
+<p>Items can carry up to five inline <strong>supports</strong> (at most one per kind), each anchored to a specific scaffold rung and minted as a clickable resource:</p>
+<ul>
+  <li><strong>Glossary</strong> — a vocabulary preview card (terms drawn from the item itself).</li>
+  <li><strong>Math manipulative</strong> — an interactive STEM Lab tool (number line, fractions, area model) preset to the right state.</li>
+  <li><strong>Word-sounds probe</strong> — a phonological-awareness activity.</li>
+  <li><strong>Visual organizer</strong> — a concept map, mind map, outline, timeline, or sort.</li>
+  <li><strong>Sentence frames</strong> — fill-in starters; the only support that scaffolds the student's <strong>output</strong> (use when the bottleneck is expression).</li>
+</ul>
+<p>Supports are generated in isolation from any active lesson, standards, or topic — so a support cannot smuggle in outside curriculum content that would confound what the probe is measuring. It tests the construct in the item, not familiarity with whatever lesson happens to be loaded.</p>
+<h3>Three controlled access contrasts</h3>
+<p>For multilingual learners (gated on the intake language field), you can run three same-item contrasts. <strong>None of them changes the score</strong> — each is recorded as a checkbox flag carrying the note "(Access-contrast evidence; does not change the score.)" Each holds the item constant and removes exactly one access demand, so a "flip" (success <em>only</em> in the altered condition) isolates that demand as the likely barrier rather than the underlying skill:</p>
+<p>1. <strong>Read-aloud (modality).</strong> You read the item aloud, then flag <strong>"Succeeded only when read aloud."</strong> This is direct evidence about whether <strong>reading/decoding access</strong> — not the reasoning — gates performance.</p>
+<p>2. <strong>Simpler language (linguistic load).</strong> The tool generates a version that reduces <em>only</em> vocabulary and sentence complexity — same numbers, names, quantities, and question, no added hints or steps. Verify the problem is genuinely unchanged before using it, then flag <strong>"Succeeded only with simpler language."</strong> This isolates <strong>academic-language load</strong> from the reasoning.</p>
+<p>3. <strong>Home language (L1).</strong> The tool produces a faithful translation at the same complexity. Flag <strong>"Succeeded only in home language."</strong> This isolates <strong>the language of testing</strong> from the underlying skill.</p>
+<blockquote><p>The home-language translation is AI-generated. <strong>Verify equivalence with a proficient speaker before relying on it — the problem must be unchanged.</strong></p></blockquote>
+<p>Together these triangulate <em>where the barrier sits</em> by elimination. A flip on the read-aloud contrast points at decoding; a flip on simpler-language points at academic-language load; a flip on home-language points at the language of testing. All three are <strong>hypothesis-generating</strong> observations, never determinations. (The tool deliberately uses no theoretical jargon to label any of this — it describes observations only.)</p>
+<hr>
+<h2>Interpreting Results</h2>
+<h3>Modifiability Index (MI)</h3>
+<p>The MI is the proportion of <em>available</em> growth the student realized under mediation:</p>
+<p><strong>MI = (posttest − pretest) / (maximum possible − pretest)</strong>, bounded from −1 to 1.</p>
+<p>Tiers:</p>
+<ul>
+  <li><strong>≥ 0.6</strong> — <em>Responsive to mediation.</em></li>
+  <li><strong>0.3–0.6</strong> — <em>Moderately responsive — responds to mediation with continued practice.</em></li>
+  <li><strong>0–0.3</strong> — <em>Limited modifiability under these mediation conditions.</em></li>
+  <li><strong>&lt; 0</strong> — <em>Posttest below pretest baseline</em> (regression — usually reflects fatigue, anxiety, or motivation rather than ability; re-test on a different day).</li>
+</ul>
+<p><strong>The MI is descriptive, not normed.</strong> With fewer than five items per phase (the default is three), it carries substantial measurement error — read it as a <strong>broad direction</strong> (clear gain / little change / regression), not a precise number. It is a <em>within-student</em> metric: never report it as a standard score, percentile, or classification, and never compare it across students. If you compare against your own saved sessions, the tool will tell you that is a local reference only — not an external or standardized norm — and unstable below ~10 sessions, exploratory below ~30. Across a single student's own sessions the trajectory is descriptive only (and construct-relative — compare points <em>within</em> the same domain), never a growth norm.</p>
+<h3>Transfer Tier (generalization vs. memorization)</h3>
+<p>When the transfer phase runs, the tool compares novel-item performance to the posttest:</p>
+<ul>
+  <li><strong>Strong transfer</strong> — the student learned the underlying construct; the clearest pattern of generalizable learning.</li>
+  <li><strong>Partial transfer</strong> — generalization is incomplete.</li>
+  <li><strong>Weak transfer</strong> — posttest gains may reflect item-specific learning or memory of the mediation.</li>
+  <li><strong>Minimal transfer</strong> — performance on novel items collapsed back to baseline; interpret the posttest gain as <strong>un-generalized</strong> learning, not construct mastery.</li>
+</ul>
+<p>Recommended report phrasing: <em>"Transfer-probe performance suggests [strong/partial/weak/minimal] generalization to novel surface features."</em></p>
+<h3>Access-Condition Lens (hypothesis only)</h3>
+<p>When a language background is on file, the summary shows a purple <strong>"Access-condition lens · exploratory"</strong> card. It combines two signal types of different epistemic strength:</p>
+<ul>
+  <li>The <strong>controlled contrasts</strong> (read-aloud, simpler-language, home-language) are clinician-confirmed manipulations and can surface even on a single item.</li>
+  <li>A <strong>support-coincidence</strong> signal — which language-reducing supports happened to coincide with valid mediation successes — is <strong>correlational only</strong> (the supports weren't a controlled manipulation).</li>
+</ul>
+<p>If language-reducing supports dominate, the lens raises the hypothesis that academic-language access — rather than the underlying skill — limited performance. <strong>It is a hypothesis, not a determination.</strong> Interpret it only alongside the student's language-proficiency data and home-language context, weigh it against opportunity to learn, and verify any translation with a proficient speaker. It is never a determination of disability or its absence.</p>
+<hr>
+<h2>Limitations and Responsible Use</h2>
+<p>Read this section as the floor for every DA report.</p>
+<ul>
+  <li><strong>Structured clinical observation, not a normed measure.</strong> The MI is descriptive and must not be used for eligibility decisions on its own.</li>
+  <li><strong>Not for eligibility alone.</strong> Eligibility requires standardized batteries with established reliability and validity. DA supplements, never replaces, the standardized component of an evaluation.</li>
+  <li><strong>Not tied to a published instrument.</strong> The methodology is grounded in the DA tradition but does not implement LPAD, ACFS, ARROW, or any specific normed instrument, and is not normed against published populations.</li>
+  <li><strong>Within-student only.</strong> Comparing two students' indices is not meaningful.</li>
+  <li><strong>Small-N throughout.</strong> Fewer than 5 items per phase → broad direction only; fewer than 10 saved sessions → highly unstable, illustrative only; fewer than 30 → exploratory.</li>
+  <li><strong>Convergent evidence required.</strong> Interpret DA alongside standardized data, classroom observation, and intervention-response history — never in isolation. It does not generalize to un-probed constructs and does not predict 6- or 12-month academic trajectories.</li>
+  <li><strong>Not the monitoring tool.</strong> CBM probes monitor progress; DA tests hypotheses at intake and review.</li>
+  <li><strong>AI-generated items are not validated.</strong> Always review before use.</li>
+  <li><strong>Verify translations.</strong> Home-language versions are AI-generated; confirm equivalence with a proficient speaker.</li>
+  <li><strong>Access-condition findings are hypotheses,</strong> to be weighed alongside language-proficiency data, home-language history, and opportunity to learn — <em>not a determination of disability or its absence.</em></li>
+  <li><strong>Privacy.</strong> Free-text examiner observations stay on the device and are never synced. All session history lives in local storage. PII-stripping on custom-probe context is a soft defense, not a guarantee — nothing reaches the AI or the Report Writer until you choose to send it.</li>
+  <li><strong>Consent and regulation.</strong> Use only with parent/guardian consent for non-standardized procedures, and never when a student is acutely dysregulated.</li>
+  <li><strong>Generated outputs are drafts.</strong> Everything the AI produces is "drafted from DA findings; clinician to review and finalize." The Report Writer auto-draft is a starting point, not a final draft.</li>
+</ul>
+<p>In reports: present DA as clinical observations of learning behavior; avoid framing the MI as a standard score, percentile, or classification; do not draw eligibility conclusions from DA alone; and do not frame DA as a "better test" than standardized measures.</p>
+<hr>
+<h2>Outputs You Can Generate</h2>
+<p>From the summary screen's outputs dashboard:</p>
+<ul>
+  <li><strong>Clinical narrative</strong> — deterministic, template-built (editable), covering referral context, pretest/posttest/MI, scaffold use, transfer, observed patterns, and the access-condition note. Ends with a fixed caveat that the finding is descriptive, not normed, and should be interpreted alongside standardized measures.</li>
+  <li><strong>Teacher / case-manager handoff</strong> — a "Monday morning" page: what worked, what didn't, what to watch for, quick probes, and when to re-refer. Carries the access-condition note as a kept, hypothesis-generating (not diagnostic) note.</li>
+  <li><strong>Family letter</strong> — plain-language, sixth-grade reading level, jargon-banned and validated against overclaiming; it deliberately omits the technical access-condition note.</li>
+  <li><strong>IEP goals</strong> — SMART-format annual goals with short-term objectives, anchored to scaffolds that worked; non-measurable verbs are rejected.</li>
+  <li><strong>UDL accommodations</strong> — grouped by UDL principle (Engagement / Representation / Action &amp; Expression), each tied to DA evidence.</li>
+  <li><strong>Progress-monitoring plan</strong> — CBM-anchored with NCII/RTI decision rules, explicitly noting that DA is <em>not</em> the primary monitoring tool.</li>
+</ul>
+<p><strong>Export and backup:</strong> a self-contained black-and-white <strong>print packet</strong> (with the full clinical caveat in its footer), per-session and full-history <strong>JSON</strong> backup/restore (non-destructive — your local sessions always win), <strong>CSV</strong> exports for research/instrument development, and a <strong>Send to Report Writer</strong> hand-off that carries fact chunks, a pre-drafted section, and all generated outputs.</p>
+<hr>
+<h2>Practical Tips for a Good Session</h2>
+<ul>
+  <li><strong>Fill in intake, especially the language field</strong> — it unlocks the access-condition lens and surfaces first in every report.</li>
+  <li><strong>Default to clinician-led mediation</strong> when you have the training; reserve AI-mediated mode for non-specialist settings.</li>
+  <li><strong>Deliver scaffolds one rung at a time</strong> and record the <em>highest</em> level the student actually needed — don't jump ahead.</li>
+  <li><strong>Flag leaky rungs honestly.</strong> If a hint gave the answer away, check the box; the conservative re-score protects your interpretation.</li>
+  <li><strong>Use the observation tags liberally</strong> — they aggregate into the pattern summary and feed the narrative.</li>
+  <li><strong>Run a transfer probe whenever possible.</strong> Without it you can't distinguish real learning from memorization.</li>
+  <li><strong>Run access contrasts for multilingual learners,</strong> but treat every flip as a hypothesis and verify translations with a proficient speaker.</li>
+  <li><strong>Read small-N results as direction, not precision</strong> — and re-test on a different day when you see regression.</li>
+  <li><strong>Calibrate.</strong> The built-in calibration mode (hand-authored scenarios with expert verdicts) sharpens your scoring without affecting real sessions.</li>
+  <li><strong>Review every AI draft before it leaves your hands.</strong> These are starting points, not finished documents.</li>
+</ul>
+</article>
+<footer>AlloFlow — Dynamic Assessment Studio. This guide describes a clinical-observation tool; it is not a substitute for training in dynamic-assessment methodology or for a comprehensive, standardized evaluation.</footer>
+</main>
+</body>
+</html>

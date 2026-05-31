@@ -27138,7 +27138,7 @@ window.SelHub = window.SelHub || {
                 type: 'text', value: tfCustomThought,
                 'aria-label': 'Enter a negative thought to reframe',
                 onChange: function(e) { upd('tfCustomThought', e.target.value); },
-                placeholder: band === 'elementary' ? 'Type a mean thought here...' : 'Enter a negative thought...',
+                placeholder: band === 'elementary' ? 'Type a mean thought here... Don\'t share personal info (like your full name).' : 'Enter a negative thought... Don\'t share personal info (names, school, etc.).',
                 style: { width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, boxSizing: 'border-box', marginBottom: 8 }
               }),
               callGemini && tfCustomThought.trim() && h('button', { 'aria-label': 'Toggle sound',
@@ -27425,7 +27425,7 @@ window.SelHub = window.SelHub || {
                 value: stInput,
                 'aria-label': 'Self-talk reframe response',
                 onChange: function(e) { upd('stInput', e.target.value); },
-                placeholder: band === 'elementary' ? 'Example: I\'m so stupid...' : 'Example: I always mess everything up...',
+                placeholder: band === 'elementary' ? 'Example: I\'m so stupid... Don\'t share personal info (like your full name).' : 'Example: I always mess everything up... Don\'t share personal info (names, school, etc.).',
                 rows: 3,
                 style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
               })
@@ -27789,7 +27789,7 @@ window.SelHub = window.SelHub || {
               h('textarea', {
                 id: 'cp-rp-input', value: cpRpInput,
                 onChange: function(e) { upd('cpRpInput', e.target.value); },
-                placeholder: 'What would you actually say / do / notice? You can describe an action ("I take a slow breath"), say something out loud, or both.',
+                placeholder: 'What would you actually say / do / notice? You can describe an action ("I take a slow breath"), say something out loud, or both. Don\'t share personal info (names, school, etc.).',
                 rows: 2,
                 disabled: cpRpLoading,
                 style: { width: '100%', padding: 10, fontSize: 13, background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(148,163,184,0.4)', borderRadius: 8, color: '#f1f5f9', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
@@ -28098,9 +28098,9 @@ window.SelHub = window.SelHub || {
             value: matcherFeeling,
             'aria-label': 'Describe how you are feeling for coping matcher',
             onChange: function(e) { upd('matcherFeeling', e.target.value); },
-            placeholder: band === 'elementary' ? 'I feel really mad because my brother broke my toy...' :
-                         band === 'middle' ? 'I\'m feeling overwhelmed with homework and social drama...' :
-                         'Describe your current emotional state, triggers, and what you\'ve already tried...',
+            placeholder: band === 'elementary' ? 'I feel really mad because my brother broke my toy... Don\'t share personal info (like full names).' :
+                         band === 'middle' ? 'I\'m feeling overwhelmed with homework and social drama... Don\'t share personal info (names, school, etc.).' :
+                         'Describe your current emotional state, triggers, and what you\'ve already tried... Don\'t share personal info (names, school, etc.).',
             rows: 4,
             style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 12 }
           }),

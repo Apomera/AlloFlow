@@ -127,9 +127,51 @@ window.SelHub = window.SelHub || {
   }
 
   // ── Storage ──
+  // STORAGE_KEY is the legacy localStorage slot. Canvas wipes localStorage
+  // between sessions, so we ALSO mirror this state into the hub's
+  // window.__alloflowSelToolData slot (via SelToolDataManager) which DOES
+  // ride the project save JSON.
   var STORAGE_KEY = 'alloSelVoiceDetective';
-  function loadData() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; } }
-  function saveData(data) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {} }
+  function loadData() {
+    // Prefer the restored window slot (a project was just loaded) over
+    // localStorage when both exist.
+    try {
+      if (window.SelToolDataManager) {
+        var slot = window.SelToolDataManager.get('voicedetective');
+        if (slot && slot._lsValue && typeof slot._lsValue === 'object') return slot._lsValue;
+      }
+    } catch (e) {}
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; }
+  }
+  function saveData(data) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+    // Mirror into the per-tool window slot so executeSaveFile picks it up.
+    try {
+      if (window.SelToolDataManager) {
+        window.SelToolDataManager.merge('voicedetective', { _lsKey: STORAGE_KEY, _lsValue: data });
+      }
+    } catch (e) {}
+  }
+  // Bind the legacy localStorage key on load so handleLoadProject can mirror
+  // a restored slot back to localStorage (for legacy code paths that read
+  // localStorage directly on mount).
+  try {
+    if (window.SelToolDataManager) window.SelToolDataManager.bindLegacyKey('voicedetective', STORAGE_KEY);
+  } catch (e) {}
+
+  // Listen for a project-load restore: pull the restored value back to
+  // localStorage so the next loadData() call sees fresh content.
+  try {
+    window.addEventListener('alloflow-sel-tooldata-restored', function () {
+      try {
+        if (!window.SelToolDataManager) return;
+        var slot = window.SelToolDataManager.get('voicedetective');
+        if (slot && slot._lsValue && typeof slot._lsValue === 'object') {
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(slot._lsValue)); } catch (e) {}
+        }
+      } catch (e) {}
+    });
+  } catch (e) {}
 
   // ═══════════════════════════════════════════════════════════════
   // REGISTRATION

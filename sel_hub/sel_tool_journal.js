@@ -963,7 +963,7 @@ window.SelHub = window.SelHub || {
                 value: ciThoughts,
                 'aria-label': 'Check-in thoughts',
                 onChange: function(e) { upd('ciThoughts', e.target.value); },
-                placeholder: band === 'elementary' ? 'I feel this way because...' : 'Describe what\u2019s going on...',
+                placeholder: band === 'elementary' ? 'I feel this way because... Don\'t share personal info (like your full name).' : 'Describe what\u2019s going on... Don\'t share personal info (names, school, etc.).',
                 rows: 3,
                 style: { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }
               })
@@ -1003,7 +1003,7 @@ window.SelHub = window.SelHub || {
                 type: 'text', value: ciGratitude,
                 'aria-label': 'Gratitude entry',
                 onChange: function(e) { upd('ciGratitude', e.target.value); },
-                placeholder: band === 'elementary' ? 'I\u2019m thankful for...' : 'Something I appreciate...',
+                placeholder: band === 'elementary' ? 'I\u2019m thankful for... Don\'t share personal info (like full names).' : 'Something I appreciate... Don\'t share personal info (names, school, etc.).',
                 style: { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: '#0f172a', color: '#e2e8f0', fontSize: 13, boxSizing: 'border-box' }
               })
             ),
@@ -1266,7 +1266,7 @@ window.SelHub = window.SelHub || {
                 value: letterText,
                 'aria-label': 'Letter to self',
                 onChange: function(e) { upd('letterText', e.target.value); },
-                placeholder: isFuture ? 'Dear future me,...' : 'Dear younger me,...',
+                placeholder: isFuture ? 'Dear future me,... (Tip: keep it general — don\'t share personal info like full names, addresses, or your school)' : 'Dear younger me,... (Tip: keep it general — don\'t share personal info like full names, addresses, or your school)',
                 rows: 10,
                 style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + letterColor + '44', background: '#0f172a', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
               }),
@@ -1385,7 +1385,7 @@ window.SelHub = window.SelHub || {
                 value: jText,
                 'aria-label': 'Journal entry',
                 onChange: function(e) { upd('jText', e.target.value); },
-                placeholder: band === 'elementary' ? 'Start writing here... You can use the prompt above or write about anything!' : 'Write freely. Use the prompt above as a starting point, or write about whatever is on your mind...',
+                placeholder: band === 'elementary' ? 'Start writing here... You can use the prompt above or write about anything! Don\'t share personal info (like your full name).' : 'Write freely. Use the prompt above as a starting point, or write about whatever is on your mind... Don\'t share personal info (names, school, etc.).',
                 rows: 8,
                 style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + ACCENT_MED, background: '#0f172a', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
               }),
