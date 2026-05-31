@@ -1163,8 +1163,8 @@ inputText.substring(0, 6000) + '\n' +
     // ── Generating spinner ──
     var renderGenerating = function() {
       return h('div', { className: 'flex-grow flex flex-col items-center justify-center gap-4' },
-        h(Sparkles, { className: 'animate-spin text-purple-700', size: 48 }),
-        h('p', { className: 'text-purple-700 text-lg font-bold' }, t('escape_room.generating')),
+        h(Sparkles, { className: 'animate-spin text-purple-400', size: 48 }),
+        h('p', { className: 'text-purple-400 text-lg font-bold' }, t('escape_room.generating')),
         h('p', { className: 'text-slate-500 text-sm' }, t('escape_room.generating_hint'))
       );
     };
@@ -1197,33 +1197,33 @@ inputText.substring(0, 6000) + '\n' +
         h('h3', { className: 'text-4xl font-black ' + ratingColor },
           t('escape_room.performance_' + rating) || (rating === 'perfect' ? 'Perfect Escape!' : rating === 'great' ? 'Great Job!' : 'Good Effort!')
         ),
-        h('p', { className: 'text-slate-600' }, t('escape_room.escaped_desc')),
+        h('p', { className: 'text-slate-400' }, t('escape_room.escaped_desc')),
         h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-2xl mt-4' },
           h('div', { className: 'bg-slate-800/70 p-4 rounded-xl border border-slate-700' },
             h('div', { className: 'text-2xl mb-1' }, '\u23F1\uFE0F'),
             h('div', { className: 'text-2xl font-bold text-white' }, minutes + ':' + seconds.toString().padStart(2, '0')),
-            h('div', { className: 'text-xs text-slate-600 uppercase' }, t('escape_room.time_taken') || 'Time Taken')
+            h('div', { className: 'text-xs text-slate-400 uppercase' }, t('escape_room.time_taken') || 'Time Taken')
           ),
           h('div', { className: 'bg-slate-800/70 p-4 rounded-xl border border-slate-700' },
             h('div', { className: 'text-2xl mb-1' }, '\u2705'),
-            h('div', { className: 'text-2xl font-bold text-green-700' }, puzzlesSolved + '/' + totalPuzzles),
-            h('div', { className: 'text-xs text-slate-600 uppercase' }, t('escape_room.puzzles_solved') || 'Puzzles Solved')
+            h('div', { className: 'text-2xl font-bold text-green-400' }, puzzlesSolved + '/' + totalPuzzles),
+            h('div', { className: 'text-xs text-slate-400 uppercase' }, t('escape_room.puzzles_solved') || 'Puzzles Solved')
           ),
           h('div', { className: 'bg-slate-800/70 p-4 rounded-xl border border-slate-700' },
             h('div', { className: 'text-2xl mb-1' }, '\u274C'),
             h('div', { className: 'text-2xl font-bold ' + (wrongAttempts === 0 ? 'text-green-400' : 'text-red-400') }, wrongAttempts),
-            h('div', { className: 'text-xs text-slate-600 uppercase' }, t('escape_room.wrong_attempts') || 'Wrong Attempts')
+            h('div', { className: 'text-xs text-slate-400 uppercase' }, t('escape_room.wrong_attempts') || 'Wrong Attempts')
           ),
           h('div', { className: 'bg-slate-800/70 p-4 rounded-xl border border-slate-700' },
             h('div', { className: 'text-2xl mb-1' }, '\uD83D\uDCA1'),
             h('div', { className: 'text-2xl font-bold ' + (hintsUsed === 0 ? 'text-green-400' : 'text-amber-400') }, hintsUsed),
-            h('div', { className: 'text-xs text-slate-600 uppercase' }, t('escape_room.hints_used') || 'Hints Used')
+            h('div', { className: 'text-xs text-slate-400 uppercase' }, t('escape_room.hints_used') || 'Hints Used')
           )
         ),
         h('div', { className: 'bg-gradient-to-r from-purple-900/50 to-indigo-900/50 p-4 rounded-xl border border-purple-500/30 w-full max-w-md' },
-          h('div', { className: 'text-lg font-bold text-purple-700 mb-2' }, t('escape_room.xp_earned_label') || 'XP Earned'),
-          h('div', { className: 'text-4xl font-black text-purple-700' }, '+' + totalXP + ' XP'),
-          h('div', { className: 'text-xs text-slate-600 mt-2' },
+          h('div', { className: 'text-lg font-bold text-purple-400 mb-2' }, t('escape_room.xp_earned_label') || 'XP Earned'),
+          h('div', { className: 'text-4xl font-black text-purple-400' }, '+' + totalXP + ' XP'),
+          h('div', { className: 'text-xs text-slate-400 mt-2' },
             baseXP + ' base' + (bonusXP > 0 ? ' + ' + bonusXP + ' bonus' : '') + (hintPenalty > 0 ? ' - ' + hintPenalty + ' hints' : '') + (xpMultiplier !== 1 ? ' \u00D7 ' + xpMultiplier : '')
           )
         ),
@@ -1311,14 +1311,14 @@ inputText.substring(0, 6000) + '\n' +
       // Show revealed hint
       if (escapeRoomState.hintsUsed && escapeRoomState.hintsUsed[puzzle.id] && (puzzle.hint || (puzzle.hints && puzzle.hints[0]))) {
         questionChildren.push(
-          h('p', { key: 'hint-display', className: 'text-amber-700 text-sm mt-3 bg-amber-900/30 p-2 rounded-lg' },
+          h('p', { key: 'hint-display', className: 'text-amber-400 text-sm mt-3 bg-amber-900/30 p-2 rounded-lg' },
             '\uD83D\uDCA1 ' + (puzzle.hint || puzzle.hints[0]))
         );
       }
       // Show discovered clue
       if (escapeRoomState.discoveredClues && escapeRoomState.discoveredClues[puzzle.id]) {
         questionChildren.push(
-          h('p', { key: 'clue-display', className: 'text-yellow-700 text-sm mt-2 bg-yellow-900/30 p-2 rounded-lg' },
+          h('p', { key: 'clue-display', className: 'text-yellow-400 text-sm mt-2 bg-yellow-900/30 p-2 rounded-lg' },
             '\uD83D\uDD11 ' + t('escape_room.clue') + ': ' + escapeRoomState.discoveredClues[puzzle.id])
         );
       }
@@ -1798,7 +1798,7 @@ inputText.substring(0, 6000) + '\n' +
           }, h(X, { size: 24, 'aria-hidden': 'true' })),
           h('div', { className: 'text-center mb-8' },
             h('div', { className: 'text-6xl mb-4', 'aria-hidden': 'true' }, '\uD83D\uDEAA'),
-            h('h3', { id: 'final-door-title', className: 'text-2xl font-bold text-yellow-700' }, t('escape_room.final_door_title')),
+            h('h3', { id: 'final-door-title', className: 'text-2xl font-bold text-yellow-400' }, t('escape_room.final_door_title')),
             h('p', { className: 'text-slate-500 text-sm mt-2' }, t('escape_room.final_door_desc'))
           ),
           h('div', { className: 'bg-slate-900 p-6 rounded-xl mb-6 border-2 border-yellow-500/30' },

@@ -4380,7 +4380,7 @@
               });
               if (profileWishes.length === 0) return null;
               return e('div', { style: { background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 100%)', borderRadius: '16px', padding: '14px 16px', marginBottom: '10px', textAlign: 'center' } },
-                e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#7e22ce', marginBottom: '8px' } }, '💫 Wishes waiting to grow'),
+                e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#c4b5fd', marginBottom: '8px' } }, '💫 Wishes waiting to grow'),
                 e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' } },
                   profileWishes.map(function (w, i) {
                     return e('span', { key: i, className: 'ss-garden-seed', style: { padding: '4px 12px', background: 'rgba(196,181,253,0.2)', border: '1px solid #7c3aed', borderRadius: '20px', fontSize: '13px', fontWeight: 600, color: '#e0e7ff' } }, '💫 ' + w.label);
@@ -7360,7 +7360,7 @@
             return e('div', { style: { display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 10px', background: '#1a1a2e', borderRadius: '7px', border: '1px solid #312e81' } },
               e('span', { style: { color: '#a78bfa', fontSize: '10px', fontWeight: 600, whiteSpace: 'nowrap' } }, '🌱 Model:'),
               focusOnBoard.map(function (w) {
-                return e('span', { key: w.key, style: { color: '#7e22ce', fontSize: '11px', fontWeight: 700 } }, w.displayLabel);
+                return e('span', { key: w.key, style: { color: '#c4b5fd', fontSize: '11px', fontWeight: 700 } }, w.displayLabel);
               }));
           })(),
           // 💫 Wish Seed — capture the moment a student reaches for a word that doesn't exist
@@ -7386,7 +7386,7 @@
                 onClick: function () { setBoardWishOpen(true); },
                 'aria-label': 'Plant a wish seed — record a word the student wanted',
                 title: 'The student is reaching for a word that isn\'t here. Capture it.',
-                style: { background: '#1e1b4b', color: '#7e22ce', border: '1px solid #4c1d95', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+                style: { background: '#1e1b4b', color: '#c4b5fd', border: '1px solid #4c1d95', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
               }, '💫'),
           e('button', {
             onClick: function () { setShowCommLog(function (v) { return !v; }); },

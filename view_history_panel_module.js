@@ -200,7 +200,7 @@ function HistoryPanel(props) {
     {
       "data-help-key": "history_delete_unit_btn",
       onClick: handleDeleteUnit,
-      className: "p-1 rounded hover:bg-red-900/50 text-red-600 hover:text-red-300 transition-colors",
+      className: "p-1 rounded hover:bg-red-900/50 text-red-400 hover:text-red-300 transition-colors",
       title: t("history.delete_unit_tooltip"),
       "aria-label": t("history.delete_unit_tooltip")
     },
