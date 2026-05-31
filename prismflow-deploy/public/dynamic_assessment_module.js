@@ -82,10 +82,14 @@
   // an item/scaffold instead of reading it. This is both an accessibility
   // feature and the foundation for the "modality" access contrast (does
   // performance change when the reading demand is removed?).
-  function daSpeak(text) {
+  function daSpeak(text, lang) {
     try {
       var sp = (typeof window !== "undefined") ? window.AlloSpeechPlayer : null;
-      if (sp && typeof sp.speak === "function") sp.speak(String(text || ""));
+      if (sp && typeof sp.speak === "function") {
+        // Pass a language so home-language (L1) read-aloud speaks in the L1,
+        // not the default voice. AlloSpeechPlayer reads opts.language.
+        sp.speak(String(text || ""), lang ? { language: lang } : undefined);
+      }
     } catch (_) {}
   }
   function daStopSpeak() {
@@ -4270,17 +4274,19 @@
     // Tier-2 MODALITY axis: count distinct items the clinician flagged as
     // "succeeded only when read aloud" (a contemporaneous controlled contrast —
     // direct evidence that reading/decoding access, not the construct, gated it).
-    var raItems = {}, slItems = {};
+    var raItems = {}, slItems = {}, l1Items = {};
     (session.itemResults || []).forEach(function (r) {
       if (r && r.itemId && r.accessReadAloudHelped) raItems[r.itemId] = true;
       if (r && r.itemId && r.accessSimplifiedHelped) slItems[r.itemId] = true;
+      if (r && r.itemId && r.accessL1Helped) l1Items[r.itemId] = true;
     });
     var readAloudFlips = Object.keys(raItems).length;
     var simplifiedFlips = Object.keys(slItems).length;
+    var l1Flips = Object.keys(l1Items).length;
     // Surface the lens if there's EITHER a support-coincidence pattern OR direct
-    // contrast evidence (read-aloud / simplified). Small-N discipline applies to
-    // the (correlational) support pattern; the direct contrasts are clinician-confirmed.
-    if (supportedSucc < 2 && readAloudFlips < 1 && simplifiedFlips < 1) return null;
+    // contrast evidence (read-aloud / simplified / L1). Small-N discipline applies
+    // to the (correlational) support pattern; the direct contrasts are clinician-confirmed.
+    if (supportedSucc < 2 && readAloudFlips < 1 && simplifiedFlips < 1 && l1Flips < 1) return null;
     var languageConcentrated = supportedSucc >= 2 && langSucc >= constructSucc && langSucc >= Math.ceil(supportedSucc * 0.5);
     return {
       languageContext: lc,
@@ -4290,7 +4296,8 @@
       languageConcentrated: languageConcentrated,
       exampleConstructs: langConstructs.slice(0, 3),
       readAloudFlips: readAloudFlips,
-      simplifiedFlips: simplifiedFlips
+      simplifiedFlips: simplifiedFlips,
+      l1Flips: l1Flips
     };
   }
 
@@ -4311,6 +4318,10 @@
     if (ac.simplifiedFlips >= 1) {
       sentences.push("On " + ac.simplifiedFlips + " item" + (ac.simplifiedFlips === 1 ? "" : "s") + ", " + name +
         " succeeded with a simpler-language version of the same problem but not at full language complexity — a same-item contrast suggesting academic-language load, rather than the underlying reasoning, limited performance on those items.");
+    }
+    if (ac.l1Flips >= 1) {
+      sentences.push("On " + ac.l1Flips + " item" + (ac.l1Flips === 1 ? "" : "s") + ", " + name +
+        " succeeded when the same problem was presented in their home language but not in the language of testing — a same-item contrast suggesting the language of testing, rather than the underlying reasoning, limited performance on those items (home-language translation should be verified with a proficient speaker).");
     }
     if (ac.languageConcentrated) {
       sentences.push("Gains during mediation also concentrated on supports that reduced language demand (vocabulary previews, sentence frames, visual organizers), consistent with academic-language access shaping performance.");
@@ -5024,6 +5035,57 @@
           addToast("Couldn't simplify this item: " + (e && e.message ? e.message : "unknown"));
         });
     }
+    // Access-contrast (home language / L1): the clinician's home-language entry
+    // (session-stable — NOT reset per item; it's the same student's L1 throughout)
+    // + the per-item translated text, spinner, and flip flag (reset per item).
+    // Kept separate from daOutputLanguage, which drives item-GENERATION language.
+    var homeLangDraftTuple = useState("");
+    var homeLangDraft = homeLangDraftTuple[0];
+    var setHomeLangDraft = homeLangDraftTuple[1];
+    var l1TextDraftTuple = useState(null);
+    var l1TextDraft = l1TextDraftTuple[0];
+    var setL1TextDraft = l1TextDraftTuple[1];
+    var l1BusyTuple = useState(false);
+    var l1Busy = l1BusyTuple[0];
+    var setL1Busy = l1BusyTuple[1];
+    var accessL1DraftTuple = useState(false);
+    var accessL1Draft = accessL1DraftTuple[0];
+    var setAccessL1Draft = accessL1DraftTuple[1];
+    // Construct-constant TRANSLATION. Same validity guard as simplification, plus
+    // the output must be a faithful translation (no simplification, no hints). The
+    // clinician must verify equivalence with a proficient speaker (caveat surfaced
+    // in the lens + reports) — an AI translation is not guaranteed equivalent.
+    function generateL1Item(itemPrompt, lang) {
+      if (typeof callGeminiFn !== "function") { addToast("AI not available — cannot translate."); return; }
+      var p = String(itemPrompt || "").trim();
+      var L = String(lang || "").trim();
+      if (!p || !L) return;
+      setL1Busy(true);
+      Promise.resolve()
+        .then(function () {
+          return callGeminiFn([
+            "Translate this assessment item into " + L + " for a student whose home language is " + L + ".",
+            "ABSOLUTE RULES — this is a measurement item:",
+            "1. Keep the EXACT same problem, numbers, names, quantities, and the same thing being asked.",
+            "2. Produce a faithful, natural translation at the SAME complexity — do NOT simplify, do NOT add hints, steps, or examples.",
+            "3. Do NOT change, reveal, or hint at the answer. Do NOT add or remove information.",
+            "Return ONLY the translated item text in " + L + " — no preamble, no quotes, no English, no explanation.",
+            "",
+            "ITEM:",
+            p
+          ].join("\n"), false);
+        })
+        .then(function (raw) {
+          var out = String(raw || "").trim().replace(/^["'`]+|["'`]+$/g, "").trim();
+          if (!out) throw new Error("empty");
+          setL1TextDraft(out);
+          setL1Busy(false);
+        })
+        .catch(function (e) {
+          setL1Busy(false);
+          addToast("Couldn't translate this item: " + (e && e.message ? e.message : "unknown"));
+        });
+    }
     function toggleObservationTag(tagId) {
       setObservationTagsDraft(function (prev) {
         if (prev.indexOf(tagId) >= 0) return prev.filter(function (t) { return t !== tagId; });
@@ -5550,6 +5612,9 @@
       setSimplifiedTextDraft(null);
       setSimplifiedBusy(false);
       setAccessSimplifiedDraft(false);
+      setL1TextDraft(null);
+      setL1Busy(false);
+      setAccessL1Draft(false);
       announce("Session started. Pretest phase, item 1.");
     }
 
@@ -6574,6 +6639,7 @@
         scaffoldLeaked: !!args.scaffoldLeaked,
         accessReadAloudHelped: !!args.accessReadAloudHelped,
         accessSimplifiedHelped: !!args.accessSimplifiedHelped,
+        accessL1Helped: !!args.accessL1Helped,
         scoreAwarded: scoreForLevel(args.levelReached || 0, !!args.finalCorrect, !!args.scaffoldLeaked),
         attemptedAt: nowIso
       };
@@ -6614,6 +6680,9 @@
       setSimplifiedTextDraft(null);
       setSimplifiedBusy(false);
       setAccessSimplifiedDraft(false);
+      setL1TextDraft(null);
+      setL1Busy(false);
+      setAccessL1Draft(false);
       daStopSpeak(); // stop any read-aloud when advancing to the next item
       if (advanced) {
         announce(nextPhase === "summary"
@@ -10848,6 +10917,40 @@
               h("div", { style: { marginTop: 4, fontSize: 10, color: "#6b21a8", fontStyle: "italic" } },
                 "Check the language is simpler but the problem is unchanged before using.")
             ) : null
+          ),
+          // Access contrast (home language / L1): translate the SAME item into the
+          // student's home language. Needs a home language entered (session-stable).
+          h("div", { style: { marginTop: 8 } },
+            h("div", { style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" } },
+              h("input", {
+                type: "text", value: homeLangDraft,
+                onChange: function (e) { setHomeLangDraft(e.target.value); },
+                placeholder: "Home language (e.g., Somali)",
+                "aria-label": "Student's home language for the translation contrast",
+                style: { padding: "3px 8px", borderRadius: 6, border: "1px solid #cbd5e1", fontFamily: "inherit", fontSize: 11, width: 170, boxSizing: "border-box" }
+              }),
+              !l1TextDraft ? h("button", {
+                type: "button",
+                disabled: l1Busy || !homeLangDraft.trim(),
+                onClick: function () { generateL1Item(item.prompt, homeLangDraft.trim()); },
+                title: homeLangDraft.trim() ? ("Translate this item into " + homeLangDraft.trim() + " (same problem) to test whether the language of testing is the barrier") : "Enter the student's home language first",
+                "aria-label": "Show this item in the student's home language",
+                style: { padding: "3px 10px", borderRadius: 6, border: "1px solid #c4b5fd", background: (l1Busy || !homeLangDraft.trim()) ? "#f5f3ff" : "#faf5ff", color: "#6b21a8", fontSize: 11, fontWeight: 700, cursor: (l1Busy || !homeLangDraft.trim()) ? "not-allowed" : "pointer", fontFamily: "inherit" }
+              }, l1Busy ? "🌐 Translating…" : ("🌐 Show in " + (homeLangDraft.trim() || "home language"))) : null
+            ),
+            l1TextDraft ? h("div", { style: { marginTop: 6, padding: "8px 10px", borderRadius: 8, background: "#faf5ff", border: "1px dashed #c4b5fd" } },
+              h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 } },
+                h("span", { style: { fontSize: 10, fontWeight: 800, color: "#6b21a8", textTransform: "uppercase", letterSpacing: "0.06em" } }, (homeLangDraft.trim() || "Home-language") + " version (same problem)"),
+                daTtsAvailable() ? h("button", {
+                  type: "button", onClick: function () { daSpeak(l1TextDraft, homeLangDraft.trim()); },
+                  title: "Read the home-language version aloud", "aria-label": "Read the home-language version aloud",
+                  style: { padding: "1px 7px", borderRadius: 6, border: "1px solid #c4b5fd", background: "#ffffff", color: "#6b21a8", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                }, "🔊") : null
+              ),
+              h("p", { dir: "auto", style: { margin: 0, fontSize: 14, color: "#0f172a", lineHeight: 1.6 } }, l1TextDraft),
+              h("div", { style: { marginTop: 4, fontSize: 10, color: "#6b21a8", fontStyle: "italic" } },
+                "⚠ AI translation — verify equivalence with a proficient speaker before relying on it. The problem must be unchanged.")
+            ) : null
           )
         ),
 
@@ -11018,6 +11121,27 @@
             " — check if the student got this right with the simpler-language version but not at full language complexity. (Access-contrast evidence; does not change the score.)")
         ) : null),
 
+        // ─── Tier-2 access contrast (home language / L1): flip flag ───
+        // Only meaningful once a home-language version has been generated/shown.
+        (l1TextDraft ? h("div", {
+          role: "button", tabIndex: 0,
+          "aria-pressed": accessL1Draft ? "true" : "false",
+          "aria-label": "Flag that the student succeeded only in their home language",
+          onClick: function () { setAccessL1Draft(!accessL1Draft); },
+          onKeyDown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAccessL1Draft(!accessL1Draft); } },
+          style: {
+            display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
+            borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
+            border: "1px solid " + (accessL1Draft ? "#7c3aed" : "#e2e8f0"),
+            background: accessL1Draft ? "#faf5ff" : "#f8fafc"
+          }
+        },
+          h("span", { "aria-hidden": "true", style: { fontSize: 14, lineHeight: 1.3 } }, accessL1Draft ? "☑" : "☐"),
+          h("span", { style: { fontSize: 11.5, color: accessL1Draft ? "#6b21a8" : "#475569", lineHeight: 1.45 } },
+            h("strong", null, "🌐 Succeeded only in home language"),
+            " — check if the student got this right with the home-language version but not in the language of testing. (Access-contrast evidence; does not change the score.)")
+        ) : null),
+
         // ─── SCORING ROW ───
         h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" } },
           h("div", { style: { fontSize: 12, color: "#475569" } },
@@ -11043,6 +11167,7 @@
                   scaffoldLeaked: scaffoldLeakedDraft,
                   accessReadAloudHelped: accessReadAloudDraft,
                   accessSimplifiedHelped: accessSimplifiedDraft,
+                  accessL1Helped: accessL1Draft,
                   supportType: canScaffold ? (item.promptLadder[level - 1] ? item.promptLadder[level - 1].type : "none") : "none"
                 });
               },
@@ -11065,6 +11190,7 @@
                   scaffoldLeaked: scaffoldLeakedDraft,
                   accessReadAloudHelped: accessReadAloudDraft,
                   accessSimplifiedHelped: accessSimplifiedDraft,
+                  accessL1Helped: accessL1Draft,
                   supportType: canScaffold ? (item.promptLadder[level - 1] ? item.promptLadder[level - 1].type : "none") : "none"
                 });
               },
@@ -11881,8 +12007,16 @@
               ", the student succeeded ", h("strong", null, "only with simpler language"),
               " — a direct contrast (same problem, reduced language complexity) indicating academic-language load, rather than the underlying skill, was the barrier on those items."));
           }
+          // (d) Direct HOME-LANGUAGE (L1) contrast (same problem, language of testing → L1).
+          if (ac.l1Flips >= 1) {
+            children.push(h("div", { key: "l1", style: { fontSize: 12.5, color: "#0f172a", lineHeight: 1.55, marginTop: 6 } },
+              "🌐 On ",
+              h("strong", null, ac.l1Flips + " item" + (ac.l1Flips === 1 ? "" : "s")),
+              ", the student succeeded ", h("strong", null, "only in their home language"),
+              " — a direct contrast (same problem, language of testing → home language) indicating the language of testing, rather than the underlying skill, was the barrier on those items. Verify the translation with a proficient speaker."));
+          }
           children.push(h("div", { key: "cav", style: { fontSize: 11, color: "#86198f", fontStyle: "italic", marginTop: 6, lineHeight: 1.5 } },
-            "⚠ Exploratory, small-N. The read-aloud and simpler-language contrasts are controlled manipulations; the support-coincidence pattern is correlational (supports were offered as mediation, not a controlled trial). Interpret only alongside this student's language-proficiency data and the home-language context noted at intake. A home-language (L1) contrast is planned next. This lens appears because a language background was recorded at intake."));
+            "⚠ Exploratory, small-N. The read-aloud, simpler-language, and home-language contrasts are controlled manipulations (home-language translations should be verified with a proficient speaker); the support-coincidence pattern is correlational. Interpret only alongside this student's language-proficiency data and the home-language context noted at intake. This lens appears because a language background was recorded at intake."));
           return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#fdf4ff", borderColor: "#e9d5ff" } }, children);
         })(),
 
