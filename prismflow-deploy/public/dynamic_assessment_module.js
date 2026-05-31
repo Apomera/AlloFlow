@@ -2405,6 +2405,10 @@
         );
       }
     }
+    // Access-condition observations (only when a language context was recorded
+    // at intake AND there is contrast evidence). Aaron-approved wording.
+    var narrAccessNote = formatAccessContrastForReport(session, name);
+    if (narrAccessNote) lines.push(narrAccessNote);
     lines.push(
       "Clinical interpretation: this finding is descriptive of " + name + "'s response to scaffolded instruction in this specific construct domain. It is not a normed or standardized measure. Findings should be interpreted alongside results from standardized cognitive and academic measures, classroom observation, and intervention response data."
     );
@@ -4286,6 +4290,28 @@
     };
   }
 
+  // Report-facing access-contrast note (Aaron-approved wording, 2026-05-31).
+  // Used in the clinical narrative (verbatim, deterministic) and the teacher
+  // handoff prompt (as a required note). Returns "" when there's no evidence or
+  // the language gate is off. Hypothesis-generating framing, never diagnostic.
+  // NOT used in the family letter (too technical, by decision).
+  function formatAccessContrastForReport(session, studentName) {
+    var ac = analyzeAccessConditions(session);
+    if (!ac) return "";
+    var name = studentName || (session && session.studentNickname) || "The student";
+    var sentences = [];
+    if (ac.readAloudFlips >= 1) {
+      sentences.push("On " + ac.readAloudFlips + " item" + (ac.readAloudFlips === 1 ? "" : "s") + ", " + name +
+        " reached a correct response when the item was read aloud but not when reading it independently — a same-item contrast suggesting reading/decoding access, rather than the underlying reasoning, limited performance on those items.");
+    }
+    if (ac.languageConcentrated) {
+      sentences.push("Gains during mediation also concentrated on supports that reduced language demand (vocabulary previews, sentence frames, visual organizers), consistent with academic-language access shaping performance.");
+    }
+    if (sentences.length === 0) return "";
+    sentences.push("These are hypothesis-generating observations from a small number of items, to be weighed alongside language-proficiency data, home-language history, and opportunity to learn — not a determination of disability or its absence.");
+    return "Access-condition observations: " + sentences.join(" ");
+  }
+
   function buildFamilySummaryPrompt(session, studentName, outputLanguage) {
     var pretestResults = (session.itemResults || []).filter(function (r) { return r.phase === "pretest"; });
     var posttestResults = (session.itemResults || []).filter(function (r) { return r.phase === "posttest"; });
@@ -4471,6 +4497,12 @@
       "Items where mediation did NOT produce success: " + didNotWork,
       (leakedCount > 0 ? ("NOTE: on " + leakedCount + " item(s) the clinician flagged that the scaffold inadvertently gave away the answer — those responses are NOT counted as the scaffold 'working,' and were scored one level higher. Do not over-credit a scaffold level the student may not actually respond to.") : ""),
       formatSupportsForTeacherPrompt(daSupportsUsedInSession(session)),
+      // Access-condition evidence (read-aloud / language-reducing supports). If
+      // present, the handoff must convey it faithfully and as hypothesis-generating.
+      (function () {
+        var note = formatAccessContrastForReport(session, name);
+        return note ? ("ACCESS-CONDITION EVIDENCE (include this faithfully in the headline or watchFor, kept hypothesis-generating, NOT diagnostic — do not overstate): " + note) : "";
+      })(),
       tagSummary ? ("Observation patterns: " + tagSummary) : "Observation patterns: (none recorded)",
       session.sessionNote && session.sessionNote.trim() ? ("Session-level clinician notes: " + session.sessionNote.trim()) : "Session-level clinician notes: (none recorded)",
       "",
