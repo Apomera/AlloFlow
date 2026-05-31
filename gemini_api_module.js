@@ -20,7 +20,7 @@ const createGeminiAPI = deps => {
     debugLog,
     getAbortSignal
   } = deps;
-  const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null) => {
+  const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false) => {
     if (!apiKey && !_isCanvasEnv) {
       console.warn('[callGemini] No API key available — skipping request.');
       if (jsonMode) return "{}";
@@ -84,6 +84,14 @@ const createGeminiAPI = deps => {
         google_search: {}
       }];
     }
+    // Phase 1: Gemini code execution — server-side Python sandbox the model
+    // can invoke during generation (arithmetic, table lookups, etc.). Caller
+    // opts in per-call so audit prompts stay LLM-only.
+    if (useCodeExecution) {
+      payload.tools = (payload.tools || []).concat([{
+        code_execution: {}
+      }]);
+    }
     try {
       // Pick up either the caller-supplied signal or the ambient pdf-autocontinue
       // signal (set by runAutoFixLoop and read by every nested callGemini during
@@ -128,7 +136,13 @@ const createGeminiAPI = deps => {
         warnLog("Gemini Prompt Blocked:", data.promptFeedback);
         throw new Error(`Content Blocked: ${data.promptFeedback.blockReason}`);
       }
-      let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      // Collect text from every part (code execution responses can interleave
+      // text / executable_code / code_execution_result parts — only the text
+      // ones are the model's prose; the code/result parts are reasoning that
+      // the model already incorporated into the prose).
+      const _parts = data.candidates?.[0]?.content?.parts || [];
+      let text = _parts.map(p => typeof p.text === 'string' ? p.text : '').join('');
+      if (!text && _parts[0]?.text !== undefined) text = _parts[0].text;
       if (data.candidates?.[0]?.finishReason) {
         const reason = data.candidates[0].finishReason;
         if (reason === 'MAX_TOKENS') {

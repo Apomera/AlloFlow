@@ -453,6 +453,14 @@
     const safeGetItem = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
     const safeSetItem = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { warnLog('localStorage write failed:', e); } };
 
+    // Phase 1: Gemini code-execution opt-in for generation prompts.
+    // The 7th arg to callGemini enables a server-side Python sandbox the model
+    // can invoke mid-response (arithmetic, score-classification lookups, date
+    // math, conversions). Audit prompts intentionally stay LLM-only — we want
+    // the Claim Verifier / Contradiction Hunter to reason on their own.
+    const RW_CODE_EXEC = true;
+    const callGen = (cg, prompt, jsonMode) => cg(prompt, jsonMode, false, null, null, null, RW_CODE_EXEC);
+
     const ReportWriterPanel = ({ studentName, abcEntries, observationSessions, aiAnalysis, studentProfile, longitudinalData, dashboardData, callGemini, t, addToast }) => {
         const STEPS = [
             { num: 1, label: 'Assessment Scores', icon: '📊' },
@@ -678,7 +686,7 @@ Return ONLY valid JSON with this exact structure:
 
 Include 6-10 assessment scores using REAL subtest names from the assessment batteries listed. Make scores clinically consistent with the chosen profile. Use person-first language in all narrative sections.`;
 
-                const result = await callGemini(prompt, true);
+                const result = await callGen(callGemini, prompt, true);
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -734,7 +742,7 @@ Original Section:
 ${text}
 
 Return ONLY the adapted text, no commentary.`;
-                const result = await callGemini(prompt, true);
+                const result = await callGen(callGemini, prompt, true);
                 setReportSections(prev => ({ ...prev, [section]: result.trim() }));
                 setAccuracyResults([]);
                 if (addToast) addToast(`"${section}" adapted for ${targetLevel} reading level`, 'success');
@@ -1166,6 +1174,11 @@ listing only the [chunk-id] values you actually referenced. Return the section t
         const generateReport = async () => {
             if (!callGemini) return;
             setGenerating(true);
+            // Phase 2: kick off Pyodide warmup in the background so the Python
+            // audit pass at the end of generation doesn't have to wait for the
+            // ~10MB download. Lazy loader is no-op if already warmed.
+            try { window.__alloLazyPyodide && window.__alloLazyPyodide(); } catch (_) {}
+            try { window.AlloModules?.PyodideRuntime?.warmup?.(); } catch (_) {}
             const verifiedChunks = factChunks.filter(c => c.verified);
             if (verifiedChunks.length === 0) { setGenerating(false); if (addToast) addToast(t('toasts.verified_fact_chunks'), 'error'); return; }
             const sections = blueprint.filter(s => s.enabled).map(s => s.name);
@@ -1186,7 +1199,7 @@ listing only the [chunk-id] values you actually referenced. Return the section t
                     if (numPasses <= 1) {
                         // Single pass (fast mode)
                         const prompt = buildSectionPrompt(section, verifiedChunks, null);
-                        const result = await callGemini(prompt, false);
+                        const result = await callGen(callGemini, prompt, false);
                         const { text, usedChunks } = parseEvidenceResponse(result);
                         generated[section] = text;
                         evidenceMap[section] = usedChunks;
@@ -1194,7 +1207,7 @@ listing only the [chunk-id] values you actually referenced. Return the section t
                         // Triangulated: run N passes in parallel, score each, pick best
                         const passPromises = genVariants.slice(0, numPasses).map(variant => {
                             const prompt = buildSectionPrompt(section, verifiedChunks, variant);
-                            return callGemini(prompt, false).then(r => parseEvidenceResponse(r)).catch(() => null);
+                            return callGen(callGemini, prompt, false).then(r => parseEvidenceResponse(r)).catch(() => null);
                         });
                         const passResults = (await Promise.all(passPromises)).filter(Boolean);
                         if (passResults.length === 0) throw new Error('All passes failed');
@@ -1430,6 +1443,38 @@ Return ONLY valid JSON:
                 const passB = parseAudit(resultB);
                 // ── Reconciliation Engine ──
                 const reconciled = reconcileAuditPasses(passA, passB);
+
+                // ── Phase 2: Pyodide deterministic audit (stub in Phase 2; real
+                //    checks land in Phase 3). Findings join `reconciled` with
+                //    source='python' so the existing self-heal loop picks up
+                //    contradictions Python catches that the LLM passes missed.
+                try {
+                    const py = window.AlloModules?.PyodideRuntime;
+                    if (py && typeof py.runAudit === 'function') {
+                        setGenProgress('Running deterministic checks (Python)…');
+                        const pyFindings = await py.runAudit({
+                            reportSections,
+                            factChunks: verifiedChunks,
+                            scoreEntries,
+                        });
+                        if (Array.isArray(pyFindings) && pyFindings.length > 0) {
+                            for (const f of pyFindings) {
+                                reconciled.push({
+                                    claim: f.claim || '',
+                                    status: f.status || 'info',
+                                    chunkId: null,
+                                    explanation: f.finding || '',
+                                    confidence: f.severity === 'high' ? 'needs-review' : 'medium',
+                                    auditSource: 'python',
+                                    section: f.section || null,
+                                    fixHint: f.fix_hint || null,
+                                });
+                            }
+                        }
+                    }
+                } catch (pyErr) {
+                    warnLog('[ReportWriter] Pyodide audit skipped:', pyErr && pyErr.message);
+                }
 
                 // ── Self-Healing: auto-fix contradictions and critical discrepancies ──
                 const contradictions = reconciled.filter(r => r.status === 'contradicts');
