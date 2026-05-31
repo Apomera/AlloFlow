@@ -47,6 +47,7 @@
     "verify:iife-lazy": "node dev-tools/check_iife_lazy_lookup.cjs",
     "verify:dashes": "node dev-tools/check_em_en_dashes.cjs",
     "verify:security": "node dev-tools/check_secrets.cjs && node dev-tools/check_cors_strict.cjs && node dev-tools/check_xss_surface.cjs && node dev-tools/check_eval.cjs && node dev-tools/check_npm_audit.cjs && node dev-tools/check_lti_surface.cjs",
+    "verify:gate": "node dev-tools/check_render_refs.cjs && node dev-tools/check_lang_json.cjs && node dev-tools/check_build_smoke.cjs --quiet && node dev-tools/verify_module_registry.cjs --quiet && node dev-tools/check_view_props.cjs && node dev-tools/check_window_icons.cjs && node dev-tools/check_iife_lazy_lookup.cjs",
     "audit:a11y": "cd a11y-audit && node static-audit.js",
     "audit:a11y:runtime": "cd a11y-audit && node runtime-audit.js"
   },
@@ -58,6 +59,7 @@
     "@babel/plugin-transform-react-jsx": "^7.28.6",
     "@playwright/test": "^1.60.0",
     "diff": "^9.0.0",
+    "eslint-scope": "^9.1.2",
     "jsdom": "^29.1.0",
     "playwright": "^1.59.1",
     "vitest": "^4.1.5"

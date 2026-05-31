@@ -1,0 +1,73 @@
+name: verify
+
+# Automated quality gate for the push -> Cloudflare-Pages deploy path, which
+# previously had NO gate (every render crash this project shipped reached the
+# live pilot through an ungated push to main).
+#
+#   gate         — BLOCKING. The static checks that catch the bug classes that
+#                  actually reached production:
+#                    * render crashes: undeclared identifiers in React hook
+#                      dependency arrays (data / onPlayAudio / isEscaped)
+#                    * dead modules: files that don't parse / won't load
+#                      (platetectonics) — check_render_refs parse-gating
+#                    * corrupt lang packs (check_lang_json)
+#                    * broken AlloModules registry / view-module props / icons
+#                  Make this a REQUIRED status check in branch protection to
+#                  truly block merges to main.
+#   verify-full  — NON-BLOCKING. The full ~40-check suite, for visibility. It
+#                  currently surfaces known pre-existing debt (76 missing t()
+#                  keys, deploy-mirror drift) — reported, not enforced, so it
+#                  never blocks while that debt is paid down.
+#   smoke        — NON-BLOCKING. Playwright opens each major surface against the
+#                  deployed demo and asserts no fatal/ErrorBoundary. Regression
+#                  detection (tests whatever is live), not a pre-merge gate.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  gate:
+    name: Static gate (crash + load classes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: verify:gate (render-refs + lang-json + module contracts)
+        run: npm run verify:gate
+
+  verify-full:
+    name: Full verify suite (non-blocking visibility)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: npm run verify (surfaces translation gaps + mirror drift)
+        run: npm run verify
+
+  smoke:
+    name: Render smoke — deployed demo (non-blocking)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+      - name: Smoke — major surfaces open without a fatal error
+        run: npx playwright test tests/e2e/11-render-smoke.spec.ts
