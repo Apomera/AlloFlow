@@ -2046,11 +2046,13 @@
       // sound in its keyword context (Jolly-Phonics style). Falls back to
       // attempting to play the phoneme directly if no key word is available.
       const handleAnchorPlay = React.useCallback((ipa, keyWord) => {
-        if (typeof onPlayAudio === "function") {
-          if (keyWord) { onPlayAudio(keyWord); return; }
-          if (ipa) onPlayAudio(ipa);
-        }
-      }, [onPlayAudio]);
+        // The modal scope has no `onPlayAudio` (that's a child-view prop) — using
+        // it here threw ReferenceError on every render via the dep array. Use the
+        // in-scope `speakWord` prop instead, which also makes the OG corrective
+        // auto-play actually fire.
+        const toSpeak = keyWord || ipa;
+        if (toSpeak && typeof speakWord === "function") speakWord(toSpeak);
+      }, [speakWord]);
       // Post-error remediation: when the student gets an answer wrong, briefly
       // flash the anchor and auto-play the key word so the letter ↔ sound
       // association is reinforced immediately (classic OG corrective procedure).
