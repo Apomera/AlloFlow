@@ -4270,14 +4270,17 @@
     // Tier-2 MODALITY axis: count distinct items the clinician flagged as
     // "succeeded only when read aloud" (a contemporaneous controlled contrast —
     // direct evidence that reading/decoding access, not the construct, gated it).
-    var raItems = {};
+    var raItems = {}, slItems = {};
     (session.itemResults || []).forEach(function (r) {
-      if (r && r.accessReadAloudHelped && r.itemId) raItems[r.itemId] = true;
+      if (r && r.itemId && r.accessReadAloudHelped) raItems[r.itemId] = true;
+      if (r && r.itemId && r.accessSimplifiedHelped) slItems[r.itemId] = true;
     });
     var readAloudFlips = Object.keys(raItems).length;
+    var simplifiedFlips = Object.keys(slItems).length;
     // Surface the lens if there's EITHER a support-coincidence pattern OR direct
-    // modality evidence. (Small-N discipline still applies to the support pattern.)
-    if (supportedSucc < 2 && readAloudFlips < 1) return null;
+    // contrast evidence (read-aloud / simplified). Small-N discipline applies to
+    // the (correlational) support pattern; the direct contrasts are clinician-confirmed.
+    if (supportedSucc < 2 && readAloudFlips < 1 && simplifiedFlips < 1) return null;
     var languageConcentrated = supportedSucc >= 2 && langSucc >= constructSucc && langSucc >= Math.ceil(supportedSucc * 0.5);
     return {
       languageContext: lc,
@@ -4286,7 +4289,8 @@
       supportedSucc: supportedSucc,
       languageConcentrated: languageConcentrated,
       exampleConstructs: langConstructs.slice(0, 3),
-      readAloudFlips: readAloudFlips
+      readAloudFlips: readAloudFlips,
+      simplifiedFlips: simplifiedFlips
     };
   }
 
@@ -4303,6 +4307,10 @@
     if (ac.readAloudFlips >= 1) {
       sentences.push("On " + ac.readAloudFlips + " item" + (ac.readAloudFlips === 1 ? "" : "s") + ", " + name +
         " reached a correct response when the item was read aloud but not when reading it independently — a same-item contrast suggesting reading/decoding access, rather than the underlying reasoning, limited performance on those items.");
+    }
+    if (ac.simplifiedFlips >= 1) {
+      sentences.push("On " + ac.simplifiedFlips + " item" + (ac.simplifiedFlips === 1 ? "" : "s") + ", " + name +
+        " succeeded with a simpler-language version of the same problem but not at full language complexity — a same-item contrast suggesting academic-language load, rather than the underlying reasoning, limited performance on those items.");
     }
     if (ac.languageConcentrated) {
       sentences.push("Gains during mediation also concentrated on supports that reduced language demand (vocabulary previews, sentence frames, visual organizers), consistent with academic-language access shaping performance.");
@@ -4969,6 +4977,53 @@
     var accessReadAloudDraftTuple = useState(false);
     var accessReadAloudDraft = accessReadAloudDraftTuple[0];
     var setAccessReadAloudDraft = accessReadAloudDraftTuple[1];
+    // Access-contrast (linguistic load): on-demand simpler-language version of
+    // the current item + the flip flag (succeeded only when language simplified).
+    // simplifiedTextDraft holds the generated text; simplifiedBusy is the spinner.
+    // accessSimplifiedDraft is the per-item flip flag. All reset on advance.
+    var simplifiedTextDraftTuple = useState(null);
+    var simplifiedTextDraft = simplifiedTextDraftTuple[0];
+    var setSimplifiedTextDraft = simplifiedTextDraftTuple[1];
+    var simplifiedBusyTuple = useState(false);
+    var simplifiedBusy = simplifiedBusyTuple[0];
+    var setSimplifiedBusy = simplifiedBusyTuple[1];
+    var accessSimplifiedDraftTuple = useState(false);
+    var accessSimplifiedDraft = accessSimplifiedDraftTuple[0];
+    var setAccessSimplifiedDraft = accessSimplifiedDraftTuple[1];
+    // Construct-constant simplification. The KEY validity guard lives in this
+    // prompt: simplify ONLY the language, never the problem/numbers/answer/hints.
+    function generateSimplifiedItem(itemPrompt) {
+      if (typeof callGeminiFn !== "function") { addToast("AI not available — cannot simplify."); return; }
+      var p = String(itemPrompt || "").trim();
+      if (!p) return;
+      setSimplifiedBusy(true);
+      Promise.resolve()
+        .then(function () {
+          return callGeminiFn([
+            "Rewrite this assessment item in MUCH simpler English for an English learner.",
+            "ABSOLUTE RULES — this is a measurement item, not a teaching moment:",
+            "1. Keep the EXACT same problem, the same numbers, names, and quantities, and the same thing being asked.",
+            "2. Reduce ONLY vocabulary difficulty and sentence complexity (short sentences, common words, active voice).",
+            "3. Do NOT make the problem conceptually easier. Do NOT add hints, steps, examples, or any cue toward the answer.",
+            "4. Do NOT change, reveal, or hint at the answer. Do NOT add or remove information.",
+            "If you cannot simplify the language without changing the problem, return the item nearly unchanged.",
+            "Return ONLY the rewritten item text — no preamble, no quotes, no explanation.",
+            "",
+            "ITEM:",
+            p
+          ].join("\n"), false);
+        })
+        .then(function (raw) {
+          var out = String(raw || "").trim().replace(/^["'`]+|["'`]+$/g, "").trim();
+          if (!out) throw new Error("empty");
+          setSimplifiedTextDraft(out);
+          setSimplifiedBusy(false);
+        })
+        .catch(function (e) {
+          setSimplifiedBusy(false);
+          addToast("Couldn't simplify this item: " + (e && e.message ? e.message : "unknown"));
+        });
+    }
     function toggleObservationTag(tagId) {
       setObservationTagsDraft(function (prev) {
         if (prev.indexOf(tagId) >= 0) return prev.filter(function (t) { return t !== tagId; });
@@ -5492,6 +5547,9 @@
       setObservationDraft("");
       setScaffoldLeakedDraft(false);
       setAccessReadAloudDraft(false);
+      setSimplifiedTextDraft(null);
+      setSimplifiedBusy(false);
+      setAccessSimplifiedDraft(false);
       announce("Session started. Pretest phase, item 1.");
     }
 
@@ -6515,6 +6573,7 @@
         finalCorrect: !!args.finalCorrect,
         scaffoldLeaked: !!args.scaffoldLeaked,
         accessReadAloudHelped: !!args.accessReadAloudHelped,
+        accessSimplifiedHelped: !!args.accessSimplifiedHelped,
         scoreAwarded: scoreForLevel(args.levelReached || 0, !!args.finalCorrect, !!args.scaffoldLeaked),
         attemptedAt: nowIso
       };
@@ -6552,6 +6611,9 @@
       setObservationTagsDraft([]);
       setScaffoldLeakedDraft(false);
       setAccessReadAloudDraft(false);
+      setSimplifiedTextDraft(null);
+      setSimplifiedBusy(false);
+      setAccessSimplifiedDraft(false);
       daStopSpeak(); // stop any read-aloud when advancing to the next item
       if (advanced) {
         announce(nextPhase === "summary"
@@ -10762,7 +10824,31 @@
               style: { flexShrink: 0, padding: "2px 8px", borderRadius: 6, border: "1px solid #c7d2fe", background: "#eef2ff", color: "#3730a3", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
             }, "🔊 Read aloud") : null
           ),
-          h("p", { style: { margin: 0, fontSize: 16, color: "#0f172a", lineHeight: 1.65 } }, item.prompt)
+          h("p", { style: { margin: 0, fontSize: 16, color: "#0f172a", lineHeight: 1.65 } }, item.prompt),
+          // Access contrast (linguistic load): on-demand simpler-language version.
+          h("div", { style: { marginTop: 8 } },
+            !simplifiedTextDraft ? h("button", {
+              type: "button",
+              disabled: simplifiedBusy,
+              onClick: function () { generateSimplifiedItem(item.prompt); },
+              title: "Generate a simpler-language version of this item (same problem, easier words) to test whether language load is the barrier",
+              "aria-label": "Show a simpler-language version of this item",
+              style: { padding: "3px 10px", borderRadius: 6, border: "1px solid #c4b5fd", background: simplifiedBusy ? "#f5f3ff" : "#faf5ff", color: "#6b21a8", fontSize: 11, fontWeight: 700, cursor: simplifiedBusy ? "wait" : "pointer", fontFamily: "inherit" }
+            }, simplifiedBusy ? "✍️ Simplifying…" : "✍️ Show simpler-language version") : null,
+            simplifiedTextDraft ? h("div", { style: { marginTop: 6, padding: "8px 10px", borderRadius: 8, background: "#faf5ff", border: "1px dashed #c4b5fd" } },
+              h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 } },
+                h("span", { style: { fontSize: 10, fontWeight: 800, color: "#6b21a8", textTransform: "uppercase", letterSpacing: "0.06em" } }, "Simpler-language version (same problem)"),
+                daTtsAvailable() ? h("button", {
+                  type: "button", onClick: function () { daSpeak(simplifiedTextDraft); },
+                  title: "Read the simpler version aloud", "aria-label": "Read the simpler version aloud",
+                  style: { padding: "1px 7px", borderRadius: 6, border: "1px solid #c4b5fd", background: "#ffffff", color: "#6b21a8", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                }, "🔊") : null
+              ),
+              h("p", { style: { margin: 0, fontSize: 14, color: "#0f172a", lineHeight: 1.6 } }, simplifiedTextDraft),
+              h("div", { style: { marginTop: 4, fontSize: 10, color: "#6b21a8", fontStyle: "italic" } },
+                "Check the language is simpler but the problem is unchanged before using.")
+            ) : null
+          )
         ),
 
         // ─── SCAFFOLD LADDER (only in mediation phase) ───
@@ -10911,6 +10997,27 @@
             " — check if the student got this right when they HEARD it but not when reading it themselves. (Access-contrast evidence; does not change the score.)")
         ) : null),
 
+        // ─── Tier-2 access contrast (linguistic load): simplified-language flip flag ───
+        // Only meaningful once a simpler-language version has been generated/shown.
+        (simplifiedTextDraft ? h("div", {
+          role: "button", tabIndex: 0,
+          "aria-pressed": accessSimplifiedDraft ? "true" : "false",
+          "aria-label": "Flag that the student succeeded only with the simpler-language version",
+          onClick: function () { setAccessSimplifiedDraft(!accessSimplifiedDraft); },
+          onKeyDown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAccessSimplifiedDraft(!accessSimplifiedDraft); } },
+          style: {
+            display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
+            borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
+            border: "1px solid " + (accessSimplifiedDraft ? "#7c3aed" : "#e2e8f0"),
+            background: accessSimplifiedDraft ? "#faf5ff" : "#f8fafc"
+          }
+        },
+          h("span", { "aria-hidden": "true", style: { fontSize: 14, lineHeight: 1.3 } }, accessSimplifiedDraft ? "☑" : "☐"),
+          h("span", { style: { fontSize: 11.5, color: accessSimplifiedDraft ? "#6b21a8" : "#475569", lineHeight: 1.45 } },
+            h("strong", null, "✍️ Succeeded only with simpler language"),
+            " — check if the student got this right with the simpler-language version but not at full language complexity. (Access-contrast evidence; does not change the score.)")
+        ) : null),
+
         // ─── SCORING ROW ───
         h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" } },
           h("div", { style: { fontSize: 12, color: "#475569" } },
@@ -10935,6 +11042,7 @@
                   observationTags: observationTagsDraft,
                   scaffoldLeaked: scaffoldLeakedDraft,
                   accessReadAloudHelped: accessReadAloudDraft,
+                  accessSimplifiedHelped: accessSimplifiedDraft,
                   supportType: canScaffold ? (item.promptLadder[level - 1] ? item.promptLadder[level - 1].type : "none") : "none"
                 });
               },
@@ -10956,6 +11064,7 @@
                   observationTags: observationTagsDraft,
                   scaffoldLeaked: scaffoldLeakedDraft,
                   accessReadAloudHelped: accessReadAloudDraft,
+                  accessSimplifiedHelped: accessSimplifiedDraft,
                   supportType: canScaffold ? (item.promptLadder[level - 1] ? item.promptLadder[level - 1].type : "none") : "none"
                 });
               },
@@ -11764,8 +11873,16 @@
               ", the student succeeded ", h("strong", null, "only when it was read aloud"),
               " — a direct contrast (same item, reading demand removed) indicating reading/decoding access, rather than the underlying skill, was the barrier on those items."));
           }
+          // (c) Direct LINGUISTIC-LOAD contrast (same problem, simpler language).
+          if (ac.simplifiedFlips >= 1) {
+            children.push(h("div", { key: "simp", style: { fontSize: 12.5, color: "#0f172a", lineHeight: 1.55, marginTop: 6 } },
+              "✍️ On ",
+              h("strong", null, ac.simplifiedFlips + " item" + (ac.simplifiedFlips === 1 ? "" : "s")),
+              ", the student succeeded ", h("strong", null, "only with simpler language"),
+              " — a direct contrast (same problem, reduced language complexity) indicating academic-language load, rather than the underlying skill, was the barrier on those items."));
+          }
           children.push(h("div", { key: "cav", style: { fontSize: 11, color: "#86198f", fontStyle: "italic", marginTop: 6, lineHeight: 1.5 } },
-            "⚠ Exploratory, small-N. The read-aloud contrast is a controlled manipulation; the support-coincidence pattern is correlational (supports were offered as mediation, not a controlled trial). Interpret only alongside this student's language-proficiency data and the home-language context noted at intake. Simplified-language and home-language (L1) contrasts are planned next. This lens appears because a language background was recorded at intake."));
+            "⚠ Exploratory, small-N. The read-aloud and simpler-language contrasts are controlled manipulations; the support-coincidence pattern is correlational (supports were offered as mediation, not a controlled trial). Interpret only alongside this student's language-proficiency data and the home-language context noted at intake. A home-language (L1) contrast is planned next. This lens appears because a language background was recorded at intake."));
           return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#fdf4ff", borderColor: "#e9d5ff" } }, children);
         })(),
 
