@@ -84,6 +84,16 @@ const checks = [
     description: 'AlloFlowANTI.txt + App.jsx parse cleanly as JSX',
   },
   {
+    name: 'Render-path free vars (CDN modules)',
+    cmd: ['node', 'dev-tools/check_render_refs.cjs', '--quiet'],
+    description: 'Undeclared identifiers in hook dep arrays of *_module.js (data/onPlayAudio/isEscaped render-crash class)',
+  },
+  {
+    name: 'Lang pack JSON validity',
+    cmd: ['node', 'dev-tools/check_lang_json.cjs', '--quiet'],
+    description: 'Every lang/*.js parses as JSON (catches corruption before deploy)',
+  },
+  {
     name: 'Deploy mirror sync',
     cmd: ['node', 'dev-tools/check_deploy_mirror.cjs', '--quiet'],
     description: 'Root *_module.js matches prismflow-deploy/public/ mirror',

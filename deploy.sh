@@ -99,6 +99,18 @@ if [[ "$CURRENT_BRANCH" != "main" ]]; then
   fi
 fi
 
+# ── Step 0.6: render-path free-variable gate ──────────────────────
+# Blocks the deploy if any *_module.js has an undeclared identifier in a hook
+# dependency array (the data / onPlayAudio / isEscaped render-crash class that
+# hard-crashes WordSoundsModal/TeacherModule on render). set -e aborts the
+# deploy on failure. Emergency bypass: SKIP_RENDER_CHECK=1 ./deploy.sh "..."
+if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
+  echo ""
+  echo "=== Step 0.6: render-path free-variable gate ==="
+  node dev-tools/check_render_refs.cjs --quiet
+  echo "  ✓ no render-path free vars in CDN modules."
+fi
+
 # ── Step 1: Source commit ──────────────────────────────────────────
 echo ""
 echo "════════════════════════════════════════════"

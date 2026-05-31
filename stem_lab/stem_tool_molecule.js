@@ -117,6 +117,28 @@ window.StemLab = window.StemLab || {
       // ── Tool body (molecule) ──
       return (function() {
 
+          // ── State + three.js refs ──
+          // Restored: these were referenced throughout the tool body but their
+          // declarations were lost to a bulk edit (commit 49aa0e5f dropped
+          // `const d`/`upd`; the 3D feature referenced threeLoaded + *Ref without
+          // ever declaring them) — molecule crashed on render with everything
+          // undefined. d/upd match the last-good version (7b02d155).
+          const d = labToolData.molecule || {};
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, molecule: { ...prev.molecule, [key]: val } }));
+          const [threeLoaded, setThreeLoaded] = useState(false);
+          const webglCanvasRef = useRef(null);
+          const threeSceneRef = useRef(null);
+          const threeCameraRef = useRef(null);
+          const threeRendererRef = useRef(null);
+          const threeControlsRef = useRef(null);
+          const threeResourcesRef = useRef(null);
+          const animationFrameIdRef = useRef(null);
+          // INCOMPLETE FEATURE (stubbed to prevent a render crash): commit 49aa0e5f
+          // added drawVisualShelf(...) calls for the reactions-mode "Visual Molecule
+          // Shelf" but never a definition. Stubbed to null so the tool renders; the
+          // per-reaction-side molecule visual still needs to be implemented.
+          const drawVisualShelf = () => null;
+
           const W = 400, H = 300;
 
           const mode = d.moleculeMode || 'viewer';
