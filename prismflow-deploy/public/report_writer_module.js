@@ -1625,6 +1625,95 @@ Return ONLY valid JSON:
             const footer = `\n\n${'─'.repeat(50)}\nClinician Signature: _______________ Date: ________\nGenerated with AlloFlow Report Writer (AI-Assisted Draft)\n`;
             navigator.clipboard.writeText(draftNotice + header + body + footer).then(() => { if (addToast) addToast(t('toasts.report_copied_clipboard'), 'success'); });
         };
+        // ── Audit summary export ──
+        // Groups findings by provenance (Python deterministic vs LLM passes vs
+        // self-healed etc.) for sharing with a reviewing supervisor / district.
+        // Standalone — exposes the audit without dumping the student narrative.
+        const buildAuditSummary = (includeHeader = true) => {
+            if (!accuracyResults || accuracyResults.length === 0) return null;
+            const symbol = s => s === 'verified' ? 'OK' : s === 'contradicts' ? 'X ' : s === 'unsourced' ? '? ' : s === 'discrepancy' ? '! ' : '- ';
+            const groupOrder = [
+                ['python',                   'Python deterministic checks'],
+                ['dual-pass-disagree',       'LLM dual-pass DISAGREEMENT (review carefully)'],
+                ['dual-pass-minor-disagree', 'LLM dual-pass minor disagreement'],
+                ['dual-pass-agree',          'LLM dual-pass (both passes agreed)'],
+                ['single-pass',              'LLM single pass (Claim Verifier only)'],
+                ['pass-b-only',              'LLM single pass (Contradiction Hunter only)'],
+                ['self-healed',              'Self-healed (was a contradiction; auto-fixed)'],
+                ['post-fix-verification',    'Re-checked after self-heal'],
+            ];
+            const buckets = new Map(groupOrder.map(([k]) => [k, []]));
+            const orphans = [];
+            for (const r of accuracyResults) {
+                const src = r.auditSource || '';
+                if (buckets.has(src)) buckets.get(src).push(r);
+                else orphans.push(r);
+            }
+            const totals = {
+                total: accuracyResults.length,
+                verified: accuracyResults.filter(r => r.status === 'verified').length,
+                contradicts: accuracyResults.filter(r => r.status === 'contradicts').length,
+                unsourced: accuracyResults.filter(r => r.status === 'unsourced').length,
+                discrepancy: accuracyResults.filter(r => r.status === 'discrepancy').length,
+            };
+            const lines = [];
+            if (includeHeader) {
+                lines.push('='.repeat(60));
+                lines.push('REPORT WRITER ACCURACY AUDIT SUMMARY');
+                lines.push('='.repeat(60));
+                lines.push(`Report:    ${reportTitle || 'Untitled'}`);
+                lines.push(`Student:   ${studentName || '[Student]'}`);
+                lines.push(`Age/Grade: ${studentAge || 'N/A'} / ${studentGrade || 'N/A'}`);
+                lines.push(`Generated: ${new Date().toLocaleString()}`);
+                lines.push('');
+            }
+            lines.push(`Total findings: ${totals.total}`);
+            lines.push(`  OK Verified:    ${totals.verified}`);
+            lines.push(`  X  Contradicts: ${totals.contradicts}`);
+            lines.push(`  ?  Unsourced:   ${totals.unsourced}`);
+            if (totals.discrepancy) lines.push(`  !  Discrepancy:  ${totals.discrepancy}`);
+            lines.push('');
+            for (const [key, label] of groupOrder) {
+                const arr = buckets.get(key);
+                if (!arr || arr.length === 0) continue;
+                lines.push('');
+                lines.push(`-- ${label} (${arr.length}) --`);
+                for (const f of arr) {
+                    const sec = f.section ? `[${f.section}] ` : '';
+                    lines.push(`  ${symbol(f.status)} ${sec}${f.claim || '(no claim text)'}`);
+                    if (f.explanation) lines.push(`       -> ${f.explanation}`);
+                    if (f.fixHint) lines.push(`       fix: ${f.fixHint}`);
+                }
+            }
+            if (orphans.length) {
+                lines.push('');
+                lines.push(`-- Other (${orphans.length}) --`);
+                for (const f of orphans) {
+                    const sec = f.section ? `[${f.section}] ` : '';
+                    lines.push(`  ${symbol(f.status)} ${sec}${f.claim || ''}`);
+                    if (f.explanation) lines.push(`       -> ${f.explanation}`);
+                }
+            }
+            lines.push('');
+            lines.push('-'.repeat(60));
+            lines.push('Findings are advisory. Licensed clinician is responsible for');
+            lines.push('final review of all claims against the underlying source data.');
+            lines.push('Generated with AlloFlow Report Writer (AI-Assisted).');
+            return lines.join('\n');
+        };
+        const copyAuditSummary = () => {
+            const summary = buildAuditSummary(true);
+            if (!summary) {
+                if (addToast) addToast('No audit findings yet — run the accuracy check first.', 'info');
+                return;
+            }
+            navigator.clipboard.writeText(summary).then(() => {
+                if (addToast) addToast('Audit summary copied to clipboard', 'success');
+            }).catch(() => {
+                if (addToast) addToast('Could not copy — paste from the textarea below.', 'error');
+            });
+        };
+
         const printReport = () => {
             const w = window.open('', '_blank');
             const draftBanner = `<div style="background:#fef2f2;border:2px solid #dc2626;border-radius:8px;padding:12px 16px;margin-bottom:20px;text-align:center"><p style="color:#dc2626;font-weight:900;font-size:13px;margin:0 0 4px 0;text-transform:uppercase;letter-spacing:1px">CONFIDENTIAL DRAFT — AI-ASSISTED DOCUMENT</p><p style="color:#991b1b;font-size:10px;margin:0;line-height:1.4">This report was generated with AI assistance and requires review and approval by the licensed school psychologist before use in educational decision-making. All interpretations must be validated against the clinician&rsquo;s independent professional judgment. This document is not a finalized evaluation report until signed by the responsible clinician.</p></div>`;
@@ -2359,7 +2448,15 @@ Return ONLY valid JSON:
                             h('p', { className: 'text-lg font-bold text-violet-700' }, `${accuracyResults.length > 0 ? Math.round((accuracyResults.filter(r => r.status === 'verified').length / accuracyResults.length) * 100) : 0}%`),
                             h('p', { className: 'text-[11px] text-slate-600' }, 'Accuracy')
                         ),
-                        h('button', { 'aria-label': 'Re-check accuracy', className: 'px-3 py-1 bg-violet-100 text-violet-700 text-[11px] rounded-lg hover:bg-violet-200', onClick: runAccuracyCheck }, '🔄 Re-check')
+                        h('button', { 'aria-label': 'Re-check accuracy', className: 'px-3 py-1 bg-violet-100 text-violet-700 text-[11px] rounded-lg hover:bg-violet-200', onClick: runAccuracyCheck }, '🔄 Re-check'),
+                        // Phase 4c: standalone audit-summary copy, available right here on the dashboard
+                        // so the clinician can share findings with a supervisor without leaving the page.
+                        accuracyResults.length > 0 && h('button', {
+                            'aria-label': 'Copy audit summary',
+                            title: 'Copy a text summary of all findings grouped by provenance (Python / LLM passes)',
+                            className: 'px-3 py-1 bg-fuchsia-100 text-fuchsia-700 text-[11px] rounded-lg hover:bg-fuchsia-200',
+                            onClick: copyAuditSummary
+                        }, '📋 Copy Audit')
                     ),
                     // Claim-by-claim results
                     accuracyResults.length > 0 && h('div', { className: 'space-y-1 max-h-[350px] overflow-y-auto' },
@@ -2421,10 +2518,22 @@ Return ONLY valid JSON:
                     )
                 ),
                 // Export buttons
-                h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
+                h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2' },
                     h('button', { 'aria-label': 'Export as JSON', className: 'flex flex-col items-center gap-1 px-3 py-3 bg-violet-50 border border-violet-600 rounded-lg hover:bg-violet-100 transition-colors', onClick: exportJSON },
                         h('span', { className: 'text-lg' }, '💾'),
                         h('span', { className: 'text-[11px] font-medium text-violet-700' }, 'Save JSON')
+                    ),
+                    // Phase 4c: standalone audit-summary copy. Separate from "Copy Report" so the
+                    // clinician can share quality-control findings with a supervisor without
+                    // including the full narrative (or vice versa, the formal report stays clean).
+                    accuracyResults.length > 0 && h('button', {
+                        'aria-label': 'Copy audit summary',
+                        title: 'Copy a text summary of all findings grouped by provenance (Python / LLM passes / self-healed)',
+                        className: 'flex flex-col items-center gap-1 px-3 py-3 bg-fuchsia-50 border border-fuchsia-600 rounded-lg hover:bg-fuchsia-100 transition-colors',
+                        onClick: copyAuditSummary
+                    },
+                        h('span', { className: 'text-lg' }, '📊'),
+                        h('span', { className: 'text-[11px] font-medium text-fuchsia-700' }, 'Copy Audit')
                     ),
                     h('button', { 'aria-label': 'Copy report to clipboard', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-600 opacity-50 cursor-not-allowed' : 'bg-indigo-50 border border-indigo-600 hover:bg-indigo-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast(t('toasts.resolve_contradictions_before_copying_run'), 'error'); return; } copyFullReport(); }, disabled: Object.keys(reportSections).length === 0 },
                         h('span', { className: 'text-lg' }, '📋'),
