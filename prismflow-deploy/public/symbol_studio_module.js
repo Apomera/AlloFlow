@@ -32,7 +32,7 @@
     + ' .ss-garden-tapped{animation:ss-garden-tap 0.4s ease-out}'
     + ' @keyframes ss-garden-levelup{0%{transform:scale(0.95);opacity:0}20%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}'
     + ' .ss-garden-levelup{animation:ss-garden-levelup 0.6s ease-out}'
-    + ' @media(prefers-reduced-motion:reduce){.fixed.inset-0 *,.fixed.inset-0 *::before,.fixed.inset-0 *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}.ss-garden-seed,.ss-garden-mastered,.ss-garden-tapped,.ss-garden-levelup{animation:none!important}}';
+    + ' @media(prefers-reduced-motion:reduce){.ss-modal-root *,.ss-modal-root *::before,.ss-modal-root *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}.ss-garden-seed,.ss-garden-mastered,.ss-garden-tapped,.ss-garden-levelup{animation:none!important}}';
     // Removed: .text-slate-600{color:#64748b!important} — was an unscoped global override that downgraded slate-600 from AAA (#475569, 7.42:1) to AA-borderline (#64748b, 4.59:1) across the entire app whenever Symbol Studio loaded. Tailwind's default slate-600 is AAA-pass.
     document.head.appendChild(style);
   })();
@@ -2642,20 +2642,21 @@
 
     // ── Styles ─────────────────────────────────────────────────────────────
     var PURPLE = '#7c3aed'; var DARK_PURPLE = '#5b21b6'; var LIGHT_PURPLE = '#ede9fe';
+    var _ssDk = (ssTheme === 'dark' || ssTheme === 'contrast'); // dark base; high-contrast refined by injected CSS
     var S = {
       overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, display: 'flex', alignItems: 'stretch', justifyContent: 'center', padding: '12px', boxSizing: 'border-box' },
-      modal: { background: '#fff', borderRadius: '14px', width: '100%', maxWidth: '1100px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 30px 80px rgba(0,0,0,0.4)' },
-      header: { background: 'linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)', padding: '12px 18px', flexShrink: 0 },
+      modal: { background: _ssDk ? '#0f172a' : '#fff', borderRadius: '14px', width: '100%', maxWidth: '1100px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 30px 80px rgba(0,0,0,0.4)' },
+      header: { background: _ssDk ? 'linear-gradient(135deg, #4c1d95 0%, #312e81 100%)' : 'linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)', padding: '12px 18px', flexShrink: 0 },
       tabBar: { display: 'flex', gap: '2px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', padding: '3px', marginTop: '10px' },
       body: { display: 'flex', flex: 1, overflow: 'hidden' },
-      leftCol: { width: '250px', flexShrink: 0, borderRight: '1px solid #e5e7eb', overflowY: 'auto', background: '#f9fafb', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' },
+      leftCol: { width: '250px', flexShrink: 0, borderRight: _ssDk ? '1px solid #334155' : '1px solid #e5e7eb', overflowY: 'auto', background: _ssDk ? '#1e293b' : '#f9fafb', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' },
       rightCol: { flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' },
-      lbl: { fontSize: '11px', fontWeight: 600, color: '#374151', display: 'block', marginBottom: '3px' },
-      input: { width: '100%', border: '1px solid #d1d5db', borderRadius: '6px', padding: '7px 9px', fontSize: '13px', boxSizing: 'border-box', fontFamily: 'inherit' },
-      textarea: { width: '100%', border: '1px solid #d1d5db', borderRadius: '6px', padding: '7px 9px', fontSize: '12px', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' },
+      lbl: { fontSize: '11px', fontWeight: 600, color: _ssDk ? '#cbd5e1' : '#374151', display: 'block', marginBottom: '3px' },
+      input: { width: '100%', border: _ssDk ? '1px solid #334155' : '1px solid #d1d5db', borderRadius: '6px', padding: '7px 9px', fontSize: '13px', boxSizing: 'border-box', fontFamily: 'inherit', background: _ssDk ? '#0f172a' : '#fff', color: _ssDk ? '#f1f5f9' : 'inherit' },
+      textarea: { width: '100%', border: _ssDk ? '1px solid #334155' : '1px solid #d1d5db', borderRadius: '6px', padding: '7px 9px', fontSize: '12px', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical', background: _ssDk ? '#0f172a' : '#fff', color: _ssDk ? '#f1f5f9' : 'inherit' },
       btn: function (bg, color, disabled) { return { padding: '8px 14px', background: disabled ? '#d1d5db' : (bg || PURPLE), color: disabled ? '#6b7280' : (color || '#fff'), border: 'none', borderRadius: '7px', fontWeight: 600, fontSize: '12px', cursor: disabled ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }; },
       chip: function (bg, color) { return { padding: '3px 8px', background: bg, color: color, border: '1px solid ' + color, borderRadius: '20px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }; },
-      card: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' },
+      card: { background: _ssDk ? '#1e293b' : '#fff', border: _ssDk ? '1px solid #334155' : '1px solid #e5e7eb', borderRadius: '10px', padding: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', color: _ssDk ? '#e2e8f0' : 'inherit' },
     };
 
     // ── Sub-render helpers ─────────────────────────────────────────────────
@@ -4707,8 +4708,8 @@
             var uniq = Object.keys(uw).length; var ld = uniq / tw; var ldPct = Math.round(ld * 100);
             var ldLabel = ld >= 0.7 ? 'Rich' : ld >= 0.5 ? 'Developing' : ld >= 0.3 ? 'Emerging' : 'Limited';
             var ldColor = ld >= 0.7 ? '#059669' : ld >= 0.5 ? '#2563eb' : ld >= 0.3 ? '#d97706' : '#6b7280';
-            return e('div', { style: { display: 'flex', gap: '12px', alignItems: 'center', padding: '6px 12px', background: '#eff6ff', borderRadius: '8px', marginBottom: '4px', fontSize: '11px' }, title: 'Lexical Diversity = unique words / total words. Strongest predictor of linguistic competence.' },
-              e('span', { style: { fontWeight: 700, color: '#2563eb' } }, '📊 Lexical Diversity: ' + ldPct + '%'),
+            return e('div', { style: { display: 'flex', gap: '12px', alignItems: 'center', padding: '6px 12px', background: '#eff6ff', borderRadius: '8px', marginBottom: '4px', fontSize: '11px' }, title: 'Word variety = unique ÷ total words used in AlloFlow. A practice indicator, not a clinical assessment.' },
+              e('span', { style: { fontWeight: 700, color: '#2563eb' } }, '📊 Word Variety (in AlloFlow): ' + ldPct + '%'),
               e('span', { style: { color: ldColor, fontWeight: 600 } }, ldLabel),
               e('span', { style: { color: '#9ca3af' } }, '(' + uniq + ' unique / ' + tw + ' total)'));
           })(),
@@ -4856,7 +4857,7 @@
       if (rpTW >= 5) {
         var rpUniq = Object.keys(rpUW).length; var rpLD = rpUniq / rpTW; var rpPct = Math.round(rpLD * 100);
         var rpLabel = rpLD >= 0.7 ? 'Rich' : rpLD >= 0.5 ? 'Developing' : rpLD >= 0.3 ? 'Emerging' : 'Limited';
-        html += '<p style="margin-top:8px"><strong>Lexical Diversity:</strong> ' + rpPct + '% (' + rpLabel + ') — ' + rpUniq + ' unique words out of ' + rpTW + ' total AAC utterances. <em>Lexical diversity is the strongest single predictor of linguistic competence in AAC users.</em></p>';
+        html += '<p style="margin-top:8px"><strong>Word Variety (in AlloFlow):</strong> ' + rpPct + '% (' + rpLabel + ') — ' + rpUniq + ' unique words out of ' + rpTW + ' total in-app uses. <em>A practice indicator from AlloFlow use — not a standardized language assessment. Interpret alongside clinical judgment.</em></p>';
       }
       html += '</div>';
       // Mastered words — celebration

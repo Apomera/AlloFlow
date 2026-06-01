@@ -4337,7 +4337,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '48f83d0b';
+    var pluginCdnVersion = 'ec08d275';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -4494,6 +4494,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js');
     loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js');
     loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js');
+    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.

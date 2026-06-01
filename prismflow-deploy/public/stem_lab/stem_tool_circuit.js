@@ -569,6 +569,7 @@ window.StemLab = window.StemLab || {
               return Object.assign({}, c, { ledColor: LED_COLORS[(ci + 1) % LED_COLORS.length] });
             });
             upd('components', newComps);
+            if (typeof addToast === 'function') addToast('💡 LED color changed', 'info');
           };
 
           // ── Circuit calculations ──

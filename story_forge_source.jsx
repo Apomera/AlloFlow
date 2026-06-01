@@ -3574,7 +3574,7 @@ show();
                       dir="auto"
                       className={`w-full p-4 text-sm resize-none outline-none transition-colors ${
                         layoutMode === 'dark' ? 'bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-750 caret-cyan-400' :
-                        layoutMode === 'journal' ? 'bg-amber-50 text-amber-900 placeholder:text-amber-400 focus:bg-amber-100/50' :
+                        layoutMode === 'journal' ? 'bg-amber-50 text-amber-900 placeholder:text-amber-600 focus:bg-amber-100/50' :
                         'focus:bg-rose-50/30'
                       }`}
                       style={{
@@ -3686,7 +3686,7 @@ show();
                     if (unused.length === 0 || unused.length === vocabTerms.length) return null;
                     return (
                       <div className={`px-4 py-1.5 border-t text-[11px] ${
-                        layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-600' : 'bg-rose-50/50 border-rose-100 text-rose-400'
+                        layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-300' : 'bg-rose-50/50 border-rose-100 text-rose-700'
                       }`}>
                         <span className="font-bold">Still needed: </span>
                         {unused.map((v, vi) => (
@@ -3734,7 +3734,7 @@ show();
                   <div className="flex items-center justify-center py-1">
                     <button
                       onClick={() => updateParagraph(idx + 1, suggestTransition(idx + 1) + ' ')}
-                      className="text-[11px] text-indigo-400 hover:text-indigo-600 font-medium hover:bg-indigo-50 px-3 py-1 rounded-full transition-colors"
+                      className="text-[11px] text-indigo-600 hover:text-indigo-700 font-medium hover:bg-indigo-50 px-3 py-1 rounded-full transition-colors"
                       title={t("ui_common.click_to_insert")}
                     >
                       Tip: Start next paragraph with "{suggestTransition(idx + 1)}"
@@ -4870,7 +4870,7 @@ show();
                           )}
                           {/* Thought bubble */}
                           {(panelDialogue[p.id] || {}).thought && (
-                            <div className="bg-purple-50 border-2 border-purple-300 rounded-2xl p-2 text-[11px] text-purple-300 italic leading-relaxed" style={{ borderRadius: '20px', borderStyle: 'dashed' }}>
+                            <div className="bg-purple-50 border-2 border-purple-300 rounded-2xl p-2 text-[11px] text-purple-700 italic leading-relaxed" style={{ borderRadius: '20px', borderStyle: 'dashed' }}>
                               💭 {panelDialogue[p.id].thought}
                             </div>
                           )}
@@ -4904,7 +4904,7 @@ show();
 
               {/* Achievement Badges */}
               <div className="bg-white rounded-2xl border-2 border-amber-200 p-5 shadow-sm">
-                <h4 className="text-sm font-bold text-amber-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <h4 className="text-sm font-bold text-amber-700 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <Star size={16} /> Achievements ({earnedCount}/{achievements.length})
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">

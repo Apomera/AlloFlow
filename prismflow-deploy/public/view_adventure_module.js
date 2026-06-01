@@ -879,7 +879,7 @@
     className: `absolute inset-0 w-full h-full ${immersiveHideUI ? 'object-contain' : 'object-cover'} transition-opacity duration-700 animate-ken-burns`,
     alt: adventureState.currentScene?.text || "Adventure Scene"
   }) : /*#__PURE__*/React.createElement("div", {
-    className: "absolute inset-0 bg-slate-900 flex items-center justify-center flex-col gap-4 text-slate-600"
+    className: "absolute inset-0 bg-slate-900 flex items-center justify-center flex-col gap-4 text-slate-300"
   }, adventureState.isImageLoading ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 48,
     className: "animate-spin text-indigo-500"

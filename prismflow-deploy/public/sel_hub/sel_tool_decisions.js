@@ -899,7 +899,7 @@ window.SelHub = window.SelHub || {
               value: dtReflection,
               onChange: function(e) { upd('dtReflection', e.target.value); },
               'aria-label': 'Decision tree reflection',
-              placeholder: band === 'elementary' ? 'I chose this because...' : 'I chose this because... The consequences might be... It connects to the values of...',
+              placeholder: band === 'elementary' ? 'I chose this because... (Tip: don\'t share personal info like your full name, address, or school)' : 'I chose this because... The consequences might be... It connects to the values of... (Tip: keep it general — don\'t share personal info like names, addresses, or contact details)',
               rows: 4,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 12 }
             }),
@@ -1033,7 +1033,7 @@ window.SelHub = window.SelHub || {
                 value: edSideA,
                 onChange: function(e) { upd('edSideA', e.target.value); },
                 'aria-label': 'Arguments for side A',
-                placeholder: 'Why might this value matter more here?',
+                placeholder: 'Why might this value matter more here? (Tip: don\'t share personal info like names or contact details)',
                 rows: 3,
                 style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #3b82f644', background: '#1e293b', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
               })
@@ -1044,7 +1044,7 @@ window.SelHub = window.SelHub || {
                 value: edSideB,
                 onChange: function(e) { upd('edSideB', e.target.value); },
                 'aria-label': 'Arguments for side B',
-                placeholder: 'Why might this value matter more here?',
+                placeholder: 'Why might this value matter more here? (Tip: don\'t share personal info like names or contact details)',
                 rows: 3,
                 style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #ef444444', background: '#1e293b', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
               })
@@ -1057,7 +1057,7 @@ window.SelHub = window.SelHub || {
               value: edVerdict,
               onChange: function(e) { upd('edVerdict', e.target.value); },
               'aria-label': 'Your verdict',
-              placeholder: 'I would lean toward... because...',
+              placeholder: 'I would lean toward... because... (Tip: keep it general — don\'t share personal info like full names, addresses, or your school)',
               rows: 3,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
             })
@@ -1479,7 +1479,7 @@ window.SelHub = window.SelHub || {
               value: rwReflection,
               onChange: function(e) { upd('rwReflection', e.target.value); },
               'aria-label': 'Real-world decision reflection',
-              placeholder: 'What would you have done? What makes this decision so hard?',
+              placeholder: 'What would you have done? What makes this decision so hard? (Tip: don\'t share personal info like names, addresses, or your school)',
               rows: 4,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
             })
@@ -1750,8 +1750,8 @@ window.SelHub = window.SelHub || {
               onChange: function(e) { upd('advPrompt', e.target.value); },
               'aria-label': 'Describe your decision for AI advisor',
               placeholder: band === 'elementary'
-                ? 'Tell me about something you need to decide. For example: "I can\'t decide if I should try out for the play or join soccer..."'
-                : 'Describe a decision you\'re facing. Include what makes it hard — the competing values, the people involved, the pressure you feel...',
+                ? 'Tell me about something you need to decide. For example: "I can\'t decide if I should try out for the play or join soccer..." (Tip: don\'t share personal info like your full name, address, or school)'
+                : 'Describe a decision you\'re facing. Include what makes it hard — the competing values, the people involved, the pressure you feel... (Tip: keep it general — don\'t share personal info like full names, addresses, contact details, or your school)',
               rows: 5,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 10 }
             }),

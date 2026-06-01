@@ -118,7 +118,7 @@ function AdventurePanel(props) {
     },
     isResumingAdventure ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 16, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(History, { size: 16 }),
     isResumingAdventure ? t("adventure.loading_save") : t("adventure.resume")
-  ), globalPoints < studentProjectSettings.adventureUnlockXP ? /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800 text-white p-4 rounded-xl text-center shadow-md border border-slate-600 animate-in zoom-in" }, /* @__PURE__ */ React.createElement(Lock, { size: 32, className: "mx-auto mb-2 text-yellow-700" }), /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-lg mb-1" }, t("adventure.locked_title")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-3" }, t("adventure.locked_desc_prefix"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-yellow-700" }, studentProjectSettings.adventureUnlockXP, " XP"), " ", t("adventure.locked_desc_suffix")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-700 rounded-full h-3 overflow-hidden border border-slate-600" }, /* @__PURE__ */ React.createElement(
+  ), globalPoints < studentProjectSettings.adventureUnlockXP ? /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800 text-white p-4 rounded-xl text-center shadow-md border border-slate-600 animate-in zoom-in" }, /* @__PURE__ */ React.createElement(Lock, { size: 32, className: "mx-auto mb-2 text-yellow-400" }), /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-lg mb-1" }, t("adventure.locked_title")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-3" }, t("adventure.locked_desc_prefix"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-yellow-400" }, studentProjectSettings.adventureUnlockXP, " XP"), " ", t("adventure.locked_desc_suffix")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-700 rounded-full h-3 overflow-hidden border border-slate-600" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "h-full bg-yellow-400 transition-all duration-500",
@@ -2502,7 +2502,7 @@ function UiToolWordsoundsPanel(props) {
       onClick: handleOpenWordSounds,
       className: "w-full py-2 bg-pink-600 text-white rounded-lg font-bold text-sm shadow-md hover:bg-pink-700 active:scale-95 transition-all flex items-center justify-center gap-2"
     },
-    /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-700" }),
+    /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-300" }),
     " Open Generator"
   ));
 }

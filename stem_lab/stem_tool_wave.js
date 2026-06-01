@@ -96,7 +96,7 @@ window.StemLab = window.StemLab || {
         }
         return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading Wave Simulator…');
       }
-      return (function() {
+      var __waveMainView = (function() {
 const d = labToolData.wave;
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, wave: { ...prev.wave, [key]: val } }));
@@ -2232,6 +2232,417 @@ const d = labToolData.wave;
 
           )
       })();
+
+      // ═══════════════════════════════════════════════════════════════════
+      // WAVE EXPANSION SECTIONS — interactive reference library (2026-05-31)
+      // ═══════════════════════════════════════════════════════════════════
+      var d2 = (labToolData && labToolData.wave) || {};
+      var expSection = d2.expSection || null;
+      function setExp(patch) {
+        setLabToolData(function(prev) {
+          var prior = (prev && prev.wave) || {};
+          return Object.assign({}, prev, { wave: Object.assign({}, prior, patch) });
+        });
+      }
+
+      // ── Reference data ──
+      var WAVE_TYPES = [
+        { name: 'Transverse', icon: '⤴', desc: 'Particle motion perpendicular to wave direction. Crests + troughs.', examples: ['Light + all EM waves', 'String wave', 'Surface water waves (mostly)', 'S-waves in earthquakes'], speed: 'Varies by medium' },
+        { name: 'Longitudinal (compressional)', icon: '⤇', desc: 'Particle motion parallel to wave direction. Compressions + rarefactions.', examples: ['Sound waves in air', 'Slinky push-pull', 'P-waves in earthquakes', 'Ultrasound'], speed: '~343 m/s sound in air at 20°C' },
+        { name: 'Surface (Rayleigh)', icon: '〰', desc: 'Particles trace elliptical paths. Combines transverse + longitudinal.', examples: ['Ocean surface waves', 'Rayleigh waves in earthquakes'], speed: 'Depends on water depth + λ' },
+        { name: 'Electromagnetic', icon: '⚡', desc: 'Oscillating electric + magnetic fields. No medium needed (travel through vacuum).', examples: ['Visible light', 'Radio', 'X-rays', 'Microwaves', 'IR / UV'], speed: 'c = 3.0 × 10⁸ m/s in vacuum' },
+        { name: 'Matter waves (de Broglie)', icon: 'λ', desc: 'All matter has wave properties. λ = h/p. Observable for electrons + atoms.', examples: ['Electron diffraction', 'Neutron scattering', 'Atom interferometry'], speed: 'Particle velocity (not wave)' },
+        { name: 'Gravitational waves', icon: '⊕', desc: 'Ripples in spacetime from accelerating masses. First detected 2015 (LIGO).', examples: ['Black hole + neutron star mergers', 'Predicted by Einstein 1915'], speed: 'c (speed of light)' }
+      ];
+
+      var WAVE_QUANTITIES = [
+        { sym: 'λ', name: 'Wavelength', units: 'm (meters)', def: 'Distance between two successive crests (or troughs). Crest-to-crest.' },
+        { sym: 'f', name: 'Frequency', units: 'Hz (1/s)', def: 'Cycles per second. How many wave peaks pass a point per second.' },
+        { sym: 'T', name: 'Period', units: 's (seconds)', def: 'Time for one complete cycle. T = 1/f.' },
+        { sym: 'A', name: 'Amplitude', units: 'm (or whatever the wave displaces)', def: 'Maximum displacement from equilibrium. Carries energy; intensity ∝ A².' },
+        { sym: 'v', name: 'Wave speed', units: 'm/s', def: 'How fast the wave moves through the medium. v = fλ.' },
+        { sym: 'k', name: 'Wave number', units: '1/m (or rad/m)', def: 'k = 2π/λ. Spatial frequency. Useful in y = A·sin(kx − ωt).' },
+        { sym: 'ω', name: 'Angular frequency', units: 'rad/s', def: 'ω = 2πf. Used in trigonometric wave equations.' },
+        { sym: 'φ', name: 'Phase', units: 'rad (or degrees)', def: 'Position within a cycle. Two waves in phase: peaks align (constructive); out of phase by π: peaks meet troughs (destructive).' }
+      ];
+
+      var INTERFERENCE_PATTERNS = [
+        { type: 'Constructive', icon: '+', condition: 'Δφ = 0, 2π, 4π... (path diff = mλ)', result: 'Amplitudes ADD. Bright fringe (light), loud point (sound), large displacement.' },
+        { type: 'Destructive', icon: '−', condition: 'Δφ = π, 3π, 5π... (path diff = (m+½)λ)', result: 'Amplitudes CANCEL. Dark fringe, quiet point, no displacement.' },
+        { type: 'Partial', icon: '~', condition: 'Other Δφ values', result: 'Partial reinforcement or cancellation. Wave appears with intermediate amplitude.' }
+      ];
+
+      var DOPPLER_CASES = [
+        { case: 'Source moving toward you', effect: 'f observed > f emitted', detail: 'Wavefronts bunch up in front. Higher pitch (sound) / blueshift (light).' },
+        { case: 'Source moving away', effect: 'f observed < f emitted', detail: 'Wavefronts spread out behind. Lower pitch / redshift.' },
+        { case: 'Observer moving toward source', effect: 'f observed > f emitted', detail: 'You meet wavefronts faster. Higher apparent frequency.' },
+        { case: 'Observer moving away', effect: 'f observed < f emitted', detail: 'Wavefronts catch up to you slower.' },
+        { case: 'Both moving same direction, same speed', effect: 'No Doppler shift', detail: 'Relative velocity zero between source + observer.' },
+        { case: 'Source at sound barrier (v_source ≥ v_sound)', effect: 'Sonic boom (Mach cone)', detail: 'Wavefronts stack on top of each other. Cone of compression follows the source.' }
+      ];
+
+      var EM_SPECTRUM = [
+        { name: 'Radio', λ: '1 mm – 100 km', f: '3 Hz – 300 GHz', energy: 'Very low', uses: 'Broadcasting, communication, MRI' },
+        { name: 'Microwave', λ: '1 mm – 1 m', f: '300 MHz – 300 GHz', energy: 'Low', uses: 'Cooking (water rotation), radar, WiFi, satellite' },
+        { name: 'Infrared (IR)', λ: '700 nm – 1 mm', f: '300 GHz – 430 THz', energy: 'Low-mid', uses: 'Thermal imaging, TV remotes, fiber optics' },
+        { name: 'Visible light', λ: '380 – 700 nm', f: '430 – 790 THz', energy: 'Mid', uses: 'Vision, photosynthesis, photography' },
+        { name: 'Ultraviolet (UV)', λ: '10 – 380 nm', f: '790 THz – 30 PHz', energy: 'High', uses: 'Sterilization, fluorescence, Vit D synthesis' },
+        { name: 'X-ray', λ: '0.01 – 10 nm', f: '30 PHz – 30 EHz', energy: 'Very high', uses: 'Medical imaging, crystallography, security scanners' },
+        { name: 'Gamma ray', λ: '< 0.01 nm', f: '> 30 EHz', energy: 'Extreme', uses: 'Cancer treatment, sterilization, astronomy (most energetic photons)' }
+      ];
+
+      var VISIBLE_COLORS = [
+        { color: 'Violet', λnm: '380–450', f: '670–790 THz', hex: '#7c3aed', notes: 'Highest-energy visible. Just below UV.' },
+        { color: 'Blue', λnm: '450–485', f: '620–670 THz', hex: '#2563eb', notes: 'Sky color (Rayleigh scattering favors short λ).' },
+        { color: 'Cyan', λnm: '485–500', f: '600–620 THz', hex: '#0891b2', notes: 'Bright in shallow water.' },
+        { color: 'Green', λnm: '500–565', f: '530–600 THz', hex: '#16a34a', notes: 'Peak photopic eye sensitivity (~555 nm).' },
+        { color: 'Yellow', λnm: '565–590', f: '510–530 THz', hex: '#eab308', notes: 'Sodium lamp emission (589 nm doublet).' },
+        { color: 'Orange', λnm: '590–625', f: '480–510 THz', hex: '#ea580c', notes: 'Sunset enhances reds + oranges via scattering.' },
+        { color: 'Red', λnm: '625–700', f: '430–480 THz', hex: '#dc2626', notes: 'Lowest-energy visible. Just above IR.' }
+      ];
+
+      var HARMONICS = [
+        { mode: 'Fundamental (1st)', nodes: '2 (ends)', f: 'f₁', desc: 'Lowest mode. One antinode in the middle.' },
+        { mode: '2nd harmonic', nodes: '3', f: '2 f₁', desc: 'One full wavelength fits in the string length.' },
+        { mode: '3rd harmonic', nodes: '4', f: '3 f₁', desc: 'Three half-wavelengths fit. Common in plucked strings.' },
+        { mode: '4th harmonic', nodes: '5', f: '4 f₁', desc: 'Even integer; less common in stringed instruments tuned to fundamental.' },
+        { mode: 'nth harmonic', nodes: 'n+1', f: 'n f₁', desc: 'General formula. Higher harmonics give timbre / character to a note.' }
+      ];
+
+      var WAVE_FORMULAS = [
+        { eq: 'v = f · λ', purpose: 'Wave speed from frequency + wavelength' },
+        { eq: 'T = 1 / f', purpose: 'Period and frequency are reciprocals' },
+        { eq: 'y(x,t) = A · sin(kx − ωt + φ)', purpose: 'Standard sinusoidal traveling wave' },
+        { eq: 'k = 2π / λ', purpose: 'Wave number ↔ wavelength' },
+        { eq: 'ω = 2π f', purpose: 'Angular frequency ↔ frequency' },
+        { eq: 'Intensity ∝ A²', purpose: 'Energy/area carried by wave grows as square of amplitude' },
+        { eq: 'n₁ sin θ₁ = n₂ sin θ₂', purpose: 'Snell\'s law — refraction at interface' },
+        { eq: 'd sin θ = m λ', purpose: 'Diffraction grating maxima (m = order)' },
+        { eq: 'f\' = f · (v + vₒ) / (v − vₛ)', purpose: 'Doppler shift (general; signs depend on directions)' },
+        { eq: 'E = hf = hc / λ', purpose: 'Photon energy (h = Planck constant)' }
+      ];
+
+      var STANDING_WAVE_INSTRUMENTS = [
+        { instrument: 'Guitar string', boundary: 'Both ends fixed', harmonics: 'All integers (1,2,3,4...)', formula: 'fₙ = n · v/(2L)', note: 'Pluck position selects which harmonics dominate. Near center → odd harmonics.' },
+        { instrument: 'Open organ pipe', boundary: 'Both ends open (antinodes)', harmonics: 'All integers (1,2,3,4...)', formula: 'fₙ = n · v/(2L)', note: 'Same formula as string. Wave equation symmetric.' },
+        { instrument: 'Closed organ pipe', boundary: 'One closed end', harmonics: 'Odd only (1,3,5,7...)', formula: 'fₙ = (2n−1) · v/(4L)', note: 'Only odd harmonics. Octave + 5th, not octave alone.' },
+        { instrument: 'Drum head', boundary: 'Circular fixed edge', harmonics: 'Bessel function modes', formula: 'Complex 2D', note: 'Inharmonic — doesn\'t sound like a clear pitch. Tympani tuned to approximate one.' },
+        { instrument: 'Marimba bar', boundary: 'Bar supported at nodes', harmonics: 'Tunable with bar shape', formula: 'Depends on cross-section', note: 'Undercut shapes the second partial to be a perfect octave above the fundamental.' }
+      ];
+
+      var SOUND_INTENSITY = [
+        { db: 0, source: 'Threshold of hearing', notes: 'Reference: 10⁻¹² W/m²' },
+        { db: 10, source: 'Breathing', notes: 'Quietest noticeable sound' },
+        { db: 30, source: 'Whisper', notes: 'Library quiet' },
+        { db: 60, source: 'Conversation', notes: 'Office background' },
+        { db: 70, source: 'Vacuum cleaner', notes: 'Annoying at length' },
+        { db: 85, source: 'Heavy traffic', notes: 'Hearing damage above this with extended exposure' },
+        { db: 100, source: 'Motorcycle / blender', notes: 'Damage in 15 min' },
+        { db: 110, source: 'Rock concert', notes: 'Damage in seconds to minutes' },
+        { db: 120, source: 'Jet engine at 100 m', notes: 'Threshold of pain' },
+        { db: 140, source: 'Gunshot at ear', notes: 'Instant damage' },
+        { db: 194, source: 'Theoretical max in air', notes: 'Pressure variation = atmospheric pressure (can\'t go louder without becoming shock wave)' }
+      ];
+
+      var WAVE_GLOSSARY = [
+        { term: 'Crest', def: 'Highest point of a transverse wave. Maximum positive displacement.' },
+        { term: 'Trough', def: 'Lowest point of a transverse wave. Maximum negative displacement.' },
+        { term: 'Compression', def: 'Region of high pressure in a longitudinal wave (sound).' },
+        { term: 'Rarefaction', def: 'Region of low pressure in a longitudinal wave.' },
+        { term: 'Node', def: 'Point of zero displacement on a standing wave.' },
+        { term: 'Antinode', def: 'Point of maximum displacement on a standing wave.' },
+        { term: 'Reflection', def: 'Wave bouncing off a boundary. Phase flips if going from less to more dense (hard boundary).' },
+        { term: 'Refraction', def: 'Wave bending as it crosses a boundary where speed changes. Snell\'s law.' },
+        { term: 'Diffraction', def: 'Wave bending around obstacles or through apertures. Effect strong when aperture ~ λ.' },
+        { term: 'Interference', def: 'Two waves overlapping. Constructive (in phase) or destructive (out of phase).' },
+        { term: 'Standing wave', def: 'Pattern from two identical waves traveling opposite directions. Nodes + antinodes fixed in space.' },
+        { term: 'Resonance', def: 'Large amplitude when driving frequency matches natural frequency. Tacoma Narrows bridge collapse classic example (with caveats).' },
+        { term: 'Damping', def: 'Loss of amplitude over time due to friction or radiation. Critical damping = fastest decay without overshoot.' },
+        { term: 'Coherence', def: 'Constant phase relationship between waves. Required for stable interference patterns. Lasers are highly coherent.' },
+        { term: 'Polarization', def: 'Direction of oscillation in a transverse wave. Light from sun is unpolarized; passing through a polarizer selects one direction.' },
+        { term: 'Photon', def: 'Quantum of EM radiation. Energy E = hf. Each photon carries momentum p = h/λ.' }
+      ];
+
+      function expHeader() {
+        return React.createElement('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-cyan-50 to-blue-50 border-2 border-cyan-200' },
+          React.createElement('div', null,
+            React.createElement('h3', { className: 'text-base font-black text-cyan-900' }, '🌊 Wave Reference Library'),
+            React.createElement('div', { className: 'text-[11px] text-cyan-700 mt-0.5' }, 'Interactive references — pick a topic below to explore.')
+          ),
+          expSection && React.createElement('button', {
+            onClick: function() { setExp({ expSection: null }); },
+            className: 'px-3 py-1 rounded-md text-xs font-bold bg-white border border-cyan-300 text-cyan-700 hover:bg-cyan-100'
+          }, '✕ Close section')
+        );
+      }
+
+      function expTabBar() {
+        var sections = [
+          { id: 'types', label: 'Wave types', icon: '🌊' },
+          { id: 'quantities', label: 'Wave quantities', icon: '📐' },
+          { id: 'formulas', label: 'Key formulas', icon: 'ƒ' },
+          { id: 'interference', label: 'Interference', icon: '+' },
+          { id: 'doppler', label: 'Doppler effect', icon: '🚓' },
+          { id: 'spectrum', label: 'EM spectrum', icon: '⚡' },
+          { id: 'colors', label: 'Visible light', icon: '🌈' },
+          { id: 'harmonics', label: 'Harmonics', icon: '🎵' },
+          { id: 'instruments', label: 'Standing waves', icon: '🎸' },
+          { id: 'decibels', label: 'Sound intensity', icon: '🔊' },
+          { id: 'glossary', label: 'Glossary', icon: '📖' }
+        ];
+        return React.createElement('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
+          sections.map(function(s) {
+            var active = expSection === s.id;
+            return React.createElement('button', {
+              key: s.id,
+              onClick: function() { setExp({ expSection: active ? null : s.id }); },
+              className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-cyan-600 text-white border-cyan-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-cyan-50 hover:border-cyan-300')
+            }, s.icon + ' ' + s.label);
+          })
+        );
+      }
+
+      function renderTypesSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌊 Wave types'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Waves are categorized by particle motion relative to propagation, and by whether they need a medium. All carry energy but no matter from one place to another.'),
+          React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
+            WAVE_TYPES.map(function(w, i) {
+              return React.createElement('div', { key: 'w'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  React.createElement('span', { className: 'text-xl text-cyan-600' }, w.icon),
+                  React.createElement('span', { className: 'text-sm font-black text-slate-800' }, w.name),
+                  React.createElement('span', { className: 'text-[10px] font-bold ml-auto px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-800' }, w.speed)
+                ),
+                React.createElement('div', { className: 'text-[12px] text-slate-700 leading-relaxed mb-1' }, w.desc),
+                React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Examples: ', w.examples.join(', '))
+              );
+            })
+          )
+        );
+      }
+
+      function renderQuantitiesSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📐 Wave quantities'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'The full vocabulary needed to describe any wave. Most quantities are related — once you know two, you can derive the rest.'),
+          React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
+            WAVE_QUANTITIES.map(function(q, i) {
+              return React.createElement('div', { key: 'q'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  React.createElement('span', { className: 'text-lg font-black text-cyan-700 font-mono min-w-[24px]' }, q.sym),
+                  React.createElement('span', { className: 'text-[12px] font-bold text-slate-800' }, q.name),
+                  React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto' }, q.units)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, q.def)
+              );
+            })
+          )
+        );
+      }
+
+      function renderFormulasSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'ƒ Key wave equations'),
+          React.createElement('div', { className: 'space-y-1.5' },
+            WAVE_FORMULAS.map(function(f, i) {
+              return React.createElement('div', { key: 'f'+i, className: 'flex items-baseline gap-3 p-2 rounded-md bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-sm font-bold text-indigo-800 font-mono min-w-[200px]' }, f.eq),
+                React.createElement('div', { className: 'text-[11px] text-slate-700' }, f.purpose)
+              );
+            })
+          )
+        );
+      }
+
+      function renderInterferenceSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '+ Interference + superposition'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'When two waves meet, their displacements add (principle of superposition). After passing through each other, each wave continues unchanged.'),
+          React.createElement('div', { className: 'space-y-2 mb-3' },
+            INTERFERENCE_PATTERNS.map(function(p, i) {
+              return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  React.createElement('span', { className: 'text-2xl font-black text-cyan-700' }, p.icon),
+                  React.createElement('span', { className: 'text-sm font-black text-slate-800' }, p.type),
+                  React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto font-mono' }, p.condition)
+                ),
+                React.createElement('div', { className: 'text-[12px] text-slate-700 leading-relaxed' }, p.result)
+              );
+            })
+          ),
+          React.createElement('div', { className: 'p-2.5 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
+            React.createElement('strong', null, '💡 Beats: '), 'Two waves of slightly different frequency interfere alternately constructively + destructively. Beat frequency = |f₁ − f₂|. Musicians use this to tune by ear.'
+          )
+        );
+      }
+
+      function renderDopplerSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🚓 Doppler effect'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Frequency observed changes when source and/or observer move relative to each other. The ambulance siren that drops pitch as it passes you = sound Doppler. Galaxy redshift = light Doppler.'),
+          React.createElement('div', { className: 'space-y-2' },
+            DOPPLER_CASES.map(function(c, i) {
+              return React.createElement('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, c.case),
+                  React.createElement('span', { className: 'text-[11px] font-bold ml-auto px-2 py-0.5 rounded bg-cyan-100 text-cyan-800' }, c.effect)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+              );
+            })
+          ),
+          React.createElement('div', { className: 'mt-3 p-3 rounded-md bg-emerald-50 border border-emerald-200' },
+            React.createElement('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, '📡 Applications'),
+            React.createElement('div', { className: 'text-[11px] text-emerald-900 leading-relaxed' },
+              '• Police radar: bounces microwaves off your car; Doppler shift = your speed. ',
+              '• Doppler ultrasound: measures blood flow direction + speed. ',
+              '• Hubble\'s discovery: distant galaxies are redshifted → universe expanding. ',
+              '• Cosmic microwave background: small Doppler shifts reveal early-universe structure.'
+            )
+          )
+        );
+      }
+
+      function renderSpectrumSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚡ Electromagnetic spectrum'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'All EM waves travel at c in vacuum. The full spectrum spans 18+ orders of magnitude in frequency. We see only a narrow sliver (visible light). Energy per photon: E = hf — higher frequency = more energetic.'),
+          React.createElement('div', { className: 'space-y-1.5' },
+            EM_SPECTRUM.map(function(s, i) {
+              return React.createElement('div', { key: 's'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-0.5' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800 min-w-[100px]' }, s.name),
+                  React.createElement('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-800 ml-auto' }, s.energy + ' energy')
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-0.5 font-mono' }, 'λ: ', s.λ, '  ·  f: ', s.f),
+                React.createElement('div', { className: 'text-[11px] text-slate-700' }, 'Uses: ', s.uses)
+              );
+            })
+          )
+        );
+      }
+
+      function renderColorsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌈 Visible light spectrum'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Human vision spans ~380-700 nm. Each color corresponds to a specific range of wavelengths. White light = mix of all visible wavelengths.'),
+          React.createElement('div', { className: 'grid gap-2' },
+            VISIBLE_COLORS.map(function(c, i) {
+              return React.createElement('div', { key: 'c'+i, className: 'p-2.5 rounded-lg border border-slate-200 flex items-center gap-3', style: { background: c.hex + '15' } },
+                React.createElement('div', { className: 'w-8 h-8 rounded shrink-0', style: { background: c.hex, border: '1px solid rgba(0,0,0,0.1)' } }),
+                React.createElement('div', { className: 'flex-1' },
+                  React.createElement('div', { className: 'text-[12px] font-black text-slate-800' }, c.color, React.createElement('span', { className: 'text-[10px] font-mono text-slate-500 ml-2' }, c.λnm, ' nm  ·  ', c.f)),
+                  React.createElement('div', { className: 'text-[11px] text-slate-700 italic' }, c.notes)
+                )
+              );
+            })
+          )
+        );
+      }
+
+      function renderHarmonicsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎵 Harmonics — modes of vibration'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'A vibrating string supports an infinite series of modes called harmonics. Each has a specific number of nodes (zero-amplitude points) + antinodes (max-amplitude points). The mix of harmonics = timbre.'),
+          React.createElement('div', { className: 'space-y-1.5' },
+            HARMONICS.map(function(h, i) {
+              return React.createElement('div', { key: 'h'+i, className: 'flex items-baseline gap-3 p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'min-w-[140px]' },
+                  React.createElement('div', { className: 'text-[12px] font-black text-slate-800' }, h.mode),
+                  React.createElement('div', { className: 'text-[10px] text-slate-500 font-mono' }, h.nodes + ' nodes · f = ' + h.f)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, h.desc)
+              );
+            })
+          ),
+          React.createElement('div', { className: 'mt-3 p-2.5 rounded-md bg-purple-50 border border-purple-200 text-[11px] text-purple-900' },
+            React.createElement('strong', null, '💡 Why instruments sound different: '), 'A note at 440 Hz on a violin and a flute both have fundamental at 440 Hz. The MIX of higher harmonics (the spectrum) is different — that\'s timbre. Pure sine = boring; rich harmonic content = recognizable instrument.'
+          )
+        );
+      }
+
+      function renderInstrumentsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎸 Standing waves in instruments'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Instruments make tones by setting up standing waves. The boundary conditions (open/closed/fixed ends) determine which harmonics are allowed.'),
+          React.createElement('div', { className: 'space-y-2' },
+            STANDING_WAVE_INSTRUMENTS.map(function(s, i) {
+              return React.createElement('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, s.instrument),
+                  React.createElement('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-purple-100 text-purple-800' }, s.harmonics)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' }, React.createElement('strong', null, 'Boundary: '), s.boundary),
+                React.createElement('div', { className: 'text-[11px] font-mono text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded mb-1 inline-block' }, s.formula),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.note)
+              );
+            })
+          )
+        );
+      }
+
+      function renderDecibelsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔊 Sound intensity (decibels)'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Decibels are a logarithmic scale. +10 dB ≈ 10× intensity, perceived as ~2× as loud. dB SPL (sound pressure level) is referenced to threshold of human hearing.'),
+          React.createElement('div', { className: 'space-y-1' },
+            SOUND_INTENSITY.map(function(s, i) {
+              var dangerLevel = s.db >= 120 ? 'red' : s.db >= 85 ? 'amber' : 'emerald';
+              var colors = {
+                red: 'bg-red-50 border-red-200 text-red-900',
+                amber: 'bg-amber-50 border-amber-200 text-amber-900',
+                emerald: 'bg-emerald-50 border-emerald-200 text-emerald-900'
+              };
+              return React.createElement('div', { key: 's'+i, className: 'flex items-center gap-3 p-2 rounded-md border ' + colors[dangerLevel] },
+                React.createElement('div', { className: 'text-base font-black font-mono min-w-[44px]' }, s.db + ' dB'),
+                React.createElement('div', { className: 'text-[12px] font-bold min-w-[140px]' }, s.source),
+                React.createElement('div', { className: 'text-[11px] italic flex-1' }, s.notes)
+              );
+            })
+          ),
+          React.createElement('div', { className: 'mt-3 p-2.5 rounded-md bg-red-50 border border-red-300 text-[11px] text-red-900' },
+            React.createElement('strong', null, '⚠ Permanent hearing loss: '), 'OSHA: 85 dB for 8 hours, 90 dB for 4 hours, etc. (each +5 dB halves safe exposure time). Wear ear protection at concerts, with power tools, at firing ranges.'
+          )
+        );
+      }
+
+      function renderGlossarySection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📖 Wave glossary'),
+          React.createElement('div', { className: 'space-y-1' },
+            WAVE_GLOSSARY.map(function(g, i) {
+              return React.createElement('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900' }, g.term),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.def)
+              );
+            })
+          )
+        );
+      }
+
+      function renderActiveSection() {
+        if (expSection === 'types') return renderTypesSection();
+        if (expSection === 'quantities') return renderQuantitiesSection();
+        if (expSection === 'formulas') return renderFormulasSection();
+        if (expSection === 'interference') return renderInterferenceSection();
+        if (expSection === 'doppler') return renderDopplerSection();
+        if (expSection === 'spectrum') return renderSpectrumSection();
+        if (expSection === 'colors') return renderColorsSection();
+        if (expSection === 'harmonics') return renderHarmonicsSection();
+        if (expSection === 'instruments') return renderInstrumentsSection();
+        if (expSection === 'decibels') return renderDecibelsSection();
+        if (expSection === 'glossary') return renderGlossarySection();
+        return null;
+      }
+
+      var __waveExpansions = React.createElement('div', { className: 'mt-4 max-w-5xl mx-auto' },
+        expHeader(),
+        expTabBar(),
+        expSection && React.createElement('div', { className: 'mt-2' }, renderActiveSection())
+      );
+
+      return React.createElement(React.Fragment, null, __waveMainView, __waveExpansions);
     }
   });
 

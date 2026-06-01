@@ -406,7 +406,7 @@ window.StemLab = window.StemLab || {
         check('streak_10', curStreak >= 10);
         check('speed_demon', curSpeedScore >= 10);
         check('estimator', curEstCount >= 3);
-        check('all_types', curTypesSeen['Acute'] && curTypesSeen[t('stem.calculus.right') || 'Right'] && curTypesSeen['Obtuse'] && curTypesSeen['Straight'] && curTypesSeen['Reflex']);
+        check('all_types', (curTypesSeen['Acute'] || 0) >= 1 && ((curTypesSeen[t('stem.calculus.right') || 'Right'] || 0) >= 1 || (curTypesSeen['Right'] || 0) >= 1) && (curTypesSeen['Obtuse'] || 0) >= 1 && (curTypesSeen['Straight'] || 0) >= 1 && (curTypesSeen['Reflex'] || 0) >= 1);
         check('polygon_pro', Object.keys(curPolygons).length >= 5);
         check('century', curTotal >= 100);
 
@@ -483,7 +483,9 @@ window.StemLab = window.StemLab || {
         var guess = parseInt(estimateGuess);
         if (isNaN(guess)) return;
         var diff = Math.abs(guess - estimateTarget);
-        var ok = diff <= 5;
+        // Progressive difficulty: tolerance tightens as the streak grows (6° down to 2°).
+        var estTolerance = Math.max(2, 6 - Math.floor((streak || 0) / 2));
+        var ok = diff <= estTolerance;
         var exact = diff === 0;
         var newEstCount = estimateCount + (ok ? 1 : 0);
         upd({

@@ -115,7 +115,7 @@ window.StemLab = window.StemLab || {
       var useEffect = React.useEffect;
 
       // ── Tool body (molecule) ──
-      return (function() {
+      var __moleculeMainView = (function() {
 
           // ── State + three.js refs ──
           // Restored: these were referenced throughout the tool body but their
@@ -2850,6 +2850,811 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
             )
           )
       })();
+
+      // ═══════════════════════════════════════════════════════════════════
+      // EXPANSION SECTIONS — interactive reference library (2026-05-31)
+      // ═══════════════════════════════════════════════════════════════════
+      // Appended below the main molecule view. Adds: VSEPR geometry gallery,
+      // bond types reference, intermolecular forces, common reactions catalog,
+      // molecule library, periodic table reference, acid-base reference,
+      // polymers, lab safety, glossary, quick reference, practice problems,
+      // stoichiometry/molarity calculators, phase diagrams, equilibrium,
+      // kinetics, thermodynamics basics, quantum numbers reference.
+      var d2 = (labToolData && labToolData.molecule) || {};
+      var expSection = d2.expSection || null;  // null = collapsed, else section id
+      function setExp(patch) {
+        setLabToolData(function(prev) {
+          var prior = (prev && prev.molecule) || {};
+          return Object.assign({}, prev, { molecule: Object.assign({}, prior, patch) });
+        });
+      }
+
+      // ── Reference data (large constants drive the views) ──
+      var VSEPR_GEOMETRIES = [
+        { id: 'linear', name: 'Linear', steric: 2, lone: 0, angle: '180°', examples: ['CO₂', 'BeCl₂', 'HCN'], color: '#0ea5e9', desc: 'Two bonded pairs, no lone pairs on central atom.' },
+        { id: 'bent2', name: 'Bent (2 lone pairs)', steric: 4, lone: 2, angle: '~104.5°', examples: ['H₂O', 'OF₂', 'OCl₂'], color: '#06b6d4', desc: 'Tetrahedral electron geometry but two lone pairs push bonds closer.' },
+        { id: 'trigonal', name: 'Trigonal planar', steric: 3, lone: 0, angle: '120°', examples: ['BF₃', 'SO₃', 'NO₃⁻'], color: '#22c55e', desc: 'Three bonded pairs in a plane.' },
+        { id: 'bent3', name: 'Bent (1 lone pair)', steric: 3, lone: 1, angle: '~117°', examples: ['SO₂', 'O₃', 'NO₂⁻'], color: '#84cc16', desc: 'Trigonal planar electron geometry with one lone pair.' },
+        { id: 'tetrahedral', name: 'Tetrahedral', steric: 4, lone: 0, angle: '109.5°', examples: ['CH₄', 'CCl₄', 'NH₄⁺'], color: '#eab308', desc: 'Four bonded pairs in tetrahedral arrangement.' },
+        { id: 'pyramidal', name: 'Trigonal pyramidal', steric: 4, lone: 1, angle: '~107°', examples: ['NH₃', 'PH₃', 'PCl₃'], color: '#f97316', desc: 'Tetrahedral electron geometry, one lone pair pushes shape pyramidal.' },
+        { id: 'tbp', name: 'Trigonal bipyramidal', steric: 5, lone: 0, angle: '90° + 120°', examples: ['PCl₅', 'PF₅', 'AsF₅'], color: '#ef4444', desc: 'Five bonded pairs; three equatorial at 120°, two axial at 90°.' },
+        { id: 'seesaw', name: 'Seesaw', steric: 5, lone: 1, angle: 'distorted', examples: ['SF₄', 'XeO₂F₂'], color: '#dc2626', desc: 'Trigonal bipyramidal with one equatorial lone pair.' },
+        { id: 'tshape', name: 'T-shaped', steric: 5, lone: 2, angle: '~87.5°', examples: ['ClF₃', 'BrF₃'], color: '#a855f7', desc: 'Two equatorial lone pairs leave a T-shape.' },
+        { id: 'linear5', name: 'Linear (3 lone)', steric: 5, lone: 3, angle: '180°', examples: ['XeF₂', 'I₃⁻'], color: '#7e22ce', desc: 'Three equatorial lone pairs leave linear axial bonds.' },
+        { id: 'octahedral', name: 'Octahedral', steric: 6, lone: 0, angle: '90°', examples: ['SF₆', 'PF₆⁻'], color: '#0f172a', desc: 'Six bonded pairs in octahedral arrangement.' },
+        { id: 'sqpyramid', name: 'Square pyramidal', steric: 6, lone: 1, angle: '~90°', examples: ['BrF₅', 'IF₅'], color: '#475569', desc: 'Octahedral with one axial lone pair.' },
+        { id: 'sqplane', name: 'Square planar', steric: 6, lone: 2, angle: '90°', examples: ['XeF₄', 'PtCl₄²⁻'], color: '#64748b', desc: 'Two opposite lone pairs leave a square plane.' }
+      ];
+
+      var BOND_TYPES = [
+        { name: 'Covalent (nonpolar)', diff: '0 – 0.4', icon: '⚛︎', examples: ['H₂', 'O₂', 'CH₄'], desc: 'Electrons shared roughly equally between atoms with similar electronegativity.' },
+        { name: 'Covalent (polar)', diff: '0.4 – 1.7', icon: '⇌', examples: ['H₂O', 'HCl', 'NH₃'], desc: 'Electrons shared unevenly — one atom pulls more strongly; creates partial charges (δ+ / δ−).' },
+        { name: 'Ionic', diff: '> 1.7', icon: '⊕⊖', examples: ['NaCl', 'KBr', 'MgO'], desc: 'Electron transferred from metal (low EN) to nonmetal (high EN); lattice held by electrostatic attraction.' },
+        { name: 'Metallic', diff: 'N/A', icon: '⚜︎', examples: ['Cu', 'Fe', 'Au'], desc: 'Delocalized "sea of electrons" shared across cations; conducts heat/electricity, malleable.' },
+        { name: 'Hydrogen bond', diff: 'intermolecular', icon: '⤬', examples: ['H₂O···H₂O', 'DNA base pairs'], desc: 'Strong dipole-dipole between H bonded to N/O/F and another lone pair. Not a true bond — but ~5-30 kJ/mol.' },
+        { name: 'Coordinate covalent', diff: 'special', icon: '➡︎', examples: ['NH₄⁺', '[Cu(H₂O)₆]²⁺'], desc: 'Both shared electrons come from one atom. Common in transition-metal complexes.' },
+        { name: 'Triple bond', diff: '3 pairs', icon: '☰', examples: ['N₂', 'C₂H₂', 'CO'], desc: 'Three shared electron pairs (1 σ + 2 π). Very strong (~945 kJ/mol for N≡N).' },
+        { name: 'Double bond', diff: '2 pairs', icon: '═', examples: ['O₂', 'C=O', 'C=C'], desc: 'Two shared electron pairs (1 σ + 1 π). Restricts rotation around the bond axis.' }
+      ];
+
+      var IMF_TYPES = [
+        { name: 'London dispersion', strength: '0.05 – 40 kJ/mol', symbol: '∼', present: 'All molecules', desc: 'Temporary dipoles from electron motion. Stronger for larger molecules / more polarizable atoms.', examples: ['Noble gases', 'Alkanes', 'I₂ vs F₂'] },
+        { name: 'Dipole-dipole', strength: '5 – 25 kJ/mol', symbol: '↔', present: 'Polar molecules', desc: 'Permanent dipoles align δ+ to δ−. Stronger than dispersion at comparable size.', examples: ['HCl', 'CH₂Cl₂', 'acetone'] },
+        { name: 'Hydrogen bond', strength: '5 – 50 kJ/mol', symbol: '⤬', present: 'H bonded to N/O/F + nearby lone pair', desc: 'Strongest dipole-dipole. Explains anomalous boiling points (H₂O vs H₂S).', examples: ['H₂O', 'NH₃', 'HF', 'DNA, proteins'] },
+        { name: 'Ion-dipole', strength: '40 – 600 kJ/mol', symbol: '⊕↔', present: 'Ions dissolved in polar solvent', desc: 'Charge-dipole attraction. Drives ionic dissolution.', examples: ['Na⁺ in water', 'K⁺ in DMSO'] },
+        { name: 'Ion-induced dipole', strength: '3 – 15 kJ/mol', symbol: '⊕→', present: 'Ion + nonpolar molecule', desc: 'Ion polarizes nearby nonpolar molecule.', examples: ['I⁻ + I₂ → I₃⁻'] },
+        { name: 'π-π stacking', strength: '0 – 50 kJ/mol', symbol: '⇄', present: 'Aromatic rings', desc: 'Stacking attraction between aromatic π-clouds.', examples: ['benzene dimer', 'DNA base stacking'] }
+      ];
+
+      var COMMON_REACTIONS = [
+        { type: 'Combustion', icon: '🔥', general: 'CₓHᵧ + O₂ → CO₂ + H₂O', example: 'CH₄ + 2 O₂ → CO₂ + 2 H₂O', enthalpy: '−890 kJ/mol (methane)', desc: 'Hydrocarbon burns in oxygen producing CO₂ + water. Exothermic.' },
+        { type: 'Synthesis (combination)', icon: '➕', general: 'A + B → AB', example: '2 H₂ + O₂ → 2 H₂O', enthalpy: 'Usually exothermic', desc: 'Two or more reactants combine into one product.' },
+        { type: 'Decomposition', icon: '➗', general: 'AB → A + B', example: '2 H₂O₂ → 2 H₂O + O₂', enthalpy: 'Often endothermic', desc: 'One reactant splits into multiple products.' },
+        { type: 'Single replacement', icon: '⇄', general: 'A + BC → AC + B', example: 'Zn + CuSO₄ → ZnSO₄ + Cu', enthalpy: 'Varies', desc: 'More reactive element displaces a less reactive one from a compound.' },
+        { type: 'Double replacement', icon: '↔', general: 'AB + CD → AD + CB', example: 'AgNO₃ + NaCl → AgCl + NaNO₃', enthalpy: 'Varies', desc: 'Cations and anions swap partners. Often produces precipitate, gas, or water.' },
+        { type: 'Acid-base (neutralization)', icon: '⚖', general: 'HA + BOH → BA + H₂O', example: 'HCl + NaOH → NaCl + H₂O', enthalpy: '~ −56 kJ/mol', desc: 'Acid + base produces salt + water. Heat of neutralization is nearly constant for strong A+B.' },
+        { type: 'Precipitation', icon: '💎', general: 'soluble + soluble → insoluble + soluble', example: 'AgNO₃(aq) + KCl(aq) → AgCl(s) + KNO₃(aq)', enthalpy: 'Driven by ΔS', desc: 'Two soluble ionic compounds form one insoluble product.' },
+        { type: 'Redox (oxidation-reduction)', icon: '🔄', general: 'electrons transferred', example: 'Cu + 2 AgNO₃ → Cu(NO₃)₂ + 2 Ag', enthalpy: 'Varies', desc: 'One species loses electrons (oxidized), another gains (reduced). Many "everyday" reactions are redox.' },
+        { type: 'Esterification', icon: '🌸', general: 'R-COOH + R\'-OH → R-COO-R\' + H₂O', example: 'CH₃COOH + C₂H₅OH ⇌ CH₃COOC₂H₅ + H₂O', enthalpy: '~ −20 kJ/mol', desc: 'Carboxylic acid + alcohol → ester + water. Reversible; H₂SO₄ catalyst commonly used.' },
+        { type: 'Saponification', icon: '🧼', general: 'fat + base → soap + glycerol', example: '(C₁₇H₃₅COO)₃C₃H₅ + 3 NaOH → 3 C₁₇H₃₅COONa + C₃H₅(OH)₃', enthalpy: 'Exothermic', desc: 'Triglyceride hydrolyzed by strong base to make soap.' },
+        { type: 'Polymerization', icon: '🧬', general: 'n monomer → polymer', example: 'n CH₂=CH₂ → (-CH₂-CH₂-)ₙ', enthalpy: 'Exothermic', desc: 'Many small monomers join into long polymer chains. Addition or condensation type.' },
+        { type: 'Hydrolysis', icon: '💧', general: 'AB + H₂O → AH + BOH', example: 'sucrose + H₂O → glucose + fructose (catalyzed)', enthalpy: 'Varies', desc: 'Water splits a bond. Common for esters, polymers, ATP.' }
+      ];
+
+      var MOLECULE_LIBRARY = [
+        { f: 'H₂O', name: 'Water', uses: 'Universal solvent. ~70% of body mass. Hydrogen bonding gives unique properties.', shape: 'bent', m: 18.02 },
+        { f: 'CO₂', name: 'Carbon dioxide', uses: 'Photosynthesis input. Greenhouse gas. Carbonates dissolved in oceans.', shape: 'linear', m: 44.01 },
+        { f: 'O₂', name: 'Oxygen', uses: '21% of atmosphere. Essential for aerobic respiration. Strong oxidizer.', shape: 'linear', m: 32.00 },
+        { f: 'N₂', name: 'Nitrogen', uses: '78% of atmosphere. Triple bond makes it very stable. Fixed by bacteria + Haber process.', shape: 'linear', m: 28.02 },
+        { f: 'CH₄', name: 'Methane', uses: 'Natural gas. Major greenhouse gas (25× CO₂ over 100 yr). Microbial methanogenesis.', shape: 'tetrahedral', m: 16.04 },
+        { f: 'NH₃', name: 'Ammonia', uses: 'Fertilizer feedstock (Haber process). Cleaning agent. Refrigerant.', shape: 'pyramidal', m: 17.03 },
+        { f: 'HCl', name: 'Hydrochloric acid', uses: 'Stomach acid (pH ~1.5). Industrial pickling. Strong monoprotic acid.', shape: 'linear', m: 36.46 },
+        { f: 'NaCl', name: 'Sodium chloride', uses: 'Table salt. Essential electrolyte. Ionic lattice.', shape: 'ionic', m: 58.44 },
+        { f: 'CaCO₃', name: 'Calcium carbonate', uses: 'Limestone, chalk, eggshells. Antacid. Building material.', shape: 'ionic', m: 100.09 },
+        { f: 'H₂SO₄', name: 'Sulfuric acid', uses: '#1 industrial chemical by mass. Fertilizers, batteries, refining.', shape: 'tetrahedral', m: 98.08 },
+        { f: 'HNO₃', name: 'Nitric acid', uses: 'Fertilizers, explosives, oxidation. Strong monoprotic acid.', shape: 'trigonal', m: 63.01 },
+        { f: 'CH₃OH', name: 'Methanol', uses: 'Solvent. Fuel. Toxic to humans (causes blindness).', shape: 'tetrahedral', m: 32.04 },
+        { f: 'C₂H₅OH', name: 'Ethanol', uses: 'Beverages, fuel additive, antiseptic. Hydrogen bonding raises BP.', shape: 'tetrahedral', m: 46.07 },
+        { f: 'C₆H₁₂O₆', name: 'Glucose', uses: 'Primary energy source for cells. Photosynthesis product.', shape: 'cyclic', m: 180.16 },
+        { f: 'C₁₂H₂₂O₁₁', name: 'Sucrose', uses: 'Table sugar. Disaccharide (glucose + fructose).', shape: 'disaccharide', m: 342.30 },
+        { f: 'C₈H₁₀N₄O₂', name: 'Caffeine', uses: 'Adenosine receptor antagonist. Most-used psychoactive drug. Plant defense.', shape: 'planar', m: 194.19 },
+        { f: 'C₉H₈O₄', name: 'Aspirin', uses: 'NSAID. Inhibits COX enzymes. Daily cardioprotection in low doses.', shape: 'planar', m: 180.16 },
+        { f: 'C₇H₆O₃', name: 'Salicylic acid', uses: 'Topical acne treatment. Precursor to aspirin. Plant signaling.', shape: 'planar', m: 138.12 },
+        { f: 'CHCl₃', name: 'Chloroform', uses: 'Solvent. Former anesthetic (now obsolete; toxic).', shape: 'tetrahedral', m: 119.38 },
+        { f: 'CCl₄', name: 'Carbon tetrachloride', uses: 'Former cleaning solvent. Ozone-depleter; phased out.', shape: 'tetrahedral', m: 153.82 }
+      ];
+
+      var ACID_BASE_REF = [
+        { name: 'Hydrochloric acid', formula: 'HCl', ka: '~10⁷', strength: 'Very strong', notes: 'Stomach acid; pH ~1' },
+        { name: 'Sulfuric acid', formula: 'H₂SO₄', ka: '~10³ (first H)', strength: 'Very strong', notes: 'Diprotic; battery acid' },
+        { name: 'Nitric acid', formula: 'HNO₃', ka: '~20', strength: 'Strong', notes: 'Oxidizing acid' },
+        { name: 'Hydrofluoric acid', formula: 'HF', ka: '6.6 × 10⁻⁴', strength: 'Weak (but dangerous)', notes: 'Etches glass; causes deep tissue burns' },
+        { name: 'Acetic acid', formula: 'CH₃COOH', ka: '1.8 × 10⁻⁵', strength: 'Weak', notes: 'Vinegar; pKa 4.76' },
+        { name: 'Carbonic acid', formula: 'H₂CO₃', ka: '4.3 × 10⁻⁷', strength: 'Weak', notes: 'Soda water; CO₂ + H₂O' },
+        { name: 'Ammonia', formula: 'NH₃', kb: '1.8 × 10⁻⁵', strength: 'Weak base', notes: 'Cleaning; conjugate of NH₄⁺' },
+        { name: 'Sodium hydroxide', formula: 'NaOH', kb: '~10²⁰', strength: 'Very strong base', notes: 'Lye; pH ~14 at 1M' },
+        { name: 'Potassium hydroxide', formula: 'KOH', kb: '~10²⁰', strength: 'Very strong base', notes: 'Caustic potash' },
+        { name: 'Calcium hydroxide', formula: 'Ca(OH)₂', kb: 'limited solubility', strength: 'Strong base', notes: 'Slaked lime' },
+        { name: 'Water (self)', formula: 'H₂O', kw: '1.0 × 10⁻¹⁴', strength: 'Amphoteric', notes: 'Kw at 25°C; both donates + accepts H⁺' },
+        { name: 'Citric acid', formula: 'H₃C₆H₅O₇', ka1: '7.4 × 10⁻⁴', strength: 'Weak (triprotic)', notes: 'Citrus fruits; cleaning' }
+      ];
+
+      var QUANTUM_REF = [
+        { n: 'Principal (n)', range: '1, 2, 3, ...', means: 'Shell / energy level. Larger n = farther from nucleus + higher energy.' },
+        { n: 'Azimuthal (ℓ)', range: '0 to n−1', means: 'Subshell shape. ℓ=0→s (sphere), 1→p (dumbbell), 2→d (cloverleaf), 3→f (complex).' },
+        { n: 'Magnetic (mₗ)', range: '−ℓ to +ℓ', means: 'Orbital orientation in space. 2ℓ+1 orbitals per subshell.' },
+        { n: 'Spin (mₛ)', range: '+½ or −½', means: 'Intrinsic angular momentum. Pauli: no two electrons in same atom can have identical 4 quantum numbers.' }
+      ];
+
+      // ── Section render helpers ──
+      function expHeader() {
+        return React.createElement('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200' },
+          React.createElement('div', null,
+            React.createElement('h3', { className: 'text-base font-black text-indigo-900' }, '🧪 Chemistry Reference Library'),
+            React.createElement('div', { className: 'text-[11px] text-indigo-700 mt-0.5' }, 'Interactive references — pick a topic below to explore.')
+          ),
+          expSection && React.createElement('button', {
+            onClick: function() { setExp({ expSection: null }); },
+            className: 'px-3 py-1 rounded-md text-xs font-bold bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-100'
+          }, '✕ Close section')
+        );
+      }
+
+      function expTabBar() {
+        var sections = [
+          { id: 'vsepr', label: 'VSEPR shapes', icon: '🔺' },
+          { id: 'bonds', label: 'Bond types', icon: '⚛︎' },
+          { id: 'imf', label: 'Intermolecular forces', icon: '↔' },
+          { id: 'reactions', label: 'Reaction types', icon: '🔄' },
+          { id: 'library', label: 'Molecule library', icon: '📚' },
+          { id: 'acidbase', label: 'Acid/base', icon: '⚖' },
+          { id: 'quantum', label: 'Quantum numbers', icon: '⚛︎' },
+          { id: 'periodic', label: 'Periodic trends', icon: '📊' },
+          { id: 'molarity', label: 'Molarity calc', icon: '🧮' },
+          { id: 'stoich', label: 'Stoichiometry', icon: '⚖' },
+          { id: 'phase', label: 'Phase diagram', icon: '🧊' },
+          { id: 'equilibrium', label: 'Equilibrium', icon: '⇌' },
+          { id: 'kinetics', label: 'Kinetics', icon: '⏱' },
+          { id: 'thermo', label: 'Thermodynamics', icon: '🔥' },
+          { id: 'polymers', label: 'Polymers', icon: '🧬' },
+          { id: 'safety', label: 'Lab safety', icon: '🦺' },
+          { id: 'glossary', label: 'Glossary', icon: '📖' }
+        ];
+        return React.createElement('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
+          sections.map(function(s) {
+            var active = expSection === s.id;
+            return React.createElement('button', {
+              key: s.id,
+              onClick: function() { setExp({ expSection: active ? null : s.id }); },
+              className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-indigo-50 hover:border-indigo-300')
+            }, s.icon + ' ' + s.label);
+          })
+        );
+      }
+
+      // ── Individual section renders ──
+      function renderVseprSection() {
+        var pickedId = d2.vseprPicked || VSEPR_GEOMETRIES[0].id;
+        var picked = VSEPR_GEOMETRIES.filter(function(g) { return g.id === pickedId; })[0] || VSEPR_GEOMETRIES[0];
+
+        // SVG diagram showing the central atom + bonds
+        function svgGeometry(geo) {
+          var size = 200;
+          var cx = size/2, cy = size/2;
+          var bondCount = geo.steric - geo.lone;
+          var angles = [];
+          if (geo.id === 'linear' || geo.id === 'linear5') angles = [0, 180];
+          else if (geo.id === 'trigonal' || geo.id === 'bent3') angles = (geo.id === 'bent3' ? [90, 210, 330] : [90, 210, 330]);
+          else if (geo.id === 'bent2') angles = [120, 60];
+          else if (geo.id === 'tetrahedral' || geo.id === 'pyramidal') angles = [90, 210, 330, 30];
+          else if (geo.id === 'tbp' || geo.id === 'seesaw' || geo.id === 'tshape') angles = [90, 30, 150, 180, 0];
+          else if (geo.id === 'octahedral' || geo.id === 'sqpyramid' || geo.id === 'sqplane') angles = [0, 60, 120, 180, 240, 300];
+          var bondsToShow = bondCount;
+          return React.createElement('svg', { width: size, height: size, viewBox: '0 0 ' + size + ' ' + size, role: 'img', 'aria-label': geo.name + ' geometry' },
+            React.createElement('circle', { cx: cx, cy: cy, r: 80, fill: 'none', stroke: '#e2e8f0', strokeDasharray: '2,3' }),
+            angles.slice(0, bondsToShow).map(function(a, i) {
+              var rad = (a - 90) * Math.PI / 180;
+              var bx = cx + 70 * Math.cos(rad);
+              var by = cy + 70 * Math.sin(rad);
+              return React.createElement('g', { key: 'b'+i },
+                React.createElement('line', { x1: cx, y1: cy, x2: bx, y2: by, stroke: geo.color, strokeWidth: 2.5 }),
+                React.createElement('circle', { cx: bx, cy: by, r: 14, fill: '#fff', stroke: geo.color, strokeWidth: 2 }),
+                React.createElement('text', { x: bx, y: by + 4, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#1e293b' }, 'X')
+              );
+            }),
+            angles.slice(bondsToShow).map(function(a, i) {
+              var rad = (a - 90) * Math.PI / 180;
+              var bx = cx + 50 * Math.cos(rad);
+              var by = cy + 50 * Math.sin(rad);
+              return React.createElement('g', { key: 'l'+i, opacity: 0.6 },
+                React.createElement('ellipse', { cx: bx, cy: by, rx: 16, ry: 8, fill: 'none', stroke: '#94a3b8', strokeDasharray: '3,2', transform: 'rotate(' + a + ' ' + bx + ' ' + by + ')' })
+              );
+            }),
+            React.createElement('circle', { cx: cx, cy: cy, r: 18, fill: geo.color }),
+            React.createElement('text', { x: cx, y: cy + 4, textAnchor: 'middle', fontSize: 13, fontWeight: 800, fill: '#fff' }, 'A')
+          );
+        }
+
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔺 VSEPR — molecular geometry'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Valence Shell Electron Pair Repulsion theory predicts molecular shape from steric number (bonded + lone pairs around central atom). Lone pairs repel more strongly than bonded pairs, so they push bonds closer.'),
+          React.createElement('div', { className: 'grid gap-3 grid-cols-1 md:grid-cols-3 mb-3' },
+            React.createElement('div', { className: 'flex flex-col gap-1 md:col-span-1' },
+              VSEPR_GEOMETRIES.map(function(g) {
+                var sel = g.id === pickedId;
+                return React.createElement('button', {
+                  key: g.id,
+                  onClick: function() { setExp({ vseprPicked: g.id }); },
+                  className: 'text-left px-2.5 py-1.5 rounded-md text-[11px] font-bold border ' + (sel ? 'bg-indigo-100 border-indigo-400 text-indigo-900' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'),
+                  style: { borderLeftWidth: 4, borderLeftColor: g.color }
+                }, g.name);
+              })
+            ),
+            React.createElement('div', { className: 'md:col-span-2 flex flex-col items-center' },
+              svgGeometry(picked),
+              React.createElement('div', { className: 'mt-2 text-center' },
+                React.createElement('div', { className: 'text-sm font-black text-slate-800' }, picked.name),
+                React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Steric ' + picked.steric + ' · ' + picked.lone + ' lone pair' + (picked.lone === 1 ? '' : 's') + ' · ' + picked.angle),
+                React.createElement('div', { className: 'text-[12px] mt-2 text-slate-700' }, picked.desc),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1.5' }, 'Examples: ', picked.examples.join(', '))
+              )
+            )
+          )
+        );
+      }
+
+      function renderBondsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚛︎ Bond types — electronegativity difference'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Bond character ranges from purely covalent (equal sharing) to ionic (full electron transfer). The boundary is fuzzy — most real bonds have partial ionic character.'),
+          React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
+            BOND_TYPES.map(function(b, i) {
+              return React.createElement('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  React.createElement('span', { className: 'text-lg' }, b.icon),
+                  React.createElement('span', { className: 'text-sm font-black text-slate-800' }, b.name),
+                  React.createElement('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-white border border-slate-300 text-slate-700 ml-auto' }, 'ΔEN ' + b.diff)
+                ),
+                React.createElement('div', { className: 'text-[12px] text-slate-700 leading-relaxed mb-1' }, b.desc),
+                React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Examples: ', b.examples.join(', '))
+              );
+            })
+          )
+        );
+      }
+
+      function renderImfSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↔ Intermolecular forces (IMF)'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Forces BETWEEN molecules determine melting/boiling points, viscosity, solubility, and surface tension. Stronger IMF = higher BP.'),
+          React.createElement('div', { className: 'space-y-2' },
+            IMF_TYPES.map(function(f, i) {
+              return React.createElement('div', { key: 'i'+i, className: 'p-3 rounded-lg bg-gradient-to-r from-slate-50 to-white border border-slate-200' },
+                React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+                  React.createElement('span', { className: 'text-xl text-indigo-600' }, f.symbol),
+                  React.createElement('span', { className: 'text-sm font-black text-slate-800' }, f.name),
+                  React.createElement('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-indigo-100 text-indigo-800' }, f.strength)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' }, 'Present in: ', f.present),
+                React.createElement('div', { className: 'text-[12px] text-slate-700 leading-relaxed mb-1' }, f.desc),
+                React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Examples: ', f.examples.join(', '))
+              );
+            })
+          ),
+          React.createElement('div', { className: 'mt-3 p-2 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
+            React.createElement('strong', null, '💡 Tip: '), 'For polar molecules, ALL applicable IMFs add up. Water has dispersion + dipole + H-bonding — that\'s why its BP is so high (100°C) compared to similar-mass H₂S (−60°C).'
+          )
+        );
+      }
+
+      function renderReactionsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔄 Reaction types'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Reactions fall into recognizable patterns. Knowing the type helps predict products + balance equations.'),
+          React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
+            COMMON_REACTIONS.map(function(r, i) {
+              return React.createElement('div', { key: 'r'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+                  React.createElement('span', { className: 'text-xl' }, r.icon),
+                  React.createElement('span', { className: 'text-sm font-black text-slate-800' }, r.type)
+                ),
+                React.createElement('div', { className: 'text-[11px] font-mono text-indigo-800 bg-indigo-50 px-2 py-1 rounded mb-1' }, r.general),
+                React.createElement('div', { className: 'text-[11px] font-mono text-slate-700 bg-white px-2 py-1 rounded mb-1 border border-slate-200' }, r.example),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' }, 'ΔH: ', r.enthalpy),
+                React.createElement('div', { className: 'text-[12px] text-slate-700' }, r.desc)
+              );
+            })
+          )
+        );
+      }
+
+      function renderLibrarySection() {
+        var search = (d2.libSearch || '').toLowerCase();
+        var filtered = MOLECULE_LIBRARY.filter(function(m) {
+          if (!search) return true;
+          return m.f.toLowerCase().indexOf(search) >= 0 ||
+                 m.name.toLowerCase().indexOf(search) >= 0 ||
+                 m.uses.toLowerCase().indexOf(search) >= 0;
+        });
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📚 Common molecule library'),
+          React.createElement('input', {
+            type: 'text',
+            value: d2.libSearch || '',
+            onChange: function(e) { setExp({ libSearch: e.target.value }); },
+            placeholder: 'Search formula / name / use...',
+            className: 'w-full px-3 py-1.5 rounded-md border border-slate-300 text-[12px] mb-3'
+          }),
+          React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3' },
+            filtered.map(function(m, i) {
+              return React.createElement('div', { key: 'm'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline justify-between mb-1' },
+                  React.createElement('span', { className: 'text-base font-black text-indigo-800 font-mono' }, m.f),
+                  React.createElement('span', { className: 'text-[10px] text-slate-500' }, m.m + ' g/mol')
+                ),
+                React.createElement('div', { className: 'text-[12px] font-bold text-slate-800 mb-1' }, m.name),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' }, 'Shape: ', m.shape),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-snug' }, m.uses)
+              );
+            })
+          ),
+          filtered.length === 0 && React.createElement('div', { className: 'text-center text-[11px] text-slate-500 py-4' }, 'No molecules match "', search, '"')
+        );
+      }
+
+      function renderAcidBaseSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚖ Acid / base reference'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Strength = how completely an acid/base dissociates in water. Strong = ~100% (Ka >> 1). Weak = partial (Ka < 1). pH = −log[H⁺].'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, 'Name'),
+                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, 'Formula'),
+                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, 'Ka/Kb'),
+                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, 'Strength'),
+                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, 'Notes')
+                )
+              ),
+              React.createElement('tbody', null,
+                ACID_BASE_REF.map(function(a, i) {
+                  return React.createElement('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-800 font-bold' }, a.name),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 font-mono' }, a.formula),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 font-mono' }, a.ka || a.kb || a.kw || a.ka1 || '—'),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700' }, a.strength),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600' }, a.notes)
+                  );
+                })
+              )
+            )
+          ),
+          React.createElement('div', { className: 'mt-3 p-2 rounded-md bg-blue-50 border border-blue-200 text-[11px] text-blue-900' },
+            React.createElement('strong', null, '💡 pH scale: '), 'pH 0-6 acidic · pH 7 neutral · pH 8-14 basic. Each unit = 10× change in [H⁺]. Stomach acid pH 1.5, blood pH 7.4, bleach pH 12.'
+          )
+        );
+      }
+
+      function renderQuantumSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚛︎ Quantum numbers — orbital identity'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Each electron in an atom is described by 4 quantum numbers (n, ℓ, mₗ, mₛ). The Pauli exclusion principle: no two electrons in an atom share all 4.'),
+          React.createElement('div', { className: 'grid gap-2' },
+            QUANTUM_REF.map(function(q, i) {
+              return React.createElement('div', { key: 'q'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+                  React.createElement('span', { className: 'text-sm font-black text-slate-800' }, q.n),
+                  React.createElement('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 ml-auto font-mono' }, q.range)
+                ),
+                React.createElement('div', { className: 'text-[12px] text-slate-700 leading-relaxed' }, q.means)
+              );
+            })
+          ),
+          React.createElement('div', { className: 'mt-3 grid grid-cols-4 gap-2 text-center' },
+            ['s (ℓ=0)', 'p (ℓ=1)', 'd (ℓ=2)', 'f (ℓ=3)'].map(function(sub, i) {
+              var orbitals = [1, 3, 5, 7][i];
+              var electrons = orbitals * 2;
+              return React.createElement('div', { key: 'o'+i, className: 'p-2 rounded-md bg-indigo-50 border border-indigo-200' },
+                React.createElement('div', { className: 'text-xs font-black text-indigo-900' }, sub),
+                React.createElement('div', { className: 'text-[10px] text-indigo-700 mt-0.5' }, orbitals + ' orbital' + (orbitals > 1 ? 's' : '')),
+                React.createElement('div', { className: 'text-[10px] text-indigo-700' }, 'up to ' + electrons + ' e⁻')
+              );
+            })
+          )
+        );
+      }
+
+      // ── Full content for the remaining sections ──
+      var PERIODIC_TRENDS = [
+        { trend: 'Atomic radius', across: 'Decreases →', down: 'Increases ↓', why: 'Across: more protons, same shell, stronger pull → atoms shrink. Down: new shells, larger.', example: 'Li > Be > B > C > N > O > F (left to right shrink)' },
+        { trend: 'Ionization energy (IE₁)', across: 'Increases →', down: 'Decreases ↓', why: 'Smaller atoms hold electrons tighter (closer to nucleus). Down: outer electrons farther + shielded.', example: 'He highest (2372 kJ/mol); Cs near lowest of stable atoms (376 kJ/mol)' },
+        { trend: 'Electronegativity', across: 'Increases →', down: 'Decreases ↓', why: 'Pull on shared electrons. F most electronegative (3.98 Pauling).', example: 'F > O > N ≈ Cl > Br > I (pattern across periods 2-3)' },
+        { trend: 'Electron affinity', across: 'Generally increases →', down: 'Generally decreases ↓', why: 'Energy released when atom gains an e⁻. Halogens very negative (eager to gain).', example: 'Cl most exothermic e⁻ gain (~ −349 kJ/mol)' },
+        { trend: 'Metallic character', across: 'Decreases →', down: 'Increases ↓', why: 'Easy to lose electrons = metallic. Down a group, IE drops.', example: 'Group 1 all metals; Group 17 all nonmetals; metalloids on diagonal' },
+        { trend: 'Atomic mass', across: 'Generally increases →', down: 'Increases ↓', why: 'Adding protons + neutrons. Exceptions where isotope ratios reverse (Te > I, Ar > K).', example: 'H (1.008) < He (4.003) < Li (6.94)... < U (238)' }
+      ];
+
+      var PHASE_POINTS = [
+        { phase: 'Solid', shape: 'Fixed', volume: 'Fixed', density: 'High', particles: 'Vibrate in place; ordered (crystalline) or amorphous', examples: 'Ice, salt, diamond' },
+        { phase: 'Liquid', shape: 'Container', volume: 'Fixed', density: 'High (~ solid)', particles: 'Move freely but stay close; short-range order', examples: 'Water, mercury, alcohol' },
+        { phase: 'Gas', shape: 'Container', volume: 'Container', density: 'Very low', particles: 'Move freely + independently; mostly empty space', examples: 'O₂, CO₂, water vapor' },
+        { phase: 'Plasma', shape: 'Container', volume: 'Container', density: 'Varies', particles: 'Ionized — electrons separated from nuclei', examples: 'Lightning, stars, fluorescent tubes' },
+        { phase: 'BEC (Bose-Einstein)', shape: '—', volume: '—', density: 'Very low', particles: 'Atoms collapse into single quantum state near 0 K', examples: 'Cold atom physics labs (Rb, Na at nK)' }
+      ];
+
+      var EQUILIBRIUM_FACTORS = [
+        { factor: 'Add reactant', shift: 'Forward (→)', why: 'Q < Keq; system uses extra reactant to make more product.' },
+        { factor: 'Add product', shift: 'Reverse (←)', why: 'Q > Keq; system consumes extra product.' },
+        { factor: 'Remove product', shift: 'Forward (→)', why: 'Q < Keq; system regenerates product.' },
+        { factor: 'Increase T (exothermic rxn)', shift: 'Reverse (←)', why: 'Heat is a "product" of exothermic rxn; adding it shifts away.' },
+        { factor: 'Increase T (endothermic rxn)', shift: 'Forward (→)', why: 'Heat is a "reactant" of endothermic rxn; adding it shifts forward.' },
+        { factor: 'Decrease volume / ↑P (more gas mol on R)', shift: 'Reverse (←)', why: 'System shifts toward fewer gas moles to reduce pressure.' },
+        { factor: 'Decrease volume / ↑P (more gas mol on L)', shift: 'Forward (→)', why: 'System shifts toward fewer gas moles to reduce pressure.' },
+        { factor: 'Add catalyst', shift: 'No shift', why: 'Speeds both directions equally; reaches eq faster but doesn\'t change Keq.' },
+        { factor: 'Add inert gas at constant V', shift: 'No shift', why: 'Partial pressures of reactants/products unchanged.' }
+      ];
+
+      var KINETICS_FACTORS = [
+        { factor: 'Concentration', effect: 'Rate ∝ [reactants]^orders', detail: 'More molecules = more collisions / time. Determined experimentally, not from coefficients.' },
+        { factor: 'Temperature', effect: 'Rate roughly doubles per 10°C', detail: 'Higher T → more molecules with energy ≥ Ea (Maxwell-Boltzmann tail).' },
+        { factor: 'Surface area', effect: 'More SA = faster', detail: 'Grinding solid reactant exposes more atoms to collision. Powder vs chunk.' },
+        { factor: 'Catalyst', effect: 'Lowers Ea, faster', detail: 'Provides alternate pathway. Not consumed. Enzymes are catalysts (often >10⁶× faster).' },
+        { factor: 'Pressure (gas)', effect: 'Higher P = faster (gas)', detail: 'Same as concentration: more molecules per unit volume.' },
+        { factor: 'Solvent / medium', effect: 'Polarity matches → faster', detail: '"Like dissolves like." Solvent can stabilize transition state.' },
+        { factor: 'Light (photochemistry)', effect: 'Adds energy', detail: 'Some rxns need photons (photosynthesis, photographic film, UV-driven).' }
+      ];
+
+      var THERMO_KEY = [
+        { sym: 'ΔH', name: 'Enthalpy change', sign: 'Negative = exothermic (heat released to surroundings); positive = endothermic (heat absorbed)', units: 'kJ/mol' },
+        { sym: 'ΔS', name: 'Entropy change', sign: 'Positive = more disorder; negative = more order. Gas > liquid > solid.', units: 'J/(mol·K)' },
+        { sym: 'ΔG', name: 'Gibbs free energy', sign: 'Negative = spontaneous; positive = non-spontaneous; zero = at equilibrium.', units: 'kJ/mol' },
+        { sym: 'T', name: 'Temperature', sign: 'Absolute (Kelvin). Multiplies entropy term — high T amplifies ΔS importance.', units: 'K' },
+        { sym: 'Ea', name: 'Activation energy', sign: 'Always positive. Barrier between reactants and products. Lower = faster.', units: 'kJ/mol' },
+        { sym: 'K', name: 'Equilibrium constant', sign: 'K >> 1: products favored. K << 1: reactants favored. K = exp(−ΔG°/RT).', units: 'unitless' }
+      ];
+
+      var POLYMER_TYPES = [
+        { name: 'Polyethylene (PE)', monomer: 'CH₂=CH₂', type: 'Addition', uses: 'Plastic bags, bottles, packaging. ~150M tons/year.', notes: 'LDPE (low density, branched) vs HDPE (high density, linear).' },
+        { name: 'Polypropylene (PP)', monomer: 'CH₂=CHCH₃', type: 'Addition', uses: 'Yogurt cups, carpet fibers, car parts. Higher melting (160°C) than PE.', notes: 'Isotactic / atactic / syndiotactic configurations.' },
+        { name: 'PVC', monomer: 'CH₂=CHCl', type: 'Addition', uses: 'Pipes, vinyl flooring, insulation. Often plasticized.', notes: 'Burning releases HCl + dioxins — recycling concern.' },
+        { name: 'Polystyrene (PS)', monomer: 'CH₂=CHC₆H₅', type: 'Addition', uses: 'Disposable cups, packaging foam (Styrofoam).', notes: 'Hard + brittle. Slow biodegradation.' },
+        { name: 'PET', monomer: 'terephthalic acid + ethylene glycol', type: 'Condensation', uses: 'Beverage bottles, polyester fiber, food packaging.', notes: 'Recyclable (#1); most widely recycled plastic.' },
+        { name: 'Nylon-6,6', monomer: 'adipic acid + hexamethylenediamine', type: 'Condensation', uses: 'Stockings, ropes, fishing line, parachutes.', notes: 'Wallace Carothers, DuPont, 1935.' },
+        { name: 'Kevlar', monomer: 'p-phenylenediamine + terephthaloyl chloride', type: 'Condensation', uses: 'Body armor, bicycle tires, aerospace.', notes: 'Aromatic polyamide; ring stacking gives extreme strength.' },
+        { name: 'Polylactic acid (PLA)', monomer: 'lactic acid', type: 'Condensation', uses: '3D printing filament, biodegradable packaging.', notes: 'Made from corn starch / sugarcane. Compostable in industrial facilities.' },
+        { name: 'Silicone', monomer: 'siloxane (Si-O backbone)', type: 'Condensation', uses: 'Medical implants, cookware, sealants, lubricants.', notes: 'Inorganic backbone — heat + UV resistant.' },
+        { name: 'Rubber (natural)', monomer: 'isoprene', type: 'Addition', uses: 'Tires, gloves, elastic bands.', notes: 'Vulcanization with sulfur cross-links chains → harder, more elastic.' }
+      ];
+
+      var BIOPOLYMER_TYPES = [
+        { name: 'Proteins', monomer: '20 amino acids', bond: 'Peptide bond (CO-NH)', role: 'Structure (collagen), catalysis (enzymes), transport (hemoglobin), signaling (hormones), immunity (antibodies).' },
+        { name: 'DNA / RNA', monomer: 'nucleotides (base + sugar + phosphate)', bond: 'Phosphodiester', role: 'Genetic information storage + transfer. Double helix (DNA) / single strand (RNA).' },
+        { name: 'Polysaccharides', monomer: 'monosaccharides (glucose, fructose)', bond: 'Glycosidic', role: 'Energy storage (starch, glycogen), structure (cellulose, chitin).' },
+        { name: 'Lipids (fats)', monomer: 'glycerol + fatty acids (not strictly polymer)', bond: 'Ester', role: 'Energy storage, membranes (phospholipid bilayer), signaling, insulation.' }
+      ];
+
+      var LAB_SAFETY = [
+        { cat: 'PPE (always)', items: ['Splash goggles (full coverage, not just safety glasses)', 'Lab coat or apron (closed front)', 'Closed-toe shoes (no sandals)', 'Long pants', 'Long hair tied back', 'Nitrile gloves for chemicals (latex for water-only work OK)'] },
+        { cat: 'Acid + base handling', items: ['ALWAYS add acid TO water (never water TO acid)', 'Wash any spill immediately with copious water', 'Strong base spills feel slippery — that\'s saponification of your skin oils', 'Concentrated HF: special protocol — calcium gluconate gel nearby'] },
+        { cat: 'Heat + flame', items: ['Bunsen burner: blue cone is hottest (~1500°C)', 'Never heat sealed container — explosion risk', 'Tongs / mitts for hot glassware', 'Allow glassware to cool before handling', 'Hot glass looks identical to cold glass'] },
+        { cat: 'Glassware', items: ['Inspect for chips before use (broken edge = hand cut)', 'Don\'t force a stopper — use glycerin or twist gently', 'Pyrex / borosilicate handles thermal shock; common glass cracks', 'Broken glass goes in dedicated bin, not regular trash'] },
+        { cat: 'Pipettes + volumetric', items: ['NEVER mouth-pipette (use bulb or pipette aid)', 'Read meniscus at eye level — bottom of curve for liquids that wet glass (water); top of curve for mercury', 'Volumetric flask: precise to "to contain" or "to deliver" marking'] },
+        { cat: 'Fume hood', items: ['Use for: volatile organics, halogenated solvents, anything noxious', 'Sash low for protection', 'Don\'t store stuff inside — disrupts airflow', 'Check airflow indicator before starting'] },
+        { cat: 'Reactive combinations', items: ['Strong oxidizer + organic = fire (chlorate + sugar, peroxide + alcohol)', 'Acid + bleach = chlorine gas (toxic)', 'Ammonia + bleach = chloramine gas (toxic)', 'Alkali metals (Na, K) + water = hydrogen gas + heat (can ignite)', 'Mercury + aluminum = aluminum amalgam (extreme corrosion of Al)'] },
+        { cat: 'Emergency response', items: ['Eyewash within 10 seconds of any chemical station — 15 minutes of flushing for eye exposure', 'Safety shower nearby for chemical body spills', 'Fire blanket for clothing fires (drop + roll if no blanket)', 'Know location of nearest fire extinguisher + first-aid kit', 'Spill kits for acids / bases / organics — different absorbents'] },
+        { cat: 'Documentation', items: ['Lab notebook in pen (no pencil)', 'Date every entry', 'Hazard codes on bottles (NFPA diamond)', 'MSDS / SDS for every chemical you use — read BEFORE using', 'Inventory current chemicals; segregate by hazard class'] }
+      ];
+
+      var GLOSSARY = [
+        { term: 'Mole', def: 'Amount of substance containing 6.022 × 10²³ particles (Avogadro\'s number). Bridges atomic-scale to lab-scale.' },
+        { term: 'Molar mass', def: 'Mass of one mole of a substance, in g/mol. Numerically equal to atomic/molecular mass in amu.' },
+        { term: 'Avogadro\'s number', def: '6.022 × 10²³ — particles per mole. SI redefinition (2019) made it exact.' },
+        { term: 'Atomic mass unit (amu / u)', def: 'Defined as 1/12 the mass of a ¹²C atom. ≈ 1.661 × 10⁻²⁴ g.' },
+        { term: 'STP', def: 'Standard Temperature + Pressure. IUPAC: 0°C (273.15 K) + 100 kPa. Older: 0°C + 1 atm.' },
+        { term: 'NTP', def: 'Normal Temperature + Pressure. 20°C + 1 atm. Used for room-temp gas calculations.' },
+        { term: 'Ideal gas', def: 'PV = nRT. Approximation: no intermolecular forces, point particles. Good for low P, high T, non-polar molecules.' },
+        { term: 'Real gas', def: 'Van der Waals: (P + a(n/V)²)(V − nb) = nRT. Accounts for IMF (a) and molecular volume (b).' },
+        { term: 'Activation energy (Ea)', def: 'Minimum collision energy required for a reaction to proceed. Lower Ea = faster reaction.' },
+        { term: 'Catalyst', def: 'Substance that speeds reaction without being consumed. Provides alternate lower-Ea pathway.' },
+        { term: 'Allotrope', def: 'Different structural form of an element. O₂ vs O₃ vs O₄. Diamond vs graphite vs graphene vs C₆₀.' },
+        { term: 'Isotope', def: 'Atoms of same element with different number of neutrons. Same chemistry, different mass + nuclear properties.' },
+        { term: 'Ion', def: 'Atom or molecule with net charge from electron gain/loss. Cation (+), anion (−).' },
+        { term: 'Electronegativity', def: 'Atom\'s ability to attract shared electrons in a bond. Pauling scale 0.7 (Cs) to 3.98 (F).' },
+        { term: 'Hybrid orbital', def: 'Mixed atomic orbitals (sp, sp², sp³, sp³d, sp³d²) that explain observed bond angles.' },
+        { term: 'Resonance structure', def: 'Two or more Lewis structures with same atom positions but different electron distributions. Actual structure is the average.' },
+        { term: 'Functional group', def: 'Group of atoms responsible for characteristic reactivity (e.g., -OH alcohol, -COOH carboxylic acid, -NH₂ amine).' },
+        { term: 'Chiral center', def: 'Atom (usually C) bonded to four different groups. Gives rise to optical isomers (enantiomers).' },
+        { term: 'Stoichiometry', def: 'Quantitative relationships in chemical reactions, derived from balanced equation coefficients.' },
+        { term: 'Limiting reactant', def: 'Reactant consumed first; determines maximum product. Calculate by dividing moles of each reactant by its coefficient — smallest wins.' },
+        { term: 'Yield', def: 'Actual / theoretical × 100%. Real reactions never reach 100% due to side reactions, incomplete reactions, losses.' },
+        { term: 'Buffer', def: 'Weak acid + conjugate base (or vice versa) that resists pH change when small amounts of acid/base added. Henderson-Hasselbalch: pH = pKa + log([A⁻]/[HA]).' }
+      ];
+
+      function renderPeriodicSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📊 Periodic trends'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Patterns in element properties that follow position on the periodic table. Driven by effective nuclear charge (Zeff) — the net pull on outermost electrons after inner electrons shield them.'),
+          React.createElement('div', { className: 'space-y-2 mb-3' },
+            PERIODIC_TRENDS.map(function(t, i) {
+              return React.createElement('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-sm font-black text-slate-800 mb-1' }, t.trend),
+                React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-1' },
+                  React.createElement('div', { className: 'text-[11px] px-2 py-1 rounded bg-blue-50 border border-blue-200 text-blue-900' },
+                    React.createElement('strong', null, 'Across period: '), t.across),
+                  React.createElement('div', { className: 'text-[11px] px-2 py-1 rounded bg-purple-50 border border-purple-200 text-purple-900' },
+                    React.createElement('strong', null, 'Down group: '), t.down)
+                ),
+                React.createElement('div', { className: 'text-[12px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Why: '), t.why),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 italic' }, 'Example: ', t.example)
+              );
+            })
+          ),
+          React.createElement('div', { className: 'p-2 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
+            React.createElement('strong', null, '💡 Diagonal relationship: '), 'Li-Mg, Be-Al, B-Si — pairs across a diagonal share similar properties because the increases in size + charge offset.'
+          )
+        );
+      }
+
+      function renderMolaritySection() {
+        var c = d2.molM || '';
+        var v = d2.molV || '';
+        var mw = d2.molMW || '';
+        var grams = (parseFloat(c) || 0) * (parseFloat(v) || 0) * (parseFloat(mw) || 0);
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧮 Molarity + dilution calculator'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Molarity (M) = moles of solute per liter of solution. To prepare a target molarity: weigh out (M × V × MW) grams of solute, dissolve in less than the final volume, then dilute to the mark.'),
+          React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
+            React.createElement('div', null,
+              React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, 'Molarity (M, mol/L)'),
+              React.createElement('input', { type: 'number', step: 0.01, value: c, onChange: function(e) { setExp({ molM: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: '0.1' })
+            ),
+            React.createElement('div', null,
+              React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, 'Volume (L)'),
+              React.createElement('input', { type: 'number', step: 0.01, value: v, onChange: function(e) { setExp({ molV: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: '1.0' })
+            ),
+            React.createElement('div', null,
+              React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, 'Molecular weight (g/mol)'),
+              React.createElement('input', { type: 'number', step: 0.01, value: mw, onChange: function(e) { setExp({ molMW: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: '58.44 (NaCl)' })
+            )
+          ),
+          React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border-2 border-indigo-300 text-center mb-3' },
+            React.createElement('div', { className: 'text-[10px] font-bold text-indigo-700 uppercase tracking-wide' }, 'Grams of solute needed'),
+            React.createElement('div', { className: 'text-2xl font-black text-indigo-900 mt-1 font-mono' }, grams.toFixed(4) + ' g')
+          ),
+          React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed space-y-1' },
+            React.createElement('div', null, React.createElement('strong', null, 'Dilution: '), 'M₁V₁ = M₂V₂. Solve for whichever is unknown.'),
+            React.createElement('div', null, React.createElement('strong', null, 'Serial dilution: '), 'For very low concentrations, dilute 1:10 (or 1:100) repeatedly. Each step is precise; cumulative error stays small.'),
+            React.createElement('div', null, React.createElement('strong', null, 'Watch out: '), 'Add ~half the water FIRST, then add solute + stir until dissolved, THEN top up to the mark. Adding solute to full-volume water often gives wrong final volume due to volume changes during dissolution.')
+          )
+        );
+      }
+
+      function renderStoichSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚖ Stoichiometry — recipe math'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Balanced equation → mole ratio. Like a cooking recipe, but for atoms. Coefficients tell you the ratio of reactant moles to product moles.'),
+          React.createElement('div', { className: 'space-y-2' },
+            [
+              { step: '1. Balance the equation', detail: 'Atoms in = atoms out, on each side. Balance metals first, then non-O/H atoms, then O and H last. Charge balanced for ionic equations.' },
+              { step: '2. Identify mole ratios', detail: 'From coefficients: 2 H₂ + 1 O₂ → 2 H₂O means 2 mol H₂ : 1 mol O₂ : 2 mol H₂O.' },
+              { step: '3. Convert grams ↔ moles', detail: 'mol = g / molar mass. Always work in moles when comparing across the equation.' },
+              { step: '4. Find limiting reactant', detail: 'For each reactant: (moles available) / (coefficient). Smallest result = limiting reactant.' },
+              { step: '5. Calculate theoretical yield', detail: 'Use limiting reactant\'s moles × (product coefficient / limiting coefficient) × product MW.' },
+              { step: '6. Calculate % yield', detail: 'Actual / Theoretical × 100. Real reactions rarely hit 100% — losses to side reactions, incomplete rxn, transfer losses.' }
+            ].map(function(s, i) {
+              return React.createElement('div', { key: 's'+i, className: 'flex gap-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-sm font-black text-indigo-700 min-w-[18px]' }, (i + 1)),
+                React.createElement('div', null,
+                  React.createElement('div', { className: 'text-[12px] font-bold text-slate-800' }, s.step),
+                  React.createElement('div', { className: 'text-[11px] text-slate-700 mt-0.5' }, s.detail)
+                )
+              );
+            })
+          ),
+          React.createElement('div', { className: 'mt-3 p-3 rounded-md bg-emerald-50 border border-emerald-200' },
+            React.createElement('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, '🔢 Worked example'),
+            React.createElement('div', { className: 'text-[12px] text-emerald-900 font-mono leading-relaxed' },
+              'N₂ + 3 H₂ → 2 NH₃', React.createElement('br'),
+              '28 g N₂ + 6 g H₂ → ? g NH₃', React.createElement('br'),
+              '1.00 mol N₂ + 3.00 mol H₂', React.createElement('br'),
+              'Ratio: N₂/1 = 1.00; H₂/3 = 1.00 → tie, neither limits', React.createElement('br'),
+              '→ 2.00 mol NH₃ × 17.03 g/mol = 34.06 g (theoretical)'
+            )
+          )
+        );
+      }
+
+      function renderPhaseSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧊 Phases of matter + phase diagrams'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'A phase diagram plots phase boundaries on a P (pressure) vs T (temperature) graph. Lines = phase transitions. Triple point: all three phases coexist. Critical point: liquid + gas become indistinguishable (supercritical fluid).'),
+          React.createElement('div', { className: 'overflow-x-auto mb-3' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Phase', 'Shape', 'Volume', 'Density', 'Particles', 'Examples'].map(function(h, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, h);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                PHASE_POINTS.map(function(p, i) {
+                  return React.createElement('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-800 font-bold' }, p.phase),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700' }, p.shape),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700' }, p.volume),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700' }, p.density),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700' }, p.particles),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 italic' }, p.examples)
+                  );
+                })
+              )
+            )
+          ),
+          React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+            React.createElement('div', { className: 'p-2.5 rounded-md bg-blue-50 border border-blue-200 text-[11px] text-blue-900' },
+              React.createElement('strong', null, '💧 Water is unusual: '), 'Ice is LESS dense than liquid water (ice floats). Most substances: solid denser than liquid. Hydrogen bonding gives ice its open crystal structure.'
+            ),
+            React.createElement('div', { className: 'p-2.5 rounded-md bg-purple-50 border border-purple-200 text-[11px] text-purple-900' },
+              React.createElement('strong', null, '🌬 Sublimation: '), 'Solid → gas without going through liquid (CO₂ dry ice; iodine at room temp). Reverse: deposition.'
+            )
+          )
+        );
+      }
+
+      function renderEquilibriumSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⇌ Chemical equilibrium + Le Chatelier'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Reversible reactions reach dynamic equilibrium when forward rate = reverse rate. Concentrations stop changing (but reactions keep going both ways). Keq = product of [products]^coefficients / product of [reactants]^coefficients.'),
+          React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-300 mb-3' },
+            React.createElement('div', { className: 'text-[11px] font-bold text-indigo-800 mb-1' }, 'Le Chatelier\'s principle'),
+            React.createElement('div', { className: 'text-[12px] text-indigo-900 leading-relaxed' }, 'If a stress is applied to a system at equilibrium, the system shifts to relieve that stress. Predict the direction of shift to make sense of how rxns respond to changes.')
+          ),
+          React.createElement('div', { className: 'space-y-1.5' },
+            EQUILIBRIUM_FACTORS.map(function(f, i) {
+              return React.createElement('div', { key: 'eq'+i, className: 'flex items-center gap-2 p-2 rounded-md bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 min-w-[200px]' }, f.factor),
+                React.createElement('div', { className: 'text-[11px] font-black text-indigo-700 min-w-[110px] font-mono' }, f.shift),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 flex-1' }, f.why)
+              );
+            })
+          )
+        );
+      }
+
+      function renderKineticsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⏱ Reaction kinetics — what controls speed'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Kinetics = how fast. Thermodynamics = whether possible. A reaction can be very favorable (large negative ΔG) but slow (high Ea). Catalysts and conditions tune kinetics.'),
+          React.createElement('div', { className: 'space-y-2 mb-3' },
+            KINETICS_FACTORS.map(function(k, i) {
+              return React.createElement('div', { key: 'k'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline justify-between mb-1' },
+                  React.createElement('span', { className: 'text-sm font-black text-slate-800' }, k.factor),
+                  React.createElement('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded bg-orange-100 text-orange-800' }, k.effect)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, k.detail)
+              );
+            })
+          ),
+          React.createElement('div', { className: 'p-3 rounded-md bg-emerald-50 border border-emerald-200' },
+            React.createElement('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, '📐 Arrhenius equation'),
+            React.createElement('div', { className: 'text-[12px] text-emerald-900 font-mono leading-relaxed mb-1' }, 'k = A · exp(−Ea / RT)'),
+            React.createElement('div', { className: 'text-[11px] text-emerald-800 leading-relaxed' },
+              'k = rate constant · A = collision frequency factor · Ea = activation energy · R = 8.314 J/(mol·K) · T = absolute temperature (K). Plot ln(k) vs 1/T; slope = −Ea/R.'
+            )
+          )
+        );
+      }
+
+      function renderThermoSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔥 Thermodynamics — what\'s spontaneous'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Spontaneity = whether a reaction proceeds on its own (regardless of speed). Gibbs free energy ΔG tells us: negative = spontaneous; positive = not; zero = at equilibrium.'),
+          React.createElement('div', { className: 'p-3 rounded-lg bg-orange-50 border-2 border-orange-300 mb-3 text-center' },
+            React.createElement('div', { className: 'text-[10px] font-bold text-orange-700 uppercase tracking-wide mb-1' }, 'Master equation'),
+            React.createElement('div', { className: 'text-2xl font-black text-orange-900 font-mono' }, 'ΔG = ΔH − TΔS')
+          ),
+          React.createElement('div', { className: 'space-y-2 mb-3' },
+            THERMO_KEY.map(function(t, i) {
+              return React.createElement('div', { key: 'th'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  React.createElement('span', { className: 'text-sm font-black text-slate-800 font-mono' }, t.sym),
+                  React.createElement('span', { className: 'text-[12px] font-bold text-slate-700' }, t.name),
+                  React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto' }, t.units)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.sign)
+              );
+            })
+          ),
+          React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+            React.createElement('div', { className: 'p-2.5 rounded-md bg-red-50 border border-red-200 text-[11px] text-red-900' },
+              React.createElement('strong', null, '🔥 Exothermic (ΔH < 0): '), 'Combustion, neutralization, condensation. Heat released to surroundings.'
+            ),
+            React.createElement('div', { className: 'p-2.5 rounded-md bg-blue-50 border border-blue-200 text-[11px] text-blue-900' },
+              React.createElement('strong', null, '🧊 Endothermic (ΔH > 0): '), 'Photosynthesis, melting, evaporation, cold packs. Heat absorbed from surroundings.'
+            )
+          )
+        );
+      }
+
+      function renderPolymersSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧬 Polymers + biopolymers'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Long chains of repeating units (monomers). Addition polymers form by C=C double bonds opening up. Condensation polymers form by losing water (or other small molecule) at each link.'),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-800 mt-2 mb-1' }, 'Synthetic polymers'),
+          React.createElement('div', { className: 'space-y-1.5 mb-3' },
+            POLYMER_TYPES.map(function(p, i) {
+              return React.createElement('div', { key: 'p'+i, className: 'p-2 rounded-md bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, p.name),
+                  React.createElement('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800' }, p.type),
+                  React.createElement('span', { className: 'text-[10px] font-mono text-slate-600 ml-auto' }, p.monomer)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-0.5' }, p.uses),
+                React.createElement('div', { className: 'text-[10px] text-slate-500 italic' }, p.notes)
+              );
+            })
+          ),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-800 mt-3 mb-1' }, 'Biopolymers (biological macromolecules)'),
+          React.createElement('div', { className: 'space-y-1.5' },
+            BIOPOLYMER_TYPES.map(function(p, i) {
+              return React.createElement('div', { key: 'b'+i, className: 'p-2 rounded-md bg-emerald-50 border border-emerald-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-emerald-900' }, p.name),
+                  React.createElement('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-white border border-emerald-300 text-emerald-800 ml-auto' }, p.bond)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-emerald-800 mb-0.5' }, React.createElement('strong', null, 'Monomer: '), p.monomer),
+                React.createElement('div', { className: 'text-[11px] text-emerald-900' }, p.role)
+              );
+            })
+          )
+        );
+      }
+
+      function renderSafetySection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🦺 Lab safety basics'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Most lab accidents are preventable. The biggest factors: PPE, attention, and not mixing things that shouldn\'t mix. Always read the SDS (Safety Data Sheet) for each chemical before using it.'),
+          React.createElement('div', { className: 'space-y-2' },
+            LAB_SAFETY.map(function(s, i) {
+              return React.createElement('div', { key: 's'+i, className: 'p-3 rounded-lg bg-amber-50 border border-amber-300' },
+                React.createElement('div', { className: 'text-[12px] font-black text-amber-900 mb-1.5' }, s.cat),
+                React.createElement('ul', { className: 'text-[11px] text-amber-900 leading-relaxed space-y-0.5 list-disc pl-4' },
+                  s.items.map(function(item, j) {
+                    return React.createElement('li', { key: 'i'+j }, item);
+                  })
+                )
+              );
+            })
+          )
+        );
+      }
+
+      function renderGlossarySection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📖 Chemistry glossary'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Common chemistry terms students mix up. Bookmarkable reference for vocabulary.'),
+          React.createElement('div', { className: 'space-y-1' },
+            GLOSSARY.map(function(g, i) {
+              return React.createElement('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-indigo-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-indigo-900' }, g.term),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.def)
+              );
+            })
+          )
+        );
+      }
+
+      function renderActiveSection() {
+        if (expSection === 'vsepr') return renderVseprSection();
+        if (expSection === 'bonds') return renderBondsSection();
+        if (expSection === 'imf') return renderImfSection();
+        if (expSection === 'reactions') return renderReactionsSection();
+        if (expSection === 'library') return renderLibrarySection();
+        if (expSection === 'acidbase') return renderAcidBaseSection();
+        if (expSection === 'quantum') return renderQuantumSection();
+        if (expSection === 'periodic') return renderPeriodicSection();
+        if (expSection === 'molarity') return renderMolaritySection();
+        if (expSection === 'stoich') return renderStoichSection();
+        if (expSection === 'phase') return renderPhaseSection();
+        if (expSection === 'equilibrium') return renderEquilibriumSection();
+        if (expSection === 'kinetics') return renderKineticsSection();
+        if (expSection === 'thermo') return renderThermoSection();
+        if (expSection === 'polymers') return renderPolymersSection();
+        if (expSection === 'safety') return renderSafetySection();
+        if (expSection === 'glossary') return renderGlossarySection();
+        return null;
+      }
+
+      var __moleculeExpansions = React.createElement('div', { className: 'mt-4 max-w-4xl mx-auto' },
+        expHeader(),
+        expTabBar(),
+        expSection && React.createElement('div', { className: 'mt-2' }, renderActiveSection())
+      );
+
+      return React.createElement(React.Fragment, null, __moleculeMainView, __moleculeExpansions);
     }
   });
 

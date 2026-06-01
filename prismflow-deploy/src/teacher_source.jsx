@@ -27,7 +27,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const [batchTypes, setBatchTypes] = useState({ simplified: true, glossary: false, quiz: false, 'sentence-frames': false, brainstorm: false, faq: false, outline: false, adventure: false, 'concept-sort': false, image: false, timeline: false });
   const fileInputRef = useRef(null);
   const panelRef = useRef(null);
-  useFocusTrap(panelRef, isOpen);
+  useFocusTrap(panelRef, isOpen, onClose);
   if (!isOpen) return null;
   const groups = rosterKey?.groups || {};
   const students = rosterKey?.students || {};
@@ -801,7 +801,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       <div className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-sm border-b border-purple-500/30 p-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <DoorOpen className="text-purple-700" size={24} />
+            <DoorOpen className="text-purple-400" size={24} />
             <span className="text-white font-bold text-lg">{escapeState.room?.theme || t('escape_room.title')}</span>
           </div>
           <div className="flex items-center gap-4">
@@ -823,11 +823,11 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
               </div>
             )}
             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50" title={t('escape_room.hints_used')}>
-              <Lightbulb size={14} className="text-yellow-700" />
+              <Lightbulb size={14} className="text-yellow-400" />
               <span className="text-white text-xs font-bold">{escapeState.hintsRemaining || 0}</span>
             </div>
             {(escapeState.streak || 0) >= 3 && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-700 font-bold text-xs animate-pulse" data-help-key="escape_room_streak">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-bold text-xs animate-pulse" data-help-key="escape_room_streak">
                 🔥 x{escapeState.streak}
               </div>
             )}
@@ -882,7 +882,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
               >
                 <span className="text-4xl">{obj.emoji}</span>
                 <span className="text-white text-sm font-bold text-center">{obj.name}</span>
-                {isSolved && <CheckCircle className="text-green-700" size={20} />}
+                {isSolved && <CheckCircle className="text-green-400" size={20} />}
               </button>
             );
           })}
@@ -897,7 +897,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                   {currentPuzzle.type || 'mcq'}
                 </span>
               </div>
-              <button onClick={() => setSelectedPuzzle(null)} data-help-key="escape_room_close_btn" className="text-slate-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1" aria-label={t('common.close')}>
+              <button onClick={() => setSelectedPuzzle(null)} data-help-key="escape_room_close_btn" className="text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1" aria-label={t('common.close')}>
                 <X size={24} />
               </button>
             </div>
@@ -906,7 +906,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
               <div className="mb-4">
                 {escapeState.revealedHints?.[currentPuzzle.id] ? (
                   <div className="p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in fade-in">
-                    <Lightbulb size={14} className="inline mr-2 text-yellow-700" />
+                    <Lightbulb size={14} className="inline mr-2 text-yellow-400" />
                     {currentPuzzle.hint}
                   </div>
                 ) : (
@@ -931,7 +931,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap ${
                       (escapeState.hintsRemaining || 0) > 0
                         ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/40'
-                        : 'bg-slate-700 text-slate-600 cursor-not-allowed'
+                        : 'bg-slate-700 text-slate-300 cursor-not-allowed'
                     }`}
                   >
                     <span className="text-sm">💡</span>
@@ -949,7 +949,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                     data-help-key="escape_room_mcq_option"
                     className="w-full text-left p-4 bg-slate-700 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors border-2 border-transparent hover:border-purple-400"
                   >
-                    <span className="inline-block w-8 font-bold text-purple-700">{String.fromCharCode(65+idx)}.</span>
+                    <span className="inline-block w-8 font-bold text-purple-400">{String.fromCharCode(65+idx)}.</span>
                     {opt}
                   </button>
                 ))}
@@ -958,7 +958,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             {currentPuzzle.type === 'cipher' && (
               <div className="space-y-4">
                 {currentPuzzle.encodedText && (
-                  <div className="bg-slate-900 p-4 rounded-lg font-mono text-purple-700 text-center">
+                  <div className="bg-slate-900 p-4 rounded-lg font-mono text-purple-300 text-center">
                     {currentPuzzle.encodedText}
                   </div>
                 )}
@@ -988,7 +988,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                 )}
                 {currentPuzzle.wordbank && currentPuzzle.wordbank.length > 0 ? (
                   <div className="space-y-3">
-                    <p className="text-xs text-slate-600 text-center uppercase font-bold">{t('escape_room.select_word') || 'Select the correct word:'}</p>
+                    <p className="text-xs text-slate-400 text-center uppercase font-bold">{t('escape_room.select_word') || 'Select the correct word:'}</p>
                     <div className="flex flex-wrap gap-2 justify-center">
                       {currentPuzzle.wordbank.map((word, idx) => (
                         <button
@@ -1053,7 +1053,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             )}
             {currentPuzzle.type === 'sequence' && (
               <div className="space-y-4" data-help-key="escape_room_sequence_container">
-                <p className="text-sm text-purple-700 italic mb-2">{t('escape_room.sequence_instructions')}</p>
+                <p className="text-sm text-purple-300 italic mb-2">{t('escape_room.sequence_instructions')}</p>
                 <div className="space-y-2" role="list" aria-label={t('escape_room.sequence_list') || 'Sequence items to order'}>
                   {sequenceOrder.length === 0
                     ? (currentPuzzle.shuffledItems || currentPuzzle.items || []).map((item, idx) => (
@@ -1187,7 +1187,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                     <p className="text-xs text-slate-600 mb-2" aria-hidden="true">{t('escape_room.matched_pairs')}</p>
                     <div className="space-y-1">
                       {matchingPairs.map((pair, idx) => (
-                        <div key={idx} role="listitem" className="text-sm text-green-700">✓ {pair.left} ↔ {pair.right}</div>
+                        <div key={idx} role="listitem" className="text-sm text-green-400">✓ {pair.left} ↔ {pair.right}</div>
                       ))}
                     </div>
                   </div>
@@ -1203,7 +1203,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
               </div>
             )}
             {currentPuzzle.hint && (
-              <p className="mt-4 text-purple-700 text-sm italic">💡 {currentPuzzle.hint}</p>
+              <p className="mt-4 text-purple-400 text-sm italic">💡 {currentPuzzle.hint}</p>
             )}
           </div>
         </div>
@@ -1213,7 +1213,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
           <div className="text-center text-white animate-pulse">
             <div className="text-8xl mb-6">⏸️</div>
             <h2 className="text-4xl font-black mb-3">{t('escape_room.game_paused')}</h2>
-            <p className="text-xl text-slate-600">{t('escape_room.waiting_resume')}</p>
+            <p className="text-xl text-slate-400">{t('escape_room.waiting_resume')}</p>
           </div>
         </div>
       )}
@@ -2398,7 +2398,7 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
                                  <foreignObject x={Math.min(width - 120, Math.max(0, x - 60))} y={y - 50} width="120" height="50" className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                                      <div className="bg-slate-800 text-white text-[11px] px-3 py-2 rounded-lg text-center shadow-xl">
                                          <div className="font-bold">{new Date(l.timestamp).toLocaleDateString()}</div>
-                                         <div className="text-yellow-700 font-mono">{l.xp} XP</div>
+                                         <div className="text-yellow-300 font-mono">{l.xp} XP</div>
                                      </div>
                                  </foreignObject>
                              </g>
@@ -4109,7 +4109,7 @@ const LearnerProgressView = React.memo(({
 const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens, callGemini }) => {
   const { t } = useContext(LanguageContext);
   const modalRef = useRef(null);
-  useFocusTrap(modalRef, true);
+  useFocusTrap(modalRef, true, onClose);
   const [gradedIds, setGradedIds] = useState(new Set());
   // Teacher comment threads per (student, resource). Persisted to localStorage
   // since the dashboard is a one-way student→teacher upload and the comments

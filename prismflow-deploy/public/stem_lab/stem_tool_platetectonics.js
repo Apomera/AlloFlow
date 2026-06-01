@@ -905,7 +905,6 @@
         ctx.fillText('Offset: ' + Math.round(cur.offset) + ' m', W - 130, 22);
       }
     }
-  }
 
   function reset() {
     update({ years: 0, quakes: [], mountainHeight: 0, rift: 0, offset: 0 });
@@ -1007,6 +1006,7 @@
       )
     )
   );
+  };
   // â•â•â• ðŸ”¬ plateTectonics (plateTectonics) â•â•â•
   window.StemLab.registerTool('plateTectonics', {
     icon: '\uD83C\uDF0B',
@@ -6761,7 +6761,7 @@ var d = labToolData.plateTectonics || {};
                   React.createElement('div', { className: 'flex items-center gap-2' },
                     React.createElement('span', { className: 'text-lg' }, ERAS[timelineEra].icon || '\uD83C\uDF0D'),
                     React.createElement('span', { className: 'text-lg font-black text-red-700' }, ERAS[timelineEra].name),
-                    React.createElement('span', { className: 'text-xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-full' }, ERAS[timelineEra].mya)
+                    React.createElement('span', { className: 'text-xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-full' }, (ERAS[timelineEra] || ERAS[0] || {}).mya)
                   ),
 
                   // Key event banner

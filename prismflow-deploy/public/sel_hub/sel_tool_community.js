@@ -1908,7 +1908,7 @@ window.SelHub = window.SelHub || {
                       }).catch(function(err) { upd({ aiLoading: false }); addToast('Error: ' + err.message, 'error'); });
                     }
                   },
-                  placeholder: 'Ask a question about culture...',
+                  placeholder: 'Ask a question about culture — please don’t share personal info like your name, school, or where you live.',
                   style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: '#0f172a', color: '#e2e8f0', fontSize: 12 }
                 }),
                 h('button', { 'aria-label': 'wait',

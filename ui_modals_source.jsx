@@ -229,15 +229,15 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                             btnClass = 'bg-red-500 text-white border-red-600 opacity-90';
                             letterClass = 'bg-white text-red-600 border-white';
                         } else {
-                            btnClass = 'bg-slate-800 text-slate-600 border-slate-900 opacity-50';
-                            letterClass = 'bg-slate-700 text-slate-600 border-slate-600';
+                            btnClass = 'bg-slate-800 text-slate-300 border-slate-900 opacity-50';
+                            letterClass = 'bg-slate-700 text-slate-300 border-slate-600';
                         }
                     } else if (isSelected) {
                         btnClass = 'bg-yellow-400 text-indigo-900 border-yellow-600 scale-[1.02] ring-4 ring-yellow-200/50 z-10';
                         letterClass = 'bg-indigo-900 text-yellow-400 border-indigo-900';
                     } else if (isDisabled) {
-                         btnClass = 'bg-slate-800 text-slate-600 border-slate-900 opacity-60 cursor-not-allowed';
-                         letterClass = 'bg-slate-700 text-slate-600 border-slate-600';
+                         btnClass = 'bg-slate-800 text-slate-300 border-slate-900 opacity-60 cursor-not-allowed';
+                         letterClass = 'bg-slate-700 text-slate-300 border-slate-600';
                     }
                     return (
                         <button

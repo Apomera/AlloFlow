@@ -831,7 +831,7 @@ function AdventureView(props) {
                                         alt={adventureState.currentScene?.text || "Adventure Scene"}
                                     />
                                 ) : (
-                                    <div className="absolute inset-0 bg-slate-900 flex items-center justify-center flex-col gap-4 text-slate-600">
+                                    <div className="absolute inset-0 bg-slate-900 flex items-center justify-center flex-col gap-4 text-slate-300">
                                         {adventureState.isImageLoading ? (
                                             <>
                                                 <RefreshCw size={48} className="animate-spin text-indigo-500"/>

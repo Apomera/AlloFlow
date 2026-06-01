@@ -931,7 +931,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap ${
                       (escapeState.hintsRemaining || 0) > 0
                         ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/40'
-                        : 'bg-slate-700 text-slate-600 cursor-not-allowed'
+                        : 'bg-slate-700 text-slate-300 cursor-not-allowed'
                     }`}
                   >
                     <span className="text-sm">💡</span>

@@ -103,7 +103,7 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
                  </button>
                  <button aria-label={t('common.on_close')}
                     onClick={() => { onClose(); if(onNewGame) onNewGame(); }}
-                    className="w-full py-3 rounded-xl font-bold bg-slate-700 text-slate-600 hover:bg-slate-600 hover:text-white transition-colors border border-slate-600 flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-xl font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white transition-colors border border-slate-600 flex items-center justify-center gap-2"
                  >
                      <RefreshCw size={18} /> {t('adventure.new_game') || "New Game"}
                  </button>
@@ -111,7 +111,7 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
              <button
                  aria-label={t('common.close')}
                 onClick={onClose}
-                className="w-full py-2 text-xs font-bold text-slate-600 hover:text-slate-600 transition-colors"
+                className="w-full py-2 text-xs font-bold text-slate-300 hover:text-white transition-colors"
              >
                  {t('adventure.mission_report.confirm_exit')}
              </button>
@@ -734,7 +734,7 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                         </div>
                         <div className="text-right">
                             <div className="text-yellow-400 font-black text-lg">{item.cost} G</div>
-                            <span className="text-[11px] font-bold uppercase text-slate-600 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
+                            <span className="text-[11px] font-bold uppercase text-slate-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
                                 {t(`adventure.effects.${item.effectType}`) || item.effectType}
                             </span>
                         </div>
@@ -743,7 +743,7 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                         <h3 className="text-white font-bold text-lg mb-1 group-hover:text-indigo-300 transition-colors">
                             {t(`adventure.shop_items.${item.id}_name`) || item.name}
                         </h3>
-                        <p className="text-slate-600 text-xs leading-relaxed mb-2 sm:mb-4 min-h-[2em] flex-1 overflow-y-auto custom-scrollbar">
+                        <p className="text-slate-300 text-xs leading-relaxed mb-2 sm:mb-4 min-h-[2em] flex-1 overflow-y-auto custom-scrollbar">
                             {t(`adventure.shop_items.${item.id}_desc`) || item.description}
                         </p>
                         <button
@@ -752,7 +752,7 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                             className={`w-full py-2 sm:py-2.5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 min-h-[40px] ${
                                 gold >= item.cost
                                 ? 'bg-yellow-500 hover:bg-yellow-400 text-indigo-900 shadow-lg shadow-yellow-500/30 border-2 border-yellow-300 ring-1 ring-yellow-400/50'
-                                : 'bg-slate-700 text-slate-600 cursor-not-allowed'
+                                : 'bg-slate-700 text-slate-300 cursor-not-allowed'
                             }`}
                         >
                             {gold >= item.cost ? t('adventure.buy_now') : t('adventure.no_gold')}
