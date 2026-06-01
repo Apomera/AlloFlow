@@ -4339,7 +4339,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '1b33e38a';
+    var pluginCdnVersion = '673fce97';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -26465,7 +26465,7 @@ ${_toolList}
           processExpertCommand, runAxeAudit, saveExportPreset, selectedFont, setAgentActivityLog,
           setAgentLogFullView, setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,
-          setIsAgentRunning, setShowExportPreview, showExportPreview, toggleA11yInspect, updateExportPreview
+          setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview, showExportPreview, t, toggleA11yInspect, updateExportPreview
         })}
         <CDNModuleGate moduleKey="StemLab" isOpen={showStemLab} onClose={() => setShowStemLab(false)} icon="🔬" displayName="STEM Lab" t={t}>
             {(StemLab) => React.createElement(StemLab, {
