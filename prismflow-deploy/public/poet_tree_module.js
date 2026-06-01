@@ -670,6 +670,12 @@
     var _aiLoading = useState(false); var aiLoading = _aiLoading[0]; var setAiLoading = _aiLoading[1];
     var _meterAnalysis = useState(null); var meterAnalysis = _meterAnalysis[0]; var setMeterAnalysis = _meterAnalysis[1];
     var _meterLoading = useState(false); var meterLoading = _meterLoading[0]; var setMeterLoading = _meterLoading[1];
+    // CMU-dict verification (Pyodide + pronouncing package). Authoritative
+    // syllable / rhyme / stress / structural-form checks. The existing live
+    // structure check (heuristic) stays for instant typing feedback; this
+    // runs on-demand with a button click.
+    var _cmuResult = useState(null); var cmuResult = _cmuResult[0]; var setCmuResult = _cmuResult[1];
+    var _cmuLoading = useState(false); var cmuLoading = _cmuLoading[0]; var setCmuLoading = _cmuLoading[1];
 
     // Performance state
     var _ttsPlaying = useState(false); var ttsPlaying = _ttsPlaying[0]; var setTtsPlaying = _ttsPlaying[1];
@@ -1418,6 +1424,45 @@
       addToast && addToast('Replaced with the rewrite. Your old version is gone — Library save first if you want both.', 'info');
       announcePT('Replaced with ' + (rewriteResult.targetForm ? rewriteResult.targetForm.name : 'rewrite') + '.');
     }, [rewriteResult, addToast]);
+
+    // ── CMU-dict verification (Pyodide-on-demand) ──
+    // Authoritative syllable / rhyme / stress / structural form check that
+    // catches what the JS heuristic misses (rhythm = 2 syllables not 1;
+    // though/cough don't rhyme; love/dove do; villanelle refrain positions).
+    // Background-loads the ~10MB Pyodide runtime + pronouncing package the
+    // first time the user opens PoetTree so the button click is fast.
+    useEffect(function () {
+      var py = window.AlloModules && window.AlloModules.PyodideRuntime;
+      if (py && typeof py.warmupPoetry === 'function') {
+        try { py.warmupPoetry(); } catch (e) { /* non-blocking */ }
+      }
+    }, []);
+    var verifyWithCMU = useCallback(async function () {
+      var py = window.AlloModules && window.AlloModules.PyodideRuntime;
+      if (!py || typeof py.runPoetryCheck !== 'function') {
+        if (addToast) addToast('Python verifier not available — refresh and try again.', 'error');
+        return;
+      }
+      if (!form || !poemText.trim()) return;
+      setCmuLoading(true);
+      setCmuResult(null);
+      try {
+        var result = await py.runPoetryCheck({
+          form: form,
+          poemText: poemText,
+          targetWord: (form.id === 'acrostic' && typeof poemTitle === 'string' && poemTitle.trim()) ? poemTitle.trim() : null,
+        });
+        setCmuResult(result || { error: 'Verifier returned no result.', findings: [] });
+        if (result && Array.isArray(result.findings)) {
+          announcePT('CMU verification: ' + result.findings.length + ' findings.');
+        }
+      } catch (err) {
+        warnLog('CMU verification failed:', err && err.message);
+        setCmuResult({ error: String(err && err.message || err), findings: [] });
+      } finally {
+        setCmuLoading(false);
+      }
+    }, [form, poemText, poemTitle, addToast]);
 
     // ── Meter analysis (Gemini-on-demand) ──
     var analyzeMeter = useCallback(async function () {
@@ -2351,6 +2396,16 @@
                 'aria-busy': meterLoading ? 'true' : 'false',
                 style: { padding: '8px 14px', background: poemText.trim() && !meterLoading ? '#0891b2' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() && !meterLoading ? 'pointer' : 'not-allowed' }
               }, meterLoading ? '⏳ Analyzing meter…' : '📏 Analyze meter'),
+              // Phase 5: CMU-dict verifier — runs Pyodide + pronouncing for authoritative
+              // syllable / rhyme / stress / structural-form checks. Hidden for the 'free'
+              // form since there are no targets to verify against.
+              form && form.id !== 'free' && e('button', {
+                onClick: verifyWithCMU,
+                disabled: !poemText.trim() || cmuLoading,
+                'aria-busy': cmuLoading ? 'true' : 'false',
+                title: 'Authoritative check using the CMU Pronouncing Dictionary (catches what the heuristic misses)',
+                style: { padding: '8px 14px', background: poemText.trim() && !cmuLoading ? '#a21caf' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() && !cmuLoading ? 'pointer' : 'not-allowed' }
+              }, cmuLoading ? '⏳ Verifying…' : '🐍 Verify with CMU'),
               onCallTTS && e('button', { onClick: function () { setActiveTab('perform'); },
                 style: { padding: '8px 14px', background: '#fff', color: TEAL_DARK, border: '1px solid ' + TEAL, borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
               }, '🎙️ Perform')
@@ -2431,6 +2486,55 @@
                 )
               ),
               e('p', { style: { fontSize: '10px', color: '#475569', fontStyle: 'italic', margin: '6px 0 0' } }, '/ = stressed syllable, u = unstressed. Read the line aloud to verify.')
+            ),
+
+            // ── CMU dictionary verification panel (Phase 5) ──
+            // Mirrors the meter analysis panel; styled with fuchsia to match the
+            // 🐍 Python provenance chip used in Report Writer.
+            cmuResult && e('div', { style: { background: '#fdf4ff', borderRadius: '10px', padding: '12px', border: '1px solid #f0abfc' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' } },
+                e('h4', { style: { fontSize: '12px', fontWeight: 800, color: '#86198f', margin: 0 } }, '🐍 CMU dictionary verification'),
+                e('span', { style: { fontSize: '10px', color: '#a21caf', fontWeight: 700, padding: '2px 8px', background: '#fae8ff', borderRadius: '10px' } },
+                  cmuResult.error ? 'error' : (cmuResult.overall_match ? '✓ all checks passed' : ((cmuResult.findings || []).length + ' finding' + ((cmuResult.findings || []).length === 1 ? '' : 's')))
+                )
+              ),
+              cmuResult.error && e('p', { style: { fontSize: '11px', color: '#9a1234', margin: 0 } }, cmuResult.error),
+              !cmuResult.error && Array.isArray(cmuResult.findings) && cmuResult.findings.length > 0 && e('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '4px' } },
+                cmuResult.findings.map(function (f, fi) {
+                  return e('li', { key: fi, style: { fontSize: '11px', color: '#581c87', padding: '6px 8px', background: '#fff', borderRadius: '6px', border: '1px solid #f0abfc', display: 'flex', alignItems: 'flex-start', gap: '6px' } },
+                    e('span', { 'aria-hidden': 'true', style: { fontSize: '12px', flexShrink: 0 } }, f.severity === 'high' ? '🔴' : '🟡'),
+                    e('span', { style: { flex: 1 } }, f.message)
+                  );
+                })
+              ),
+              !cmuResult.error && cmuResult.overall_match && e('p', { style: { fontSize: '11px', color: '#15803d', margin: 0 } }, 'All structural checks pass for this form.'),
+              // Per-line table — shows actual vs expected syllable counts using CMU
+              !cmuResult.error && Array.isArray(cmuResult.lines) && cmuResult.lines.length > 0 && e('details', { style: { marginTop: '8px' } },
+                e('summary', { style: { fontSize: '10px', color: '#86198f', cursor: 'pointer', fontWeight: 700 } }, 'per-line details'),
+                e('table', { style: { width: '100%', fontSize: '10px', borderCollapse: 'collapse', marginTop: '6px' } },
+                  e('thead', null, e('tr', null,
+                    e('th', { style: { textAlign: 'left', padding: '3px', color: '#86198f' } }, 'Line'),
+                    e('th', { style: { textAlign: 'left', padding: '3px', color: '#86198f' } }, 'Syl (CMU)'),
+                    e('th', { style: { textAlign: 'left', padding: '3px', color: '#86198f' } }, 'Expected'),
+                    e('th', { style: { textAlign: 'left', padding: '3px', color: '#86198f' } }, 'Stress'),
+                    e('th', { style: { textAlign: 'left', padding: '3px', color: '#86198f' } }, 'Rhyme')
+                  )),
+                  e('tbody', null,
+                    cmuResult.lines.map(function (ln, li) {
+                      var ok = ln.syllables_match;
+                      var unk = (ln.unknown_words || []).length > 0;
+                      return e('tr', { key: li, style: { borderTop: '1px solid #f3e8ff' } },
+                        e('td', { style: { padding: '3px', color: '#1e293b', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, ln.text),
+                        e('td', { style: { padding: '3px', color: ok ? '#15803d' : '#9a1234', fontWeight: 700 } }, ln.syllables_actual + (unk ? '*' : '')),
+                        e('td', { style: { padding: '3px', color: '#475569' } }, ln.syllables_expected != null ? ln.syllables_expected : '—'),
+                        e('td', { style: { padding: '3px', fontFamily: 'monospace', color: '#475569' } }, ln.stress_pattern || '—'),
+                        e('td', { style: { padding: '3px', fontFamily: 'monospace', color: '#475569', maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, ln.rhyme_class || '—')
+                      );
+                    })
+                  )
+                ),
+                e('p', { style: { fontSize: '9px', color: '#86198f', fontStyle: 'italic', margin: '4px 0 0' } }, '* = word not in CMU dict; counted by heuristic')
+              )
             ),
 
             // ── Writing helpers (collapsible panel: Daily Prompt, Rhymes, Stronger Verbs) ──
