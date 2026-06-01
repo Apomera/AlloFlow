@@ -31,7 +31,13 @@ const FONT_OPTIONS = [
     { id: 'opendyslexic', label: 'OpenDyslexic', cssClass: 'font-opendyslexic', googleFont: null, category: 'accessibility' },
     { id: 'lexend', label: 'Lexend', cssClass: 'font-lexend', googleFont: 'Lexend:wght@400;500;700', category: 'accessibility' },
     { id: 'atkinson', label: 'Atkinson Hyperlegible', cssClass: 'font-atkinson', googleFont: 'Atkinson+Hyperlegible:wght@400;700', category: 'accessibility' },
-    { id: 'andika', label: 'Andika (SIL)', cssClass: 'font-andika', googleFont: 'Andika:wght@400;700', category: 'accessibility' },
+    // Andika (SIL): regular + bold + italic + bold-italic loaded in one Google Fonts call.
+    // Italic and Bold Italic are surfaced as their own selectable font options (per teacher
+    // request 2026-06-01) so they can be picked from the font dropdown alongside upright
+    // Andika; CSS classes below set font-style/font-weight on top of the shared family.
+    { id: 'andika', label: 'Andika (SIL)', cssClass: 'font-andika', googleFont: 'Andika:ital,wght@0,400;0,700;1,400;1,700', category: 'accessibility' },
+    { id: 'andika-italic', label: 'Andika Italic (SIL)', cssClass: 'font-andika-italic', googleFont: null, category: 'accessibility' },
+    { id: 'andika-bold-italic', label: 'Andika Bold Italic (SIL)', cssClass: 'font-andika-bold-italic', googleFont: null, category: 'accessibility' },
     { id: 'inter', label: 'Inter', cssClass: 'font-inter', googleFont: 'Inter:wght@400;500;600;700', category: 'sans-serif' },
     { id: 'roboto', label: 'Roboto', cssClass: 'font-roboto', googleFont: 'Roboto:wght@400;500;700', category: 'sans-serif' },
     { id: 'opensans', label: 'Open Sans', cssClass: 'font-opensans', googleFont: 'Open+Sans:wght@400;600;700', category: 'sans-serif' },
@@ -65,6 +71,8 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     .font-lexend, .font-lexend * { font-family: 'Lexend', sans-serif !important; }
     .font-atkinson, .font-atkinson * { font-family: 'Atkinson Hyperlegible', sans-serif !important; }
     .font-andika, .font-andika * { font-family: 'Andika', sans-serif !important; }
+    .font-andika-italic, .font-andika-italic * { font-family: 'Andika', sans-serif !important; font-style: italic !important; }
+    .font-andika-bold-italic, .font-andika-bold-italic * { font-family: 'Andika', sans-serif !important; font-style: italic !important; font-weight: 700 !important; }
     .font-inter, .font-inter * { font-family: 'Inter', sans-serif !important; }
     .font-roboto, .font-roboto * { font-family: 'Roboto', sans-serif !important; }
     .font-opensans, .font-opensans * { font-family: 'Open Sans', sans-serif !important; }
