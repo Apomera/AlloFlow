@@ -1690,7 +1690,7 @@ window.StemLab = window.StemLab || {
       var earnedBadgeCount = 0;
       for (var bi = 0; bi < DNA_BADGES.length; bi++) { if (badges[DNA_BADGES[bi].id]) earnedBadgeCount++; }
 
-      return h("div", { className: "space-y-4 max-w-4xl mx-auto animate-in fade-in duration-200" },
+      var __dnaMainView = h("div", { className: "space-y-4 max-w-4xl mx-auto animate-in fade-in duration-200" },
 
         // ═══ HEADER ═══
         h("div", { className: "flex items-center justify-between" },
@@ -2691,6 +2691,877 @@ window.StemLab = window.StemLab || {
         // SR status
         h("div", { className: "sr-only", role: "status", 'aria-live': "polite" }, "DNA Lab: " + tab + " view")
       );
+
+      // ═══════════════════════════════════════════════════════════════════
+      // DNA EXPANSION SECTIONS — interactive genetics reference (2026-05-31)
+      // ═══════════════════════════════════════════════════════════════════
+      var d2 = (labToolData && labToolData.dna) || {};
+      var expSection = d2.expSection || null;
+      function setExp(patch) {
+        setLabToolData(function(prev) {
+          var prior = (prev && prev.dna) || {};
+          return Object.assign({}, prev, { dna: Object.assign({}, prior, patch) });
+        });
+      }
+
+      // ── Reference data ──
+      var BASE_PAIRS = [
+        { base: 'Adenine (A)', cat: 'Purine (2-ring)', pairs: 'Thymine (T) in DNA · Uracil (U) in RNA', bonds: '2 hydrogen bonds', icon: 'A', color: '#3b82f6', notes: 'One of the four DNA bases. Paired with T via 2 H-bonds — weaker than G-C.' },
+        { base: 'Thymine (T)', cat: 'Pyrimidine (1-ring)', pairs: 'Adenine (A)', bonds: '2 hydrogen bonds', icon: 'T', color: '#ef4444', notes: 'DNA only — replaced by uracil in RNA. Methyl group at C5 distinguishes it from U.' },
+        { base: 'Guanine (G)', cat: 'Purine (2-ring)', pairs: 'Cytosine (C)', bonds: '3 hydrogen bonds', icon: 'G', color: '#22c55e', notes: 'Stronger pairing than A-T due to 3 H-bonds. G-C rich regions are more thermally stable.' },
+        { base: 'Cytosine (C)', cat: 'Pyrimidine (1-ring)', pairs: 'Guanine (G)', bonds: '3 hydrogen bonds', icon: 'C', color: '#f59e0b', notes: 'Pyrimidine. Subject to deamination → uracil (a major source of DNA damage).' },
+        { base: 'Uracil (U)', cat: 'Pyrimidine (1-ring)', pairs: 'Adenine (A) in RNA', bonds: '2 hydrogen bonds', icon: 'U', color: '#a855f7', notes: 'RNA-only. Cheaper for cell to make than T; T more stable for genetic-info storage.' }
+      ];
+
+      var GENETIC_CODE = [
+        { codon: 'AUG', aa: 'Met', name: 'Methionine', note: 'START codon' },
+        { codon: 'UAA', aa: '—', name: 'STOP', note: 'ochre' },
+        { codon: 'UAG', aa: '—', name: 'STOP', note: 'amber' },
+        { codon: 'UGA', aa: '—', name: 'STOP', note: 'opal (sometimes selenocysteine)' },
+        { codon: 'UUU/UUC', aa: 'Phe', name: 'Phenylalanine', note: 'Aromatic, hydrophobic' },
+        { codon: 'UUA/UUG/CUx', aa: 'Leu', name: 'Leucine', note: '6 codons. Branched, hydrophobic.' },
+        { codon: 'AUU/AUC/AUA', aa: 'Ile', name: 'Isoleucine', note: 'Branched, hydrophobic' },
+        { codon: 'GUx', aa: 'Val', name: 'Valine', note: 'Branched, hydrophobic' },
+        { codon: 'UCx/AGU/AGC', aa: 'Ser', name: 'Serine', note: 'Polar, hydroxyl side chain. Often phosphorylated.' },
+        { codon: 'ACx', aa: 'Thr', name: 'Threonine', note: 'Polar, hydroxyl. Often phosphorylated.' },
+        { codon: 'UAU/UAC', aa: 'Tyr', name: 'Tyrosine', note: 'Aromatic, polar' },
+        { codon: 'UGU/UGC', aa: 'Cys', name: 'Cysteine', note: 'Forms disulfide bonds (S-S). Critical for protein folding.' },
+        { codon: 'UGG', aa: 'Trp', name: 'Tryptophan', note: 'Aromatic, hydrophobic. Largest amino acid.' },
+        { codon: 'CCx', aa: 'Pro', name: 'Proline', note: 'Rigid (ring). Disrupts α-helices.' },
+        { codon: 'CAU/CAC', aa: 'His', name: 'Histidine', note: 'Basic side chain. Active site of many enzymes (pKa near 7).' },
+        { codon: 'CAA/CAG', aa: 'Gln', name: 'Glutamine', note: 'Polar amide. Often surface-exposed.' },
+        { codon: 'AAU/AAC', aa: 'Asn', name: 'Asparagine', note: 'Polar amide. Common N-glycosylation site.' },
+        { codon: 'AAA/AAG', aa: 'Lys', name: 'Lysine', note: 'Basic, long side chain. Often acetylated/methylated.' },
+        { codon: 'CGx/AGA/AGG', aa: 'Arg', name: 'Arginine', note: 'Basic, guanidinium group. 6 codons — most degenerate.' },
+        { codon: 'GAU/GAC', aa: 'Asp', name: 'Aspartate', note: 'Acidic. Often active-site nucleophile.' },
+        { codon: 'GAA/GAG', aa: 'Glu', name: 'Glutamate', note: 'Acidic. Most abundant in proteins.' },
+        { codon: 'GGx', aa: 'Gly', name: 'Glycine', note: 'Smallest. No side chain — high flexibility.' },
+        { codon: 'GCx', aa: 'Ala', name: 'Alanine', note: 'Small, hydrophobic. "Generic" residue.' }
+      ];
+
+      var DNA_REPLICATION_STEPS = [
+        { step: 1, name: 'Initiation', enzymes: 'Helicase, SSBs, Topoisomerase', detail: 'Helicase unwinds the double helix at origins of replication. Single-strand binding proteins prevent re-annealing. Topoisomerase relieves the supercoiling tension ahead of the fork.' },
+        { step: 2, name: 'Primer synthesis', enzymes: 'Primase (RNA polymerase)', detail: 'Primase lays down short (~10 nt) RNA primers — DNA polymerase needs a 3\'-OH to extend from, so it cannot start a new strand alone.' },
+        { step: 3, name: 'Leading strand', enzymes: 'DNA polymerase III (prokaryotes) / Pol δ (eukaryotes)', detail: 'Synthesized continuously 5\'→3\' in the same direction as the replication fork moves. One primer per origin.' },
+        { step: 4, name: 'Lagging strand (Okazaki fragments)', enzymes: 'DNA polymerase III / Pol δ + Pol α', detail: 'Synthesized in short 100–1000 nt fragments (Okazaki fragments) because polymerase can only extend 5\'→3\'. Each fragment needs its own primer.' },
+        { step: 5, name: 'Primer removal + gap filling', enzymes: 'DNA polymerase I (prokaryotes) / RNase H + Pol δ (eukaryotes)', detail: 'RNA primers are excised and replaced with DNA nucleotides.' },
+        { step: 6, name: 'Ligation', enzymes: 'DNA ligase', detail: 'Joins Okazaki fragments by forming the final phosphodiester bond.' },
+        { step: 7, name: 'Proofreading', enzymes: 'DNA Pol III 3\'→5\' exonuclease', detail: 'Polymerase checks each base; mismatches removed and replaced. Lowers error rate from ~10⁻⁵ to ~10⁻⁷.' },
+        { step: 8, name: 'Mismatch repair', enzymes: 'MutS, MutL, MutH (prokaryotes); MSH, MLH (eukaryotes)', detail: 'Catches the few mismatches that escape proofreading. Final error rate: ~10⁻¹⁰ per base pair.' }
+      ];
+
+      var TRANSCRIPTION_STEPS = [
+        { step: 1, name: 'Initiation', detail: 'RNA polymerase binds the promoter (e.g., TATA box ~25 bp upstream of transcription start). Helps melt the DNA double helix.' },
+        { step: 2, name: 'Elongation', detail: 'Polymerase reads template strand 3\'→5\', synthesizing mRNA 5\'→3\'. Adds ~30 nucleotides per second in bacteria; ~10-50 in eukaryotes.' },
+        { step: 3, name: 'Termination', detail: 'Bacteria: rho-dependent or intrinsic termination (hairpin loop). Eukaryotes: cleavage and polyadenylation signals.' },
+        { step: 4, name: '5\' capping (eukaryotes)', detail: '7-methylguanosine cap added to 5\' end. Helps ribosome recognize mRNA + protects from degradation.' },
+        { step: 5, name: 'Splicing (eukaryotes)', detail: 'Introns removed, exons joined by the spliceosome. Alternative splicing → multiple proteins from one gene.' },
+        { step: 6, name: 'Polyadenylation (eukaryotes)', detail: '~100-250 adenine nucleotides added to 3\' end. Stabilizes mRNA + signals export.' },
+        { step: 7, name: 'Nuclear export (eukaryotes)', detail: 'Mature mRNA exits through nuclear pore complexes to the cytoplasm.' }
+      ];
+
+      var TRANSLATION_STEPS = [
+        { step: 1, name: 'Initiation', detail: 'Small ribosomal subunit binds mRNA. Initiator tRNA (carrying Met) binds AUG start codon. Large subunit joins.' },
+        { step: 2, name: 'Elongation', detail: 'Each cycle: aminoacyl-tRNA enters A site → peptide bond forms (catalyzed by 23S rRNA, a ribozyme) → ribosome translocates one codon → tRNA shifts A→P→E.' },
+        { step: 3, name: 'Termination', detail: 'Stop codon (UAA/UAG/UGA) recognized by release factors. Peptide released, ribosome dissociates.' },
+        { step: 4, name: 'Folding + modification', detail: 'Chaperones (Hsp70, GroEL) help proteins fold correctly. Post-translational modifications: phosphorylation, glycosylation, cleavage, disulfide bonds.' }
+      ];
+
+      var MUTATION_TYPES = [
+        { type: 'Substitution (point)', subtype: 'Silent', desc: 'Codon changes but amino acid is the same (genetic code redundancy). No effect.' },
+        { type: 'Substitution (point)', subtype: 'Missense', desc: 'Codon changes → different amino acid. Effect ranges from none (conservative substitution) to severe (sickle cell: Glu→Val).' },
+        { type: 'Substitution (point)', subtype: 'Nonsense', desc: 'Codon changes → STOP codon. Truncated protein, usually non-functional.' },
+        { type: 'Insertion', subtype: 'Frameshift (if not ÷3)', desc: 'Adds nucleotide(s). If not a multiple of 3, shifts reading frame → all downstream codons changed. Usually severe.' },
+        { type: 'Deletion', subtype: 'Frameshift (if not ÷3)', desc: 'Removes nucleotide(s). Same frameshift consequence as insertion.' },
+        { type: 'Duplication', subtype: 'Gene/chromosome', desc: 'Extra copies of a gene or region. Can lead to dosage effects (Down syndrome = extra chrom 21).' },
+        { type: 'Inversion', subtype: 'Chromosomal', desc: 'Segment of chromosome flipped. May disrupt genes at breakpoints.' },
+        { type: 'Translocation', subtype: 'Chromosomal', desc: 'Segment moves to a different chromosome. Famous: Philadelphia chromosome (CML; BCR-ABL fusion).' },
+        { type: 'Repeat expansion', subtype: 'Trinucleotide repeat', desc: 'Repeating unit (e.g., CAG) expands across generations. Huntington\'s (CAG repeats in HTT), fragile X (CGG in FMR1), myotonic dystrophy.' }
+      ];
+
+      var CHROMOSOMES = [
+        { name: 'Human autosomes', count: '22 pairs', detail: 'Pairs 1-22 (numbered roughly by size, with exceptions: chr 21 is smaller than chr 22).' },
+        { name: 'Sex chromosomes', count: '1 pair', detail: 'XX (female) or XY (male). Y is much smaller, carries few genes (~70) vs X (~800).' },
+        { name: 'Total human chromosomes', count: '46', detail: '23 pairs (diploid in somatic cells). Gametes are haploid (23 chromosomes, no pairs).' },
+        { name: 'Total human genes', count: '~20,000', detail: 'Surprisingly few — many genes produce multiple proteins via alternative splicing. Much of the genome is regulatory or non-coding.' },
+        { name: 'Total base pairs (haploid)', count: '~3.2 billion', detail: 'If stretched out, ~1.8 m of DNA per cell. Packed into a nucleus ~10 µm across via histones + supercoiling.' },
+        { name: 'Mitochondrial DNA', count: '16,569 bp (circular)', detail: 'Maternally inherited. Codes for 37 genes (13 proteins, 22 tRNAs, 2 rRNAs). Multiple copies per mitochondrion.' }
+      ];
+
+      var DNA_VS_RNA = [
+        { feature: 'Sugar', dna: 'Deoxyribose (no -OH at 2\')', rna: 'Ribose (-OH at 2\')' },
+        { feature: 'Bases', dna: 'A, T, G, C', rna: 'A, U, G, C (uracil replaces thymine)' },
+        { feature: 'Strands', dna: 'Double-stranded helix', rna: 'Usually single-stranded; can fold into 3D structures' },
+        { feature: 'Stability', dna: 'Very stable; long-term info storage', rna: 'Less stable (the 2\'-OH makes it susceptible to hydrolysis)' },
+        { feature: 'Length', dna: 'Very long (chromosomes)', rna: 'Short to medium; mRNA up to ~kb, rRNA few kb' },
+        { feature: 'Location', dna: 'Mostly nucleus (eukaryotes) + mitochondria', rna: 'Nucleus, cytoplasm, ribosomes' },
+        { feature: 'Function', dna: 'Genetic blueprint', rna: 'mRNA (messenger), tRNA (transfer), rRNA (ribosomal), regulatory (miRNA, lncRNA)' }
+      ];
+
+      var BIOTECH_TOOLS = [
+        { name: 'PCR (Polymerase Chain Reaction)', invented: '1983 (Kary Mullis)', desc: 'Amplifies a specific DNA segment by 2ⁿ (n cycles). Uses heat-stable Taq polymerase. Foundation of modern molecular biology.' },
+        { name: 'Sanger sequencing', invented: '1977 (Frederick Sanger)', desc: 'Reads DNA sequence using chain-terminating dideoxynucleotides. Read length ~800-1000 bp. Now largely replaced by next-gen sequencing.' },
+        { name: 'Next-gen sequencing (NGS)', invented: '2005+ (multiple)', desc: 'Massively parallel — sequences millions of fragments simultaneously. Illumina dominates. ~100-300 bp reads, billions per run.' },
+        { name: 'CRISPR-Cas9', invented: '2012 (Doudna, Charpentier, Zhang)', desc: 'Programmable gene editing. Guide RNA targets Cas9 nuclease to specific DNA. Cuts allow gene knockout or HDR-mediated insertion. Nobel 2020.' },
+        { name: 'CRISPR base editing', invented: '2016 (Liu lab)', desc: 'Edits a single base without double-strand break. Lower off-target effects than Cas9.' },
+        { name: 'Restriction enzymes', invented: '1970s (Smith, Nathans, Arber)', desc: 'Bacterial proteins that cut DNA at specific 4-8 bp sequences. Enabled recombinant DNA technology. Nobel 1978.' },
+        { name: 'DNA ligase', invented: '1967', desc: 'Joins DNA fragments via phosphodiester bonds. T4 DNA ligase is the workhorse for cloning.' },
+        { name: 'Gel electrophoresis', invented: '1960s', desc: 'Separates DNA fragments by size in an electric field. Smaller fragments migrate faster through gel matrix.' },
+        { name: 'Microarrays', invented: '1990s', desc: 'Thousands of DNA probes on a chip. Measure gene expression or detect SNPs in parallel.' },
+        { name: 'Single-cell RNA-seq', invented: '2009+', desc: 'Sequences mRNA from individual cells. Reveals cell-type heterogeneity that bulk RNA-seq misses.' },
+        { name: 'Cryo-EM for nucleic acids', invented: '2010s+ (revolution)', desc: 'Near-atomic structures of RNA/DNA complexes without crystallization. Particularly powerful for ribosomes, spliceosomes, replisomes.' },
+        { name: 'Long-read sequencing (PacBio, Nanopore)', invented: '2010s', desc: 'Read lengths up to 100kb+ (vs Illumina\'s ~300bp). Better for structural variants, repeats, full-length transcripts.' }
+      ];
+
+      var DISEASES_AND_GENES = [
+        { disease: 'Sickle cell anemia', gene: 'HBB (β-globin)', mutation: 'Glu6Val (GAG→GTG)', inheritance: 'Autosomal recessive', notes: 'Heterozygotes have malaria resistance — balanced polymorphism in malaria-endemic regions.' },
+        { disease: 'Cystic fibrosis', gene: 'CFTR (chloride channel)', mutation: 'ΔF508 (Phe508 deletion, most common); 1900+ known mutations', inheritance: 'Autosomal recessive', notes: 'Carrier frequency ~1/25 in Europeans. Thick mucus in lungs + pancreas + gut.' },
+        { disease: 'Huntington disease', gene: 'HTT', mutation: 'CAG repeat expansion (≥36 repeats)', inheritance: 'Autosomal dominant', notes: 'Anticipation: repeats expand across generations, earlier onset in offspring.' },
+        { disease: 'BRCA-related breast/ovarian cancer', gene: 'BRCA1, BRCA2', mutation: '1000+ pathogenic variants', inheritance: 'Autosomal dominant (high penetrance)', notes: '60-85% lifetime breast cancer risk if pathogenic variant present. PARP inhibitors therapeutic.' },
+        { disease: 'Phenylketonuria (PKU)', gene: 'PAH', mutation: '500+ variants', inheritance: 'Autosomal recessive', notes: 'Newborn screening (Guthrie test) — early dietary management (low Phe) prevents intellectual disability.' },
+        { disease: 'Down syndrome', gene: 'Whole chr 21 (trisomy)', mutation: 'Three copies of chr 21', inheritance: 'Sporadic (non-disjunction)', notes: 'Most common autosomal aneuploidy. Risk increases with maternal age.' },
+        { disease: 'Tay-Sachs disease', gene: 'HEXA', mutation: 'Various (1278insTATC common in Ashkenazi)', inheritance: 'Autosomal recessive', notes: 'Founder effect in Ashkenazi Jewish (~1/27 carriers) and French Canadian populations.' },
+        { disease: 'Hemophilia A', gene: 'F8 (factor VIII)', mutation: 'Inversions, deletions, points', inheritance: 'X-linked recessive', notes: 'Mostly affects males. Famous in European royal families via Queen Victoria.' },
+        { disease: 'Duchenne muscular dystrophy', gene: 'DMD (dystrophin)', mutation: 'Large deletions common', inheritance: 'X-linked recessive', notes: 'Largest gene known (~2.4 Mb, ~99% introns). Boys typically wheelchair-bound by adolescence.' },
+        { disease: 'Lactose intolerance (adults)', gene: 'LCT (lactase)', mutation: 'Regulatory SNP (rs4988235) keeps gene "on" in adults', inheritance: 'Variable by population', notes: 'Persistence (continuing to make lactase as adult) is the derived trait — appeared with dairy-farming cultures.' }
+      ];
+
+      var EVOLUTION_CONCEPTS = [
+        { concept: 'Natural selection', detail: 'Differential reproduction based on heritable variation. Genes that improve survival/reproduction become more common over generations.' },
+        { concept: 'Mutation', detail: 'Random source of new genetic variation. Most are neutral or harmful; rarely beneficial. Substrate for selection.' },
+        { concept: 'Genetic drift', detail: 'Random changes in allele frequency, especially in small populations. Founder effect + bottlenecks are extreme cases.' },
+        { concept: 'Gene flow', detail: 'Movement of alleles between populations via migration. Reduces between-population differences; increases within-population diversity.' },
+        { concept: 'Speciation', detail: 'Formation of new species, usually via reproductive isolation. Allopatric (geographic separation) most common.' },
+        { concept: 'Convergent evolution', detail: 'Unrelated organisms evolve similar traits independently (wings in birds + bats + insects; eyes in vertebrates + cephalopods).' },
+        { concept: 'Common ancestry', detail: 'All life shares a common ancestor (LUCA). Evidence: shared genetic code, ribosomes, ATP, glycolysis, basic biochemistry.' },
+        { concept: 'Phylogenetic tree', detail: 'Diagram showing evolutionary relationships. Increasingly built from DNA sequence comparisons rather than morphology.' },
+        { concept: 'Hardy-Weinberg equilibrium', detail: 'Allele frequencies stay constant under no-evolution assumptions: large pop, random mating, no selection/mutation/migration/drift. p² + 2pq + q² = 1.' }
+      ];
+
+      var DNA_GLOSSARY = [
+        { term: 'Gene', def: 'A segment of DNA that codes for a functional product (protein or RNA).' },
+        { term: 'Allele', def: 'A variant of a gene. Different alleles can produce different versions of the same trait.' },
+        { term: 'Genotype', def: 'The complete set of alleles an organism has.' },
+        { term: 'Phenotype', def: 'The observable traits — result of genotype + environment + chance.' },
+        { term: 'Homozygous', def: 'Two identical alleles at a locus (AA or aa).' },
+        { term: 'Heterozygous', def: 'Two different alleles at a locus (Aa).' },
+        { term: 'Dominant allele', def: 'Expressed in heterozygote. Capital letter (A).' },
+        { term: 'Recessive allele', def: 'Only expressed in homozygote (aa). Lowercase (a).' },
+        { term: 'Codominance', def: 'Both alleles fully expressed in heterozygote (ABO blood: AB shows both A + B antigens).' },
+        { term: 'Incomplete dominance', def: 'Heterozygote has intermediate phenotype (red × white → pink flowers).' },
+        { term: 'Locus', def: 'Specific physical location of a gene on a chromosome.' },
+        { term: 'Genome', def: 'Complete set of an organism\'s DNA. Human ~3.2 billion bp.' },
+        { term: 'Chromosome', def: 'Single, long, condensed DNA molecule with associated proteins (mainly histones).' },
+        { term: 'Chromatin', def: 'DNA + protein in the nucleus. Euchromatin (loose, active) vs heterochromatin (condensed, inactive).' },
+        { term: 'Exon', def: 'Coding region of a gene; retained in mature mRNA.' },
+        { term: 'Intron', def: 'Non-coding region of a gene; removed by splicing.' },
+        { term: 'Promoter', def: 'DNA sequence where RNA polymerase binds to start transcription. ~25-100 bp upstream of gene.' },
+        { term: 'Codon', def: 'Three-nucleotide sequence specifying one amino acid (or stop signal). 64 possible codons.' },
+        { term: 'Anticodon', def: 'Three-nucleotide sequence on tRNA that pairs with mRNA codon during translation.' },
+        { term: 'Ribosome', def: 'Cellular machine that synthesizes proteins. Made of rRNA + proteins. Catalytic activity is in the 23S rRNA — it\'s a ribozyme.' },
+        { term: 'tRNA', def: 'Transfer RNA. Adapter molecule that carries amino acids to the ribosome based on codon-anticodon pairing.' },
+        { term: 'mRNA', def: 'Messenger RNA. Carries genetic code from DNA to ribosomes for translation.' },
+        { term: 'rRNA', def: 'Ribosomal RNA. Structural + catalytic component of ribosomes. Most abundant RNA in cells.' },
+        { term: 'siRNA / miRNA', def: 'Small interfering / microRNA. Regulatory RNAs that silence gene expression via RNAi pathway. Therapeutic + research tools.' },
+        { term: 'Plasmid', def: 'Small, circular DNA found in bacteria, separate from chromosomes. Often carries antibiotic resistance. Workhorse of molecular cloning.' },
+        { term: 'Karyotype', def: 'Visual representation of an individual\'s full chromosome set. Reveals numerical or large structural abnormalities.' },
+        { term: 'Pedigree', def: 'Diagram tracing a trait through a family tree. Reveals inheritance pattern (dominant/recessive, autosomal/sex-linked).' },
+        { term: 'Epigenetics', def: 'Heritable changes in gene expression NOT caused by changes in DNA sequence. Methylation, histone modification, etc.' },
+        { term: 'Telomere', def: 'Repetitive DNA at chromosome ends (TTAGGG in vertebrates). Shortens with each division — linked to aging.' },
+        { term: 'Centromere', def: 'Constricted region where sister chromatids attach. Site of kinetochore + spindle attachment during cell division.' }
+      ];
+
+      function expHeader() {
+        return h('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200' },
+          h('div', null,
+            h('h3', { className: 'text-base font-black text-emerald-900' }, '🧬 Genetics Reference Library'),
+            h('div', { className: 'text-[11px] text-emerald-700 mt-0.5' }, 'Interactive references — pick a topic below to explore.')
+          ),
+          expSection && h('button', {
+            onClick: function() { setExp({ expSection: null }); },
+            className: 'px-3 py-1 rounded-md text-xs font-bold bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-100'
+          }, '✕ Close section')
+        );
+      }
+
+      function expTabBar() {
+        var sections = [
+          { id: 'bases', label: 'Base pairs', icon: '🅰🅣' },
+          { id: 'code', label: 'Genetic code', icon: '🔡' },
+          { id: 'replication', label: 'DNA replication', icon: '🔄' },
+          { id: 'transcription', label: 'Transcription', icon: '✍' },
+          { id: 'translation', label: 'Translation', icon: '🏭' },
+          { id: 'mutations', label: 'Mutations', icon: '⚠' },
+          { id: 'chromosomes', label: 'Chromosomes', icon: '🧬' },
+          { id: 'dnarna', label: 'DNA vs RNA', icon: '⇌' },
+          { id: 'biotech', label: 'Biotech tools', icon: '🔬' },
+          { id: 'diseases', label: 'Disease genes', icon: '🏥' },
+          { id: 'evolution', label: 'Evolution', icon: '🌳' },
+          { id: 'genomes', label: 'Genome sizes', icon: '📏' },
+          { id: 'meiosis', label: 'Meiosis vs mitosis', icon: '⊞' },
+          { id: 'mendel', label: 'Mendelian genetics', icon: '🫛' },
+          { id: 'epigenetics', label: 'Epigenetics', icon: '✎' },
+          { id: 'amino', label: 'Amino acids', icon: '⚕' },
+          { id: 'organelles', label: 'Cell organelles', icon: '🔬' },
+          { id: 'celltypes', label: 'Cell types', icon: '🧫' },
+          { id: 'sequencing', label: 'Sequencing tech', icon: '📊' },
+          { id: 'ethics', label: 'Bioethics', icon: '⚖' },
+          { id: 'famous', label: 'History', icon: '🕰' },
+          { id: 'glossary', label: 'Glossary', icon: '📖' }
+        ];
+        return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
+          sections.map(function(s) {
+            var active = expSection === s.id;
+            return h('button', {
+              key: s.id,
+              onClick: function() { setExp({ expSection: active ? null : s.id }); },
+              className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-emerald-600 text-white border-emerald-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-emerald-50 hover:border-emerald-300')
+            }, s.icon + ' ' + s.label);
+          })
+        );
+      }
+
+      function renderBasesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🅰🅣 DNA + RNA bases'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Five nitrogenous bases make up DNA + RNA: A, T, G, C (DNA); A, U, G, C (RNA). Purines (A, G) are 2-ringed; pyrimidines (T, U, C) are 1-ringed. Pairing follows specific H-bond patterns.'),
+          h('div', { className: 'space-y-2' },
+            BASE_PAIRS.map(function(b, i) {
+              return h('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-center gap-3 mb-1' },
+                  h('div', { className: 'w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-lg', style: { background: b.color } }, b.icon),
+                  h('div', { className: 'flex-1' },
+                    h('div', { className: 'text-sm font-black text-slate-800' }, b.base),
+                    h('div', { className: 'text-[11px] text-slate-600' }, b.cat + ' · ' + b.bonds)
+                  )
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Pairs with: '), b.pairs),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, b.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCodeSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔡 Genetic code — codon table'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, '64 codons (4³) encode 20 amino acids + 3 stop signals. Code is redundant (degenerate) — most amino acids have multiple codons, usually differing in the 3rd position ("wobble"). Universal across nearly all life.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Codon(s)', 'AA', 'Name', 'Note'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                GENETIC_CODE.map(function(g, i) {
+                  var isStop = g.aa === '—';
+                  var isStart = g.note === 'START codon';
+                  return h('tr', { key: 'g'+i, className: isStop ? 'bg-red-50' : isStart ? 'bg-emerald-50' : (i % 2 === 0 ? 'bg-white' : 'bg-slate-50') },
+                    h('td', { className: 'px-2 py-1 text-slate-800 font-mono font-bold' }, g.codon),
+                    h('td', { className: 'px-2 py-1 text-slate-800 font-mono font-bold' }, g.aa),
+                    h('td', { className: 'px-2 py-1 text-slate-700' }, g.name),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, g.note)
+                  );
+                })
+              )
+            )
+          ),
+          h('div', { className: 'mt-3 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
+            h('strong', null, '💡 Wobble: '), 'Third codon position pairs less strictly — a single tRNA can recognize multiple codons. Reduces the number of tRNAs needed (cells have ~30-40, not 64).'
+          )
+        );
+      }
+
+      function renderReplicationSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔄 DNA replication'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Semi-conservative — each new helix has one parent + one newly-synthesized strand. Proven by Meselson-Stahl 1958. ~50 bp/sec in bacteria, ~50 bp/sec per fork in eukaryotes (but thousands of forks in parallel).'),
+          h('div', { className: 'space-y-2' },
+            DNA_REPLICATION_STEPS.map(function(s, i) {
+              return h('div', { key: 's'+i, className: 'flex gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-base font-black text-emerald-700 min-w-[28px] mt-0.5' }, s.step),
+                h('div', { className: 'flex-1' },
+                  h('div', { className: 'text-[12px] font-black text-slate-800 mb-0.5' }, s.name),
+                  h('div', { className: 'text-[10px] font-bold text-emerald-700 mb-1' }, 'Enzymes: ', s.enzymes),
+                  h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.detail)
+                )
+              );
+            })
+          )
+        );
+      }
+
+      function renderTranscriptionSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '✍ Transcription (DNA → RNA)'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'RNA polymerase reads DNA template (3\'→5\') and synthesizes mRNA (5\'→3\'). In eukaryotes, the primary transcript is heavily processed before export.'),
+          h('div', { className: 'space-y-2' },
+            TRANSCRIPTION_STEPS.map(function(s, i) {
+              return h('div', { key: 's'+i, className: 'flex gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-base font-black text-emerald-700 min-w-[28px] mt-0.5' }, s.step),
+                h('div', { className: 'flex-1' },
+                  h('div', { className: 'text-[12px] font-black text-slate-800 mb-0.5' }, s.name),
+                  h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.detail)
+                )
+              );
+            })
+          )
+        );
+      }
+
+      function renderTranslationSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏭 Translation (mRNA → protein)'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Ribosome reads mRNA in 3-base codons and builds protein. ~10-20 amino acids per second in bacteria; ~3-5 in eukaryotes. Multiple ribosomes can translate the same mRNA (polyribosome).'),
+          h('div', { className: 'space-y-2' },
+            TRANSLATION_STEPS.map(function(s, i) {
+              return h('div', { key: 's'+i, className: 'flex gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-base font-black text-emerald-700 min-w-[28px] mt-0.5' }, s.step),
+                h('div', { className: 'flex-1' },
+                  h('div', { className: 'text-[12px] font-black text-slate-800 mb-0.5' }, s.name),
+                  h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.detail)
+                )
+              );
+            })
+          )
+        );
+      }
+
+      function renderMutationsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚠ Mutation types'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Mutations range from invisible (silent) to lethal. Their effect depends on what changes, where, and in which cell type (germline vs somatic).'),
+          h('div', { className: 'space-y-2' },
+            MUTATION_TYPES.map(function(m, i) {
+              return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, m.type),
+                  h('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-emerald-100 text-emerald-800' }, m.subtype)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.desc)
+              );
+            })
+          )
+        );
+      }
+
+      function renderChromosomesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧬 Human chromosomes + genome'),
+          h('div', { className: 'space-y-2' },
+            CHROMOSOMES.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'flex items-baseline gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'min-w-[180px]' },
+                  h('div', { className: 'text-[12px] font-black text-slate-800' }, c.name),
+                  h('div', { className: 'text-[10px] font-bold text-emerald-700 font-mono' }, c.count)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed flex-1' }, c.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderDnaRnaSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⇌ DNA vs RNA'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Feature', 'DNA', 'RNA'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                DNA_VS_RNA.map(function(d, i) {
+                  return h('tr', { key: 'd'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 text-slate-800 font-bold' }, d.feature),
+                    h('td', { className: 'px-2 py-1 text-slate-700' }, d.dna),
+                    h('td', { className: 'px-2 py-1 text-slate-700' }, d.rna)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderBiotechSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔬 Biotech tools'),
+          h('div', { className: 'space-y-1.5' },
+            BIOTECH_TOOLS.map(function(t, i) {
+              return h('div', { key: 't'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, t.name),
+                  h('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 italic' }, t.invented)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.desc)
+              );
+            })
+          )
+        );
+      }
+
+      function renderDiseasesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏥 Disease-causing genes (examples)'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'A sampling of well-characterized genetic disorders. Genetic counseling resources and current treatments evolve — verify with current literature for clinical decisions.'),
+          h('div', { className: 'space-y-2' },
+            DISEASES_AND_GENES.map(function(d, i) {
+              return h('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, d.disease),
+                  h('span', { className: 'text-[10px] font-mono ml-auto px-2 py-0.5 rounded bg-emerald-100 text-emerald-800' }, d.gene)
+                ),
+                h('div', { className: 'text-[11px] text-slate-600 mb-1' }, h('strong', null, 'Inheritance: '), d.inheritance),
+                h('div', { className: 'text-[11px] text-slate-600 mb-1' }, h('strong', null, 'Mutation: '), d.mutation),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed italic' }, d.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderEvolutionSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌳 Evolution concepts'),
+          h('div', { className: 'space-y-1.5' },
+            EVOLUTION_CONCEPTS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, c.concept),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderGlossarySection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📖 Genetics glossary'),
+          h('div', { className: 'space-y-1' },
+            DNA_GLOSSARY.map(function(g, i) {
+              return h('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900' }, g.term),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.def)
+              );
+            })
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 2 EXPANSION — Additional genetics references (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var GENOME_SIZES = [
+        { organism: 'φX174 (bacteriophage)', size: '~5,400 bp', genes: '11', notes: 'One of the smallest. First DNA genome sequenced (Sanger, 1977).' },
+        { organism: 'HIV-1', size: '~9,700 bp', genes: '9', notes: 'RNA genome. Compact, with overlapping reading frames.' },
+        { organism: 'E. coli', size: '~4.6 million bp', genes: '~4,300', notes: 'Workhorse of molecular biology. Circular chromosome.' },
+        { organism: 'Yeast (S. cerevisiae)', size: '~12 million bp', genes: '~6,000', notes: 'First eukaryote sequenced (1996). 16 chromosomes.' },
+        { organism: 'C. elegans (roundworm)', size: '~100 million bp', genes: '~20,000', notes: 'First multicellular sequenced. Cell-by-cell fate mapped.' },
+        { organism: 'Fruit fly (D. melanogaster)', size: '~140 million bp', genes: '~14,000', notes: 'Classic genetics model. Polytene chromosomes.' },
+        { organism: 'Arabidopsis (plant model)', size: '~135 million bp', genes: '~27,500', notes: 'First plant sequenced (2000).' },
+        { organism: 'Pufferfish (Takifugu)', size: '~390 million bp', genes: '~22,000', notes: 'Compact vertebrate genome — little "junk" DNA.' },
+        { organism: 'Human', size: '~3.0 billion bp', genes: '~20,000', notes: 'Reference draft 2001. Telomere-to-telomere finished 2022.' },
+        { organism: 'Wheat', size: '~16 billion bp', genes: '~108,000', notes: 'Hexaploid (6 copies). Much larger than human.' },
+        { organism: 'Axolotl (salamander)', size: '~32 billion bp', genes: '~23,000', notes: 'One of the largest sequenced. Lots of repetitive DNA.' },
+        { organism: 'Paris japonica (plant)', size: '~150 billion bp', genes: 'unknown', notes: 'Largest known eukaryotic genome. ~50× bigger than human.' }
+      ];
+
+      var MEIOSIS_VS_MITOSIS = [
+        { feature: 'Purpose', mitosis: 'Growth, repair, asexual reproduction', meiosis: 'Produce gametes (sperm, egg) for sexual reproduction' },
+        { feature: 'Divisions', mitosis: '1', meiosis: '2 (meiosis I + meiosis II)' },
+        { feature: 'Daughter cells', mitosis: '2', meiosis: '4' },
+        { feature: 'Daughter chromosome count', mitosis: 'Same as parent (diploid → diploid)', meiosis: 'Half of parent (diploid → haploid)' },
+        { feature: 'Genetic variation', mitosis: 'None (clones, barring mutations)', meiosis: 'Crossing over + independent assortment = huge variation' },
+        { feature: 'Homologous pairing', mitosis: 'No', meiosis: 'Yes (synapsis in prophase I)' },
+        { feature: 'Crossing over', mitosis: 'No', meiosis: 'Yes — exchanges DNA between homologs' },
+        { feature: 'Where it happens', mitosis: 'All somatic cells', meiosis: 'Only germ cells (gonads)' }
+      ];
+
+      var MENDEL_LAWS = [
+        { name: 'Law of Segregation', description: 'During gamete formation, the two alleles for each gene separate so each gamete carries only one allele.', example: 'Pea plant Tt (heterozygous) produces ½ T gametes and ½ t gametes.' },
+        { name: 'Law of Independent Assortment', description: 'Alleles for different genes assort independently of one another during gamete formation (genes on different chromosomes).', example: 'A TtYy plant produces TY, Ty, tY, ty gametes in equal proportions.' },
+        { name: 'Law of Dominance', description: 'When two different alleles are present, one (dominant) is expressed while the other (recessive) is masked.', example: 'In peas, purple (P) is dominant to white (p). Pp plants are purple.' }
+      ];
+
+      var MENDEL_RATIOS = [
+        { cross: 'Monohybrid (Aa × Aa)', phenotype: '3:1', genotype: '1 AA : 2 Aa : 1 aa', notes: 'Classic dominance pattern.' },
+        { cross: 'Dihybrid (AaBb × AaBb)', phenotype: '9:3:3:1', genotype: '16 combinations', notes: 'Independent assortment of two genes.' },
+        { cross: 'Test cross (Aa × aa)', phenotype: '1:1', genotype: '1 Aa : 1 aa', notes: 'Used to determine if dominant phenotype is heterozygous or homozygous.' },
+        { cross: 'Incomplete dominance (RR × WW)', phenotype: 'All pink', genotype: 'All RW', notes: 'Heterozygotes show blended phenotype. Snapdragons, four o\'clocks.' },
+        { cross: 'Codominance (IᴬIᴮ blood type)', phenotype: 'AB blood', genotype: 'Both alleles expressed', notes: 'Both alleles fully expressed. Roan cattle (red + white = roan).' },
+        { cross: 'X-linked recessive (carrier female)', phenotype: 'Affected sons (50%)', genotype: 'XᴬXᵃ × XᴬY', notes: 'Pattern for hemophilia, color blindness, DMD.' }
+      ];
+
+      var EPIGENETIC_MECHANISMS = [
+        { mechanism: 'DNA methylation', description: 'Methyl group (–CH₃) added to cytosines, especially at CpG islands. Generally silences gene expression.', example: 'Methylation of tumor-suppressor gene promoters can drive cancer.' },
+        { mechanism: 'Histone modifications', description: 'Acetylation, methylation, phosphorylation of histone tails. Changes chromatin packing.', example: 'Histone acetylation → open chromatin → active transcription. Deacetylation → silent.' },
+        { mechanism: 'Chromatin remodeling', description: 'ATP-dependent complexes slide or eject nucleosomes to expose DNA.', example: 'SWI/SNF complex repositions nucleosomes during gene activation.' },
+        { mechanism: 'Non-coding RNA', description: 'miRNA, lncRNA regulate gene expression post-transcriptionally.', example: 'XIST lncRNA coats one X chromosome in females → X-inactivation.' },
+        { mechanism: 'Genomic imprinting', description: 'Some genes expressed only from maternal or paternal allele. Methylation marks.', example: 'IGF2 expressed only from paternal allele; H19 only from maternal.' },
+        { mechanism: 'Trans-generational inheritance', description: 'Some epigenetic marks survive gametogenesis and pass to offspring.', example: 'Dutch Hunger Winter (1944-45) descendants show altered metabolism, methylation patterns.' }
+      ];
+
+      var AMINO_ACIDS = [
+        { letter: 'A', three: 'Ala', name: 'Alanine', side: 'Nonpolar, hydrophobic', notes: 'Smallest after glycine. Common in protein cores.' },
+        { letter: 'R', three: 'Arg', name: 'Arginine', side: 'Basic, positively charged', notes: 'Long side chain. Binds DNA/RNA (negatively charged).' },
+        { letter: 'N', three: 'Asn', name: 'Asparagine', side: 'Polar, uncharged', notes: 'Can be glycosylated. Hydrogen bonds with water.' },
+        { letter: 'D', three: 'Asp', name: 'Aspartate', side: 'Acidic, negatively charged', notes: 'Active site of many enzymes.' },
+        { letter: 'C', three: 'Cys', name: 'Cysteine', side: 'Polar, contains –SH', notes: 'Forms disulfide bonds (S-S) — stabilize protein folds.' },
+        { letter: 'E', three: 'Glu', name: 'Glutamate', side: 'Acidic, negatively charged', notes: 'Important neurotransmitter (in brain).' },
+        { letter: 'Q', three: 'Gln', name: 'Glutamine', side: 'Polar, uncharged', notes: 'Most abundant amino acid in blood.' },
+        { letter: 'G', three: 'Gly', name: 'Glycine', side: 'Nonpolar, smallest', notes: 'No side chain (just –H). Found in tight turns + collagen.' },
+        { letter: 'H', three: 'His', name: 'Histidine', side: 'Basic, can be neutral or +', notes: 'pKa near 6 — important in enzyme active sites (proton transfer).' },
+        { letter: 'I', three: 'Ile', name: 'Isoleucine', side: 'Nonpolar, hydrophobic', notes: 'Branched chain. Essential.' },
+        { letter: 'L', three: 'Leu', name: 'Leucine', side: 'Nonpolar, hydrophobic', notes: 'Most common in proteins. Branched chain. Essential.' },
+        { letter: 'K', three: 'Lys', name: 'Lysine', side: 'Basic, positively charged', notes: 'Long side chain. Often modified (acetylation, methylation) in histones.' },
+        { letter: 'M', three: 'Met', name: 'Methionine', side: 'Nonpolar, contains S', notes: 'Start codon. Sulfur in side chain. Essential.' },
+        { letter: 'F', three: 'Phe', name: 'Phenylalanine', side: 'Nonpolar, aromatic', notes: 'Benzene ring. Hydrophobic core of proteins. Essential.' },
+        { letter: 'P', three: 'Pro', name: 'Proline', side: 'Special — cyclic', notes: 'Side chain loops back to N. Creates kinks in protein chain.' },
+        { letter: 'S', three: 'Ser', name: 'Serine', side: 'Polar, contains –OH', notes: 'Active site of serine proteases. Phosphorylation target.' },
+        { letter: 'T', three: 'Thr', name: 'Threonine', side: 'Polar, contains –OH', notes: 'Phosphorylation target. Essential.' },
+        { letter: 'W', three: 'Trp', name: 'Tryptophan', side: 'Nonpolar, aromatic', notes: 'Largest amino acid. Fluorescent — used for protein detection. Essential.' },
+        { letter: 'Y', three: 'Tyr', name: 'Tyrosine', side: 'Polar, aromatic with –OH', notes: 'Phosphorylation target in signaling.' },
+        { letter: 'V', three: 'Val', name: 'Valine', side: 'Nonpolar, hydrophobic', notes: 'Branched chain. Sickle cell anemia: Glu→Val mutation in β-globin. Essential.' }
+      ];
+
+      var ORGANELLES = [
+        { name: 'Nucleus', function: 'Houses DNA, controls gene expression, site of transcription', notes: 'Surrounded by double membrane (nuclear envelope). Pores allow regulated transport.' },
+        { name: 'Nucleolus', function: 'Produces ribosomal RNA + assembles ribosomes', notes: 'Dense region within the nucleus. Not membrane-bound.' },
+        { name: 'Mitochondrion', function: 'Cellular respiration → ATP production', notes: 'Has own DNA (mtDNA, ~16,500 bp in humans). Maternally inherited. Endosymbiotic origin.' },
+        { name: 'Chloroplast (plants)', function: 'Photosynthesis: light energy → glucose', notes: 'Has own DNA. Contains chlorophyll. Endosymbiotic origin (cyanobacterium).' },
+        { name: 'Endoplasmic reticulum (rough)', function: 'Protein synthesis (ribosomes on surface), modification', notes: 'Continuous with nuclear envelope.' },
+        { name: 'Endoplasmic reticulum (smooth)', function: 'Lipid synthesis, detoxification, calcium storage', notes: 'No ribosomes. Abundant in liver cells.' },
+        { name: 'Golgi apparatus', function: 'Modifies, sorts, packages proteins for secretion or delivery', notes: 'Stack of flattened sacs (cisternae).' },
+        { name: 'Lysosome', function: 'Digestion via hydrolytic enzymes', notes: 'pH ~5 (acidic). Recycles cell components (autophagy).' },
+        { name: 'Peroxisome', function: 'Breakdown of fatty acids, detox of H₂O₂', notes: 'Contains catalase. Important in liver and kidney.' },
+        { name: 'Vacuole (plant central)', function: 'Storage, turgor pressure', notes: 'Can be 90% of plant cell volume. Maintains shape.' },
+        { name: 'Cytoskeleton', function: 'Structure, motility, intracellular transport', notes: 'Microtubules, microfilaments, intermediate filaments.' },
+        { name: 'Ribosome', function: 'Protein synthesis (translation)', notes: 'Made of rRNA + protein. Free in cytoplasm or attached to rough ER.' },
+        { name: 'Cell membrane', function: 'Selective barrier, signaling', notes: 'Phospholipid bilayer with embedded proteins (fluid mosaic model).' },
+        { name: 'Cell wall (plants, fungi, bacteria)', function: 'Structure, protection', notes: 'Plants: cellulose. Fungi: chitin. Bacteria: peptidoglycan.' }
+      ];
+
+      var CELL_TYPES = [
+        { type: 'Prokaryote (bacteria/archaea)', size: '~1–10 μm', features: 'No nucleus or membrane-bound organelles. Circular DNA in nucleoid.', example: 'E. coli, Streptococcus' },
+        { type: 'Eukaryote (general)', size: '~10–100 μm', features: 'Nucleus + organelles. Linear chromosomes with histones.', example: 'All animals, plants, fungi, protists' },
+        { type: 'Neuron', size: 'soma ~10–100 μm; axon up to 1 m', features: 'Specialized for electrical signaling. Doesn\'t divide (mostly).', example: 'Brain, spinal cord, peripheral nerves' },
+        { type: 'Red blood cell (RBC)', size: '~7–8 μm', features: 'No nucleus or organelles in mature form. Packed with hemoglobin.', example: 'Mammalian erythrocytes' },
+        { type: 'White blood cell (lymphocyte)', size: '~7–15 μm', features: 'Immune surveillance. B cells make antibodies; T cells kill infected cells.', example: 'Lymph, blood, lymphoid tissue' },
+        { type: 'Muscle cell (skeletal)', size: 'long fibers, up to many cm', features: 'Multinucleate. Packed with myofibrils (actin + myosin).', example: 'Biceps, quadriceps' },
+        { type: 'Cardiac muscle', size: '~50–100 μm long', features: 'Branched. Intercalated discs synchronize contraction.', example: 'Heart' },
+        { type: 'Smooth muscle', size: '~100 μm long', features: 'Involuntary, no striations. Around hollow organs.', example: 'Intestines, blood vessels, uterus' },
+        { type: 'Epithelial cell', size: 'varies', features: 'Sheet-forming. Polarized (apical vs basal surfaces).', example: 'Skin, gut lining, glands' },
+        { type: 'Sperm', size: '~50 μm long', features: 'Highly streamlined. Mitochondria for flagellum power. Haploid.', example: 'Male gamete' },
+        { type: 'Egg (oocyte)', size: '~100 μm (human) up to ostrich egg', features: 'Huge cytoplasm with maternal mRNAs + organelles. Haploid.', example: 'Female gamete' },
+        { type: 'Stem cell', size: 'varies', features: 'Can self-renew + differentiate. Pluripotent (ESCs) or multipotent (adult).', example: 'Bone marrow HSCs, embryonic stem cells, iPSCs' }
+      ];
+
+      var SEQUENCING_METHODS = [
+        { name: 'Sanger sequencing', year: '1977', readLength: '~800 bp', cost: 'high per base', notes: 'Chain termination with ddNTPs. Still used for short, accurate reads. Used for Human Genome Project.' },
+        { name: 'Illumina (short-read NGS)', year: '~2007', readLength: '~150-300 bp', cost: 'low per base', notes: 'Sequencing by synthesis with reversible terminators. High throughput, dominates whole-genome sequencing.' },
+        { name: 'Ion Torrent', year: '2010', readLength: '~200-400 bp', cost: 'moderate', notes: 'Detects H⁺ release as bases are added. No fluorescence — simpler optics.' },
+        { name: 'PacBio (SMRT)', year: '2011', readLength: '10-100 kb', cost: 'moderate', notes: 'Long reads. Good for spanning repeats, structural variants, full transcripts.' },
+        { name: 'Oxford Nanopore', year: '~2014', readLength: '1 kb – 4 Mb', cost: 'low per device', notes: 'Detects current changes as DNA passes through pore. Portable (MinION). Used in Ebola, COVID field sequencing.' },
+        { name: 'Hi-C / chromosome conformation capture', year: '2009', readLength: 'paired-end', cost: 'high', notes: 'Maps 3D genome organization, scaffolds genomes. Reveals chromatin loops and TADs.' }
+      ];
+
+      var BIOETHICS = [
+        { topic: 'Genetic privacy', detail: 'Who can access your genome? GINA (2008, US) prohibits genetic discrimination in employment + health insurance, NOT life insurance.' },
+        { topic: 'Direct-to-consumer testing', detail: '23andMe, AncestryDNA reveal ancestry + health risk. Concerns: incidental findings, accuracy, third-party data sharing.' },
+        { topic: 'CRISPR germline editing', detail: 'In 2018, He Jiankui edited embryos for HIV resistance → twin births. Widely condemned. Most countries ban germline editing.' },
+        { topic: 'Designer babies', detail: 'Hypothetical selection or editing of embryos for non-medical traits (height, IQ). Currently technically limited; ethically contested.' },
+        { topic: 'Gene drives', detail: 'Engineered to spread through wild populations (e.g., mosquito malaria-resistance). Potential ecological irreversibility.' },
+        { topic: 'Genetic testing for disease', detail: 'Should we test for untreatable diseases (Huntington)? Some people choose not to know.' },
+        { topic: 'Forensic DNA', detail: 'Familial DNA searches solved cold cases (Golden State Killer, 2018) but raise privacy issues for relatives who never consented.' },
+        { topic: 'Patenting genes', detail: 'US Supreme Court (2013) ruled that naturally-occurring DNA cannot be patented, but synthetic cDNA can.' },
+        { topic: 'Equity in genomics', detail: 'Reference genomes historically Eurocentric. Improving reference diversity is ongoing (e.g., human pangenome project).' }
+      ];
+
+      var DNA_HISTORY = [
+        { year: '1865', who: 'Gregor Mendel', what: 'Pea plant experiments → laws of inheritance. Largely ignored until 1900.' },
+        { year: '1869', who: 'Friedrich Miescher', what: 'Isolated "nuclein" (DNA) from pus cells. Didn\'t know its function.' },
+        { year: '1928', who: 'Frederick Griffith', what: 'Transformation experiments in pneumonia bacteria → some "transforming principle" carries heredity.' },
+        { year: '1944', who: 'Avery, MacLeod, McCarty', what: 'Showed Griffith\'s transforming principle is DNA.' },
+        { year: '1952', who: 'Hershey + Chase', what: 'Blender experiment with radiolabeled phages confirmed DNA = genetic material.' },
+        { year: '1953', who: 'Watson, Crick, Franklin, Wilkins', what: 'Double helix structure of DNA (using Franklin\'s Photo 51).' },
+        { year: '1958', who: 'Meselson + Stahl', what: 'Showed DNA replication is semi-conservative.' },
+        { year: '1961', who: 'Jacob + Monod', what: 'Operon model — how genes are regulated (lac operon in E. coli).' },
+        { year: '1966', who: 'Nirenberg, Khorana, Holley', what: 'Cracked the genetic code — codon → amino acid mapping.' },
+        { year: '1977', who: 'Frederick Sanger', what: 'Developed Sanger sequencing. Earlier (1958) sequenced insulin (proteins). Two Nobels.' },
+        { year: '1983', who: 'Kary Mullis', what: 'Invented PCR (polymerase chain reaction).' },
+        { year: '1990', who: 'NIH + international', what: 'Human Genome Project launched.' },
+        { year: '2001', who: 'HGP + Celera', what: 'First draft of human genome published.' },
+        { year: '2012', who: 'Doudna + Charpentier', what: 'CRISPR-Cas9 demonstrated as programmable gene-editing tool.' },
+        { year: '2022', who: 'T2T consortium', what: 'First complete (telomere-to-telomere) human genome published.' }
+      ];
+
+      function renderGenomesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📏 Genome sizes across life'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Genome size does not correlate with organism complexity (C-value paradox). Humans have similar gene counts to roundworms — much of "extra" DNA in larger genomes is non-coding.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Organism', 'Genome size', 'Genes', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                GENOME_SIZES.map(function(g, i) {
+                  return h('tr', { key: 'g'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, g.organism),
+                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 font-bold' }, g.size),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, g.genes),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, g.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderMeiosisSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⊞ Meiosis vs Mitosis'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Feature', 'Mitosis', 'Meiosis'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                MEIOSIS_VS_MITOSIS.map(function(r, i) {
+                  return h('tr', { key: 'r'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, r.feature),
+                    h('td', { className: 'px-2 py-1 text-slate-700' }, r.mitosis),
+                    h('td', { className: 'px-2 py-1 text-emerald-700 font-medium' }, r.meiosis)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderMendelSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🫛 Mendelian genetics'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Mendel\'s Laws (1865)'),
+            h('div', { className: 'space-y-2' },
+              MENDEL_LAWS.map(function(L, i) {
+                return h('div', { key: 'L'+i, className: 'p-3 rounded bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, L.name),
+                  h('div', { className: 'text-[11px] text-slate-700 mb-1' }, L.description),
+                  h('div', { className: 'text-[10px] text-emerald-700 italic font-mono' }, '→ ' + L.example)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Common cross outcomes'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Cross', 'Phenotype ratio', 'Genotype', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                MENDEL_RATIOS.map(function(m, i) {
+                  return h('tr', { key: 'm'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, m.cross),
+                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 font-bold' }, m.phenotype),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, m.genotype),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, m.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderEpigeneticsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '✎ Epigenetics — beyond the sequence'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Heritable changes in gene expression that don\'t involve changes to DNA sequence. Influenced by environment, diet, stress.'),
+          h('div', { className: 'space-y-2' },
+            EPIGENETIC_MECHANISMS.map(function(m, i) {
+              return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, m.mechanism),
+                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, m.description),
+                h('div', { className: 'text-[10px] text-emerald-700 italic' }, '→ ' + m.example)
+              );
+            })
+          )
+        );
+      }
+
+      function renderAminoSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚕ The 20 standard amino acids'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Building blocks of proteins. 9 are "essential" (can\'t be synthesized — must come from diet): His, Ile, Leu, Lys, Met, Phe, Thr, Trp, Val.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['1-letter', '3-letter', 'Name', 'Side chain', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                AMINO_ACIDS.map(function(a, i) {
+                  return h('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-mono font-black text-emerald-700' }, a.letter),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, a.three),
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, a.name),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, a.side),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, a.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderOrganellesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔬 Cell organelles'),
+          h('div', { className: 'space-y-2' },
+            ORGANELLES.map(function(o, i) {
+              return h('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, o.name),
+                h('div', { className: 'text-[11px] text-emerald-700 font-bold mb-1' }, 'Function: ' + o.function),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, o.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCellTypesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧫 Cell types'),
+          h('div', { className: 'space-y-2' },
+            CELL_TYPES.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, c.type),
+                  h('span', { className: 'text-[10px] text-emerald-700 font-mono ml-auto px-2 py-0.5 rounded bg-emerald-100' }, c.size)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, c.features),
+                h('div', { className: 'text-[10px] text-slate-600 italic' }, 'Example: ' + c.example)
+              );
+            })
+          )
+        );
+      }
+
+      function renderSequencingSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📊 DNA sequencing technologies'),
+          h('div', { className: 'space-y-2' },
+            SEQUENCING_METHODS.map(function(s, i) {
+              return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, s.name),
+                  h('span', { className: 'text-[10px] text-slate-500 ml-auto font-mono' }, s.year)
+                ),
+                h('div', { className: 'flex gap-3 text-[10px] mb-1' },
+                  h('span', { className: 'font-mono text-emerald-700' }, 'Read length: ' + s.readLength),
+                  h('span', { className: 'font-mono text-slate-600' }, 'Cost: ' + s.cost)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderEthicsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚖ Bioethics in genetics'),
+          h('div', { className: 'space-y-2' },
+            BIOETHICS.map(function(b, i) {
+              return h('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, b.topic),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, b.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderFamousSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🕰 History of genetics'),
+          h('div', { className: 'space-y-2' },
+            DNA_HISTORY.map(function(d, i) {
+              return h('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-0.5' },
+                  h('span', { className: 'text-[10px] font-mono text-emerald-700 font-bold' }, d.year),
+                  h('span', { className: 'text-[12px] font-black text-emerald-900' }, d.who)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, d.what)
+              );
+            })
+          )
+        );
+      }
+
+      function renderActiveSection() {
+        if (expSection === 'bases') return renderBasesSection();
+        if (expSection === 'code') return renderCodeSection();
+        if (expSection === 'replication') return renderReplicationSection();
+        if (expSection === 'transcription') return renderTranscriptionSection();
+        if (expSection === 'translation') return renderTranslationSection();
+        if (expSection === 'mutations') return renderMutationsSection();
+        if (expSection === 'chromosomes') return renderChromosomesSection();
+        if (expSection === 'dnarna') return renderDnaRnaSection();
+        if (expSection === 'biotech') return renderBiotechSection();
+        if (expSection === 'diseases') return renderDiseasesSection();
+        if (expSection === 'evolution') return renderEvolutionSection();
+        if (expSection === 'genomes') return renderGenomesSection();
+        if (expSection === 'meiosis') return renderMeiosisSection();
+        if (expSection === 'mendel') return renderMendelSection();
+        if (expSection === 'epigenetics') return renderEpigeneticsSection();
+        if (expSection === 'amino') return renderAminoSection();
+        if (expSection === 'organelles') return renderOrganellesSection();
+        if (expSection === 'celltypes') return renderCellTypesSection();
+        if (expSection === 'sequencing') return renderSequencingSection();
+        if (expSection === 'ethics') return renderEthicsSection();
+        if (expSection === 'famous') return renderFamousSection();
+        if (expSection === 'glossary') return renderGlossarySection();
+        return null;
+      }
+
+      var __dnaExpansions = h('div', { className: 'mt-4 max-w-4xl mx-auto' },
+        expHeader(),
+        expTabBar(),
+        expSection && h('div', { className: 'mt-2' }, renderActiveSection())
+      );
+
+      return h(React.Fragment, null, __dnaMainView, __dnaExpansions);
     }
   });
 

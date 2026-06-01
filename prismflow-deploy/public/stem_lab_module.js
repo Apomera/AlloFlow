@@ -1072,10 +1072,16 @@
       // This is a safety net — tools should be accessible by default, but this catches gaps.
       if (!window._stemA11yFixerActive) {
         window._stemA11yFixerActive = true;
-        setInterval(function() {
+        window._stemA11yFixerInterval = setInterval(function() {
           try {
             var modal = document.querySelector('.stem-lab-modal');
-            if (!modal) return;
+            if (!modal) {
+              // Lab is closed — stop the polling loop and allow a clean restart on reopen.
+              try { clearInterval(window._stemA11yFixerInterval); } catch (e) {}
+              window._stemA11yFixerInterval = null;
+              window._stemA11yFixerActive = false;
+              return;
+            }
             // 1. Auto-label role=button elements that lack aria-label
             var roleButtons = modal.querySelectorAll('[role="button"]:not([aria-label])');
             roleButtons.forEach(function(el) {

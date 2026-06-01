@@ -387,11 +387,9 @@ var createContentEngine = function(deps) {
     const dialectInstruction = effectiveLanguage !== 'English'
         ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions."
         : "";
-    console.error('[CE-TRACE] About to setIsGeneratingSource. typeof:', typeof setIsGeneratingSource);
     setIsGeneratingSource(true);
     setGenerationStep(t('status_steps.generating_source'));
     setError(null);
-    console.error('[CE-TRACE] State setters called. About to call Gemini...');
     if (switchView) {
         setGeneratedContent(null);
         setActiveView('input');
@@ -1290,7 +1288,6 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       setInputText(text);
       setShowSourceGen(false);
     } catch (err) {
-      console.error('[CE-TRACE] CAUGHT ERROR in handleGenerateSource:', err);
       if (!err.message?.includes("401")) {
           warnLog("Unhandled error:", err);
       }

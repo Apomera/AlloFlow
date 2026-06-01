@@ -1985,7 +1985,315 @@ window.StemLab = window.StemLab || {
           );
         };
       }
-      return h(this._CircuitComponent, { ctx: ctx });
+      var __circuitMainView = h(this._CircuitComponent, { ctx: ctx });
+
+      // ═══════════════════════════════════════════════════════════════════
+      // CIRCUIT EXPANSION SECTIONS — interactive electronics reference (2026-05-31)
+      // ═══════════════════════════════════════════════════════════════════
+      var labToolData = ctx.toolData;
+      var setLabToolData = ctx.setToolData;
+      var React = ctx.React;
+      var d2 = (labToolData && labToolData.circuit) || {};
+      var expSection = d2.expSection || null;
+      function setExp(patch) {
+        setLabToolData(function(prev) {
+          var prior = (prev && prev.circuit) || {};
+          return Object.assign({}, prev, { circuit: Object.assign({}, prior, patch) });
+        });
+      }
+
+      var CIRCUIT_LAWS = [
+        { name: 'Ohm\'s law', formula: 'V = I × R', desc: 'Voltage across a resistor equals current × resistance. Linear relationship for ohmic materials.', example: 'A 100 Ω resistor with 12 V across it → I = 0.12 A.' },
+        { name: 'Kirchhoff\'s current law (KCL)', formula: 'Σ I_in = Σ I_out', desc: 'Sum of currents into a node = sum of currents out. Conservation of charge.', example: 'If 3 A enters a junction and one branch takes 1 A, the other branch carries 2 A.' },
+        { name: 'Kirchhoff\'s voltage law (KVL)', formula: 'Σ V around loop = 0', desc: 'Sum of voltage drops around any closed loop = 0. Conservation of energy.', example: '9V battery + 4Ω + 5Ω in series: voltage drops 4×I + 5×I = 9 → I = 1A.' },
+        { name: 'Power formula', formula: 'P = V × I = I² × R = V²/R', desc: 'Three equivalent forms. Pick the one matching what you know.', example: '100 W bulb on 120 V mains: I = 0.83 A; R = 144 Ω.' },
+        { name: 'Series resistance', formula: 'R_total = R₁ + R₂ + R₃ + ...', desc: 'Resistors in series simply add. Same current through each.', example: '100 Ω + 220 Ω + 470 Ω in series = 790 Ω.' },
+        { name: 'Parallel resistance', formula: '1/R_total = 1/R₁ + 1/R₂ + ...', desc: 'Inverses add. Parallel total is ALWAYS less than smallest. Same voltage across each.', example: '100 Ω || 100 Ω = 50 Ω. 100 Ω || 1000 Ω ≈ 91 Ω.' },
+        { name: 'Capacitance', formula: 'Q = C × V; I = C × dV/dt', desc: 'Charge stored proportional to voltage. Current = capacitance × rate of voltage change.', example: '100 µF capacitor charged to 10 V holds 1 mC of charge.' },
+        { name: 'RC time constant', formula: 'τ = R × C', desc: 'Time to charge to ~63% (or discharge to ~37%). Reaches ~99% in 5τ.', example: '10 kΩ × 100 µF = 1 second. After 5 s, capacitor is fully (>99%) charged.' },
+        { name: 'Inductance', formula: 'V = L × dI/dt', desc: 'Inductor resists current changes. Voltage = inductance × rate of current change.', example: '1 mH inductor with current changing at 1000 A/s → 1 V across it.' },
+        { name: 'AC reactance', formula: 'X_L = 2πfL; X_C = 1/(2πfC)', desc: 'Frequency-dependent "resistance" of L and C. Combined as impedance Z.', example: '1 µF cap at 60 Hz: X_C = 2.65 kΩ. At 60 kHz: 2.65 Ω.' }
+      ];
+
+      var CIRCUIT_COMPONENTS = [
+        { name: 'Resistor', symbol: '⏛', units: 'Ω (ohms)', role: 'Limits current, drops voltage, divides voltage. Most common passive component.', colors: 'Color bands: Black=0, Brown=1, Red=2, Orange=3, Yellow=4, Green=5, Blue=6, Violet=7, Gray=8, White=9.' },
+        { name: 'Capacitor', symbol: '||', units: 'F (farads)', role: 'Stores charge. Blocks DC, passes AC. Filtering, timing, energy storage.', colors: 'Common sizes: µF (10⁻⁶), nF (10⁻⁹), pF (10⁻¹²). Electrolytic caps polarized.' },
+        { name: 'Inductor', symbol: '⌇', units: 'H (henries)', role: 'Stores energy in magnetic field. Resists current changes. Filtering, transformers, motors.', colors: 'Common sizes: mH, µH, nH. Coil of wire, often on a ferrite core.' },
+        { name: 'Diode', symbol: '▷|', units: 'V_f (forward voltage)', role: 'One-way valve for current. Conducts when V > V_f (~0.7 V for Si, 0.3 V for Ge).', colors: 'LED V_f varies by color: red ~1.8 V, green ~2.1 V, blue ~3.2 V, white ~3.0 V.' },
+        { name: 'Transistor (BJT)', symbol: '3 terminals', units: 'β (gain)', role: 'Current amplifier. Small base current controls large collector current. NPN or PNP.', colors: 'Common: 2N3904 (NPN), 2N3906 (PNP). β often 100-300.' },
+        { name: 'Transistor (MOSFET)', symbol: '3 terminals + gate', units: 'V_GS threshold', role: 'Voltage amplifier. Gate voltage controls drain-source current. Very high input impedance.', colors: 'Dominant in modern ICs. Logic levels: V_GS > V_threshold turns on.' },
+        { name: 'Op-amp', symbol: '▷', units: 'gain (often 10⁵+)', role: 'High-gain differential amplifier. With feedback, makes amplifiers, filters, comparators.', colors: 'Iconic: 741, LM358, TL072. Modern rail-to-rail: MCP6022.' },
+        { name: 'Switch', symbol: '|/', units: '—', role: 'Manual open/close of circuit. SPST, SPDT, DPDT, momentary, toggle, slide, rocker.', colors: 'Mechanical or solid-state (transistor switching).' },
+        { name: 'LED', symbol: 'D with arrows', units: 'mcd (millicandela)', role: 'Light-emitting diode. Efficient lighting + indicators. Need current-limiting resistor.', colors: 'Common drop ~2 V; current ~10-20 mA. R = (V_supply − V_LED) / I_LED.' },
+        { name: 'Battery', symbol: '|||−', units: 'V + Ah', role: 'DC voltage source. Capacity (Ah) × voltage = energy. Internal resistance limits current.', colors: 'AA: 1.5 V × ~2.5 Ah = 3.75 Wh. 9V: 9 V × ~0.5 Ah = 4.5 Wh.' },
+        { name: 'Fuse', symbol: '~', units: 'A (amps) rating', role: 'Sacrifices itself to protect circuit. Wire that melts above rated current.', colors: 'Slow-blow vs fast-blow. Always replace with same or LOWER rating.' },
+        { name: 'Crystal oscillator', symbol: '⊙', units: 'Hz', role: 'Provides precise frequency reference. Common: 32.768 kHz (watches), 16 MHz (Arduinos).', colors: 'Stability: ppm or ppb. Temperature-compensated (TCXO) for tighter specs.' }
+      ];
+
+      var SERIES_VS_PARALLEL = [
+        { aspect: 'Current', series: 'Same through all components', parallel: 'Divides between branches inversely with R' },
+        { aspect: 'Voltage', series: 'Divides across components proportional to R', parallel: 'Same across all branches' },
+        { aspect: 'Resistance', series: 'Sum: R₁ + R₂ + R₃', parallel: 'Reciprocal: 1/(1/R₁ + 1/R₂ + 1/R₃); always less than smallest' },
+        { aspect: 'Single component fails (open)', series: 'Entire circuit stops (like Christmas lights)', parallel: 'Other branches keep working' },
+        { aspect: 'Single component fails (short)', series: 'Other components see more current (may burn out)', parallel: 'That branch sees full current; others unaffected' },
+        { aspect: 'Power dissipation', series: 'P = I²R; larger R dissipates more (same I)', parallel: 'P = V²/R; smaller R dissipates more (same V)' },
+        { aspect: 'Typical use', series: 'Current limiting (resistor + LED)', parallel: 'Independent loads (every outlet in your house)' }
+      ];
+
+      var SAFETY_RULES = [
+        { rule: 'Power off before working', detail: 'Disconnect battery / unplug from mains. Discharge large capacitors (a CRT cap can hold lethal voltage for weeks).' },
+        { rule: '"Right-hand rule" for high-voltage work', detail: 'Keep one hand in pocket. Prevents current flow across chest. Adopted from electric utility safety.' },
+        { rule: 'GFCI in wet locations', detail: 'Ground Fault Circuit Interrupter trips in <30 ms if current leaks. Required by code in kitchens, bathrooms, outdoors.' },
+        { rule: 'AFCI for electrical fire prevention', detail: 'Arc Fault Circuit Interrupter detects dangerous arcs in damaged wiring. Required in bedrooms in newer codes.' },
+        { rule: 'Mains voltage is lethal', detail: '120 V AC can kill at ~10 mA across heart. Voltage drives current through skin resistance (~10-100 kΩ dry, much lower wet).' },
+        { rule: 'Battery short circuit', detail: 'Li-ion batteries shorted = fire / explosion. Lead-acid car batteries = molten metal sparks. Even AAs can heat up significantly.' },
+        { rule: 'Capacitor discharge before service', detail: 'Use a 10 kΩ resistor with insulated leads, never a screwdriver across terminals (the latter can vaporize the conductor + your eyes).' },
+        { rule: 'ESD (electrostatic discharge)', detail: 'Static can destroy ICs. Use wrist strap + ESD mat when handling chips. Walk on carpet → easily 10+ kV body charge.' }
+      ];
+
+      var CIRCUIT_PATTERNS = [
+        { name: 'Voltage divider', purpose: 'Get fraction of V_in', formula: 'V_out = V_in × R₂ / (R₁ + R₂)', notes: 'Two resistors in series. V_out tapped between them. Common for ADC scaling, biasing.' },
+        { name: 'Current divider', purpose: 'Split current between parallel branches', formula: 'I_n = I_total × R_total / R_n', notes: 'More current flows through smaller resistance.' },
+        { name: 'Low-pass filter (RC)', purpose: 'Pass low frequencies, block high', formula: 'f_cutoff = 1 / (2π × R × C)', notes: 'Resistor in series with cap to ground. Used for noise filtering, audio.' },
+        { name: 'High-pass filter (RC)', purpose: 'Pass high frequencies, block low (incl. DC)', formula: 'f_cutoff = 1 / (2π × R × C)', notes: 'Cap in series with resistor to ground. Same cutoff formula, swapped topology.' },
+        { name: 'LED with current limit', purpose: 'Light an LED safely', formula: 'R = (V_supply − V_LED) / I_LED', notes: 'V_LED ~2V, I_LED ~10-20 mA. From 5V: R = (5-2)/0.015 = 200Ω → use 220Ω standard.' },
+        { name: 'Pull-up / pull-down resistor', purpose: 'Define logic level when switch open', formula: 'Typically 4.7-10 kΩ', notes: 'Pull-up: switch connects to ground; otherwise input reads HIGH. Pull-down: opposite.' },
+        { name: 'Bypass capacitor (decoupling)', purpose: 'Suppress noise on power rails', formula: '0.1 µF ceramic near each IC', notes: 'Provides local energy reservoir for fast current demands. CRITICAL for digital circuits.' },
+        { name: 'Common-emitter amplifier (BJT)', purpose: 'Voltage amplification', formula: 'Gain ≈ −R_C / R_E (with emitter degen)', notes: 'Classic textbook amp. Inverts signal. Modern use: still common in audio.' },
+        { name: 'Inverting op-amp', purpose: 'Amplify (inverted) with precise gain', formula: 'V_out = −R_f / R_in × V_in', notes: 'Negative input, feedback resistor sets gain. Positive input grounded.' },
+        { name: 'Non-inverting op-amp', purpose: 'Amplify (in phase) with precise gain', formula: 'V_out = (1 + R_f / R_g) × V_in', notes: 'Positive input is signal. Gain always ≥ 1.' },
+        { name: '555 timer (astable)', purpose: 'Generate square wave', formula: 'f = 1.44 / ((R_a + 2R_b) × C)', notes: 'Iconic chip. Two resistors + cap set frequency. Duty cycle depends on R ratio.' },
+        { name: 'Voltage regulator (7805)', purpose: 'Constant 5 V output from higher V_in', formula: 'Input >7V, output 5V, drop = V_in - 5', notes: 'Drop × current = heat dissipation. Add bypass caps in + out. Modern switching regs >90% efficient.' }
+      ];
+
+      var DIGITAL_LOGIC = [
+        { gate: 'AND', symbol: 'D-shape', truth: '1 only if BOTH inputs = 1', formula: 'Y = A · B', uses: 'Permission logic ("OK to proceed if all conditions met")' },
+        { gate: 'OR', symbol: 'Curved', truth: '1 if EITHER input = 1', formula: 'Y = A + B', uses: 'Alarm triggers ("alert if any sensor fires")' },
+        { gate: 'NOT', symbol: 'Triangle + bubble', truth: 'Inverts input', formula: 'Y = ¬A', uses: 'Active-low signals, complementary signals' },
+        { gate: 'NAND', symbol: 'AND + bubble', truth: '0 only if BOTH inputs = 1', formula: 'Y = ¬(A · B)', uses: 'Universal gate — any logic can be built from NAND alone' },
+        { gate: 'NOR', symbol: 'OR + bubble', truth: '1 only if BOTH inputs = 0', formula: 'Y = ¬(A + B)', uses: 'Universal gate. RS latch building block.' },
+        { gate: 'XOR', symbol: '⊕ in curved', truth: '1 if inputs DIFFER', formula: 'Y = A ⊕ B', uses: 'Adders, parity checking, encryption' },
+        { gate: 'XNOR', symbol: 'XOR + bubble', truth: '1 if inputs MATCH', formula: 'Y = ¬(A ⊕ B)', uses: 'Equality detector' }
+      ];
+
+      var CIRCUIT_GLOSSARY = [
+        { term: 'Voltage (V)', def: 'Electric potential difference. Drives current through a circuit. Measured in volts.' },
+        { term: 'Current (I)', def: 'Flow rate of electric charge. Measured in amperes (A = C/s).' },
+        { term: 'Resistance (R)', def: 'Opposition to current flow. Measured in ohms (Ω = V/A).' },
+        { term: 'Power (P)', def: 'Energy per unit time. Watts (W = J/s = V·A).' },
+        { term: 'Charge (Q)', def: 'Quantity of electricity. Coulombs (C). 1 e⁻ = 1.6 × 10⁻¹⁹ C.' },
+        { term: 'Capacitance (C)', def: 'Ability to store charge per volt. Farads (F = C/V). Most caps are µF or pF.' },
+        { term: 'Inductance (L)', def: 'Resistance to change in current. Henries (H = V·s/A).' },
+        { term: 'Impedance (Z)', def: 'AC equivalent of resistance. Complex: includes resistance + reactance.' },
+        { term: 'Frequency (f)', def: 'Cycles per second. Hertz (Hz). AC mains: 50 Hz (Europe) or 60 Hz (US).' },
+        { term: 'Period (T)', def: 'Time for one cycle. T = 1/f. 60 Hz → 16.67 ms.' },
+        { term: 'Ground (GND)', def: 'Reference point for voltage measurement (often 0 V). Earth ground for safety.' },
+        { term: 'Open circuit', def: 'Break in the circuit; no current flows. Infinite resistance.' },
+        { term: 'Short circuit', def: 'Path with near-zero resistance; very large current. Often unintended; dangerous.' },
+        { term: 'Polarity', def: 'Direction of conventional current flow. Some components (electrolytic caps, batteries, diodes) are polarized; reversing damages them.' },
+        { term: 'AC (alternating current)', def: 'Current that reverses direction periodically. Used for power distribution (lower transmission losses).' },
+        { term: 'DC (direct current)', def: 'Current flowing in one direction. Batteries, USB, electronic devices internally.' },
+        { term: 'Multimeter', def: 'Measures V, I, R (and often more). Auto-ranging multimeters pick the right scale automatically.' },
+        { term: 'Oscilloscope', def: 'Visualizes voltage vs time. Bandwidth (MHz) is the key spec.' },
+        { term: 'Breadboard', def: 'Prototyping board with sockets connected in standard patterns. No soldering required.' },
+        { term: 'PCB', def: 'Printed Circuit Board. Permanent platform with copper traces. Cheap to manufacture even in small quantities.' },
+        { term: 'Solder', def: 'Low-melting metal alloy that joins components to PCB. Modern: lead-free (SAC305).' },
+        { term: 'Datasheet', def: 'Manufacturer document detailing a component\'s electrical, mechanical, and thermal specifications. Always check before designing.' }
+      ];
+
+      function expHeader() {
+        return h('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200' },
+          h('div', null,
+            h('h3', { className: 'text-base font-black text-amber-900' }, '⚡ Circuit Reference Library'),
+            h('div', { className: 'text-[11px] text-amber-700 mt-0.5' }, 'Interactive references — pick a topic below to explore.')
+          ),
+          expSection && h('button', {
+            onClick: function() { setExp({ expSection: null }); },
+            className: 'px-3 py-1 rounded-md text-xs font-bold bg-white border border-amber-300 text-amber-700 hover:bg-amber-100'
+          }, '✕ Close section')
+        );
+      }
+
+      function expTabBar() {
+        var sections = [
+          { id: 'laws', label: 'Laws + formulas', icon: 'V=IR' },
+          { id: 'components', label: 'Components', icon: '⏛' },
+          { id: 'sp', label: 'Series vs parallel', icon: '⇊' },
+          { id: 'patterns', label: 'Common circuits', icon: '🔌' },
+          { id: 'logic', label: 'Digital logic', icon: '0/1' },
+          { id: 'safety', label: 'Safety', icon: '⚠' },
+          { id: 'resistor', label: 'Resistor colors', icon: '🎨' },
+          { id: 'capacitor', label: 'Capacitors', icon: '⎮⎮' },
+          { id: 'inductor', label: 'Inductors', icon: '∿∿' },
+          { id: 'semicon', label: 'Semiconductors', icon: '⌐' },
+          { id: 'opamp', label: 'Op-amps', icon: '▷' },
+          { id: 'filters', label: 'Filters', icon: '⌒' },
+          { id: 'power', label: 'Power supplies', icon: '🔋' },
+          { id: 'motors', label: 'Motors & generators', icon: '⚙' },
+          { id: 'fields', label: 'Electric & magnetic fields', icon: '⚡' },
+          { id: 'wireless', label: 'Wireless power', icon: '📶' },
+          { id: 'units', label: 'Units & constants', icon: '∑' },
+          { id: 'famous', label: 'History', icon: '🕰' },
+          { id: 'glossary', label: 'Glossary', icon: '📖' }
+        ];
+        return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
+          sections.map(function(s) {
+            var active = expSection === s.id;
+            return h('button', {
+              key: s.id,
+              onClick: function() { setExp({ expSection: active ? null : s.id }); },
+              className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-amber-600 text-white border-amber-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-amber-50 hover:border-amber-300')
+            }, s.icon + ' ' + s.label);
+          })
+        );
+      }
+
+      function renderLawsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'V=IR Core laws + formulas'),
+          h('div', { className: 'space-y-2' },
+            CIRCUIT_LAWS.map(function(l, i) {
+              return h('div', { key: 'l'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, l.name),
+                  h('span', { className: 'text-sm font-bold ml-auto px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-mono' }, l.formula)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 mb-1 leading-relaxed' }, l.desc),
+                h('div', { className: 'text-[11px] text-slate-600 italic' }, 'Example: ', l.example)
+              );
+            })
+          )
+        );
+      }
+
+      function renderComponentsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⏛ Common components'),
+          h('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
+            CIRCUIT_COMPONENTS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  h('span', { className: 'text-base font-black text-amber-700' }, c.symbol),
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, c.name),
+                  h('span', { className: 'text-[10px] font-mono ml-auto px-1.5 py-0.5 rounded bg-amber-100 text-amber-800' }, c.units)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 mb-1 leading-relaxed' }, c.role),
+                h('div', { className: 'text-[10px] text-slate-600 italic' }, c.colors)
+              );
+            })
+          )
+        );
+      }
+
+      function renderSpSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⇊ Series vs parallel circuits'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Aspect', 'Series', 'Parallel'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                SERIES_VS_PARALLEL.map(function(r, i) {
+                  return h('tr', { key: 'r'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 text-slate-800 font-bold' }, r.aspect),
+                    h('td', { className: 'px-2 py-1 text-slate-700' }, r.series),
+                    h('td', { className: 'px-2 py-1 text-slate-700' }, r.parallel)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderPatternsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔌 Common circuit patterns'),
+          h('div', { className: 'space-y-2' },
+            CIRCUIT_PATTERNS.map(function(p, i) {
+              return h('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, p.name),
+                  h('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-amber-100 text-amber-800' }, p.purpose)
+                ),
+                h('div', { className: 'text-[11px] font-mono text-indigo-800 bg-indigo-50 px-2 py-1 rounded mb-1' }, p.formula),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, p.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderLogicSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '0/1 Digital logic gates'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Every digital circuit is built from logic gates. Combinational logic computes; sequential logic remembers. NAND or NOR alone is functionally complete (can build all others).'),
+          h('div', { className: 'space-y-2' },
+            DIGITAL_LOGIC.map(function(g, i) {
+              return h('div', { key: 'g'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[14px] font-black text-amber-700' }, g.gate),
+                  h('span', { className: 'text-[11px] font-mono ml-auto px-2 py-0.5 rounded bg-amber-100 text-amber-800' }, g.formula)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Truth: '), g.truth),
+                h('div', { className: 'text-[11px] text-slate-600 italic' }, 'Uses: ', g.uses)
+              );
+            })
+          )
+        );
+      }
+
+      function renderSafetySection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚠ Electrical safety'),
+          h('div', { className: 'space-y-2' },
+            SAFETY_RULES.map(function(s, i) {
+              return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-red-50 border border-red-200' },
+                h('div', { className: 'text-[12px] font-black text-red-900 mb-1' }, '🛡 ' + s.rule),
+                h('div', { className: 'text-[11px] text-red-900 leading-relaxed' }, s.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderGlossarySection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📖 Circuit glossary'),
+          h('div', { className: 'space-y-1' },
+            CIRCUIT_GLOSSARY.map(function(g, i) {
+              return h('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-amber-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-amber-900' }, g.term),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.def)
+              );
+            })
+          )
+        );
+      }
+
+      function renderActiveSection() {
+        if (expSection === 'laws') return renderLawsSection();
+        if (expSection === 'components') return renderComponentsSection();
+        if (expSection === 'sp') return renderSpSection();
+        if (expSection === 'patterns') return renderPatternsSection();
+        if (expSection === 'logic') return renderLogicSection();
+        if (expSection === 'safety') return renderSafetySection();
+        if (expSection === 'glossary') return renderGlossarySection();
+        return null;
+      }
+
+      var __circuitExpansions = h('div', { className: 'mt-4 max-w-3xl mx-auto' },
+        expHeader(),
+        expTabBar(),
+        expSection && h('div', { className: 'mt-2' }, renderActiveSection())
+      );
+
+      return h(React.Fragment, null, __circuitMainView, __circuitExpansions);
     }
   });
 

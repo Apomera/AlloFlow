@@ -1,0 +1,993 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FERPA environment renders identically 1`] = `
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-default">
+<style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
+<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
+</div>
+<div style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="font-size:22px" aria-hidden="true">🎨</span>
+<div>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
+<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+</div>
+</div>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+</div>
+<div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<button role="tab" aria-selected="true" aria-label="Symbols tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
+<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
+<button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
+<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🔍</span>Symbol Search</button>
+<button role="tab" aria-selected="false" aria-label="Word Garden tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🌱</span>Word Garden</button>
+</div>
+</div>
+<div style="display:flex;flex:1;overflow:hidden" role="tabpanel" aria-label="symbols panel">
+<div style="width:250px;flex-shrink:0;border-right:1px solid #e5e7eb;overflow-y:auto;background:#f9fafb;padding:14px;display:flex;flex-direction:column;gap:10px">
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Student Profiles</div>
+<button aria-label="Add new student profile" style="padding:2px 8px;border:1px dashed #6b7280;border-radius:12px;background:transparent;color:#6b7280;font-size:11px;cursor:pointer;line-height:1.4">+ Add</button>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+<button aria-label="Profile: Student 1" style="display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;border:2px solid #7c3aed;background:#ede9fe;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer">
+<span style="font-size:11px">👤</span>Student 1</button>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Global Settings</div>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Art Style</label>
+<select aria-label="Art style" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit;margin-bottom:8px">
+<option value="" selected="">Flat Vector (default)</option>
+<option value="simple line art, bold outlines">Line Art</option>
+<option value="friendly cartoon, vibrant colors">Cartoon</option>
+<option value="soft watercolor, gentle washes">Watercolor</option>
+<option value="bold comic book, thick outlines">Bold Comic</option>
+<option value="high contrast black and white, bold thick outlines, no color fill, simple silhouette">High Contrast (B&amp;W Print)</option>
+<option value="__custom__">✏️ Custom Style...</option>
+</select>
+<label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:#374151">
+<input type="checkbox" aria-label="Auto-clean text from images" checked=""/>
+<span>Auto-clean text from images</span>
+</label>
+<p style="font-size:10px;color:#6b7280;margin:3px 0 0">Runs a second AI pass to strip any embedded labels</p>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">Category Colors (AAC)</label>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px">
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#fef9c3"/>Noun</label>
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dcfce7"/>Verb</label>
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
+<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+</div>
+<p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
+<select aria-label="Text-to-speech voice selection" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit;margin-bottom:4px">
+<optgroup label="✨ Gemini TTS (Cloud)">
+</optgroup>
+<optgroup label="🎤 Kokoro (Offline Fallback)">
+</optgroup>
+</select>
+<button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
+<p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
+</div>
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
+</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap">
+<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
+</div>
+<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+</div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
+<p style="font-size:10px;color:#6b7280;margin:0 0 8px">0 symbols · 0 boards · 0 schedules</p>
+<div style="display:flex;flex-direction:column;gap:5px">
+<button aria-label="Export all data as backup file" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;text-align:left">⬇️ Export Backup</button>
+<button aria-label="Import Backup" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;text-align:left">📂 Import Backup</button>
+</div>
+<input type="file" accept=".json" style="display:none"/>
+<div style="margin-top:8px;padding-top:8px;border-top:1px solid #f3f4f6">
+<button aria-label="Toggle AAC usage analytics" style="background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;width:100%;text-align:left;font-size:11px;font-weight:700;color:#374151;margin-bottom:0">📊 AAC Usage Analytics <span style="color:#6b7280;font-weight:400;margin-left:auto;font-size:10px">▼ show</span>
+</button>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">IEP Communication Goals</div>
+<p style="font-size:10px;color:#6b7280;margin:0 0 8px">Track AAC &amp; communication goals. Progress syncs with Teacher Dashboard RTI data.</p>
+<p style="font-size:11px;color:#6b7280;font-style:italic;margin:0 0 8px">No goals set for this profile yet.</p>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<select id="iep-goal-type" aria-label="IEP goal type" style="font-size:11px;border:1px solid #d1d5db;border-radius:6px;padding:4px 6px;background:#fff">
+<option value="expressive">Expressive</option>
+<option value="receptive">Receptive</option>
+<option value="social">Social</option>
+<option value="pragmatic">Pragmatic</option>
+<option value="articulation">Articulation</option>
+</select>
+<input id="iep-goal-text" type="text" placeholder="e.g. Request items using 2-word phrases" aria-label="IEP goal description" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:11px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit;flex:1;margin:0;min-width:200px"/>
+<input id="iep-goal-target" type="number" min="1" max="200" placeholder="# target" aria-label="IEP goal target count" style="width:60px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;padding:4px 6px;text-align:center"/>
+</div>
+<details style="font-size:10px">
+<summary style="cursor:pointer;color:#6b7280;font-weight:700;padding:2px 0">+ IEP team details (priority, baseline, target date, cue level)</summary>
+<div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:6px;margin-top:6px">
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Priority</span>
+<select id="iep-goal-priority" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px">
+<option value="standard">Standard</option>
+<option value="high">High</option>
+<option value="maintenance">Maintenance</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Cue level</span>
+<select id="iep-goal-cue" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px" title="Support required for the student to succeed on this goal">
+<option value="independent">Independent</option>
+<option value="visual">Visual cue</option>
+<option value="verbal">Verbal cue</option>
+<option value="gestural">Gestural cue</option>
+<option value="physical">Physical prompt</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Data method</span>
+<select id="iep-goal-datamethod" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px">
+<option value="frequency">Frequency count</option>
+<option value="percentage">Percentage accuracy</option>
+<option value="duration">Duration</option>
+<option value="rubric">Rubric score</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Target date</span>
+<input id="iep-goal-targetdate" type="date" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
+<span style="color:#374151;font-weight:700">Baseline</span>
+<input id="iep-goal-baseline" type="text" placeholder="e.g. 2/10 accuracy on probe trials (Sept 2026)" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
+<span style="color:#374151;font-weight:700">Accommodations</span>
+<input id="iep-goal-accom" type="text" placeholder="e.g. AAC device available, visual supports, extended time" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
+<span style="color:#374151;font-weight:700">Linked IEP section (optional)</span>
+<input id="iep-goal-iepsection" type="text" placeholder="e.g. Communication — Expressive Language" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+</div>
+</details>
+<button aria-label="Add new IEP goal" style="padding:8px 14px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">+ Add Goal</button>
+</div>
+</div>
+</div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+<div style="display:flex;gap:14px;padding:16px;flex:1;overflow:hidden">
+<div style="width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:3px;background:#f3f4f6;border-radius:8px;padding:3px">
+<button aria-label="single generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:#fff;font-weight:700;font-size:11px;cursor:pointer;color:#7c3aed;box-shadow:0 1px 3px rgba(0,0,0,0.1)">✏️ Single</button>
+<button aria-label="batch generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:transparent;font-weight:400;font-size:11px;cursor:pointer;color:#6b7280;box-shadow:none">📋 Batch</button>
+</div>
+<div style="margin-bottom:4px">
+<div style="font-size:9px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">💡 Suggested (Evening)</div>
+<div style="display:flex;flex-wrap:wrap;gap:3px">
+<button aria-label="Quick set label: home" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">home</button>
+<button aria-label="Quick set label: snack" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">snack</button>
+<button aria-label="Quick set label: tired" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">tired</button>
+<button aria-label="Quick set label: bath" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">bath</button>
+<button aria-label="Quick set label: dinner" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">dinner</button>
+<button aria-label="Quick set label: goodnight" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">goodnight</button>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:7px">
+<div>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Label</label>
+<input type="text" placeholder="e.g. wash hands" aria-label="Symbol label" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" autofocus="" value=""/>
+</div>
+<div>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Context (optional)</label>
+<input type="text" placeholder="e.g. hygiene routine" aria-label="Symbol context" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" value=""/>
+</div>
+<div>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Category</label>
+<select aria-label="Symbol category" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit">
+<option value="" selected="">other</option>
+<option value="emotions">emotions</option>
+<option value="classroom">classroom</option>
+<option value="daily living">daily living</option>
+<option value="food">food</option>
+<option value="social">social</option>
+<option value="actions">actions</option>
+<option value="places">places</option>
+<option value="objects">objects</option>
+</select>
+</div>
+</div>
+<button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden;gap:10px">
+<div style="flex:1;overflow-y:auto">
+<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">
+<div style="display:flex;align-items:center;gap:6px">
+<span style="font-weight:600;font-size:12px;color:#374151">Gallery (0)</span>
+<input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in gallery" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
+<button aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
+</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap">
+<button aria-label="Filter by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
+<button aria-label="Filter by Nouns" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Nouns</button>
+<button aria-label="Filter by Verbs" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Verbs</button>
+<button aria-label="Filter by Adjectives" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Adjectives</button>
+<button aria-label="Filter by Other" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Other</button>
+</div>
+</div>
+<div style="text-align:center;color:#6b7280;padding:30px 0;font-size:13px">Generate your first symbol using the panel on the left.</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>"
+`;
+
+exports[`Symbol Studio — render under each host theme (snapshot) > dark theme renders identically 1`] = `
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-dark">
+<style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
+<div style="background:#0f172a;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
+</div>
+<div style="background:linear-gradient(135deg, #4c1d95 0%, #312e81 100%);padding:12px 18px;flex-shrink:0">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="font-size:22px" aria-hidden="true">🎨</span>
+<div>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
+<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+</div>
+</div>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+</div>
+<div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<button role="tab" aria-selected="true" aria-label="Symbols tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
+<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
+<button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
+<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🔍</span>Symbol Search</button>
+<button role="tab" aria-selected="false" aria-label="Word Garden tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🌱</span>Word Garden</button>
+</div>
+</div>
+<div style="display:flex;flex:1;overflow:hidden" role="tabpanel" aria-label="symbols panel">
+<div style="width:250px;flex-shrink:0;border-right:1px solid #334155;overflow-y:auto;background:#1e293b;padding:14px;display:flex;flex-direction:column;gap:10px">
+<div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Student Profiles</div>
+<button aria-label="Add new student profile" style="padding:2px 8px;border:1px dashed #6b7280;border-radius:12px;background:transparent;color:#6b7280;font-size:11px;cursor:pointer;line-height:1.4">+ Add</button>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+<button aria-label="Profile: Student 1" style="display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;border:2px solid #7c3aed;background:#ede9fe;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer">
+<span style="font-size:11px">👤</span>Student 1</button>
+</div>
+</div>
+<div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Global Settings</div>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Art Style</label>
+<select aria-label="Art style" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9;margin-bottom:8px">
+<option value="" selected="">Flat Vector (default)</option>
+<option value="simple line art, bold outlines">Line Art</option>
+<option value="friendly cartoon, vibrant colors">Cartoon</option>
+<option value="soft watercolor, gentle washes">Watercolor</option>
+<option value="bold comic book, thick outlines">Bold Comic</option>
+<option value="high contrast black and white, bold thick outlines, no color fill, simple silhouette">High Contrast (B&amp;W Print)</option>
+<option value="__custom__">✏️ Custom Style...</option>
+</select>
+<label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:#374151">
+<input type="checkbox" aria-label="Auto-clean text from images" checked=""/>
+<span>Auto-clean text from images</span>
+</label>
+<p style="font-size:10px;color:#6b7280;margin:3px 0 0">Runs a second AI pass to strip any embedded labels</p>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px;margin-top:10px">Category Colors (AAC)</label>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px">
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#fef9c3"/>Noun</label>
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dcfce7"/>Verb</label>
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
+<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+</div>
+<p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
+<select aria-label="Text-to-speech voice selection" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9;margin-bottom:4px">
+</select>
+<button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
+<p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
+</div>
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
+</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap">
+<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
+</div>
+<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+</div>
+<div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
+<p style="font-size:10px;color:#6b7280;margin:0 0 8px">0 symbols · 0 boards · 0 schedules</p>
+<div style="display:flex;flex-direction:column;gap:5px">
+<button aria-label="Export all data as backup file" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;text-align:left">⬇️ Export Backup</button>
+<button aria-label="Import Backup" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;text-align:left">📂 Import Backup</button>
+</div>
+<input type="file" accept=".json" style="display:none"/>
+<div style="margin-top:8px;padding-top:8px;border-top:1px solid #f3f4f6">
+<button aria-label="Toggle AAC usage analytics" style="background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;width:100%;text-align:left;font-size:11px;font-weight:700;color:#374151;margin-bottom:0">📊 AAC Usage Analytics <span style="color:#6b7280;font-weight:400;margin-left:auto;font-size:10px">▼ show</span>
+</button>
+</div>
+</div>
+<div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">IEP Communication Goals</div>
+<p style="font-size:10px;color:#6b7280;margin:0 0 8px">Track AAC &amp; communication goals. Progress syncs with Teacher Dashboard RTI data.</p>
+<p style="font-size:11px;color:#6b7280;font-style:italic;margin:0 0 8px">No goals set for this profile yet.</p>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<select id="iep-goal-type" aria-label="IEP goal type" style="font-size:11px;border:1px solid #d1d5db;border-radius:6px;padding:4px 6px;background:#fff">
+<option value="expressive">Expressive</option>
+<option value="receptive">Receptive</option>
+<option value="social">Social</option>
+<option value="pragmatic">Pragmatic</option>
+<option value="articulation">Articulation</option>
+</select>
+<input id="iep-goal-text" type="text" placeholder="e.g. Request items using 2-word phrases" aria-label="IEP goal description" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:11px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9;flex:1;margin:0;min-width:200px"/>
+<input id="iep-goal-target" type="number" min="1" max="200" placeholder="# target" aria-label="IEP goal target count" style="width:60px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;padding:4px 6px;text-align:center"/>
+</div>
+<details style="font-size:10px">
+<summary style="cursor:pointer;color:#6b7280;font-weight:700;padding:2px 0">+ IEP team details (priority, baseline, target date, cue level)</summary>
+<div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:6px;margin-top:6px">
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Priority</span>
+<select id="iep-goal-priority" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px">
+<option value="standard">Standard</option>
+<option value="high">High</option>
+<option value="maintenance">Maintenance</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Cue level</span>
+<select id="iep-goal-cue" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px" title="Support required for the student to succeed on this goal">
+<option value="independent">Independent</option>
+<option value="visual">Visual cue</option>
+<option value="verbal">Verbal cue</option>
+<option value="gestural">Gestural cue</option>
+<option value="physical">Physical prompt</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Data method</span>
+<select id="iep-goal-datamethod" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px">
+<option value="frequency">Frequency count</option>
+<option value="percentage">Percentage accuracy</option>
+<option value="duration">Duration</option>
+<option value="rubric">Rubric score</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Target date</span>
+<input id="iep-goal-targetdate" type="date" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
+<span style="color:#374151;font-weight:700">Baseline</span>
+<input id="iep-goal-baseline" type="text" placeholder="e.g. 2/10 accuracy on probe trials (Sept 2026)" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
+<span style="color:#374151;font-weight:700">Accommodations</span>
+<input id="iep-goal-accom" type="text" placeholder="e.g. AAC device available, visual supports, extended time" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
+<span style="color:#374151;font-weight:700">Linked IEP section (optional)</span>
+<input id="iep-goal-iepsection" type="text" placeholder="e.g. Communication — Expressive Language" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+</div>
+</details>
+<button aria-label="Add new IEP goal" style="padding:8px 14px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">+ Add Goal</button>
+</div>
+</div>
+</div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+<div style="display:flex;gap:14px;padding:16px;flex:1;overflow:hidden">
+<div style="width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:3px;background:#f3f4f6;border-radius:8px;padding:3px">
+<button aria-label="single generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:#fff;font-weight:700;font-size:11px;cursor:pointer;color:#7c3aed;box-shadow:0 1px 3px rgba(0,0,0,0.1)">✏️ Single</button>
+<button aria-label="batch generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:transparent;font-weight:400;font-size:11px;cursor:pointer;color:#6b7280;box-shadow:none">📋 Batch</button>
+</div>
+<div style="margin-bottom:4px">
+<div style="font-size:9px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">💡 Suggested (Evening)</div>
+<div style="display:flex;flex-wrap:wrap;gap:3px">
+<button aria-label="Quick set label: home" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">home</button>
+<button aria-label="Quick set label: snack" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">snack</button>
+<button aria-label="Quick set label: tired" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">tired</button>
+<button aria-label="Quick set label: bath" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">bath</button>
+<button aria-label="Quick set label: dinner" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">dinner</button>
+<button aria-label="Quick set label: goodnight" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">goodnight</button>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:7px">
+<div>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Label</label>
+<input type="text" placeholder="e.g. wash hands" aria-label="Symbol label" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9" autofocus="" value=""/>
+</div>
+<div>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Context (optional)</label>
+<input type="text" placeholder="e.g. hygiene routine" aria-label="Symbol context" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9" value=""/>
+</div>
+<div>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Category</label>
+<select aria-label="Symbol category" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9">
+<option value="" selected="">other</option>
+<option value="emotions">emotions</option>
+<option value="classroom">classroom</option>
+<option value="daily living">daily living</option>
+<option value="food">food</option>
+<option value="social">social</option>
+<option value="actions">actions</option>
+<option value="places">places</option>
+<option value="objects">objects</option>
+</select>
+</div>
+</div>
+<button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden;gap:10px">
+<div style="flex:1;overflow-y:auto">
+<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">
+<div style="display:flex;align-items:center;gap:6px">
+<span style="font-weight:600;font-size:12px;color:#374151">Gallery (0)</span>
+<input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in gallery" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
+<button aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
+</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap">
+<button aria-label="Filter by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
+<button aria-label="Filter by Nouns" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Nouns</button>
+<button aria-label="Filter by Verbs" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Verbs</button>
+<button aria-label="Filter by Adjectives" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Adjectives</button>
+<button aria-label="Filter by Other" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Other</button>
+</div>
+</div>
+<div style="text-align:center;color:#6b7280;padding:30px 0;font-size:13px">Generate your first symbol using the panel on the left.</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>"
+`;
+
+exports[`Symbol Studio — render under each host theme (snapshot) > default (light) theme renders identically 1`] = `
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-default">
+<style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
+<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
+</div>
+<div style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="font-size:22px" aria-hidden="true">🎨</span>
+<div>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
+<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+</div>
+</div>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+</div>
+<div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<button role="tab" aria-selected="true" aria-label="Symbols tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
+<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
+<button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
+<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🔍</span>Symbol Search</button>
+<button role="tab" aria-selected="false" aria-label="Word Garden tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🌱</span>Word Garden</button>
+</div>
+</div>
+<div style="display:flex;flex:1;overflow:hidden" role="tabpanel" aria-label="symbols panel">
+<div style="width:250px;flex-shrink:0;border-right:1px solid #e5e7eb;overflow-y:auto;background:#f9fafb;padding:14px;display:flex;flex-direction:column;gap:10px">
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Student Profiles</div>
+<button aria-label="Add new student profile" style="padding:2px 8px;border:1px dashed #6b7280;border-radius:12px;background:transparent;color:#6b7280;font-size:11px;cursor:pointer;line-height:1.4">+ Add</button>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+<button aria-label="Profile: Student 1" style="display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;border:2px solid #7c3aed;background:#ede9fe;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer">
+<span style="font-size:11px">👤</span>Student 1</button>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Global Settings</div>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Art Style</label>
+<select aria-label="Art style" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit;margin-bottom:8px">
+<option value="" selected="">Flat Vector (default)</option>
+<option value="simple line art, bold outlines">Line Art</option>
+<option value="friendly cartoon, vibrant colors">Cartoon</option>
+<option value="soft watercolor, gentle washes">Watercolor</option>
+<option value="bold comic book, thick outlines">Bold Comic</option>
+<option value="high contrast black and white, bold thick outlines, no color fill, simple silhouette">High Contrast (B&amp;W Print)</option>
+<option value="__custom__">✏️ Custom Style...</option>
+</select>
+<label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:#374151">
+<input type="checkbox" aria-label="Auto-clean text from images" checked=""/>
+<span>Auto-clean text from images</span>
+</label>
+<p style="font-size:10px;color:#6b7280;margin:3px 0 0">Runs a second AI pass to strip any embedded labels</p>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">Category Colors (AAC)</label>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px">
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#fef9c3"/>Noun</label>
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dcfce7"/>Verb</label>
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
+<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+</div>
+<p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
+<select aria-label="Text-to-speech voice selection" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit;margin-bottom:4px">
+</select>
+<button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
+<p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
+</div>
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
+</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap">
+<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
+</div>
+<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+</div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
+<p style="font-size:10px;color:#6b7280;margin:0 0 8px">0 symbols · 0 boards · 0 schedules</p>
+<div style="display:flex;flex-direction:column;gap:5px">
+<button aria-label="Export all data as backup file" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;text-align:left">⬇️ Export Backup</button>
+<button aria-label="Import Backup" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;text-align:left">📂 Import Backup</button>
+</div>
+<input type="file" accept=".json" style="display:none"/>
+<div style="margin-top:8px;padding-top:8px;border-top:1px solid #f3f4f6">
+<button aria-label="Toggle AAC usage analytics" style="background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;width:100%;text-align:left;font-size:11px;font-weight:700;color:#374151;margin-bottom:0">📊 AAC Usage Analytics <span style="color:#6b7280;font-weight:400;margin-left:auto;font-size:10px">▼ show</span>
+</button>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">IEP Communication Goals</div>
+<p style="font-size:10px;color:#6b7280;margin:0 0 8px">Track AAC &amp; communication goals. Progress syncs with Teacher Dashboard RTI data.</p>
+<p style="font-size:11px;color:#6b7280;font-style:italic;margin:0 0 8px">No goals set for this profile yet.</p>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<select id="iep-goal-type" aria-label="IEP goal type" style="font-size:11px;border:1px solid #d1d5db;border-radius:6px;padding:4px 6px;background:#fff">
+<option value="expressive">Expressive</option>
+<option value="receptive">Receptive</option>
+<option value="social">Social</option>
+<option value="pragmatic">Pragmatic</option>
+<option value="articulation">Articulation</option>
+</select>
+<input id="iep-goal-text" type="text" placeholder="e.g. Request items using 2-word phrases" aria-label="IEP goal description" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:11px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit;flex:1;margin:0;min-width:200px"/>
+<input id="iep-goal-target" type="number" min="1" max="200" placeholder="# target" aria-label="IEP goal target count" style="width:60px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;padding:4px 6px;text-align:center"/>
+</div>
+<details style="font-size:10px">
+<summary style="cursor:pointer;color:#6b7280;font-weight:700;padding:2px 0">+ IEP team details (priority, baseline, target date, cue level)</summary>
+<div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:6px;margin-top:6px">
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Priority</span>
+<select id="iep-goal-priority" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px">
+<option value="standard">Standard</option>
+<option value="high">High</option>
+<option value="maintenance">Maintenance</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Cue level</span>
+<select id="iep-goal-cue" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px" title="Support required for the student to succeed on this goal">
+<option value="independent">Independent</option>
+<option value="visual">Visual cue</option>
+<option value="verbal">Verbal cue</option>
+<option value="gestural">Gestural cue</option>
+<option value="physical">Physical prompt</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Data method</span>
+<select id="iep-goal-datamethod" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px">
+<option value="frequency">Frequency count</option>
+<option value="percentage">Percentage accuracy</option>
+<option value="duration">Duration</option>
+<option value="rubric">Rubric score</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Target date</span>
+<input id="iep-goal-targetdate" type="date" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
+<span style="color:#374151;font-weight:700">Baseline</span>
+<input id="iep-goal-baseline" type="text" placeholder="e.g. 2/10 accuracy on probe trials (Sept 2026)" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
+<span style="color:#374151;font-weight:700">Accommodations</span>
+<input id="iep-goal-accom" type="text" placeholder="e.g. AAC device available, visual supports, extended time" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
+<span style="color:#374151;font-weight:700">Linked IEP section (optional)</span>
+<input id="iep-goal-iepsection" type="text" placeholder="e.g. Communication — Expressive Language" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+</div>
+</details>
+<button aria-label="Add new IEP goal" style="padding:8px 14px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">+ Add Goal</button>
+</div>
+</div>
+</div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+<div style="display:flex;gap:14px;padding:16px;flex:1;overflow:hidden">
+<div style="width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:3px;background:#f3f4f6;border-radius:8px;padding:3px">
+<button aria-label="single generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:#fff;font-weight:700;font-size:11px;cursor:pointer;color:#7c3aed;box-shadow:0 1px 3px rgba(0,0,0,0.1)">✏️ Single</button>
+<button aria-label="batch generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:transparent;font-weight:400;font-size:11px;cursor:pointer;color:#6b7280;box-shadow:none">📋 Batch</button>
+</div>
+<div style="margin-bottom:4px">
+<div style="font-size:9px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">💡 Suggested (Evening)</div>
+<div style="display:flex;flex-wrap:wrap;gap:3px">
+<button aria-label="Quick set label: home" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">home</button>
+<button aria-label="Quick set label: snack" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">snack</button>
+<button aria-label="Quick set label: tired" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">tired</button>
+<button aria-label="Quick set label: bath" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">bath</button>
+<button aria-label="Quick set label: dinner" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">dinner</button>
+<button aria-label="Quick set label: goodnight" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">goodnight</button>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:7px">
+<div>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Label</label>
+<input type="text" placeholder="e.g. wash hands" aria-label="Symbol label" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" autofocus="" value=""/>
+</div>
+<div>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Context (optional)</label>
+<input type="text" placeholder="e.g. hygiene routine" aria-label="Symbol context" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" value=""/>
+</div>
+<div>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Category</label>
+<select aria-label="Symbol category" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit">
+<option value="" selected="">other</option>
+<option value="emotions">emotions</option>
+<option value="classroom">classroom</option>
+<option value="daily living">daily living</option>
+<option value="food">food</option>
+<option value="social">social</option>
+<option value="actions">actions</option>
+<option value="places">places</option>
+<option value="objects">objects</option>
+</select>
+</div>
+</div>
+<button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden;gap:10px">
+<div style="flex:1;overflow-y:auto">
+<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">
+<div style="display:flex;align-items:center;gap:6px">
+<span style="font-weight:600;font-size:12px;color:#374151">Gallery (0)</span>
+<input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in gallery" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
+<button aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
+</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap">
+<button aria-label="Filter by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
+<button aria-label="Filter by Nouns" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Nouns</button>
+<button aria-label="Filter by Verbs" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Verbs</button>
+<button aria-label="Filter by Adjectives" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Adjectives</button>
+<button aria-label="Filter by Other" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Other</button>
+</div>
+</div>
+<div style="text-align:center;color:#6b7280;padding:30px 0;font-size:13px">Generate your first symbol using the panel on the left.</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>"
+`;
+
+exports[`Symbol Studio — render under each host theme (snapshot) > high-contrast theme renders identically 1`] = `
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-contrast">
+<style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
+<div style="background:#0f172a;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
+</div>
+<div style="background:linear-gradient(135deg, #4c1d95 0%, #312e81 100%);padding:12px 18px;flex-shrink:0">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="font-size:22px" aria-hidden="true">🎨</span>
+<div>
+<h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
+<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+</div>
+</div>
+<button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
+</div>
+<div style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<button role="tab" aria-selected="true" aria-label="Symbols tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbols</button>
+<button role="tab" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📋</span>Board Builder</button>
+<button role="tab" aria-selected="false" aria-label="Visual Schedule tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📅</span>Visual Schedule</button>
+<button role="tab" aria-selected="false" aria-label="Social Stories tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📖</span>Social Stories</button>
+<button role="tab" aria-selected="false" aria-label="Quick Boards tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">⚡</span>Quick Boards</button>
+<button role="tab" aria-selected="false" aria-label="Activity Sets tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">📚</span>Activity Sets</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Quest tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🎮</span>Symbol Quest</button>
+<button role="tab" aria-selected="false" aria-label="Symbol Search tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🔍</span>Symbol Search</button>
+<button role="tab" aria-selected="false" aria-label="Word Garden tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
+<span style="font-size:14px;position:relative" aria-hidden="true">🌱</span>Word Garden</button>
+</div>
+</div>
+<div style="display:flex;flex:1;overflow:hidden" role="tabpanel" aria-label="symbols panel">
+<div style="width:250px;flex-shrink:0;border-right:1px solid #334155;overflow-y:auto;background:#1e293b;padding:14px;display:flex;flex-direction:column;gap:10px">
+<div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Student Profiles</div>
+<button aria-label="Add new student profile" style="padding:2px 8px;border:1px dashed #6b7280;border-radius:12px;background:transparent;color:#6b7280;font-size:11px;cursor:pointer;line-height:1.4">+ Add</button>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+<button aria-label="Profile: Student 1" style="display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;border:2px solid #7c3aed;background:#ede9fe;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer">
+<span style="font-size:11px">👤</span>Student 1</button>
+</div>
+</div>
+<div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Global Settings</div>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Art Style</label>
+<select aria-label="Art style" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9;margin-bottom:8px">
+<option value="" selected="">Flat Vector (default)</option>
+<option value="simple line art, bold outlines">Line Art</option>
+<option value="friendly cartoon, vibrant colors">Cartoon</option>
+<option value="soft watercolor, gentle washes">Watercolor</option>
+<option value="bold comic book, thick outlines">Bold Comic</option>
+<option value="high contrast black and white, bold thick outlines, no color fill, simple silhouette">High Contrast (B&amp;W Print)</option>
+<option value="__custom__">✏️ Custom Style...</option>
+</select>
+<label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:#374151">
+<input type="checkbox" aria-label="Auto-clean text from images" checked=""/>
+<span>Auto-clean text from images</span>
+</label>
+<p style="font-size:10px;color:#6b7280;margin:3px 0 0">Runs a second AI pass to strip any embedded labels</p>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px;margin-top:10px">Category Colors (AAC)</label>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px">
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#fef9c3"/>Noun</label>
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dcfce7"/>Verb</label>
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
+<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+</div>
+<p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
+<select aria-label="Text-to-speech voice selection" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9;margin-bottom:4px">
+</select>
+<button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
+<p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
+</div>
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
+</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap">
+<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
+</div>
+<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+</div>
+<div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
+<p style="font-size:10px;color:#6b7280;margin:0 0 8px">0 symbols · 0 boards · 0 schedules</p>
+<div style="display:flex;flex-direction:column;gap:5px">
+<button aria-label="Export all data as backup file" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;text-align:left">⬇️ Export Backup</button>
+<button aria-label="Import Backup" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;text-align:left">📂 Import Backup</button>
+</div>
+<input type="file" accept=".json" style="display:none"/>
+<div style="margin-top:8px;padding-top:8px;border-top:1px solid #f3f4f6">
+<button aria-label="Toggle AAC usage analytics" style="background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;width:100%;text-align:left;font-size:11px;font-weight:700;color:#374151;margin-bottom:0">📊 AAC Usage Analytics <span style="color:#6b7280;font-weight:400;margin-left:auto;font-size:10px">▼ show</span>
+</button>
+</div>
+</div>
+<div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
+<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">IEP Communication Goals</div>
+<p style="font-size:10px;color:#6b7280;margin:0 0 8px">Track AAC &amp; communication goals. Progress syncs with Teacher Dashboard RTI data.</p>
+<p style="font-size:11px;color:#6b7280;font-style:italic;margin:0 0 8px">No goals set for this profile yet.</p>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<select id="iep-goal-type" aria-label="IEP goal type" style="font-size:11px;border:1px solid #d1d5db;border-radius:6px;padding:4px 6px;background:#fff">
+<option value="expressive">Expressive</option>
+<option value="receptive">Receptive</option>
+<option value="social">Social</option>
+<option value="pragmatic">Pragmatic</option>
+<option value="articulation">Articulation</option>
+</select>
+<input id="iep-goal-text" type="text" placeholder="e.g. Request items using 2-word phrases" aria-label="IEP goal description" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:11px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9;flex:1;margin:0;min-width:200px"/>
+<input id="iep-goal-target" type="number" min="1" max="200" placeholder="# target" aria-label="IEP goal target count" style="width:60px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;padding:4px 6px;text-align:center"/>
+</div>
+<details style="font-size:10px">
+<summary style="cursor:pointer;color:#6b7280;font-weight:700;padding:2px 0">+ IEP team details (priority, baseline, target date, cue level)</summary>
+<div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:6px;margin-top:6px">
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Priority</span>
+<select id="iep-goal-priority" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px">
+<option value="standard">Standard</option>
+<option value="high">High</option>
+<option value="maintenance">Maintenance</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Cue level</span>
+<select id="iep-goal-cue" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px" title="Support required for the student to succeed on this goal">
+<option value="independent">Independent</option>
+<option value="visual">Visual cue</option>
+<option value="verbal">Verbal cue</option>
+<option value="gestural">Gestural cue</option>
+<option value="physical">Physical prompt</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Data method</span>
+<select id="iep-goal-datamethod" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px">
+<option value="frequency">Frequency count</option>
+<option value="percentage">Percentage accuracy</option>
+<option value="duration">Duration</option>
+<option value="rubric">Rubric score</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px">
+<span style="color:#374151;font-weight:700">Target date</span>
+<input id="iep-goal-targetdate" type="date" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
+<span style="color:#374151;font-weight:700">Baseline</span>
+<input id="iep-goal-baseline" type="text" placeholder="e.g. 2/10 accuracy on probe trials (Sept 2026)" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
+<span style="color:#374151;font-weight:700">Accommodations</span>
+<input id="iep-goal-accom" type="text" placeholder="e.g. AAC device available, visual supports, extended time" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+<label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
+<span style="color:#374151;font-weight:700">Linked IEP section (optional)</span>
+<input id="iep-goal-iepsection" type="text" placeholder="e.g. Communication — Expressive Language" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
+</label>
+</div>
+</details>
+<button aria-label="Add new IEP goal" style="padding:8px 14px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">+ Add Goal</button>
+</div>
+</div>
+</div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+<div style="display:flex;gap:14px;padding:16px;flex:1;overflow:hidden">
+<div style="width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:3px;background:#f3f4f6;border-radius:8px;padding:3px">
+<button aria-label="single generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:#fff;font-weight:700;font-size:11px;cursor:pointer;color:#7c3aed;box-shadow:0 1px 3px rgba(0,0,0,0.1)">✏️ Single</button>
+<button aria-label="batch generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:transparent;font-weight:400;font-size:11px;cursor:pointer;color:#6b7280;box-shadow:none">📋 Batch</button>
+</div>
+<div style="margin-bottom:4px">
+<div style="font-size:9px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">💡 Suggested (Evening)</div>
+<div style="display:flex;flex-wrap:wrap;gap:3px">
+<button aria-label="Quick set label: home" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">home</button>
+<button aria-label="Quick set label: snack" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">snack</button>
+<button aria-label="Quick set label: tired" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">tired</button>
+<button aria-label="Quick set label: bath" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">bath</button>
+<button aria-label="Quick set label: dinner" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">dinner</button>
+<button aria-label="Quick set label: goodnight" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">goodnight</button>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:7px">
+<div>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Label</label>
+<input type="text" placeholder="e.g. wash hands" aria-label="Symbol label" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9" autofocus="" value=""/>
+</div>
+<div>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Context (optional)</label>
+<input type="text" placeholder="e.g. hygiene routine" aria-label="Symbol context" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9" value=""/>
+</div>
+<div>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Category</label>
+<select aria-label="Symbol category" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9">
+<option value="" selected="">other</option>
+<option value="emotions">emotions</option>
+<option value="classroom">classroom</option>
+<option value="daily living">daily living</option>
+<option value="food">food</option>
+<option value="social">social</option>
+<option value="actions">actions</option>
+<option value="places">places</option>
+<option value="objects">objects</option>
+</select>
+</div>
+</div>
+<button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden;gap:10px">
+<div style="flex:1;overflow-y:auto">
+<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">
+<div style="display:flex;align-items:center;gap:6px">
+<span style="font-weight:600;font-size:12px;color:#374151">Gallery (0)</span>
+<input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in gallery" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
+<button aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
+</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap">
+<button aria-label="Filter by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
+<button aria-label="Filter by Nouns" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Nouns</button>
+<button aria-label="Filter by Verbs" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Verbs</button>
+<button aria-label="Filter by Adjectives" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Adjectives</button>
+<button aria-label="Filter by Other" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Other</button>
+</div>
+</div>
+<div style="text-align:center;color:#6b7280;padding:30px 0;font-size:13px">Generate your first symbol using the panel on the left.</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>"
+`;

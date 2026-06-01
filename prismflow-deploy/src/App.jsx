@@ -4101,6 +4101,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [showBehaviorLens, setShowBehaviorLens] = useState(false);
   const [showEducatorHub, _setShowEducatorHubRaw] = useState(false);
   const setShowEducatorHub = React.useCallback((v) => { if (v && window.__alloLazyEducatorHubModal) { try { window.__alloLazyEducatorHubModal(); } catch(_) {} } _setShowEducatorHubRaw(v); }, []);
+  const [showBrandProfileEditor, _setShowBrandProfileEditorRaw] = useState(false);
+  const setShowBrandProfileEditor = React.useCallback((v) => { if (v && window.__alloLazyBrandProfileEditor) { try { window.__alloLazyBrandProfileEditor(); } catch(_) {} } _setShowBrandProfileEditorRaw(v); }, []);
   const [showReportWriter, setShowReportWriter] = useState(false);
   const [isSymbolStudioOpen, _setIsSymbolStudioOpenRaw] = useState(false);
   const setIsSymbolStudioOpen = React.useCallback((v) => { if (v && window.__alloLazySymbolStudio) { try { window.__alloLazySymbolStudio(); } catch(_) {} } _setIsSymbolStudioOpenRaw(v); }, []);
@@ -4337,7 +4339,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'bdf0ac56';
+    var pluginCdnVersion = '1bd3eb99';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -4561,6 +4563,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js');
     window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js'); }; })();
     window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js'); }; })();
     window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js'); }; })();
     window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js'); }; })();
     loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js');
@@ -26506,7 +26509,7 @@ ${_toolList}
                   activeSessionCode, studentNickname, isTeacherMode
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} showEducatorHub={showEducatorHub} t={t} />}
+        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowBrandProfileEditor={setShowBrandProfileEditor} showEducatorHub={showEducatorHub} t={t} />}
         {showLearningHub && <LearningHubModal setIsAlloHavenOpen={setIsAlloHavenOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowPoetTree={setShowPoetTree} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
@@ -26526,6 +26529,13 @@ ${_toolList}
             })}
         </CDNModuleGate>
 
+        <CDNModuleGate moduleKey="BrandProfileEditor" isOpen={showBrandProfileEditor} onClose={() => setShowBrandProfileEditor(false)} icon="🎨" displayName="Brand Settings" t={t}>
+            {(BrandProfileEditor) => React.createElement(BrandProfileEditor, {
+                onClose: () => setShowBrandProfileEditor(false),
+                t,
+                addToast
+            })}
+        </CDNModuleGate>
         <CDNModuleGate moduleKey="SymbolStudio" isOpen={isSymbolStudioOpen} onClose={() => setIsSymbolStudioOpen(false)} icon="🎨" displayName="Symbol Studio" t={t}>
             {(SymbolStudio) => React.createElement(SymbolStudio, {
                 isOpen: true,

@@ -3544,6 +3544,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             className: 'w-full py-1.5 rounded-lg text-xs font-semibold border border-slate-400 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all',
             onClick: takeSnapshot
           }, '\uD83D\uDCF7 Take Snapshot'),
+          h('button', { 'aria-label': 'Export CSV', onClick: function() { try { var _d = (typeof d !== 'undefined' && d && d.data) ? d.data : []; if (!_d.length) return; var _csv = 'step,prey,predator\n' + _d.map(function(p,i){ return i + ',' + (p.prey||0) + ',' + (p.pred||0); }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _a = document.createElement('a'); _a.href = URL.createObjectURL(_b); _a.download = 'ecosystem_' + Date.now() + '.csv'; _a.click(); if (typeof addToast === 'function') addToast('CSV saved!', 'success'); } catch(e){} }, className: 'w-full py-1.5 mt-1 rounded-lg text-xs font-semibold border border-emerald-500 text-emerald-700', style: { cursor: 'pointer' } }, 'Export CSV'),
 
           // ── AI Tutor ──
           callGemini && h('div', { className: 'bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-3 border border-indigo-200 dark:border-indigo-700 space-y-2' },

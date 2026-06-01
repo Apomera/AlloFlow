@@ -2998,6 +2998,27 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           { id: 'thermo', label: 'Thermodynamics', icon: '🔥' },
           { id: 'polymers', label: 'Polymers', icon: '🧬' },
           { id: 'safety', label: 'Lab safety', icon: '🦺' },
+          { id: 'gaslaws', label: 'Gas laws', icon: '💨' },
+          { id: 'colligative', label: 'Colligative', icon: '🧂' },
+          { id: 'redox', label: 'Redox', icon: '🔋' },
+          { id: 'organic', label: 'Organic groups', icon: '🧪' },
+          { id: 'spectro', label: 'Spectroscopy', icon: '📡' },
+          { id: 'crystal', label: 'Crystal structures', icon: '💎' },
+          { id: 'biochem', label: 'Biochemistry', icon: '🧬' },
+          { id: 'environment', label: 'Atmospheric', icon: '🌫' },
+          { id: 'nuclear', label: 'Nuclear chem', icon: '☢' },
+          { id: 'electrochem', label: 'Electrochemistry', icon: '⚡' },
+          { id: 'famous', label: 'History', icon: '🕰' },
+          { id: 'lab', label: 'Lab techniques', icon: '🔬' },
+          { id: 'medchem', label: 'Drug discovery', icon: '💊' },
+          { id: 'food', label: 'Food chemistry', icon: '🍳' },
+          { id: 'materials', label: 'Materials', icon: '🪨' },
+          { id: 'inorganic', label: 'Inorganic chem', icon: '⚛' },
+          { id: 'enviro2', label: 'Pollution', icon: '🏭' },
+          { id: 'green', label: 'Green chemistry', icon: '🌱' },
+          { id: 'mol_geo', label: 'Bond geometry', icon: '∡' },
+          { id: 'isomers', label: 'Isomers', icon: '⇄' },
+          { id: 'noble', label: 'Noble gases', icon: 'He' },
           { id: 'glossary', label: 'Glossary', icon: '📖' }
         ];
         return React.createElement('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3627,6 +3648,454 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
         );
       }
 
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 2 EXPANSION — Additional reference sections (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var GAS_LAWS = [
+        { name: 'Boyle\'s Law', formula: 'P₁V₁ = P₂V₂', plain: 'Pressure and volume are inversely related at constant temperature.', example: 'Compress a syringe → pressure rises. Push 50 mL down to 25 mL at constant T → pressure doubles.', year: 1662 },
+        { name: 'Charles\'s Law', formula: 'V₁/T₁ = V₂/T₂', plain: 'Volume and absolute temperature are directly proportional at constant pressure.', example: 'Heat a balloon → it expands. Heating from 273 K to 546 K doubles volume.', year: 1787 },
+        { name: 'Gay-Lussac\'s Law', formula: 'P₁/T₁ = P₂/T₂', plain: 'Pressure and absolute temperature are directly proportional at constant volume.', example: 'Heat a sealed gas can → pressure rises (and may explode!).', year: 1802 },
+        { name: 'Avogadro\'s Law', formula: 'V₁/n₁ = V₂/n₂', plain: 'Equal volumes of gas at same T and P contain equal numbers of molecules.', example: '22.4 L of any ideal gas at STP contains 1 mole (6.022×10²³ molecules).', year: 1811 },
+        { name: 'Combined Gas Law', formula: 'P₁V₁/T₁ = P₂V₂/T₂', plain: 'Combines Boyle\'s, Charles\'s, and Gay-Lussac\'s laws.', example: 'Tracking a weather balloon as it rises (T drops, P drops, V grows).', year: 1834 },
+        { name: 'Ideal Gas Law', formula: 'PV = nRT', plain: 'Relates pressure, volume, moles, and temperature using the gas constant R.', example: 'R = 0.0821 L·atm/(mol·K). 1 mol gas at 1 atm, 273 K occupies 22.4 L.', year: 1834 },
+        { name: 'Dalton\'s Law of Partial Pressures', formula: 'P_total = P₁ + P₂ + P₃ + ...', plain: 'Total pressure of a gas mixture = sum of partial pressures.', example: 'Atmosphere: ~78% N₂ (0.78 atm) + ~21% O₂ (0.21 atm) + trace gases = 1 atm.', year: 1801 },
+        { name: 'Graham\'s Law of Effusion', formula: 'rate₁/rate₂ = √(M₂/M₁)', plain: 'Lighter gases effuse faster than heavier gases.', example: 'H₂ (M=2) effuses 4× faster than O₂ (M=32). √(32/2) = 4.', year: 1848 },
+        { name: 'Henry\'s Law', formula: 'C = k·P', plain: 'Solubility of a gas in liquid is proportional to its partial pressure above the liquid.', example: 'Open a soda bottle → CO₂ partial pressure drops → CO₂ comes out of solution → fizz.', year: 1803 },
+        { name: 'Van der Waals equation', formula: '(P + a/V²)(V − b) = nRT', plain: 'Modifies ideal gas law to account for real gas behavior (intermolecular attractions + molecular volume).', example: 'Real gases deviate at high P and low T. CO₂ has a=3.6, b=0.043.', year: 1873 }
+      ];
+
+      var COLLIGATIVE_PROPS = [
+        { prop: 'Vapor pressure lowering', formula: 'ΔP = X_solute · P°_solvent', plain: 'Adding a nonvolatile solute lowers vapor pressure of the solvent.', example: 'Salt water has lower vapor pressure than pure water.' },
+        { prop: 'Boiling point elevation', formula: 'ΔTb = i·Kb·m', plain: 'Solute raises boiling point. Kb depends on solvent; m is molality; i is van\'t Hoff factor.', example: 'Salt in pasta water → slightly higher boiling point (~0.5°C for 1% NaCl).' },
+        { prop: 'Freezing point depression', formula: 'ΔTf = i·Kf·m', plain: 'Solute lowers freezing point. Why we salt icy roads.', example: 'NaCl + water → freezing point drops to as low as −21°C (eutectic at 23% NaCl).' },
+        { prop: 'Osmotic pressure', formula: 'π = iMRT', plain: 'Pressure needed to stop osmotic flow across semipermeable membrane. M = molarity.', example: 'Blood ≈ 7.7 atm osmotic pressure. IV fluids must be isotonic (~0.9% saline).' }
+      ];
+
+      var REDOX_PAIRS = [
+        { half: 'F₂ + 2e⁻ → 2F⁻', e0: '+2.87 V', notes: 'Strongest oxidizer in this list. F₂ is extremely reactive.' },
+        { half: 'O₃ + 2H⁺ + 2e⁻ → O₂ + H₂O', e0: '+2.07 V', notes: 'Ozone — strong oxidizer used in water treatment.' },
+        { half: 'H₂O₂ + 2H⁺ + 2e⁻ → 2H₂O', e0: '+1.78 V', notes: 'Hydrogen peroxide as oxidizer.' },
+        { half: 'MnO₄⁻ + 8H⁺ + 5e⁻ → Mn²⁺ + 4H₂O', e0: '+1.51 V', notes: 'Permanganate in acid — vivid purple to nearly colorless.' },
+        { half: 'Cl₂ + 2e⁻ → 2Cl⁻', e0: '+1.36 V', notes: 'Chlorine as oxidizer — water treatment, bleaching.' },
+        { half: 'O₂ + 4H⁺ + 4e⁻ → 2H₂O', e0: '+1.23 V', notes: 'Why oxygen is corrosive to metals over time.' },
+        { half: 'Ag⁺ + e⁻ → Ag', e0: '+0.80 V', notes: 'Silver ion easily reduced. Silver mirror test.' },
+        { half: 'Cu²⁺ + 2e⁻ → Cu', e0: '+0.34 V', notes: 'Reference for "noble" metals.' },
+        { half: '2H⁺ + 2e⁻ → H₂', e0: '0.00 V', notes: 'Defined as zero — Standard Hydrogen Electrode (SHE).' },
+        { half: 'Fe²⁺ + 2e⁻ → Fe', e0: '−0.44 V', notes: 'Iron is more easily oxidized than copper → rust.' },
+        { half: 'Zn²⁺ + 2e⁻ → Zn', e0: '−0.76 V', notes: 'Zinc anode in batteries. Sacrificial anode for ships.' },
+        { half: 'Al³⁺ + 3e⁻ → Al', e0: '−1.66 V', notes: 'Aluminum is very reactive; protected by Al₂O₃ surface layer.' },
+        { half: 'Mg²⁺ + 2e⁻ → Mg', e0: '−2.37 V', notes: 'Used as sacrificial anode for buried steel pipes.' },
+        { half: 'Na⁺ + e⁻ → Na', e0: '−2.71 V', notes: 'Sodium very easily oxidized → must store under oil.' },
+        { half: 'Li⁺ + e⁻ → Li', e0: '−3.04 V', notes: 'Strongest reducer of metals shown. Li-ion batteries use this potential.' }
+      ];
+
+      var ORGANIC_GROUPS = [
+        { name: 'Alkane', formula: 'R–H (single bonds only)', example: 'Methane CH₄, Ethane C₂H₆', notes: 'Saturated. Unreactive baseline. Combust to CO₂ + H₂O.' },
+        { name: 'Alkene', formula: 'R–CH=CH–R', example: 'Ethene C₂H₄ (ethylene)', notes: 'C=C double bond. Reactive at the double bond. Plant ripening hormone.' },
+        { name: 'Alkyne', formula: 'R–C≡C–R', example: 'Ethyne C₂H₂ (acetylene)', notes: 'Triple bond. Welding torches burn acetylene + O₂ → ~3,500°C.' },
+        { name: 'Alcohol', formula: 'R–OH', example: 'Methanol CH₃OH, Ethanol C₂H₅OH', notes: 'Hydroxyl group. Polar, can H-bond. Beverages, fuels, antiseptics.' },
+        { name: 'Ether', formula: 'R–O–R', example: 'Diethyl ether (C₂H₅)₂O', notes: 'Oxygen bridge. Historically used as anesthetic.' },
+        { name: 'Aldehyde', formula: 'R–CHO', example: 'Formaldehyde HCHO', notes: 'C=O at end of chain. Preservatives. Vanilla flavor (vanillin).' },
+        { name: 'Ketone', formula: 'R–CO–R', example: 'Acetone (CH₃)₂CO', notes: 'C=O in middle of chain. Nail polish remover.' },
+        { name: 'Carboxylic acid', formula: 'R–COOH', example: 'Acetic acid CH₃COOH', notes: '–COOH. Acidic. Vinegar (acetic), citrus (citric), aspirin (salicylic).' },
+        { name: 'Ester', formula: 'R–COO–R', example: 'Ethyl acetate CH₃COOC₂H₅', notes: 'Carboxylic acid + alcohol. Fruity smells (banana ester, pineapple ester).' },
+        { name: 'Amine', formula: 'R–NH₂', example: 'Methylamine CH₃NH₂', notes: 'Nitrogen with lone pair. Basic. Fishy smells, neurotransmitters.' },
+        { name: 'Amide', formula: 'R–CONH₂', example: 'Acetamide CH₃CONH₂', notes: 'C=O attached to N. Peptide bonds in proteins.' },
+        { name: 'Nitrile', formula: 'R–C≡N', example: 'Acetonitrile CH₃CN', notes: 'Cyanide group. Some plant defenses (amygdalin in almonds).' },
+        { name: 'Thiol (mercaptan)', formula: 'R–SH', example: 'Methanethiol CH₃SH', notes: 'Sulfur analog of alcohol. STRONG smell — added to natural gas as warning.' },
+        { name: 'Aromatic (arene)', formula: 'Benzene ring C₆H₆', example: 'Benzene, toluene, naphthalene', notes: 'Delocalized π electrons. Stable. Coal tar, mothballs.' }
+      ];
+
+      var SPECTRO_METHODS = [
+        { name: 'UV-Vis spectroscopy', range: '200–800 nm', detects: 'Electronic transitions; conjugated π systems, transition metal complexes', use: 'Concentration via Beer\'s law (A = εbc); color of compounds.' },
+        { name: 'IR (infrared) spectroscopy', range: '2.5–25 μm (4000–400 cm⁻¹)', detects: 'Molecular vibrations; functional groups', use: '–OH (~3300, broad), C=O (~1700), C≡N (~2250). Identifies functional groups.' },
+        { name: '¹H NMR (proton NMR)', range: 'Radio (MHz)', detects: 'Hydrogen environments', use: 'Counts H atoms in different environments. Chemical shift + splitting → structure.' },
+        { name: '¹³C NMR', range: 'Radio (MHz)', detects: 'Carbon framework', use: 'Counts unique C environments. ¹³C is only 1.1% natural abundance.' },
+        { name: 'Mass spectrometry (MS)', range: 'm/z', detects: 'Mass-to-charge ratio of ions', use: 'Molecular weight + fragmentation pattern → structure. Drug testing, forensics.' },
+        { name: 'X-ray crystallography', range: 'X-ray (~1 Å)', detects: '3D atomic positions in crystal', use: 'Determines exact molecular geometry. Used to solve DNA structure (1953).' },
+        { name: 'Raman spectroscopy', range: 'Vis to NIR laser', detects: 'Vibrational modes (complementary to IR)', use: 'Detects symmetric vibrations that IR misses. Useful for inorganic compounds, water-containing samples.' },
+        { name: 'Atomic absorption (AAS)', range: 'UV-Vis', detects: 'Specific metal elements', use: 'Each element absorbs at characteristic wavelength. Water quality, blood lead testing.' },
+        { name: 'Fluorescence spectroscopy', range: 'UV → Vis', detects: 'Excited state emission', use: 'GFP (green fluorescent protein) tracking in biology. Forensics (luminol).' },
+        { name: 'EPR (electron paramagnetic resonance)', range: 'Microwave', detects: 'Unpaired electrons (radicals)', use: 'Free radical research, transition metal complexes.' }
+      ];
+
+      var CRYSTAL_STRUCTURES = [
+        { name: 'Simple cubic', coord: 6, packing: '52.4%', example: 'Polonium (rare)', notes: 'Atoms only at corners of cube. Inefficient packing.' },
+        { name: 'Body-centered cubic (BCC)', coord: 8, packing: '68.0%', example: 'Iron (α), W, Mo, Cr', notes: 'Atom at corners + one in center.' },
+        { name: 'Face-centered cubic (FCC) / Cubic close-packed', coord: 12, packing: '74.0%', example: 'Cu, Ag, Au, Al, Pb, Ni', notes: 'Most efficient cubic packing. ABCABC layer sequence.' },
+        { name: 'Hexagonal close-packed (HCP)', coord: 12, packing: '74.0%', example: 'Mg, Zn, Ti, Co', notes: 'Same efficiency as FCC but ABAB sequence. Different mechanical properties.' },
+        { name: 'Diamond cubic', coord: 4, packing: '34.0%', example: 'C (diamond), Si, Ge', notes: 'Each atom bonded to 4 neighbors tetrahedrally.' },
+        { name: 'Sodium chloride (rock salt)', coord: '6 (each ion)', packing: '~67% (ionic)', example: 'NaCl, KCl, MgO', notes: 'FCC of Cl⁻ with Na⁺ in octahedral holes.' },
+        { name: 'Cesium chloride', coord: '8 (each ion)', packing: '~73% (ionic)', example: 'CsCl, CsBr, CsI', notes: 'Simple cubic of Cl⁻ with Cs⁺ at body center.' },
+        { name: 'Zinc blende (sphalerite)', coord: '4 (each ion)', packing: '~50% (ionic)', example: 'ZnS, GaAs, CdTe', notes: 'FCC of S²⁻ with Zn²⁺ in half the tetrahedral holes.' },
+        { name: 'Wurtzite', coord: '4 (each ion)', packing: '~50% (ionic)', example: 'ZnS (high-T form), ZnO, AlN', notes: 'HCP analog of zinc blende.' },
+        { name: 'Fluorite', coord: 'Ca: 8, F: 4', packing: '~75%', example: 'CaF₂, UO₂, ZrO₂', notes: 'FCC of cations with anions in all tetrahedral holes.' },
+        { name: 'Perovskite', coord: 'varies', packing: 'varies', example: 'CaTiO₃, BaTiO₃, organic-inorganic hybrids', notes: 'ABX₃ structure. Hot in solar cell research (perovskite solar cells).' },
+        { name: 'Graphite', coord: 3, packing: 'layered (sparse)', example: 'C (graphite)', notes: 'Hexagonal layers held by weak van der Waals → slippery, soft.' }
+      ];
+
+      var BIOCHEM_MOLECULES = [
+        { class: 'Amino acid', example: 'Glycine, Alanine, Lysine', formula: 'H₂N–CHR–COOH', notes: '20 standard amino acids. Side chain (R) determines polarity, charge, special features.' },
+        { class: 'Protein', example: 'Hemoglobin, insulin, collagen', formula: 'Polymer of amino acids via peptide bonds (–CONH–)', notes: 'Primary→secondary (α-helix, β-sheet)→tertiary→quaternary structure.' },
+        { class: 'Carbohydrate (monosaccharide)', example: 'Glucose, fructose, ribose', formula: '(CH₂O)n typically', notes: 'Simple sugars. Glucose = main fuel; ribose = RNA backbone; deoxyribose = DNA.' },
+        { class: 'Disaccharide', example: 'Sucrose, lactose, maltose', formula: 'Two monosaccharides linked', notes: 'Sucrose = glucose + fructose. Lactose = glucose + galactose.' },
+        { class: 'Polysaccharide', example: 'Starch, glycogen, cellulose', formula: 'Many glucose units linked', notes: 'Starch (plant storage), glycogen (animal storage), cellulose (plant structure — α vs β linkage).' },
+        { class: 'Lipid (fatty acid)', example: 'Palmitic, oleic, omega-3', formula: 'R–COOH (long chain)', notes: 'Saturated (no double bonds) or unsaturated. Cis double bonds = healthy; trans = harmful.' },
+        { class: 'Triglyceride', example: 'Body fat, vegetable oil', formula: 'Glycerol + 3 fatty acids (ester bonds)', notes: 'Main energy storage. Solid (fat) vs liquid (oil) depends on saturation.' },
+        { class: 'Phospholipid', example: 'Phosphatidylcholine (lecithin)', formula: 'Glycerol + 2 fatty acids + phosphate-head', notes: 'Bilayer forms cell membranes. Hydrophobic tails, hydrophilic heads.' },
+        { class: 'Steroid', example: 'Cholesterol, testosterone, cortisol', formula: '4 fused rings (3 hexagonal, 1 pentagonal)', notes: 'Lipid class with rigid ring structure. Hormones, vitamin D, bile.' },
+        { class: 'Nucleotide', example: 'ATP, GTP, cAMP', formula: 'Sugar + phosphate + nitrogenous base', notes: 'Building blocks of DNA/RNA. ATP = main cellular energy currency.' },
+        { class: 'DNA', example: 'Human genome (~3 billion bp)', formula: 'Polymer of deoxyribonucleotides (A,T,G,C)', notes: 'Double helix. Stores genetic info. Replication is semi-conservative.' },
+        { class: 'RNA', example: 'mRNA, tRNA, rRNA, miRNA', formula: 'Polymer of ribonucleotides (A,U,G,C)', notes: 'Usually single-stranded. mRNA carries gene info; tRNA delivers amino acids.' },
+        { class: 'Enzyme', example: 'Amylase, lipase, ATP synthase', formula: 'Catalytic protein (usually)', notes: 'Lowers activation energy. Specific to substrate via active site. End in "-ase".' },
+        { class: 'Vitamin', example: 'B12 (cobalamin), C (ascorbic), D₃ (cholecalciferol)', formula: 'Varies', notes: 'Organic micronutrients. Water-soluble (B, C) vs fat-soluble (A, D, E, K).' }
+      ];
+
+      var ATMOSPHERE_LAYERS = [
+        { name: 'Troposphere', altitude: '0–12 km', temp: '15°C → −56°C', notes: 'Weather happens here. ~80% of atmospheric mass.' },
+        { name: 'Stratosphere', altitude: '12–50 km', temp: '−56°C → −2°C', notes: 'Ozone layer absorbs UV → temperature rises with altitude.' },
+        { name: 'Mesosphere', altitude: '50–85 km', temp: '−2°C → −90°C', notes: 'Coldest layer. Meteors burn up here.' },
+        { name: 'Thermosphere', altitude: '85–600 km', temp: '−90°C → 2000°C+', notes: 'ISS orbits here (~400 km). Auroras form here.' },
+        { name: 'Exosphere', altitude: '600–10,000 km', temp: 'varies', notes: 'Outermost layer. Gradually fades into space.' }
+      ];
+
+      var ATMOSPHERIC_GASES = [
+        { gas: 'N₂', pct: '78.084%', notes: 'Inert filler. Cycled by N-fixing bacteria + lightning.' },
+        { gas: 'O₂', pct: '20.946%', notes: 'Reactive. Produced by photosynthesis; consumed by respiration + combustion.' },
+        { gas: 'Ar', pct: '0.934%', notes: 'Noble gas. Inert. Produced by ⁴⁰K decay.' },
+        { gas: 'CO₂', pct: '~0.042% (420+ ppm)', notes: 'Greenhouse gas. Was ~280 ppm pre-industrial; rising ~2 ppm/year.' },
+        { gas: 'Ne', pct: '0.0018%', notes: 'Noble gas. Sign lighting.' },
+        { gas: 'He', pct: '0.0005%', notes: 'Noble gas. Escapes Earth\'s gravity over time.' },
+        { gas: 'CH₄', pct: '~0.00019% (~1.9 ppm)', notes: 'Methane — potent greenhouse gas (~28× CO₂ over 100 yr). Rising.' },
+        { gas: 'Kr', pct: '0.0001%', notes: 'Noble gas. Specialty lighting.' },
+        { gas: 'H₂', pct: '0.00005%', notes: 'Small molecules escape gravity over geological time.' },
+        { gas: 'N₂O', pct: '~0.000033%', notes: 'Nitrous oxide. Greenhouse gas. Anesthetic, also from fertilizer.' },
+        { gas: 'O₃', pct: '~0.000007% (varies)', notes: 'Ozone. Concentrated in stratosphere. Absorbs UV-B/C.' },
+        { gas: 'H₂O', pct: '0–4% (variable)', notes: 'Water vapor. The biggest natural greenhouse gas; feedback amplifier.' }
+      ];
+
+      var NUCLEAR_PROCESSES = [
+        { name: 'Alpha decay (α)', particle: 'He nucleus (⁴He)', notes: 'Heavy nuclei eject ⁴He. Atomic number drops 2, mass drops 4. Stopped by paper.' },
+        { name: 'Beta-minus decay (β⁻)', particle: 'electron + antineutrino', notes: 'Neutron → proton + e⁻ + ν̄. Atomic number rises 1. Stopped by aluminum.' },
+        { name: 'Beta-plus decay (β⁺)', particle: 'positron + neutrino', notes: 'Proton → neutron + e⁺ + ν. Atomic number drops 1. Used in PET scans.' },
+        { name: 'Electron capture', particle: 'absorbs inner electron', notes: 'Proton + e⁻ → neutron + ν. Mimics β⁺ effect on Z but no positron emitted.' },
+        { name: 'Gamma decay (γ)', particle: 'high-energy photon', notes: 'Nucleus releases excess energy. No change in Z or A. Needs lead/concrete shielding.' },
+        { name: 'Neutron emission', particle: 'free neutron', notes: 'Rare. Some fission products emit delayed neutrons (critical for reactor control).' },
+        { name: 'Fission', particle: 'splits into 2+ nuclei', notes: 'Heavy nuclei (U-235, Pu-239) split when struck by neutron. Releases 2-3 more neutrons + energy.' },
+        { name: 'Fusion', particle: 'two light nuclei combine', notes: 'Powers stars. D + T → He + n + energy. Requires extreme T and P.' },
+        { name: 'Spontaneous fission', particle: 'self-splitting', notes: 'Some heavy isotopes (Cf-252) split without provocation.' }
+      ];
+
+      var COMMON_ISOTOPES = [
+        { iso: '¹H (protium)', halfLife: 'stable', use: '99.98% of all hydrogen.' },
+        { iso: '²H (deuterium)', halfLife: 'stable', use: '0.015%. Used in heavy water, NMR solvents.' },
+        { iso: '³H (tritium)', halfLife: '12.3 yr (β⁻)', use: 'Glow-in-the-dark watches, fusion fuel.' },
+        { iso: '¹²C', halfLife: 'stable', use: '98.9%. Defines atomic mass unit (¹²C = exactly 12 amu).' },
+        { iso: '¹⁴C', halfLife: '5,730 yr (β⁻)', use: 'Radiocarbon dating up to ~50,000 years.' },
+        { iso: '¹⁵N', halfLife: 'stable', use: 'NMR tracking, isotope labeling experiments.' },
+        { iso: '¹⁸O', halfLife: 'stable', use: 'Ice core climate reconstruction (paleoclimate).' },
+        { iso: '³²P', halfLife: '14.3 days (β⁻)', use: 'Radiolabeling DNA/RNA for sequencing.' },
+        { iso: '⁹⁹ᵐTc', halfLife: '6 hr (γ)', use: 'Most widely used medical imaging isotope.' },
+        { iso: '¹³¹I', halfLife: '8 days (β⁻, γ)', use: 'Treats thyroid cancer; thyroid concentrates iodine.' },
+        { iso: '²³⁵U', halfLife: '7.0×10⁸ yr (α)', use: '0.72% of natural U. Fissile — used in reactors and weapons.' },
+        { iso: '²³⁸U', halfLife: '4.5×10⁹ yr (α)', use: '99.27% of natural U. Used in armor + ammunition.' },
+        { iso: '²³⁹Pu', halfLife: '24,100 yr (α)', use: 'Fissile. Used in nuclear weapons + some reactors.' },
+        { iso: '²⁴¹Am', halfLife: '432 yr (α)', use: 'Smoke detectors.' }
+      ];
+
+      var ELECTROCHEM_CELLS = [
+        { type: 'Galvanic / Voltaic cell', operation: 'Spontaneous redox → electricity', example: 'Zn/Cu Daniell cell (1836)', notes: 'Anode = oxidation (−), cathode = reduction (+).' },
+        { type: 'Electrolytic cell', operation: 'External electricity → drives non-spontaneous redox', example: 'Electroplating, aluminum refining (Hall-Héroult)', notes: 'Anode = oxidation (+), cathode = reduction (−). Sign convention flipped.' },
+        { type: 'Concentration cell', operation: 'Same electrodes, different ion concentrations', example: 'Two Cu electrodes in CuSO₄ at different concentrations', notes: 'Drives ions to equalize concentration. Small voltage.' },
+        { type: 'Fuel cell', operation: 'Continuous flow of fuel + oxidizer', example: 'Hydrogen fuel cell: 2H₂ + O₂ → 2H₂O + electricity', notes: 'No combustion. Higher efficiency than heat engines. Apollo missions.' },
+        { type: 'Primary battery (non-rechargeable)', operation: 'One-time use', example: 'Alkaline AA (Zn + MnO₂), Li-thionyl chloride', notes: 'Discarded when discharged.' },
+        { type: 'Secondary battery (rechargeable)', operation: 'Reversible', example: 'Lead-acid (cars), NiMH, Li-ion', notes: 'Recharging reverses the redox.' },
+        { type: 'Li-ion battery', operation: 'Li⁺ shuttles between anode and cathode', example: 'Phones, EVs, laptops', notes: 'Anode = graphite (Li intercalation). Cathode = LiCoO₂ / LiFePO₄ / NMC.' },
+        { type: 'Flow battery', operation: 'Liquid electrolyte pumped through cell', example: 'Vanadium redox flow battery (grid storage)', notes: 'Capacity scales with tank size. Long cycle life.' }
+      ];
+
+      var FAMOUS_CHEMISTS = [
+        { name: 'Antoine Lavoisier', year: '1780s', contrib: 'Law of conservation of mass; oxygen theory of combustion (overturned phlogiston).', notes: 'Executed in French Revolution (1794). "It took only an instant to cut off that head, and 100 years may not produce another like it."' },
+        { name: 'John Dalton', year: '1803', contrib: 'Atomic theory: matter is made of indivisible atoms; elements have unique atom types.', notes: 'Also studied color blindness (which he had).' },
+        { name: 'Amedeo Avogadro', year: '1811', contrib: 'Equal volumes of gas at same T,P contain equal numbers of molecules.', notes: 'Number named for him: 6.022×10²³ (number of particles in a mole).' },
+        { name: 'Dmitri Mendeleev', year: '1869', contrib: 'Periodic table arranged by atomic mass; left gaps for undiscovered elements + predicted their properties.', notes: 'Predicted gallium, scandium, germanium — all later confirmed.' },
+        { name: 'Marie Curie', year: '1898–1911', contrib: 'Discovered polonium + radium; coined "radioactivity".', notes: 'Two Nobels (Physics 1903, Chemistry 1911). Only person to win Nobel in two distinct sciences.' },
+        { name: 'Fritz Haber', year: '1909', contrib: 'Haber-Bosch process: N₂ + 3H₂ → 2NH₃. Made synthetic fertilizer possible.', notes: 'Nobel 1918. Also developed chemical weapons in WWI. Complex legacy.' },
+        { name: 'Linus Pauling', year: '1930s–60s', contrib: 'Nature of the chemical bond; protein α-helix; electronegativity scale.', notes: 'Two Nobels (Chemistry 1954, Peace 1962). Promoted vitamin C megadosing — that part was wrong.' },
+        { name: 'Rosalind Franklin', year: '1952', contrib: 'X-ray diffraction "Photo 51" — essential to determining DNA double helix.', notes: 'Died 1958 (ovarian cancer); Nobel awarded 1962 (posthumous Nobels not allowed). Watson & Crick + Wilkins shared it.' },
+        { name: 'Dorothy Hodgkin', year: '1950s–60s', contrib: 'X-ray crystallography of penicillin, B12, insulin.', notes: 'Nobel 1964. Only British woman to win a science Nobel.' },
+        { name: 'Stephanie Kwolek', year: '1965', contrib: 'Invented Kevlar (poly-paraphenylene terephthalamide).', notes: 'Body armor, ballistic vests. Stiffer than steel by weight.' },
+        { name: 'Frances Arnold', year: '1990s–2018', contrib: 'Directed evolution of enzymes.', notes: 'Nobel 2018. Engineered enzymes for sustainable manufacturing.' },
+        { name: 'Jennifer Doudna & Emmanuelle Charpentier', year: '2012', contrib: 'CRISPR-Cas9 gene editing.', notes: 'Nobel 2020. Revolutionized genetic engineering.' }
+      ];
+
+      function renderGasLawsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💨 Gas laws'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Quantitative relationships between P, V, T, and n (moles) for gases. Use Kelvin for temperature.'),
+          React.createElement('div', { className: 'space-y-2' },
+            GAS_LAWS.map(function(g, i) {
+              return React.createElement('div', { key: 'g'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, g.name),
+                  React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto' }, g.year)
+                ),
+                React.createElement('div', { className: 'text-[11px] font-mono text-indigo-700 font-bold mb-1' }, g.formula),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed mb-1' }, g.plain),
+                React.createElement('div', { className: 'text-[10px] text-slate-600 italic bg-white p-1.5 rounded border border-slate-100' }, '🧪 ' + g.example)
+              );
+            })
+          )
+        );
+      }
+
+      function renderColligativeSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧂 Colligative properties'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Properties that depend on the NUMBER of solute particles, not their identity. i = van\'t Hoff factor (1 for non-electrolyte, ~2 for NaCl, ~3 for CaCl₂).'),
+          React.createElement('div', { className: 'space-y-2' },
+            COLLIGATIVE_PROPS.map(function(p, i) {
+              return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, p.prop),
+                React.createElement('div', { className: 'text-[11px] font-mono text-indigo-700 font-bold mb-1' }, p.formula),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed mb-1' }, p.plain),
+                React.createElement('div', { className: 'text-[10px] text-slate-600 italic' }, '🌡 ' + p.example)
+              );
+            })
+          )
+        );
+      }
+
+      function renderRedoxSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔋 Standard reduction potentials (E°)'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Higher E° = stronger oxidizer (more eager to GAIN electrons). To predict a redox reaction: cell potential = E°(cathode) − E°(anode). Positive → spontaneous.'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Half-reaction', 'E° (V)', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                REDOX_PAIRS.map(function(r, i) {
+                  return React.createElement('tr', { key: 'r'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, r.half),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono font-bold text-indigo-700' }, r.e0),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, r.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderOrganicSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧪 Organic functional groups'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Recognize functional groups to predict chemical behavior. R = "rest of molecule" (any carbon chain).'),
+          React.createElement('div', { className: 'space-y-2' },
+            ORGANIC_GROUPS.map(function(o, i) {
+              return React.createElement('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, o.name),
+                  React.createElement('span', { className: 'text-[11px] font-mono ml-auto px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-bold' }, o.formula)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Example: '), o.example),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, o.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderSpectroSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📡 Spectroscopy methods'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Different wavelengths probe different molecular properties. Chemists combine multiple methods to determine structure of unknown compounds.'),
+          React.createElement('div', { className: 'space-y-2' },
+            SPECTRO_METHODS.map(function(s, i) {
+              return React.createElement('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, s.name),
+                  React.createElement('span', { className: 'text-[10px] text-slate-600 font-mono ml-auto px-2 py-0.5 rounded bg-indigo-100 text-indigo-800' }, s.range)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Detects: '), s.detects),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, React.createElement('strong', null, 'Use: '), s.use)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCrystalSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💎 Crystal structures'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'How atoms/ions pack in solids determines material properties (hardness, conductivity, melting point, optical behavior).'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Structure', 'Coord #', 'Packing %', 'Example', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                CRYSTAL_STRUCTURES.map(function(c, i) {
+                  return React.createElement('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, c.name),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, c.coord),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, c.packing),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, c.example),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderBiochemSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧬 Biochemistry — classes of biomolecules'),
+          React.createElement('div', { className: 'space-y-2' },
+            BIOCHEM_MOLECULES.map(function(b, i) {
+              return React.createElement('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, b.class),
+                  React.createElement('span', { className: 'text-[10px] text-slate-600 ml-auto italic' }, b.example)
+                ),
+                React.createElement('div', { className: 'text-[11px] font-mono text-indigo-700 font-bold mb-1' }, b.formula),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, b.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderEnvironmentSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌫 Atmospheric chemistry'),
+          React.createElement('div', { className: 'mb-3' },
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Atmospheric layers (bottom to top)'),
+            React.createElement('div', { className: 'space-y-1' },
+              ATMOSPHERE_LAYERS.map(function(L, i) {
+                return React.createElement('div', { key: 'L'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, L.name),
+                    React.createElement('span', { className: 'text-[10px] font-mono text-indigo-700' }, L.altitude),
+                    React.createElement('span', { className: 'text-[10px] font-mono text-slate-600' }, L.temp)
+                  ),
+                  React.createElement('div', { className: 'text-[10px] text-slate-600 italic' }, L.notes)
+                );
+              })
+            )
+          ),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Atmospheric composition (dry air, by volume)'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Gas', '%', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                ATMOSPHERIC_GASES.map(function(a, i) {
+                  return React.createElement('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-mono font-bold text-indigo-700' }, a.gas),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, a.pct),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, a.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderNuclearSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '☢ Nuclear chemistry'),
+          React.createElement('div', { className: 'mb-3' },
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Decay and nuclear processes'),
+            React.createElement('div', { className: 'space-y-1' },
+              NUCLEAR_PROCESSES.map(function(n, i) {
+                return React.createElement('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, n.name),
+                    React.createElement('span', { className: 'text-[10px] font-mono text-indigo-700 ml-auto' }, n.particle)
+                  ),
+                  React.createElement('div', { className: 'text-[10px] text-slate-700' }, n.notes)
+                );
+              })
+            )
+          ),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Notable isotopes'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Isotope', 'Half-life (decay)', 'Use'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                COMMON_ISOTOPES.map(function(c, i) {
+                  return React.createElement('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-mono font-bold text-indigo-700' }, c.iso),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, c.halfLife),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px]' }, c.use)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderElectrochemSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚡ Electrochemistry — cell types'),
+          React.createElement('div', { className: 'space-y-2' },
+            ELECTROCHEM_CELLS.map(function(c, i) {
+              return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, c.type),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Operation: '), c.operation),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Example: '), c.example),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderFamousSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🕰 Chemistry history — selected figures'),
+          React.createElement('div', { className: 'space-y-2' },
+            FAMOUS_CHEMISTS.map(function(c, i) {
+              return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-indigo-400 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-indigo-900' }, c.name),
+                  React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto font-mono' }, c.year)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-800 mb-1' }, c.contrib),
+                React.createElement('div', { className: 'text-[10px] text-slate-600 italic' }, c.notes)
+              );
+            })
+          )
+        );
+      }
+
       function renderActiveSection() {
         if (expSection === 'vsepr') return renderVseprSection();
         if (expSection === 'bonds') return renderBondsSection();
@@ -3644,6 +4113,17 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
         if (expSection === 'thermo') return renderThermoSection();
         if (expSection === 'polymers') return renderPolymersSection();
         if (expSection === 'safety') return renderSafetySection();
+        if (expSection === 'gaslaws') return renderGasLawsSection();
+        if (expSection === 'colligative') return renderColligativeSection();
+        if (expSection === 'redox') return renderRedoxSection();
+        if (expSection === 'organic') return renderOrganicSection();
+        if (expSection === 'spectro') return renderSpectroSection();
+        if (expSection === 'crystal') return renderCrystalSection();
+        if (expSection === 'biochem') return renderBiochemSection();
+        if (expSection === 'environment') return renderEnvironmentSection();
+        if (expSection === 'nuclear') return renderNuclearSection();
+        if (expSection === 'electrochem') return renderElectrochemSection();
+        if (expSection === 'famous') return renderFamousSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
       }

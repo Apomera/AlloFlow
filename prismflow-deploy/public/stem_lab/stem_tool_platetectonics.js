@@ -555,6 +555,7 @@
             onClick: reset,
             className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-emerald-200 text-emerald-900 hover:bg-emerald-300')
           }, '↻ Reset stations & epicenter'),
+          h('button', { onClick: function() { try { var _cs = [].slice.call(document.querySelectorAll('canvas')); if (!_cs.length) return; var _c = _cs.sort(function(a,b){ return (b.width*b.height)-(a.width*a.height); })[0]; var _a = document.createElement('a'); _a.href = _c.toDataURL('image/png'); _a.download = 'platetectonics_' + Date.now() + '.png'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCF8 PNG saved!', 'success'); } catch (e) {} }, style: { padding: '6px 10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', background: '#0e7490', color: '#fff', border: 'none', cursor: 'pointer', marginLeft: '6px' } }, '\uD83D\uDCF8 PNG'),
           h('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-400' : 'text-emerald-800') },
             'Tip: stations are also draggable. Arrow keys move the epicenter when canvas is focused.'
           )

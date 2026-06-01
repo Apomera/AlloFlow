@@ -2388,6 +2388,17 @@ const d = labToolData.wave;
           { id: 'harmonics', label: 'Harmonics', icon: '🎵' },
           { id: 'instruments', label: 'Standing waves', icon: '🎸' },
           { id: 'decibels', label: 'Sound intensity', icon: '🔊' },
+          { id: 'optics', label: 'Optics & lenses', icon: '🔍' },
+          { id: 'refraction', label: 'Refraction index', icon: '↻' },
+          { id: 'diffraction', label: 'Diffraction', icon: '∿' },
+          { id: 'polarization', label: 'Polarization', icon: '↕' },
+          { id: 'quantum', label: 'Quantum waves', icon: '⚛' },
+          { id: 'seismic', label: 'Seismic waves', icon: '🌋' },
+          { id: 'ocean', label: 'Ocean waves', icon: '🏄' },
+          { id: 'antennas', label: 'Antennas', icon: '📶' },
+          { id: 'radar', label: 'Radar/sonar', icon: '📡' },
+          { id: 'shockwaves', label: 'Shock waves', icon: '✈' },
+          { id: 'famous', label: 'History', icon: '🕰' },
           { id: 'glossary', label: 'Glossary', icon: '📖' }
         ];
         return React.createElement('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
@@ -2621,6 +2632,369 @@ const d = labToolData.wave;
         );
       }
 
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 2 EXPANSION — More wave reference (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var OPTICS_ELEMENTS = [
+        { name: 'Converging (convex) lens', behavior: 'Bends parallel rays toward focal point', use: 'Magnifying glass, eyeglasses for farsightedness, camera lenses, microscope objectives.' },
+        { name: 'Diverging (concave) lens', behavior: 'Spreads parallel rays as if from focal point', use: 'Eyeglasses for nearsightedness, peephole viewers.' },
+        { name: 'Concave (converging) mirror', behavior: 'Reflects parallel rays through focal point', use: 'Reflecting telescopes, satellite dishes, makeup mirrors (magnification).' },
+        { name: 'Convex (diverging) mirror', behavior: 'Reflects parallel rays as if from focal point', use: 'Car side mirrors ("objects in mirror are closer than they appear"), store security mirrors.' },
+        { name: 'Plane mirror', behavior: 'Flat reflection — image distance = object distance', use: 'Everyday mirrors. Image is virtual, upright, same-size, laterally inverted.' },
+        { name: 'Prism (triangular)', behavior: 'Separates white light into spectrum by refraction', use: 'Spectroscopy, rainbow demos. Different wavelengths refract by different amounts (dispersion).' },
+        { name: 'Diffraction grating', behavior: 'Separates light by many parallel slits', use: 'Higher resolution than prism. Used in modern spectrometers.' },
+        { name: 'Beam splitter', behavior: 'Transmits part of beam, reflects rest', use: 'Interferometers, LIGO, projectors, optical instruments.' },
+        { name: 'Polarizing filter', behavior: 'Transmits only one polarization direction', use: 'Sunglasses (cut glare from water/road), LCD displays, photography filters.' },
+        { name: 'Optical fiber', behavior: 'Total internal reflection guides light along the core', use: 'Internet backbone, endoscopes, fiber-optic Christmas trees.' },
+        { name: 'Half-silvered mirror', behavior: '~50% transmitted, ~50% reflected', use: 'One-way windows (only works with brightness asymmetry), Michelson interferometer.' },
+        { name: 'Retroreflector (corner cube)', behavior: 'Returns light to source regardless of angle', use: 'Bike reflectors, road signs, Apollo lunar laser ranging.' }
+      ];
+
+      var REFRACTION_INDICES = [
+        { material: 'Vacuum', n: '1.0000 (defined)', notes: 'Reference. Light travels at c = 299,792,458 m/s.' },
+        { material: 'Air (STP)', n: '1.0003', notes: 'Essentially same as vacuum for most purposes.' },
+        { material: 'Water (20°C)', n: '1.333', notes: 'Bends light noticeably. Critical angle (water→air) ≈ 48.6°.' },
+        { material: 'Ethanol', n: '1.361', notes: 'Slightly more refractive than water.' },
+        { material: 'Glycerin', n: '1.473', notes: 'Submerged glass nearly invisible in glycerin (similar n).' },
+        { material: 'Quartz', n: '1.544', notes: 'Common in optics. Some birefringence.' },
+        { material: 'Crown glass', n: '1.52', notes: 'Standard eyeglass + lens material.' },
+        { material: 'Flint glass', n: '1.65', notes: 'Higher dispersion than crown — used in achromatic doublets.' },
+        { material: 'Sapphire', n: '1.77', notes: 'Watch crystals, smartphone camera lenses.' },
+        { material: 'Cubic zirconia', n: '2.16', notes: 'Higher than glass — used as diamond simulant.' },
+        { material: 'Diamond', n: '2.42', notes: 'Very high. Critical angle just 24.4° → "fire" via total internal reflection.' },
+        { material: 'Silicon (visible)', n: '~3.5', notes: 'Opaque to visible but transparent in IR. Used in IR optics.' },
+        { material: 'Negative-index metamaterials', n: '< 0 (engineered)', notes: 'Engineered structures bend light backward. Cloaking research.' }
+      ];
+
+      var DIFFRACTION_FACTS = [
+        { fact: 'Single-slit diffraction', formula: 'a·sin θ = m·λ (dark fringes)', notes: 'a = slit width. Central bright fringe is twice as wide as side fringes.' },
+        { fact: 'Double-slit interference', formula: 'd·sin θ = m·λ (bright fringes)', notes: 'd = slit separation. Demonstrates wave nature of light (Young, 1801).' },
+        { fact: 'Diffraction grating', formula: 'd·sin θ = m·λ', notes: 'Many slits, very sharp peaks. Resolution improves with more slits.' },
+        { fact: 'Rayleigh criterion', formula: 'θ_min ≈ 1.22 λ / D', notes: 'Smallest angle resolvable by circular aperture of diameter D. Limits telescope/microscope resolution.' },
+        { fact: 'Bragg\'s law (X-ray crystallography)', formula: '2d·sin θ = n·λ', notes: 'X-rays diffract from crystal planes. Used to determine atomic positions.' },
+        { fact: 'Diffraction-limited spot size', formula: '≈ λ/(2·NA)', notes: 'NA = numerical aperture. Visible light limit ~200 nm — why electron microscopes have higher resolution.' }
+      ];
+
+      var POLARIZATION_NOTES = [
+        { topic: 'What it is', detail: 'Direction of oscillation of the electric field in EM waves. Sound (longitudinal) cannot be polarized.' },
+        { topic: 'Linear polarization', detail: 'E-field oscillates in single plane. Most "polarized" light is linear.' },
+        { topic: 'Circular polarization', detail: 'E-field rotates in circle. Right vs left circular. Used in 3D movies.' },
+        { topic: 'Malus\'s law', detail: 'I = I₀·cos²θ. Light through two polarizers: angle between them controls intensity.' },
+        { topic: 'Brewster\'s angle', detail: 'tan θ_B = n₂/n₁. Reflected light is fully polarized at this angle of incidence.' },
+        { topic: 'Birefringence', detail: 'Some crystals (calcite, quartz) split unpolarized light into two polarized rays.' },
+        { topic: 'Real-world: glare', detail: 'Reflection off horizontal surfaces (water, road) polarizes horizontally. Polarized sunglasses block this.' },
+        { topic: 'Real-world: LCDs', detail: 'Two crossed polarizers + liquid crystals → controllable transmission per pixel.' },
+        { topic: 'Real-world: stress analysis', detail: 'Polarized light through plastic models shows stress patterns as color bands.' },
+        { topic: 'Real-world: 3D movies', detail: 'Circular polarization (RealD) or linear at 45°/135° (older systems) separates left/right images.' }
+      ];
+
+      var QUANTUM_WAVES = [
+        { topic: 'de Broglie wavelength', detail: 'λ = h/p. Every massive particle has a wave nature. For an electron at 100 eV, λ ≈ 0.12 nm.' },
+        { topic: 'Wave-particle duality', detail: 'Photons + electrons show both wave + particle behavior. Single-photon double-slit experiments confirm interference even with one photon at a time.' },
+        { topic: 'Schrödinger equation', detail: 'Wave equation for matter waves. Solutions ψ give probability amplitude. |ψ|² = probability density.' },
+        { topic: 'Heisenberg uncertainty', detail: 'Δx · Δp ≥ ℏ/2. Position + momentum can\'t both be measured precisely. Fundamental, not measurement error.' },
+        { topic: 'Quantized energy', detail: 'Bound systems (atoms, harmonic oscillators) only allow specific energy levels. Like standing waves on a string.' },
+        { topic: 'Tunneling', detail: 'Wave nature lets particles "tunnel" through energy barriers classically forbidden. Basis of STM, alpha decay, flash memory.' },
+        { topic: 'Photon energy', detail: 'E = hf = hc/λ. Higher frequency → higher-energy photon. UV photons can ionize; IR cannot.' },
+        { topic: 'Compton scattering', detail: 'Photon-electron collision shifts photon wavelength. Confirms photons carry momentum p = h/λ.' },
+        { topic: 'Pauli exclusion', detail: 'Identical fermions cannot occupy same quantum state. Why electrons fill shells; why matter has structure.' },
+        { topic: 'Coherence length', detail: 'Distance over which wave maintains phase. Laser: kilometers. Sunlight: micrometers. Needed for interference.' }
+      ];
+
+      var SEISMIC_WAVES = [
+        { name: 'P-wave (primary)', type: 'Body wave / longitudinal', speed: '~5–8 km/s in crust', notes: 'Fastest. Compression/rarefaction along travel direction. Travels through solids AND liquids — passes through Earth\'s outer core.' },
+        { name: 'S-wave (secondary/shear)', type: 'Body wave / transverse', speed: '~3–4.5 km/s in crust', notes: 'Slower than P. Side-to-side shaking. Cannot travel through liquids → outer core blocks S-waves (key evidence it\'s liquid).' },
+        { name: 'Love wave', type: 'Surface wave', speed: '~3–4.5 km/s', notes: 'Horizontal transverse motion at surface. More damaging to buildings than P/S.' },
+        { name: 'Rayleigh wave', type: 'Surface wave', speed: '~2–4 km/s', notes: 'Rolling motion (like ocean waves). Largest amplitude. Felt as the rolling shake of an earthquake.' }
+      ];
+
+      var SEISMIC_FACTS = [
+        { fact: 'Richter magnitude', detail: 'Logarithmic. Each +1 magnitude = ~10× amplitude, ~32× energy. M7 releases ~1000× energy of M5.' },
+        { fact: 'Moment magnitude (Mw)', detail: 'Used for modern measurements, especially large quakes. Replaced Richter for M > ~6.5.' },
+        { fact: 'Mercalli intensity', detail: 'Felt-effects scale (I-XII). What people experienced, not energy released. Same quake = different intensity at different distances.' },
+        { fact: 'Locating an epicenter', detail: '3 stations measure P-S arrival-time difference → distance to each → triangulate epicenter.' },
+        { fact: 'Earth\'s structure (from seismology)', detail: 'P/S wave behavior revealed liquid outer core, solid inner core, mantle, crust. Discontinuities mapped.' },
+        { fact: 'Tsunami warning', detail: 'Underwater quake → ocean displacement → long-wavelength wave traveling ~700 km/h in deep water. P-wave arrival gives ~minutes warning before tsunami.' },
+        { fact: 'Largest recorded', detail: 'Chile 1960: M9.5 (~32× energy of biggest US quake — 1964 Alaska M9.2). Tsunami crossed Pacific.' }
+      ];
+
+      var OCEAN_WAVES = [
+        { type: 'Wind wave (sea)', period: '< 10 s', wavelength: '~10–100 m', notes: 'Local wind generated. Variable height + direction.' },
+        { type: 'Swell', period: '10–30 s', wavelength: '~100–800 m', notes: 'Wind waves that have traveled far. Sorted into regular sets.' },
+        { type: 'Tsunami', period: '~10 min – 2 hr', wavelength: '~100–500 km', notes: 'Tiny height in deep ocean (<1 m) but VERY long wavelength. Pile up at shore.' },
+        { type: 'Tide', period: '~12 h or 24 h', wavelength: 'half Earth\'s circumference', notes: 'Gravitational pull of Moon + Sun. Bulges in ocean rotate as Earth turns.' },
+        { type: 'Seiche', period: 'min to hours', wavelength: 'enclosed basin', notes: 'Standing wave in enclosed/semi-enclosed water (lakes, harbors). Triggered by wind, pressure, quakes.' },
+        { type: 'Rogue wave', period: 'irregular', wavelength: 'irregular', notes: 'Unusually large (>2× average). Once thought myth, now confirmed; constructive interference of swells.' }
+      ];
+
+      var OCEAN_FACTS = [
+        { fact: 'Deep water', detail: 'Depth > λ/2. Wave speed depends only on λ: v = √(gλ/2π).' },
+        { fact: 'Shallow water', detail: 'Depth < λ/20. Wave speed depends only on depth: v = √(gd). Tsunamis are always shallow-water waves (huge λ).' },
+        { fact: 'Wave breaking', detail: 'Waves break when amplitude/wavelength > ~1/7. Crest moves faster than trough → tips over.' },
+        { fact: 'Significant wave height', detail: 'Average height of tallest 1/3 of waves — better matches what a sailor would call "the wave height".' },
+        { fact: 'Spring vs neap tides', detail: 'Spring (extreme): Sun + Moon aligned (new/full moon). Neap (mild): Sun + Moon at 90° (quarter moons).' }
+      ];
+
+      var ANTENNA_TYPES = [
+        { type: 'Dipole', size: '~λ/2', use: 'Simplest resonant antenna. FM radio dipole is ~1.5 m.' },
+        { type: 'Yagi-Uda', size: 'multi-element', use: 'Directional. Old rooftop TV antennas, ham radio.' },
+        { type: 'Parabolic dish', size: '> 10λ for efficient gain', use: 'Satellite TV, radio astronomy, deep-space comm.' },
+        { type: 'Patch (microstrip)', size: '~λ/2', use: 'GPS, Wi-Fi, phones. Flat, easy to mass-manufacture.' },
+        { type: 'Helical', size: '~λ circumference per turn', use: 'Circularly polarized. Satellite uplinks.' },
+        { type: 'Loop', size: 'fraction of λ', use: 'AM radio receivers, RFID tags.' },
+        { type: 'Horn', size: '~few λ', use: 'Radar feeds, microwave links. Broadband.' },
+        { type: 'Phased array', size: 'matrix of elements', use: 'Steer beam electronically. Modern radar, 5G mmWave, Starlink user terminals.' }
+      ];
+
+      var RADAR_SONAR = [
+        { system: 'Primary radar', use: 'Aircraft detection. Pulse sent → echo measured. Range = c·Δt/2.' },
+        { system: 'Doppler radar', use: 'Weather (rain motion → wind), police speed guns. Frequency shift → velocity.' },
+        { system: 'Synthetic aperture radar (SAR)', use: 'Moving platform creates effective large aperture. Earth imaging from satellites; works through clouds + at night.' },
+        { system: 'Phased array radar', use: 'Steerable beam without moving the dish. AEGIS, modern fighters.' },
+        { system: 'Active sonar', use: 'Send pulse, listen for echo. Submarine detection, fish-finding. Limited range due to sound absorption.' },
+        { system: 'Passive sonar', use: 'Listen for sounds from targets. Submarines use this when avoiding detection (no emissions).' },
+        { system: 'Echolocation (biological)', use: 'Bats, dolphins. Frequencies up to ~200 kHz (bats); chirps adapted for prey.' },
+        { system: 'Ultrasound (medical)', use: '1–20 MHz pulses image internal tissues. Doppler mode shows blood flow.' },
+        { system: 'LIDAR', use: 'Laser pulses → 3D point clouds. Self-driving cars, archaeology (forest-floor mapping).' }
+      ];
+
+      var SHOCKWAVE_FACTS = [
+        { fact: 'Mach number', detail: 'M = v/v_sound. M<1 subsonic, M=1 transonic, M>1 supersonic, M>5 hypersonic.' },
+        { fact: 'Sonic boom', detail: 'Cone of compressed air trailing supersonic objects. Heard as boom when cone passes you.' },
+        { fact: 'Mach cone angle', detail: 'sin α = 1/M. Faster object → narrower cone.' },
+        { fact: 'Shock wave thickness', detail: 'Just a few mean free paths (~micrometers in atmosphere). Steep pressure jump.' },
+        { fact: 'Sound of speed (air, 20°C)', detail: '343 m/s = 1235 km/h = 767 mph. Increases with temperature: v ≈ 331 + 0.6·T(°C) m/s.' },
+        { fact: 'Other media', detail: 'Water: ~1480 m/s. Steel: ~5000 m/s. Hotter, denser, stiffer → faster sound.' },
+        { fact: 'Bullwhip crack', detail: 'Tip of whip exceeds Mach 1 → mini sonic boom.' },
+        { fact: 'Explosion shock wave', detail: 'Initial pressure jump (overpressure) travels faster than sound, slowing to sound speed with distance.' }
+      ];
+
+      var WAVE_HISTORY = [
+        { year: '1665', who: 'Robert Hooke', what: 'First observed diffraction.' },
+        { year: '1690', who: 'Christiaan Huygens', what: 'Wave theory of light. Huygens\' principle (every point on wavefront is source of secondary wavelets).' },
+        { year: '1801', who: 'Thomas Young', what: 'Double-slit experiment. Established wave nature of light through interference.' },
+        { year: '1818', who: 'Augustin Fresnel', what: 'Mathematical theory of diffraction. Predicted (correctly) the "Poisson spot" — bright dot in center of circular shadow.' },
+        { year: '1842', who: 'Christian Doppler', what: 'Doppler effect for sound and light.' },
+        { year: '1864', who: 'James Clerk Maxwell', what: 'Maxwell\'s equations — light is electromagnetic wave. Predicted speed = c.' },
+        { year: '1887', who: 'Heinrich Hertz', what: 'Produced + detected radio waves in lab. Confirmed Maxwell\'s prediction.' },
+        { year: '1900', who: 'Max Planck', what: 'E = hf — energy is quantized. Birth of quantum theory.' },
+        { year: '1905', who: 'Albert Einstein', what: 'Photoelectric effect — light comes in quanta (photons). Nobel 1921.' },
+        { year: '1924', who: 'Louis de Broglie', what: 'Matter waves: λ = h/p. Even electrons are waves.' },
+        { year: '1927', who: 'Davisson + Germer', what: 'Confirmed electron diffraction — proved matter waves.' },
+        { year: '1960', who: 'Theodore Maiman', what: 'First working laser (ruby).' },
+        { year: '2015', who: 'LIGO collaboration', what: 'First direct detection of gravitational waves (binary black hole merger).' }
+      ];
+
+      function renderOpticsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔍 Optics — lenses, mirrors, and elements'),
+          React.createElement('div', { className: 'space-y-2' },
+            OPTICS_ELEMENTS.map(function(o, i) {
+              return React.createElement('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, o.name),
+                React.createElement('div', { className: 'text-[11px] text-cyan-700 font-bold mb-1' }, o.behavior),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, o.use)
+              );
+            })
+          )
+        );
+      }
+
+      function renderRefractionSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↻ Refractive indices'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Snell\'s law: n₁ sin θ₁ = n₂ sin θ₂. Light slows by factor n in material; n is wavelength-dependent (dispersion).'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Material', 'n', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                REFRACTION_INDICES.map(function(r, i) {
+                  return React.createElement('tr', { key: 'r'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, r.material),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold' }, r.n),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, r.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderDiffractionSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∿ Diffraction'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Diffraction = bending of waves around obstacles or through openings. Most noticeable when feature size ≈ wavelength.'),
+          React.createElement('div', { className: 'space-y-2' },
+            DIFFRACTION_FACTS.map(function(d, i) {
+              return React.createElement('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, d.fact),
+                React.createElement('div', { className: 'text-[11px] font-mono text-cyan-700 font-bold mb-1' }, d.formula),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, d.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderPolarizationSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↕ Polarization'),
+          React.createElement('div', { className: 'space-y-2' },
+            POLARIZATION_NOTES.map(function(p, i) {
+              return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, p.topic),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, p.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderQuantumSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚛ Quantum waves'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'In quantum mechanics, every particle has wave properties. The "wave function" ψ gives probability amplitude.'),
+          React.createElement('div', { className: 'space-y-2' },
+            QUANTUM_WAVES.map(function(q, i) {
+              return React.createElement('div', { key: 'q'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, q.topic),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, q.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderSeismicSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌋 Seismic waves'),
+          React.createElement('div', { className: 'mb-3' },
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Wave types'),
+            React.createElement('div', { className: 'space-y-1' },
+              SEISMIC_WAVES.map(function(w, i) {
+                return React.createElement('div', { key: 'w'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, w.name),
+                    React.createElement('span', { className: 'text-[10px] text-cyan-700 ml-auto font-mono' }, w.speed)
+                  ),
+                  React.createElement('div', { className: 'text-[10px] text-slate-700 italic mb-0.5' }, w.type),
+                  React.createElement('div', { className: 'text-[10px] text-slate-700' }, w.notes)
+                );
+              })
+            )
+          ),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Seismology essentials'),
+          React.createElement('div', { className: 'space-y-1' },
+            SEISMIC_FACTS.map(function(f, i) {
+              return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[11px] font-black text-cyan-900 mb-0.5' }, f.fact),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderOceanSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏄 Ocean waves'),
+          React.createElement('div', { className: 'mb-3' },
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Ocean wave types'),
+            React.createElement('div', { className: 'space-y-1' },
+              OCEAN_WAVES.map(function(o, i) {
+                return React.createElement('div', { key: 'o'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, o.type),
+                    React.createElement('span', { className: 'text-[10px] text-cyan-700 font-mono ml-auto' }, 'T: ' + o.period + ' · λ: ' + o.wavelength)
+                  ),
+                  React.createElement('div', { className: 'text-[10px] text-slate-700' }, o.notes)
+                );
+              })
+            )
+          ),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Wave physics in water'),
+          React.createElement('div', { className: 'space-y-1' },
+            OCEAN_FACTS.map(function(f, i) {
+              return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[11px] font-black text-cyan-900 mb-0.5' }, f.fact),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderAntennasSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📶 Antenna types'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Antenna size typically tied to wavelength. Lower frequency = longer wavelength = bigger antenna.'),
+          React.createElement('div', { className: 'space-y-2' },
+            ANTENNA_TYPES.map(function(a, i) {
+              return React.createElement('div', { key: 'a'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, a.type),
+                  React.createElement('span', { className: 'text-[10px] text-cyan-700 font-mono ml-auto px-2 py-0.5 rounded bg-cyan-100' }, a.size)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, a.use)
+              );
+            })
+          )
+        );
+      }
+
+      function renderRadarSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📡 Radar, sonar, and active ranging'),
+          React.createElement('div', { className: 'space-y-2' },
+            RADAR_SONAR.map(function(r, i) {
+              return React.createElement('div', { key: 'r'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, r.system),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, r.use)
+              );
+            })
+          )
+        );
+      }
+
+      function renderShockwavesSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '✈ Shock waves'),
+          React.createElement('div', { className: 'space-y-2' },
+            SHOCKWAVE_FACTS.map(function(s, i) {
+              return React.createElement('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, s.fact),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderFamousSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🕰 History of wave science'),
+          React.createElement('div', { className: 'space-y-2' },
+            WAVE_HISTORY.map(function(h2, i) {
+              return React.createElement('div', { key: 'h'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-0.5' },
+                  React.createElement('span', { className: 'text-[10px] font-mono text-cyan-700 font-bold' }, h2.year),
+                  React.createElement('span', { className: 'text-[12px] font-black text-cyan-900' }, h2.who)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, h2.what)
+              );
+            })
+          )
+        );
+      }
+
       function renderActiveSection() {
         if (expSection === 'types') return renderTypesSection();
         if (expSection === 'quantities') return renderQuantitiesSection();
@@ -2632,6 +3006,17 @@ const d = labToolData.wave;
         if (expSection === 'harmonics') return renderHarmonicsSection();
         if (expSection === 'instruments') return renderInstrumentsSection();
         if (expSection === 'decibels') return renderDecibelsSection();
+        if (expSection === 'optics') return renderOpticsSection();
+        if (expSection === 'refraction') return renderRefractionSection();
+        if (expSection === 'diffraction') return renderDiffractionSection();
+        if (expSection === 'polarization') return renderPolarizationSection();
+        if (expSection === 'quantum') return renderQuantumSection();
+        if (expSection === 'seismic') return renderSeismicSection();
+        if (expSection === 'ocean') return renderOceanSection();
+        if (expSection === 'antennas') return renderAntennasSection();
+        if (expSection === 'radar') return renderRadarSection();
+        if (expSection === 'shockwaves') return renderShockwavesSection();
+        if (expSection === 'famous') return renderFamousSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
       }

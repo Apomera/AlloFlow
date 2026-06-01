@@ -645,7 +645,7 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       // ── RENDER ──
       // ══════════════════════════════════════════════════════════════
-      return h('div', { className: 'space-y-3 max-w-4xl mx-auto animate-in fade-in duration-200' },
+      var __anglesMainView = h('div', { className: 'space-y-3 max-w-4xl mx-auto animate-in fade-in duration-200' },
 
         // ── Header ──
         h('div', { className: 'flex items-center gap-3 mb-1' },
@@ -1274,6 +1274,397 @@ window.StemLab = window.StemLab || {
             : '\uD83D\uDCA1 Tip: Architects use precise angles to design buildings. The Eiffel Tower has a 54\u00B0 incline!'
         )
       );
+
+      // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+      // ANGLES EXPANSION SECTIONS \u2014 interactive geometry reference (2026-05-31)
+      // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+      var d2 = (labToolData && labToolData.angles) || {};
+      var expSection = d2.expSection || null;
+      function setExp(patch) {
+        setLabToolData(function(prev) {
+          var prior = (prev && prev.angles) || {};
+          return Object.assign({}, prev, { angles: Object.assign({}, prior, patch) });
+        });
+      }
+
+      var ANGLE_TYPES = [
+        { name: 'Zero', range: '0\u00B0', icon: '\u2014', desc: 'Two rays overlap exactly. No rotation.' },
+        { name: 'Acute', range: '0\u00B0 < \u03B8 < 90\u00B0', icon: '<', desc: 'Less than a right angle. Pizza slice, "less than square".' },
+        { name: 'Right', range: '90\u00B0', icon: '\u2310', desc: 'Exactly 90\u00B0. Corner of a square. Perpendicular lines.' },
+        { name: 'Obtuse', range: '90\u00B0 < \u03B8 < 180\u00B0', icon: '>', desc: 'Between right and straight. Wider than square corner.' },
+        { name: 'Straight', range: '180\u00B0', icon: '\u2014', desc: 'Half rotation. The two rays form a straight line.' },
+        { name: 'Reflex', range: '180\u00B0 < \u03B8 < 360\u00B0', icon: '\u21BA', desc: 'Greater than a straight angle. Measure the "outside" of the angle.' },
+        { name: 'Full rotation', range: '360\u00B0', icon: '\u25CB', desc: 'Complete turn. The two rays overlap exactly (like 0\u00B0, but went all the way around).' }
+      ];
+
+      var ANGLE_RELATIONSHIPS = [
+        { name: 'Complementary', condition: 'Sum to 90\u00B0', example: '30\u00B0 + 60\u00B0 = 90\u00B0', visual: 'Two angles fit together to make a right angle.' },
+        { name: 'Supplementary', condition: 'Sum to 180\u00B0', example: '110\u00B0 + 70\u00B0 = 180\u00B0', visual: 'Two angles fit together to make a straight line.' },
+        { name: 'Vertical (vertically opposite)', condition: 'Equal', example: 'X-shape: opposite angles are equal', visual: 'Two intersecting lines make 4 angles in 2 equal pairs.' },
+        { name: 'Adjacent', condition: 'Share a vertex + ray', example: 'No specific sum', visual: 'Two angles next to each other on either side of a common ray.' },
+        { name: 'Linear pair', condition: 'Adjacent + supplementary (sum 180\u00B0)', example: 'On a straight line', visual: 'Special case of adjacent + supplementary.' },
+        { name: 'Corresponding (parallel lines + transversal)', condition: 'Equal', example: 'Same position at each intersection', visual: 'Like-position angles when a line crosses two parallel lines.' },
+        { name: 'Alternate interior', condition: 'Equal', example: 'Z-pattern', visual: 'Between the parallel lines, on opposite sides of the transversal.' },
+        { name: 'Alternate exterior', condition: 'Equal', example: 'Outside the parallels', visual: 'Outside the parallel lines, on opposite sides of the transversal.' },
+        { name: 'Co-interior (consecutive interior)', condition: 'Supplementary (sum 180\u00B0)', example: 'C-pattern', visual: 'Between the parallels on the same side of the transversal.' }
+      ];
+
+      var POLYGON_ANGLES = [
+        { sides: 3, name: 'Triangle', interiorSum: '180\u00B0', regularInterior: '60\u00B0', exteriorEach: '120\u00B0', notes: 'Sum is constant. Equilateral all 60\u00B0.' },
+        { sides: 4, name: 'Quadrilateral', interiorSum: '360\u00B0', regularInterior: '90\u00B0', exteriorEach: '90\u00B0', notes: 'Square (regular) has all 90\u00B0. Sum holds even for irregular shapes.' },
+        { sides: 5, name: 'Pentagon', interiorSum: '540\u00B0', regularInterior: '108\u00B0', exteriorEach: '72\u00B0', notes: 'Regular: ~108\u00B0 interior.' },
+        { sides: 6, name: 'Hexagon', interiorSum: '720\u00B0', regularInterior: '120\u00B0', exteriorEach: '60\u00B0', notes: 'Regular hexagons tile the plane perfectly (honeycomb).' },
+        { sides: 7, name: 'Heptagon', interiorSum: '900\u00B0', regularInterior: '~128.6\u00B0', exteriorEach: '~51.4\u00B0', notes: 'Cannot be constructed with compass + straightedge alone.' },
+        { sides: 8, name: 'Octagon', interiorSum: '1080\u00B0', regularInterior: '135\u00B0', exteriorEach: '45\u00B0', notes: 'STOP signs.' },
+        { sides: 9, name: 'Nonagon', interiorSum: '1260\u00B0', regularInterior: '140\u00B0', exteriorEach: '40\u00B0', notes: 'Also called enneagon.' },
+        { sides: 10, name: 'Decagon', interiorSum: '1440\u00B0', regularInterior: '144\u00B0', exteriorEach: '36\u00B0', notes: 'Regular decagons have 10-fold rotational symmetry.' },
+        { sides: 12, name: 'Dodecagon', interiorSum: '1800\u00B0', regularInterior: '150\u00B0', exteriorEach: '30\u00B0', notes: 'Some coins (UK \u00A31 since 2017).' },
+        { sides: 'n', name: 'n-gon (general)', interiorSum: '(n\u22122) \u00D7 180\u00B0', regularInterior: '(n\u22122) \u00D7 180\u00B0 / n', exteriorEach: '360\u00B0 / n', notes: 'As n \u2192 \u221E, the polygon approaches a circle.' }
+      ];
+
+      var TRIG_REF = [
+        { fn: 'sin \u03B8', mnemonic: 'opposite / hypotenuse', range: '\u22121 \u2264 sin \u2264 1', notes: 'Positive in Q1 (0-90\u00B0) + Q2 (90-180\u00B0). sin 30\u00B0=0.5, sin 45\u00B0=\u221A2/2, sin 60\u00B0=\u221A3/2, sin 90\u00B0=1.' },
+        { fn: 'cos \u03B8', mnemonic: 'adjacent / hypotenuse', range: '\u22121 \u2264 cos \u2264 1', notes: 'Positive in Q1 + Q4. cos 0\u00B0=1, cos 30\u00B0=\u221A3/2, cos 45\u00B0=\u221A2/2, cos 60\u00B0=0.5, cos 90\u00B0=0.' },
+        { fn: 'tan \u03B8', mnemonic: 'opposite / adjacent = sin/cos', range: '\u2212\u221E to +\u221E', notes: 'Undefined at 90\u00B0, 270\u00B0. tan 30\u00B0=1/\u221A3, tan 45\u00B0=1, tan 60\u00B0=\u221A3.' },
+        { fn: 'csc \u03B8', mnemonic: '1 / sin = hyp / opp', range: '|csc| \u2265 1', notes: 'Reciprocal of sine. Undefined where sin = 0 (0\u00B0, 180\u00B0, 360\u00B0).' },
+        { fn: 'sec \u03B8', mnemonic: '1 / cos = hyp / adj', range: '|sec| \u2265 1', notes: 'Reciprocal of cosine. Undefined where cos = 0 (90\u00B0, 270\u00B0).' },
+        { fn: 'cot \u03B8', mnemonic: '1 / tan = adj / opp = cos/sin', range: 'all reals', notes: 'Reciprocal of tangent. Undefined where sin = 0.' }
+      ];
+
+      var ANGLE_UNITS = [
+        { unit: 'Degrees', symbol: '\u00B0', fullCircle: '360\u00B0', use: 'Everyday geometry, navigation, surveying. Divides naturally (90, 60, 45, 30, 18, 15...).' },
+        { unit: 'Radians', symbol: 'rad', fullCircle: '2\u03C0 rad \u2248 6.283', use: 'Math, calculus, physics. Arc length = r \u00D7 \u03B8 when \u03B8 is in radians. Natural unit for trig derivatives.' },
+        { unit: 'Gradians (gons)', symbol: 'g', fullCircle: '400 gons', use: 'European surveying. 100 gons = right angle. Decimal-friendly.' },
+        { unit: 'Turns (revolutions)', symbol: 'rev', fullCircle: '1 turn', use: 'Rotational mechanics, engineering. 1 rev/min = 1 RPM.' },
+        { unit: 'Arc minutes', symbol: '\u2032', fullCircle: '21,600 \u2032', use: 'Astronomy, surveying. 1\u00B0 = 60\u2032. Moon\'s apparent diameter ~30\u2032.' },
+        { unit: 'Arc seconds', symbol: '\u2033', fullCircle: '1,296,000 \u2033', use: 'Astronomy. 1\u2032 = 60\u2033. Hubble can resolve ~0.05\u2033 angles.' },
+        { unit: 'Milliradians (mils)', symbol: 'mrad', fullCircle: '~6283 mrad', use: 'Ballistics, military scopes. ~1 m at 1 km distance. 1 mrad \u2248 3.4 arc minutes.' }
+      ];
+
+      var SPECIAL_ANGLES = [
+        { deg: '0\u00B0', rad: '0', sin: '0', cos: '1', tan: '0', notes: 'Identity reference.' },
+        { deg: '30\u00B0', rad: '\u03C0/6', sin: '1/2', cos: '\u221A3/2', tan: '1/\u221A3', notes: 'Half of an equilateral triangle.' },
+        { deg: '45\u00B0', rad: '\u03C0/4', sin: '\u221A2/2', cos: '\u221A2/2', tan: '1', notes: 'Isosceles right triangle. Sin and cos equal.' },
+        { deg: '60\u00B0', rad: '\u03C0/3', sin: '\u221A3/2', cos: '1/2', tan: '\u221A3', notes: 'Equilateral triangle vertex.' },
+        { deg: '90\u00B0', rad: '\u03C0/2', sin: '1', cos: '0', tan: 'undef', notes: 'Maximum sin. Tan blows up.' },
+        { deg: '120\u00B0', rad: '2\u03C0/3', sin: '\u221A3/2', cos: '\u22121/2', tan: '\u2212\u221A3', notes: 'Quadrant 2.' },
+        { deg: '135\u00B0', rad: '3\u03C0/4', sin: '\u221A2/2', cos: '\u2212\u221A2/2', tan: '\u22121', notes: 'Quadrant 2 mirror of 45\u00B0.' },
+        { deg: '150\u00B0', rad: '5\u03C0/6', sin: '1/2', cos: '\u2212\u221A3/2', tan: '\u22121/\u221A3', notes: 'Quadrant 2 mirror of 30\u00B0.' },
+        { deg: '180\u00B0', rad: '\u03C0', sin: '0', cos: '\u22121', tan: '0', notes: 'Half rotation.' },
+        { deg: '270\u00B0', rad: '3\u03C0/2', sin: '\u22121', cos: '0', tan: 'undef', notes: 'Minimum sin. Tan blows up again.' },
+        { deg: '360\u00B0', rad: '2\u03C0', sin: '0', cos: '1', tan: '0', notes: 'Full rotation = back to start.' }
+      ];
+
+      var REAL_WORLD_ANGLES = [
+        { thing: 'Pizza slice (8 cuts)', angle: '45\u00B0', notes: '360\u00B0 / 8 = 45\u00B0 per slice.' },
+        { thing: 'Hexagon honeycomb cell', angle: '120\u00B0', notes: 'Each interior angle of a regular hexagon.' },
+        { thing: 'Skyscraper corner', angle: '90\u00B0', notes: 'Most buildings use right angles for structural simplicity.' },
+        { thing: 'Yield sign', angle: '60\u00B0', notes: 'Equilateral triangle.' },
+        { thing: 'Stop sign', angle: '135\u00B0', notes: 'Regular octagon interior angles.' },
+        { thing: 'Eiffel Tower incline (legs)', angle: '54\u00B0', notes: 'Helps the structure resist wind.' },
+        { thing: 'Earth\'s axial tilt', angle: '23.5\u00B0', notes: 'Causes seasons. Tilted relative to orbital plane.' },
+        { thing: 'Critical angle (water/air, refraction)', angle: '~48.6\u00B0', notes: 'Beyond this angle, light is totally internally reflected. Used in fiber optics.' },
+        { thing: 'Snowflake symmetry', angle: '60\u00B0 (6-fold)', notes: 'Hexagonal ice crystals always have 6-fold symmetry.' },
+        { thing: 'DNA helix angle', angle: '~36\u00B0', notes: 'Each base pair rotates ~36\u00B0 around the helix axis (~10 bp per turn).' },
+        { thing: 'Highway curve banking', angle: 'varies (5-10\u00B0)', notes: 'Tilts road so gravity component balances centripetal force at design speed.' },
+        { thing: 'Sun at zenith (equator, equinox)', angle: '90\u00B0', notes: 'Sun directly overhead. Only happens between Tropics during the year.' }
+      ];
+
+      var ANGLE_TRICKS = [
+        { trick: 'Sum of angles in triangle = 180\u00B0', use: 'Find missing angle if you know the other two: 180 \u2212 (a + b).' },
+        { trick: 'Exterior angle of triangle = sum of remote interior', use: 'Faster than calculating + then subtracting from 180.' },
+        { trick: 'Angles in same segment of circle are equal', use: 'Inscribed angle theorem. Subtend same arc \u2192 equal.' },
+        { trick: 'Inscribed angle = \u00BD central angle', use: 'Central + inscribed angle subtend same arc; inscribed is exactly half.' },
+        { trick: 'Tangent \u22A5 radius at point of contact', use: 'Right angle at tangent point. Useful for many circle problems.' },
+        { trick: 'Pythagorean identity', use: 'sin\u00B2\u03B8 + cos\u00B2\u03B8 = 1. Find one trig value from another.' },
+        { trick: 'CAST rule (quadrant signs)', use: 'C(IV: cos+), A(I: all+), S(II: sin+), T(III: tan+). Memorize quadrant signs of trig functions.' },
+        { trick: 'sin(180\u00B0 \u2212 \u03B8) = sin \u03B8', use: 'Supplementary angles have same sine. Useful in triangle problems.' },
+        { trick: 'cos(360\u00B0 \u2212 \u03B8) = cos \u03B8', use: 'Cosine is symmetric about 0\u00B0 (cosine is an even function).' },
+        { trick: 'Doubling formula: sin 2\u03B8 = 2 sin \u03B8 cos \u03B8', use: 'Compute trig of doubled angle from original.' }
+      ];
+
+      var COMPASS_BEARINGS = [
+        { dir: 'N', bearing: '0\u00B0' }, { dir: 'NNE', bearing: '22.5\u00B0' }, { dir: 'NE', bearing: '45\u00B0' }, { dir: 'ENE', bearing: '67.5\u00B0' },
+        { dir: 'E', bearing: '90\u00B0' }, { dir: 'ESE', bearing: '112.5\u00B0' }, { dir: 'SE', bearing: '135\u00B0' }, { dir: 'SSE', bearing: '157.5\u00B0' },
+        { dir: 'S', bearing: '180\u00B0' }, { dir: 'SSW', bearing: '202.5\u00B0' }, { dir: 'SW', bearing: '225\u00B0' }, { dir: 'WSW', bearing: '247.5\u00B0' },
+        { dir: 'W', bearing: '270\u00B0' }, { dir: 'WNW', bearing: '292.5\u00B0' }, { dir: 'NW', bearing: '315\u00B0' }, { dir: 'NNW', bearing: '337.5\u00B0' }
+      ];
+
+      var ANGLES_GLOSSARY = [
+        { term: 'Vertex', def: 'The common endpoint of two rays that form an angle.' },
+        { term: 'Ray', def: 'Half of a line \u2014 starts at a point, extends infinitely in one direction.' },
+        { term: 'Vertex angle', def: 'In an isosceles triangle, the angle opposite the equal sides.' },
+        { term: 'Base angle', def: 'In an isosceles triangle, one of the two equal angles opposite the equal sides.' },
+        { term: 'Bisector', def: 'A ray that divides an angle into two equal angles.' },
+        { term: 'Perpendicular', def: 'Two lines that meet at a right angle (90\u00B0).' },
+        { term: 'Parallel', def: 'Two lines that never meet (same slope). Always equidistant.' },
+        { term: 'Transversal', def: 'A line that crosses two or more other lines.' },
+        { term: 'Coterminal angles', def: 'Angles with same initial + terminal sides but different rotations. E.g., 30\u00B0 and 390\u00B0 are coterminal.' },
+        { term: 'Reference angle', def: 'The acute angle between the terminal side and the x-axis. Always between 0\u00B0 and 90\u00B0.' },
+        { term: 'Polar angle (\u03B8)', def: 'In polar coordinates, the angle from the positive x-axis to the point.' },
+        { term: 'Azimuth', def: 'Horizontal angle measured clockwise from a reference direction (usually north). Used in navigation, astronomy.' },
+        { term: 'Altitude angle', def: 'Vertical angle above the horizon. 0\u00B0 = horizon, 90\u00B0 = zenith.' },
+        { term: 'Angle of incidence', def: 'Angle between incoming ray and normal to surface.' },
+        { term: 'Angle of refraction', def: 'Angle between refracted ray and normal. Snell\'s law relates the two.' },
+        { term: 'Angle of elevation', def: 'Angle above horizontal to a point above (e.g., top of a tree).' },
+        { term: 'Angle of depression', def: 'Angle below horizontal to a point below.' }
+      ];
+
+      function expHeader() {
+        return h('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 border-2 border-rose-200' },
+          h('div', null,
+            h('h3', { className: 'text-base font-black text-rose-900' }, '\uD83D\uDCD0 Angles Reference Library'),
+            h('div', { className: 'text-[11px] text-rose-700 mt-0.5' }, 'Interactive geometry references \u2014 pick a topic.')
+          ),
+          expSection && h('button', {
+            onClick: function() { setExp({ expSection: null }); },
+            className: 'px-3 py-1 rounded-md text-xs font-bold bg-white border border-rose-300 text-rose-700 hover:bg-rose-100'
+          }, '\u2715 Close section')
+        );
+      }
+
+      function expTabBar() {
+        var sections = [
+          { id: 'types', label: 'Types', icon: '<' },
+          { id: 'relationships', label: 'Relationships', icon: '\u2AEF' },
+          { id: 'polygons', label: 'Polygon angles', icon: '\u2B21' },
+          { id: 'trig', label: 'Trig functions', icon: 'sin' },
+          { id: 'special', label: 'Special angles', icon: '\u2605' },
+          { id: 'units', label: 'Angle units', icon: '\u00B0' },
+          { id: 'world', label: 'Real-world', icon: '\uD83C\uDF0D' },
+          { id: 'tricks', label: 'Shortcuts', icon: '\u26A1' },
+          { id: 'compass', label: 'Compass', icon: '\uD83E\uDDED' },
+          { id: 'glossary', label: 'Glossary', icon: '\uD83D\uDCD6' }
+        ];
+        return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
+          sections.map(function(s) {
+            var active = expSection === s.id;
+            return h('button', {
+              key: s.id,
+              onClick: function() { setExp({ expSection: active ? null : s.id }); },
+              className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-rose-50 hover:border-rose-300')
+            }, s.icon + ' ' + s.label);
+          })
+        );
+      }
+
+      function renderTypesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '< Types of angles by size'),
+          h('div', { className: 'space-y-2' },
+            ANGLE_TYPES.map(function(a, i) {
+              return h('div', { key: 'a'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  h('span', { className: 'text-xl text-rose-600 font-mono' }, a.icon),
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, a.name),
+                  h('span', { className: 'text-[11px] font-bold ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-mono' }, a.range)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, a.desc)
+              );
+            })
+          )
+        );
+      }
+
+      function renderRelationshipsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\u2AEF Angle pair relationships'),
+          h('div', { className: 'space-y-2' },
+            ANGLE_RELATIONSHIPS.map(function(r, i) {
+              return h('div', { key: 'r'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, r.name),
+                  h('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, r.condition)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 mb-0.5' }, h('strong', null, 'Example: '), r.example),
+                h('div', { className: 'text-[11px] text-slate-600 italic' }, r.visual)
+              );
+            })
+          )
+        );
+      }
+
+      function renderPolygonsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\u2B21 Polygon angle sums'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Interior angle sum = (n \u2212 2) \u00D7 180\u00B0 for any n-sided polygon. Each exterior angle of a REGULAR polygon = 360\u00B0/n. Sum of exterior angles always = 360\u00B0.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['n', 'Name', 'Sum interior', 'Each (regular)', 'Each exterior', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                POLYGON_ANGLES.map(function(p, i) {
+                  return h('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-mono font-bold text-slate-800' }, p.sides),
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, p.name),
+                    h('td', { className: 'px-2 py-1 text-slate-700' }, p.interiorSum),
+                    h('td', { className: 'px-2 py-1 text-slate-700' }, p.regularInterior),
+                    h('td', { className: 'px-2 py-1 text-slate-700' }, p.exteriorEach),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, p.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderTrigSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'sin Trigonometric functions'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'SOH-CAH-TOA: Sine = Opp/Hyp, Cosine = Adj/Hyp, Tangent = Opp/Adj. The trig functions express ratios of right-triangle sides; extended to all angles via the unit circle.'),
+          h('div', { className: 'space-y-2' },
+            TRIG_REF.map(function(t, i) {
+              return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  h('span', { className: 'text-base font-black text-rose-700 font-mono min-w-[48px]' }, t.fn),
+                  h('span', { className: 'text-[11px] font-bold text-slate-700' }, t.mnemonic),
+                  h('span', { className: 'text-[10px] font-mono ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, t.range)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderSpecialSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\u2605 Special angles (unit circle)'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'These angles + their trig values are worth memorizing \u2014 they appear constantly in math, physics, and engineering.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Degrees', 'Radians', 'sin', 'cos', 'tan', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                SPECIAL_ANGLES.map(function(s, i) {
+                  return h('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-mono font-bold text-slate-800' }, s.deg),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, s.rad),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, s.sin),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, s.cos),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, s.tan),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderUnitsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\u00B0 Angle units'),
+          h('div', { className: 'space-y-2' },
+            ANGLE_UNITS.map(function(u, i) {
+              return h('div', { key: 'u'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, u.unit),
+                  h('span', { className: 'text-[11px] font-bold ml-2 text-rose-700' }, u.symbol),
+                  h('span', { className: 'text-[10px] font-mono ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, u.fullCircle)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, u.use)
+              );
+            })
+          ),
+          h('div', { className: 'mt-3 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
+            h('strong', null, '\uD83D\uDD01 Conversions: '), '1 rad = 180/\u03C0 \u2248 57.296\u00B0. 1\u00B0 = \u03C0/180 \u2248 0.01745 rad. 1 gon = 0.9\u00B0. Most calculators have a degrees/radians mode toggle \u2014 make sure you\'re in the right mode!'
+          )
+        );
+      }
+
+      function renderWorldSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\uD83C\uDF0D Real-world angles'),
+          h('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
+            REAL_WORLD_ANGLES.map(function(r, i) {
+              return h('div', { key: 'r'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, r.thing),
+                  h('span', { className: 'text-[11px] font-mono ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold' }, r.angle)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, r.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderTricksSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\u26A1 Angle problem-solving shortcuts'),
+          h('div', { className: 'space-y-2' },
+            ANGLE_TRICKS.map(function(t, i) {
+              return h('div', { key: 't'+i, className: 'p-2.5 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, t.trick),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.use)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCompassSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\uD83E\uDDED Compass bearings (16-point)'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Bearings measured CLOCKWISE from north. Standard 16-point compass has 22.5\u00B0 between adjacent directions.'),
+          h('div', { className: 'grid grid-cols-4 gap-2' },
+            COMPASS_BEARINGS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-2 rounded-md bg-slate-50 border border-slate-200 text-center' },
+                h('div', { className: 'text-base font-black text-rose-700' }, c.dir),
+                h('div', { className: 'text-[10px] font-mono text-slate-600' }, c.bearing)
+              );
+            })
+          )
+        );
+      }
+
+      function renderGlossarySection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\uD83D\uDCD6 Angles glossary'),
+          h('div', { className: 'space-y-1' },
+            ANGLES_GLOSSARY.map(function(g, i) {
+              return h('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900' }, g.term),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.def)
+              );
+            })
+          )
+        );
+      }
+
+      function renderActiveSection() {
+        if (expSection === 'types') return renderTypesSection();
+        if (expSection === 'relationships') return renderRelationshipsSection();
+        if (expSection === 'polygons') return renderPolygonsSection();
+        if (expSection === 'trig') return renderTrigSection();
+        if (expSection === 'special') return renderSpecialSection();
+        if (expSection === 'units') return renderUnitsSection();
+        if (expSection === 'world') return renderWorldSection();
+        if (expSection === 'tricks') return renderTricksSection();
+        if (expSection === 'compass') return renderCompassSection();
+        if (expSection === 'glossary') return renderGlossarySection();
+        return null;
+      }
+
+      var __anglesExpansions = h('div', { className: 'mt-4 max-w-4xl mx-auto' },
+        expHeader(),
+        expTabBar(),
+        expSection && h('div', { className: 'mt-2' }, renderActiveSection())
+      );
+
+      return h(React.Fragment, null, __anglesMainView, __anglesExpansions);
     }
   });
 })();

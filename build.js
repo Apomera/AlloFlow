@@ -359,6 +359,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'BrandProfileEditor',
+        filename: 'brand_profile_editor_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'StudentAnalytics',
         filename: 'student_analytics_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1093,6 +1098,25 @@ const COMPILE_PAIRS = [
                 '(function() {\n'
                 + "'use strict';\n"
                 + "if (window.AlloModules && window.AlloModules.Export) { console.log('[CDN] Export already loaded, skipping'); return; }\n"
+                + compiled
+                + '\n})();\n'
+            );
+        },
+    },
+    {
+        // Brand Settings editor UI (consumes window.AlloModules.BrandProfile).
+        // Registers window.AlloModules.BrandProfileEditor (a React component),
+        // opened from the Educator Hub via CDNModuleGate.
+        name: 'BrandProfileEditor',
+        srcPath: path.join(ROOT, 'brand_profile_editor_source.jsx'),
+        modPath: path.join(ROOT, 'brand_profile_editor_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'brand_profile_editor_module.js'),
+        wrap(src) {
+            const compiled = compileJsx(src);
+            return (
+                '(function() {\n'
+                + "'use strict';\n"
+                + "if (window.AlloModules && window.AlloModules.BrandProfileEditor) { console.log('[CDN] BrandProfileEditor already loaded, skipping'); return; }\n"
                 + compiled
                 + '\n})();\n'
             );
