@@ -16322,6 +16322,45 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const textAlign = isRtl ? 'right' : 'left';
       const seed = STYLE_SEEDS[exportTheme] || (function (sid) { try { var _BP = window.AlloModules && window.AlloModules.BrandProfile; var _p = _BP && _BP.getBrandProfile && _BP.getBrandProfile(sid); return _p ? { name: _p.name, emoji: '\u{1F3A8}', cssVars: _BP.brandProfileToCssVars(_p) } : null; } catch (e) { return null; } })(exportTheme) || STYLE_SEEDS.professional;
       const theme = seed.cssVars ? { name: seed.name, emoji: seed.emoji, ...seed.cssVars } : (EXPORT_THEMES.professional);
+      // ── Brand identity bands (header/footer) — independent of style choice ──
+      // If a BrandProfile is active, render its header/footer + minimal styling
+      // regardless of which style seed is selected. This lets a teacher pick
+      // "Magazine" for the body styling but still get "King Middle School ·
+      // Grade 8 ELA" + the school logo at the top. Brand colors + fonts only
+      // override the seed when the brand is itself selected as the style (the
+      // seed fallback above handles that path).
+      const _activeBrand = (function () {
+        try {
+          var _BP = window.AlloModules && window.AlloModules.BrandProfile;
+          return _BP && _BP.getActiveBrandProfile ? _BP.getActiveBrandProfile() : null;
+        } catch (e) { return null; }
+      })();
+      const _brandHeaderHTML = _activeBrand ? (function () {
+        try { return window.AlloModules.BrandProfile.brandProfileToHeaderHTML(_activeBrand) || ''; }
+        catch (e) { return ''; }
+      })() : '';
+      const _brandFooterHTML = _activeBrand ? (function () {
+        try { return window.AlloModules.BrandProfile.brandProfileToFooterHTML(_activeBrand, null) || ''; }
+        catch (e) { return ''; }
+      })() : '';
+      // Minimal CSS scoped to the brand bands so they render even when the
+      // selected style seed has no awareness of the brand. Uses brand colors
+      // so the identity is visually consistent across exports.
+      const _brandBandsCSS = _activeBrand ? (function () {
+        var c = _activeBrand.colors;
+        return [
+          '.brand-header { background: ' + c.heading + '; color: ' + c.bg + '; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; border-radius: 8px 8px 0 0; }',
+          '.brand-header img { max-height: 48px; width: auto; flex-shrink: 0; }',
+          '.brand-header-text { font-weight: 600; }',
+          '.brand-footer { border-top: 1px solid ' + c.cardBorder + '; color: ' + c.body + '; padding: 0.5rem 1rem; font-size: 0.875rem; display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; }',
+          '@media print {',
+          '  .brand-header, .brand-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }',
+          '  .brand-header { position: running(brandHeader); }',
+          '  .brand-footer { position: running(brandFooter); }',
+          '  @page { @top-center { content: element(brandHeader); } @bottom-center { content: element(brandFooter); } }',
+          '}'
+        ].join('\n');
+      })() : '';
       // Font: honor user's app font if toggled, otherwise use theme font
       // Read FONT_OPTIONS from window (defined in monolith) with safe fallback
       const _fontOptions = (typeof window !== 'undefined' && window.FONT_OPTIONS) || [];
@@ -16694,6 +16733,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             .alloflow-section-marker span:last-child { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           }
           ${theme.extraCSS || ''}
+          ${_brandBandsCSS ? `/* Active Brand Profile bands (header/footer) */\n${_brandBandsCSS}` : ''}
           ${customExportCSS ? `/* Custom AI-generated style (sanitized for XSS) */\n${sanitizeCustomExportCSS(customExportCSS)}` : ''}
 
           /* ═══ Reading Tools toolbar + runtime theme switcher ═══
@@ -16955,6 +16995,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       </head>
       <body>
         <a href="#main-export-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:100;">Skip to content</a>
+        ${_brandHeaderHTML}
         <div class="alloflow-reading-tools" role="region" aria-label="Reading tools">
           <div class="alloflow-reading-tools-group" role="group" aria-label="Reading theme">
             <span class="alloflow-reading-tools-label">Theme</span>
@@ -18528,6 +18569,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 ${_submissionSaveHandler}
             });
         </script>
+        ${_brandFooterHTML}
       </body>
       </html>
       `;
