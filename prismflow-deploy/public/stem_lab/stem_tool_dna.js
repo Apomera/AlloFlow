@@ -2917,6 +2917,19 @@ window.StemLab = window.StemLab || {
           { id: 'neuro', label: 'Neuroscience', icon: '🧠' },
           { id: 'tree', label: 'Tree of life', icon: '🌳' },
           { id: 'biotech2', label: 'Biotech apps', icon: '💉' },
+          { id: 'animals2', label: 'Animal facts', icon: '🐾' },
+          { id: 'plants', label: 'Plant biology', icon: '🌿' },
+          { id: 'famousgenes', label: 'Famous genes', icon: '⌬' },
+          { id: 'modelorg', label: 'Model organisms', icon: '🧫' },
+          { id: 'ecology', label: 'Ecology', icon: '🌍' },
+          { id: 'periodtable_bio', label: 'Bio elements', icon: '⌬' },
+          { id: 'pathways', label: 'Cell pathways', icon: '⇄' },
+          { id: 'extinct', label: 'Extinct species', icon: '🦕' },
+          { id: 'organ_systems', label: 'Organ systems', icon: '🫀' },
+          { id: 'hormones', label: 'Hormones', icon: '⚛' },
+          { id: 'vitamins', label: 'Vitamins', icon: '💊' },
+          { id: 'animal_groups', label: 'Animal groups', icon: '🦁' },
+          { id: 'famous_orgs', label: 'Wild + dog DNA', icon: '🐕' },
           { id: 'glossary', label: 'Glossary', icon: '📖' }
         ];
         return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3561,8 +3574,1077 @@ window.StemLab = window.StemLab || {
         if (expSection === 'sequencing') return renderSequencingSection();
         if (expSection === 'ethics') return renderEthicsSection();
         if (expSection === 'famous') return renderFamousSection();
+        if (expSection === 'pcr') return renderPcrSection();
+        if (expSection === 'crispr') return renderCrisprSection();
+        if (expSection === 'viruses') return renderVirusesSection();
+        if (expSection === 'microbiome') return renderMicrobiomeSection();
+        if (expSection === 'devel') return renderDevelSection();
+        if (expSection === 'cancer') return renderCancerSection();
+        if (expSection === 'immunity') return renderImmunitySection();
+        if (expSection === 'neuro') return renderNeuroSection();
+        if (expSection === 'tree') return renderTreeSection();
+        if (expSection === 'biotech2') return renderBiotech2Section();
+        if (expSection === 'animals2') return renderAnimals2Section();
+        if (expSection === 'plants') return renderPlantsSection();
+        if (expSection === 'famousgenes') return renderFamousGenesSection();
+        if (expSection === 'modelorg') return renderModelorgSection();
+        if (expSection === 'ecology') return renderEcologySection();
+        if (expSection === 'periodtable_bio') return renderPeriodTableBioSection();
+        if (expSection === 'pathways') return renderPathwaysSection();
+        if (expSection === 'extinct') return renderExtinctSection();
+        if (expSection === 'organ_systems') return renderOrganSystemsSection();
+        if (expSection === 'hormones') return renderHormonesSection();
+        if (expSection === 'vitamins') return renderVitaminsSection();
+        if (expSection === 'animal_groups') return renderAnimalGroupsSection();
+        if (expSection === 'famous_orgs') return renderFamousOrgsSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
+      }
+
+      var DOG_GENETICS = [
+        { breed: 'Dalmatian', trait: 'Spots', genetics: 'Two genes (S + T loci). Born white; spots develop in first weeks.', notes: 'All Dalmatians historically had uric-acid metabolism mutation → kidney stone risk.' },
+        { breed: 'Golden Retriever', trait: 'Coat color', genetics: 'E-locus extension gene — recessive ee gives yellow/red coat.', notes: 'All Goldens are ee for that locus. Variation in shade due to other genes.' },
+        { breed: 'Border Collie', trait: 'Herding behavior', genetics: 'Strongly heritable behavioral trait. Several genes implicated.', notes: 'Most intelligent dog breed by some measures (vocabulary tests).' },
+        { breed: 'Bulldog (English)', trait: 'Flat face', genetics: 'Brachycephalic syndrome. Selective breeding shaped skull dramatically.', notes: 'Most cannot give birth naturally — ~80% require C-section.' },
+        { breed: 'Pug', trait: 'Curly tail + flat face', genetics: 'Similar brachycephalic genetics.', notes: 'Breathing + eye problems common.' },
+        { breed: 'Greyhound', trait: 'Speed', genetics: 'Muscle composition + body proportions.', notes: 'Up to ~72 km/h. Heart proportionally larger than other breeds.' },
+        { breed: 'Chihuahua', trait: 'Tiny size', genetics: 'IGF1 gene variants.', notes: 'Smallest dog breed. Adults 1-3 kg.' },
+        { breed: 'Great Dane', trait: 'Huge size', genetics: 'IGF1 variants opposite of small breeds.', notes: 'Can reach 90+ kg. Short lifespan (~7 years).' },
+        { breed: 'Husky / Malamute', trait: 'Blue eyes (some)', genetics: 'Variant near ALX4 gene.', notes: 'About 40% of Huskies have at least one blue eye.' },
+        { breed: 'Poodle', trait: 'Curly hypoallergenic coat', genetics: 'KRT71 mutation → curl.', notes: '"Hypoallergenic" overstated — all dogs produce allergenic proteins.' },
+        { breed: 'Basenji', trait: 'Doesn\'t bark', genetics: 'Unusual larynx shape.', notes: 'African breed. "Sings" or yodels instead. Genetically distinct from most modern breeds.' }
+      ];
+
+      var WILD_DNA_FACTS = [
+        { fact: 'Octopus has 33,000 genes', detail: 'More than humans (~20,000). Many novel genes for sensing + cognition.' },
+        { fact: 'Tardigrade DNA repair', detail: 'Special protein (Dsup) wraps DNA + protects against X-ray damage. Studied for radiation therapy applications.' },
+        { fact: 'Naked mole rat cancer resistance', detail: 'Hypersensitive contact inhibition + high-molecular-weight hyaluronan. Cancer extremely rare.' },
+        { fact: 'Elephant TP53 redundancy', detail: 'Elephants have ~20 copies of tumor suppressor TP53 (humans have 1). Possible explanation for low cancer rates despite huge cell number.' },
+        { fact: 'Salamander regeneration', detail: 'Axolotl can regrow limbs, spinal cord, heart, even portions of brain. Studied for regenerative medicine.' },
+        { fact: 'Camel hump', detail: 'Stores fat, not water (myth). Allows survival without food for weeks. Water comes from drinking + metabolic byproduct.' },
+        { fact: 'Cheetah inbreeding', detail: 'Population crashed ~12,000 years ago. Genetic bottleneck → very low diversity. All cheetahs basically twins genetically.' },
+        { fact: 'Whale evolution', detail: 'Modern whales descended from land mammals (~50 mya). Closest living relatives: hippos. Vestigial pelvis bones remain.' },
+        { fact: 'Plant chromosome counts', detail: 'Wide variation. Adder\'s tongue fern: ~720 pairs (most ever). Rice: 12 pairs. Humans: 23 pairs.' },
+        { fact: 'Bdelloid rotifers', detail: 'All-female, asexual for ~80 million years. Acquire genes from other species (HGT) instead of mixing via sex.' },
+        { fact: 'Coelacanth', detail: 'Lobe-finned fish thought extinct since dinosaur age. Living specimens found 1938. Lineage ~400 million years old.' },
+        { fact: 'Horseshoe crab blood', detail: 'Blue (copper-based hemocyanin). Detects bacterial endotoxins — used to test vaccines + medical devices.' },
+        { fact: 'Polar bear evolution', detail: 'Diverged from brown bears ~150,000-500,000 years ago. Some grizzly-polar hybrids ("pizzly" or "grolar") confirmed in wild.' }
+      ];
+
+      function renderFamousOrgsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🐕 Dog breed genetics + wild DNA facts'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Dog breed genetics'),
+            h('div', { className: 'space-y-2' },
+              DOG_GENETICS.map(function(d, i) {
+                return h('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                    h('span', { className: 'text-[12px] font-black text-slate-800' }, d.breed),
+                    h('span', { className: 'text-[10px] text-emerald-700 italic ml-auto' }, d.trait)
+                  ),
+                  h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Genetics: '), d.genetics),
+                  h('div', { className: 'text-[10px] text-slate-600 italic' }, d.notes)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Wild DNA + biology trivia'),
+          h('div', { className: 'space-y-1' },
+            WILD_DNA_FACTS.map(function(w, i) {
+              return h('div', { key: 'w'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, w.fact),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, w.detail)
+              );
+            })
+          )
+        );
+      }
+
+      var ANIMAL_GROUPS = [
+        { phylum: 'Porifera', common: 'Sponges', features: 'Multicellular, no true tissues, filter feeders', examples: 'Sea sponges', notes: '~8,500 species. No organs. Among oldest animal lineages.' },
+        { phylum: 'Cnidaria', common: 'Jellyfish, corals, sea anemones, hydras', features: 'Radial symmetry, stinging cells (cnidocytes), two body forms (polyp + medusa)', examples: 'Box jellyfish, brain coral, Portuguese man o\' war', notes: '~10,000 species. Some virtually immortal (Turritopsis).' },
+        { phylum: 'Platyhelminthes', common: 'Flatworms (incl. tapeworms, planaria, flukes)', features: 'Flat body, no body cavity, bilateral symmetry', examples: 'Tapeworm, liver fluke, planaria', notes: '~20,000 species. Planaria can regenerate from tiny fragments.' },
+        { phylum: 'Nematoda', common: 'Roundworms', features: 'Long, thin, unsegmented', examples: 'C. elegans, hookworm, Trichinella', notes: '~25,000 described, but estimated millions of species. Most abundant animals on Earth.' },
+        { phylum: 'Annelida', common: 'Segmented worms', features: 'Segmented body, closed circulatory system', examples: 'Earthworm, leech, marine bristle worms', notes: '~17,000 species. Important soil engineers.' },
+        { phylum: 'Mollusca', common: 'Snails, clams, octopuses, squid', features: 'Soft body, often with shell, muscular foot', examples: 'Garden snail, octopus, scallop, giant squid', notes: '~85,000 living species. Octopuses are among most intelligent invertebrates.' },
+        { phylum: 'Arthropoda', common: 'Insects, spiders, crustaceans, centipedes', features: 'Exoskeleton (chitin), segmented body, jointed legs', examples: 'Ant, spider, lobster, butterfly', notes: '~1.1 million described — most of all animals. Probably 5-10× more undescribed.' },
+        { phylum: 'Echinodermata', common: 'Starfish, sea urchins, sea cucumbers, sand dollars', features: 'Radial symmetry (as adults), water vascular system, calcareous endoskeleton', examples: 'Sea star, sea urchin, sand dollar', notes: '~7,000 species. All marine. Bilateral as larvae.' },
+        { phylum: 'Chordata', common: 'Vertebrates + close relatives', features: 'Notochord (or backbone), dorsal hollow nerve cord, gill slits at some stage, post-anal tail', examples: 'Fish, frogs, birds, mammals, humans', notes: '~65,000 species. Includes us.' }
+      ];
+
+      var VERTEBRATE_CLASSES = [
+        { class_: 'Agnatha (jawless fish)', features: 'No jaws, cartilaginous skeleton', examples: 'Lamprey, hagfish', notes: 'Most ancient vertebrate lineage.' },
+        { class_: 'Chondrichthyes', features: 'Cartilaginous skeleton, paired jaws + fins', examples: 'Sharks, rays, skates', notes: '~1,200 species. Hammerhead, great white, manta ray.' },
+        { class_: 'Osteichthyes (bony fish)', features: 'Bony skeleton, swim bladder, gills', examples: 'Salmon, tuna, goldfish, coelacanth', notes: 'Largest vertebrate group. ~32,000 species. Includes ray-finned + lobe-finned.' },
+        { class_: 'Amphibia', features: 'Moist skin, metamorphosis (in many), lay eggs in water', examples: 'Frog, salamander, caecilian', notes: '~8,000 species. Permeable skin makes them sensitive to pollution.' },
+        { class_: 'Reptilia', features: 'Scaly skin, lay shelled eggs on land (or live bear), ectothermic', examples: 'Snake, turtle, crocodile, lizard, tuatara', notes: '~11,500 species. Birds are technically reptiles (modern cladistics).' },
+        { class_: 'Aves (birds)', features: 'Feathers, beak, hollow bones, lay hard-shelled eggs, endothermic', examples: 'Sparrow, eagle, penguin, ostrich, hummingbird', notes: '~11,000 species. Evolved from theropod dinosaurs.' },
+        { class_: 'Mammalia', features: 'Hair/fur, mammary glands, live birth (mostly), endothermic, 3 middle ear bones', examples: 'Mouse, whale, bat, human, kangaroo, platypus', notes: '~6,500 species. Three main groups: monotremes, marsupials, placentals.' }
+      ];
+
+      function renderAnimalGroupsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🦁 Animal classification'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Major animal phyla'),
+            h('div', { className: 'space-y-2' },
+              ANIMAL_GROUPS.map(function(a, i) {
+                return h('div', { key: 'a'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                    h('span', { className: 'text-[12px] font-black text-slate-800' }, a.phylum),
+                    h('span', { className: 'text-[10px] text-emerald-700 ml-auto' }, a.common)
+                  ),
+                  h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Features: '), a.features),
+                  h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Examples: '), a.examples),
+                  h('div', { className: 'text-[10px] text-slate-600 italic' }, a.notes)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Vertebrate classes (subset of Chordata)'),
+          h('div', { className: 'space-y-1' },
+            VERTEBRATE_CLASSES.map(function(v, i) {
+              return h('div', { key: 'v'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, v.class_),
+                h('div', { className: 'text-[10px] text-slate-700 mb-0.5' }, h('strong', null, 'Features: '), v.features),
+                h('div', { className: 'text-[10px] text-slate-700 mb-0.5' }, h('strong', null, 'Examples: '), v.examples),
+                h('div', { className: 'text-[10px] text-slate-600 italic' }, v.notes)
+              );
+            })
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 7 — Final dna data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var VITAMINS = [
+        { vitamin: 'A (retinol)', solubility: 'Fat', sources: 'Liver, eggs, dairy, orange/yellow veg (as β-carotene)', role: 'Vision (rhodopsin), immune, skin, growth', deficit: 'Night blindness, xerophthalmia, immune compromise. Toxic in excess (especially retinol form).' },
+        { vitamin: 'B1 (thiamine)', solubility: 'Water', sources: 'Whole grains, pork, legumes, fortified foods', role: 'Energy metabolism (cofactor for pyruvate dehydrogenase)', deficit: 'Beriberi (cardio + neuro). Wernicke-Korsakoff in alcoholism.' },
+        { vitamin: 'B2 (riboflavin)', solubility: 'Water', sources: 'Dairy, eggs, leafy greens, fortified grains', role: 'FAD + FMN — electron carriers', deficit: 'Cracked lips, sore throat, anemia. Rarely deficient alone.' },
+        { vitamin: 'B3 (niacin)', solubility: 'Water', sources: 'Meat, fish, peanuts, fortified grains', role: 'NAD + NADP — major electron carriers', deficit: 'Pellagra: dermatitis, diarrhea, dementia, death.' },
+        { vitamin: 'B5 (pantothenic acid)', solubility: 'Water', sources: 'Wide variety', role: 'Coenzyme A — central to metabolism', deficit: 'Very rare. Almost never seen due to wide food distribution.' },
+        { vitamin: 'B6 (pyridoxine)', solubility: 'Water', sources: 'Meat, fish, potatoes, bananas, chickpeas', role: 'Amino acid + neurotransmitter metabolism', deficit: 'Anemia, dermatitis, depression. Toxic in extreme excess (neuropathy).' },
+        { vitamin: 'B7 (biotin)', solubility: 'Water', sources: 'Egg yolks, nuts, legumes, gut bacteria', role: 'Carboxylase enzymes (fatty acid synthesis, gluconeogenesis)', deficit: 'Rare — caused by raw egg whites long-term (avidin binds biotin).' },
+        { vitamin: 'B9 (folate)', solubility: 'Water', sources: 'Leafy greens, legumes, fortified grains', role: 'Nucleotide synthesis, methylation', deficit: 'Megaloblastic anemia, neural tube defects. Critical pre-conception + pregnancy.' },
+        { vitamin: 'B12 (cobalamin)', solubility: 'Water', sources: 'Animal products (meat, fish, dairy, eggs)', role: 'Nucleotide synthesis, nerve myelination', deficit: 'Megaloblastic anemia, permanent neurological damage. Vegans need supplements.' },
+        { vitamin: 'C (ascorbic acid)', solubility: 'Water', sources: 'Citrus, peppers, broccoli, strawberries', role: 'Collagen synthesis, antioxidant, iron absorption', deficit: 'Scurvy (gum bleeding, poor healing). Historically killed sailors.' },
+        { vitamin: 'D (cholecalciferol)', solubility: 'Fat', sources: 'Sunlight (skin synthesis), fatty fish, fortified milk', role: 'Calcium + phosphorus absorption, immune', deficit: 'Rickets (kids), osteomalacia (adults). Common in northern winters.' },
+        { vitamin: 'E (α-tocopherol)', solubility: 'Fat', sources: 'Nuts, seeds, vegetable oils, leafy greens', role: 'Antioxidant — protects cell membranes', deficit: 'Rare. Neurological problems in deficiency.' },
+        { vitamin: 'K1 (phylloquinone)', solubility: 'Fat', sources: 'Leafy greens', role: 'Blood clotting (carboxylation of clotting factors)', deficit: 'Bleeding. Newborns get vitamin K injection.' },
+        { vitamin: 'K2 (menaquinone)', solubility: 'Fat', sources: 'Fermented foods (natto), gut bacteria, animal products', role: 'Calcium regulation, bone + cardiovascular health', deficit: 'Possible role in osteoporosis. Less established than K1.' }
+      ];
+
+      var MINERAL_NUTRIENTS = [
+        { mineral: 'Calcium', daily: '~1000-1200 mg', role: 'Bones, teeth, muscle contraction, signaling', sources: 'Dairy, leafy greens, fortified plant milk' },
+        { mineral: 'Iron', daily: '~8-18 mg', role: 'Hemoglobin, myoglobin, electron transport', sources: 'Red meat, beans, lentils, fortified grains. Heme iron (animal) more bioavailable.' },
+        { mineral: 'Magnesium', daily: '~310-420 mg', role: 'Cofactor for ~300 enzymes, ATP-Mg complex, nerve + muscle', sources: 'Nuts, seeds, whole grains, leafy greens' },
+        { mineral: 'Phosphorus', daily: '~700 mg', role: 'Bones, ATP, DNA backbone, cell membranes', sources: 'Dairy, meat, nuts, beans' },
+        { mineral: 'Potassium', daily: '~3500-4700 mg', role: 'Major intracellular cation, nerve + muscle', sources: 'Bananas, potatoes, beans, leafy greens, citrus' },
+        { mineral: 'Sodium', daily: '<2300 mg (UL)', role: 'Major extracellular cation, nerve impulses, BP', sources: 'Salt, processed foods. Most people exceed need.' },
+        { mineral: 'Zinc', daily: '~8-11 mg', role: 'Immune function, wound healing, DNA synthesis', sources: 'Oysters, meat, legumes, seeds' },
+        { mineral: 'Copper', daily: '~900 μg', role: 'Iron metabolism, electron transport, neurotransmitter synthesis', sources: 'Shellfish, organ meats, nuts, dark chocolate' },
+        { mineral: 'Iodine', daily: '~150 μg', role: 'Thyroid hormones (T3, T4)', sources: 'Seafood, iodized salt, dairy. Deficiency caused goiter — iodized salt nearly eliminated it.' },
+        { mineral: 'Selenium', daily: '~55 μg', role: 'Antioxidant enzymes (glutathione peroxidase)', sources: 'Brazil nuts (very high), seafood, meat. Just 1-2 Brazil nuts/day meets need.' },
+        { mineral: 'Manganese', daily: '~1.8-2.3 mg', role: 'Enzyme cofactor', sources: 'Whole grains, nuts, leafy greens, tea' },
+        { mineral: 'Chromium', daily: '~25-35 μg', role: 'Insulin function (debated)', sources: 'Broccoli, grape juice, whole grains' },
+        { mineral: 'Molybdenum', daily: '~45 μg', role: 'Enzyme cofactor', sources: 'Legumes, grains, nuts' },
+        { mineral: 'Fluoride', daily: '~3-4 mg', role: 'Strengthens tooth enamel + bone', sources: 'Fluoridated water, tea, seafood. Excess causes fluorosis.' },
+        { mineral: 'Chloride', daily: '~2300 mg', role: 'Extracellular fluid balance, stomach HCl', sources: 'Salt (NaCl). Rarely deficient.' }
+      ];
+
+      function renderVitaminsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💊 Vitamins + minerals'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'The 13 essential vitamins'),
+            h('div', { className: 'space-y-2' },
+              VITAMINS.map(function(v, i) {
+                return h('div', { key: 'v'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                    h('span', { className: 'text-[12px] font-black text-slate-800' }, v.vitamin),
+                    h('span', { className: 'text-[10px] text-emerald-700 font-mono ml-auto px-2 py-0.5 rounded bg-emerald-100' }, v.solubility)
+                  ),
+                  h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Sources: '), v.sources),
+                  h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Role: '), v.role),
+                  h('div', { className: 'text-[10px] text-slate-600 italic' }, h('strong', null, 'Deficit: '), v.deficit)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Essential dietary minerals'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Mineral', 'Daily intake', 'Role', 'Sources'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                MINERAL_NUTRIENTS.map(function(m, i) {
+                  return h('tr', { key: 'm'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, m.mineral),
+                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 font-bold text-[10px]' }, m.daily),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, m.role),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, m.sources)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 6 — Final dense data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var ORGAN_SYSTEMS = [
+        { system: 'Cardiovascular', parts: 'Heart, arteries, veins, capillaries, blood', function: 'Transports O₂, CO₂, nutrients, hormones, heat. Maintains pressure + circulation.', notes: 'Heart pumps ~5 L/min at rest. ~100,000 km of blood vessels in adult.' },
+        { system: 'Respiratory', parts: 'Lungs, trachea, bronchi, alveoli, diaphragm', function: 'Exchange O₂ + CO₂ between air + blood.', notes: '~500 million alveoli in adult lungs. Surface area ~70 m² (tennis court).' },
+        { system: 'Digestive', parts: 'Mouth, esophagus, stomach, small + large intestine, liver, pancreas', function: 'Break down food, absorb nutrients, eliminate waste.', notes: 'Small intestine ~6-7 m long (in living person; longer at autopsy after muscle relaxes).' },
+        { system: 'Urinary (renal)', parts: 'Kidneys, ureters, bladder, urethra', function: 'Filter blood, regulate water/salt balance, excrete urea + other wastes.', notes: 'Kidneys filter ~180 L/day, reabsorb ~178 L → ~1-2 L urine.' },
+        { system: 'Nervous', parts: 'Brain, spinal cord, peripheral nerves, sensory organs', function: 'Sense, process, respond. Coordinate body.', notes: '~86 billion neurons in brain. Each neuron makes thousands of synaptic connections.' },
+        { system: 'Endocrine', parts: 'Pituitary, thyroid, parathyroid, adrenals, pancreas (islets), gonads, hypothalamus', function: 'Hormone-based slow signaling. Metabolism, growth, reproduction, stress.', notes: 'Hormones travel via blood — slower than nervous signals but reach all cells.' },
+        { system: 'Immune', parts: 'Lymph nodes, spleen, thymus, bone marrow, lymphatic vessels, immune cells', function: 'Defense against pathogens. Surveillance + memory.', notes: 'Innate (fast, non-specific) + adaptive (slow, specific, has memory).' },
+        { system: 'Lymphatic', parts: 'Lymph vessels, lymph nodes, lymph fluid', function: 'Return interstitial fluid to bloodstream. Transport immune cells. Absorb fats from gut.', notes: 'Closely tied to immune system. No central pump — flows via muscle compression.' },
+        { system: 'Muscular', parts: 'Skeletal (~600), cardiac (heart), smooth (organs)', function: 'Movement (skeletal), pumping (cardiac), peristalsis + vasoconstriction (smooth).', notes: '~40% of body weight in adults. ATP-powered actin-myosin sliding.' },
+        { system: 'Skeletal', parts: '206 bones, joints, cartilage, ligaments, tendons', function: 'Support, protect, enable movement. Bone marrow makes blood cells.', notes: 'Born with ~270 bones — many fuse during growth. Largest: femur. Smallest: stapes (ear).' },
+        { system: 'Integumentary', parts: 'Skin, hair, nails, sebaceous + sweat glands', function: 'Barrier to environment. Thermoregulation. Vitamin D synthesis. Sensory input.', notes: 'Largest organ. ~16% of body weight. Adult skin total ~1.5-2 m².' },
+        { system: 'Reproductive', parts: 'Gonads (ovaries/testes), uterus, fallopian tubes, vagina, penis, prostate', function: 'Produce gametes + sex hormones. Enable reproduction.', notes: 'Only system that exists in two different anatomic configurations.' }
+      ];
+
+      var HORMONES = [
+        { hormone: 'Insulin', source: 'Pancreas (β cells in islets of Langerhans)', target: 'Liver, muscle, fat', effect: 'Lowers blood glucose by promoting uptake + storage as glycogen + fat.' },
+        { hormone: 'Glucagon', source: 'Pancreas (α cells)', target: 'Liver primarily', effect: 'Raises blood glucose. Stimulates glycogen breakdown + gluconeogenesis.' },
+        { hormone: 'Thyroxine (T₄)', source: 'Thyroid gland', target: 'Most cells', effect: 'Sets metabolic rate. Converted to active T₃ in tissues.' },
+        { hormone: 'Calcitonin', source: 'Thyroid (C cells)', target: 'Bones, kidneys', effect: 'Lowers blood calcium by promoting deposit in bone.' },
+        { hormone: 'Parathyroid hormone (PTH)', source: 'Parathyroid glands', target: 'Bones, kidneys, gut', effect: 'Raises blood calcium. Opposite of calcitonin.' },
+        { hormone: 'Cortisol', source: 'Adrenal cortex', target: 'Most cells', effect: 'Stress response. Raises blood glucose. Suppresses immune system. Anti-inflammatory.' },
+        { hormone: 'Aldosterone', source: 'Adrenal cortex', target: 'Kidneys', effect: 'Retains Na⁺ + water, excretes K⁺. Raises blood pressure.' },
+        { hormone: 'Epinephrine (adrenaline)', source: 'Adrenal medulla', target: 'Heart, muscles, smooth muscle', effect: 'Fight-or-flight: ↑ heart rate, ↑ blood glucose, dilates airways.' },
+        { hormone: 'Norepinephrine', source: 'Adrenal medulla + nerve terminals', target: 'Blood vessels, heart', effect: 'Vasoconstriction, ↑ blood pressure. Sympathetic nervous system.' },
+        { hormone: 'Growth hormone (GH)', source: 'Anterior pituitary', target: 'Most tissues, especially bone + muscle', effect: 'Stimulates growth. Acts via IGF-1 from liver.' },
+        { hormone: 'ACTH', source: 'Anterior pituitary', target: 'Adrenal cortex', effect: 'Stimulates cortisol release. Part of HPA axis.' },
+        { hormone: 'TSH', source: 'Anterior pituitary', target: 'Thyroid', effect: 'Stimulates T₃/T₄ production.' },
+        { hormone: 'FSH', source: 'Anterior pituitary', target: 'Ovaries / testes', effect: 'Follicle development (♀) / sperm production (♂).' },
+        { hormone: 'LH', source: 'Anterior pituitary', target: 'Ovaries / testes', effect: 'Triggers ovulation (♀) / testosterone production (♂).' },
+        { hormone: 'Prolactin', source: 'Anterior pituitary', target: 'Mammary glands', effect: 'Milk production after childbirth.' },
+        { hormone: 'Oxytocin', source: 'Posterior pituitary (made in hypothalamus)', target: 'Uterus, mammary glands, brain', effect: 'Childbirth contractions, milk letdown, social bonding.' },
+        { hormone: 'ADH (vasopressin)', source: 'Posterior pituitary', target: 'Kidneys', effect: 'Water retention. Concentrates urine.' },
+        { hormone: 'Melatonin', source: 'Pineal gland', target: 'Brain (SCN)', effect: 'Regulates sleep-wake cycle. Rises in darkness.' },
+        { hormone: 'Estrogen (estradiol)', source: 'Ovaries + placenta', target: 'Reproductive tissues, bones, brain', effect: 'Female secondary sex traits, menstrual cycle, bone maintenance.' },
+        { hormone: 'Progesterone', source: 'Ovaries (corpus luteum), placenta', target: 'Uterus, breast', effect: 'Maintains pregnancy. Prepares uterus for implantation.' },
+        { hormone: 'Testosterone', source: 'Testes (Leydig cells) + adrenals (small amount)', target: 'Reproductive + muscle tissue', effect: 'Male secondary sex traits, muscle + bone growth, libido.' },
+        { hormone: 'hCG', source: 'Placenta (after implantation)', target: 'Corpus luteum', effect: 'Maintains progesterone in early pregnancy. Detected by pregnancy tests.' },
+        { hormone: 'Leptin', source: 'Fat cells', target: 'Hypothalamus', effect: 'Signals satiety. Long-term hunger regulation.' },
+        { hormone: 'Ghrelin', source: 'Stomach', target: 'Hypothalamus', effect: 'Triggers hunger before meals.' },
+        { hormone: 'Renin', source: 'Kidneys (juxtaglomerular cells)', target: 'Blood', effect: 'Initiates RAAS (renin-angiotensin-aldosterone) → blood pressure regulation.' },
+        { hormone: 'Erythropoietin (EPO)', source: 'Kidneys', target: 'Bone marrow', effect: 'Stimulates red blood cell production. Notorious in athletic doping.' },
+        { hormone: 'Atrial natriuretic peptide (ANP)', source: 'Heart (atria)', target: 'Kidneys + vessels', effect: 'Lowers blood pressure by promoting Na⁺ + water excretion.' },
+        { hormone: 'Vitamin D (calcitriol)', source: 'Skin (with sunlight) → liver → kidney', target: 'Gut + bone', effect: 'Promotes Ca²⁺ absorption. Acts like steroid hormone despite being a vitamin.' }
+      ];
+
+      function renderOrganSystemsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🫀 Human organ systems'),
+          h('div', { className: 'space-y-2' },
+            ORGAN_SYSTEMS.map(function(o, i) {
+              return h('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, o.system),
+                h('div', { className: 'text-[11px] text-emerald-700 mb-1' }, h('strong', null, 'Parts: '), o.parts),
+                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Function: '), o.function),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed italic' }, o.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderHormonesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚛ Major hormones'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Hormones travel through the bloodstream to act on distant target tissues. They orchestrate metabolism, growth, reproduction, stress response, and homeostasis.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Hormone', 'Source', 'Target', 'Effect'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                HORMONES.map(function(H, i) {
+                  return h('tr', { key: 'H'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800 text-[10px]' }, H.hormone),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, H.source),
+                    h('td', { className: 'px-2 py-1 text-emerald-700 text-[10px]' }, H.target),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, H.effect)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 5 — Dense data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var BIO_ELEMENTS = [
+        { element: 'Oxygen (O)', pct: '65%', role: 'In water (~60% of body) + organic molecules.' },
+        { element: 'Carbon (C)', pct: '18%', role: 'Backbone of all organic molecules.' },
+        { element: 'Hydrogen (H)', pct: '10%', role: 'Water + organic molecules. Most numerous atoms.' },
+        { element: 'Nitrogen (N)', pct: '3%', role: 'Proteins (amino group) + DNA/RNA bases.' },
+        { element: 'Calcium (Ca)', pct: '1.5%', role: 'Bones, teeth, muscle contraction, signaling.' },
+        { element: 'Phosphorus (P)', pct: '1.0%', role: 'DNA backbone, ATP, bones, cell membranes.' },
+        { element: 'Potassium (K)', pct: '0.4%', role: 'Major intracellular cation. Nerve + muscle function.' },
+        { element: 'Sulfur (S)', pct: '0.3%', role: 'Amino acids cys + met. Disulfide bonds.' },
+        { element: 'Sodium (Na)', pct: '0.2%', role: 'Major extracellular cation. Nerve impulses.' },
+        { element: 'Chlorine (Cl)', pct: '0.2%', role: 'Stomach HCl. Negative counter-ion.' },
+        { element: 'Magnesium (Mg)', pct: '0.05%', role: 'Cofactor for ~300 enzymes. ATP-Mg complex.' },
+        { element: 'Iron (Fe)', pct: '0.006%', role: 'Hemoglobin (O₂ transport). Electron transport.' },
+        { element: 'Zinc (Zn)', pct: '0.003%', role: 'Cofactor for many enzymes. Immune function.' },
+        { element: 'Copper (Cu)', pct: '0.0001%', role: 'Cytochrome c oxidase. Iron metabolism.' },
+        { element: 'Iodine (I)', pct: '0.00003%', role: 'Thyroid hormones (T₃, T₄).' },
+        { element: 'Selenium (Se)', pct: 'trace', role: 'Antioxidant enzymes (glutathione peroxidase).' },
+        { element: 'Manganese (Mn)', pct: 'trace', role: 'Cofactor for various enzymes.' },
+        { element: 'Cobalt (Co)', pct: 'trace', role: 'Center of vitamin B12.' },
+        { element: 'Molybdenum (Mo)', pct: 'trace', role: 'Cofactor for several enzymes.' },
+        { element: 'Fluorine (F)', pct: 'trace', role: 'Strengthens tooth enamel (fluorapatite).' }
+      ];
+
+      var CELL_PATHWAYS = [
+        { pathway: 'Glycolysis', input: 'Glucose', output: '2 pyruvate + 2 ATP + 2 NADH', location: 'Cytoplasm', notes: 'Universal pathway. Anaerobic. First step of cellular respiration.' },
+        { pathway: 'Krebs (citric acid) cycle', input: 'Acetyl-CoA', output: 'CO₂ + ATP + NADH + FADH₂', location: 'Mitochondrial matrix', notes: '8 steps. Generates electron carriers for ETC.' },
+        { pathway: 'Electron transport chain', input: 'NADH, FADH₂, O₂', output: '~32 ATP + H₂O', location: 'Inner mitochondrial membrane', notes: 'Where most ATP is made. Proton gradient drives ATP synthase.' },
+        { pathway: 'Fermentation (lactic acid)', input: 'Pyruvate, NADH', output: 'Lactate + NAD⁺', location: 'Cytoplasm', notes: 'When oxygen is short. Muscle burn. Yogurt + sauerkraut bacteria.' },
+        { pathway: 'Fermentation (alcoholic)', input: 'Pyruvate, NADH', output: 'Ethanol + CO₂ + NAD⁺', location: 'Cytoplasm', notes: 'Yeast. Bread, beer, wine.' },
+        { pathway: 'Photosynthesis (light reactions)', input: 'H₂O, light, ADP, NADP⁺', output: 'O₂ + ATP + NADPH', location: 'Thylakoid membrane', notes: 'Splits water → O₂. Chlorophyll absorbs photons.' },
+        { pathway: 'Calvin cycle (dark reactions)', input: 'CO₂, ATP, NADPH', output: 'Glucose (G3P)', location: 'Chloroplast stroma', notes: 'Fixes CO₂ into organic molecules. Doesn\'t require light directly.' },
+        { pathway: 'Beta-oxidation', input: 'Fatty acids', output: 'Acetyl-CoA + NADH + FADH₂', location: 'Mitochondria + peroxisomes', notes: 'How fats are broken down for energy.' },
+        { pathway: 'Urea cycle', input: 'NH₃ + CO₂', output: 'Urea (excreted in urine)', location: 'Liver mitochondria + cytosol', notes: 'Disposes of toxic ammonia from protein breakdown.' },
+        { pathway: 'Gluconeogenesis', input: 'Pyruvate, amino acids', output: 'Glucose', location: 'Liver mainly', notes: 'Make glucose when blood sugar drops.' },
+        { pathway: 'Pentose phosphate pathway', input: 'Glucose-6-phosphate', output: 'NADPH + ribose-5-phosphate', location: 'Cytoplasm', notes: 'Provides building blocks for nucleotides + reducing power.' },
+        { pathway: 'Cholesterol synthesis', input: 'Acetyl-CoA', output: 'Cholesterol', location: 'Smooth ER (liver primarily)', notes: 'Target of statin drugs (HMG-CoA reductase step).' },
+        { pathway: 'Apoptosis (intrinsic)', input: 'DNA damage, stress', output: 'Programmed cell death', location: 'Mitochondria → cytoplasm', notes: 'Releases cytochrome c. Activates caspases.' },
+        { pathway: 'Apoptosis (extrinsic)', input: 'Death receptor activation', output: 'Programmed cell death', location: 'Cell surface → cytoplasm', notes: 'Initiated by external "death signals" (e.g., Fas/FasL).' },
+        { pathway: 'Cell cycle (G1/S/G2/M)', input: 'Growth signals', output: 'Cell division', location: 'Nucleus + cytoplasm', notes: 'Tightly regulated by cyclins + cyclin-dependent kinases (CDKs).' },
+        { pathway: 'MAPK signaling', input: 'Growth factor binding', output: 'Gene expression changes', location: 'Cytoplasm → nucleus', notes: 'Cascade of kinases. Mutations drive many cancers.' },
+        { pathway: 'PI3K/AKT/mTOR', input: 'Insulin, growth factors', output: 'Cell growth, metabolism', location: 'Cytoplasm', notes: 'Promotes growth + protein synthesis. mTOR inhibitors as immunosuppressants + cancer drugs.' },
+        { pathway: 'JAK-STAT', input: 'Cytokines', output: 'Transcription factor activation', location: 'Cytoplasm → nucleus', notes: 'Immune cell signaling. JAK inhibitors for autoimmune disease.' },
+        { pathway: 'Notch signaling', input: 'Cell-cell contact (Notch ligand)', output: 'Cell fate decisions', location: 'Cell membrane → nucleus', notes: 'Developmental patterning. Lateral inhibition.' },
+        { pathway: 'Wnt/β-catenin', input: 'Wnt protein binding', output: 'Stem cell maintenance + body axis', location: 'Cell membrane → nucleus', notes: 'Critical in embryonic patterning + adult stem cells. Mutations drive colon cancer.' }
+      ];
+
+      var EXTINCT_SPECIES = [
+        { species: 'Wooly mammoth', when: '~4000 BP (last)', notes: 'Last on Wrangel Island. Climate + human hunting. Genome being studied for de-extinction.' },
+        { species: 'Smilodon (saber-tooth cat)', when: '~10,000 BP', notes: 'Ice age predator of large prey. Massive canines.' },
+        { species: 'Giant ground sloth', when: '~12,000 BP', notes: 'Up to 6 m long. Vanished as humans arrived in Americas.' },
+        { species: 'Megatherium', when: '~10,000 BP', notes: 'Largest ground sloth (4 tons).' },
+        { species: 'Cave bear', when: '~24,000 BP', notes: 'Ice age. Larger than modern brown bears.' },
+        { species: 'Dodo', when: '1681 (last sighting)', notes: 'Flightless Mauritius pigeon relative. Hunted by humans + introduced rats/pigs.' },
+        { species: 'Passenger pigeon', when: '1914 (last died in Cincinnati Zoo)', notes: 'Was perhaps most numerous bird ever (5 billion). Driven extinct by hunting + habitat loss.' },
+        { species: 'Tasmanian tiger (thylacine)', when: '1936 (last died in zoo)', notes: 'Marsupial carnivore. Resembled striped wolf. Bounty hunting + disease.' },
+        { species: 'Great auk', when: '1844', notes: 'Flightless North Atlantic bird. Hunted to extinction.' },
+        { species: 'Steller\'s sea cow', when: '1768', notes: '8 m long sea cow. Eliminated within 27 years of European discovery.' },
+        { species: 'Quagga', when: '1883', notes: 'Half-striped zebra. Selective breeding program now attempting reverse breeding.' },
+        { species: 'Western black rhinoceros', when: '2011 (declared extinct)', notes: 'Subspecies of black rhino. Poaching for horn.' },
+        { species: 'Caspian tiger', when: '~1970s', notes: 'Hunted to extinction in Central Asia.' },
+        { species: 'Pyrenean ibex', when: '2000', notes: 'Last specimen cloned briefly in 2003 — first extinct species "resurrected".' },
+        { species: 'Tyrannosaurus rex', when: '66 mya (K-Pg extinction)', notes: 'Cretaceous-Paleogene boundary. Asteroid impact at Chicxulub.' },
+        { species: 'Triceratops', when: '66 mya', notes: 'Same K-Pg extinction.' },
+        { species: 'Brachiosaurus', when: '~140 mya', notes: 'Late Jurassic.' },
+        { species: 'Stegosaurus', when: '~150 mya', notes: 'Late Jurassic. Distinct plates + tail spikes.' },
+        { species: 'Velociraptor', when: '~75 mya', notes: 'Smaller than Jurassic Park depiction (~turkey-sized). Likely feathered.' },
+        { species: 'Pterodactyls (pterosaurs)', when: 'Various mya', notes: 'Flying reptiles. Not dinosaurs. Vanished with dinosaurs at K-Pg.' },
+        { species: 'Megalodon', when: '~3.6 mya', notes: 'Giant shark, ~15-18 m long. Vanished as oceans cooled.' },
+        { species: 'Trilobites', when: '252 mya (P-T extinction)', notes: 'Dominant Paleozoic arthropods for 270 million years. Vanished in greatest extinction event.' },
+        { species: 'Ammonites', when: '66 mya', notes: 'Spiral-shelled cephalopods. K-Pg extinction.' },
+        { species: 'Dimetrodon', when: '~270 mya', notes: 'Sail-backed synapsid. NOT a dinosaur — closer relative of mammals than reptiles.' },
+        { species: 'Anomalocaris', when: '~520 mya', notes: 'Cambrian-era predator. ~1 m long, terrifying to trilobites.' },
+        { species: 'Neanderthals', when: '~40,000 BP', notes: 'Closest extinct relative of modern humans. Most non-Africans carry 1-4% Neanderthal DNA.' },
+        { species: 'Denisovans', when: '~30,000 BP', notes: 'Sister group to Neanderthals. Known mostly from DNA in finger bone + teeth. Tibetans carry adaptive Denisovan genes.' }
+      ];
+
+      function renderPeriodTableBioSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⌬ Elements of life'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Approximate elemental composition of the human body by mass. Just 11 elements account for >99%. CHNOPS (C, H, N, O, P, S) make up almost all organic molecules.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Element', '% by mass', 'Role'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                BIO_ELEMENTS.map(function(e, i) {
+                  return h('tr', { key: 'e'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, e.element),
+                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 font-bold' }, e.pct),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, e.role)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderPathwaysSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⇄ Major cell pathways'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Pathway', 'Input', 'Output', 'Location', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                CELL_PATHWAYS.map(function(p, i) {
+                  return h('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800 text-[10px]' }, p.pathway),
+                    h('td', { className: 'px-2 py-1 text-emerald-700 text-[10px]' }, p.input),
+                    h('td', { className: 'px-2 py-1 text-emerald-700 font-medium text-[10px]' }, p.output),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, p.location),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, p.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderExtinctSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🦕 Extinct species'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Recent extinctions (mostly human-caused) + notable prehistoric extinctions. Earth has had 5 mass extinctions — many argue we\'re in a 6th now.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Species', 'When extinct', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                EXTINCT_SPECIES.map(function(s, i) {
+                  return h('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.species),
+                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 text-[10px]' }, s.when),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 4 — Dense reference data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var ANIMAL_FACTS = [
+        { animal: 'African elephant', lifespan: '60-70 yr', genome: '3.2 Gb', notes: 'Largest land animal. Pregnancy ~22 months — longest of any mammal.' },
+        { animal: 'Blue whale', lifespan: '80-90 yr', genome: '2.4 Gb', notes: 'Largest animal ever. Heart size of a small car. ~30 m long.' },
+        { animal: 'Ostrich', lifespan: '40-45 yr', genome: '1.2 Gb', notes: 'Largest bird. Cannot fly. Eggs ~1.5 kg.' },
+        { animal: 'Komodo dragon', lifespan: '~30 yr', genome: '1.5 Gb', notes: 'Largest lizard. Saliva harbors potent bacteria + venom.' },
+        { animal: 'Cheetah', lifespan: '10-12 yr', genome: '2.4 Gb', notes: 'Fastest land animal (~110 km/h). Very low genetic diversity → inbreeding risk.' },
+        { animal: 'Honeybee', lifespan: '6 wk (worker) / 5 yr (queen)', genome: '236 Mb', notes: 'Genetic sex determination via haploid males.' },
+        { animal: 'Octopus (common)', lifespan: '1-2 yr', genome: '2.7 Gb', notes: 'Highly intelligent. Edits RNA extensively (unusual). Female dies after eggs hatch.' },
+        { animal: 'Naked mole rat', lifespan: '30+ yr', genome: '2.8 Gb', notes: 'Extreme longevity for rodent. Cancer-resistant. Cold-blooded mammal (one of few).' },
+        { animal: 'Tardigrade', lifespan: '~3 months / 10+ yr in cryptobiosis', genome: '~100 Mb', notes: 'Survives vacuum, radiation, dehydration. Cryptobiosis suspends metabolism.' },
+        { animal: 'Hummingbird (bee)', lifespan: '~7-10 yr', genome: '~1 Gb', notes: 'Smallest bird. Hover via figure-8 wing motion. ~80 wingbeats/sec.' },
+        { animal: 'Giant squid', lifespan: '~5 yr', genome: 'unknown', notes: 'Up to ~13 m long. Largest invertebrate eyes (basketball-sized).' },
+        { animal: 'Mantis shrimp', lifespan: '~3-6 yr', genome: '~1.2 Gb', notes: '16 types of color receptors (humans: 3). Strikes faster than .22 caliber bullet.' },
+        { animal: 'Bowhead whale', lifespan: '200+ yr', genome: '2.7 Gb', notes: 'Longest-lived mammal. Cancer resistance studied for human aging research.' },
+        { animal: 'Greenland shark', lifespan: '300-500 yr', genome: 'unknown', notes: 'Longest-lived vertebrate. Slow growth + cold habitat.' },
+        { animal: 'Cicadas (periodical)', lifespan: '13 or 17 yr', genome: 'small', notes: 'Spend years underground; emerge in massive swarms. Prime numbers — predator avoidance hypothesis.' },
+        { animal: 'Anglerfish (female)', lifespan: '20+ yr', genome: 'unknown', notes: 'Bioluminescent lure. Males fuse permanently to females (parasitic mating).' }
+      ];
+
+      var PLANT_FACTS = [
+        { topic: 'Photosynthesis', detail: '6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂. Powered by chlorophyll. Source of most atmospheric oxygen.' },
+        { topic: 'C3, C4, CAM pathways', detail: 'C3 (most plants), C4 (corn, sugarcane — efficient at high T), CAM (cacti, succulents — open stomata at night to save water).' },
+        { topic: 'Stomata', detail: 'Tiny pores on leaves. Let CO₂ in + O₂/water out. Open/close in response to light, water, CO₂.' },
+        { topic: 'Xylem', detail: 'Carries water + minerals UP from roots. Dead cells. Drives transpiration pull.' },
+        { topic: 'Phloem', detail: 'Carries sugars from leaves to rest of plant. Living cells. Bidirectional.' },
+        { topic: 'Auxin', detail: 'Plant hormone. Phototropism (growing toward light). Concentration on dark side → cells elongate → bends toward light.' },
+        { topic: 'Ethylene', detail: 'Gas hormone. Ripens fruit. Why ripe bananas ripen others. Stress signaling.' },
+        { topic: 'Gibberellin', detail: 'Promotes stem elongation, seed germination, flowering.' },
+        { topic: 'Cytokinin', detail: 'Promotes cell division. Delays leaf senescence.' },
+        { topic: 'Abscisic acid (ABA)', detail: 'Stress hormone. Closes stomata when water-stressed. Promotes seed dormancy.' },
+        { topic: 'Pollen + double fertilization', detail: 'Angiosperm unique: one sperm fertilizes egg (embryo), one fertilizes polar nuclei (endosperm — food for seed).' },
+        { topic: 'Coevolution with pollinators', detail: 'Flower shape + color + scent match pollinator preferences. Some highly specialized (orchid + specific moth).' },
+        { topic: 'Carnivorous plants', detail: 'Evolved in nutrient-poor soils. Venus flytrap (snap), pitcher plants (pitfall), sundew (sticky).' },
+        { topic: 'Mycorrhiza', detail: 'Symbiosis with fungi. Fungi extend root reach; plants supply sugars. ~85% of plant species.' },
+        { topic: 'Nitrogen fixation (legumes)', detail: 'Rhizobium bacteria in root nodules convert N₂ → NH₃. Why beans + peas are protein-rich + soil-improving.' },
+        { topic: 'Crop genetics', detail: 'Domestication selected larger seeds (wheat), non-shattering (rice), sweeter fruit (apples). Recent: hybrid corn, GM, marker-assisted selection.' },
+        { topic: 'Polyploidy in plants', detail: 'Common in plants (rare in animals). Wheat is hexaploid (6 sets), strawberry is octoploid. Often increases vigor + crop yield.' },
+        { topic: 'Lignin', detail: 'Stiffening compound in cell walls of wood. Why wood is stiff + slow to decompose.' }
+      ];
+
+      var FAMOUS_GENES = [
+        { gene: 'BRCA1, BRCA2', chr: '17q, 13q', function: 'DNA double-strand break repair', notes: 'Mutations greatly increase breast + ovarian cancer risk.' },
+        { gene: 'TP53', chr: '17p', function: 'Tumor suppressor — "guardian of the genome"', notes: 'Mutated in ~50% of human cancers. Activates apoptosis when DNA damaged.' },
+        { gene: 'APOE', chr: '19q', function: 'Lipid transport', notes: 'APOE4 variant: 3-4× increased Alzheimer\'s risk. APOE2 protective.' },
+        { gene: 'CFTR', chr: '7q', function: 'Chloride channel in epithelial cells', notes: 'Mutations cause cystic fibrosis. ~1500 different mutations known.' },
+        { gene: 'HBB', chr: '11p', function: 'β-globin (oxygen transport)', notes: 'Sickle cell + β-thalassemia mutations. Glu6Val in HbS.' },
+        { gene: 'HTT', chr: '4p', function: 'Huntingtin (function not fully clear)', notes: 'Huntington\'s disease: CAG repeat expansion (>36).' },
+        { gene: 'FMR1', chr: 'Xq', function: 'Fragile X mental retardation protein', notes: 'Most common inherited intellectual disability. CGG repeat expansion.' },
+        { gene: 'DMD', chr: 'Xp', function: 'Dystrophin (muscle structure)', notes: 'Largest known human gene (~2.4 Mb, 79 exons). Mutations → Duchenne muscular dystrophy.' },
+        { gene: 'SRY', chr: 'Yp', function: 'Sex-determining region', notes: 'Triggers testis development in mammals.' },
+        { gene: 'MC1R', chr: '16q', function: 'Melanocortin 1 receptor', notes: 'Variants → red hair + fair skin. Higher melanoma risk.' },
+        { gene: 'LCT', chr: '2q', function: 'Lactase (digests lactose)', notes: 'Most humans lose expression after weaning. Persistence common in pastoral populations.' },
+        { gene: 'ALDH2', chr: '12q', function: 'Aldehyde dehydrogenase (alcohol metabolism)', notes: 'Variant common in East Asian populations causes "alcohol flush".' },
+        { gene: 'CYP2D6', chr: '22q', function: 'Drug metabolism (cytochrome P450)', notes: '>100 variants. Affects ~25% of prescription drug metabolism.' },
+        { gene: 'OPN1LW, OPN1MW, OPN1SW', chr: 'X (LW, MW), 7q (SW)', function: 'Cone opsins for color vision', notes: 'Variants cause color blindness (red-green: X-linked, common; blue: very rare).' },
+        { gene: 'HLA complex', chr: '6p', function: 'Major histocompatibility complex', notes: 'Highly polymorphic. Tissue matching for transplants. Disease associations.' },
+        { gene: 'FOXP2', chr: '7q', function: 'Transcription factor', notes: 'Speech + language. Mutations cause speech impairment.' },
+        { gene: 'TAS2R38', chr: '7q', function: 'Bitter taste receptor', notes: 'Determines PTC-tasting ability + sensitivity to bitter vegetables.' },
+        { gene: 'BDNF', chr: '11p', function: 'Brain-derived neurotrophic factor', notes: 'Neuronal growth + plasticity. Val66Met variant studied for mood + cognition.' },
+        { gene: 'SOD1', chr: '21q', function: 'Superoxide dismutase', notes: 'Mutations cause ~20% of familial ALS.' },
+        { gene: 'p21 (CDKN1A)', chr: '6p', function: 'Cell cycle inhibitor', notes: 'Activated by p53. Stops cell division to allow DNA repair.' }
+      ];
+
+      var MODEL_ORGANISMS = [
+        { org: 'E. coli (bacterium)', size: '1-2 μm', life: '20 min div.', genome: '4.6 Mb', why: 'Easy to culture, fast, well-characterized. Workhorse of molecular biology + cloning.' },
+        { org: 'Saccharomyces cerevisiae (yeast)', size: '5 μm', life: '~90 min div.', genome: '12 Mb', why: 'Simplest eukaryote. Cell biology, drug screens, brewing + baking.' },
+        { org: 'Caenorhabditis elegans (worm)', size: '1 mm', life: '~3 days egg→adult', genome: '100 Mb', why: '959 somatic cells, all mapped. Apoptosis discovered here. Transparent.' },
+        { org: 'Drosophila melanogaster (fruit fly)', size: '~3 mm', life: '~10 days', genome: '140 Mb', why: 'Genetics workhorse since 1910 (Morgan). Many human disease orthologs.' },
+        { org: 'Zebrafish (Danio rerio)', size: '~4 cm adult', life: '3-4 mo to adult', genome: '1.4 Gb', why: 'Transparent embryos. Vertebrate development + drug screens.' },
+        { org: 'Xenopus laevis (African clawed frog)', size: '~10 cm', life: '~1 yr to adult', genome: '3.1 Gb (tetraploid)', why: 'Large eggs. Embryology + cell biology. Once used for pregnancy tests.' },
+        { org: 'Mouse (Mus musculus)', size: '~7-10 cm body', life: '~3 wk gestation', genome: '2.7 Gb', why: 'Closest standard mammalian model. Knockout + transgenic technology mature.' },
+        { org: 'Rat', size: '~25 cm', life: '~3 wk gestation', genome: '2.7 Gb', why: 'Bigger than mouse → easier surgery. Behavioral + cardiovascular studies.' },
+        { org: 'Arabidopsis thaliana', size: '~30 cm tall', life: '~6 wk', genome: '135 Mb', why: 'Small genome, short life cycle, easy to transform. Plant genetics model.' },
+        { org: 'Chimp (Pan troglodytes)', size: 'human-like', life: '~40-50 yr', genome: '3.1 Gb', why: '~98.8% DNA shared with humans. Closest model for human-specific questions; restricted use.' },
+        { org: 'Macaque (rhesus monkey)', size: '~50 cm', life: '~25 yr', genome: '2.9 Gb', why: 'Cardiovascular + immunology. Used for vaccine development.' },
+        { org: 'Tetrahymena (ciliate)', size: '~50 μm', life: '~3 hr div.', genome: '125 Mb', why: 'Telomeres + ribozymes discovered here.' },
+        { org: 'Bacteriophage λ', size: '~100 nm', life: '~30 min', genome: '48 kb', why: 'Lysogeny, gene regulation, recombination. Classic molecular biology.' },
+        { org: 'iPS cells (human, in vitro)', size: 'cell-scale', life: 'continuous culture', genome: '3.0 Gb', why: 'Reprogrammed from adult cells. Generate any tissue type. Avoid embryo ethics.' }
+      ];
+
+      var ECOLOGY_CONCEPTS = [
+        { concept: 'Population', detail: 'Individuals of one species in an area.' },
+        { concept: 'Community', detail: 'All populations interacting in an area.' },
+        { concept: 'Ecosystem', detail: 'Community + abiotic environment (soil, water, weather).' },
+        { concept: 'Biosphere', detail: 'All ecosystems on Earth. The zone of life.' },
+        { concept: 'Niche', detail: 'Role of a species in its ecosystem. Two species can\'t occupy exactly the same niche (competitive exclusion).' },
+        { concept: 'Habitat', detail: 'Physical place where an organism lives.' },
+        { concept: 'Food web', detail: 'Network of who eats whom. Trophic levels: producers → primary consumers → secondary → etc.' },
+        { concept: 'Producers (autotrophs)', detail: 'Make own food. Plants, algae, some bacteria. Foundation of food chains.' },
+        { concept: 'Consumers (heterotrophs)', detail: 'Get food by eating others. Herbivores, carnivores, omnivores.' },
+        { concept: 'Decomposers', detail: 'Break down dead matter. Fungi, bacteria, detritivores. Recycle nutrients.' },
+        { concept: 'Symbiosis', detail: 'Close interaction between species. Mutualism (+/+), commensalism (+/0), parasitism (+/−).' },
+        { concept: 'Keystone species', detail: 'Disproportionate effect on ecosystem despite low abundance. Sea otters control urchins, which control kelp.' },
+        { concept: 'Carrying capacity (K)', detail: 'Maximum population size environment can sustain. Resources, predation, disease limit K.' },
+        { concept: 'Exponential growth', detail: 'Population grows at constant rate. dN/dt = rN. Cannot continue forever.' },
+        { concept: 'Logistic growth', detail: 'Growth slows as N approaches K. dN/dt = rN(K-N)/K. S-shaped curve.' },
+        { concept: 'r-selected species', detail: 'Many offspring, little parental care, short-lived. Insects, weeds. Boom-and-bust.' },
+        { concept: 'K-selected species', detail: 'Few offspring, lots of care, long-lived. Whales, humans, oaks.' },
+        { concept: 'Succession', detail: 'Predictable changes in community over time. Primary (bare rock) vs secondary (after disturbance).' },
+        { concept: 'Biodiversity', detail: 'Variety of life. Species richness (count) + evenness (distribution). High biodiversity → ecosystem resilience.' },
+        { concept: 'Extinction', detail: 'Background rate ~1 species per million per year. Current rate 100-1000× background due to humans.' },
+        { concept: 'Biome', detail: 'Major life zone defined by climate + vegetation. Tropical rainforest, desert, tundra, savanna, etc.' },
+        { concept: 'Nitrogen cycle', detail: 'N₂ → NH₃ (fixation) → NO₂⁻ → NO₃⁻ (nitrification) → organic N → back to N₂ (denitrification).' },
+        { concept: 'Carbon cycle', detail: 'CO₂ ↔ photosynthesis ↔ organic C ↔ respiration. Fossil fuels move long-buried C back to atmosphere.' },
+        { concept: 'Water cycle', detail: 'Evaporation → condensation → precipitation → runoff/groundwater → back to ocean.' },
+        { concept: 'Biogeochemical cycles', detail: 'Movement of elements (C, N, P, S) through biotic + abiotic compartments.' }
+      ];
+
+      function renderAnimals2Section() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🐾 Notable animals'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Animal', 'Lifespan', 'Genome', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                ANIMAL_FACTS.map(function(a, i) {
+                  return h('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, a.animal),
+                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 text-[10px]' }, a.lifespan),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, a.genome),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, a.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderPlantsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌿 Plant biology'),
+          h('div', { className: 'space-y-1' },
+            PLANT_FACTS.map(function(p, i) {
+              return h('div', { key: 'p'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, p.topic),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, p.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderFamousGenesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⌬ Famous human genes'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Gene', 'Location', 'Function', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                FAMOUS_GENES.map(function(g, i) {
+                  return h('tr', { key: 'g'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-mono font-black text-emerald-700' }, g.gene),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, g.chr),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, g.function),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, g.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderModelorgSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧫 Model organisms in research'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Each chosen for properties that make biology tractable: small size, fast life cycle, ease of culture, genetic tools.'),
+          h('div', { className: 'space-y-2' },
+            MODEL_ORGANISMS.map(function(m, i) {
+              return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, m.org),
+                  h('span', { className: 'text-[10px] text-emerald-700 font-mono ml-auto' }, m.size + ' · ' + m.life + ' · ' + m.genome)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.why)
+              );
+            })
+          )
+        );
+      }
+
+      function renderEcologySection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌍 Ecology concepts'),
+          h('div', { className: 'space-y-1' },
+            ECOLOGY_CONCEPTS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, c.concept),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+              );
+            })
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 3 EXPANSION (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var PCR_STEPS = [
+        { step: '1. Denaturation', temp: '94-98°C', duration: '~30 sec', detail: 'Heat separates double-stranded DNA into single strands. Hydrogen bonds break.' },
+        { step: '2. Annealing', temp: '50-65°C', duration: '~30 sec', detail: 'Primers (short DNA sequences) bind to complementary regions on each template strand.' },
+        { step: '3. Extension', temp: '72°C', duration: '~30-60 sec', detail: 'DNA polymerase (Taq, from Thermus aquaticus) extends primers, synthesizing new DNA.' }
+      ];
+
+      var PCR_FACTS = [
+        { fact: 'Amplification', detail: 'Each cycle doubles target DNA. 30 cycles → ~10⁹-fold amplification.' },
+        { fact: 'Inventor', detail: 'Kary Mullis invented PCR (1983); won Nobel Prize 1993.' },
+        { fact: 'Taq polymerase', detail: 'From thermophilic bacterium in hot springs. Survives 95°C denaturation step.' },
+        { fact: 'qPCR (real-time)', detail: 'Fluorescent dyes report on amplification in real time. Used for COVID tests, gene expression.' },
+        { fact: 'RT-PCR', detail: 'Reverse Transcription PCR. Converts RNA to cDNA first. Used for RNA viruses (COVID, HIV, flu).' },
+        { fact: 'Digital PCR (dPCR)', detail: 'Partitions sample into thousands of droplets. Counts presence/absence — highly accurate quantification.' },
+        { fact: 'Applications', detail: 'Diagnostics, forensics, gene cloning, ancient DNA (Jurassic Park-style; real life, mostly < 1 million years).' }
+      ];
+
+      var CRISPR_PARTS = [
+        { component: 'Cas9 protein', role: 'Programmable DNA-cutting enzyme.', notes: 'From bacterial immune system. Other Cas variants exist (Cas12, Cas13, etc.).' },
+        { component: 'sgRNA (single guide RNA)', role: 'Directs Cas9 to specific DNA sequence (20 bp target).', notes: 'Engineered fusion of crRNA + tracrRNA.' },
+        { component: 'PAM (protospacer adjacent motif)', role: 'Short sequence (NGG for SpCas9) next to target.', notes: 'Required for Cas9 to cut. Limits targetable sites.' },
+        { component: 'DSB (double-strand break)', role: 'Cas9 cleaves both DNA strands.', notes: 'Triggers cellular repair: NHEJ (error-prone) or HDR (homology-directed).' },
+        { component: 'Repair templates (HDR)', role: 'Provide a sequence to insert at the cut site.', notes: 'Allows precise edits, but HDR is inefficient outside dividing cells.' },
+        { component: 'Prime editing', role: '"Search-and-replace" without DSBs.', notes: 'Newer method (2019). Higher precision, fewer off-target effects.' },
+        { component: 'Base editing', role: 'Single-base changes (e.g., C→T) without DSB.', notes: 'Combines Cas9 nickase + deaminase. Useful for point mutations.' }
+      ];
+
+      var CRISPR_APPS = [
+        { use: 'Sickle cell + β-thalassemia (Casgevy)', detail: 'First CRISPR therapy FDA-approved (Dec 2023). Edits patient\'s stem cells ex vivo.' },
+        { use: 'CAR-T cancer therapy', detail: 'CRISPR engineers T cells to attack cancer. Several Phase I/II trials.' },
+        { use: 'Drug discovery screens', detail: 'CRISPR knockout libraries reveal which genes are essential for disease.' },
+        { use: 'Animal disease models', detail: 'Faster than traditional knockout mice. Used widely in research.' },
+        { use: 'Crop improvement', detail: 'Disease-resistant rice, mushrooms that don\'t brown, gluten-free wheat (still mostly research).' },
+        { use: 'Mosquito gene drives', detail: 'Spread sterility or malaria-resistance through wild populations. Field trials being debated.' },
+        { use: 'Heritable editing', detail: 'He Jiankui (2018) edited human embryos → moral + scientific outcry. Currently banned in most countries.' }
+      ];
+
+      var VIRUS_FAMILIES = [
+        { family: 'Adenoviridae', genome: 'dsDNA', envelope: 'No', examples: 'Common cold (some), adenovirus vaccine vectors (J&J COVID)', notes: 'Linear dsDNA. Used in gene therapy + vaccines.' },
+        { family: 'Coronaviridae', genome: '(+)ssRNA', envelope: 'Yes', examples: 'SARS-CoV-2 (COVID), MERS, SARS, common cold strains', notes: 'Largest RNA genomes (~30 kb). Crown of spike proteins.' },
+        { family: 'Flaviviridae', genome: '(+)ssRNA', envelope: 'Yes', examples: 'Dengue, Zika, West Nile, yellow fever, hepatitis C', notes: 'Mostly mosquito-borne.' },
+        { family: 'Herpesviridae', genome: 'dsDNA', envelope: 'Yes', examples: 'HSV-1/2, varicella zoster, Epstein-Barr, CMV', notes: 'Establish lifelong latent infection.' },
+        { family: 'Orthomyxoviridae', genome: '(−)ssRNA segmented', envelope: 'Yes', examples: 'Influenza A, B, C', notes: 'Segmented genome → reassortment → new strains.' },
+        { family: 'Paramyxoviridae', genome: '(−)ssRNA', envelope: 'Yes', examples: 'Measles, mumps, RSV, Nipah', notes: 'Measles among most contagious diseases known (R₀ ~12-18).' },
+        { family: 'Picornaviridae', genome: '(+)ssRNA', envelope: 'No', examples: 'Polio, rhinovirus (common cold), hepatitis A, enteroviruses', notes: 'Small (pico) RNA viruses.' },
+        { family: 'Retroviridae', genome: 'ssRNA (reverse-transcribed)', envelope: 'Yes', examples: 'HIV, HTLV', notes: 'Integrates into host genome. Reverse transcriptase converts RNA to DNA.' },
+        { family: 'Rhabdoviridae', genome: '(−)ssRNA', envelope: 'Yes', examples: 'Rabies, vesicular stomatitis virus', notes: 'Bullet-shaped.' },
+        { family: 'Filoviridae', genome: '(−)ssRNA', envelope: 'Yes', examples: 'Ebola, Marburg', notes: 'Hemorrhagic fevers. Filamentous shape.' },
+        { family: 'Poxviridae', genome: 'dsDNA', envelope: 'Complex', examples: 'Smallpox (eradicated), mpox, vaccinia', notes: 'Largest viruses. Replicate in cytoplasm (unusual for DNA viruses).' },
+        { family: 'Bacteriophage', genome: 'varies', envelope: 'sometimes', examples: 'T4 (E. coli), lambda', notes: 'Infect bacteria. Used as research tools + phage therapy (alternative to antibiotics).' }
+      ];
+
+      var MICROBIOME_FACTS = [
+        { topic: 'How many', detail: 'Human body has ~10¹³ human cells + ~10¹³-10¹⁴ microbial cells. Roughly equal in number.' },
+        { topic: 'Microbial diversity', detail: '500-1,000+ bacterial species in healthy adult gut. Plus archaea, fungi, viruses.' },
+        { topic: 'Genome contribution', detail: 'Microbiome carries ~100× more genes than human genome. Adds many metabolic capabilities.' },
+        { topic: 'Gut-brain axis', detail: 'Gut microbes communicate with brain via vagus nerve, immune signals, metabolites. Linked to mood, behavior — though many specific claims overstated.' },
+        { topic: 'Antibiotic disruption', detail: 'Broad-spectrum antibiotics wipe out commensals → may take months/years to recover. Some shifts persistent.' },
+        { topic: 'C. diff + FMT', detail: 'Fecal microbiota transplant (FMT) cures recurrent C. difficile infection ~90% of time. Other applications still experimental.' },
+        { topic: 'Skin microbiome', detail: 'Varies by body site: forehead (oily, dominated by Cutibacterium acnes), gut (anaerobes), armpit (apocrine sweat + bacteria → body odor).' },
+        { topic: 'Vaginal microbiome', detail: 'Healthy: Lactobacillus dominant, low pH. Imbalance → bacterial vaginosis (BV).' },
+        { topic: 'Oral microbiome', detail: '~700 species. Affects cavities, gum disease. Linked to cardiovascular risk.' },
+        { topic: 'Birth mode', detail: 'Vaginal birth seeds infant with maternal vaginal microbes; C-section seeds with skin microbes. Long-term effects studied (some contested).' },
+        { topic: 'Breast milk + microbiome', detail: 'Contains live bacteria + prebiotics (HMOs) that feed specific gut microbes (B. infantis).' }
+      ];
+
+      var EMBRYO_STAGES = [
+        { stage: 'Fertilization', time: 'Day 0-1', detail: 'Sperm + egg fuse. Diploid zygote forms.' },
+        { stage: 'Cleavage', time: 'Day 1-3', detail: 'Rapid cell divisions without growth. 2 → 4 → 8 → 16 cell stage.' },
+        { stage: 'Morula', time: 'Day 3-4', detail: 'Solid ball of ~16-32 cells.' },
+        { stage: 'Blastocyst', time: 'Day 5-6', detail: 'Hollow ball with inner cell mass (future embryo) + trophoblast (future placenta).' },
+        { stage: 'Implantation', time: 'Day 6-12', detail: 'Blastocyst attaches to uterine wall.' },
+        { stage: 'Gastrulation', time: 'Week 3', detail: 'Cell movements form 3 germ layers: ectoderm, mesoderm, endoderm.' },
+        { stage: 'Neurulation', time: 'Week 3-4', detail: 'Neural tube forms from ectoderm. Future brain + spinal cord.' },
+        { stage: 'Organogenesis', time: 'Week 4-8', detail: 'All major organs begin forming. Heart starts beating ~week 4-5.' },
+        { stage: 'Fetal period', time: 'Week 9 - birth', detail: 'Growth + maturation. Major structures already formed.' }
+      ];
+
+      var GERM_LAYERS = [
+        { layer: 'Ectoderm (outer)', forms: 'Skin epidermis, hair, nails. Nervous system (brain, spinal cord, peripheral nerves). Tooth enamel. Inner ear, lens of eye.' },
+        { layer: 'Mesoderm (middle)', forms: 'Muscle (skeletal, cardiac, smooth). Bone + cartilage. Heart + blood vessels. Kidneys. Gonads. Dermis of skin.' },
+        { layer: 'Endoderm (inner)', forms: 'Lining of digestive tract. Lining of respiratory tract. Liver, pancreas. Thyroid, parathyroid. Bladder.' }
+      ];
+
+      var CANCER_HALLMARKS = [
+        { hallmark: 'Sustained proliferative signaling', detail: 'Cancer cells produce their own growth signals or activate receptors constitutively.' },
+        { hallmark: 'Evading growth suppressors', detail: 'Tumor suppressors (p53, Rb) inactivated → cells divide despite stop signals.' },
+        { hallmark: 'Resisting cell death', detail: 'Apoptosis pathways disabled. Damaged cells survive when they should die.' },
+        { hallmark: 'Enabling replicative immortality', detail: 'Reactivate telomerase → telomeres maintained → unlimited divisions.' },
+        { hallmark: 'Inducing angiogenesis', detail: 'Tumors recruit blood vessels to feed growing mass.' },
+        { hallmark: 'Activating invasion + metastasis', detail: 'Cells lose adhesion, migrate, colonize distant tissues.' },
+        { hallmark: 'Reprogramming energy metabolism', detail: 'Warburg effect: tumors use glycolysis even in oxygen presence.' },
+        { hallmark: 'Evading immune destruction', detail: 'Tumors hide from or suppress immune surveillance (PD-L1 expression).' },
+        { hallmark: 'Tumor-promoting inflammation', detail: 'Chronic inflammation creates a permissive environment.' },
+        { hallmark: 'Genome instability', detail: 'Accumulating mutations + chromosomal rearrangements drive evolution.' }
+      ];
+
+      var IMMUNE_COMPONENTS = [
+        { component: 'Innate immunity', detail: 'Fast, non-specific. Skin, mucus, complement, neutrophils, NK cells, macrophages.' },
+        { component: 'Adaptive immunity', detail: 'Slower (days), highly specific, has memory. B cells (antibodies) + T cells.' },
+        { component: 'B cells', detail: 'Produce antibodies. Each B cell makes one specificity. Activated B cells become plasma cells.' },
+        { component: 'T helper cells (CD4+)', detail: 'Coordinate immune response. HIV target. Tipped from naive to specialized subsets (Th1, Th2, Th17, Treg).' },
+        { component: 'T cytotoxic cells (CD8+)', detail: 'Kill infected or cancerous cells via perforin + granzyme.' },
+        { component: 'Antibodies', detail: 'Y-shaped proteins. 5 classes: IgG (most abundant), IgA (mucosal), IgM (initial), IgE (allergies + parasites), IgD (B-cell surface).' },
+        { component: 'MHC / HLA', detail: 'Cell-surface molecules that present antigens to T cells. MHC I (all cells, viral peptides). MHC II (immune cells, extracellular peptides).' },
+        { component: 'Complement', detail: 'Plasma proteins that punch holes in pathogens + recruit phagocytes.' },
+        { component: 'Cytokines', detail: 'Signaling molecules of immune system. Interferons (anti-viral), interleukins (coordinate), TNF (inflammation).' },
+        { component: 'Memory cells', detail: 'Long-lived B + T cells from prior exposure. Basis of vaccines + lifelong immunity.' },
+        { component: 'Vaccines', detail: 'Train adaptive immunity without disease. mRNA (COVID), protein subunit, attenuated live, inactivated.' },
+        { component: 'Autoimmunity', detail: 'Immune system attacks self. Type 1 diabetes, RA, MS, lupus, Hashimoto\'s.' },
+        { component: 'Allergy', detail: 'IgE-mediated hypersensitivity. Mast cells release histamine.' }
+      ];
+
+      var NEURO_BASICS = [
+        { topic: 'Neuron parts', detail: 'Dendrites (receive), soma (cell body), axon (transmit), terminals (release neurotransmitter).' },
+        { topic: 'Action potential', detail: 'All-or-none electrical signal. Sodium in → depolarize → potassium out → repolarize. ~1 ms. Traveling speed: ~1 m/s (unmyelinated) to ~100 m/s (myelinated).' },
+        { topic: 'Myelin sheath', detail: 'Fatty insulation made by glia (oligodendrocytes in CNS, Schwann cells in PNS). Speeds conduction. Destroyed in MS.' },
+        { topic: 'Synapse', detail: 'Junction between neurons. Electrical or chemical (most). ~0.02 μm gap.' },
+        { topic: 'Neurotransmitters', detail: 'Chemical messengers across synapse. Excitatory (glutamate), inhibitory (GABA), modulatory (serotonin, dopamine).' },
+        { topic: 'Dopamine', detail: 'Reward, motivation, motor control. Low in Parkinson\'s; dysregulated in schizophrenia.' },
+        { topic: 'Serotonin', detail: 'Mood, sleep, appetite. SSRIs target reuptake.' },
+        { topic: 'Acetylcholine', detail: 'Neuromuscular junction. Memory + attention. Low in Alzheimer\'s.' },
+        { topic: 'Glia (non-neuron brain cells)', detail: 'Astrocytes (support, BBB), oligodendrocytes (myelin in CNS), microglia (immune), ependymal cells (CSF).' },
+        { topic: 'Brain regions', detail: 'Cerebrum (cortex — thinking, perception), cerebellum (motor coordination), brainstem (autonomic), limbic system (emotion + memory).' },
+        { topic: 'Neuroplasticity', detail: 'Brain reorganizes itself — strongest in childhood but ongoing throughout life. Basis of learning.' },
+        { topic: 'Blood-brain barrier', detail: 'Tight junctions between brain capillary cells keep most molecules out. Major challenge for CNS drug delivery.' },
+        { topic: 'Brain energy', detail: '~20% of body\'s energy at rest despite being ~2% of mass. Mostly Na+/K+ pumps maintaining ion gradients.' }
+      ];
+
+      var TREE_OF_LIFE = [
+        { domain: 'Bacteria', features: 'Prokaryotic. No nucleus. Peptidoglycan cell wall. Highly diverse metabolism.', examples: 'E. coli, Streptococcus, cyanobacteria' },
+        { domain: 'Archaea', features: 'Prokaryotic. Distinct membrane lipids + ribosomes. Often in extreme environments.', examples: 'Methanogens, halophiles, thermophiles' },
+        { domain: 'Eukarya', features: 'Eukaryotic. Membrane-bound nucleus + organelles. Sexual reproduction common.', examples: 'Animals, plants, fungi, protists' }
+      ];
+
+      var KINGDOMS = [
+        { kingdom: 'Animalia', features: 'Multicellular, heterotrophic, mobile (at some stage), no cell wall.', notes: 'Mostly sexual reproduction. From sponges (no true tissues) to vertebrates.' },
+        { kingdom: 'Plantae', features: 'Multicellular, photosynthetic (chlorophyll a+b), cellulose cell walls.', notes: 'Includes algae (debated), mosses, ferns, gymnosperms, angiosperms.' },
+        { kingdom: 'Fungi', features: 'Multicellular (mostly), heterotrophic, chitin cell walls. Digest externally.', notes: 'Decomposers + symbionts. Yeasts, molds, mushrooms, lichens (fungus + alga).' },
+        { kingdom: 'Protista', features: 'Eukaryotes that aren\'t plants, animals, or fungi. Polyphyletic — being reclassified.', notes: 'Amoebas, algae (some), Plasmodium (malaria), euglena.' }
+      ];
+
+      var BIOTECH_APPS = [
+        { app: 'Recombinant insulin', detail: 'First mass-produced human protein. Made in E. coli (1982). Replaced pig + cow insulin.' },
+        { app: 'Monoclonal antibodies', detail: 'Single-target therapies. Humira (autoimmune), Herceptin (HER2+ breast cancer), Keytruda (immunotherapy).' },
+        { app: 'mRNA vaccines', detail: 'COVID-19 vaccines (Pfizer, Moderna). Self-amplifying versions + non-COVID applications in development.' },
+        { app: 'Gene therapy', detail: 'Replace defective genes. Luxturna (inherited blindness, FDA 2017). Zolgensma (SMA, 2019).' },
+        { app: 'CAR-T cell therapy', detail: 'Engineered immune cells. Yescarta + Kymriah for blood cancers. ~$400K per dose.' },
+        { app: 'Stem cell therapy', detail: 'Bone marrow transplants standard for decades. Newer iPSC + ESC approaches in trials.' },
+        { app: '3D bioprinting', detail: 'Print tissue with living cells + scaffolds. Skin, cartilage, bladder. Whole organs still distant.' },
+        { app: 'Synthetic biology', detail: 'Engineer biological systems. Bacteria that produce drugs, yeast that brews opioids, algae biofuels.' },
+        { app: 'GMO crops', detail: 'Bt corn (insect resistance), Roundup Ready (herbicide), Golden Rice (vitamin A).' },
+        { app: 'DNA forensics', detail: 'STR profiling, mtDNA (degraded samples), Y-chromosome (paternal lineage). Database matching.' },
+        { app: 'Ancestry + relative finding', detail: 'SNP arrays (23andMe, AncestryDNA). Reveals biogeographic ancestry + DNA relatives.' },
+        { app: 'Liquid biopsy', detail: 'Detect cancer DNA in blood. Earlier diagnosis, treatment monitoring.' },
+        { app: 'Engineered T cells', detail: 'Treat solid tumors. TIL therapy (Iovance, melanoma) FDA approved 2024.' },
+        { app: 'Bioremediation', detail: 'Engineered microbes clean up oil spills, plastic pollution, heavy metals.' }
+      ];
+
+      function renderPcrSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧪 PCR (polymerase chain reaction)'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Amplifies specific DNA sequences a billion-fold. Workhorse of molecular biology, diagnostics, and forensics.'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'The 3 steps (repeated ~30×)'),
+            h('div', { className: 'space-y-1' },
+              PCR_STEPS.map(function(s, i) {
+                return h('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                    h('span', { className: 'text-[11px] font-black text-slate-800' }, s.step),
+                    h('span', { className: 'text-[10px] font-mono text-emerald-700 ml-auto' }, s.temp + ' · ' + s.duration)
+                  ),
+                  h('div', { className: 'text-[10px] text-slate-700' }, s.detail)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Key facts'),
+          h('div', { className: 'space-y-1' },
+            PCR_FACTS.map(function(f, i) {
+              return h('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[11px] font-black text-emerald-900 mb-0.5' }, f.fact),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCrisprSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '✂ CRISPR-Cas9'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Originally a bacterial immune system; now a programmable gene-editing tool. Doudna + Charpentier shared 2020 Nobel Prize.'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Components + concepts'),
+            h('div', { className: 'space-y-1' },
+              CRISPR_PARTS.map(function(c, i) {
+                return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'text-[11px] font-black text-slate-800 mb-0.5' }, c.component),
+                  h('div', { className: 'text-[10px] text-emerald-700 italic mb-0.5' }, c.role),
+                  h('div', { className: 'text-[10px] text-slate-700' }, c.notes)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Real applications'),
+          h('div', { className: 'space-y-1' },
+            CRISPR_APPS.map(function(a, i) {
+              return h('div', { key: 'a'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[11px] font-black text-emerald-900 mb-0.5' }, a.use),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, a.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderVirusesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🦠 Virus families'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Viruses are non-living infectious agents — they need a host cell to replicate. Classified by genome type (Baltimore classification), envelope, shape.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Family', 'Genome', 'Envelope', 'Examples', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                VIRUS_FAMILIES.map(function(v, i) {
+                  return h('tr', { key: 'v'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, v.family),
+                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 text-[10px]' }, v.genome),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, v.envelope),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, v.examples),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, v.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderMicrobiomeSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🦠 Human microbiome'),
+          h('div', { className: 'p-2.5 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-900 mb-3' },
+            h('strong', null, '⚠ Note: '), 'Microbiome science is advancing fast. Many popular claims (specific probiotic strains "curing" specific conditions) outrun the evidence. Stick to robustly replicated findings.'
+          ),
+          h('div', { className: 'space-y-1' },
+            MICROBIOME_FACTS.map(function(m, i) {
+              return h('div', { key: 'm'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, m.topic),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderDevelSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🥚 Embryonic development'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Stages (human, approximate)'),
+            h('div', { className: 'space-y-1' },
+              EMBRYO_STAGES.map(function(s, i) {
+                return h('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                    h('span', { className: 'text-[11px] font-black text-slate-800' }, s.stage),
+                    h('span', { className: 'text-[10px] font-mono text-emerald-700 ml-auto' }, s.time)
+                  ),
+                  h('div', { className: 'text-[10px] text-slate-700' }, s.detail)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Germ layers — what each forms'),
+          h('div', { className: 'space-y-1' },
+            GERM_LAYERS.map(function(L, i) {
+              return h('div', { key: 'L'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, L.layer),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, L.forms)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCancerSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚕ Hallmarks of cancer'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Defined by Hanahan + Weinberg (2000, updated 2011). Most cancers acquire most of these hallmarks. Therapy increasingly targets specific hallmarks.'),
+          h('div', { className: 'space-y-1' },
+            CANCER_HALLMARKS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, c.hallmark),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderImmunitySection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🛡 The immune system'),
+          h('div', { className: 'space-y-2' },
+            IMMUNE_COMPONENTS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, c.component),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderNeuroSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧠 Neuroscience basics'),
+          h('div', { className: 'space-y-1' },
+            NEURO_BASICS.map(function(n, i) {
+              return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, n.topic),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderTreeSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌳 Tree of life'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Three domains (Woese, 1990)'),
+            h('div', { className: 'space-y-2' },
+              TREE_OF_LIFE.map(function(d, i) {
+                return h('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, d.domain),
+                  h('div', { className: 'text-[11px] text-emerald-700 font-bold mb-1' }, d.features),
+                  h('div', { className: 'text-[10px] text-slate-600 italic' }, 'Examples: ' + d.examples)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Traditional eukaryote kingdoms'),
+          h('div', { className: 'space-y-1' },
+            KINGDOMS.map(function(K, i) {
+              return h('div', { key: 'K'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, K.kingdom),
+                h('div', { className: 'text-[11px] text-slate-700 mb-0.5' }, K.features),
+                h('div', { className: 'text-[10px] text-slate-600 italic' }, K.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderBiotech2Section() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💉 Biotechnology applications'),
+          h('div', { className: 'space-y-2' },
+            BIOTECH_APPS.map(function(b, i) {
+              return h('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, b.app),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, b.detail)
+              );
+            })
+          )
+        );
       }
 
       var __dnaExpansions = h('div', { className: 'mt-4 max-w-4xl mx-auto' },

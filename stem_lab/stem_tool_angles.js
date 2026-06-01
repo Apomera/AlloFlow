@@ -1449,6 +1449,32 @@ window.StemLab = window.StemLab || {
           { id: 'tilings', label: 'Tessellations', icon: '\u2B21' },
           { id: 'famous', label: 'History', icon: '\uD83D\uDD70' },
           { id: 'careers', label: 'Careers using angles', icon: '\uD83D\uDCBC' },
+          { id: 'conics', label: 'Conic sections', icon: '\u25C9' },
+          { id: 'platonic', label: 'Platonic solids', icon: '\u2B21' },
+          { id: 'fractals', label: 'Fractals', icon: '\u2744' },
+          { id: 'noneuclid', label: 'Non-Euclidean', icon: '\u2295' },
+          { id: 'projection', label: 'Map projections', icon: '\uD83D\uDDFA' },
+          { id: 'sundial', label: 'Sundials', icon: '\u263C' },
+          { id: 'goldenratio', label: 'Golden ratio', icon: '\u03C6' },
+          { id: 'origami', label: 'Origami geometry', icon: '\u2726' },
+          { id: 'sports', label: 'Angles in sports', icon: '\uD83C\uDFC6' },
+          { id: 'art', label: 'Angles in art', icon: '\uD83C\uDFA8' },
+          { id: 'tools', label: 'Measuring tools', icon: '\uD83D\uDCCF' },
+          { id: 'constants', label: 'Math constants', icon: '\u03C0' },
+          { id: 'rivers', label: 'Earth measurements', icon: '\uD83C\uDF0E' },
+          { id: 'buildings', label: 'Famous structures', icon: '\uD83C\uDFDB' },
+          { id: 'curves', label: 'Famous curves', icon: '\u223F' },
+          { id: 'mathematicians', label: 'Mathematicians', icon: '\uD83D\uDC68\u200D\uD83C\uDFEB' },
+          { id: 'practical', label: 'Practical angles', icon: '\uD83D\uDEE0' },
+          { id: 'puzzles', label: 'Geometry puzzles', icon: '\uD83E\uDDE9' },
+          { id: 'tessell2', label: 'Famous tilings', icon: '\u25C7' },
+          { id: 'cities', label: 'City coordinates', icon: '\uD83C\uDF06' },
+          { id: 'mountains', label: 'Mountains + peaks', icon: '\u26F0' },
+          { id: 'planets', label: 'Planet data', icon: '\uD83E\uDE90' },
+          { id: 'building_angles', label: 'Roof + ramp pitch', icon: '\u25E2' },
+          { id: 'flag_design', label: 'Flag geometry', icon: '\uD83D\uDEA9' },
+          { id: 'shapes_iq', label: 'Shape facts', icon: '\u25C7' },
+          { id: 'theorems', label: 'Classic theorems', icon: '\u220E' },
           { id: 'glossary', label: 'Glossary', icon: '\uD83D\uDCD6' }
         ];
         return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
@@ -2067,8 +2093,1148 @@ window.StemLab = window.StemLab || {
         if (expSection === 'tilings') return renderTilingsSection();
         if (expSection === 'famous') return renderFamousSection();
         if (expSection === 'careers') return renderCareersSection();
+        if (expSection === 'conics') return renderConicsSection();
+        if (expSection === 'platonic') return renderPlatonicSection();
+        if (expSection === 'fractals') return renderFractalsSection();
+        if (expSection === 'noneuclid') return renderNoneuclidSection();
+        if (expSection === 'projection') return renderProjectionSection();
+        if (expSection === 'sundial') return renderSundialSection();
+        if (expSection === 'goldenratio') return renderGoldenRatioSection();
+        if (expSection === 'origami') return renderOrigamiSection();
+        if (expSection === 'sports') return renderSportsSection();
+        if (expSection === 'art') return renderArtSection();
+        if (expSection === 'tools') return renderToolsSection();
+        if (expSection === 'constants') return renderConstantsSection();
+        if (expSection === 'rivers') return renderRiversSection();
+        if (expSection === 'buildings') return renderBuildingsSection();
+        if (expSection === 'curves') return renderCurvesSection();
+        if (expSection === 'mathematicians') return renderMathematiciansSection();
+        if (expSection === 'practical') return renderPracticalSection();
+        if (expSection === 'puzzles') return renderPuzzlesSection();
+        if (expSection === 'tessell2') return renderTessell2Section();
+        if (expSection === 'cities') return renderCitiesSection();
+        if (expSection === 'mountains') return renderMountainsSection();
+        if (expSection === 'planets') return renderPlanetsSection();
+        if (expSection === 'building_angles') return renderBuildingAnglesSection();
+        if (expSection === 'flag_design') return renderFlagDesignSection();
+        if (expSection === 'shapes_iq') return renderShapesIqSection();
+        if (expSection === 'theorems') return renderTheoremsSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
+      }
+
+      var CLASSIC_THEOREMS = [
+        { theorem: 'Pythagorean theorem', statement: 'a² + b² = c² for right triangles', notes: 'Pre-dates Pythagoras; Babylonians knew it. >370 distinct proofs exist.' },
+        { theorem: 'Thales\'s theorem', statement: 'Inscribed angle in semicircle = 90°', notes: 'Special case of inscribed angle theorem.' },
+        { theorem: 'Triangle inequality', statement: 'a + b > c (for any two sides + third)', notes: 'Generalizes to: distance is "shortest along straight line".' },
+        { theorem: 'Law of cosines', statement: 'c² = a² + b² − 2ab cos C', notes: 'Generalization of Pythagoras. C=90° → Pythagoras.' },
+        { theorem: 'Euler\'s formula (polyhedra)', statement: 'V − E + F = 2 for convex polyhedron', notes: 'Holds for all 5 Platonic solids + many others.' },
+        { theorem: 'Four-color theorem', statement: 'Every planar map can be colored with 4 colors', notes: 'First major theorem proved by computer (1976).' },
+        { theorem: 'Fermat\'s last theorem', statement: 'No integer solutions to aⁿ + bⁿ = cⁿ for n > 2', notes: 'Conjectured 1637, proved 1994 by Andrew Wiles.' },
+        { theorem: 'Gödel\'s incompleteness', statement: 'Any consistent formal system contains true statements unprovable in that system', notes: 'Devastated formalist program in mathematics (1931).' },
+        { theorem: 'Banach-Tarski paradox', statement: 'A solid ball can be split + reassembled into two identical balls', notes: 'Uses non-measurable pieces + axiom of choice.' },
+        { theorem: 'Bayes\' theorem', statement: 'P(A|B) = P(B|A) · P(A) / P(B)', notes: 'Foundation of probabilistic inference + modern ML.' },
+        { theorem: 'Central limit theorem', statement: 'Sum of many independent random variables tends to normal distribution', notes: 'Why bell curve appears so often.' },
+        { theorem: 'Euclidean parallel postulate', statement: 'Through a point not on a line, exactly one parallel line exists', notes: 'Equivalent forms: triangle angles sum to 180°, Pythagoras holds. Dropping it gives non-Euclidean geometries.' },
+        { theorem: 'Stokes\' theorem', statement: 'Integral of curl over surface = integral around boundary', notes: 'Unifies Green\'s, divergence, fundamental theorem of calculus. Foundation of vector calculus.' },
+        { theorem: 'Noether\'s theorem', statement: 'Every continuous symmetry implies a conservation law', notes: 'Time symmetry → conservation of energy. Space symmetry → momentum. Rotation → angular momentum.' },
+        { theorem: 'Poincaré conjecture', statement: 'A simply-connected 3-manifold is a 3-sphere', notes: 'Proved by Grigori Perelman (2003). He declined the $1M Millennium Prize and the Fields Medal.' },
+        { theorem: 'Hairy ball theorem', statement: 'Cannot comb a hairy ball flat without creating a cowlick', notes: 'There is always at least one point on a sphere where wind speed = 0. Implications for weather.' },
+        { theorem: 'Brouwer fixed-point theorem', statement: 'Continuous map from a disk to itself has at least one fixed point', notes: 'Stir a cup of coffee — at least one point ends up where it started.' },
+        { theorem: 'Borsuk-Ulam theorem', statement: 'For any continuous map S² → R², two antipodal points map to the same point', notes: 'At any moment, two antipodal places on Earth share exact same temperature + pressure.' }
+      ];
+
+      function renderTheoremsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∎ Classic mathematical theorems'),
+          h('div', { className: 'space-y-2' },
+            CLASSIC_THEOREMS.map(function(t, i) {
+              return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-1' }, t.theorem),
+                h('div', { className: 'text-[11px] text-slate-800 font-mono mb-1' }, t.statement),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed italic' }, t.notes)
+              );
+            })
+          )
+        );
+      }
+
+      var SHAPE_FACTS = [
+        { fact: 'Circle has most area for a perimeter', detail: 'Isoperimetric inequality: 4πA ≤ P². Equality only for circles. Why soap bubbles + planets are round.' },
+        { fact: 'Sphere has most volume for a surface area', detail: '3D version of above. Single bubbles are spheres; merged bubbles meet at 120° angles.' },
+        { fact: 'Regular hexagons tile most efficiently', detail: 'Honeycomb conjecture (proven 1999 by Hales): hexagonal tiling has lowest total edge length per area among any partition.' },
+        { fact: 'Triangle is most rigid shape', detail: 'Cannot be deformed without changing side lengths. Why bridges + roof trusses use triangles.' },
+        { fact: 'Squares stack densely (100%)', detail: 'Square tiles fill the plane with no gaps. Same for rectangles + parallelograms.' },
+        { fact: 'Circles tile poorly', detail: 'Hexagonal packing of circles fills ~90.7% of plane (best possible). Square packing only ~78.5%.' },
+        { fact: 'Sphere packing in 3D', detail: 'FCC + HCP both achieve ~74% density (Kepler conjecture, proven 2014 by Hales).' },
+        { fact: 'Five regular polyhedra', detail: 'Only 5 in 3D: tetrahedron, cube, octahedron, dodecahedron, icosahedron. (Plato discussed.)' },
+        { fact: 'Tetrahedron is simplest', detail: '4 vertices, 6 edges, 4 faces. Minimum 3D shape.' },
+        { fact: 'Sphere/cube/cylinder volumes', detail: 'For sphere inscribed in cylinder (h = 2r): V_sphere = 2/3 × V_cylinder. (Archimedes\'s favorite result.)' },
+        { fact: '4D hypercube (tesseract)', detail: '16 vertices, 32 edges, 24 faces, 8 cells. Can be unfolded into 8 cubes (per Salvador Dalí).' },
+        { fact: 'Möbius strip', detail: 'Single-sided surface. Cut down middle → longer single loop. Cut at 1/3 → two interlocked rings (one Möbius).' },
+        { fact: 'Klein bottle', detail: 'Closed non-orientable surface. Inside = outside. Can be made in 3D only with self-intersection.' },
+        { fact: 'Reuleaux triangle', detail: 'Curve of constant width (not a circle!). Can roll a board on three Reuleaux rollers smoothly. Drill bits use it.' },
+        { fact: 'Antiprism', detail: 'Two parallel polygons rotated 360°/2n, connected by triangles. Tetrahedron is the simplest antiprism.' },
+        { fact: 'Snub cube', detail: 'Has chirality — left- + right-handed forms. One of two chiral Archimedean solids (other is snub dodecahedron).' },
+        { fact: 'Hyperbolic paraboloid (saddle)', detail: 'Equation z = xy. Straight lines lie on it in 2 families. Used in Pringles + some roofs.' },
+        { fact: 'Stable polyhedron count', detail: '"Gomboc" (2006) is first known mono-monostatic — one stable + one unstable equilibrium. Like a self-righting Weeble.' },
+        { fact: 'Egg shape (oval) tessellation', detail: 'Cannot tile plane alone — gaps. But 7 egg-shapes form a hex-like cluster.' },
+        { fact: 'Polyhedra in nature', detail: 'Common in crystals: cube (NaCl), octahedron (diamond, fluorite), dodecahedron (pyrite, garnet).' },
+        { fact: 'Buckyball (C₆₀)', detail: 'Truncated icosahedron. 60 carbons. Like soccer ball pattern. Discovered 1985.' },
+        { fact: 'DNA double helix', detail: 'Helical, ~10.5 base pairs per turn. Major + minor grooves. Constant diameter ~2 nm.' },
+        { fact: 'Honeycomb cells', detail: 'Hexagonal prisms with rhombic bottoms. Bees do not consciously calculate — biophysics naturally minimizes surface area.' },
+        { fact: '"Spaghetti theorem"', detail: 'Drop spaghetti at random — average number of intersections = (L/πd) × π × n. Used to estimate π in classroom.' }
+      ];
+
+      function renderShapesIqSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◇ Surprising shape facts'),
+          h('div', { className: 'space-y-1' },
+            SHAPE_FACTS.map(function(f, i) {
+              return h('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, f.fact),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+              );
+            })
+          )
+        );
+      }
+
+      var FLAG_GEOMETRY = [
+        { flag: 'United States', ratio: '1.0 : 1.9', features: '50 stars in alternating rows of 6/5; 13 stripes', notes: 'Stars on union (canton): 5 rows of 6 + 4 rows of 5. Each star points up.' },
+        { flag: 'United Kingdom (Union Jack)', ratio: '1 : 2', features: 'Crosses of St. George, St. Andrew, St. Patrick combined', notes: 'Asymmetric — has a correct "up" orientation. Flying upside-down is distress signal.' },
+        { flag: 'France', ratio: '2 : 3', features: 'Blue, white, red vertical stripes (equal)', notes: 'Tricolore inspired many revolutionary flags worldwide.' },
+        { flag: 'Japan', ratio: '2 : 3', features: 'White field with red circle in center', notes: 'Circle radius = 3/10 of width. Center of flag.' },
+        { flag: 'China', ratio: '2 : 3', features: '5 yellow stars on red field', notes: 'Large star + 4 small stars arc; smaller stars have one point facing the large star\'s center.' },
+        { flag: 'Canada', ratio: '1 : 2', features: 'White square (1:1) with 11-point maple leaf flanked by red bars', notes: '11 points: 5 left, 5 right, 1 base. Adopted 1965.' },
+        { flag: 'Switzerland', ratio: '1 : 1 (square)', features: 'Red field with white cross', notes: 'One of only two square national flags (other: Vatican City).' },
+        { flag: 'Nepal', ratio: 'unique non-rectangular', features: 'Two stacked triangular pennants', notes: 'Only non-rectangular national flag. Constitution specifies exact geometric construction.' },
+        { flag: 'Israel', ratio: '8 : 11', features: 'White field, two blue horizontal stripes, Star of David in center', notes: 'Star of David = two overlapping equilateral triangles.' },
+        { flag: 'Brazil', ratio: '7 : 10', features: 'Green field, yellow rhombus, blue disc with stars + motto', notes: 'Stars represent constellations visible from Rio at moment of independence proclamation.' },
+        { flag: 'South Africa', ratio: '2 : 3', features: 'Y-shape pall (horizontal Y) dividing 6 colors', notes: 'Adopted 1994. Six colors represent the new democracy.' },
+        { flag: 'EU', ratio: '2 : 3', features: '12 yellow stars in circle on blue field', notes: '12 = symbol of perfection (not member count). Stars 5-pointed, pointed up.' },
+        { flag: 'NATO', ratio: '3 : 4', features: 'Dark blue field with white compass rose + circle', notes: 'Compass rose = 4 cardinal directions, symbolizing unity of purpose.' },
+        { flag: 'Olympic', ratio: '2 : 3', features: '5 interlocking rings (blue, yellow, black, green, red) on white field', notes: 'Five rings = five inhabited continents. Six colors (with white field) cover all national flags at time of design.' },
+        { flag: 'Pirate (Jolly Roger)', ratio: 'varies', features: 'Skull above crossed bones', notes: 'Different captains had distinct designs. Edward Teach (Blackbeard) had skeleton + spear + heart.' }
+      ];
+
+      var FLAG_GEOMETRY_NOTES = [
+        { topic: 'Vexillology', detail: 'Study of flags. Comes from Latin vexillum (flag carried by Roman cavalry).' },
+        { topic: 'Good flag design principles (NAVA)', detail: 'Keep it simple (a child can draw from memory), use meaningful symbolism, 2-3 basic colors, no lettering or seals, be distinctive.' },
+        { topic: 'Aspect ratios', detail: 'Most common: 2:3 (e.g., France, Germany). US is 1:1.9. UK is 1:2. Some unusual: Switzerland 1:1, Nepal non-rectangular.' },
+        { topic: 'Charges', detail: 'Symbols added to flag (stars, crosses, animals). Heraldic vocabulary describes positioning.' },
+        { topic: 'Canton', detail: 'Upper-left rectangle (about 1/4 the flag). US stars go here. Australia, NZ also use canton design.' },
+        { topic: 'Field', detail: 'Background color/colors of flag.' },
+        { topic: 'Hoist + fly', detail: 'Hoist = side attached to pole. Fly = opposite (free) side.' },
+        { topic: 'Color symbolism (common)', detail: 'Red = courage, revolution, blood. Blue = ocean, sky, freedom. Green = land, nature, Islam. White = peace, purity. Yellow/Gold = wealth, sun.' },
+        { topic: 'Distress signals', detail: 'Flying flag upside-down (where asymmetric); flying flag at half-staff = mourning.' },
+        { topic: 'NATO + UN flags', detail: 'Light blue with map (UN) or compass (NATO). Intentionally avoid national/religious symbols.' }
+      ];
+
+      function renderFlagDesignSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🚩 Flag geometry'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Flags are codified geometry. Every national flag has precise specifications: aspect ratio, color codes, charge positions, star angles.'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Selected national + organizational flags'),
+            h('div', { className: 'space-y-2' },
+              FLAG_GEOMETRY.map(function(f, i) {
+                return h('div', { key: 'f'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                    h('span', { className: 'text-[12px] font-black text-slate-800' }, f.flag),
+                    h('span', { className: 'text-[10px] text-rose-700 font-mono ml-auto px-2 py-0.5 rounded bg-rose-100' }, f.ratio)
+                  ),
+                  h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Features: '), f.features),
+                  h('div', { className: 'text-[10px] text-slate-600 italic' }, f.notes)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Flag design principles'),
+          h('div', { className: 'space-y-1' },
+            FLAG_GEOMETRY_NOTES.map(function(n, i) {
+              return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[11px] font-black text-rose-900 mb-0.5' }, n.topic),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.detail)
+              );
+            })
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 7 — Final angles data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var ROOF_PITCHES = [
+        { name: '1:12 (flat-ish)', degrees: '4.76°', percent: '8.3%', notes: 'Membrane roofs only. Too shallow for shingles. Drainage barely works.' },
+        { name: '2:12', degrees: '9.46°', percent: '16.7%', notes: 'Low-slope. Some metal + membrane. Below shingle minimum.' },
+        { name: '3:12', degrees: '14.04°', percent: '25.0%', notes: 'Minimum recommended for asphalt shingles.' },
+        { name: '4:12', degrees: '18.43°', percent: '33.3%', notes: 'Common modern residential pitch.' },
+        { name: '5:12', degrees: '22.62°', percent: '41.7%', notes: 'Typical residential.' },
+        { name: '6:12 (standard)', degrees: '26.57°', percent: '50.0%', notes: 'Very common. Good water/snow shed. Walkable with care.' },
+        { name: '7:12', degrees: '30.26°', percent: '58.3%', notes: 'Steeper traditional. Requires safety gear to work on.' },
+        { name: '8:12', degrees: '33.69°', percent: '66.7%', notes: 'Steep. Common in colder climates (sheds snow).' },
+        { name: '9:12', degrees: '36.87°', percent: '75.0%', notes: 'Steep traditional. Cathedral ceilings.' },
+        { name: '10:12', degrees: '39.81°', percent: '83.3%', notes: 'Very steep. Victorian + Tudor styles.' },
+        { name: '12:12 (45°)', degrees: '45.00°', percent: '100.0%', notes: 'A-frame. Strong shedding. Distinctive look.' },
+        { name: '18:12', degrees: '56.31°', percent: '150.0%', notes: 'Extreme. Some chalets + churches. Steep enough to be dangerous to work on.' },
+        { name: '24:12 (steep)', degrees: '63.43°', percent: '200.0%', notes: 'Very rare in residential. Gothic + chalet styles.' }
+      ];
+
+      var RAMP_GRADES = [
+        { use: 'Wheelchair (ADA standard)', grade: '1:12', degrees: '4.76°', notes: 'Max for public accessibility. 1 inch rise per 12 inches run. 30 ft ramp for 30 inches rise.' },
+        { use: 'Wheelchair (preferred)', grade: '1:16-1:20', degrees: '2.86-3.58°', notes: 'Easier than 1:12. Used where space allows.' },
+        { use: 'Wheelchair (max short)', grade: '1:8', degrees: '7.13°', notes: 'For very short runs only (< 3 inches rise).' },
+        { use: 'Pedestrian sidewalk max', grade: '1:20', degrees: '2.86°', notes: 'No ramp considered needed below this. ADA cross-slope: max 2%.' },
+        { use: 'Bike path max', grade: '5%', degrees: '2.86°', notes: 'Comfortable. 8% considered max for most cyclists.' },
+        { use: 'Driveway typical', grade: '12% max', degrees: '6.84°', notes: 'Steeper risks bottoming out cars + snow problems.' },
+        { use: 'Driveway max (cities allow)', grade: '20%', degrees: '11.31°', notes: 'San Francisco hills + some neighborhoods. Lillet Street ~31.5%.' },
+        { use: 'Highway interstate max', grade: '6%', degrees: '3.43°', notes: 'Federal interstate standard. Mountain interstates up to 7%.' },
+        { use: 'Highway secondary', grade: '7-9%', degrees: '4-5.14°', notes: 'Steeper allowed on lower-volume roads.' },
+        { use: 'Railroad standard', grade: '1-2%', degrees: '0.57-1.15°', notes: 'Steel-on-steel friction is limiting factor.' },
+        { use: 'Railroad mountain (max)', grade: '4-5%', degrees: '2.29-2.86°', notes: 'Special equipment or cog/rack needed for steeper.' },
+        { use: 'Cog railway', grade: 'up to ~48%', degrees: '~25.6°', notes: 'Pikes Peak Cog Railway, Mount Washington Cog Railway.' },
+        { use: 'Funicular', grade: 'up to ~31%', degrees: '~17.2°', notes: 'Two cars counterbalance via cable.' },
+        { use: 'Loading ramp (truck)', grade: '15-30%', degrees: '8.5-16.7°', notes: 'Varies by application. Steeper = shorter but harder.' },
+        { use: 'Skate ramp (mini)', grade: '~80% (38°)', degrees: '38°+', notes: 'Quarter pipes go to vertical (90°) at top.' },
+        { use: 'Roller coaster max drop', grade: '~80-90°', degrees: '80-90° (some past vertical)', notes: 'Drops past 90° (overhanging): Mumbo Jumbo, Takabisha.' }
+      ];
+
+      function renderBuildingAnglesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◢ Roof pitch + ramp grade tables'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Roof pitches (rise:run notation)'),
+            h('p', { className: 'text-[11px] text-slate-700 mb-2' }, 'X:12 means X inches rise per 12 inches of horizontal run.'),
+            h('div', { className: 'overflow-x-auto' },
+              h('table', { className: 'min-w-full text-[11px] border-collapse' },
+                h('thead', null,
+                  h('tr', { className: 'bg-slate-100' },
+                    ['Pitch (X:12)', 'Angle', '% slope', 'Notes'].map(function(hh, i) {
+                      return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    })
+                  )
+                ),
+                h('tbody', null,
+                  ROOF_PITCHES.map(function(r, i) {
+                    return h('tr', { key: 'r'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                      h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, r.name),
+                      h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, r.degrees),
+                      h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, r.percent),
+                      h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, r.notes)
+                    );
+                  })
+                )
+              )
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Ramp grades + transportation slopes'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Use case', 'Grade', 'Angle', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                RAMP_GRADES.map(function(g, i) {
+                  return h('tr', { key: 'g'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, g.use),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, g.grade),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, g.degrees),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, g.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 6 — Final dense data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var MOUNTAINS = [
+        { peak: 'Mount Everest', height: '8,848.86 m', range: 'Himalaya', country: 'Nepal/China', notes: 'Highest point on Earth above sea level. Slope angles up to 60° on some sections.' },
+        { peak: 'K2 (Mount Godwin-Austen)', height: '8,611 m', range: 'Karakoram', country: 'Pakistan/China', notes: 'Second highest. Much harder + more dangerous than Everest.' },
+        { peak: 'Kangchenjunga', height: '8,586 m', range: 'Himalaya', country: 'Nepal/India', notes: 'Third highest. Five peaks; locals consider it sacred.' },
+        { peak: 'Annapurna I', height: '8,091 m', range: 'Himalaya', country: 'Nepal', notes: 'Among the most dangerous 8000ers (~32% fatality rate).' },
+        { peak: 'Aconcagua', height: '6,961 m', range: 'Andes', country: 'Argentina', notes: 'Highest outside Asia. Non-technical climb (mostly walk-up).' },
+        { peak: 'Denali (Mount McKinley)', height: '6,190 m', range: 'Alaska Range', country: 'USA', notes: 'Highest in North America. Extreme cold + altitude.' },
+        { peak: 'Mount Kilimanjaro', height: '5,895 m', range: 'standalone', country: 'Tanzania', notes: 'Highest in Africa. Volcanic. Glaciers receding fast.' },
+        { peak: 'Mont Blanc', height: '4,808 m', range: 'Alps', country: 'France/Italy', notes: 'Highest in western Europe.' },
+        { peak: 'Mount Elbrus', height: '5,642 m', range: 'Caucasus', country: 'Russia', notes: 'Highest in Europe (geographic definition varies).' },
+        { peak: 'Mount Whitney', height: '4,421 m', range: 'Sierra Nevada', country: 'USA', notes: 'Highest in contiguous US. ~85 mi from Badwater (lowest in US).' },
+        { peak: 'Mount Fuji', height: '3,776 m', range: 'standalone', country: 'Japan', notes: 'Iconic stratovolcano. Symmetrical slopes ~30-35°.' },
+        { peak: 'Mount Olympus', height: '2,917 m', range: 'standalone', country: 'Greece', notes: 'Highest in Greece. Mythological home of Greek gods.' },
+        { peak: 'Mount Etna', height: '~3,357 m (grows)', range: 'standalone', country: 'Italy (Sicily)', notes: 'Most active volcano in Europe. Frequent eruptions change height.' },
+        { peak: 'Mauna Kea', height: '4,207 m (above sea); ~10,200 m from base', range: 'standalone', country: 'USA (Hawaii)', notes: 'Tallest from base. Hosts world-class observatories.' },
+        { peak: 'Olympus Mons (Mars)', height: '~21,900 m', range: 'standalone', country: 'Mars', notes: 'Tallest known mountain in solar system. ~3× Everest.' }
+      ];
+
+      var PLANET_DATA = [
+        { planet: 'Mercury', diameter: '4,879 km', distance: '0.39 AU', day: '58.6 Earth days', year: '88 Earth days', tilt: '0.034°', notes: 'No atmosphere. Extreme temperature swings (−180°C to +430°C).' },
+        { planet: 'Venus', diameter: '12,104 km', distance: '0.72 AU', day: '243 Earth days (retrograde)', year: '225 Earth days', tilt: '177.4°', notes: 'Day longer than year. Hellish atmosphere (96% CO₂, ~92 atm, 462°C).' },
+        { planet: 'Earth', diameter: '12,742 km', distance: '1.00 AU', day: '23.93 hr', year: '365.25 days', tilt: '23.44°', notes: 'Tilt causes seasons. Only known life-bearing planet.' },
+        { planet: 'Mars', diameter: '6,779 km', distance: '1.52 AU', day: '24.6 hr', year: '687 Earth days', tilt: '25.19°', notes: 'Similar day length to Earth. Water ice + evidence of ancient oceans.' },
+        { planet: 'Jupiter', diameter: '139,820 km', distance: '5.20 AU', day: '9.93 hr', year: '11.86 Earth years', tilt: '3.13°', notes: 'Largest planet. Could fit all other planets inside. Great Red Spot storm.' },
+        { planet: 'Saturn', diameter: '116,460 km', distance: '9.58 AU', day: '10.7 hr', year: '29.4 Earth years', tilt: '26.73°', notes: 'Most famous rings. Lower density than water — would float.' },
+        { planet: 'Uranus', diameter: '50,724 km', distance: '19.22 AU', day: '17.2 hr (retrograde)', year: '84 Earth years', tilt: '97.77°', notes: 'Rotates on its side. Pale blue from methane.' },
+        { planet: 'Neptune', diameter: '49,244 km', distance: '30.05 AU', day: '16.1 hr', year: '165 Earth years', tilt: '28.32°', notes: 'Strongest winds in solar system (2,100 km/h). Has never completed an orbit since discovery (1846).' },
+        { planet: 'Pluto (dwarf)', diameter: '2,377 km', distance: '39.5 AU avg', day: '6.4 Earth days', year: '248 Earth years', tilt: '122.5°', notes: 'Reclassified as dwarf planet (2006). Has 5 moons. Heart-shaped Tombaugh Regio.' },
+        { planet: 'Moon (Earth\'s)', diameter: '3,474 km', distance: '0.0026 AU from Earth', day: '27.3 Earth days (tidally locked)', year: 'orbits Earth in 27.3 days', tilt: '6.68°', notes: 'Same face always toward Earth. Tides arise from Moon\'s gravity.' },
+        { planet: 'Ceres (dwarf)', diameter: '940 km', distance: '2.77 AU', day: '9 hr', year: '4.6 Earth years', tilt: '4°', notes: 'Largest object in asteroid belt. Visited by Dawn (2015).' },
+        { planet: 'Eris (dwarf)', diameter: '2,326 km', distance: '67.8 AU avg', day: '25.9 hr', year: '558 Earth years', tilt: 'unknown', notes: 'Discovery triggered Pluto demotion. Slightly more massive than Pluto.' }
+      ];
+
+      var SOLAR_SYSTEM_FACTS = [
+        { fact: 'Total solar system mass', detail: 'Sun = 99.86%. Jupiter = 0.095%. Everything else = 0.045%.' },
+        { fact: 'Astronomical Unit (AU)', detail: '149,597,870,700 m. Defined exactly. Light takes ~8.3 min to cross 1 AU.' },
+        { fact: 'Light-year', detail: '9.461×10¹⁵ m. Distance light travels in 1 Julian year.' },
+        { fact: 'Parsec', detail: '~3.26 light-years. Distance at which 1 AU subtends 1 arcsecond.' },
+        { fact: 'Voyager 1 distance', detail: '~165 AU (2024). Fastest human-made object leaving solar system. Still receiving data.' },
+        { fact: 'Sun mass', detail: '1.989×10³⁰ kg. ~333,000 Earth masses.' },
+        { fact: 'Sun fusion', detail: '~620 million tons of H → He every second. Loses ~4 million tons as energy (E = mc²).' },
+        { fact: 'Solar wind', detail: 'Stream of charged particles. ~400-800 km/s near Earth. Creates auroras + sculpts comet tails.' }
+      ];
+
+      function renderMountainsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⛰ Notable peaks + their slopes'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Peak', 'Height', 'Range', 'Country', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                MOUNTAINS.map(function(m, i) {
+                  return h('tr', { key: 'm'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, m.peak),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, m.height),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, m.range),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, m.country),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, m.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderPlanetsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🪐 Solar system planets + dwarf planets'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Axial tilt drives seasons. Tilt > 90° means retrograde rotation (Venus, Uranus, Pluto).'),
+          h('div', { className: 'overflow-x-auto mb-3' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Planet', 'Diameter', 'Distance', 'Day', 'Year', 'Tilt', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                PLANET_DATA.map(function(p, i) {
+                  return h('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, p.planet),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, p.diameter),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, p.distance),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, p.day),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, p.year),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, p.tilt),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, p.notes)
+                  );
+                })
+              )
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Solar system facts'),
+          h('div', { className: 'space-y-1' },
+            SOLAR_SYSTEM_FACTS.map(function(f, i) {
+              return h('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[11px] font-black text-rose-900 mb-0.5' }, f.fact),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+              );
+            })
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 5 — Dense data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var GEOMETRY_PUZZLES = [
+        { name: 'Königsberg bridges', description: 'Can you cross each of the 7 bridges of Königsberg exactly once?', answer: 'No. Euler proved (1736) you need each node to have even degree, except possibly 2 odd-degree nodes. Königsberg had 4 odd-degree nodes. Founded graph theory.' },
+        { name: 'Squaring the circle', description: 'Using only compass + straightedge, construct a square with same area as a given circle.', answer: 'Impossible. π is transcendental (Lindemann 1882). Cannot be constructed with finite C+S operations.' },
+        { name: 'Doubling the cube', description: 'Construct a cube with twice the volume of a given cube using compass + straightedge.', answer: 'Impossible. Requires ∛2, which is algebraic of degree 3, but C+S only produces 2ⁿ-degree numbers.' },
+        { name: 'Trisecting an angle', description: 'Divide an arbitrary angle into 3 equal parts with compass + straightedge.', answer: 'Impossible in general. Some specific angles (e.g., 180°) can be. Origami CAN trisect arbitrary angles.' },
+        { name: 'Two-circle problem', description: 'Given two circles, how do they relate?', answer: '5 cases: separate, externally tangent, intersecting (2 points), internally tangent, one inside the other.' },
+        { name: 'Four color theorem', description: 'Can every planar map be colored with 4 colors so no adjacent regions share a color?', answer: 'Yes. Proven by Appel + Haken (1976) — first major theorem proved with computer assistance.' },
+        { name: 'Brachistochrone', description: 'What path from A to B (B lower) minimizes time of sliding object under gravity?', answer: 'Cycloid. Posed by Bernoulli (1696). Solved by Newton overnight + by 4 others including Leibniz.' },
+        { name: 'Pizza theorem', description: 'Cut a circular pizza into 8 sectors with cuts through one point (not necessarily center). Alternating pieces have equal area.', answer: 'True for any odd-multiple-of-4 sectors. Works for 8, 12, 16, ...' },
+        { name: 'Mrs. Miniver problem', description: 'For what radii of intersecting circles do the moon-shape ("lune") + lens have equal area?', answer: 'Ratio depends — solved analytically. Romantic geometry from a 1942 novel.' },
+        { name: 'Steinmetz solid', description: 'Intersection of two perpendicular cylinders of same radius.', answer: 'Has 4 vertices, looks like a 4-faced cushion. Volume = (16/3)r³.' },
+        { name: 'Buffon\'s needle', description: 'Drop a needle of length L onto parallel lines spaced d apart. What\'s the probability it crosses a line?', answer: '2L/(πd) for L ≤ d. Method to compute π by dropping needles!' },
+        { name: 'Tarski circle-squaring', description: 'Can you cut a circle into pieces + rearrange them into a square of equal area?', answer: 'Yes (Laczkovich 1990) — with ~10⁵⁰ pieces. Choice axiom required. Cannot use scissors-style cuts; pieces are bizarre.' },
+        { name: 'Banach-Tarski paradox', description: 'Can you cut a ball into pieces + rearrange them into two balls of the same size?', answer: 'Yes — requires axiom of choice + non-measurable pieces. Defies intuition but mathematically valid.' },
+        { name: 'Soap film minimal surface', description: 'Why do soap films take certain shapes?', answer: 'They minimize surface area. Catenoid (between rings), Plateau border (junctions). Yields beautiful geometry.' }
+      ];
+
+      var FAMOUS_TILINGS = [
+        { name: 'Square tiling', detail: 'Simplest regular tiling. Schläfli symbol {4,4}.' },
+        { name: 'Triangular tiling', detail: '6 triangles around each vertex. {3,6}.' },
+        { name: 'Hexagonal tiling', detail: '3 hexagons around each vertex. {6,3}. Honeycomb. Most efficient.' },
+        { name: 'Truncated square tiling', detail: 'Octagons + squares (4.8.8). Hispanic colonial tile patterns.' },
+        { name: 'Truncated hexagonal tiling', detail: 'Dodecagons + triangles (3.12.12). Some pavements.' },
+        { name: 'Snub square tiling', detail: 'Squares + triangles (3.3.4.3.4). Chiral — has handedness.' },
+        { name: 'Rhombic tiling', detail: 'Just rhombi. Can be combined to make Penrose tilings.' },
+        { name: 'Penrose tiling (P3)', detail: 'Two rhombi (fat + thin). Aperiodic — never repeats. 5-fold symmetry.' },
+        { name: 'Penrose tiling (P2)', detail: 'Kite + dart. Aperiodic with 5-fold symmetry.' },
+        { name: 'Pinwheel tiling', detail: 'Right triangles arranged in pinwheels. Aperiodic. Used in tiles at Federation Square (Melbourne).' },
+        { name: '"Hat" einstein tile (2023)', detail: 'Single polygon that tiles aperiodically. Major recent discovery by Smith, Myers, Kaplan, Goodman-Strauss.' },
+        { name: '"Spectre" einstein tile (2023)', detail: 'Improvement on hat — uses only direct (not reflected) tiles.' },
+        { name: 'Cairo pentagonal', detail: '5-sided tiles. Found in Cairo street paving. Each tile has 4 angles of ~120° + one of 90°.' },
+        { name: 'Demiregular tilings', detail: 'Use 2 vertex types. 14 distinct ones (some debate). More complex than Archimedean.' },
+        { name: 'Voronoi tessellation', detail: 'Divide plane into cells closest to each "seed" point. Appears in nature (giraffe spots, foam).' },
+        { name: 'Delaunay triangulation', detail: 'Triangle mesh with property that no point is inside any triangle\'s circumcircle. Dual of Voronoi.' },
+        { name: '15 pentagon types', detail: '15 distinct convex pentagon shapes can tile the plane. Last one found 2015 (Mann, McLoud, Von Derau). Marjorie Rice found 4 as amateur in 1970s.' },
+        { name: 'Hyperbolic {7,3} tiling', detail: 'Heptagons (impossible in Euclidean) tile hyperbolic plane with 3 around each vertex. Drawn by Escher.' },
+        { name: 'Truchet tiles', detail: 'Square tiles with curves or diagonals. Random orientation → maze-like patterns.' }
+      ];
+
+      var WORLD_CITIES = [
+        { city: 'Reykjavik', lat: '64.13°N', lon: '21.94°W', notes: 'Northernmost capital. Solstice extremes: ~4 hr / 21 hr daylight.' },
+        { city: 'Helsinki', lat: '60.17°N', lon: '24.94°E', notes: 'Finnish capital. ~6 hr daylight in December.' },
+        { city: 'Stockholm', lat: '59.33°N', lon: '18.07°E', notes: 'Swedish capital.' },
+        { city: 'Moscow', lat: '55.75°N', lon: '37.62°E', notes: 'Russian capital.' },
+        { city: 'London', lat: '51.51°N', lon: '0.13°W', notes: 'Near prime meridian (0°). Greenwich is in London.' },
+        { city: 'Berlin', lat: '52.52°N', lon: '13.40°E', notes: 'German capital.' },
+        { city: 'Paris', lat: '48.86°N', lon: '2.35°E', notes: 'French capital.' },
+        { city: 'Vienna', lat: '48.21°N', lon: '16.37°E', notes: 'Austrian capital.' },
+        { city: 'New York', lat: '40.71°N', lon: '74.01°W', notes: 'Same latitude as Madrid + Beijing.' },
+        { city: 'Madrid', lat: '40.42°N', lon: '3.70°W', notes: 'Spanish capital.' },
+        { city: 'Beijing', lat: '39.90°N', lon: '116.41°E', notes: 'Chinese capital.' },
+        { city: 'Tokyo', lat: '35.68°N', lon: '139.69°E', notes: 'Japanese capital. Largest metro area.' },
+        { city: 'Cairo', lat: '30.05°N', lon: '31.24°E', notes: 'Egyptian capital. On the Nile.' },
+        { city: 'New Delhi', lat: '28.61°N', lon: '77.21°E', notes: 'Indian capital.' },
+        { city: 'Mexico City', lat: '19.43°N', lon: '99.13°W', notes: '~2,250 m elevation.' },
+        { city: 'Bangkok', lat: '13.76°N', lon: '100.50°E', notes: 'Thai capital.' },
+        { city: 'Lagos', lat: '6.52°N', lon: '3.38°E', notes: 'Largest city in Africa.' },
+        { city: 'Jakarta', lat: '6.21°S', lon: '106.85°E', notes: 'Indonesian capital. Sinking ~10 cm/year.' },
+        { city: 'Nairobi', lat: '1.29°S', lon: '36.82°E', notes: 'Kenyan capital. Equatorial.' },
+        { city: 'Singapore', lat: '1.35°N', lon: '103.82°E', notes: 'Equatorial city-state. Tropical year-round.' },
+        { city: 'Quito', lat: '0.19°S', lon: '78.45°W', notes: 'Capital nearest to equator. 2,850 m elevation.' },
+        { city: 'São Paulo', lat: '23.55°S', lon: '46.63°W', notes: 'Largest city in southern hemisphere.' },
+        { city: 'Sydney', lat: '33.87°S', lon: '151.21°E', notes: 'Australian east coast.' },
+        { city: 'Buenos Aires', lat: '34.61°S', lon: '58.38°W', notes: 'Argentine capital.' },
+        { city: 'Auckland', lat: '36.85°S', lon: '174.76°E', notes: 'Largest NZ city.' },
+        { city: 'Wellington', lat: '41.29°S', lon: '174.78°E', notes: 'NZ capital. Southernmost capital.' },
+        { city: 'McMurdo Station', lat: '77.85°S', lon: '166.67°E', notes: 'Largest Antarctic research station.' },
+        { city: 'South Pole', lat: '90.00°S', lon: 'all', notes: 'All directions are north from here. ~2,835 m elevation (on ice).' },
+        { city: 'North Pole', lat: '90.00°N', lon: 'all', notes: 'All directions are south. On floating sea ice — no fixed surface.' }
+      ];
+
+      function renderPuzzlesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧩 Famous geometry puzzles'),
+          h('div', { className: 'space-y-2' },
+            GEOMETRY_PUZZLES.map(function(p, i) {
+              return h('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-1' }, p.name),
+                h('div', { className: 'text-[11px] text-slate-700 mb-1 italic' }, p.description),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, h('strong', null, '→ '), p.answer)
+              );
+            })
+          )
+        );
+      }
+
+      function renderTessell2Section() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◇ Famous tilings of the plane'),
+          h('div', { className: 'space-y-1' },
+            FAMOUS_TILINGS.map(function(t, i) {
+              return h('div', { key: 't'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, t.name),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCitiesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌆 World city coordinates'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Latitude + longitude in decimal degrees. Lat: 0° = equator, ±90° = poles. Lon: 0° = Greenwich, ±180° = international date line area.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['City', 'Latitude', 'Longitude', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                WORLD_CITIES.map(function(c, i) {
+                  return h('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, c.city),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, c.lat),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, c.lon),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 4 — Dense reference data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var MATH_CONSTANTS = [
+        { symbol: 'π (pi)', value: '3.14159265358979...', notes: 'Ratio of circle\'s circumference to diameter. Irrational + transcendental.' },
+        { symbol: 'e', value: '2.71828182845904...', notes: 'Base of natural logarithm. Limit of (1 + 1/n)ⁿ as n → ∞. Irrational + transcendental.' },
+        { symbol: 'φ (phi, golden ratio)', value: '1.61803398874989...', notes: '(1+√5)/2. Satisfies φ² = φ + 1.' },
+        { symbol: '√2', value: '1.41421356237309...', notes: 'Pythagoras\'s diagonal of unit square. First known irrational number.' },
+        { symbol: '√3', value: '1.73205080756887...', notes: 'Diagonal of unit cube face. Appears in equilateral triangle altitude.' },
+        { symbol: '√5', value: '2.23606797749979...', notes: 'Diagonal of 1×2 rectangle. Component of φ.' },
+        { symbol: 'γ (Euler-Mascheroni)', value: '0.57721566490153...', notes: 'Limit of (1 + 1/2 + ... + 1/n) − ln n. Unknown if irrational.' },
+        { symbol: 'ln 2', value: '0.69314718055994...', notes: 'Natural log of 2. Appears in radioactive decay (half-life formula).' },
+        { symbol: 'log₁₀ 2', value: '0.30102999566398...', notes: 'Doubling = ~30% extra. Useful for decibels.' },
+        { symbol: 'Catalan\'s constant (G)', value: '0.91596559417721...', notes: 'Sum of (−1)ⁿ/(2n+1)². Unknown if irrational.' },
+        { symbol: 'Apéry\'s constant ζ(3)', value: '1.20205690315959...', notes: 'Sum of 1/n³. Proven irrational by Apéry (1978).' },
+        { symbol: 'Conway\'s constant', value: '1.30357726903429...', notes: 'Growth rate of look-and-say sequence. Algebraic of degree 71.' },
+        { symbol: 'Feigenbaum δ', value: '4.66920160910299...', notes: 'Period-doubling ratio in chaos theory. Appears in many systems.' },
+        { symbol: 'Planck length', value: '1.616×10⁻³⁵ m', notes: 'Smallest meaningful length in physics.' },
+        { symbol: 'Avogadro number', value: '6.02214076×10²³', notes: 'Particles per mole. Exact (defined since 2019).' },
+        { symbol: 'Speed of light (c)', value: '299,792,458 m/s', notes: 'Exact. Defines the meter.' },
+        { symbol: 'Gravitational constant (G)', value: '6.674×10⁻¹¹ N·m²/kg²', notes: 'Force between two 1 kg masses 1 m apart: ~6.7×10⁻¹¹ N.' },
+        { symbol: '180/π', value: '57.29577951308232...', notes: 'Convert radians to degrees: multiply by this.' },
+        { symbol: 'π/180', value: '0.01745329251994...', notes: 'Convert degrees to radians: multiply by this.' }
+      ];
+
+      var EARTH_DATA = [
+        { measurement: 'Equatorial radius', value: '6,378.137 km', notes: 'Defined by WGS84 (GPS reference).' },
+        { measurement: 'Polar radius', value: '6,356.752 km', notes: 'Earth is slightly oblate (flattened at poles).' },
+        { measurement: 'Mean radius', value: '6,371.0 km', notes: 'Often used for general calculations.' },
+        { measurement: 'Circumference (equator)', value: '40,075 km', notes: 'Original definition of meter: 10,000 km from pole to equator (slightly off).' },
+        { measurement: 'Surface area', value: '510,072,000 km²', notes: '~71% ocean, ~29% land.' },
+        { measurement: 'Land area', value: '148,940,000 km²', notes: '~29.2% of surface.' },
+        { measurement: 'Ocean area', value: '361,132,000 km²', notes: '~70.8% of surface.' },
+        { measurement: 'Volume', value: '1.0832×10¹² km³', notes: '~1 trillion km³.' },
+        { measurement: 'Mass', value: '5.972×10²⁴ kg', notes: '~6 septillion kg.' },
+        { measurement: 'Density (mean)', value: '5.514 g/cm³', notes: 'Densest planet in solar system.' },
+        { measurement: 'Distance to Sun (mean)', value: '149,598,023 km', notes: '1 AU (Astronomical Unit).' },
+        { measurement: 'Distance to Sun (perihelion)', value: '147,098,074 km', notes: 'Closest, in early January.' },
+        { measurement: 'Distance to Sun (aphelion)', value: '152,097,701 km', notes: 'Farthest, in early July.' },
+        { measurement: 'Orbital period', value: '365.256 days', notes: '~1 sidereal year. Civil year = 365.25 days (with leap years).' },
+        { measurement: 'Axial tilt (obliquity)', value: '23.44°', notes: 'Causes seasons. Slowly varies (22°-24.5° on ~41,000 yr cycle).' },
+        { measurement: 'Rotation period (sidereal)', value: '23 h 56 min 4.1 s', notes: 'Solar day = 24 h because Earth also moves around Sun.' },
+        { measurement: 'Highest point (Everest)', value: '8,848.86 m above sea level', notes: 'But Mount Chimborazo is the farthest from Earth\'s center (because of equatorial bulge).' },
+        { measurement: 'Lowest point (Challenger Deep)', value: '−10,935 m below sea level', notes: 'Mariana Trench. Pressure ~1,086 atm.' },
+        { measurement: 'Highest altitude human (ISS)', value: '~400 km (low Earth orbit)', notes: 'Inhabited continuously since November 2000.' },
+        { measurement: 'Atmosphere mass', value: '5.15×10¹⁸ kg', notes: '~1 millionth of Earth\'s mass.' },
+        { measurement: 'Magnetic field (surface)', value: '~25-65 μT', notes: 'Strongest near poles. Flips periodically (last ~780,000 yr ago).' }
+      ];
+
+      var FAMOUS_BUILDINGS = [
+        { building: 'Great Pyramid of Giza', height: '146.6 m original / 138.8 m today', built: '~2560 BCE', angles: 'Slope 51.84° (each face)', notes: 'Tallest human structure for 3,800+ years. Base ratio surprisingly close to 2π.' },
+        { building: 'Eiffel Tower', height: '330 m', built: '1889', angles: 'Legs 54° from horizontal', notes: 'Was tallest in world until 1930 (Chrysler Building).' },
+        { building: 'Sydney Opera House', height: '65 m', built: '1973', angles: 'Sails are sections of a sphere', notes: 'Iconic curves are spherical-segment shells.' },
+        { building: 'Burj Khalifa', height: '828 m', built: '2010', angles: 'Tapers in three Y-arms', notes: 'Tallest building in the world. Y-shape minimizes wind load.' },
+        { building: 'Taipei 101', height: '508 m', built: '2004', angles: '8-tier pagoda inspired', notes: 'Tuned mass damper (660-ton sphere) at top counters wind sway.' },
+        { building: 'CN Tower', height: '553 m', built: '1976', angles: 'Tapering cylinder', notes: 'Tallest free-standing structure 1976-2007.' },
+        { building: 'Hagia Sophia', height: '55 m to top of dome', built: '537 CE', angles: 'Pendentive dome', notes: 'Innovation: pendentives transfer dome weight to 4 piers, allowing large dome on square base.' },
+        { building: 'Pantheon (Rome)', height: '43.3 m dome', built: '126 CE', angles: 'Hemisphere = perfect dome', notes: 'Largest unreinforced concrete dome in the world. Oculus 8.7 m wide at top.' },
+        { building: 'Notre Dame (Paris)', height: '69 m (towers) / 96 m (spire pre-2019)', built: '1163-1345', angles: 'Pointed Gothic arches', notes: 'Flying buttresses transfer roof loads outward. Spire collapsed in 2019 fire.' },
+        { building: 'Leaning Tower of Pisa', height: '57 m', built: '1372', angles: 'Currently leans ~3.97°', notes: 'Was up to 5.5° before 1990s stabilization.' },
+        { building: 'Empire State Building', height: '443 m', built: '1931', angles: 'Setback design (zoning law)', notes: 'Setbacks were required by NYC zoning to allow sunlight to reach streets.' },
+        { building: 'Sears (Willis) Tower', height: '527 m', built: '1973', angles: '9 bundled tubes', notes: 'Tube structure invented by Fazlur Khan revolutionized tall building design.' },
+        { building: 'St. Louis Gateway Arch', height: '192 m', built: '1965', angles: 'Catenary curve', notes: 'Mathematical curve assumed by hanging chain. Inverted = stable arch.' },
+        { building: 'Stonehenge', height: 'Up to 7.3 m', built: '~3000-1500 BCE', angles: 'Solstice alignments', notes: 'Heel Stone aligns with summer solstice sunrise.' },
+        { building: 'Great Wall of China', length: '~21,000 km total', built: '7th c. BCE - 17th c. CE', angles: 'Follows terrain', notes: 'Different dynasties built different sections. Most surviving sections are Ming dynasty.' }
+      ];
+
+      var FAMOUS_CURVES = [
+        { name: 'Circle', equation: 'x² + y² = r²', notes: 'All points equidistant from center.' },
+        { name: 'Ellipse', equation: 'x²/a² + y²/b² = 1', notes: 'Sum of distances to two foci is constant. Planetary orbits.' },
+        { name: 'Parabola', equation: 'y = ax²', notes: 'All points equidistant from focus + directrix.' },
+        { name: 'Hyperbola', equation: 'x²/a² − y²/b² = 1', notes: 'Difference of distances to two foci is constant.' },
+        { name: 'Logarithmic spiral', equation: 'r = a·e^(bθ)', notes: 'Constant angle between radius + tangent. Nautilus shells, galaxies.' },
+        { name: 'Archimedean spiral', equation: 'r = a + bθ', notes: 'Equal spacing between coils. Vinyl records, springs.' },
+        { name: 'Catenary', equation: 'y = a·cosh(x/a)', notes: 'Shape of hanging chain. Different from parabola.' },
+        { name: 'Brachistochrone (cycloid)', equation: 'parametric: x = r(t − sin t), y = r(1 − cos t)', notes: 'Curve of fastest descent under gravity. Found by Bernoulli (1696).' },
+        { name: 'Tractrix', equation: 'parametric', notes: '"Dog curve" — path of object dragged behind moving point.' },
+        { name: 'Lissajous figures', equation: 'parametric sin/cos', notes: 'Closed curves from perpendicular oscillations at different frequencies. Oscilloscope art.' },
+        { name: 'Helix', equation: '3D parametric', notes: 'DNA backbone. Springs. Screw threads.' },
+        { name: 'Sine wave', equation: 'y = A sin(ωt + φ)', notes: 'Fundamental oscillation. Most natural-sounding tone.' },
+        { name: 'Cosine wave', equation: 'y = A cos(ωt + φ)', notes: 'Same as sine but 90° phase shifted.' },
+        { name: 'Bell curve (Gaussian)', equation: 'y = e^(−x²)', notes: 'Normal distribution shape.' },
+        { name: 'Heart curve (cardioid)', equation: 'r = a(1 + cos θ)', notes: 'Heart shape. Apple\'s logo + valentine.' },
+        { name: 'Trefoil knot', equation: '3D parametric', notes: 'Simplest nontrivial mathematical knot.' },
+        { name: 'Möbius strip', equation: 'Boundary parametric', notes: 'One-sided surface. Cut down middle → longer single loop.' },
+        { name: 'Klein bottle', equation: '4D — no inside/outside', notes: 'Non-orientable surface. Can be made in 3D only with self-intersection.' }
+      ];
+
+      var GREAT_MATHEMATICIANS = [
+        { name: 'Pythagoras', year: '~570-495 BCE', contrib: 'Pythagorean theorem. Founded mystical mathematical brotherhood. May not have personally proved the theorem named for him.' },
+        { name: 'Euclid', year: '~325-265 BCE', contrib: '"Elements" — 13 books axiomatizing geometry. Most influential math textbook ever.' },
+        { name: 'Archimedes', year: '~287-212 BCE', contrib: 'Pi to several digits. Lever, screw, war machines. "Eureka!" displacement principle.' },
+        { name: 'Hypatia', year: '~370-415 CE', contrib: 'Alexandrian mathematician + astronomer + philosopher. One of first known female mathematicians.' },
+        { name: 'al-Khwarizmi', year: '~780-850', contrib: 'Founded algebra ("al-jabr"). "Algorithm" comes from his Latinized name.' },
+        { name: 'Fibonacci (Leonardo of Pisa)', year: '~1170-1250', contrib: 'Introduced Hindu-Arabic numerals to Europe. Fibonacci sequence (from a rabbit-population problem).' },
+        { name: 'René Descartes', year: '1596-1650', contrib: 'Analytic geometry (Cartesian coordinates linking algebra to geometry). "I think, therefore I am."' },
+        { name: 'Pierre de Fermat', year: '1601-1665', contrib: 'Number theory. Famous Last Theorem (unproved for 358 years!). Probability with Pascal.' },
+        { name: 'Blaise Pascal', year: '1623-1662', contrib: 'Probability theory. Pascal\'s triangle. Mechanical calculator. Pascal\'s wager.' },
+        { name: 'Isaac Newton', year: '1643-1727', contrib: 'Calculus (independent of Leibniz). Laws of motion + gravitation. Optics.' },
+        { name: 'Gottfried Leibniz', year: '1646-1716', contrib: 'Calculus (with modern notation). Binary number system. Concept of momentum.' },
+        { name: 'Leonhard Euler', year: '1707-1783', contrib: 'Most prolific mathematician ever. Notation (f(x), e, i, π, Σ, sin, cos). Euler\'s identity e^(iπ) + 1 = 0.' },
+        { name: 'Carl Friedrich Gauss', year: '1777-1855', contrib: 'Prince of mathematicians. Number theory, statistics, geometry, electromagnetism, geodesy.' },
+        { name: 'Évariste Galois', year: '1811-1832', contrib: 'Founded group theory + Galois theory. Wrote his theories the night before dying in a duel at age 20.' },
+        { name: 'Bernhard Riemann', year: '1826-1866', contrib: 'Riemann sums (integration). Riemann hypothesis ($1M Millennium Prize). Curved geometry (basis of relativity).' },
+        { name: 'Sofia Kovalevskaya', year: '1850-1891', contrib: 'First woman to earn a doctorate in mathematics. Partial differential equations. Rotation of bodies.' },
+        { name: 'Georg Cantor', year: '1845-1918', contrib: 'Set theory. Different sizes of infinity. Diagonal argument.' },
+        { name: 'Henri Poincaré', year: '1854-1912', contrib: 'Topology founder. Chaos theory (three-body problem). Poincaré conjecture (solved 2003 by Perelman).' },
+        { name: 'David Hilbert', year: '1862-1943', contrib: 'Hilbert\'s 23 problems shaped 20th c math. Foundations of mathematics. Quantum mechanics.' },
+        { name: 'Emmy Noether', year: '1882-1935', contrib: 'Abstract algebra. Noether\'s theorem (every symmetry → conservation law) — foundational in physics.' },
+        { name: 'Srinivasa Ramanujan', year: '1887-1920', contrib: 'Self-taught Indian genius. Discovered thousands of identities, many proved decades later. Died at 32.' },
+        { name: 'Alan Turing', year: '1912-1954', contrib: 'Theoretical computer science. Turing machine, Turing test. Broke Enigma in WWII.' },
+        { name: 'John von Neumann', year: '1903-1957', contrib: 'Game theory, computer architecture (von Neumann architecture). Manhattan Project. Quantum mechanics formalism.' },
+        { name: 'Paul Erdős', year: '1913-1996', contrib: 'Most prolific 20th c mathematician (~1500 papers). Itinerant life. Erdős number = collaboration distance to him.' },
+        { name: 'Andrew Wiles', year: '1953-', contrib: 'Proved Fermat\'s Last Theorem (1994), 358 years after Fermat\'s famous margin.' },
+        { name: 'Maryam Mirzakhani', year: '1977-2017', contrib: 'First woman to win Fields Medal (2014). Riemann surfaces + their moduli. Died at 40 of cancer.' }
+      ];
+
+      var PRACTICAL_ANGLES = [
+        { context: 'Ramp accessibility (ADA)', angle: '≤ 4.76° (1:12 slope)', notes: 'US ADA standard. 1 inch rise per 12 inches run.' },
+        { context: 'Wheelchair ramp residential', angle: '≤ 2.86° (1:20)', notes: 'Recommended where space allows. Easier than 1:12.' },
+        { context: 'Stair rise/run (US)', angle: '~30-37°', notes: 'Typical: 7" rise, 11" run → ~32.5°. IRC code: max 7¾" rise.' },
+        { context: 'Roof pitch (residential)', angle: '14° (3:12) to 45° (12:12)', notes: 'Steeper = sheds water/snow faster, more usable attic. Lower = easier installation.' },
+        { context: 'Solar panel tilt (mid-latitude)', angle: '≈ latitude (±15° seasonal)', notes: 'Maximize annual energy. Adjustable mounts swap winter (steeper) vs summer (shallower).' },
+        { context: 'Highway curve banking', angle: '~3-10°', notes: 'Tilt provides centripetal force assistance at design speed.' },
+        { context: 'Highway max grade', angle: '~3-6° (5-10%)', notes: 'Interstate standard. Mountain roads up to ~7%.' },
+        { context: 'Railroad max grade', angle: '~1-2%', notes: 'Steel-on-steel limits traction. Cog/rack railways for steeper.' },
+        { context: 'Driveway max', angle: '~12% (~7°)', notes: 'Steeper risks scraping car undersides + bad in snow.' },
+        { context: 'Earth\'s axial tilt', angle: '23.5°', notes: 'Causes seasons.' },
+        { context: 'Sun at zenith (equator equinox)', angle: '90° altitude', notes: 'Directly overhead.' },
+        { context: 'Highway sight line', angle: 'depends on speed', notes: 'AASHTO formulas. Decision sight distance grows with speed.' },
+        { context: 'Drone gimbal compensation', angle: 'continuous', notes: 'IMU-stabilized camera gimbal keeps shot level.' },
+        { context: 'Eye HFOV (binocular)', angle: '~120°', notes: 'Total horizontal visual field with both eyes.' },
+        { context: 'Eye HFOV (each)', angle: '~150-200°', notes: 'Includes far peripheral. Stereopsis only ~120° overlap.' },
+        { context: 'Camera FOV (50mm lens, 35mm full-frame)', angle: '~46° diagonal', notes: '"Normal" lens — close to human comfortable view.' },
+        { context: 'Wide-angle (24mm)', angle: '~84° diagonal', notes: 'Landscape, architecture.' },
+        { context: 'Fisheye (8mm)', angle: '~180° diagonal', notes: 'Distorted, hemispheric view.' },
+        { context: 'Telephoto (200mm)', angle: '~12° diagonal', notes: 'Wildlife, sports.' },
+        { context: 'TV viewing optimum', angle: '~30° horizontal FOV', notes: 'THX recommends. Higher (~40°) for more cinematic.' }
+      ];
+
+      function renderConstantsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'π Mathematical + physical constants'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Symbol', 'Value', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                MATH_CONSTANTS.map(function(c, i) {
+                  return h('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-mono font-black text-rose-700' }, c.symbol),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, c.value),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderRiversSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌎 Earth measurements'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Measurement', 'Value', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                EARTH_DATA.map(function(e, i) {
+                  return h('tr', { key: 'e'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, e.measurement),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, e.value),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, e.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderBuildingsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏛 Famous structures + their angles'),
+          h('div', { className: 'space-y-2' },
+            FAMOUS_BUILDINGS.map(function(b, i) {
+              return h('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, b.building),
+                  h('span', { className: 'text-[10px] text-rose-700 font-mono ml-auto px-2 py-0.5 rounded bg-rose-100' }, b.height)
+                ),
+                h('div', { className: 'flex items-baseline gap-3 text-[10px] mb-1 flex-wrap' },
+                  h('span', { className: 'font-mono text-slate-600' }, 'Built: ' + b.built),
+                  h('span', { className: 'font-mono text-rose-700 font-bold' }, b.angles)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, b.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCurvesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∿ Famous mathematical curves'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Curve', 'Equation', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                FAMOUS_CURVES.map(function(c, i) {
+                  return h('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, c.name),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, c.equation),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderMathematiciansSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '👨‍🏫 Great mathematicians'),
+          h('div', { className: 'space-y-2' },
+            GREAT_MATHEMATICIANS.map(function(m, i) {
+              return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-0.5 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-rose-900' }, m.name),
+                  h('span', { className: 'text-[10px] font-mono text-slate-500 ml-auto' }, m.year)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.contrib)
+              );
+            })
+          )
+        );
+      }
+
+      function renderPracticalSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🛠 Practical angle standards'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Context', 'Angle', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                PRACTICAL_ANGLES.map(function(p, i) {
+                  return h('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, p.context),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, p.angle),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, p.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 3 EXPANSION (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var CONIC_SECTIONS = [
+        { name: 'Circle', eccentricity: 'e = 0', equation: 'x² + y² = r²', cut: 'Plane perpendicular to cone axis', use: 'Wheels, gears, orbits (almost — most planetary orbits are slightly elliptical).' },
+        { name: 'Ellipse', eccentricity: '0 < e < 1', equation: 'x²/a² + y²/b² = 1', cut: 'Oblique plane through cone (both nappes uncut)', use: 'Planetary orbits (Kepler\'s 1st law). Whispering galleries (St. Paul\'s Cathedral).' },
+        { name: 'Parabola', eccentricity: 'e = 1', equation: 'y² = 4ax', cut: 'Plane parallel to cone\'s slant side', use: 'Satellite dishes (parallel rays focus to one point). Projectile motion (in vacuum). Suspension bridge cables.' },
+        { name: 'Hyperbola', eccentricity: 'e > 1', equation: 'x²/a² − y²/b² = 1', cut: 'Plane parallel to axis (cuts both nappes)', use: 'Sundials. Hyperbolic mirrors. Comet orbits (some). Long-baseline navigation (LORAN).' },
+        { name: 'Degenerate (point)', eccentricity: '—', equation: 'x² + y² = 0', cut: 'Plane through apex perpendicular to axis', use: '—' },
+        { name: 'Degenerate (line)', eccentricity: '—', equation: 'y² = 0 (and y = 0)', cut: 'Plane through apex along slant', use: '—' },
+        { name: 'Degenerate (two lines)', eccentricity: '—', equation: 'x² − y² = 0', cut: 'Plane through apex through both nappes', use: '—' }
+      ];
+
+      var PLATONIC_SOLIDS = [
+        { name: 'Tetrahedron', faces: '4 triangles', vertices: 4, edges: 6, dual: 'self-dual', notes: 'Simplest 3D shape. Vertex angle ~70.5°.' },
+        { name: 'Cube (hexahedron)', faces: '6 squares', vertices: 8, edges: 12, dual: 'octahedron', notes: 'Most familiar. All angles 90°.' },
+        { name: 'Octahedron', faces: '8 triangles', vertices: 6, edges: 12, dual: 'cube', notes: 'Diamond crystals. Two pyramids base-to-base.' },
+        { name: 'Dodecahedron', faces: '12 pentagons', vertices: 20, edges: 30, dual: 'icosahedron', notes: 'Plato associated with "the heavens" (5th element).' },
+        { name: 'Icosahedron', faces: '20 triangles', vertices: 12, edges: 30, dual: 'dodecahedron', notes: 'Most spherelike Platonic solid. D20 die in tabletop games.' }
+      ];
+
+      var PLATONIC_NOTES = [
+        { note: 'Why only 5?', detail: 'At each vertex, you need 3+ polygons whose angle sum is < 360° (else flat or impossible). Only 5 combinations work for regular polygons.' },
+        { note: 'Euler\'s formula', detail: 'V − E + F = 2 holds for every convex polyhedron (including all 5 Platonic solids).' },
+        { note: 'Duality', detail: 'Connecting face centers of a Platonic solid gives its "dual". Cube ↔ octahedron; dodecahedron ↔ icosahedron; tetrahedron ↔ itself.' },
+        { note: 'Archimedean solids', detail: '13 semi-regular solids — same arrangement at each vertex, but multiple polygon types. Includes truncated icosahedron (soccer ball pattern).' },
+        { note: 'Kepler-Poinsot polyhedra', detail: '4 regular star polyhedra with pentagram faces or vertices. Non-convex.' }
+      ];
+
+      var FRACTAL_NOTES = [
+        { name: 'Koch snowflake', detail: 'Start with triangle. On each side, replace middle third with two sides of a smaller triangle. Repeat. Infinite perimeter, finite area.' },
+        { name: 'Sierpinski triangle', detail: 'Start with triangle. Remove middle (smaller) triangle. Repeat on each remaining triangle. Hausdorff dimension log(3)/log(2) ≈ 1.585.' },
+        { name: 'Cantor set', detail: 'Remove middle third of segment. Repeat on each remaining segment. Uncountably infinite but total length zero.' },
+        { name: 'Mandelbrot set', detail: 'Points c where iterating z = z² + c stays bounded. Infinite detail at any zoom. Discovered 1980.' },
+        { name: 'Julia set', detail: 'For each c, points z where iterating z = z² + c stays bounded. Each c gives a different Julia set; together they tile the Mandelbrot set.' },
+        { name: 'Dragon curve', detail: 'Fold a strip of paper in half repeatedly; unfold each fold at 90°. Or recursive replacement of segments.' },
+        { name: 'Barnsley fern', detail: 'Iterated function system. Random selection of 4 affine maps produces a fern shape.' },
+        { name: 'Hausdorff dimension', detail: 'Fractional dimension. Coastline ~1.2-1.3 depending on country. Captures "roughness" beyond integer dimensions.' },
+        { name: 'Self-similarity', detail: 'Defining property. Strict self-similarity (Koch) or statistical (coastlines).' },
+        { name: 'Real-world fractals', detail: 'Coastlines, trees, lungs (bronchi), blood vessels, river networks, mountain ranges, clouds, lightning.' }
+      ];
+
+      var NONEUCLID_FACTS = [
+        { topic: 'Euclidean geometry', detail: 'Flat plane. Parallel postulate holds. Angles in triangle sum to exactly 180°.' },
+        { topic: 'Spherical geometry', detail: 'Surface of sphere. Triangle angles sum to MORE than 180°. Excess proportional to area. Used in navigation.' },
+        { topic: 'Hyperbolic geometry', detail: 'Saddle-shaped surface. Triangle angles sum to LESS than 180°. Many parallels through a point not on a line.' },
+        { topic: 'Geodesics', detail: 'Shortest paths on a surface. Straight lines (Euclidean); great circles (sphere); hyperbolic lines.' },
+        { topic: 'Great circles', detail: 'Largest circles on a sphere. Equator + meridians. Plane flights follow great-circle paths.' },
+        { topic: 'Curvature', detail: 'Euclidean = 0. Spherical = positive. Hyperbolic = negative. Curvature determines geometry.' },
+        { topic: 'Sum of angles excess', detail: 'On sphere of radius R, triangle area = R² × (angle sum − π).' },
+        { topic: 'Real-world spherical: GPS', detail: 'Positions on Earth\'s surface use spherical (or more precisely, ellipsoidal) geometry.' },
+        { topic: 'Real-world spherical: airplane routes', detail: 'NYC to Tokyo is shortest via the Arctic, not straight east — that\'s the great circle.' },
+        { topic: 'General relativity', detail: 'Spacetime is curved by mass-energy. Geodesics through curved spacetime ARE the paths of free-falling objects.' }
+      ];
+
+      var MAP_PROJECTIONS = [
+        { name: 'Mercator', preserves: 'Angles (conformal)', distorts: 'Areas (massively near poles)', use: 'Marine navigation — straight lines on map = constant compass bearing.' },
+        { name: 'Gall-Peters', preserves: 'Areas', distorts: 'Shapes (elongated)', use: 'Equal-area focus. Used to challenge Mercator\'s "Europe is bigger" distortion.' },
+        { name: 'Robinson', preserves: 'Neither perfectly', distorts: 'Some of both', use: 'Compromise. National Geographic used 1988-1998.' },
+        { name: 'Winkel tripel', preserves: 'Neither perfectly', distorts: 'Minimizes total', use: 'National Geographic since 1998.' },
+        { name: 'Mollweide', preserves: 'Areas', distorts: 'Shapes near edges', use: 'Equal-area. Used for global thematic maps.' },
+        { name: 'Sinusoidal', preserves: 'Areas, distances along equator + meridians', distorts: 'Shapes', use: 'Old projection. Variant: interrupted to reduce distortion.' },
+        { name: 'Albers conic', preserves: 'Areas', distorts: 'Shapes', use: 'Conic projection. Common for continental US maps.' },
+        { name: 'Lambert conformal conic', preserves: 'Angles + shapes (locally)', distorts: 'Areas', use: 'Aeronautical charts. FAA sectionals.' },
+        { name: 'Azimuthal equidistant', preserves: 'Distances from center point', distorts: 'Areas + shapes far from center', use: 'UN logo. Useful for showing distances + bearings from one location.' },
+        { name: 'Goode\'s homolosine', preserves: 'Areas', distorts: 'Splits continents', use: 'Interrupted to keep continent shapes accurate.' }
+      ];
+
+      var SUNDIAL_NOTES = [
+        { topic: 'How they work', detail: 'A vertical or angled "gnomon" casts a shadow. As Earth rotates, shadow moves across markings.' },
+        { topic: 'Gnomon angle', detail: 'For accuracy, gnomon must be parallel to Earth\'s axis — angle to horizontal = local latitude.' },
+        { topic: 'Equatorial sundial', detail: 'Dial plate perpendicular to gnomon (parallel to equator). Hour lines evenly spaced 15° apart.' },
+        { topic: 'Horizontal sundial', detail: 'Dial plate parallel to ground. Hour lines NOT evenly spaced — formula: tan(hour line angle) = sin(latitude) × tan(hour angle).' },
+        { topic: 'Vertical sundial', detail: 'Dial on a wall. Hour lines depend on wall\'s azimuth + latitude.' },
+        { topic: 'Equation of time', detail: 'Sundial time differs from clock time by up to ~16 minutes through the year. Due to Earth\'s elliptical orbit + axial tilt.' },
+        { topic: 'Analemma', detail: 'Figure-8 trace of sun\'s position at same clock time each day for a year. Shown on some advanced sundials.' },
+        { topic: 'Time zones complication', detail: 'Sundial shows LOCAL apparent solar time. Differs from civil time by longitude offset within timezone + DST.' },
+        { topic: 'Heliochronometer', detail: 'Very precise sundials with corrections for equation of time + longitude. Accurate to seconds.' }
+      ];
+
+      var GOLDEN_RATIO = [
+        { fact: 'Value', detail: 'φ (phi) ≈ 1.61803398874989... Irrational. Roots of x² = x + 1.' },
+        { fact: 'Algebraic definition', detail: 'A line divided so that whole : larger = larger : smaller. (a+b)/a = a/b = φ.' },
+        { fact: 'Fibonacci connection', detail: 'Ratio of consecutive Fibonacci numbers approaches φ: 1, 1, 2, 3, 5, 8, 13, 21 → 21/13 ≈ 1.615.' },
+        { fact: 'Golden rectangle', detail: 'Long side / short side = φ. Remove a square → remaining rectangle is also golden.' },
+        { fact: 'Golden spiral', detail: 'Logarithmic spiral with growth factor φ per quarter turn. Approximated by Fibonacci squares + arcs.' },
+        { fact: 'Pentagram', detail: 'Ratios of pentagram diagonals to sides = φ. Pythagoras knew this.' },
+        { fact: 'In nature', detail: 'Spiral arrangements in sunflowers, pinecones, nautilus shells. Reflects optimal packing for growing meristems.' },
+        { fact: 'In art (overstated)', detail: 'Often claimed in Parthenon, Mona Lisa, etc. — most claims unsupported. Real golden ratio art: 20th-century deliberate use (Le Corbusier, Dali).' },
+        { fact: '"Aesthetic" claim', detail: 'Long believed humans find golden ratio most beautiful. Robust evidence weaker than popular accounts suggest.' },
+        { fact: 'Continued fraction', detail: 'φ = 1 + 1/(1 + 1/(1 + 1/(...))). Most irrational number — slowest converging continued fraction.' }
+      ];
+
+      var ORIGAMI_FACTS = [
+        { fact: 'Mathematical origami', detail: 'Active research area. Can solve cubic equations (impossible with compass + straightedge alone). Connect to algebra.' },
+        { fact: 'Maekawa\'s theorem', detail: 'At any flat-foldable vertex, |# mountain folds − # valley folds| = 2.' },
+        { fact: 'Kawasaki\'s theorem', detail: 'At a flat-foldable vertex, alternating angles around the vertex sum to 180°.' },
+        { fact: '7-fold limit (paper)', detail: 'Standard paper can be folded in half ~7 times. Each fold doubles thickness. After 7, paper is too stiff. Record (with special equipment + huge paper): 12 folds.' },
+        { fact: 'Crease pattern → 3D', detail: 'Flat sheet can fold into virtually any 3D shape with enough creases. Modern origami extremely complex.' },
+        { fact: 'Real-world: space telescopes', detail: 'James Webb Space Telescope sunshield folded for launch (origami principles), unfolded in space.' },
+        { fact: 'Real-world: airbags', detail: 'Folded efficiently to fit in compartment, unfold rapidly.' },
+        { fact: 'Real-world: stents', detail: 'Origami-inspired medical stents fold tiny for insertion, expand in artery.' },
+        { fact: 'Miura fold', detail: 'Parallelogram-based fold lets large surface (solar panel) deploy from compact bundle via single pull.' },
+        { fact: 'Kirigami', detail: 'Cuts allowed in addition to folds. Used for pop-up books + scientific structures.' }
+      ];
+
+      var SPORTS_ANGLES = [
+        { sport: 'Basketball shot arc', angle: 'Optimal launch: ~45-52° above horizontal', notes: 'Higher arc = more forgiving on rim — but harder to control distance.' },
+        { sport: 'Soccer free kick', angle: 'Optimal launch: ~20-30°', notes: 'Trade-off between hang time + speed past defenders.' },
+        { sport: 'Long jump', angle: 'Optimal launch: ~21-23° (NOT 45°)', notes: 'Launch height higher than landing height; biomechanical limits reduce optimum.' },
+        { sport: 'Shot put', angle: '~38°', notes: 'Less than 45° because release height > landing height.' },
+        { sport: 'Javelin', angle: '~30-36°', notes: 'Aerodynamic lift makes optimum less than ballistic 45°.' },
+        { sport: 'Discus', angle: '~33-38°', notes: 'Like javelin, aerodynamic lift matters.' },
+        { sport: 'Golf', angle: 'Driver loft ~9-12°, wedge ~52-60°', notes: 'Higher loft = higher trajectory + more spin = less distance.' },
+        { sport: 'Pool / billiards', angle: 'Cushion angles: angle in = angle out (with English/spin modifying)', notes: 'Pure geometry, plus spin (English) for control.' },
+        { sport: 'Tennis serve', angle: 'Toss angle, racket angle, ball spin', notes: 'Topspin curves ball down (allows hard hit landing in court).' },
+        { sport: 'Skiing tilt', angle: 'Edge angle controls carve radius', notes: 'Higher edge angle = tighter turn. Ski sidecut + tilt define carve.' },
+        { sport: 'Pole vault', angle: 'Pole plant ~85-90°, take-off angle', notes: 'Plant pole nearly vertical to convert horizontal speed to height.' },
+        { sport: 'Ski jumping', angle: 'In-run, take-off ~10-11° down, hill ~36-37°', notes: 'Jumpers angle bodies into V-shape for aerodynamic lift.' }
+      ];
+
+      var ART_ANGLES = [
+        { topic: 'Linear perspective', detail: 'Parallel lines converge to vanishing points. 1-point (looking down a road), 2-point (corner of building), 3-point (looking up at a tower).' },
+        { topic: 'Vanishing point', detail: 'Where parallel lines appear to meet on horizon. Determined by viewer\'s position + line direction.' },
+        { topic: 'Eye level / horizon', detail: 'Horizontal line at viewer\'s eye height. All vanishing points lie on it (for lines parallel to ground).' },
+        { topic: 'Foreshortening', detail: 'Objects pointing at viewer appear compressed. Drawing a hand pointed at viewer = challenge.' },
+        { topic: 'Rule of thirds', detail: 'Divide canvas/photo into 9 equal sections. Place subjects on intersections for dynamic composition.' },
+        { topic: 'Dutch angle (camera tilt)', detail: 'Camera tilted off-horizontal creates unease, instability, dynamism.' },
+        { topic: 'Angle of light', detail: 'Sun angle determines shadow length + direction. Low angle (golden hour) = long shadows + warm color.' },
+        { topic: 'Renaissance perspective', detail: 'Brunelleschi (~1413) demonstrated mathematical linear perspective. Alberti formalized it (1435).' },
+        { topic: 'Atmospheric perspective', detail: 'Distant objects appear bluer + less distinct due to atmospheric scattering.' },
+        { topic: 'Sacred geometry in art', detail: 'Some traditions use specific angles + ratios (Islamic geometric patterns, Indian mandalas, gothic cathedrals).' },
+        { topic: 'M.C. Escher', detail: 'Mathematical artist. Impossible objects (Penrose triangles), tessellations, hyperbolic geometry.' },
+        { topic: 'Origami art', detail: 'Folding angles + crease patterns produce 3D sculptures from flat paper.' }
+      ];
+
+      var MEASURING_TOOLS = [
+        { tool: 'Protractor', use: 'Measure or draw angles 0-180° (semicircle) or 0-360° (full).', notes: 'Standard school tool.' },
+        { tool: 'Theodolite', use: 'Surveying. Horizontal + vertical angles with high precision.', notes: 'Telescope on calibrated rotating mounts.' },
+        { tool: 'Total station', use: 'Modern survey instrument. Theodolite + electronic distance measurement.', notes: 'Computes 3D coordinates directly.' },
+        { tool: 'Sextant', use: 'Marine navigation. Measure angle between horizon + celestial body.', notes: 'Determines latitude. Brought maritime navigation to high accuracy.' },
+        { tool: 'Inclinometer', use: 'Measure tilt or slope from horizontal.', notes: 'Smartphone has one (accelerometer-based level app).' },
+        { tool: 'Compass (drawing)', use: 'Draw circles + arcs.', notes: 'Two-legged. Holds pencil at fixed distance from pivot.' },
+        { tool: 'Set square (triangle)', use: 'Draw specific angles: 45°-45°-90° or 30°-60°-90°.', notes: 'Combine with T-square for parallel lines.' },
+        { tool: 'Speed square (carpentry)', use: 'Mark right angles, 45° angles, roof pitches.', notes: 'Triangular metal/plastic. Lots of built-in markings.' },
+        { tool: 'Bevel gauge', use: 'Transfer angles between locations.', notes: 'Adjustable, locks at any angle.' },
+        { tool: 'Goniometer', use: 'Measure joint angles in physical therapy.', notes: 'Specialized for human body movement.' },
+        { tool: 'Sundial (gnomon)', use: 'Tells time from shadow angle.', notes: 'Ancient. Still works without batteries.' },
+        { tool: 'Plumb bob', use: 'Establishes vertical (90° from level ground).', notes: 'String + weight. Gravity does the work.' },
+        { tool: 'Spirit level', use: 'Establishes horizontal (90° from gravity).', notes: 'Bubble in liquid-filled tube. Modern versions have laser variants.' },
+        { tool: 'Smartphone (sensors)', use: 'Apps use accelerometer + gyroscope for tilt + heading.', notes: 'Many free angle-measuring apps.' }
+      ];
+
+      function renderConicsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◉ Conic sections'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Curves formed when a plane intersects a (double) cone. The angle of the plane to the cone\'s axis determines the curve type.'),
+          h('div', { className: 'space-y-2' },
+            CONIC_SECTIONS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, c.name),
+                  h('span', { className: 'text-[10px] font-mono text-rose-700 ml-auto px-2 py-0.5 rounded bg-rose-100' }, c.eccentricity)
+                ),
+                h('div', { className: 'text-[11px] font-mono text-rose-700 font-bold mb-1' }, c.equation),
+                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Cut: '), c.cut),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.use)
+              );
+            })
+          )
+        );
+      }
+
+      function renderPlatonicSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⬡ Platonic solids'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'The only 5 convex regular polyhedra. All faces are congruent regular polygons, same number meeting at each vertex.'),
+          h('div', { className: 'overflow-x-auto mb-3' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Name', 'Faces', 'V', 'E', 'Dual', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                PLATONIC_SOLIDS.map(function(p, i) {
+                  return h('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, p.name),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, p.faces),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, p.vertices),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, p.edges),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, p.dual),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, p.notes)
+                  );
+                })
+              )
+            )
+          ),
+          h('div', { className: 'space-y-1' },
+            PLATONIC_NOTES.map(function(n, i) {
+              return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[11px] font-black text-rose-900 mb-0.5' }, n.note),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderFractalsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '❄ Fractals'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Shapes that exhibit self-similarity at every scale. Coined by Benoit Mandelbrot (1975) from Latin fractus, "broken".'),
+          h('div', { className: 'space-y-2' },
+            FRACTAL_NOTES.map(function(f, i) {
+              return h('div', { key: 'f'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, f.name),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderNoneuclidSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⊕ Non-Euclidean geometry'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Geometries on curved surfaces. Euclid\'s parallel postulate doesn\'t hold. Discovered 1820s (Lobachevsky, Bolyai, Gauss).'),
+          h('div', { className: 'space-y-1' },
+            NONEUCLID_FACTS.map(function(n, i) {
+              return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, n.topic),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderProjectionSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🗺 Map projections'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Projecting curved Earth onto a flat map ALWAYS distorts something — angles, areas, distances, or shapes. Each projection optimizes for different uses.'),
+          h('div', { className: 'space-y-2' },
+            MAP_PROJECTIONS.map(function(m, i) {
+              return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, m.name),
+                h('div', { className: 'text-[11px] text-rose-700 font-bold mb-1' }, 'Preserves: ' + m.preserves),
+                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Distorts: '), m.distorts),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, h('strong', null, 'Use: '), m.use)
+              );
+            })
+          )
+        );
+      }
+
+      function renderSundialSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '☼ Sundials'),
+          h('div', { className: 'space-y-1' },
+            SUNDIAL_NOTES.map(function(s, i) {
+              return h('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, s.topic),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderGoldenRatioSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'φ Golden ratio'),
+          h('div', { className: 'p-2.5 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-900 mb-3' },
+            h('strong', null, '⚠ Reality check: '), 'Many popular claims about the golden ratio in art, architecture, and "beauty" are unsupported or invented retroactively. The mathematical properties are real + beautiful; the cultural claims often aren\'t.'
+          ),
+          h('div', { className: 'space-y-1' },
+            GOLDEN_RATIO.map(function(g, i) {
+              return h('div', { key: 'g'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, g.fact),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderOrigamiSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '✦ Origami geometry'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Origami connects geometry to engineering, biology, and design. Mathematical theorems govern what folds are possible.'),
+          h('div', { className: 'space-y-1' },
+            ORIGAMI_FACTS.map(function(o, i) {
+              return h('div', { key: 'o'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, o.fact),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, o.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderSportsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏆 Angles in sports'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Many athletic skills depend on launch angles. The classic "45° is optimal" is true only for projectiles launched + landing at the same height (without air resistance).'),
+          h('div', { className: 'space-y-2' },
+            SPORTS_ANGLES.map(function(s, i) {
+              return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, s.sport),
+                  h('span', { className: 'text-[11px] font-mono text-rose-700 font-bold ml-auto px-2 py-0.5 rounded bg-rose-100' }, s.angle)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderArtSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎨 Angles in art + perspective'),
+          h('div', { className: 'space-y-1' },
+            ART_ANGLES.map(function(a, i) {
+              return h('div', { key: 'a'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, a.topic),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, a.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderToolsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📏 Angle-measuring tools'),
+          h('div', { className: 'space-y-2' },
+            MEASURING_TOOLS.map(function(t, i) {
+              return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, t.tool),
+                h('div', { className: 'text-[11px] text-rose-700 font-bold mb-1' }, 'Use: ' + t.use),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.notes)
+              );
+            })
+          )
+        );
       }
 
       var __anglesExpansions = h('div', { className: 'mt-4 max-w-4xl mx-auto' },

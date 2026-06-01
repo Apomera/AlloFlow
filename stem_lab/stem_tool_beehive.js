@@ -4012,17 +4012,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
             BEEHIVE_DEBUG && console.log('[Beehive DEBUG] tryInit #' + tries + ', cv=' + (cv ? 'ATTACHED (' + cv.tagName + ')' : 'NULL') + ', _cvRef obj id=' + (_cvRef.__id || (_cvRef.__id = Math.random().toString(36).slice(2, 6))));
             if (!cv) {
-              if (tries++ < 12) {
+              // Tiered polling so the canvas isn't lost if React's ref attachment is delayed:
+              //   - first 60 tries at 50ms each = 3s of fast polling (covers normal renders)
+              //   - next 30 tries at 500ms each = 15s more of slow polling (catches blocked-JS or off-screen mounts)
+              if (tries < 60) {
                 retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
               } else {
-                BEEHIVE_DEBUG && console.warn('[Beehive DEBUG] beekeeper canvas ref NEVER attached after 12 retries');
+                BEEHIVE_DEBUG && console.warn('[Beehive DEBUG] beekeeper canvas ref NEVER attached after ~18s of retries');
               }
+              tries++;
               return;
             }
             var c = cv.getContext('2d');
             BEEHIVE_DEBUG && console.log('[Beehive DEBUG] getContext result=' + (c ? 'OK' : 'NULL') + ', parent=' + (cv.parentElement ? cv.parentElement.tagName + ' ' + cv.parentElement.clientWidth + 'x' + cv.parentElement.clientHeight : 'NO PARENT'));
             if (!c) {
-              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
+              if (tries < 60) {
+                retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
+              }
+              tries++;
               return;
             }
             BEEHIVE_DEBUG && console.log('[Beehive DEBUG] calling doSetup...');

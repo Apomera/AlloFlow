@@ -89,6 +89,11 @@ const checks = [
     description: 'Undeclared identifiers in hook dep arrays of *_module.js (data/onPlayAudio/isEscaped render-crash class)',
   },
   {
+    name: 'Keyless list children (CDN modules + STEM tools)',
+    cmd: ['node', 'dev-tools/check_keyless_map.cjs', '--quiet'],
+    description: 'React "unique key" warning class: elements from .map()/array children without a key (the StemPluginBridge warning)',
+  },
+  {
     name: 'Lang pack JSON validity',
     cmd: ['node', 'dev-tools/check_lang_json.cjs', '--quiet'],
     description: 'Every lang/*.js parses as JSON (catches corruption before deploy)',

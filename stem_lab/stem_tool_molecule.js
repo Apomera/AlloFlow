@@ -3019,6 +3019,18 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           { id: 'mol_geo', label: 'Bond geometry', icon: '∡' },
           { id: 'isomers', label: 'Isomers', icon: '⇄' },
           { id: 'noble', label: 'Noble gases', icon: 'He' },
+          { id: 'allelements', label: 'All elements', icon: '🅻' },
+          { id: 'minerals', label: 'Minerals', icon: '💎' },
+          { id: 'pharma', label: 'Common drugs', icon: '💊' },
+          { id: 'household', label: 'Household chem', icon: '🧴' },
+          { id: 'pH_scale', label: 'pH scale', icon: 'H⁺' },
+          { id: 'foods', label: 'Food + nutrition', icon: '🥦' },
+          { id: 'meltboil', label: 'Melt + boil pts', icon: '🌡' },
+          { id: 'solubility', label: 'Solubility', icon: '◐' },
+          { id: 'compounds', label: 'Common compounds', icon: '⌬' },
+          { id: 'flavor_chem', label: 'Flavor + scent', icon: '👃' },
+          { id: 'colors_chem', label: 'Color chemistry', icon: '🎨' },
+          { id: 'industrial', label: 'Industrial scale', icon: '🏗' },
           { id: 'glossary', label: 'Glossary', icon: '📖' }
         ];
         return React.createElement('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4134,8 +4146,787 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
         if (expSection === 'mol_geo') return renderMolGeoSection();
         if (expSection === 'isomers') return renderIsomersSection();
         if (expSection === 'noble') return renderNobleSection();
+        if (expSection === 'allelements') return renderAllElementsSection();
+        if (expSection === 'minerals') return renderMineralsSection();
+        if (expSection === 'pharma') return renderPharmaSection();
+        if (expSection === 'household') return renderHouseholdSection();
+        if (expSection === 'pH_scale') return renderPhScaleSection();
+        if (expSection === 'foods') return renderFoodsSection();
+        if (expSection === 'meltboil') return renderMeltboilSection();
+        if (expSection === 'solubility') return renderSolubilitySection();
+        if (expSection === 'compounds') return renderCompoundsSection();
+        if (expSection === 'flavor_chem') return renderFlavorChemSection();
+        if (expSection === 'colors_chem') return renderColorsChemSection();
+        if (expSection === 'industrial') return renderIndustrialSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
+      }
+
+      var INDUSTRIAL_CHEMS = [
+        { product: 'Sulfuric acid (H₂SO₄)', volume: '~270 million tons/yr', use: 'Fertilizers (phosphate processing), oil refining, metal pickling, batteries', notes: 'Most produced industrial chemical. Indicator of economic activity.' },
+        { product: 'Ammonia (NH₃)', volume: '~180 million tons/yr', use: 'Fertilizer (urea, nitrates), refrigerant, cleaning', notes: 'Haber-Bosch process. ~1-2% of global energy consumption.' },
+        { product: 'Ethylene (C₂H₄)', volume: '~210 million tons/yr', use: 'Polyethylene plastic, antifreeze, fibers', notes: 'Most produced organic. Made from steam cracking of natural gas/naphtha.' },
+        { product: 'Propylene (C₃H₆)', volume: '~130 million tons/yr', use: 'Polypropylene plastic, propylene oxide', notes: 'Second most produced organic.' },
+        { product: 'Chlorine (Cl₂)', volume: '~75 million tons/yr', use: 'PVC plastic, water treatment, bleach, pharmaceuticals', notes: 'Co-product with NaOH from electrolysis of brine.' },
+        { product: 'Sodium hydroxide (NaOH)', volume: '~80 million tons/yr', use: 'Paper, soap, drain cleaners, biodiesel', notes: 'Caustic soda. Co-produced with Cl₂.' },
+        { product: 'Phosphoric acid (H₃PO₄)', volume: '~50 million tons/yr', use: 'Fertilizers, food additive, rust converter', notes: 'Mostly used for phosphate fertilizers.' },
+        { product: 'Nitric acid (HNO₃)', volume: '~60 million tons/yr', use: 'Fertilizers, explosives, plastics', notes: 'Made from ammonia via Ostwald process.' },
+        { product: 'Urea (CO(NH₂)₂)', volume: '~180 million tons/yr', use: 'Nitrogen fertilizer (most common worldwide)', notes: 'Highest N content of common fertilizers (~46%).' },
+        { product: 'Hydrochloric acid (HCl)', volume: '~20 million tons/yr', use: 'Metal pickling, oil well stimulation, food processing', notes: 'Often a by-product of organic chlorination.' },
+        { product: 'Methanol (CH₃OH)', volume: '~110 million tons/yr', use: 'Formaldehyde, fuel additive, antifreeze', notes: 'Future shipping fuel + chemical feedstock interest.' },
+        { product: 'Polyethylene', volume: '~110 million tons/yr', use: 'Plastic bags, bottles, pipes, films', notes: 'Most produced plastic. HDPE + LDPE differ in branching → density + use.' },
+        { product: 'PVC (polyvinyl chloride)', volume: '~50 million tons/yr', use: 'Pipes, window frames, flooring, medical devices', notes: 'Third most produced plastic.' },
+        { product: 'Polypropylene', volume: '~80 million tons/yr', use: 'Plastic furniture, fibers (carpets), packaging', notes: 'Second most produced plastic.' },
+        { product: 'Polystyrene', volume: '~30 million tons/yr', use: 'Foam packaging, disposable cups, insulation', notes: 'EPS (expanded) for cups, XPS for insulation.' },
+        { product: 'PET (polyethylene terephthalate)', volume: '~30 million tons/yr', use: 'Beverage bottles, fibers (polyester)', notes: 'Most recycled plastic. Bottle-to-bottle recycling growing.' },
+        { product: 'Cement', volume: '~4 billion tons/yr', use: 'Construction (with sand + gravel = concrete)', notes: '~8% of global CO₂ emissions. Heating limestone releases CO₂ (chemistry + fuel).' },
+        { product: 'Steel', volume: '~1.8 billion tons/yr', use: 'Construction, transportation, packaging', notes: '~7% of global CO₂. Switching to hydrogen reduction in development.' }
+      ];
+
+      function renderIndustrialSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏗 Industrial-scale chemicals'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Volumes are approximate annual world production. Chemistry at industrial scale underlies modern civilization.'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Product', 'Annual volume', 'Use', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                INDUSTRIAL_CHEMS.map(function(I, i) {
+                  return React.createElement('tr', { key: 'I'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, I.product),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, I.volume),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, I.use),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, I.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      var COLOR_CHEMISTRY = [
+        { color: 'Beet red (betanin)', compound: 'C₂₄H₂₆N₂O₁₃', source: 'Beets', notes: 'Water-soluble. Not heat-stable above ~70°C.' },
+        { color: 'Carrot orange (β-carotene)', compound: 'C₄₀H₅₆', source: 'Carrots, sweet potato', notes: 'Fat-soluble. Vitamin A precursor.' },
+        { color: 'Tomato red (lycopene)', compound: 'C₄₀H₅₆', source: 'Tomatoes, watermelon', notes: 'Becomes more bioavailable when cooked + with fat.' },
+        { color: 'Spinach green (chlorophyll a)', compound: 'C₅₅H₇₂MgN₄O₅', source: 'All green plants', notes: 'Mg at center of porphyrin ring (like Fe in heme).' },
+        { color: 'Blueberry blue (anthocyanin)', compound: 'C₁₅H₁₁O₆⁺ class', source: 'Blueberries, red cabbage', notes: 'pH indicator! Red in acid, blue/purple at neutral, green in base.' },
+        { color: 'Egg yolk yellow (lutein + zeaxanthin)', compound: 'C₄₀H₅₆O₂', source: 'Egg yolk, leafy greens', notes: 'Concentrated in retinal macula. May protect against age-related macular degeneration.' },
+        { color: 'Saffron yellow (crocin)', compound: 'C₄₄H₆₄O₂₄', source: 'Saffron threads', notes: 'Most expensive spice by weight (~$5-10/g). 150 flowers per gram.' },
+        { color: 'Turmeric yellow (curcumin)', compound: 'C₂₁H₂₀O₆', source: 'Turmeric root', notes: 'Poor bioavailability — combine with black pepper (piperine) to increase absorption.' },
+        { color: 'Indigo blue', compound: 'C₁₆H₁₀N₂O₂', source: 'Indigofera plants (originally); now mostly synthetic', notes: 'Original blue jeans dye. Insoluble — applied as soluble leuco form, oxidizes blue on air.' },
+        { color: 'Tyrian purple', compound: '6,6\'-dibromoindigo', source: 'Murex snails (~12,000 snails per gram!)', notes: 'Ancient Roman royalty exclusive. Why "born to the purple".' },
+        { color: 'Henna red', compound: 'lawsone C₁₀H₆O₃', source: 'Lawsonia inermis leaves', notes: 'Stains skin + hair red-brown. Traditional in many cultures.' },
+        { color: 'Cochineal red (carmine)', compound: 'carminic acid C₂₂H₂₀O₁₃', source: 'Cochineal insects (Dactylopius coccus)', notes: 'Vivid red. Used in food, cosmetics. ~70,000 insects per pound.' },
+        { color: 'Prussian blue', compound: 'Fe₇(CN)₁₈', source: 'Synthesized 1706', notes: 'First modern synthetic pigment. Color of architectural drawings ("blueprints").' },
+        { color: 'Ultramarine blue', compound: 'Na₈Al₆Si₆O₂₄S₂', source: 'Originally crushed lapis lazuli', notes: 'More expensive than gold in Middle Ages. Used in Vermeer\'s "Girl with a Pearl Earring".' },
+        { color: 'Vermilion red', compound: 'HgS (mercuric sulfide)', source: 'Cinnabar mineral', notes: 'Toxic — contains mercury. Used in red lacquer, paint, lipstick historically.' },
+        { color: 'White lead', compound: 'Pb₃(CO₃)₂(OH)₂', source: 'Lead carbonate', notes: 'Brilliant white pigment. Toxic — banned in most countries. Replaced by titanium dioxide.' },
+        { color: 'Chrome yellow', compound: 'PbCrO₄', source: 'Synthesis', notes: 'Van Gogh\'s sunflowers. Darkens over time due to chrome reduction. Lead toxicity.' },
+        { color: 'Cobalt blue', compound: 'CoAl₂O₄', source: 'Synthesis (since 1802)', notes: 'Stable, intense blue. Used in glass, ceramics, paint.' },
+        { color: 'Mauve (first synthetic dye)', compound: 'C₂₆H₂₃N₄·HCl', source: 'Synthesized by William Perkin (1856)', notes: 'Accidental discovery while trying to synthesize quinine. Launched synthetic dye industry.' },
+        { color: 'Fluorescein green', compound: 'C₂₀H₁₂O₅', source: 'Synthesis', notes: 'Used in eye exams (visualize corneal damage), tracking water flow.' },
+        { color: 'Phthalocyanine green/blue', compound: 'Cu-N₈ macrocycle', source: 'Synthesis', notes: 'Stable industrial pigments. Photodynamic therapy research.' },
+        { color: 'Titanium white', compound: 'TiO₂', source: 'Synthesis (rutile or anatase)', notes: 'Replaced lead white. Most common white pigment in modern paint, food (E171), sunscreen.' }
+      ];
+
+      function renderColorsChemSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎨 Color chemistry — pigments + dyes'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Color in chemistry usually comes from absorption of specific visible wavelengths. Conjugated double-bond systems (like in chlorophyll, beta-carotene) absorb in the visible.'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Color', 'Compound', 'Source', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                COLOR_CHEMISTRY.map(function(c, i) {
+                  return React.createElement('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, c.color),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, c.compound),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, c.source),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 7 — Final molecules data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var FLAVOR_SCENT = [
+        { compound: 'Vanillin', formula: 'C₈H₈O₃', source: 'Vanilla bean', notes: 'Most vanilla in food is synthetic vanillin from lignin or guaiacol.' },
+        { compound: 'Capsaicin', formula: 'C₁₈H₂₇NO₃', source: 'Chili peppers', notes: 'Activates TRPV1 heat receptor. Fat-soluble — milk soothes mouth.' },
+        { compound: 'Piperine', formula: 'C₁₇H₁₉NO₃', source: 'Black pepper', notes: 'Sharp + pungent. Different mechanism than capsaicin.' },
+        { compound: 'Allyl isothiocyanate', formula: 'C₄H₅NS', source: 'Mustard, wasabi, horseradish', notes: 'Causes pain via TRPA1. Volatile — burns sinuses, not tongue.' },
+        { compound: 'Menthol', formula: 'C₁₀H₂₀O', source: 'Mint', notes: 'Cooling sensation. Activates TRPM8 cold receptor.' },
+        { compound: 'Limonene', formula: 'C₁₀H₁₆', source: 'Citrus peel', notes: 'Two enantiomers smell different! D-limonene = oranges; L = pine + turpentine.' },
+        { compound: 'Caffeine', formula: 'C₈H₁₀N₄O₂', source: 'Coffee, tea, cocoa', notes: 'Bitter tasting. Adenosine receptor blocker.' },
+        { compound: 'Theobromine', formula: 'C₇H₈N₄O₂', source: 'Cocoa', notes: 'Mild stimulant. Toxic to dogs (slow metabolism).' },
+        { compound: 'Eugenol', formula: 'C₁₀H₁₂O₂', source: 'Cloves, basil, cinnamon', notes: 'Used in dentistry (mild anesthetic). Strong clove scent.' },
+        { compound: 'Cinnamaldehyde', formula: 'C₉H₈O', source: 'Cinnamon bark', notes: 'Primary flavor of cinnamon. Anti-microbial.' },
+        { compound: 'Diacetyl', formula: 'C₄H₆O₂', source: 'Butter (natural), microwave popcorn', notes: 'Butter flavor. "Popcorn lung" lung damage in workers from inhalation.' },
+        { compound: 'Linalool', formula: 'C₁₀H₁₈O', source: 'Lavender, basil, citrus', notes: 'Floral scent. Used in soaps + lotions. Reportedly relaxing.' },
+        { compound: 'Geraniol', formula: 'C₁₀H₁₈O', source: 'Geraniums, roses, citronella', notes: 'Rose scent. Mosquito repellent.' },
+        { compound: 'Methyl salicylate', formula: 'C₈H₈O₃', source: 'Wintergreen, birch', notes: 'Topical pain relievers (icy-hot). Also gives sports drink "wintergreen" flavor.' },
+        { compound: 'Allicin', formula: 'C₆H₁₀OS₂', source: 'Crushed garlic', notes: 'Forms when garlic is cut. Antimicrobial. Persists on breath via lungs.' },
+        { compound: 'Citral', formula: 'C₁₀H₁₆O', source: 'Lemongrass, lemon zest', notes: 'Lemon-scented. Mixture of two isomers (geranial + neral).' },
+        { compound: 'Anethole', formula: 'C₁₀H₁₂O', source: 'Anise, fennel, licorice', notes: 'Licorice flavor. Trans isomer 13× sweeter than sugar.' },
+        { compound: 'Carvone', formula: 'C₁₀H₁₄O', source: 'Caraway / spearmint', notes: 'Two enantiomers — one is spearmint, other is caraway. Brain distinguishes them!' },
+        { compound: '2,4,6-trichloroanisole', formula: 'C₇H₅Cl₃O', source: 'Cork taint', notes: 'Detectable at parts per trillion. Cause of "corked" wines.' },
+        { compound: 'Isoamyl acetate', formula: 'C₇H₁₄O₂', source: 'Bananas, pears (esters)', notes: 'Classic banana scent. Bee alarm pheromone.' },
+        { compound: 'Ethyl butyrate', formula: 'C₆H₁₂O₂', source: 'Pineapple', notes: 'Sweet fruity scent.' },
+        { compound: 'Methylpyrazine + derivatives', formula: 'C₅H₆N₂ family', source: 'Roasted foods', notes: 'From Maillard reaction. Coffee, chocolate, bread crust aromas.' },
+        { compound: '2-acetyl-1-pyrroline', formula: 'C₆H₉NO', source: 'Jasmine rice, basmati, popcorn', notes: 'Distinctive aroma. Threshold ~0.1 ppb in air.' },
+        { compound: 'Sotolon', formula: 'C₆H₈O₃', source: 'Maple syrup, fenugreek', notes: 'Sweet maple/curry scent. Eating fenugreek can make sweat smell like maple syrup.' },
+        { compound: 'Indole', formula: 'C₈H₇N', source: 'Feces (in high concentration) / jasmine flowers (dilute)', notes: 'High concentration = unpleasant. Dilute = floral. Same molecule!' },
+        { compound: 'Skatole', formula: 'C₉H₉N', source: 'Feces, civet, beets', notes: 'Like indole — disgusting concentrated, attractive diluted. Used in perfumes.' },
+        { compound: 'Mercaptan (methanethiol)', formula: 'CH₃SH', source: 'Skunk spray, added to natural gas', notes: 'Detectable at parts per billion. Added to gas as safety warning.' },
+        { compound: '(R)-Linalool', formula: 'C₁₀H₁₈O', source: 'Coriander leaves', notes: 'Some people (genetic variant in olfactory receptor) perceive cilantro as soapy.' }
+      ];
+
+      function renderFlavorChemSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '👃 Flavor + scent molecules'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Olfactory receptors detect specific molecules. Humans have ~400 different olfactory receptors and can distinguish ~10,000 distinct smells (some claim trillions).'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Compound', 'Formula', 'Source', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                FLAVOR_SCENT.map(function(f, i) {
+                  return React.createElement('tr', { key: 'f'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, f.compound),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, f.formula),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, f.source),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, f.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 6 — Final dense data tables (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var SOLUBILITY_RULES = [
+        { rule: 'All Group 1 (alkali metal) salts', soluble: 'Yes', exceptions: 'None significant', notes: 'Li⁺, Na⁺, K⁺, Rb⁺, Cs⁺ — always soluble in water.' },
+        { rule: 'All ammonium (NH₄⁺) salts', soluble: 'Yes', exceptions: 'None significant', notes: 'Like alkali metals — always soluble.' },
+        { rule: 'All nitrates (NO₃⁻)', soluble: 'Yes', exceptions: 'None', notes: 'Universal solubility. AgNO₃, Cu(NO₃)₂, Pb(NO₃)₂ all soluble.' },
+        { rule: 'All acetates (CH₃COO⁻)', soluble: 'Yes', exceptions: 'AgCH₃COO slightly soluble', notes: 'Most acetates dissolve.' },
+        { rule: 'All chlorates + perchlorates', soluble: 'Yes', exceptions: 'None significant', notes: 'ClO₃⁻ and ClO₄⁻.' },
+        { rule: 'Halides (Cl⁻, Br⁻, I⁻)', soluble: 'Mostly yes', exceptions: 'Ag⁺, Pb²⁺, Hg₂²⁺ insoluble', notes: 'AgCl famously insoluble (white precipitate test).' },
+        { rule: 'Sulfates (SO₄²⁻)', soluble: 'Mostly yes', exceptions: 'Ba²⁺, Pb²⁺, Sr²⁺, Ca²⁺ (slight)', notes: 'BaSO₄ used for X-ray contrast because insoluble.' },
+        { rule: 'Hydroxides (OH⁻)', soluble: 'Mostly no', exceptions: 'Group 1 + Ba²⁺ soluble', notes: 'NaOH, KOH dissolve well. Ca(OH)₂ slightly soluble.' },
+        { rule: 'Carbonates (CO₃²⁻)', soluble: 'Mostly no', exceptions: 'Group 1 + NH₄⁺ soluble', notes: 'CaCO₃ insoluble (limestone, marble).' },
+        { rule: 'Phosphates (PO₄³⁻)', soluble: 'Mostly no', exceptions: 'Group 1 + NH₄⁺ soluble', notes: 'Why phosphate fertilizer washes off into rivers slowly.' },
+        { rule: 'Sulfides (S²⁻)', soluble: 'Mostly no', exceptions: 'Group 1, NH₄⁺, Group 2 soluble', notes: 'Many colored metal sulfides (CuS black, ZnS white, CdS yellow).' },
+        { rule: 'Chromates (CrO₄²⁻)', soluble: 'Mostly no', exceptions: 'Group 1 + NH₄⁺ soluble', notes: 'PbCrO₄ is yellow pigment ("chrome yellow").' },
+        { rule: 'Oxides (O²⁻)', soluble: 'Mostly no', exceptions: 'Group 1 react with water → hydroxides', notes: 'Na₂O + H₂O → 2 NaOH.' }
+      ];
+
+      var SOLUBILITY_DATA = [
+        { compound: 'NaCl (table salt)', solubility: '360 g/L at 20°C', notes: 'Common reference. ~26% by mass at saturation.' },
+        { compound: 'Sucrose (table sugar)', solubility: '2000 g/L at 20°C', notes: 'Very soluble. Hot tea dissolves more.' },
+        { compound: 'KNO₃', solubility: '316 g/L at 20°C', notes: 'Huge temperature dependence (13 g/L at 0°C → 2470 g/L at 100°C).' },
+        { compound: 'NaHCO₃ (baking soda)', solubility: '96 g/L at 20°C', notes: 'Moderate.' },
+        { compound: 'CaCO₃ (limestone)', solubility: '0.013 g/L at 20°C', notes: 'Practically insoluble. Dissolves slowly in acid water.' },
+        { compound: 'AgCl', solubility: '0.0019 g/L at 25°C', notes: 'Famous insoluble. White precipitate in Cl⁻ test.' },
+        { compound: 'BaSO₄', solubility: '0.0024 g/L at 25°C', notes: 'Insoluble — safe for X-ray contrast even though Ba²⁺ is toxic.' },
+        { compound: 'PbS', solubility: '~10⁻⁹ g/L at 25°C', notes: 'Galena (Pb ore). Extremely insoluble.' },
+        { compound: 'AgNO₃', solubility: '2160 g/L at 20°C', notes: 'Very soluble. Used in many analytical tests.' },
+        { compound: 'CuSO₄·5H₂O', solubility: '320 g/L at 20°C', notes: 'Blue crystals. Pesticide, fungicide.' },
+        { compound: 'O₂ (gas) in water', solubility: '~8.3 mg/L at 25°C', notes: 'Decreases with temperature → why warm rivers struggle for fish.' },
+        { compound: 'CO₂ (gas) in water', solubility: '~1.5 g/L at 25°C (1 atm)', notes: 'Increases with pressure → carbonation.' },
+        { compound: 'N₂ (gas) in water', solubility: '~20 mg/L at 25°C', notes: 'Dissolved nitrogen — divers worry about it (the bends).' },
+        { compound: 'CH₄ (methane) in water', solubility: '~22 mg/L at 25°C', notes: 'Low. Methane hydrates form at high P + low T (oceans, permafrost).' },
+        { compound: 'I₂ in water', solubility: '0.33 g/L at 20°C', notes: 'Low — KI is added to increase iodine solubility (Lugol\'s solution).' },
+        { compound: 'I₂ in ethanol', solubility: '~210 g/L', notes: 'Much more soluble in polar organic. Tincture of iodine.' },
+        { compound: 'Hexane in water', solubility: '~0.01 g/L', notes: 'Essentially immiscible. Forms layer above water.' }
+      ];
+
+      var COMMON_COMPOUNDS = [
+        { name: 'Water', formula: 'H₂O', mw: 18.0, notes: 'Most familiar molecule. Universal solvent. 70% of body weight.' },
+        { name: 'Carbon dioxide', formula: 'CO₂', mw: 44.0, notes: 'Greenhouse gas. Plant food via photosynthesis. ~420 ppm in atmosphere (2024).' },
+        { name: 'Methane', formula: 'CH₄', mw: 16.0, notes: 'Natural gas. Powerful greenhouse gas. Cow burps, landfills.' },
+        { name: 'Ammonia', formula: 'NH₃', mw: 17.0, notes: 'Fertilizer feedstock (Haber process). Pungent smell. Household cleaner.' },
+        { name: 'Hydrochloric acid', formula: 'HCl', mw: 36.5, notes: 'Stomach acid. Strong acid in lab.' },
+        { name: 'Sulfuric acid', formula: 'H₂SO₄', mw: 98.1, notes: 'Most produced industrial chemical. Battery acid, fertilizer.' },
+        { name: 'Nitric acid', formula: 'HNO₃', mw: 63.0, notes: 'Strong oxidizer. Explosives, fertilizers.' },
+        { name: 'Sodium hydroxide (lye)', formula: 'NaOH', mw: 40.0, notes: 'Strong base. Soap-making, drain cleaner.' },
+        { name: 'Calcium hydroxide (slaked lime)', formula: 'Ca(OH)₂', mw: 74.1, notes: 'Construction mortar, pH adjustment.' },
+        { name: 'Sodium chloride', formula: 'NaCl', mw: 58.4, notes: 'Table salt. Essential for life.' },
+        { name: 'Calcium carbonate', formula: 'CaCO₃', mw: 100.1, notes: 'Limestone, marble, chalk, eggshells.' },
+        { name: 'Sodium bicarbonate', formula: 'NaHCO₃', mw: 84.0, notes: 'Baking soda. Antacid. Fire extinguishers.' },
+        { name: 'Hydrogen peroxide', formula: 'H₂O₂', mw: 34.0, notes: 'Disinfectant. Decomposes to water + O₂.' },
+        { name: 'Ozone', formula: 'O₃', mw: 48.0, notes: 'Protective in stratosphere; pollutant at ground level.' },
+        { name: 'Glucose', formula: 'C₆H₁₂O₆', mw: 180.2, notes: 'Body\'s primary fuel. Blood sugar.' },
+        { name: 'Sucrose (table sugar)', formula: 'C₁₂H₂₂O₁₁', mw: 342.3, notes: 'Glucose + fructose disaccharide.' },
+        { name: 'Ethanol', formula: 'C₂H₅OH', mw: 46.1, notes: 'Alcoholic beverages, fuel additive, hand sanitizer.' },
+        { name: 'Methanol', formula: 'CH₃OH', mw: 32.0, notes: 'Wood alcohol. Toxic — causes blindness, death.' },
+        { name: 'Acetone', formula: '(CH₃)₂CO', mw: 58.1, notes: 'Nail polish remover. Common organic solvent.' },
+        { name: 'Acetic acid', formula: 'CH₃COOH', mw: 60.1, notes: 'Vinegar (~5% in water). Glacial form solid below 17°C.' },
+        { name: 'Formaldehyde', formula: 'HCHO', mw: 30.0, notes: 'Preservative (formalin). Indoor air contaminant.' },
+        { name: 'Benzene', formula: 'C₆H₆', mw: 78.1, notes: 'Aromatic ring. Carcinogen. Industrial solvent (regulated).' },
+        { name: 'Caffeine', formula: 'C₈H₁₀N₄O₂', mw: 194.2, notes: 'Stimulant. World\'s most consumed psychoactive drug.' },
+        { name: 'Aspirin', formula: 'C₉H₈O₄', mw: 180.2, notes: 'Acetylsalicylic acid. Pain reliever, blood thinner.' },
+        { name: 'Penicillin G', formula: 'C₁₆H₁₈N₂O₄S', mw: 334.4, notes: 'First mass antibiotic. β-lactam ring.' },
+        { name: 'DDT', formula: 'C₁₄H₉Cl₅', mw: 354.5, notes: 'Pesticide. Banned in most countries due to environmental persistence.' },
+        { name: 'TNT', formula: 'C₇H₅N₃O₆', mw: 227.1, notes: 'Trinitrotoluene. Explosive standard reference.' },
+        { name: 'Glycerin (glycerol)', formula: 'C₃H₈O₃', mw: 92.1, notes: 'Sweet, viscous. Moisturizer, food additive, explosive precursor (nitroglycerin).' },
+        { name: 'Urea', formula: 'CO(NH₂)₂', mw: 60.1, notes: 'First organic compound synthesized from inorganic (Wöhler 1828). Fertilizer.' },
+        { name: 'Iron(III) oxide (rust)', formula: 'Fe₂O₃', mw: 159.7, notes: 'Iron rust. Red pigment. Same as hematite mineral.' },
+        { name: 'Calcium phosphate', formula: 'Ca₃(PO₄)₂', mw: 310.2, notes: 'Main bone + tooth mineral (as hydroxyapatite).' },
+        { name: 'Silicon dioxide', formula: 'SiO₂', mw: 60.1, notes: 'Quartz, sand, glass. Most abundant mineral.' },
+        { name: 'Aluminum oxide', formula: 'Al₂O₃', mw: 102.0, notes: 'Corundum, sapphire, ruby (with chromium). Abrasive.' },
+        { name: 'Titanium dioxide', formula: 'TiO₂', mw: 79.9, notes: 'White pigment in paint, sunscreen, food. Highly reflective.' },
+        { name: 'Sodium fluoride', formula: 'NaF', mw: 42.0, notes: 'Toothpaste additive. Strengthens enamel as fluorapatite.' }
+      ];
+
+      function renderSolubilitySection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◐ Solubility rules + data'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Rules of thumb for ionic compound solubility in water. Helpful for predicting precipitation reactions.'),
+          React.createElement('div', { className: 'mb-3' },
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'General solubility rules'),
+            React.createElement('div', { className: 'overflow-x-auto' },
+              React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+                React.createElement('thead', null,
+                  React.createElement('tr', { className: 'bg-slate-100' },
+                    ['Rule', 'Soluble?', 'Exceptions', 'Notes'].map(function(hh, i) {
+                      return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    })
+                  )
+                ),
+                React.createElement('tbody', null,
+                  SOLUBILITY_RULES.map(function(r, i) {
+                    return React.createElement('tr', { key: 'r'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                      React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800 text-[10px]' }, r.rule),
+                      React.createElement('td', { className: 'px-2 py-1 font-bold text-indigo-700' }, r.soluble),
+                      React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, r.exceptions),
+                      React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, r.notes)
+                    );
+                  })
+                )
+              )
+            )
+          ),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Solubility of specific compounds in water'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Compound', 'Solubility', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                SOLUBILITY_DATA.map(function(s, i) {
+                  return React.createElement('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.compound),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, s.solubility),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderCompoundsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⌬ Common chemical compounds'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Molecular weights in g/mol. Listed in rough order of familiarity.'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Compound', 'Formula', 'MW', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                COMMON_COMPOUNDS.map(function(c, i) {
+                  return React.createElement('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, c.name),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, c.formula),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, c.mw),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 5 — More dense data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var PH_EXAMPLES = [
+        { ph: 0, substance: 'Battery acid (H₂SO₄ ~37%)', notes: 'Extremely acidic. Will dissolve metals.' },
+        { ph: 1, substance: 'Hydrochloric acid (1 M)', notes: 'Stomach acid is around pH 1.5-3.5.' },
+        { ph: 2, substance: 'Lemon juice, vinegar (some)', notes: 'Citric + acetic acids. Sour taste.' },
+        { ph: 3, substance: 'Orange juice, cola, wine', notes: 'Dissolves tooth enamel over time.' },
+        { ph: 4, substance: 'Tomato juice, beer', notes: 'Mildly acidic.' },
+        { ph: 5, substance: 'Black coffee, banana, acid rain', notes: 'Acid rain typically 4.0-5.5.' },
+        { ph: 5.5, substance: 'Skin surface', notes: 'Slightly acidic — "acid mantle" protects against bacteria.' },
+        { ph: 6, substance: 'Milk, saliva, urine (normal)', notes: 'Slightly acidic. Urine varies 4.5-8.0.' },
+        { ph: 7, substance: 'Pure water', notes: 'Neutral. At 25°C.' },
+        { ph: 7.4, substance: 'Human blood', notes: 'Tightly regulated 7.35-7.45. Outside range = serious illness.' },
+        { ph: 8, substance: 'Seawater, baking soda solution', notes: 'Seawater 7.5-8.4 — has dropped ~0.1 since pre-industrial (ocean acidification).' },
+        { ph: 9, substance: 'Milk of magnesia, borax', notes: 'Mildly basic.' },
+        { ph: 10, substance: 'Antacid tablets', notes: 'Neutralize stomach acid.' },
+        { ph: 11, substance: 'Ammonia (household)', notes: 'Strongly basic.' },
+        { ph: 12, substance: 'Soapy water, bleach', notes: 'Bleach pH ~12-13.' },
+        { ph: 13, substance: 'Oven cleaner, lye solution', notes: 'Caustic — handle with gloves.' },
+        { ph: 14, substance: 'Sodium hydroxide (1 M)', notes: 'Drain cleaner. Severe burns.' }
+      ];
+
+      var FOODS_NUTRITION = [
+        { food: 'Egg (large, ~50g)', cal: '~70', protein: '6g', notes: 'Complete protein. Yolk has cholesterol + nutrients (lutein, choline).' },
+        { food: 'Milk (1 cup, whole)', cal: '~150', protein: '8g', notes: 'Lactose (sugar), casein + whey proteins, calcium.' },
+        { food: 'Bread (1 slice, white)', cal: '~80', protein: '3g', notes: 'Mostly starch (gelatinized during baking). Gluten gives elastic texture.' },
+        { food: 'Rice (1 cup cooked)', cal: '~200', protein: '4g', notes: 'Mostly carbohydrate. White rice = bran + germ removed.' },
+        { food: 'Chicken breast (100g cooked)', cal: '~165', protein: '31g', notes: 'High protein, low fat. Lean.' },
+        { food: 'Beef (100g, 80/20 ground)', cal: '~250', protein: '26g', notes: 'Higher fat than chicken. Iron, B12.' },
+        { food: 'Salmon (100g)', cal: '~210', protein: '20g', notes: 'Omega-3 fatty acids (EPA + DHA).' },
+        { food: 'Avocado (1 medium)', cal: '~240', protein: '3g', notes: 'Monounsaturated fat, fiber, potassium.' },
+        { food: 'Almonds (1 oz, ~28g)', cal: '~160', protein: '6g', notes: 'Good fats, vitamin E, magnesium.' },
+        { food: 'Apple (medium)', cal: '~95', protein: '0.5g', notes: 'Fiber (pectin), vitamin C, natural sugars (fructose).' },
+        { food: 'Banana (medium)', cal: '~105', protein: '1g', notes: 'Potassium. Slightly higher in sugar as it ripens.' },
+        { food: 'Broccoli (1 cup chopped)', cal: '~30', protein: '2.5g', notes: 'Vitamin C, K, fiber, sulforaphane.' },
+        { food: 'Carrot (medium)', cal: '~25', protein: '0.5g', notes: 'Beta-carotene (precursor to vitamin A).' },
+        { food: 'Potato (medium baked)', cal: '~160', protein: '4g', notes: 'Mostly starch. Vitamin C, potassium.' },
+        { food: 'Sweet potato', cal: '~115', protein: '2g', notes: 'Beta-carotene-rich. Lower glycemic than white potato.' },
+        { food: 'Beans (black, 1 cup cooked)', cal: '~225', protein: '15g', notes: 'Plant protein. Fiber. Iron, folate.' },
+        { food: 'Lentils (1 cup cooked)', cal: '~230', protein: '18g', notes: 'Plant protein. Fast-cooking pulse.' },
+        { food: 'Tofu (100g)', cal: '~75', protein: '8g', notes: 'Soybean curd. Complete plant protein.' },
+        { food: 'Cheese (cheddar, 1 oz)', cal: '~115', protein: '7g', notes: 'Concentrated milk protein + fat. Calcium.' },
+        { food: 'Yogurt (Greek, 6 oz)', cal: '~100', protein: '17g', notes: 'High protein. Live cultures (probiotics).' },
+        { food: 'Olive oil (1 tbsp)', cal: '~120', protein: '0g', notes: 'Mediterranean diet staple. Monounsaturated.' },
+        { food: 'Butter (1 tbsp)', cal: '~100', protein: '0g', notes: 'Saturated fat. Dairy.' },
+        { food: 'Sugar (granulated, 1 tsp)', cal: '~16', protein: '0g', notes: 'Sucrose. Pure carbohydrate.' },
+        { food: 'Honey (1 tbsp)', cal: '~64', protein: '0g', notes: 'Mostly fructose + glucose. Trace nutrients.' },
+        { food: 'Dark chocolate (1 oz, 70%)', cal: '~170', protein: '2g', notes: 'Antioxidants. Caffeine + theobromine.' }
+      ];
+
+      var MELT_BOIL = [
+        { substance: 'Helium', mp: '−272°C', bp: '−269°C', notes: 'Only substance that can\'t solidify at 1 atm (even at absolute zero).' },
+        { substance: 'Hydrogen (H₂)', mp: '−259°C', bp: '−253°C', notes: 'Liquid H₂ is rocket fuel.' },
+        { substance: 'Nitrogen (N₂)', mp: '−210°C', bp: '−196°C', notes: 'Liquid N₂ for cryogenics, food.' },
+        { substance: 'Oxygen (O₂)', mp: '−218°C', bp: '−183°C', notes: 'Liquid O₂ for rockets, hospitals.' },
+        { substance: 'Methane', mp: '−183°C', bp: '−162°C', notes: 'Natural gas. LNG = liquefied methane.' },
+        { substance: 'Ethanol', mp: '−114°C', bp: '78°C', notes: 'Alcoholic drinks, fuel, hand sanitizer.' },
+        { substance: 'Water', mp: '0°C', bp: '100°C', notes: 'At 1 atm. Density max at 4°C — why ice floats.' },
+        { substance: 'Mercury (Hg)', mp: '−39°C', bp: '357°C', notes: 'Only metal liquid at RT.' },
+        { substance: 'Iron (Fe)', mp: '1538°C', bp: '2862°C', notes: 'Smelting temperature must exceed mp.' },
+        { substance: 'Copper (Cu)', mp: '1085°C', bp: '2562°C', notes: 'Casting + smelting.' },
+        { substance: 'Aluminum (Al)', mp: '660°C', bp: '2470°C', notes: 'Low for metal — easy to recycle.' },
+        { substance: 'Tin (Sn)', mp: '232°C', bp: '2602°C', notes: 'Low mp — used in solder.' },
+        { substance: 'Lead (Pb)', mp: '327°C', bp: '1749°C', notes: 'Old plumbing (toxic). Bullet metal.' },
+        { substance: 'Gold (Au)', mp: '1064°C', bp: '2856°C', notes: 'Pure gold is soft — alloyed for jewelry.' },
+        { substance: 'Silver (Ag)', mp: '962°C', bp: '2162°C', notes: 'Sterling silver = 92.5% Ag + 7.5% Cu.' },
+        { substance: 'Tungsten (W)', mp: '3422°C', bp: '5555°C', notes: 'Highest mp of metals. Light bulb filaments.' },
+        { substance: 'Carbon (graphite)', mp: '~3825°C (sublimes)', bp: '~4827°C', notes: 'Highest mp of pure elements.' },
+        { substance: 'Diamond', mp: '~3550°C', bp: '~4827°C', notes: 'Burns in oxygen at ~700°C before melting.' },
+        { substance: 'Silicon dioxide (quartz)', mp: '1713°C', bp: '2950°C', notes: 'Glass made from silica.' },
+        { substance: 'Sodium chloride (NaCl)', mp: '801°C', bp: '1413°C', notes: 'Table salt. High mp due to ionic bonding.' },
+        { substance: 'Calcium carbonate (CaCO₃)', mp: 'decomposes ~825°C', bp: '—', notes: 'Limestone. Releases CO₂ when heated → quicklime.' },
+        { substance: 'Sucrose (table sugar)', mp: 'decomposes ~186°C', bp: '—', notes: 'Caramelizes before melting cleanly.' },
+        { substance: 'Glucose', mp: '146°C', bp: '—', notes: 'Decomposes around mp.' },
+        { substance: 'Acetic acid', mp: '17°C', bp: '118°C', notes: 'Below 17°C: glacial acetic acid (solid).' },
+        { substance: 'Liquid nitrogen freezing temp tissues', mp: '—', bp: '−196°C', notes: 'Quickly freezes tissues; used in cryopreservation, cryotherapy.' }
+      ];
+
+      function renderPhScaleSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'H⁺ pH scale of common substances'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'pH = −log[H⁺]. Each unit = 10× change in [H⁺]. pH 7 = neutral; <7 = acidic; >7 = basic. Scale theoretically goes beyond 0-14 but rarely encountered.'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['pH', 'Substance', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                PH_EXAMPLES.map(function(p, i) {
+                  return React.createElement('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-mono font-black text-indigo-700 text-center' }, p.ph),
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, p.substance),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, p.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderFoodsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🥦 Food + nutrition (chemistry context)'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Macronutrients: carbs, fats, proteins. Each gram: carbs ~4 cal, protein ~4 cal, fat ~9 cal, alcohol ~7 cal.'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Food', 'Calories', 'Protein', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                FOODS_NUTRITION.map(function(f, i) {
+                  return React.createElement('tr', { key: 'f'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, f.food),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, f.cal),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, f.protein),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, f.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderMeltboilSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌡 Melting + boiling points'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'At 1 atm. Materials with strong intermolecular forces (ionic, network covalent) have higher melting/boiling points than those with weak forces (London).'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Substance', 'Melting pt', 'Boiling pt', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                MELT_BOIL.map(function(m, i) {
+                  return React.createElement('tr', { key: 'm'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, m.substance),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 text-[10px]' }, m.mp),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 text-[10px]' }, m.bp),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, m.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 4 — Dense reference data tables (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var ALL_ELEMENTS = [
+        { z: 1, sym: 'H', name: 'Hydrogen', mass: 1.008, cat: 'Nonmetal', notes: 'Most abundant in universe. Fuel of stars.' },
+        { z: 2, sym: 'He', name: 'Helium', mass: 4.003, cat: 'Noble gas', notes: 'Second most abundant in universe.' },
+        { z: 3, sym: 'Li', name: 'Lithium', mass: 6.94, cat: 'Alkali metal', notes: 'Lightest metal. Batteries, mood stabilizer.' },
+        { z: 4, sym: 'Be', name: 'Beryllium', mass: 9.012, cat: 'Alkaline earth', notes: 'Aerospace alloys. Toxic dust.' },
+        { z: 5, sym: 'B', name: 'Boron', mass: 10.81, cat: 'Metalloid', notes: 'Borosilicate glass (Pyrex). Detergents.' },
+        { z: 6, sym: 'C', name: 'Carbon', mass: 12.011, cat: 'Nonmetal', notes: 'Backbone of organic chemistry + life.' },
+        { z: 7, sym: 'N', name: 'Nitrogen', mass: 14.007, cat: 'Nonmetal', notes: '78% of atmosphere. Essential for proteins, DNA.' },
+        { z: 8, sym: 'O', name: 'Oxygen', mass: 15.999, cat: 'Nonmetal', notes: '21% of atmosphere. Essential for respiration.' },
+        { z: 9, sym: 'F', name: 'Fluorine', mass: 18.998, cat: 'Halogen', notes: 'Most electronegative. Toothpaste, Teflon, refrigerants.' },
+        { z: 10, sym: 'Ne', name: 'Neon', mass: 20.180, cat: 'Noble gas', notes: 'Red-orange signs.' },
+        { z: 11, sym: 'Na', name: 'Sodium', mass: 22.990, cat: 'Alkali metal', notes: 'Reactive! Table salt is NaCl. Vital for nerves.' },
+        { z: 12, sym: 'Mg', name: 'Magnesium', mass: 24.305, cat: 'Alkaline earth', notes: 'Light + strong (alloys). Chlorophyll center.' },
+        { z: 13, sym: 'Al', name: 'Aluminum', mass: 26.982, cat: 'Post-transition', notes: 'Most abundant metal in crust. Cans, foil, aircraft.' },
+        { z: 14, sym: 'Si', name: 'Silicon', mass: 28.085, cat: 'Metalloid', notes: 'Semiconductor electronics. Glass, sand, quartz.' },
+        { z: 15, sym: 'P', name: 'Phosphorus', mass: 30.974, cat: 'Nonmetal', notes: 'DNA backbone, ATP. Fertilizer. Matches.' },
+        { z: 16, sym: 'S', name: 'Sulfur', mass: 32.06, cat: 'Nonmetal', notes: 'Amino acids cys + met. Volcanic. Gunpowder.' },
+        { z: 17, sym: 'Cl', name: 'Chlorine', mass: 35.45, cat: 'Halogen', notes: 'Pool water sanitizer. Bleach. PVC.' },
+        { z: 18, sym: 'Ar', name: 'Argon', mass: 39.948, cat: 'Noble gas', notes: 'Inert gas for welding, light bulbs.' },
+        { z: 19, sym: 'K', name: 'Potassium', mass: 39.098, cat: 'Alkali metal', notes: 'Essential for nerves + muscles. Bananas.' },
+        { z: 20, sym: 'Ca', name: 'Calcium', mass: 40.078, cat: 'Alkaline earth', notes: 'Bones, teeth. Milk source.' },
+        { z: 21, sym: 'Sc', name: 'Scandium', mass: 44.956, cat: 'Transition metal', notes: 'Bicycle frames, baseball bats (aluminum-scandium alloys).' },
+        { z: 22, sym: 'Ti', name: 'Titanium', mass: 47.867, cat: 'Transition metal', notes: 'Strong + light. Aerospace, implants, paint (TiO₂).' },
+        { z: 23, sym: 'V', name: 'Vanadium', mass: 50.942, cat: 'Transition metal', notes: 'High-strength steel alloys.' },
+        { z: 24, sym: 'Cr', name: 'Chromium', mass: 51.996, cat: 'Transition metal', notes: 'Stainless steel (with Ni). Plating.' },
+        { z: 25, sym: 'Mn', name: 'Manganese', mass: 54.938, cat: 'Transition metal', notes: 'Steelmaking. Batteries.' },
+        { z: 26, sym: 'Fe', name: 'Iron', mass: 55.845, cat: 'Transition metal', notes: 'Most common metal in Earth\'s crust + core. Hemoglobin.' },
+        { z: 27, sym: 'Co', name: 'Cobalt', mass: 58.933, cat: 'Transition metal', notes: 'Permanent magnets. Vitamin B12.' },
+        { z: 28, sym: 'Ni', name: 'Nickel', mass: 58.693, cat: 'Transition metal', notes: 'Coins, stainless steel, batteries.' },
+        { z: 29, sym: 'Cu', name: 'Copper', mass: 63.546, cat: 'Transition metal', notes: 'Electrical wiring, plumbing. Antimicrobial surfaces.' },
+        { z: 30, sym: 'Zn', name: 'Zinc', mass: 65.38, cat: 'Transition metal', notes: 'Galvanizing iron. Brass (with Cu).' },
+        { z: 31, sym: 'Ga', name: 'Gallium', mass: 69.723, cat: 'Post-transition', notes: 'Melts in your hand (29.8°C). Semiconductors (GaN LEDs).' },
+        { z: 32, sym: 'Ge', name: 'Germanium', mass: 72.630, cat: 'Metalloid', notes: 'First transistors. Now mostly for IR optics.' },
+        { z: 33, sym: 'As', name: 'Arsenic', mass: 74.922, cat: 'Metalloid', notes: 'Famous poison. Doped in semiconductors. Wood preservative.' },
+        { z: 34, sym: 'Se', name: 'Selenium', mass: 78.971, cat: 'Nonmetal', notes: 'Trace nutrient. Photocells. Glass color.' },
+        { z: 35, sym: 'Br', name: 'Bromine', mass: 79.904, cat: 'Halogen', notes: 'Only liquid nonmetal at RT. Flame retardants (some banned).' },
+        { z: 36, sym: 'Kr', name: 'Krypton', mass: 83.798, cat: 'Noble gas', notes: 'Specialty lighting. Once defined the meter.' },
+        { z: 37, sym: 'Rb', name: 'Rubidium', mass: 85.468, cat: 'Alkali metal', notes: 'Atomic clocks.' },
+        { z: 38, sym: 'Sr', name: 'Strontium', mass: 87.62, cat: 'Alkaline earth', notes: 'Red fireworks. ⁹⁰Sr — radioactive fallout concern.' },
+        { z: 39, sym: 'Y', name: 'Yttrium', mass: 88.906, cat: 'Transition metal', notes: 'YBCO superconductors. Red phosphor in old TVs.' },
+        { z: 40, sym: 'Zr', name: 'Zirconium', mass: 91.224, cat: 'Transition metal', notes: 'Nuclear fuel cladding. ZrO₂ — fake diamond.' },
+        { z: 41, sym: 'Nb', name: 'Niobium', mass: 92.906, cat: 'Transition metal', notes: 'Superconductors (NbTi in MRI magnets).' },
+        { z: 42, sym: 'Mo', name: 'Molybdenum', mass: 95.95, cat: 'Transition metal', notes: 'High-strength steel alloys.' },
+        { z: 43, sym: 'Tc', name: 'Technetium', mass: 98, cat: 'Transition metal', notes: 'No stable isotopes. ⁹⁹ᵐTc most common medical isotope.' },
+        { z: 44, sym: 'Ru', name: 'Ruthenium', mass: 101.07, cat: 'Transition metal', notes: 'Platinum group. Catalysts, electronics.' },
+        { z: 45, sym: 'Rh', name: 'Rhodium', mass: 102.906, cat: 'Transition metal', notes: 'Most expensive metal (some years). Catalytic converters.' },
+        { z: 46, sym: 'Pd', name: 'Palladium', mass: 106.42, cat: 'Transition metal', notes: 'Catalytic converters. H₂ storage.' },
+        { z: 47, sym: 'Ag', name: 'Silver', mass: 107.868, cat: 'Transition metal', notes: 'Best conductor of heat + electricity. Photography (historical).' },
+        { z: 48, sym: 'Cd', name: 'Cadmium', mass: 112.414, cat: 'Transition metal', notes: 'Toxic. Old yellow paints. NiCd batteries.' },
+        { z: 49, sym: 'In', name: 'Indium', mass: 114.818, cat: 'Post-transition', notes: 'ITO — transparent conductor for touchscreens.' },
+        { z: 50, sym: 'Sn', name: 'Tin', mass: 118.710, cat: 'Post-transition', notes: 'Solder, bronze (with Cu), cans. Low melting point.' },
+        { z: 51, sym: 'Sb', name: 'Antimony', mass: 121.760, cat: 'Metalloid', notes: 'Flame retardants. Old "stibnite" eye makeup.' },
+        { z: 52, sym: 'Te', name: 'Tellurium', mass: 127.60, cat: 'Metalloid', notes: 'Photovoltaics (CdTe solar cells).' },
+        { z: 53, sym: 'I', name: 'Iodine', mass: 126.904, cat: 'Halogen', notes: 'Thyroid hormone. Antiseptic. Iodized salt.' },
+        { z: 54, sym: 'Xe', name: 'Xenon', mass: 131.293, cat: 'Noble gas', notes: 'Bright arc lamps. Anesthetic.' },
+        { z: 55, sym: 'Cs', name: 'Cesium', mass: 132.905, cat: 'Alkali metal', notes: 'Atomic clocks define the second. Reactive.' },
+        { z: 56, sym: 'Ba', name: 'Barium', mass: 137.327, cat: 'Alkaline earth', notes: 'Green fireworks. BaSO₄ for X-ray contrast (insoluble = nontoxic).' },
+        { z: 57, sym: 'La', name: 'Lanthanum', mass: 138.905, cat: 'Lanthanide', notes: 'Camera lenses (high refractive index).' },
+        { z: 58, sym: 'Ce', name: 'Cerium', mass: 140.116, cat: 'Lanthanide', notes: 'Most abundant rare earth. Catalytic converters.' },
+        { z: 59, sym: 'Pr', name: 'Praseodymium', mass: 140.908, cat: 'Lanthanide', notes: 'Magnets. Tinted welding goggles.' },
+        { z: 60, sym: 'Nd', name: 'Neodymium', mass: 144.242, cat: 'Lanthanide', notes: 'Strongest permanent magnets (NdFeB). Speakers, hard drives, motors.' },
+        { z: 61, sym: 'Pm', name: 'Promethium', mass: 145, cat: 'Lanthanide', notes: 'No stable isotopes. Glow-in-dark paints.' },
+        { z: 62, sym: 'Sm', name: 'Samarium', mass: 150.36, cat: 'Lanthanide', notes: 'SmCo magnets (high-temp).' },
+        { z: 63, sym: 'Eu', name: 'Europium', mass: 151.964, cat: 'Lanthanide', notes: 'Red phosphors. Anti-counterfeit ink in euros.' },
+        { z: 64, sym: 'Gd', name: 'Gadolinium', mass: 157.25, cat: 'Lanthanide', notes: 'MRI contrast. Magnetic refrigeration research.' },
+        { z: 65, sym: 'Tb', name: 'Terbium', mass: 158.925, cat: 'Lanthanide', notes: 'Green phosphors. Magnetostrictive alloys.' },
+        { z: 66, sym: 'Dy', name: 'Dysprosium', mass: 162.500, cat: 'Lanthanide', notes: 'Magnets that work at high temp (EV motors, wind turbines).' },
+        { z: 67, sym: 'Ho', name: 'Holmium', mass: 164.930, cat: 'Lanthanide', notes: 'Highest magnetic strength among elements.' },
+        { z: 68, sym: 'Er', name: 'Erbium', mass: 167.259, cat: 'Lanthanide', notes: 'Fiber amplifiers (EDFA) for internet backbones.' },
+        { z: 69, sym: 'Tm', name: 'Thulium', mass: 168.934, cat: 'Lanthanide', notes: 'Portable X-ray sources.' },
+        { z: 70, sym: 'Yb', name: 'Ytterbium', mass: 173.045, cat: 'Lanthanide', notes: 'Atomic clocks (most accurate today).' },
+        { z: 71, sym: 'Lu', name: 'Lutetium', mass: 174.967, cat: 'Lanthanide', notes: 'PET scan crystals.' },
+        { z: 72, sym: 'Hf', name: 'Hafnium', mass: 178.49, cat: 'Transition metal', notes: 'Nuclear control rods. CPU gate dielectric.' },
+        { z: 73, sym: 'Ta', name: 'Tantalum', mass: 180.948, cat: 'Transition metal', notes: 'Capacitors in electronics. Conflict mineral concerns.' },
+        { z: 74, sym: 'W', name: 'Tungsten', mass: 183.84, cat: 'Transition metal', notes: 'Highest melting point of metals (3422°C). Filaments, drill bits.' },
+        { z: 75, sym: 'Re', name: 'Rhenium', mass: 186.207, cat: 'Transition metal', notes: 'Jet engine alloys (high-T strength).' },
+        { z: 76, sym: 'Os', name: 'Osmium', mass: 190.23, cat: 'Transition metal', notes: 'Densest natural element (22.59 g/cm³). Fountain pen nibs.' },
+        { z: 77, sym: 'Ir', name: 'Iridium', mass: 192.217, cat: 'Transition metal', notes: 'Second densest. Spark plugs. Asteroid layer marker (K-Pg boundary).' },
+        { z: 78, sym: 'Pt', name: 'Platinum', mass: 195.084, cat: 'Transition metal', notes: 'Catalytic converters. Jewelry. Chemotherapy (cisplatin).' },
+        { z: 79, sym: 'Au', name: 'Gold', mass: 196.967, cat: 'Transition metal', notes: 'Doesn\'t tarnish. Jewelry, electronics, dental, money standard.' },
+        { z: 80, sym: 'Hg', name: 'Mercury', mass: 200.592, cat: 'Transition metal', notes: 'Only metal liquid at RT. Thermometers (banned now). Toxic.' },
+        { z: 81, sym: 'Tl', name: 'Thallium', mass: 204.38, cat: 'Post-transition', notes: 'Extremely toxic. Famous Agatha Christie poison.' },
+        { z: 82, sym: 'Pb', name: 'Lead', mass: 207.2, cat: 'Post-transition', notes: 'Lead-acid batteries, X-ray shielding. Neurotoxin — phased out of paint, gasoline.' },
+        { z: 83, sym: 'Bi', name: 'Bismuth', mass: 208.980, cat: 'Post-transition', notes: 'Pepto-Bismol. Heavy but relatively non-toxic.' },
+        { z: 84, sym: 'Po', name: 'Polonium', mass: 209, cat: 'Metalloid', notes: 'Highly radioactive. Discovered by Marie Curie. Poisoning agent (Litvinenko).' },
+        { z: 85, sym: 'At', name: 'Astatine', mass: 210, cat: 'Halogen', notes: 'Rarest element on Earth (~1g exists at any time).' },
+        { z: 86, sym: 'Rn', name: 'Radon', mass: 222, cat: 'Noble gas', notes: 'Radioactive. Major basement lung cancer risk.' },
+        { z: 87, sym: 'Fr', name: 'Francium', mass: 223, cat: 'Alkali metal', notes: 'Highly radioactive + reactive. Only tiny amounts exist.' },
+        { z: 88, sym: 'Ra', name: 'Radium', mass: 226, cat: 'Alkaline earth', notes: 'Discovered by Curies. Glow-in-dark paints (radium girls).' },
+        { z: 89, sym: 'Ac', name: 'Actinium', mass: 227, cat: 'Actinide', notes: 'Radioactive. Limited research uses.' },
+        { z: 90, sym: 'Th', name: 'Thorium', mass: 232.038, cat: 'Actinide', notes: 'Potential nuclear fuel. Old lantern mantles.' },
+        { z: 92, sym: 'U', name: 'Uranium', mass: 238.029, cat: 'Actinide', notes: 'Nuclear fuel + weapons. ²³⁵U fissile, ²³⁸U fertile.' },
+        { z: 94, sym: 'Pu', name: 'Plutonium', mass: 244, cat: 'Actinide', notes: 'Synthetic. Reactor fuel + weapons. RTGs (Voyager, Mars rovers).' }
+      ];
+
+      var MINERALS = [
+        { name: 'Quartz', formula: 'SiO₂', mohs: 7, notes: 'Most abundant mineral in crust. Sand. Watch crystals (piezo).' },
+        { name: 'Feldspar', formula: '(K,Na,Ca)(Al,Si)₄O₈', mohs: 6, notes: 'Most abundant mineral group. Ceramics, glass.' },
+        { name: 'Calcite', formula: 'CaCO₃', mohs: 3, notes: 'Limestone, marble. Reacts with HCl → CO₂ bubbles.' },
+        { name: 'Halite', formula: 'NaCl', mohs: 2.5, notes: 'Rock salt. Old salt mines.' },
+        { name: 'Gypsum', formula: 'CaSO₄·2H₂O', mohs: 2, notes: 'Drywall. Plaster of Paris (when partly dehydrated).' },
+        { name: 'Mica (muscovite)', formula: 'KAl₂(AlSi₃O₁₀)(OH)₂', mohs: 2.5, notes: 'Flakes into thin sheets. Used in cosmetics, capacitors.' },
+        { name: 'Olivine', formula: '(Mg,Fe)₂SiO₄', mohs: 6.5, notes: 'Mantle mineral. Green peridot gemstone.' },
+        { name: 'Pyrite', formula: 'FeS₂', mohs: 6, notes: '"Fool\'s gold". Brassy yellow cubic crystals.' },
+        { name: 'Galena', formula: 'PbS', mohs: 2.5, notes: 'Main lead ore. Heavy, silvery.' },
+        { name: 'Magnetite', formula: 'Fe₃O₄', mohs: 5.5, notes: 'Magnetic iron ore. Used in compass needles historically.' },
+        { name: 'Hematite', formula: 'Fe₂O₃', mohs: 6, notes: 'Iron ore. Red color in rocks + Mars soil.' },
+        { name: 'Talc', formula: 'Mg₃Si₄O₁₀(OH)₂', mohs: 1, notes: 'Softest mineral. Baby powder. Soapstone.' },
+        { name: 'Corundum', formula: 'Al₂O₃', mohs: 9, notes: 'Ruby (red) + sapphire (other colors). Watch crystals.' },
+        { name: 'Diamond', formula: 'C', mohs: 10, notes: 'Hardest natural material. Cutting tools, jewelry.' },
+        { name: 'Topaz', formula: 'Al₂SiO₄(F,OH)₂', mohs: 8, notes: 'Various colors. November birthstone.' },
+        { name: 'Beryl (emerald, aquamarine)', formula: 'Be₃Al₂Si₆O₁₈', mohs: 7.5, notes: 'Emerald = green (Cr); aquamarine = blue (Fe).' },
+        { name: 'Garnet', formula: 'X₃Y₂(SiO₄)₃ (various)', mohs: 7, notes: 'Many colors. Used in sandpaper + as gem.' },
+        { name: 'Fluorite', formula: 'CaF₂', mohs: 4, notes: 'Fluoresces under UV. Source of name "fluorescence".' },
+        { name: 'Apatite', formula: 'Ca₅(PO₄)₃(F,Cl,OH)', mohs: 5, notes: 'Main mineral in bones + teeth (hydroxyapatite form).' },
+        { name: 'Orthoclase', formula: 'KAlSi₃O₈', mohs: 6, notes: 'Mohs scale reference at 6.' }
+      ];
+
+      var DRUGS_LIST = [
+        { name: 'Aspirin', formula: 'C₉H₈O₄', class: 'NSAID', use: 'Pain, fever, blood thinner. Original drug from willow bark salicin.' },
+        { name: 'Ibuprofen', formula: 'C₁₃H₁₈O₂', class: 'NSAID', use: 'Pain, fever, inflammation. OTC since 1984.' },
+        { name: 'Acetaminophen (Tylenol)', formula: 'C₈H₉NO₂', class: 'Analgesic', use: 'Pain, fever. NOT anti-inflammatory. Overdose → liver failure.' },
+        { name: 'Caffeine', formula: 'C₈H₁₀N₄O₂', class: 'Stimulant', use: 'Adenosine receptor antagonist. Most consumed psychoactive drug.' },
+        { name: 'Penicillin G', formula: 'C₁₆H₁₈N₂O₄S', class: 'Antibiotic (β-lactam)', use: 'First mass-produced antibiotic. Inhibits bacterial cell-wall synthesis.' },
+        { name: 'Amoxicillin', formula: 'C₁₆H₁₉N₃O₅S', class: 'Antibiotic (β-lactam)', use: 'Common oral antibiotic. Broader spectrum than penicillin G.' },
+        { name: 'Insulin', formula: 'protein (51 aa)', class: 'Hormone', use: 'Diabetes. First recombinant drug (1982).' },
+        { name: 'Metformin', formula: 'C₄H₁₁N₅', class: 'Antidiabetic', use: 'First-line for type 2 diabetes. Reduces hepatic glucose output.' },
+        { name: 'Statins (e.g., atorvastatin)', formula: 'C₃₃H₃₅FN₂O₅', class: 'HMG-CoA reductase inhibitor', use: 'Lower LDL cholesterol. Most prescribed drug class in many countries.' },
+        { name: 'Levothyroxine', formula: 'C₁₅H₁₁I₄NO₄', class: 'Thyroid hormone', use: 'Hypothyroidism. Most prescribed drug in US most years.' },
+        { name: 'Sertraline (Zoloft)', formula: 'C₁₇H₁₇Cl₂N', class: 'SSRI', use: 'Depression, anxiety. Increases serotonin in synapse.' },
+        { name: 'Albuterol', formula: 'C₁₃H₂₁NO₃', class: 'Bronchodilator', use: 'Asthma rescue inhaler. β₂-adrenergic agonist.' },
+        { name: 'Lisinopril', formula: 'C₂₁H₃₁N₃O₅', class: 'ACE inhibitor', use: 'Hypertension. Inhibits angiotensin-converting enzyme.' },
+        { name: 'Atorvastatin (Lipitor)', formula: 'C₃₃H₃₅FN₂O₅', class: 'Statin', use: 'Cholesterol. Best-selling drug in history (~$148B lifetime).' },
+        { name: 'Omeprazole', formula: 'C₁₇H₁₉N₃O₃S', class: 'PPI (proton pump inhibitor)', use: 'Heartburn, GERD, ulcers.' },
+        { name: 'Diphenhydramine (Benadryl)', formula: 'C₁₇H₂₁NO', class: 'Antihistamine (1st gen)', use: 'Allergies, sleep aid. Sedating.' },
+        { name: 'Loratadine (Claritin)', formula: 'C₂₂H₂₃ClN₂O₂', class: 'Antihistamine (2nd gen)', use: 'Allergies. Non-sedating.' },
+        { name: 'Codeine', formula: 'C₁₈H₂₁NO₃', class: 'Opioid', use: 'Pain, cough. Liver metabolizes to morphine.' },
+        { name: 'Morphine', formula: 'C₁₇H₁₉NO₃', class: 'Opioid', use: 'Severe pain. First isolated drug from a plant (opium, 1804).' },
+        { name: 'Hydrocodone', formula: 'C₁₈H₂₁NO₃', class: 'Opioid', use: 'Pain. Often combined with acetaminophen.' },
+        { name: 'Diazepam (Valium)', formula: 'C₁₆H₁₃ClN₂O', class: 'Benzodiazepine', use: 'Anxiety, muscle spasms, seizures.' },
+        { name: 'Warfarin', formula: 'C₁₉H₁₆O₄', class: 'Anticoagulant', use: 'Blood thinner. Originally a rat poison.' },
+        { name: 'Furosemide (Lasix)', formula: 'C₁₂H₁₁ClN₂O₅S', class: 'Loop diuretic', use: 'Edema, heart failure. Increases urine output.' },
+        { name: 'Albuterol (salbutamol)', formula: 'C₁₃H₂₁NO₃', class: 'β₂ agonist', use: 'Asthma quick-relief.' },
+        { name: 'Metoprolol', formula: 'C₁₅H₂₅NO₃', class: 'Beta blocker', use: 'High blood pressure, heart failure, arrhythmia.' }
+      ];
+
+      var HOUSEHOLD_CHEM = [
+        { product: 'Bleach (household)', active: 'Sodium hypochlorite NaOCl (~5%)', notes: 'Oxidizes stains, kills microbes. NEVER mix with ammonia (toxic chloramines) or acids (toxic Cl₂ gas).' },
+        { product: 'Ammonia cleaner', active: 'NH₃ in water', notes: 'Cuts grease. Don\'t mix with bleach.' },
+        { product: 'Vinegar', active: 'Acetic acid CH₃COOH (~5%)', notes: 'Mild acid. Cleans mineral deposits, descales coffeemakers.' },
+        { product: 'Baking soda', active: 'Sodium bicarbonate NaHCO₃', notes: 'Mild base. Deodorizer, mild abrasive. Reacts with vinegar to make CO₂ (volcano demo).' },
+        { product: 'Hydrogen peroxide', active: 'H₂O₂ (3% medical, 35% commercial)', notes: 'Wound disinfectant. Bleaches hair. Decomposes to water + oxygen.' },
+        { product: 'Isopropyl alcohol', active: '(CH₃)₂CHOH (70-99%)', notes: 'Disinfectant. Solvent. 70% works best (water helps penetrate cells).' },
+        { product: 'Drain cleaner (lye-based)', active: 'Sodium hydroxide NaOH', notes: 'Very strong base. Dissolves hair + grease. Generates heat. WEAR GLOVES.' },
+        { product: 'Toilet bowl cleaner', active: 'HCl (5-10%) or H₃PO₄', notes: 'Acids dissolve mineral scale + rust.' },
+        { product: 'Glass cleaner (Windex)', active: 'Ammonia + 2-butoxyethanol + water', notes: 'Ammonia dissolves grease without streaks.' },
+        { product: 'Antiperspirant', active: 'Aluminum chlorohydrate', notes: 'Forms gel plugs in sweat ducts. Deodorant ≠ antiperspirant.' },
+        { product: 'Sunscreen (chemical)', active: 'Avobenzone, oxybenzone, octinoxate', notes: 'Absorb UV photons + dissipate as heat.' },
+        { product: 'Sunscreen (mineral)', active: 'Zinc oxide, titanium dioxide', notes: 'Scatter + absorb UV. Less skin penetration concerns.' },
+        { product: 'Toothpaste', active: 'Fluoride (NaF, MFP, SnF₂)', notes: 'Strengthens enamel (forms fluorapatite, less acid-soluble than hydroxyapatite).' },
+        { product: 'Antacid (Tums)', active: 'Calcium carbonate CaCO₃', notes: 'Neutralizes stomach HCl. CaCO₃ + 2HCl → CaCl₂ + H₂O + CO₂.' },
+        { product: 'Antacid (Mylanta)', active: 'Mg(OH)₂ + Al(OH)₃', notes: 'Different active ingredients = different side effects.' },
+        { product: 'Laundry detergent', active: 'Surfactants + enzymes + builders', notes: 'Surfactants surround oils; enzymes (proteases, amylases, lipases) digest stains.' },
+        { product: 'Dish soap', active: 'Anionic surfactants', notes: 'Emulsifies fats. Why it cuts grease.' },
+        { product: 'Soap (bar)', active: 'Sodium salts of fatty acids', notes: 'From saponification of fats + lye. Old-school cleaning.' },
+        { product: 'Pool chlorine', active: 'Calcium hypochlorite Ca(OCl)₂', notes: 'Sanitizes pool water. Sun degrades it — stabilizers (cyanuric acid) help.' },
+        { product: 'Antifreeze', active: 'Ethylene glycol (HOCH₂CH₂OH)', notes: 'Lowers freezing point of coolant. SWEET TASTE → toxic to pets + kids.' },
+        { product: 'Brake fluid', active: 'Glycol ethers (DOT 3, 4, 5.1) or silicone (DOT 5)', notes: 'Hygroscopic — absorbs water over time → reduces boiling point → fade.' },
+        { product: 'Gasoline (octane rating)', active: 'Hydrocarbons (C₄ to C₁₂)', notes: 'Octane rating = resistance to knock. Higher = more compression-tolerant.' }
+      ];
+
+      function renderAllElementsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🅻 Periodic table (90 elements)'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'A summary of the 90 naturally-occurring elements + selected synthetic ones. Full periodic table has 118 elements.'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Z', 'Sym', 'Name', 'Mass', 'Category', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                ALL_ELEMENTS.map(function(e, i) {
+                  return React.createElement('tr', { key: 'e'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-center' }, e.z),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono font-black text-indigo-700' }, e.sym),
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, e.name),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, e.mass),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px]' }, e.cat),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, e.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderMineralsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💎 Common minerals'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Mohs scale measures relative hardness (1 = softest, 10 = hardest). The scale steps are NOT linear: corundum (9) is ~4× harder than topaz (8), and diamond (10) is ~4× harder than corundum.'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Mineral', 'Formula', 'Mohs', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                MINERALS.map(function(m, i) {
+                  return React.createElement('tr', { key: 'm'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, m.name),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, m.formula),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 font-bold text-center' }, m.mohs),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, m.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderPharmaSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💊 Common medications'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'For chemistry context only — NOT medical advice. Always consult a doctor or pharmacist before taking any medication.'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Drug', 'Formula', 'Class', 'Use'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                DRUGS_LIST.map(function(d, i) {
+                  return React.createElement('tr', { key: 'd'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, d.name),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 text-[10px]' }, d.formula),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, d.class),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, d.use)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderHouseholdSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧴 Household chemicals'),
+          React.createElement('div', { className: 'p-2.5 rounded bg-rose-50 border border-rose-200 text-[11px] text-rose-900 mb-3' },
+            React.createElement('strong', null, '⚠ Safety: '), 'NEVER mix bleach with ammonia (toxic chloramine vapors) or acids (deadly chlorine gas). Store cleaners separately. Keep away from children.'
+          ),
+          React.createElement('div', { className: 'space-y-2' },
+            HOUSEHOLD_CHEM.map(function(c, i) {
+              return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, c.product),
+                  React.createElement('span', { className: 'text-[10px] font-mono text-indigo-700 font-bold ml-auto px-2 py-0.5 rounded bg-indigo-100' }, c.active)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.notes)
+              );
+            })
+          )
+        );
       }
 
       // ═════════════════════════════════════════════════════════════════════

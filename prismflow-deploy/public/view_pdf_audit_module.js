@@ -639,8 +639,59 @@ Return ONLY JSON:
               if (cleaned.indexOf("\n") !== -1) cleaned = cleaned.split("\n").slice(1).join("\n");
               if (cleaned.lastIndexOf("```") !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf("```"));
             }
-            window.__pdfBrandOverride = JSON.parse(cleaned);
+            const _extracted = JSON.parse(cleaned);
+            // Back-compat: keep the legacy globals so any non-migrated code path still works.
+            window.__pdfBrandOverride = _extracted;
             window.__pdfBrandMode = "upload";
+            // New: also save as a persistent Brand Profile so the same brand reaches
+            // the Document Builder, survives a reload, and can be exported across
+            // devices. Falls back gracefully if BrandProfile module isn't loaded.
+            try {
+              const _BP = window.AlloModules && window.AlloModules.BrandProfile;
+              if (_BP && typeof _BP.saveBrandProfile === "function") {
+                // Default name from filename; user can rename later in the editor.
+                const _defaultName = (file.name || "Uploaded brand").replace(/\.[^.]+$/, "").slice(0, 80);
+                // Map extracted fields onto the BrandProfile schema. Body color
+                // isn't extracted (Vision only returns palette/header colors), so
+                // fall back to a near-black that works against most extracted bgs.
+                const _candidate = {
+                  name: _defaultName,
+                  colors: {
+                    heading: _extracted.headingColor || "#1e3a5f",
+                    accent: _extracted.accentColor || "#2563eb",
+                    body: "#1f2937",
+                    bg: _extracted.bgColor || "#ffffff",
+                    cardBg: _extracted.tableBg || _extracted.bgColor || "#f8fafc",
+                    cardBorder: _extracted.tableBorder || "#e2e8f0"
+                  },
+                  fonts: {
+                    body: _extracted.bodyFont || "system-ui, sans-serif",
+                    heading: _extracted.headingFont || null
+                  },
+                  header: { text: "", showLogo: false },
+                  footer: { text: "", showPageNumber: false },
+                  createdFrom: "pdf-upload"
+                };
+                let _saved = _BP.saveBrandProfile(_candidate);
+                if (!_saved.ok && typeof _BP.autoFixBrandColors === "function") {
+                  // Vision sometimes returns colors that just-barely fail AA.
+                  // Auto-fix once, then retry.
+                  const _fixed = _BP.autoFixBrandColors(_candidate);
+                  const _retry = Object.assign({}, _fixed.profile, { name: _defaultName, createdFrom: "pdf-upload" });
+                  _saved = _BP.saveBrandProfile(_retry);
+                  if (_saved.ok) {
+                    addToast("🎨 Brand saved (" + _fixed.fixes.length + " contrast auto-fix" + (_fixed.fixes.length === 1 ? "" : "es") + " applied)", "success");
+                  }
+                }
+                if (_saved.ok) {
+                  _BP.setActiveBrandProfile(_saved.id);
+                } else if (_saved.errors && _saved.errors.length) {
+                  console.warn("[PDF Audit] Could not save brand profile:", _saved.errors.join("; "));
+                }
+              }
+            } catch (_bpErr) {
+              console.warn("[PDF Audit] BrandProfile integration failed (non-blocking):", _bpErr);
+            }
             document.querySelectorAll("[data-brand-mode]").forEach((b) => b.classList.remove("ring-2", "ring-indigo-400", "bg-indigo-50"));
             document.querySelector('[data-brand-mode="upload"]')?.classList.add("ring-2", "ring-indigo-400", "bg-indigo-50");
             addToast(t("toasts.brand_colors_extracted_from") + file.name, "success");

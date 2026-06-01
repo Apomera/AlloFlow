@@ -2410,6 +2410,18 @@ const d = labToolData.wave;
           { id: 'gravitational', label: 'Gravitational waves', icon: '⌇' },
           { id: 'units2', label: 'Wave units', icon: '∑' },
           { id: 'careers', label: 'Wave careers', icon: '💼' },
+          { id: 'animals', label: 'Animal senses', icon: '🦇' },
+          { id: 'instruments', label: 'Instrument freqs', icon: '🎻' },
+          { id: 'radio', label: 'Radio bands', icon: '📻' },
+          { id: 'colorhex', label: 'Named colors', icon: '🎨' },
+          { id: 'wavespeed', label: 'Wave speeds', icon: '⏱' },
+          { id: 'stars', label: 'Stars + spectra', icon: '⭐' },
+          { id: 'tvfreq', label: 'TV + screen', icon: '📺' },
+          { id: 'noise', label: 'Noise sources', icon: '🔊' },
+          { id: 'speeds2', label: 'Detailed speeds', icon: '⏲' },
+          { id: 'cameras', label: 'Camera lenses', icon: '📷' },
+          { id: 'optical_facts', label: 'Optical illusions', icon: '👁' },
+          { id: 'recordings', label: 'Audio formats', icon: '🎧' },
           { id: 'glossary', label: 'Glossary', icon: '📖' }
         ];
         return React.createElement('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3039,8 +3051,677 @@ const d = labToolData.wave;
         if (expSection === 'gravitational') return renderGravitationalSection();
         if (expSection === 'units2') return renderUnitsSection();
         if (expSection === 'careers') return renderCareersSection();
+        if (expSection === 'animals') return renderAnimalsSection();
+        if (expSection === 'instruments') return renderInstrumentFreqSection();
+        if (expSection === 'radio') return renderRadioSection();
+        if (expSection === 'colorhex') return renderColorhexSection();
+        if (expSection === 'wavespeed') return renderWaveSpeedSection();
+        if (expSection === 'stars') return renderStarsSection();
+        if (expSection === 'tvfreq') return renderTvfreqSection();
+        if (expSection === 'noise') return renderNoiseSection();
+        if (expSection === 'speeds2') return renderSpeeds2Section();
+        if (expSection === 'cameras') return renderCamerasSection();
+        if (expSection === 'optical_facts') return renderOpticalFactsSection();
+        if (expSection === 'recordings') return renderRecordingsSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
+      }
+
+      var AUDIO_FORMATS = [
+        { format: 'WAV (PCM)', extension: '.wav', compression: 'None (lossless)', notes: 'Raw uncompressed audio. ~10 MB/min at CD quality. Standard for editing.' },
+        { format: 'FLAC', extension: '.flac', compression: 'Lossless', notes: 'Free Lossless Audio Codec. ~5 MB/min CD quality. Bit-perfect — when decoded, identical to original.' },
+        { format: 'ALAC', extension: '.m4a, .alac', compression: 'Lossless', notes: 'Apple Lossless Audio Codec. Similar to FLAC but Apple-developed.' },
+        { format: 'MP3', extension: '.mp3', compression: 'Lossy', notes: 'Most common lossy format. 128 kbps = compact but audible artifacts. 320 kbps near-transparent.' },
+        { format: 'AAC', extension: '.aac, .m4a', compression: 'Lossy', notes: 'Better quality than MP3 at same bitrate. iTunes, YouTube use it.' },
+        { format: 'OGG Vorbis', extension: '.ogg', compression: 'Lossy', notes: 'Open-source alternative to MP3. Often used in games (Minecraft, Spotify).' },
+        { format: 'Opus', extension: '.opus', compression: 'Lossy', notes: 'Modern open codec. Excellent at low bitrates (6-510 kbps). Used in WebRTC, Discord, YouTube.' },
+        { format: 'WMA', extension: '.wma', compression: 'Lossy or lossless', notes: 'Microsoft\'s codec. Largely abandoned.' },
+        { format: 'AIFF', extension: '.aiff', compression: 'None (lossless)', notes: 'Apple\'s uncompressed format. Similar to WAV.' },
+        { format: 'MIDI', extension: '.mid', compression: 'Not audio — instructions', notes: 'Stores notes + timing, not sound. Player synthesizes. Tiny files.' },
+        { format: 'DSD', extension: '.dsf, .dff', compression: 'PDM (different from PCM)', notes: 'Used for Super Audio CD. 1-bit, very high sample rate (2.8+ MHz).' }
+      ];
+
+      var AUDIO_BITRATES = [
+        { quality: 'Phone call (G.711)', bitrate: '64 kbps', notes: '8 kHz sample, narrow band.' },
+        { quality: 'Opus low quality', bitrate: '24 kbps', notes: 'Voice still intelligible.' },
+        { quality: 'AM radio quality', bitrate: '~30 kbps equiv', notes: '5 kHz bandwidth approximately.' },
+        { quality: 'FM radio quality', bitrate: '~96 kbps equiv', notes: '15 kHz bandwidth approximately.' },
+        { quality: 'MP3 (web typical)', bitrate: '128 kbps', notes: 'Acceptable for casual listening. Audible artifacts.' },
+        { quality: 'AAC (Apple Music)', bitrate: '256 kbps', notes: 'Apple Music standard. Better than 128 kbps MP3.' },
+        { quality: 'Spotify (high)', bitrate: '320 kbps Ogg', notes: 'High-quality lossy. Near-transparent for most.' },
+        { quality: 'CD quality (16-bit/44.1 kHz PCM)', bitrate: '1411 kbps', notes: 'Lossless. ~10 MB/min stereo.' },
+        { quality: 'DVD-Audio (24-bit/96 kHz)', bitrate: '~4600 kbps', notes: 'High-resolution audio. Debated whether audible improvement.' },
+        { quality: 'Studio masters (24-bit/192 kHz)', bitrate: '~9200 kbps', notes: 'Recording standard. Down-converted for distribution.' }
+      ];
+
+      function renderRecordingsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎧 Audio formats + quality'),
+          React.createElement('div', { className: 'mb-3' },
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Common audio file formats'),
+            React.createElement('div', { className: 'overflow-x-auto' },
+              React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+                React.createElement('thead', null,
+                  React.createElement('tr', { className: 'bg-slate-100' },
+                    ['Format', 'Extension', 'Compression', 'Notes'].map(function(hh, i) {
+                      return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    })
+                  )
+                ),
+                React.createElement('tbody', null,
+                  AUDIO_FORMATS.map(function(a, i) {
+                    return React.createElement('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                      React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, a.format),
+                      React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 text-[10px]' }, a.extension),
+                      React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, a.compression),
+                      React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, a.notes)
+                    );
+                  })
+                )
+              )
+            )
+          ),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Common bitrates'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Quality level', 'Bitrate', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                AUDIO_BITRATES.map(function(b, i) {
+                  return React.createElement('tr', { key: 'b'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, b.quality),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, b.bitrate),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, b.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 7 — Final wave data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var OPTICAL_ILLUSIONS = [
+        { illusion: 'Müller-Lyer', description: 'Two equal lines with arrowheads — one outward, one inward — appear different lengths.', explanation: 'Brain interprets arrows as depth cues. May be culturally-influenced (less effect in some non-Western cultures).' },
+        { illusion: 'Necker cube', description: 'Wireframe cube spontaneously "flips" which face is in front.', explanation: 'Ambiguous projection — brain alternates interpretations. Bistable perception.' },
+        { illusion: 'Hermann grid', description: 'Black squares on white grid show ghostly gray dots at intersections.', explanation: 'Lateral inhibition in retinal cells. Each cell\'s response depends on neighbors.' },
+        { illusion: 'Checker shadow', description: 'Two checkerboard squares appear different shades but are identical.', explanation: 'Adelson\'s classic. Brain corrects for perceived shadow → "constancy" overrides actual luminance.' },
+        { illusion: 'Ponzo illusion', description: 'Two identical lines, one near converging rails, appear different lengths.', explanation: 'Brain treats converging lines as depth — "farther" object must be bigger to project same size on retina.' },
+        { illusion: 'Café wall', description: 'Parallel rows of alternating black/white tiles appear sloped.', explanation: 'Offset between rows creates perceived tilt. Studied at café walls in Bristol.' },
+        { illusion: 'Rotating snakes (Kitaoka)', description: 'Static image of circles appears to rotate.', explanation: 'Motion-sensitive cells respond differently to varying luminance, creating illusory motion in peripheral vision.' },
+        { illusion: 'Spinning dancer (silhouette)', description: 'Dancer appears to spin clockwise or counterclockwise.', explanation: 'Ambiguous silhouette has no depth cues. Brain locks in an interpretation — can sometimes be switched.' },
+        { illusion: 'The dress (2015 viral)', description: 'Photo of dress appeared blue/black to some, white/gold to others.', explanation: 'Different brains assume different illumination (daylight vs incandescent) → "color constancy" leads to different perceptions.' },
+        { illusion: 'Mach bands', description: 'Sharp luminance edges appear to have over/undershoot bands.', explanation: 'Lateral inhibition in retina enhances edges. Helps with object recognition but creates artifact at edges.' },
+        { illusion: 'Stroboscopic effect', description: 'Wheels appear to spin backward in movies.', explanation: 'Frame rate samples motion — when wheel completes nearly full rotation per frame, looks like slight reverse motion.' },
+        { illusion: 'Phantom limb', description: 'Amputees feel sensations from missing limb.', explanation: 'Brain map of body remains. Mirror therapy (Ramachandran) sometimes helps.' },
+        { illusion: 'Persistence of vision', description: 'Why movies (24+ fps) appear as continuous motion.', explanation: 'Retinal afterimage + brain interpolation. Below ~16 fps flicker is visible.' },
+        { illusion: 'Color afterimage', description: 'Stare at red for 30s → look at white → see green afterimage.', explanation: 'Cone receptors fatigue; complementary color signal dominates briefly when you look away.' },
+        { illusion: 'Blind spot', description: 'Each eye has a small region where you don\'t see.', explanation: 'Where optic nerve leaves retina — no photoreceptors. Brain fills in. Both eyes together compensate.' },
+        { illusion: 'Anaglyph (red/cyan 3D)', description: 'Glasses with red + cyan lenses create 3D from flat image.', explanation: 'Each eye sees different-colored image → brain fuses into 3D.' },
+        { illusion: 'Magic Eye / autostereogram', description: 'Cross-eye to see hidden 3D image.', explanation: 'Repeating pattern, each row offset slightly. Brain matches wrong elements → perceived depth.' },
+        { illusion: 'Doppler shift in sound', description: 'Siren of approaching vehicle sounds higher than receding.', explanation: 'Compressed waves coming, stretched waves going. f\' = f × (v_sound ± v_observer) / (v_sound ∓ v_source).' },
+        { illusion: 'Sonic boom', description: 'Loud bang when supersonic object passes.', explanation: 'Pressure cone of compressed air. Boom not heard until cone reaches you.' },
+        { illusion: 'Mirage (highway shimmer)', description: 'Distant road appears wet on hot day.', explanation: 'Hot air near road has lower n than cooler air above → refracts sky light to your eye. Same physics for desert mirages.' },
+        { illusion: 'Rainbow', description: '42° arc from anti-solar point.', explanation: 'Sunlight refracts entering water droplet, reflects off back, refracts again leaving. Different λ at different angles.' },
+        { illusion: 'Double rainbow', description: 'Second, dimmer rainbow with reversed colors at ~51°.', explanation: 'Two internal reflections in droplets. Less light → dimmer. Reverse order.' },
+        { illusion: 'Halo around moon/sun', description: '22° halo around sun or moon.', explanation: 'Ice crystals in high cirrus refract light. Often precedes weather change.' },
+        { illusion: 'Green flash at sunset', description: 'Brief green flash as sun dips below horizon.', explanation: 'Atmospheric refraction separates colors at moment of sunset. Best seen over ocean.' }
+      ];
+
+      function renderOpticalFactsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '👁 Optical illusions + perception phenomena'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Visual perception is active — brain interprets, fills in gaps, makes guesses. Illusions reveal the underlying processes.'),
+          React.createElement('div', { className: 'space-y-2' },
+            OPTICAL_ILLUSIONS.map(function(o, i) {
+              return React.createElement('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, o.illusion),
+                React.createElement('div', { className: 'text-[11px] text-cyan-700 italic mb-1' }, o.description),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, o.explanation)
+              );
+            })
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 6 — Final dense data tables (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var DETAILED_SPEEDS = [
+        { thing: 'Speed of light (vacuum)', speed: '299,792,458 m/s', notes: 'Universal speed limit. Defined exact.' },
+        { thing: 'Speed of light (air)', speed: '~299,700,000 m/s', notes: 'Air refractive index ~1.0003.' },
+        { thing: 'Speed of light (water)', speed: '~225,000,000 m/s', notes: 'n = 1.33.' },
+        { thing: 'Speed of light (glass)', speed: '~200,000,000 m/s', notes: 'n ~ 1.5.' },
+        { thing: 'Speed of light (diamond)', speed: '~124,000,000 m/s', notes: 'n = 2.42 — highest of common materials.' },
+        { thing: 'Cherenkov radiation threshold (water)', speed: '~225,000 km/s', notes: 'Particles faster than light-in-medium emit blue glow (Cherenkov).' },
+        { thing: 'Sound in air at 0°C', speed: '331 m/s', notes: 'Cold air, dry, sea level.' },
+        { thing: 'Sound in air at 20°C', speed: '343 m/s', notes: 'Reference room temp.' },
+        { thing: 'Sound in air at 40°C', speed: '355 m/s', notes: 'Hot day.' },
+        { thing: 'Sound in helium (RT)', speed: '~1007 m/s', notes: '~3× air → voice an octave higher.' },
+        { thing: 'Sound in CO₂ (RT)', speed: '~267 m/s', notes: 'Slower than air → voice lower.' },
+        { thing: 'Sound in water (RT)', speed: '~1482 m/s', notes: 'Whales use long-distance communication.' },
+        { thing: 'Sound in seawater', speed: '~1500 m/s', notes: 'Slightly different due to salts.' },
+        { thing: 'Sound in ice', speed: '~3840 m/s', notes: 'Stiff solid.' },
+        { thing: 'Sound in granite', speed: '~6000 m/s', notes: 'Hard rock.' },
+        { thing: 'Sound in steel', speed: '~5960 m/s', notes: 'Train tracks carry sound far before train arrives.' },
+        { thing: 'Sound in aluminum', speed: '~6420 m/s', notes: 'Light + stiff.' },
+        { thing: 'Sound in diamond', speed: '~12,000 m/s', notes: 'Fastest in common materials.' },
+        { thing: 'Sound in beryllium', speed: '~12,900 m/s', notes: 'Fastest in pure elements at standard conditions.' },
+        { thing: 'P-wave in upper mantle', speed: '~8 km/s', notes: 'Earthquake primary waves.' },
+        { thing: 'S-wave in upper mantle', speed: '~4.5 km/s', notes: 'Earthquake secondary waves.' },
+        { thing: 'Tsunami in deep ocean', speed: '~700 km/h', notes: 'Long wavelength shallow-water wave.' },
+        { thing: 'Tsunami in shore approach', speed: '~50 km/h', notes: 'Slows + grows as depth decreases.' },
+        { thing: 'Surface ripple on water', speed: 'depends on λ', notes: 'Short wavelengths controlled by surface tension; long by gravity.' },
+        { thing: 'Sound in human body (avg tissue)', speed: '~1540 m/s', notes: 'Used for medical ultrasound timing.' },
+        { thing: 'Sound in bone', speed: '~3000-4000 m/s', notes: 'Faster than soft tissue.' },
+        { thing: 'Sound in lung tissue', speed: '~650 m/s', notes: 'Air pockets slow it. Why lungs poorly imaged by ultrasound.' },
+        { thing: 'Lightning thunder rule of thumb', speed: '5 sec per mile / 3 sec per km', notes: 'Count seconds between flash + thunder.' }
+      ];
+
+      var CAMERA_LENSES = [
+        { lens: '8mm fisheye', fov: '~180° diagonal', use: 'Hemispheric panoramas, sky time-lapse, security cameras.' },
+        { lens: '14mm ultrawide', fov: '~114° diagonal', use: 'Tight indoor architecture, dramatic landscape.' },
+        { lens: '20mm ultrawide', fov: '~94°', use: 'Astrophotography, group photos in tight space.' },
+        { lens: '24mm wide-angle', fov: '~84°', use: 'Landscape, real estate, environmental portraits.' },
+        { lens: '28mm wide', fov: '~75°', use: 'Street photography, photojournalism.' },
+        { lens: '35mm wide', fov: '~63°', use: 'Documentary, candid. "Storyteller\'s lens".' },
+        { lens: '50mm normal', fov: '~47°', use: 'Closest to human eye perspective. "Nifty fifty". Portraits.' },
+        { lens: '85mm short telephoto', fov: '~28°', use: 'Portraits. Pleasing background compression.' },
+        { lens: '105mm portrait', fov: '~23°', use: 'Tight portraits. Macro variants for close-up.' },
+        { lens: '135mm', fov: '~18°', use: 'Outdoor portraits, candids from distance.' },
+        { lens: '200mm telephoto', fov: '~12°', use: 'Sports, wildlife, distant subjects.' },
+        { lens: '300mm telephoto', fov: '~8°', use: 'Sports field-side, bird photography.' },
+        { lens: '400mm super-tele', fov: '~6°', use: 'Wildlife, sports. Heavy + expensive.' },
+        { lens: '600mm super-tele', fov: '~4°', use: 'Distant wildlife, moon. Requires tripod.' },
+        { lens: '800mm super-tele', fov: '~3°', use: 'Specialized wildlife + astronomy.' },
+        { lens: '1200mm + teleconverter', fov: '~2°', use: 'Extreme reach. Solar eclipse details.' },
+        { lens: 'Macro 100mm', fov: '~24° at infinity / close at 1:1', use: 'Insects, flowers, product. 1:1 magnification.' },
+        { lens: 'Tilt-shift 24mm', fov: '~84° normal, controllable', use: 'Architecture (keep verticals straight), miniature faking.' },
+        { lens: 'Cinema anamorphic 50mm', fov: 'wider horizontally than spherical', use: 'Cinematic look. Oval bokeh, lens flares.' }
+      ];
+
+      var CAMERA_FACTS = [
+        { fact: 'Crop factor', detail: 'Smaller sensors crop image. APS-C ~1.5×, Micro 4/3 ~2×, smartphone ~5-7×.' },
+        { fact: 'Effective focal length', detail: '50mm lens on APS-C looks like 75mm on full frame. Doesn\'t change actual focal length, just FOV.' },
+        { fact: 'f-stop', detail: 'Ratio of focal length to aperture diameter. f/1.4, f/2, f/2.8, f/4, f/5.6, f/8 (each step halves light).' },
+        { fact: 'Depth of field', detail: 'Wider aperture (smaller f number) → shallower DOF. Why portraits use f/1.8-f/2.8 for soft backgrounds.' },
+        { fact: 'Shutter speed for handheld', detail: 'Rule: at least 1/focal-length sec. 50mm → 1/50 or faster. Stabilization helps.' },
+        { fact: 'Sensor sizes', detail: 'Full frame (36×24mm) > APS-H > APS-C > Micro 4/3 > 1" > phone sensors (~1/2" - 1/3").' },
+        { fact: 'Megapixels', detail: 'More pixels = more detail (with good lens). Diminishing returns past ~24-50 MP for most uses.' },
+        { fact: 'ISO', detail: 'Sensor sensitivity. Higher ISO = brighter image but more noise. Base ISO (lowest noise) typically 100-200.' }
+      ];
+
+      function renderSpeeds2Section() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⏲ Wave speeds in detail'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Wave + medium', 'Speed', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                DETAILED_SPEEDS.map(function(s, i) {
+                  return React.createElement('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.thing),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, s.speed),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderCamerasSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📷 Camera lenses + photography'),
+          React.createElement('div', { className: 'mb-3' },
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Lens focal lengths (35mm full-frame)'),
+            React.createElement('div', { className: 'overflow-x-auto' },
+              React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+                React.createElement('thead', null,
+                  React.createElement('tr', { className: 'bg-slate-100' },
+                    ['Lens', 'Field of view', 'Use'].map(function(hh, i) {
+                      return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    })
+                  )
+                ),
+                React.createElement('tbody', null,
+                  CAMERA_LENSES.map(function(L, i) {
+                    return React.createElement('tr', { key: 'L'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                      React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, L.lens),
+                      React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, L.fov),
+                      React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px]' }, L.use)
+                    );
+                  })
+                )
+              )
+            )
+          ),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Photography essentials'),
+          React.createElement('div', { className: 'space-y-1' },
+            CAMERA_FACTS.map(function(f, i) {
+              return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[11px] font-black text-cyan-900 mb-0.5' }, f.fact),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+              );
+            })
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 5 — Additional dense data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var STAR_DATA = [
+        { star: 'Sun', type: 'G2V (yellow dwarf)', temp: '5,778 K', distance: '1 AU', notes: 'Our nearest star. Apparent peak ~480 nm (blue-green) but we see it yellow due to atmospheric scattering.' },
+        { star: 'Proxima Centauri', type: 'M5.5 (red dwarf)', temp: '~3,042 K', distance: '4.24 ly', notes: 'Nearest known star. Has planets including Proxima b in habitable zone.' },
+        { star: 'Sirius A', type: 'A1V (white)', temp: '9,940 K', distance: '8.6 ly', notes: 'Brightest in night sky. Binary with white-dwarf Sirius B.' },
+        { star: 'Betelgeuse', type: 'M1-2 (red supergiant)', temp: '~3,500 K', distance: '~640 ly', notes: 'Orion\'s shoulder. Variable. Could go supernova "soon" (anytime in next ~100,000 yr).' },
+        { star: 'Rigel', type: 'B8I (blue supergiant)', temp: '~12,100 K', distance: '~860 ly', notes: 'Orion\'s foot. Triple star system.' },
+        { star: 'Vega', type: 'A0V (white)', temp: '9,602 K', distance: '25 ly', notes: 'Was once "the" North Star. Will be again in ~13,727 CE (precession of equinoxes).' },
+        { star: 'Polaris', type: 'F7Ib (yellow supergiant)', temp: '6,015 K', distance: '~430 ly', notes: 'Current North Star. Within ~0.5° of celestial north.' },
+        { star: 'Aldebaran', type: 'K5III (orange giant)', temp: '~3,910 K', distance: '~65 ly', notes: 'Eye of Taurus. Reddish-orange.' },
+        { star: 'Antares', type: 'M1.5Iab (red supergiant)', temp: '~3,660 K', distance: '~550 ly', notes: 'Heart of Scorpius. Diameter ~700× Sun.' },
+        { star: 'Procyon', type: 'F5IV (yellow-white)', temp: '6,530 K', distance: '11.5 ly', notes: 'Eighth brightest star. Binary.' },
+        { star: 'Capella', type: 'G3III + G0III (yellow giants)', temp: '~5,000 K (combined)', distance: '~43 ly', notes: 'Sixth brightest. Two pairs (4 stars).' },
+        { star: 'Spica', type: 'B1III-IV (blue giant)', temp: '~22,400 K', distance: '~250 ly', notes: 'Brightest in Virgo. Binary.' },
+        { star: 'Eta Carinae', type: 'LBV (luminous blue variable)', temp: '~20,000 K', distance: '~7,500 ly', notes: 'Massive (90 M☉ + companion). Erupted dramatically in 1840s. Likely future supernova/hypernova.' },
+        { star: 'UY Scuti', type: 'M4Ia (red hypergiant)', temp: '~3,365 K', distance: '~5,200 ly', notes: 'Among largest known stars. Diameter ~1700× Sun.' }
+      ];
+
+      var SCREEN_TYPES = [
+        { type: 'CRT (cathode ray tube)', refresh: '60-100 Hz', notes: 'Electron beam scans phosphors. Largely obsolete since ~2010.' },
+        { type: 'LCD (liquid crystal display)', refresh: '60-360 Hz', notes: 'LCs modulate backlight. Energy-efficient. Limited viewing angles.' },
+        { type: 'OLED (organic LED)', refresh: '60-240 Hz', notes: 'Each pixel emits own light. True blacks. Premium phones, TVs.' },
+        { type: 'micro-LED', refresh: '60-240 Hz', notes: 'Like OLED but inorganic LEDs. Brighter, longer-lived. Expensive (~2025).' },
+        { type: 'Plasma', refresh: '60 Hz typical', notes: 'Excited gas emits UV → phosphors. Discontinued ~2014.' },
+        { type: 'E-ink', refresh: 'on update', notes: 'Microcapsules with charged particles. No backlight needed. E-readers.' },
+        { type: 'Projector (DLP)', refresh: 'varies', notes: 'Micromirror array. Color via spinning wheel or 3 chips.' },
+        { type: 'Projector (LCD)', refresh: 'varies', notes: '3 LCD panels (RGB). Common in classrooms.' },
+        { type: 'Laser projector', refresh: 'varies', notes: 'RGB lasers, no lamp replacement. Wide color gamut.' }
+      ];
+
+      var SCREEN_RESOLUTIONS = [
+        { name: '480p (SD)', resolution: '640×480 or 720×480', notes: 'Standard definition.' },
+        { name: '720p (HD)', resolution: '1280×720', notes: 'Cable TV, older laptops.' },
+        { name: '1080p (Full HD)', resolution: '1920×1080', notes: 'Most TVs + phones for a decade.' },
+        { name: '2K / QHD', resolution: '2560×1440', notes: 'High-end monitors.' },
+        { name: '4K (UHD)', resolution: '3840×2160', notes: 'Now standard for new TVs.' },
+        { name: '5K', resolution: '5120×2880', notes: 'Apple iMac 5K, pro monitors.' },
+        { name: '8K', resolution: '7680×4320', notes: 'Premium TVs. Limited content.' },
+        { name: 'DCI 4K', resolution: '4096×2160', notes: 'Cinema standard.' },
+        { name: '16K (experimental)', resolution: '15360×8640', notes: 'Not commercially available.' }
+      ];
+
+      var NOISE_LEVELS = [
+        { source: 'Threshold of hearing', db: '0 dB SPL', notes: 'Quietest sound a young healthy ear can detect.' },
+        { source: 'Whisper at 1 m', db: '~30 dB', notes: 'Library.' },
+        { source: 'Quiet room', db: '~40 dB', notes: 'Empty house at night.' },
+        { source: 'Normal conversation', db: '~60 dB', notes: 'At 1 m.' },
+        { source: 'Vacuum cleaner', db: '~70 dB', notes: 'Most household appliances.' },
+        { source: 'Heavy traffic', db: '~80 dB', notes: 'Long exposure can cause hearing damage.' },
+        { source: 'Lawn mower', db: '~85-90 dB', notes: '85 dB = OSHA action level (hearing conservation required).' },
+        { source: 'Subway train', db: '~95-100 dB', notes: 'Pain threshold for prolonged exposure.' },
+        { source: 'Power tools (chainsaw)', db: '~110 dB', notes: 'Hearing protection essential.' },
+        { source: 'Rock concert / club', db: '~110-120 dB', notes: 'Permanent damage in minutes.' },
+        { source: 'Threshold of pain', db: '~130 dB', notes: 'Physically painful.' },
+        { source: 'Jet engine at 30 m', db: '~140 dB', notes: 'Instant hearing damage.' },
+        { source: 'Gunshot', db: '~150-170 dB', notes: 'Permanent damage possible from single exposure.' },
+        { source: 'Rocket launch at 100 m', db: '~180 dB', notes: 'Causes hearing damage + can damage equipment.' },
+        { source: 'Krakatoa eruption (1883)', db: '~310 dB at source', notes: 'Possibly loudest sound in modern history. Heard 3000 miles away.' }
+      ];
+
+      function renderStarsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⭐ Notable stars (visible spectra)'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Star color reflects surface temperature: red coolest (~3,000 K) → orange → yellow → white → blue hottest (~30,000+ K). Spectral types O-B-A-F-G-K-M.'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Star', 'Type', 'Temp', 'Distance', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                STAR_DATA.map(function(s, i) {
+                  return React.createElement('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.star),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 text-[10px]' }, s.type),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, s.temp),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, s.distance),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderTvfreqSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📺 Display technologies + resolutions'),
+          React.createElement('div', { className: 'mb-3' },
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Display types'),
+            React.createElement('div', { className: 'space-y-1' },
+              SCREEN_TYPES.map(function(s, i) {
+                return React.createElement('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, s.type),
+                    React.createElement('span', { className: 'text-[10px] font-mono text-cyan-700 ml-auto' }, s.refresh)
+                  ),
+                  React.createElement('div', { className: 'text-[10px] text-slate-700' }, s.notes)
+                );
+              })
+            )
+          ),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Standard resolutions'),
+          React.createElement('div', { className: 'space-y-1' },
+            SCREEN_RESOLUTIONS.map(function(r, i) {
+              return React.createElement('div', { key: 'r'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                  React.createElement('span', { className: 'text-[11px] font-black text-cyan-900' }, r.name),
+                  React.createElement('span', { className: 'text-[10px] font-mono text-cyan-700 ml-auto font-bold' }, r.resolution)
+                ),
+                React.createElement('div', { className: 'text-[10px] text-slate-700' }, r.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderNoiseSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔊 Sound levels (dB SPL)'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Decibels are logarithmic: +10 dB ≈ 10× sound intensity but ~2× perceived loudness. Sustained exposure >85 dB damages hearing.'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Source', 'Level', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                NOISE_LEVELS.map(function(n, i) {
+                  return React.createElement('tr', { key: 'n'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, n.source),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, n.db),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, n.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 4 — Dense reference data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var ANIMAL_HEARING = [
+        { animal: 'Human (young)', range: '20 Hz - 20 kHz', notes: 'Upper limit drops with age; adults often only ~14-16 kHz.' },
+        { animal: 'Human (elderly)', range: '20 Hz - 10-12 kHz', notes: 'Presbycusis — gradual high-frequency loss after age ~50.' },
+        { animal: 'Dog', range: '40 Hz - 60 kHz', notes: 'Dog whistles at 20-25 kHz inaudible to humans.' },
+        { animal: 'Cat', range: '55 Hz - 79 kHz', notes: 'Wide range. Sensitive to mouse squeaks.' },
+        { animal: 'Bat (echolocation)', range: '1 kHz - 200 kHz', notes: 'Chirp out + listen. Some species at 100+ kHz.' },
+        { animal: 'Dolphin', range: '~150 Hz - 150 kHz', notes: 'Echolocate underwater; clicks up to 200 kHz.' },
+        { animal: 'Whale (baleen)', range: '~10 Hz - 30 kHz', notes: 'Use infrasound (low freq) for very long-distance communication.' },
+        { animal: 'Elephant', range: '~5 Hz - 12 kHz', notes: 'Infrasonic rumbles travel miles. Use for long-range communication.' },
+        { animal: 'Mouse', range: '1 kHz - 90 kHz', notes: 'Ultrasonic vocalizations.' },
+        { animal: 'Bird (chicken)', range: '125 Hz - 2 kHz', notes: 'Narrower range than mammals. Used in cock crow.' },
+        { animal: 'Owl', range: '~50 Hz - 12 kHz', notes: 'Asymmetric ears for precise location of prey rustles.' },
+        { animal: 'Moth', range: '~20-60 kHz', notes: 'Hear bat echolocation — drop to evade.' },
+        { animal: 'Fish (most)', range: '50 Hz - 1 kHz', notes: 'Use lateral line for water vibrations + ears for sound.' },
+        { animal: 'Cricket', range: '~5-90 kHz', notes: 'Ears on legs! Tympanic organs near "knee".' }
+      ];
+
+      var INSTRUMENT_FREQS = [
+        { instrument: 'Piano', range: '27.5 Hz - 4186 Hz', fundamental: 'A0-C8 (88 keys)', notes: 'Widest range of standard orchestral instruments.' },
+        { instrument: 'Violin', range: '196 Hz - 3520 Hz', fundamental: 'G3-A7', notes: 'Highest pitch of orchestral strings.' },
+        { instrument: 'Viola', range: '130 Hz - 1318 Hz', fundamental: 'C3-E6', notes: 'Pitched fifth below violin.' },
+        { instrument: 'Cello', range: '65 Hz - 1046 Hz', fundamental: 'C2-C6', notes: 'Pitched octave below viola.' },
+        { instrument: 'Double bass', range: '41 Hz - 246 Hz', fundamental: 'E1-B3', notes: 'Lowest of standard orchestral strings.' },
+        { instrument: 'Guitar (standard tuning)', range: '82 Hz - 1318 Hz', fundamental: 'E2-E6', notes: 'EADGBE strings. Range varies with frets.' },
+        { instrument: 'Bass guitar', range: '41 Hz - 350 Hz', fundamental: 'E1-E4', notes: 'Octave below standard guitar (4-string).' },
+        { instrument: 'Flute', range: '262 Hz - 2093 Hz', fundamental: 'C4-C7', notes: 'Highest standard woodwind.' },
+        { instrument: 'Clarinet (Bb)', range: '147 Hz - 1568 Hz', fundamental: 'D3-G6', notes: 'Wide range. Distinctive timbre via odd harmonics.' },
+        { instrument: 'Oboe', range: '233 Hz - 1568 Hz', fundamental: 'Bb3-G6', notes: 'Reedy tone. Tunes the orchestra (its A is hardest to adjust).' },
+        { instrument: 'Bassoon', range: '58 Hz - 622 Hz', fundamental: 'Bb1-Eb5', notes: 'Lowest standard woodwind.' },
+        { instrument: 'Trumpet', range: '165 Hz - 988 Hz', fundamental: 'E3-B5', notes: 'Highest standard brass.' },
+        { instrument: 'Trombone', range: '82 Hz - 622 Hz', fundamental: 'E2-Eb5', notes: 'Slide changes pitch — continuous glissando possible.' },
+        { instrument: 'French horn', range: '62 Hz - 698 Hz', fundamental: 'B1-F5', notes: 'Wide tonal range; difficult to control.' },
+        { instrument: 'Tuba', range: '41 Hz - 349 Hz', fundamental: 'E1-F4', notes: 'Lowest brass.' },
+        { instrument: 'Voice (soprano)', range: '262 Hz - 1046 Hz', fundamental: 'C4-C6', notes: 'Highest female voice type.' },
+        { instrument: 'Voice (alto)', range: '196 Hz - 698 Hz', fundamental: 'G3-F5', notes: 'Lower female voice.' },
+        { instrument: 'Voice (tenor)', range: '131 Hz - 523 Hz', fundamental: 'C3-C5', notes: 'Highest male voice.' },
+        { instrument: 'Voice (baritone)', range: '110 Hz - 440 Hz', fundamental: 'A2-A4', notes: 'Most common male voice.' },
+        { instrument: 'Voice (bass)', range: '82 Hz - 349 Hz', fundamental: 'E2-F4', notes: 'Lowest standard voice.' },
+        { instrument: 'Drum kit (kick)', range: '60-100 Hz', fundamental: 'low rumble', notes: 'Felt as much as heard.' },
+        { instrument: 'Drum kit (snare)', range: '~200 Hz fundamental', fundamental: 'sharp attack', notes: 'Wires (snares) add high-frequency rattle.' },
+        { instrument: 'Cymbal (crash)', range: 'broad ~300 Hz - 10+ kHz', fundamental: 'inharmonic', notes: 'Not tonally pitched — many frequencies together.' }
+      ];
+
+      var RADIO_BANDS = [
+        { band: 'ELF (extremely low)', range: '3-30 Hz', wavelength: '100,000-10,000 km', use: 'Submarine communication (penetrates water).' },
+        { band: 'SLF (super low)', range: '30-300 Hz', wavelength: '10,000-1,000 km', use: 'Submarines, AC power harmonics.' },
+        { band: 'ULF (ultra low)', range: '300 Hz-3 kHz', wavelength: '1,000-100 km', use: 'Mine communication, geophysics.' },
+        { band: 'VLF (very low)', range: '3-30 kHz', wavelength: '100-10 km', use: 'Submarine comms, navigation beacons.' },
+        { band: 'LF (low)', range: '30-300 kHz', wavelength: '10-1 km', use: 'AM longwave radio (Europe), time signals (WWVB), aircraft navigation.' },
+        { band: 'MF (medium)', range: '300 kHz-3 MHz', wavelength: '1 km-100 m', use: 'AM broadcast radio (525-1705 kHz).' },
+        { band: 'HF (high)', range: '3-30 MHz', wavelength: '100-10 m', use: 'Shortwave radio, ham radio. Reflects off ionosphere → global propagation.' },
+        { band: 'VHF (very high)', range: '30-300 MHz', wavelength: '10-1 m', use: 'FM radio (88-108 MHz), TV channels 2-13, air traffic, weather radio.' },
+        { band: 'UHF (ultra high)', range: '300 MHz-3 GHz', wavelength: '1 m-10 cm', use: 'TV channels 14+, cellular (700 MHz - 2.6 GHz), Wi-Fi 2.4 GHz, microwave ovens.' },
+        { band: 'SHF (super high)', range: '3-30 GHz', wavelength: '10 cm-1 cm', use: 'Wi-Fi 5/6 GHz, satellite TV, radar.' },
+        { band: 'EHF (extremely high)', range: '30-300 GHz', wavelength: '1 cm-1 mm', use: '5G mmWave, automotive radar, radio astronomy.' },
+        { band: 'THF (terahertz)', range: '300 GHz-3 THz', wavelength: '1 mm-100 μm', use: 'Research band. Some imaging applications (terahertz cameras).' }
+      ];
+
+      var NAMED_COLORS = [
+        { name: 'Black', hex: '#000000', wavelength: '—', notes: 'Absence of light. Truest black possible.' },
+        { name: 'White', hex: '#FFFFFF', wavelength: 'all visible', notes: 'All wavelengths reflected equally.' },
+        { name: 'Red', hex: '#FF0000', wavelength: '~620-750 nm', notes: 'Lowest energy visible.' },
+        { name: 'Orange', hex: '#FFA500', wavelength: '~590-620 nm', notes: 'Between red + yellow.' },
+        { name: 'Yellow', hex: '#FFFF00', wavelength: '~570-590 nm', notes: 'Brightest perceived color (peak human sensitivity).' },
+        { name: 'Green', hex: '#00FF00', wavelength: '~495-570 nm', notes: 'Most abundant in nature (chlorophyll reflects).' },
+        { name: 'Cyan', hex: '#00FFFF', wavelength: '~485-500 nm', notes: 'Halfway between blue + green.' },
+        { name: 'Blue', hex: '#0000FF', wavelength: '~450-495 nm', notes: 'Scattered most by atmosphere → blue sky.' },
+        { name: 'Magenta', hex: '#FF00FF', wavelength: 'not a single λ', notes: 'Brain perceives red+blue without green. Has no monochromatic wavelength.' },
+        { name: 'Violet', hex: '#8B00FF', wavelength: '~380-450 nm', notes: 'Highest energy visible. Beyond is UV.' },
+        { name: 'Pink', hex: '#FFC0CB', wavelength: '—', notes: 'Tint of red. Lots of cultural meaning.' },
+        { name: 'Brown', hex: '#A52A2A', wavelength: '—', notes: 'Dark orange/red. No "brown" wavelength exists — perceptual color only.' },
+        { name: 'Gray', hex: '#808080', wavelength: '—', notes: 'Achromatic. Equal RGB at any intensity.' },
+        { name: 'Silver', hex: '#C0C0C0', wavelength: '—', notes: 'Light gray, often with metallic sheen.' },
+        { name: 'Gold', hex: '#FFD700', wavelength: '—', notes: 'Yellow with brownish tint. Metallic sheen in physical samples.' },
+        { name: 'Maroon', hex: '#800000', wavelength: '—', notes: 'Dark red.' },
+        { name: 'Navy', hex: '#000080', wavelength: '—', notes: 'Dark blue. Original navy uniforms.' },
+        { name: 'Teal', hex: '#008080', wavelength: '—', notes: 'Dark cyan. Named after teal duck\'s head color.' },
+        { name: 'Olive', hex: '#808000', wavelength: '—', notes: 'Dark yellow-green.' },
+        { name: 'Purple', hex: '#800080', wavelength: '—', notes: 'Dark magenta. Royal purple historically rare + expensive (Tyrian dye).' },
+        { name: 'Indigo', hex: '#4B0082', wavelength: '~440-450 nm', notes: 'Between blue + violet. Newton\'s color of the spectrum.' },
+        { name: 'Lime', hex: '#00FF00', wavelength: '~495-570 nm', notes: 'Web "lime" = pure green RGB.' },
+        { name: 'Aqua', hex: '#00FFFF', wavelength: '~485-500 nm', notes: 'Same as cyan in web colors.' },
+        { name: 'Fuchsia', hex: '#FF00FF', wavelength: 'not a single λ', notes: 'Same as magenta in web colors.' },
+        { name: 'Coral', hex: '#FF7F50', wavelength: '—', notes: 'Orange-pink, named after coral reefs.' },
+        { name: 'Tomato', hex: '#FF6347', wavelength: '—', notes: 'Bright red-orange.' },
+        { name: 'Salmon', hex: '#FA8072', wavelength: '—', notes: 'Pinkish orange, like salmon flesh.' },
+        { name: 'Khaki', hex: '#F0E68C', wavelength: '—', notes: 'Light yellow-brown. Military uniforms.' },
+        { name: 'Crimson', hex: '#DC143C', wavelength: '~640 nm', notes: 'Deep red.' },
+        { name: 'Lavender', hex: '#E6E6FA', wavelength: '—', notes: 'Light purple, named after the flower.' },
+        { name: 'Turquoise', hex: '#40E0D0', wavelength: '~490 nm', notes: 'Greenish blue, named after the gemstone.' },
+        { name: 'Beige', hex: '#F5F5DC', wavelength: '—', notes: 'Pale yellow-brown. Common neutral.' }
+      ];
+
+      var WAVE_SPEEDS = [
+        { medium: 'Vacuum', speed: '299,792,458 m/s (light)', notes: 'Defined exactly. Maximum possible speed of any information.' },
+        { medium: 'Air at 0°C', speed: '331 m/s (sound)', notes: 'Speed of sound increases with temperature.' },
+        { medium: 'Air at 20°C', speed: '343 m/s (sound)', notes: 'Standard reference. ~1235 km/h, 767 mph.' },
+        { medium: 'Helium at 20°C', speed: '~1007 m/s (sound)', notes: 'Faster — lighter molecules. Why helium makes voice high-pitched.' },
+        { medium: 'Water at 20°C', speed: '~1482 m/s (sound)', notes: 'Sound travels ~4× faster in water than air.' },
+        { medium: 'Steel', speed: '~5960 m/s (sound)', notes: 'Sound very fast in stiff solids.' },
+        { medium: 'Diamond', speed: '~12,000 m/s (sound)', notes: 'Fastest sound speed of common materials.' },
+        { medium: 'Glass (typical)', speed: '~200,000 km/s (light)', notes: 'About 2/3 c. Refractive index n = c/v ≈ 1.5.' },
+        { medium: 'Water', speed: '~225,000 km/s (light)', notes: 'About 3/4 c. n ≈ 1.33.' },
+        { medium: 'Crust (P-waves)', speed: '~5-8 km/s', notes: 'Earthquake P-waves move at this speed in upper crust.' },
+        { medium: 'Crust (S-waves)', speed: '~3-4.5 km/s', notes: 'Slower than P-waves.' },
+        { medium: 'Tsunami (deep ocean)', speed: '~700 km/h', notes: 'Long-wavelength shallow-water wave. Slows + grows at shore.' },
+        { medium: 'Light in coaxial cable', speed: '~200,000 km/s', notes: 'Slower than vacuum — limits internet latency to/from data centers.' },
+        { medium: 'Sound in body tissue', speed: '~1500-1600 m/s', notes: 'Similar to water. Why ultrasound works for medical imaging.' },
+        { medium: 'Compressional wave in rope', speed: '√(T/μ) m/s', notes: 'T = tension, μ = linear density. Tighter rope → faster waves.' }
+      ];
+
+      function renderAnimalsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🦇 Animal hearing ranges'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Animal', 'Hearing range', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                ANIMAL_HEARING.map(function(a, i) {
+                  return React.createElement('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, a.animal),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold' }, a.range),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, a.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderInstrumentFreqSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎻 Musical instrument frequencies'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Instrument', 'Range', 'Notes (notation)', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                INSTRUMENT_FREQS.map(function(I, i) {
+                  return React.createElement('tr', { key: 'I'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, I.instrument),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, I.range),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, I.fundamental),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, I.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderRadioSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📻 Radio frequency bands (ITU)'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'EM waves below visible light, classified by frequency. Lower bands penetrate further; higher bands carry more data.'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Band', 'Frequency', 'Wavelength', 'Use'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                RADIO_BANDS.map(function(b, i) {
+                  return React.createElement('tr', { key: 'b'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, b.band),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, b.range),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, b.wavelength),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px]' }, b.use)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderColorhexSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎨 Named colors + their wavelengths'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Color', 'Hex', 'λ peak', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                NAMED_COLORS.map(function(c, i) {
+                  return React.createElement('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800', style: { borderLeft: '8px solid ' + c.hex } }, c.name),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, c.hex),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 text-[10px]' }, c.wavelength),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderWaveSpeedSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⏱ Wave speeds in different media'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Medium', 'Speed', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                WAVE_SPEEDS.map(function(w, i) {
+                  return React.createElement('tr', { key: 'w'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, w.medium),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, w.speed),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, w.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
       }
 
       // ═════════════════════════════════════════════════════════════════════

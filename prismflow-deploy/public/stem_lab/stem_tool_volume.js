@@ -2121,10 +2121,9 @@ window.StemLab = window.StemLab || {
                     c2.fillStyle = s.color + '40';
                     // Draw shape (simplified)
                     if (s.name === 'Cube') {
-                      // Iso cube
+                      // Iso cube with interior Y edges so it reads as 3D, not flat hexagon
                       var pts = [];
                       var cos30 = Math.cos(Math.PI / 6 + rot);
-                      var sin30 = Math.sin(Math.PI / 6 + rot);
                       pts = [
                         { x: 0, y: -sz }, { x: sz * cos30, y: -sz / 2 }, { x: sz * cos30, y: sz / 2 }, { x: 0, y: sz },
                         { x: -sz * cos30, y: sz / 2 }, { x: -sz * cos30, y: -sz / 2 }
@@ -2133,16 +2132,23 @@ window.StemLab = window.StemLab || {
                       pts.forEach(function(p, pi) { if (pi === 0) c2.moveTo(p.x, p.y); else c2.lineTo(p.x, p.y); });
                       c2.closePath();
                       c2.fill(); c2.stroke();
+                      // Interior Y: 3 edges from the near-corner (centre) to alternating outer vertices
+                      c2.beginPath(); c2.moveTo(0, 0); c2.lineTo(pts[0].x, pts[0].y); c2.stroke();
+                      c2.beginPath(); c2.moveTo(0, 0); c2.lineTo(pts[2].x, pts[2].y); c2.stroke();
+                      c2.beginPath(); c2.moveTo(0, 0); c2.lineTo(pts[4].x, pts[4].y); c2.stroke();
                     } else if (s.name === 'Sphere') {
                       c2.beginPath();
                       c2.arc(0, 0, sz, 0, Math.PI * 2);
                       c2.fill(); c2.stroke();
-                      // Equator + meridian
+                      // Equator + two phase-offset meridians for continuous spin
                       c2.beginPath();
                       c2.ellipse(0, 0, sz, sz * 0.3, 0, 0, Math.PI * 2);
                       c2.stroke();
                       c2.beginPath();
                       c2.ellipse(0, 0, sz * 0.3 * Math.abs(Math.cos(rot)), sz, 0, 0, Math.PI * 2);
+                      c2.stroke();
+                      c2.beginPath();
+                      c2.ellipse(0, 0, sz * 0.3 * Math.abs(Math.sin(rot)), sz, 0, 0, Math.PI * 2);
                       c2.stroke();
                     } else if (s.name === 'Cylinder') {
                       c2.beginPath();
@@ -2154,6 +2160,9 @@ window.StemLab = window.StemLab || {
                       c2.beginPath();
                       c2.ellipse(0, sz, sz * 0.7, sz * 0.2, 0, 0, Math.PI * 2);
                       c2.fill(); c2.stroke();
+                      // Back edge: vertical seam swinging horizontally to show vertical-axis spin
+                      var cylBackX = Math.sin(rot) * sz * 0.7;
+                      c2.beginPath(); c2.moveTo(cylBackX, -sz); c2.lineTo(cylBackX, sz); c2.stroke();
                     } else if (s.name === 'Cone') {
                       c2.beginPath();
                       c2.moveTo(0, -sz);
@@ -2164,6 +2173,9 @@ window.StemLab = window.StemLab || {
                       c2.beginPath();
                       c2.ellipse(0, sz, sz * 0.7, sz * 0.2, 0, 0, Math.PI * 2);
                       c2.fill(); c2.stroke();
+                      // Back ridge: line from apex to a swinging point on the base ellipse
+                      var coneBackX = Math.sin(rot) * sz * 0.7;
+                      c2.beginPath(); c2.moveTo(0, -sz); c2.lineTo(coneBackX, sz); c2.stroke();
                     } else if (s.name === 'Pyramid') {
                       c2.beginPath();
                       c2.moveTo(0, -sz);
@@ -2171,17 +2183,41 @@ window.StemLab = window.StemLab || {
                       c2.lineTo(sz * 0.7, sz);
                       c2.closePath();
                       c2.fill(); c2.stroke();
-                      c2.beginPath();
-                      c2.moveTo(0, -sz); c2.lineTo(0, sz);
-                      c2.stroke();
+                      // Two phase-offset edges from apex to swinging base points
+                      // (a 4-sided pyramid has 4 apex→base edges; show 2 of them rotating)
+                      var pyrX1 = Math.sin(rot) * sz * 0.7;
+                      var pyrX2 = Math.sin(rot + Math.PI / 2) * sz * 0.7;
+                      c2.beginPath(); c2.moveTo(0, -sz); c2.lineTo(pyrX1, sz); c2.stroke();
+                      c2.beginPath(); c2.moveTo(0, -sz); c2.lineTo(pyrX2, sz); c2.stroke();
                     } else if (s.name === 'Prism') {
-                      // Triangular prism
+                      // Triangular prism: front face triangle + depth edges from each vertex
                       c2.beginPath();
                       c2.moveTo(-sz, sz / 2);
                       c2.lineTo(0, -sz / 2);
                       c2.lineTo(sz, sz / 2);
                       c2.closePath();
                       c2.fill(); c2.stroke();
+                      var prismDx = Math.cos(rot) * sz * 0.35;
+                      var prismDy = Math.sin(rot) * sz * 0.15;
+                      var prismVerts = [
+                        { x: -sz, y: sz / 2 },
+                        { x: 0, y: -sz / 2 },
+                        { x: sz, y: sz / 2 }
+                      ];
+                      // Depth edges
+                      prismVerts.forEach(function(v) {
+                        c2.beginPath();
+                        c2.moveTo(v.x, v.y);
+                        c2.lineTo(v.x + prismDx, v.y + prismDy);
+                        c2.stroke();
+                      });
+                      // Back face outline (offset triangle)
+                      c2.beginPath();
+                      c2.moveTo(prismVerts[0].x + prismDx, prismVerts[0].y + prismDy);
+                      c2.lineTo(prismVerts[1].x + prismDx, prismVerts[1].y + prismDy);
+                      c2.lineTo(prismVerts[2].x + prismDx, prismVerts[2].y + prismDy);
+                      c2.closePath();
+                      c2.stroke();
                     }
                     c2.restore();
                     c2.font = 'bold 10px sans-serif'; c2.fillStyle = s.color; c2.textAlign = 'center';

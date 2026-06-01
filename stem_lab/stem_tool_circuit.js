@@ -2144,6 +2144,19 @@ window.StemLab = window.StemLab || {
           { id: 'simulation', label: 'Circuit sim', icon: '🖥' },
           { id: 'standards', label: 'Standards + plugs', icon: '🔌' },
           { id: 'careers', label: 'Careers', icon: '💼' },
+          { id: 'batteries', label: 'Battery types', icon: '🔋' },
+          { id: 'energy', label: 'Energy sources', icon: '⚡' },
+          { id: 'famouscirc', label: 'Famous circuits', icon: '🎛' },
+          { id: 'computers', label: 'Computer history', icon: '💻' },
+          { id: 'world', label: 'World electrification', icon: '🌐' },
+          { id: 'wire', label: 'Wire gauges', icon: '〰' },
+          { id: 'fuses', label: 'Fuses + circuit brks', icon: '⌧' },
+          { id: 'lights', label: 'Light bulbs', icon: '💡' },
+          { id: 'household_app', label: 'Appliance watts', icon: '🏠' },
+          { id: 'circuit_lab', label: 'Lab equipment', icon: '🔬' },
+          { id: 'common_circuits', label: 'Project circuits', icon: '⚒' },
+          { id: 'connectors', label: 'Common connectors', icon: '🔌' },
+          { id: 'symbols', label: 'Schematic symbols', icon: '⊜' },
           { id: 'glossary', label: 'Glossary', icon: '📖' }
         ];
         return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
@@ -2731,8 +2744,985 @@ window.StemLab = window.StemLab || {
         if (expSection === 'wireless') return renderWirelessSection();
         if (expSection === 'units') return renderUnitsSection();
         if (expSection === 'famous') return renderFamousSection();
+        if (expSection === 'micro') return renderMicroSection();
+        if (expSection === 'ics') return renderIcsSection();
+        if (expSection === 'protos') return renderProtosSection();
+        if (expSection === 'sensors') return renderSensorsSection();
+        if (expSection === 'actuators') return renderActuatorsSection();
+        if (expSection === 'pcb') return renderPcbSection();
+        if (expSection === 'troubleshoot') return renderTroubleshootSection();
+        if (expSection === 'simulation') return renderSimulationSection();
+        if (expSection === 'standards') return renderStandardsSection();
+        if (expSection === 'careers') return renderCareersSection();
+        if (expSection === 'batteries') return renderBatteriesSection();
+        if (expSection === 'energy') return renderEnergySection();
+        if (expSection === 'famouscirc') return renderFamouscircSection();
+        if (expSection === 'computers') return renderComputersSection();
+        if (expSection === 'world') return renderWorldSection();
+        if (expSection === 'wire') return renderWireSection();
+        if (expSection === 'fuses') return renderFusesSection();
+        if (expSection === 'lights') return renderLightsSection();
+        if (expSection === 'household_app') return renderHouseholdAppSection();
+        if (expSection === 'circuit_lab') return renderCircuitLabSection();
+        if (expSection === 'common_circuits') return renderCommonCircuitsSection();
+        if (expSection === 'connectors') return renderConnectorsSection();
+        if (expSection === 'symbols') return renderSymbolsSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
+      }
+
+      var SCHEMATIC_SYMBOLS = [
+        { name: 'Resistor', us: 'Zigzag line', eu: 'Rectangle', notes: 'IEEE/ANSI uses zigzag; IEC uses rectangle. Both globally understood.' },
+        { name: 'Capacitor (non-polarized)', us: 'Two parallel straight lines', eu: 'Same', notes: 'Universal symbol.' },
+        { name: 'Capacitor (polarized)', us: 'One straight + one curved line', eu: 'Same with + marker', notes: '+ side = anode. Curved side = cathode.' },
+        { name: 'Inductor', us: 'Loops/coils', eu: 'Filled rectangle', notes: 'IEEE: curves like a spring. IEC: filled bar.' },
+        { name: 'Battery', us: 'Long line (+) + short line (−)', eu: 'Same', notes: 'Multi-cell shown with multiple line pairs. Universal.' },
+        { name: 'Ground (earth)', us: 'Lines decreasing in length', eu: 'Same', notes: 'Multiple variants for chassis, earth, signal ground.' },
+        { name: 'LED', us: 'Diode with two arrows pointing OUT', eu: 'Same', notes: 'Arrows = emitted light. Photodiode has arrows pointing IN.' },
+        { name: 'Diode', us: 'Triangle pointing to bar', eu: 'Same', notes: 'Triangle = anode side. Current flows in direction of triangle.' },
+        { name: 'Transistor (NPN)', us: 'Circle with 3 leads, arrow OUT on emitter', eu: 'Same', notes: 'PNP has arrow pointing IN.' },
+        { name: 'MOSFET (N-channel)', us: 'Symbol with gate insulated, arrow IN on body', eu: 'Same', notes: 'Many variations — enhancement vs depletion, with vs without body terminal.' },
+        { name: 'Op-amp', us: 'Triangle with + and − inputs + output', eu: 'Same', notes: 'Power supply pins often hidden for clarity.' },
+        { name: 'Logic gates', us: 'Distinctive shapes (AND = D-shape, OR = curved)', eu: 'Rectangle with label (&, ≥1, =1)', notes: 'US: graphical. EU: rectangle + Boolean operator symbol.' },
+        { name: 'Wire crossing (no connection)', us: 'One wire jumps over other', eu: 'Crossed lines (no dot)', notes: 'Dot = connection. No dot = wires cross without touching.' },
+        { name: 'Wire junction (connection)', us: 'Dot at intersection', eu: 'Same', notes: 'T-junctions usually shown without dot; 4-way always with dot.' },
+        { name: 'Switch (SPST)', us: 'Hinged line on contact', eu: 'Same', notes: 'SPDT, DPDT, etc. add more contacts.' },
+        { name: 'Speaker', us: 'Square + curved triangle', eu: 'Same', notes: 'Loudspeaker, headphone — same basic symbol.' },
+        { name: 'Microphone', us: 'Circle with vertical line', eu: 'Same', notes: 'Or circle with diagonal lines.' },
+        { name: 'Transformer', us: 'Two coils with bar between', eu: 'Same', notes: 'Bar = iron core. Air-core transformers omit it.' },
+        { name: 'Fuse', us: 'Rectangle with curve, or zigzag with line', eu: 'Rectangle', notes: 'Multiple variants. All indicate breakable link.' },
+        { name: 'Lamp / bulb', us: 'Circle with X (×) inside', eu: 'Same', notes: 'Or circle with crossed loop.' }
+      ];
+
+      function renderSymbolsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⊜ Schematic symbols (US vs EU style)'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Most schematics use IEEE/ANSI (US) or IEC (European) symbols. Both are clear once you learn them, but mixing in one schematic is confusing.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Component', 'US (IEEE)', 'EU (IEC)', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                SCHEMATIC_SYMBOLS.map(function(s, i) {
+                  return h('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.name),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, s.us),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, s.eu),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      var CONNECTORS = [
+        { name: 'USB-A', pins: '4 (USB 2.0) / 9 (USB 3.0)', use: 'Computer host ports. Being phased out for USB-C.', notes: 'Rectangular, "only fits one way" — but Murphy says it takes 3 tries.' },
+        { name: 'USB-C', pins: '24 (16 + power/data)', use: 'Modern phones, laptops, peripherals. Reversible.', notes: 'Power up to 240W, data up to 80 Gbps. EU mandate for new phones.' },
+        { name: 'USB Micro-B', pins: '5', use: 'Older Android phones, small electronics', notes: 'Replaced by USB-C in most new products. Easy to wear out.' },
+        { name: 'USB Mini-B', pins: '5', use: 'Older cameras, MP3 players', notes: 'Mostly obsolete.' },
+        { name: 'HDMI Type A (standard)', pins: 19, use: 'TVs, monitors, game consoles', notes: 'Audio + video. HDMI 2.1: 48 Gbps, 8K@60.' },
+        { name: 'HDMI Mini (Type C)', pins: 19, use: 'Tablets, some cameras', notes: 'Smaller form factor.' },
+        { name: 'HDMI Micro (Type D)', pins: 19, use: 'Phones, GoPro, small cameras', notes: 'Even smaller.' },
+        { name: 'DisplayPort', pins: 20, use: 'Computer monitors', notes: 'DP 2.0: 80 Gbps. Common on graphics cards + pro displays.' },
+        { name: 'Mini DisplayPort', pins: 20, use: 'MacBooks, Surface (older)', notes: 'Largely replaced by USB-C/Thunderbolt.' },
+        { name: 'Thunderbolt 3/4 (over USB-C)', pins: 24, use: 'High-speed external storage, eGPUs, docks', notes: 'TB4: 40 Gbps. Same connector as USB-C but more capability.' },
+        { name: 'VGA (DE-15)', pins: 15, use: 'Older monitors, projectors', notes: 'Analog. Largely obsolete but still common in education.' },
+        { name: 'DVI', pins: '24+5 (DVI-I) / 24 (DVI-D)', use: 'Older flat-panel monitors', notes: 'Digital (DVI-D) or hybrid (DVI-I). Replaced by HDMI + DP.' },
+        { name: 'RJ45 (Ethernet)', pins: 8, use: 'Wired networking', notes: 'Cat 5e (1 Gbps), Cat 6 (10 Gbps short), Cat 8 (40 Gbps).' },
+        { name: 'RJ11 (telephone)', pins: '4-6', use: 'Landline phones, DSL', notes: 'Smaller than RJ45.' },
+        { name: '3.5mm TRS audio', pins: '3 contacts', use: 'Headphones, speakers, line in/out', notes: 'Tip-Ring-Sleeve. 4-contact (TRRS) adds microphone for headsets.' },
+        { name: '1/4" TRS', pins: '3 contacts', use: 'Pro audio, guitar cables', notes: 'Same idea as 3.5mm but bigger. Guitar = TS (no ring).' },
+        { name: 'XLR (3-pin)', pins: 3, use: 'Professional microphones, mixing boards', notes: 'Balanced audio — rejects noise. Locking connector.' },
+        { name: 'RCA (composite)', pins: '1 (+ground shield)', use: 'Old AV equipment', notes: 'Yellow=video, red/white=stereo audio. Mostly obsolete.' },
+        { name: 'Banana plug', pins: 1, use: 'Test leads, speakers', notes: 'Single conductor. Common in lab instruments.' },
+        { name: 'BNC', pins: 1, use: 'Coax video, RF lab equipment', notes: 'Bayonet locking. Used on oscilloscope probes.' },
+        { name: 'F-connector (coax TV)', pins: 1, use: 'Cable TV, satellite, antenna', notes: 'Threaded. 75-ohm impedance.' },
+        { name: 'SMA', pins: 1, use: 'RF + microwave equipment, antennas', notes: 'Threaded coax connector. 50-ohm.' },
+        { name: 'IEC C13/C14 (kettle plug)', pins: 3, use: 'Computer power supplies, monitors', notes: 'Standard PC cord. International compatibility.' },
+        { name: 'Barrel jack (DC)', pins: 2, use: 'Wall warts, small electronics', notes: 'Multiple sizes (5.5×2.1mm common). Center pin polarity varies — check datasheet!' },
+        { name: 'JST (PH, XH, etc.)', pins: '2-15+', use: 'Internal connections in electronics', notes: 'Many series. Common in hobby + Arduino projects.' },
+        { name: 'Molex (4-pin Mate-N-Lok)', pins: 4, use: 'Old IDE drives, fans', notes: 'PC peripheral power. Largely replaced by SATA power.' },
+        { name: 'SATA data + power', pins: '7 + 15', use: 'Internal storage drives', notes: 'Standard since mid-2000s. NVMe replacing for high-end.' },
+        { name: 'M.2 (NVMe)', pins: 'B + M keys, varies', use: 'Modern SSDs', notes: 'Direct PCIe connection. Tiny + fast.' },
+        { name: 'Lightning (Apple)', pins: 8, use: 'iPhones pre-2024, iPads, accessories', notes: 'Reversible. Being replaced by USB-C across Apple line.' }
+      ];
+
+      function renderConnectorsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔌 Common connectors + cables'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Connector', 'Pins', 'Use', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                CONNECTORS.map(function(c, i) {
+                  return h('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, c.name),
+                    h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold text-[10px]' }, c.pins),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, c.use),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 7 — Final circuit data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var PROJECT_CIRCUITS = [
+        { project: 'LED + battery', difficulty: 'Beginner', components: 'LED, resistor (220-470 Ω), 9V battery (or AA holder)', skills: 'Polarity, current-limit resistor calculation' },
+        { project: 'Series + parallel LEDs', difficulty: 'Beginner', components: 'Multiple LEDs, resistors, battery', skills: 'Series adds voltage drops. Parallel needs separate resistors per branch.' },
+        { project: '555 timer LED blink', difficulty: 'Beginner', components: '555 IC, 2 resistors, 1 cap, LED, battery', skills: 'Astable multivibrator. Frequency calc. Reading datasheets.' },
+        { project: 'Light-sensing alarm (LDR + 555)', difficulty: 'Beginner-intermediate', components: 'LDR, transistor, 555, speaker', skills: 'Voltage divider with variable R. Transistor switching.' },
+        { project: 'Arduino + LED + button', difficulty: 'Beginner', components: 'Arduino, LED, resistor, button, breadboard', skills: 'Digital I/O, pull-up/down resistors, basic programming.' },
+        { project: 'Servo motor sweep', difficulty: 'Beginner', components: 'Arduino, servo, power supply', skills: 'PWM signal generation. Library use (Servo.h).' },
+        { project: 'Temperature display', difficulty: 'Intermediate', components: 'Arduino, DHT22 sensor, OLED screen', skills: 'I²C, library installation, sensor calibration.' },
+        { project: 'Bluetooth speaker (DIY)', difficulty: 'Intermediate', components: 'Bluetooth module, amp board, speaker, battery, switch', skills: 'Audio signal flow. Power management. Enclosure design.' },
+        { project: 'Motion-sensing light', difficulty: 'Intermediate', components: 'PIR sensor, MOSFET, LED strip, power supply', skills: 'Digital sensors. High-current switching with MOSFET.' },
+        { project: 'Robot car (basic)', difficulty: 'Intermediate', components: 'Arduino, motor driver, 2 DC motors, wheels, chassis, battery, ultrasonic sensor', skills: 'H-bridge motor control. Sensor integration. Mechanical assembly.' },
+        { project: 'Weather station (data logger)', difficulty: 'Intermediate-advanced', components: 'ESP32, BME280, DHT22, SD card, OLED, battery', skills: 'Multi-sensor I²C, SD card filesystem, real-time clock, low-power sleep modes.' },
+        { project: 'Home automation switch (Wi-Fi)', difficulty: 'Intermediate-advanced', components: 'ESP32/ESP8266, relay, USB power, enclosure', skills: 'AC mains safety (!), Wi-Fi APIs, MQTT or HTTP, mobile app integration.' },
+        { project: 'CNC machine controller', difficulty: 'Advanced', components: 'Stepper drivers, steppers, controller board (e.g., GRBL), power supply', skills: 'Stepper microstepping, G-code, mechanical alignment.' },
+        { project: '3D printer firmware', difficulty: 'Advanced', components: 'Marlin/Klipper firmware, board (e.g., SKR), endstops, thermistors, fans', skills: 'Firmware compilation, PID tuning for hot end + bed, stepper calibration.' },
+        { project: 'Drone build', difficulty: 'Advanced', components: 'Frame, motors (brushless), ESCs, flight controller, receiver, props, LiPo battery', skills: 'PID control, RF binding, safety (props off until ready), regulations.' },
+        { project: 'Custom keyboard', difficulty: 'Intermediate-advanced', components: 'Switches, diodes, PCB (custom), USB controller (RP2040/Pro Micro), keycaps', skills: 'Matrix scanning, QMK firmware, PCB design (or hand-wired).' },
+        { project: 'Software-defined radio (SDR)', difficulty: 'Advanced', components: 'RTL-SDR dongle (or HackRF), antenna, computer', skills: 'Signal processing, frequency analysis, modulation/demodulation.' },
+        { project: 'Custom PCB project', difficulty: 'Advanced', components: 'KiCad/Altium, manufacturer (JLCPCB, PCBWay), parts (DigiKey/Mouser)', skills: 'Schematic capture, layout, ordering, assembly, debugging.' },
+        { project: 'Battery management system (BMS)', difficulty: 'Advanced', components: 'Cells, balancing IC, current sensor, MCU, safety FETs', skills: 'Cell balancing, overcurrent + thermal protection, safety!' },
+        { project: 'Quadruped robot', difficulty: 'Advanced', components: '12 servos (3 per leg), MCU, IMU, power, chassis', skills: 'Inverse kinematics, gait planning, balance algorithms.' }
+      ];
+
+      function renderCommonCircuitsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚒ Hands-on project ideas'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'A learning ladder from "blink an LED" to "build a quadruped robot." Each project builds on skills from earlier ones.'),
+          h('div', { className: 'space-y-2' },
+            PROJECT_CIRCUITS.map(function(p, i) {
+              return h('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, p.project),
+                  h('span', { className: 'text-[10px] text-amber-700 font-mono ml-auto px-2 py-0.5 rounded bg-amber-100' }, p.difficulty)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Components: '), p.components),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, h('strong', null, 'Skills: '), p.skills)
+              );
+            })
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 6 — Final dense data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var APPLIANCES = [
+        { device: 'LED light bulb (typical)', watts: '5-15 W', notes: 'Replaces 40-100W incandescent. ~10× more efficient.' },
+        { device: 'Incandescent bulb (60W)', watts: '60 W', notes: 'Mostly heat. Phased out in many countries.' },
+        { device: 'Fluorescent ceiling tube (4 ft)', watts: '32 W', notes: 'Office standard for decades.' },
+        { device: 'Laptop computer', watts: '15-60 W', notes: 'Higher under load. Charging draws more than running.' },
+        { device: 'Desktop PC (typical)', watts: '60-250 W', notes: 'Gaming PCs can hit 500-800 W under load.' },
+        { device: 'CRT TV (old, 32")', watts: '~150 W', notes: 'Mostly obsolete.' },
+        { device: 'LCD TV (40")', watts: '~75 W', notes: 'Big improvement over CRT.' },
+        { device: 'OLED TV (65")', watts: '~120 W', notes: 'Per-pixel emission.' },
+        { device: 'Refrigerator', watts: '100-400 W when running', notes: 'Cycles on/off. ~1-2 kWh/day typical.' },
+        { device: 'Freezer (chest)', watts: '50-150 W when running', notes: 'More insulated than fridge. Cycles less.' },
+        { device: 'Microwave oven', watts: '700-1500 W', notes: '"700 W output" = actual cooking power; input may be 1000+ W.' },
+        { device: 'Electric kettle', watts: '1500 W (US) / 3000 W (EU/UK)', notes: 'Higher voltage in EU/UK allows faster boil.' },
+        { device: 'Toaster', watts: '800-1500 W', notes: 'Pure resistive heating.' },
+        { device: 'Hair dryer', watts: '1200-1875 W', notes: 'Heating element + small motor.' },
+        { device: 'Coffee maker (drip)', watts: '600-1200 W', notes: 'Heats water, keeps hot.' },
+        { device: 'Espresso machine', watts: '1000-1500 W', notes: 'Brief high-power bursts.' },
+        { device: 'Dishwasher', watts: '1200-1500 W during cycle', notes: 'Mostly heating water + pump.' },
+        { device: 'Clothes washer', watts: '300-500 W (cold) / ~2000 W (hot)', notes: 'Cold wash much more efficient.' },
+        { device: 'Clothes dryer (electric)', watts: '1800-5000 W', notes: 'One of the biggest household loads.' },
+        { device: 'Vacuum cleaner', watts: '500-1500 W', notes: 'Motor + air movement.' },
+        { device: 'Iron (clothing)', watts: '1000-1800 W', notes: 'Resistive heating.' },
+        { device: 'Window AC (5,000 BTU)', watts: '~450 W', notes: '~1 kWh per 2.5 hr of cooling.' },
+        { device: 'Central AC (3 ton)', watts: '3500-5000 W', notes: 'Biggest summer load. SEER rating matters.' },
+        { device: 'Electric furnace', watts: '10,000-25,000 W', notes: 'Mostly replaced by heat pumps in efficient homes.' },
+        { device: 'Heat pump (3 ton)', watts: '1500-3000 W', notes: '~3× more efficient than resistive heat.' },
+        { device: 'Water heater (electric tank)', watts: '4500 W', notes: 'On/off cycling. ~3-5 kWh/day for typical household.' },
+        { device: 'EV charging (Level 1, 120V)', watts: '1400 W', notes: 'Slow — adds ~4-5 miles/hour of charging.' },
+        { device: 'EV charging (Level 2, 240V)', watts: '7000-12,000 W', notes: 'Home garage charger. Adds 20-40 mi/hr.' },
+        { device: 'EV DC fast charger', watts: '50,000-350,000 W', notes: 'Highway charging. Can add 200+ mi in 20 min.' },
+        { device: 'Phone charger', watts: '5-65 W', notes: 'USB-PD 3.1 allows up to 240 W (laptop charging).' },
+        { device: 'Wi-Fi router', watts: '5-20 W', notes: '24/7 — small per hour but adds up.' },
+        { device: 'Game console (PS5/Xbox)', watts: '160-200 W gaming / 20 W idle', notes: 'Modern consoles are efficient by default.' },
+        { device: 'Treadmill', watts: '600-2000 W', notes: 'Motor scales with speed + incline.' }
+      ];
+
+      var LAB_EQUIPMENT = [
+        { instrument: 'Digital multimeter (DMM)', use: 'Measures V, I, R (and often continuity, capacitance, frequency).', notes: 'Basic tool. Auto-ranging models common. Higher-end: true RMS for non-sine AC.' },
+        { instrument: 'Oscilloscope', use: 'Visualize voltage vs time. See waveform shape, frequency, glitches.', notes: 'Bandwidth (MHz/GHz) determines fastest signals you can see. 4 channels common.' },
+        { instrument: 'Logic analyzer', use: 'Capture many digital signals simultaneously.', notes: 'For debugging digital protocols (I²C, SPI, USB).' },
+        { instrument: 'Function/arbitrary waveform generator', use: 'Output sine, square, triangle, custom waves.', notes: 'For stimulating circuits during testing.' },
+        { instrument: 'Bench DC power supply', use: 'Adjustable voltage + current limit.', notes: 'Multi-output models common. Current limit protects circuits during testing.' },
+        { instrument: 'Spectrum analyzer', use: 'Frequency-domain view of signals.', notes: 'Used in RF design, EMI testing.' },
+        { instrument: 'Network analyzer', use: 'Measures S-parameters (impedance + transmission) over frequency.', notes: 'Vector network analyzer (VNA) gives phase + magnitude.' },
+        { instrument: 'LCR meter', use: 'Measures inductance, capacitance, resistance at various frequencies.', notes: 'Better than multimeter for these parameters.' },
+        { instrument: 'Soldering iron', use: 'Joins components via molten solder.', notes: '~350°C typical. Temperature-controlled stations preferred.' },
+        { instrument: 'Hot air rework station', use: 'Desolder + place SMT components.', notes: 'Adjustable temp + airflow.' },
+        { instrument: 'Solder reflow oven', use: 'Mass-solders PCB assemblies.', notes: 'Toaster ovens can be modified for hobby use.' },
+        { instrument: 'Microscope (stereo)', use: 'Inspect SMT components + solder joints.', notes: '10-40× typical. 0603 + smaller require microscope.' },
+        { instrument: 'PCB drill / mill', use: 'Make holes + cut traces in prototype boards.', notes: 'CNC machines like Bantam Tools for low-volume.' },
+        { instrument: 'Wire strippers', use: 'Remove insulation cleanly.', notes: 'Multi-gauge selectable. Avoid nicking conductors.' },
+        { instrument: 'Crimping tool', use: 'Compress connectors onto wires.', notes: 'Right tool for the connector matters — wrong crimp = unreliable.' },
+        { instrument: 'Heat gun', use: 'Shrinks heat-shrink tubing. Hot air rework.', notes: '~200-400°C. Don\'t aim at flammable insulation.' },
+        { instrument: 'Continuity tester', use: 'Beeps when circuit complete.', notes: 'DMMs have this built-in. Quick wire + trace checks.' },
+        { instrument: 'Clamp meter', use: 'Measures current without breaking circuit.', notes: 'Hall-effect sensor reads magnetic field around conductor.' },
+        { instrument: 'Insulation tester (megger)', use: 'Tests insulation with high voltage (500-1000+ V DC).', notes: 'For mains wiring + motor windings.' },
+        { instrument: 'Earth ground tester', use: 'Verifies grounding system resistance.', notes: '<25 Ω typically required for safety.' },
+        { instrument: 'IR thermometer / thermal camera', use: 'Spot hot components or failing connections.', notes: 'Useful for finding hot solder joints or overloaded wires.' },
+        { instrument: 'ESD wrist strap', use: 'Prevent static damage to sensitive components.', notes: '1 MΩ resistor to ground. Essential for MOSFETs, modern ICs.' }
+      ];
+
+      function renderHouseholdAppSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏠 Household appliance power'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Typical wattage of common devices. Watts × hours = watt-hours of energy used. 1 kWh costs ~$0.10-0.30 in most regions.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Device', 'Power', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                APPLIANCES.map(function(a, i) {
+                  return h('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, a.device),
+                    h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold text-[10px]' }, a.watts),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, a.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderCircuitLabSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔬 Electronics lab equipment'),
+          h('div', { className: 'space-y-2' },
+            LAB_EQUIPMENT.map(function(L, i) {
+              return h('div', { key: 'L'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, L.instrument),
+                h('div', { className: 'text-[11px] text-amber-700 font-bold mb-1' }, 'Use: ' + L.use),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, L.notes)
+              );
+            })
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 5 — Dense data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var WIRE_GAUGES = [
+        { awg: 0, dia: '8.25 mm', amps: '195 A', use: 'Large feeder cables.' },
+        { awg: 2, dia: '6.54 mm', amps: '130 A', use: 'Battery cables (cars).' },
+        { awg: 4, dia: '5.19 mm', amps: '95 A', use: 'Range/cooktop circuits.' },
+        { awg: 6, dia: '4.11 mm', amps: '65 A', use: 'Electric clothes dryers.' },
+        { awg: 8, dia: '3.26 mm', amps: '50 A', use: 'Electric dryers, ranges.' },
+        { awg: 10, dia: '2.59 mm', amps: '30 A', use: 'Water heaters, air conditioners.' },
+        { awg: 12, dia: '2.05 mm', amps: '20 A', use: 'Kitchen + bathroom outlets (US).' },
+        { awg: 14, dia: '1.63 mm', amps: '15 A', use: 'General lighting + outlets (US).' },
+        { awg: 16, dia: '1.29 mm', amps: '10 A', use: 'Extension cords (light duty).' },
+        { awg: 18, dia: '1.02 mm', amps: '7 A', use: 'Lamp cords, small appliances.' },
+        { awg: 20, dia: '0.81 mm', amps: '5 A', use: 'Speaker wires (low current).' },
+        { awg: 22, dia: '0.64 mm', amps: '3 A', use: 'Hookup wire, breadboarding.' },
+        { awg: 24, dia: '0.51 mm', amps: '2 A', use: 'Ethernet (Cat 5e). Small hobby projects.' },
+        { awg: 26, dia: '0.40 mm', amps: '1 A', use: 'Magnet wire, fine signal wire.' },
+        { awg: 28, dia: '0.32 mm', amps: '0.6 A', use: 'Thin signal wire, jumpers.' },
+        { awg: 30, dia: '0.25 mm', amps: '0.4 A', use: 'Wire-wrap. Thin transformers.' },
+        { awg: 32, dia: '0.20 mm', amps: '0.2 A', use: 'Very fine work.' }
+      ];
+
+      var WIRE_NOTES = [
+        { topic: 'AWG counterintuitive', detail: 'Lower number = THICKER wire. AWG 0 (0000) = ~12 mm. AWG 36 = ~0.13 mm.' },
+        { topic: 'Solid vs stranded', detail: 'Solid: single conductor, cheaper, stiffer. Stranded: multiple thin strands, more flexible.' },
+        { topic: 'Insulation ratings', detail: 'THHN (90°C dry), THWN (75°C wet), NM-B (Romex, 90°C). Higher rating = higher temp tolerance.' },
+        { topic: 'Voltage drop', detail: 'V = I × R. Long runs need bigger wire to keep drop < ~3%. Online calculators help.' },
+        { topic: 'Skin effect', detail: 'At high freq, current concentrates near wire surface. Litz wire (many fine insulated strands) reduces loss.' },
+        { topic: 'Color code (US residential)', detail: 'Black: hot. White: neutral. Green/bare: ground. Red: 2nd hot (240V).' },
+        { topic: 'Color code (EU)', detail: 'Brown: live. Blue: neutral. Green/yellow stripe: ground.' }
+      ];
+
+      var FUSES_BREAKERS = [
+        { device: 'Ceramic fuse (5×20 mm)', rating: '~100 mA to ~30 A', notes: 'Common in electronics. Fast (F) or slow-blow (T) variants.' },
+        { device: 'Glass fuse (3AG, 6×30 mm)', rating: '~100 mA to ~30 A', notes: 'Older equipment. Easy to inspect (visible filament).' },
+        { device: 'Cartridge fuse (auto)', rating: '~5 A to ~80 A', notes: 'Color-coded ATC/ATO blade fuses in modern cars.' },
+        { device: 'Resettable fuse (polyfuse, PTC)', rating: '~50 mA to ~10 A', notes: 'Heats up + resets when fault clears. No replacement needed.' },
+        { device: 'Thermal fuse', rating: 'temp-rated', notes: 'Opens at specific temp. Coffee makers, hair dryers.' },
+        { device: 'Circuit breaker (residential)', rating: '15-200 A', notes: 'Thermal-magnetic. Trips on overcurrent or short. Resettable.' },
+        { device: 'GFCI / RCD', rating: 'trips at ~5 mA imbalance', notes: 'Ground Fault Circuit Interrupter. Required in bathrooms, kitchens, outdoors.' },
+        { device: 'AFCI', rating: 'detects arcing patterns', notes: 'Arc Fault Circuit Interrupter. Required in bedroom outlets (US).' },
+        { device: 'HRC fuse (industrial)', rating: '~10-2000 A', notes: 'High Rupturing Capacity. Industrial equipment, transformers.' }
+      ];
+
+      var LIGHT_BULBS = [
+        { type: 'Incandescent (Edison)', efficiency: '~2% (15 lm/W)', life: '~1000 hr', notes: 'Tungsten filament glowing hot. Mostly heat, little light. Banned for general lighting in many countries.' },
+        { type: 'Halogen', efficiency: '~3% (25 lm/W)', life: '~2000 hr', notes: 'Incandescent variant with halogen gas + quartz envelope. Slightly more efficient.' },
+        { type: 'CFL (compact fluorescent)', efficiency: '~10% (60 lm/W)', life: '~10,000 hr', notes: 'Mercury vapor + phosphor coating. Slow warm-up. Mercury disposal concern.' },
+        { type: 'Linear fluorescent (T8)', efficiency: '~10% (~85 lm/W)', life: '~20,000 hr', notes: 'Office + commercial standard. Being replaced by LED.' },
+        { type: 'LED (white)', efficiency: '~15-30% (~100-150 lm/W)', life: '~25,000-50,000 hr', notes: 'Blue LED + yellow phosphor (or RGB). Most efficient general lighting.' },
+        { type: 'LED (filament-style)', efficiency: '~12% (~90 lm/W)', life: '~15,000 hr', notes: 'Mimics incandescent look. Slightly less efficient than standard LED.' },
+        { type: 'High-pressure sodium', efficiency: '~25% (~150 lm/W)', life: '~24,000 hr', notes: 'Yellow-orange. Old streetlights. Being replaced by LED.' },
+        { type: 'Metal halide', efficiency: '~20% (~100 lm/W)', life: '~15,000 hr', notes: 'White light. Stadiums, parking lots, retail.' },
+        { type: 'Mercury vapor', efficiency: '~15%', life: '~24,000 hr', notes: 'Bluish-white. Largely phased out due to mercury + low efficiency vs newer options.' },
+        { type: 'Xenon arc', efficiency: '~5-10%', life: '~2000 hr', notes: 'Movie projectors, car HID headlights, IMAX.' },
+        { type: 'OLED panel', efficiency: '~15%', life: '~10,000-30,000 hr', notes: 'Flat panel lighting. Architectural use. Expensive.' },
+        { type: 'Carbon arc', efficiency: 'high luminance', life: 'short (consumes electrodes)', notes: 'Old movie projection, searchlights. Obsolete.' }
+      ];
+
+      var LIGHT_FACTS = [
+        { fact: 'Lumens vs watts', detail: '60W incandescent ≈ 800 lumens. Same lumens from LED uses ~9W.' },
+        { fact: 'Color temperature', detail: '2700 K (warm/incandescent-like), 3000 K (soft white), 4000 K (neutral), 5000 K+ (daylight/cool).' },
+        { fact: 'Color rendering index (CRI)', detail: 'How accurately colors appear. 100 = sunlight. >90 = high quality. Cheap LEDs ~70.' },
+        { fact: 'Lumen', detail: 'Total light emitted. Brightness perceived by human eye.' },
+        { fact: 'Lux', detail: 'Lumens per square meter. Brightness AT a surface. Office: ~500 lux. Sunlight: ~100,000 lux.' },
+        { fact: 'Candela', detail: 'Luminous intensity in one direction. Replaced "candlepower". One candle ≈ 1 cd.' },
+        { fact: 'Photopic vs scotopic vision', detail: 'Day (cones) vs night (rods). Peak sensitivity shifts from 555 nm (yellow-green) to 505 nm (blue-green) in dim light.' },
+        { fact: 'Blue light + sleep', detail: '~480 nm suppresses melatonin. Why screens late at night affect sleep. "Night mode" shifts to warmer colors.' }
+      ];
+
+      function renderWireSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '〰 Wire gauges (AWG)'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'American Wire Gauge. Lower number = THICKER. Doubles in cross-section every 3 gauges. Current capacity depends on insulation + ambient temp.'),
+          h('div', { className: 'overflow-x-auto mb-3' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['AWG', 'Diameter', 'Max amps (chassis)', 'Typical use'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                WIRE_GAUGES.map(function(w, i) {
+                  return h('tr', { key: 'w'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-mono font-black text-amber-700 text-center' }, w.awg),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, w.dia),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, w.amps),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, w.use)
+                  );
+                })
+              )
+            )
+          ),
+          h('div', { className: 'space-y-1' },
+            WIRE_NOTES.map(function(n, i) {
+              return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-amber-400 border border-slate-200' },
+                h('div', { className: 'text-[11px] font-black text-amber-900 mb-0.5' }, n.topic),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderFusesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⌧ Fuses + circuit protection'),
+          h('div', { className: 'space-y-2' },
+            FUSES_BREAKERS.map(function(f, i) {
+              return h('div', { key: 'f'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, f.device),
+                  h('span', { className: 'text-[10px] text-amber-700 font-mono ml-auto px-2 py-0.5 rounded bg-amber-100' }, f.rating)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderLightsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💡 Light bulb technologies'),
+          h('div', { className: 'mb-3' },
+            h('div', { className: 'space-y-2' },
+              LIGHT_BULBS.map(function(L, i) {
+                return h('div', { key: 'L'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                    h('span', { className: 'text-[12px] font-black text-slate-800' }, L.type),
+                    h('span', { className: 'text-[10px] text-amber-700 font-mono' }, L.efficiency),
+                    h('span', { className: 'text-[10px] text-slate-600 font-mono ml-auto' }, 'Life: ' + L.life)
+                  ),
+                  h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, L.notes)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Lighting essentials'),
+          h('div', { className: 'space-y-1' },
+            LIGHT_FACTS.map(function(L, i) {
+              return h('div', { key: 'L'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-amber-400 border border-slate-200' },
+                h('div', { className: 'text-[11px] font-black text-amber-900 mb-0.5' }, L.fact),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, L.detail)
+              );
+            })
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 4 — Dense reference data (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var BATTERY_TYPES = [
+        { type: 'Alkaline (AA, AAA, C, D, 9V)', voltage: '1.5 V (9V for 9V)', energy: '~100-150 Wh/kg', notes: 'Non-rechargeable. ~10-year shelf life. Most common consumer battery.' },
+        { type: 'Carbon-zinc', voltage: '1.5 V', energy: '~40-60 Wh/kg', notes: 'Cheap, lower performance than alkaline. Older "heavy duty" batteries.' },
+        { type: 'Lithium primary (CR2032, etc.)', voltage: '3.0 V', energy: '~250 Wh/kg', notes: 'Long shelf life (~10 yr). Coin cells in watches, motherboards.' },
+        { type: 'NiCd (nickel-cadmium)', voltage: '1.2 V', energy: '~40-60 Wh/kg', notes: 'Rechargeable. Memory effect. Now mostly replaced by NiMH (Cd is toxic).' },
+        { type: 'NiMH (nickel-metal hydride)', voltage: '1.2 V', energy: '~60-120 Wh/kg', notes: 'Rechargeable. Replaced NiCd. Used in older hybrid cars, low-self-discharge variants in remotes.' },
+        { type: 'Lead-acid', voltage: '~2.1 V/cell (12 V = 6 cells)', energy: '~30-50 Wh/kg', notes: 'Heavy + cheap. Cars, UPS, off-grid solar. Invented 1859.' },
+        { type: 'Li-ion (LiCoO₂)', voltage: '~3.7 V', energy: '~150-250 Wh/kg', notes: 'Phones, laptops. High energy density. Sensitive to overcharge/discharge.' },
+        { type: 'Li-ion (LiFePO₄)', voltage: '~3.2 V', energy: '~90-160 Wh/kg', notes: 'Safer (no thermal runaway). EVs (BYD, Tesla LFP), home solar. Long cycle life.' },
+        { type: 'Li-ion (NMC, NCA)', voltage: '~3.6 V', energy: '~200-280 Wh/kg', notes: 'Most EV batteries (Tesla, GM). High energy density.' },
+        { type: 'Lithium polymer (LiPo)', voltage: '~3.7 V', energy: '~150-200 Wh/kg', notes: 'Pouch cells. Drones, RC. Less safe if punctured/damaged.' },
+        { type: 'Solid-state lithium', voltage: '~3.7 V', energy: '~400 Wh/kg (claimed)', notes: 'Emerging. Replace liquid electrolyte with solid. Safer + higher density. Toyota + others aim for 2027+ production.' },
+        { type: 'Sodium-ion', voltage: '~3 V', energy: '~140-160 Wh/kg', notes: 'Emerging alternative. Sodium more abundant than lithium. CATL launched 2023.' },
+        { type: 'Zinc-air', voltage: '~1.4 V', energy: '~400+ Wh/kg (theoretical)', notes: 'Hearing aids (long runtime). Air activates when tab pulled.' },
+        { type: 'Silver-oxide', voltage: '~1.55 V', energy: '~130 Wh/kg', notes: 'Watch batteries. Stable voltage curve.' },
+        { type: 'Flow battery (vanadium)', voltage: '~1.4 V/cell', energy: '~25 Wh/kg', notes: 'Grid storage. Tanks scale separately from cells. 20+ yr life.' }
+      ];
+
+      var ENERGY_SOURCES = [
+        { source: 'Coal', share: '~26% global electricity (2024)', cost: 'low fuel, high external cost', notes: 'Highest CO₂ per kWh. Pollutants: SOx, NOx, mercury, PM2.5. Declining in OECD, still growing in some Asia.' },
+        { source: 'Natural gas', share: '~22%', cost: 'low-medium', notes: '~½ CO₂ of coal. Methane leaks during extraction offset some benefit. Fast-ramping for grid balancing.' },
+        { source: 'Nuclear', share: '~10%', cost: 'high upfront, low fuel', notes: 'Zero CO₂. Long-lived radioactive waste. New small modular reactors (SMRs) in development.' },
+        { source: 'Hydroelectric', share: '~16%', cost: 'high upfront, near-zero fuel', notes: 'Mature. Ecological + community impacts (Three Gorges, Itaipu). Pumped storage = grid battery.' },
+        { source: 'Wind (onshore + offshore)', share: '~7-8% rising', cost: 'low operating', notes: 'Variable. Offshore typically more consistent + larger turbines.' },
+        { source: 'Solar PV', share: '~5-6% rising fast', cost: 'low operating', notes: 'Modular. Costs dropped ~10× in last decade. Often paired with batteries.' },
+        { source: 'Solar thermal (CSP)', share: '<1%', cost: 'medium', notes: 'Mirrors concentrate sunlight to heat fluid → steam turbine. Can store heat overnight.' },
+        { source: 'Geothermal', share: '<1%', cost: 'medium', notes: 'Limited to volcanically active regions. Iceland 65% geothermal.' },
+        { source: 'Biomass', share: '~2%', cost: 'medium', notes: 'Burning wood, crops. Carbon-neutral IF sustainably grown. Air pollution issues.' },
+        { source: 'Tidal + wave', share: '<1%', cost: 'high', notes: 'Predictable (tides) but limited sites + high engineering cost.' },
+        { source: 'Hydrogen (storage/carrier)', share: 'minimal', cost: 'high', notes: 'Not a primary source — must be produced (from gas, electrolysis). Heavy industry decarbonization role.' },
+        { source: 'Fusion (research)', share: '0%', cost: 'still experimental', notes: 'ITER + private companies (CFS, Helion, TAE). Net energy gain announced 2022. Commercial: still distant.' }
+      ];
+
+      var FAMOUS_CIRCUITS = [
+        { name: 'Wheatstone bridge', use: 'Measure unknown resistance via null detection', notes: 'Strain gauges, sensor interfaces. Invented 1833 (Hunter Christie), popularized by Charles Wheatstone.' },
+        { name: 'Voltage divider', use: 'Split voltage in known ratio', notes: 'V_out = V_in × R₂/(R₁+R₂). Used everywhere.' },
+        { name: 'Current mirror', use: 'Copy current from one branch to another', notes: 'Basic op-amp building block.' },
+        { name: 'Schmitt trigger', use: 'Clean noisy digital signals via hysteresis', notes: 'Two thresholds prevent rapid toggling on noisy edge.' },
+        { name: '555 timer (astable)', use: 'Generate square wave / clock', notes: 'Frequency set by R + C. Was rumored to make up >1% of all chips made (probably exaggerated but iconic).' },
+        { name: '555 timer (monostable)', use: 'Single pulse of defined duration', notes: 'One-shot. Pulse length T = 1.1 × R × C.' },
+        { name: 'Class A amplifier', use: 'Linear amplification', notes: 'Always on. Low distortion, low efficiency (~25%). Audiophile single-ended designs.' },
+        { name: 'Class AB amplifier', use: 'Linear amplification', notes: 'Push-pull. ~50-70% efficient. Most audio amps.' },
+        { name: 'Class D amplifier', use: 'Switching amplification', notes: 'PWM. ~90%+ efficient. Modern portable + auto audio.' },
+        { name: 'Common emitter (BJT)', use: 'Voltage amplification', notes: 'Standard amplifier configuration. Inverts signal.' },
+        { name: 'Common collector (emitter follower)', use: 'Buffer (current gain, voltage gain ≈ 1)', notes: 'High input Z, low output Z. Impedance matching.' },
+        { name: 'H-bridge', use: 'Drive motor in either direction', notes: '4 switches (often MOSFETs). Reverses motor polarity.' },
+        { name: 'Boost converter', use: 'DC-DC step-up', notes: 'Inductor + switch + diode + capacitor. Powers higher-V circuits from lower-V battery.' },
+        { name: 'Buck converter', use: 'DC-DC step-down', notes: 'Most efficient way to reduce DC voltage. Dominant in modern electronics.' },
+        { name: 'Phase-locked loop (PLL)', use: 'Lock onto + multiply frequency', notes: 'CPU clocks, FM demodulation, radio synthesis.' },
+        { name: 'Sample-and-hold', use: 'Capture momentary voltage for ADC', notes: 'Switch + capacitor. Holds voltage while ADC measures.' },
+        { name: 'Charge pump', use: 'Generate higher voltage with no inductor', notes: 'Caps + switches. Used inside chips for internal high voltage.' },
+        { name: 'Cockcroft-Walton multiplier', use: 'Very high voltage from low AC', notes: 'Cascade of diodes + caps. Old TV CRT supplies, particle accelerators.' },
+        { name: 'Power-over-Ethernet (PoE)', use: 'Power + data on one Ethernet cable', notes: 'Up to 100 W (PoE++) on Cat 5+ cable. Used for IP phones, cameras, access points.' }
+      ];
+
+      var COMPUTER_HISTORY = [
+        { year: '~150 BCE', what: 'Antikythera mechanism', detail: 'Ancient Greek bronze analog computer for astronomical calculations. Discovered 1901.' },
+        { year: '1642', what: 'Pascal\'s calculator', detail: 'Mechanical adder using gears. One of first calculating machines.' },
+        { year: '1837', what: 'Analytical Engine (Babbage)', detail: 'Programmable mechanical computer design. Never fully built. Ada Lovelace wrote first algorithm.' },
+        { year: '1936', what: 'Turing machine concept', detail: 'Alan Turing\'s mathematical model of computation. Foundation of computer science.' },
+        { year: '1937', what: 'Z1 (Konrad Zuse)', detail: 'First programmable mechanical computer. Used binary.' },
+        { year: '1944', what: 'Mark I (Harvard, IBM)', detail: 'Electromechanical. 16 m long, 5 tons. Programmed via punched paper tape.' },
+        { year: '1945', what: 'ENIAC', detail: 'First general-purpose electronic computer. 17,000+ vacuum tubes. Programmed by physically rewiring.' },
+        { year: '1947', what: 'Transistor (Bell Labs)', detail: 'Bardeen, Brattain, Shockley. Replaced vacuum tubes. Nobel 1956.' },
+        { year: '1958', what: 'Integrated circuit', detail: 'Jack Kilby (TI) + Robert Noyce (Fairchild). Multiple transistors on one chip.' },
+        { year: '1971', what: 'Intel 4004', detail: 'First commercial microprocessor. 2,300 transistors. 4-bit CPU.' },
+        { year: '1973', what: 'Xerox Alto', detail: 'First computer with GUI, mouse, ethernet. Inspired Macintosh + Windows.' },
+        { year: '1975', what: 'Altair 8800', detail: 'First commercial PC kit. Bill Gates + Paul Allen wrote BASIC for it.' },
+        { year: '1976', what: 'Apple I', detail: 'Jobs + Wozniak. Hand-built. Sold for $666.66.' },
+        { year: '1977', what: 'Apple II, TRS-80, Commodore PET', detail: 'Personal computer revolution begins.' },
+        { year: '1981', what: 'IBM PC', detail: 'Open architecture. Spawned the PC industry.' },
+        { year: '1983', what: 'TCP/IP', detail: 'Internet protocol standardized. ARPANET converted in January.' },
+        { year: '1984', what: 'Macintosh', detail: 'First mass-market GUI computer. "1984" Super Bowl ad.' },
+        { year: '1989', what: 'World Wide Web', detail: 'Tim Berners-Lee at CERN proposes WWW. Released publicly 1991.' },
+        { year: '1991', what: 'Linux 0.01', detail: 'Linus Torvalds posts to comp.os.minix. Now powers most servers, Android.' },
+        { year: '1993', what: 'Mosaic browser', detail: 'First popular web browser with images. Led to Netscape (1994).' },
+        { year: '1995', what: 'JavaScript, Java, Windows 95', detail: 'Pivotal year. Brendan Eich writes JS in 10 days for Netscape.' },
+        { year: '1998', what: 'Google founded', detail: 'PageRank algorithm. Search becomes lucrative.' },
+        { year: '2007', what: 'iPhone', detail: 'Modern smartphone. Capacitive touch + responsive UI standard.' },
+        { year: '2008', what: 'Bitcoin whitepaper', detail: 'Satoshi Nakamoto. Proof-of-work blockchain.' },
+        { year: '2012', what: 'AlexNet', detail: 'Deep CNN wins ImageNet by huge margin. Modern AI era begins.' },
+        { year: '2017', what: 'Transformer architecture', detail: '"Attention is All You Need". Foundation of GPT, BERT, modern LLMs.' },
+        { year: '2022', what: 'ChatGPT', detail: 'Mass-market LLM. 100M users in 2 months.' }
+      ];
+
+      var WORLD_ELECTRIC = [
+        { region: 'Per capita electricity (US)', detail: '~12,500 kWh/yr per person. Among highest globally.' },
+        { region: 'Per capita (Iceland)', detail: '~55,000 kWh/yr — highest globally. Cheap geothermal + hydro.' },
+        { region: 'Per capita (Germany)', detail: '~7,000 kWh/yr.' },
+        { region: 'Per capita (China)', detail: '~5,500 kWh/yr — risen rapidly from <500 in 1990.' },
+        { region: 'Per capita (India)', detail: '~1,300 kWh/yr.' },
+        { region: 'Per capita (sub-Saharan Africa avg)', detail: '~500 kWh/yr — many regions still developing grid access.' },
+        { region: 'Without electricity', detail: '~675 million people lack reliable access (2024 IEA). Most in sub-Saharan Africa.' },
+        { region: 'Top renewable share', detail: 'Iceland ~100%, Norway ~98% (hydro + small geothermal). Costa Rica ~95%.' },
+        { region: 'Biggest CO₂ per kWh', detail: 'Coal-heavy grids: India, China, South Africa, Australia, Poland. ~800-1100 g CO₂/kWh.' },
+        { region: 'Cleanest grids', detail: 'France ~50 g CO₂/kWh (nuclear). Iceland + Norway near zero (hydro/geo).' },
+        { region: 'Grid voltage standards', detail: '120/240 V (Americas, Japan), 220/240 V (rest). 50 Hz almost everywhere except Americas (60 Hz).' },
+        { region: 'Plug types', detail: '15+ standards. EU pushing for universal USB-C for devices.' },
+        { region: 'Transmission voltages', detail: '~110-765 kV AC for long-distance. HVDC up to ±1100 kV (China). Higher V → less loss for same power.' },
+        { region: 'Largest power plants', detail: 'Three Gorges (China): 22.5 GW hydro. Tarbela (Pakistan): 6 GW hydro. Kashiwazaki-Kariwa (Japan): 7.9 GW nuclear (idle since 2011).' }
+      ];
+
+      function renderBatteriesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔋 Battery technologies'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Type', 'Voltage', 'Energy density', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                BATTERY_TYPES.map(function(b, i) {
+                  return h('tr', { key: 'b'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, b.type),
+                    h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold text-[10px]' }, b.voltage),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, b.energy),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, b.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderEnergySection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚡ Electricity generation sources'),
+          h('div', { className: 'space-y-2' },
+            ENERGY_SOURCES.map(function(s, i) {
+              return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, s.source),
+                  h('span', { className: 'text-[10px] text-amber-700 font-mono ml-auto' }, s.share)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Cost: '), s.cost),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderFamouscircSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎛 Famous circuit building blocks'),
+          h('div', { className: 'space-y-2' },
+            FAMOUS_CIRCUITS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, c.name),
+                h('div', { className: 'text-[11px] text-amber-700 font-bold mb-1' }, 'Use: ' + c.use),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderComputersSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💻 Computer history timeline'),
+          h('div', { className: 'space-y-1' },
+            COMPUTER_HISTORY.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-amber-400 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                  h('span', { className: 'text-[10px] font-mono text-amber-700 font-bold' }, c.year),
+                  h('span', { className: 'text-[12px] font-black text-amber-900' }, c.what)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderWorldSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌐 Electricity around the world'),
+          h('div', { className: 'space-y-2' },
+            WORLD_ELECTRIC.map(function(w, i) {
+              return h('div', { key: 'w'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-amber-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-amber-900 mb-0.5' }, w.region),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, w.detail)
+              );
+            })
+          )
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 3 EXPANSION (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var MICROCONTROLLERS = [
+        { name: 'Arduino Uno (ATmega328P)', specs: '8-bit, 16 MHz, 32 KB flash, 2 KB RAM', notes: 'Most popular education board. 14 digital, 6 analog I/O. 5 V logic.' },
+        { name: 'ESP32', specs: '32-bit dual-core, 240 MHz, 4 MB flash', notes: 'Wi-Fi + Bluetooth built in. Hugely popular in IoT. Inexpensive.' },
+        { name: 'Raspberry Pi Pico (RP2040)', specs: '32-bit dual-core ARM, 133 MHz, 264 KB RAM', notes: '$4. PIO state machines for custom I/O. MicroPython or C/C++.' },
+        { name: 'STM32 (ARM Cortex-M)', specs: 'Wide range: M0 to M7, 32 KB to 2 MB flash', notes: 'Industry standard for embedded. Powerful peripherals.' },
+        { name: 'Teensy 4.x', specs: '32-bit ARM Cortex-M7, 600 MHz', notes: 'Very fast. Arduino-compatible. Used in pro audio, DIY MIDI.' },
+        { name: 'Raspberry Pi (full)', specs: '64-bit ARM, 1.5+ GHz, runs Linux', notes: 'Single-board computer, not microcontroller. Pi 5 = real desktop performance.' },
+        { name: 'BBC micro:bit', specs: '32-bit ARM, 16 MHz', notes: 'Education-focused. Built-in LEDs, accelerometer, Bluetooth. Block-based + Python coding.' },
+        { name: 'PIC microcontrollers', specs: '8 to 32-bit, varies', notes: 'Microchip Technology. Common in industrial + consumer products.' },
+        { name: 'AVR (Atmel)', specs: '8-bit, various', notes: 'ATmega + ATtiny families. Arduino built on these.' },
+        { name: 'ESP8266', specs: '32-bit, 80 MHz, Wi-Fi', notes: 'Predecessor of ESP32. Cheap Wi-Fi MCU.' }
+      ];
+
+      var COMMON_ICS = [
+        { ic: 'NE555 (timer)', use: 'Oscillator, PWM, monostable. Iconic chip.', notes: 'Released 1972. Billions sold. Easy to learn, infinitely useful.' },
+        { ic: '741 op-amp', use: 'General-purpose amplifier.', notes: 'Classic but now superseded. LM358, MCP6002 better choices for new designs.' },
+        { ic: '74HC00 series (logic)', use: 'NAND, NOR, AND, OR, flip-flops, counters.', notes: 'Modern CMOS replacements for older 74LS series.' },
+        { ic: 'LM7805 (voltage regulator)', use: 'Linear 5 V regulator.', notes: '~1 A output. Heat sink needed for higher currents. Newer switching alternatives are more efficient.' },
+        { ic: 'LM317 (adjustable regulator)', use: 'Adjustable 1.25-37 V output.', notes: 'Two resistors set output voltage.' },
+        { ic: 'ULN2003 (Darlington array)', use: 'Drive relays, motors, LEDs from logic-level signals.', notes: '7 channels at up to 500 mA each.' },
+        { ic: 'L298N (motor driver)', use: 'Drive 2 DC motors or 1 stepper.', notes: 'H-bridge. Common in robotics. Replaced by more efficient MOSFET drivers in newer designs.' },
+        { ic: 'DS18B20 (digital thermometer)', use: 'Temperature sensor with 1-wire interface.', notes: 'Range −55 to +125°C. 9-12 bit resolution.' },
+        { ic: 'MCP3008 (8-channel ADC)', use: 'Add analog input to a digital MCU.', notes: '10-bit, SPI. Common with Raspberry Pi (which has no built-in ADC).' },
+        { ic: 'MAX7219 (LED matrix driver)', use: 'Drive 8×8 LED matrix or 7-segment displays.', notes: 'SPI interface. Cascade multiple modules.' },
+        { ic: 'WS2812 (Neopixel)', use: 'Individually addressable RGB LEDs.', notes: 'Single data line. Chain hundreds together.' },
+        { ic: 'CD4017 (decade counter)', use: 'Sequence through 10 outputs.', notes: 'Common in chaser-light projects.' }
+      ];
+
+      var DIGITAL_PROTOCOLS = [
+        { protocol: 'GPIO', wires: '1+ per signal', notes: 'General-purpose I/O. Read/write digital high/low. Simplest.' },
+        { protocol: 'PWM', wires: '1', notes: 'Pulse-width modulation. Vary average voltage by changing duty cycle. Used for motors, LEDs, audio.' },
+        { protocol: 'I²C', wires: '2 (SDA, SCL) + power + ground', notes: 'Multi-device bus. Each device has 7-bit address. Slow (~100 kHz, 400 kHz, 1 MHz, 5 MHz).' },
+        { protocol: 'SPI', wires: '4 (MOSI, MISO, SCK, SS) + power', notes: 'Faster than I²C (up to 50+ MHz). Requires extra SS pin per device.' },
+        { protocol: 'UART (serial)', wires: '2 (TX, RX) + power', notes: 'Asynchronous. Common baud rates: 9600, 115200. Used for debug consoles.' },
+        { protocol: 'USB', wires: '4 (D+, D−, VBUS, GND)', notes: '1.5 Mbps (Low) to 80 Gbps (USB4 v2). Hot-pluggable, powered.' },
+        { protocol: 'CAN bus', wires: '2 differential', notes: 'Used in cars + industrial. Robust to noise.' },
+        { protocol: '1-Wire', wires: '1 (+ ground)', notes: 'Dallas/Maxim. Power + data on same wire (parasitic power). DS18B20 thermometer uses it.' },
+        { protocol: 'I²S', wires: '3 (BCLK, LRCLK, DATA)', notes: 'Digital audio between chips. 16/24/32-bit samples at various rates.' },
+        { protocol: 'Ethernet', wires: '4 twisted pairs (RJ45)', notes: '10 Mbps to 100+ Gbps. PoE can deliver up to 100 W.' }
+      ];
+
+      var SENSORS = [
+        { sensor: 'Potentiometer', measures: 'Position (angle or linear)', notes: 'Variable resistor. Volume knobs, joysticks.' },
+        { sensor: 'Photoresistor (LDR)', measures: 'Light intensity', notes: 'Resistance drops with brighter light. Cheap, slow.' },
+        { sensor: 'Photodiode', measures: 'Light intensity', notes: 'Fast. Used in optical receivers, sun trackers, solar cells.' },
+        { sensor: 'Thermistor (NTC)', measures: 'Temperature', notes: 'Resistance decreases with temperature. Cheap. Non-linear.' },
+        { sensor: 'RTD (Pt100, Pt1000)', measures: 'Temperature', notes: 'Very accurate + linear. More expensive than thermistors.' },
+        { sensor: 'Thermocouple (J, K, T types)', measures: 'Temperature', notes: 'Wide range (−200 to +1700°C). Self-generates voltage from temperature difference.' },
+        { sensor: 'Infrared (PIR)', measures: 'Motion (warm objects)', notes: 'Passive — detects changes in IR. Cheap motion sensor in security lights.' },
+        { sensor: 'Ultrasonic (HC-SR04)', measures: 'Distance (~2 cm - 4 m)', notes: 'Measures time-of-flight of 40 kHz pulses. Cheap, popular for robotics.' },
+        { sensor: 'Time-of-flight (VL53L0X)', measures: 'Distance via laser', notes: 'mm-resolution. Less interference than ultrasonic.' },
+        { sensor: 'IMU (MPU-6050, BNO055)', measures: 'Acceleration + rotation', notes: '6 or 9-axis. Drones, AR/VR, motion tracking.' },
+        { sensor: 'Hall effect sensor', measures: 'Magnetic field', notes: 'Voltage proportional to field. Speed sensors, contactless switches.' },
+        { sensor: 'Pressure (BMP280)', measures: 'Air pressure', notes: 'Used as altimeter (1 hPa ≈ 8 m elevation change).' },
+        { sensor: 'Humidity (DHT22, SHT3x)', measures: 'Relative humidity + temperature', notes: 'Common in HVAC + weather stations.' },
+        { sensor: 'pH probe', measures: 'pH of liquid', notes: 'Glass-electrode based. Used in aquaponics, water quality.' },
+        { sensor: 'CO₂ (MH-Z19, SCD30)', measures: 'CO₂ concentration', notes: 'NDIR-based. Used for ventilation control (CO₂ proxies for human exhalation).' }
+      ];
+
+      var ACTUATORS = [
+        { actuator: 'LED', purpose: 'Visual indicator', notes: 'Forward voltage 1.8-3.3 V. Always use current-limit resistor.' },
+        { actuator: 'Buzzer (piezo)', purpose: 'Audio alert', notes: 'Active buzzer = built-in oscillator. Passive needs driving frequency.' },
+        { actuator: 'Speaker', purpose: 'Audio output', notes: 'Needs amplifier for most volumes. Impedance matters (typically 4-8 Ω).' },
+        { actuator: 'DC motor', purpose: 'Continuous rotation', notes: 'Speed via PWM. Direction via H-bridge.' },
+        { actuator: 'Servo (RC)', purpose: 'Position control 0-180° (typically)', notes: 'PWM 50 Hz, 1-2 ms pulse width. Internal feedback + controller.' },
+        { actuator: 'Stepper motor', purpose: 'Precise position steps', notes: 'Step-and-direction or full 4-coil drive. Open-loop precision.' },
+        { actuator: 'Relay (electromechanical)', purpose: 'High-power switching', notes: 'Logic signal switches separate AC/DC circuit. Audible click.' },
+        { actuator: 'Solid-state relay (SSR)', purpose: 'Silent, fast switching', notes: 'Triac or MOSFET inside. Zero-crossing types for AC.' },
+        { actuator: 'Solenoid', purpose: 'Linear push/pull', notes: 'Coil pulls iron core when energized. Door locks, pinball flippers.' },
+        { actuator: 'Linear actuator', purpose: 'Slow, powerful linear motion', notes: 'Motor + lead screw. TV mounts, standing desks.' },
+        { actuator: 'Heating element', purpose: 'Generate heat', notes: 'Resistive (Joule heating). Used with PID control for precise temperature.' },
+        { actuator: 'Peltier (thermoelectric)', purpose: 'Cool or heat by electric current', notes: 'One side gets cold, other hot. Mini coolers, thermal cycling.' },
+        { actuator: 'Pump (DC)', purpose: 'Move fluid', notes: 'Centrifugal, peristaltic, diaphragm. Hydroponics, dosing.' },
+        { actuator: 'LCD display', purpose: 'Show text or graphics', notes: '16×2 character LCDs (HD44780) very common. Graphic OLEDs cheaper now.' },
+        { actuator: 'OLED display (SSD1306)', purpose: 'Show graphics', notes: 'Tiny (0.96") I²C. Sharp, no backlight.' }
+      ];
+
+      var PCB_TOPICS = [
+        { topic: 'Layers', detail: 'Most PCBs: 2 layers (top + bottom). High-density: 4, 6, 8+ layers. Inner layers often power + ground planes.' },
+        { topic: 'Vias', detail: 'Plated holes connecting layers. Through-hole (full thickness), blind (surface to inner), buried (inner to inner).' },
+        { topic: 'Traces', detail: 'Copper paths. Width determines current capacity (12 mil ~ 1 A on 1 oz copper).' },
+        { topic: 'Ground plane', detail: 'Large copper area. Provides low-impedance return path + reduces EMI.' },
+        { topic: 'Soldermask', detail: 'Insulating layer (usually green) over copper. Prevents bridging during assembly.' },
+        { topic: 'Silkscreen', detail: 'Printed labels (usually white) on top of soldermask. Helps assembly + debug.' },
+        { topic: 'Surface mount (SMT)', detail: 'Components soldered onto pads (no leads through holes). Smaller, mass-produced.' },
+        { topic: 'Through-hole (THT)', detail: 'Component leads pass through holes + soldered on opposite side. Bigger, easier to hand-solder, mechanically stronger.' },
+        { topic: 'Decoupling capacitors', detail: 'Small caps (typically 0.1 μF) near every IC power pin. Smooth supply, reduce noise.' },
+        { topic: 'EMI/EMC', detail: 'Electromagnetic interference + compatibility. Shielding, ferrite beads, careful routing.' },
+        { topic: 'Impedance control', detail: 'High-speed traces need controlled impedance (50 Ω typical). Trace width + layer stackup determine it.' },
+        { topic: 'Differential pairs', detail: 'Two traces routed together. Used for USB, Ethernet, LVDS. Common-mode noise rejected.' },
+        { topic: 'Design rules', detail: 'Minimum trace width, spacing, hole size. Determined by manufacturer + cost.' },
+        { topic: 'Assembly file', detail: 'BOM (bill of materials), CPL (component placement list), Gerbers (per-layer artwork). Sent to manufacturer.' }
+      ];
+
+      var TROUBLESHOOTING = [
+        { problem: 'No power', steps: 'Check battery/supply voltage with multimeter. Check fuse. Verify polarity. Check power switch.' },
+        { problem: 'Burning smell or smoke', steps: 'Disconnect IMMEDIATELY. Often reversed polarity, shorted component, or under-rated part.' },
+        { problem: 'Component getting hot', steps: 'Check current vs rating. Check for short circuit nearby. Add heat sink if appropriate.' },
+        { problem: 'Intermittent operation', steps: 'Often a cold solder joint or loose connector. Wiggle test (gently!) while powered.' },
+        { problem: 'Voltage drops under load', steps: 'Power supply current limit, undersized wires, or weak battery.' },
+        { problem: 'Noisy signal', steps: 'Add decoupling caps, twist signal pairs, ferrite bead. Move away from switching power supplies.' },
+        { problem: 'LED not lighting', steps: 'Check polarity (anode = +). Check current-limit resistor value. Probe forward voltage.' },
+        { problem: 'Microcontroller not running', steps: 'Check 3.3 V or 5 V supply at MCU pin. Check reset line. Check crystal/clock if external.' },
+        { problem: 'Code uploads but no execution', steps: 'Check programming setup, BOOT/RESET pins, oscillator. Power-on reset issue?' },
+        { problem: 'Communication failure', steps: 'Verify baud rate match. Check TX↔RX cross. Add ground reference between devices.' },
+        { problem: 'Motor runs the wrong direction', steps: 'Swap two of the motor leads (DC) or fix code (servo/stepper).' },
+        { problem: 'Capacitor explodes', steps: 'Either exceeded voltage rating or reversed polarity. ALWAYS check before powering.' }
+      ];
+
+      var SIM_TOOLS = [
+        { tool: 'LTspice', use: 'Analog circuit simulation. Free. Industry standard for switching power supply design.' },
+        { tool: 'KiCad', use: 'Open-source PCB design. Free. Schematic, layout, 3D viewer, autorouter.' },
+        { tool: 'Altium Designer', use: 'Industry-leading PCB design. Commercial. Used for complex products.' },
+        { tool: 'Eagle (Autodesk)', use: 'PCB design. Was popular for hobbyists. Discontinued; transitioning to Fusion Electronics.' },
+        { tool: 'CircuitJS / Falstad', use: 'Browser-based interactive circuit simulator. Great for visualizing current + voltage.' },
+        { tool: 'Tinkercad Circuits', use: 'Beginner-friendly. Drag-and-drop. Simulates Arduino code.' },
+        { tool: 'Multisim (NI)', use: 'Educational circuit simulator. Often used in college labs.' },
+        { tool: 'Proteus', use: 'PCB + microcontroller co-simulation. Commercial.' },
+        { tool: 'Wokwi', use: 'Browser-based Arduino/ESP32 simulator. Good for learning + testing without hardware.' },
+        { tool: 'PSpice', use: 'Industrial-grade analog simulator. Now owned by Cadence.' }
+      ];
+
+      var STANDARDS = [
+        { standard: 'AC mains: 120 V / 60 Hz', region: 'US, Canada, Mexico, parts of South America + Asia', notes: 'Type A/B plugs (US). Hot, neutral, ground.' },
+        { standard: 'AC mains: 230 V / 50 Hz', region: 'Europe, most of Asia + Africa + Australia', notes: 'Various plug types (C, F, G/UK, I/AU).' },
+        { standard: 'AC mains: 100 V / 50-60 Hz', region: 'Japan', notes: '50 Hz east, 60 Hz west (Tokyo vs Osaka).' },
+        { standard: 'USB Type-A', region: 'Worldwide', notes: 'Traditional rectangular. USB 1.0-3.0. Being replaced by Type-C.' },
+        { standard: 'USB Type-C', region: 'Worldwide', notes: 'Reversible. Up to 240 W (USB-PD 3.1). Up to 80 Gbps (USB4 v2). EU mandates for new mobiles.' },
+        { standard: 'Lightning (Apple)', region: 'Apple devices (pre-2024)', notes: 'Apple proprietary. iPhone 15+ switched to USB-C (EU regulation).' },
+        { standard: 'XLR', region: 'Pro audio', notes: '3-pin (balanced microphone), 4-7 pin variants. Locking connector.' },
+        { standard: '1/4" TRS / TS', region: 'Musical instruments + headphones', notes: 'Guitar cables, headphone jacks (also 3.5 mm version).' },
+        { standard: 'RJ45 (Ethernet)', region: 'Worldwide', notes: '8 pins, 4 pairs. Cat 5e (1 Gbps), Cat 6 (10 Gbps short runs), Cat 8 (40 Gbps).' },
+        { standard: 'HDMI', region: 'Worldwide', notes: 'Audio + video. HDMI 2.1: 48 Gbps, 8K@60.' },
+        { standard: 'DisplayPort', region: 'Worldwide', notes: 'Computer displays. DP 2.0: 80 Gbps. Common on monitors.' },
+        { standard: 'GPIB / IEEE-488', region: 'Test equipment', notes: 'Old but persistent. Bench multimeters, scopes.' }
+      ];
+
+      var ELEC_CAREERS = [
+        { career: 'Electrical engineer', detail: 'Design power systems, motors, transformers. Utility scale to portable devices.' },
+        { career: 'Electronics engineer', detail: 'Design circuit boards, embedded systems. Signal processing, power electronics.' },
+        { career: 'Embedded software engineer', detail: 'Firmware for microcontrollers. C/C++, RTOS. Bridges hardware + software.' },
+        { career: 'PCB designer', detail: 'Schematic capture + board layout. Trace routing, signal integrity.' },
+        { career: 'Power systems engineer', detail: 'Grid design, generation, transmission. Renewable integration.' },
+        { career: 'RF engineer', detail: 'Antennas, wireless systems, radar. Touches everything from satellites to Wi-Fi chips.' },
+        { career: 'Field service technician', detail: 'Install + repair industrial equipment, telecom systems, medical devices.' },
+        { career: 'Lineworker', detail: 'Install + maintain power lines. Demanding + dangerous; well-paid skilled trade.' },
+        { career: 'Electrician', detail: 'Install + maintain building wiring. Residential, commercial, industrial. Licensed trade.' },
+        { career: 'Robotics engineer', detail: 'Combines electrical + mechanical + software. Industrial robots, drones, self-driving.' },
+        { career: 'Test engineer', detail: 'Validates products. ESD, EMC, environmental, life testing.' },
+        { career: 'Audio engineer', detail: 'Equipment design, mixing, mastering. Live sound + studio.' },
+        { career: 'Maker / hobbyist', detail: 'Open path with Arduino, RPi, ESP32. Some become professionals; many enjoy as creative outlet.' }
+      ];
+
+      function renderMicroSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧠 Microcontrollers'),
+          h('div', { className: 'space-y-2' },
+            MICROCONTROLLERS.map(function(m, i) {
+              return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, m.name),
+                  h('span', { className: 'text-[10px] text-amber-700 font-mono ml-auto px-2 py-0.5 rounded bg-amber-100' }, m.specs)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderIcsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⬚ Common integrated circuits'),
+          h('div', { className: 'space-y-2' },
+            COMMON_ICS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, c.ic),
+                h('div', { className: 'text-[11px] text-amber-700 font-bold mb-1' }, c.use),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderProtosSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↔ Digital communication protocols'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Protocol', 'Wires', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                DIGITAL_PROTOCOLS.map(function(p, i) {
+                  return h('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, p.protocol),
+                    h('td', { className: 'px-2 py-1 font-mono text-amber-700 text-[10px]' }, p.wires),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, p.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderSensorsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◉ Sensors'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Sensor', 'Measures', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                SENSORS.map(function(s, i) {
+                  return h('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.sensor),
+                    h('td', { className: 'px-2 py-1 text-amber-700 font-medium text-[10px]' }, s.measures),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, s.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderActuatorsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚙ Actuators + outputs'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Actuator', 'Purpose', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                ACTUATORS.map(function(a, i) {
+                  return h('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, a.actuator),
+                    h('td', { className: 'px-2 py-1 text-amber-700 font-medium text-[10px]' }, a.purpose),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, a.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderPcbSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '▦ PCB design concepts'),
+          h('div', { className: 'space-y-1' },
+            PCB_TOPICS.map(function(p, i) {
+              return h('div', { key: 'p'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-amber-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-amber-900 mb-0.5' }, p.topic),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, p.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderTroubleshootSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🛠 Troubleshooting checklist'),
+          h('div', { className: 'space-y-2' },
+            TROUBLESHOOTING.map(function(t, i) {
+              return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-amber-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-amber-900 mb-0.5' }, t.problem),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.steps)
+              );
+            })
+          )
+        );
+      }
+
+      function renderSimulationSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🖥 Circuit simulation tools'),
+          h('div', { className: 'space-y-2' },
+            SIM_TOOLS.map(function(s, i) {
+              return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, s.tool),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.use)
+              );
+            })
+          )
+        );
+      }
+
+      function renderStandardsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔌 Standards, plugs, and connectors'),
+          h('div', { className: 'space-y-2' },
+            STANDARDS.map(function(s, i) {
+              return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, s.standard),
+                  h('span', { className: 'text-[10px] text-amber-700 font-mono ml-auto px-2 py-0.5 rounded bg-amber-100' }, s.region)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCareersSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💼 Careers in electronics'),
+          h('div', { className: 'space-y-2' },
+            ELEC_CAREERS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-amber-900 mb-0.5' }, c.career),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+              );
+            })
+          )
+        );
       }
 
       var __circuitExpansions = h('div', { className: 'mt-4 max-w-3xl mx-auto' },
