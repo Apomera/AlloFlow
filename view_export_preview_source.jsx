@@ -21,6 +21,7 @@ function ExportPreviewView(props) {
     setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
     setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt,
     setExportTheme, setIsAgentRunning, setShowExportPreview, showExportPreview,
+    t,
     toggleA11yInspect, updateExportPreview
   } = props;
 
