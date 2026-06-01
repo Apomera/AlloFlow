@@ -31,7 +31,7 @@ on:
 jobs:
   gate:
     name: Static gate (crash + load classes)
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,7 +44,7 @@ jobs:
 
   verify-full:
     name: Full verify suite (non-blocking visibility)
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +58,7 @@ jobs:
 
   smoke:
     name: Render smoke — deployed demo (non-blocking)
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -68,6 +68,6 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: Install Playwright chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Smoke — major surfaces open without a fatal error
         run: npx playwright test tests/e2e/11-render-smoke.spec.ts
