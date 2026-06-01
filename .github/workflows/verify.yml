@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - name: verify:gate (render-refs + lang-json + module contracts)
         run: npm run verify:gate
 
@@ -52,7 +52,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - name: npm run verify (surfaces translation gaps + mirror drift)
         run: npm run verify
 
@@ -66,7 +66,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - name: Install Playwright chromium
         run: npx playwright install chromium
       - name: Smoke — major surfaces open without a fatal error
