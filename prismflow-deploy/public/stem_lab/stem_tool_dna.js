@@ -2907,6 +2907,16 @@ window.StemLab = window.StemLab || {
           { id: 'sequencing', label: 'Sequencing tech', icon: '📊' },
           { id: 'ethics', label: 'Bioethics', icon: '⚖' },
           { id: 'famous', label: 'History', icon: '🕰' },
+          { id: 'pcr', label: 'PCR + lab', icon: '🧪' },
+          { id: 'crispr', label: 'CRISPR detail', icon: '✂' },
+          { id: 'viruses', label: 'Virus families', icon: '🦠' },
+          { id: 'microbiome', label: 'Microbiome', icon: '🦠' },
+          { id: 'devel', label: 'Embryology', icon: '🥚' },
+          { id: 'cancer', label: 'Cancer biology', icon: '⚕' },
+          { id: 'immunity', label: 'Immune system', icon: '🛡' },
+          { id: 'neuro', label: 'Neuroscience', icon: '🧠' },
+          { id: 'tree', label: 'Tree of life', icon: '🌳' },
+          { id: 'biotech2', label: 'Biotech apps', icon: '💉' },
           { id: 'glossary', label: 'Glossary', icon: '📖' }
         ];
         return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },

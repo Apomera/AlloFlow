@@ -2134,6 +2134,16 @@ window.StemLab = window.StemLab || {
           { id: 'wireless', label: 'Wireless power', icon: '📶' },
           { id: 'units', label: 'Units & constants', icon: '∑' },
           { id: 'famous', label: 'History', icon: '🕰' },
+          { id: 'micro', label: 'Microcontrollers', icon: '🧠' },
+          { id: 'ics', label: 'Common ICs', icon: '⬚' },
+          { id: 'protos', label: 'Comm protocols', icon: '↔' },
+          { id: 'sensors', label: 'Sensors', icon: '◉' },
+          { id: 'actuators', label: 'Actuators', icon: '⚙' },
+          { id: 'pcb', label: 'PCB design', icon: '▦' },
+          { id: 'troubleshoot', label: 'Troubleshooting', icon: '🛠' },
+          { id: 'simulation', label: 'Circuit sim', icon: '🖥' },
+          { id: 'standards', label: 'Standards + plugs', icon: '🔌' },
+          { id: 'careers', label: 'Careers', icon: '💼' },
           { id: 'glossary', label: 'Glossary', icon: '📖' }
         ];
         return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },

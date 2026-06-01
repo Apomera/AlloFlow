@@ -2907,6 +2907,16 @@ window.StemLab = window.StemLab || {
           { id: 'sequencing', label: 'Sequencing tech', icon: '📊' },
           { id: 'ethics', label: 'Bioethics', icon: '⚖' },
           { id: 'famous', label: 'History', icon: '🕰' },
+          { id: 'pcr', label: 'PCR + lab', icon: '🧪' },
+          { id: 'crispr', label: 'CRISPR detail', icon: '✂' },
+          { id: 'viruses', label: 'Virus families', icon: '🦠' },
+          { id: 'microbiome', label: 'Microbiome', icon: '🦠' },
+          { id: 'devel', label: 'Embryology', icon: '🥚' },
+          { id: 'cancer', label: 'Cancer biology', icon: '⚕' },
+          { id: 'immunity', label: 'Immune system', icon: '🛡' },
+          { id: 'neuro', label: 'Neuroscience', icon: '🧠' },
+          { id: 'tree', label: 'Tree of life', icon: '🌳' },
+          { id: 'biotech2', label: 'Biotech apps', icon: '💉' },
           { id: 'glossary', label: 'Glossary', icon: '📖' }
         ];
         return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3551,8 +3561,398 @@ window.StemLab = window.StemLab || {
         if (expSection === 'sequencing') return renderSequencingSection();
         if (expSection === 'ethics') return renderEthicsSection();
         if (expSection === 'famous') return renderFamousSection();
+        if (expSection === 'pcr') return renderPcrSection();
+        if (expSection === 'crispr') return renderCrisprSection();
+        if (expSection === 'viruses') return renderVirusesSection();
+        if (expSection === 'microbiome') return renderMicrobiomeSection();
+        if (expSection === 'devel') return renderDevelSection();
+        if (expSection === 'cancer') return renderCancerSection();
+        if (expSection === 'immunity') return renderImmunitySection();
+        if (expSection === 'neuro') return renderNeuroSection();
+        if (expSection === 'tree') return renderTreeSection();
+        if (expSection === 'biotech2') return renderBiotech2Section();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 3 EXPANSION (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var PCR_STEPS = [
+        { step: '1. Denaturation', temp: '94-98°C', duration: '~30 sec', detail: 'Heat separates double-stranded DNA into single strands. Hydrogen bonds break.' },
+        { step: '2. Annealing', temp: '50-65°C', duration: '~30 sec', detail: 'Primers (short DNA sequences) bind to complementary regions on each template strand.' },
+        { step: '3. Extension', temp: '72°C', duration: '~30-60 sec', detail: 'DNA polymerase (Taq, from Thermus aquaticus) extends primers, synthesizing new DNA.' }
+      ];
+
+      var PCR_FACTS = [
+        { fact: 'Amplification', detail: 'Each cycle doubles target DNA. 30 cycles → ~10⁹-fold amplification.' },
+        { fact: 'Inventor', detail: 'Kary Mullis invented PCR (1983); won Nobel Prize 1993.' },
+        { fact: 'Taq polymerase', detail: 'From thermophilic bacterium in hot springs. Survives 95°C denaturation step.' },
+        { fact: 'qPCR (real-time)', detail: 'Fluorescent dyes report on amplification in real time. Used for COVID tests, gene expression.' },
+        { fact: 'RT-PCR', detail: 'Reverse Transcription PCR. Converts RNA to cDNA first. Used for RNA viruses (COVID, HIV, flu).' },
+        { fact: 'Digital PCR (dPCR)', detail: 'Partitions sample into thousands of droplets. Counts presence/absence — highly accurate quantification.' },
+        { fact: 'Applications', detail: 'Diagnostics, forensics, gene cloning, ancient DNA (Jurassic Park-style; real life, mostly < 1 million years).' }
+      ];
+
+      var CRISPR_PARTS = [
+        { component: 'Cas9 protein', role: 'Programmable DNA-cutting enzyme.', notes: 'From bacterial immune system. Other Cas variants exist (Cas12, Cas13, etc.).' },
+        { component: 'sgRNA (single guide RNA)', role: 'Directs Cas9 to specific DNA sequence (20 bp target).', notes: 'Engineered fusion of crRNA + tracrRNA.' },
+        { component: 'PAM (protospacer adjacent motif)', role: 'Short sequence (NGG for SpCas9) next to target.', notes: 'Required for Cas9 to cut. Limits targetable sites.' },
+        { component: 'DSB (double-strand break)', role: 'Cas9 cleaves both DNA strands.', notes: 'Triggers cellular repair: NHEJ (error-prone) or HDR (homology-directed).' },
+        { component: 'Repair templates (HDR)', role: 'Provide a sequence to insert at the cut site.', notes: 'Allows precise edits, but HDR is inefficient outside dividing cells.' },
+        { component: 'Prime editing', role: '"Search-and-replace" without DSBs.', notes: 'Newer method (2019). Higher precision, fewer off-target effects.' },
+        { component: 'Base editing', role: 'Single-base changes (e.g., C→T) without DSB.', notes: 'Combines Cas9 nickase + deaminase. Useful for point mutations.' }
+      ];
+
+      var CRISPR_APPS = [
+        { use: 'Sickle cell + β-thalassemia (Casgevy)', detail: 'First CRISPR therapy FDA-approved (Dec 2023). Edits patient\'s stem cells ex vivo.' },
+        { use: 'CAR-T cancer therapy', detail: 'CRISPR engineers T cells to attack cancer. Several Phase I/II trials.' },
+        { use: 'Drug discovery screens', detail: 'CRISPR knockout libraries reveal which genes are essential for disease.' },
+        { use: 'Animal disease models', detail: 'Faster than traditional knockout mice. Used widely in research.' },
+        { use: 'Crop improvement', detail: 'Disease-resistant rice, mushrooms that don\'t brown, gluten-free wheat (still mostly research).' },
+        { use: 'Mosquito gene drives', detail: 'Spread sterility or malaria-resistance through wild populations. Field trials being debated.' },
+        { use: 'Heritable editing', detail: 'He Jiankui (2018) edited human embryos → moral + scientific outcry. Currently banned in most countries.' }
+      ];
+
+      var VIRUS_FAMILIES = [
+        { family: 'Adenoviridae', genome: 'dsDNA', envelope: 'No', examples: 'Common cold (some), adenovirus vaccine vectors (J&J COVID)', notes: 'Linear dsDNA. Used in gene therapy + vaccines.' },
+        { family: 'Coronaviridae', genome: '(+)ssRNA', envelope: 'Yes', examples: 'SARS-CoV-2 (COVID), MERS, SARS, common cold strains', notes: 'Largest RNA genomes (~30 kb). Crown of spike proteins.' },
+        { family: 'Flaviviridae', genome: '(+)ssRNA', envelope: 'Yes', examples: 'Dengue, Zika, West Nile, yellow fever, hepatitis C', notes: 'Mostly mosquito-borne.' },
+        { family: 'Herpesviridae', genome: 'dsDNA', envelope: 'Yes', examples: 'HSV-1/2, varicella zoster, Epstein-Barr, CMV', notes: 'Establish lifelong latent infection.' },
+        { family: 'Orthomyxoviridae', genome: '(−)ssRNA segmented', envelope: 'Yes', examples: 'Influenza A, B, C', notes: 'Segmented genome → reassortment → new strains.' },
+        { family: 'Paramyxoviridae', genome: '(−)ssRNA', envelope: 'Yes', examples: 'Measles, mumps, RSV, Nipah', notes: 'Measles among most contagious diseases known (R₀ ~12-18).' },
+        { family: 'Picornaviridae', genome: '(+)ssRNA', envelope: 'No', examples: 'Polio, rhinovirus (common cold), hepatitis A, enteroviruses', notes: 'Small (pico) RNA viruses.' },
+        { family: 'Retroviridae', genome: 'ssRNA (reverse-transcribed)', envelope: 'Yes', examples: 'HIV, HTLV', notes: 'Integrates into host genome. Reverse transcriptase converts RNA to DNA.' },
+        { family: 'Rhabdoviridae', genome: '(−)ssRNA', envelope: 'Yes', examples: 'Rabies, vesicular stomatitis virus', notes: 'Bullet-shaped.' },
+        { family: 'Filoviridae', genome: '(−)ssRNA', envelope: 'Yes', examples: 'Ebola, Marburg', notes: 'Hemorrhagic fevers. Filamentous shape.' },
+        { family: 'Poxviridae', genome: 'dsDNA', envelope: 'Complex', examples: 'Smallpox (eradicated), mpox, vaccinia', notes: 'Largest viruses. Replicate in cytoplasm (unusual for DNA viruses).' },
+        { family: 'Bacteriophage', genome: 'varies', envelope: 'sometimes', examples: 'T4 (E. coli), lambda', notes: 'Infect bacteria. Used as research tools + phage therapy (alternative to antibiotics).' }
+      ];
+
+      var MICROBIOME_FACTS = [
+        { topic: 'How many', detail: 'Human body has ~10¹³ human cells + ~10¹³-10¹⁴ microbial cells. Roughly equal in number.' },
+        { topic: 'Microbial diversity', detail: '500-1,000+ bacterial species in healthy adult gut. Plus archaea, fungi, viruses.' },
+        { topic: 'Genome contribution', detail: 'Microbiome carries ~100× more genes than human genome. Adds many metabolic capabilities.' },
+        { topic: 'Gut-brain axis', detail: 'Gut microbes communicate with brain via vagus nerve, immune signals, metabolites. Linked to mood, behavior — though many specific claims overstated.' },
+        { topic: 'Antibiotic disruption', detail: 'Broad-spectrum antibiotics wipe out commensals → may take months/years to recover. Some shifts persistent.' },
+        { topic: 'C. diff + FMT', detail: 'Fecal microbiota transplant (FMT) cures recurrent C. difficile infection ~90% of time. Other applications still experimental.' },
+        { topic: 'Skin microbiome', detail: 'Varies by body site: forehead (oily, dominated by Cutibacterium acnes), gut (anaerobes), armpit (apocrine sweat + bacteria → body odor).' },
+        { topic: 'Vaginal microbiome', detail: 'Healthy: Lactobacillus dominant, low pH. Imbalance → bacterial vaginosis (BV).' },
+        { topic: 'Oral microbiome', detail: '~700 species. Affects cavities, gum disease. Linked to cardiovascular risk.' },
+        { topic: 'Birth mode', detail: 'Vaginal birth seeds infant with maternal vaginal microbes; C-section seeds with skin microbes. Long-term effects studied (some contested).' },
+        { topic: 'Breast milk + microbiome', detail: 'Contains live bacteria + prebiotics (HMOs) that feed specific gut microbes (B. infantis).' }
+      ];
+
+      var EMBRYO_STAGES = [
+        { stage: 'Fertilization', time: 'Day 0-1', detail: 'Sperm + egg fuse. Diploid zygote forms.' },
+        { stage: 'Cleavage', time: 'Day 1-3', detail: 'Rapid cell divisions without growth. 2 → 4 → 8 → 16 cell stage.' },
+        { stage: 'Morula', time: 'Day 3-4', detail: 'Solid ball of ~16-32 cells.' },
+        { stage: 'Blastocyst', time: 'Day 5-6', detail: 'Hollow ball with inner cell mass (future embryo) + trophoblast (future placenta).' },
+        { stage: 'Implantation', time: 'Day 6-12', detail: 'Blastocyst attaches to uterine wall.' },
+        { stage: 'Gastrulation', time: 'Week 3', detail: 'Cell movements form 3 germ layers: ectoderm, mesoderm, endoderm.' },
+        { stage: 'Neurulation', time: 'Week 3-4', detail: 'Neural tube forms from ectoderm. Future brain + spinal cord.' },
+        { stage: 'Organogenesis', time: 'Week 4-8', detail: 'All major organs begin forming. Heart starts beating ~week 4-5.' },
+        { stage: 'Fetal period', time: 'Week 9 - birth', detail: 'Growth + maturation. Major structures already formed.' }
+      ];
+
+      var GERM_LAYERS = [
+        { layer: 'Ectoderm (outer)', forms: 'Skin epidermis, hair, nails. Nervous system (brain, spinal cord, peripheral nerves). Tooth enamel. Inner ear, lens of eye.' },
+        { layer: 'Mesoderm (middle)', forms: 'Muscle (skeletal, cardiac, smooth). Bone + cartilage. Heart + blood vessels. Kidneys. Gonads. Dermis of skin.' },
+        { layer: 'Endoderm (inner)', forms: 'Lining of digestive tract. Lining of respiratory tract. Liver, pancreas. Thyroid, parathyroid. Bladder.' }
+      ];
+
+      var CANCER_HALLMARKS = [
+        { hallmark: 'Sustained proliferative signaling', detail: 'Cancer cells produce their own growth signals or activate receptors constitutively.' },
+        { hallmark: 'Evading growth suppressors', detail: 'Tumor suppressors (p53, Rb) inactivated → cells divide despite stop signals.' },
+        { hallmark: 'Resisting cell death', detail: 'Apoptosis pathways disabled. Damaged cells survive when they should die.' },
+        { hallmark: 'Enabling replicative immortality', detail: 'Reactivate telomerase → telomeres maintained → unlimited divisions.' },
+        { hallmark: 'Inducing angiogenesis', detail: 'Tumors recruit blood vessels to feed growing mass.' },
+        { hallmark: 'Activating invasion + metastasis', detail: 'Cells lose adhesion, migrate, colonize distant tissues.' },
+        { hallmark: 'Reprogramming energy metabolism', detail: 'Warburg effect: tumors use glycolysis even in oxygen presence.' },
+        { hallmark: 'Evading immune destruction', detail: 'Tumors hide from or suppress immune surveillance (PD-L1 expression).' },
+        { hallmark: 'Tumor-promoting inflammation', detail: 'Chronic inflammation creates a permissive environment.' },
+        { hallmark: 'Genome instability', detail: 'Accumulating mutations + chromosomal rearrangements drive evolution.' }
+      ];
+
+      var IMMUNE_COMPONENTS = [
+        { component: 'Innate immunity', detail: 'Fast, non-specific. Skin, mucus, complement, neutrophils, NK cells, macrophages.' },
+        { component: 'Adaptive immunity', detail: 'Slower (days), highly specific, has memory. B cells (antibodies) + T cells.' },
+        { component: 'B cells', detail: 'Produce antibodies. Each B cell makes one specificity. Activated B cells become plasma cells.' },
+        { component: 'T helper cells (CD4+)', detail: 'Coordinate immune response. HIV target. Tipped from naive to specialized subsets (Th1, Th2, Th17, Treg).' },
+        { component: 'T cytotoxic cells (CD8+)', detail: 'Kill infected or cancerous cells via perforin + granzyme.' },
+        { component: 'Antibodies', detail: 'Y-shaped proteins. 5 classes: IgG (most abundant), IgA (mucosal), IgM (initial), IgE (allergies + parasites), IgD (B-cell surface).' },
+        { component: 'MHC / HLA', detail: 'Cell-surface molecules that present antigens to T cells. MHC I (all cells, viral peptides). MHC II (immune cells, extracellular peptides).' },
+        { component: 'Complement', detail: 'Plasma proteins that punch holes in pathogens + recruit phagocytes.' },
+        { component: 'Cytokines', detail: 'Signaling molecules of immune system. Interferons (anti-viral), interleukins (coordinate), TNF (inflammation).' },
+        { component: 'Memory cells', detail: 'Long-lived B + T cells from prior exposure. Basis of vaccines + lifelong immunity.' },
+        { component: 'Vaccines', detail: 'Train adaptive immunity without disease. mRNA (COVID), protein subunit, attenuated live, inactivated.' },
+        { component: 'Autoimmunity', detail: 'Immune system attacks self. Type 1 diabetes, RA, MS, lupus, Hashimoto\'s.' },
+        { component: 'Allergy', detail: 'IgE-mediated hypersensitivity. Mast cells release histamine.' }
+      ];
+
+      var NEURO_BASICS = [
+        { topic: 'Neuron parts', detail: 'Dendrites (receive), soma (cell body), axon (transmit), terminals (release neurotransmitter).' },
+        { topic: 'Action potential', detail: 'All-or-none electrical signal. Sodium in → depolarize → potassium out → repolarize. ~1 ms. Traveling speed: ~1 m/s (unmyelinated) to ~100 m/s (myelinated).' },
+        { topic: 'Myelin sheath', detail: 'Fatty insulation made by glia (oligodendrocytes in CNS, Schwann cells in PNS). Speeds conduction. Destroyed in MS.' },
+        { topic: 'Synapse', detail: 'Junction between neurons. Electrical or chemical (most). ~0.02 μm gap.' },
+        { topic: 'Neurotransmitters', detail: 'Chemical messengers across synapse. Excitatory (glutamate), inhibitory (GABA), modulatory (serotonin, dopamine).' },
+        { topic: 'Dopamine', detail: 'Reward, motivation, motor control. Low in Parkinson\'s; dysregulated in schizophrenia.' },
+        { topic: 'Serotonin', detail: 'Mood, sleep, appetite. SSRIs target reuptake.' },
+        { topic: 'Acetylcholine', detail: 'Neuromuscular junction. Memory + attention. Low in Alzheimer\'s.' },
+        { topic: 'Glia (non-neuron brain cells)', detail: 'Astrocytes (support, BBB), oligodendrocytes (myelin in CNS), microglia (immune), ependymal cells (CSF).' },
+        { topic: 'Brain regions', detail: 'Cerebrum (cortex — thinking, perception), cerebellum (motor coordination), brainstem (autonomic), limbic system (emotion + memory).' },
+        { topic: 'Neuroplasticity', detail: 'Brain reorganizes itself — strongest in childhood but ongoing throughout life. Basis of learning.' },
+        { topic: 'Blood-brain barrier', detail: 'Tight junctions between brain capillary cells keep most molecules out. Major challenge for CNS drug delivery.' },
+        { topic: 'Brain energy', detail: '~20% of body\'s energy at rest despite being ~2% of mass. Mostly Na+/K+ pumps maintaining ion gradients.' }
+      ];
+
+      var TREE_OF_LIFE = [
+        { domain: 'Bacteria', features: 'Prokaryotic. No nucleus. Peptidoglycan cell wall. Highly diverse metabolism.', examples: 'E. coli, Streptococcus, cyanobacteria' },
+        { domain: 'Archaea', features: 'Prokaryotic. Distinct membrane lipids + ribosomes. Often in extreme environments.', examples: 'Methanogens, halophiles, thermophiles' },
+        { domain: 'Eukarya', features: 'Eukaryotic. Membrane-bound nucleus + organelles. Sexual reproduction common.', examples: 'Animals, plants, fungi, protists' }
+      ];
+
+      var KINGDOMS = [
+        { kingdom: 'Animalia', features: 'Multicellular, heterotrophic, mobile (at some stage), no cell wall.', notes: 'Mostly sexual reproduction. From sponges (no true tissues) to vertebrates.' },
+        { kingdom: 'Plantae', features: 'Multicellular, photosynthetic (chlorophyll a+b), cellulose cell walls.', notes: 'Includes algae (debated), mosses, ferns, gymnosperms, angiosperms.' },
+        { kingdom: 'Fungi', features: 'Multicellular (mostly), heterotrophic, chitin cell walls. Digest externally.', notes: 'Decomposers + symbionts. Yeasts, molds, mushrooms, lichens (fungus + alga).' },
+        { kingdom: 'Protista', features: 'Eukaryotes that aren\'t plants, animals, or fungi. Polyphyletic — being reclassified.', notes: 'Amoebas, algae (some), Plasmodium (malaria), euglena.' }
+      ];
+
+      var BIOTECH_APPS = [
+        { app: 'Recombinant insulin', detail: 'First mass-produced human protein. Made in E. coli (1982). Replaced pig + cow insulin.' },
+        { app: 'Monoclonal antibodies', detail: 'Single-target therapies. Humira (autoimmune), Herceptin (HER2+ breast cancer), Keytruda (immunotherapy).' },
+        { app: 'mRNA vaccines', detail: 'COVID-19 vaccines (Pfizer, Moderna). Self-amplifying versions + non-COVID applications in development.' },
+        { app: 'Gene therapy', detail: 'Replace defective genes. Luxturna (inherited blindness, FDA 2017). Zolgensma (SMA, 2019).' },
+        { app: 'CAR-T cell therapy', detail: 'Engineered immune cells. Yescarta + Kymriah for blood cancers. ~$400K per dose.' },
+        { app: 'Stem cell therapy', detail: 'Bone marrow transplants standard for decades. Newer iPSC + ESC approaches in trials.' },
+        { app: '3D bioprinting', detail: 'Print tissue with living cells + scaffolds. Skin, cartilage, bladder. Whole organs still distant.' },
+        { app: 'Synthetic biology', detail: 'Engineer biological systems. Bacteria that produce drugs, yeast that brews opioids, algae biofuels.' },
+        { app: 'GMO crops', detail: 'Bt corn (insect resistance), Roundup Ready (herbicide), Golden Rice (vitamin A).' },
+        { app: 'DNA forensics', detail: 'STR profiling, mtDNA (degraded samples), Y-chromosome (paternal lineage). Database matching.' },
+        { app: 'Ancestry + relative finding', detail: 'SNP arrays (23andMe, AncestryDNA). Reveals biogeographic ancestry + DNA relatives.' },
+        { app: 'Liquid biopsy', detail: 'Detect cancer DNA in blood. Earlier diagnosis, treatment monitoring.' },
+        { app: 'Engineered T cells', detail: 'Treat solid tumors. TIL therapy (Iovance, melanoma) FDA approved 2024.' },
+        { app: 'Bioremediation', detail: 'Engineered microbes clean up oil spills, plastic pollution, heavy metals.' }
+      ];
+
+      function renderPcrSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧪 PCR (polymerase chain reaction)'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Amplifies specific DNA sequences a billion-fold. Workhorse of molecular biology, diagnostics, and forensics.'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'The 3 steps (repeated ~30×)'),
+            h('div', { className: 'space-y-1' },
+              PCR_STEPS.map(function(s, i) {
+                return h('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                    h('span', { className: 'text-[11px] font-black text-slate-800' }, s.step),
+                    h('span', { className: 'text-[10px] font-mono text-emerald-700 ml-auto' }, s.temp + ' · ' + s.duration)
+                  ),
+                  h('div', { className: 'text-[10px] text-slate-700' }, s.detail)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Key facts'),
+          h('div', { className: 'space-y-1' },
+            PCR_FACTS.map(function(f, i) {
+              return h('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[11px] font-black text-emerald-900 mb-0.5' }, f.fact),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCrisprSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '✂ CRISPR-Cas9'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Originally a bacterial immune system; now a programmable gene-editing tool. Doudna + Charpentier shared 2020 Nobel Prize.'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Components + concepts'),
+            h('div', { className: 'space-y-1' },
+              CRISPR_PARTS.map(function(c, i) {
+                return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'text-[11px] font-black text-slate-800 mb-0.5' }, c.component),
+                  h('div', { className: 'text-[10px] text-emerald-700 italic mb-0.5' }, c.role),
+                  h('div', { className: 'text-[10px] text-slate-700' }, c.notes)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Real applications'),
+          h('div', { className: 'space-y-1' },
+            CRISPR_APPS.map(function(a, i) {
+              return h('div', { key: 'a'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[11px] font-black text-emerald-900 mb-0.5' }, a.use),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, a.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderVirusesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🦠 Virus families'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Viruses are non-living infectious agents — they need a host cell to replicate. Classified by genome type (Baltimore classification), envelope, shape.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Family', 'Genome', 'Envelope', 'Examples', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                VIRUS_FAMILIES.map(function(v, i) {
+                  return h('tr', { key: 'v'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, v.family),
+                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 text-[10px]' }, v.genome),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, v.envelope),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, v.examples),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, v.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderMicrobiomeSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🦠 Human microbiome'),
+          h('div', { className: 'p-2.5 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-900 mb-3' },
+            h('strong', null, '⚠ Note: '), 'Microbiome science is advancing fast. Many popular claims (specific probiotic strains "curing" specific conditions) outrun the evidence. Stick to robustly replicated findings.'
+          ),
+          h('div', { className: 'space-y-1' },
+            MICROBIOME_FACTS.map(function(m, i) {
+              return h('div', { key: 'm'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, m.topic),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderDevelSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🥚 Embryonic development'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Stages (human, approximate)'),
+            h('div', { className: 'space-y-1' },
+              EMBRYO_STAGES.map(function(s, i) {
+                return h('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                    h('span', { className: 'text-[11px] font-black text-slate-800' }, s.stage),
+                    h('span', { className: 'text-[10px] font-mono text-emerald-700 ml-auto' }, s.time)
+                  ),
+                  h('div', { className: 'text-[10px] text-slate-700' }, s.detail)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Germ layers — what each forms'),
+          h('div', { className: 'space-y-1' },
+            GERM_LAYERS.map(function(L, i) {
+              return h('div', { key: 'L'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, L.layer),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, L.forms)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCancerSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚕ Hallmarks of cancer'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Defined by Hanahan + Weinberg (2000, updated 2011). Most cancers acquire most of these hallmarks. Therapy increasingly targets specific hallmarks.'),
+          h('div', { className: 'space-y-1' },
+            CANCER_HALLMARKS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, c.hallmark),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderImmunitySection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🛡 The immune system'),
+          h('div', { className: 'space-y-2' },
+            IMMUNE_COMPONENTS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, c.component),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderNeuroSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧠 Neuroscience basics'),
+          h('div', { className: 'space-y-1' },
+            NEURO_BASICS.map(function(n, i) {
+              return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, n.topic),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderTreeSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌳 Tree of life'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Three domains (Woese, 1990)'),
+            h('div', { className: 'space-y-2' },
+              TREE_OF_LIFE.map(function(d, i) {
+                return h('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, d.domain),
+                  h('div', { className: 'text-[11px] text-emerald-700 font-bold mb-1' }, d.features),
+                  h('div', { className: 'text-[10px] text-slate-600 italic' }, 'Examples: ' + d.examples)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Traditional eukaryote kingdoms'),
+          h('div', { className: 'space-y-1' },
+            KINGDOMS.map(function(K, i) {
+              return h('div', { key: 'K'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, K.kingdom),
+                h('div', { className: 'text-[11px] text-slate-700 mb-0.5' }, K.features),
+                h('div', { className: 'text-[10px] text-slate-600 italic' }, K.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderBiotech2Section() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💉 Biotechnology applications'),
+          h('div', { className: 'space-y-2' },
+            BIOTECH_APPS.map(function(b, i) {
+              return h('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, b.app),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, b.detail)
+              );
+            })
+          )
+        );
       }
 
       var __dnaExpansions = h('div', { className: 'mt-4 max-w-4xl mx-auto' },

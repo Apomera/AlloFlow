@@ -1434,6 +1434,17 @@ window.StemLab = window.StemLab || {
           { id: 'world', label: 'Real-world', icon: '\uD83C\uDF0D' },
           { id: 'tricks', label: 'Shortcuts', icon: '\u26A1' },
           { id: 'compass', label: 'Compass', icon: '\uD83E\uDDED' },
+          { id: 'pythag', label: 'Pythagorean', icon: 'a\u00B2+b\u00B2' },
+          { id: 'triangles', label: 'Triangle types', icon: '\u25B3' },
+          { id: 'circle', label: 'Circle geometry', icon: '\u25EF' },
+          { id: 'solids', label: '3D solids', icon: '\u2B22' },
+          { id: 'transform', label: 'Transformations', icon: '\u21BB' },
+          { id: 'coords', label: 'Coordinates', icon: '(x,y)' },
+          { id: 'vectors', label: 'Vectors', icon: '\u2192' },
+          { id: 'symmetry', label: 'Symmetry', icon: '\u27C2' },
+          { id: 'tilings', label: 'Tessellations', icon: '\u2B21' },
+          { id: 'famous', label: 'History', icon: '\uD83D\uDD70' },
+          { id: 'careers', label: 'Careers using angles', icon: '\uD83D\uDCBC' },
           { id: 'glossary', label: 'Glossary', icon: '\uD83D\uDCD6' }
         ];
         return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
@@ -1644,6 +1655,393 @@ window.StemLab = window.StemLab || {
         );
       }
 
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 2 EXPANSION — More geometry references (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var PYTHAG_TRIPLES = [
+        { a: 3, b: 4, c: 5, notes: 'Smallest primitive triple. Egyptians used 3:4:5 ropes to make right angles.' },
+        { a: 5, b: 12, c: 13, notes: 'Second smallest primitive.' },
+        { a: 8, b: 15, c: 17, notes: 'Primitive.' },
+        { a: 7, b: 24, c: 25, notes: 'Primitive.' },
+        { a: 20, b: 21, c: 29, notes: 'Primitive — legs close in length.' },
+        { a: 9, b: 40, c: 41, notes: 'Primitive.' },
+        { a: 12, b: 35, c: 37, notes: 'Primitive.' },
+        { a: 11, b: 60, c: 61, notes: 'Primitive.' },
+        { a: 28, b: 45, c: 53, notes: 'Primitive.' },
+        { a: 33, b: 56, c: 65, notes: 'Primitive.' },
+        { a: 16, b: 63, c: 65, notes: 'Primitive. Two triples with hypotenuse 65.' },
+        { a: 6, b: 8, c: 10, notes: '2× of (3,4,5). Multiples are also Pythagorean (just not primitive).' },
+        { a: 9, b: 12, c: 15, notes: '3× of (3,4,5).' }
+      ];
+
+      var TRIANGLE_TYPES = [
+        { type: 'Equilateral', sides: 'All 3 sides equal', angles: 'All 60°', notes: 'Three lines of symmetry. Maximum area for given perimeter (among triangles).' },
+        { type: 'Isosceles', sides: 'Two sides equal', angles: 'Two equal base angles', notes: 'Single line of symmetry through apex.' },
+        { type: 'Scalene', sides: 'No sides equal', angles: 'No angles equal', notes: 'No special symmetry.' },
+        { type: 'Right', sides: 'No constraint', angles: 'One 90° angle', notes: 'Pythagoras applies. Hypotenuse is longest side.' },
+        { type: 'Acute', sides: 'No constraint', angles: 'All angles < 90°', notes: 'All three angles are acute.' },
+        { type: 'Obtuse', sides: 'No constraint', angles: 'One angle > 90°', notes: 'Only one angle can be obtuse — sum is 180°.' },
+        { type: 'Right isosceles', sides: 'Two equal legs', angles: '90°, 45°, 45°', notes: 'Hypotenuse = leg × √2. Diagonal of a square.' },
+        { type: '30-60-90', sides: 'Ratio 1 : √3 : 2', angles: '30°, 60°, 90°', notes: 'Half of an equilateral triangle.' }
+      ];
+
+      var TRIANGLE_FORMULAS = [
+        { name: 'Area (base × height)', formula: 'A = ½·b·h', notes: 'Most common. b and h must be perpendicular.' },
+        { name: 'Area (Heron\'s formula)', formula: 'A = √[s(s−a)(s−b)(s−c)], s = (a+b+c)/2', notes: 'Uses three sides only. No angles needed.' },
+        { name: 'Area (two sides + included angle)', formula: 'A = ½·a·b·sin C', notes: 'When you know two sides and the angle between them.' },
+        { name: 'Law of Sines', formula: 'a/sin A = b/sin B = c/sin C = 2R', notes: 'R = circumradius. Useful when you know one side + opposite angle.' },
+        { name: 'Law of Cosines', formula: 'c² = a² + b² − 2ab·cos C', notes: 'Generalization of Pythagoras. Cos C = 0 (C=90°) → Pythagoras.' },
+        { name: 'Sum of angles', formula: 'A + B + C = 180°', notes: 'Euclidean (flat) triangles. Sum > 180° on sphere.' },
+        { name: 'Pythagorean theorem', formula: 'a² + b² = c²', notes: 'Right triangles only. c = hypotenuse.' },
+        { name: 'Triangle inequality', formula: 'a + b > c (and permutations)', notes: 'Sum of any two sides > third side.' },
+        { name: 'Centroid', formula: 'Intersection of medians', notes: 'Center of mass. Divides each median 2:1 from vertex.' },
+        { name: 'Circumcenter', formula: 'Intersection of perpendicular bisectors', notes: 'Center of circumscribed circle (passes through all 3 vertices).' },
+        { name: 'Incenter', formula: 'Intersection of angle bisectors', notes: 'Center of inscribed circle (tangent to all 3 sides).' },
+        { name: 'Orthocenter', formula: 'Intersection of altitudes', notes: 'Inside acute triangles, outside obtuse, at right-angle vertex of right triangles.' }
+      ];
+
+      var CIRCLE_FACTS = [
+        { name: 'Circumference', formula: 'C = 2πr = πd', notes: 'd = diameter. π ≈ 3.14159...' },
+        { name: 'Area', formula: 'A = πr²', notes: 'Maximum area for given perimeter (isoperimetric inequality).' },
+        { name: 'Arc length', formula: 's = r·θ (θ in radians)', notes: 'Or s = (θ°/360°)·2πr.' },
+        { name: 'Sector area', formula: 'A = ½·r²·θ (θ in radians)', notes: 'Or A = (θ°/360°)·πr².' },
+        { name: 'Chord length', formula: 'L = 2r·sin(θ/2)', notes: 'θ = central angle to the chord.' },
+        { name: 'Inscribed angle theorem', formula: 'Inscribed angle = ½ central angle', notes: 'Both subtend the same arc.' },
+        { name: 'Thales\' theorem', formula: 'Angle inscribed in semicircle = 90°', notes: 'Special case of inscribed angle theorem.' },
+        { name: 'Power of a point', formula: 'For two secants: PA·PB = PC·PD', notes: 'Holds for any two lines through P intersecting circle.' },
+        { name: 'Equation of circle (center h,k)', formula: '(x−h)² + (y−k)² = r²', notes: 'Standard form.' },
+        { name: 'Tangent-radius', formula: 'Tangent ⊥ radius at point of contact', notes: 'Right angle between radius and tangent line.' }
+      ];
+
+      var SOLID_VOLUMES = [
+        { name: 'Cube', V: 's³', SA: '6s²', notes: '6 faces, 12 edges, 8 vertices. All edges equal.' },
+        { name: 'Rectangular prism (box)', V: 'lwh', SA: '2(lw + lh + wh)', notes: '6 faces, 12 edges, 8 vertices.' },
+        { name: 'Sphere', V: '(4/3)πr³', SA: '4πr²', notes: 'Maximum volume for given surface area. Soap bubbles minimize surface area.' },
+        { name: 'Cylinder', V: 'πr²h', SA: '2πr² + 2πrh', notes: 'Like a prism but with circular ends.' },
+        { name: 'Cone', V: '(1/3)πr²h', SA: 'πr² + πr·ℓ (ℓ = slant)', notes: 'Volume = 1/3 of cylinder with same r and h.' },
+        { name: 'Square pyramid', V: '(1/3)s²h', SA: 's² + 2s·ℓ', notes: 'Egyptian pyramids. Volume = 1/3 of prism with same base + height.' },
+        { name: 'Triangular prism', V: '(1/2)bh·L', SA: 'sum of 5 faces', notes: 'Cross-section is triangle. Toblerone bar.' },
+        { name: 'Tetrahedron (regular)', V: 's³/(6√2)', SA: 's²·√3', notes: '4 triangular faces. Simplest 3D shape (just 4 vertices).' },
+        { name: 'Octahedron (regular)', V: '(√2/3)s³', SA: '2s²·√3', notes: '8 triangular faces. Diamond crystal shape.' },
+        { name: 'Dodecahedron (regular)', V: '(15+7√5)/4·s³', SA: '3·s²·√(25+10√5)', notes: '12 pentagonal faces. Plato linked to "the heavens".' },
+        { name: 'Icosahedron (regular)', V: '(5(3+√5)/12)·s³', SA: '5·s²·√3', notes: '20 triangular faces. Most spherelike Platonic solid.' }
+      ];
+
+      var TRANSFORMATIONS = [
+        { name: 'Translation', effect: 'Slides shape (no rotation, no reflection, no resize)', preserves: 'Size, shape, orientation', notes: 'Just adds a vector to every point. (x,y) → (x+a, y+b).' },
+        { name: 'Rotation', effect: 'Turns shape around a fixed point', preserves: 'Size, shape', notes: 'Specified by center + angle. Around origin: (x,y) → (x·cos θ − y·sin θ, x·sin θ + y·cos θ).' },
+        { name: 'Reflection', effect: 'Mirrors shape across a line', preserves: 'Size, shape (but reverses orientation/chirality)', notes: 'Across x-axis: (x,y) → (x,−y). Across y-axis: (x,y) → (−x,y). Across y=x: (x,y) → (y,x).' },
+        { name: 'Glide reflection', effect: 'Reflection + translation along the line of reflection', preserves: 'Size, shape (reverses orientation)', notes: 'Footprints in sand are a glide reflection pattern.' },
+        { name: 'Dilation (scaling)', effect: 'Stretches/shrinks shape from a center', preserves: 'Shape (similarity), but not size', notes: 'Factor k: (x,y) → (kx, ky). k > 1 = enlargement; 0 < k < 1 = reduction; k < 0 = reflection through center.' },
+        { name: 'Shear', effect: 'Skews shape — parallel lines stay parallel but slide', preserves: 'Area', notes: 'Horizontal shear: (x,y) → (x + k·y, y). Italic fonts are sheared.' },
+        { name: 'Identity', effect: 'Does nothing', preserves: 'Everything', notes: 'The trivial transformation.' },
+        { name: 'Composition', effect: 'Apply one after another', preserves: 'Depends on the composition', notes: 'Order matters! Rotate-then-translate ≠ translate-then-rotate (in general).' }
+      ];
+
+      var COORD_SYSTEMS = [
+        { name: 'Cartesian (rectangular) 2D', coords: '(x, y)', use: 'Most common. Standard graph paper.', notes: 'x-axis horizontal, y-axis vertical. Origin (0,0).' },
+        { name: 'Cartesian (rectangular) 3D', coords: '(x, y, z)', use: 'Standard for 3D graphics, physics.', notes: 'Right-handed: thumb x, index y, middle z.' },
+        { name: 'Polar 2D', coords: '(r, θ)', use: 'Circular/radial symmetry.', notes: 'r = distance from origin, θ = angle from +x axis. x = r cos θ, y = r sin θ.' },
+        { name: 'Cylindrical 3D', coords: '(r, θ, z)', use: 'Cylinders, helices, axial symmetry.', notes: 'Polar in plane + z height. Used for solenoids, pipe flow.' },
+        { name: 'Spherical 3D', coords: '(ρ, θ, φ)', use: 'Spheres, planetary motion, antennas.', notes: 'ρ = distance from origin; conventions vary on which angle is θ vs φ.' },
+        { name: 'Geographic (lat, lon)', coords: '(lat, lon)', use: 'Earth surface.', notes: 'Latitude: −90° (S pole) to +90° (N pole). Longitude: −180° to +180° from prime meridian.' },
+        { name: 'UTM (Universal Transverse Mercator)', coords: 'zone + (E, N)', use: 'Local-scale maps, surveys.', notes: 'Projects Earth onto cylinder. Less distortion at small scales than lat/lon.' },
+        { name: 'Homogeneous (projective)', coords: '(x, y, w) or (x, y, z, w)', use: 'Computer graphics, projective geometry.', notes: 'Adds a "weight" coordinate. Enables translations as matrix multiplication.' }
+      ];
+
+      var VECTOR_NOTES = [
+        { topic: 'What is a vector', detail: 'Quantity with both magnitude AND direction. Drawn as arrow. Examples: velocity, force, displacement.' },
+        { topic: 'Scalar vs vector', detail: 'Scalar = just a number (mass, temperature, time). Vector = magnitude + direction.' },
+        { topic: 'Vector addition (head-to-tail)', detail: 'Place tail of second at head of first. Resultant = first tail to second head.' },
+        { topic: 'Vector addition (parallelogram)', detail: 'Place tails together. Diagonal of parallelogram = resultant.' },
+        { topic: 'Components', detail: 'Vector v at angle θ: vₓ = v·cos θ, v_y = v·sin θ.' },
+        { topic: 'Magnitude', detail: '|v| = √(vₓ² + v_y² + v_z²). Pythagoras in any dimension.' },
+        { topic: 'Unit vector', detail: 'Magnitude 1. v̂ = v / |v|. Often called the "direction" of v.' },
+        { topic: 'Dot product', detail: 'a·b = |a||b|cos θ. Gives scalar. Zero when perpendicular. Negative when angle > 90°.' },
+        { topic: 'Cross product (3D only)', detail: 'a×b = |a||b|sin θ · n̂. Gives vector PERPENDICULAR to both. Magnitude = area of parallelogram.' },
+        { topic: 'Right-hand rule (cross)', detail: 'Curl fingers from a to b. Thumb points in direction of a×b. (Right-handed coordinates.)' },
+        { topic: 'Linear combination', detail: 'c₁·a + c₂·b. Generates a plane (or line) of vectors.' },
+        { topic: 'Real-world: forces', detail: 'Newton\'s 2nd law: F = ma. Net force is vector sum of all forces.' },
+        { topic: 'Real-world: navigation', detail: 'Airplane heading + wind vector → ground velocity (vector sum).' }
+      ];
+
+      var SYMMETRY_TYPES = [
+        { name: 'Reflection (mirror) symmetry', count: 'one or more axes', example: 'Butterfly (1 axis), snowflake (6 axes), letter A (1 axis vertical)', notes: 'Shape unchanged when reflected across the axis.' },
+        { name: 'Rotational symmetry', count: 'n-fold (rotation 360°/n)', example: 'Pinwheel (4-fold), starfish (5-fold), honeycomb cell (6-fold)', notes: 'Looks identical after rotating 360°/n.' },
+        { name: 'Translational symmetry', count: 'unlimited (along translation vector)', example: 'Wallpaper, brick wall, fence', notes: 'Pattern repeats by translation.' },
+        { name: 'Glide reflection', count: '—', example: 'Footprints, frieze patterns', notes: 'Reflect + translate combined.' },
+        { name: 'Point symmetry (centrosymmetric)', count: '2-fold rotation about a point', example: 'Letter S, letter Z, recycling logo', notes: 'Looks identical when rotated 180° about center.' },
+        { name: 'Bilateral symmetry', count: '1 mirror axis', example: 'Vertebrate animals (you!), most leaves', notes: 'Left/right halves are mirror images.' },
+        { name: 'Radial symmetry', count: 'rotational', example: 'Sea stars, daisies, jellyfish', notes: 'Multiple mirror lines through a center.' },
+        { name: 'Crystallographic groups', count: '17 wallpaper, 230 3D space groups', example: 'Crystals, M.C. Escher tilings', notes: 'Mathematically classified symmetry of repeating patterns.' }
+      ];
+
+      var TILING_FACTS = [
+        { name: 'Regular tessellations (3 only)', detail: 'Equilateral triangle, square, regular hexagon. Only regular polygons that tile the plane.' },
+        { name: 'Why only 3?', detail: 'Interior angle must divide 360°. Triangle 60° (×6), square 90° (×4), hexagon 120° (×3). Pentagon 108° doesn\'t divide 360° → can\'t tile alone.' },
+        { name: 'Semiregular (Archimedean) tessellations', detail: '8 in total. Combine multiple regular polygons; same arrangement at each vertex.' },
+        { name: 'Penrose tilings (1974)', detail: 'Aperiodic tiling — never repeats exactly. 5-fold symmetry. Inspired discovery of quasicrystals.' },
+        { name: 'Honeycomb conjecture', detail: 'Hexagonal tiling minimizes total perimeter for given area. Proven by Hales (1999). Why bees use hexagons.' },
+        { name: 'Voronoi diagrams', detail: 'Each region = points closest to one "seed" point. Appears in nature (giraffe spots, mud cracks, cell organization).' },
+        { name: 'Hyperbolic tilings', detail: 'On a hyperbolic plane, regular pentagons (and many other shapes) CAN tile. M.C. Escher\'s "Circle Limit" series.' },
+        { name: 'Wang tiles (1961)', detail: 'Colored squares that must match neighbors on edges. Can simulate Turing machine → tiling problem is undecidable in general.' },
+        { name: '"Einstein" tile (2023)', detail: 'A single tile that aperiodically tiles the plane (the "hat" and "spectre" shapes). Major recent discovery.' }
+      ];
+
+      var GEOMETRY_HISTORY = [
+        { year: '~3000 BCE', who: 'Egyptians + Babylonians', what: 'Used 3-4-5 ropes to lay out right angles for pyramids + buildings.' },
+        { year: '~300 BCE', who: 'Euclid', what: '"Elements" — 13 books axiomatized geometry. Basis of geometry for 2000+ years.' },
+        { year: '~250 BCE', who: 'Archimedes', what: 'Calculated π to high precision. Volume + surface area of sphere. Almost developed integral calculus.' },
+        { year: '~150 CE', who: 'Ptolemy', what: 'Trigonometry tables. Geocentric model of solar system (Almagest).' },
+        { year: '~830 CE', who: 'al-Khwarizmi', what: 'Founded algebra ("al-jabr"). Linked to geometry. "Algorithm" derives from his name.' },
+        { year: '1637', who: 'René Descartes', what: 'Analytic geometry — coordinates link algebra + geometry. "Cartesian" named for him.' },
+        { year: '1675', who: 'Isaac Newton + Leibniz', what: 'Independently developed calculus. Tangent lines + areas → infinitesimal geometry.' },
+        { year: '1820s', who: 'Lobachevsky + Bolyai + Gauss', what: 'Non-Euclidean geometry — parallel postulate not required.' },
+        { year: '1854', who: 'Bernhard Riemann', what: 'Differential geometry — curved manifolds. Basis of Einstein\'s general relativity.' },
+        { year: '1872', who: 'Felix Klein', what: 'Erlangen program — classified geometries by their symmetry groups.' },
+        { year: '1899', who: 'David Hilbert', what: 'Axiomatized Euclidean geometry more rigorously than Euclid himself.' },
+        { year: '1915', who: 'Albert Einstein', what: 'General relativity: gravity is curvature of spacetime. Pure geometry of physics.' },
+        { year: '1975', who: 'Benoit Mandelbrot', what: 'Fractals — shapes with infinite detail at every scale.' },
+        { year: '2003', who: 'Grigori Perelman', what: 'Proved Poincaré conjecture (a Millennium Prize problem). Declined the $1M prize.' }
+      ];
+
+      var ANGLE_CAREERS = [
+        { career: 'Architect', use: 'Angles in building design — roof pitches, structural braces, sight lines. CAD software computes structural angles.' },
+        { career: 'Surveyor', use: 'Theodolites measure horizontal + vertical angles. Triangulation determines land boundaries, elevations.' },
+        { career: 'Civil engineer', use: 'Road banking angles, bridge truss angles, dam slopes. Loads decomposed into perpendicular components.' },
+        { career: 'Astronomer', use: 'Telescope pointing, parallax measurements (very small angles), star positions in arcseconds.' },
+        { career: 'Pilot / navigator', use: 'Compass headings, glide slopes, bearings. Air traffic control headings always in degrees.' },
+        { career: 'Photographer / cinematographer', use: 'Field of view (FOV), Dutch tilts, sun angles. Lens choices determined by angle of view.' },
+        { career: 'Carpenter', use: 'Miter saw angles for picture frames, roof rafters, stair stringers. Speed square is angle reference.' },
+        { career: 'Sailor', use: 'Wind angle (point of sail), compass headings, celestial navigation with sextant.' },
+        { career: 'Optometrist', use: 'Astigmatism axes measured in degrees. Prism prescription for binocular vision problems.' },
+        { career: 'Animator / game dev', use: 'Bone rotations in rigs, camera frustums, lighting angles.' },
+        { career: 'Athletic coach', use: 'Optimal launch angles for projectiles (shot put ~38°, long jump ~21°, javelin ~30-35°).' },
+        { career: 'Geologist', use: 'Strike and dip of rock layers — measured with Brunton compass.' },
+        { career: 'Robotics engineer', use: 'Joint angles of robot arms, sensor field of view, path planning.' },
+        { career: 'Anesthesiologist', use: 'Needle insertion angles for nerve blocks, epidurals.' }
+      ];
+
+      function renderPythagSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'a²+b² Pythagorean theorem'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'In a right triangle, a² + b² = c² where c is the hypotenuse. Sets of integers (a, b, c) that satisfy this are called Pythagorean triples. A "primitive" triple has no common factor.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['a', 'b', 'c', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                PYTHAG_TRIPLES.map(function(t, i) {
+                  return h('tr', { key: 't'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, t.a),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, t.b),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, t.c),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px] italic' }, t.notes)
+                  );
+                })
+              )
+            )
+          ),
+          h('div', { className: 'mt-3 p-2.5 rounded bg-rose-50 border border-rose-200 text-[11px] text-rose-900' },
+            h('strong', null, 'Generating primitive triples: '), 'For positive integers m > n with no common factor and not both odd, a = m² − n², b = 2mn, c = m² + n². Tries m=2, n=1 → (3,4,5).'
+          )
+        );
+      }
+
+      function renderTrianglesSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '△ Triangle types and formulas'),
+          h('div', { className: 'mb-3' },
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Classification'),
+            h('div', { className: 'space-y-1' },
+              TRIANGLE_TYPES.map(function(t, i) {
+                return h('div', { key: 't'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                    h('span', { className: 'text-[11px] font-black text-slate-800' }, t.type),
+                    h('span', { className: 'text-[10px] text-rose-700 font-mono ml-auto' }, t.angles)
+                  ),
+                  h('div', { className: 'text-[10px] text-slate-700 italic mb-0.5' }, t.sides),
+                  h('div', { className: 'text-[10px] text-slate-700' }, t.notes)
+                );
+              })
+            )
+          ),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Key formulas'),
+          h('div', { className: 'space-y-1' },
+            TRIANGLE_FORMULAS.map(function(f, i) {
+              return h('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                  h('span', { className: 'text-[11px] font-black text-slate-800' }, f.name),
+                  h('span', { className: 'text-[11px] font-mono ml-auto text-rose-700 font-bold' }, f.formula)
+                ),
+                h('div', { className: 'text-[10px] text-slate-700' }, f.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCircleSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◯ Circle geometry'),
+          h('div', { className: 'space-y-1' },
+            CIRCLE_FACTS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                  h('span', { className: 'text-[11px] font-black text-slate-800' }, c.name),
+                  h('span', { className: 'text-[11px] font-mono ml-auto text-rose-700 font-bold' }, c.formula)
+                ),
+                h('div', { className: 'text-[10px] text-slate-700' }, c.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderSolidsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⬢ 3D solids — volumes and surface areas'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100' },
+                  ['Solid', 'Volume (V)', 'Surface area (SA)', 'Notes'].map(function(hh, i) {
+                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              h('tbody', null,
+                SOLID_VOLUMES.map(function(s, i) {
+                  return h('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.name),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, s.V),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 text-[10px]' }, s.SA),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderTransformSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↻ Geometric transformations'),
+          h('div', { className: 'space-y-2' },
+            TRANSFORMATIONS.map(function(t, i) {
+              return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, t.name),
+                h('div', { className: 'text-[11px] text-rose-700 font-bold mb-1' }, t.effect),
+                h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Preserves: '), t.preserves),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCoordsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '(x,y) Coordinate systems'),
+          h('div', { className: 'space-y-2' },
+            COORD_SYSTEMS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, c.name),
+                  h('span', { className: 'text-[11px] font-mono text-rose-700 font-bold ml-auto px-2 py-0.5 rounded bg-rose-100' }, c.coords)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Use: '), c.use),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderVectorsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '→ Vectors'),
+          h('div', { className: 'space-y-1' },
+            VECTOR_NOTES.map(function(v, i) {
+              return h('div', { key: 'v'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, v.topic),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, v.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderSymmetrySection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⟂ Symmetry'),
+          h('div', { className: 'space-y-2' },
+            SYMMETRY_TYPES.map(function(s, i) {
+              return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[12px] font-black text-slate-800' }, s.name),
+                  h('span', { className: 'text-[10px] text-rose-700 font-mono ml-auto' }, s.count)
+                ),
+                h('div', { className: 'text-[10px] text-slate-700 italic mb-1' }, 'Example: ' + s.example),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderTilingsSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⬡ Tessellations & tilings'),
+          h('div', { className: 'space-y-2' },
+            TILING_FACTS.map(function(t, i) {
+              return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, t.name),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderFamousSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🕰 History of geometry'),
+          h('div', { className: 'space-y-2' },
+            GEOMETRY_HISTORY.map(function(g, i) {
+              return h('div', { key: 'g'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
+                h('div', { className: 'flex items-baseline gap-2 mb-0.5' },
+                  h('span', { className: 'text-[10px] font-mono text-rose-700 font-bold' }, g.year),
+                  h('span', { className: 'text-[12px] font-black text-rose-900' }, g.who)
+                ),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.what)
+              );
+            })
+          )
+        );
+      }
+
+      function renderCareersSection() {
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💼 Careers that use angles every day'),
+          h('div', { className: 'space-y-2' },
+            ANGLE_CAREERS.map(function(c, i) {
+              return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, c.career),
+                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.use)
+              );
+            })
+          )
+        );
+      }
+
       function renderActiveSection() {
         if (expSection === 'types') return renderTypesSection();
         if (expSection === 'relationships') return renderRelationshipsSection();
@@ -1654,6 +2052,17 @@ window.StemLab = window.StemLab || {
         if (expSection === 'world') return renderWorldSection();
         if (expSection === 'tricks') return renderTricksSection();
         if (expSection === 'compass') return renderCompassSection();
+        if (expSection === 'pythag') return renderPythagSection();
+        if (expSection === 'triangles') return renderTrianglesSection();
+        if (expSection === 'circle') return renderCircleSection();
+        if (expSection === 'solids') return renderSolidsSection();
+        if (expSection === 'transform') return renderTransformSection();
+        if (expSection === 'coords') return renderCoordsSection();
+        if (expSection === 'vectors') return renderVectorsSection();
+        if (expSection === 'symmetry') return renderSymmetrySection();
+        if (expSection === 'tilings') return renderTilingsSection();
+        if (expSection === 'famous') return renderFamousSection();
+        if (expSection === 'careers') return renderCareersSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
       }

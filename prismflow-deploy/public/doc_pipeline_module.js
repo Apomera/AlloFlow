@@ -12507,7 +12507,7 @@ tr { page-break-inside: avoid; }
   // ── PDF Preview: Apply theme to accessible HTML ──
   // ── Apply Style Seed to HTML (unified replacement for applyThemeToPdfHtml) ──
   const applyStyleSeedToHtml = (html, seedId, fontSize) => {
-    const seed = STYLE_SEEDS[seedId];
+    const seed = STYLE_SEEDS[seedId] || (function (sid) { try { var _BP = window.AlloModules && window.AlloModules.BrandProfile; var _p = _BP && _BP.getBrandProfile && _BP.getBrandProfile(sid); return _p ? { name: _p.name, emoji: '\u{1F3A8}', cssVars: _BP.brandProfileToCssVars(_p) } : null; } catch (e) { return null; } })(seedId);
     const extractedStyle = pdfFixResult?.docStyle;
 
     // Resolve CSS vars: matchOriginal uses extracted PDF colors, others use seed.cssVars
@@ -16322,7 +16322,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const isRtl = isRtlLang(leveledTextLanguage);
       const direction = isRtl ? 'rtl' : 'ltr';
       const textAlign = isRtl ? 'right' : 'left';
-      const seed = STYLE_SEEDS[exportTheme] || STYLE_SEEDS.professional;
+      const seed = STYLE_SEEDS[exportTheme] || (function (sid) { try { var _BP = window.AlloModules && window.AlloModules.BrandProfile; var _p = _BP && _BP.getBrandProfile && _BP.getBrandProfile(sid); return _p ? { name: _p.name, emoji: '\u{1F3A8}', cssVars: _BP.brandProfileToCssVars(_p) } : null; } catch (e) { return null; } })(exportTheme) || STYLE_SEEDS.professional;
       const theme = seed.cssVars ? { name: seed.name, emoji: seed.emoji, ...seed.cssVars } : (EXPORT_THEMES.professional);
       // Font: honor user's app font if toggled, otherwise use theme font
       // Read FONT_OPTIONS from window (defined in monolith) with safe fallback

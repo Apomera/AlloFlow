@@ -3009,6 +3009,16 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           { id: 'nuclear', label: 'Nuclear chem', icon: '☢' },
           { id: 'electrochem', label: 'Electrochemistry', icon: '⚡' },
           { id: 'famous', label: 'History', icon: '🕰' },
+          { id: 'lab', label: 'Lab techniques', icon: '🔬' },
+          { id: 'medchem', label: 'Drug discovery', icon: '💊' },
+          { id: 'food', label: 'Food chemistry', icon: '🍳' },
+          { id: 'materials', label: 'Materials', icon: '🪨' },
+          { id: 'inorganic', label: 'Inorganic chem', icon: '⚛' },
+          { id: 'enviro2', label: 'Pollution', icon: '🏭' },
+          { id: 'green', label: 'Green chemistry', icon: '🌱' },
+          { id: 'mol_geo', label: 'Bond geometry', icon: '∡' },
+          { id: 'isomers', label: 'Isomers', icon: '⇄' },
+          { id: 'noble', label: 'Noble gases', icon: 'He' },
           { id: 'glossary', label: 'Glossary', icon: '📖' }
         ];
         return React.createElement('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4114,8 +4124,381 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
         if (expSection === 'nuclear') return renderNuclearSection();
         if (expSection === 'electrochem') return renderElectrochemSection();
         if (expSection === 'famous') return renderFamousSection();
+        if (expSection === 'lab') return renderLabSection();
+        if (expSection === 'medchem') return renderMedchemSection();
+        if (expSection === 'food') return renderFoodSection();
+        if (expSection === 'materials') return renderMaterialsSection();
+        if (expSection === 'inorganic') return renderInorganicSection();
+        if (expSection === 'enviro2') return renderEnviro2Section();
+        if (expSection === 'green') return renderGreenSection();
+        if (expSection === 'mol_geo') return renderMolGeoSection();
+        if (expSection === 'isomers') return renderIsomersSection();
+        if (expSection === 'noble') return renderNobleSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 3 EXPANSION (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var LAB_TECHNIQUES = [
+        { name: 'Recrystallization', use: 'Purify a solid by dissolving + slowly recrystallizing.', notes: 'Impurities stay in solution; pure crystals grow.' },
+        { name: 'Distillation (simple)', use: 'Separate liquids with different boiling points.', notes: 'Works when boiling points differ by >25°C.' },
+        { name: 'Distillation (fractional)', use: 'Separate liquids with close boiling points.', notes: 'Uses a fractionating column. Refines petroleum, vodka.' },
+        { name: 'Filtration (gravity)', use: 'Separate solid from liquid through filter paper.', notes: 'Slow but recovers liquid filtrate cleanly.' },
+        { name: 'Vacuum filtration (Büchner)', use: 'Faster filtration with suction.', notes: 'Used to collect crystallized product.' },
+        { name: 'Liquid-liquid extraction', use: 'Pull a compound from one solvent into another (immiscible) solvent.', notes: 'Separatory funnel. Caffeine extraction from tea.' },
+        { name: 'Chromatography (TLC)', use: 'Identify compounds by separation on a thin plate.', notes: 'Quick. Visualize with UV or stain. Rf values identify compounds.' },
+        { name: 'Chromatography (column)', use: 'Separate larger amounts.', notes: 'Silica gel column. Eluent washes compounds through at different speeds.' },
+        { name: 'Chromatography (HPLC)', use: 'High-resolution separation under pressure.', notes: 'Quantitative analysis of mixtures (e.g., drug purity).' },
+        { name: 'Chromatography (GC)', use: 'Separate volatile compounds in gas phase.', notes: 'Coupled to MS for forensics, environmental analysis.' },
+        { name: 'Reflux', use: 'Heat a reaction without losing solvent.', notes: 'Condenser returns vapor to flask. Drives reaction to completion.' },
+        { name: 'Titration', use: 'Determine concentration via reaction with known standard.', notes: 'Acid-base, redox, complexometric. Endpoint via indicator or pH meter.' },
+        { name: 'Gel electrophoresis', use: 'Separate molecules by size + charge in electric field.', notes: 'Common for DNA, proteins (SDS-PAGE).' },
+        { name: 'Rotary evaporator (rotovap)', use: 'Remove solvent quickly at reduced pressure.', notes: 'Standard in synthesis labs.' },
+        { name: 'Schlenk line', use: 'Air- + moisture-free synthesis.', notes: 'Vacuum/inert gas manifold. Essential for air-sensitive chemistry.' },
+        { name: 'Soxhlet extraction', use: 'Continuously extract a compound from solid with solvent.', notes: 'Used in food chem (fat content), natural product isolation.' }
+      ];
+
+      var DRUG_DISCOVERY = [
+        { stage: 'Target identification', duration: '~1-2 yr', notes: 'Identify protein/pathway that, if modulated, would treat disease. Often via genomics.' },
+        { stage: 'Hit discovery', duration: '~1-2 yr', notes: 'Screen libraries of compounds (often millions) against target. Find a few "hits".' },
+        { stage: 'Lead optimization', duration: '~2-3 yr', notes: 'Modify hits to improve potency, selectivity, drug-like properties. Test in cells then animals.' },
+        { stage: 'Preclinical', duration: '~1-2 yr', notes: 'Safety + efficacy in 2+ animal species. Pharmacokinetics. IND filing to regulator.' },
+        { stage: 'Phase I trial', duration: '~1-2 yr', notes: '~20-100 healthy volunteers. Safety + dosing.' },
+        { stage: 'Phase II trial', duration: '~2-3 yr', notes: '~100-300 patients. Does it work? At what dose? Side effects.' },
+        { stage: 'Phase III trial', duration: '~3-4 yr', notes: '~1,000-5,000 patients. Confirm efficacy + safety vs standard of care.' },
+        { stage: 'Regulatory review', duration: '~1 yr', notes: 'FDA/EMA/etc. review NDA. Decide approval.' },
+        { stage: 'Phase IV (post-market)', duration: 'ongoing', notes: 'Real-world surveillance. Rare side effects appear only at scale.' }
+      ];
+
+      var DRUG_FACTS = [
+        { fact: 'Average time to market', detail: '10-15 years from initial discovery to approval.' },
+        { fact: 'Average cost', detail: 'Estimated $1-2.5 billion per approved drug (includes failures).' },
+        { fact: 'Attrition rate', detail: '~10% of candidates entering Phase I make it to market. Most fail at Phase II for efficacy or Phase III for safety.' },
+        { fact: 'Lipinski\'s Rule of 5', detail: 'Drug-likeness: MW < 500, logP < 5, ≤ 5 H-bond donors, ≤ 10 H-bond acceptors. Predicts oral bioavailability.' },
+        { fact: 'Generic drugs', detail: 'Available after patent expires (typically 20 years from filing). Much cheaper but bioequivalent.' },
+        { fact: 'Biologics', detail: 'Made by living cells (antibodies, vaccines). More complex, more expensive, "biosimilars" instead of generics.' }
+      ];
+
+      var FOOD_CHEMISTRY = [
+        { topic: 'Maillard reaction', detail: 'Reducing sugar + amino acid → brown flavor compounds. Happens above ~140°C. Why bread crusts, seared steak, coffee are flavorful.' },
+        { topic: 'Caramelization', detail: 'Sugar molecules break + recombine at high heat (>160°C). Creates hundreds of flavor compounds. Different from Maillard (no amino acids needed).' },
+        { topic: 'Gelatinization (starch)', detail: 'Starch granules absorb water + swell when heated >60°C. Thickens sauces, cooks pasta.' },
+        { topic: 'Gluten', detail: 'Wheat proteins (glutenin + gliadin) form elastic network when hydrated. Develops with kneading. Captures CO₂ in bread.' },
+        { topic: 'Emulsion', detail: 'Stable mixture of oil + water with emulsifier (lecithin in egg yolk → mayonnaise; mustard or honey help too).' },
+        { topic: 'Denaturation', detail: 'Heat unfolds proteins → texture changes. Eggs cook (clear → white), meat firms.' },
+        { topic: 'Fermentation', detail: 'Microbes convert sugars to acids, alcohols, gases. Sauerkraut (lactic), beer (alcohol + CO₂), yogurt (lactic from lactose).' },
+        { topic: 'Capsaicin', detail: 'Spicy compound in chili peppers. Activates TRPV1 heat receptors. Soluble in fat + alcohol, not water — why milk soothes spicy mouth.' },
+        { topic: 'MSG (monosodium glutamate)', detail: 'Sodium salt of glutamate. Triggers umami taste receptor. Naturally abundant in tomatoes, parmesan, fish sauce, mushrooms.' },
+        { topic: 'Browning enzymes', detail: 'Polyphenol oxidase browns cut apples + bananas. Lemon juice (acid) or refrigeration slows it.' },
+        { topic: 'Carbonation', detail: 'CO₂ dissolves in cold water under pressure. Open bottle → pressure drops → CO₂ escapes as bubbles + H₂CO₃ tang.' },
+        { topic: 'Pectin', detail: 'Plant cell wall polysaccharide. Forms gel with sugar + acid → jams.' },
+        { topic: 'Saponification', detail: 'Fat + base → soap + glycerol. Soap molecules are amphipathic (one end loves water, one loves oil).' },
+        { topic: 'Spherification (molecular gastronomy)', detail: 'Sodium alginate + calcium → liquid gel "caviar" or "ravioli". Modernist cooking.' },
+        { topic: 'Sourdough leavening', detail: 'Wild yeast + lactic bacteria. Slower, more sour than commercial yeast.' }
+      ];
+
+      var MATERIALS_CLASSES = [
+        { name: 'Metals', properties: 'Ductile, conductive, lustrous, malleable, dense', examples: 'Steel, aluminum, copper, titanium, gold' },
+        { name: 'Ceramics', properties: 'Hard, brittle, high melting point, chemically stable, insulating (usually)', examples: 'Porcelain, alumina, silicon carbide, zirconia, glass' },
+        { name: 'Polymers (plastics)', properties: 'Light, formable, low melting, insulating', examples: 'Polyethylene, PVC, polystyrene, nylon, Kevlar, epoxy' },
+        { name: 'Composites', properties: 'Combine properties of constituents', examples: 'Carbon fiber, fiberglass, reinforced concrete, plywood' },
+        { name: 'Semiconductors', properties: 'Conductivity between metal + insulator; controllable via doping', examples: 'Si, GaAs, GaN, SiC, perovskites' },
+        { name: 'Biomaterials', properties: 'Compatible with living tissue', examples: 'Titanium implants, hydroxyapatite (bone-mimic), PLA sutures, hydrogels' },
+        { name: 'Nanomaterials', properties: 'Size 1-100 nm; properties different from bulk', examples: 'Carbon nanotubes, graphene, quantum dots, nanoparticles' },
+        { name: 'Smart materials', properties: 'Respond to stimuli (heat, light, voltage)', examples: 'Shape-memory alloys, piezoelectrics, electroactive polymers, thermochromics' },
+        { name: 'Superconductors', properties: 'Zero electrical resistance below critical temperature', examples: 'YBCO (Tc 93 K), Nb-Ti (used in MRI), MgB₂' },
+        { name: 'Metamaterials', properties: 'Engineered structure gives properties not found in nature', examples: 'Negative-index (cloaking research), perfect absorbers, acoustic cloaks' }
+      ];
+
+      var MATERIAL_FACTS = [
+        { material: 'Diamond', property: 'Hardest natural material (Mohs 10)', notes: 'Carbon in tetrahedral lattice. Synthetic diamonds now widely available.' },
+        { material: 'Graphene', property: '~200× stronger than steel by weight', notes: 'Single sheet of graphite. Electrically + thermally conductive. Discovered 2004 (Nobel 2010).' },
+        { material: 'Carbon nanotubes', property: 'Tensile strength ~63 GPa', notes: 'Rolled-up graphene. Many uses being explored.' },
+        { material: 'Kevlar', property: 'Tensile strength ~3.6 GPa, very high modulus', notes: 'Bulletproof vests, ropes. Aligned aromatic polyamide chains.' },
+        { material: 'Spider silk', property: '~1-2 GPa tensile, very elastic', notes: 'Tougher than steel by weight (combines high strength + high stretch).' },
+        { material: 'Aerogel', property: 'Density as low as 1.6 kg/m³ (~3× air)', notes: '99%+ air. Best thermal insulator. NASA uses on Mars rovers.' },
+        { material: 'NEG (Non-Evaporable Getter)', property: 'Absorbs gases at low T', notes: 'Used in vacuum systems, particle accelerators.' },
+        { material: 'GFRP (fiberglass)', property: 'Lighter than steel, doesn\'t rust', notes: 'Boats, car bodies, wind turbine blades.' }
+      ];
+
+      var INORGANIC_TOPICS = [
+        { topic: 'Coordination compounds', detail: 'Central metal atom bonded to "ligands" (neutral or anionic). Geometry (octahedral, tetrahedral, square planar) determined by metal + ligands.' },
+        { topic: 'Crystal field theory', detail: 'Ligands split metal d-orbital energies. Determines color, magnetic properties. High-spin vs low-spin complexes.' },
+        { topic: 'Chelation', detail: 'A single ligand binds metal through multiple atoms (EDTA is hexadentate). Very stable complexes.' },
+        { topic: 'Lewis acid/base', detail: 'Lewis acid = electron-pair acceptor (e.g., BF₃, Cu²⁺); Lewis base = electron-pair donor (e.g., NH₃, OH⁻).' },
+        { topic: 'Hard-soft acid-base (HSAB) theory', detail: 'Hard acids prefer hard bases (small, non-polarizable). Soft prefer soft (large, polarizable). Predicts reactivity.' },
+        { topic: 'Lanthanides + actinides', detail: 'f-block. Similar chemistry within each series (lanthanide contraction). Many radioactive (all actinides).' },
+        { topic: 'Transition metals', detail: 'd-block. Multiple oxidation states (Fe²⁺/Fe³⁺), often colored complexes, catalytic activity.' },
+        { topic: 'Organometallic chemistry', detail: 'Metal-carbon bonds. Grignard reagents (RMgX), ferrocene (Fe(C₅H₅)₂), catalysts (Wilkinson, Grubbs).' },
+        { topic: 'Oxoacids', detail: 'Acids with O–H bonds. H₂SO₄, H₃PO₄, HNO₃, HClO₄. More O atoms → stronger acid (typically).' },
+        { topic: 'Hydrides', detail: 'Binary compounds with H. Ionic (NaH), covalent (CH₄), metallic (PdH, used in H₂ storage).' }
+      ];
+
+      var POLLUTANTS = [
+        { pollutant: 'Carbon dioxide (CO₂)', source: 'Fossil fuel burning, deforestation, cement', impact: 'Greenhouse gas. ~420 ppm + rising. Drives climate change.' },
+        { pollutant: 'Methane (CH₄)', source: 'Livestock, landfills, gas leaks, wetlands', impact: 'Greenhouse gas (~28× CO₂ over 100 yr). ~1.9 ppm + rising.' },
+        { pollutant: 'Nitrous oxide (N₂O)', source: 'Fertilizer, livestock, industry', impact: 'Greenhouse gas. Also depletes ozone.' },
+        { pollutant: 'Sulfur dioxide (SO₂)', source: 'Coal burning, smelting', impact: 'Acid rain (forms H₂SO₄). Lung irritant. Largely reduced by scrubbers in many countries.' },
+        { pollutant: 'Nitrogen oxides (NOₓ)', source: 'Combustion (cars, power plants)', impact: 'Smog precursor, acid rain. Lung damage.' },
+        { pollutant: 'Particulate matter (PM₂.₅)', source: 'Combustion, brake/tire wear, dust', impact: 'Lung + cardiovascular disease. Major mortality cause globally.' },
+        { pollutant: 'Ground-level ozone (O₃)', source: 'NOₓ + VOCs + sunlight', impact: 'Smog. Lung damage. Crop yield reduction. (Stratospheric O₃ is protective.)' },
+        { pollutant: 'CFCs (chlorofluorocarbons)', source: 'Old refrigerants, aerosols', impact: 'Depleted ozone layer. Banned (Montreal Protocol 1987). Hole now slowly recovering.' },
+        { pollutant: 'PFAS ("forever chemicals")', source: 'Nonstick coatings, firefighting foam, water-resistant fabric', impact: 'Bioaccumulate. Linked to cancer, immune effects. Being phased out.' },
+        { pollutant: 'Microplastics', source: 'Plastic breakdown, synthetic fabrics', impact: 'Found in oceans, drinking water, human blood. Long-term effects under study.' },
+        { pollutant: 'Heavy metals (Pb, Hg, Cd, As)', source: 'Industry, mining, old paint, gasoline (Pb phased out)', impact: 'Bioaccumulative. Neurological + kidney damage.' },
+        { pollutant: 'Nitrates + phosphates', source: 'Fertilizer runoff, sewage', impact: 'Eutrophication of waterways → algal blooms → dead zones (e.g., Gulf of Mexico).' }
+      ];
+
+      var GREEN_CHEMISTRY = [
+        { principle: 'Prevention', detail: 'Better to prevent waste than treat or clean it up.' },
+        { principle: 'Atom economy', detail: 'Maximize fraction of reactant atoms ending up in product.' },
+        { principle: 'Less hazardous synthesis', detail: 'Use + generate substances with little/no toxicity.' },
+        { principle: 'Safer products', detail: 'Design products with minimal toxicity while preserving function.' },
+        { principle: 'Safer solvents', detail: 'Avoid solvents when possible; use safer ones when not (water, supercritical CO₂).' },
+        { principle: 'Energy efficiency', detail: 'Run reactions at ambient T + P when possible.' },
+        { principle: 'Renewable feedstocks', detail: 'Use biomass/agricultural by-products instead of petroleum.' },
+        { principle: 'Reduce derivatives', detail: 'Avoid protecting groups and unnecessary modifications.' },
+        { principle: 'Catalysis', detail: 'Catalytic > stoichiometric. Reusable; less waste.' },
+        { principle: 'Design for degradation', detail: 'Products should break down to innocuous substances at end of life.' },
+        { principle: 'Real-time analysis', detail: 'Inline monitoring to prevent pollution.' },
+        { principle: 'Inherently safer chemistry', detail: 'Design for accident prevention — minimize releases, explosions, fires.' }
+      ];
+
+      var BOND_GEOMETRIES = [
+        { electronPairs: 2, bondingPairs: 2, geometry: 'Linear', angle: '180°', example: 'BeCl₂, CO₂' },
+        { electronPairs: 3, bondingPairs: 3, geometry: 'Trigonal planar', angle: '120°', example: 'BF₃' },
+        { electronPairs: 3, bondingPairs: 2, geometry: 'Bent (1 lone pair)', angle: '~117°', example: 'O₃, SO₂' },
+        { electronPairs: 4, bondingPairs: 4, geometry: 'Tetrahedral', angle: '109.5°', example: 'CH₄, NH₄⁺' },
+        { electronPairs: 4, bondingPairs: 3, geometry: 'Trigonal pyramidal (1 LP)', angle: '~107°', example: 'NH₃' },
+        { electronPairs: 4, bondingPairs: 2, geometry: 'Bent (2 LP)', angle: '~104.5°', example: 'H₂O' },
+        { electronPairs: 5, bondingPairs: 5, geometry: 'Trigonal bipyramidal', angle: '120° + 90°', example: 'PCl₅' },
+        { electronPairs: 5, bondingPairs: 4, geometry: 'Seesaw (1 LP equatorial)', angle: 'distorted', example: 'SF₄' },
+        { electronPairs: 5, bondingPairs: 3, geometry: 'T-shaped (2 LP equatorial)', angle: '~90°', example: 'ClF₃' },
+        { electronPairs: 5, bondingPairs: 2, geometry: 'Linear (3 LP equatorial)', angle: '180°', example: 'XeF₂' },
+        { electronPairs: 6, bondingPairs: 6, geometry: 'Octahedral', angle: '90°', example: 'SF₆' },
+        { electronPairs: 6, bondingPairs: 5, geometry: 'Square pyramidal (1 LP)', angle: '~90°', example: 'BrF₅' },
+        { electronPairs: 6, bondingPairs: 4, geometry: 'Square planar (2 LP trans)', angle: '90°', example: 'XeF₄' }
+      ];
+
+      var ISOMER_TYPES = [
+        { name: 'Structural (constitutional) isomers', description: 'Different connectivity of atoms. Same molecular formula.', example: 'C₄H₁₀: n-butane vs isobutane.' },
+        { name: 'Chain isomers', description: 'Different carbon chain arrangements.', example: 'Pentane vs 2-methylbutane vs 2,2-dimethylpropane.' },
+        { name: 'Positional isomers', description: 'Same functional group, different position.', example: '1-propanol vs 2-propanol.' },
+        { name: 'Functional group isomers', description: 'Same molecular formula, different functional group.', example: 'C₂H₆O: ethanol (alcohol) vs dimethyl ether.' },
+        { name: 'Geometric (cis-trans) isomers', description: 'Different arrangement around a rigid bond (e.g., double bond or ring).', example: 'Cis-2-butene vs trans-2-butene; oleic vs elaidic acid (cis vs trans fat).' },
+        { name: 'Enantiomers (mirror-image stereoisomers)', description: 'Non-superimposable mirror images. "Chirality".', example: 'L- vs D-amino acids; (R)- vs (S)-thalidomide (one safe, one teratogenic).' },
+        { name: 'Diastereomers', description: 'Stereoisomers that are NOT mirror images.', example: 'D-glucose vs D-galactose (both right-handed sugars but differ at C4).' },
+        { name: 'Conformational isomers', description: 'Differ by rotation about single bonds — interconvert rapidly.', example: 'Ethane staggered vs eclipsed; chair vs boat cyclohexane.' },
+        { name: 'Tautomers', description: 'Constitutional isomers that interconvert by H-atom migration.', example: 'Keto-enol tautomerism. Crucial in DNA base pairing.' },
+        { name: 'Optical rotation', description: 'Chiral molecules rotate polarized light. (+) or (−) prefix.', example: '(+)-Glucose rotates light clockwise.' }
+      ];
+
+      var NOBLE_GASES = [
+        { gas: 'Helium (He)', uses: 'Cryogenics (liquid He, 4 K), MRI cooling, balloons, deep diving gas mix', notes: 'Second lightest. Escapes Earth\'s gravity → must be extracted from natural gas wells.' },
+        { gas: 'Neon (Ne)', uses: 'Signs (red-orange glow), high-voltage indicators', notes: '"Neon signs" with other colors use other gases or fluorescent coatings.' },
+        { gas: 'Argon (Ar)', uses: 'Inert gas in welding, light bulbs, glass insulation', notes: '0.93% of atmosphere. Cheapest noble gas.' },
+        { gas: 'Krypton (Kr)', uses: 'Specialty lighting, lasers, energy-efficient windows', notes: 'Used in old high-end fluorescent + photography flash bulbs.' },
+        { gas: 'Xenon (Xe)', uses: 'High-intensity arc lamps (movie projectors, headlights), ion thrusters, anesthesia', notes: 'Forms some compounds (XeF₂, XeO₃) despite being "noble".' },
+        { gas: 'Radon (Rn)', uses: '(Historically) radiation therapy', notes: 'Radioactive. From U/Th decay. Health hazard in basements (lung cancer risk).' },
+        { gas: 'Oganesson (Og)', uses: 'None (synthetic, vanishingly small samples)', notes: 'Element 118. First atom made 2002. Decays in milliseconds.' }
+      ];
+
+      function renderLabSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔬 Lab techniques'),
+          React.createElement('div', { className: 'space-y-2' },
+            LAB_TECHNIQUES.map(function(t, i) {
+              return React.createElement('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, t.name),
+                React.createElement('div', { className: 'text-[11px] text-indigo-700 font-bold mb-1' }, t.use),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderMedchemSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💊 Drug discovery pipeline'),
+          React.createElement('div', { className: 'mb-3' },
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Stages'),
+            React.createElement('div', { className: 'space-y-1' },
+              DRUG_DISCOVERY.map(function(d, i) {
+                return React.createElement('div', { key: 'd'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, d.stage),
+                    React.createElement('span', { className: 'text-[10px] font-mono text-indigo-700 ml-auto' }, d.duration)
+                  ),
+                  React.createElement('div', { className: 'text-[10px] text-slate-700' }, d.notes)
+                );
+              })
+            )
+          ),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Industry essentials'),
+          React.createElement('div', { className: 'space-y-1' },
+            DRUG_FACTS.map(function(f, i) {
+              return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-indigo-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[11px] font-black text-indigo-900 mb-0.5' }, f.fact),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderFoodSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🍳 Food chemistry'),
+          React.createElement('div', { className: 'space-y-2' },
+            FOOD_CHEMISTRY.map(function(f, i) {
+              return React.createElement('div', { key: 'f'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-indigo-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-indigo-900 mb-0.5' }, f.topic),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderMaterialsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🪨 Materials classes'),
+          React.createElement('div', { className: 'mb-3' },
+            React.createElement('div', { className: 'space-y-2' },
+              MATERIALS_CLASSES.map(function(m, i) {
+                return React.createElement('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                  React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, m.name),
+                  React.createElement('div', { className: 'text-[11px] text-indigo-700 font-bold mb-1' }, m.properties),
+                  React.createElement('div', { className: 'text-[10px] text-slate-700 italic' }, 'Examples: ' + m.examples)
+                );
+              })
+            )
+          ),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Notable materials'),
+          React.createElement('div', { className: 'space-y-1' },
+            MATERIAL_FACTS.map(function(f, i) {
+              return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-indigo-400 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                  React.createElement('span', { className: 'text-[11px] font-black text-indigo-900' }, f.material),
+                  React.createElement('span', { className: 'text-[10px] text-indigo-700 font-mono ml-auto' }, f.property)
+                ),
+                React.createElement('div', { className: 'text-[10px] text-slate-700' }, f.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderInorganicSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚛ Inorganic chemistry topics'),
+          React.createElement('div', { className: 'space-y-2' },
+            INORGANIC_TOPICS.map(function(t, i) {
+              return React.createElement('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-indigo-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-indigo-900 mb-0.5' }, t.topic),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderEnviro2Section() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏭 Environmental pollutants'),
+          React.createElement('div', { className: 'space-y-2' },
+            POLLUTANTS.map(function(p, i) {
+              return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, p.pollutant),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Source: '), p.source),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, React.createElement('strong', null, 'Impact: '), p.impact)
+              );
+            })
+          )
+        );
+      }
+
+      function renderGreenSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌱 12 Principles of Green Chemistry'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Articulated by Anastas + Warner (1998). Guides chemists toward more sustainable methods.'),
+          React.createElement('div', { className: 'space-y-1' },
+            GREEN_CHEMISTRY.map(function(g, i) {
+              return React.createElement('div', { key: 'g'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2' },
+                  React.createElement('span', { className: 'text-[10px] font-mono text-emerald-700 font-bold' }, (i + 1) + '.'),
+                  React.createElement('span', { className: 'text-[12px] font-black text-emerald-900' }, g.principle)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed ml-5' }, g.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderMolGeoSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∡ VSEPR — electron pair geometries'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Lone pairs (LP) take more space than bonding pairs → compress bond angles. VSEPR predicts molecular shape from total electron pairs.'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Total e- pairs', 'Bonding', 'Geometry', 'Angle', 'Example'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                BOND_GEOMETRIES.map(function(b, i) {
+                  return React.createElement('tr', { key: 'b'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-center' }, b.electronPairs),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-center' }, b.bondingPairs),
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, b.geometry),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold' }, b.angle),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, b.example)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderIsomersSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⇄ Isomers'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Molecules with the same molecular formula but different arrangement. Isomers can have very different properties.'),
+          React.createElement('div', { className: 'space-y-2' },
+            ISOMER_TYPES.map(function(I, i) {
+              return React.createElement('div', { key: 'I'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, I.name),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, I.description),
+                React.createElement('div', { className: 'text-[10px] text-indigo-700 italic' }, '→ ' + I.example)
+              );
+            })
+          )
+        );
+      }
+
+      function renderNobleSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'He Noble gases (Group 18)'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Full outer electron shell → very unreactive. Discovered late (Ramsay et al., 1894-1898) because they don\'t form compounds easily.'),
+          React.createElement('div', { className: 'space-y-2' },
+            NOBLE_GASES.map(function(n, i) {
+              return React.createElement('div', { key: 'n'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, n.gas),
+                React.createElement('div', { className: 'text-[11px] text-indigo-700 font-bold mb-1' }, 'Uses: ' + n.uses),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.notes)
+              );
+            })
+          )
+        );
       }
 
       var __moleculeExpansions = React.createElement('div', { className: 'mt-4 max-w-4xl mx-auto' },

@@ -2399,6 +2399,17 @@ const d = labToolData.wave;
           { id: 'radar', label: 'Radar/sonar', icon: '📡' },
           { id: 'shockwaves', label: 'Shock waves', icon: '✈' },
           { id: 'famous', label: 'History', icon: '🕰' },
+          { id: 'colors2', label: 'Color models', icon: '🎨' },
+          { id: 'lasers', label: 'Lasers', icon: '⫸' },
+          { id: 'fibers', label: 'Fiber optics', icon: '〰' },
+          { id: 'protocols', label: 'Comm protocols', icon: '📡' },
+          { id: 'music', label: 'Music + acoustics', icon: '🎵' },
+          { id: 'hearing', label: 'Hearing + ear', icon: '👂' },
+          { id: 'medical', label: 'Medical imaging', icon: '🏥' },
+          { id: 'satellites', label: 'GPS + satellites', icon: '🛰' },
+          { id: 'gravitational', label: 'Gravitational waves', icon: '⌇' },
+          { id: 'units2', label: 'Wave units', icon: '∑' },
+          { id: 'careers', label: 'Wave careers', icon: '💼' },
           { id: 'glossary', label: 'Glossary', icon: '📖' }
         ];
         return React.createElement('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3017,8 +3028,396 @@ const d = labToolData.wave;
         if (expSection === 'radar') return renderRadarSection();
         if (expSection === 'shockwaves') return renderShockwavesSection();
         if (expSection === 'famous') return renderFamousSection();
+        if (expSection === 'colors2') return renderColors2Section();
+        if (expSection === 'lasers') return renderLasersSection();
+        if (expSection === 'fibers') return renderFibersSection();
+        if (expSection === 'protocols') return renderProtocolsSection();
+        if (expSection === 'music') return renderMusicSection();
+        if (expSection === 'hearing') return renderHearingSection();
+        if (expSection === 'medical') return renderMedicalSection();
+        if (expSection === 'satellites') return renderSatellitesSection();
+        if (expSection === 'gravitational') return renderGravitationalSection();
+        if (expSection === 'units2') return renderUnitsSection();
+        if (expSection === 'careers') return renderCareersSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROUND 3 EXPANSION (2026-05-31)
+      // ═════════════════════════════════════════════════════════════════════
+
+      var COLOR_MODELS = [
+        { model: 'RGB (additive)', use: 'Screens, displays', notes: 'Red + Green + Blue. All three at max = white. Used because screens emit light.' },
+        { model: 'CMYK (subtractive)', use: 'Printing', notes: 'Cyan, Magenta, Yellow + Key (black). Inks absorb colors; all four = black. Used because paper reflects light.' },
+        { model: 'HSL / HSV', use: 'Color pickers, design', notes: 'Hue (angle 0-360°), Saturation (%), Lightness/Value (%). More intuitive than RGB for humans.' },
+        { model: 'LAB (CIELAB)', use: 'Color science, calibration', notes: 'L = lightness, a = green-red, b = blue-yellow. Perceptually uniform.' },
+        { model: 'XYZ (CIE 1931)', use: 'Reference for all other models', notes: 'Based on human cone responses. Foundation of modern colorimetry.' },
+        { model: 'sRGB', use: 'Standard web + most displays', notes: 'Limited color gamut. Defines specific RGB primaries + gamma curve.' },
+        { model: 'Adobe RGB', use: 'Print prep + pro photography', notes: 'Wider gamut than sRGB, especially in greens.' },
+        { model: 'Display P3', use: 'Apple devices, modern smartphones', notes: 'Wider gamut than sRGB, esp. reds. Standard for HDR.' },
+        { model: 'Rec. 2020', use: 'UHD TV / 4K + 8K video', notes: 'Very wide gamut. Few displays can reproduce it fully.' }
+      ];
+
+      var LASER_TYPES = [
+        { type: 'Helium-Neon (HeNe)', wavelength: '633 nm (red)', power: 'mW', use: 'Alignment, barcode scanners (old). One of the first practical lasers.' },
+        { type: 'CO₂', wavelength: '10.6 μm (IR)', power: 'W to kW', use: 'Cutting metal + acrylic, surgery, marking.' },
+        { type: 'Nd:YAG', wavelength: '1064 nm (NIR)', power: 'mW to kW', use: 'Industrial cutting + welding, medical (skin treatment, tattoo removal).' },
+        { type: 'Argon ion', wavelength: '488, 514 nm (blue-green)', power: 'mW to W', use: 'Eye surgery (retinal), flow cytometry, light shows.' },
+        { type: 'Excimer (ArF, KrF)', wavelength: '193, 248 nm (UV)', power: 'pulse', use: 'LASIK eye surgery, microchip photolithography.' },
+        { type: 'Semiconductor (laser diode)', wavelength: 'broad — 400 nm to 2 μm', power: 'mW to W', use: 'CD/DVD/Blu-ray, laser pointers, fiber-optic comm.' },
+        { type: 'Fiber laser', wavelength: '~1 μm (typically)', power: 'W to kW', use: 'Industrial cutting/welding. Higher efficiency than older lasers.' },
+        { type: 'Dye laser', wavelength: 'tunable across visible', power: 'mW to W', use: 'Spectroscopy, research. Largely replaced by tunable solid-state.' },
+        { type: 'Free-electron laser (FEL)', wavelength: 'tunable, microwave to X-ray', power: 'high', use: 'Research — accelerator-based. Atomic-scale imaging.' },
+        { type: 'Ti:Sapphire', wavelength: '~800 nm (tunable)', power: 'W (ultrafast)', use: 'Ultrafast science. Femtosecond pulses. Two-photon microscopy.' }
+      ];
+
+      var LASER_FACTS = [
+        { fact: 'LASER acronym', detail: 'Light Amplification by Stimulated Emission of Radiation.' },
+        { fact: 'Stimulated emission', detail: 'A photon causes an excited atom to emit a SECOND identical photon. Cascade of identical photons = laser beam.' },
+        { fact: 'Population inversion', detail: 'More atoms in excited state than ground. Required for net amplification. Achieved via "pumping" (light, current, or chemical).' },
+        { fact: 'Coherence', detail: 'Laser photons all in phase. Allows interference effects + tight focusing.' },
+        { fact: 'Monochromatic', detail: 'Single wavelength. Real lasers have very narrow line width (kHz to GHz).' },
+        { fact: 'Beam divergence', detail: 'Laser beams spread VERY slowly. Apollo laser ranging spread <2 km over 384,400 km to Moon.' },
+        { fact: 'Eye safety', detail: 'Even low-power lasers can blind. Focused on retina, mW = sun-level brightness on photoreceptors.' },
+        { fact: 'Classes', detail: 'Class 1 (safe), Class 2 (eye blink protects), Class 3R/3B (potentially hazardous), Class 4 (skin burns + fire risk).' }
+      ];
+
+      var FIBER_OPTICS = [
+        { topic: 'How they work', detail: 'Total internal reflection traps light in core (higher n) surrounded by cladding (lower n). Light bounces along the fiber.' },
+        { topic: 'Single-mode fiber (SMF)', detail: 'Core ~9 μm. Only one mode propagates. Long distances (>100 km). Used in telecom backbones.' },
+        { topic: 'Multi-mode fiber (MMF)', detail: 'Core ~50-62.5 μm. Many modes — limits bandwidth-distance product. Short runs (<2 km).' },
+        { topic: 'Attenuation', detail: 'Modern fibers: ~0.2 dB/km at 1550 nm. Signal halves every ~15 km without amplification.' },
+        { topic: 'Dispersion', detail: 'Different wavelengths or modes travel at slightly different speeds → pulse spreading. Limits data rate.' },
+        { topic: 'EDFA (erbium-doped fiber amp)', detail: 'Amplifies optical signal directly without electrical conversion. Revolutionized long-haul fiber.' },
+        { topic: 'WDM (wavelength division multiplexing)', detail: 'Multiple wavelengths on one fiber. DWDM can fit 100+ channels — Tb/s per fiber.' },
+        { topic: 'Bandwidth-distance product', detail: 'Single-mode fiber: petabit-per-second times km. Vastly more than copper.' },
+        { topic: 'Real-world: internet backbones', detail: '99% of intercontinental data traffic goes over fiber-optic submarine cables.' },
+        { topic: 'Real-world: medical endoscopes', detail: 'Coherent fiber bundles transmit images. Used to inspect inside body.' },
+        { topic: 'Real-world: sensors', detail: 'Fiber Bragg gratings detect strain, temperature. Used in bridges, oil wells, aerospace.' }
+      ];
+
+      var COMM_PROTOCOLS = [
+        { name: 'Wi-Fi 6 (802.11ax)', band: '2.4 + 5 + 6 GHz', notes: 'Up to ~10 Gbps. OFDMA for many simultaneous users.' },
+        { name: 'Wi-Fi 7 (802.11be)', band: '2.4 + 5 + 6 GHz', notes: 'Up to ~46 Gbps theoretical. Wider channels (320 MHz).' },
+        { name: 'Bluetooth Classic', band: '2.4 GHz', notes: '~1-3 Mbps. Pairing for headphones, controllers.' },
+        { name: 'Bluetooth LE (low energy)', band: '2.4 GHz', notes: '~1-2 Mbps. Beacons, sensors, wearables. Years of coin-cell battery life.' },
+        { name: 'Zigbee', band: '2.4 GHz (mostly)', notes: '~250 kbps. Mesh networking. Smart-home devices.' },
+        { name: '4G LTE', band: '600 MHz - 2.6 GHz', notes: '~50-150 Mbps typical.' },
+        { name: '5G (sub-6 GHz)', band: '600 MHz - 6 GHz', notes: '~100 Mbps - 1 Gbps. Wider coverage than mmWave.' },
+        { name: '5G (mmWave)', band: '24-100 GHz', notes: 'Multi-Gbps in clear LOS. Heavily blocked by walls, body, rain.' },
+        { name: 'NFC', band: '13.56 MHz', notes: 'cm range. Contactless payment, pairing.' },
+        { name: 'RFID (UHF)', band: '860-960 MHz', notes: 'Inventory, tags. Reads at distance without battery in tag.' },
+        { name: 'AM radio', band: '535-1605 kHz', notes: 'Amplitude-modulated. Long range, low fidelity. Susceptible to noise.' },
+        { name: 'FM radio', band: '88-108 MHz', notes: 'Frequency-modulated. Better noise immunity than AM, higher fidelity.' },
+        { name: 'GPS L1', band: '1.575 GHz', notes: 'Civilian band. ~30 satellites.' },
+        { name: 'Satellite TV (Ku band)', band: '12-14 GHz', notes: 'Most consumer satellite TV.' },
+        { name: 'Microwave oven', band: '2.45 GHz', notes: 'Same band as Wi-Fi! Why microwaves can disrupt Wi-Fi when door seal is bad.' }
+      ];
+
+      var MUSIC_ACOUSTICS = [
+        { topic: 'Pitch', detail: 'Perception of frequency. A4 = 440 Hz standard concert pitch (some orchestras use 442 Hz).' },
+        { topic: 'Octave', detail: 'Doubling of frequency. A4 = 440 Hz, A5 = 880 Hz, A3 = 220 Hz.' },
+        { topic: 'Equal temperament', detail: '12 semitones per octave, each ratio 2^(1/12) ≈ 1.05946. Allows transposing.' },
+        { topic: 'Just intonation', detail: 'Uses simple integer ratios (3:2 = perfect fifth, 5:4 = major third). Sounds more "pure" but not transposable.' },
+        { topic: 'Harmonics', detail: 'Integer multiples of fundamental. Determine timbre. Different instruments emphasize different harmonics.' },
+        { topic: 'Formants', detail: 'Resonant peaks in vocal/instrument spectrum. Distinguish vowels + instruments.' },
+        { topic: 'Beats', detail: 'Two close frequencies interfere → audible amplitude oscillation at difference frequency. Used to tune instruments.' },
+        { topic: 'Resonance (instruments)', detail: 'Air column or string vibrates at characteristic frequencies. Length + tension determine pitch.' },
+        { topic: 'String frequency', detail: 'f = (1/2L)·√(T/μ). Higher tension or shorter string → higher pitch.' },
+        { topic: 'Open pipe resonance', detail: 'f = nv/(2L). Both ends open. Even harmonics present (flute).' },
+        { topic: 'Closed pipe resonance', detail: 'f = (2n-1)v/(4L). One end closed. Only odd harmonics (clarinet).' },
+        { topic: 'Stereo + spatial audio', detail: 'Two ears → interaural time + level differences locate sound. Spatial audio reproduces this with head tracking.' },
+        { topic: 'Reverb time (RT60)', detail: 'Time for sound to decay by 60 dB. Concert hall ~1.5-2 s; cathedral ~5-10 s; recording studio <0.3 s.' },
+        { topic: 'Decibels (sound)', detail: '0 dB SPL = threshold of hearing. Conversation ~60 dB. Rock concert ~110 dB. Pain ~130 dB. Hearing damage >85 dB long exposure.' }
+      ];
+
+      var EAR_PARTS = [
+        { part: 'Pinna (outer ear)', function: 'Funnels sound to canal; helps localize sound', notes: 'Shape filters frequencies → vertical localization cues.' },
+        { part: 'Ear canal', function: 'Channels sound to eardrum', notes: 'Resonates at ~3 kHz → enhanced sensitivity to speech frequencies.' },
+        { part: 'Eardrum (tympanic membrane)', function: 'Vibrates with sound waves', notes: '~0.1 mm thick. Connected to ossicles.' },
+        { part: 'Ossicles (hammer, anvil, stirrup)', function: 'Amplify + transmit vibrations to cochlea', notes: 'Smallest bones in body. Lever action + area mismatch amplifies ~20×.' },
+        { part: 'Oval window', function: 'Membrane connecting middle to inner ear', notes: 'Stirrup pushes against it, transferring vibration to cochlear fluid.' },
+        { part: 'Cochlea', function: 'Frequency analysis — different positions respond to different frequencies', notes: 'Snail-shaped. ~3.5 turns. ~16,000 hair cells per ear.' },
+        { part: 'Basilar membrane', function: 'Mechanical frequency analysis', notes: 'Stiff near oval window (high freq), floppy at apex (low freq).' },
+        { part: 'Hair cells', function: 'Convert mechanical vibration to neural signal', notes: 'Outer hair cells amplify; inner hair cells transmit. Damage = permanent hearing loss.' },
+        { part: 'Auditory nerve', function: 'Carries signal to brain', notes: 'About 30,000 fibers per ear.' },
+        { part: 'Semicircular canals', function: 'Balance + head rotation', notes: '3 fluid-filled rings in 3 perpendicular planes. Detect angular acceleration.' },
+        { part: 'Otolith organs', function: 'Detect linear acceleration + gravity', notes: 'Crystals on hair cells move with motion. Source of "elevator stomach" feeling.' }
+      ];
+
+      var MEDICAL_IMAGING = [
+        { method: 'X-ray', radiation: 'X-rays', use: 'Bones, dense tissue. Quick, cheap, ubiquitous.', notes: 'Ionizing radiation. Bone absorbs more than soft tissue → contrast.' },
+        { method: 'CT scan', radiation: 'X-rays (many angles)', use: '3D reconstruction. Trauma, tumors, internal injury.', notes: 'Higher dose than single X-ray. Excellent anatomical detail.' },
+        { method: 'MRI', radiation: 'Radio (in strong B field)', use: 'Soft tissue, brain, joints, tumors.', notes: 'No ionizing radiation. Long scans. T1 vs T2 highlights different features.' },
+        { method: 'fMRI', radiation: 'Radio (in strong B field)', use: 'Brain activity via blood oxygenation', notes: 'BOLD signal. Indirect — neural activity → blood flow change → MRI signal.' },
+        { method: 'Ultrasound', radiation: 'High-frequency sound', use: 'Pregnancy, heart, abdominal organs', notes: 'No radiation. Real-time. Doppler mode shows blood flow.' },
+        { method: 'PET scan', radiation: 'Positron emission (radiotracer)', use: 'Metabolic activity, cancer staging, brain disease', notes: 'Radioactive glucose (FDG) concentrates in active tissue.' },
+        { method: 'SPECT', radiation: 'Gamma (radiotracer)', use: 'Blood flow, heart, brain', notes: 'Like PET but uses single-photon emitters; lower resolution but cheaper.' },
+        { method: 'Mammography', radiation: 'Low-energy X-rays', use: 'Breast tissue screening', notes: 'Compression spreads tissue for clearer image.' },
+        { method: 'Bone densitometry (DEXA)', radiation: 'Dual-energy X-ray', use: 'Bone density (osteoporosis)', notes: 'Two energies subtract to isolate bone density.' },
+        { method: 'OCT (optical coherence tomography)', radiation: 'Near-infrared light', use: 'Retina + cornea imaging', notes: 'Like ultrasound but with light. μm resolution. No radiation.' }
+      ];
+
+      var SATELLITE_FACTS = [
+        { topic: 'GPS orbital altitude', detail: '~20,200 km. Medium Earth orbit. Period ~12 hours (2 orbits per sidereal day).' },
+        { topic: 'GPS constellation', detail: '24+ satellites; need ≥4 in view for 3D fix + time.' },
+        { topic: 'Receiver position', detail: 'Triangulation by time-of-flight from satellites to receiver. Needs 4 satellites (3 for position + 1 for clock sync).' },
+        { topic: 'Accuracy', detail: 'Civilian GPS: ~3-10 m. With augmentation (DGPS, RTK): cm. Selective Availability ended in 2000.' },
+        { topic: 'Galileo', detail: 'EU GNSS. ~30 satellites. Open service ~1 m accuracy.' },
+        { topic: 'GLONASS', detail: 'Russian GNSS. ~24 satellites.' },
+        { topic: 'BeiDou', detail: 'Chinese GNSS. 35 satellites. Global service since 2020.' },
+        { topic: 'Geostationary orbit (GEO)', detail: '35,786 km altitude. Period = 24 hours → fixed over equator point. Used for TV, weather.' },
+        { topic: 'Low Earth orbit (LEO)', detail: '200-2000 km. Period ~90 min. ISS at ~400 km. Starlink at ~550 km. Lower latency.' },
+        { topic: 'Atomic clocks on GPS', detail: 'Cesium + rubidium clocks. Stability ~10⁻¹³. Even small relativistic effects matter — must correct for both special + general relativity.' },
+        { topic: 'Light travel time', detail: 'GPS satellite → receiver: ~70 ms. Geo satellite → receiver: ~250 ms (perceptible delay in geo satellite calls).' }
+      ];
+
+      var GW_FACTS = [
+        { topic: 'What they are', detail: 'Ripples in spacetime predicted by Einstein (1916). Travel at speed of light.' },
+        { topic: 'Sources', detail: 'Massive accelerating objects: merging black holes + neutron stars, supernovae, pulsars, Big Bang.' },
+        { topic: 'LIGO', detail: 'Laser Interferometer Gravitational-wave Observatory. Two L-shaped detectors (Hanford WA, Livingston LA), 4 km arms.' },
+        { topic: 'First detection', detail: '14 September 2015. Two ~30 M☉ black holes merged ~1.3 billion years ago. Signal lasted ~0.2 sec. Nobel Prize 2017.' },
+        { topic: 'Sensitivity', detail: 'LIGO detects length changes ~10⁻¹⁸ m — 1/10000 the size of a proton.' },
+        { topic: 'Multi-messenger astronomy', detail: '17 August 2017: GW + gamma rays + visible light from neutron-star merger (GW170817). Confirmed kilonovae produce heavy elements.' },
+        { topic: 'Virgo', detail: 'European GW detector in Italy. 3 km arms.' },
+        { topic: 'KAGRA', detail: 'Japanese GW detector. Underground, cryogenic mirrors.' },
+        { topic: 'LISA (planned)', detail: 'Space-based detector. 3 satellites in 2.5 million km triangle. Launch ~2035. Sensitive to lower frequencies (supermassive black holes).' },
+        { topic: 'Pulsar timing arrays', detail: 'Use millisecond pulsars as natural clocks. Detect very low-frequency GWs from supermassive black hole binaries. NANOGrav announced detection 2023.' }
+      ];
+
+      var WAVE_UNITS = [
+        { quantity: 'Frequency', symbol: 'f or ν', unit: 'hertz (Hz)', notes: 'Cycles per second. kHz, MHz, GHz, THz common in modern tech.' },
+        { quantity: 'Period', symbol: 'T', unit: 'second (s)', notes: 'Time per cycle. T = 1/f. Heart: ~1 s; mains: 16.7 ms; visible light: ~2 fs.' },
+        { quantity: 'Wavelength', symbol: 'λ', unit: 'meter (m)', notes: 'Distance per cycle. Sub-mm (UHF radio) to thousands of km (extremely low freq).' },
+        { quantity: 'Wavenumber', symbol: 'k', unit: 'rad/m', notes: 'k = 2π/λ. Used in waveform math.' },
+        { quantity: 'Angular frequency', symbol: 'ω', unit: 'rad/s', notes: 'ω = 2πf. Common in oscillation + wave equations.' },
+        { quantity: 'Speed', symbol: 'v or c', unit: 'm/s', notes: 'v = fλ. Light in vacuum: c = 299,792,458 m/s (exact).' },
+        { quantity: 'Amplitude', symbol: 'A', unit: 'meters (mech), V/m (EM)', notes: 'Maximum displacement from equilibrium.' },
+        { quantity: 'Intensity', symbol: 'I', unit: 'W/m²', notes: 'Power per area. Solar irradiance at Earth: ~1361 W/m².' },
+        { quantity: 'Sound pressure level (SPL)', symbol: 'L_p', unit: 'dB', notes: '20·log₁₀(p/p_ref). Reference: 20 μPa.' },
+        { quantity: 'Photon energy', symbol: 'E', unit: 'joule (J) or eV', notes: 'E = hf = hc/λ. Visible photons: ~2 eV.' }
+      ];
+
+      var WAVE_CAREERS = [
+        { career: 'Audio engineer', use: 'Mixing music, recording. Understand EQ, reverb, frequency response.' },
+        { career: 'Acoustic consultant', use: 'Design concert halls, recording studios, noise control for buildings + machinery.' },
+        { career: 'Audiologist', use: 'Test + treat hearing loss. Fit hearing aids and cochlear implants.' },
+        { career: 'Speech-language pathologist', use: 'Analyze speech sounds (acoustic phonetics). Treat voice + articulation disorders.' },
+        { career: 'RF engineer', use: 'Design antennas, wireless systems, radar.' },
+        { career: 'Optical engineer', use: 'Design cameras, microscopes, telescopes, fiber-optic links.' },
+        { career: 'Seismologist', use: 'Analyze earthquake waves, locate epicenters, monitor for nuclear tests.' },
+        { career: 'Oceanographer', use: 'Study tides, currents, ocean wave dynamics.' },
+        { career: 'Meteorologist', use: 'Doppler radar analysis. Wave physics in atmosphere (Rossby waves).' },
+        { career: 'Sonographer (medical)', use: 'Operate ultrasound for diagnostic imaging.' },
+        { career: 'Astronomer', use: 'Analyze light + radio waves from celestial objects.' },
+        { career: 'Music producer', use: 'Shape recorded sound. Synthesize tones. Mix tracks.' },
+        { career: 'Lighting designer', use: 'Theater, film. Color temperature, beam angles, intensity.' },
+        { career: 'Telecom engineer', use: 'Cellular networks, fiber backbones, satellite links.' },
+        { career: 'Radar technician', use: 'Maintain + operate weather, air-traffic, military radar.' }
+      ];
+
+      function renderColors2Section() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎨 Color models'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Different ways to describe color numerically. Each is suited to a specific medium or application.'),
+          React.createElement('div', { className: 'space-y-2' },
+            COLOR_MODELS.map(function(c, i) {
+              return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, c.model),
+                  React.createElement('span', { className: 'text-[10px] text-cyan-700 font-mono ml-auto px-2 py-0.5 rounded bg-cyan-100' }, c.use)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderLasersSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⫸ Lasers'),
+          React.createElement('div', { className: 'mb-3' },
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Common laser types'),
+            React.createElement('div', { className: 'space-y-1' },
+              LASER_TYPES.map(function(L, i) {
+                return React.createElement('div', { key: 'L'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
+                  React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, L.type),
+                    React.createElement('span', { className: 'text-[10px] text-cyan-700 font-mono ml-auto' }, L.wavelength + ' · ' + L.power)
+                  ),
+                  React.createElement('div', { className: 'text-[10px] text-slate-700' }, L.use)
+                );
+              })
+            )
+          ),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Laser physics essentials'),
+          React.createElement('div', { className: 'space-y-1' },
+            LASER_FACTS.map(function(f, i) {
+              return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[11px] font-black text-cyan-900 mb-0.5' }, f.fact),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderFibersSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '〰 Fiber optics'),
+          React.createElement('div', { className: 'space-y-1' },
+            FIBER_OPTICS.map(function(f, i) {
+              return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, f.topic),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderProtocolsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📡 Wireless communication protocols'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Standard', 'Frequency band', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                COMM_PROTOCOLS.map(function(p, i) {
+                  return React.createElement('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, p.name),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold' }, p.band),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, p.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderMusicSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎵 Music & acoustics'),
+          React.createElement('div', { className: 'space-y-1' },
+            MUSIC_ACOUSTICS.map(function(m, i) {
+              return React.createElement('div', { key: 'm'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, m.topic),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderHearingSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '👂 The ear & hearing'),
+          React.createElement('div', { className: 'space-y-2' },
+            EAR_PARTS.map(function(p, i) {
+              return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, p.part),
+                React.createElement('div', { className: 'text-[11px] text-cyan-700 font-bold mb-1' }, p.function),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, p.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderMedicalSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏥 Medical imaging (wave-based)'),
+          React.createElement('div', { className: 'space-y-2' },
+            MEDICAL_IMAGING.map(function(m, i) {
+              return React.createElement('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, m.method),
+                  React.createElement('span', { className: 'text-[10px] text-cyan-700 font-mono ml-auto px-2 py-0.5 rounded bg-cyan-100' }, m.radiation)
+                ),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Use: '), m.use),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.notes)
+              );
+            })
+          )
+        );
+      }
+
+      function renderSatellitesSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🛰 GPS & satellite communications'),
+          React.createElement('div', { className: 'space-y-1' },
+            SATELLITE_FACTS.map(function(s, i) {
+              return React.createElement('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, s.topic),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderGravitationalSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⌇ Gravitational waves'),
+          React.createElement('div', { className: 'space-y-1' },
+            GW_FACTS.map(function(g, i) {
+              return React.createElement('div', { key: 'g'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, g.topic),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.detail)
+              );
+            })
+          )
+        );
+      }
+
+      function renderUnitsSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∑ Wave units & symbols'),
+          React.createElement('div', { className: 'overflow-x-auto' },
+            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('thead', null,
+                React.createElement('tr', { className: 'bg-slate-100' },
+                  ['Quantity', 'Symbol', 'Unit', 'Notes'].map(function(hh, i) {
+                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                  })
+                )
+              ),
+              React.createElement('tbody', null,
+                WAVE_UNITS.map(function(u, i) {
+                  return React.createElement('tr', { key: 'u'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                    React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, u.quantity),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold' }, u.symbol),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, u.unit),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, u.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      function renderCareersSection() {
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💼 Careers using wave science'),
+          React.createElement('div', { className: 'space-y-2' },
+            WAVE_CAREERS.map(function(c, i) {
+              return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, c.career),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.use)
+              );
+            })
+          )
+        );
       }
 
       var __waveExpansions = React.createElement('div', { className: 'mt-4 max-w-5xl mx-auto' },
