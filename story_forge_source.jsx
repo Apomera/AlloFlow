@@ -54,6 +54,17 @@ const escapeHtml = (str) => {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 };
 
+// Word-boundary-aware truncation for compact previews — cuts at the last space before `max`
+// (never mid-word) and appends an ellipsis. Used only for the on-screen comic-panel preview;
+// exports keep the full text so no student writing is lost.
+const smartTruncate = (str, max = 200) => {
+  const s = String(str || '');
+  if (s.length <= max) return s;
+  const slice = s.slice(0, max);
+  const lastSpace = slice.lastIndexOf(' ');
+  return (lastSpace > max * 0.6 ? slice.slice(0, lastSpace) : slice).trimEnd() + '…';
+};
+
 // ── Defensive normalizers for UNTRUSTED draft data (imported .json files + restored
 //    localStorage). Prevents render crashes from malformed paragraph shapes and closes
 //    the stored-XSS vector where imported image URLs are interpolated into export HTML. ──
@@ -2384,6 +2395,30 @@ Return ONLY JSON:
     return names.length >= 2 ? names.slice(0, 6) : fallback;
   };
 
+  // Tolerant lookup of a student's self-rating for an AI-named criterion. The model often
+  // rewords a rubric criterion (e.g. "Story Structure" → "Structure" or "Plot & Structure"),
+  // which made an exact selfAssessment[s.criteria] lookup silently return undefined and drop
+  // the You-vs-AI comparison. Try exact, then case/space-normalized, then loose token overlap.
+  const lookupSelfScore = (aiCriteria) => {
+    if (aiCriteria == null) return null;
+    if (selfAssessment[aiCriteria] != null) return selfAssessment[aiCriteria];
+    const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    const target = norm(aiCriteria);
+    if (!target) return null;
+    const keys = Object.keys(selfAssessment);
+    let hit = keys.find(k => norm(k) === target);
+    if (hit) return selfAssessment[hit];
+    const targetTokens = new Set(target.split(' ').filter(w => w.length > 2));
+    if (targetTokens.size > 0) {
+      hit = keys.find(k => {
+        const kt = norm(k).split(' ').filter(w => w.length > 2);
+        return kt.some(w => targetTokens.has(w));
+      });
+      if (hit) return selfAssessment[hit];
+    }
+    return null;
+  };
+
   // ═══════════════════════════════════════════════════════════
   // EXPORT PHASE FUNCTIONS
   // ═══════════════════════════════════════════════════════════
@@ -2425,7 +2460,7 @@ Return ONLY JSON:
           chaptersHtml += `</div>`;
         }
         if (safeThought) chaptersHtml += `<div class="thought-bubble" aria-label="Inner thought">💭 ${safeThought}</div>`;
-        chaptersHtml += `<div class="speech-bubble panel-caption">${safeText.length > 200 ? safeText.substring(0, 200) + '...' : safeText.replace(/\n/g, '<br/>')}</div>`;
+        chaptersHtml += `<div class="speech-bubble panel-caption">${safeText.replace(/\n/g, '<br/>')}</div>`;
         chaptersHtml += `</article>`;
       } else {
         chaptersHtml += `<article class="chapter" aria-label="${escapeHtml(t("a11y.paragraph_n", { n: idx + 1 }))}">`;
@@ -3573,7 +3608,7 @@ show();
                       onChange={(e) => updateParagraph(idx, e.target.value)}
                       dir="auto"
                       className={`w-full p-4 text-sm resize-none outline-none transition-colors ${
-                        layoutMode === 'dark' ? 'bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-750 caret-cyan-400' :
+                        layoutMode === 'dark' ? 'bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-700 caret-cyan-400' :
                         layoutMode === 'journal' ? 'bg-amber-50 text-amber-900 placeholder:text-amber-600 focus:bg-amber-100/50' :
                         'focus:bg-rose-50/30'
                       }`}
@@ -4742,7 +4777,7 @@ show();
                             const m = String(s.score || '').match(/(\d+(?:\.\d+)?)/);
                             return m ? parseFloat(m[1]) : null;
                           })();
-                          const selfScore = selfAssessment[s.criteria];
+                          const selfScore = lookupSelfScore(s.criteria);
                           const showCompare = Object.keys(selfAssessment).length > 0 && selfScore != null && aiScoreNum != null;
                           const delta = showCompare ? (aiScoreNum - selfScore) : null;
                           return (
@@ -4852,7 +4887,7 @@ show();
                           {/* Narration caption — yellow bar */}
                           {p.text.trim() && (
                             <div className="bg-amber-50 border border-amber-200 rounded-md px-2 py-1 text-[11px] text-amber-800 italic leading-snug">
-                              {p.text.length > 200 ? p.text.substring(0, 200) + '...' : p.text}
+                              {smartTruncate(p.text, 200)}
                             </div>
                           )}
                           {/* Speech bubble */}

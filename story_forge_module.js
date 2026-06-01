@@ -99,6 +99,13 @@ const escapeHtml = (str) => {
   if (!str) return "";
   return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 };
+const smartTruncate = (str, max = 200) => {
+  const s = String(str || "");
+  if (s.length <= max) return s;
+  const slice = s.slice(0, max);
+  const lastSpace = slice.lastIndexOf(" ");
+  return (lastSpace > max * 0.6 ? slice.slice(0, lastSpace) : slice).trimEnd() + "\u2026";
+};
 const MAX_DRAFT_PARAGRAPHS = 8;
 const sanitizeParagraphs = (arr) => {
   if (!Array.isArray(arr)) return null;
@@ -2261,6 +2268,25 @@ Return ONLY JSON:
     const names = rows.map((r) => r.split("|").map((s) => s.trim()).filter(Boolean)[0]).filter((n) => n && n.toLowerCase() !== "criteria" && !/^[-:]+$/.test(n));
     return names.length >= 2 ? names.slice(0, 6) : fallback;
   };
+  const lookupSelfScore = (aiCriteria) => {
+    if (aiCriteria == null) return null;
+    if (selfAssessment[aiCriteria] != null) return selfAssessment[aiCriteria];
+    const norm = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    const target = norm(aiCriteria);
+    if (!target) return null;
+    const keys = Object.keys(selfAssessment);
+    let hit = keys.find((k) => norm(k) === target);
+    if (hit) return selfAssessment[hit];
+    const targetTokens = new Set(target.split(" ").filter((w) => w.length > 2));
+    if (targetTokens.size > 0) {
+      hit = keys.find((k) => {
+        const kt = norm(k).split(" ").filter((w) => w.length > 2);
+        return kt.some((w) => targetTokens.has(w));
+      });
+      if (hit) return selfAssessment[hit];
+    }
+    return null;
+  };
   const exportStorybook = () => {
     const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || "My Story");
     const author = escapeHtml(authorName || "A Creative Student");
@@ -2295,7 +2321,7 @@ Return ONLY JSON:
           chaptersHtml += `</div>`;
         }
         if (safeThought) chaptersHtml += `<div class="thought-bubble" aria-label="Inner thought">\u{1F4AD} ${safeThought}</div>`;
-        chaptersHtml += `<div class="speech-bubble panel-caption">${safeText.length > 200 ? safeText.substring(0, 200) + "..." : safeText.replace(/\n/g, "<br/>")}</div>`;
+        chaptersHtml += `<div class="speech-bubble panel-caption">${safeText.replace(/\n/g, "<br/>")}</div>`;
         chaptersHtml += `</article>`;
       } else {
         chaptersHtml += `<article class="chapter" aria-label="${escapeHtml(t("a11y.paragraph_n", { n: idx + 1 }))}">`;
@@ -3093,7 +3119,7 @@ show();
         value: p.text,
         onChange: (e) => updateParagraph(idx, e.target.value),
         dir: "auto",
-        className: `w-full p-4 text-sm resize-none outline-none transition-colors ${layoutMode === "dark" ? "bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-750 caret-cyan-400" : layoutMode === "journal" ? "bg-amber-50 text-amber-900 placeholder:text-amber-600 focus:bg-amber-100/50" : "focus:bg-rose-50/30"}`,
+        className: `w-full p-4 text-sm resize-none outline-none transition-colors ${layoutMode === "dark" ? "bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-700 caret-cyan-400" : layoutMode === "journal" ? "bg-amber-50 text-amber-900 placeholder:text-amber-600 focus:bg-amber-100/50" : "focus:bg-rose-50/30"}`,
         style: {
           minHeight: "120px",
           fontFamily: layoutMode === "journal" ? "'Georgia', 'Times New Roman', serif" : "inherit",
@@ -3493,7 +3519,7 @@ show();
       const m = String(s.score || "").match(/(\d+(?:\.\d+)?)/);
       return m ? parseFloat(m[1]) : null;
     })();
-    const selfScore = selfAssessment[s.criteria];
+    const selfScore = lookupSelfScore(s.criteria);
     const showCompare = Object.keys(selfAssessment).length > 0 && selfScore != null && aiScoreNum != null;
     const delta = showCompare ? aiScoreNum - selfScore : null;
     return /* @__PURE__ */ React.createElement("div", { key: i, className: "px-4 py-3 flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800" }, s.criteria), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, s.comment)), showCompare ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 text-violet-800 px-2 py-0.5 rounded-full text-xs font-bold", title: t("tooltips.your_self_rating") }, selfScore, "/5"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-xs" }, "\u2192"), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold", title: t("tooltips.ai_score") }, s.score), Math.abs(delta) >= 1 && /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-bold px-1.5 py-0.5 rounded-full ${delta > 0 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`, title: delta > 0 ? "AI rated higher than you did" : "AI rated lower than you did" }, delta > 0 ? "+" : "", delta.toFixed(1))) : /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold" }, s.score));
@@ -3509,7 +3535,7 @@ show();
     m.label
   ))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-b from-amber-50 to-white border-2 border-amber-200 rounded-2xl overflow-hidden shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8 border-b border-amber-200 bg-gradient-to-r from-amber-100/50 to-rose-100/50" }, coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: t("alts.book_cover"), className: "max-w-[200px] mx-auto rounded-xl shadow-lg mb-4 border-2 border-amber-200" }), /* @__PURE__ */ React.createElement("h3", { className: "text-3xl font-black text-amber-900" }, storyTitle || storyPrompt || sourceTopic || "My Story"), authorName && /* @__PURE__ */ React.createElement("p", { className: "text-amber-800 text-sm mt-1 font-bold" }, "By ", authorName), /* @__PURE__ */ React.createElement("p", { className: "text-amber-700 text-sm mt-1 italic" }, GENRE_TEMPLATES[genre]?.label || "Creative Writing", " \xB7 ", vocabTerms.length, " vocabulary terms")), layoutMode === "comic" ? (
     /* ── Comic Panel Grid ── */
-    /* @__PURE__ */ React.createElement("div", { className: "p-4 grid grid-cols-2 gap-3 bg-slate-900" }, paragraphs.map((p, idx) => /* @__PURE__ */ React.createElement("div", { key: p.id, className: "bg-white rounded-lg overflow-hidden shadow-md relative", style: { border: "3px solid #1e293b" } }, illustrations[p.id]?.imageUrl && /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: `Panel ${idx + 1}`, className: "w-full aspect-square object-cover" }), panelStickers[p.id] && /* @__PURE__ */ React.createElement("div", { className: "absolute top-2 right-2 text-3xl drop-shadow-lg select-none pointer-events-none", style: { transform: "rotate(12deg)" } }, panelStickers[p.id]), (panelDialogue[p.id] || {}).sfx && /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 left-3 font-black text-red-500 text-lg drop-shadow-lg select-none pointer-events-none", style: { transform: "rotate(-8deg)", textShadow: "2px 2px 0 #fff, -1px -1px 0 #fff" } }, panelDialogue[p.id].sfx), /* @__PURE__ */ React.createElement("div", { className: "p-2.5 relative space-y-1.5" }, p.text.trim() && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-md px-2 py-1 text-[11px] text-amber-800 italic leading-snug" }, p.text.length > 200 ? p.text.substring(0, 200) + "..." : p.text), (panelDialogue[p.id] || {}).speech && /* @__PURE__ */ React.createElement("div", { className: "relative" }, (panelDialogue[p.id] || {}).speaker && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-600 mb-0.5" }, panelDialogue[p.id].speaker, ":"), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-2 border-slate-800 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed", style: { borderRadius: "18px" } }, panelDialogue[p.id].speech), /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-1.5 left-4 w-3 h-3 bg-white border-b-2 border-r-2 border-slate-800", style: { transform: "rotate(45deg)" } })), (panelDialogue[p.id] || {}).thought && /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border-2 border-purple-300 rounded-2xl p-2 text-[11px] text-purple-700 italic leading-relaxed", style: { borderRadius: "20px", borderStyle: "dashed" } }, "\u{1F4AD} ", panelDialogue[p.id].thought), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5" }, ["\u{1F4A5}", "\u2764\uFE0F", "\u2B50", "\u{1F602}", "\u{1F631}", "\u{1F525}", "\u{1F480}", "\u{1F31F}"].map((emoji) => /* @__PURE__ */ React.createElement("button", { key: emoji, onClick: () => setPanelStickers((prev) => ({ ...prev, [p.id]: prev[p.id] === emoji ? null : emoji })), className: `text-sm hover:scale-125 transition-transform ${panelStickers[p.id] === emoji ? "scale-125" : "opacity-50 hover:opacity-100"}`, title: `Add ${emoji} sticker` }, emoji))), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-500 font-bold" }, "Panel ", idx + 1))))))
+    /* @__PURE__ */ React.createElement("div", { className: "p-4 grid grid-cols-2 gap-3 bg-slate-900" }, paragraphs.map((p, idx) => /* @__PURE__ */ React.createElement("div", { key: p.id, className: "bg-white rounded-lg overflow-hidden shadow-md relative", style: { border: "3px solid #1e293b" } }, illustrations[p.id]?.imageUrl && /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: `Panel ${idx + 1}`, className: "w-full aspect-square object-cover" }), panelStickers[p.id] && /* @__PURE__ */ React.createElement("div", { className: "absolute top-2 right-2 text-3xl drop-shadow-lg select-none pointer-events-none", style: { transform: "rotate(12deg)" } }, panelStickers[p.id]), (panelDialogue[p.id] || {}).sfx && /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 left-3 font-black text-red-500 text-lg drop-shadow-lg select-none pointer-events-none", style: { transform: "rotate(-8deg)", textShadow: "2px 2px 0 #fff, -1px -1px 0 #fff" } }, panelDialogue[p.id].sfx), /* @__PURE__ */ React.createElement("div", { className: "p-2.5 relative space-y-1.5" }, p.text.trim() && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-md px-2 py-1 text-[11px] text-amber-800 italic leading-snug" }, smartTruncate(p.text, 200)), (panelDialogue[p.id] || {}).speech && /* @__PURE__ */ React.createElement("div", { className: "relative" }, (panelDialogue[p.id] || {}).speaker && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-600 mb-0.5" }, panelDialogue[p.id].speaker, ":"), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-2 border-slate-800 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed", style: { borderRadius: "18px" } }, panelDialogue[p.id].speech), /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-1.5 left-4 w-3 h-3 bg-white border-b-2 border-r-2 border-slate-800", style: { transform: "rotate(45deg)" } })), (panelDialogue[p.id] || {}).thought && /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border-2 border-purple-300 rounded-2xl p-2 text-[11px] text-purple-700 italic leading-relaxed", style: { borderRadius: "20px", borderStyle: "dashed" } }, "\u{1F4AD} ", panelDialogue[p.id].thought), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5" }, ["\u{1F4A5}", "\u2764\uFE0F", "\u2B50", "\u{1F602}", "\u{1F631}", "\u{1F525}", "\u{1F480}", "\u{1F31F}"].map((emoji) => /* @__PURE__ */ React.createElement("button", { key: emoji, onClick: () => setPanelStickers((prev) => ({ ...prev, [p.id]: prev[p.id] === emoji ? null : emoji })), className: `text-sm hover:scale-125 transition-transform ${panelStickers[p.id] === emoji ? "scale-125" : "opacity-50 hover:opacity-100"}`, title: `Add ${emoji} sticker` }, emoji))), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-500 font-bold" }, "Panel ", idx + 1))))))
   ) : (
     /* ── Prose Layout ── */
     /* @__PURE__ */ React.createElement("div", { className: "p-6 space-y-6" }, paragraphs.map((p, idx) => /* @__PURE__ */ React.createElement("div", { key: p.id, className: "flex flex-col items-center gap-4" }, illustrations[p.id]?.imageUrl && /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: `Scene ${idx + 1}`, className: "max-w-md rounded-xl shadow-md" }), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-800 leading-relaxed max-w-lg text-center", style: { textIndent: "2em", textAlign: "left" } }, p.text), idx < paragraphs.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "text-amber-400 text-lg" }, "\u2014"))))
