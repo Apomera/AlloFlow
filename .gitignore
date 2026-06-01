@@ -2,6 +2,9 @@ node_modules
 
 .git-token*
 
+# Security: PAT folder used for local gh auth — never commit the token
+Claude Token/
+
 # Archive: temp/debug/backup files moved here during cleanup
 _archive/
 # Dev scratch: one-off build scripts relocated out of source dirs (kept local)
