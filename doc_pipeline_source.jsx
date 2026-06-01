@@ -3936,7 +3936,7 @@ Return ONLY valid JSON:
       const ci95Lower = Math.max(0, Math.round(rawMean - 1.96 * (rawSD / Math.sqrt(n))));
       const ci95Upper = Math.min(100, Math.round(rawMean + 1.96 * (rawSD / Math.sqrt(n))));
 
-      // Auditor Consistency (ICC-like): custom formula 1 - (SD / 50) using raw unrounded SD.
+      // Pass-to-pass score agreement (heuristic): custom formula 1 - (SD / 50) using raw unrounded SD.
       // NOT the textbook intraclass correlation coefficient — this is a lightweight agreement
       // index scaled for small auditor panels (n=2–10) where true ICC requires ANOVA components
       // we don't compute. Scale: SD=0 → 1.00 (perfect), SD=5 → 0.90, SD=10 → 0.80, SD=25 → 0.50.
@@ -3945,7 +3945,7 @@ Return ONLY valid JSON:
       const rawAgreement = n > 1 ? Math.max(0, 1 - (rawSD / 50)) : 1;
       const icc = rawSD === 0 ? 1 : Math.round(rawAgreement * 100) / 100;
 
-      // Auditor Consistency (Cronbach-like): NOT textbook Cronbach's α (which needs per-item
+      // Cross-pass consistency (heuristic): NOT textbook Cronbach's α (which needs per-item
       // variance components we don't have). Instead combines CV-based estimate with weighted
       // pairwise agreement — a pragmatic hybrid for small n. Variable kept named `cronbachAlpha`
       // for backwards compatibility with saved project files.
@@ -10803,11 +10803,11 @@ tr { page-break-inside: avoid; }
     // Reliability metrics
     const audit = isBeforeAfter ? (d.before?.audit || d) : d;
     if (audit.scores && audit.scores.length > 1) {
-      html += `<h2>Reliability Metrics</h2><div class="meta-grid">
+      html += `<h2>Auditor Agreement Metrics</h2><div class="meta-grid">
         <div class="meta-card"><div class="meta-val">${audit.ci95 ? audit.ci95[0] + '&ndash;' + audit.ci95[1] : 'N/A'}</div><div class="meta-label">95% Confidence Interval</div></div>
         <div class="meta-card"><div class="meta-val">${audit.scoreSD ?? 'N/A'}</div><div class="meta-label">Standard Deviation</div></div>
-        <div class="meta-card"><div class="meta-val">${audit.icc ?? 'N/A'}</div><div class="meta-label">Auditor Consistency (ICC-like)</div></div>
-        ${audit.cronbachAlpha !== null && audit.cronbachAlpha !== undefined ? '<div class="meta-card"><div class="meta-val">' + audit.cronbachAlpha + '</div><div class="meta-label">Auditor Consistency (Cronbach-like)</div></div>' : ''}
+        <div class="meta-card"><div class="meta-val">${audit.icc ?? 'N/A'}</div><div class="meta-label">Pass-to-pass score agreement (heuristic)</div></div>
+        ${audit.cronbachAlpha !== null && audit.cronbachAlpha !== undefined ? '<div class="meta-card"><div class="meta-val">' + audit.cronbachAlpha + '</div><div class="meta-label">Cross-pass consistency (heuristic)</div></div>' : ''}
       </div>
       <p style="font-size:12px;color:#64748b">Auditors: ${audit.auditorCount || audit.scores.length} | Individual scores: ${audit.scores.join(', ')} | SEM: &plusmn;${audit.scoreSEM || 'N/A'} | Range: ${audit.scoreRange || 'N/A'} | Reliability: ${audit.reliability || 'N/A'}</p>`;
     }
@@ -10966,7 +10966,7 @@ tr { page-break-inside: avoid; }
     <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per violation: Critical (-15), Serious (-10), Moderate (-5), Minor (-2). Each unique violation counted once. Passing checks proportionally offset deductions — a document that passes 90% of checks receives up to 36% reduction in effective deductions, reflecting that remaining violations represent a small proportion of the overall content. Final score is a 50/50 blend of AI rubric score and axe-core (Deque) automated checker score.</p>`;
 
     html += `<div class="footer">
-      <p><strong>Methodology:</strong> ${audit.auditorCount || 1}-pass AI triangulation with adaptive confidence scoring, statistical reliability analysis (ICC, SEM, CV), and axe-core (Deque Systems) automated WCAG 2.1 AA verification. Deterministic fixes applied for color contrast, heading hierarchy, table structure, and landmark regions.</p>
+      <p><strong>Methodology:</strong> ${audit.auditorCount || 1}-pass AI triangulation with adaptive confidence scoring, a descriptive score-variability summary (SD, SEM) across passes, and axe-core (Deque Systems) automated WCAG 2.1 AA verification. Deterministic fixes applied for color contrast, heading hierarchy, table structure, and landmark regions.</p>
       <p><strong>Standards:</strong> WCAG 2.1 Level AA | ADA Title II (28 CFR Part 35 Subpart H) | Section 508 | EN 301 549</p>
       <p><strong>Limitations:</strong> This automated audit identifies common accessibility barriers but cannot replace manual testing with assistive technology. For comprehensive compliance verification, consider professional accessibility auditing services such as <a href="https://knowbility.org" style="color:#2563eb">Knowbility</a> (AccessWorks usability testing with people with disabilities).</p>
       <p>Generated by AlloFlow Document Accessibility Pipeline | ${date} | Open source (GNU AGPL v3)</p>
@@ -11035,15 +11035,15 @@ tr { page-break-inside: avoid; }
       <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px">
         <tbody>
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Standard Deviation (across auditors)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.scoreSD ?? 'n/a'}</td></tr>
-          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Standard Error of Measurement (SEM)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">±${ar.scoreSEM ?? 'n/a'}</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Standard error of pass scores (SEM)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">±${ar.scoreSEM ?? 'n/a'}</td></tr>
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">95% Confidence Interval</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${Array.isArray(ar.ci95) ? ar.ci95.join(' – ') : 'n/a'}</td></tr>
-          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Auditor Consistency (ICC-like)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.icc ?? 'n/a'}</td></tr>
-          ${ar.cronbachAlpha != null ? `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Cronbach's α (pragmatic hybrid)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.cronbachAlpha}</td></tr>` : ''}
-          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Reliability Classification</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-transform:capitalize">${_esc(ar.reliability || 'n/a')}</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Pass-to-pass score agreement (heuristic)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.icc ?? 'n/a'}</td></tr>
+          ${ar.cronbachAlpha != null ? `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Cross-pass consistency (heuristic)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.cronbachAlpha}</td></tr>` : ''}
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Agreement Classification</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-transform:capitalize">${_esc(ar.reliability || 'n/a')}</td></tr>
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Individual Auditor Scores</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${Array.isArray(ar.scores) ? ar.scores.join(', ') : 'n/a'}</td></tr>
         </tbody>
       </table>
-      <p style="font-size:11px;color:#64748b;margin-top:0">No commercial PDF accessibility validator currently reports inter-rater reliability — this is an AlloFlow extension to give users a confidence signal alongside the score.</p>
+      <p style="font-size:11px;color:#64748b;margin-top:0">No commercial PDF accessibility validator currently reports a cross-pass agreement signal. This is an AlloFlow extension: because AlloFlow's passes use a single AI model, it reflects repeat-measurement stability, not inter-rater reliability.</p>
     ` : '';
 
     // Score-blend block
