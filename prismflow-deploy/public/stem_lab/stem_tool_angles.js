@@ -1278,10 +1278,14 @@ window.StemLab = window.StemLab || {
       // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
       // ANGLES EXPANSION SECTIONS \u2014 interactive geometry reference (2026-05-31)
       // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-      var d2 = (labToolData && labToolData.angles) || {};
+      // ctx.toolData / ctx.setToolData are the plugin-bridge surface (stem_lab_module.js:4718-4719).
+      // The bare labToolData / setLabToolData identifiers used by the original expansion code
+      // were never declared in this scope — caused "ReferenceError: labToolData is not defined"
+      // the moment the protractor tab mounted. Fixed 2026-06-01.
+      var d2 = (ctx.toolData && ctx.toolData.angles) || {};
       var expSection = d2.expSection || null;
       function setExp(patch) {
-        setLabToolData(function(prev) {
+        ctx.setToolData(function(prev) {
           var prior = (prev && prev.angles) || {};
           return Object.assign({}, prev, { angles: Object.assign({}, prior, patch) });
         });
