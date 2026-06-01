@@ -26465,7 +26465,7 @@ ${_toolList}
           processExpertCommand, runAxeAudit, saveExportPreset, selectedFont, setAgentActivityLog,
           setAgentLogFullView, setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,
-          setIsAgentRunning, setShowExportPreview, showExportPreview, toggleA11yInspect, updateExportPreview
+          setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview, showExportPreview, t, toggleA11yInspect, updateExportPreview
         })}
         <CDNModuleGate moduleKey="StemLab" isOpen={showStemLab} onClose={() => setShowStemLab(false)} icon="🔬" displayName="STEM Lab" t={t}>
             {(StemLab) => React.createElement(StemLab, {

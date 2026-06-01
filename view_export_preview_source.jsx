@@ -20,10 +20,24 @@ function ExportPreviewView(props) {
     saveExportPreset, selectedFont, setAgentActivityLog, setAgentLogFullView,
     setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
     setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt,
-    setExportTheme, setIsAgentRunning, setShowExportPreview, showExportPreview,
+    setExportTheme, setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview, showExportPreview,
     t,
     toggleA11yInspect, updateExportPreview
   } = props;
+  // BrandProfile inline integration — replaces the standalone Educator Hub tool.
+  // Read the user's saved brand profiles so they can be picked as export themes
+  // alongside the built-in STYLE_SEEDS, and surface a "Manage" button + first-
+  // time banner so brand setup happens in the context where brands get used.
+  const brandProfiles = React.useMemo(() => {
+    try {
+      const bp = window.AlloModules && window.AlloModules.BrandProfile;
+      return bp && typeof bp.listBrandProfiles === 'function' ? (bp.listBrandProfiles() || []) : [];
+    } catch (e) { return []; }
+  }, [showExportPreview]);
+  const noBrandsYet = brandProfiles.length === 0;
+  const openBrandEditor = React.useCallback(() => {
+    if (typeof setShowBrandProfileEditor === 'function') setShowBrandProfileEditor(true);
+  }, [setShowBrandProfileEditor]);
 
   const hasGlossary = (history || []).some(h => h && h.type === 'glossary');
   const hasTimeline = (history || []).some(h => h && h.type === 'timeline');
@@ -112,12 +126,39 @@ function ExportPreviewView(props) {
 
                 {/* Style */}
                 <div>
-                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Style</div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5 flex items-center justify-between">
+                    <span>Style</span>
+                    {setShowBrandProfileEditor && (
+                      <button
+                        type="button"
+                        onClick={openBrandEditor}
+                        className="text-[10px] font-semibold text-rose-700 hover:text-rose-800 underline-offset-2 hover:underline normal-case"
+                        title="Create, edit, or delete school brand profiles"
+                      >🏷️ Manage brand profiles</button>
+                    )}
+                  </div>
+                  {/* First-time banner: brand setup is most discoverable HERE because this is
+                      where brands actually get applied. Shown only when no profiles exist. */}
+                  {noBrandsYet && setShowBrandProfileEditor && (
+                    <button
+                      type="button"
+                      onClick={openBrandEditor}
+                      className="w-full mb-1.5 text-left text-[11px] px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-300 text-rose-800 hover:border-rose-400 hover:from-rose-100 hover:to-orange-100 transition-colors"
+                    >🏷️ <strong>First time?</strong> Set up your school brand → colors, fonts, logo for branded exports</button>
+                  )}
                   <div className="grid grid-cols-2 gap-1">
                     {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => (
                       <button key={key} onClick={() => { setExportTheme(key); setTimeout(updateExportPreview, 50); }}
                         className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}
                       >{s.emoji} {s.name}</button>
+                    ))}
+                    {/* User brand profiles as selectable themes — clicking one applies its
+                        CSS vars via doc_pipeline_source.jsx:16325 BrandProfile fallback. */}
+                    {brandProfiles.map(p => (
+                      <button key={p.id} onClick={() => { setExportTheme(p.id); setTimeout(updateExportPreview, 50); }}
+                        className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === p.id ? 'bg-rose-600 text-white ring-2 ring-rose-300' : 'bg-white border border-rose-400 text-rose-700 hover:bg-rose-50'}`}
+                        title="School brand profile"
+                      >🏷️ {p.name || 'Brand'}</button>
                     ))}
                   </div>
                 </div>

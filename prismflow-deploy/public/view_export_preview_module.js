@@ -71,12 +71,25 @@ function ExportPreviewView(props) {
     setExportStylePrompt,
     setExportTheme,
     setIsAgentRunning,
+    setShowBrandProfileEditor,
     setShowExportPreview,
     showExportPreview,
     t,
     toggleA11yInspect,
     updateExportPreview
   } = props;
+  const brandProfiles = React.useMemo(() => {
+    try {
+      const bp = window.AlloModules && window.AlloModules.BrandProfile;
+      return bp && typeof bp.listBrandProfiles === "function" ? bp.listBrandProfiles() || [] : [];
+    } catch (e) {
+      return [];
+    }
+  }, [showExportPreview]);
+  const noBrandsYet = brandProfiles.length === 0;
+  const openBrandEditor = React.useCallback(() => {
+    if (typeof setShowBrandProfileEditor === "function") setShowBrandProfileEditor(true);
+  }, [setShowBrandProfileEditor]);
   const hasGlossary = (history || []).some((h) => h && h.type === "glossary");
   const hasTimeline = (history || []).some((h) => h && h.type === "timeline");
   const hasBrainstorm = (history || []).some((h) => h && h.type === "brainstorm");
@@ -153,7 +166,26 @@ function ExportPreviewView(props) {
     )))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const name = prompt("Preset name:");
       if (name && name.trim()) saveExportPreset(name.trim());
-    }, className: "mt-1.5 w-full px-2 py-1.5 border border-dashed border-slate-300 rounded-lg text-[11px] font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all" }, "+ Save Current as Preset")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Format"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, [["print", "\u{1F4C4} PDF"], ["worksheet", "\u{1F4DD} Worksheet"], ["html", "\u{1F4BB} HTML"], ["slides", "\u{1F4CA} Slides"]].map(([m, label]) => /* @__PURE__ */ React.createElement("button", { key: m, onClick: () => setExportPreviewMode(m), className: `flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? "bg-indigo-600 text-white" : "bg-white border border-slate-400 text-slate-600 hover:bg-slate-100"}` }, label)))), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Appearance", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Style"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1" }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => /* @__PURE__ */ React.createElement(
+    }, className: "mt-1.5 w-full px-2 py-1.5 border border-dashed border-slate-300 rounded-lg text-[11px] font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all" }, "+ Save Current as Preset")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Format"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, [["print", "\u{1F4C4} PDF"], ["worksheet", "\u{1F4DD} Worksheet"], ["html", "\u{1F4BB} HTML"], ["slides", "\u{1F4CA} Slides"]].map(([m, label]) => /* @__PURE__ */ React.createElement("button", { key: m, onClick: () => setExportPreviewMode(m), className: `flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? "bg-indigo-600 text-white" : "bg-white border border-slate-400 text-slate-600 hover:bg-slate-100"}` }, label)))), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Appearance", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Style"), setShowBrandProfileEditor && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: openBrandEditor,
+        className: "text-[10px] font-semibold text-rose-700 hover:text-rose-800 underline-offset-2 hover:underline normal-case",
+        title: "Create, edit, or delete school brand profiles"
+      },
+      "\u{1F3F7}\uFE0F Manage brand profiles"
+    )), noBrandsYet && setShowBrandProfileEditor && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: openBrandEditor,
+        className: "w-full mb-1.5 text-left text-[11px] px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-300 text-rose-800 hover:border-rose-400 hover:from-rose-100 hover:to-orange-100 transition-colors"
+      },
+      "\u{1F3F7}\uFE0F ",
+      /* @__PURE__ */ React.createElement("strong", null, "First time?"),
+      " Set up your school brand \u2192 colors, fonts, logo for branded exports"
+    ), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1" }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key,
@@ -166,6 +198,19 @@ function ExportPreviewView(props) {
       s.emoji,
       " ",
       s.name
+    )), brandProfiles.map((p) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: p.id,
+        onClick: () => {
+          setExportTheme(p.id);
+          setTimeout(updateExportPreview, 50);
+        },
+        className: `text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === p.id ? "bg-rose-600 text-white ring-2 ring-rose-300" : "bg-white border border-rose-400 text-rose-700 hover:bg-rose-50"}`,
+        title: "School brand profile"
+      },
+      "\u{1F3F7}\uFE0F ",
+      p.name || "Brand"
     )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Typography"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 mb-2 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.useAppFont, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, useAppFont: e.target.checked })), className: "rounded" }), "Use app font (", FONT_OPTIONS.find((f) => f.id === selectedFont)?.label || "Default", ")"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Size:"), /* @__PURE__ */ React.createElement(
       "input",
       {
