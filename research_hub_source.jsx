@@ -55,7 +55,7 @@
  */
 (function () {
   'use strict';
-  if (window.AlloModules && window.AlloModules.ResearchHub && window.AlloModules.ResearchHub.__tier >= 2) {
+  if (window.AlloModules && window.AlloModules.ResearchHub && window.AlloModules.ResearchHub.__tier >= 3) {
     console.log('[CDN] ResearchHub already loaded, skipping');
     return;
   }
@@ -118,7 +118,7 @@
   // ───────────────────────────────────────────────────────────────────────
   function emptyJournal() {
     return {
-      v: 2,                              // Tier 2 substrate revision; lanes migrate older shapes lazily
+      v: 3,                              // Tier 3 substrate revision; lanes migrate older shapes lazily
       createdAt: Date.now(),
       updatedAt: Date.now(),
       devLevel: '6_8',
@@ -138,8 +138,27 @@
       claims: [],                        // [{ id, ts, text, label, staleLabel?, aiLabelQuestion?, warrantText?, calibrationResponse? }]
       claimEvidenceLinks: [],            // [{ id, claim, evidenceIds, warrant, qualifier, rebuttal }]
       positionality: { text: '', audioBase64: null, durationS: 0 },
-      tradeOffLedger: [],                // [{ v, ts, criterion, accepted, justification }]
-      constraintMatrix: [],              // [{ id, criterion, target, measured, weight, source, tier }]
+      // Tier-3: tradeOffLedger and constraintMatrix slots reserved at Tier 1
+      // are EXTENDED to carry units + sacrificed-criterion + whose-interest.
+      // Shapes lazy-migrated by loadJournal so older sessions don't crash.
+      tradeOffLedger: [],                // [{ v, ts, criterion: gainedConstraintId, sacrificedCriterion: sacrificedConstraintId, accepted: declarationText, justification, whoseInterestThisServes, acceptedPriorityRank, justificationAudioBase64?, loopBackOrigin? }]
+      constraintMatrix: [],              // [{ id, ts, criterion, target, unit, measured, weight, source, tier, staleLabel? }]
+      // Tier-3 Engineering Design lane top-level fields. Each is justified as
+      // top-level because cross-stage rendering, structural distinctness
+      // gates, AI validators, and export-time substring-link checks all need
+      // direct access. Nesting any of these in stageNotes would break those
+      // gates or render-paths. See docs/research_lane_engineering_design.md.
+      stakeholderProfile: null,          // { name, group?, accessNote: 'direct'|'proxy'|'imagined_with_research', epistemicStatus: 'invented'|'observed'|'interviewed'|'curriculum_prompt', whyThisStakeholderJustification, voiceNote?, ts, staleLabel? }
+      criteria: [],                      // [{ id, name, unit, target, direction: 'maximize'|'minimize'|'meet', weight: 1-5, kind: 'stakeholder-derived'|'physical-safety'|'measurable-other', ts, staleLabel? }]
+      candidateConcepts: [],             // [{ id, ts, name, sketchText, sketchDataUrl?, audioBase64?, durationS?, materialsList, constraintsSatisfied, constraintsPunted, riskiestAssumption, killReason?, chosen?, supersededBy? }]
+      decisionMatrix: [],                // [{ candidateId, criterionId, score: 1-5, reasonText, ts }]
+      criteriaWeightLog: [],             // append-only: [{ ts, criterionId, fromWeight, toWeight, afterMatrixFilled }]
+      testProtocol: [],                  // [{ id, criterionId, procedureText, instrument, unit, pass_threshold, conditions?, ts }]
+      buildLog: [],                      // append-only: [{ v, ts, candidateId, buildText, materialsActually, photoDescription, durationS_voice?, audioBase64?, loopBackOrigin?, deltaFromPrior? }]
+      testRun: [],                       // [{ id, v, ts, buildLogV, criterionId, measured, unit, passed, observationText, audioBase64?, durationS? }]
+      stakeholderFeedback: [],           // [{ id, ts, prototypeVersionRef, verbatimResponse?, proxyJustification?, audioBase64?, durationS?, observerNotes, surprises, criteriaJudgments: [{ criterionId, stakeholderJudgment }] }]
+      failureLog: [],                    // [{ id, ts, fromTestRunId, modeText, causeHypothesisText, changedVariable: { name, fromValue, toValue }, predictedEffectText, retestRunId, predictionVsRealityRadio? }]
+      designClaims: [],                  // [{ id, ts, text, kind: 'serves_stakeholder'|'satisfies_criterion'|'acknowledges_limit', label, staleLabel?, claimEvidenceRunIds, constraintRefs, tradeoffRefs, aiLabelQuestion?, calibrationResponse? }]
       stageNotes: {},                    // { stageKey: { text, audioBase64, durationS, ts, exemplarViewed?, exemplarDismissed?, supersededBy?, acknowledgedSuperseded?, ...stageSpecific } }
       // Tier-2: loopBacks now carry a whyChipId (1-tap canned reason) so
       // the field is reliably populated — per the loop-back-architecture
@@ -161,12 +180,40 @@
     if (!raw) return emptyJournal();
     try {
       var parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== 'object' || parsed.v !== 1) return emptyJournal();
+      if (!parsed || typeof parsed !== 'object') return emptyJournal();
+      // Tier-3 migration ladder. Pre-Tier-3 the check was strict-equal to 1,
+      // which silently dropped any v:2 save (the actual shape emptyJournal()
+      // returned at Tier 2). Accept v in {1, 2, 3} and migrate forward so
+      // mid-pilot sessions don't lose their inquiry on a deploy.
+      var v = parsed.v;
+      if (v !== 1 && v !== 2 && v !== 3) return emptyJournal();
       // Merge defaults so an older shape doesn't crash readers.
       var fresh = emptyJournal();
       Object.keys(fresh).forEach(function (k) {
         if (parsed[k] === undefined) parsed[k] = fresh[k];
       });
+      // v:1/v:2 → v:3 — constraintMatrix rows gained a required `unit` field;
+      // tradeOffLedger rows gained sacrificedCriterion + whoseInterestThisServes
+      // + acceptedPriorityRank. Migrate lazily so existing rows render.
+      if (v === 1 || v === 2) {
+        if (Array.isArray(parsed.constraintMatrix)) {
+          parsed.constraintMatrix = parsed.constraintMatrix.map(function (row) {
+            if (!row || typeof row !== 'object') return row;
+            if (row.unit === undefined) row.unit = '';
+            return row;
+          });
+        }
+        if (Array.isArray(parsed.tradeOffLedger)) {
+          parsed.tradeOffLedger = parsed.tradeOffLedger.map(function (row) {
+            if (!row || typeof row !== 'object') return row;
+            if (row.sacrificedCriterion === undefined) row.sacrificedCriterion = null;
+            if (row.whoseInterestThisServes === undefined) row.whoseInterestThisServes = '';
+            if (row.acceptedPriorityRank === undefined) row.acceptedPriorityRank = null;
+            return row;
+          });
+        }
+        parsed.v = 3;
+      }
       // aiCallCount resets per page-load — quota is a per-session anti-spam
       // gate, not anti-cost; documented explicitly so this isn't surprising.
       parsed.aiCallCount = 0;
@@ -421,6 +468,29 @@
     /^confidence[_-]calibration[_-]note$/i,
     /^coverage[_-]note$/i,
     /^label[_-]question$/i,               // singular variant — must be plural questions[]
+    // Tier-3 Engineering Design lane FOOTGUN extensions — at SUBSTRATE level
+    // so future lanes (Humanities, Math) inherit. These are noun-phrase
+    // completions specific to engineering output (the AI proposing or
+    // approving a design / candidate / fix) that the lane prompts explicitly
+    // forbid; the substrate strip is the last line of defense if a model
+    // ignores the prompt.
+    /^proposed[_-]/i,                     // proposed_design / proposed_fix
+    /^recommended[_-]/i,                  // recommended_constraint / recommended_candidate
+    /^try[_-]this/i,                      // imperative-verb output
+    /^better[_-]candidate/i,
+    /^optimal[_-]/i,
+    /^pick[_-]/i,                         // pick_winner / pick_a_candidate
+    /^well[_-]fitted/i,                   // approval verdict
+    /^design[_-]is[_-]sound/i,            // approval verdict
+    /^ready[_-]to[_-]ship/i,              // approval verdict
+    /^meets[_-]all[_-]criteria[_-]judgment$/i,  // approval verdict
+    /^correct[_-]priority/i,              // tradeoff_inverter (V2) guard
+    /^better[_-]tradeoff/i,
+    /^should[_-]sacrifice/i,
+    /^suggested[_-]fix/i,
+    /^corrected[_-]cause/i,
+    /^improvement$/i,                     // completion noun
+    /^dominated[_-]judgment$/i,
   ];
   function stripPedagogicalFootguns(obj, depth) {
     if (depth === undefined) depth = 0;
@@ -881,6 +951,13 @@
       model_surfacer: 3,
       steelman_second_pass: 2,
       honest_uncertainty: 2,
+      // Tier-3 Engineering Design lane (Constraint Forge). Sum = 8 hits the
+      // global session cap exactly, forcing students to choose where to spend
+      // AI critique. tradeoff_inverter is held for V2 — observe baseline.
+      constraint_excavator: 2,
+      dominated_solution_finder: 2,
+      failure_mode_critic: 2,
+      stakeholder_translator: 2,
     };
     // Tier-2: cooldown burst lock. 6+ gate failures in 5 minutes blocks the
     // AI button for 2 minutes — kills brute-force fuzzing.
@@ -1585,7 +1662,7 @@
   // ───────────────────────────────────────────────────────────────────────
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.ResearchHub = ResearchHub;
-  window.AlloModules.ResearchHub.__tier = 2;
+  window.AlloModules.ResearchHub.__tier = 3;
   // Stash primitives on the registry so lane plugins (Tiers 2-4) can import
   // them without re-implementing.
   if (window.ResearchHub) {
@@ -1613,5 +1690,5 @@
     };
   }
 
-  console.log('[CDN] ResearchHub loaded (Tier 2)');
+  console.log('[CDN] ResearchHub loaded (Tier 3)');
 })();

@@ -1,6 +1,6 @@
 (function() {
   "use strict";
-  if (window.AlloModules && window.AlloModules.ResearchHub && window.AlloModules.ResearchHub.__tier >= 2) {
+  if (window.AlloModules && window.AlloModules.ResearchHub && window.AlloModules.ResearchHub.__tier >= 3) {
     console.log("[CDN] ResearchHub already loaded, skipping");
     return;
   }
@@ -40,8 +40,8 @@
   }
   function emptyJournal() {
     return {
-      v: 2,
-      // Tier 2 substrate revision; lanes migrate older shapes lazily
+      v: 3,
+      // Tier 3 substrate revision; lanes migrate older shapes lazily
       createdAt: Date.now(),
       updatedAt: Date.now(),
       devLevel: "6_8",
@@ -70,10 +70,40 @@
       claimEvidenceLinks: [],
       // [{ id, claim, evidenceIds, warrant, qualifier, rebuttal }]
       positionality: { text: "", audioBase64: null, durationS: 0 },
+      // Tier-3: tradeOffLedger and constraintMatrix slots reserved at Tier 1
+      // are EXTENDED to carry units + sacrificed-criterion + whose-interest.
+      // Shapes lazy-migrated by loadJournal so older sessions don't crash.
       tradeOffLedger: [],
-      // [{ v, ts, criterion, accepted, justification }]
+      // [{ v, ts, criterion: gainedConstraintId, sacrificedCriterion: sacrificedConstraintId, accepted: declarationText, justification, whoseInterestThisServes, acceptedPriorityRank, justificationAudioBase64?, loopBackOrigin? }]
       constraintMatrix: [],
-      // [{ id, criterion, target, measured, weight, source, tier }]
+      // [{ id, ts, criterion, target, unit, measured, weight, source, tier, staleLabel? }]
+      // Tier-3 Engineering Design lane top-level fields. Each is justified as
+      // top-level because cross-stage rendering, structural distinctness
+      // gates, AI validators, and export-time substring-link checks all need
+      // direct access. Nesting any of these in stageNotes would break those
+      // gates or render-paths. See docs/research_lane_engineering_design.md.
+      stakeholderProfile: null,
+      // { name, group?, accessNote: 'direct'|'proxy'|'imagined_with_research', epistemicStatus: 'invented'|'observed'|'interviewed'|'curriculum_prompt', whyThisStakeholderJustification, voiceNote?, ts, staleLabel? }
+      criteria: [],
+      // [{ id, name, unit, target, direction: 'maximize'|'minimize'|'meet', weight: 1-5, kind: 'stakeholder-derived'|'physical-safety'|'measurable-other', ts, staleLabel? }]
+      candidateConcepts: [],
+      // [{ id, ts, name, sketchText, sketchDataUrl?, audioBase64?, durationS?, materialsList, constraintsSatisfied, constraintsPunted, riskiestAssumption, killReason?, chosen?, supersededBy? }]
+      decisionMatrix: [],
+      // [{ candidateId, criterionId, score: 1-5, reasonText, ts }]
+      criteriaWeightLog: [],
+      // append-only: [{ ts, criterionId, fromWeight, toWeight, afterMatrixFilled }]
+      testProtocol: [],
+      // [{ id, criterionId, procedureText, instrument, unit, pass_threshold, conditions?, ts }]
+      buildLog: [],
+      // append-only: [{ v, ts, candidateId, buildText, materialsActually, photoDescription, durationS_voice?, audioBase64?, loopBackOrigin?, deltaFromPrior? }]
+      testRun: [],
+      // [{ id, v, ts, buildLogV, criterionId, measured, unit, passed, observationText, audioBase64?, durationS? }]
+      stakeholderFeedback: [],
+      // [{ id, ts, prototypeVersionRef, verbatimResponse?, proxyJustification?, audioBase64?, durationS?, observerNotes, surprises, criteriaJudgments: [{ criterionId, stakeholderJudgment }] }]
+      failureLog: [],
+      // [{ id, ts, fromTestRunId, modeText, causeHypothesisText, changedVariable: { name, fromValue, toValue }, predictedEffectText, retestRunId, predictionVsRealityRadio? }]
+      designClaims: [],
+      // [{ id, ts, text, kind: 'serves_stakeholder'|'satisfies_criterion'|'acknowledges_limit', label, staleLabel?, claimEvidenceRunIds, constraintRefs, tradeoffRefs, aiLabelQuestion?, calibrationResponse? }]
       stageNotes: {},
       // { stageKey: { text, audioBase64, durationS, ts, exemplarViewed?, exemplarDismissed?, supersededBy?, acknowledgedSuperseded?, ...stageSpecific } }
       // Tier-2: loopBacks now carry a whyChipId (1-tap canned reason) so
@@ -99,11 +129,32 @@
     if (!raw) return emptyJournal();
     try {
       var parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object" || parsed.v !== 1) return emptyJournal();
+      if (!parsed || typeof parsed !== "object") return emptyJournal();
+      var v = parsed.v;
+      if (v !== 1 && v !== 2 && v !== 3) return emptyJournal();
       var fresh = emptyJournal();
       Object.keys(fresh).forEach(function(k) {
         if (parsed[k] === void 0) parsed[k] = fresh[k];
       });
+      if (v === 1 || v === 2) {
+        if (Array.isArray(parsed.constraintMatrix)) {
+          parsed.constraintMatrix = parsed.constraintMatrix.map(function(row) {
+            if (!row || typeof row !== "object") return row;
+            if (row.unit === void 0) row.unit = "";
+            return row;
+          });
+        }
+        if (Array.isArray(parsed.tradeOffLedger)) {
+          parsed.tradeOffLedger = parsed.tradeOffLedger.map(function(row) {
+            if (!row || typeof row !== "object") return row;
+            if (row.sacrificedCriterion === void 0) row.sacrificedCriterion = null;
+            if (row.whoseInterestThisServes === void 0) row.whoseInterestThisServes = "";
+            if (row.acceptedPriorityRank === void 0) row.acceptedPriorityRank = null;
+            return row;
+          });
+        }
+        parsed.v = 3;
+      }
       parsed.aiCallCount = 0;
       parsed.sessionStartedAt = Date.now();
       return parsed;
@@ -401,8 +452,41 @@
     /^what[_-]changed[_-]well$/i,
     /^confidence[_-]calibration[_-]note$/i,
     /^coverage[_-]note$/i,
-    /^label[_-]question$/i
+    /^label[_-]question$/i,
     // singular variant — must be plural questions[]
+    // Tier-3 Engineering Design lane FOOTGUN extensions — at SUBSTRATE level
+    // so future lanes (Humanities, Math) inherit. These are noun-phrase
+    // completions specific to engineering output (the AI proposing or
+    // approving a design / candidate / fix) that the lane prompts explicitly
+    // forbid; the substrate strip is the last line of defense if a model
+    // ignores the prompt.
+    /^proposed[_-]/i,
+    // proposed_design / proposed_fix
+    /^recommended[_-]/i,
+    // recommended_constraint / recommended_candidate
+    /^try[_-]this/i,
+    // imperative-verb output
+    /^better[_-]candidate/i,
+    /^optimal[_-]/i,
+    /^pick[_-]/i,
+    // pick_winner / pick_a_candidate
+    /^well[_-]fitted/i,
+    // approval verdict
+    /^design[_-]is[_-]sound/i,
+    // approval verdict
+    /^ready[_-]to[_-]ship/i,
+    // approval verdict
+    /^meets[_-]all[_-]criteria[_-]judgment$/i,
+    // approval verdict
+    /^correct[_-]priority/i,
+    // tradeoff_inverter (V2) guard
+    /^better[_-]tradeoff/i,
+    /^should[_-]sacrifice/i,
+    /^suggested[_-]fix/i,
+    /^corrected[_-]cause/i,
+    /^improvement$/i,
+    // completion noun
+    /^dominated[_-]judgment$/i
   ];
   function stripPedagogicalFootguns(obj, depth) {
     if (depth === void 0) depth = 0;
@@ -911,7 +995,14 @@
       wonder_sorter: 2,
       model_surfacer: 3,
       steelman_second_pass: 2,
-      honest_uncertainty: 2
+      honest_uncertainty: 2,
+      // Tier-3 Engineering Design lane (Constraint Forge). Sum = 8 hits the
+      // global session cap exactly, forcing students to choose where to spend
+      // AI critique. tradeoff_inverter is held for V2 — observe baseline.
+      constraint_excavator: 2,
+      dominated_solution_finder: 2,
+      failure_mode_critic: 2,
+      stakeholder_translator: 2
     };
     var BURST_WINDOW_MS = 5 * 60 * 1e3;
     var BURST_THRESHOLD = 6;
@@ -1553,7 +1644,7 @@
   }
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.ResearchHub = ResearchHub;
-  window.AlloModules.ResearchHub.__tier = 2;
+  window.AlloModules.ResearchHub.__tier = 3;
   if (window.ResearchHub) {
     window.ResearchHub.primitives = {
       SuggestionBadge,
@@ -1577,5 +1668,5 @@
       SHARED_STOP_WORDS
     };
   }
-  console.log("[CDN] ResearchHub loaded (Tier 2)");
+  console.log("[CDN] ResearchHub loaded (Tier 3)");
 })();
