@@ -326,7 +326,7 @@ function OnboardingCoach(props) {
       key: "learning_tools",
       icon: "\u{1F9E0}",
       title: t("launch_pad.learning_tools_title") || "Learning Tools",
-      desc: t("launch_pad.learning_tools_desc") || "STEM Lab, StoryForge & SEL Hub \u2014 explore, create, and grow.",
+      desc: t("launch_pad.learning_tools_desc") || "STEM Lab, StoryForge, SEL Hub & Research Hub \u2014 explore, create, investigate, and grow.",
       bestIf: t("onboarding.learning_tools_best_if") || "Best if you\u2019re a student or independent learner who wants to jump into activities right away."
     },
     {

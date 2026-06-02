@@ -10,7 +10,7 @@
 function LearningHubModal(props) {
   const {
     setIsAlloHavenOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
-    setShowPoetTree, setShowSelHub, setShowStemLab, setShowStoryForge,
+    setShowPoetTree, setShowResearchHub, setShowSelHub, setShowStemLab, setShowStoryForge,
     setStemLabTab, showLearningHub, t,
   } = props;
   return (
@@ -64,6 +64,13 @@ function LearningHubModal(props) {
                 <div>
                   <h3 className="font-bold text-green-800">AlloHaven</h3>
                   <p className="text-xs text-green-700 mt-1">A cozy room you build by focusing and reflecting. Pomodoro + journal + AI decorations. No leaderboards, no streak guilt.</p>
+                </div>
+              </button>
+              <button onClick={() => { setShowLearningHub(false); if (typeof setShowResearchHub === 'function') setShowResearchHub(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                <span className="text-4xl">{'🔍'}</span>
+                <div>
+                  <h3 className="font-bold text-indigo-800">{t('learning_hub.research_title') || 'Research Hub'}</h3>
+                  <p className="text-xs text-indigo-700 mt-1">{t('learning_hub.research_desc') || 'Scientific Inquiry, Engineering Design, and Humanities research — one inquiry journal, three lanes.'}</p>
                 </div>
               </button>
             </div>

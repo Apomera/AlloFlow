@@ -18,6 +18,7 @@ function LearningHubModal(props) {
     setShowLearningHub,
     setShowLitLab,
     setShowPoetTree,
+    setShowResearchHub,
     setShowSelHub,
     setShowStemLab,
     setShowStoryForge,
@@ -47,7 +48,10 @@ function LearningHubModal(props) {
   }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F496}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-emerald-800" }, t("learning_hub.sel_title") || "SEL Hub"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-600 mt-1" }, t("learning_hub.sel_desc") || "Social-emotional learning for self-awareness & growth"))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setShowLearningHub(false);
     setIsAlloHavenOpen(true);
-  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-green-50 to-lime-50 border border-green-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl", role: "img", "aria-label": "herb" }, "\u{1F33F}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-green-800" }, "AlloHaven"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-green-700 mt-1" }, "A cozy room you build by focusing and reflecting. Pomodoro + journal + AI decorations. No leaderboards, no streak guilt."))))));
+  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-green-50 to-lime-50 border border-green-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl", role: "img", "aria-label": "herb" }, "\u{1F33F}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-green-800" }, "AlloHaven"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-green-700 mt-1" }, "A cozy room you build by focusing and reflecting. Pomodoro + journal + AI decorations. No leaderboards, no streak guilt."))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    setShowLearningHub(false);
+    if (typeof setShowResearchHub === "function") setShowResearchHub(true);
+  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("learning_hub.research_title") || "Research Hub"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-700 mt-1" }, t("learning_hub.research_desc") || "Scientific Inquiry, Engineering Design, and Humanities research \u2014 one inquiry journal, three lanes."))))));
 }
 
   window.AlloModules = window.AlloModules || {};
