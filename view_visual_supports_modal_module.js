@@ -92,20 +92,27 @@ function PausableImage(props) {
 }
 function VisualSupportsModal(props) {
   const { setShowVisualSupports, setVsTab, showVisualSupports, vsTab } = props;
-  const vsBoards = (() => {
+  const vsRead = (base) => {
     try {
-      return JSON.parse(localStorage.getItem("alloSymbolBoards") || "[]");
+      let profs = [];
+      try {
+        profs = JSON.parse(localStorage.getItem("alloStudentProfiles") || "[]") || [];
+      } catch (e) {
+      }
+      let saved = null;
+      try {
+        saved = JSON.parse(localStorage.getItem("alloActiveProfileId") || "null");
+      } catch (e) {
+      }
+      const pid = saved && profs.find((p) => p.id === saved) ? saved : profs[0] ? profs[0].id : "default";
+      const raw = localStorage.getItem(base + "__" + pid);
+      return JSON.parse((raw != null ? raw : localStorage.getItem(base)) || "[]");
     } catch (e) {
       return [];
     }
-  })();
-  const vsSchedules = (() => {
-    try {
-      return JSON.parse(localStorage.getItem("alloSchedules") || "[]");
-    } catch (e) {
-      return [];
-    }
-  })();
+  };
+  const vsBoards = vsRead("alloSymbolBoards");
+  const vsSchedules = vsRead("alloSchedules");
   const CAT_BG = { noun: "#fef9c3", verb: "#dcfce7", adjective: "#dbeafe", other: "#f3f4f6" };
   const [pauseAnim, setPauseAnim] = React.useState(function() {
     try {

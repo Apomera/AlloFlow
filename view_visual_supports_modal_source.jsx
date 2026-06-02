@@ -93,8 +93,22 @@ function PausableImage(props) {
 
 function VisualSupportsModal(props) {
   const { setShowVisualSupports, setVsTab, showVisualSupports, vsTab } = props;
-  const vsBoards = (() => { try { return JSON.parse(localStorage.getItem('alloSymbolBoards') || '[]'); } catch(e) { return []; } })();
-  const vsSchedules = (() => { try { return JSON.parse(localStorage.getItem('alloSchedules') || '[]'); } catch(e) { return []; } })();
+  // Read the ACTIVE profile's per-profile-scoped data. Symbol Studio migrated boards/schedules
+  // onto namespaced keys (base + '__' + pid) and DELETED the bare keys, so reading bare here
+  // showed an empty viewer post-migration. Resolve pid the same way Symbol Studio does (saved
+  // active id if still valid, else first profile, else 'default'); fall back to the bare key
+  // for any legacy / un-migrated data.
+  const vsRead = (base) => {
+    try {
+      let profs = []; try { profs = JSON.parse(localStorage.getItem('alloStudentProfiles') || '[]') || []; } catch (e) {}
+      let saved = null; try { saved = JSON.parse(localStorage.getItem('alloActiveProfileId') || 'null'); } catch (e) {}
+      const pid = (saved && profs.find(p => p.id === saved)) ? saved : (profs[0] ? profs[0].id : 'default');
+      const raw = localStorage.getItem(base + '__' + pid);
+      return JSON.parse((raw != null ? raw : localStorage.getItem(base)) || '[]');
+    } catch (e) { return []; }
+  };
+  const vsBoards = vsRead('alloSymbolBoards');
+  const vsSchedules = vsRead('alloSchedules');
   const CAT_BG = { noun: '#fef9c3', verb: '#dcfce7', adjective: '#dbeafe', other: '#f3f4f6' };
 
   // WCAG 2.2.2: default to paused if the OS reports reduced-motion preference,

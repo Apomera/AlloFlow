@@ -7807,9 +7807,18 @@
   window.AlloModules.GardenBridge = {
     getVocabulary: function () {
       try {
-        var gallery = JSON.parse(localStorage.getItem('alloSymbolGallery') || '[]');
-        var boards = JSON.parse(localStorage.getItem('alloSymbolBoards') || '[]');
-        var fam = JSON.parse(localStorage.getItem('alloSymbolFamiliarity') || '{}');
+        // Read the ACTIVE profile's per-profile-scoped data. The per-profile migration moved
+        // gallery/boards onto namespaced keys (base + '__' + pid) and DELETED the bare keys, so
+        // reading bare here returned empty post-migration. Resolve pid like the component does
+        // (saved active id, else first profile, else 'default'); fall back to the bare key for
+        // any legacy / un-migrated data.
+        var _profs = load(STORAGE_PROFILES, []) || [];
+        var _saved = load(STORAGE_ACTIVE_PROFILE, null);
+        var _pid = (_saved && _profs.find(function (p) { return p.id === _saved; })) ? _saved : (_profs[0] ? _profs[0].id : 'default');
+        var _rd = function (base, def) { var v = load(profKey(base, _pid), null); return v != null ? v : load(base, def); };
+        var gallery = _rd(STORAGE_GALLERY, []);
+        var boards = _rd(STORAGE_BOARDS, []);
+        var fam = _rd(STORAGE_FAMILIARITY, {});
         var words = {};
         gallery.forEach(function (s) { var k = s.label.trim().toLowerCase(); if (k) words[k] = { label: s.label.trim(), category: s.category || 'other', image: s.image || null }; });
         boards.forEach(function (b) { (b.words || []).forEach(function (w) { var k = w.label.trim().toLowerCase(); if (k && !words[k]) words[k] = { label: w.label.trim(), category: w.category || 'other', image: w.image || null }; }); });
