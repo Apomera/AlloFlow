@@ -18,6 +18,10 @@
   // breakout but NOT a hostile scheme (javascript:, data:text/html). Permit only http(s),
   // blob:, and data:image/* (legitimate generated/uploaded symbols); blank anything else.
   var safeImgUrl = function (u) { u = String(u == null ? '' : u).trim(); return /^(https?:|blob:|data:image\/)/i.test(u) ? u : ''; };
+  // CSV cell: escape quotes AND neutralize spreadsheet formula injection. A field
+  // beginning with = + - @ (or tab/CR) becomes a live formula in Excel/Sheets — IEP
+  // goal text, notes, and labels are user/AI-authored, so prefix a single quote.
+  var csvCell = function (s) { s = String(s == null ? '' : s); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
 
   // ── Print CSS injection ───────────────────────────────────────────────────
   (function injectPrintStyles() {
@@ -293,7 +297,7 @@
   ];
 
   // ── Storage helpers ───────────────────────────────────────────────────────
-  function store(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+  function store(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); return true; } catch (e) { try { console.warn('[SymbolStudio] storage write failed for ' + key + ' (' + (e && e.name) + ')'); } catch (_) {} return false; } }
   function load(key, def) { try { return JSON.parse(localStorage.getItem(key) || 'null') || def; } catch (e) { return def; } }
 
   // Per-profile scoping for student-specific data (gallery/boards/schedules) so a shared
@@ -1595,8 +1599,10 @@
       // doesn't accidentally inherit it.
       pendingFctMetaRef.current = null;
       var updated = [saved].concat(savedBoards);
-      setSavedBoards(updated); store(scopedKey(STORAGE_BOARDS), updated);
-      addToast && addToast(t('toasts.board_saved') + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
+      setSavedBoards(updated);
+      var _saveOk = store(scopedKey(STORAGE_BOARDS), updated);
+      if (_saveOk) addToast && addToast(t('toasts.board_saved') + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
+      else addToast && addToast('Could not save the board — device storage is full. Remove some saved boards or images and try again.', 'error');
       // Garden discovery nudge — fires once when gallery + board create cross-context vocabulary
       if (addToast && gallery.length >= 2 && !load('alloGardenNudgeSeen', false)) {
         setTimeout(function () {
@@ -2751,6 +2757,9 @@
     var _srchStats = useState(function () { return load(STORAGE_SEARCH_STATS, { sessions: 0, totalCorrect: 0, totalTrials: 0, bestStreak: 0 }); });
     var srchStats = _srchStats[0]; var setSrchStats = _srchStats[1];
     var srchTimerRef = useRef(null);
+    // Clear pending search/prediction timers on unmount so their setState callbacks
+    // don't fire after the modal closes mid-session (no-op-on-unmounted warnings).
+    useEffect(function () { return function () { try { if (predTimerRef.current) clearTimeout(predTimerRef.current); if (srchTimerRef.current) clearTimeout(srchTimerRef.current); } catch (e) {} }; }, []);
     // Pedagogy-improvement refs (session-scoped, no render needed):
     //   srchLastTargetRef — id of the most recently picked target. Blocks back-to-back repetition
     //                       so the student doesn't drift into memory-matching instead of recognition.
@@ -4845,7 +4854,7 @@
       var earlyWords = rows.filter(function (w) { return w.growth === 'seed' || w.growth === 'sprout'; });
       html += '<div class="narrative">';
       if (masteredWords.length > 0) {
-        html += name + ' has <strong>' + masteredWords.length + ' mastered word' + (masteredWords.length !== 1 ? 's' : '') + '</strong> — vocabulary used confidently across multiple tools and in real communication. ';
+        html += name + ' has <strong>' + masteredWords.length + ' mastered word' + (masteredWords.length !== 1 ? 's' : '') + '</strong> — vocabulary practiced confidently across multiple tools in AlloFlow. ';
       }
       if (growingWords.length > 0) {
         html += 'There are <strong>' + growingWords.length + ' word' + (growingWords.length !== 1 ? 's' : '') + ' actively growing</strong>, appearing in multiple contexts and showing increasing familiarity through practice. ';
@@ -4867,7 +4876,7 @@
       // Mastered words — celebration
       if (masteredWords.length > 0) {
         html += '<h2>🌳 Words ' + name + ' Owns</h2>';
-        html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">These words are used spontaneously across boards, schedules, stories, and daily communication.</p>';
+        html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">These words have been practiced across boards, schedules, and stories in AlloFlow — a practice indicator, not a measure of independent or spontaneous use.</p>';
         html += '<div class="word-cloud">';
         masteredWords.forEach(function (w) { html += '<span class="word-chip" style="background:#fefce8;color:#92400e;border:1px solid #facc15">🌳 ' + escHtml(w.displayLabel) + '</span>'; });
         html += '</div>';
@@ -5174,7 +5183,7 @@
         rows.push('codename,export_date,goal_id,goal_text,goal_type,target_count,current_count,trial_timestamp,trial_success,trial_context');
         activeGoals.forEach(function (g) {
           (g.trials || []).forEach(function (t) {
-            rows.push([codename, now, g.id, '"' + (g.text || '').replace(/"/g, '""') + '"', g.type, g.targetCount, g.currentCount, t.ts, t.success ? 1 : 0, '"' + (t.context || '').replace(/"/g, '""') + '"'].join(','));
+            rows.push([codename, now, g.id, csvCell(g.text), g.type, g.targetCount, g.currentCount, t.ts, t.success ? 1 : 0, csvCell(t.context)].join(','));
           });
         });
       }
@@ -5186,7 +5195,7 @@
         rows.push('codename,export_date,wish_word,wish_note,wish_timestamp,wish_fulfilled');
         profileWishes.forEach(function (w) {
           var fulfilled = bank.some(function (b) { return b.key === w.label.trim().toLowerCase() && b.contextTypes.length > 1; }) ? 1 : 0;
-          rows.push([codename, now, '"' + w.label.replace(/"/g, '""') + '"', '"' + (w.note || '').replace(/"/g, '""') + '"', w.ts || '', fulfilled].join(','));
+          rows.push([codename, now, csvCell(w.label), csvCell(w.note), w.ts || '', fulfilled].join(','));
         });
       }
       var csv = rows.join('\n');
@@ -6804,6 +6813,7 @@
                       setBoardWords(function (prev) {
                         var from = prev.findIndex(function (w) { return w.id === dragBoardId; });
                         var to = prev.findIndex(function (w) { return w.id === word.id; });
+                        if (from < 0 || to < 0) return prev;
                         var next = prev.slice(); next.splice(to, 0, next.splice(from, 1)[0]); return next;
                       });
                       setDragBoardId(null); setDragOverBoardId(null);
@@ -7410,7 +7420,7 @@
         var rows = ['Time,Word,Board'];
         commLog.forEach(function (en) {
           var t = new Date(en.ts);
-          rows.push('"' + t.toLocaleTimeString() + '","' + en.label.replace(/"/g, '""') + '","' + (en.boardTitle || '').replace(/"/g, '""') + '"');
+          rows.push(csvCell(t.toLocaleTimeString()) + ',' + csvCell(en.label) + ',' + csvCell(en.boardTitle));
         });
         var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
         var a = document.createElement('a');
@@ -7419,7 +7429,7 @@
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
       };
       var useCols = Math.min(usePageData ? (usePageData.cols || useBoard.cols || 4) : 4, useCells.length || 1);
-      return e('div', { style: { position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column' } },
+      return e('div', { className: 'ss-modal-root ss-theme-' + ssTheme, style: { position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column' } },
         // ── Header ──
         e('div', { style: { background: '#1e293b', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 } },
           e('span', { style: { color: '#a78bfa', fontSize: '18px' } }, '▶'),
@@ -7650,6 +7660,7 @@
         if (scanManual && (ev.code === 'Tab' || ev.code === 'ArrowRight' || ev.code === 'ArrowDown')) { ev.preventDefault(); advanceScan(); }
       };
       return e('div', {
+        className: 'ss-modal-root ss-theme-' + ssTheme,
         style: { position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column', outline: 'none' },
         tabIndex: 0,
         ref: function (el) { if (el) el.focus(); },
