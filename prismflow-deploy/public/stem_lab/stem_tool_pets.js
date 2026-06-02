@@ -1884,6 +1884,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           var tfsShown = d.tfsShown || [];
           var tfsOpen = !!d.tfsOpen;
 
+          // ESC dismisses the Toxic Foods Sleuth modal (keyboard accessibility)
+          React.useEffect(function() {
+            if (!tfsOpen) return;
+            function onEsc(e) {
+              if (e.key === 'Escape') { e.preventDefault(); upd('tfsOpen', false); }
+            }
+            document.addEventListener('keydown', onEsc);
+            return function() { document.removeEventListener('keydown', onEsc); };
+          }, [tfsOpen]);
+
           function startTfs() {
             var pool = [];
             for (var i = 0; i < TFS_VIGNETTES.length; i++) if (tfsShown.indexOf(i) < 0) pool.push(i);
@@ -1921,11 +1931,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 )
               ),
               h('button', {
+                'aria-label': tfsOpen ? 'Close Toxic Foods Sleuth quiz' : 'Open Toxic Foods Sleuth quiz',
+                'aria-expanded': tfsOpen,
                 onClick: function() { upd('tfsOpen', !tfsOpen); },
                 style: { padding: '6px 12px', borderRadius: 8, background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.accent, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, tfsOpen ? 'Hide ▴' : 'Play →')
             ),
-            tfsOpen && h('div', { style: { marginTop: 12 } },
+            tfsOpen && h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Toxic Foods Sleuth quiz game', style: { marginTop: 12 } },
               tfsIdx < 0
                 ? h('div', { style: { textAlign: 'center', padding: '12px 8px' } },
                     h('p', { style: { color: T.muted, fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
@@ -3966,7 +3978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
         backBar('🔬 Diagrams'),
         h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-          '4 labeled schematics for visual learners. Switch tabs to compare different topics covered across the lab.'),
+          '4 labeled anatomical schematics. Switch tabs to compare different topics covered across the lab.'),
         h('div', { role: 'tablist', 'aria-label': 'Schematic diagrams',
           style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
           DIAGRAM_TABS.map(function(t) {

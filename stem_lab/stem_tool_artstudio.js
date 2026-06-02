@@ -5282,7 +5282,7 @@ const d = labToolData.artStudio || {};
 
                               var kfs = d.stereoAnimKeyframes.slice(); kfs.splice(idx, 1); upd('stereoAnimKeyframes', kfs);
 
-                            }, className: "absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-700 text-white text-[11px] font-bold flex items-center justify-center hover:bg-red-600", style: { lineHeight: '1' } }, "\u00D7")
+                            }, className: "absolute -top-2 -right-2 w-7 h-7 rounded-full bg-red-700 text-white text-sm font-bold flex items-center justify-center hover:bg-red-600 cursor-pointer", style: { lineHeight: '1' } }, "\u00D7")
 
                           );
 

@@ -6492,7 +6492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       research: 'Citizen science participation gives meaning. Contributing to bird conservation through observation.',
       maine_specific: 'Maine birders contribute to eBird + Christmas Bird Count + Audubon Maine + state agencies.' },
     { benefit: 'Aesthetic + Cognitive Reward',
-      research: 'Beautiful birds activate reward circuits. Pattern recognition builds neural efficiency.',
+      observation: 'Many birders report aesthetic pleasure from sightings + a sense of growing skill with practice at identification.',
       maine_specific: 'Maine\'s vivid birds (Cardinal, Goldfinch, eagle, hummingbird) inspire daily.' },
     { benefit: 'Reduced Depression + Anxiety',
       research: 'Outdoor activity + nature contact reduce depression + anxiety in clinical studies.',

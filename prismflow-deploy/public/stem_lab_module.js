@@ -646,7 +646,8 @@
 
       // Quest progress persistence
       React.useEffect(function() {
-        try { localStorage.setItem('alloflow_quest_progress', JSON.stringify(_questProgress)); } catch(e) {}
+        try { localStorage.setItem('alloflow_quest_progress', JSON.stringify(_questProgress)); }
+        catch(e) { console.error('[QuestSystem] Failed to save quest progress (quota or permission):', e.message || e); }
       }, [_questProgress]);
 
       // Quest evaluation — watches labToolData for auto-completion
@@ -2938,6 +2939,14 @@
             var _allStemTools = [
               { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals'), desc: '', color: 'slate', category: true },
               {
+                id: 'arccity',
+                icon: '🌆',
+                label: 'Arc City',
+                desc: 'Author functions to fire light-beams, clear walls, and re-light a neon city.',
+                color: 'fuchsia',
+                ready: true
+              },
+              {
                 id: 'volume',
                 icon: '📦',
                 label: '3D Volume Explorer',
@@ -4710,7 +4719,15 @@
           // setStemLabTab / setToolSnapshots / shared explore setters during
           // render could trigger "Cannot update a component while rendering
           // a different component" because those setters were raw.
-          var _safeSetStemLabTool = typeof setStemLabTool === 'function' ? _deferSafe(setStemLabTool) : function() {};
+          // Wrap setStemLabTool so any tool switch first runs the universe tool's cleanup
+          // (animationFrame, ResizeObserver, tracked setTimeouts, time-lapse interval).
+          // The cleanup is idempotent + no-op if universe was never mounted, so safe for every switch.
+          var _safeSetStemLabTool = typeof setStemLabTool === 'function' ? _deferSafe(function() {
+            if (typeof window !== 'undefined' && typeof window._universeCleanupAll === 'function') {
+              try { window._universeCleanupAll(); } catch(e) {}
+            }
+            setStemLabTool.apply(null, arguments);
+          }) : function() {};
           var _safeSetStemLabTab = typeof setStemLabTab === 'function' ? _deferSafe(setStemLabTab) : function() {};
           var _safeSetToolSnapshots = typeof setToolSnapshots === 'function' ? _deferSafe(setToolSnapshots) : function() {};
           var _ctx = {

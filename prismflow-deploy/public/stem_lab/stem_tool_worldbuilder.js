@@ -247,7 +247,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             var npc = JSON.parse(cleaned);
             updMulti({ gmCharacters: gmCharacters.concat([npc]), actionLoading: false });
             if (addToast) addToast(npc.emoji + ' ' + npc.name + ' placed in the world!', 'success');
-          } catch(e) { upd('actionLoading', false); }
+          } catch(e) {
+            upd('actionLoading', false);
+            if (typeof addToast === 'function') addToast('Could not parse AI response — please try again', 'error');
+          }
         }).catch(function() { upd('actionLoading', false); });
       };
 
@@ -574,7 +577,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
         upd('hwLoading', true);
         var reader = new FileReader();
         reader.onload = function() {
-          var base64 = reader.result.split(',')[1];
+          // Defensive split: a malformed data URL (no comma) would yield undefined
+          // and silently hang the OCR call. Surface a friendly error instead.
+          var parts = reader.result.split(',');
+          var base64 = parts.length > 1 ? parts[1] : null;
+          if (!base64) {
+            upd('hwLoading', false);
+            if (typeof addToast === 'function') addToast('Could not read handwriting image — try uploading a clearer photo', 'error');
+            return;
+          }
           var mimeType = file.type || 'image/png';
           var showPenmanship = hwPenmanshipOn || hwTeacherPenmanship;
 
@@ -1671,7 +1682,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                               updMulti({ gmCharacters: gmCharacters.concat(npcs), actionLoading: false });
                               sfxWbMagic(); if (addToast) addToast(tmpl.label + ' scenario created — ' + npcs.length + ' characters!', 'success');
                             }
-                          } catch(e) { upd('actionLoading', false); }
+                          } catch(e) {
+            upd('actionLoading', false);
+            if (typeof addToast === 'function') addToast('Could not parse AI response — please try again', 'error');
+          }
                         }).catch(function() { upd('actionLoading', false); });
                       },
                       disabled: actionLoading,

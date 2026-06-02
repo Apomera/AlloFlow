@@ -900,9 +900,15 @@ var d = labToolData || {};
             // parsed ~20MB dataset instead of re-parsing it each time.
             var geojsonPromise = window._geoCountriesGeoJSON
               ? Promise.resolve(window._geoCountriesGeoJSON)
-              : fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
-                  .then(function(r) { return r.json(); })
-                  .then(function(data) { window._geoCountriesGeoJSON = data; return data; });
+              : (function() {
+                  // Abort fetch after 10s so the UI doesn't hang forever on slow/offline networks
+                  var controller = new AbortController();
+                  var timeoutId = setTimeout(function() { controller.abort(); }, 10000);
+                  return fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson', { signal: controller.signal })
+                    .then(function(r) { clearTimeout(timeoutId); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                    .then(function(data) { window._geoCountriesGeoJSON = data; return data; })
+                    .catch(function(e) { clearTimeout(timeoutId); console.warn('[Geo] 2D map GeoJSON fetch failed:', e.message); throw e; });
+                })();
 
             geojsonPromise
 
@@ -1085,9 +1091,15 @@ var d = labToolData || {};
 
             var globeGeojsonPromise = window._geoCountriesGeoJSON
               ? Promise.resolve(window._geoCountriesGeoJSON)
-              : fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
-                  .then(function(r) { return r.json(); })
-                  .then(function(data) { window._geoCountriesGeoJSON = data; return data; });
+              : (function() {
+                  // Abort fetch after 10s so the globe doesn't hang on slow/offline networks
+                  var controller = new AbortController();
+                  var timeoutId = setTimeout(function() { controller.abort(); }, 10000);
+                  return fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson', { signal: controller.signal })
+                    .then(function(r) { clearTimeout(timeoutId); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                    .then(function(data) { window._geoCountriesGeoJSON = data; return data; })
+                    .catch(function(e) { clearTimeout(timeoutId); console.warn('[Geo] 3D globe GeoJSON fetch failed:', e.message); throw e; });
+                })();
 
             globeGeojsonPromise
 
@@ -3409,7 +3421,7 @@ var d = labToolData || {};
           // BUILD TAB
           gpTab==='build'&&React.createElement('div',{className:'space-y-3'},
             React.createElement('div',{className:'flex items-center gap-2'},
-              React.createElement('button',{onClick:()=>{gpUpd('investigate',!gpInvestigate);gpUpd('revealed',false);gpUpd('prediction','');},className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpInvestigate?'bg-amber-700 text-white shadow':'bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100'}`},gpInvestigate?'🔮 Investigate ON':'🔮 Investigate Mode'),
+              React.createElement('button',{'aria-pressed':gpInvestigate?'true':'false',onClick:()=>{gpUpd('investigate',!gpInvestigate);gpUpd('revealed',false);gpUpd('prediction','');},className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all focus:ring-2 focus:ring-amber-400 focus:outline-none ${gpInvestigate?'bg-amber-700 text-white shadow':'bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100'}`},gpInvestigate?'🔮 Investigate ON':'🔮 Investigate Mode'),
               React.createElement('span',{className:'text-[11px] text-slate-600 italic'},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
             ),
             React.createElement('div',{className:'flex gap-1.5 flex-wrap'},
@@ -3423,8 +3435,8 @@ var d = labToolData || {};
             ),
             React.createElement('div',{className:'flex gap-2 flex-wrap'},
               React.createElement('button',{onClick:()=>{if(gpPoints.length>=2){const last=gpPoints.length-1;if(!gpSegments.some(s=>(s.from===last-1&&s.to===last)||(s.from===last&&s.to===last-1)))gpUpd('segments',[...gpSegments,{from:last-1,to:last}]);}},disabled:gpPoints.length<2,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-violet-100 text-violet-700 hover:bg-violet-200 border border-violet-600 transition-all disabled:opacity-40'},'🔗 Connect Last Two'),
-              React.createElement('button',{onClick:()=>{if(gpConnecting!=null)gpUpd('connecting',null);else if(gpPoints.length>0)gpUpd('connecting',gpPoints.length-1);},disabled:gpPoints.length<1,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpConnecting!=null?'bg-indigo-600 text-white':'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-600'} disabled:opacity-40`},gpConnecting!=null?'✔ Connecting from '+labelFor(gpConnecting):'↗️ Draw Segment'),
-              React.createElement('button',{onClick:()=>gpUpd('showLabels',!gpShowLabels),className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpShowLabels?'bg-emerald-700 text-white':'bg-slate-100 text-slate-600 border border-slate-400'}`},gpShowLabels?'📏 Labels ON':'📏 Labels'),
+              React.createElement('button',{onClick:()=>{if(gpConnecting!=null)gpUpd('connecting',null);else if(gpPoints.length>0)gpUpd('connecting',gpPoints.length-1);},disabled:gpPoints.length<1,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all focus:ring-2 focus:ring-indigo-300 focus:outline-none ${gpConnecting!=null?'bg-indigo-600 text-white':'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-600'} disabled:opacity-40`},gpConnecting!=null?'✔ Connecting from '+labelFor(gpConnecting):'↗️ Draw Segment'),
+              React.createElement('button',{'aria-pressed':gpShowLabels?'true':'false',onClick:()=>gpUpd('showLabels',!gpShowLabels),className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all focus:ring-2 focus:ring-slate-300 focus:outline-none ${gpShowLabels?'bg-emerald-700 text-white':'bg-slate-100 text-slate-600 border border-slate-400'}`},gpShowLabels?'📏 Labels ON':'📏 Labels'),
               React.createElement('button',{onClick:()=>{if(gpPoints.length>0){const rm=gpPoints.length-1;gpUpd('points',gpPoints.slice(0,-1));gpUpd('segments',gpSegments.filter(s=>s.from!==rm&&s.to!==rm));gpUpd('connecting',null);}},disabled:gpPoints.length<1,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-600 transition-all disabled:opacity-40'},'⌫ Undo'),
               React.createElement('button',{onClick:()=>{gpUpd('points',[]);gpUpd('segments',[]);gpUpd('connecting',null);gpUpd('feedback',null);gpUpd('challenge',null);gpUpd('challengeAnswer','');},className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 transition-all'},'↺ Clear')
             ),

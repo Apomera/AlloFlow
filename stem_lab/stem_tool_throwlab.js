@@ -66,7 +66,10 @@ window.StemLab = window.StemLab || {
     if (document.getElementById('allo-throwlab-focus-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-throwlab-focus-css';
-    st.textContent = '[data-tl-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}';
+    // Focus outline + WCAG 2.5.5 minimum touch target (44×44px) for every interactive element
+    // in throwlab — all `[data-tl-focusable]` usages are on <button> or <input>, so a global
+    // min-size is safe (no risk of distorting text spans).
+    st.textContent = '[data-tl-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px} [data-tl-focusable]{min-width:44px;min-height:44px}';
     document.head.appendChild(st);
   })();
 
@@ -1724,8 +1727,9 @@ window.StemLab = window.StemLab || {
         try {
           var snapshot = { pitchLocker: d.pitchLocker || {}, _ts: Date.now() };
           window.__alloflowThrowLab = snapshot;
-          try { localStorage.setItem('throwlab.state.v1', JSON.stringify(snapshot)); } catch (e) {}
-        } catch (e) {}
+          try { localStorage.setItem('throwlab.state.v1', JSON.stringify(snapshot)); }
+          catch (e) { console.warn('[ThrowLab] localStorage save failed (quota or permission); session state will not persist on refresh:', e.message || e); }
+        } catch (e) { console.warn('[ThrowLab] snapshot failed:', e.message || e); }
       }, [d.pitchLocker]);
 
       // Hot-reload listener.

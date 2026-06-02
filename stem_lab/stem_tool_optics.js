@@ -2669,6 +2669,10 @@
       }
       var d = labToolData.opticsLab;
 
+      // ── Mounted ref for async callback guards (prevents setState after unmount) ──
+      var _mounted = React.useRef(true);
+      React.useEffect(function() { return function() { _mounted.current = false; }; }, []);
+
       // ── Concept-mastery state + Canvas-survival persistence ──
       // The StemLab host's localStorage block does not include opticsLab, so
       // the tool resets every reload by default. Layer our own:
@@ -3133,6 +3137,7 @@
         '5. Clarity for a peer studying for the AP exam\n\n' +
         'Return JSON: {"score": 0-10, "strengths": ["..."], "issues": ["..."], "improved_version": "a model 2-3 sentence explanation"}';
       callGemini(prompt, true).then(function(text) {
+        if (!_mounted.current) return;
         var parsed = null;
         try {
           var jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -3144,6 +3149,7 @@
         if (awardXP) awardXP(10, 'OpticsLab — AI graded explanation', 'opticsLab');
         if (addToast) addToast('AI feedback ready', 'success');
       }).catch(function(err) {
+        if (!_mounted.current) return;
         upd({ aiLoadingTab: null, aiResponse: { error: 'AI request failed: ' + (err.message || 'unknown') }, aiResponseTab: tab });
       });
     }
@@ -6142,7 +6148,14 @@
             filtered.map(function(p) {
               var isOpen = openId === p.id;
               return h('div', { key: p.id,
+                role: 'button',
+                tabIndex: 0,
+                'aria-expanded': isOpen,
                 onClick: function() { upd('phDbOpenId', isOpen ? null : p.id); },
+                onKeyDown: function(e) {
+                  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('phDbOpenId', isOpen ? null : p.id); }
+                  else if (e.key === 'Escape' && isOpen) { e.preventDefault(); upd('phDbOpenId', null); }
+                },
                 style: {
                   background: isOpen ? 'rgba(56,189,248,0.10)' : 'rgba(15,23,42,0.65)',
                   border: '1px solid ' + (isOpen ? 'rgba(56,189,248,0.55)' : 'rgba(100,116,139,0.30)'),
@@ -6812,7 +6825,14 @@
             filtered.map(function(s) {
               var isOpen = openId === s.id;
               return h('div', { key: s.id,
+                role: 'button',
+                tabIndex: 0,
+                'aria-expanded': isOpen,
                 onClick: function() { upd('scientistOpenId', isOpen ? null : s.id); },
+                onKeyDown: function(e) {
+                  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('scientistOpenId', isOpen ? null : s.id); }
+                  else if (e.key === 'Escape' && isOpen) { e.preventDefault(); upd('scientistOpenId', null); }
+                },
                 style: {
                   background: isOpen ? 'rgba(99,102,241,0.10)' : 'rgba(15,23,42,0.65)',
                   border: '1px solid ' + (isOpen ? 'rgba(99,102,241,0.55)' : 'rgba(100,116,139,0.30)'),
@@ -7299,7 +7319,14 @@
         filtered.map(function(i) {
           var isOpen = openId === i.id;
           return h('div', { key: i.id,
+            role: 'button',
+            tabIndex: 0,
+            'aria-expanded': isOpen,
             onClick: function() { upd('instOpenId', isOpen ? null : i.id); },
+            onKeyDown: function(e) {
+              if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('instOpenId', isOpen ? null : i.id); }
+              else if (e.key === 'Escape' && isOpen) { e.preventDefault(); upd('instOpenId', null); }
+            },
             style: {
               background: isOpen ? 'rgba(34,197,94,0.10)' : 'rgba(15,23,42,0.65)',
               border: '1px solid ' + (isOpen ? 'rgba(34,197,94,0.55)' : 'rgba(100,116,139,0.30)'),
@@ -7530,7 +7557,14 @@
         filtered.map(function(k) {
           var isOpen = openId === k.id;
           return h('div', { key: k.id,
+            role: 'button',
+            tabIndex: 0,
+            'aria-expanded': isOpen,
             onClick: function() { upd('kitOpenId', isOpen ? null : k.id); },
+            onKeyDown: function(e) {
+              if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('kitOpenId', isOpen ? null : k.id); }
+              else if (e.key === 'Escape' && isOpen) { e.preventDefault(); upd('kitOpenId', null); }
+            },
             style: {
               background: isOpen ? 'rgba(251,146,60,0.10)' : 'rgba(15,23,42,0.65)',
               border: '1px solid ' + (isOpen ? 'rgba(251,146,60,0.55)' : 'rgba(100,116,139,0.30)'),
@@ -7866,7 +7900,14 @@
         filtered.map(function(c) {
           var isOpen = openId === c.id;
           return h('div', { key: c.id,
+            role: 'button',
+            tabIndex: 0,
+            'aria-expanded': isOpen,
             onClick: function() { upd('careerOpenId', isOpen ? null : c.id); },
+            onKeyDown: function(e) {
+              if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('careerOpenId', isOpen ? null : c.id); }
+              else if (e.key === 'Escape' && isOpen) { e.preventDefault(); upd('careerOpenId', null); }
+            },
             style: {
               background: isOpen ? 'rgba(168,85,247,0.10)' : 'rgba(15,23,42,0.65)',
               border: '1px solid ' + (isOpen ? 'rgba(168,85,247,0.55)' : 'rgba(100,116,139,0.30)'),
@@ -12325,7 +12366,7 @@
     return h('div', null,
       h('div', { style: { background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#5eead4', fontSize: 17, fontWeight: 900, margin: '0 0 4px' } }, '🔬 Visual Optics Lab'),
-        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0 } }, 'Interactive SVG visualizations. Open + drag sliders, click to interact. Built for visual learners.')
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0 } }, 'Interactive SVG visualizations. Open + drag sliders, click to interact. Designed for hands-on visual exploration of ray paths and lens behavior.')
       ),
       // === MINI-TOOL: SNELL'S LAW REFRACTION VISUALIZER ===
       h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },

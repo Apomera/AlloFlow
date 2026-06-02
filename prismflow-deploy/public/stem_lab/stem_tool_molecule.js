@@ -1376,7 +1376,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("span", { className: "text-lg font-black text-slate-700" }, "\u00D7" + count),
 
-                      React.createElement("button", { "aria-label": "Remove Element", onClick: () => removeElement(sym), className: "ml-1 w-5 h-5 rounded-full bg-red-100 text-red-500 text-xs font-bold hover:bg-red-200 flex items-center justify-center" }, "\u2212")
+                      React.createElement("button", { "aria-label": "Remove Element", onClick: () => removeElement(sym), className: "ml-1 w-8 h-8 rounded-full bg-red-100 text-red-500 text-sm font-bold hover:bg-red-200 flex items-center justify-center" }, "\u2212")
 
                     );
 
@@ -2981,66 +2981,91 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       }
 
       function expTabBar() {
-        var sections = [
-          { id: 'vsepr', label: 'VSEPR shapes', icon: '🔺' },
-          { id: 'bonds', label: 'Bond types', icon: '⚛︎' },
-          { id: 'imf', label: 'Intermolecular forces', icon: '↔' },
-          { id: 'reactions', label: 'Reaction types', icon: '🔄' },
-          { id: 'library', label: 'Molecule library', icon: '📚' },
-          { id: 'acidbase', label: 'Acid/base', icon: '⚖' },
-          { id: 'quantum', label: 'Quantum numbers', icon: '⚛︎' },
-          { id: 'periodic', label: 'Periodic trends', icon: '📊' },
-          { id: 'molarity', label: 'Molarity calc', icon: '🧮' },
-          { id: 'stoich', label: 'Stoichiometry', icon: '⚖' },
-          { id: 'phase', label: 'Phase diagram', icon: '🧊' },
-          { id: 'equilibrium', label: 'Equilibrium', icon: '⇌' },
-          { id: 'kinetics', label: 'Kinetics', icon: '⏱' },
-          { id: 'thermo', label: 'Thermodynamics', icon: '🔥' },
-          { id: 'polymers', label: 'Polymers', icon: '🧬' },
-          { id: 'safety', label: 'Lab safety', icon: '🦺' },
-          { id: 'gaslaws', label: 'Gas laws', icon: '💨' },
-          { id: 'colligative', label: 'Colligative', icon: '🧂' },
-          { id: 'redox', label: 'Redox', icon: '🔋' },
-          { id: 'organic', label: 'Organic groups', icon: '🧪' },
-          { id: 'spectro', label: 'Spectroscopy', icon: '📡' },
-          { id: 'crystal', label: 'Crystal structures', icon: '💎' },
-          { id: 'biochem', label: 'Biochemistry', icon: '🧬' },
-          { id: 'environment', label: 'Atmospheric', icon: '🌫' },
-          { id: 'nuclear', label: 'Nuclear chem', icon: '☢' },
-          { id: 'electrochem', label: 'Electrochemistry', icon: '⚡' },
-          { id: 'famous', label: 'History', icon: '🕰' },
-          { id: 'lab', label: 'Lab techniques', icon: '🔬' },
-          { id: 'medchem', label: 'Drug discovery', icon: '💊' },
-          { id: 'food', label: 'Food chemistry', icon: '🍳' },
-          { id: 'materials', label: 'Materials', icon: '🪨' },
-          { id: 'inorganic', label: 'Inorganic chem', icon: '⚛' },
-          { id: 'enviro2', label: 'Pollution', icon: '🏭' },
-          { id: 'green', label: 'Green chemistry', icon: '🌱' },
-          { id: 'mol_geo', label: 'Bond geometry', icon: '∡' },
-          { id: 'isomers', label: 'Isomers', icon: '⇄' },
-          { id: 'noble', label: 'Noble gases', icon: 'He' },
-          { id: 'allelements', label: 'All elements', icon: '🅻' },
-          { id: 'minerals', label: 'Minerals', icon: '💎' },
-          { id: 'pharma', label: 'Common drugs', icon: '💊' },
-          { id: 'household', label: 'Household chem', icon: '🧴' },
-          { id: 'pH_scale', label: 'pH scale', icon: 'H⁺' },
-          { id: 'foods', label: 'Food + nutrition', icon: '🥦' },
-          { id: 'meltboil', label: 'Melt + boil pts', icon: '🌡' },
-          { id: 'solubility', label: 'Solubility', icon: '◐' },
-          { id: 'compounds', label: 'Common compounds', icon: '⌬' },
-          { id: 'flavor_chem', label: 'Flavor + scent', icon: '👃' },
-          { id: 'colors_chem', label: 'Color chemistry', icon: '🎨' },
-          { id: 'industrial', label: 'Industrial scale', icon: '🏗' },
-          { id: 'glossary', label: 'Glossary', icon: '📖' }
+        // 50 chemistry sections grouped by domain so the bar reads as a
+        // navigable table-of-contents instead of an alphabet soup. All IDs
+        // preserved. Groups: Structure & Bonding · Reactions & Equilibrium
+        // · States & Energy · Organic & Polymers · Reference & Tables ·
+        // Applications · Lab & Safety.
+        var TAB_GROUPS = [
+          { id: 'structure', label: 'Structure & Bonding', color: 'indigo', tabs: [
+            { id: 'vsepr', label: 'VSEPR shapes', icon: '🔺' },
+            { id: 'mol_geo', label: 'Bond geometry', icon: '∡' },
+            { id: 'bonds', label: 'Bond types', icon: '⚛︎' },
+            { id: 'imf', label: 'Intermol. forces', icon: '↔' },
+            { id: 'quantum', label: 'Quantum numbers', icon: '𝑛' },
+            { id: 'periodic', label: 'Periodic trends', icon: '📊' },
+            { id: 'isomers', label: 'Isomers', icon: '⇄' }
+          ] },
+          { id: 'reactions', label: 'Reactions & Equilibrium', color: 'rose', tabs: [
+            { id: 'reactions', label: 'Reaction types', icon: '🔄' },
+            { id: 'acidbase', label: 'Acid/base', icon: '⚖' },
+            { id: 'pH_scale', label: 'pH scale', icon: 'H⁺' },
+            { id: 'equilibrium', label: 'Equilibrium', icon: '⇌' },
+            { id: 'kinetics', label: 'Kinetics', icon: '⏱' },
+            { id: 'redox', label: 'Redox', icon: '🔋' },
+            { id: 'electrochem', label: 'Electrochemistry', icon: '⚡' },
+            { id: 'stoich', label: 'Stoichiometry', icon: '⚖' },
+            { id: 'molarity', label: 'Molarity calc', icon: '🧮' }
+          ] },
+          { id: 'states', label: 'States & Energy', color: 'sky', tabs: [
+            { id: 'phase', label: 'Phase diagram', icon: '🧊' },
+            { id: 'gaslaws', label: 'Gas laws', icon: '💨' },
+            { id: 'colligative', label: 'Colligative', icon: '🧂' },
+            { id: 'solubility', label: 'Solubility', icon: '◐' },
+            { id: 'meltboil', label: 'Melt + boil pts', icon: '🌡' },
+            { id: 'thermo', label: 'Thermodynamics', icon: '🔥' },
+            { id: 'nuclear', label: 'Nuclear chem', icon: '☢' }
+          ] },
+          { id: 'organic', label: 'Organic & Polymers', color: 'emerald', tabs: [
+            { id: 'organic', label: 'Organic groups', icon: '🧪' },
+            { id: 'polymers', label: 'Polymers', icon: '🧬' },
+            { id: 'biochem', label: 'Biochemistry', icon: '🧬' }
+          ] },
+          { id: 'reference', label: 'Reference & Tables', color: 'slate', tabs: [
+            { id: 'library', label: 'Molecule library', icon: '📚' },
+            { id: 'compounds', label: 'Common compounds', icon: '⌬' },
+            { id: 'allelements', label: 'All elements', icon: '🅻' },
+            { id: 'noble', label: 'Noble gases', icon: 'He' },
+            { id: 'inorganic', label: 'Inorganic chem', icon: '⚛' },
+            { id: 'minerals', label: 'Minerals', icon: '💎' },
+            { id: 'crystal', label: 'Crystal structures', icon: '💎' },
+            { id: 'glossary', label: 'Glossary', icon: '📖' },
+            { id: 'famous', label: 'History', icon: '🕰' }
+          ] },
+          { id: 'applications', label: 'Applications', color: 'amber', tabs: [
+            { id: 'medchem', label: 'Drug discovery', icon: '💊' },
+            { id: 'pharma', label: 'Common drugs', icon: '💊' },
+            { id: 'food', label: 'Food chemistry', icon: '🍳' },
+            { id: 'foods', label: 'Food + nutrition', icon: '🥦' },
+            { id: 'flavor_chem', label: 'Flavor + scent', icon: '👃' },
+            { id: 'colors_chem', label: 'Color chemistry', icon: '🎨' },
+            { id: 'materials', label: 'Materials', icon: '🪨' },
+            { id: 'household', label: 'Household chem', icon: '🧴' },
+            { id: 'industrial', label: 'Industrial scale', icon: '🏗' },
+            { id: 'environment', label: 'Atmospheric', icon: '🌫' },
+            { id: 'enviro2', label: 'Pollution', icon: '🏭' },
+            { id: 'green', label: 'Green chemistry', icon: '🌱' }
+          ] },
+          { id: 'lab', label: 'Lab & Safety', color: 'cyan', tabs: [
+            { id: 'lab', label: 'Lab techniques', icon: '🔬' },
+            { id: 'spectro', label: 'Spectroscopy', icon: '📡' },
+            { id: 'safety', label: 'Lab safety', icon: '🦺' }
+          ] }
         ];
-        return React.createElement('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
-          sections.map(function(s) {
-            var active = expSection === s.id;
-            return React.createElement('button', {
-              key: s.id,
-              onClick: function() { setExp({ expSection: active ? null : s.id }); },
-              className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-indigo-50 hover:border-indigo-300')
-            }, s.icon + ' ' + s.label);
+        function renderBtn(s, accent) {
+          var active = expSection === s.id;
+          return React.createElement('button', {
+            key: s.id,
+            onClick: function() { setExp({ expSection: active ? null : s.id }); },
+            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+          }, s.icon + ' ' + s.label);
+        }
+        return React.createElement('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
+          TAB_GROUPS.map(function(g) {
+            return React.createElement('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
+              React.createElement('span', { 'aria-hidden': 'true', className: 'text-[9px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
+              g.tabs.map(function(s) { return renderBtn(s, g.color); })
+            );
           })
         );
       }

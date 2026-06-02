@@ -108,8 +108,17 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           function tryInit() {
             var cv = _vizCvRef.current;
             if (!cv) {
-              if (tries++ < 12) { retryTimer = setTimeout(tryInit, 50); }
-              else { console.warn('[Calculus Viz] canvas ref never attached'); }
+              // Tiered polling so the canvas isn't lost if React's ref attachment is delayed:
+              //   - first 60 tries at 50ms each = 3s of fast polling (covers normal renders)
+              //   - next 30 tries at 500ms each = 15s more of slow polling (catches blocked-JS or off-screen mounts)
+              if (tries < 60) {
+                retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
+              } else {
+                console.warn('[Calculus Viz] canvas ref NEVER attached after ~18s of retries');
+              }
+              tries++;
               return;
             }
             var c = cv.getContext('2d');
@@ -2632,15 +2641,19 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('div', { className: 'flex gap-1.5 flex-wrap text-xs font-bold mb-2', role: 'tablist', 'aria-label': 'Calculus visualization view' },
                   VIEWS.map(function(v, vi) {
                     var active = vizView === v.id;
-                    return h('button', {
+                    var btnAttrs = {
                       key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
                       onClick: function() { upd('vizView', v.id); },
                       title: v.desc,
-                      'aria-keyshortcuts': 'Shift+' + (vi + 1),
                       className: 'px-3 py-1.5 rounded-lg border transition-all whitespace-nowrap ' + (active
                         ? 'bg-red-500 border-red-600 text-white shadow-md'
                         : 'bg-white border-slate-200 text-slate-600 hover:border-red-400')
-                    }, v.icon + ' ' + v.label);
+                    };
+                    // Only the first 10 views (zoom..related) have keyboard shortcuts wired:
+                    //   indices 0-8 → Shift+1..9, index 9 → Shift+0. vor + eps have no shortcut.
+                    if (vi < 9) btnAttrs['aria-keyshortcuts'] = 'Shift+' + (vi + 1);
+                    else if (vi === 9) btnAttrs['aria-keyshortcuts'] = 'Shift+0';
+                    return h('button', btnAttrs, v.icon + ' ' + v.label);
                   })
                 ),
                 // Function picker (shown only for views that use it)

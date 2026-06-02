@@ -4719,7 +4719,15 @@
           // setStemLabTab / setToolSnapshots / shared explore setters during
           // render could trigger "Cannot update a component while rendering
           // a different component" because those setters were raw.
-          var _safeSetStemLabTool = typeof setStemLabTool === 'function' ? _deferSafe(setStemLabTool) : function() {};
+          // Wrap setStemLabTool so any tool switch first runs the universe tool's cleanup
+          // (animationFrame, ResizeObserver, tracked setTimeouts, time-lapse interval).
+          // The cleanup is idempotent + no-op if universe was never mounted, so safe for every switch.
+          var _safeSetStemLabTool = typeof setStemLabTool === 'function' ? _deferSafe(function() {
+            if (typeof window !== 'undefined' && typeof window._universeCleanupAll === 'function') {
+              try { window._universeCleanupAll(); } catch(e) {}
+            }
+            setStemLabTool.apply(null, arguments);
+          }) : function() {};
           var _safeSetStemLabTab = typeof setStemLabTab === 'function' ? _deferSafe(setStemLabTab) : function() {};
           var _safeSetToolSnapshots = typeof setToolSnapshots === 'function' ? _deferSafe(setToolSnapshots) : function() {};
           var _ctx = {

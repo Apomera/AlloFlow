@@ -101,6 +101,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
       var callGeminiVision = ctx.callGeminiVision;
 
+      // ── Mounted flag to prevent stale setState on unmounted component ──
+      var _mounted = React.useRef(true);
+      React.useEffect(function() { return function() { _mounted.current = false; }; }, []);
+
       var tab = d.tab || 'audit';
       var auditUrl = d.auditUrl || '';
       var auditHtml = d.auditHtml || '';
@@ -134,6 +138,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       // ── Audit PDF/Screenshot via Vision ──
       var runVisionAudit = function(base64, mimeType, label) {
         if (!callGeminiVision) { if (addToast) addToast('Vision API not available', 'error'); return; }
+        if (auditLoading) return; // guard against double-click triggering parallel AI calls
         upd('auditLoading', true);
         var visionPrompt = 'You are a WCAG 2.1 AA accessibility expert. Audit this ' + label + ' for accessibility compliance.\n' +
           'Check: alt text on images, heading structure, color contrast, keyboard access hints, form labels, link text, language declaration, focus indicators, ARIA usage, skip navigation.\n' +
@@ -143,6 +148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           '{"score": 0-100, "grade": "A/B/C/D/F", "summary": "plain-language summary", "issues": [{"criterion": "1.1.1", "issue": "desc", "severity": "critical|major|minor", "who": "affected group", "fix": "how to fix"}], "strengths": ["good things"], "score_breakdown": {"structure": 0-10, "images": 0-10, "contrast": 0-10, "keyboard": 0-10, "forms": 0-10, "language": 0-10, "links": 0-10, "focus": 0-10, "aria": 0-10, "navigation": 0-10}, "recommendation": "fix this first"}';
 
         callGeminiVision(visionPrompt, base64, mimeType).then(function(result) {
+          if (!_mounted.current) return;
           try {
             var cleaned = result.trim();
             if (cleaned.indexOf('```') !== -1) { var parts = cleaned.split('```'); cleaned = parts[1] || parts[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
@@ -155,6 +161,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             updMulti({ auditResult: { score: -1, summary: 'Audit failed \u2014 could not parse the ' + label + '.', issues: [], strengths: [] }, auditLoading: false });
           }
         }).catch(function() {
+          if (!_mounted.current) return;
           updMulti({ auditResult: { score: -1, summary: 'Vision audit failed. The file may be too large or unsupported.', issues: [], strengths: [] }, auditLoading: false });
         });
       };
@@ -176,6 +183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       // ── Fetch URL HTML then audit ──
       var fetchAndAudit = function(url) {
         if (!callGemini) return;
+        if (auditLoading) return; // guard against double-click triggering parallel Gemini calls (~3 in-flight per audit)
         upd('auditLoading', true);
         // Use Gemini with grounding/search to analyze the URL
         var fetchPrompt = 'Visit and analyze the website at ' + url + ' for WCAG 2.1 AA accessibility compliance.\n' +
@@ -188,6 +196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       // ── Run social media audit ──
       var runSocialAudit = function() {
         if (!callGemini || !socialText.trim()) return;
+        if (auditLoading) return; // guard against double-click triggering parallel AI calls
         upd('auditLoading', true);
         var prompt = 'You are a social media accessibility expert. Audit this ' + socialPlatform + ' post for accessibility compliance.\n\n' +
           'POST CONTENT:\n"""\n' + socialText.substring(0, 3000) + '\n"""\n\n' +
@@ -208,6 +217,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           '"score_breakdown": {"alt_text": 0-10, "captions": 0-10, "hashtags": 0-10, "emoji": 0-10, "readability": 0-10, "contrast": 0-10, "links": 0-10, "text_in_images": 0-10},\n' +
           '"recommendation": "fix this first"}';
         callGemini(prompt, true).then(function(result) {
+          if (!_mounted.current) return;
           try {
             var cleaned = result.trim();
             if (cleaned.indexOf('```') !== -1) { var parts = cleaned.split('```'); cleaned = parts[1] || parts[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
@@ -220,6 +230,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             updMulti({ auditResult: { score: -1, summary: 'Social media audit failed.', issues: [], strengths: [] }, auditLoading: false });
           }
         }).catch(function() {
+          if (!_mounted.current) return;
           updMulti({ auditResult: { score: -1, summary: 'Social media audit failed.', issues: [], strengths: [] }, auditLoading: false });
         });
       };
@@ -240,9 +251,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           '- Preserve the original voice and personality\n\n' +
           'Return ONLY the rewritten post text, nothing else.';
         callGemini(prompt, true).then(function(result) {
+          if (!_mounted.current) return;
           updMulti({ socialRewrite: result.trim(), socialRewriteLoading: false });
           if (announceToSR) announceToSR('Accessible rewrite generated.');
         }).catch(function() {
+          if (!_mounted.current) return;
           updMulti({ socialRewrite: 'Rewrite failed. Please try again.', socialRewriteLoading: false });
         });
       };
@@ -274,6 +287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           '"title_ii": {"ada_coordinator": true/false, "accessibility_statement": true/false, "grievance_procedure": true/false, "compliant_forms": true/false, "tagged_pdfs": true/false, "captioned_videos": true/false},\n' +
           '"recommendation": "fix this first"}';
         callGemini(prompt, true).then(function(result) {
+          if (!_mounted.current) return;
           try {
             var cleaned = result.trim();
             if (cleaned.indexOf('```') !== -1) { var parts = cleaned.split('```'); cleaned = parts[1] || parts[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
@@ -286,6 +300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             updMulti({ auditResult: { score: -1, summary: 'Government audit failed.', issues: [], strengths: [] }, auditLoading: false });
           }
         }).catch(function() {
+          if (!_mounted.current) return;
           updMulti({ auditResult: { score: -1, summary: 'Government audit failed.', issues: [], strengths: [] }, auditLoading: false });
         });
       };
@@ -310,6 +325,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         var p3 = callGemini('You are a WCAG 2.1 AA NAVIGATION accessibility expert auditing ' + target + '.\n\n' + htmlCtx + 'Focus ONLY on navigation and operability:\n1. Keyboard access (2.1.1)\n2. Skip navigation links (2.4.1)\n3. Link purpose and descriptive text (2.4.4)\n4. Focus order and tab sequence (2.4.3)\n5. No keyboard traps (2.1.2)\n\n' + audience + jsonSchema, true);
 
         Promise.all([p1, p2, p3]).then(function(results) {
+          if (!_mounted.current) return;
           try {
             var audits = results.map(function(r) { try { return parseAuditJson(r); } catch(e) { return null; } }).filter(Boolean);
             if (audits.length === 0) throw new Error('All passes failed');
@@ -343,6 +359,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             updMulti({ auditResult: { score: -1, summary: 'Audit failed. Try different content or a simpler URL.', issues: [], strengths: [] }, auditLoading: false });
           }
         }).catch(function() {
+          if (!_mounted.current) return;
           updMulti({ auditResult: { score: -1, summary: 'Audit failed. The content could not be analyzed.', issues: [], strengths: [] }, auditLoading: false });
         });
       };
@@ -902,11 +919,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   'GRADE LEVEL: Write at a ' + (gradeLevel || '8th grade') + ' reading level.\n' +
                   'FORMAT: Return the complete letter ready to send, with proper formatting, date, addresses, and signature line. Include filing instructions at the end.';
                 callGemini(prompt, true).then(function(result) {
+                  if (!_mounted.current) return;
                   if (thisReqId !== window.__a11yComplaintReqId) return;
                   updMulti({ complaintResult: result, complaintLoading: false, complaintsGenerated: complaintsGenerated + 1 });
                   if (awardStemXP) awardStemXP(20);
                   if (announceToSR) announceToSR('Complaint letter generated.');
                 }).catch(function() {
+                  if (!_mounted.current) return;
                   if (thisReqId !== window.__a11yComplaintReqId) return;
                   updMulti({ complaintResult: 'Error generating complaint letter. Please try again.', complaintLoading: false });
                 });

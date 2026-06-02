@@ -4348,7 +4348,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   playSound('systemSelect');
                 },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (sysKey === key ? 'text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-400'),
-                style: sysKey === key ? { background: s.accent } : {}
+                style: sysKey === key ? { background: s.accent, boxShadow: 'inset 0 0 0 2px rgba(0,0,0,0.3), 0 2px 6px ' + s.accent + '30' } : {}
               }, s.icon + ' ' + s.name);
             })
           ),
@@ -4415,7 +4415,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1' }, '\uD83E\uDDE0 Layers'),
             LAYER_DEFS.map(function(ld) {
               var isOn = layers[ld.id] || ld.id === autoLayerId;
-              return h('button', { 'aria-label': 'Toggle layer',
+              return h('button', { 'aria-label': (isOn ? 'Hide ' : 'Show ') + ld.name + ' layer',
                 key: ld.id,
                 onClick: function() {
                   toggleLayer(ld.id);
@@ -4444,7 +4444,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   key: v,
                   onClick: function() { upd('view', v); upd('selectedStructure', null); playSound('viewSwitch'); },
                   'aria-pressed': view === v,
-                  className: 'px-3 py-1 text-xs font-bold transition-all ' + (view === v ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50')
+                  className: 'px-3 py-1 text-xs font-bold transition-all border-2 ' + (view === v ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 hover:bg-slate-50 border-transparent')
                 }, v.charAt(0).toUpperCase() + v.slice(1));
               })
             ),
@@ -4459,6 +4459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               className: 'flex-1 min-w-[140px] px-3 py-1.5 text-xs border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none'
             }),
             h('button', { onClick: function() { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
+              'aria-pressed': !!d.quizMode,
               className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100')
             }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
             h('div', { className: 'flex rounded-lg border border-slate-400 overflow-hidden' },
@@ -4476,6 +4477,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' + (d._showRegionLabels ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50')
             }, '\uD83C\uDFF7 Regions'),
             h('button', { 'aria-label': 'X-ray',
+              'aria-pressed': !!xrayMode,
               onClick: function() { upd('_xrayMode', !xrayMode); },
               title: 'Toggle X-ray radiograph mode',
               className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' + (xrayMode ? 'bg-cyan-800 text-cyan-200 border-cyan-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50')
@@ -4488,7 +4490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   key: tone.id,
                   'aria-label': tone.label + ' skin tone',
                   onClick: function() { upd('_skinTone', tone.id); },
-                  className: 'w-4 h-4 rounded-full border-2 transition-all ' + (skinToneId === tone.id ? 'border-indigo-500 ring-1 ring-indigo-300 scale-110' : 'border-slate-200 hover:border-slate-400'),
+                  className: 'w-5 h-5 rounded-full border-2 transition-all ' + (skinToneId === tone.id ? 'border-slate-700 ring-2 ring-offset-1 ring-slate-700 scale-110' : 'border-slate-400 hover:border-slate-600'),
                   style: { backgroundColor: tone.base }
                 });
               })
@@ -4786,8 +4788,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     }),
                     h('button', { 'aria-label': 'Ask',
                       onClick: function() { sendAiQuestion(d._aiInput || ''); upd('_aiInput', ''); },
-                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-600 text-white hover:bg-violet-700 transition-all'
-                    }, 'Ask')
+                      disabled: aiLoading,
+                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-600 text-white hover:bg-violet-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+                    }, aiLoading ? '…' : 'Ask')
                   )
                 )
               ) : activeTab === 'tour' ? (

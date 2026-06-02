@@ -1610,7 +1610,7 @@ window.StemLab = window.StemLab || {
 
               aiLoading && React.createElement("div", { className: "flex items-center justify-center gap-2 p-3 bg-violet-100 rounded-xl border border-violet-200" },
 
-                React.createElement("div", { className: "animate-spin w-4 h-4 border-2 border-violet-600 border-t-transparent rounded-full" }),
+                React.createElement("div", { className: "animate-spin w-5 h-5 border-2 border-violet-600 border-t-transparent rounded-full", role: "status", "aria-label": "Loading AI content" }),
 
                 React.createElement("span", { className: "text-xs font-bold text-violet-600" }, "Generating with AI...")
 
@@ -2303,6 +2303,8 @@ window.StemLab = window.StemLab || {
               React.createElement('h4', { className: 'text-sm font-bold text-violet-700 mb-2' }, '\ud83d\udd0d Truth Tables \u2014 Boolean logic at a glance'),
               React.createElement('div', { className: 'rounded-xl overflow-hidden border border-violet-200', style: { background: '#1e1b4b', aspectRatio: '16/5' } },
                 React.createElement('canvas', {
+                  role: 'img',
+                  'aria-label': 'Truth table visualization cycling through AND, OR, XOR, and NAND logic gates.',
                   ref: function(cvEl) {
                     if (!cvEl) return;
                     if (cvEl._ttAnim) return;

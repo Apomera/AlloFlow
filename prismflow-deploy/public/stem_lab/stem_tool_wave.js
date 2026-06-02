@@ -2377,61 +2377,86 @@ const d = labToolData.wave;
       }
 
       function expTabBar() {
-        var sections = [
-          { id: 'types', label: 'Wave types', icon: '🌊' },
-          { id: 'quantities', label: 'Wave quantities', icon: '📐' },
-          { id: 'formulas', label: 'Key formulas', icon: 'ƒ' },
-          { id: 'interference', label: 'Interference', icon: '+' },
-          { id: 'doppler', label: 'Doppler effect', icon: '🚓' },
-          { id: 'spectrum', label: 'EM spectrum', icon: '⚡' },
-          { id: 'colors', label: 'Visible light', icon: '🌈' },
-          { id: 'harmonics', label: 'Harmonics', icon: '🎵' },
-          { id: 'instruments', label: 'Standing waves', icon: '🎸' },
-          { id: 'decibels', label: 'Sound intensity', icon: '🔊' },
-          { id: 'optics', label: 'Optics & lenses', icon: '🔍' },
-          { id: 'refraction', label: 'Refraction index', icon: '↻' },
-          { id: 'diffraction', label: 'Diffraction', icon: '∿' },
-          { id: 'polarization', label: 'Polarization', icon: '↕' },
-          { id: 'quantum', label: 'Quantum waves', icon: '⚛' },
-          { id: 'seismic', label: 'Seismic waves', icon: '🌋' },
-          { id: 'ocean', label: 'Ocean waves', icon: '🏄' },
-          { id: 'antennas', label: 'Antennas', icon: '📶' },
-          { id: 'radar', label: 'Radar/sonar', icon: '📡' },
-          { id: 'shockwaves', label: 'Shock waves', icon: '✈' },
-          { id: 'famous', label: 'History', icon: '🕰' },
-          { id: 'colors2', label: 'Color models', icon: '🎨' },
-          { id: 'lasers', label: 'Lasers', icon: '⫸' },
-          { id: 'fibers', label: 'Fiber optics', icon: '〰' },
-          { id: 'protocols', label: 'Comm protocols', icon: '📡' },
-          { id: 'music', label: 'Music + acoustics', icon: '🎵' },
-          { id: 'hearing', label: 'Hearing + ear', icon: '👂' },
-          { id: 'medical', label: 'Medical imaging', icon: '🏥' },
-          { id: 'satellites', label: 'GPS + satellites', icon: '🛰' },
-          { id: 'gravitational', label: 'Gravitational waves', icon: '⌇' },
-          { id: 'units2', label: 'Wave units', icon: '∑' },
-          { id: 'careers', label: 'Wave careers', icon: '💼' },
-          { id: 'animals', label: 'Animal senses', icon: '🦇' },
-          { id: 'instruments', label: 'Instrument freqs', icon: '🎻' },
-          { id: 'radio', label: 'Radio bands', icon: '📻' },
-          { id: 'colorhex', label: 'Named colors', icon: '🎨' },
-          { id: 'wavespeed', label: 'Wave speeds', icon: '⏱' },
-          { id: 'stars', label: 'Stars + spectra', icon: '⭐' },
-          { id: 'tvfreq', label: 'TV + screen', icon: '📺' },
-          { id: 'noise', label: 'Noise sources', icon: '🔊' },
-          { id: 'speeds2', label: 'Detailed speeds', icon: '⏲' },
-          { id: 'cameras', label: 'Camera lenses', icon: '📷' },
-          { id: 'optical_facts', label: 'Optical illusions', icon: '👁' },
-          { id: 'recordings', label: 'Audio formats', icon: '🎧' },
-          { id: 'glossary', label: 'Glossary', icon: '📖' }
+        // 45 wave/optics sections grouped into 7 cohesive domains. Renamed
+        // duplicate id 'instruments' (was used for both Standing waves AND
+        // Instrument freqs) — second now 'instrumentfreqs'. All other IDs
+        // preserved. Groups: Wave Basics · Sound & Music · Light & Optics ·
+        // EM Spectrum · Communications · Natural & Cosmic · Reference.
+        var TAB_GROUPS = [
+          { id: 'basics', label: 'Wave Basics', color: 'cyan', tabs: [
+            { id: 'types', label: 'Wave types', icon: '🌊' },
+            { id: 'quantities', label: 'Wave quantities', icon: '📐' },
+            { id: 'formulas', label: 'Key formulas', icon: 'ƒ' },
+            { id: 'units2', label: 'Wave units', icon: '∑' },
+            { id: 'wavespeed', label: 'Wave speeds', icon: '⏱' },
+            { id: 'speeds2', label: 'Detailed speeds', icon: '⏲' },
+            { id: 'interference', label: 'Interference', icon: '+' },
+            { id: 'diffraction', label: 'Diffraction', icon: '∿' },
+            { id: 'polarization', label: 'Polarization', icon: '↕' },
+            { id: 'doppler', label: 'Doppler effect', icon: '🚓' },
+            { id: 'shockwaves', label: 'Shock waves', icon: '✈' }
+          ] },
+          { id: 'sound', label: 'Sound & Music', color: 'amber', tabs: [
+            { id: 'harmonics', label: 'Harmonics', icon: '🎵' },
+            { id: 'instruments', label: 'Standing waves', icon: '🎸' },
+            { id: 'instrumentfreqs', label: 'Instrument freqs', icon: '🎻' },
+            { id: 'music', label: 'Music + acoustics', icon: '🎼' },
+            { id: 'decibels', label: 'Sound intensity', icon: '🔊' },
+            { id: 'noise', label: 'Noise sources', icon: '📢' },
+            { id: 'hearing', label: 'Hearing + ear', icon: '👂' },
+            { id: 'recordings', label: 'Audio formats', icon: '🎧' }
+          ] },
+          { id: 'optics', label: 'Light & Optics', color: 'fuchsia', tabs: [
+            { id: 'optics', label: 'Optics & lenses', icon: '🔍' },
+            { id: 'refraction', label: 'Refraction index', icon: '↻' },
+            { id: 'colors', label: 'Visible light', icon: '🌈' },
+            { id: 'colors2', label: 'Color models', icon: '🎨' },
+            { id: 'colorhex', label: 'Named colors', icon: '🖌' },
+            { id: 'lasers', label: 'Lasers', icon: '⫸' },
+            { id: 'cameras', label: 'Camera lenses', icon: '📷' },
+            { id: 'optical_facts', label: 'Optical illusions', icon: '👁' }
+          ] },
+          { id: 'spectrum', label: 'EM Spectrum', color: 'violet', tabs: [
+            { id: 'spectrum', label: 'EM spectrum', icon: '⚡' },
+            { id: 'radio', label: 'Radio bands', icon: '📻' },
+            { id: 'tvfreq', label: 'TV + screen', icon: '📺' },
+            { id: 'quantum', label: 'Quantum waves', icon: '⚛' }
+          ] },
+          { id: 'comm', label: 'Communications', color: 'sky', tabs: [
+            { id: 'antennas', label: 'Antennas', icon: '📶' },
+            { id: 'radar', label: 'Radar/sonar', icon: '📡' },
+            { id: 'protocols', label: 'Comm protocols', icon: '🛜' },
+            { id: 'fibers', label: 'Fiber optics', icon: '〰' },
+            { id: 'satellites', label: 'GPS + satellites', icon: '🛰' },
+            { id: 'medical', label: 'Medical imaging', icon: '🏥' }
+          ] },
+          { id: 'natural', label: 'Natural & Cosmic', color: 'emerald', tabs: [
+            { id: 'ocean', label: 'Ocean waves', icon: '🏄' },
+            { id: 'seismic', label: 'Seismic waves', icon: '🌋' },
+            { id: 'animals', label: 'Animal senses', icon: '🦇' },
+            { id: 'stars', label: 'Stars + spectra', icon: '⭐' },
+            { id: 'gravitational', label: 'Gravitational waves', icon: '⌇' }
+          ] },
+          { id: 'reference', label: 'Reference', color: 'slate', tabs: [
+            { id: 'careers', label: 'Wave careers', icon: '💼' },
+            { id: 'famous', label: 'History', icon: '🕰' },
+            { id: 'glossary', label: 'Glossary', icon: '📖' }
+          ] }
         ];
-        return React.createElement('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
-          sections.map(function(s) {
-            var active = expSection === s.id;
-            return React.createElement('button', {
-              key: s.id,
-              onClick: function() { setExp({ expSection: active ? null : s.id }); },
-              className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-cyan-600 text-white border-cyan-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-cyan-50 hover:border-cyan-300')
-            }, s.icon + ' ' + s.label);
+        function renderBtn(s, accent) {
+          var active = expSection === s.id;
+          return React.createElement('button', {
+            key: s.id,
+            onClick: function() { setExp({ expSection: active ? null : s.id }); },
+            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+          }, s.icon + ' ' + s.label);
+        }
+        return React.createElement('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
+          TAB_GROUPS.map(function(g) {
+            return React.createElement('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
+              React.createElement('span', { 'aria-hidden': 'true', className: 'text-[9px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
+              g.tabs.map(function(s) { return renderBtn(s, g.color); })
+            );
           })
         );
       }
@@ -3052,7 +3077,7 @@ const d = labToolData.wave;
         if (expSection === 'units2') return renderUnitsSection();
         if (expSection === 'careers') return renderCareersSection();
         if (expSection === 'animals') return renderAnimalsSection();
-        if (expSection === 'instruments') return renderInstrumentFreqSection();
+        if (expSection === 'instrumentfreqs') return renderInstrumentFreqSection();
         if (expSection === 'radio') return renderRadioSection();
         if (expSection === 'colorhex') return renderColorhexSection();
         if (expSection === 'wavespeed') return renderWaveSpeedSection();

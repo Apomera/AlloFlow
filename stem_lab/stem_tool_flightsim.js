@@ -5033,8 +5033,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       explanation: 'Many students think "pilot" is the only aviation career. Show them mechanics, controllers, engineers, dispatchers — varied paths.',
     },
     {
-      note: 'Honor multiple intelligences',
-      explanation: 'Aviation involves spatial (3D awareness), kinesthetic (hands on yoke), interpersonal (CRM, ATC), intrapersonal (decision making under stress), naturalistic (weather), linguistic (radio communication), mathematical (calculations).',
+      note: 'Use varied modalities',
+      explanation: 'Aviation engages many skills at once: 3D spatial reasoning, hand-eye control, radio communication, weather interpretation, and rapid mental math. Hands-on simulator work, paper-folding experiments, and ATC role-play each tap different parts of that mix — without endorsing the Multiple Intelligences theory (which has not held up to empirical replication; see sibling stem_tool_learning_lab.js for the debunk).',
     },
     {
       note: 'Use simulators',
@@ -10016,6 +10016,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         window.addEventListener('keyup', onKey);
         return function() { window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onKey); };
       }, [view]);
+
+      // ── ESC to Exit Fullscreen ──
+      // Browsers do handle ESC natively for fullscreen, but having an explicit handler
+      // ensures the behavior is consistent and traceable in app-level event flow.
+      useEffect(function() {
+        var onEscKey = function(e) {
+          if ((e.key === 'Escape' || e.keyCode === 27) && document.fullscreenElement) {
+            document.exitFullscreen().catch(function() {});
+          }
+        };
+        window.addEventListener('keydown', onEscKey);
+        return function() { window.removeEventListener('keydown', onEscKey); };
+      }, []);
 
       // ── Touch Controls (mobile/tablet) ──
       var touchRef = useRef({ active: false, startX: 0, startY: 0, throttleStart: 0 });
@@ -20129,6 +20142,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               else { container.requestFullscreen().catch(function() {}); }
             },
               'aria-label': 'Toggle fullscreen flight view',
+              'aria-pressed': document.fullscreenElement ? 'true' : 'false',
               style: { padding: '6px 10px', borderRadius: '6px', background: document.fullscreenElement ? 'rgba(34,211,238,0.3)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, '\u26F6 Fullscreen'),
             h('button', { onClick: function() { upd('thirdPerson', !d.thirdPerson); },

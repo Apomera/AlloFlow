@@ -60,7 +60,7 @@ window.StemLab = window.StemLab || {
   // ══════════════════════════════════════════════════════════════
   var GALLERY_KEY = 'alloflow_dataplot_charts';
   function loadGallery() { try { return JSON.parse(localStorage.getItem(GALLERY_KEY) || '[]'); } catch(e) { return []; } }
-  function saveGallery(arr) { try { localStorage.setItem(GALLERY_KEY, JSON.stringify(arr)); } catch(e) {} }
+  function saveGallery(arr) { try { localStorage.setItem(GALLERY_KEY, JSON.stringify(arr)); } catch(e) { console.warn('[DataPlot] Gallery save failed (quota or permission); charts will not persist on refresh:', e.message || e); } }
 
   // ══════════════════════════════════════════════════════════════
   // ── Built-in Dataset Library ──

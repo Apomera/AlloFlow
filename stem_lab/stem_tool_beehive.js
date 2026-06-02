@@ -16399,13 +16399,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           function tryInit() {
             var cv = _droneCvRef.current;
             if (!cv) {
-              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
-              else console.warn('[Beehive] drone canvas ref never attached');
+              // Tiered polling: 60 fast (50ms) + 30 slow (500ms) = ~18s budget
+              if (tries < 60) {
+                retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
+              } else {
+                console.warn('[Beehive] drone canvas ref never attached after ~18s of retries');
+              }
+              tries++;
               return;
             }
             var c = cv.getContext('2d');
             if (!c) {
-              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
+              if (tries < 60) {
+                retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
+              }
+              tries++;
               return;
             }
             teardownFn = doSetup(cv, c);
@@ -17406,13 +17418,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           function tryInit() {
             var cv = _queenCvRef.current;
             if (!cv) {
-              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
-              else console.warn('[Beehive] queen canvas ref never attached');
+              // Tiered polling: 60 fast (50ms) + 30 slow (500ms) = ~18s budget
+              if (tries < 60) {
+                retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
+              } else {
+                console.warn('[Beehive] queen canvas ref never attached after ~18s of retries');
+              }
+              tries++;
               return;
             }
             var c = cv.getContext('2d');
             if (!c) {
-              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
+              if (tries < 60) {
+                retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
+              }
+              tries++;
               return;
             }
             teardownFn = doSetup(cv, c);
@@ -17797,6 +17821,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               style: { lineHeight: 1.3, maxWidth: '60%' }
             }, '💡 Tip: click the hive, beekeeper, or meadow to dive in')
           ),
+          // ═══ EDUCATIONAL VIEW SELECTOR (beekeeper only) ═══
+          // 10 educational views (scene, anatomy, physics, lifecycle, honey, waggle,
+          // thermo, castes, pheromones, threats) already have draw functions + Shift+1..0
+          // shortcuts wired. This selector makes them clickable + discoverable.
+          viewMode === 'beekeeper' && h('div', {
+            className: 'flex gap-1.5 p-1 rounded-xl flex-wrap ' + (dk ? 'bg-slate-800' : 'bg-slate-100'),
+            role: 'tablist',
+            'aria-label': 'Educational topic views'
+          },
+            [
+              { id: 'scene', icon: '🎬', label: 'Scene', shortDesc: 'the hive scene' },
+              { id: 'anatomy', icon: '🐝', label: 'Anatomy', shortDesc: 'bee anatomy' },
+              { id: 'physics', icon: '⚡', label: 'Flight Physics', shortDesc: 'bee flight physics' },
+              { id: 'lifecycle', icon: '🔄', label: 'Lifecycle', shortDesc: 'the bee lifecycle' },
+              { id: 'honey', icon: '🍯', label: 'Honey', shortDesc: 'honey production' },
+              { id: 'waggle', icon: '💃', label: 'Waggle Dance', shortDesc: 'the waggle dance' },
+              { id: 'thermo', icon: '🌡️', label: 'Thermoregulation', shortDesc: 'hive thermoregulation' },
+              { id: 'castes', icon: '👥', label: 'Castes', shortDesc: 'bee castes (queen / worker / drone)' },
+              { id: 'pheromones', icon: '👃', label: 'Pheromones', shortDesc: 'bee pheromones' },
+              { id: 'threats', icon: '⚠️', label: 'Threats', shortDesc: 'colony threats' }
+            ].map(function(tab, idx) {
+              var active = beeView === tab.id;
+              var shortcut = idx === 9 ? 'Shift+0' : 'Shift+' + (idx + 1);
+              return h('button', {
+                key: tab.id,
+                role: 'tab',
+                'aria-selected': active ? 'true' : 'false',
+                onClick: function() { upd('beeView', tab.id); },
+                className: 'flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-bold transition-all ' +
+                  (active
+                    ? (dk ? 'bg-amber-700 text-white shadow-md' : 'bg-white text-amber-800 shadow-md border border-amber-200')
+                    : (dk ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-600 hover:text-slate-800 hover:bg-white/60 border border-transparent')),
+                title: 'View: ' + tab.shortDesc + ' (' + shortcut + ')'
+              }, h('span', { 'aria-hidden': 'true' }, tab.icon), tab.label);
+            })
+          ),
 // ═══ DRONE FLIGHT MODE UI ═══
           viewMode === 'drone' && h('div', { className: 'space-y-3' },
             // Drone canvas (or launch screen)
@@ -18151,6 +18211,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ].map(function(pair) {
                 return h('div', { key: pair[0], className: 'flex items-center gap-2 text-[11px] py-0.5' },
                   h('kbd', { className: 'inline-flex items-center justify-center w-6 h-6 rounded font-mono font-bold text-[11px] ' + (dk ? 'bg-slate-700 text-amber-300 border border-slate-600' : 'bg-slate-100 text-amber-700 border border-slate-400') }, pair[0]),
+                  h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, pair[1]));
+              })),
+            // Educational view shortcuts (added alongside the simulation shortcuts above)
+            h('div', { className: 'text-xs font-bold mt-2 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, '🔬 Educational Views'),
+            h('div', { className: 'grid grid-cols-2 gap-1' },
+              [
+                ['Shift+1', 'Scene'], ['Shift+2', 'Anatomy'],
+                ['Shift+3', 'Flight Physics'], ['Shift+4', 'Lifecycle'],
+                ['Shift+5', 'Honey'], ['Shift+6', 'Waggle Dance'],
+                ['Shift+7', 'Thermoregulation'], ['Shift+8', 'Castes'],
+                ['Shift+9', 'Pheromones'], ['Shift+0', 'Threats']
+              ].map(function(pair) {
+                return h('div', { key: pair[0], className: 'flex items-center gap-2 text-[11px] py-0.5' },
+                  h('kbd', { className: 'inline-flex items-center justify-center px-1.5 h-6 rounded font-mono font-bold text-[10px] ' + (dk ? 'bg-slate-700 text-amber-300 border border-slate-600' : 'bg-slate-100 text-amber-700 border border-slate-400') }, pair[0]),
                   h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, pair[1]));
               }))),
 

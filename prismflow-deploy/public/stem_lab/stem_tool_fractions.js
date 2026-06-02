@@ -10048,7 +10048,7 @@ window.StemLab = window.StemLab || {
           var active = navMode === mk;
           return h('button', {
             key: 'mode-' + mk,
-            role: 'tab', 'aria-selected': active,
+            role: 'tab', 'aria-selected': active, tabIndex: active ? 0 : -1,
             onClick: function() {
               sfxClick();
               // Switch mode; also switch to first tab in that mode if current tab not in mode
@@ -10066,7 +10066,7 @@ window.StemLab = window.StemLab || {
         visibleTabs.map(function(t2) {
           return h('button', { key: t2.id,
             onClick: function() { sfxClick(); upd({ tab: t2.id }); trackTab(t2.id); },
-            role: 'tab', 'aria-selected': tab === t2.id,
+            role: 'tab', 'aria-selected': tab === t2.id, tabIndex: (tab === t2.id) ? 0 : -1,
             className: 'py-1.5 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap ' +
               (tab === t2.id ? 'bg-white text-rose-800 shadow-sm border border-rose-200' : 'text-rose-500 hover:text-rose-700 hover:bg-rose-100')
           }, t2.icon + ' ' + t2.label);

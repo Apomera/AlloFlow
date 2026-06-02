@@ -1428,63 +1428,85 @@ window.StemLab = window.StemLab || {
       }
 
       function expTabBar() {
-        var sections = [
-          { id: 'types', label: 'Types', icon: '<' },
-          { id: 'relationships', label: 'Relationships', icon: '\u2AEF' },
-          { id: 'polygons', label: 'Polygon angles', icon: '\u2B21' },
-          { id: 'trig', label: 'Trig functions', icon: 'sin' },
-          { id: 'special', label: 'Special angles', icon: '\u2605' },
-          { id: 'units', label: 'Angle units', icon: '\u00B0' },
-          { id: 'world', label: 'Real-world', icon: '\uD83C\uDF0D' },
-          { id: 'tricks', label: 'Shortcuts', icon: '\u26A1' },
-          { id: 'compass', label: 'Compass', icon: '\uD83E\uDDED' },
-          { id: 'pythag', label: 'Pythagorean', icon: 'a\u00B2+b\u00B2' },
-          { id: 'triangles', label: 'Triangle types', icon: '\u25B3' },
-          { id: 'circle', label: 'Circle geometry', icon: '\u25EF' },
-          { id: 'solids', label: '3D solids', icon: '\u2B22' },
-          { id: 'transform', label: 'Transformations', icon: '\u21BB' },
-          { id: 'coords', label: 'Coordinates', icon: '(x,y)' },
-          { id: 'vectors', label: 'Vectors', icon: '\u2192' },
-          { id: 'symmetry', label: 'Symmetry', icon: '\u27C2' },
-          { id: 'tilings', label: 'Tessellations', icon: '\u2B21' },
-          { id: 'famous', label: 'History', icon: '\uD83D\uDD70' },
-          { id: 'careers', label: 'Careers using angles', icon: '\uD83D\uDCBC' },
-          { id: 'conics', label: 'Conic sections', icon: '\u25C9' },
-          { id: 'platonic', label: 'Platonic solids', icon: '\u2B21' },
-          { id: 'fractals', label: 'Fractals', icon: '\u2744' },
-          { id: 'noneuclid', label: 'Non-Euclidean', icon: '\u2295' },
-          { id: 'projection', label: 'Map projections', icon: '\uD83D\uDDFA' },
-          { id: 'sundial', label: 'Sundials', icon: '\u263C' },
-          { id: 'goldenratio', label: 'Golden ratio', icon: '\u03C6' },
-          { id: 'origami', label: 'Origami geometry', icon: '\u2726' },
-          { id: 'sports', label: 'Angles in sports', icon: '\uD83C\uDFC6' },
-          { id: 'art', label: 'Angles in art', icon: '\uD83C\uDFA8' },
-          { id: 'tools', label: 'Measuring tools', icon: '\uD83D\uDCCF' },
-          { id: 'constants', label: 'Math constants', icon: '\u03C0' },
-          { id: 'rivers', label: 'Earth measurements', icon: '\uD83C\uDF0E' },
-          { id: 'buildings', label: 'Famous structures', icon: '\uD83C\uDFDB' },
-          { id: 'curves', label: 'Famous curves', icon: '\u223F' },
-          { id: 'mathematicians', label: 'Mathematicians', icon: '\uD83D\uDC68\u200D\uD83C\uDFEB' },
-          { id: 'practical', label: 'Practical angles', icon: '\uD83D\uDEE0' },
-          { id: 'puzzles', label: 'Geometry puzzles', icon: '\uD83E\uDDE9' },
-          { id: 'tessell2', label: 'Famous tilings', icon: '\u25C7' },
-          { id: 'cities', label: 'City coordinates', icon: '\uD83C\uDF06' },
-          { id: 'mountains', label: 'Mountains + peaks', icon: '\u26F0' },
-          { id: 'planets', label: 'Planet data', icon: '\uD83E\uDE90' },
-          { id: 'building_angles', label: 'Roof + ramp pitch', icon: '\u25E2' },
-          { id: 'flag_design', label: 'Flag geometry', icon: '\uD83D\uDEA9' },
-          { id: 'shapes_iq', label: 'Shape facts', icon: '\u25C7' },
-          { id: 'theorems', label: 'Classic theorems', icon: '\u220E' },
-          { id: 'glossary', label: 'Glossary', icon: '\uD83D\uDCD6' }
+        // 47 angle/geometry sections grouped into 6 cohesive domains. All
+        // IDs preserved. Groups: Angles & Trig \u00B7 Shapes & Solids \u00B7 Coords
+        // & Transforms \u00B7 Real World \u00B7 Math History \u00B7 Reference.
+        var TAB_GROUPS = [
+          { id: 'angles', label: 'Angles & Trig', color: 'rose', tabs: [
+            { id: 'types', label: 'Types', icon: '<' },
+            { id: 'relationships', label: 'Relationships', icon: '\u2AEF' },
+            { id: 'special', label: 'Special angles', icon: '\u2605' },
+            { id: 'units', label: 'Angle units', icon: '\u00B0' },
+            { id: 'trig', label: 'Trig functions', icon: 'sin' },
+            { id: 'pythag', label: 'Pythagorean', icon: 'a\u00B2+b\u00B2' },
+            { id: 'theorems', label: 'Classic theorems', icon: '\u220E' },
+            { id: 'tricks', label: 'Shortcuts', icon: '\u26A1' }
+          ] },
+          { id: 'shapes', label: 'Shapes & Solids', color: 'amber', tabs: [
+            { id: 'triangles', label: 'Triangle types', icon: '\u25B3' },
+            { id: 'polygons', label: 'Polygon angles', icon: '\u2B21' },
+            { id: 'circle', label: 'Circle geometry', icon: '\u25EF' },
+            { id: 'conics', label: 'Conic sections', icon: '\u25C9' },
+            { id: 'solids', label: '3D solids', icon: '\u2B22' },
+            { id: 'platonic', label: 'Platonic solids', icon: '\u2B21' },
+            { id: 'curves', label: 'Famous curves', icon: '\u223F' },
+            { id: 'shapes_iq', label: 'Shape facts', icon: '\u25C7' }
+          ] },
+          { id: 'coords', label: 'Coords & Transforms', color: 'cyan', tabs: [
+            { id: 'coords', label: 'Coordinates', icon: '(x,y)' },
+            { id: 'vectors', label: 'Vectors', icon: '\u2192' },
+            { id: 'transform', label: 'Transformations', icon: '\u21BB' },
+            { id: 'symmetry', label: 'Symmetry', icon: '\u27C2' },
+            { id: 'tilings', label: 'Tessellations', icon: '\u2B21' },
+            { id: 'tessell2', label: 'Famous tilings', icon: '\u25C7' },
+            { id: 'fractals', label: 'Fractals', icon: '\u2744' },
+            { id: 'noneuclid', label: 'Non-Euclidean', icon: '\u2295' },
+            { id: 'goldenratio', label: 'Golden ratio', icon: '\u03C6' }
+          ] },
+          { id: 'world', label: 'Real World', color: 'emerald', tabs: [
+            { id: 'world', label: 'Real-world', icon: '\uD83C\uDF0D' },
+            { id: 'practical', label: 'Practical angles', icon: '\uD83D\uDEE0' },
+            { id: 'tools', label: 'Measuring tools', icon: '\uD83D\uDCCF' },
+            { id: 'compass', label: 'Compass', icon: '\uD83E\uDDED' },
+            { id: 'sundial', label: 'Sundials', icon: '\u263C' },
+            { id: 'sports', label: 'Angles in sports', icon: '\uD83C\uDFC6' },
+            { id: 'art', label: 'Angles in art', icon: '\uD83C\uDFA8' },
+            { id: 'origami', label: 'Origami geometry', icon: '\u2726' },
+            { id: 'building_angles', label: 'Roof + ramp pitch', icon: '\u25E2' },
+            { id: 'buildings', label: 'Famous structures', icon: '\uD83C\uDFDB' },
+            { id: 'flag_design', label: 'Flag geometry', icon: '\uD83D\uDEA9' },
+            { id: 'projection', label: 'Map projections', icon: '\uD83D\uDDFA' },
+            { id: 'rivers', label: 'Earth measurements', icon: '\uD83C\uDF0E' },
+            { id: 'cities', label: 'City coordinates', icon: '\uD83C\uDF06' },
+            { id: 'mountains', label: 'Mountains + peaks', icon: '\u26F0' },
+            { id: 'planets', label: 'Planet data', icon: '\uD83E\uDE90' }
+          ] },
+          { id: 'history', label: 'History & Careers', color: 'violet', tabs: [
+            { id: 'famous', label: 'History', icon: '\uD83D\uDD70' },
+            { id: 'mathematicians', label: 'Mathematicians', icon: '\uD83D\uDC68\u200D\uD83C\uDFEB' },
+            { id: 'careers', label: 'Careers using angles', icon: '\uD83D\uDCBC' }
+          ] },
+          { id: 'reference', label: 'Reference', color: 'slate', tabs: [
+            { id: 'constants', label: 'Math constants', icon: '\u03C0' },
+            { id: 'puzzles', label: 'Geometry puzzles', icon: '\uD83E\uDDE9' },
+            { id: 'glossary', label: 'Glossary', icon: '\uD83D\uDCD6' }
+          ] }
+        , { id: 'pisaCross', label: 'Pisa: linked reps', icon: '\uD83D\uDDFC' }
         ];
-        return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
-          sections.map(function(s) {
-            var active = expSection === s.id;
-            return h('button', {
-              key: s.id,
-              onClick: function() { setExp({ expSection: active ? null : s.id }); },
-              className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-rose-50 hover:border-rose-300')
-            }, s.icon + ' ' + s.label);
+        function renderBtn(s, accent) {
+          var active = expSection === s.id;
+          return h('button', {
+            key: s.id,
+            onClick: function() { setExp({ expSection: active ? null : s.id }); },
+            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+          }, s.icon + ' ' + s.label);
+        }
+        return h('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
+          TAB_GROUPS.map(function(g) {
+            return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
+              h('span', { 'aria-hidden': 'true', className: 'text-[9px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
+              g.tabs.map(function(s) { return renderBtn(s, g.color); })
+            );
           })
         );
       }
@@ -1667,6 +1689,167 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-[10px] font-mono text-slate-600' }, c.bearing)
               );
             })
+          )
+        );
+      }
+
+      // ── Cycle 5 of the inquiry-learning study: CROSS-REPRESENTATION LINKING ──
+      // Three live representations of the same trigonometric scenario:
+      // (1) SVG of the Leaning Tower at variable lean angle,
+      // (2) right-triangle decomposition with labeled sides,
+      // (3) the symbolic equation tan(θ) = opposite/adjacent.
+      // Manipulating any ONE updates all three. Designed to address Cycle 4's critic gap:
+      // real visualizations in a topic that naturally calls for them.
+      function renderPisaCrossSection() {
+        var state = d2.pisaCross || { angleDeg: 4.0, towerHeight: 56, quizMode: false, quizQ: null, quizAns: '', quizRevealed: false };
+        function setPC(patch) {
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.angles) || {};
+            var st = Object.assign({}, prior.pisaCross || state, patch);
+            return Object.assign({}, prev, { angles: Object.assign({}, prior, { pisaCross: st }) });
+          });
+        }
+        var theta = state.angleDeg;
+        var towerH = state.towerHeight;
+        var thetaRad = theta * Math.PI / 180;
+        // For a leaning tower of height H tilted at angle θ from vertical:
+        //   horizontal displacement of top from base = H * sin(θ)   (this is the 'opposite')
+        //   vertical projection on ground             = H * cos(θ)   (this is the 'adjacent')
+        // The tilt-triangle angle at the base IS θ; tan(θ) = horizontal_disp / vertical_proj
+        var opp = towerH * Math.sin(thetaRad);
+        var adj = towerH * Math.cos(thetaRad);
+        var hyp = towerH;
+        var tanVal = opp / adj;
+        // ── SVG: leaning tower ──
+        function towerSVG() {
+          var cx = 130, baseY = 200, towerWidth = 30, towerVisualHeight = 140;
+          var topCx = cx + towerVisualHeight * Math.sin(thetaRad);
+          var topCy = baseY - towerVisualHeight * Math.cos(thetaRad);
+          var bl = cx - towerWidth/2 + (-towerWidth/2) * Math.cos(thetaRad);
+          // Tower as parallelogram (4 corners)
+          var halfW = towerWidth / 2;
+          var corners = [
+            { x: cx - halfW, y: baseY },
+            { x: cx + halfW, y: baseY },
+            { x: topCx + halfW * Math.cos(thetaRad), y: topCy + halfW * Math.sin(thetaRad) },
+            { x: topCx - halfW * Math.cos(thetaRad), y: topCy - halfW * Math.sin(thetaRad) }
+          ];
+          var pathStr = 'M ' + corners.map(function(c) { return c.x.toFixed(1) + ',' + c.y.toFixed(1); }).join(' L ') + ' Z';
+          return h('svg', { viewBox: '0 0 260 220', width: '100%', style: { height: 'auto', maxWidth: 280, background: 'linear-gradient(180deg,#f0f9ff 0%,#e0f2fe 60%,#bae6fd 100%)', borderRadius: 8 } },
+            // Ground
+            h('line', { x1: 5, y1: baseY, x2: 255, y2: baseY, stroke: '#92400e', strokeWidth: 2 }),
+            h('rect', { x: 5, y: baseY, width: 250, height: 20, fill: '#fed7aa' }),
+            // Faint vertical guide (where tower WOULD be if not tilted)
+            h('line', { x1: cx, y1: baseY, x2: cx, y2: baseY - towerVisualHeight, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3,3' }),
+            // Tower itself
+            h('path', { d: pathStr, fill: '#fbbf24', stroke: '#92400e', strokeWidth: 1.5, opacity: 0.95 }),
+            // Crown / cross at top
+            h('circle', { cx: topCx, cy: topCy, r: 3, fill: '#dc2626' }),
+            // Opposite-side annotation (red horizontal at top, from vertical guide to top of tower)
+            h('line', { x1: cx, y1: topCy, x2: topCx, y2: topCy, stroke: '#dc2626', strokeWidth: 2 }),
+            h('text', { x: (cx + topCx)/2, y: topCy - 5, textAnchor: 'middle', fontSize: 9, fill: '#dc2626', fontWeight: 'bold' }, 'opp ≈ ' + opp.toFixed(2) + ' m'),
+            // Angle arc at base
+            h('path', { d: 'M ' + (cx + 12) + ',' + baseY + ' A 12,12 0 0,0 ' + (cx + 12 * Math.cos(Math.PI/2 - thetaRad)) + ',' + (baseY - 12 * Math.sin(Math.PI/2 - thetaRad)), fill: 'none', stroke: '#7c3aed', strokeWidth: 2 }),
+            h('text', { x: cx + 20, y: baseY - 5, fontSize: 10, fill: '#7c3aed', fontWeight: 'bold' }, 'θ = ' + theta.toFixed(1) + '°'),
+            // Caption
+            h('text', { x: 130, y: 215, textAnchor: 'middle', fontSize: 9, fill: '#475569' }, 'Tower of Pisa — actual lean ≈ 4°')
+          );
+        }
+        // ── SVG: extracted triangle ──
+        function triangleSVG() {
+          // Render a clean right triangle with labeled sides at chosen scale
+          var scale = 5;
+          var triBase = 200;
+          var triLeft = 30;
+          var triRight = triLeft + adj * scale * (40 / Math.max(adj, 1));
+          var triApexX = triLeft;
+          var triApexY = triBase - opp * scale * (40 / Math.max(adj, 1));
+          // Constrain to visible space
+          var visAdj = Math.min(180, adj * 3);
+          var visOpp = Math.min(140, opp * 3);
+          var rb_x = triLeft + visAdj;
+          var rt_x = triLeft;
+          var rt_y = triBase - visOpp;
+          return h('svg', { viewBox: '0 0 260 220', width: '100%', style: { height: 'auto', maxWidth: 280, background: '#fafafa', borderRadius: 8, border: '1px solid #e2e8f0' } },
+            // Triangle
+            h('polygon', { points: triLeft+','+triBase+' '+rb_x+','+triBase+' '+rt_x+','+rt_y, fill: 'rgba(251,191,36,0.3)', stroke: '#92400e', strokeWidth: 2 }),
+            // Right angle marker
+            h('rect', { x: triLeft, y: triBase - 12, width: 12, height: 12, fill: 'none', stroke: '#475569', strokeWidth: 1.5 }),
+            // Side labels
+            h('text', { x: (triLeft + rb_x)/2, y: triBase + 14, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, 'adjacent (cos θ)'),
+            h('text', { x: (triLeft + rb_x)/2, y: triBase + 26, textAnchor: 'middle', fontSize: 10, fill: '#0f766e', fontWeight: 'bold' }, adj.toFixed(2) + ' m'),
+            h('text', { x: triLeft - 6, y: (triBase + rt_y)/2, textAnchor: 'end', fontSize: 10, fill: '#475569' }, 'opposite'),
+            h('text', { x: triLeft - 6, y: (triBase + rt_y)/2 + 12, textAnchor: 'end', fontSize: 10, fill: '#dc2626', fontWeight: 'bold' }, opp.toFixed(2) + ' m'),
+            // hypotenuse label
+            h('text', { x: (rb_x + rt_x)/2 + 10, y: (triBase + rt_y)/2 - 8, fontSize: 10, fill: '#475569' }, 'hyp = ' + hyp.toFixed(0) + ' m'),
+            // angle label
+            h('text', { x: rb_x - 30, y: triBase - 5, fontSize: 11, fill: '#7c3aed', fontWeight: 'bold' }, 'θ = ' + theta.toFixed(1) + '°')
+          );
+        }
+        // ── Quiz: present ONE representation, hide the others, learner solves the inverse ──
+        var QUIZ_QS = [
+          { id: 'q1', given: 'opposite = 2.5 m', given2: 'adjacent = 18.0 m', ask: 'tilt angle θ (in degrees)?', expected: Math.atan(2.5/18.0) * 180 / Math.PI, tolerance: 1.0 },
+          { id: 'q2', given: 'tilt angle = 6°', given2: 'tower height = 50 m', ask: 'horizontal lean at top (m)?', expected: 50 * Math.sin(6 * Math.PI / 180), tolerance: 0.5 },
+          { id: 'q3', given: 'tilt angle = 3°', given2: 'horizontal lean at top = 2.0 m', ask: 'tower height (m)?', expected: 2.0 / Math.sin(3 * Math.PI / 180), tolerance: 3.0 }
+        ];
+        function startQuiz(q) {
+          setPC({ quizMode: true, quizQ: q.id, quizAns: '', quizRevealed: false });
+        }
+        function submitQuiz() {
+          setPC({ quizRevealed: true });
+        }
+        var currentQuiz = QUIZ_QS.find(function(q) { return q.id === state.quizQ; });
+        var userAns = parseFloat(state.quizAns);
+        var correct = currentQuiz && !isNaN(userAns) && Math.abs(userAns - currentQuiz.expected) <= currentQuiz.tolerance;
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🗼 Pisa: linked representations'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+            'Three views of the SAME trigonometric setup. Drag the angle (or tower height) slider — every representation updates simultaneously. Then take the inverse-problem quiz: solve a real measurement from only one representation.'),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-3' },
+            h('div', null,
+              h('div', { className: 'text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1' }, '1. Phenomenon — the tower'),
+              towerSVG()
+            ),
+            h('div', null,
+              h('div', { className: 'text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1' }, '2. Geometric decomposition'),
+              triangleSVG()
+            )
+          ),
+          h('div', { className: 'mb-3 p-3 rounded-lg bg-rose-50 border border-rose-200' },
+            h('div', { className: 'text-[10px] uppercase font-bold text-rose-700 tracking-wider mb-1' }, '3. Equation'),
+            h('div', { className: 'font-mono text-[16px] text-rose-900 text-center my-2' }, 'tan(θ) = opposite / adjacent'),
+            h('div', { className: 'font-mono text-[14px] text-rose-800 text-center' },
+              'tan(' + theta.toFixed(1) + '°) = ' + opp.toFixed(2) + ' / ' + adj.toFixed(2) + ' = ' + tanVal.toFixed(4)
+            ),
+            h('div', { className: 'text-[11px] text-rose-700 italic text-center mt-1' }, 'Change the angle and watch all three update together — this is what "the same idea, three representations" means.')
+          ),
+          h('div', { className: 'p-3 rounded-lg bg-slate-50 border border-slate-200 mb-3' },
+            h('label', { htmlFor: 'pisaAngle', className: 'block text-[11px] font-bold text-slate-700' }, 'Tilt angle θ: ' + theta.toFixed(1) + '°'),
+            h('input', { id: 'pisaAngle', type: 'range', min: 0, max: 30, step: 0.1, value: theta, onChange: function(e) { setPC({ angleDeg: parseFloat(e.target.value) }); }, className: 'w-full', 'aria-label': 'Tilt angle in degrees' }),
+            h('label', { htmlFor: 'pisaHeight', className: 'block text-[11px] font-bold text-slate-700 mt-2' }, 'Tower height: ' + towerH + ' m'),
+            h('input', { id: 'pisaHeight', type: 'range', min: 20, max: 100, step: 1, value: towerH, onChange: function(e) { setPC({ towerHeight: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-label': 'Tower height in meters' }),
+            h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, '(Pisa is roughly 56 m tall, leaning ≈ 4° today)')
+          ),
+          h('div', { className: 'p-3 rounded-lg bg-amber-50 border border-amber-200' },
+            h('div', { className: 'text-[12px] font-black text-amber-900 mb-2' }, '🧩 Inverse-problem quiz'),
+            h('p', { className: 'text-[11px] text-amber-800 mb-2' }, 'Each quiz gives you partial info. Use the relationships you discovered above to compute the missing value.'),
+            h('div', { className: 'flex flex-wrap gap-1 mb-2' },
+              QUIZ_QS.map(function(q, i) {
+                return h('button', { key: q.id, onClick: function() { startQuiz(q); },
+                  className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors focus:ring-2 focus:ring-amber-400 focus:outline-none ' + (state.quizQ === q.id ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-700 border-slate-300 hover:bg-amber-100')
+                }, 'Quiz #' + (i + 1));
+              })
+            ),
+            currentQuiz && h('div', { className: 'mt-2 p-2 rounded bg-white border border-amber-300' },
+              h('div', { className: 'text-[12px] text-slate-700 mb-1' }, h('strong', null, 'Given: '), currentQuiz.given + '; ' + currentQuiz.given2),
+              h('div', { className: 'text-[12px] text-slate-700 mb-2' }, h('strong', null, 'Find: '), currentQuiz.ask),
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('input', { type: 'number', step: 'any', value: state.quizAns, onChange: function(e) { setPC({ quizAns: e.target.value, quizRevealed: false }); }, placeholder: 'your answer', className: 'px-2 py-1 rounded border border-slate-300 text-[12px] w-32 focus:ring-2 focus:ring-amber-400 focus:outline-none', 'aria-label': 'Your answer' }),
+                h('button', { onClick: submitQuiz, disabled: state.quizAns === '', className: 'px-3 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none' }, 'Check'),
+                state.quizRevealed && h('span', { className: 'text-[11px] font-bold ' + (correct ? 'text-green-700' : 'text-rose-700') }, correct ? '✓ Within tolerance' : '✗ Expected ≈ ' + currentQuiz.expected.toFixed(2))
+              ),
+              state.quizRevealed && h('p', { className: 'text-[11px] text-slate-700 mt-1 italic' }, 'Tip: rearrange tan(θ) = opp/adj — if you know θ and one side, you can solve for the other. If you know both sides, take arctan.')
+            )
           )
         );
       }
@@ -2119,6 +2302,7 @@ window.StemLab = window.StemLab || {
         if (expSection === 'flag_design') return renderFlagDesignSection();
         if (expSection === 'shapes_iq') return renderShapesIqSection();
         if (expSection === 'theorems') return renderTheoremsSection();
+        if (expSection === 'pisaCross') return renderPisaCrossSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
       }

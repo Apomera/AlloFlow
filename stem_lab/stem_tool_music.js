@@ -69,7 +69,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             return React.createElement("span", { className: "relative inline-block ml-1" },
               React.createElement("button", { "aria-label": "Toggle tooltip: " + props.title,
                 onClick: function () { upd(showId, !isOpen); },
-                className: "w-4 h-4 rounded-full text-[11px] font-bold leading-none inline-flex items-center justify-center " + (isOpen ? "bg-violet-600 text-white" : "bg-violet-100 text-violet-500 hover:bg-violet-200"),
+                "aria-expanded": isOpen,
+                className: "w-5 h-5 rounded-full text-[11px] font-bold leading-none inline-flex items-center justify-center focus:ring-2 focus:ring-offset-1 focus:ring-violet-500 focus:outline-none transition-colors " + (isOpen ? "bg-violet-600 text-white" : "bg-violet-100 text-violet-500 hover:bg-violet-200"),
                 title: props.text
               }, "\u24D8"),
               isOpen && React.createElement("div", { className: "absolute z-50 left-6 top-0 w-64 p-2.5 bg-white border border-violet-200 rounded-lg shadow-xl text-[11px] text-slate-600 leading-relaxed", style: { maxHeight: "200px", overflowY: "auto" } },
@@ -1723,11 +1724,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             upd('samplesLoading', true);
             var audio = getCtx(); var ctx = audio.ctx;
             var loaded = {}; var total = Object.keys(kit.files).length; var count = 0;
+            // Track per-fetch AbortControllers — each download times out after 30s instead of
+            // hanging indefinitely on a slow CDN, and the kit load can be cancelled if needed.
+            var abortControllers = [];
             Object.keys(kit.files).forEach(function (type) {
               var url = SAMPLE_CDN + kitName + '/' + kit.files[type];
-              fetch(url).then(function (r) { return r.arrayBuffer(); }).then(function (buf) {
+              var controller = new AbortController();
+              var timeoutId = setTimeout(function() { controller.abort(); }, 30000);
+              abortControllers.push(controller);
+              fetch(url, { signal: controller.signal }).then(function (r) { return r.arrayBuffer(); }).then(function (buf) {
                 return ctx.decodeAudioData(buf);
               }).then(function (decoded) {
+                clearTimeout(timeoutId);
                 loaded[type] = decoded; count++;
                 if (count >= total) {
                   window._alloSampleCache[kitName] = loaded;
@@ -1735,6 +1743,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   upd('activeKit', kitName);
                 }
               }).catch(function (e) {
+                clearTimeout(timeoutId);
                 console.warn('[Beat Pad] Failed to load sample:', url, e);
                 count++;
                 if (count >= total) {
@@ -1750,6 +1759,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 }
               });
             });
+            window._alloSampleAbortControllers = window._alloSampleAbortControllers || {};
+            window._alloSampleAbortControllers[kitName] = abortControllers;
           }
           // Play sample from loaded kit, fall back to synth
           function playSample(type, row) {

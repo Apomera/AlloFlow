@@ -1379,7 +1379,7 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-sky-400 font-mono' }, (dims[sl.key] || sl.min).toFixed(sl.step < 1 ? 1 : 0))
                   ),
                   h('input', {
-                    type: 'range', 'aria-label': 'Geosandbox slider',
+                    type: 'range',
                     min: sl.min,
                     max: sl.max,
                     step: sl.step,

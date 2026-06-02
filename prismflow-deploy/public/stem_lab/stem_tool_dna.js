@@ -2885,61 +2885,85 @@ window.StemLab = window.StemLab || {
       }
 
       function expTabBar() {
-        var sections = [
-          { id: 'bases', label: 'Base pairs', icon: '🅰🅣' },
-          { id: 'code', label: 'Genetic code', icon: '🔡' },
-          { id: 'replication', label: 'DNA replication', icon: '🔄' },
-          { id: 'transcription', label: 'Transcription', icon: '✍' },
-          { id: 'translation', label: 'Translation', icon: '🏭' },
-          { id: 'mutations', label: 'Mutations', icon: '⚠' },
-          { id: 'chromosomes', label: 'Chromosomes', icon: '🧬' },
-          { id: 'dnarna', label: 'DNA vs RNA', icon: '⇌' },
-          { id: 'biotech', label: 'Biotech tools', icon: '🔬' },
-          { id: 'diseases', label: 'Disease genes', icon: '🏥' },
-          { id: 'evolution', label: 'Evolution', icon: '🌳' },
-          { id: 'genomes', label: 'Genome sizes', icon: '📏' },
-          { id: 'meiosis', label: 'Meiosis vs mitosis', icon: '⊞' },
-          { id: 'mendel', label: 'Mendelian genetics', icon: '🫛' },
-          { id: 'epigenetics', label: 'Epigenetics', icon: '✎' },
-          { id: 'amino', label: 'Amino acids', icon: '⚕' },
-          { id: 'organelles', label: 'Cell organelles', icon: '🔬' },
-          { id: 'celltypes', label: 'Cell types', icon: '🧫' },
-          { id: 'sequencing', label: 'Sequencing tech', icon: '📊' },
-          { id: 'ethics', label: 'Bioethics', icon: '⚖' },
-          { id: 'famous', label: 'History', icon: '🕰' },
-          { id: 'pcr', label: 'PCR + lab', icon: '🧪' },
-          { id: 'crispr', label: 'CRISPR detail', icon: '✂' },
-          { id: 'viruses', label: 'Virus families', icon: '🦠' },
-          { id: 'microbiome', label: 'Microbiome', icon: '🦠' },
-          { id: 'devel', label: 'Embryology', icon: '🥚' },
-          { id: 'cancer', label: 'Cancer biology', icon: '⚕' },
-          { id: 'immunity', label: 'Immune system', icon: '🛡' },
-          { id: 'neuro', label: 'Neuroscience', icon: '🧠' },
-          { id: 'tree', label: 'Tree of life', icon: '🌳' },
-          { id: 'biotech2', label: 'Biotech apps', icon: '💉' },
-          { id: 'animals2', label: 'Animal facts', icon: '🐾' },
-          { id: 'plants', label: 'Plant biology', icon: '🌿' },
-          { id: 'famousgenes', label: 'Famous genes', icon: '⌬' },
-          { id: 'modelorg', label: 'Model organisms', icon: '🧫' },
-          { id: 'ecology', label: 'Ecology', icon: '🌍' },
-          { id: 'periodtable_bio', label: 'Bio elements', icon: '⌬' },
-          { id: 'pathways', label: 'Cell pathways', icon: '⇄' },
-          { id: 'extinct', label: 'Extinct species', icon: '🦕' },
-          { id: 'organ_systems', label: 'Organ systems', icon: '🫀' },
-          { id: 'hormones', label: 'Hormones', icon: '⚛' },
-          { id: 'vitamins', label: 'Vitamins', icon: '💊' },
-          { id: 'animal_groups', label: 'Animal groups', icon: '🦁' },
-          { id: 'famous_orgs', label: 'Wild + dog DNA', icon: '🐕' },
-          { id: 'glossary', label: 'Glossary', icon: '📖' }
+        // 45 DNA/biology sections grouped into 7 cohesive domains. All IDs
+        // preserved. Groups: DNA Basics · Cell & Organelles · Genetics &
+        // Inheritance · Biotech & Lab · Disease & Health · Life on Earth ·
+        // Reference.
+        var TAB_GROUPS = [
+          { id: 'dna', label: 'DNA Basics', color: 'emerald', tabs: [
+            { id: 'bases', label: 'Base pairs', icon: '🅰🅣' },
+            { id: 'code', label: 'Genetic code', icon: '🔡' },
+            { id: 'replication', label: 'DNA replication', icon: '🔄' },
+            { id: 'transcription', label: 'Transcription', icon: '✍' },
+            { id: 'translation', label: 'Translation', icon: '🏭' },
+            { id: 'dnarna', label: 'DNA vs RNA', icon: '⇌' },
+            { id: 'mutations', label: 'Mutations', icon: '⚠' },
+            { id: 'amino', label: 'Amino acids', icon: '⚕' }
+          ] },
+          { id: 'cell', label: 'Cell & Organelles', color: 'teal', tabs: [
+            { id: 'organelles', label: 'Cell organelles', icon: '🔬' },
+            { id: 'celltypes', label: 'Cell types', icon: '🧫' },
+            { id: 'pathways', label: 'Cell pathways', icon: '⇄' },
+            { id: 'periodtable_bio', label: 'Bio elements', icon: '⌬' },
+            { id: 'devel', label: 'Embryology', icon: '🥚' }
+          ] },
+          { id: 'genetics', label: 'Genetics & Inheritance', color: 'lime', tabs: [
+            { id: 'chromosomes', label: 'Chromosomes', icon: '🧬' },
+            { id: 'meiosis', label: 'Meiosis vs mitosis', icon: '⊞' },
+            { id: 'mendel', label: 'Mendelian genetics', icon: '🫛' },
+            { id: 'epigenetics', label: 'Epigenetics', icon: '✎' },
+            { id: 'genomes', label: 'Genome sizes', icon: '📏' },
+            { id: 'famousgenes', label: 'Famous genes', icon: '⌬' }
+          ] },
+          { id: 'biotech', label: 'Biotech & Lab', color: 'cyan', tabs: [
+            { id: 'biotech', label: 'Biotech tools', icon: '🔬' },
+            { id: 'biotech2', label: 'Biotech apps', icon: '💉' },
+            { id: 'pcr', label: 'PCR + lab', icon: '🧪' },
+            { id: 'crispr', label: 'CRISPR detail', icon: '✂' },
+            { id: 'sequencing', label: 'Sequencing tech', icon: '📊' },
+            { id: 'modelorg', label: 'Model organisms', icon: '🧫' },
+            { id: 'ethics', label: 'Bioethics', icon: '⚖' }
+          ] },
+          { id: 'health', label: 'Disease & Health', color: 'rose', tabs: [
+            { id: 'diseases', label: 'Disease genes', icon: '🏥' },
+            { id: 'cancer', label: 'Cancer biology', icon: '⚕' },
+            { id: 'immunity', label: 'Immune system', icon: '🛡' },
+            { id: 'viruses', label: 'Virus families', icon: '🦠' },
+            { id: 'microbiome', label: 'Microbiome', icon: '🦠' },
+            { id: 'organ_systems', label: 'Organ systems', icon: '🫀' },
+            { id: 'hormones', label: 'Hormones', icon: '⚛' },
+            { id: 'vitamins', label: 'Vitamins', icon: '💊' },
+            { id: 'neuro', label: 'Neuroscience', icon: '🧠' }
+          ] },
+          { id: 'life', label: 'Life on Earth', color: 'amber', tabs: [
+            { id: 'evolution', label: 'Evolution', icon: '🌳' },
+            { id: 'tree', label: 'Tree of life', icon: '🌳' },
+            { id: 'ecology', label: 'Ecology', icon: '🌍' },
+            { id: 'animals2', label: 'Animal facts', icon: '🐾' },
+            { id: 'animal_groups', label: 'Animal groups', icon: '🦁' },
+            { id: 'famous_orgs', label: 'Wild + dog DNA', icon: '🐕' },
+            { id: 'plants', label: 'Plant biology', icon: '🌿' },
+            { id: 'extinct', label: 'Extinct species', icon: '🦕' }
+          ] },
+          { id: 'reference', label: 'Reference', color: 'slate', tabs: [
+            { id: 'famous', label: 'History', icon: '🕰' },
+            { id: 'glossary', label: 'Glossary', icon: '📖' }
+          ] }
         ];
-        return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
-          sections.map(function(s) {
-            var active = expSection === s.id;
-            return h('button', {
-              key: s.id,
-              onClick: function() { setExp({ expSection: active ? null : s.id }); },
-              className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-emerald-600 text-white border-emerald-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-emerald-50 hover:border-emerald-300')
-            }, s.icon + ' ' + s.label);
+        function renderBtn(s, accent) {
+          var active = expSection === s.id;
+          return h('button', {
+            key: s.id,
+            onClick: function() { setExp({ expSection: active ? null : s.id }); },
+            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+          }, s.icon + ' ' + s.label);
+        }
+        return h('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
+          TAB_GROUPS.map(function(g) {
+            return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
+              h('span', { 'aria-hidden': 'true', className: 'text-[9px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
+              g.tabs.map(function(s) { return renderBtn(s, g.color); })
+            );
           })
         );
       }

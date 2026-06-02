@@ -1020,13 +1020,18 @@ var d = labToolData.dissection || {};
 
               var isHC = d.highContrast;
 
+              // Route the dissection-tray gradient through the global theme palette so it
+              // adapts to light/dark/contrast mode instead of forcing a fixed dark surface.
+              var _p = (typeof window !== 'undefined' && window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { canvas: '#0f172a', panel: '#1e293b' };
               var trayGrad = ctx.createLinearGradient(0, 0, 0, H);
-
-              trayGrad.addColorStop(0, '#1e293b'); trayGrad.addColorStop(1, '#0f172a');
+              var _topColor = (_p.panel && _p.panel !== _p.canvas) ? _p.panel : _p.canvas;
+              trayGrad.addColorStop(0, _topColor); trayGrad.addColorStop(1, _p.canvas);
 
               ctx.fillStyle = trayGrad; ctx.fillRect(0, 0, W, H);
 
-              ctx.strokeStyle = '#334155'; ctx.lineWidth = 3; ctx.strokeRect(4, 4, W - 8, H - 8);
+              // Theme-aware tray border (was hardcoded slate-700) — adapts to current theme palette
+              var _borderPalette = (typeof window !== 'undefined' && window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { border: '#334155' };
+              ctx.strokeStyle = _borderPalette.border || '#334155'; ctx.lineWidth = 3; ctx.strokeRect(4, 4, W - 8, H - 8);
 
               // Faint grid
 
@@ -1086,7 +1091,12 @@ var d = labToolData.dissection || {};
 
               else if (spec.bodyShape === 'worm') { ctx.ellipse(cx + 2, H * 0.50 + 5, W * 0.05, H * 0.42, 0, 0, Math.PI * 2); }
 
-              ctx.fillStyle = '#000'; ctx.fill();
+              // Theme-aware shadow: derives the darkest tone from the current palette so the
+              // shadow reads as "depth" in both light and dark themes instead of pure black.
+              var _shadowPalette = (typeof window !== 'undefined' && window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { canvas: '#0f172a' };
+              var _shc = _shadowPalette.canvas || '#0f172a';
+              ctx.fillStyle = 'rgba(' + parseInt(_shc.slice(1, 3), 16) + ',' + parseInt(_shc.slice(3, 5), 16) + ',' + parseInt(_shc.slice(5, 7), 16) + ',0.3)';
+              ctx.fill();
 
               ctx.globalAlpha = 1;
 
@@ -2198,7 +2208,11 @@ var d = labToolData.dissection || {};
 
                 ctx.beginPath(); ctx.rect(cx - ww * 0.3, wormTop + H * 0.05, ww * 0.4, wormBot - wormTop - H * 0.10);
 
-                ctx.fillStyle = '#fff'; ctx.fill();
+                // Theme-aware moisture sheen — use palette.text so it reads as a faint highlight
+                // in both light + dark modes (was hardcoded white, broke in light theme).
+                var _moistPalette = (typeof window !== 'undefined' && window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { text: '#ffffff' };
+                ctx.fillStyle = _moistPalette.text || '#ffffff';
+                ctx.fill();
 
                 ctx.globalAlpha = 1;
 
@@ -3316,7 +3330,10 @@ var d = labToolData.dissection || {};
 
                   ctx.beginPath(); ctx.arc(cx - W * 0.12 + (ct % 6) * W * 0.04, cy - H * 0.10 + Math.floor(ct / 6) * H * 0.04, 1.5, 0, Math.PI * 2);
 
-                  ctx.fillStyle = '#000'; ctx.fill();
+                  // Theme-aware texture dots (was hardcoded black) — use deepest palette tone for contrast on any theme
+                  var _dotPalette = (typeof window !== 'undefined' && window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { deeper: '#020617' };
+                  ctx.fillStyle = _dotPalette.deeper || _dotPalette.canvas || '#020617';
+                  ctx.fill();
 
                 }
 

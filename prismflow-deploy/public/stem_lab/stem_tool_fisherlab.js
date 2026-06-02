@@ -9374,15 +9374,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       { id: 'quiz', label: '✅ Quiz' }
     ];
 
+    // ── Category rebalance (2026-06-01): applied audit findings ──
+    // - `lighthouses` Culture → Core (navigation infrastructure)
+    // - `tides` Science → Core (tide tables are nav, not weather/science)
+    // - `textbook` Science → Study (textbook chapters belong with study materials)
+    // - `vessels` Culture → Fisheries (vessel types fit with boats/gear)
+    // Plus careers split: success → Culture, regframework → Fisheries,
+    // globalcontext/indgroups/future → Study, yearplan → Safety. Brings the
+    // 19-tab careers category down to a manageable 13.
     var CATEGORIES = [
-      { id: 'core', label: '⚓ Core Sim & Charts', name: 'Core Sim', icon: '⚓', tabs: ['home', 'sim', 'chart', 'nightnav', 'spots', 'voyages', 'chartsymbols', 'chartguide'] },
-      { id: 'safety', label: '🛟 Seamanship & Safety', name: 'Safety & Seamanship', icon: '🛟', tabs: ['buoyage', 'colregs', 'vhf', 'knots', 'knotsteps', 'survival', 'safety', 'boatskills', 'boatregs', 'emergency', 'safetyman', 'safetychk', 'seamanship', 'maintenance', 'engmaint', 'law'] },
+      { id: 'core', label: '⚓ Core Sim & Charts', name: 'Core Sim', icon: '⚓', tabs: ['home', 'sim', 'chart', 'nightnav', 'spots', 'voyages', 'chartsymbols', 'chartguide', 'lighthouses', 'tides'] },
+      { id: 'safety', label: '🛟 Seamanship & Safety', name: 'Safety & Seamanship', icon: '🛟', tabs: ['buoyage', 'colregs', 'vhf', 'knots', 'knotsteps', 'survival', 'safety', 'boatskills', 'boatregs', 'emergency', 'safetyman', 'safetychk', 'seamanship', 'maintenance', 'engmaint', 'law', 'yearplan'] },
       { id: 'biology', label: '🐟 Biology & Ecology', name: 'Biology & Ecology', icon: '🐟', tabs: ['species', 'extspecies', 'idkey', 'habitats', 'inverts', 'seabirds', 'mammals', 'invasives', 'deepdives', 'rightwhale', 'watercolumn', 'ecosystem', 'coddeep', 'striperdeep', 'alewifedeep', 'tunadeep'] },
-      { id: 'fisheries', label: '🦞 Fisheries & Gear', name: 'Fisheries & Gear', icon: '🦞', tabs: ['gear', 'gearmaster', 'bait', 'boats', 'zones', 'regs', 'regsdeep', 'lobsterconserve', 'license', 'conservation', 'mpas', 'mgmtmile', 'ethics', 'techguides'] },
-      { id: 'science', label: '🌡️ Weather & Science', name: 'Weather & Science', icon: '🌡️', tabs: ['climate', 'climatedeep', 'weather', 'weathertips', 'navmath', 'navprob', 'textbook', 'tides'] },
-      { id: 'culture', label: '🌲 Culture & History', name: 'Culture & History', icon: '🌲', tabs: ['wabanaki', 'wabfigures', 'history', 'vessels', 'ports', 'harbors', 'regional', 'culinary', 'voices', 'notablepeople', 'books', 'women', 'families', 'lighthouses', 'waterfrontdeep'] },
-      { id: 'careers', label: '🧰 Student & Careers', name: 'Student & Careers', icon: '🧰', tabs: ['lessonplans', 'activities', 'studyguide', 'training', 'mentorship', 'careers', 'studcareer', 'workforce', 'success', 'community', 'fishfacts', 'fishessays', 'termessays', 'globalcontext', 'indgroups', 'regframework', 'playbooks', 'yearplan', 'future'] },
-      { id: 'study', label: '🎓 Study Tools & Quiz', name: 'Study & Quiz', icon: '🎓', tabs: ['quiz', 'achievements', 'glossary', 'extglossary', 'bibliography', 'bibext', 'refnumbers', 'events', 'studentfaq', 'faqpub'] }
+      { id: 'fisheries', label: '🦞 Fisheries & Gear', name: 'Fisheries & Gear', icon: '🦞', tabs: ['gear', 'gearmaster', 'bait', 'boats', 'vessels', 'zones', 'regs', 'regsdeep', 'regframework', 'lobsterconserve', 'license', 'conservation', 'mpas', 'mgmtmile', 'ethics', 'techguides'] },
+      { id: 'science', label: '🌡️ Weather & Science', name: 'Weather & Science', icon: '🌡️', tabs: ['climate', 'climatedeep', 'weather', 'weathertips', 'navmath', 'navprob'] },
+      { id: 'culture', label: '🌲 Culture & History', name: 'Culture & History', icon: '🌲', tabs: ['wabanaki', 'wabfigures', 'history', 'ports', 'harbors', 'regional', 'culinary', 'voices', 'notablepeople', 'books', 'women', 'families', 'waterfrontdeep', 'success'] },
+      { id: 'careers', label: '🧰 Student & Careers', name: 'Student & Careers', icon: '🧰', tabs: ['lessonplans', 'activities', 'studyguide', 'training', 'mentorship', 'careers', 'studcareer', 'workforce', 'community', 'fishfacts', 'fishessays', 'termessays', 'playbooks'] },
+      { id: 'study', label: '🎓 Study Tools & Quiz', name: 'Study & Quiz', icon: '🎓', tabs: ['quiz', 'achievements', 'glossary', 'extglossary', 'bibliography', 'bibext', 'refnumbers', 'events', 'studentfaq', 'faqpub', 'textbook', 'globalcontext', 'indgroups', 'future'] }
     ];
 
     function tabBar() {

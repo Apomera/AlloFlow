@@ -2885,61 +2885,85 @@ window.StemLab = window.StemLab || {
       }
 
       function expTabBar() {
-        var sections = [
-          { id: 'bases', label: 'Base pairs', icon: '🅰🅣' },
-          { id: 'code', label: 'Genetic code', icon: '🔡' },
-          { id: 'replication', label: 'DNA replication', icon: '🔄' },
-          { id: 'transcription', label: 'Transcription', icon: '✍' },
-          { id: 'translation', label: 'Translation', icon: '🏭' },
-          { id: 'mutations', label: 'Mutations', icon: '⚠' },
-          { id: 'chromosomes', label: 'Chromosomes', icon: '🧬' },
-          { id: 'dnarna', label: 'DNA vs RNA', icon: '⇌' },
-          { id: 'biotech', label: 'Biotech tools', icon: '🔬' },
-          { id: 'diseases', label: 'Disease genes', icon: '🏥' },
-          { id: 'evolution', label: 'Evolution', icon: '🌳' },
-          { id: 'genomes', label: 'Genome sizes', icon: '📏' },
-          { id: 'meiosis', label: 'Meiosis vs mitosis', icon: '⊞' },
-          { id: 'mendel', label: 'Mendelian genetics', icon: '🫛' },
-          { id: 'epigenetics', label: 'Epigenetics', icon: '✎' },
-          { id: 'amino', label: 'Amino acids', icon: '⚕' },
-          { id: 'organelles', label: 'Cell organelles', icon: '🔬' },
-          { id: 'celltypes', label: 'Cell types', icon: '🧫' },
-          { id: 'sequencing', label: 'Sequencing tech', icon: '📊' },
-          { id: 'ethics', label: 'Bioethics', icon: '⚖' },
-          { id: 'famous', label: 'History', icon: '🕰' },
-          { id: 'pcr', label: 'PCR + lab', icon: '🧪' },
-          { id: 'crispr', label: 'CRISPR detail', icon: '✂' },
-          { id: 'viruses', label: 'Virus families', icon: '🦠' },
-          { id: 'microbiome', label: 'Microbiome', icon: '🦠' },
-          { id: 'devel', label: 'Embryology', icon: '🥚' },
-          { id: 'cancer', label: 'Cancer biology', icon: '⚕' },
-          { id: 'immunity', label: 'Immune system', icon: '🛡' },
-          { id: 'neuro', label: 'Neuroscience', icon: '🧠' },
-          { id: 'tree', label: 'Tree of life', icon: '🌳' },
-          { id: 'biotech2', label: 'Biotech apps', icon: '💉' },
-          { id: 'animals2', label: 'Animal facts', icon: '🐾' },
-          { id: 'plants', label: 'Plant biology', icon: '🌿' },
-          { id: 'famousgenes', label: 'Famous genes', icon: '⌬' },
-          { id: 'modelorg', label: 'Model organisms', icon: '🧫' },
-          { id: 'ecology', label: 'Ecology', icon: '🌍' },
-          { id: 'periodtable_bio', label: 'Bio elements', icon: '⌬' },
-          { id: 'pathways', label: 'Cell pathways', icon: '⇄' },
-          { id: 'extinct', label: 'Extinct species', icon: '🦕' },
-          { id: 'organ_systems', label: 'Organ systems', icon: '🫀' },
-          { id: 'hormones', label: 'Hormones', icon: '⚛' },
-          { id: 'vitamins', label: 'Vitamins', icon: '💊' },
-          { id: 'animal_groups', label: 'Animal groups', icon: '🦁' },
-          { id: 'famous_orgs', label: 'Wild + dog DNA', icon: '🐕' },
-          { id: 'glossary', label: 'Glossary', icon: '📖' }
+        // 45 DNA/biology sections grouped into 7 cohesive domains. All IDs
+        // preserved. Groups: DNA Basics · Cell & Organelles · Genetics &
+        // Inheritance · Biotech & Lab · Disease & Health · Life on Earth ·
+        // Reference.
+        var TAB_GROUPS = [
+          { id: 'dna', label: 'DNA Basics', color: 'emerald', tabs: [
+            { id: 'bases', label: 'Base pairs', icon: '🅰🅣' },
+            { id: 'code', label: 'Genetic code', icon: '🔡' },
+            { id: 'replication', label: 'DNA replication', icon: '🔄' },
+            { id: 'transcription', label: 'Transcription', icon: '✍' },
+            { id: 'translation', label: 'Translation', icon: '🏭' },
+            { id: 'dnarna', label: 'DNA vs RNA', icon: '⇌' },
+            { id: 'mutations', label: 'Mutations', icon: '⚠' },
+            { id: 'amino', label: 'Amino acids', icon: '⚕' }
+          ] },
+          { id: 'cell', label: 'Cell & Organelles', color: 'teal', tabs: [
+            { id: 'organelles', label: 'Cell organelles', icon: '🔬' },
+            { id: 'celltypes', label: 'Cell types', icon: '🧫' },
+            { id: 'pathways', label: 'Cell pathways', icon: '⇄' },
+            { id: 'periodtable_bio', label: 'Bio elements', icon: '⌬' },
+            { id: 'devel', label: 'Embryology', icon: '🥚' }
+          ] },
+          { id: 'genetics', label: 'Genetics & Inheritance', color: 'lime', tabs: [
+            { id: 'chromosomes', label: 'Chromosomes', icon: '🧬' },
+            { id: 'meiosis', label: 'Meiosis vs mitosis', icon: '⊞' },
+            { id: 'mendel', label: 'Mendelian genetics', icon: '🫛' },
+            { id: 'epigenetics', label: 'Epigenetics', icon: '✎' },
+            { id: 'genomes', label: 'Genome sizes', icon: '📏' },
+            { id: 'famousgenes', label: 'Famous genes', icon: '⌬' }
+          ] },
+          { id: 'biotech', label: 'Biotech & Lab', color: 'cyan', tabs: [
+            { id: 'biotech', label: 'Biotech tools', icon: '🔬' },
+            { id: 'biotech2', label: 'Biotech apps', icon: '💉' },
+            { id: 'pcr', label: 'PCR + lab', icon: '🧪' },
+            { id: 'crispr', label: 'CRISPR detail', icon: '✂' },
+            { id: 'sequencing', label: 'Sequencing tech', icon: '📊' },
+            { id: 'modelorg', label: 'Model organisms', icon: '🧫' },
+            { id: 'ethics', label: 'Bioethics', icon: '⚖' }
+          ] },
+          { id: 'health', label: 'Disease & Health', color: 'rose', tabs: [
+            { id: 'diseases', label: 'Disease genes', icon: '🏥' },
+            { id: 'cancer', label: 'Cancer biology', icon: '⚕' },
+            { id: 'immunity', label: 'Immune system', icon: '🛡' },
+            { id: 'viruses', label: 'Virus families', icon: '🦠' },
+            { id: 'microbiome', label: 'Microbiome', icon: '🦠' },
+            { id: 'organ_systems', label: 'Organ systems', icon: '🫀' },
+            { id: 'hormones', label: 'Hormones', icon: '⚛' },
+            { id: 'vitamins', label: 'Vitamins', icon: '💊' },
+            { id: 'neuro', label: 'Neuroscience', icon: '🧠' }
+          ] },
+          { id: 'life', label: 'Life on Earth', color: 'amber', tabs: [
+            { id: 'evolution', label: 'Evolution', icon: '🌳' },
+            { id: 'tree', label: 'Tree of life', icon: '🌳' },
+            { id: 'ecology', label: 'Ecology', icon: '🌍' },
+            { id: 'animals2', label: 'Animal facts', icon: '🐾' },
+            { id: 'animal_groups', label: 'Animal groups', icon: '🦁' },
+            { id: 'famous_orgs', label: 'Wild + dog DNA', icon: '🐕' },
+            { id: 'plants', label: 'Plant biology', icon: '🌿' },
+            { id: 'extinct', label: 'Extinct species', icon: '🦕' }
+          ] },
+          { id: 'reference', label: 'Reference', color: 'slate', tabs: [
+            { id: 'famous', label: 'History', icon: '🕰' },
+            { id: 'glossary', label: 'Glossary', icon: '📖' }
+          , { id: 'traceTrait', label: 'Trace trait', icon: '🧬' }] }
         ];
-        return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
-          sections.map(function(s) {
-            var active = expSection === s.id;
-            return h('button', {
-              key: s.id,
-              onClick: function() { setExp({ expSection: active ? null : s.id }); },
-              className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-emerald-600 text-white border-emerald-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-emerald-50 hover:border-emerald-300')
-            }, s.icon + ' ' + s.label);
+        function renderBtn(s, accent) {
+          var active = expSection === s.id;
+          return h('button', {
+            key: s.id,
+            onClick: function() { setExp({ expSection: active ? null : s.id }); },
+            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+          }, s.icon + ' ' + s.label);
+        }
+        return h('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
+          TAB_GROUPS.map(function(g) {
+            return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
+              h('span', { 'aria-hidden': 'true', className: 'text-[9px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
+              g.tabs.map(function(s) { return renderBtn(s, g.color); })
+            );
           })
         );
       }
@@ -3162,6 +3186,178 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
               );
             })
+          )
+        );
+      }
+
+      // ── Cycle 4 of the inquiry-learning study: REASONING VERIFICATION ──
+      // Refined H5: forced commitment of the ANSWER alone is not enough —
+      // learner must commit to the REASONING ranking too; reveal verifies both.
+      // Implementation: drag-rank 4 candidate explanations from most→least supporting.
+      var PEDIGREE_PUZZLES = [
+        {
+          id: 'p1', title: 'Family A — three generations, blue eyes',
+          description: 'Two unaffected parents (gen I) have one affected child + one unaffected (gen II). The affected child + unaffected partner have one affected + one unaffected (gen III). Trait appears in roughly 25% of offspring of unaffected x unaffected matings.',
+          correctPattern: 'autosomal_recessive',
+          expertRanking: ['skip_generations', 'unaffected_carriers', 'no_sex_bias', 'present_in_homozygote'],
+          explanations: [
+            { id: 'skip_generations', text: 'Trait skips generations (unaffected parents → affected child).' },
+            { id: 'unaffected_carriers', text: 'Parents must be heterozygous carriers passing one recessive allele each.' },
+            { id: 'no_sex_bias', text: 'Affected individuals appear in both sexes at roughly equal frequency.' },
+            { id: 'present_in_homozygote', text: 'Affected = aa homozygous; carriers (Aa) are phenotypically unaffected.' }
+          ]
+        },
+        {
+          id: 'p2', title: 'Family B — color blindness across three generations',
+          description: 'Affected grandfather (gen I) has unaffected daughter (gen II) and affected grandson via that daughter (gen III). No affected sons of unaffected fathers. Trait far more common in males.',
+          correctPattern: 'x_linked_recessive',
+          expertRanking: ['male_bias', 'mother_carrier', 'skip_via_daughters', 'no_male_to_male'],
+          explanations: [
+            { id: 'male_bias', text: 'Trait shows strong male bias (hemizygous males express; females need two copies).' },
+            { id: 'mother_carrier', text: 'Unaffected daughter of affected grandfather is an obligate carrier.' },
+            { id: 'skip_via_daughters', text: 'Trait skips generation through carrier daughters, then reappears in grandsons.' },
+            { id: 'no_male_to_male', text: 'No father-to-son transmission (sons inherit Y from father, not X).' }
+          ]
+        },
+        {
+          id: 'p3', title: 'Family C — Huntington-like late-onset trait',
+          description: 'Every affected individual has at least one affected parent. Trait appears in every generation. ~50% of children of affected parents are affected. Equal in males + females.',
+          correctPattern: 'autosomal_dominant',
+          expertRanking: ['every_gen', 'affected_parent_required', 'fifty_pct', 'no_sex_bias_dom'],
+          explanations: [
+            { id: 'every_gen', text: 'Trait appears in every generation (no skipping).' },
+            { id: 'affected_parent_required', text: 'Every affected individual has at least one affected parent.' },
+            { id: 'fifty_pct', text: 'Roughly 50% of children of an affected heterozygote are affected.' },
+            { id: 'no_sex_bias_dom', text: 'Equal frequency in males + females — autosomal, not sex-linked.' }
+          ]
+        }
+      ];
+      var PATTERN_OPTIONS = [
+        { id: 'autosomal_dominant', label: 'Autosomal dominant' },
+        { id: 'autosomal_recessive', label: 'Autosomal recessive' },
+        { id: 'x_linked_dominant', label: 'X-linked dominant' },
+        { id: 'x_linked_recessive', label: 'X-linked recessive' },
+        { id: 'y_linked', label: 'Y-linked' },
+        { id: 'mitochondrial', label: 'Mitochondrial' }
+      ];
+      function renderTraceTraitSection() {
+        var state = d2.traceTrait || { puzzles: {}, score: 0 };
+        function setTT(patch) {
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.dna) || {};
+            var st = Object.assign({}, prior.traceTrait || state, patch);
+            return Object.assign({}, prev, { dna: Object.assign({}, prior, { traceTrait: st }) });
+          });
+        }
+        function reorderExplanations(puzzleId, fromIdx, toIdx) {
+          var ps = state.puzzles[puzzleId];
+          if (!ps || !ps.ranking) return;
+          var ranking = ps.ranking.slice();
+          var item = ranking.splice(fromIdx, 1)[0];
+          ranking.splice(toIdx, 0, item);
+          var newPuzzles = Object.assign({}, state.puzzles);
+          newPuzzles[puzzleId] = Object.assign({}, ps, { ranking: ranking });
+          setTT({ puzzles: newPuzzles });
+        }
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🧬 Trace the trait'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+            'Inheritance pattern + reasoning ranking — both must be committed before reveal. The reveal grades your ranking position-by-position, not just your final answer. Real inquiry requires you to know WHY, not just WHAT.'),
+          PEDIGREE_PUZZLES.map(function(puzzle, pIdx) {
+            var defaultRanking = puzzle.explanations.map(function(e) { return e.id; });
+            var st = state.puzzles[puzzle.id] || { pick: null, ranking: defaultRanking, revealed: false };
+            if (!state.puzzles[puzzle.id]) {
+              setTimeout(function() {
+                var newP = Object.assign({}, state.puzzles);
+                newP[puzzle.id] = st;
+                setTT({ puzzles: newP });
+              }, 0);
+            }
+            var canReveal = st.pick != null && Array.isArray(st.ranking) && st.ranking.length === 4 && !st.revealed;
+            var diagnosisCorrect = st.revealed && st.pick === puzzle.correctPattern;
+            var positionMatches = st.revealed ? (st.ranking || []).map(function(id, i) { return id === puzzle.expertRanking[i]; }) : [];
+            var rankingScore = positionMatches.filter(Boolean).length;
+            return h('div', { key: puzzle.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
+              h('div', { className: 'flex items-baseline gap-2 mb-1' },
+                h('span', { className: 'text-[10px] font-mono text-emerald-700 font-bold' }, '#' + (pIdx + 1)),
+                h('span', { className: 'text-[12px] font-black text-slate-800' }, puzzle.title)
+              ),
+              h('p', { className: 'text-[11px] text-slate-700 mb-2 italic' }, puzzle.description),
+              h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, '1. Inheritance pattern:'),
+              h('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                PATTERN_OPTIONS.map(function(opt) {
+                  var picked = st.pick === opt.id;
+                  var revealed = st.revealed;
+                  var correct = opt.id === puzzle.correctPattern;
+                  var bg = revealed
+                    ? (correct ? 'bg-green-600 text-white border-green-700' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
+                    : (picked ? 'bg-emerald-200 text-emerald-900 border-emerald-400' : 'bg-white text-slate-600 border-slate-200 hover:bg-emerald-50');
+                  return h('button', {
+                    key: opt.id,
+                    disabled: revealed,
+                    onClick: function() {
+                      var newP = Object.assign({}, state.puzzles);
+                      newP[puzzle.id] = Object.assign({}, st, { pick: opt.id });
+                      setTT({ puzzles: newP });
+                    },
+                    'aria-pressed': picked ? 'true' : 'false',
+                    className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors focus:ring-2 focus:ring-emerald-400 focus:outline-none ' + bg
+                  }, opt.label);
+                })
+              ),
+              h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, '2. Rank these explanations (most → least supporting):'),
+              h('ol', { className: 'space-y-1 mb-2', style: { listStyle: 'none', padding: 0 } },
+                (st.ranking || defaultRanking).map(function(eId, rIdx) {
+                  var expl = puzzle.explanations.find(function(e) { return e.id === eId; });
+                  if (!expl) return null;
+                  var expertPos = puzzle.expertRanking.indexOf(eId);
+                  var positionMatch = st.revealed && rIdx === expertPos;
+                  return h('li', { key: eId, className: 'flex items-center gap-2 p-2 rounded border ' +
+                    (st.revealed
+                      ? (positionMatch ? 'bg-green-100 border-green-300' : 'bg-amber-50 border-amber-300')
+                      : 'bg-white border-slate-300')
+                  },
+                    h('span', { className: 'font-mono font-bold text-[11px] text-slate-500', style: { minWidth: 24 } }, '#' + (rIdx + 1)),
+                    h('span', { className: 'flex-1 text-[11px] text-slate-700' }, expl.text),
+                    !st.revealed && rIdx > 0 && h('button', {
+                      'aria-label': 'Move up',
+                      onClick: function() { reorderExplanations(puzzle.id, rIdx, rIdx - 1); },
+                      className: 'px-2 py-0.5 rounded text-[11px] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-400 focus:outline-none'
+                    }, '▲'),
+                    !st.revealed && rIdx < (st.ranking || []).length - 1 && h('button', {
+                      'aria-label': 'Move down',
+                      onClick: function() { reorderExplanations(puzzle.id, rIdx, rIdx + 1); },
+                      className: 'px-2 py-0.5 rounded text-[11px] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-400 focus:outline-none'
+                    }, '▼'),
+                    st.revealed && h('span', { className: 'text-[10px] font-bold ' + (positionMatch ? 'text-green-700' : 'text-amber-700') },
+                      positionMatch ? '✓ exact' : 'expert pos #' + (expertPos + 1))
+                  );
+                })
+              ),
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('button', {
+                  disabled: !canReveal,
+                  onClick: function() {
+                    var newP = Object.assign({}, state.puzzles);
+                    newP[puzzle.id] = Object.assign({}, st, { revealed: true });
+                    var bonus = st.pick === puzzle.correctPattern ? 1 : 0;
+                    setTT({ puzzles: newP, score: (state.score || 0) + bonus });
+                  },
+                  className: 'px-3 py-1 rounded text-[11px] font-bold bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-400 focus:outline-none'
+                }, st.revealed ? '✓ Revealed' : 'Reveal verdict'),
+                !canReveal && !st.revealed && h('span', { className: 'text-[10px] text-slate-500 italic' },
+                  st.pick == null ? 'Pick a pattern first' : 'Order all 4 explanations'),
+                st.revealed && h('span', { className: 'text-[11px] font-bold ' + (diagnosisCorrect ? 'text-green-700' : 'text-rose-700') },
+                  diagnosisCorrect ? '✓ Pattern correct' : '✗ Pattern off'),
+                st.revealed && h('span', { className: 'text-[11px] text-slate-600' },
+                  'Ranking match: ' + rankingScore + '/4 positions')
+              )
+            );
+          }),
+          h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2 flex-wrap' },
+            h('span', null, '🎯'),
+            h('strong', null, 'Pattern score: ' + (state.score || 0) + ' / ' + PEDIGREE_PUZZLES.length),
+            h('span', { className: 'text-slate-500 ml-2 italic' }, 'Notice: the ranking grade is independent of the pattern grade — you can identify the WHAT correctly but rank the WHY out of order.')
           )
         );
       }
@@ -3597,6 +3793,7 @@ window.StemLab = window.StemLab || {
         if (expSection === 'vitamins') return renderVitaminsSection();
         if (expSection === 'animal_groups') return renderAnimalGroupsSection();
         if (expSection === 'famous_orgs') return renderFamousOrgsSection();
+        if (expSection === 'traceTrait') return renderTraceTraitSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
       }

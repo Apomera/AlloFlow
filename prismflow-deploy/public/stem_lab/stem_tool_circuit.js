@@ -667,6 +667,13 @@ window.StemLab = window.StemLab || {
 
           // ── Remove component ──
           var removeComponent = function(idx) {
+            // Confirm only when removing from a substantial circuit (5+ components),
+            // so quick early-stage edits stay frictionless.
+            if (components.length >= 5) {
+              var comp = components[idx];
+              var name = comp && comp.type ? comp.type : 'component';
+              if (!window.confirm('Remove this ' + name + '? You can undo by adding it back from the toolbox.')) return;
+            }
             var newComps = components.filter(function(_, j) { return j !== idx; });
             upd('components', newComps);
             circuitSound('removeComp');
@@ -674,6 +681,9 @@ window.StemLab = window.StemLab || {
 
           // ── Clear components ──
           var clearComponents = function() {
+            // Always confirm — this wipes the entire circuit with no undo.
+            if (components.length === 0) return; // nothing to clear, no need to ask
+            if (!window.confirm('Clear all ' + components.length + ' components from the circuit? This cannot be undone.')) return;
             upd('components', []);
             circuitSound('removeComp');
           };
@@ -1329,7 +1339,7 @@ window.StemLab = window.StemLab || {
                     // LED color cycle button
                     comp.type === 'led' && h('button', { 'aria-label': 'Cycle LED Color',
                       onClick: function() { cycleLedColor(comp.id); },
-                      className: 'w-5 h-5 rounded-full border-2 border-slate-700 hover:scale-110 transition-transform',
+                      className: 'w-8 h-8 rounded-full border-2 border-slate-700 hover:scale-110 transition-transform',
                       style: { backgroundColor: comp.ledColor || '#ef4444' }
                     }),
 
@@ -2115,58 +2125,80 @@ window.StemLab = window.StemLab || {
       }
 
       function expTabBar() {
-        var sections = [
-          { id: 'laws', label: 'Laws + formulas', icon: 'V=IR' },
-          { id: 'components', label: 'Components', icon: '⏛' },
-          { id: 'sp', label: 'Series vs parallel', icon: '⇊' },
-          { id: 'patterns', label: 'Common circuits', icon: '🔌' },
-          { id: 'logic', label: 'Digital logic', icon: '0/1' },
-          { id: 'safety', label: 'Safety', icon: '⚠' },
-          { id: 'resistor', label: 'Resistor colors', icon: '🎨' },
-          { id: 'capacitor', label: 'Capacitors', icon: '⎮⎮' },
-          { id: 'inductor', label: 'Inductors', icon: '∿∿' },
-          { id: 'semicon', label: 'Semiconductors', icon: '⌐' },
-          { id: 'opamp', label: 'Op-amps', icon: '▷' },
-          { id: 'filters', label: 'Filters', icon: '⌒' },
-          { id: 'power', label: 'Power supplies', icon: '🔋' },
-          { id: 'motors', label: 'Motors & generators', icon: '⚙' },
-          { id: 'fields', label: 'Electric & magnetic fields', icon: '⚡' },
-          { id: 'wireless', label: 'Wireless power', icon: '📶' },
-          { id: 'units', label: 'Units & constants', icon: '∑' },
-          { id: 'famous', label: 'History', icon: '🕰' },
-          { id: 'micro', label: 'Microcontrollers', icon: '🧠' },
-          { id: 'ics', label: 'Common ICs', icon: '⬚' },
-          { id: 'protos', label: 'Comm protocols', icon: '↔' },
-          { id: 'sensors', label: 'Sensors', icon: '◉' },
-          { id: 'actuators', label: 'Actuators', icon: '⚙' },
-          { id: 'pcb', label: 'PCB design', icon: '▦' },
-          { id: 'troubleshoot', label: 'Troubleshooting', icon: '🛠' },
-          { id: 'simulation', label: 'Circuit sim', icon: '🖥' },
-          { id: 'standards', label: 'Standards + plugs', icon: '🔌' },
-          { id: 'careers', label: 'Careers', icon: '💼' },
-          { id: 'batteries', label: 'Battery types', icon: '🔋' },
-          { id: 'energy', label: 'Energy sources', icon: '⚡' },
-          { id: 'famouscirc', label: 'Famous circuits', icon: '🎛' },
-          { id: 'computers', label: 'Computer history', icon: '💻' },
-          { id: 'world', label: 'World electrification', icon: '🌐' },
-          { id: 'wire', label: 'Wire gauges', icon: '〰' },
-          { id: 'fuses', label: 'Fuses + circuit brks', icon: '⌧' },
-          { id: 'lights', label: 'Light bulbs', icon: '💡' },
-          { id: 'household_app', label: 'Appliance watts', icon: '🏠' },
-          { id: 'circuit_lab', label: 'Lab equipment', icon: '🔬' },
-          { id: 'common_circuits', label: 'Project circuits', icon: '⚒' },
-          { id: 'connectors', label: 'Common connectors', icon: '🔌' },
-          { id: 'symbols', label: 'Schematic symbols', icon: '⊜' },
-          { id: 'glossary', label: 'Glossary', icon: '📖' }
+        // 42 circuits/electronics sections grouped into 6 cohesive domains.
+        // All IDs preserved. Groups: Fundamentals · Components · Systems &
+        // Computing · Power & Energy · Practical & Reference · History &
+        // Careers.
+        var TAB_GROUPS = [
+          { id: 'fundamentals', label: 'Fundamentals', color: 'amber', tabs: [
+            { id: 'laws', label: 'Laws + formulas', icon: 'V=IR' },
+            { id: 'units', label: 'Units & constants', icon: '∑' },
+            { id: 'sp', label: 'Series vs parallel', icon: '⇊' },
+            { id: 'patterns', label: 'Common circuits', icon: '🔌' },
+            { id: 'symbols', label: 'Schematic symbols', icon: '⊜' },
+            { id: 'fields', label: 'E & M fields', icon: '⚡' }
+          ] },
+          { id: 'components', label: 'Components', color: 'sky', tabs: [
+            { id: 'components', label: 'Components', icon: '⏛' },
+            { id: 'resistor', label: 'Resistor colors', icon: '🎨' },
+            { id: 'capacitor', label: 'Capacitors', icon: '⎮⎮' },
+            { id: 'inductor', label: 'Inductors', icon: '∿∿' },
+            { id: 'semicon', label: 'Semiconductors', icon: '⌐' },
+            { id: 'opamp', label: 'Op-amps', icon: '▷' },
+            { id: 'filters', label: 'Filters', icon: '⌒' },
+            { id: 'sensors', label: 'Sensors', icon: '◉' },
+            { id: 'actuators', label: 'Actuators', icon: '🔧' },
+            { id: 'connectors', label: 'Connectors', icon: '🔗' }
+          ] },
+          { id: 'systems', label: 'Systems & Computing', color: 'violet', tabs: [
+            { id: 'logic', label: 'Digital logic', icon: '0/1' },
+            { id: 'micro', label: 'Microcontrollers', icon: '🧠' },
+            { id: 'ics', label: 'Common ICs', icon: '⬚' },
+            { id: 'protos', label: 'Comm protocols', icon: '↔' },
+            { id: 'pcb', label: 'PCB design', icon: '▦' },
+            { id: 'simulation', label: 'Circuit sim', icon: '🖥' }
+          ] },
+          { id: 'power', label: 'Power & Energy', color: 'rose', tabs: [
+            { id: 'power', label: 'Power supplies', icon: '🔌' },
+            { id: 'batteries', label: 'Battery types', icon: '🔋' },
+            { id: 'energy', label: 'Energy sources', icon: '⚡' },
+            { id: 'motors', label: 'Motors & gens', icon: '⚙' },
+            { id: 'wireless', label: 'Wireless power', icon: '📶' },
+            { id: 'fuses', label: 'Fuses + breakers', icon: '⌧' },
+            { id: 'safety', label: 'Safety', icon: '⚠' }
+          ] },
+          { id: 'practical', label: 'Practical & Reference', color: 'emerald', tabs: [
+            { id: 'standards', label: 'Standards + plugs', icon: '🔌' },
+            { id: 'wire', label: 'Wire gauges', icon: '〰' },
+            { id: 'lights', label: 'Light bulbs', icon: '💡' },
+            { id: 'household_app', label: 'Appliance watts', icon: '🏠' },
+            { id: 'circuit_lab', label: 'Lab equipment', icon: '🔬' },
+            { id: 'common_circuits', label: 'Project circuits', icon: '⚒' },
+            { id: 'troubleshoot', label: 'Troubleshooting', icon: '🛠' },
+            { id: 'glossary', label: 'Glossary', icon: '📖' }
+          ] },
+          { id: 'history', label: 'History & Careers', color: 'slate', tabs: [
+            { id: 'famous', label: 'History', icon: '🕰' },
+            { id: 'famouscirc', label: 'Famous circuits', icon: '🎛' },
+            { id: 'computers', label: 'Computer history', icon: '💻' },
+            { id: 'world', label: 'World electrification', icon: '🌐' },
+            { id: 'careers', label: 'Careers', icon: '💼' }
+          ] }
         ];
-        return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
-          sections.map(function(s) {
-            var active = expSection === s.id;
-            return h('button', {
-              key: s.id,
-              onClick: function() { setExp({ expSection: active ? null : s.id }); },
-              className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-amber-600 text-white border-amber-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-amber-50 hover:border-amber-300')
-            }, s.icon + ' ' + s.label);
+        function renderBtn(s, accent) {
+          var active = expSection === s.id;
+          return h('button', {
+            key: s.id,
+            onClick: function() { setExp({ expSection: active ? null : s.id }); },
+            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+          }, s.icon + ' ' + s.label);
+        }
+        return h('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
+          TAB_GROUPS.map(function(g) {
+            return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
+              h('span', { 'aria-hidden': 'true', className: 'text-[9px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
+              g.tabs.map(function(s) { return renderBtn(s, g.color); })
+            );
           })
         );
       }

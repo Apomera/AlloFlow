@@ -2260,12 +2260,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           function slider(label, value, min, max, step, unit, key, color) {
+            var sliderId = 'fireeco-slider-' + key;
             return h('div', { style: { marginBottom: 14 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13 } },
-                h('span', { style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, label),
+                h('label', { htmlFor: sliderId, style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, label),
                 h('span', { style: { color: color, fontWeight: 700 } }, value + unit)
               ),
               h('input', {
+                id: sliderId,
+                'aria-label': label,
                 type: 'range', min: min, max: max, step: step, value: value,
                 onChange: function(e) { upd(key, parseFloat(e.target.value)); upd('burnResult', null); },
                 style: { width: '100%', accentColor: color }
@@ -2836,10 +2839,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             // Acres slider
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 14 } },
-                h('span', { style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Area to Calculate'),
+                h('label', { htmlFor: 'fireeco-carbon-acres', style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Area to Calculate'),
                 h('span', { style: { color: '#f97316', fontWeight: 700 } }, carbonAcres.toLocaleString() + ' acres')
               ),
               h('input', {
+                id: 'fireeco-carbon-acres',
+                'aria-label': 'Area to Calculate (acres)',
                 type: 'range',  min: 10, max: 10000, step: 10, value: carbonAcres,
                 onChange: function(e) { updMulti({ carbonAcres: parseInt(e.target.value), carbonCalculated: false }); },
                 style: { width: '100%', accentColor: '#f97316' }

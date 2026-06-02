@@ -182,12 +182,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
       // Slider with built-in label, value display, and aria-valuetext.
       function LabeledSlider(props) {
+        var sliderId = props.id || ('evolab-slider-' + String(props.label || '').replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase() + '-' + Math.random().toString(36).slice(2, 8));
         return h('div', { className: 'bg-white rounded-xl p-3 shadow border border-slate-300' },
-          h('label', { className: 'flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' },
+          h('label', { htmlFor: sliderId, className: 'flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' },
             h('span', null, props.label),
             h('span', { className: 'normal-case text-[11px] font-semibold ' + (props.valueColor || 'text-emerald-700') }, props.valueText)
           ),
           h('input', {
+            id: sliderId,
             type: 'range',
             min: props.min, max: props.max, step: props.step || 0.01,
             value: props.value,
@@ -4517,7 +4519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ),
             // Big temperature slider — the main interaction
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-4' },
-              h('label', { className: 'flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' },
+              h('label', { htmlFor: 'evolab-temperature-slider', className: 'flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' },
                 h('span', null, '🌡️ Temperature (drag this!)'),
                 h('span', { className: 'normal-case font-semibold ' + (lag > 0.2 ? 'text-rose-700' : lag > 0.1 ? 'text-amber-700' : 'text-emerald-700') },
                   temperature.toFixed(2) + ' (population mean: ' + mean.toFixed(2) + ')'
@@ -4526,6 +4528,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('div', { className: 'flex items-center gap-2' },
                 h('span', { className: 'text-2xl' }, '❄️'),
                 h('input', {
+                  id: 'evolab-temperature-slider',
                   type: 'range',
                   min: 0, max: 1, step: 0.01,
                   value: temperature,

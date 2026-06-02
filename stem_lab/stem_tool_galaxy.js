@@ -1222,6 +1222,10 @@ if (!window._galaxyHasLoadedOnce) {
 
             function animate() {
 
+              // Guard against RAF leak after React unmounts the canvas — without this,
+              // the loop keeps running 60×/s, holding refs to disposed three.js objects.
+              if (!canvasEl.isConnected) { if (animId) cancelAnimationFrame(animId); return; }
+
               animId = requestAnimationFrame(animate);
 
               var elapsed = (Date.now() - startT) * 0.001;

@@ -3108,6 +3108,8 @@ window.StemLab = window.StemLab || {
                 React.createElement('h4', { className: 'text-sm font-bold text-emerald-700 mb-2' }, '💵 Dollar Bill — Anti-counterfeit features'),
                 React.createElement('div', { className: 'rounded-xl overflow-hidden border border-emerald-200', style: { background: '#022c22', aspectRatio: '16/5' } },
                   React.createElement('canvas', {
+                    'role': 'img',
+                    'aria-label': 'Detailed view of a US dollar bill.',
                     ref: function(cvEl) {
                       if (!cvEl) return;
                       if (cvEl._dbAnim) return;

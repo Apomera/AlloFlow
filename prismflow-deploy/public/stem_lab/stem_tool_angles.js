@@ -1428,63 +1428,84 @@ window.StemLab = window.StemLab || {
       }
 
       function expTabBar() {
-        var sections = [
-          { id: 'types', label: 'Types', icon: '<' },
-          { id: 'relationships', label: 'Relationships', icon: '\u2AEF' },
-          { id: 'polygons', label: 'Polygon angles', icon: '\u2B21' },
-          { id: 'trig', label: 'Trig functions', icon: 'sin' },
-          { id: 'special', label: 'Special angles', icon: '\u2605' },
-          { id: 'units', label: 'Angle units', icon: '\u00B0' },
-          { id: 'world', label: 'Real-world', icon: '\uD83C\uDF0D' },
-          { id: 'tricks', label: 'Shortcuts', icon: '\u26A1' },
-          { id: 'compass', label: 'Compass', icon: '\uD83E\uDDED' },
-          { id: 'pythag', label: 'Pythagorean', icon: 'a\u00B2+b\u00B2' },
-          { id: 'triangles', label: 'Triangle types', icon: '\u25B3' },
-          { id: 'circle', label: 'Circle geometry', icon: '\u25EF' },
-          { id: 'solids', label: '3D solids', icon: '\u2B22' },
-          { id: 'transform', label: 'Transformations', icon: '\u21BB' },
-          { id: 'coords', label: 'Coordinates', icon: '(x,y)' },
-          { id: 'vectors', label: 'Vectors', icon: '\u2192' },
-          { id: 'symmetry', label: 'Symmetry', icon: '\u27C2' },
-          { id: 'tilings', label: 'Tessellations', icon: '\u2B21' },
-          { id: 'famous', label: 'History', icon: '\uD83D\uDD70' },
-          { id: 'careers', label: 'Careers using angles', icon: '\uD83D\uDCBC' },
-          { id: 'conics', label: 'Conic sections', icon: '\u25C9' },
-          { id: 'platonic', label: 'Platonic solids', icon: '\u2B21' },
-          { id: 'fractals', label: 'Fractals', icon: '\u2744' },
-          { id: 'noneuclid', label: 'Non-Euclidean', icon: '\u2295' },
-          { id: 'projection', label: 'Map projections', icon: '\uD83D\uDDFA' },
-          { id: 'sundial', label: 'Sundials', icon: '\u263C' },
-          { id: 'goldenratio', label: 'Golden ratio', icon: '\u03C6' },
-          { id: 'origami', label: 'Origami geometry', icon: '\u2726' },
-          { id: 'sports', label: 'Angles in sports', icon: '\uD83C\uDFC6' },
-          { id: 'art', label: 'Angles in art', icon: '\uD83C\uDFA8' },
-          { id: 'tools', label: 'Measuring tools', icon: '\uD83D\uDCCF' },
-          { id: 'constants', label: 'Math constants', icon: '\u03C0' },
-          { id: 'rivers', label: 'Earth measurements', icon: '\uD83C\uDF0E' },
-          { id: 'buildings', label: 'Famous structures', icon: '\uD83C\uDFDB' },
-          { id: 'curves', label: 'Famous curves', icon: '\u223F' },
-          { id: 'mathematicians', label: 'Mathematicians', icon: '\uD83D\uDC68\u200D\uD83C\uDFEB' },
-          { id: 'practical', label: 'Practical angles', icon: '\uD83D\uDEE0' },
-          { id: 'puzzles', label: 'Geometry puzzles', icon: '\uD83E\uDDE9' },
-          { id: 'tessell2', label: 'Famous tilings', icon: '\u25C7' },
-          { id: 'cities', label: 'City coordinates', icon: '\uD83C\uDF06' },
-          { id: 'mountains', label: 'Mountains + peaks', icon: '\u26F0' },
-          { id: 'planets', label: 'Planet data', icon: '\uD83E\uDE90' },
-          { id: 'building_angles', label: 'Roof + ramp pitch', icon: '\u25E2' },
-          { id: 'flag_design', label: 'Flag geometry', icon: '\uD83D\uDEA9' },
-          { id: 'shapes_iq', label: 'Shape facts', icon: '\u25C7' },
-          { id: 'theorems', label: 'Classic theorems', icon: '\u220E' },
-          { id: 'glossary', label: 'Glossary', icon: '\uD83D\uDCD6' }
+        // 47 angle/geometry sections grouped into 6 cohesive domains. All
+        // IDs preserved. Groups: Angles & Trig \u00B7 Shapes & Solids \u00B7 Coords
+        // & Transforms \u00B7 Real World \u00B7 Math History \u00B7 Reference.
+        var TAB_GROUPS = [
+          { id: 'angles', label: 'Angles & Trig', color: 'rose', tabs: [
+            { id: 'types', label: 'Types', icon: '<' },
+            { id: 'relationships', label: 'Relationships', icon: '\u2AEF' },
+            { id: 'special', label: 'Special angles', icon: '\u2605' },
+            { id: 'units', label: 'Angle units', icon: '\u00B0' },
+            { id: 'trig', label: 'Trig functions', icon: 'sin' },
+            { id: 'pythag', label: 'Pythagorean', icon: 'a\u00B2+b\u00B2' },
+            { id: 'theorems', label: 'Classic theorems', icon: '\u220E' },
+            { id: 'tricks', label: 'Shortcuts', icon: '\u26A1' }
+          ] },
+          { id: 'shapes', label: 'Shapes & Solids', color: 'amber', tabs: [
+            { id: 'triangles', label: 'Triangle types', icon: '\u25B3' },
+            { id: 'polygons', label: 'Polygon angles', icon: '\u2B21' },
+            { id: 'circle', label: 'Circle geometry', icon: '\u25EF' },
+            { id: 'conics', label: 'Conic sections', icon: '\u25C9' },
+            { id: 'solids', label: '3D solids', icon: '\u2B22' },
+            { id: 'platonic', label: 'Platonic solids', icon: '\u2B21' },
+            { id: 'curves', label: 'Famous curves', icon: '\u223F' },
+            { id: 'shapes_iq', label: 'Shape facts', icon: '\u25C7' }
+          ] },
+          { id: 'coords', label: 'Coords & Transforms', color: 'cyan', tabs: [
+            { id: 'coords', label: 'Coordinates', icon: '(x,y)' },
+            { id: 'vectors', label: 'Vectors', icon: '\u2192' },
+            { id: 'transform', label: 'Transformations', icon: '\u21BB' },
+            { id: 'symmetry', label: 'Symmetry', icon: '\u27C2' },
+            { id: 'tilings', label: 'Tessellations', icon: '\u2B21' },
+            { id: 'tessell2', label: 'Famous tilings', icon: '\u25C7' },
+            { id: 'fractals', label: 'Fractals', icon: '\u2744' },
+            { id: 'noneuclid', label: 'Non-Euclidean', icon: '\u2295' },
+            { id: 'goldenratio', label: 'Golden ratio', icon: '\u03C6' }
+          ] },
+          { id: 'world', label: 'Real World', color: 'emerald', tabs: [
+            { id: 'world', label: 'Real-world', icon: '\uD83C\uDF0D' },
+            { id: 'practical', label: 'Practical angles', icon: '\uD83D\uDEE0' },
+            { id: 'tools', label: 'Measuring tools', icon: '\uD83D\uDCCF' },
+            { id: 'compass', label: 'Compass', icon: '\uD83E\uDDED' },
+            { id: 'sundial', label: 'Sundials', icon: '\u263C' },
+            { id: 'sports', label: 'Angles in sports', icon: '\uD83C\uDFC6' },
+            { id: 'art', label: 'Angles in art', icon: '\uD83C\uDFA8' },
+            { id: 'origami', label: 'Origami geometry', icon: '\u2726' },
+            { id: 'building_angles', label: 'Roof + ramp pitch', icon: '\u25E2' },
+            { id: 'buildings', label: 'Famous structures', icon: '\uD83C\uDFDB' },
+            { id: 'flag_design', label: 'Flag geometry', icon: '\uD83D\uDEA9' },
+            { id: 'projection', label: 'Map projections', icon: '\uD83D\uDDFA' },
+            { id: 'rivers', label: 'Earth measurements', icon: '\uD83C\uDF0E' },
+            { id: 'cities', label: 'City coordinates', icon: '\uD83C\uDF06' },
+            { id: 'mountains', label: 'Mountains + peaks', icon: '\u26F0' },
+            { id: 'planets', label: 'Planet data', icon: '\uD83E\uDE90' }
+          ] },
+          { id: 'history', label: 'History & Careers', color: 'violet', tabs: [
+            { id: 'famous', label: 'History', icon: '\uD83D\uDD70' },
+            { id: 'mathematicians', label: 'Mathematicians', icon: '\uD83D\uDC68\u200D\uD83C\uDFEB' },
+            { id: 'careers', label: 'Careers using angles', icon: '\uD83D\uDCBC' }
+          ] },
+          { id: 'reference', label: 'Reference', color: 'slate', tabs: [
+            { id: 'constants', label: 'Math constants', icon: '\u03C0' },
+            { id: 'puzzles', label: 'Geometry puzzles', icon: '\uD83E\uDDE9' },
+            { id: 'glossary', label: 'Glossary', icon: '\uD83D\uDCD6' }
+          ] }
         ];
-        return h('div', { className: 'flex flex-wrap gap-1.5 mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
-          sections.map(function(s) {
-            var active = expSection === s.id;
-            return h('button', {
-              key: s.id,
-              onClick: function() { setExp({ expSection: active ? null : s.id }); },
-              className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-rose-50 hover:border-rose-300')
-            }, s.icon + ' ' + s.label);
+        function renderBtn(s, accent) {
+          var active = expSection === s.id;
+          return h('button', {
+            key: s.id,
+            onClick: function() { setExp({ expSection: active ? null : s.id }); },
+            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+          }, s.icon + ' ' + s.label);
+        }
+        return h('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
+          TAB_GROUPS.map(function(g) {
+            return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
+              h('span', { 'aria-hidden': 'true', className: 'text-[9px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
+              g.tabs.map(function(s) { return renderBtn(s, g.color); })
+            );
           })
         );
       }

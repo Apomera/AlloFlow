@@ -1890,6 +1890,8 @@ window.StemLab = window.StemLab || {
               h('h4', { className: 'text-sm font-bold text-sky-700 mb-2' }, '\uD83D\uDD22 Integers \u2014 Absolute value = distance from zero'),
               h('div', { className: 'rounded-xl overflow-hidden border border-sky-200', style: { background: '#020210', aspectRatio: '16/4' } },
                 h('canvas', {
+                  role: 'img',
+                  'aria-label': 'Absolute value number line showing distance from zero',
                   ref: function(cvEl) {
                     if (!cvEl) return;
                     if (cvEl._nlAnim) return;

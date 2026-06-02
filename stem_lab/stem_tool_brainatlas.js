@@ -10,6 +10,7 @@
 
 // stem_tool_brainatlas.js - Brain Atlas Explorer plugin
 // Extracted from stem_tool_science.js
+var prefersReducedMotion = (function() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 (function() {
   if (!window.StemLab || !window.StemLab.registerTool) return;
 
@@ -3800,6 +3801,10 @@ var d = labToolData.brainAtlas || {};
 
                   onClick: handleClick,
 
+                  role: "img",
+
+                  "aria-label": "Brain atlas showing " + (currentView && currentView.name ? currentView.name : 'lateral') + " view" + (sel && sel.name ? ", selected region: " + sel.name : ""),
+
                   className: "rounded-xl border-2 border-purple-200 cursor-crosshair",
 
                   style: { background: '#faf8ff', maxWidth: '100%' }
@@ -4023,6 +4028,10 @@ var d = labToolData.brainAtlas || {};
 
                     width: 560, height: 160,
 
+                    role: "img",
+
+                    "aria-label": "EEG waveform animation",
+
                     className: "w-full rounded-lg",
 
                     style: { background: '#0f0b2e' }
@@ -4148,9 +4157,13 @@ var d = labToolData.brainAtlas || {};
 
                   function drawFrame() {
 
-                    canvas._bwAnimFrame = requestAnimationFrame(drawFrame);
+                    if (!prefersReducedMotion) {
 
-                    tick += 0.8;
+                      canvas._bwAnimFrame = requestAnimationFrame(drawFrame);
+
+                      tick += 0.8;
+
+                    }
 
                     ctx.fillStyle = 'rgba(15, 11, 46, 0.15)';
 

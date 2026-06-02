@@ -8523,7 +8523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               );
             })
           ),
-      nlEvidenceFooter('Behavioral activation + positive psychology: documenting wins amplifies motivation. The dopamine spike from celebration consolidates the behavior more than rewards do.')
+      nlEvidenceFooter('Behavioral activation + positive psychology: documenting wins is associated with sustained motivation. (The popular "dopamine-spike consolidates behavior" framing is a contested oversimplification in modern neuroscience and is not the mechanism claimed here.)')
     );
   }
 

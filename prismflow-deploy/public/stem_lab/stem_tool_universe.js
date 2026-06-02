@@ -190,7 +190,13 @@ var d = labToolData.universe || {};
             upd('epochsVisited', newVisited);
             epochsVisited = newVisited;
           }
-          setTimeout(checkChallenges, 100);
+          // Track the timeout ID on the canvas element so _universeCleanupAll() can clear it
+          var _ucv = document.querySelector('[data-universe-canvas]');
+          var _ucTimeoutId = setTimeout(checkChallenges, 100);
+          if (_ucv) {
+            if (!_ucv._universeTimeoutIds) _ucv._universeTimeoutIds = [];
+            _ucv._universeTimeoutIds.push(_ucTimeoutId);
+          }
 
           // --- Sound effects ---
           function playBeep() {
@@ -1577,6 +1583,9 @@ var d = labToolData.universe || {};
 
             canvasEl._universeCleanup = function () { cancelAnimationFrame(canvasEl._animId); canvasEl._universeInit = false; };
 
+            // Track pending setTimeout IDs so unmount can clear them in one place
+            if (!canvasEl._universeTimeoutIds) canvasEl._universeTimeoutIds = [];
+
             var ro = new ResizeObserver(function () {
 
               var newW = canvasEl.offsetWidth, newH = canvasEl.offsetHeight;
@@ -1591,11 +1600,28 @@ var d = labToolData.universe || {};
 
 
 
+          // Centralized cleanup for the universe tool. Called from the back-button + safe to call
+          // from any external trigger (e.g. parent unmount). Idempotent — clears everything that
+          // could otherwise keep running after the user leaves the tool.
+          window._universeCleanupAll = function() {
+            var cv = document.querySelector('[data-universe-canvas]');
+            if (cv) {
+              if (cv._animId) { cancelAnimationFrame(cv._animId); cv._animId = null; }
+              if (cv._ro) { cv._ro.disconnect(); cv._ro = null; }
+              if (cv._universeTimeoutIds && cv._universeTimeoutIds.length) {
+                cv._universeTimeoutIds.forEach(function(id) { clearTimeout(id); });
+                cv._universeTimeoutIds = [];
+              }
+              cv._universeInit = false;
+            }
+            if (window._universeTimeLapse) { clearInterval(window._universeTimeLapse); window._universeTimeLapse = null; }
+          };
+
           return React.createElement("div", { className: "max-w-6xl mx-auto animate-in fade-in duration-200" },
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-universe-canvas]'); if (cv && cv._universeCleanup) cv._universeCleanup(); if (cv && cv._ro) cv._ro.disconnect(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
+              React.createElement("button", { onClick: function () { if (window._universeCleanupAll) window._universeCleanupAll(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF20 Universe Time-Lapse"),
 
@@ -1607,7 +1633,7 @@ var d = labToolData.universe || {};
 
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-violet-300 shadow-lg", style: { height: '55vh', minHeight: '360px', maxHeight: '700px', background: '#050510' } },
 
-              React.createElement("canvas", { "data-universe-canvas": "true", ref: canvasRefCb, "data-time": String(cosmicTime), style: { width: '100%', height: '100%', display: 'block' } })
+              React.createElement("canvas", { "data-universe-canvas": "true", ref: canvasRefCb, "data-time": String(cosmicTime), role: 'img', 'aria-label': 'Universe time-lapse visualization showing 13.8 billion years of cosmic history from the Big Bang to the present day', style: { width: '100%', height: '100%', display: 'block' } })
 
             ),
 
@@ -1868,6 +1894,8 @@ var d = labToolData.universe || {};
               d.showHR && React.createElement("div", null,
                 React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-200') + " italic mb-2" }, "The HR Diagram plots stars by temperature (x) and luminosity (y). Most stars fall on the Main Sequence diagonal."),
                 React.createElement("canvas", {
+                  role: 'img',
+                  'aria-label': 'Hertzsprung-Russell diagram plotting stars by surface temperature on the horizontal axis and luminosity on the vertical axis, with most stars falling on the main sequence diagonal',
                   style: { width: '100%', height: '320px', display: 'block', borderRadius: '8px' },
                   ref: function(hrEl) {
                     if (!hrEl || hrEl._hrInit) return;
@@ -1996,6 +2024,8 @@ var d = labToolData.universe || {};
               d.showDark && React.createElement("div", { className: "space-y-2" },
                 // Pie chart canvas
                 React.createElement("canvas", {
+                  role: 'img',
+                  'aria-label': 'Pie chart showing the composition of the universe: 68 percent dark energy, 27 percent dark matter, and 5 percent ordinary matter',
                   style: { width: '100%', height: '180px', display: 'block', borderRadius: '8px' },
                   ref: function(pieEl) {
                     if (!pieEl || pieEl._pieInit) return;
@@ -2322,6 +2352,8 @@ var d = labToolData.universe || {};
               d.showBlackHole && React.createElement("div", { className: "space-y-1.5" },
                 // Visual canvas
                 React.createElement("canvas", {
+                  role: 'img',
+                  'aria-label': 'Animated black hole anatomy diagram showing the singularity, event horizon, photon sphere, and accretion disk swirling around a central black hole',
                   style: { width: '100%', height: '240px', display: 'block', borderRadius: '8px' },
                   ref: function(bhEl) {
                     if (!bhEl || bhEl._bhInit) return;
@@ -2677,6 +2709,8 @@ var d = labToolData.universe || {};
                 React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-200') + " italic mb-1" }, "Einstein predicted that massive objects bend light. This gravitational lensing lets us see behind galaxies, magnify distant objects, and map invisible dark matter."),
                 // Animated lensing canvas
                 React.createElement("canvas", {
+                  role: 'img',
+                  'aria-label': 'Animated gravitational lensing visualization showing how a massive foreground galaxy bends light from a distant background source, producing arcs and Einstein rings',
                   style: { width: '100%', height: '260px', display: 'block', borderRadius: '8px' },
                   ref: function(lensEl) {
                     if (!lensEl || lensEl._lensInit) return;
@@ -2854,6 +2888,8 @@ var d = labToolData.universe || {};
               d.showRedshift && React.createElement("div", { className: "space-y-2" },
                 // Animated Doppler canvas
                 React.createElement("canvas", {
+                  role: 'img',
+                  'aria-label': 'Animated redshift and blueshift Doppler effect demonstration: top half shows a galaxy approaching with light waves compressed to blue, bottom half shows a galaxy receding with light waves stretched to red',
                   style: { width: '100%', height: '260px', display: 'block', borderRadius: '8px' },
                   ref: function(rsEl) {
                     if (!rsEl || rsEl._rsInit) return;

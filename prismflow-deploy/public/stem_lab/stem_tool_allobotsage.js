@@ -2374,6 +2374,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     });
                     ctx.updateMulti('alloBotSage', { aiChallengeCache: freshCache, _aiInFlight: freshFlight });
                     addToast('+' + addedCount + ' AI questions ready', 'success');
+                  }).catch(function(err) {
+                    // Reset in-flight state so the user can retry — without this, loading spinners freeze
+                    console.error('[AlloBotSage] Pre-load AI questions failed:', err);
+                    var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
+                    var freshFlight = Object.assign({}, freshD._aiInFlight || {});
+                    equippedLoadout.forEach(function(spellId) { delete freshFlight[spellId]; });
+                    ctx.updateMulti('alloBotSage', { _aiInFlight: freshFlight });
+                    addToast('Failed to generate AI questions. Try again.', 'error');
                   });
                 },
                 className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-400 focus:outline-none'
@@ -2415,6 +2423,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         if (qs.length > 0) freshCache[spellId] = qs;
                         ctx.updateMulti('alloBotSage', { aiChallengeCache: freshCache, _aiInFlight: freshFlight });
                         if (qs.length > 0) addToast('\u2728 ' + s.name + ' rerolled (+' + qs.length + ' new)', 'success');
+                      }).catch(function(err) {
+                        // Clear in-flight so the spell can be rerolled again instead of getting stuck
+                        console.error('[AlloBotSage] Reroll failed for ' + s.name + ':', err);
+                        var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
+                        var freshFlight = Object.assign({}, freshD._aiInFlight || {});
+                        delete freshFlight[spellId];
+                        ctx.updateMulti('alloBotSage', { _aiInFlight: freshFlight });
+                        addToast('Failed to reroll ' + s.name + '. Try again.', 'error');
                       });
                     },
                     'aria-label': 'Regenerate AI questions for ' + s.name,
@@ -2840,6 +2856,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 } else {
                   ctx.updateMulti('alloBotSage', { _aiInFlight: freshFlight });
                 }
+              }).catch(function(err) {
+                // Background generation — student already has bank questions, so silent + log only
+                console.error('[AlloBotSage] Background AI generation failed for ' + s.name + ':', err);
+                var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
+                var freshFlight = Object.assign({}, freshD._aiInFlight || {});
+                delete freshFlight[spellId];
+                ctx.updateMulti('alloBotSage', { _aiInFlight: freshFlight });
               });
             }
           }

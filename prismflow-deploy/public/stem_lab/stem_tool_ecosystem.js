@@ -2932,6 +2932,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         { id: 'wildfire',  icon: '\uD83D\uDD25',   label: 'Wildfire',  color: 'bg-red-500' }
       ];
 
+      // ── Cleanup on unmount ──
+      // The ambient soundscape uses setInterval to schedule random tones.
+      // Without this cleanup, switching to a different tool leaves the audio loop
+      // firing in the background indefinitely.
+      React.useEffect(function() {
+        return function() { stopEcoAmbient(); };
+      }, []);
+
       return h('div', { className: 'space-y-3 pb-4' },
 
         // ── Header ──
@@ -3558,8 +3566,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('div', { className: 'flex gap-1 flex-wrap' },
                 ['What is Lotka-Volterra?', 'Why do populations oscillate?', 'What is carrying capacity?', 'Explain food webs'].map(function(question) {
                   return h('button', { key: question,
-                    className: 'px-2 py-1 text-[11px] rounded-full border border-indigo-600 dark:border-indigo-600 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800',
-                    onClick: function() { askAI(question); }
+                    className: 'px-2 py-1 text-[11px] rounded-full border border-indigo-600 dark:border-indigo-600 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed',
+                    onClick: function() { askAI(question); },
+                    disabled: aiLoading
                   }, question);
                 })
               ),
