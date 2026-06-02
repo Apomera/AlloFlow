@@ -1321,8 +1321,9 @@
         perspective: { tier: 'emerging' },
         conflict: { tier: 'emerging' },
         conflicttheater: { tier: 'emerging' },
-        // Contested: popular but scientifically disputed
-        growthmindset: { tier: 'contested', note: 'Mindset interventions are popular but their effects are small and debated (Sisk et al. 2018 meta-analysis; Yeager et al. 2019 found small, targeted effects).' },
+        // (No tool is currently rated 'contested'; the tier stays reserved for
+        // mechanisms that are popular but scientifically disputed.)
+        growthmindset: { tier: 'emerging', note: 'Mindset interventions are popular; effects are real but small and debated (Sisk et al. 2018 meta-analysis; Yeager et al. 2019 found small, targeted effects).' },
         // Practice: structured practice / heuristic, not an empirical efficacy claim
         strengths: { tier: 'practice' },
         viaStrengths: { tier: 'practice', note: 'Reflective self-sort, not the validated VIA survey at viacharacter.org.' },
