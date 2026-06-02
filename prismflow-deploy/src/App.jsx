@@ -4341,7 +4341,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'ff673a35';
+    var pluginCdnVersion = '503374f2';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -4701,7 +4701,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_coordgrid.js', 'stem_lab/stem_tool_angles.js', 'stem_lab/stem_tool_archstudio.js',
         'stem_lab/stem_tool_physics.js', 'stem_lab/stem_tool_brainatlas.js', 'stem_lab/stem_tool_inequality.js',
         'stem_lab/stem_tool_arccity.js', 'stem_lab/stem_tool_funcgrapher.js', 'stem_lab/stem_tool_multtable.js', 'stem_lab/stem_tool_geosandbox.js',
-        'stem_lab/stem_tool_watercycle.js', 'stem_lab/stem_tool_rocks.js', 'stem_lab/stem_tool_platetectonics.js',
+        'stem_lab/stem_tool_watercycle.js', 'stem_lab/stem_tool_rocks.js', 'stem_lab/stem_tool_platetectonics.js', 'stem_lab/stem_tool_dinolab.js',
         'stem_lab/stem_tool_dissection.js', 'stem_lab/stem_tool_cyberdefense.js',
         'stem_lab/stem_tool_probability.js', 'stem_lab/stem_tool_logiclab.js',
         'stem_lab/stem_tool_calculus.js', 'stem_lab/stem_tool_unitconvert.js',
