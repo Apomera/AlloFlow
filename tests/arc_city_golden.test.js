@@ -200,3 +200,39 @@ describe('Arc City — action-named badges (design §9.4)', () => {
     });
   });
 });
+
+describe('Arc City — drag↔equation binding (design §4.2)', () => {
+  const L1 = levelById('L1'), L2 = levelById('L2'), L3 = levelById('L3');
+
+  it('snapToRange clamps to bounds and snaps to the step grid', () => {
+    expect(arc.snapToRange(0.53, { min: -1.5, max: 1.5, step: 0.05 })).toBe(0.55);
+    expect(arc.snapToRange(99, { min: 0, max: 8, step: 0.25 })).toBe(8);
+    expect(arc.snapToRange(-99, { min: 0, max: 8, step: 0.25 })).toBe(0);
+  });
+
+  it('dragging the parabola vertex snaps to {h,k} and clamps out-of-range', () => {
+    expect(arc.parabolaVertexParams(5, 5, L3)).toEqual({ h: 5, k: 5 });
+    expect(arc.parabolaVertexParams(999, 999, L3)).toEqual({ h: 10, k: 8 });
+    expect(arc.parabolaVertexParams(-5, -5, L3)).toEqual({ h: 0, k: 0 });
+  });
+
+  it('drag↔solve: vertex at (5,5) + a=-0.5 lights the node', () => {
+    const merged = Object.assign({}, arc.parabolaVertexParams(5, 5, L3), { a: -0.5 });
+    expect(classifyShot(L3, merged).result).toBe('hit');
+  });
+
+  it('L1 line handle pivots about the origin — intercept stays locked at 0', () => {
+    const params = arc.linePivotParams(8, 4, 0, 0, L1); // drag the x=8 point up to y=4
+    expect(params.b).toBe(0);    // b is locked
+    expect(params.m).toBe(0.5);  // slope = 4 / 8
+    expect(classifyShot(L1, params).result).toBe('hit');
+  });
+
+  it('L2 two-point drag recomputes slope + intercept and can reach the solution', () => {
+    // drag point A=(2, 4.7), anchored at B=(8, 2.3) → m=-0.4, b=5.5
+    const params = arc.linePivotParams(2, 4.7, 8, 2.3, L2);
+    expect(params.m).toBe(-0.4);
+    expect(params.b).toBe(5.5);
+    expect(classifyShot(L2, params).result).toBe('hit');
+  });
+});

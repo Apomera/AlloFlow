@@ -224,6 +224,27 @@
     return out;
   }
 
+  // ── Snap a value to a param's [min,max] grid (shared by sliders + drag). ──
+  function snapToRange(val, r) {
+    var v = Math.max(r.min, Math.min(r.max, val));
+    var snapped = Math.round(v / r.step) * r.step;
+    return Math.round(snapped * 1000) / 1000;
+  }
+
+  // ── Drag → params (pure, testable): the concrete end of the drag↔equation
+  // binding (design §4.2). A dragged handle mutates the SAME params the sliders
+  // and the equation read — one source of truth, three editors. ──
+  function parabolaVertexParams(worldX, worldY, level) {
+    return { h: snapToRange(worldX, level.params.h), k: snapToRange(worldY, level.params.k) };
+  }
+  function linePivotParams(dragX, dragY, anchorX, anchorY, level) {
+    var m = (dragX === anchorX) ? 0 : (dragY - anchorY) / (dragX - anchorX);
+    var b = dragY - m * dragX;
+    var out = { m: snapToRange(m, level.params.m), b: snapToRange(b, level.params.b) };
+    if (level.params.b && level.params.b.locked) out.b = level.params.b.default; // L1: intercept stays put
+    return out;
+  }
+
   var ArcCityCore = {
     LEVELS: LEVELS,
     levelById: levelById,
@@ -244,7 +265,10 @@
     solveIsIndependent: solveIsIndependent,
     BADGES: BADGES,
     badgeLabel: badgeLabel,
-    badgesForSolve: badgesForSolve
+    badgesForSolve: badgesForSolve,
+    snapToRange: snapToRange,
+    parabolaVertexParams: parabolaVertexParams,
+    linePivotParams: linePivotParams
   };
 
   if (typeof module !== 'undefined' && module.exports) { module.exports = ArcCityCore; }
@@ -308,11 +332,7 @@
     try { if (ctx && typeof ctx.announceToSR === 'function') ctx.announceToSR(msg); } catch (e) { }
   }
 
-  function clampStep(val, r) {
-    var v = Math.max(r.min, Math.min(r.max, val));
-    var snapped = Math.round(v / r.step) * r.step;
-    return Math.round(snapped * 1000) / 1000;
-  }
+  function clampStep(val, r) { return snapToRange(val, r); }
 
   function beamRef(el) {
     if (!el) return;
@@ -397,6 +417,16 @@
             return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: false }) });
           });
         }
+        function setParamsMulti(np) {
+          if (typeof setToolData !== 'function') return;
+          setToolData(function (prev) {
+            var cur = (prev && prev._arccity) || S;
+            var bl = Object.assign({}, cur.byLevel || {});
+            var base = Object.assign({ params: defaultParams(level), shots: 0, solved: false, misses: 0 }, bl[level.id] || {});
+            bl[level.id] = Object.assign({}, base, { params: Object.assign({}, base.params, np) });
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: false }) });
+          });
+        }
         function fire() {
           if (typeof setToolData !== 'function') return;
           var r = classifyShot(level, P);
@@ -456,6 +486,22 @@
         var wx0 = level.world.x0, wx1 = level.world.x1, wy0 = level.world.y0, wy1 = level.world.y1;
         function sx(x) { return (x - wx0) / (wx1 - wx0) * W; }
         function sy(y) { return H - (y - wy0) / (wy1 - wy0) * H; }
+        function svgWorldFromEvent(svgEl, evt) {
+          try {
+            var pt = svgEl.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY;
+            var loc = pt.matrixTransform(svgEl.getScreenCTM().inverse());
+            return { x: wx0 + (loc.x / W) * (wx1 - wx0), y: wy0 + (1 - loc.y / H) * (wy1 - wy0) };
+          } catch (e) { return null; }
+        }
+        function startHandleDrag(evt, computeParams) {
+          if (typeof setToolData !== 'function') return;
+          if (evt && evt.preventDefault) evt.preventDefault();
+          var svgEl = evt.currentTarget && evt.currentTarget.ownerSVGElement;
+          if (!svgEl) return;
+          function move(ev) { var w = svgWorldFromEvent(svgEl, ev); if (w) setParamsMulti(computeParams(w.x, w.y)); }
+          function up() { try { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); } catch (e) { } }
+          try { window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); } catch (e) { }
+        }
 
         var INK = 'var(--allo-stem-text, #e2e8f0)';
         var GRID = 'var(--allo-stem-border, #334155)';
@@ -512,11 +558,46 @@
           }
         }
 
+        // ── Drag handles (Practice tier only: the concrete scaffold. Never on
+        // hidden-preview tiers, so they can't undercut the integrity gate). The
+        // handle shares the equation's accent color = the always-on co-highlight. ──
+        var HANDLE = BEAM;
+        var handleEls = [];
+        if (tier === 'practice') {
+          if (level.family === 'parabola') {
+            handleEls.push(h('circle', {
+              key: 'vh', cx: sx(P.h), cy: sy(P.k), r: 9, fill: HANDLE, opacity: 0.95, stroke: '#06262b', strokeWidth: 2,
+              style: { cursor: 'grab' }, 'aria-hidden': 'true',
+              onPointerDown: function (e) { startHandleDrag(e, function (wx, wy) { return parabolaVertexParams(wx, wy, level); }); }
+            }));
+            handleEls.push(h('text', { key: 'vhl', x: sx(P.h) + 12, y: sy(P.k) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, 'vertex (h, k)'));
+          } else if (level.params.b && level.params.b.locked) {
+            var xH = level.node.x, yH = fnY('line', P, xH);
+            handleEls.push(h('circle', {
+              key: 'lh', cx: sx(xH), cy: sy(yH), r: 9, fill: HANDLE, opacity: 0.95, stroke: '#06262b', strokeWidth: 2,
+              style: { cursor: 'grab' }, 'aria-hidden': 'true',
+              onPointerDown: function (e) { startHandleDrag(e, function (wx, wy) { return linePivotParams(xH, wy, 0, 0, level); }); }
+            }));
+          } else {
+            var xA = 2, xB = 8, yA = fnY('line', P, xA), yB = fnY('line', P, xB);
+            handleEls.push(h('circle', {
+              key: 'lhA', cx: sx(xA), cy: sy(yA), r: 9, fill: HANDLE, opacity: 0.95, stroke: '#06262b', strokeWidth: 2,
+              style: { cursor: 'grab' }, 'aria-hidden': 'true',
+              onPointerDown: (function (bx, by) { return function (e) { startHandleDrag(e, function (wx, wy) { return linePivotParams(xA, wy, bx, by, level); }); }; })(xB, yB)
+            }));
+            handleEls.push(h('circle', {
+              key: 'lhB', cx: sx(xB), cy: sy(yB), r: 9, fill: HANDLE, opacity: 0.95, stroke: '#06262b', strokeWidth: 2,
+              style: { cursor: 'grab' }, 'aria-hidden': 'true',
+              onPointerDown: (function (ax, ay) { return function (e) { startHandleDrag(e, function (wx, wy) { return linePivotParams(xB, wy, ax, ay, level); }); }; })(xA, yA)
+            }));
+          }
+        }
+
         var svg = h('svg', {
           key: 'svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%',
           role: 'img', 'aria-label': describeBoard(level),
-          style: { display: 'block', maxHeight: '50vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden' }
-        }, [].concat(gridEls, obstacleEls, previewEls, overlay, [nodeEl]));
+          style: { display: 'block', maxHeight: '50vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden', touchAction: 'none' }
+        }, [].concat(gridEls, obstacleEls, previewEls, overlay, [nodeEl], handleEls));
 
         // ── Level progression bar ──
         var levelBtns = LEVELS.map(function (lv, i) {
@@ -589,7 +670,11 @@
         (level.gates || []).forEach(function (g, i) { coordItems.push(h('li', { key: 'cg' + i }, '🚪 ' + t('arccity.gate', 'Gate:') + ' x ' + g.x + ', opening y ' + g.lo + ' to ' + g.hi)); });
 
         var controls = h('div', { key: 'controls', style: { marginTop: 14 } },
-          h('div', { key: 'eq', style: { fontSize: 13, color: INK, marginBottom: 10, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)' } }, describeEquation(level, P)),
+          h('div', { key: 'eq', 'aria-label': describeEquation(level, P), style: { fontSize: 15, color: INK, marginBottom: 6, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', fontVariantNumeric: 'tabular-nums' } },
+            level.family === 'line'
+              ? ['y = ', h('span', { key: 'm', style: { color: BEAM, fontWeight: 800 } }, round1(P.m)), ' · x + ', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, round1(P.b))]
+              : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, round1(P.h)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]),
+          tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.6, marginBottom: 10 } }, t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.')) : null,
           h('div', { key: 'rows' }, paramRows),
           h('div', { key: 'btns', style: { display: 'flex', gap: 10, marginTop: 6 } },
             h('button', { key: 'fire', type: 'button', onClick: fire, style: fireBtnStyle }, '⚡ ' + t('arccity.fire', 'Fire beam')),
