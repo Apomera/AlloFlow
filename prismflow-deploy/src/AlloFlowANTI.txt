@@ -4339,7 +4339,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '20238352';
+    var pluginCdnVersion = '7ca5a146';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -26404,7 +26404,33 @@ ${_toolList}
           setPendingRole, setIsGateOpen, setShowAIBackendModal
       })}
       {isAppReady && !hasSelectedMode && window.AlloModules && window.AlloModules.OnboardingCoach && React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach, {
-          t, setRunTour
+          t, setRunTour,
+          // Tier 3 — pickMode dispatch. Mirrors the exact setter sequence each
+          // LaunchPad mode card fires (view_launch_pad_source.jsx:224-241),
+          // including the educator password gate. Single source of truth lives
+          // in the host so the coach module never bypasses the gate.
+          pickMode: function (key) {
+              switch (key) {
+                  case 'full':
+                      setHasSelectedMode(true);
+                      break;
+                  case 'guided':
+                      setHasSelectedMode(true); setGuidedMode(true);
+                      break;
+                  case 'learning_tools':
+                      setShowLearningHub(true); setIsTeacherMode(false); setShowWizard(false);
+                      setHasSelectedRole(true); setHasSelectedMode(true);
+                      break;
+                  case 'educator':
+                      setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false);
+                      if (APP_CONFIG._cfg_validation_key) {
+                          setPendingRole('educator_hub'); setIsGateOpen(true);
+                      } else {
+                          setIsTeacherMode(true); setShowEducatorHub(true);
+                      }
+                      break;
+              }
+          }
       })}
       {isBotVisible && (
           <AlloBot
