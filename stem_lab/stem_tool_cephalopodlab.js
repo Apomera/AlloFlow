@@ -17356,13 +17356,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 var y2 = 80 + Math.abs(Math.sin(ang)) * 50;
                 return h('path', { key: 't' + ti, d: 'M 160 80 Q ' + (160 + (x2-160)*0.4) + ' 120 ' + x2 + ' ' + y2, stroke: octoColor(), strokeWidth: 4, fill: 'none', strokeLinecap: 'round' });
               }),
-              // Predator detection eye — fades as detection drops
-              h('g', { transform: 'translate(280, 25)', opacity: detection / 100 },
-                h('ellipse', { cx: 0, cy: 0, rx: 18, ry: 10, fill: '#fef2f2', stroke: '#dc2626', strokeWidth: 1.5 }),
-                h('circle', { cx: 0, cy: 0, r: 6, fill: '#dc2626' }),
-                h('circle', { cx: 0, cy: 0, r: 2, fill: '#000' }),
-                h('text', { x: 0, y: 26, textAnchor: 'middle', fontSize: 9, fill: '#dc2626', fontWeight: 'bold' }, 'PREDATOR')
-              )
+              // Discrete state marker (Cycle 11 refactor: replaces fading-eye pseudo-score with binary state).
+              // The threshold (30) is intentionally not shown to the learner — they observe the flip, they do not optimize toward a number.
+              (function() {
+                var hidden = detection < 30;
+                return h('g', { transform: 'translate(280, 25)' },
+                  h('rect', { x: -32, y: -10, width: 64, height: 20, rx: 4, fill: hidden ? '#dcfce7' : '#fee2e2', stroke: hidden ? '#16a34a' : '#dc2626', strokeWidth: 1.2 }),
+                  h('text', { x: 0, y: 4, textAnchor: 'middle', fontSize: 10, fontWeight: 'bold', fill: hidden ? '#15803d' : '#b91c1c' }, hidden ? '🌿 hidden' : '👁 spotted')
+                );
+              })()
             ),
             h('div', { className: 'text-[10px] text-slate-600 px-2 py-1 bg-slate-50 text-center' },
               'Substrate: ' + sub.label + '   |   Brightness slider ' + st.brightness + '%, Hue ' + st.hue + '%, Coarseness ' + st.coarseness + '%')

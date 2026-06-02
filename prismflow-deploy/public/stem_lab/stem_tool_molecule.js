@@ -3050,6 +3050,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
             { id: 'lab', label: 'Lab techniques', icon: '🔬' },
             { id: 'spectro', label: 'Spectroscopy', icon: '📡' },
             { id: 'safety', label: 'Lab safety', icon: '🦺' }
+, { id: 'bondMystery', label: 'Bond detective', icon: '🔬' }
+, { id: 'solventMystery', label: 'Mystery solvent', icon: '🧪' }
           ] }
         ];
         function renderBtn(s, accent) {
@@ -3670,6 +3672,405 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
         );
       }
 
+      // ── Cycle 3 of the inquiry-learning study: Hypothesis Competition + FORCED commitment ──
+      // Tests H5: enforcing "predict before reveal" makes MCQ-style inquiry score higher
+      // than the same content with optional reveal. The reveal button is disabled until the
+      // learner has both picked an answer AND ticked at least one supporting evidence chip.
+      var BOND_CASES = [
+        {
+          id: 'c1',
+          alias: 'Compound α',
+          data: { mp: 801, conductMolten: 'high', conductSolid: 'none', solubility: 'high in water', appearance: 'white crystalline solid' },
+          correct: 'ionic',
+          principles: 'Very high melting point + conducts only when molten (free ions) + dissolves in polar solvent → classic ionic. This is sodium chloride (NaCl).',
+          evidenceKeys: ['mp', 'conductMolten', 'conductSolid', 'solubility']
+        },
+        {
+          id: 'c2',
+          alias: 'Compound β',
+          data: { mp: -114, conductMolten: 'none', conductSolid: 'none', solubility: 'miscible with water', appearance: 'colorless liquid' },
+          correct: 'covalent_hbonded',
+          principles: 'Low melting point + no conductivity in any phase + dissolves in water → polar covalent. The unusually high boiling point (vs other small molecules) hints at hydrogen bonding. This is ethanol (C₂H₅OH).',
+          evidenceKeys: ['mp', 'conductMolten', 'conductSolid', 'solubility']
+        },
+        {
+          id: 'c3',
+          alias: 'Compound γ',
+          data: { mp: 1085, conductMolten: 'high', conductSolid: 'high', solubility: 'insoluble in water', appearance: 'reddish-orange lustrous solid, malleable' },
+          correct: 'metallic',
+          principles: 'High melting point + conducts in BOTH solid and molten states + insoluble in water + lustrous and malleable → metallic bonding (delocalized electron sea). This is copper.',
+          evidenceKeys: ['mp', 'conductMolten', 'conductSolid', 'appearance']
+        }
+      ];
+
+      var BOND_OPTIONS = [
+        { id: 'ionic', label: 'Ionic' },
+        { id: 'covalent_hbonded', label: 'Covalent (polar / H-bonded)' },
+        { id: 'covalent_nonpolar', label: 'Covalent (nonpolar molecular)' },
+        { id: 'metallic', label: 'Metallic' },
+        { id: 'network_covalent', label: 'Network covalent' }
+      ];
+
+      var EVIDENCE_LABELS = {
+        mp: 'Melting point',
+        conductMolten: 'Conductivity (molten)',
+        conductSolid: 'Conductivity (solid)',
+        solubility: 'Water solubility',
+        appearance: 'Appearance / malleability'
+      };
+
+      function renderBondMysterySection() {
+        var state = d2.bondMystery || { cases: {}, score: 0 };
+        function setBM(patch) {
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.molecule) || {};
+            var st = Object.assign({}, prior.bondMystery || state, patch);
+            return Object.assign({}, prev, { molecule: Object.assign({}, prior, { bondMystery: st }) });
+          });
+        }
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🔬 Bond detective'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+            'Three unknown compounds. Study the data, pick the most likely bond type, AND check which pieces of evidence convinced you. The "Reveal" button only enables once you\'ve committed to both — no peeking, no hedging.'),
+          BOND_CASES.map(function(c, idx) {
+            var st = state.cases[c.id] || { pick: null, evidence: {}, revealed: false };
+            var evidenceCount = Object.keys(st.evidence || {}).filter(function(k) { return st.evidence[k]; }).length;
+            var canReveal = st.pick != null && evidenceCount >= 1 && !st.revealed;
+            var isCorrect = st.revealed && st.pick === c.correct;
+            return React.createElement('div', { key: c.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
+              React.createElement('div', { className: 'flex items-baseline gap-2 mb-2' },
+                React.createElement('span', { className: 'text-[10px] font-mono text-indigo-700 font-bold' }, '#' + (idx + 1)),
+                React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, c.alias)
+              ),
+              React.createElement('table', { className: 'text-[11px] w-full border-collapse mb-2' },
+                React.createElement('tbody', null,
+                  Object.keys(c.data).map(function(k) {
+                    return React.createElement('tr', { key: k, className: 'border-b border-slate-200' },
+                      React.createElement('td', { className: 'py-1 pr-2 font-bold text-slate-600 w-1/3' }, EVIDENCE_LABELS[k]),
+                      React.createElement('td', { className: 'py-1 font-mono text-slate-800' }, String(c.data[k]))
+                    );
+                  })
+                )
+              ),
+              // Bond-type picker
+              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, 'Your hypothesis (bond type):'),
+              React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                BOND_OPTIONS.map(function(opt) {
+                  var picked = st.pick === opt.id;
+                  var revealed = st.revealed;
+                  var correct = opt.id === c.correct;
+                  var bg = revealed
+                    ? (correct ? 'bg-green-600 text-white border-green-700' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
+                    : (picked ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50');
+                  return React.createElement('button', {
+                    key: opt.id,
+                    disabled: revealed,
+                    onClick: function() {
+                      var newCases = Object.assign({}, state.cases);
+                      newCases[c.id] = Object.assign({}, st, { pick: opt.id });
+                      setBM({ cases: newCases });
+                    },
+                    'aria-pressed': picked ? 'true' : 'false',
+                    className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors focus:ring-2 focus:ring-indigo-400 focus:outline-none ' + bg
+                  }, opt.label);
+                })
+              ),
+              // Evidence picker
+              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, 'Which evidence convinced you? (at least 1)'),
+              React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                c.evidenceKeys.map(function(ek) {
+                  var checked = !!(st.evidence || {})[ek];
+                  return React.createElement('label', {
+                    key: ek,
+                    className: 'inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] border cursor-pointer transition-colors ' +
+                      (checked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-amber-50')
+                  },
+                    React.createElement('input', {
+                      type: 'checkbox',
+                      checked: checked,
+                      disabled: st.revealed,
+                      onChange: function(e) {
+                        var newEv = Object.assign({}, st.evidence || {});
+                        newEv[ek] = e.target.checked;
+                        var newCases = Object.assign({}, state.cases);
+                        newCases[c.id] = Object.assign({}, st, { evidence: newEv });
+                        setBM({ cases: newCases });
+                      },
+                      'aria-label': EVIDENCE_LABELS[ek],
+                      className: 'w-3 h-3'
+                    }),
+                    EVIDENCE_LABELS[ek]
+                  );
+                })
+              ),
+              // Reveal button — DISABLED until commitment is complete (H5 mechanic)
+              React.createElement('div', { className: 'flex items-center gap-2' },
+                React.createElement('button', {
+                  disabled: !canReveal,
+                  onClick: function() {
+                    var newCases = Object.assign({}, state.cases);
+                    newCases[c.id] = Object.assign({}, st, { revealed: true });
+                    var bonus = st.pick === c.correct ? 1 : 0;
+                    setBM({ cases: newCases, score: (state.score || 0) + bonus });
+                  },
+                  className: 'px-3 py-1 rounded text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-400 focus:outline-none'
+                }, st.revealed ? '✓ Revealed' : 'Reveal answer'),
+                !canReveal && !st.revealed && React.createElement('span', { className: 'text-[10px] text-slate-500 italic' },
+                  st.pick == null ? 'Pick a bond type first' : 'Tick at least one evidence checkbox'
+                ),
+                st.revealed && React.createElement('span', { className: 'text-[11px] font-bold ' + (isCorrect ? 'text-green-700' : 'text-rose-700') },
+                  isCorrect ? '✓ Correct!' : '✗ Re-read the principles below'
+                )
+              ),
+              st.revealed && React.createElement('div', { className: 'mt-2 p-2 rounded bg-indigo-50 border-l-4 border-l-indigo-400 text-[11px] text-slate-700 leading-relaxed' },
+                React.createElement('strong', { className: 'text-indigo-900' }, 'Principles: '), c.principles
+              )
+            );
+          }),
+          React.createElement('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2' },
+            React.createElement('span', null, '🎯'),
+            React.createElement('strong', null, 'Score: ' + (state.score || 0) + ' / ' + BOND_CASES.length),
+            React.createElement('span', { className: 'text-slate-500 ml-2 italic' }, 'The reveal is locked behind your commitment — it\'s the prediction, not the answer, that builds intuition.')
+          )
+        );
+      }
+
+      // === Cycle-7 conjunctive-integration widget: mystery solvent ===
+      // Combines: forced commitment, reasoning verification, SVG visualization,
+      // multi-step Socratic reveal on wrong, cross-representation linking.
+      var SOLVENT_CASES = [
+        {
+          id: 'nacl', solute: 'Table salt (NaCl)', soluteKind: 'ionic-polar',
+          desc: 'White crystalline solid. Held together by strong + / − ion attractions.',
+          correct: 'water',
+          explanation: 'Water’s permanent dipoles surround Na+ and Cl- ions (ion–dipole forces strong enough to break the ionic lattice).',
+          rationale: ['ion-dipole', 'like-dissolves-like', 'has-h-bonds']
+        },
+        {
+          id: 'i2', solute: 'Iodine crystals (I₂)', soluteKind: 'nonpolar-molecular',
+          desc: 'Purple-black solid. Each I₂ molecule held loosely by London dispersion only.',
+          correct: 'hexane',
+          explanation: 'I₂ is nonpolar; only London dispersion attractions stabilize it in solution. Hexane is also nonpolar — like-dissolves-like via dispersion.',
+          rationale: ['like-dissolves-like', 'nonpolar-match', 'no-h-bonds-needed']
+        },
+        {
+          id: 'suc', solute: 'Sucrose (table sugar)', soluteKind: 'polar-covalent',
+          desc: 'Many –OH groups on a covalent ring. Polar, but not ionic.',
+          correct: 'water',
+          explanation: 'Sucrose dissolves because its –OH groups form hydrogen bonds with water. Not ionic, so the mechanism is H-bonding, not ion–dipole.',
+          rationale: ['has-h-bonds', 'like-dissolves-like', 'forms-hydrogen-bonds']
+        }
+      ];
+      var SOLVENT_OPTS = [
+        { id: 'water', label: 'Water (H₂O)', polarity: 'polar', symbol: 'H–O–H', dipole: 1.85, note: 'strongly polar; H-bond donor + acceptor' },
+        { id: 'hexane', label: 'Hexane (C₆H₁₄)', polarity: 'nonpolar', symbol: 'CH₃(CH₂)₄CH₃', dipole: 0.08, note: 'nonpolar; London dispersion only' },
+        { id: 'ethanol', label: 'Ethanol (C₂H₅OH)', polarity: 'intermediate', symbol: 'CH₃CH₂OH', dipole: 1.69, note: 'amphiphilic — polar OH end, nonpolar tail' }
+      ];
+      var RATIONALE_CHIPS = {
+        'ion-dipole': 'Ion–dipole attraction can pull ions out of the lattice',
+        'like-dissolves-like': 'Like dissolves like (polarity match)',
+        'has-h-bonds': 'Solvent can donate or accept H-bonds',
+        'forms-hydrogen-bonds': 'Solute’s OH groups will hydrogen-bond to solvent',
+        'no-h-bonds-needed': 'No H-bonds needed — only weak dispersion forces',
+        'nonpolar-match': 'Both solute and solvent are nonpolar (dispersion match)',
+        'low-density': 'Solvent has the lowest density',
+        'cheapest': 'Solvent is the least expensive',
+        'highest-bp': 'Solvent has the highest boiling point'
+      };
+
+      function renderSolventMysterySection() {
+        var state = d2.solventMystery || { cases: {}, score: 0 };
+        function setSM(patch) {
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.molecule) || {};
+            var st = Object.assign({}, prior.solventMystery || state, patch);
+            return Object.assign({}, prev, { molecule: Object.assign({}, prior, { solventMystery: st }) });
+          });
+        }
+        function updateCase(id, patch) {
+          var newCases = Object.assign({}, state.cases);
+          newCases[id] = Object.assign({}, state.cases[id] || { pick: null, ranking: [], revealed: false, socraticStep: 0 }, patch);
+          setSM({ cases: newCases });
+        }
+        // Cross-rep: live polarity diagram for the chosen solvent
+        function solventDiagramSvg(optId) {
+          var opt = SOLVENT_OPTS.find(function(o) { return o.id === optId; });
+          if (!opt) {
+            return React.createElement('div', { className: 'h-20 flex items-center justify-center text-[10px] text-slate-400 italic border border-dashed border-slate-300 rounded' }, '(pick a solvent to see its polarity diagram)');
+          }
+          var isPolar = opt.polarity === 'polar';
+          var isInt = opt.polarity === 'intermediate';
+          // Simple cartoon: central atoms with delta+/delta- when polar; uniform when nonpolar
+          return React.createElement('svg', { viewBox: '0 0 240 80', className: 'w-full h-20 bg-slate-50 rounded border border-slate-200' },
+            React.createElement('circle', { cx: 80, cy: 40, r: 18, fill: isPolar ? '#fde68a' : (isInt ? '#fcd34d' : '#cbd5e1') }),
+            React.createElement('circle', { cx: 160, cy: 40, r: 14, fill: isPolar ? '#bfdbfe' : (isInt ? '#bfdbfe' : '#cbd5e1') }),
+            React.createElement('line', { x1: 95, y1: 40, x2: 147, y2: 40, stroke: '#475569', strokeWidth: 3 }),
+            React.createElement('text', { x: 80, y: 45, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: '#1e293b' }, isPolar ? 'δ+' : (isInt ? 'δ+' : '—')),
+            React.createElement('text', { x: 160, y: 45, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: '#1e293b' }, isPolar ? 'δ−' : (isInt ? 'δ−' : '—')),
+            isPolar && React.createElement('path', { d: 'M 95 28 Q 122 18 147 28', stroke: '#dc2626', strokeWidth: 2, fill: 'none', markerEnd: 'url(#arrow)' }),
+            React.createElement('defs', null,
+              React.createElement('marker', { id: 'arrow', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' },
+                React.createElement('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#dc2626' })
+              )
+            ),
+            React.createElement('text', { x: 120, y: 70, textAnchor: 'middle', fontSize: 10, fill: '#475569' },
+              opt.label + ' — dipole μ = ' + opt.dipole + ' D (' + opt.polarity + ')')
+          );
+        }
+        // Cross-rep: IMF strength bar
+        function imfStrengthBar(picked, kase) {
+          var opt = SOLVENT_OPTS.find(function(o) { return o.id === picked; });
+          if (!opt) return null;
+          // Heuristic match score: polar+ionic = high, polar+polar = high, nonpolar+nonpolar = high, mismatched = low
+          var score = 0;
+          if (kase.soluteKind === 'ionic-polar' && opt.polarity === 'polar') score = 90;
+          else if (kase.soluteKind === 'ionic-polar' && opt.polarity === 'intermediate') score = 35;
+          else if (kase.soluteKind === 'ionic-polar' && opt.polarity === 'nonpolar') score = 5;
+          else if (kase.soluteKind === 'polar-covalent' && opt.polarity === 'polar') score = 85;
+          else if (kase.soluteKind === 'polar-covalent' && opt.polarity === 'intermediate') score = 55;
+          else if (kase.soluteKind === 'polar-covalent' && opt.polarity === 'nonpolar') score = 10;
+          else if (kase.soluteKind === 'nonpolar-molecular' && opt.polarity === 'nonpolar') score = 85;
+          else if (kase.soluteKind === 'nonpolar-molecular' && opt.polarity === 'intermediate') score = 40;
+          else if (kase.soluteKind === 'nonpolar-molecular' && opt.polarity === 'polar') score = 8;
+          var color = score >= 70 ? 'bg-emerald-500' : (score >= 35 ? 'bg-amber-400' : 'bg-rose-400');
+          return React.createElement('div', { className: 'mt-1' },
+            React.createElement('div', { className: 'flex items-baseline gap-2 text-[10px] text-slate-600' },
+              React.createElement('span', null, 'Predicted IMF match strength:'),
+              React.createElement('span', { className: 'font-mono font-bold text-slate-800' }, score + '%')
+            ),
+            React.createElement('div', { className: 'h-2 bg-slate-200 rounded overflow-hidden', role: 'progressbar', 'aria-valuenow': score, 'aria-valuemin': 0, 'aria-valuemax': 100 },
+              React.createElement('div', { className: 'h-full ' + color, style: { width: score + '%' } })
+            )
+          );
+        }
+        // Cross-rep: plain-language live prediction
+        function livePrediction(picked, kase) {
+          var opt = SOLVENT_OPTS.find(function(o) { return o.id === picked; });
+          if (!opt) return null;
+          var label = kase.soluteKind + ' solute + ' + opt.polarity + ' solvent';
+          var verdict = (
+            (kase.soluteKind === 'ionic-polar' && opt.polarity === 'polar') ||
+            (kase.soluteKind === 'polar-covalent' && opt.polarity === 'polar') ||
+            (kase.soluteKind === 'nonpolar-molecular' && opt.polarity === 'nonpolar')
+          ) ? '→ dissolves readily' : ((opt.polarity === 'intermediate') ? '→ partially soluble' : '→ does NOT dissolve');
+          return React.createElement('div', { className: 'text-[10px] italic text-slate-700 mt-1' }, label + ' ' + verdict);
+        }
+        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🧪 Mystery solvent'),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+            'Three unknown solutes. For each: (1) pick the best solvent, (2) rank the chemistry reasoning that justifies your pick, (3) live diagrams update with each click, and (4) wrong answers walk you through the polarity logic step by step — no answer dump.'),
+          SOLVENT_CASES.map(function(kase, idx) {
+            var st = state.cases[kase.id] || { pick: null, ranking: [], revealed: false, socraticStep: 0 };
+            var hasRanked = (st.ranking || []).length >= 2;
+            var canReveal = st.pick != null && hasRanked && !st.revealed;
+            var isCorrect = st.revealed && st.pick === kase.correct;
+            // Expert ranking = the correct-rationale ids in their listed order
+            var expertOrder = kase.rationale;
+            var rankCorrect = JSON.stringify((st.ranking || []).slice(0, expertOrder.length)) === JSON.stringify(expertOrder);
+            // Build candidate chip pool: 3 correct + 3 distractors
+            var distractors = ['low-density', 'cheapest', 'highest-bp'];
+            var chipPool = expertOrder.concat(distractors);
+            function toggleRank(chip) {
+              var arr = (st.ranking || []).slice();
+              var i = arr.indexOf(chip);
+              if (i >= 0) arr.splice(i, 1); else arr.push(chip);
+              updateCase(kase.id, { ranking: arr });
+            }
+            return React.createElement('div', { key: kase.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
+              React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
+                React.createElement('span', { className: 'text-[10px] font-mono text-indigo-700 font-bold' }, '#' + (idx + 1)),
+                React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, kase.solute)
+              ),
+              React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2' }, kase.desc),
+              // (1) Solvent picker
+              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, '1. Pick a solvent:'),
+              React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                SOLVENT_OPTS.map(function(opt) {
+                  var picked = st.pick === opt.id;
+                  var revealed = st.revealed;
+                  var correct = opt.id === kase.correct;
+                  var bg = revealed
+                    ? (correct ? 'bg-green-600 text-white border-green-700' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
+                    : (picked ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50');
+                  return React.createElement('button', {
+                    key: opt.id,
+                    disabled: revealed,
+                    'aria-pressed': picked ? 'true' : 'false',
+                    onClick: function() { updateCase(kase.id, { pick: opt.id, socraticStep: 0 }); },
+                    className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors focus:ring-2 focus:ring-indigo-400 focus:outline-none ' + bg
+                  }, opt.label);
+                })
+              ),
+              // CROSS-REP: live polarity diagram + IMF bar + verdict sentence
+              React.createElement('div', { className: 'mb-2' }, solventDiagramSvg(st.pick)),
+              imfStrengthBar(st.pick, kase),
+              livePrediction(st.pick, kase),
+              // (2) Reasoning ranker
+              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mt-3 mb-1' },
+                '2. Rank the reasoning (click in priority order, top → bottom; need ≥2):'),
+              React.createElement('div', { className: 'flex flex-wrap gap-1 mb-1' },
+                chipPool.map(function(chip) {
+                  var pos = (st.ranking || []).indexOf(chip);
+                  var picked = pos >= 0;
+                  return React.createElement('button', {
+                    key: chip,
+                    disabled: st.revealed,
+                    onClick: function() { toggleRank(chip); },
+                    className: 'px-2 py-1 rounded text-[10px] font-semibold border transition-colors ' +
+                      (picked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-amber-50')
+                  }, (picked ? '#' + (pos + 1) + ' ' : '') + RATIONALE_CHIPS[chip]);
+                })
+              ),
+              // (3) Reveal + multi-step Socratic on wrong
+              React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                React.createElement('button', {
+                  disabled: !canReveal,
+                  onClick: function() { updateCase(kase.id, { revealed: true }); var bonus = (st.pick === kase.correct ? 1 : 0) + (rankCorrect ? 1 : 0); setSM({ score: (state.score || 0) + bonus }); },
+                  className: 'px-3 py-1 rounded text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-400 focus:outline-none'
+                }, st.revealed ? '✓ Checked' : 'Check answer'),
+                !canReveal && !st.revealed && React.createElement('span', { className: 'text-[10px] text-slate-500 italic' },
+                  st.pick == null ? 'Pick a solvent first' : 'Rank at least 2 reasoning chips'),
+                st.revealed && React.createElement('span', { className: 'text-[11px] font-bold ' + (isCorrect ? 'text-green-700' : 'text-rose-700') },
+                  isCorrect ? (rankCorrect ? '✓✓ Solvent + reasoning both correct' : '✓ Solvent correct; reasoning order off') : '✗ Wrong solvent — walk through the questions below')
+              ),
+              // MULTI-STEP SOCRATIC: only when revealed AND wrong solvent picked
+              (st.revealed && !isCorrect) && React.createElement('div', { className: 'mt-2 p-2 rounded bg-rose-50 border-l-4 border-l-rose-400 text-[11px] text-slate-700 space-y-1' },
+                React.createElement('div', { className: 'font-bold text-rose-800' }, 'Let’s walk through it step by step (no answer dump):'),
+                React.createElement('div', null,
+                  React.createElement('strong', null, 'Q1. '), 'Is ' + kase.solute + ' polar or nonpolar?'),
+                st.socraticStep >= 1 && React.createElement('div', { className: 'pl-3 text-indigo-800' },
+                  '→ ' + (kase.soluteKind === 'nonpolar-molecular' ? 'Nonpolar' : (kase.soluteKind === 'ionic-polar' ? 'Ionic (very polar)' : 'Polar (covalent, with H-bonding groups)'))),
+                st.socraticStep >= 1 && React.createElement('div', null,
+                  React.createElement('strong', null, 'Q2. '), 'Is the solvent you picked polar or nonpolar?'),
+                st.socraticStep >= 2 && React.createElement('div', { className: 'pl-3 text-indigo-800' },
+                  '→ ' + (SOLVENT_OPTS.find(function(o) { return o.id === st.pick; }) || {}).polarity),
+                st.socraticStep >= 2 && React.createElement('div', null,
+                  React.createElement('strong', null, 'Q3. '), '"Like dissolves like." Do polarities match?'),
+                st.socraticStep >= 3 && React.createElement('div', { className: 'pl-3 text-indigo-800 font-semibold' },
+                  '→ No. The correct solvent is ' + (SOLVENT_OPTS.find(function(o) { return o.id === kase.correct; }) || {}).label + ' because: ' + kase.explanation),
+                React.createElement('button', {
+                  onClick: function() { updateCase(kase.id, { socraticStep: Math.min((st.socraticStep || 0) + 1, 3) }); },
+                  disabled: (st.socraticStep || 0) >= 3,
+                  className: 'mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-40'
+                }, (st.socraticStep || 0) >= 3 ? 'Walkthrough complete' : 'Show next step →')
+              ),
+              // CORRECT-PATH explanation
+              (st.revealed && isCorrect) && React.createElement('div', { className: 'mt-2 p-2 rounded bg-emerald-50 border-l-4 border-l-emerald-400 text-[11px] text-slate-700' },
+                React.createElement('strong', { className: 'text-emerald-800' }, 'Why this works: '), kase.explanation,
+                !rankCorrect && React.createElement('div', { className: 'mt-1 text-amber-700' },
+                  '☕ Expert reasoning order: ' + expertOrder.map(function(c) { return RATIONALE_CHIPS[c]; }).join(' → '))
+              )
+            );
+          }),
+          React.createElement('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2 flex-wrap' },
+            React.createElement('span', null, '🎯'),
+            React.createElement('strong', null, 'Score: ' + (state.score || 0) + ' / ' + (SOLVENT_CASES.length * 2)),
+            React.createElement('span', { className: 'text-slate-500 italic' },
+              '(+1 for correct solvent, +1 if reasoning order matches expert). Live diagrams + Socratic walkthrough are the point — not the score.')
+          )
+        );
+      }
+
       function renderGlossarySection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📖 Chemistry glossary'),
@@ -4183,6 +4584,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
         if (expSection === 'flavor_chem') return renderFlavorChemSection();
         if (expSection === 'colors_chem') return renderColorsChemSection();
         if (expSection === 'industrial') return renderIndustrialSection();
+        if (expSection === 'bondMystery') return renderBondMysterySection();
+        if (expSection === 'solventMystery') return renderSolventMysterySection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
       }

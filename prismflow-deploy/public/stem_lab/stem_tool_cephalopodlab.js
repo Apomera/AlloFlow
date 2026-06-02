@@ -614,7 +614,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               { id: 'art', label: 'Art Projects', icon: '🎨' },
               { id: 'home', label: 'At Home', icon: '🏠' },
               { id: 'final', label: 'Final Reflections', icon: '🌅' },
-              { id: 'certs', label: 'Certificates', icon: '🏅' }
+              { id: 'certs', label: 'Certificates', icon: '🏅' },
+              { id: 'camoHunt', label: 'Camo discovery', icon: '🎨' }
             ] },
           { id: 'biology', label: 'Biology',
             color: '#86efac',
@@ -17274,6 +17275,205 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       // ═══════════════════════════════════════════════════════
+      // SECTION 15z — CAMO DISCOVERY (Cycle-10 open-ended widget)
+      // Open-ended manipulation + learner-typed hypothesis + observable
+      // paradox (disruptive coloration beats smooth for patchy substrates).
+      // No score, no chips, no reveal button, no answer dump.
+      // ═══════════════════════════════════════════════════════
+      function renderCamoHunt() {
+        var st = d.camoHunt || { substrate: 'sand', brightness: 50, hue: 50, coarseness: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setCH(patch) { setCL({ camoHunt: Object.assign({}, st, patch) }); }
+        // Substrate profiles: target brightness, hue, and pattern coarseness.
+        // Pattern coarseness matters — smooth on patchy backgrounds (pebbles, coral) INCREASES detection.
+        var SUBSTRATES = {
+          sand:    { label: '🏖 Smooth sand',      tBright: 75, tHue: 40, tCoarse: 15, color: '#d4c2a0' },
+          pebbles: { label: '🪨 Pebble bed',       tBright: 55, tHue: 35, tCoarse: 75, color: '#6b6258' },
+          coral:   { label: '🪸 Patchy coral',     tBright: 60, tHue: 80, tCoarse: 85, color: '#c97777' },
+          kelp:    { label: '🌿 Kelp forest',      tBright: 35, tHue: 55, tCoarse: 60, color: '#3f5a3f' },
+          openSea: { label: '🌊 Open water',       tBright: 45, tHue: 65, tCoarse: 5,  color: '#3a6b8a' }
+        };
+        var sub = SUBSTRATES[st.substrate] || SUBSTRATES.sand;
+        // Detection probability: penalty grows with squared distance from target in each dimension
+        var dBright = (st.brightness - sub.tBright) / 100;
+        var dHue    = (st.hue        - sub.tHue)    / 100;
+        var dCoarse = (st.coarseness - sub.tCoarse) / 100;
+        // Pattern matters more on patchy substrates
+        var coarseWeight = sub.tCoarse > 50 ? 2.2 : 1.0;
+        var raw = 100 * (dBright*dBright + dHue*dHue + coarseWeight * dCoarse*dCoarse);
+        var detection = Math.max(0, Math.min(100, Math.round(raw)));
+        // Octopus surface color derived from sliders
+        function lerp(a,b,t){ return a + (b-a) * Math.max(0, Math.min(1, t)); }
+        function octoColor() {
+          var bright = st.brightness / 100;
+          var hueT   = st.hue / 100;
+          var r = Math.round(lerp(50, 220, bright) * lerp(1, 0.9, Math.abs(hueT - 0.5) * 0.4));
+          var g = Math.round(lerp(40, 200, bright) * lerp(0.6, 1.0, hueT));
+          var b = Math.round(lerp(40, 200, bright) * lerp(1.0, 0.5, hueT));
+          return 'rgb(' + r + ',' + g + ',' + b + ')';
+        }
+        function logObs() {
+          var obs = { substrate: st.substrate, b: st.brightness, h: st.hue, c: st.coarseness, det: detection };
+          setCH({ log: (st.log || []).concat([obs]).slice(-8) });
+        }
+        return h('div', { className: 'p-4 rounded-xl bg-white border border-slate-200 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🎨 Camouflage discovery'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+            'You are the octopus. Pick a background. Adjust your skin\'s brightness, hue, and pattern coarseness. The red predator-eye fades as you become harder to detect. There is no score number, no "right answer," and no reveal button. Sweep the sliders. Notice when detection drops fast and when it does not. Type what you discover.'),
+          // Background + octopus visualization
+          h('div', { className: 'mb-3 rounded border border-slate-200 overflow-hidden' },
+            h('svg', { viewBox: '0 0 320 140', className: 'w-full h-36 block' },
+              // Background fill
+              h('rect', { x: 0, y: 0, width: 320, height: 140, fill: sub.color }),
+              // Pattern dots (more dots = coarser pattern)
+              (function() {
+                var dots = [];
+                var dotCount = Math.round(sub.tCoarse / 8);
+                for (var i = 0; i < dotCount; i++) {
+                  var px = ((i * 47) % 320);
+                  var py = ((i * 31) % 140);
+                  dots.push(h('circle', { key: 'bd' + i, cx: px, cy: py, r: 4 + (i % 3), fill: sub.color, opacity: 0.55, stroke: '#000', strokeWidth: 0.4 }));
+                }
+                return dots;
+              })(),
+              // Octopus body + tentacles
+              h('ellipse', { cx: 160, cy: 70, rx: 36, ry: 24, fill: octoColor(), stroke: '#000', strokeWidth: 0.6 }),
+              // Octopus pattern matching (more visible when learner coarseness > 50)
+              (function() {
+                var n = Math.round(st.coarseness / 12);
+                var spots = [];
+                for (var i = 0; i < n; i++) {
+                  spots.push(h('circle', { key: 'os' + i, cx: 130 + (i * 11) % 60, cy: 60 + (i * 7) % 20, r: 2 + (i % 3), fill: '#000', opacity: 0.35 }));
+                }
+                return spots;
+              })(),
+              // Eye spots
+              h('circle', { cx: 150, cy: 65, r: 2.5, fill: '#000' }),
+              h('circle', { cx: 170, cy: 65, r: 2.5, fill: '#000' }),
+              // Tentacles
+              [0,1,2,3,4,5].map(function(ti) {
+                var ang = -1.2 + ti * 0.5;
+                var x2 = 160 + Math.cos(ang) * 60;
+                var y2 = 80 + Math.abs(Math.sin(ang)) * 50;
+                return h('path', { key: 't' + ti, d: 'M 160 80 Q ' + (160 + (x2-160)*0.4) + ' 120 ' + x2 + ' ' + y2, stroke: octoColor(), strokeWidth: 4, fill: 'none', strokeLinecap: 'round' });
+              }),
+              // Predator detection eye — fades as detection drops
+              h('g', { transform: 'translate(280, 25)', opacity: detection / 100 },
+                h('ellipse', { cx: 0, cy: 0, rx: 18, ry: 10, fill: '#fef2f2', stroke: '#dc2626', strokeWidth: 1.5 }),
+                h('circle', { cx: 0, cy: 0, r: 6, fill: '#dc2626' }),
+                h('circle', { cx: 0, cy: 0, r: 2, fill: '#000' }),
+                h('text', { x: 0, y: 26, textAnchor: 'middle', fontSize: 9, fill: '#dc2626', fontWeight: 'bold' }, 'PREDATOR')
+              )
+            ),
+            h('div', { className: 'text-[10px] text-slate-600 px-2 py-1 bg-slate-50 text-center' },
+              'Substrate: ' + sub.label + '   |   Brightness slider ' + st.brightness + '%, Hue ' + st.hue + '%, Coarseness ' + st.coarseness + '%')
+          ),
+          // Substrate picker (discrete choice — but pure environment, not answer)
+          h('div', { className: 'mb-3' },
+            h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, 'Choose your background:'),
+            h('div', { className: 'flex flex-wrap gap-1' },
+              Object.keys(SUBSTRATES).map(function(k) {
+                var active = st.substrate === k;
+                return h('button', {
+                  key: k,
+                  onClick: function() { setCH({ substrate: k }); },
+                  className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors ' + (active ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-indigo-50')
+                }, SUBSTRATES[k].label);
+              })
+            )
+          ),
+          // Three continuous sliders
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
+            [
+              { key: 'brightness', label: 'Brightness', val: st.brightness, min: 0, max: 100 },
+              { key: 'hue',        label: 'Hue (cool ↔ warm)', val: st.hue, min: 0, max: 100 },
+              { key: 'coarseness', label: 'Pattern coarseness (smooth ↔ disruptive)', val: st.coarseness, min: 0, max: 100 }
+            ].map(function(s) {
+              return h('div', { key: s.key },
+                h('label', { htmlFor: 'ch-' + s.key, className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                  s.label + ': ', h('span', { className: 'font-mono text-indigo-700' }, s.val + '%')),
+                h('input', {
+                  id: 'ch-' + s.key, type: 'range', min: s.min, max: s.max, step: 1, value: s.val,
+                  onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setCH(p); },
+                  className: 'w-full', 'aria-label': s.label
+                })
+              );
+            })
+          ),
+          // Log + reset
+          h('div', { className: 'flex flex-wrap gap-2 items-center mb-3' },
+            h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log observation'),
+            h('button', { onClick: function() { setCH({ substrate: 'sand', brightness: 50, hue: 50, coarseness: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+            (st.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (st.log || []).length + ' observations logged')
+          ),
+          // Observation log table
+          (st.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
+            h('table', { className: 'text-[10px] w-full border-collapse' },
+              h('thead', null, h('tr', { className: 'bg-slate-100' },
+                ['substrate', 'brightness', 'hue', 'coarseness', 'detection'].map(function(c, i) {
+                  return h('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-200 text-left' }, c);
+                })
+              )),
+              h('tbody', null, st.log.map(function(o, idx) {
+                return h('tr', { key: 'lr' + idx, className: o.det < 20 ? 'bg-emerald-50' : (o.det > 60 ? 'bg-rose-50' : '') },
+                  h('td', { className: 'px-2 py-1 border border-slate-200' }, o.substrate),
+                  h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.b),
+                  h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.h),
+                  h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.c),
+                  h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.det)
+                );
+              }))
+            )
+          ),
+          // Free-text hypothesis
+          h('div', { className: 'mb-3' },
+            h('label', { htmlFor: 'ch-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+              'Your hypothesis (free text — no right answer):'),
+            h('textarea', {
+              id: 'ch-hypo', value: st.hypothesis || '',
+              onChange: function(e) { setCH({ hypothesis: e.target.value }); },
+              placeholder: 'What single slider seems to matter MOST for hiding on the coral? What about on the open sea? Type your own theory.',
+              className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3
+            })
+          ),
+          // Opt-in open questions
+          h('div', { className: 'mb-3' },
+            !st.stuckRevealed && h('button', {
+              onClick: function() { setCH({ stuckRevealed: true }); },
+              className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300'
+            }, '🤔 I\'m stuck — show me questions to think about (no answers)'),
+            st.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+              h('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open questions — investigate by manipulating:'),
+              h('ul', { className: 'list-disc pl-5 space-y-1' },
+                h('li', null, 'Pick the open-sea substrate. Sweep coarseness from 0 to 100. Does detection care? Now switch to coral and repeat. What changed?'),
+                h('li', null, 'Try matching brightness perfectly on coral but leave coarseness at 0. How well are you hidden? Is matching brightness alone enough?'),
+                h('li', null, 'A real cuttlefish uses a "disruptive pattern" with high-contrast blotches on patchy backgrounds, not smooth color. Predict why — then test on the coral substrate at coarseness 80.'),
+                h('li', null, 'Compare your best detection on smooth sand vs patchy coral. Is one substrate inherently easier to hide on? Why might that be?'),
+                h('li', null, 'Real cephalopods are color-blind but have superb shape and contrast vision. What does that suggest about how they perceive matching success?')
+              ),
+              h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, 'No answers will be revealed here. Investigate.')
+            )
+          ),
+          // Self-mark + explanation
+          h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+            h('div', { className: 'flex items-center gap-2 mb-2' },
+              h('input', { type: 'checkbox', id: 'ch-und', checked: !!st.understood, onChange: function(e) { setCH({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+              h('label', { htmlFor: 'ch-und', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
+                'I think I understand the pattern now — let me explain it in my own words')
+            ),
+            st.understood && h('textarea', {
+              value: st.explanation || '', onChange: function(e) { setCH({ explanation: e.target.value }); },
+              placeholder: 'Explain in your own words: what does effective camouflage require? Why does pattern matter more on patchy substrates than on smooth ones? Why might disruptive coloration sometimes beat uniform matching?',
+              className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug bg-white', rows: 4
+            }),
+            st.understood && (st.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
+              '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
+          ),
+          h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] text-slate-600 italic' },
+            'Design note: no score number, no right-answer chip, no reveal button. Detection is shown visually (predator eye fades) so the feedback signal does not become a score to maximize. The point is the inquiry, not the number.')
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
       // SECTION 16a — GLOSSARY (NGSS + AP Bio + AP Env Sci aligned)
       // ═══════════════════════════════════════════════════════
       // Full searchable glossary, organized alphabetically, with
@@ -19984,6 +20184,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       else if (section === 'conservation') content = renderConservation();
       else if (section === 'culture') content = renderCulture();
       else if (section === 'fieldday') content = renderFieldDay();
+      else if (section === 'camoHunt') content = renderCamoHunt();
       else if (section === 'glossary') content = renderGlossary();
       else if (section === 'educator') content = renderEducator();
       else if (section === 'scientists') content = renderScientists();

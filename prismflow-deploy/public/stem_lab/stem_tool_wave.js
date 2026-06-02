@@ -2394,7 +2394,8 @@ const d = labToolData.wave;
             { id: 'diffraction', label: 'Diffraction', icon: '∿' },
             { id: 'polarization', label: 'Polarization', icon: '↕' },
             { id: 'doppler', label: 'Doppler effect', icon: '🚓' },
-            { id: 'shockwaves', label: 'Shock waves', icon: '✈' }
+            { id: 'shockwaves', label: 'Shock waves', icon: '✈' },
+            { id: 'standingHunt', label: 'Standing-wave hunt', icon: '🎯' }
           ] },
           { id: 'sound', label: 'Sound & Music', color: 'amber', tabs: [
             { id: 'harmonics', label: 'Harmonics', icon: '🎵' },
@@ -2442,7 +2443,7 @@ const d = labToolData.wave;
             { id: 'famous', label: 'History', icon: '🕰' },
             { id: 'glossary', label: 'Glossary', icon: '📖' }
           ] }
-        ];
+        , { id: 'discoverWave', label: 'Discover f·λ=v', icon: '🔬' }];
         function renderBtn(s, accent) {
           var active = expSection === s.id;
           return React.createElement('button', {
@@ -2663,6 +2664,314 @@ const d = labToolData.wave;
           React.createElement('div', { className: 'mt-3 p-2.5 rounded-md bg-red-50 border border-red-300 text-[11px] text-red-900' },
             React.createElement('strong', null, '⚠ Permanent hearing loss: '), 'OSHA: 85 dB for 8 hours, 90 dB for 4 hours, etc. (each +5 dB halves safe exposure time). Wear ear protection at concerts, with power tools, at firing ranges.'
           )
+        );
+      }
+
+      // ── Cycle 2 of the inquiry-learning study: Variable manipulation ──
+      // Learner varies frequency + tension; period + wavelength + wave speed update live.
+      // The widget asks discovery questions ("what stays constant?") before revealing the law.
+      function renderDiscoverWaveSection() {
+        var lab = d2.discoverWave || { freq: 4, tension: 50, observationsLogged: [], discovered: false };
+        function setLab(patch) {
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.wave) || {};
+            var st = Object.assign({}, prior.discoverWave || lab, patch);
+            return Object.assign({}, prev, { wave: Object.assign({}, prior, { discoverWave: st }) });
+          });
+        }
+        // Physics: standing wave on a string, v = sqrt(T/μ), with μ fixed at 0.01 kg/m for simplicity.
+        // wavelength = v/freq. Period = 1/freq. Both update live as f or T change.
+        var MU = 0.01;
+        var v = Math.sqrt(lab.tension / MU);
+        var period = 1 / lab.freq;
+        var wavelength = v / lab.freq;
+        var f_lambda = lab.freq * wavelength;
+        // SVG snapshot of the standing wave — amplitude 1, length 2 metres for visual
+        var stringLength = 2.0;
+        var nodes = Math.max(1, Math.round((2 * stringLength) / wavelength)); // half-wavelengths along string
+        var pts = [];
+        var samples = 60;
+        for (var i = 0; i <= samples; i++) {
+          var x = i / samples;
+          var phase = x * nodes * Math.PI; // standing wave snapshot
+          var y = Math.sin(phase);
+          pts.push([10 + x * 240, 50 - y * 30]);
+        }
+        var pathStr = 'M ' + pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L ');
+        // Animated phase using time for visual interest (gentle wobble at user freq)
+        var anim = 'animate-pulse'; // CSS-only; full animation handled by canvas tools elsewhere
+
+        function logObservation() {
+          var obs = { f: lab.freq, T: lab.tension, lambda: parseFloat(wavelength.toFixed(3)), v: parseFloat(v.toFixed(2)) };
+          var newObs = (lab.observationsLogged || []).concat([obs]).slice(-6);
+          setLab({ observationsLogged: newObs });
+        }
+        function reveal() { setLab({ discovered: true }); }
+        function reset() { setLab({ freq: 4, tension: 50, observationsLogged: [], discovered: false }); }
+
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🔬 Discover the wave equation'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+            'A string is fixed at both ends. Wiggle the controls. Watch what changes and what stays the same. Log a few observations, then try to spot the pattern. Hit "I see it" when you think you have the law — no peeking.'),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+            // Left: live SVG visualization
+            h('div', { className: 'p-3 rounded-lg bg-slate-900 border border-slate-700' },
+              h('svg', { viewBox: '0 0 260 100', width: '100%', style: { height: 'auto' }, 'aria-label': 'Standing wave on a string' },
+                h('line', { x1: 10, y1: 50, x2: 250, y2: 50, stroke: '#475569', strokeDasharray: '2,2', strokeWidth: 1 }),
+                h('path', { d: pathStr, fill: 'none', stroke: '#22d3ee', strokeWidth: 2.5, opacity: 0.95 }),
+                h('circle', { cx: 10, cy: 50, r: 4, fill: '#fbbf24' }),
+                h('circle', { cx: 250, cy: 50, r: 4, fill: '#fbbf24' }),
+                h('text', { x: 130, y: 92, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'Length L = 2.0 m (fixed)')
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-2 gap-2 text-[11px]' },
+                h('div', { className: 'p-1.5 rounded bg-slate-800 text-cyan-300' },
+                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, 'Period T'),
+                  h('div', { className: 'font-mono font-bold text-base' }, period.toFixed(3) + ' s')
+                ),
+                h('div', { className: 'p-1.5 rounded bg-slate-800 text-cyan-300' },
+                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, 'Wavelength λ'),
+                  h('div', { className: 'font-mono font-bold text-base' }, wavelength.toFixed(3) + ' m')
+                ),
+                h('div', { className: 'p-1.5 rounded bg-slate-800 text-amber-300' },
+                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, 'Wave speed v'),
+                  h('div', { className: 'font-mono font-bold text-base' }, v.toFixed(2) + ' m/s')
+                ),
+                h('div', { className: 'p-1.5 rounded bg-slate-800 text-violet-300' },
+                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, 'f × λ'),
+                  h('div', { className: 'font-mono font-bold text-base' }, f_lambda.toFixed(2))
+                )
+              )
+            ),
+            // Right: controls + observation log
+            h('div', { className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
+              h('label', { htmlFor: 'discFreq', className: 'block text-[11px] font-bold text-slate-700' }, 'Frequency f: ' + lab.freq.toFixed(2) + ' Hz'),
+              h('input', { id: 'discFreq', type: 'range', min: 1, max: 20, step: 0.5, value: lab.freq, onChange: function(e) { setLab({ freq: parseFloat(e.target.value) }); }, className: 'w-full', 'aria-label': 'Frequency in hertz' }),
+              h('label', { htmlFor: 'discTen', className: 'block text-[11px] font-bold text-slate-700 mt-2' }, 'String tension T: ' + lab.tension + ' N'),
+              h('input', { id: 'discTen', type: 'range', min: 10, max: 200, step: 5, value: lab.tension, onChange: function(e) { setLab({ tension: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-label': 'Tension in newtons' }),
+              h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, '(string mass density μ fixed at 0.01 kg/m)'),
+              h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
+                h('button', { onClick: logObservation, className: 'px-2 py-1 rounded text-[11px] font-bold bg-cyan-600 text-white hover:bg-cyan-700 focus:ring-2 focus:ring-cyan-400 focus:outline-none' }, '📝 Log observation'),
+                h('button', { onClick: reveal, disabled: lab.discovered, className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none' }, lab.discovered ? '✓ Revealed' : '💡 I see it'),
+                h('button', { onClick: reset, className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-400 focus:outline-none' }, '↻ Reset')
+              ),
+              (lab.observationsLogged || []).length > 0 && h('div', { className: 'mt-2' },
+                h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, 'Your observations'),
+                h('div', { className: 'overflow-x-auto' },
+                  h('table', { className: 'text-[10px] border-collapse w-full' },
+                    h('thead', null, h('tr', { className: 'bg-slate-200' },
+                      ['f (Hz)', 'T (N)', 'λ (m)', 'v (m/s)', 'f·λ'].map(function(c) { return h('th', { key: c, className: 'px-1 py-0.5 text-left' }, c); })
+                    )),
+                    h('tbody', null,
+                      lab.observationsLogged.map(function(o, i) {
+                        return h('tr', { key: i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                          h('td', { className: 'px-1 py-0.5 font-mono' }, o.f.toFixed(1)),
+                          h('td', { className: 'px-1 py-0.5 font-mono' }, o.T),
+                          h('td', { className: 'px-1 py-0.5 font-mono' }, o.lambda),
+                          h('td', { className: 'px-1 py-0.5 font-mono' }, o.v),
+                          h('td', { className: 'px-1 py-0.5 font-mono font-bold text-cyan-700' }, (o.f * o.lambda).toFixed(2))
+                        );
+                      })
+                    )
+                  )
+                )
+              )
+            )
+          ),
+          // Discovery prompt — appears regardless, escalates as observations + reveal happen
+          (lab.observationsLogged || []).length >= 2 && !lab.discovered && h('div', { className: 'mt-3 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[12px] text-amber-900' },
+            h('strong', null, '🔍 Hypothesis time: '), 'Compare your f × λ column. Is it constant for different f values at the same tension? What about when you change tension? Form a hypothesis before clicking "I see it".'),
+          lab.discovered && h('div', { className: 'mt-3 p-3 rounded-lg bg-emerald-50 border-l-4 border-l-emerald-500' },
+            h('div', { className: 'font-black text-emerald-900 mb-1' }, '✨ The wave equation: v = f · λ'),
+            h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' },
+              'For a wave on a string, the speed v depends ONLY on the string\'s tension and mass density (v = √(T/μ)). The product f·λ always equals v. Change frequency → wavelength compensates so f·λ stays constant. Increase tension → wave speed jumps → f·λ jumps with it. Frequency × wavelength is one of the deepest constancies in physics: it shows up identically for light, sound, water waves, and quantum matter waves.'),
+            h('p', { className: 'text-[11px] text-emerald-700 mt-1 italic' }, 'You just discovered it the way Hertz did — by watching what stays constant when you change one variable at a time.')
+          )
+        );
+      }
+
+      // === Cycle-9 open-ended manipulation widget ===
+      // Design principles (per Cycle-8 instrument validation): no chip pool, no scoring,
+      // no reveal button, no answer dump. Just continuous sliders, live physics, free-text
+      // hypothesis input, observable paradox (harmonics-only stability), opt-in OPEN questions.
+      function renderStandingHuntSection() {
+        var h = React.createElement;
+        var lab = d2.standingHunt || { tension: 50, freq: 4, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', observationsLogged: [], visitCount: 0 };
+        function setLab(patch) {
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.wave) || {};
+            var st = Object.assign({}, prior.standingHunt || lab, patch);
+            return Object.assign({}, prev, { wave: Object.assign({}, prior, { standingHunt: st }) });
+          });
+        }
+        var MU = 0.01;          // string mass density kg/m (fixed)
+        var L = 2.0;            // string length m (fixed)
+        var v = Math.sqrt(lab.tension / MU);
+        var wavelength = v / lab.freq;
+        // For a string fixed at both ends, resonant harmonics: f_n = n * v / (2L)
+        // The CURRENT (T, f) gives an effective harmonic number n = f * 2L / v
+        var nEff = lab.freq * 2 * L / v;
+        var nNear = Math.round(nEff);
+        var nDist = Math.abs(nEff - nNear);
+        var isHarmonic = nDist < 0.05 && nNear >= 1; // a resonance lock
+        // SVG: when off-harmonic, animation looks "fuzzy" because superposition of incoming/reflected waves doesn't reinforce
+        var samples = 80;
+        var amp = isHarmonic ? 30 : 30 * Math.max(0.15, 1 - nDist * 2); // off-harmonic = visible chaos
+        var pts = [];
+        for (var i = 0; i <= samples; i++) {
+          var x = i / samples;
+          // Forward wave + reflected wave snapshot at t=0
+          var y1 = Math.sin(2 * Math.PI * x * nEff);
+          var y2 = Math.sin(2 * Math.PI * (1 - x) * nEff + (isHarmonic ? Math.PI : Math.PI * (1 + 0.3 * nDist)));
+          var y = (y1 + y2) / 2;
+          pts.push([20 + x * 280, 80 - y * amp]);
+        }
+        var pathStr = 'M ' + pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L ');
+        // Mark node positions (where y is always zero) — only meaningful at resonance
+        var nodeXs = [];
+        if (isHarmonic && nNear >= 1) {
+          for (var k = 0; k <= nNear; k++) nodeXs.push(20 + (k / nNear) * 280);
+        }
+        function logObservation() {
+          var obs = { T: lab.tension, f: parseFloat(lab.freq.toFixed(2)), v: parseFloat(v.toFixed(1)), lambda: parseFloat(wavelength.toFixed(3)), n: parseFloat(nEff.toFixed(2)), locked: isHarmonic };
+          setLab({ observationsLogged: (lab.observationsLogged || []).concat([obs]).slice(-8) });
+        }
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🎯 Standing-wave hunt'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+            'A string fixed at both ends. You control the tension and the driving frequency. There is no "right answer" — and no answer dump. Sweep the sliders. Look for the rare frequencies where the string locks into a clean standing pattern. Type what you discover in your own words.'),
+          // Live SVG
+          h('div', { className: 'mb-2 rounded border border-slate-200 bg-slate-50 p-2' },
+            h('svg', { viewBox: '0 0 320 120', className: 'w-full h-32' },
+              // String fixation posts
+              h('rect', { x: 18, y: 70, width: 4, height: 30, fill: '#475569' }),
+              h('rect', { x: 298, y: 70, width: 4, height: 30, fill: '#475569' }),
+              h('path', { d: pathStr, stroke: isHarmonic ? '#059669' : '#94a3b8', strokeWidth: isHarmonic ? 2.5 : 1.5, fill: 'none' }),
+              // Node markers — only show when locked into resonance
+              nodeXs.map(function(nx, i) {
+                return h('circle', { key: 'n' + i, cx: nx, cy: 80, r: 3.5, fill: '#16a34a' });
+              }),
+              h('text', { x: 160, y: 18, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: isHarmonic ? '#059669' : '#64748b' },
+                isHarmonic ? ('✓ Standing pattern — n = ' + nNear + ' (' + nNear + ' half-wavelengths)') : 'Off-resonance — pattern unstable'),
+              h('text', { x: 160, y: 112, textAnchor: 'middle', fontSize: 9, fill: '#475569' },
+                'T = ' + lab.tension.toFixed(0) + ' N  |  f = ' + lab.freq.toFixed(2) + ' Hz  |  v = ' + v.toFixed(1) + ' m/s  |  λ = ' + wavelength.toFixed(2) + ' m  |  n = ' + nEff.toFixed(2))
+            )
+          ),
+          // Sliders — continuous manipulation, no chip pool
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-3' },
+            h('div', null,
+              h('label', { htmlFor: 'sh-tension', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                'Tension: ', h('span', { className: 'font-mono text-indigo-700' }, lab.tension.toFixed(0) + ' N')),
+              h('input', {
+                id: 'sh-tension', type: 'range', min: 10, max: 200, step: 1, value: lab.tension,
+                onChange: function(e) { setLab({ tension: parseFloat(e.target.value) }); },
+                className: 'w-full', 'aria-label': 'Tension in newtons'
+              }),
+              h('div', { className: 'text-[9px] text-slate-500 flex justify-between' },
+                h('span', null, '10 N'), h('span', null, '200 N'))
+            ),
+            h('div', null,
+              h('label', { htmlFor: 'sh-freq', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                'Frequency: ', h('span', { className: 'font-mono text-indigo-700' }, lab.freq.toFixed(2) + ' Hz')),
+              h('input', {
+                id: 'sh-freq', type: 'range', min: 1, max: 30, step: 0.05, value: lab.freq,
+                onChange: function(e) { setLab({ freq: parseFloat(e.target.value) }); },
+                className: 'w-full', 'aria-label': 'Driving frequency in hertz'
+              }),
+              h('div', { className: 'text-[9px] text-slate-500 flex justify-between' },
+                h('span', null, '1 Hz'), h('span', null, '30 Hz'))
+            )
+          ),
+          // Log observation button (optional record-keeping; no scoring)
+          h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' },
+            h('button', {
+              onClick: logObservation,
+              className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300'
+            }, '📋 Log this observation'),
+            h('button', {
+              onClick: function() { setLab({ tension: 50, freq: 4, observationsLogged: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+              className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300'
+            }, '↺ Reset'),
+            (lab.observationsLogged || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (lab.observationsLogged || []).length + ' observation(s) logged')
+          ),
+          // Observation log (auto-tabulated; no commentary required)
+          (lab.observationsLogged || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
+            h('table', { className: 'text-[10px] w-full border-collapse' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-100 text-slate-700' },
+                  ['T (N)', 'f (Hz)', 'v (m/s)', 'λ (m)', 'n', 'locked'].map(function(h2, i) {
+                    return h('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-200 text-left' }, h2);
+                  })
+                )
+              ),
+              h('tbody', null,
+                lab.observationsLogged.map(function(o, idx) {
+                  return h('tr', { key: 'r' + idx, className: o.locked ? 'bg-emerald-50' : '' },
+                    h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.T),
+                    h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.f),
+                    h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.v),
+                    h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.lambda),
+                    h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.n),
+                    h('td', { className: 'px-2 py-1 border border-slate-200' }, o.locked ? '✓' : '—')
+                  );
+                })
+              )
+            )
+          ),
+          // Hypothesis textarea — learner-typed, free-form
+          h('div', { className: 'mb-3' },
+            h('label', { htmlFor: 'sh-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+              'Your hypothesis (free text — no right answer):'),
+            h('textarea', {
+              id: 'sh-hypo',
+              value: lab.hypothesis || '',
+              onChange: function(e) { setLab({ hypothesis: e.target.value }); },
+              placeholder: 'What pattern do you notice in the values where the string locks into a clean standing wave? Type your own theory.',
+              className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug',
+              rows: 3
+            })
+          ),
+          // OPT-IN open questions — only when learner clicks "I'm stuck". No answers given.
+          h('div', { className: 'mb-3' },
+            !lab.stuckRevealed && h('button', {
+              onClick: function() { setLab({ stuckRevealed: true }); },
+              className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300'
+            }, '🤔 I\'m stuck — show me some questions to think about (no answers)'),
+            lab.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+              h('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open questions (no answers — investigate by manipulating):'),
+              h('ul', { className: 'list-disc pl-5 space-y-1' },
+                h('li', null, 'Try f = 5 Hz at T = 100 N, then T = 25 N. Does the locked state happen at the same f? Why might that be?'),
+                h('li', null, 'Sweep frequency slowly from 1 → 20 Hz at fixed T. How many locked states do you find? Are they evenly spaced or pattern-spaced?'),
+                h('li', null, 'When you triple the tension, does the f of the first locked state triple, or change by some other factor? Predict before you check.'),
+                h('li', null, 'Log 4-5 locked observations. Look at the n column — what value do they share? Is that a coincidence or a constraint?'),
+                h('li', null, 'What relationship between f, T, and L would have to be true for an integer number of half-wavelengths to fit on the string?')
+              ),
+              h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, 'No answers will be revealed here. The point is to push your thinking, not to hand you a result.')
+            )
+          ),
+          // "I see it now" self-mark + explanation textarea — no automated scoring
+          h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+            h('div', { className: 'flex items-center gap-2 mb-2' },
+              h('input', {
+                type: 'checkbox', id: 'sh-understood',
+                checked: !!lab.understood,
+                onChange: function(e) { setLab({ understood: e.target.checked }); },
+                className: 'w-4 h-4'
+              }),
+              h('label', { htmlFor: 'sh-understood', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
+                'I think I understand the pattern now — let me explain it in my own words')
+            ),
+            lab.understood && h('textarea', {
+              value: lab.explanation || '',
+              onChange: function(e) { setLab({ explanation: e.target.value }); },
+              placeholder: 'Explain in your own words: what determines when a standing wave forms? What role does tension play? What role does frequency play? What is "n"?',
+              className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug bg-white',
+              rows: 4
+            }),
+            lab.understood && (lab.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
+              '✓ Saved. Notice — nobody checked your answer. The point of inquiry is the thinking that produced it, not external validation.')
+          ),
+          h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] text-slate-600 italic' },
+            'Design note: this widget has no score, no chips, no reveal button, and no right-answer check. Everything you discover comes from manipulation and observation. That is what "inquiry" looks like when the answer-dump is removed.')
         );
       }
 
@@ -3088,6 +3397,8 @@ const d = labToolData.wave;
         if (expSection === 'cameras') return renderCamerasSection();
         if (expSection === 'optical_facts') return renderOpticalFactsSection();
         if (expSection === 'recordings') return renderRecordingsSection();
+        if (expSection === 'discoverWave') return renderDiscoverWaveSection();
+        if (expSection === 'standingHunt') return renderStandingHuntSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
       }

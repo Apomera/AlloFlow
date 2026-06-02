@@ -815,6 +815,10 @@
     var _predictions = useState([]); var predictions = _predictions[0]; var setPredictions = _predictions[1];
     var _predLoading = useState(false); var predLoading = _predLoading[0]; var setPredLoading = _predLoading[1];
     var predTimerRef = useRef(null);
+    // AI word-prediction consent: OFF by default. When off, NO student message text
+    // is ever sent to the model. Teacher opts in per device (informed consent dialog).
+    var _aiPredict = useState(function () { return load('alloAACPredictConsent', false) === true; });
+    var aiPredict = _aiPredict[0]; var setAiPredict = _aiPredict[1];
 
     // Text-to-symbols state (Board Builder)
     var _sentenceInput = useState(''); var sentenceInput = _sentenceInput[0]; var setSentenceInput = _sentenceInput[1];
@@ -1149,6 +1153,12 @@
     }, [gallery, addToast]);
 
     var exportData = useCallback(function () {
+      var hasPhotos = profiles.some(function (p) { return p.image; });
+      var ok = window.confirm('Download full backup?\n\n'
+        + 'This file restores EVERYTHING, so it is NOT de-identified — it contains student names' + (hasPhotos ? ', photos' : '') + ', descriptions, communication logs, and IEP data in plain text.\n\n'
+        + 'FERPA: treat it as a confidential student record. Save it only to a school-approved, encrypted location — do not email it or put it in personal cloud storage. To share or analyze data, use the de-identified CSV exports instead.\n\n'
+        + 'Continue with the full backup?');
+      if (!ok) return;
       var data = {
         version: 7,
         exportDate: new Date().toISOString(),
@@ -1171,7 +1181,7 @@
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;
-      a.download = 'symbol_studio_' + new Date().toISOString().slice(0, 10) + '.json';
+      a.download = 'symbol_studio_CONFIDENTIAL_' + new Date().toISOString().slice(0, 10) + '.json';
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
       addToast && addToast(t('toasts.backup_downloaded'), 'success');
@@ -2081,6 +2091,15 @@
         setPredictions([]);
       } finally { setPredLoading(false); }
     }, [onCallGemini]);
+
+    var toggleAiPredict = useCallback(function () {
+      if (aiPredict) { setAiPredict(false); store('alloAACPredictConsent', false); setPredictions([]); return; }
+      var ok = window.confirm('Enable AI word prediction?\n\n'
+        + 'When ON, the words the student taps (their in-progress message) are sent to the AI model to suggest likely next words. Only the tapped word labels are sent — no student names, photos, profiles, or logs. AlloFlow does not store the predictions.\n\n'
+        + 'Turn this on only if sending the student\'s message text to the AI is acceptable for this student and setting. You can turn it off anytime.');
+      if (!ok) return;
+      setAiPredict(true); store('alloAACPredictConsent', true);
+    }, [aiPredict]);
 
     var importSingleBoard = useCallback(function (ev) {
       var file = ev.target.files && ev.target.files[0];
@@ -7459,6 +7478,7 @@
         // Debounced word prediction
         if (predTimerRef.current) clearTimeout(predTimerRef.current);
         predTimerRef.current = setTimeout(function () {
+          if (!aiPredict) { setPredictions([]); return; }
           var availableLabels = useCells.map(function (c) { return c.label; });
           fetchPredictions(newStrip, availableLabels);
         }, 700);
@@ -7525,6 +7545,13 @@
                 title: 'The student is reaching for a word that isn\'t here. Capture it.',
                 style: { background: '#1e1b4b', color: '#c4b5fd', border: '1px solid #4c1d95', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
               }, '💫'),
+          e('button', {
+            onClick: toggleAiPredict,
+            'aria-pressed': aiPredict,
+            'aria-label': aiPredict ? 'AI word prediction is on — click to turn off' : 'AI word prediction is off — click to turn on',
+            title: aiPredict ? 'AI prediction ON: the student\'s tapped words are sent to the AI for next-word suggestions. Click to turn off.' : 'AI prediction OFF. Click to enable (sends the student\'s tapped words to the AI).',
+            style: { background: aiPredict ? '#7c3aed' : '#334155', color: aiPredict ? '#fff' : '#94a3b8', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+          }, aiPredict ? '🤖 AI On' : '🤖 AI Off'),
           e('button', {
             onClick: function () { setShowCommLog(function (v) { return !v; }); },
             'aria-label': 'Toggle communication log', style: { background: showCommLog ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }

@@ -2183,6 +2183,8 @@ window.StemLab = window.StemLab || {
             { id: 'computers', label: 'Computer history', icon: '💻' },
             { id: 'world', label: 'World electrification', icon: '🌐' },
             { id: 'careers', label: 'Careers', icon: '💼' }
+, { id: 'poebulb', label: 'Predict bulb', icon: '💡' }
+, { id: 'failDx', label: 'Why did it fail?', icon: '🛠' }
           ] }
         ];
         function renderBtn(s, accent) {
@@ -2313,6 +2315,370 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-[11px] text-red-900 leading-relaxed' }, s.detail)
               );
             })
+          )
+        );
+      }
+
+      // ── Cycle 1 of the inquiry-learning study: Predict-Observe-Explain ──
+      // Pattern: learner sees a circuit, predicts brightness, then sees the answer with V=IR
+      // reasoning. Productive struggle from explicit pre-commitment.
+      var POE_SCENARIOS = [
+        {
+          id: 's1',
+          title: 'One bulb, 1.5 V battery',
+          svg: { battery: 1.5, bulbs: [{ R: 5 }], topology: 'simple' },
+          predict: { question: 'How bright will the bulb be?', options: ['Off (no current)', 'Very dim', 'Medium', 'Bright', 'Burns out'] },
+          answerIndex: 2,
+          explanation: 'Current I = V/R = 1.5 V ÷ 5 Ω = 0.3 A. Power = V·I = 0.45 W — a medium glow for a small bulb. The bulb conducts because the circuit is closed, and V=IR splits the energy across the only resistor.'
+        },
+        {
+          id: 's2',
+          title: 'Two bulbs in SERIES, same battery',
+          svg: { battery: 1.5, bulbs: [{ R: 5 }, { R: 5 }], topology: 'series' },
+          predict: { question: 'How does each bulb compare to scenario 1?', options: ['Brighter than s1', 'Same as s1', 'Half as bright', 'Quarter as bright', 'Off'] },
+          answerIndex: 3,
+          explanation: 'In series, resistances add: 10 Ω total. Current drops to 0.15 A. Each bulb gets only 0.75 V (half the battery) and 0.11 W — about ¼ the power of s1. Series circuits split voltage; that\'s why old Christmas-light strings dimmed when you added bulbs.'
+        },
+        {
+          id: 's3',
+          title: 'Two bulbs in PARALLEL, same battery',
+          svg: { battery: 1.5, bulbs: [{ R: 5 }, { R: 5 }], topology: 'parallel' },
+          predict: { question: 'How does each parallel bulb compare to s1?', options: ['Brighter than s1', 'Same as s1', 'Half as bright', 'Quarter as bright', 'Off'] },
+          answerIndex: 1,
+          explanation: 'In parallel, each bulb sees the full 1.5 V. Each draws 0.3 A independently and glows just as brightly as in s1 — but now the battery delivers 0.6 A total and drains twice as fast. Parallel splits current; voltage stays.'
+        },
+        {
+          id: 's4',
+          title: 'Swap one bulb for a 1 Ω resistor (in series with a 10 Ω bulb)',
+          svg: { battery: 1.5, bulbs: [{ R: 10, isBulb: true }, { R: 1, isBulb: false }], topology: 'series' },
+          predict: { question: 'How bright is the 10 Ω bulb?', options: ['Off', 'Very dim', 'Dim', 'Medium', 'Bright']  },
+          answerIndex: 3,
+          explanation: 'Total R = 11 Ω, so I ≈ 0.136 A. Voltage across the bulb is I·R_bulb = 1.36 V; voltage across the small resistor is just 0.14 V. The bulb gets most of the voltage because it has most of the resistance — a key insight: voltage divides in proportion to resistance.'
+        }
+      ];
+
+      function renderPoebulbSection() {
+        var state = d2.poeb || { stage: {}, score: 0 };
+        function setPoe(patch) {
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.circuit) || {};
+            var pb = Object.assign({}, prior.poeb || { stage: {}, score: 0 }, patch);
+            return Object.assign({}, prev, { circuit: Object.assign({}, prior, { poeb: pb }) });
+          });
+        }
+        // Tiny SVG schematic generator — kept lightweight so the lesson stays the focus
+        function drawSchematic(scenario) {
+          var s = scenario.svg;
+          var bulbs = s.bulbs;
+          var svgChildren = [];
+          // Battery
+          svgChildren.push(h('line', { x1: 20, y1: 50, x2: 20, y2: 70, stroke: '#fbbf24', strokeWidth: 3 }));
+          svgChildren.push(h('line', { x1: 14, y1: 53, x2: 26, y2: 53, stroke: '#fbbf24', strokeWidth: 3 }));
+          svgChildren.push(h('line', { x1: 17, y1: 67, x2: 23, y2: 67, stroke: '#fbbf24', strokeWidth: 2 }));
+          svgChildren.push(h('text', { x: 30, y: 64, fill: '#fbbf24', fontSize: 10, fontWeight: 'bold' }, s.battery + ' V'));
+          // Wire connections vary by topology
+          if (s.topology === 'simple') {
+            svgChildren.push(h('line', { x1: 20, y1: 70, x2: 20, y2: 110, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 20, y1: 110, x2: 180, y2: 110, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 180, y1: 110, x2: 180, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 180, y1: 60, x2: 145, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 20, y1: 50, x2: 95, y2: 50, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 95, y1: 50, x2: 95, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('circle', { cx: 120, cy: 60, r: 14, fill: '#fde047', stroke: '#facc15', strokeWidth: 2 }));
+            svgChildren.push(h('text', { x: 120, y: 63, textAnchor: 'middle', fontSize: 9, fill: '#92400e', fontWeight: 'bold' }, bulbs[0].R + 'Ω'));
+          } else if (s.topology === 'series') {
+            svgChildren.push(h('line', { x1: 20, y1: 70, x2: 20, y2: 110, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 20, y1: 110, x2: 220, y2: 110, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 220, y1: 110, x2: 220, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 220, y1: 60, x2: 195, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 165, y1: 60, x2: 115, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 85, y1: 60, x2: 20, y2: 60, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 20, y1: 60, x2: 20, y2: 50, stroke: '#cbd5e1', strokeWidth: 2 }));
+            // bulb 1
+            svgChildren.push(h('circle', { cx: 100, cy: 60, r: 14, fill: '#fde047', stroke: '#facc15', strokeWidth: 2 }));
+            svgChildren.push(h('text', { x: 100, y: 63, textAnchor: 'middle', fontSize: 9, fill: '#92400e', fontWeight: 'bold' }, bulbs[0].R + 'Ω'));
+            // bulb / resistor 2
+            if (bulbs[1].isBulb === false) {
+              svgChildren.push(h('rect', { x: 165, y: 53, width: 30, height: 14, fill: '#94a3b8', stroke: '#475569', strokeWidth: 2 }));
+              svgChildren.push(h('text', { x: 180, y: 63, textAnchor: 'middle', fontSize: 9, fill: 'white', fontWeight: 'bold' }, bulbs[1].R + 'Ω'));
+            } else {
+              svgChildren.push(h('circle', { cx: 180, cy: 60, r: 14, fill: '#fde047', stroke: '#facc15', strokeWidth: 2 }));
+              svgChildren.push(h('text', { x: 180, y: 63, textAnchor: 'middle', fontSize: 9, fill: '#92400e', fontWeight: 'bold' }, bulbs[1].R + 'Ω'));
+            }
+          } else if (s.topology === 'parallel') {
+            // Top + bottom wires
+            svgChildren.push(h('line', { x1: 20, y1: 50, x2: 200, y2: 50, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 20, y1: 70, x2: 200, y2: 70, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 100, y1: 50, x2: 100, y2: 38, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 100, y1: 70, x2: 100, y2: 82, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 170, y1: 50, x2: 170, y2: 38, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('line', { x1: 170, y1: 70, x2: 170, y2: 82, stroke: '#cbd5e1', strokeWidth: 2 }));
+            svgChildren.push(h('circle', { cx: 100, cy: 28, r: 12, fill: '#fde047', stroke: '#facc15', strokeWidth: 2 }));
+            svgChildren.push(h('text', { x: 100, y: 31, textAnchor: 'middle', fontSize: 9, fill: '#92400e', fontWeight: 'bold' }, bulbs[0].R + 'Ω'));
+            svgChildren.push(h('circle', { cx: 100, cy: 92, r: 12, fill: '#fde047', stroke: '#facc15', strokeWidth: 2 }));
+            svgChildren.push(h('text', { x: 100, y: 95, textAnchor: 'middle', fontSize: 9, fill: '#92400e', fontWeight: 'bold' }, bulbs[1].R + 'Ω'));
+            // close circuit via battery
+          }
+          return h('svg', { viewBox: '0 0 250 130', width: '100%', style: { maxWidth: 280, height: 'auto', background: 'rgba(15,23,42,0.85)', borderRadius: 8, padding: 4 } }, svgChildren);
+        }
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '💡 Predict the bulb'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+            'Look at the circuit. Predict what you think will happen ', h('em', null, 'before'), ' clicking "Show answer". This is how scientists work — commit to a hypothesis first; the result is more memorable.'),
+          POE_SCENARIOS.map(function(scenario, i) {
+            var stg = state.stage[scenario.id] || { picked: null, revealed: false };
+            return h('div', { key: scenario.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
+              h('div', { className: 'flex items-baseline gap-2 mb-2' },
+                h('span', { className: 'text-[10px] font-mono text-amber-700 font-bold' }, '#' + (i + 1)),
+                h('span', { className: 'text-[12px] font-black text-slate-800' }, scenario.title)
+              ),
+              drawSchematic(scenario),
+              h('div', { className: 'mt-2 text-[11px] font-bold text-slate-700' }, scenario.predict.question),
+              h('div', { className: 'flex flex-wrap gap-1 mt-1' },
+                scenario.predict.options.map(function(opt, oi) {
+                  var picked = stg.picked === oi;
+                  var revealed = stg.revealed;
+                  var correct = scenario.answerIndex === oi;
+                  var bg = revealed
+                    ? (correct ? 'bg-green-600 text-white border-green-700' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
+                    : (picked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-200 hover:bg-amber-50');
+                  return h('button', {
+                    key: oi,
+                    disabled: revealed,
+                    onClick: function() {
+                      var newStage = Object.assign({}, state.stage);
+                      newStage[scenario.id] = { picked: oi, revealed: false };
+                      setPoe({ stage: newStage });
+                    },
+                    'aria-pressed': picked ? 'true' : 'false',
+                    className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors ' + bg
+                  }, opt);
+                })
+              ),
+              h('div', { className: 'mt-2 flex items-center gap-2' },
+                h('button', {
+                  disabled: stg.picked == null || stg.revealed,
+                  onClick: function() {
+                    var newStage = Object.assign({}, state.stage);
+                    newStage[scenario.id] = { picked: stg.picked, revealed: true };
+                    var bonus = scenario.answerIndex === stg.picked ? 1 : 0;
+                    setPoe({ stage: newStage, score: (state.score || 0) + bonus });
+                  },
+                  className: 'px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none'
+                }, stg.revealed ? '✓ Revealed' : 'Show answer'),
+                stg.revealed && h('span', { className: 'text-[11px] ' + (scenario.answerIndex === stg.picked ? 'text-green-700 font-bold' : 'text-rose-700 font-bold') },
+                  scenario.answerIndex === stg.picked ? '✓ Correct' : '✗ Try the reasoning')
+              ),
+              stg.revealed && h('div', { className: 'mt-2 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[11px] text-slate-700 leading-relaxed' },
+                h('strong', { className: 'text-amber-900' }, 'Why: '), scenario.explanation)
+            );
+          }),
+          h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2' },
+            h('span', null, '🎯'),
+            h('strong', null, 'Score: ' + (state.score || 0) + ' / ' + POE_SCENARIOS.length),
+            h('span', { className: 'text-slate-500 ml-2 italic' }, 'Each scenario commits you to a prediction; getting the reasoning matters more than the score.')
+          )
+        );
+      }
+
+      // ── Cycle 6 of the inquiry-learning study: MULTI-STEP SOCRATIC REVEAL ──
+      // Addresses the recurrent critic complaint across cycles 2-5: "single-sentence reveal,
+      // no scaffolded hint progression." When the learner answers wrong, the reveal is not
+      // the answer — it's a follow-up sub-question that elicits the missing reasoning step.
+      // Only after 2 wrong attempts does the actual explanation surface.
+      var FAIL_DX_CASES = [
+        {
+          id: 'd1',
+          title: 'A 9V battery powering a 5V LED — no resistor in the circuit.',
+          symptom: 'The LED flashes brightly for ~half a second, then goes dark and stays dark even after reconnecting.',
+          rootCause: 'overcurrent_burnout',
+          // Level 0: top-level question
+          q0: {
+            ask: 'What killed the LED?',
+            options: [
+              { id: 'voltage_too_low', label: 'The battery voltage was too low' },
+              { id: 'overcurrent_burnout', label: 'Overcurrent burnt out the LED (no current-limiting resistor)' },
+              { id: 'battery_dead', label: 'The battery is dead' },
+              { id: 'wires_disconnected', label: 'A wire came loose' }
+            ]
+          },
+          // Level 1: after wrong, dig into the relationship
+          q1: {
+            ask: 'Right idea to investigate. Now: the LED is rated for 5V at 20mA. The battery puts out 9V. What does Ohm’s law say about current when more voltage is forced through the same resistance?',
+            options: [
+              { id: 'current_drops', label: 'Current decreases (V↑ → I↓)' },
+              { id: 'current_rises', label: 'Current rises (V↑ → I↑)' },
+              { id: 'current_constant', label: 'Current stays the same' }
+            ]
+          },
+          // Level 2: scaffold the final reveal
+          q2: {
+            ask: 'Exactly — current scales with voltage. What’s missing from this circuit that should have prevented the overcurrent?',
+            options: [
+              { id: 'fuse', label: 'A fuse' },
+              { id: 'resistor', label: 'A current-limiting resistor in series with the LED' },
+              { id: 'switch', label: 'A switch' }
+            ]
+          },
+          finalExplanation: 'Without a series resistor, the LED sees the full 9V. Ohm’s law: I = (9V − V_LED) / R. With R≈0, current rockets to hundreds of mA — far past the 20mA rating — and the LED dies of thermal damage in milliseconds. A small resistor (e.g., 220Ω) drops the excess voltage and limits current to safe levels.',
+          q1CorrectId: 'current_rises',
+          q2CorrectId: 'resistor'
+        },
+        {
+          id: 'd2',
+          title: 'Two bulbs in series — but one is much dimmer than the other.',
+          symptom: 'Bulb A glows brightly. Bulb B (same brand, same rating supposedly) glows so dimly you can barely see it.',
+          rootCause: 'mismatched_resistance',
+          q0: {
+            ask: 'Why is bulb B much dimmer?',
+            options: [
+              { id: 'mismatched_resistance', label: 'Bulb B has higher resistance — it gets more voltage but the SAME (lower) current; dim because power = I² × R but current is the limit' },
+              { id: 'farther_from_battery', label: 'Bulb B is farther from the battery — voltage drops over the wire' },
+              { id: 'wrong_polarity', label: 'Bulb B is wired backward' },
+              { id: 'bulb_dying', label: 'Bulb B is about to burn out' }
+            ]
+          },
+          q1: {
+            ask: 'Series circuits share the same CURRENT through every component. If bulb B has different resistance from bulb A, which statement is true?',
+            options: [
+              { id: 'voltage_splits_by_R', label: 'Voltage across each bulb splits in proportion to its resistance (more R → more V)' },
+              { id: 'voltage_equal', label: 'Each bulb gets the same voltage regardless of resistance' },
+              { id: 'voltage_inverse', label: 'Voltage splits inversely with resistance (more R → less V)' }
+            ]
+          },
+          q2: {
+            ask: 'Right — V_bulb = I × R_bulb. If bulb B has 4× the resistance of bulb A, what happens to its power dissipation (P = I² × R)?',
+            options: [
+              { id: 'B_more_power', label: 'Bulb B dissipates 4× the power of A and should be brighter' },
+              { id: 'B_less_power', label: 'Bulb B dissipates 4× the power — but since light depends on temperature, not just power, mismatched filaments thermalize differently' },
+              { id: 'same_power', label: 'Same power, same brightness' }
+            ]
+          },
+          finalExplanation: 'In series, current is identical through both bulbs. Power dissipation P = I²R, so the higher-resistance bulb dissipates MORE power — but a higher-resistance bulb is typically designed for higher-voltage operation, meaning its filament heats less per watt. So at the same current, the high-R bulb is operating well below its design current and stays dim; the low-R bulb (designed for that current) glows normally. Lesson: nominally identical bulbs with slightly different cold resistances will not share light output evenly in series.',
+          q1CorrectId: 'voltage_splits_by_R',
+          q2CorrectId: 'B_less_power'
+        },
+        {
+          id: 'd3',
+          title: 'A circuit with a "missing wire" — but the multimeter shows continuity everywhere.',
+          symptom: 'Schematic shows three components on a single wire from + to −. Visually you check: all components connected, no breaks in any wire. Yet the bulb doesn’t light, and the multimeter beeps continuity from end to end.',
+          rootCause: 'short_circuit',
+          q0: {
+            ask: 'What’s the most likely fault?',
+            options: [
+              { id: 'short_circuit', label: 'A short circuit somewhere — current is bypassing the bulb' },
+              { id: 'open_circuit', label: 'An open circuit — current can’t flow' },
+              { id: 'low_battery', label: 'Battery is dead' },
+              { id: 'bulb_burnt', label: 'Bulb is burnt out' }
+            ]
+          },
+          q1: {
+            ask: 'Multimeter beeps continuity, which means there IS a complete current path. If the bulb itself isn’t lighting up, what does that tell you about where the current is actually flowing?',
+            options: [
+              { id: 'current_through_bulb', label: 'Current is flowing through the bulb (just too little)' },
+              { id: 'current_bypassing', label: 'Current is taking a path that BYPASSES the bulb' },
+              { id: 'no_current', label: 'No current is flowing' }
+            ]
+          },
+          q2: {
+            ask: 'Yes — current always takes the path of least resistance. If a stray wire (or solder bridge) connects the two ends of the bulb directly, what does that wire offer compared to the bulb’s filament?',
+            options: [
+              { id: 'higher_R', label: 'Higher resistance — current still goes through the bulb' },
+              { id: 'much_lower_R', label: 'Much lower resistance — current bypasses the bulb almost entirely' },
+              { id: 'same_R', label: 'Same resistance — current splits 50/50' }
+            ]
+          },
+          finalExplanation: 'A short circuit across the bulb gives current a near-zero-resistance bypass. By V = IR, almost all current flows through the short (lots of current, almost no voltage drop) and virtually none through the bulb (tiny current, but the bulb still has its full resistance). The multimeter beeps because the overall circuit IS continuous — it just doesn’t test which path the current prefers. Always check for stray solder, frayed wires, or accidental shorts touching across components.',
+          q1CorrectId: 'current_bypassing',
+          q2CorrectId: 'much_lower_R'
+        }
+      ];
+
+      function renderFailDxSection() {
+        var state = d2.failDx || { cases: {}, score: 0, depthBonus: 0 };
+        function setFD(patch) {
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.circuit) || {};
+            var st = Object.assign({}, prior.failDx || state, patch);
+            return Object.assign({}, prev, { circuit: Object.assign({}, prior, { failDx: st }) });
+          });
+        }
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🛠 Why did it fail? — Socratic diagnostics'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+            'Three broken circuits. Diagnose the root cause. If you’re wrong, you don’t get the answer — you get a follow-up question to fill the missing reasoning step. After two wrong attempts you’ll see the explanation. Right on the first try? Bonus points + the explanation.'),
+          FAIL_DX_CASES.map(function(c, idx) {
+            var st = state.cases[c.id] || { depth: 0, picks: [], resolved: false, firstTryCorrect: false };
+            var depth = st.depth || 0;
+            var picks = st.picks || [];
+            var currentQ = depth === 0 ? c.q0 : (depth === 1 ? c.q1 : c.q2);
+            var isAtFinal = st.resolved;
+            function handlePick(optionId) {
+              var newPicks = picks.concat([{ depth: depth, picked: optionId }]);
+              var newCases = Object.assign({}, state.cases);
+              if (depth === 0) {
+                if (optionId === c.rootCause) {
+                  newCases[c.id] = { depth: 0, picks: newPicks, resolved: true, firstTryCorrect: true };
+                  setFD({ cases: newCases, score: (state.score || 0) + 1, depthBonus: (state.depthBonus || 0) + 2 });
+                } else {
+                  newCases[c.id] = { depth: 1, picks: newPicks, resolved: false, firstTryCorrect: false };
+                  setFD({ cases: newCases });
+                }
+              } else if (depth === 1) {
+                if (optionId === c.q1CorrectId) {
+                  newCases[c.id] = { depth: 2, picks: newPicks, resolved: false, firstTryCorrect: false };
+                } else {
+                  newCases[c.id] = { depth: 2, picks: newPicks, resolved: false, firstTryCorrect: false };
+                }
+                setFD({ cases: newCases });
+              } else {
+                if (optionId === c.q2CorrectId) {
+                  newCases[c.id] = { depth: 2, picks: newPicks, resolved: true, firstTryCorrect: false };
+                  setFD({ cases: newCases, score: (state.score || 0) + 0.5, depthBonus: (state.depthBonus || 0) + 1 });
+                } else {
+                  newCases[c.id] = { depth: 2, picks: newPicks, resolved: true, firstTryCorrect: false };
+                  setFD({ cases: newCases });
+                }
+              }
+            }
+            return h('div', { key: c.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
+              h('div', { className: 'flex items-baseline gap-2 mb-1' },
+                h('span', { className: 'text-[10px] font-mono text-amber-700 font-bold' }, '#' + (idx + 1)),
+                h('span', { className: 'text-[12px] font-black text-slate-800' }, c.title)
+              ),
+              h('div', { className: 'text-[11px] text-slate-700 italic mb-2' }, h('strong', null, 'Observed: '), c.symptom),
+              !isAtFinal && h('div', null,
+                depth > 0 && h('div', { className: 'mb-1 text-[10px] uppercase tracking-wider text-amber-700 font-bold' }, 'Scaffold question ' + depth + ' of 2'),
+                h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, currentQ.ask),
+                h('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                  currentQ.options.map(function(opt) {
+                    return h('button', {
+                      key: opt.id,
+                      onClick: function() { handlePick(opt.id); },
+                      className: 'px-2 py-1 rounded text-[11px] font-bold border bg-white text-slate-600 border-slate-300 hover:bg-amber-50 hover:border-amber-300 focus:ring-2 focus:ring-amber-400 focus:outline-none'
+                    }, opt.label);
+                  })
+                ),
+                depth > 0 && h('p', { className: 'text-[10px] text-amber-700 italic' }, '(Your previous answer triggered this follow-up. The next reveal will explain.)')
+              ),
+              isAtFinal && h('div', null,
+                h('div', { className: 'p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 mb-2' },
+                  h('div', { className: 'text-[12px] font-black text-amber-900 mb-1' },
+                    st.firstTryCorrect ? '✓ First-try diagnosis correct! (+1 case score, +2 depth bonus)' : 'Resolved after ' + picks.length + ' attempts (+ partial credit)'
+                  ),
+                  h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, h('strong', null, 'Root cause + reasoning: '), c.finalExplanation)
+                ),
+                h('div', { className: 'text-[10px] text-slate-500 italic' },
+                  'Your reasoning path: ' + picks.map(function(p) { return p.picked; }).join(' → ')
+                )
+              )
+            );
+          }),
+          h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2 flex-wrap' },
+            h('span', null, '🎯'),
+            h('strong', null, 'Case score: ' + (state.score || 0).toFixed(1) + ' / ' + FAIL_DX_CASES.length),
+            h('strong', { className: 'ml-2 text-amber-700' }, 'Depth bonus: +' + (state.depthBonus || 0)),
+            h('span', { className: 'text-slate-500 ml-2 italic' }, 'Multi-step reveals — wrong answers earn follow-up questions, not just corrections.')
           )
         );
       }
@@ -2799,6 +3165,8 @@ window.StemLab = window.StemLab || {
         if (expSection === 'common_circuits') return renderCommonCircuitsSection();
         if (expSection === 'connectors') return renderConnectorsSection();
         if (expSection === 'symbols') return renderSymbolsSection();
+        if (expSection === 'poebulb') return renderPoebulbSection();
+        if (expSection === 'failDx') return renderFailDxSection();
         if (expSection === 'glossary') return renderGlossarySection();
         return null;
       }
