@@ -8,6 +8,20 @@
         return;
     }
 
+    // Read the ACTIVE student's per-profile-scoped Symbol Studio familiarity. Symbol Studio
+    // migrated familiarity onto a namespaced key (alloSymbolFamiliarity__<pid>) and deleted the
+    // bare key, so reading bare returned empty. Resolve the active profile id the same way Symbol
+    // Studio does, read the scoped key, and fall back to the bare key for any legacy data.
+    function _blFamiliarityRaw() {
+        try {
+            var profs = []; try { profs = JSON.parse(localStorage.getItem('alloStudentProfiles') || '[]') || []; } catch (e) {}
+            var saved = null; try { saved = JSON.parse(localStorage.getItem('alloActiveProfileId') || 'null'); } catch (e) {}
+            var pid = (saved && profs.find(function (p) { return p.id === saved; })) ? saved : (profs[0] ? profs[0].id : 'default');
+            var scoped = localStorage.getItem('alloSymbolFamiliarity__' + pid);
+            return scoped != null ? scoped : localStorage.getItem('alloSymbolFamiliarity');
+        } catch (e) { return null; }
+    }
+
     // ─── Live region (WCAG 4.1.3) ───────────────────────────────────────
     // Source-level so it exists from module load, not just after the first
     // 2-second a11y-fixer tick. Same id used by the fixer's check, so the
@@ -3384,7 +3398,7 @@ Create a hypothesis diagram and return ONLY valid JSON:
                 if (!fctData) return null;
                 // Read familiarity data from Symbol Studio's localStorage
                 let famData = {};
-                try { const raw = localStorage.getItem('alloSymbolFamiliarity'); if (raw) famData = JSON.parse(raw); } catch(e) {}
+                try { const raw = _blFamiliarityRaw(); if (raw) famData = JSON.parse(raw); } catch(e) {}
                 // Read gallery for image availability
                 let galleryLabels = {};
                 try { const raw = localStorage.getItem('alloSymbolGallery'); if (raw) { JSON.parse(raw).forEach(g => { galleryLabels[g.label.toLowerCase().trim()] = true; }); } } catch(e) {}
@@ -7729,7 +7743,7 @@ Use plain text formatting. Be specific and actionable.`;
                 // Enrich prompt with vocabulary readiness from Word Garden if available
                 let fctEnrichment = '';
                 try {
-                    const famRaw = localStorage.getItem('alloSymbolFamiliarity');
+                    const famRaw = _blFamiliarityRaw();
                     if (famRaw) {
                         const fam = JSON.parse(famRaw);
                         const knownWords = Object.keys(fam).filter(k => {
@@ -7808,7 +7822,7 @@ Use plain text formatting. Be specific and actionable.`;
                 const fctData = FCT_WORDS[behaviorFn];
                 if (!fctData) return null;
                 let famData = {};
-                try { const raw = localStorage.getItem('alloSymbolFamiliarity'); if (raw) famData = JSON.parse(raw); } catch(e4) {}
+                try { const raw = _blFamiliarityRaw(); if (raw) famData = JSON.parse(raw); } catch(e4) {}
                 const ready = []; const growing2 = []; const missing2 = [];
                 fctData.words.forEach(w => {
                     const k = w.toLowerCase().trim();

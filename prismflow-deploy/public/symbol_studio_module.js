@@ -588,7 +588,7 @@
     var _showGalleryPicker = useState(false); var showGalleryPicker = _showGalleryPicker[0]; var setShowGalleryPicker = _showGalleryPicker[1];
     var _gpFilter = useState(''); var gpFilter = _gpFilter[0]; var setGpFilter = _gpFilter[1];
     // Activity Sets (multi-board books)
-    var _books = useState(function () { return load(STORAGE_BOOKS, []); });
+    var _books = useState(function () { return loadScoped(STORAGE_BOOKS, [], activeProfileId); });
     var books = _books[0]; var setBooks = _books[1];
     var _activeBookId = useState(null); var activeBookId = _activeBookId[0]; var setActiveBookId = _activeBookId[1];
     var _newBookTitle = useState(''); var newBookTitle = _newBookTitle[0]; var setNewBookTitle = _newBookTitle[1];
@@ -609,6 +609,11 @@
       setGallery(loadScoped(STORAGE_GALLERY, [], activeProfileId));
       setSavedBoards(loadScoped(STORAGE_BOARDS, [], activeProfileId));
       setSavedSchedules(loadScoped(STORAGE_SCHEDULES, [], activeProfileId));
+      setBooks(loadScoped(STORAGE_BOOKS, [], activeProfileId));
+      setIepGoals(loadScoped(STORAGE_GOALS, [], activeProfileId));
+      setUsageLog(loadScoped(STORAGE_USAGE, {}, activeProfileId));
+      setPrevGrowthMap(loadScoped(STORAGE_GROWTH_LOG, {}, activeProfileId));
+      setFamiliarity(loadScoped(STORAGE_FAMILIARITY, {}, activeProfileId));
     }, [activeProfileId]);
     var _showSchedGallery = useState(false); var showSchedGallery = _showSchedGallery[0]; var setShowSchedGallery = _showSchedGallery[1];
 
@@ -658,7 +663,7 @@
 
     // ── IEP Goal Tracking ──
     var STORAGE_GOALS = 'alloSymbolIEPGoals';
-    var _iepGoals = useState(function () { return load(STORAGE_GOALS, []); });
+    var _iepGoals = useState(function () { return loadScoped(STORAGE_GOALS, [], activeProfileId); });
     var iepGoals = _iepGoals[0]; var setIepGoals = _iepGoals[1];
 
     // Cloud sync state
@@ -803,7 +808,7 @@
     var _stripSpeaking = useState(false); var stripSpeaking = _stripSpeaking[0]; var setStripSpeaking = _stripSpeaking[1];
     var _commLog = useState([]); var commLog = _commLog[0]; var setCommLog = _commLog[1];
     var _showCommLog = useState(false); var showCommLog = _showCommLog[0]; var setShowCommLog = _showCommLog[1];
-    var _usageLog = useState(function () { return load(STORAGE_USAGE, {}); }); var usageLog = _usageLog[0]; var setUsageLog = _usageLog[1];
+    var _usageLog = useState(function () { return loadScoped(STORAGE_USAGE, {}, activeProfileId); }); var usageLog = _usageLog[0]; var setUsageLog = _usageLog[1];
     var _showAnalytics = useState(false); var showAnalytics = _showAnalytics[0]; var setShowAnalytics = _showAnalytics[1];
 
     // Word prediction state (Use mode)
@@ -842,14 +847,14 @@
     // Growth events — detects and celebrates when words level up
     var STORAGE_GROWTH_LOG = 'alloGardenGrowthLog';
     var _growthEvents = useState([]); var growthEvents = _growthEvents[0]; var setGrowthEvents = _growthEvents[1];
-    var _prevGrowthMap = useState(function () { return load(STORAGE_GROWTH_LOG, {}); });
+    var _prevGrowthMap = useState(function () { return loadScoped(STORAGE_GROWTH_LOG, {}, activeProfileId); });
     var prevGrowthMap = _prevGrowthMap[0]; var setPrevGrowthMap = _prevGrowthMap[1];
 
     // ── Vocabulary Familiarity System ──
     // Tracks every symbol interaction across all tabs to build a learning profile.
     // Originally conceived by a sibling instance; rebuilt here to live alongside the garden.
     // Context types: 'aac-tap', 'quest-correct', 'quest-wrong', 'speak', 'exposure'
-    var _familiarity = useState(function () { return load(STORAGE_FAMILIARITY, {}); });
+    var _familiarity = useState(function () { return loadScoped(STORAGE_FAMILIARITY, {}, activeProfileId); });
     var familiarity = _familiarity[0]; var setFamiliarity = _familiarity[1];
 
     var recordFamiliarity = useCallback(function (label, context) {
@@ -864,7 +869,7 @@
         else if (context === 'quest-wrong') updated.questWrong = (entry.questWrong || 0) + 1;
         else if (context === 'exposure') updated.exposures = (entry.exposures || 0) + 1;
         var next = Object.assign({}, prev); next[key] = updated;
-        store(STORAGE_FAMILIARITY, next);
+        store(scopedKey(STORAGE_FAMILIARITY),next);
         return next;
       });
     }, []);
@@ -1193,13 +1198,13 @@
             var impBookIds = {};
             data.books.forEach(function (b) { impBookIds[b.id] = true; });
             var mergedBooks = data.books.concat(books.filter(function (b) { return !impBookIds[b.id]; }));
-            setBooks(mergedBooks); store(STORAGE_BOOKS, mergedBooks);
+            setBooks(mergedBooks); store(scopedKey(STORAGE_BOOKS),mergedBooks);
             summary.push(data.books.length + ' activity set(s)');
           }
           // Import familiarity data (merge: imported values override existing per-word)
           if (data.familiarity && typeof data.familiarity === 'object') {
             var mergedFam = Object.assign({}, familiarity, data.familiarity);
-            setFamiliarity(mergedFam); store(STORAGE_FAMILIARITY, mergedFam);
+            setFamiliarity(mergedFam); store(scopedKey(STORAGE_FAMILIARITY),mergedFam);
             summary.push('vocabulary familiarity');
           }
           // Import AAC usage log (merge sessions)
@@ -1214,7 +1219,7 @@
               var newSessions = imported.sessions.filter(function (s) { return !existDates[s.date]; });
               mergedUsage[pid] = { sessions: existing.sessions.concat(newSessions) };
             });
-            setUsageLog(mergedUsage); store(STORAGE_USAGE, mergedUsage);
+            setUsageLog(mergedUsage); store(scopedKey(STORAGE_USAGE),mergedUsage);
             summary.push('AAC usage log');
           }
           // Import IEP goals (merge by ID)
@@ -1224,14 +1229,14 @@
             var newGoals = data.iepGoals.filter(function (g) { return !existingGoalIds[g.id]; });
             if (newGoals.length > 0) {
               var mergedGoals = iepGoals.concat(newGoals);
-              setIepGoals(mergedGoals); store(STORAGE_GOALS, mergedGoals);
+              setIepGoals(mergedGoals); store(scopedKey(STORAGE_GOALS),mergedGoals);
               summary.push(newGoals.length + ' IEP goal(s)');
             }
           }
           // Import growth log snapshot
           if (data.growthLog && typeof data.growthLog === 'object') {
             var mergedGrowth = Object.assign({}, prevGrowthMap, data.growthLog);
-            setPrevGrowthMap(mergedGrowth); store(STORAGE_GROWTH_LOG, mergedGrowth);
+            setPrevGrowthMap(mergedGrowth); store(scopedKey(STORAGE_GROWTH_LOG),mergedGrowth);
             summary.push('growth history');
           }
           // Import custom story templates
@@ -2086,14 +2091,14 @@
       if (!newBookTitle.trim()) return;
       var book = { id: uid(), title: newBookTitle.trim(), profileId: activeProfileId || null, boardIds: [], createdAt: Date.now() };
       var updated = [book].concat(books);
-      setBooks(updated); store(STORAGE_BOOKS, updated);
+      setBooks(updated); store(scopedKey(STORAGE_BOOKS),updated);
       setNewBookTitle(''); setActiveBookId(book.id);
       addToast && addToast(t('toasts.activity_set_u201c') + book.title + '\u201d created!', 'success');
     }, [newBookTitle, activeProfileId, books, addToast]);
 
     var deleteBook = useCallback(function (bookId) {
       var updated = books.filter(function (b) { return b.id !== bookId; });
-      setBooks(updated); store(STORAGE_BOOKS, updated);
+      setBooks(updated); store(scopedKey(STORAGE_BOOKS),updated);
       if (activeBookId === bookId) setActiveBookId(null);
     }, [books, activeBookId]);
 
@@ -2105,12 +2110,12 @@
           : book.boardIds.concat([boardId]);
         return Object.assign({}, book, { boardIds: ids });
       });
-      setBooks(updated); store(STORAGE_BOOKS, updated);
+      setBooks(updated); store(scopedKey(STORAGE_BOOKS),updated);
     }, [books]);
 
     var tagBookProfile = useCallback(function (bookId, profileId) {
       var updated = books.map(function (b) { return b.id === bookId ? Object.assign({}, b, { profileId: profileId || null }) : b; });
-      setBooks(updated); store(STORAGE_BOOKS, updated);
+      setBooks(updated); store(scopedKey(STORAGE_BOOKS),updated);
     }, [books]);
 
     var printBook = useCallback(function (book) {
@@ -2343,14 +2348,14 @@
         dataMethod: goal.dataMethod || 'frequency',   // 'frequency' | 'percentage' | 'duration' | 'rubric'
         linkedIepSection: goal.linkedIepSection || '' // e.g. "Communication" / "Social-Emotional" — paper IEP mapping
       };
-      setIepGoals(function (prev) { var updated = prev.concat([g]); store(STORAGE_GOALS, updated); return updated; });
+      setIepGoals(function (prev) { var updated = prev.concat([g]); store(scopedKey(STORAGE_GOALS),updated); return updated; });
       return g;
     }, [activeProfileId]);
 
     var updateIepGoal = useCallback(function (goalId, patch) {
       setIepGoals(function (prev) {
         var updated = prev.map(function (g) { return g.id === goalId ? Object.assign({}, g, patch) : g; });
-        store(STORAGE_GOALS, updated);
+        store(scopedKey(STORAGE_GOALS),updated);
         return updated;
       });
     }, []);
@@ -2368,7 +2373,7 @@
           var newCount = g.currentCount + (success ? 1 : 0);
           return Object.assign({}, g, { currentCount: newCount, trials: g.trials.concat([trial]) });
         });
-        store(STORAGE_GOALS, updated);
+        store(scopedKey(STORAGE_GOALS),updated);
 
         // Push to RTI dashboard if available
         if (setDashboardData && selectedStudentId) {
@@ -2388,7 +2393,7 @@
     var removeIepGoal = useCallback(function (goalId) {
       setIepGoals(function (prev) {
         var updated = prev.filter(function (g) { return g.id !== goalId; });
-        store(STORAGE_GOALS, updated);
+        store(scopedKey(STORAGE_GOALS),updated);
         return updated;
       });
     }, []);
@@ -3836,7 +3841,7 @@
       });
       if (events.length > 0) {
         setPrevGrowthMap(newMap);
-        store(STORAGE_GROWTH_LOG, newMap);
+        store(scopedKey(STORAGE_GROWTH_LOG),newMap);
         setGrowthEvents(function (prev) { return events.concat(prev).slice(0, 20); });
         // Speak the celebration if TTS available
         if (onCallTTS && events.length <= 2) {
@@ -3847,7 +3852,7 @@
         // First run — seed the snapshot without events
         bank.forEach(function (w) { newMap[w.key] = w.growth; });
         setPrevGrowthMap(newMap);
-        store(STORAGE_GROWTH_LOG, newMap);
+        store(scopedKey(STORAGE_GROWTH_LOG),newMap);
       }
       return events;
     }
@@ -6112,7 +6117,7 @@
                   onClick: function () {
                     var updated = Object.assign({}, usageLog);
                     delete updated[pid];
-                    store(STORAGE_USAGE, updated);
+                    store(scopedKey(STORAGE_USAGE),updated);
                     setUsageLog(updated);
                   },
                   'aria-label': 'Clear AAC usage analytics data', style: Object.assign({}, S.btn('#fee2e2', '#dc2626', false), { fontSize: '10px', padding: '3px 8px', marginTop: '6px' })
@@ -7315,7 +7320,7 @@
             var updated = Object.assign({}, prev, {
               [pid]: { sessions: profLog.sessions.concat([session]) }
             });
-            store(STORAGE_USAGE, updated);
+            store(scopedKey(STORAGE_USAGE),updated);
             return updated;
           });
           // Compute session debrief
