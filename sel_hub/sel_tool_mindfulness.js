@@ -4181,13 +4181,13 @@ window.SelHub = window.SelHub || {
         { type: 'instruction', text: 'Look down at the floor.', pauseSec: 12 },
         { type: 'instruction', text: 'Look behind you if you can.', pauseSec: 15 },
         { type: 'instruction', text: 'Take a slow breath. Notice if anything in your body relaxed.', pauseSec: 30 },
-        { type: 'reflection', text: 'Slow orientation activates the social engagement system, the safest nervous-system state.' },
+        { type: 'reflection', text: 'Slowly looking around the room can help your body settle and register that you are safe right now.' },
         { type: 'close', text: 'Return your gaze to soft focus. The room is here.' }
       ],
       variations: [
         { id: 'with_partner', name: 'With Partner Eye Contact', change: 'After orientation, soft eye contact with a safe person.' }
       ],
-      whyItWorks: 'Slow head and eye movement engages cranial nerves linked to ventral vagal safety state, per polyvagal theory.',
+      whyItWorks: 'Slow head and eye movement is a common trauma-informed grounding cue for signaling safety. The usual explanation draws on polyvagal theory, which is popular in trauma work but scientifically contested (Grossman, 2023); the orienting exercise is calming regardless of the mechanism.',
       research: 'Stephen Porges polyvagal theory; Deb Dana, The Polyvagal Theory in Therapy.'
     },
   ];
@@ -14390,7 +14390,7 @@ window.SelHub = window.SelHub || {
         'Open your eyes carrying the felt safety.'
       ],
       whatItDoes: 'Combines gratitude practice with safe-place visualization, a trauma-informed regulation technique.',
-      whyItWorks: 'Safe-place visualization activates the ventral vagal complex (Porges, 2011); gratitude framing adds an additional layer of regulation.',
+      whyItWorks: 'Safe-place visualization is a widely used calming and safety-cuing practice. The common polyvagal explanation (Porges, 2011) is scientifically contested; gratitude framing adds a further calming layer, and the practice helps regardless of the mechanism.',
       bestFrequency: 'weekly',
       variations: [
         'Imagined-safe-place version when no real safe place is available.',

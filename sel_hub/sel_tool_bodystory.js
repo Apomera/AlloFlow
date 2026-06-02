@@ -162,10 +162,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       function safetyBanner() {
         return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
           h('strong', null, '🆘 If you are restricting food, purging, exercising compulsively, or thinking constantly about food and your body — please get help. '),
-          'These can be life-threatening. Call the NEDA helpline: ',
+          'These can be life-threatening. Call the National Alliance for Eating Disorders Helpline at 1-866-662-1235 (staffed by licensed clinicians, weekdays). For an immediate crisis, call or text 988, or text HOME to 741741. For information and how to find treatment, see ',
           h('a', { href: 'https://www.nationaleatingdisorders.org/', target: '_blank', rel: 'noopener noreferrer',
             style: { color: '#fca5a5', textDecoration: 'underline', fontWeight: 800 } }, 'nationaleatingdisorders.org ↗'),
-          ' or text "NEDA" to 741741. Eating disorders are treatable, and the earlier you get help, the better. Tell a trusted adult today.'
+          '. Eating disorders are treatable, and the earlier you get help, the better. Tell a trusted adult today.'
         );
       }
 
@@ -511,10 +511,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
               h('strong', null, 'Eating disorders affect every body, every gender, every race, every size. '),
               'They are NOT just a "thin white girl" problem. Black, brown, fat, masculine, and disabled people often go undiagnosed BECAUSE of stereotypes. If you are struggling, you are not alone, and you deserve help.'),
             h('p', { style: { margin: '8px 0 0', color: '#fecaca', fontSize: 13.5, lineHeight: 1.7 } },
-              h('strong', null, 'NEDA Helpline: '),
-              h('a', { href: 'https://www.nationaleatingdisorders.org/help-support/contact-helpline', target: '_blank', rel: 'noopener noreferrer',
+              h('strong', null, 'Get help: '),
+              'National Alliance for Eating Disorders Helpline 1-866-662-1235 (licensed clinicians, weekdays). Immediate crisis: call or text 988, or text HOME to 741741. Information and treatment finder at ',
+              h('a', { href: 'https://www.nationaleatingdisorders.org/', target: '_blank', rel: 'noopener noreferrer',
                 style: { color: '#fca5a5', textDecoration: 'underline', fontWeight: 800 } }, 'nationaleatingdisorders.org ↗'),
-              ' · Text "NEDA" to 741741 · Tell a school counselor today.'
+              '. Tell a school counselor today.'
             )
           ),
 
@@ -524,7 +525,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
               'A reflective tool built on body appreciation and intuitive eating principles, NOT on weight loss or body change. The frame is: your body is not a problem to be solved; it is the thing that gets you through your life. The work is to come back home to it.'
             ),
             h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
-              'This tool deliberately does NOT include a body image screener, body satisfaction scale, or any quantitative body assessment. Surfacing body distress without offering treatment is not helpful. If you are in real distress about your body, the NEDA helpline is the right next step.'
+              'This tool deliberately does NOT include a body image screener, body satisfaction scale, or any quantitative body assessment. Surfacing body distress without offering treatment is not helpful. If you are in real distress about your body, a staffed eating-disorder helpline (National Alliance for Eating Disorders, 1-866-662-1235) is the right next step.'
             )
           ),
 
@@ -645,7 +646,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             ) : null,
 
             h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: '#94a3b8', textAlign: 'center', lineHeight: 1.5 } },
-              'Tylka body appreciation framework · Intuitive Eating · NEDA helpline: 1-800-931-2237. ',
+              'Tylka body appreciation framework · Intuitive Eating · Help: National Alliance for Eating Disorders 1-866-662-1235; crisis 988 or text HOME to 741741. ',
               'Created with AlloFlow SEL Hub.'
             )
           ),

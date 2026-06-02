@@ -1261,6 +1261,100 @@
       });
 
       // ══════════════════════════════════════════════════════════════
+      // ── Evidence-base convention ──
+      // A per-tool honesty signal, distinct from the evidence-TRADITION
+      // pill on each card (which names the framework, e.g. CASEL / DBT).
+      // This one rates how strong the empirical backing actually is, so
+      // the hub never implies a reflective heuristic is settled science.
+      //   strong    = well-replicated empirical support
+      //   emerging  = promising but limited / mixed evidence
+      //   contested = popular but scientifically disputed (use as metaphor)
+      //   practice  = a structured practice or heuristic, not an empirical claim
+      // To tune a rating, edit the single map below. Tools absent from the
+      // map show no badge. `note` (optional) surfaces the nuance on hover
+      // and to screen readers. This table is meant to be reviewed as a whole.
+      // ══════════════════════════════════════════════════════════════
+      var _evidenceTiers = {
+        strong:    { label: 'Strong evidence',     color: '#15803d', bg: '#dcfce7', title: 'Well-replicated empirical support' },
+        emerging:  { label: 'Emerging evidence',   color: '#a16207', bg: '#fef9c3', title: 'Promising but limited or mixed evidence' },
+        contested: { label: 'Contested model',     color: '#c2410c', bg: '#ffedd5', title: 'Popular but scientifically disputed; best used as metaphor, not mechanism' },
+        practice:  { label: 'Reflective practice', color: '#475569', bg: '#f1f5f9', title: 'A structured practice or heuristic, not an empirical efficacy claim' }
+      };
+      var _evidenceBase = {
+        // Strong: CBT / DBT / ACT skills and replicated prevention programs
+        thoughtRecord: { tier: 'strong' },
+        anxietyToolkit: { tier: 'strong' },
+        tipp: { tier: 'strong' },
+        dearMan: { tier: 'strong' },
+        costBenefit: { tier: 'strong' },
+        behavioralActivation: { tier: 'strong' },
+        motivationalInterviewing: { tier: 'strong' },
+        valuesCommittedAction: { tier: 'strong', note: 'From Acceptance and Commitment Therapy, a well-supported approach.' },
+        sourcesOfStrength: { tier: 'strong', note: 'Upstream suicide-prevention program with randomized-trial support (Wyman et al.).' },
+        bigFeelings: { tier: 'strong', note: "Built on Lochman's Coping Power, a well-supported anger program." },
+        identitySupport: { tier: 'strong', note: 'Family and school acceptance is strongly linked to better outcomes for LGBTQ+ youth (Ryan; Trevor Project).' },
+        // Emerging: real but limited or mixed evidence
+        zones: { tier: 'emerging', note: 'Draws on adjacent research; the Zones curriculum itself has limited outcome studies (the tool says so in its own limitations).' },
+        emotions: { tier: 'emerging', note: 'Emotional granularity has empirical support (Barrett); specific neuro explanations are framed as models.' },
+        coping: { tier: 'emerging' },
+        mindfulness: { tier: 'emerging', note: 'Benefits are modest and context-dependent; trauma-informed cautions apply.' },
+        windowOfTolerance: { tier: 'emerging', note: 'Widely used clinical heuristic (Siegel); the polyvagal framing it is often paired with is scientifically contested, which this tool flags.' },
+        stressBucket: { tier: 'emerging', note: 'CBT-tradition heuristic (Brabban and Turkington), widely used in NHS IAPT.' },
+        sleep: { tier: 'emerging', note: 'Sleep-health guidance is well grounded; behavior-change effects vary.' },
+        sensoryRegulation: { tier: 'emerging', note: "Sensory-profile self-understanding (Dunn) is reasonable; classic 'sensory diet' / Ayres Sensory Integration efficacy claims are weakly supported." },
+        substancePsychoed: { tier: 'emerging' },
+        traumaPsychoed: { tier: 'emerging', note: "SAMHSA's principles are expert consensus more than trial-tested protocol." },
+        bodyStory: { tier: 'emerging', note: 'Body-appreciation and intuitive-eating evidence is growing.' },
+        healthyRelationships: { tier: 'emerging' },
+        safety: { tier: 'emerging' },
+        sfbt: { tier: 'emerging' },
+        careerCompass: { tier: 'emerging', note: "Holland's RIASEC is well validated; this is a brief self-check, not the full O*NET inventory." },
+        compassion: { tier: 'emerging', note: 'Self-compassion has a growing evidence base (Neff).' },
+        social: { tier: 'emerging' },
+        sociallab: { tier: 'emerging' },
+        peersupport: { tier: 'emerging' },
+        upstander: { tier: 'emerging' },
+        crewProtocols: { tier: 'emerging', note: 'Restorative and Crew practices have growing but mixed evidence.' },
+        restorativeCircle: { tier: 'emerging', note: 'Restorative practices have growing but mixed evidence.' },
+        digitalWellbeing: { tier: 'emerging' },
+        griefLoss: { tier: 'emerging', note: "Worden's tasks-of-mourning is a widely used clinical heuristic." },
+        perspective: { tier: 'emerging' },
+        conflict: { tier: 'emerging' },
+        conflicttheater: { tier: 'emerging' },
+        // Contested: popular but scientifically disputed
+        growthmindset: { tier: 'contested', note: 'Mindset interventions are popular but their effects are small and debated (Sisk et al. 2018 meta-analysis; Yeager et al. 2019 found small, targeted effects).' },
+        // Practice: structured practice / heuristic, not an empirical efficacy claim
+        strengths: { tier: 'practice' },
+        viaStrengths: { tier: 'practice', note: 'Reflective self-sort, not the validated VIA survey at viacharacter.org.' },
+        wheelOfLife: { tier: 'practice', note: 'Coaching heuristic, not a validated psychometric.' },
+        perma: { tier: 'practice', note: 'Reflective self-check drawn from positive psychology (Seligman).' },
+        quietQuestions: { tier: 'practice' },
+        orientations: { tier: 'practice' },
+        careConstellations: { tier: 'practice' },
+        ecomap: { tier: 'practice', note: 'Standard social-work mapping tool (Hartman), used for reflection, not assessment.' },
+        circlesOfSupport: { tier: 'practice' },
+        genogram: { tier: 'practice', note: 'For self-understanding only, not clinical assessment.' },
+        goals: { tier: 'practice' },
+        howlTracker: { tier: 'practice' },
+        onePageProfile: { tier: 'practice' },
+        maps: { tier: 'practice', note: 'Person-centered planning artifact.' },
+        path: { tier: 'practice', note: 'Person-centered planning artifact.' },
+        journal: { tier: 'practice' },
+        decisions: { tier: 'practice' },
+        ethicalReasoning: { tier: 'practice' },
+        cultureExplorer: { tier: 'practice' },
+        community: { tier: 'practice' },
+        teamwork: { tier: 'practice' },
+        friendship: { tier: 'practice' },
+        advocacy: { tier: 'practice' },
+        civicAction: { tier: 'practice' },
+        voicedetective: { tier: 'practice' },
+        transitions: { tier: 'practice' },
+        landPlace: { tier: 'practice' },
+        disabilityVoices: { tier: 'practice' }
+      };
+
+      // ══════════════════════════════════════════════════════════════
       // ── RENDER ──
       // ══════════════════════════════════════════════════════════════
       if (!showSelHub) return null;
@@ -1978,6 +2072,22 @@
                     style: { display: 'inline-block', fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: cardColor + '22', color: cardColor, letterSpacing: 0.3, textTransform: 'uppercase', marginTop: 4, alignSelf: 'flex-start' }
                   }, tag);
                 })(),
+                // Evidence-base badge (honesty signal; see _evidenceBase above)
+                (function() {
+                  var ev = _evidenceBase[tool.id];
+                  if (!ev) return null;
+                  var tierMeta = _evidenceTiers[ev.tier];
+                  if (!tierMeta) return null;
+                  var srText = 'Evidence base: ' + tierMeta.label + '. ' + tierMeta.title + (ev.note ? '. ' + ev.note : '') + '.';
+                  return h('span', {
+                    'aria-label': srText,
+                    title: srText,
+                    style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: tierMeta.bg, color: tierMeta.color, letterSpacing: 0.3, textTransform: 'uppercase', marginTop: 4, alignSelf: 'flex-start' }
+                  },
+                    h('span', { 'aria-hidden': 'true', style: { width: 6, height: 6, borderRadius: '50%', background: tierMeta.color, display: 'inline-block', flexShrink: 0 } }),
+                    tierMeta.label
+                  );
+                })(),
                 tool.recommendedRange && h('span', {
                   style: { fontSize: 10, color: cardColor, fontWeight: 600, marginTop: 4 }
                 }, 'Grades ' + tool.recommendedRange),
@@ -2038,6 +2148,20 @@
           celebrate: selCelebrate,
           beep: selBeep,
           t: t,
+
+          // ── Theme (host light / dark / high-contrast + reduced motion) ──
+          // The hub already detects these; this exposes them to tools so they
+          // no longer have to hardcode a single palette. theme.palette mirrors
+          // the hub's _t tokens (bg, bgCard, bgInput, text, textMuted, border,
+          // headerBg, headerText, btnBg, btnText, accent). isContrast is the
+          // WCAG high-contrast case; reduceMotion gates animation. Tools opt in
+          // by reading ctx.theme; absent that, they keep their current look.
+          theme: {
+            isDark: isDark,
+            isContrast: isContrast,
+            reduceMotion: _reduceMotion,
+            palette: _t
+          },
 
           // ── AI integration ──
           callGemini: typeof callGemini === 'function' ? callGemini : null,

@@ -5457,8 +5457,8 @@ window.SelHub = window.SelHub || {
       ],
       explanation: {
         elementary: 'Sometimes your body feels really heavy and slow. That is a feeling too. Be gentle with yourself.',
-        middle: 'Heaviness usually means the parasympathetic dorsal vagal system has taken over — the body is conserving energy. Pushing through often makes it worse; small gentle movements work better.',
-        high: 'Dorsal vagal shutdown produces hypoarousal, blunted affect, and immobility. This is a protective response, not weakness. Polyvagal-informed care emphasizes co-regulation and gentle reactivation rather than forced mobilization.'
+        middle: 'Heaviness often goes with the body shifting into a low-energy, conserving state (in polyvagal terms, the dorsal vagal system). Pushing through often makes it worse; small gentle movements work better.',
+        high: 'In polyvagal terms this is described as a dorsal vagal shutdown: hypoarousal, blunted affect, and immobility. It is a protective response, not weakness. That framework is scientifically contested, but its practical lean is sound: co-regulation and gentle reactivation rather than forced mobilization.'
       },
       interventions: [
         'Let yourself rest — heaviness is data, not failure',
@@ -5972,7 +5972,7 @@ window.SelHub = window.SelHub || {
       description: {
         elementary: 'Despair feels like everything is too heavy and nothing will get better. If you feel this for more than a little while, tell someone safe.',
         middle: 'Despair is when the body has been carrying too much for too long. It feels like collapse, like there is no way out. It is a sign to reach for support, not to figure it out alone.',
-        high: 'Despair maps to dorsal vagal shutdown and is associated with suicide risk. Hopelessness is the single strongest predictor of suicide (Beck). Body-level intervention requires co-regulation, not advice.'
+        high: 'Despair is often mapped, in polyvagal terms, to a dorsal vagal shutdown state, and it is associated with suicide risk. Hopelessness is the single strongest predictor of suicide (Beck). Body-level intervention requires co-regulation, not advice.'
       },
       bodyFirstSigns: [
         'sinking that does not lift',
@@ -6497,7 +6497,7 @@ window.SelHub = window.SelHub || {
       description: {
         elementary: 'Sometimes when something scary happens, your body freezes — you cannot move or talk. That is your body protecting you. It is not your fault.',
         middle: 'Freeze is what happens when fight or flight cannot work — the body locks down. Voice goes, limbs lock, time feels weird. It is automatic and not a choice.',
-        high: 'Tonic immobility / freeze involves dorsal vagal shutdown layered on sympathetic activation. It is unconscious and not a failure of will. Recovery requires safety, co-regulation, and gentle reactivation (Levine, Porges).'
+        high: 'Tonic immobility (freeze) is, in polyvagal terms, described as a dorsal vagal shutdown layered on sympathetic activation. It is unconscious and not a failure of will. Recovery centers on safety, co-regulation, and gentle reactivation (Levine, Porges).'
       },
       bodyFirstSigns: [
         'going still',

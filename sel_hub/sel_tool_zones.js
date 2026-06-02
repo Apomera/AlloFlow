@@ -27992,7 +27992,7 @@ window.SelHub = window.SelHub || {
       name: 'Polyvagal Ladder',
       origin: 'Stephen Porges, PhD (theory); Deb Dana, LCSW (clinical application)',
       shortDesc: 'A nervous-system-based map with three states: Ventral Vagal (safe, social, connected), Sympathetic (fight/flight, mobilized), and Dorsal Vagal (collapse, shutdown, immobilized). Movement between states is automatic, not chosen, and shaped by neuroception of safety/threat. Co-regulation with a safe other person is foundational.',
-      comparedToZones: 'Polyvagal is biologically grounded in nervous system physiology, not in behavior categories. It honors that "Red" (Sympathetic) and "Blue" (Dorsal Vagal) are protective responses, not failures. Co-regulation is foundational: ventral-vagal contact with another person is the primary regulator, not solo strategies.',
+      comparedToZones: 'Polyvagal frames regulation as nervous-system states rather than behavior categories. (Its underlying physiology is popular in trauma work but scientifically contested, so treat it as a clinical metaphor, not established biology.) It honors that "Red" (Sympathetic) and "Blue" (Dorsal Vagal) are protective responses, not failures. Co-regulation is central: connection with a safe person, not solo strategies.',
       whenToUse: 'For trauma-informed practice, for students who experience freeze/shutdown, for adolescents who can engage with biology-based explanations, for clinicians and counselors.',
       research: 'Porges (2011) The Polyvagal Theory; Dana (2018) The Polyvagal Theory in Therapy; Kolacz et al. on polyvagal applications.'
     },
@@ -35251,6 +35251,14 @@ window.SelHub = window.SelHub || {
       var t = ctx.t;
       var band = ctx.gradeBand || 'elementary'; // 'elementary', 'middle', 'high'
 
+      // ── Host theme (prototype consumer of ctx.theme; see hub note) ──
+      // Template for theming a tool: read ctx.theme, then branch styles on it.
+      // Zones is an intentionally immersive dark surface, so dark stays the
+      // base, but we honor the host high-contrast toggle (hc) on the nav chrome
+      // for accessibility. Other tools can follow this same pattern.
+      var theme = (ctx && ctx.theme) || {};
+      var hc = !!theme.isContrast;
+
       // ── Tool-scoped state (via ctx.toolData.zones) ──
       var d = (ctx.toolData && ctx.toolData.zones) || {};
       var upd = function(key, val) {
@@ -35455,13 +35463,14 @@ window.SelHub = window.SelHub || {
         { id: 'plans',     label: '\uD83D\uDCCB My Plans' },
         { id: 'classroom', label: '\uD83C\uDFEB Classroom' },
         { id: 'parent',    label: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67 Parents' },
+        { id: 'limits',    label: '\u2696\uFE0F Limits & Alts' },
         { id: 'toolbox',   label: '\uD83E\uDDF0 My Toolbox' },
         { id: 'history',   label: '\uD83D\uDCCA History' },
         { id: 'zone_history', label: '\uD83C\uDF21\uFE0F Heatmap' }
       ];
 
       var tabBar = h('div', {         role: 'tablist', 'aria-label': 'Zones of Regulation tabs',
-        style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
+        style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: hc ? '2px solid #ffff00' : '1px solid #334155', background: hc ? '#000000' : undefined, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
         tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
@@ -35470,9 +35479,9 @@ window.SelHub = window.SelHub || {
             role: 'tab', 'aria-selected': isActive,
             onClick: function() { upd('activeTab', tab.id); if (soundEnabled) sfxClick(); announceToSR('Switched to ' + tab.id + ' tab'); },
             style: {
-              padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: isActive ? '#7c3aed' : 'transparent',
-              color: isActive ? '#fff' : '#94a3b8',
+              padding: '7px 12px', borderRadius: 8, border: hc ? (isActive ? '2px solid #ffff00' : '1px solid #ffff00') : 'none', cursor: 'pointer',
+              background: isActive ? (hc ? '#000000' : '#7c3aed') : 'transparent',
+              color: hc ? '#ffff00' : (isActive ? '#fff' : '#94a3b8'),
               fontWeight: isActive ? 700 : 500, fontSize: 12,
               whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0
             }
@@ -35518,6 +35527,7 @@ window.SelHub = window.SelHub || {
           plans:        { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)',  icon: '\uD83D\uDCCB', title: 'My Plans \u2014 pre-built scenario plans',                hint: '80+ pre-built plans for specific situations. Customize for your life. Includes people-to-call and crisis escalation.' },
           classroom:    { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)',   icon: '\uD83C\uDFEB', title: 'Classroom Toolkit \u2014 for teachers',                   hint: 'Zones-aligned activities for educators \u2014 morning meetings, transitions, regulation environment, crisis protocols.' },
           parent:       { accent: '#f472b6', soft: 'rgba(244,114,182,0.14)', icon: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67', title: 'Parent Guide \u2014 Zones at home',                hint: 'Guides for caregivers using Zones at home. Honest about parent dysregulation. Scripts, self-care, when to seek help.' },
+          limits:       { accent: '#94a3b8', soft: 'rgba(148,163,184,0.14)', icon: '⚖️', title: 'Limits & Alternatives: honest about the framework', hint: 'Where Zones falls short, and other regulation frameworks worth knowing. For educators and older students. Use Zones as one tool among many, not a complete curriculum.' },
           zone_history: { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)',  icon: '\uD83C\uDF21\uFE0F', title: 'Heatmap \u2014 8 weeks of zone patterns',                hint: 'Calendar visualization: dominant zone per day. Patterns to look for: days, time-of-day, sleep correlation.' }
         };
         var meta = TAB_META[activeTab] || TAB_META.checkin;
@@ -38149,9 +38159,51 @@ if (activeTab === 'parent') {
   }
 }
       // ══════════════════════════════════════════════════════════
+      // ── TAB: Limits & Alternatives (educator-facing honesty) ──
+      // Surfaces ZONES_CRITIQUES + ALTERNATIVE_FRAMEWORKS, which were
+      // authored but never rendered until now.
+      // ══════════════════════════════════════════════════════════
+      var limitsContent = null;
+      if (activeTab === 'limits') {
+        limitsContent = h('div', { style: { padding: '4px 12px 28px', maxWidth: 760, margin: '0 auto' } },
+          h('p', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.6, margin: '4px 0 18px' } },
+            'Zones of Regulation is a useful shared vocabulary, not a complete or settled curriculum. This page is for educators and older students: where the framework falls short, and other regulation frameworks worth knowing. Being honest about the limits is what keeps the tool trustworthy.'
+          ),
+          h('h3', { style: { color: '#f1f5f9', fontSize: 15, fontWeight: 800, margin: '0 0 10px' } }, '⚖️ Honest limitations'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+            (ZONES_CRITIQUES || []).map(function(c, i) {
+              return h('div', { key: c.id || i, style: { background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid #f59e0b', borderRadius: 10, padding: '12px 14px' } },
+                h('div', { style: { color: '#fbbf24', fontSize: 13, fontWeight: 700, marginBottom: 6 } }, c.critique),
+                c.description ? h('p', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, c.description) : null,
+                c.whyItMatters ? h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, h('strong', { style: { color: '#94a3b8' } }, 'Why it matters: '), c.whyItMatters) : null,
+                c.workAround ? h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, h('strong', { style: { color: '#86efac' } }, 'What to do instead: '), c.workAround) : null,
+                c.research ? h('p', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', margin: 0 } }, c.research) : null
+              );
+            })
+          ),
+          h('h3', { style: { color: '#f1f5f9', fontSize: 15, fontWeight: 800, margin: '22px 0 4px' } }, '🧭 Other frameworks worth knowing'),
+          h('p', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', margin: '0 0 10px', lineHeight: 1.5 } },
+            'Listing a framework is not a claim that its mechanism is proven. Some (such as polyvagal theory) are widely used but scientifically contested; they are included because educators encounter them.'
+          ),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+            (ALTERNATIVE_FRAMEWORKS || []).map(function(fw, i) {
+              return h('div', { key: fw.id || i, style: { background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid #38bdf8', borderRadius: 10, padding: '12px 14px' } },
+                h('div', { style: { color: '#7dd3fc', fontSize: 13, fontWeight: 700 } }, fw.name),
+                fw.origin ? h('div', { style: { color: '#64748b', fontSize: 11, marginBottom: 6 } }, fw.origin) : null,
+                fw.shortDesc ? h('p', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, fw.shortDesc) : null,
+                fw.comparedToZones ? h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, h('strong', { style: { color: '#94a3b8' } }, 'Compared to Zones: '), fw.comparedToZones) : null,
+                fw.whenToUse ? h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, h('strong', { style: { color: '#86efac' } }, 'When to use: '), fw.whenToUse) : null,
+                fw.research ? h('p', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', margin: 0 } }, fw.research) : null
+              );
+            })
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
-      return h('div', { style: { minHeight: '100%' } },
+      return h('div', { style: { minHeight: '100%', background: hc ? '#000000' : undefined } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('zones', h, ctx) : null),
         reCheckBanner,
         tabBar,
@@ -38178,7 +38230,8 @@ if (activeTab === 'parent') {
         triggersContent,
         plansContent,
         classroomContent,
-        parentContent
+        parentContent,
+        limitsContent
       );
     }
   });
