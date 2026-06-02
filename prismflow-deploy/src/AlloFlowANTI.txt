@@ -4339,7 +4339,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'b031e587';
+    var pluginCdnVersion = '20238352';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -4658,6 +4658,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js');
     loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js');
     loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js');
+    loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
+    loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js');
@@ -14572,6 +14574,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   window.__alloPlaybackRate = (typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1.0;
   window.__alloTextLanguage = leveledTextLanguage || currentUiLanguage || 'English';
   window.__alloT = t;
+  // Tier 2 OnboardingHelpers reads this lazily on every speak() so it stays
+  // current across host re-mounts (theme/lang/profile swaps). One line of
+  // host code; all imperative speech routing lives in the CDN helper.
+  window.AlloModules = window.AlloModules || {}; window.AlloModules.AlloBotRef = alloBotRef;
   window.__contentEngineState = {
     inputText, gradeLevel, sourceTopic, generatedContent,
     leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts,
@@ -26396,6 +26402,9 @@ ${_toolList}
           setHasSelectedRole, setShowWizard, setIsTeacherMode,
           setShowLearningHub, setShowEducatorHub,
           setPendingRole, setIsGateOpen, setShowAIBackendModal
+      })}
+      {isAppReady && !hasSelectedMode && window.AlloModules && window.AlloModules.OnboardingCoach && React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach, {
+          t, setRunTour
       })}
       {isBotVisible && (
           <AlloBot
