@@ -4231,8 +4231,8 @@
     "reliability": {
       "std_dev": "Standard-Deviation",
       "icc_title": "Benutzerdefiniert 1−(SD/50) index; nicht Textbook IchCC",
-      "icc_label": "Auditor Consistency (IchCC-like)",
-      "cronbach": "Cronbachs α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Gesamt prüfens performed",

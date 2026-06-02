@@ -4247,8 +4247,8 @@
     "reliability": {
       "std_dev": "মান বিচ্যুতি",
       "icc_title": "কাস্টম 1−(SD/50) সূচক; পাঠ্যবইয়ের ICC নয়",
-      "icc_label": "অডিটরের সামঞ্জস্য (ICC-সদৃশ)",
-      "cronbach": "Cronbach-এর α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "মোট চেক performed",

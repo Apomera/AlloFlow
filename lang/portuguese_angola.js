@@ -4240,8 +4240,8 @@
     "reliability": {
       "std_dev": "padrão Deviation",
       "icc_title": "Custom 1−(SD/50) index; não textbook ICC",
-      "icc_label": "Consistência do Auditor (tipo ICC)",
-      "cronbach": "α de Cronbach"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Total de verificações realizadas",

@@ -4226,8 +4226,8 @@
     "reliability": {
       "std_dev": "kiwango Deviation",
       "icc_title": "Custom 1−(SD/50) index; sio textbook ICC",
-      "icc_label": "Uthabiti wa Mkaguzi (Mfano wa ICC)",
-      "cronbach": "α ya Cronbach"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Jumla ya ukaguzi uliofanywa",

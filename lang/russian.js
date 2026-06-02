@@ -4212,8 +4212,8 @@
     "reliability": {
       "std_dev": "Стандартное отклонение",
       "icc_title": "Пользовательский индекс 1−(SD/50); не учебный ICC",
-      "icc_label": "Согласованность аудиторов (как ICC)",
-      "cronbach": "α Кронбаха"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Всего проверок выполнено",

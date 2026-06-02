@@ -4212,8 +4212,8 @@
     "reliability": {
       "std_dev": "Odchylenie standardowe",
       "icc_title": "Niestandardowy wskaźnik 1−(SD/50); nie jest to podręcznikowe ICC",
-      "icc_label": "Spójność audytorów (zbliżona do ICC)",
-      "cronbach": "α Cronbacha"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Wszystkiego sprawdzeń wykonane",

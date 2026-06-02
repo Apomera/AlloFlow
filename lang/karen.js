@@ -4232,8 +4232,8 @@
     "reliability": {
       "std_dev": "Standard Deviation",
       "icc_title": "Custom 1−(SD/50) index; တ textbook ICC",
-      "icc_label": "Auditor Consistency (ICC-like)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Total checks performed",

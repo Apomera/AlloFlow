@@ -4226,8 +4226,8 @@
     "reliability": {
       "std_dev": "መስፈርት Deviation",
       "icc_title": "Custom 1−(SD/50) index; አይደለም textbook ICC",
-      "icc_label": "የኦዲተር ወጥነት (ICC-ተመሳሳይ)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "የተከናወኑ ጠቅላላ ቼኮች",

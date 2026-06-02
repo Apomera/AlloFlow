@@ -4240,8 +4240,8 @@
     "reliability": {
       "std_dev": "ప్రమాణం Deviation",
       "icc_title": "Custom 1−(SD/50) index; కాదు textbook ICC",
-      "icc_label": "ఆడిటర్ స్థిరత్వం (ICC-వంటిది)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "మొత్తం నిర్వహించిన తనిఖీలు",

@@ -4240,8 +4240,8 @@
     "reliability": {
       "std_dev": "mizani Deviation",
       "icc_title": "Custom 1−(SD/50) index; ba textbook ICC",
-      "icc_label": "Daidaiton Mai Bincike (Kamar ICC)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Jimillar binciken da aka yi",

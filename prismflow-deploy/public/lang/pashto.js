@@ -5528,8 +5528,8 @@
     "reliability": {
       "std_dev": "انهنحراف سرهیاری",
       "icc_title": "مؤشر مخصص 1−(SD/50)؛ لیس ICC بکتاب مدرسی",
-      "icc_label": "اتساق مُدقِّق (مثل ICC)",
-      "cronbach": "ألفا کراونباخ"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "ټول ترسره شوي چکونه",

@@ -4240,8 +4240,8 @@
     "reliability": {
       "std_dev": "Itandukaniro Risanzwe",
       "icc_title": "Custom 1−(SD/50) index; atari textbook ICC",
-      "icc_label": "Uburyo bw'Umusuzuma (nk'ICC)",
-      "cronbach": "α ya Cronbach"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Total checks zakozwe",

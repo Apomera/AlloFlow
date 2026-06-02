@@ -4240,8 +4240,8 @@
     "reliability": {
       "std_dev": "ọkwa Deviation",
       "icc_title": "Custom 1−(SD/50) index; anaghị textbook ICC",
-      "icc_label": "Nkwekọ Onye Nyocha (yiri ICC)",
-      "cronbach": "α Cronbach"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Ngụkọta nyocha emere",

@@ -5536,8 +5536,8 @@
     "reliability": {
       "std_dev": "اخیرنحراف استانداردی",
       "icc_title": "مؤشر مخصص 1−(SD/50)؛ نیست ICC بکتاب مدرسی",
-      "icc_label": "اتساق مُدقِّق (مثل ICC)",
-      "cronbach": "ألفا کرونباخ"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "مجموع بررسی‌های انجام‌شده",

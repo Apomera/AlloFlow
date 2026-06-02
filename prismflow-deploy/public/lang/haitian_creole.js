@@ -8904,8 +8904,8 @@
     "reliability": {
       "std_dev": "Ekat Estanda",
       "icc_title": "Endis pèsonalize 1−(SD/50); pa ICC liv tèks",
-      "icc_label": "Konsistans Oditè (tankou ICC)",
-      "cronbach": "α Cronbach"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Total tchèk fèt",

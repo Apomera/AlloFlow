@@ -6605,8 +6605,8 @@
     "reliability": {
       "std_dev": "Kala-fogaanshaha Heerka",
       "icc_title": "Tilmaame 1−(SD/50) gaar ah; maaha ICC buugga-cilmiga",
-      "icc_label": "Joogtaynta Hubiyaha (ICC-la mid ah)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Wadarta hubinada la sameeyay",

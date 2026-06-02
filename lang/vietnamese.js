@@ -4216,8 +4216,8 @@
     "reliability": {
       "std_dev": "Độ lệch chuẩn",
       "icc_title": "Chỉ số tùy chỉnh 1−(SD/50); không phải ICC sách giáo khoa",
-      "icc_label": "Tính nhất quán của kiểm toán viên (giống ICC)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Tổng số kiểm tra đã thực hiện",

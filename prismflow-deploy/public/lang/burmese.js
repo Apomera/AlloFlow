@@ -4240,8 +4240,8 @@
     "reliability": {
       "std_dev": "စံချိန် Deviation",
       "icc_title": "Custom 1−(SD/50) index; မ textbook ICC",
-      "icc_label": "စစ်ဆေးသူ၏ တသမတ်တည်းဖြစ်မှု (ICC-like)",
-      "cronbach": "Cronbach ၏ α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "လုပ်ဆောင်ခဲ့သော စစ်ဆေးမှု စုစုပေါင်း",

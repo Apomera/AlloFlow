@@ -4226,8 +4226,8 @@
     "reliability": {
       "std_dev": "मानक Deviation",
       "icc_title": "Custom 1−(SD/50) index; छैन textbook ICC",
-      "icc_label": "लेखापरीक्षक स्थिरता (ICC जस्तै)",
-      "cronbach": "Cronbach को α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "सम्पन्न जाँचहरूको कुल सङ्ख्या",

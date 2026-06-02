@@ -10136,8 +10136,8 @@
     "reliability": {
       "std_dev": "תקנים Deviation",
       "icc_title": "מדד מותאם 1−(SD/50); לא ICC ספרי",
-      "icc_label": "עקביות מבקרים (דמוי-ICC)",
-      "cronbach": "α של קרונבך"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "סה\"כ בדיקות שבוצעו",

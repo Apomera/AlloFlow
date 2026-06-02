@@ -4213,8 +4213,8 @@
     "reliability": {
       "std_dev": "pamantayan Deviation",
       "icc_title": "Custom 1−(SD/50) index; hindi textbook ICC",
-      "icc_label": "Pagkakapareho ng Tagasuri (tulad ng ICC)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Kabuuang naisagawang pagsusuri",

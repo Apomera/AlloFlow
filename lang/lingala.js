@@ -4240,8 +4240,8 @@
     "reliability": {
       "std_dev": "mibeko Deviation",
       "icc_title": "Custom 1−(SD/50) index; te textbook ICC",
-      "icc_label": "Bondimi ya Auditeur (lolenge ya ICC)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Komeka nyonso esalami",

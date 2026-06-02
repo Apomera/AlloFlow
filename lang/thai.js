@@ -9012,8 +9012,8 @@
     "reliability": {
       "std_dev": "ส่วนเบี่ยงเบนมาตรฐาน",
       "icc_title": "ดัชนีกำหนดเอง 1−(SD/50); ไม่ใช่ ICC ตามตำรา",
-      "icc_label": "ความสอดคล้องของผู้ตรวจสอบ (คล้าย ICC)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "จำนวนการตรวจสอบทั้งหมด",

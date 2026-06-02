@@ -4236,8 +4236,8 @@
     "reliability": {
       "std_dev": "ਮਿਆਰ Deviation",
       "icc_title": "Custom 1−(SD/50) index; ਨਹੀਂ textbook ICC",
-      "icc_label": "ਆਡੀਟਰ ਇਕਸਾਰਤਾ (ICC-ਵਰਗੀ)",
-      "cronbach": "ਕ੍ਰੋਨਬਾਖ਼ ਦਾ α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "ਕੁੱਲ ਜਾਂਚਾਂ ਕੀਤੀਆਂ ਗਈਆਂ",

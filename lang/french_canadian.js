@@ -5651,8 +5651,8 @@
     "reliability": {
       "std_dev": "Écart-type",
       "icc_title": "Indice personnalisé 1−(SD/50) ; pas l'ICC du manuel",
-      "icc_label": "Cohérence des auditeurs (type ICC)",
-      "cronbach": "α de Cronbach"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Vérifications totales effectuées",

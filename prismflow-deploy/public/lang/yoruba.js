@@ -4240,8 +4240,8 @@
     "reliability": {
       "std_dev": "eto Deviation",
       "icc_title": "Custom 1−(SD/50) index; ko textbook ICC",
-      "icc_label": "Ìbámu Olùṣàyẹ̀wò (bíi ICC)",
-      "cronbach": "α Cronbach"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Àpapọ̀ àyẹ̀wò tí a ṣe",

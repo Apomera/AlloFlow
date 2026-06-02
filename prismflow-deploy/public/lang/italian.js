@@ -4226,8 +4226,8 @@
     "reliability": {
       "std_dev": "standard Deviation",
       "icc_title": "Custom 1−(SD/50) index; non textbook ICC",
-      "icc_label": "Coerenza del revisore (tipo ICC)",
-      "cronbach": "α di Cronbach"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Totale verifiche eseguite",

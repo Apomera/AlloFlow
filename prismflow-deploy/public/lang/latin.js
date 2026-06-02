@@ -4240,8 +4240,8 @@
     "reliability": {
       "std_dev": "norma Deviation",
       "icc_title": "Custom 1−(SD/50) index; nōn textbook ICC",
-      "icc_label": "Constantia Auditoris (ICC-similis)",
-      "cronbach": "Cronbach α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Summa probationum factarum",

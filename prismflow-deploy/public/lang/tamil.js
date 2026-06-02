@@ -4240,8 +4240,8 @@
     "reliability": {
       "std_dev": "தரநிலை Deviation",
       "icc_title": "Custom 1−(SD/50) index; இல்லை textbook ICC",
-      "icc_label": "தணிக்கையாளர் நிலைத்தன்மை (ICC போன்றது)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "மொத்த சரிபார்ப்புகள் செய்யப்பட்டன",

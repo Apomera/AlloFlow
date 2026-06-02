@@ -7812,8 +7812,8 @@
     "reliability": {
       "std_dev": "標準偏差",
       "icc_title": "カスタム 1−(SD/50) インデックス。教科書ICCではありません",
-      "icc_label": "監査人の一貫性 (ICC様)",
-      "cronbach": "Cronbachのα"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "実行された総チェック数",

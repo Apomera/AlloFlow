@@ -4226,8 +4226,8 @@
     "reliability": {
       "std_dev": "표준 Deviation",
       "icc_title": "사용자 정의 1−(SD/50) index; 아닙니다 textbook ICC",
-      "icc_label": "감사자 일관성 (ICC 유사)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "수행된 총 검사 수",

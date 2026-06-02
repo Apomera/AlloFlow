@@ -4241,8 +4241,8 @@
     "reliability": {
       "std_dev": "tus qauv Deviation",
       "icc_title": "Custom 1−(SD/50) index; tsis textbook ICC",
-      "icc_label": "Tus Xyuas Sib Haum (ICC-like)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Tag nrho qhov tau xyuas",

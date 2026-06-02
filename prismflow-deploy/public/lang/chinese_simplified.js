@@ -4218,8 +4218,8 @@
     "reliability": {
       "std_dev": "标准差",
       "icc_title": "自定义 1−(SD/50) 指数;不是教科书 ICC",
-      "icc_label": "审核员一致性(类 ICC)",
-      "cronbach": "克朗巴赫 α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "执行的检查总数",

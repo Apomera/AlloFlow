@@ -4240,8 +4240,8 @@
     "reliability": {
       "std_dev": "ស្តង់ដារ Deviation",
       "icc_title": "Custom 1−(SD/50) index; មិន textbook ICC",
-      "icc_label": "ភាពស៊ីសង្វាក់របស់អ្នកត្រួតពិនិត្យ (ICC-like)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "ការត្រួតពិនិត្យសរុបដែលបានធ្វើ",

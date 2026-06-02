@@ -4236,8 +4236,8 @@
     "reliability": {
       "std_dev": "መዐቀኒ Deviation",
       "icc_title": "Custom 1−(SD/50) index; ኣይኮነን textbook ICC",
-      "icc_label": "ናይ ኦዲተር ምስኽካል (ICC ዝመስል)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "ድምር ዝተገብሩ መርመራታት",

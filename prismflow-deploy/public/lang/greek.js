@@ -4240,8 +4240,8 @@
     "reliability": {
       "std_dev": "πρότυπο Deviation",
       "icc_title": "Custom 1−(SD/50) index; δεν textbook ICC",
-      "icc_label": "Συνέπεια Ελεγκτή (τύπου ICC)",
-      "cronbach": "Cronbach's α"
+      "icc_label": "Pass-to-pass score agreement (heuristic)",
+      "cronbach": "Cross-pass consistency (heuristic)"
     },
     "score": {
       "total_checks": "Συνολικοί έλεγχοι που εκτελέστηκαν",
