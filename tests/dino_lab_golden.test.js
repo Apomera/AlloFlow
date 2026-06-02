@@ -164,6 +164,19 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
   it('Field Notes corrects the "all dinosaurs died out" myth', () => {
     expect(renderTab('notes')).toMatch(/Birds are dinosaurs/i);
   });
+
+  it('the Ecosystems tab shows an energy pyramid (producers -> consumers -> apex)', () => {
+    const html = renderTab('ecosystem');
+    expect(html).toMatch(/Energy pyramid/);
+    expect(html).toMatch(/producers/i);
+    expect(html).toMatch(/apex predator/i);
+  });
+
+  it('the species detail card offers a printable trading card', () => {
+    const html = renderTab('explore');
+    expect(html).toMatch(/Print a trading card/); // aria-label on the button
+    expect(html).toMatch(/🖨️ Card/);
+  });
 });
 
 describe('Dino Lab — quest hooks', () => {

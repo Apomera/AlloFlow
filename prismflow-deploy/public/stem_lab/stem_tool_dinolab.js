@@ -4449,6 +4449,426 @@
       facts: ['Early Jurassic predators are rare, so it is valuable.', 'It lived soon after dinosaurs survived the end-Triassic.'],
       uncertain: 'It is known from limited material.',
       howKnow: 'Hip and leg bones from England.'
+    },
+    {
+      id: 'thescelosaurus', name: 'Thescelosaurus neglectus', common: 'Thescelosaurus',
+      say: 'THESS-uh-luh-SOR-us', meaning: 'wonderful lizard',
+      group: 'ornithischian', clade: 'Thescelosauridae', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 68, myaLo: 66,
+      lengthM: 3.5, heightM: 1, weightKg: 230, speedKmh: 30,
+      region: 'North America', formation: 'Hell Creek',
+      named: 1913, namedBy: 'Charles Gilmore',
+      blurb: 'A stout, fast plant-eater and one of the very last small ornithischians, living right up to the asteroid impact.',
+      traits: ['Heavy-set, fast build', 'Beak and grinding teeth', 'Lived alongside T. rex'],
+      facts: ['A specimen nicknamed "Willo" was once claimed to preserve a fossilized heart.', 'The "heart" was later argued to be a mineral concretion, not tissue.'],
+      uncertain: 'Whether "Willo" really preserves a heart is disputed; most researchers now doubt it.',
+      howKnow: 'Many skeletons from the latest Cretaceous of North America.'
+    },
+    {
+      id: 'hypsilophodon', name: 'Hypsilophodon foxii', common: 'Hypsilophodon',
+      say: 'HIP-sih-LOAF-uh-don', meaning: 'high-ridged tooth',
+      group: 'ornithischian', clade: 'Ornithopoda', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Early Cretaceous', myaHi: 126, myaLo: 125,
+      lengthM: 1.8, heightM: 0.5, weightKg: 20, speedKmh: 35,
+      region: 'Europe (England)', formation: 'Wessex',
+      named: 1869, namedBy: 'Thomas Huxley',
+      blurb: 'A small, swift plant-eater from the Isle of Wight, long used as the textbook example of a "gazelle" dinosaur.',
+      traits: ['Light, speedy build', 'Beak and self-sharpening teeth', 'Long running legs'],
+      facts: ['Old reconstructions wrongly showed it armored or climbing trees.', 'Better study revealed a fast ground-running plant-eater.'],
+      uncertain: 'Many small ornithopods were once lumped into it; most have since been split off.',
+      howKnow: 'Many skeletons from the Isle of Wight.'
+    },
+    {
+      id: 'sauropelta', name: 'Sauropelta edwardsorum', common: 'Sauropelta',
+      say: 'sor-uh-PEL-tuh', meaning: 'lizard shield',
+      group: 'ornithischian', clade: 'Nodosauridae', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Early Cretaceous', myaHi: 115, myaLo: 108,
+      lengthM: 5.5, heightM: 1.5, weightKg: 1500, speedKmh: 10,
+      region: 'North America', formation: 'Cloverly',
+      named: 1970, namedBy: 'John Ostrom',
+      blurb: 'An armored dinosaur with long forward-pointing neck spikes and a heavy, club-less tail.',
+      traits: ['Long neck spikes', 'Bands of body armor', 'No tail club'],
+      facts: ['Its rows of armor and spikes are among the best-known of any nodosaur.', 'Its heavy tail made up about half its length.'],
+      uncertain: 'How the neck spikes were used (defense, display) is inferred from their shape.',
+      howKnow: 'Good skeletons with armor from the American West.'
+    },
+    {
+      id: 'edmontonia', name: 'Edmontonia longiceps', common: 'Edmontonia',
+      say: 'ed-mon-TOH-nee-uh', meaning: 'from the Edmonton rock group',
+      group: 'ornithischian', clade: 'Nodosauridae', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 76, myaLo: 69,
+      lengthM: 6.5, heightM: 1.7, weightKg: 3000, speedKmh: 8,
+      region: 'North America', formation: 'Horseshoe Canyon',
+      named: 1928, namedBy: 'Charles M. Sternberg',
+      blurb: 'A heavily armored nodosaur with large forward-pointing shoulder spikes that may have been used in contests.',
+      traits: ['Big forked shoulder spikes', 'Body armor', 'No tail club'],
+      facts: ['Its shoulder spikes may have been used to shove rivals.', 'It relied on armor and spikes, not a tail weapon.'],
+      uncertain: 'Whether the shoulder spikes were mainly for defense or display is debated.',
+      howKnow: 'Several armored skeletons from the American West and Canada.'
+    },
+    {
+      id: 'stegoceras', name: 'Stegoceras validum', common: 'Stegoceras',
+      say: 'steg-OSS-er-us', meaning: 'roof horn',
+      group: 'ornithischian', clade: 'Pachycephalosauridae', diet: 'omnivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 77, myaLo: 75,
+      lengthM: 2, heightM: 0.7, weightKg: 40, speedKmh: 30,
+      region: 'North America', formation: 'Dinosaur Park',
+      named: 1902, namedBy: 'Lawrence Lambe',
+      blurb: 'A small dome-headed dinosaur known from many skulls, the best-studied of the bone-heads.',
+      traits: ['Rounded skull dome', 'Two-legged build', 'Knobby skull edge'],
+      facts: ['Its many domes show how the skull thickened as the animal grew.', 'It anchors much of what we know about dome-head growth.'],
+      uncertain: 'Whether it head-butted, flank-butted, or just displayed is still argued.',
+      howKnow: 'Dozens of skull domes from Alberta.'
+    },
+    {
+      id: 'shantungosaurus', name: 'Shantungosaurus giganteus', common: 'Shantungosaurus',
+      say: 'shan-TUNG-uh-SOR-us', meaning: 'Shandong lizard',
+      group: 'ornithischian', clade: 'Hadrosauridae', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 77, myaLo: 70,
+      lengthM: 15, heightM: 5, weightKg: 16000, speedKmh: 20,
+      region: 'Asia (China)', formation: 'Wangshi',
+      named: 1973, namedBy: 'Hu Chengzhi',
+      blurb: 'One of the largest duck-billed dinosaurs and the biggest known non-sauropod plant-eater, with no head crest.',
+      traits: ['Enormous crestless duck-bill', 'Hundreds of grinding teeth', 'Lived in herds'],
+      facts: ['It rivals the largest hadrosaurs in size.', 'It is built from many individuals found in Shandong, China.'],
+      uncertain: 'Its very top size is estimated by scaling composite skeletons.',
+      howKnow: 'Many bones from large bonebeds in eastern China.'
+    },
+    {
+      id: 'magnapaulia', name: 'Magnapaulia laticaudus', common: 'Magnapaulia',
+      say: 'MAG-nuh-PAW-lee-uh', meaning: 'large Paul (for Paul Haaga)',
+      group: 'ornithischian', clade: 'Hadrosauridae', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 73, myaLo: 73,
+      lengthM: 12.5, heightM: 4, weightKg: 9000, speedKmh: 20,
+      region: 'North America (Mexico)', formation: 'El Gallo',
+      named: 2012, namedBy: 'Prieto-Márquez and colleagues',
+      blurb: 'A giant crested duck-bill from Baja California, one of the largest lambeosaurs known.',
+      traits: ['Tall, deep tail', 'Hollow head crest', 'Very large duck-bill'],
+      facts: ['It was first named as a species of Lambeosaurus in 1981.', 'Its deep tail may have helped it swim or display.'],
+      uncertain: 'The exact crest shape is reconstructed from incomplete skulls.',
+      howKnow: 'Skeletons from Baja California, Mexico.'
+    },
+    {
+      id: 'mussaurus', name: 'Mussaurus patagonicus', common: 'Mussaurus',
+      say: 'moo-SOR-us', meaning: 'mouse lizard',
+      group: 'sauropod', clade: 'early Sauropodomorpha', diet: 'herbivore',
+      period: 'triassic', epoch: 'Late Triassic', myaHi: 215, myaLo: 208,
+      lengthM: 6, heightM: 2, weightKg: 1000, speedKmh: 14,
+      region: 'South America (Argentina)', formation: 'Laguna Colorada',
+      named: 1979, namedBy: 'José Bonaparte',
+      blurb: 'An early plant-eater first named from tiny hatchlings, whose babies walked on all fours but adults on two legs.',
+      traits: ['Switched from four legs to two as it grew', 'Long neck', 'Nested in colonies'],
+      facts: ['The "mouse lizard" name comes from its tiny baby fossils.', 'Nesting grounds show it laid eggs in groups by age.'],
+      uncertain: 'How its posture shifted with growth is reconstructed from many ages of fossils.',
+      howKnow: 'Eggs, hatchlings, juveniles, and adults from Patagonia.'
+    },
+    {
+      id: 'lufengosaurus', name: 'Lufengosaurus huenei', common: 'Lufengosaurus',
+      say: 'loo-FUNG-uh-SOR-us', meaning: 'Lufeng lizard',
+      group: 'sauropod', clade: 'Massospondylidae', diet: 'herbivore',
+      period: 'jurassic', epoch: 'Early Jurassic', myaHi: 199, myaLo: 190,
+      lengthM: 6, heightM: 2, weightKg: 1700, speedKmh: 14,
+      region: 'Asia (China)', formation: 'Lufeng',
+      named: 1941, namedBy: 'Yang Zhongjian',
+      blurb: 'An early long-necked plant-eater that was the first complete dinosaur skeleton mounted in China.',
+      traits: ['Long neck and small head', 'Grasping hands with a thumb claw', 'Walked mainly on two legs'],
+      facts: ['Its embryos preserve some of the oldest organic remains known in a dinosaur.', 'It featured on a 1958 Chinese postage stamp.'],
+      uncertain: 'Claims of preserved proteins in its bones are checked carefully for contamination.',
+      howKnow: 'Many skeletons plus embryo-bearing eggs from Yunnan, China.'
+    },
+    {
+      id: 'yunnanosaurus', name: 'Yunnanosaurus huangi', common: 'Yunnanosaurus',
+      say: 'yoo-NAN-uh-SOR-us', meaning: 'Yunnan lizard',
+      group: 'sauropod', clade: 'early Sauropodomorpha', diet: 'herbivore',
+      period: 'jurassic', epoch: 'Early Jurassic', myaHi: 195, myaLo: 185,
+      lengthM: 7, heightM: 2, weightKg: 2000, speedKmh: 14,
+      region: 'Asia (China)', formation: 'Lufeng',
+      named: 1942, namedBy: 'Yang Zhongjian',
+      blurb: 'An early plant-eater with many spoon-shaped, self-sharpening teeth, oddly like those of later sauropods.',
+      traits: ['Many self-sharpening teeth', 'Long neck', 'Grasping hands'],
+      facts: ['Its teeth resemble those of true sauropods, evolved separately.', 'Dozens of individuals were found together.'],
+      uncertain: 'Whether its sauropod-like teeth mean a close link, or just similar diet, is studied.',
+      howKnow: 'Many skeletons from Yunnan, China.'
+    },
+    {
+      id: 'anchisaurus', name: 'Anchisaurus polyzelus', common: 'Anchisaurus',
+      say: 'ANG-kih-SOR-us', meaning: 'near lizard',
+      group: 'sauropod', clade: 'early Sauropodomorpha', diet: 'omnivore',
+      period: 'jurassic', epoch: 'Early Jurassic', myaHi: 195, myaLo: 185,
+      lengthM: 2.2, heightM: 0.6, weightKg: 27, speedKmh: 16,
+      region: 'North America', formation: 'Portland',
+      named: 1885, namedBy: 'Othniel Charles Marsh',
+      blurb: 'A small early plant-eater, among the first dinosaurs ever found in North America, dug from Connecticut Valley sandstone.',
+      traits: ['Small early sauropodomorph', 'Grasping hands', 'Long neck'],
+      facts: ['Its bones were found in 1818, decades before the word "dinosaur" existed.', 'It was at first mistaken for human remains.'],
+      uncertain: 'Its exact diet is inferred from teeth that suit plants and maybe small animals.',
+      howKnow: 'Skeletons quarried from New England sandstone.'
+    },
+    {
+      id: 'nothronychus', name: 'Nothronychus mckinleyi', common: 'Nothronychus',
+      say: 'noth-ROH-nih-kus', meaning: 'sloth-like claw',
+      group: 'theropod', clade: 'Therizinosauridae', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 93, myaLo: 91,
+      lengthM: 5, heightM: 3, weightKg: 1000, speedKmh: 12,
+      region: 'North America', formation: 'Moreno Hill',
+      named: 2001, namedBy: 'Kirkland & Wolfe',
+      blurb: 'The first definite therizinosaur from North America, a pot-bellied, plant-eating theropod with long claws.',
+      traits: ['Long hand claws', 'Pot belly for digesting plants', 'Leaf-shaped teeth'],
+      facts: ['It showed the plant-eating therizinosaurs reached North America.', 'Its body plan looks like a giant ground sloth.'],
+      uncertain: 'Its full posture is reconstructed from a partial skeleton.',
+      howKnow: 'Partial skeletons from New Mexico and Utah.'
+    },
+    {
+      id: 'erlikosaurus', name: 'Erlikosaurus andrewsi', common: 'Erlikosaurus',
+      say: 'er-LIK-uh-SOR-us', meaning: 'Erlik’s lizard (a death king)',
+      group: 'theropod', clade: 'Therizinosauridae', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 96, myaLo: 89,
+      lengthM: 4.5, heightM: 2.5, weightKg: 500, speedKmh: 12,
+      region: 'Asia (Mongolia)', formation: 'Bayan Shireh',
+      named: 1980, namedBy: 'Barsbold & Perle',
+      blurb: 'A plant-eating therizinosaur known from a rare, well-preserved skull that has been studied by CT scan.',
+      traits: ['Toothless beak tip with leaf-shaped cheek teeth', 'Long hand claws', 'Small head'],
+      facts: ['Its skull is one of the best for any therizinosaur.', 'CT scans reveal its brain and senses.'],
+      uncertain: 'Much of its body is reconstructed from relatives.',
+      howKnow: 'A good skull plus skeletal pieces from Mongolia.'
+    },
+    {
+      id: 'segnosaurus', name: 'Segnosaurus galbinensis', common: 'Segnosaurus',
+      say: 'SEG-nuh-SOR-us', meaning: 'slow lizard',
+      group: 'theropod', clade: 'Therizinosauridae', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 96, myaLo: 89,
+      lengthM: 6, heightM: 2.5, weightKg: 1300, speedKmh: 10,
+      region: 'Asia (Mongolia)', formation: 'Bayan Shireh',
+      named: 1979, namedBy: 'Altangerel Perle',
+      blurb: 'A large therizinosaur that, for a while, gave its name to the whole odd group ("segnosaurs").',
+      traits: ['Broad, four-toed feet', 'Long hand claws', 'Down-curved lower jaw'],
+      facts: ['"Segnosaurs" was an early name for the therizinosaur group.', 'Its strange anatomy confused scientists for years.'],
+      uncertain: 'Its exact diet is inferred from its leaf-shaped teeth and gut room.',
+      howKnow: 'Jaws, limbs, and hips from Mongolia.'
+    },
+    {
+      id: 'garudimimus', name: 'Garudimimus brevipes', common: 'Garudimimus',
+      say: 'guh-ROO-dih-MIME-us', meaning: 'Garuda mimic',
+      group: 'theropod', clade: 'Ornithomimosauria', diet: 'omnivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 96, myaLo: 89,
+      lengthM: 3.5, heightM: 1.2, weightKg: 100, speedKmh: 45,
+      region: 'Asia (Mongolia)', formation: 'Bayan Shireh',
+      named: 1981, namedBy: 'Rinchen Barsbold',
+      blurb: 'A primitive "ostrich mimic" that was slower and more lightly specialized than its later, faster relatives.',
+      traits: ['Toothless beak', 'Shorter feet than later kin', 'Large eyes'],
+      facts: ['It is named after Garuda, a bird-like being in myth.', 'It sits near the base of the ostrich-mimic family.'],
+      uncertain: 'Its exact diet is inferred from its beak and build.',
+      howKnow: 'A good skeleton from Mongolia.'
+    },
+    {
+      id: 'harpymimus', name: 'Harpymimus okladnikovi', common: 'Harpymimus',
+      say: 'HAR-pih-MIME-us', meaning: 'harpy mimic',
+      group: 'theropod', clade: 'Ornithomimosauria', diet: 'omnivore',
+      period: 'cretaceous', epoch: 'Early Cretaceous', myaHi: 115, myaLo: 100,
+      lengthM: 2, heightM: 0.8, weightKg: 45, speedKmh: 45,
+      region: 'Asia (Mongolia)', formation: 'Khuren Dukh',
+      named: 1984, namedBy: 'Barsbold & Perle',
+      blurb: 'An early ostrich-mimic that still kept small teeth in its lower jaw, before the group became toothless.',
+      traits: ['A few small teeth in the lower jaw', 'Long legs', 'Slender build'],
+      facts: ['Most ostrich-mimics are toothless; this early one was not quite.', 'It captures a halfway stage toward the beaked forms.'],
+      uncertain: 'Exactly what its few teeth were for is inferred.',
+      howKnow: 'A partial skeleton from Mongolia.'
+    },
+    {
+      id: 'beishanlong', name: 'Beishanlong grandis', common: 'Beishanlong',
+      say: 'BAY-shan-long', meaning: 'Beishan dragon',
+      group: 'theropod', clade: 'Ornithomimosauria', diet: 'omnivore',
+      period: 'cretaceous', epoch: 'Early Cretaceous', myaHi: 125, myaLo: 100,
+      lengthM: 8, heightM: 3, weightKg: 600, speedKmh: 40,
+      region: 'Asia (China)', formation: 'Xinminbao',
+      named: 2010, namedBy: 'Makovicky and colleagues',
+      blurb: 'A giant ostrich-mimic, one of the largest known, that was still growing when it died.',
+      traits: ['Very large ornithomimosaur', 'Toothless beak', 'Long clawed hands'],
+      facts: ['It is among the biggest "ostrich mimics" ever found.', 'Bone growth lines show it had not reached full size.'],
+      uncertain: 'Its full adult size is estimated, since the known animal was not done growing.',
+      howKnow: 'A partial skeleton from northwestern China.'
+    },
+    {
+      id: 'brontomerus', name: 'Brontomerus mcintoshi', common: 'Brontomerus',
+      say: 'BRON-tuh-MEER-us', meaning: 'thunder thighs',
+      group: 'sauropod', clade: 'Titanosauriformes', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Early Cretaceous', myaHi: 110, myaLo: 108,
+      lengthM: 14, heightM: 4, weightKg: 6000, speedKmh: 12,
+      region: 'North America', formation: 'Cedar Mountain',
+      named: 2011, namedBy: 'Taylor, Wedel & Cifelli',
+      blurb: 'A sauropod nicknamed "thunder thighs" for a huge hip bone that anchored unusually powerful leg muscles.',
+      traits: ['Enormous thigh-muscle attachment', 'Powerful kick (inferred)', 'Long neck'],
+      facts: ['Its wide hip bone suggests strong legs, maybe for kicking predators.', 'It is known from only a few bones.'],
+      uncertain: 'The "powerful kick" idea is inferred from the hip shape, not observed.',
+      howKnow: 'A few bones, including a distinctive hip, from Utah.'
+    },
+    {
+      id: 'cedarosaurus', name: 'Cedarosaurus weiskopfae', common: 'Cedarosaurus',
+      say: 'SEE-dur-uh-SOR-us', meaning: 'Cedar Mountain lizard',
+      group: 'sauropod', clade: 'Brachiosauridae', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Early Cretaceous', myaHi: 127, myaLo: 121,
+      lengthM: 15, heightM: 6, weightKg: 12000, speedKmh: 12,
+      region: 'North America', formation: 'Cedar Mountain',
+      named: 1999, namedBy: 'Tidwell, Carpenter & Brooks',
+      blurb: 'A long-necked brachiosaur from Utah found with a cluster of stomach stones it swallowed to grind food.',
+      traits: ['Brachiosaur build', 'Stomach stones (gastroliths)', 'Long neck'],
+      facts: ['A pile of gastroliths was found with its skeleton.', 'It shows brachiosaurs lingered into the Cretaceous of North America.'],
+      uncertain: 'Whether the stones aided digestion or had another role is studied.',
+      howKnow: 'A partial skeleton with gastroliths from Utah.'
+    },
+    {
+      id: 'aquilops', name: 'Aquilops americanus', common: 'Aquilops',
+      say: 'AK-wih-lops', meaning: 'eagle face',
+      group: 'ornithischian', clade: 'Ceratopsia', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Early Cretaceous', myaHi: 108, myaLo: 104,
+      lengthM: 0.6, heightM: 0.2, weightKg: 1.5, speedKmh: 25,
+      region: 'North America', formation: 'Cloverly',
+      named: 2014, namedBy: 'Farke and colleagues',
+      blurb: 'A rabbit-sized early horned dinosaur, one of the oldest from North America, with a sharp hooked beak.',
+      traits: ['Tiny body', 'Hooked, eagle-like beak', 'No horns or frill yet'],
+      facts: ['It shows small horned dinosaurs crossed from Asia into North America early on.', 'Its whole skull is only about 8 cm long.'],
+      uncertain: 'It is known from a single small skull, so its body is reconstructed.',
+      howKnow: 'A tiny skull from Montana.'
+    },
+    {
+      id: 'yamaceratops', name: 'Yamaceratops dorngobiensis', common: 'Yamaceratops',
+      say: 'YAH-muh-SERR-uh-tops', meaning: 'Yama horned face',
+      group: 'ornithischian', clade: 'Ceratopsia', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 90, myaLo: 80,
+      lengthM: 1.5, heightM: 0.5, weightKg: 20, speedKmh: 25,
+      region: 'Asia (Mongolia)', formation: 'Javkhlant',
+      named: 2006, namedBy: 'Makovicky & Norell',
+      blurb: 'A small early horned dinosaur whose simple frill suggests frills first arose for display, not defense.',
+      traits: ['Small frill', 'Parrot-like beak', 'No big horns'],
+      facts: ['Its modest frill points to display as the first use of frills.', 'It is named after Yama, a death deity.'],
+      uncertain: 'Its age within the Late Cretaceous is debated.',
+      howKnow: 'Skull material from the Gobi Desert.'
+    },
+    {
+      id: 'loricatosaurus', name: 'Loricatosaurus priscus', common: 'Loricatosaurus',
+      say: 'luh-RIK-uh-tuh-SOR-us', meaning: 'armored lizard',
+      group: 'ornithischian', clade: 'Stegosauridae', diet: 'herbivore',
+      period: 'jurassic', epoch: 'Middle Jurassic', myaHi: 166, myaLo: 164,
+      lengthM: 5, heightM: 1.8, weightKg: 2000, speedKmh: 8,
+      region: 'Europe (England)', formation: 'Oxford Clay',
+      named: 2008, namedBy: 'Maidment and colleagues',
+      blurb: 'A Middle Jurassic plated dinosaur, an early member of the stegosaur family from European seas-edge deposits.',
+      traits: ['Back plates and tail spikes', 'Possible shoulder spine', 'Heavy body'],
+      facts: ['It was once lumped in with Lexovisaurus.', 'It is one of the older well-known stegosaurs.'],
+      uncertain: 'Its exact plate and spike arrangement is reconstructed from scattered bones.',
+      howKnow: 'Partial skeletons from England.'
+    },
+    {
+      id: 'lexovisaurus', name: 'Lexovisaurus durobrivensis', common: 'Lexovisaurus',
+      say: 'lex-OH-vih-SOR-us', meaning: 'Lexovii lizard',
+      group: 'ornithischian', clade: 'Stegosauridae', diet: 'herbivore',
+      period: 'jurassic', epoch: 'Middle Jurassic', myaHi: 165, myaLo: 164,
+      lengthM: 5, heightM: 1.8, weightKg: 2000, speedKmh: 8,
+      region: 'Europe (England/France)', formation: 'Oxford Clay',
+      named: 1957, namedBy: 'Robert Hoffstetter',
+      blurb: 'One of the earliest stegosaurs from Europe, with tall plates and long shoulder or hip spines.',
+      traits: ['Tall back plates', 'Long parascapular spine', 'Tail spikes'],
+      facts: ['It is among the oldest stegosaurs known from Europe.', 'Some of its material is now placed in Loricatosaurus.'],
+      uncertain: 'Which bones truly belong to it has been reshuffled over time.',
+      howKnow: 'Plates, spines, and bones from England and France.'
+    },
+    {
+      id: 'augustynolophus', name: 'Augustynolophus morrisi', common: 'Augustynolophus',
+      say: 'aw-GUS-tin-OL-uh-fus', meaning: 'Augustyn’s crest',
+      group: 'ornithischian', clade: 'Hadrosauridae', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 70, myaLo: 66,
+      lengthM: 8, heightM: 3, weightKg: 3000, speedKmh: 20,
+      region: 'North America (California)', formation: 'Moreno',
+      named: 2014, namedBy: 'Prieto-Márquez and colleagues',
+      blurb: 'A duck-billed dinosaur from California, one of very few dinosaurs known from the state, named its state dinosaur.',
+      traits: ['Solid forward crest', 'Grinding tooth batteries', 'Coastal dweller'],
+      facts: ['It is the official state dinosaur of California.', 'It was found in marine rocks, washed out to sea.'],
+      uncertain: 'It is known from limited skull and skeletal material.',
+      howKnow: 'Skull and partial skeletons from central California.'
+    },
+    {
+      id: 'velafrons', name: 'Velafrons coahuilensis', common: 'Velafrons',
+      say: 'VEL-uh-fronz', meaning: 'sailed forehead',
+      group: 'ornithischian', clade: 'Hadrosauridae', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 73, myaLo: 72,
+      lengthM: 10, heightM: 3.5, weightKg: 4000, speedKmh: 20,
+      region: 'North America (Mexico)', formation: 'Cerro del Pueblo',
+      named: 2007, namedBy: 'Gates and colleagues',
+      blurb: 'A crested duck-bill from Mexico, known from a large juvenile with a partly grown head crest.',
+      traits: ['Rounded hollow crest', 'Grinding teeth', 'Known from a juvenile'],
+      facts: ['Its name refers to the sail-like crest on its forehead.', 'It adds to a growing list of Mexican dinosaurs.'],
+      uncertain: 'Adult features are estimated, since the main skeleton is young.',
+      howKnow: 'A juvenile skull and skeleton from Coahuila, Mexico.'
+    },
+    {
+      id: 'zalmoxes', name: 'Zalmoxes robustus', common: 'Zalmoxes',
+      say: 'zal-MOK-seez', meaning: 'for the deity Zalmoxis',
+      group: 'ornithischian', clade: 'Rhabdodontidae', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 70, myaLo: 66,
+      lengthM: 3, heightM: 1, weightKg: 250, speedKmh: 22,
+      region: 'Europe (Romania)', formation: 'Sânpetru',
+      named: 2003, namedBy: 'Weishampel and colleagues',
+      blurb: 'A stocky plant-eater from the dwarfed island world of Late Cretaceous Romania, with a heavy, deep jaw.',
+      traits: ['Stout body', 'Deep, strong jaw', 'Island dweller'],
+      facts: ['It lived on Haţeg Island, where many dinosaurs were dwarfed.', 'It is named after a god of the ancient Dacians.'],
+      uncertain: 'Whether it was truly dwarfed or just naturally small is studied.',
+      howKnow: 'Many bones from the Haţeg basin of Romania.'
+    },
+    {
+      id: 'sarahsaurus', name: 'Sarahsaurus aurifontanalis', common: 'Sarahsaurus',
+      say: 'SAIR-uh-SOR-us', meaning: 'Sarah’s lizard',
+      group: 'sauropod', clade: 'early Sauropodomorpha', diet: 'herbivore',
+      period: 'jurassic', epoch: 'Early Jurassic', myaHi: 185, myaLo: 183,
+      lengthM: 4, heightM: 1.2, weightKg: 110, speedKmh: 16,
+      region: 'North America', formation: 'Kayenta',
+      named: 2010, namedBy: 'Rowe, Sues & Reisz',
+      blurb: 'An early plant-eater that colonized North America after the end-Triassic extinction, with surprisingly strong hands.',
+      traits: ['Strong, grasping hands', 'Long neck', 'Sturdy build'],
+      facts: ['It shows plant-eating dinosaurs spread into North America early in the Jurassic.', 'Its powerful hands are unusual for a plant-eater.'],
+      uncertain: 'What its strong hands were used for is inferred from their build.',
+      howKnow: 'Good skeletons from Arizona.'
+    },
+    {
+      id: 'stegouros', name: 'Stegouros elengassen', common: 'Stegouros',
+      say: 'STEG-oo-ross', meaning: 'roofed tail',
+      group: 'ornithischian', clade: 'Ankylosauria', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 75, myaLo: 72,
+      lengthM: 2, heightM: 0.7, weightKg: 150, speedKmh: 10,
+      region: 'South America (Chile)', formation: 'Dorotea',
+      named: 2021, namedBy: 'Soto-Acuña and colleagues',
+      blurb: 'A small southern armored dinosaur with a unique flat, frond-shaped tail weapon unlike any other dinosaur.',
+      traits: ['Flat, blade-edged tail weapon', 'Small body', 'Southern armored dinosaur'],
+      facts: ['Its tail weapon looks like a war club edged with blades.', 'It hints at a distinct southern branch of armored dinosaurs.'],
+      uncertain: 'Exactly how the strange tail was swung and used is inferred.',
+      howKnow: 'A well-preserved skeleton from Chilean Patagonia.'
+    },
+    {
+      id: 'xinjiangtitan', name: 'Xinjiangtitan shanshanesis', common: 'Xinjiangtitan',
+      say: 'shin-JYANG-TIE-tan', meaning: 'Xinjiang titan',
+      group: 'sauropod', clade: 'Mamenchisauridae', diet: 'herbivore',
+      period: 'jurassic', epoch: 'Middle Jurassic', myaHi: 166, myaLo: 161,
+      lengthM: 30, heightM: 7, weightKg: 30000, speedKmh: 12,
+      region: 'Asia (China)', formation: 'Qiketai',
+      named: 2013, namedBy: 'Wu and colleagues',
+      blurb: 'A Chinese sauropod with one of the longest necks ever measured, a relative of Mamenchisaurus.',
+      traits: ['Extremely long neck', 'Light, air-filled neck bones', 'Small head'],
+      facts: ['Its complete neck is among the longest known for any animal.', 'It belongs to the long-necked mamenchisaur group.'],
+      uncertain: 'Top neck-length figures depend on how the vertebrae are reconstructed.',
+      howKnow: 'A skeleton with a near-complete neck from northwestern China.'
+    },
+    {
+      id: 'rapetosaurus', name: 'Rapetosaurus krausei', common: 'Rapetosaurus',
+      say: 'rah-PAY-tuh-SOR-us', meaning: 'mischievous giant lizard',
+      group: 'sauropod', clade: 'Titanosauria', diet: 'herbivore',
+      period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 70, myaLo: 66,
+      lengthM: 15, heightM: 4, weightKg: 11000, speedKmh: 12,
+      region: 'Africa (Madagascar)', formation: 'Maevarano',
+      named: 2001, namedBy: 'Curry Rogers & Forster',
+      blurb: 'One of the most complete titanosaurs known, including a rare skull, from the island of Madagascar.',
+      traits: ['Rare titanosaur skull', 'Long neck and tail', 'Pencil-like teeth'],
+      facts: ['A baby Rapetosaurus skeleton revealed how fast titanosaurs grew.', 'It is a benchmark for what titanosaur heads looked like.'],
+      uncertain: 'How its growth compared across the group is still being studied.',
+      howKnow: 'Skulls and skeletons of young and older animals from Madagascar.'
     }
   ];
 
@@ -4663,6 +5083,7 @@
   function pColor(id) { return PERIOD_COLOR[id] || '#64748b'; }
   function dColor(id) { return DIET_COLOR[id] || '#64748b'; }
   function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function fmtLength(m) { if (m == null) return '?'; if (m < 1) return Math.round(m * 100) + ' cm'; return (Math.round(m * 10) / 10) + ' m'; }
   function fmtWeight(kg) { if (kg == null) return '?'; if (kg >= 1000) return (Math.round(kg / 100) / 10) + ' t'; return kg + ' kg'; }
   function fmtMya(d) { if (d.myaHi === d.myaLo) return d.myaLo + ' mya'; return d.myaHi + '–' + d.myaLo + ' mya'; }
@@ -4729,6 +5150,48 @@
         ns[id] = true; upd({ selected: id, seen: ns });
         var dn = byId(id); if (dn) announceToSR('Opened ' + dn.common);
       }
+      // Open a print-friendly "trading card" for one species in a new window.
+      // All dynamic strings are escaped (curated data, but escaped defensively).
+      function printCard(dn) {
+        if (!dn) return;
+        var rows = [
+          ['Length', fmtLength(dn.lengthM)], ['Height', fmtLength(dn.heightM)], ['Weight', fmtWeight(dn.weightKg)],
+          ['When', dn.epoch + ' (' + fmtMya(dn) + ')'], ['Where', dn.region], ['Diet', cap(dn.diet)],
+          ['Group', GROUP_LABEL[dn.group] || cap(dn.group)], ['Rock unit', dn.formation + ' Formation'], ['Named', dn.named + ' by ' + dn.namedBy]
+        ];
+        var accent = pColor(dn.period);
+        var css = 'body{font:14px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:#0f172a;background:#e2e8f0;margin:0;padding:18px}' +
+          '.bar{max-width:560px;margin:0 auto 12px;display:flex;gap:8px}' +
+          '.bar button{font:600 13px system-ui;padding:8px 14px;border-radius:8px;border:1px solid #94a3b8;background:#fff;cursor:pointer}' +
+          '.card{max-width:560px;margin:0 auto;background:#fff;border:1px solid #cbd5e1;border-top:8px solid ' + accent + ';border-radius:14px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.12)}' +
+          '.nm{font-size:24px;font-weight:800}.per{float:right;font-size:12px;font-weight:700;color:#fff;background:' + accent + ';padding:3px 10px;border-radius:999px}' +
+          '.sci{font-style:italic;color:#475569}.say{font-size:12px;color:#475569;margin:2px 0 10px}' +
+          '.blurb{margin:0 0 12px}table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px}' +
+          'th{text-align:left;color:#475569;font-weight:600;width:38%;padding:4px 0;border-bottom:1px solid #e2e8f0}td{text-align:right;font-weight:600;padding:4px 0;border-bottom:1px solid #e2e8f0}' +
+          'h3{font-size:13px;margin:10px 0 4px}ul{margin:0 0 8px;padding-left:18px}' +
+          '.box{border-radius:8px;padding:10px;margin-top:8px;font-size:12.5px}.know{background:#e0f2fe;border:1px solid #7dd3fc}.unc{background:#fef3c7;border:1px solid #fcd34d}' +
+          '.foot{margin-top:12px;font-size:11px;color:#64748b;text-align:center}' +
+          '@media print{body{background:#fff;padding:0}.no-print{display:none}.card{border:1px solid #cbd5e1;box-shadow:none}}';
+        var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' + esc(dn.common) + ' — Dino Lab card</title><style>' + css + '</style></head><body>' +
+          '<div class="bar no-print"><button onclick="window.print()">🖨️ Print this card</button><button onclick="window.close()">Close</button></div>' +
+          '<div class="card">' +
+          '<div><span class="per">' + esc(periodName(dn.period)) + '</span><div class="nm">' + esc(dn.common) + '</div></div>' +
+          '<div class="sci">' + esc(dn.name) + '</div>' +
+          '<div class="say">Say it: ' + esc(dn.say) + '  ·  Means: &ldquo;' + esc(dn.meaning) + '&rdquo;</div>' +
+          '<p class="blurb">' + esc(dn.blurb) + '</p>' +
+          '<table><tbody>' + rows.map(function (r) { return '<tr><th>' + esc(r[0]) + '</th><td>' + esc(r[1]) + '</td></tr>'; }).join('') + '</tbody></table>' +
+          '<h3>Standout traits</h3><ul>' + dn.traits.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+          '<div class="box know"><b>🔎 How we know:</b> ' + esc(dn.howKnow) + '</div>' +
+          '<div class="box unc"><b>⚖️ What we are not sure about:</b> ' + esc(dn.uncertain) + '</div>' +
+          '<div class="foot">Dino Lab · STEM Lab — lengths, weights, and speeds are widely-cited estimates, not exact measurements.</div>' +
+          '</div></body></html>';
+        try {
+          var w = window.open('', '_blank', 'width=620,height=900');
+          if (!w) { announceToSR('Pop-up blocked. Allow pop-ups to print the card.'); return; }
+          w.document.open(); w.document.write(html); w.document.close();
+          announceToSR('Trading card for ' + dn.common + ' opened in a new window.');
+        } catch (e) { announceToSR('Could not open the trading card.'); }
+      }
 
       var TABS = [
         { id: 'explore', label: 'Explore', icon: '🔍' },
@@ -4754,7 +5217,7 @@
       function renderDetail(dn) {
         if (!dn) return null;
         return panel([
-          el('div', { key: 'hd', style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } }, el('div', { key: 'nm', style: { fontSize: 20, fontWeight: 800 } }, dn.common), el('button', { key: 'cmp', onClick: function () { upd({ tab: 'compare', compareA: dn.id }); }, style: { fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: 'transparent', color: T.soft, cursor: 'pointer' } }, '⚖️ Compare')),
+          el('div', { key: 'hd', style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } }, el('div', { key: 'nm', style: { fontSize: 20, fontWeight: 800 } }, dn.common), el('div', { key: 'acts', style: { display: 'flex', gap: 6 } }, el('button', { onClick: function () { upd({ tab: 'compare', compareA: dn.id }); }, style: { fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: 'transparent', color: T.soft, cursor: 'pointer' } }, '⚖️ Compare'), el('button', { onClick: function () { printCard(dn); }, 'aria-label': 'Print a trading card for ' + dn.common, style: { fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: 'transparent', color: T.soft, cursor: 'pointer' } }, '🖨️ Card'))),
           el('div', { key: 'sci', style: { fontSize: 12, fontStyle: 'italic', color: T.soft } }, dn.name),
           el('div', { key: 'say', style: { fontSize: 12, color: T.soft, marginBottom: 8 } }, 'Say it: ' + dn.say + '  ·  Means: "' + dn.meaning + '"'),
           el('div', { key: 'bdg', style: { marginBottom: 8 } }, badge(periodName(dn.period) + ' · ' + fmtMya(dn), pColor(dn.period)), badge((DIET_ICON[dn.diet] || '') + ' ' + cap(dn.diet), dColor(dn.diet)), badge(GROUP_LABEL[dn.group] || cap(dn.group), '#38bdf8')),
@@ -5067,7 +5530,22 @@
           tier('🍴 Omnivores', omnis, '#f59e0b'),
           tier('🌿 Plant-eaters', plants, '#22c55e')
         ]);
-        return el('div', null, sectionTitle('🌍', 'Ancient ecosystems', 'Not all dinosaurs lived together. Each rock formation is a snapshot of one place and time. Pick a site to meet its whole community.'), selector, note, card);
+        var primaryN = plants.length + omnis.length;
+        var apex = hunters.length ? hunters[0] : null;
+        function plevel(widthPct, fill, label, sub) {
+          return el('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 6 } }, el('div', { style: { width: widthPct + '%', minWidth: 140, maxWidth: '100%', boxSizing: 'border-box', background: fill, borderRadius: 8, padding: '8px 12px', textAlign: 'center', color: '#fff', fontWeight: 700, fontSize: 12.5 } }, label), sub ? el('div', { style: { fontSize: 11, color: T.soft, margin: '1px 0' } }, sub) : null);
+        }
+        var pyramid = panel([
+          el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 2 } }, '🔺 Energy pyramid'),
+          el('div', { key: 's', style: { fontSize: 12, color: T.soft, marginBottom: 10, lineHeight: 1.5 } }, 'Energy flows up from the sun. Some is lost at every step, so each level can feed fewer animals than the one below it. Bar width shows energy, not exact numbers.'),
+          el('div', { key: 'p' },
+            plevel(34, '#b91c1c', '🥩 Hunters · ' + hunters.length, apex ? 'apex predator here: ' + apex.common : 'no hunters found here'),
+            plevel(64, '#b45309', '🦕 Plant-eaters + omnivores · ' + primaryN, 'the primary consumers'),
+            plevel(100, '#15803d', '🌿 Plants (producers)', 'ferns, cycads, and conifers — the green base that fed it all')
+          ),
+          el('div', { key: 'n', style: { fontSize: 11.5, color: T.soft, marginTop: 8, fontStyle: 'italic' } }, primaryN + ' kinds of plant-eater and omnivore shared this rock unit with ' + hunters.length + ' kind' + (hunters.length === 1 ? '' : 's') + ' of hunter. That few-predators-on-top shape is what an energy pyramid predicts.')
+        ], { marginTop: 14, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.28)' });
+        return el('div', null, sectionTitle('🌍', 'Ancient ecosystems', 'Not all dinosaurs lived together. Each rock formation is a snapshot of one place and time. Pick a site to meet its whole community.'), selector, note, card, pyramid);
       }
 
       var content;

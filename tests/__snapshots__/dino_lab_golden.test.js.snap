@@ -4,22 +4,22 @@ exports[`Dino Lab — data contract > dataset shape + distributions are pinned (
 {
   "byDiet": {
     "carnivore": 103,
-    "herbivore": 184,
+    "herbivore": 209,
     "insectivore": 6,
-    "omnivore": 29,
+    "omnivore": 34,
     "piscivore": 10,
   },
   "byGroup": {
-    "ornithischian": 130,
+    "ornithischian": 145,
     "other": 3,
-    "sauropod": 62,
-    "theropod": 137,
+    "sauropod": 71,
+    "theropod": 143,
   },
   "byPeriod": {
-    "cretaceous": 230,
-    "jurassic": 86,
+    "cretaceous": 252,
+    "jurassic": 93,
     "permian": 1,
-    "triassic": 15,
+    "triassic": 16,
   },
   "clades": 8,
   "extinctions": 5,
@@ -29,7 +29,7 @@ exports[`Dino Lab — data contract > dataset shape + distributions are pinned (
   "quiz": 34,
   "records": 12,
   "sites": 12,
-  "species": 332,
+  "species": 362,
 }
 `;
 
@@ -51,12 +51,14 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "ampelosaurus",
   "anchiceratops",
   "anchiornis",
+  "anchisaurus",
   "andesaurus",
   "ankylosaurus",
   "antarctosaurus",
   "antetonitrus",
   "anzu",
   "apatosaurus",
+  "aquilops",
   "aralosaurus",
   "archaeoceratops",
   "archaeopteryx",
@@ -66,6 +68,7 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "atlasaurus",
   "atrociraptor",
   "aucasaurus",
+  "augustynolophus",
   "auroraceratops",
   "australovenator",
   "austroraptor",
@@ -80,11 +83,13 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "baryonyx",
   "becklespinax",
   "beipiaosaurus",
+  "beishanlong",
   "bellusaurus",
   "bonitasaura",
   "borealopelta",
   "brachiosaurus",
   "brachylophosaurus",
+  "brontomerus",
   "brontosaurus",
   "buitreraptor",
   "buriolestes",
@@ -94,6 +99,7 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "carcharodontosaurus",
   "carnotaurus",
   "caudipteryx",
+  "cedarosaurus",
   "centrosaurus",
   "ceratosaurus",
   "cetiosaurus",
@@ -129,6 +135,7 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "dryosaurus",
   "dryptosaurus",
   "dysalotosaurus",
+  "edmontonia",
   "edmontosaurus",
   "einiosaurus",
   "elaphrosaurus",
@@ -139,6 +146,7 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "eoraptor",
   "eotyrannus",
   "epidexipteryx",
+  "erlikosaurus",
   "euhelopus",
   "euoplocephalus",
   "europasaurus",
@@ -150,6 +158,7 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "galleonosaurus",
   "gallimimus",
   "gargoyleosaurus",
+  "garudimimus",
   "gasparinisaura",
   "giganotosaurus",
   "gigantoraptor",
@@ -164,6 +173,7 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "halszkaraptor",
   "haplocanthosaurus",
   "haplocheirus",
+  "harpymimus",
   "haya",
   "herrerasaurus",
   "hesperosaurus",
@@ -172,6 +182,7 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "huayangosaurus",
   "hylaeosaurus",
   "hypacrosaurus",
+  "hypsilophodon",
   "ichthyovenator",
   "iguanodon",
   "incisivosaurus",
@@ -200,11 +211,15 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "leptoceratops",
   "lesothosaurus",
   "lessemsaurus",
+  "lexovisaurus",
   "liaoceratops",
   "liliensternus",
   "limusaurus",
+  "loricatosaurus",
   "lourinhasaurus",
+  "lufengosaurus",
   "lythronax",
+  "magnapaulia",
   "magnosaurus",
   "magyarosaurus",
   "mahakala",
@@ -237,6 +252,7 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "montanoceratops",
   "mosasaurus",
   "murusraptor",
+  "mussaurus",
   "muttaburrasaurus",
   "mymoorapelta",
   "nanosaurus",
@@ -248,6 +264,7 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "nigersaurus",
   "nipponosaurus",
   "nodosaurus",
+  "nothronychus",
   "notocolossus",
   "olorotitan",
   "omeisaurus",
@@ -288,13 +305,16 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "qianzhousaurus",
   "rahonavis",
   "rajasaurus",
+  "rapetosaurus",
   "regaliceratops",
   "rhabdodon",
   "riojasaurus",
   "rugops",
   "saichania",
+  "sarahsaurus",
   "sarcosaurus",
   "saurolophus",
+  "sauropelta",
   "saurophaganax",
   "sauroposeidon",
   "saurornitholestes",
@@ -302,6 +322,8 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "scipionyx",
   "scolosaurus",
   "secernosaurus",
+  "segnosaurus",
+  "shantungosaurus",
   "shaochilong",
   "shuvuuia",
   "siamosaurus",
@@ -316,7 +338,9 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "sphaerotholus",
   "spinophorosaurus",
   "spinosaurus",
+  "stegoceras",
   "stegosaurus",
+  "stegouros",
   "stokesosaurus",
   "struthiomimus",
   "struthiosaurus",
@@ -335,6 +359,7 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "tethyshadros",
   "thanatotheristes",
   "therizinosaurus",
+  "thescelosaurus",
   "tianyulong",
   "tianyuraptor",
   "titanoceratops",
@@ -353,16 +378,21 @@ exports[`Dino Lab — data contract > species roster (sorted ids) is pinned (sna
   "unenlagia",
   "utahraptor",
   "valdosaurus",
+  "velafrons",
   "velociraptor",
   "vulcanodon",
   "wannanosaurus",
   "wendiceratops",
   "willinakaqe",
   "wuerhosaurus",
+  "xinjiangtitan",
+  "yamaceratops",
   "yangchuanosaurus",
   "yi",
   "yinlong",
+  "yunnanosaurus",
   "yutyrannus",
+  "zalmoxes",
   "zanabazar",
   "zhenyuanlong",
   "zuniceratops",
@@ -660,7 +690,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the birds tab (sn
 <div style="font-size:12.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.55">Archaeopteryx, from about 150 million years ago, had wings and feathers like a bird but teeth, clawed fingers, and a long bony tail like a dinosaur. It is one of the clearest transitional fossils ever found, sitting right on the line between the two.</div>
 </div>
 <div style="background:var(--allo-stem-panel, #1e293b);border:1px solid var(--allo-stem-border, #334155);border-radius:14px;padding:14px;color:var(--allo-stem-text, #f1f5f9)">
-<div style="font-size:14px;font-weight:800;margin-bottom:6px">🦖 Meet the feathered dinosaurs (44)</div>
+<div style="font-size:14px;font-weight:800;margin-bottom:6px">🦖 Meet the feathered dinosaurs (45)</div>
 <div style="font-size:12px;color:var(--allo-stem-text-soft, #94a3b8);margin-bottom:8px">Each of these is preserved with feathers, fuzz, quill knobs, or wings, or sits on the branch that leads to birds. Tap one to open its file.</div>
 <div style="display:flex;flex-wrap:wrap;gap:5px">
 <button aria-label="Open Anchiornis" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Anchiornis</button>
@@ -669,6 +699,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the birds tab (sn
 <button aria-label="Open Avimimus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Avimimus</button>
 <button aria-label="Open Balaur" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Balaur</button>
 <button aria-label="Open Beipiaosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Beipiaosaurus</button>
+<button aria-label="Open Beishanlong" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Beishanlong</button>
 <button aria-label="Open Caudipteryx" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Caudipteryx</button>
 <button aria-label="Open Changyuraptor" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Changyuraptor</button>
 <button aria-label="Open Concavenator" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Concavenator</button>
@@ -870,12 +901,14 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="ampelosaurus">Ampelosaurus</option>
 <option value="anchiceratops">Anchiceratops</option>
 <option value="anchiornis">Anchiornis</option>
+<option value="anchisaurus">Anchisaurus</option>
 <option value="andesaurus">Andesaurus</option>
 <option value="ankylosaurus">Ankylosaurus</option>
 <option value="antarctosaurus">Antarctosaurus</option>
 <option value="antetonitrus">Antetonitrus</option>
 <option value="anzu">Anzu</option>
 <option value="apatosaurus">Apatosaurus</option>
+<option value="aquilops">Aquilops</option>
 <option value="aralosaurus">Aralosaurus</option>
 <option value="archaeoceratops">Archaeoceratops</option>
 <option value="archaeopteryx">Archaeopteryx</option>
@@ -884,6 +917,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="atlasaurus">Atlasaurus</option>
 <option value="atrociraptor">Atrociraptor</option>
 <option value="aucasaurus">Aucasaurus</option>
+<option value="augustynolophus">Augustynolophus</option>
 <option value="auroraceratops">Auroraceratops</option>
 <option value="australovenator">Australovenator</option>
 <option value="austroraptor">Austroraptor</option>
@@ -897,11 +931,13 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="baryonyx">Baryonyx</option>
 <option value="becklespinax">Becklespinax</option>
 <option value="beipiaosaurus">Beipiaosaurus</option>
+<option value="beishanlong">Beishanlong</option>
 <option value="bellusaurus">Bellusaurus</option>
 <option value="bonitasaura">Bonitasaura</option>
 <option value="borealopelta">Borealopelta</option>
 <option value="brachiosaurus">Brachiosaurus</option>
 <option value="brachylophosaurus">Brachylophosaurus</option>
+<option value="brontomerus">Brontomerus</option>
 <option value="brontosaurus">Brontosaurus</option>
 <option value="buitreraptor">Buitreraptor</option>
 <option value="buriolestes">Buriolestes</option>
@@ -911,6 +947,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="carcharodontosaurus">Carcharodontosaurus</option>
 <option value="carnotaurus">Carnotaurus</option>
 <option value="caudipteryx">Caudipteryx</option>
+<option value="cedarosaurus">Cedarosaurus</option>
 <option value="centrosaurus">Centrosaurus</option>
 <option value="ceratosaurus">Ceratosaurus</option>
 <option value="cetiosaurus">Cetiosaurus</option>
@@ -946,6 +983,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="dryosaurus">Dryosaurus</option>
 <option value="dryptosaurus">Dryptosaurus</option>
 <option value="dysalotosaurus">Dysalotosaurus</option>
+<option value="edmontonia">Edmontonia</option>
 <option value="edmontosaurus">Edmontosaurus</option>
 <option value="einiosaurus">Einiosaurus</option>
 <option value="elaphrosaurus">Elaphrosaurus</option>
@@ -956,6 +994,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="eoraptor">Eoraptor</option>
 <option value="eotyrannus">Eotyrannus</option>
 <option value="epidexipteryx">Epidexipteryx</option>
+<option value="erlikosaurus">Erlikosaurus</option>
 <option value="euhelopus">Euhelopus</option>
 <option value="euoplocephalus">Euoplocephalus</option>
 <option value="europasaurus">Europasaurus</option>
@@ -968,6 +1007,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="galleonosaurus">Galleonosaurus</option>
 <option value="gallimimus">Gallimimus</option>
 <option value="gargoyleosaurus">Gargoyleosaurus</option>
+<option value="garudimimus">Garudimimus</option>
 <option value="gasparinisaura">Gasparinisaura</option>
 <option value="giganotosaurus">Giganotosaurus</option>
 <option value="gigantoraptor">Gigantoraptor</option>
@@ -983,6 +1023,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="halszkaraptor">Halszkaraptor</option>
 <option value="haplocanthosaurus">Haplocanthosaurus</option>
 <option value="haplocheirus">Haplocheirus</option>
+<option value="harpymimus">Harpymimus</option>
 <option value="haya">Haya</option>
 <option value="herrerasaurus">Herrerasaurus</option>
 <option value="hesperosaurus">Hesperosaurus</option>
@@ -991,6 +1032,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="huayangosaurus">Huayangosaurus</option>
 <option value="hylaeosaurus">Hylaeosaurus</option>
 <option value="hypacrosaurus">Hypacrosaurus</option>
+<option value="hypsilophodon">Hypsilophodon</option>
 <option value="ichthyovenator">Ichthyovenator</option>
 <option value="iguanodon">Iguanodon</option>
 <option value="incisivosaurus">Incisivosaurus</option>
@@ -1019,11 +1061,15 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="leptoceratops">Leptoceratops</option>
 <option value="lesothosaurus">Lesothosaurus</option>
 <option value="lessemsaurus">Lessemsaurus</option>
+<option value="lexovisaurus">Lexovisaurus</option>
 <option value="liaoceratops">Liaoceratops</option>
 <option value="liliensternus">Liliensternus</option>
 <option value="limusaurus">Limusaurus</option>
+<option value="loricatosaurus">Loricatosaurus</option>
 <option value="lourinhasaurus">Lourinhasaurus</option>
+<option value="lufengosaurus">Lufengosaurus</option>
 <option value="lythronax">Lythronax</option>
+<option value="magnapaulia">Magnapaulia</option>
 <option value="magnosaurus">Magnosaurus</option>
 <option value="magyarosaurus">Magyarosaurus</option>
 <option value="mahakala">Mahakala</option>
@@ -1055,6 +1101,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="montanoceratops">Montanoceratops</option>
 <option value="mosasaurus">Mosasaurus</option>
 <option value="murusraptor">Murusraptor</option>
+<option value="mussaurus">Mussaurus</option>
 <option value="muttaburrasaurus">Muttaburrasaurus</option>
 <option value="mymoorapelta">Mymoorapelta</option>
 <option value="nanosaurus">Nanosaurus</option>
@@ -1067,6 +1114,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="nigersaurus">Nigersaurus</option>
 <option value="nipponosaurus">Nipponosaurus</option>
 <option value="nodosaurus">Nodosaurus</option>
+<option value="nothronychus">Nothronychus</option>
 <option value="notocolossus">Notocolossus</option>
 <option value="olorotitan">Olorotitan</option>
 <option value="omeisaurus">Omeisaurus</option>
@@ -1107,13 +1155,16 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="qianzhousaurus">Qianzhousaurus</option>
 <option value="rahonavis">Rahonavis</option>
 <option value="rajasaurus">Rajasaurus</option>
+<option value="rapetosaurus">Rapetosaurus</option>
 <option value="regaliceratops">Regaliceratops</option>
 <option value="rhabdodon">Rhabdodon</option>
 <option value="riojasaurus">Riojasaurus</option>
 <option value="rugops">Rugops</option>
 <option value="saichania">Saichania</option>
+<option value="sarahsaurus">Sarahsaurus</option>
 <option value="sarcosaurus">Sarcosaurus</option>
 <option value="saurolophus">Saurolophus</option>
+<option value="sauropelta">Sauropelta</option>
 <option value="saurophaganax">Saurophaganax</option>
 <option value="sauroposeidon">Sauroposeidon</option>
 <option value="saurornitholestes">Saurornitholestes</option>
@@ -1121,6 +1172,8 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="scipionyx">Scipionyx</option>
 <option value="scolosaurus">Scolosaurus</option>
 <option value="secernosaurus">Secernosaurus</option>
+<option value="segnosaurus">Segnosaurus</option>
+<option value="shantungosaurus">Shantungosaurus</option>
 <option value="shaochilong">Shaochilong</option>
 <option value="mamenchisaurus2">Shunosaurus</option>
 <option value="shuvuuia">Shuvuuia</option>
@@ -1136,7 +1189,9 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="sphaerotholus">Sphaerotholus</option>
 <option value="spinophorosaurus">Spinophorosaurus</option>
 <option value="spinosaurus" selected="">Spinosaurus</option>
+<option value="stegoceras">Stegoceras</option>
 <option value="stegosaurus">Stegosaurus</option>
+<option value="stegouros">Stegouros</option>
 <option value="stokesosaurus">Stokesosaurus</option>
 <option value="struthiomimus">Struthiomimus</option>
 <option value="struthiosaurus">Struthiosaurus</option>
@@ -1156,6 +1211,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="tethyshadros">Tethyshadros</option>
 <option value="thanatotheristes">Thanatotheristes</option>
 <option value="therizinosaurus">Therizinosaurus</option>
+<option value="thescelosaurus">Thescelosaurus</option>
 <option value="tianyulong">Tianyulong</option>
 <option value="tianyuraptor">Tianyuraptor</option>
 <option value="titanoceratops">Titanoceratops</option>
@@ -1172,16 +1228,21 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="unenlagia">Unenlagia</option>
 <option value="utahraptor">Utahraptor</option>
 <option value="valdosaurus">Valdosaurus</option>
+<option value="velafrons">Velafrons</option>
 <option value="velociraptor">Velociraptor</option>
 <option value="vulcanodon">Vulcanodon</option>
 <option value="wannanosaurus">Wannanosaurus</option>
 <option value="wendiceratops">Wendiceratops</option>
 <option value="willinakaqe">Willinakaqe</option>
 <option value="wuerhosaurus">Wuerhosaurus</option>
+<option value="xinjiangtitan">Xinjiangtitan</option>
+<option value="yamaceratops">Yamaceratops</option>
 <option value="yangchuanosaurus">Yangchuanosaurus</option>
 <option value="yi">Yi</option>
 <option value="yinlong">Yinlong</option>
+<option value="yunnanosaurus">Yunnanosaurus</option>
 <option value="yutyrannus">Yutyrannus</option>
+<option value="zalmoxes">Zalmoxes</option>
 <option value="zanabazar">Zanabazar</option>
 <option value="zhenyuanlong">Zhenyuanlong</option>
 <option value="zuniceratops">Zuniceratops</option>
@@ -1209,12 +1270,14 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="ampelosaurus">Ampelosaurus</option>
 <option value="anchiceratops">Anchiceratops</option>
 <option value="anchiornis">Anchiornis</option>
+<option value="anchisaurus">Anchisaurus</option>
 <option value="andesaurus">Andesaurus</option>
 <option value="ankylosaurus">Ankylosaurus</option>
 <option value="antarctosaurus">Antarctosaurus</option>
 <option value="antetonitrus">Antetonitrus</option>
 <option value="anzu">Anzu</option>
 <option value="apatosaurus">Apatosaurus</option>
+<option value="aquilops">Aquilops</option>
 <option value="aralosaurus">Aralosaurus</option>
 <option value="archaeoceratops">Archaeoceratops</option>
 <option value="archaeopteryx">Archaeopteryx</option>
@@ -1223,6 +1286,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="atlasaurus">Atlasaurus</option>
 <option value="atrociraptor">Atrociraptor</option>
 <option value="aucasaurus">Aucasaurus</option>
+<option value="augustynolophus">Augustynolophus</option>
 <option value="auroraceratops">Auroraceratops</option>
 <option value="australovenator">Australovenator</option>
 <option value="austroraptor">Austroraptor</option>
@@ -1236,11 +1300,13 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="baryonyx">Baryonyx</option>
 <option value="becklespinax">Becklespinax</option>
 <option value="beipiaosaurus">Beipiaosaurus</option>
+<option value="beishanlong">Beishanlong</option>
 <option value="bellusaurus">Bellusaurus</option>
 <option value="bonitasaura">Bonitasaura</option>
 <option value="borealopelta">Borealopelta</option>
 <option value="brachiosaurus">Brachiosaurus</option>
 <option value="brachylophosaurus">Brachylophosaurus</option>
+<option value="brontomerus">Brontomerus</option>
 <option value="brontosaurus">Brontosaurus</option>
 <option value="buitreraptor">Buitreraptor</option>
 <option value="buriolestes">Buriolestes</option>
@@ -1250,6 +1316,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="carcharodontosaurus">Carcharodontosaurus</option>
 <option value="carnotaurus">Carnotaurus</option>
 <option value="caudipteryx">Caudipteryx</option>
+<option value="cedarosaurus">Cedarosaurus</option>
 <option value="centrosaurus">Centrosaurus</option>
 <option value="ceratosaurus">Ceratosaurus</option>
 <option value="cetiosaurus">Cetiosaurus</option>
@@ -1285,6 +1352,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="dryosaurus">Dryosaurus</option>
 <option value="dryptosaurus">Dryptosaurus</option>
 <option value="dysalotosaurus">Dysalotosaurus</option>
+<option value="edmontonia">Edmontonia</option>
 <option value="edmontosaurus">Edmontosaurus</option>
 <option value="einiosaurus">Einiosaurus</option>
 <option value="elaphrosaurus">Elaphrosaurus</option>
@@ -1295,6 +1363,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="eoraptor">Eoraptor</option>
 <option value="eotyrannus">Eotyrannus</option>
 <option value="epidexipteryx">Epidexipteryx</option>
+<option value="erlikosaurus">Erlikosaurus</option>
 <option value="euhelopus">Euhelopus</option>
 <option value="euoplocephalus">Euoplocephalus</option>
 <option value="europasaurus">Europasaurus</option>
@@ -1307,6 +1376,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="galleonosaurus">Galleonosaurus</option>
 <option value="gallimimus">Gallimimus</option>
 <option value="gargoyleosaurus">Gargoyleosaurus</option>
+<option value="garudimimus">Garudimimus</option>
 <option value="gasparinisaura">Gasparinisaura</option>
 <option value="giganotosaurus">Giganotosaurus</option>
 <option value="gigantoraptor">Gigantoraptor</option>
@@ -1322,6 +1392,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="halszkaraptor">Halszkaraptor</option>
 <option value="haplocanthosaurus">Haplocanthosaurus</option>
 <option value="haplocheirus">Haplocheirus</option>
+<option value="harpymimus">Harpymimus</option>
 <option value="haya">Haya</option>
 <option value="herrerasaurus">Herrerasaurus</option>
 <option value="hesperosaurus">Hesperosaurus</option>
@@ -1330,6 +1401,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="huayangosaurus">Huayangosaurus</option>
 <option value="hylaeosaurus">Hylaeosaurus</option>
 <option value="hypacrosaurus">Hypacrosaurus</option>
+<option value="hypsilophodon">Hypsilophodon</option>
 <option value="ichthyovenator">Ichthyovenator</option>
 <option value="iguanodon">Iguanodon</option>
 <option value="incisivosaurus">Incisivosaurus</option>
@@ -1358,11 +1430,15 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="leptoceratops">Leptoceratops</option>
 <option value="lesothosaurus">Lesothosaurus</option>
 <option value="lessemsaurus">Lessemsaurus</option>
+<option value="lexovisaurus">Lexovisaurus</option>
 <option value="liaoceratops">Liaoceratops</option>
 <option value="liliensternus">Liliensternus</option>
 <option value="limusaurus">Limusaurus</option>
+<option value="loricatosaurus">Loricatosaurus</option>
 <option value="lourinhasaurus">Lourinhasaurus</option>
+<option value="lufengosaurus">Lufengosaurus</option>
 <option value="lythronax">Lythronax</option>
+<option value="magnapaulia">Magnapaulia</option>
 <option value="magnosaurus">Magnosaurus</option>
 <option value="magyarosaurus">Magyarosaurus</option>
 <option value="mahakala">Mahakala</option>
@@ -1394,6 +1470,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="montanoceratops">Montanoceratops</option>
 <option value="mosasaurus">Mosasaurus</option>
 <option value="murusraptor">Murusraptor</option>
+<option value="mussaurus">Mussaurus</option>
 <option value="muttaburrasaurus">Muttaburrasaurus</option>
 <option value="mymoorapelta">Mymoorapelta</option>
 <option value="nanosaurus">Nanosaurus</option>
@@ -1406,6 +1483,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="nigersaurus">Nigersaurus</option>
 <option value="nipponosaurus">Nipponosaurus</option>
 <option value="nodosaurus">Nodosaurus</option>
+<option value="nothronychus">Nothronychus</option>
 <option value="notocolossus">Notocolossus</option>
 <option value="olorotitan">Olorotitan</option>
 <option value="omeisaurus">Omeisaurus</option>
@@ -1446,13 +1524,16 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="qianzhousaurus">Qianzhousaurus</option>
 <option value="rahonavis">Rahonavis</option>
 <option value="rajasaurus">Rajasaurus</option>
+<option value="rapetosaurus">Rapetosaurus</option>
 <option value="regaliceratops">Regaliceratops</option>
 <option value="rhabdodon">Rhabdodon</option>
 <option value="riojasaurus">Riojasaurus</option>
 <option value="rugops">Rugops</option>
 <option value="saichania">Saichania</option>
+<option value="sarahsaurus">Sarahsaurus</option>
 <option value="sarcosaurus">Sarcosaurus</option>
 <option value="saurolophus">Saurolophus</option>
+<option value="sauropelta">Sauropelta</option>
 <option value="saurophaganax">Saurophaganax</option>
 <option value="sauroposeidon">Sauroposeidon</option>
 <option value="saurornitholestes">Saurornitholestes</option>
@@ -1460,6 +1541,8 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="scipionyx">Scipionyx</option>
 <option value="scolosaurus">Scolosaurus</option>
 <option value="secernosaurus">Secernosaurus</option>
+<option value="segnosaurus">Segnosaurus</option>
+<option value="shantungosaurus">Shantungosaurus</option>
 <option value="shaochilong">Shaochilong</option>
 <option value="mamenchisaurus2">Shunosaurus</option>
 <option value="shuvuuia">Shuvuuia</option>
@@ -1475,7 +1558,9 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="sphaerotholus">Sphaerotholus</option>
 <option value="spinophorosaurus">Spinophorosaurus</option>
 <option value="spinosaurus">Spinosaurus</option>
+<option value="stegoceras">Stegoceras</option>
 <option value="stegosaurus">Stegosaurus</option>
+<option value="stegouros">Stegouros</option>
 <option value="stokesosaurus">Stokesosaurus</option>
 <option value="struthiomimus">Struthiomimus</option>
 <option value="struthiosaurus">Struthiosaurus</option>
@@ -1495,6 +1580,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="tethyshadros">Tethyshadros</option>
 <option value="thanatotheristes">Thanatotheristes</option>
 <option value="therizinosaurus">Therizinosaurus</option>
+<option value="thescelosaurus">Thescelosaurus</option>
 <option value="tianyulong">Tianyulong</option>
 <option value="tianyuraptor">Tianyuraptor</option>
 <option value="titanoceratops">Titanoceratops</option>
@@ -1511,16 +1597,21 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <option value="unenlagia">Unenlagia</option>
 <option value="utahraptor">Utahraptor</option>
 <option value="valdosaurus">Valdosaurus</option>
+<option value="velafrons">Velafrons</option>
 <option value="velociraptor">Velociraptor</option>
 <option value="vulcanodon">Vulcanodon</option>
 <option value="wannanosaurus">Wannanosaurus</option>
 <option value="wendiceratops">Wendiceratops</option>
 <option value="willinakaqe">Willinakaqe</option>
 <option value="wuerhosaurus">Wuerhosaurus</option>
+<option value="xinjiangtitan">Xinjiangtitan</option>
+<option value="yamaceratops">Yamaceratops</option>
 <option value="yangchuanosaurus">Yangchuanosaurus</option>
 <option value="yi">Yi</option>
 <option value="yinlong">Yinlong</option>
+<option value="yunnanosaurus">Yunnanosaurus</option>
 <option value="yutyrannus">Yutyrannus</option>
+<option value="zalmoxes">Zalmoxes</option>
 <option value="zanabazar">Zanabazar</option>
 <option value="zhenyuanlong">Zhenyuanlong</option>
 <option value="zuniceratops">Zuniceratops</option>
@@ -1715,9 +1806,9 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <div style="background:var(--allo-stem-panel, #1e293b);border:1px solid var(--allo-stem-border, #334155);border-radius:14px;padding:14px;color:var(--allo-stem-text, #f1f5f9)">
 <div style="font-weight:700;margin-bottom:6px">🔎 Field clues</div>
 <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.6">
-<li>Period: Jurassic (Middle Jurassic).</li>
+<li>Period: Cretaceous (Late Cretaceous).</li>
 <li>Diet: Herbivore 🌿.</li>
-<li>Group: Sauropodomorph.</li>
+<li>Group: Ornithischian.</li>
 </ul>
 </div>
 <div style="margin-top:12px;font-size:12px;font-weight:700;color:var(--allo-stem-text-soft, #94a3b8);margin-bottom:6px">Identify the find</div>
@@ -1738,12 +1829,14 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Ampelosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Ampelosaurus</button>
 <button aria-label="Guess Anchiceratops" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Anchiceratops</button>
 <button aria-label="Guess Anchiornis" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Anchiornis</button>
+<button aria-label="Guess Anchisaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Anchisaurus</button>
 <button aria-label="Guess Andesaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Andesaurus</button>
 <button aria-label="Guess Ankylosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Ankylosaurus</button>
 <button aria-label="Guess Antarctosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Antarctosaurus</button>
 <button aria-label="Guess Antetonitrus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Antetonitrus</button>
 <button aria-label="Guess Anzu" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Anzu</button>
 <button aria-label="Guess Apatosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Apatosaurus</button>
+<button aria-label="Guess Aquilops" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Aquilops</button>
 <button aria-label="Guess Aralosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Aralosaurus</button>
 <button aria-label="Guess Archaeoceratops" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Archaeoceratops</button>
 <button aria-label="Guess Archaeopteryx" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Archaeopteryx</button>
@@ -1752,6 +1845,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Atlasaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Atlasaurus</button>
 <button aria-label="Guess Atrociraptor" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Atrociraptor</button>
 <button aria-label="Guess Aucasaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Aucasaurus</button>
+<button aria-label="Guess Augustynolophus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Augustynolophus</button>
 <button aria-label="Guess Auroraceratops" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Auroraceratops</button>
 <button aria-label="Guess Australovenator" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Australovenator</button>
 <button aria-label="Guess Austroraptor" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Austroraptor</button>
@@ -1765,11 +1859,13 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Baryonyx" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Baryonyx</button>
 <button aria-label="Guess Becklespinax" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Becklespinax</button>
 <button aria-label="Guess Beipiaosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Beipiaosaurus</button>
+<button aria-label="Guess Beishanlong" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Beishanlong</button>
 <button aria-label="Guess Bellusaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Bellusaurus</button>
 <button aria-label="Guess Bonitasaura" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Bonitasaura</button>
 <button aria-label="Guess Borealopelta" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Borealopelta</button>
 <button aria-label="Guess Brachiosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Brachiosaurus</button>
 <button aria-label="Guess Brachylophosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Brachylophosaurus</button>
+<button aria-label="Guess Brontomerus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Brontomerus</button>
 <button aria-label="Guess Brontosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Brontosaurus</button>
 <button aria-label="Guess Buitreraptor" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Buitreraptor</button>
 <button aria-label="Guess Buriolestes" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Buriolestes</button>
@@ -1779,6 +1875,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Carcharodontosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Carcharodontosaurus</button>
 <button aria-label="Guess Carnotaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Carnotaurus</button>
 <button aria-label="Guess Caudipteryx" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Caudipteryx</button>
+<button aria-label="Guess Cedarosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Cedarosaurus</button>
 <button aria-label="Guess Centrosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Centrosaurus</button>
 <button aria-label="Guess Ceratosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Ceratosaurus</button>
 <button aria-label="Guess Cetiosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Cetiosaurus</button>
@@ -1813,6 +1910,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Dryosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Dryosaurus</button>
 <button aria-label="Guess Dryptosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Dryptosaurus</button>
 <button aria-label="Guess Dysalotosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Dysalotosaurus</button>
+<button aria-label="Guess Edmontonia" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Edmontonia</button>
 <button aria-label="Guess Edmontosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Edmontosaurus</button>
 <button aria-label="Guess Einiosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Einiosaurus</button>
 <button aria-label="Guess Elaphrosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Elaphrosaurus</button>
@@ -1823,6 +1921,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Eoraptor" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Eoraptor</button>
 <button aria-label="Guess Eotyrannus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Eotyrannus</button>
 <button aria-label="Guess Epidexipteryx" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Epidexipteryx</button>
+<button aria-label="Guess Erlikosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Erlikosaurus</button>
 <button aria-label="Guess Euhelopus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Euhelopus</button>
 <button aria-label="Guess Euoplocephalus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Euoplocephalus</button>
 <button aria-label="Guess Europasaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Europasaurus</button>
@@ -1835,6 +1934,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Galleonosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Galleonosaurus</button>
 <button aria-label="Guess Gallimimus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Gallimimus</button>
 <button aria-label="Guess Gargoyleosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Gargoyleosaurus</button>
+<button aria-label="Guess Garudimimus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Garudimimus</button>
 <button aria-label="Guess Gasparinisaura" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Gasparinisaura</button>
 <button aria-label="Guess Giganotosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Giganotosaurus</button>
 <button aria-label="Guess Gigantoraptor" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Gigantoraptor</button>
@@ -1850,6 +1950,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Halszkaraptor" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Halszkaraptor</button>
 <button aria-label="Guess Haplocanthosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Haplocanthosaurus</button>
 <button aria-label="Guess Haplocheirus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Haplocheirus</button>
+<button aria-label="Guess Harpymimus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Harpymimus</button>
 <button aria-label="Guess Haya" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Haya</button>
 <button aria-label="Guess Herrerasaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Herrerasaurus</button>
 <button aria-label="Guess Hesperosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Hesperosaurus</button>
@@ -1858,6 +1959,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Huayangosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Huayangosaurus</button>
 <button aria-label="Guess Hylaeosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Hylaeosaurus</button>
 <button aria-label="Guess Hypacrosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Hypacrosaurus</button>
+<button aria-label="Guess Hypsilophodon" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Hypsilophodon</button>
 <button aria-label="Guess Ichthyovenator" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Ichthyovenator</button>
 <button aria-label="Guess Iguanodon" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Iguanodon</button>
 <button aria-label="Guess Incisivosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Incisivosaurus</button>
@@ -1886,11 +1988,15 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Leptoceratops" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Leptoceratops</button>
 <button aria-label="Guess Lesothosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Lesothosaurus</button>
 <button aria-label="Guess Lessemsaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Lessemsaurus</button>
+<button aria-label="Guess Lexovisaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Lexovisaurus</button>
 <button aria-label="Guess Liaoceratops" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Liaoceratops</button>
 <button aria-label="Guess Liliensternus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Liliensternus</button>
 <button aria-label="Guess Limusaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Limusaurus</button>
+<button aria-label="Guess Loricatosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Loricatosaurus</button>
 <button aria-label="Guess Lourinhasaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Lourinhasaurus</button>
+<button aria-label="Guess Lufengosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Lufengosaurus</button>
 <button aria-label="Guess Lythronax" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Lythronax</button>
+<button aria-label="Guess Magnapaulia" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Magnapaulia</button>
 <button aria-label="Guess Magnosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Magnosaurus</button>
 <button aria-label="Guess Magyarosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Magyarosaurus</button>
 <button aria-label="Guess Mahakala" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Mahakala</button>
@@ -1921,6 +2027,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Mononykus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Mononykus</button>
 <button aria-label="Guess Montanoceratops" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Montanoceratops</button>
 <button aria-label="Guess Murusraptor" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Murusraptor</button>
+<button aria-label="Guess Mussaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Mussaurus</button>
 <button aria-label="Guess Muttaburrasaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Muttaburrasaurus</button>
 <button aria-label="Guess Mymoorapelta" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Mymoorapelta</button>
 <button aria-label="Guess Nanosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Nanosaurus</button>
@@ -1933,6 +2040,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Nigersaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Nigersaurus</button>
 <button aria-label="Guess Nipponosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Nipponosaurus</button>
 <button aria-label="Guess Nodosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Nodosaurus</button>
+<button aria-label="Guess Nothronychus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Nothronychus</button>
 <button aria-label="Guess Notocolossus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Notocolossus</button>
 <button aria-label="Guess Olorotitan" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Olorotitan</button>
 <button aria-label="Guess Omeisaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Omeisaurus</button>
@@ -1972,13 +2080,16 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Qianzhousaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Qianzhousaurus</button>
 <button aria-label="Guess Rahonavis" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Rahonavis</button>
 <button aria-label="Guess Rajasaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Rajasaurus</button>
+<button aria-label="Guess Rapetosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Rapetosaurus</button>
 <button aria-label="Guess Regaliceratops" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Regaliceratops</button>
 <button aria-label="Guess Rhabdodon" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Rhabdodon</button>
 <button aria-label="Guess Riojasaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Riojasaurus</button>
 <button aria-label="Guess Rugops" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Rugops</button>
 <button aria-label="Guess Saichania" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Saichania</button>
+<button aria-label="Guess Sarahsaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Sarahsaurus</button>
 <button aria-label="Guess Sarcosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Sarcosaurus</button>
 <button aria-label="Guess Saurolophus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Saurolophus</button>
+<button aria-label="Guess Sauropelta" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Sauropelta</button>
 <button aria-label="Guess Saurophaganax" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Saurophaganax</button>
 <button aria-label="Guess Sauroposeidon" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Sauroposeidon</button>
 <button aria-label="Guess Saurornitholestes" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Saurornitholestes</button>
@@ -1986,6 +2097,8 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Scipionyx" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Scipionyx</button>
 <button aria-label="Guess Scolosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Scolosaurus</button>
 <button aria-label="Guess Secernosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Secernosaurus</button>
+<button aria-label="Guess Segnosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Segnosaurus</button>
+<button aria-label="Guess Shantungosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Shantungosaurus</button>
 <button aria-label="Guess Shaochilong" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Shaochilong</button>
 <button aria-label="Guess Shunosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Shunosaurus</button>
 <button aria-label="Guess Shuvuuia" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Shuvuuia</button>
@@ -2001,7 +2114,9 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Sphaerotholus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Sphaerotholus</button>
 <button aria-label="Guess Spinophorosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Spinophorosaurus</button>
 <button aria-label="Guess Spinosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Spinosaurus</button>
+<button aria-label="Guess Stegoceras" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Stegoceras</button>
 <button aria-label="Guess Stegosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Stegosaurus</button>
+<button aria-label="Guess Stegouros" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Stegouros</button>
 <button aria-label="Guess Stokesosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Stokesosaurus</button>
 <button aria-label="Guess Struthiomimus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Struthiomimus</button>
 <button aria-label="Guess Struthiosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Struthiosaurus</button>
@@ -2021,6 +2136,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Tethyshadros" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Tethyshadros</button>
 <button aria-label="Guess Thanatotheristes" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Thanatotheristes</button>
 <button aria-label="Guess Therizinosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Therizinosaurus</button>
+<button aria-label="Guess Thescelosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Thescelosaurus</button>
 <button aria-label="Guess Tianyulong" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Tianyulong</button>
 <button aria-label="Guess Tianyuraptor" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Tianyuraptor</button>
 <button aria-label="Guess Titanoceratops" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Titanoceratops</button>
@@ -2037,16 +2153,21 @@ exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snap
 <button aria-label="Guess Unenlagia" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Unenlagia</button>
 <button aria-label="Guess Utahraptor" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Utahraptor</button>
 <button aria-label="Guess Valdosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Valdosaurus</button>
+<button aria-label="Guess Velafrons" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Velafrons</button>
 <button aria-label="Guess Velociraptor" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Velociraptor</button>
 <button aria-label="Guess Vulcanodon" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Vulcanodon</button>
 <button aria-label="Guess Wannanosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Wannanosaurus</button>
 <button aria-label="Guess Wendiceratops" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Wendiceratops</button>
 <button aria-label="Guess Willinakaqe" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Willinakaqe</button>
 <button aria-label="Guess Wuerhosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Wuerhosaurus</button>
+<button aria-label="Guess Xinjiangtitan" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Xinjiangtitan</button>
+<button aria-label="Guess Yamaceratops" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Yamaceratops</button>
 <button aria-label="Guess Yangchuanosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Yangchuanosaurus</button>
 <button aria-label="Guess Yi" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Yi</button>
 <button aria-label="Guess Yinlong" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Yinlong</button>
+<button aria-label="Guess Yunnanosaurus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Yunnanosaurus</button>
 <button aria-label="Guess Yutyrannus" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Yutyrannus</button>
+<button aria-label="Guess Zalmoxes" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Zalmoxes</button>
 <button aria-label="Guess Zanabazar" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Zanabazar</button>
 <button aria-label="Guess Zhenyuanlong" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Zhenyuanlong</button>
 <button aria-label="Guess Zuniceratops" style="font-size:11.5px;padding:6px 8px;border-radius:8px;cursor:pointer;text-align:left;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Zuniceratops</button>
@@ -2085,27 +2206,27 @@ exports[`Dino Lab — render per tab (golden master) > renders the ecosystem tab
 </div>
 <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;max-height:132px;overflow-y:auto">
 <button aria-pressed="true" style="font-size:12px;font-weight:700;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid #15803d;background:#15803d;color:#fff">Morrison (23)</button>
-<button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Dinosaur Park (15)</button>
+<button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Dinosaur Park (16)</button>
 <button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Yixian (15)</button>
+<button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Hell Creek (12)</button>
 <button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Djadochta (12)</button>
 <button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Nemegt (12)</button>
-<button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Hell Creek (11)</button>
 <button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Shishugou (9)</button>
-<button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Horseshoe Canyon (6)</button>
+<button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Horseshoe Canyon (7)</button>
+<button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Wessex (6)</button>
+<button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Cedar Mountain (5)</button>
 <button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Huincul (5)</button>
 <button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Judith River (5)</button>
 <button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Tendaguru (5)</button>
 <button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Portezuelo (5)</button>
 <button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Various (5)</button>
-<button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Wessex (5)</button>
 <button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Anacleto (5)</button>
 <button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Kem Kem (4)</button>
+<button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Cloverly (4)</button>
 <button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Two Medicine (4)</button>
 <button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Ischigualasto (4)</button>
-<button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Lower Shaximiao (4)</button>
-<button aria-pressed="false" style="font-size:12px;font-weight:500;padding:6px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text-soft, #94a3b8)">Kaiparowits (4)</button>
 </div>
-<div style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);font-style:italic;margin-bottom:10px">Showing the 20 richest of 30 shared sites.</div>
+<div style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);font-style:italic;margin-bottom:10px">Showing the 20 richest of 35 shared sites.</div>
 <div style="background:var(--allo-stem-panel, #1e293b);border:1px solid var(--allo-stem-border, #334155);border-radius:14px;padding:14px;color:var(--allo-stem-text, #f1f5f9)">
 <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap">
 <div style="font-size:17px;font-weight:800">🏞️ Morrison Formation</div>
@@ -2154,6 +2275,25 @@ exports[`Dino Lab — render per tab (golden master) > renders the ecosystem tab
 <button aria-label="Open Nanosaurus" style="font-size:11.5px;padding:4px 10px;border-radius:999px;cursor:pointer;border:1px solid #22c55e66;background:#22c55e18;color:var(--allo-stem-text, #f1f5f9);margin-right:5px;margin-bottom:5px">🌿 Nanosaurus</button>
 </div>
 </div>
+</div>
+<div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.28);border-radius:14px;padding:14px;color:var(--allo-stem-text, #f1f5f9);margin-top:14px">
+<div style="font-weight:800;font-size:14px;margin-bottom:2px">🔺 Energy pyramid</div>
+<div style="font-size:12px;color:var(--allo-stem-text-soft, #94a3b8);margin-bottom:10px;line-height:1.5">Energy flows up from the sun. Some is lost at every step, so each level can feed fewer animals than the one below it. Bar width shows energy, not exact numbers.</div>
+<div>
+<div style="display:flex;flex-direction:column;align-items:center;margin-bottom:6px">
+<div style="width:34%;min-width:140px;max-width:100%;box-sizing:border-box;background:#b91c1c;border-radius:8px;padding:8px 12px;text-align:center;color:#fff;font-weight:700;font-size:12.5px">🥩 Hunters · 7</div>
+<div style="font-size:11px;color:var(--allo-stem-text-soft, #94a3b8);margin:1px 0">apex predator here: Saurophaganax</div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:center;margin-bottom:6px">
+<div style="width:64%;min-width:140px;max-width:100%;box-sizing:border-box;background:#b45309;border-radius:8px;padding:8px 12px;text-align:center;color:#fff;font-weight:700;font-size:12.5px">🦕 Plant-eaters + omnivores · 16</div>
+<div style="font-size:11px;color:var(--allo-stem-text-soft, #94a3b8);margin:1px 0">the primary consumers</div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:center;margin-bottom:6px">
+<div style="width:100%;min-width:140px;max-width:100%;box-sizing:border-box;background:#15803d;border-radius:8px;padding:8px 12px;text-align:center;color:#fff;font-weight:700;font-size:12.5px">🌿 Plants (producers)</div>
+<div style="font-size:11px;color:var(--allo-stem-text-soft, #94a3b8);margin:1px 0">ferns, cycads, and conifers — the green base that fed it all</div>
+</div>
+</div>
+<div style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);margin-top:8px;font-style:italic">16 kinds of plant-eater and omnivore shared this rock unit with 7 kinds of hunter. That few-predators-on-top shape is what an energy pyramid predicts.</div>
 </div>
 </div>
 </div>
@@ -2214,7 +2354,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the explore tab (
 <button aria-pressed="false" aria-label="Longest" style="padding:6px 12px;border-radius:999px;cursor:pointer;font-size:12px;font-weight:600;border:1px solid var(--allo-stem-border, #334155);background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap;margin-right:6px;margin-bottom:6px">Longest</button>
 <button aria-pressed="false" aria-label="Heaviest" style="padding:6px 12px;border-radius:999px;cursor:pointer;font-size:12px;font-weight:600;border:1px solid var(--allo-stem-border, #334155);background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap;margin-right:6px;margin-bottom:6px">Heaviest</button>
 <button style="font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:transparent;color:var(--allo-stem-text, #f1f5f9)">🎲 Surprise me</button>
-<span style="margin-left:auto;font-size:12px;color:var(--allo-stem-text-soft, #94a3b8)">1 of 332</span>
+<span style="margin-left:auto;font-size:12px;color:var(--allo-stem-text-soft, #94a3b8)">1 of 362</span>
 </div>
 </div>
 <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));gap:10px">
@@ -2233,7 +2373,10 @@ exports[`Dino Lab — render per tab (golden master) > renders the explore tab (
 <div style="background:var(--allo-stem-panel, #1e293b);border:1px solid var(--allo-stem-border, #334155);border-radius:14px;padding:14px;color:var(--allo-stem-text, #f1f5f9)">
 <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap">
 <div style="font-size:20px;font-weight:800">T. rex</div>
+<div style="display:flex;gap:6px">
 <button style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:transparent;color:var(--allo-stem-text-soft, #94a3b8);cursor:pointer">⚖️ Compare</button>
+<button aria-label="Print a trading card for T. rex" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:transparent;color:var(--allo-stem-text-soft, #94a3b8);cursor:pointer">🖨️ Card</button>
+</div>
 </div>
 <div style="font-size:12px;font-style:italic;color:var(--allo-stem-text-soft, #94a3b8)">Tyrannosaurus rex</div>
 <div style="font-size:12px;color:var(--allo-stem-text-soft, #94a3b8);margin-bottom:8px">Say it: tie-RAN-uh-SOR-us rex  ·  Means: &quot;tyrant lizard king&quot;</div>
@@ -3008,6 +3151,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the timeline tab 
 <button aria-label="Open Lessemsaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Lessemsaurus</button>
 <button aria-label="Open Isanosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Isanosaurus</button>
 <button aria-label="Open Melanorosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Melanorosaurus</button>
+<button aria-label="Open Mussaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Mussaurus</button>
 </div>
 </div>
 <div style="margin-bottom:14px">
@@ -3114,6 +3258,13 @@ exports[`Dino Lab — render per tab (golden master) > renders the timeline tab 
 <button aria-label="Open Metriacanthosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Metriacanthosaurus</button>
 <button aria-label="Open Jiangjunosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Jiangjunosaurus</button>
 <button aria-label="Open Sarcosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Sarcosaurus</button>
+<button aria-label="Open Lufengosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Lufengosaurus</button>
+<button aria-label="Open Yunnanosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Yunnanosaurus</button>
+<button aria-label="Open Anchisaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Anchisaurus</button>
+<button aria-label="Open Loricatosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Loricatosaurus</button>
+<button aria-label="Open Lexovisaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Lexovisaurus</button>
+<button aria-label="Open Sarahsaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Sarahsaurus</button>
+<button aria-label="Open Xinjiangtitan" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Xinjiangtitan</button>
 </div>
 </div>
 <div style="margin-bottom:14px">
@@ -3364,6 +3515,28 @@ exports[`Dino Lab — render per tab (golden master) > renders the timeline tab 
 <button aria-label="Open Koreanosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Koreanosaurus</button>
 <button aria-label="Open Willinakaqe" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Willinakaqe</button>
 <button aria-label="Open Hadrosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Hadrosaurus</button>
+<button aria-label="Open Thescelosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Thescelosaurus</button>
+<button aria-label="Open Hypsilophodon" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Hypsilophodon</button>
+<button aria-label="Open Sauropelta" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Sauropelta</button>
+<button aria-label="Open Edmontonia" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Edmontonia</button>
+<button aria-label="Open Stegoceras" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Stegoceras</button>
+<button aria-label="Open Shantungosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Shantungosaurus</button>
+<button aria-label="Open Magnapaulia" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Magnapaulia</button>
+<button aria-label="Open Nothronychus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Nothronychus</button>
+<button aria-label="Open Erlikosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Erlikosaurus</button>
+<button aria-label="Open Segnosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Segnosaurus</button>
+<button aria-label="Open Garudimimus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Garudimimus</button>
+<button aria-label="Open Harpymimus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Harpymimus</button>
+<button aria-label="Open Beishanlong" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Beishanlong</button>
+<button aria-label="Open Brontomerus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Brontomerus</button>
+<button aria-label="Open Cedarosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Cedarosaurus</button>
+<button aria-label="Open Aquilops" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Aquilops</button>
+<button aria-label="Open Yamaceratops" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Yamaceratops</button>
+<button aria-label="Open Augustynolophus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Augustynolophus</button>
+<button aria-label="Open Velafrons" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Velafrons</button>
+<button aria-label="Open Zalmoxes" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Zalmoxes</button>
+<button aria-label="Open Stegouros" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Stegouros</button>
+<button aria-label="Open Rapetosaurus" style="font-size:11px;padding:3px 9px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9)">Rapetosaurus</button>
 </div>
 </div>
 <div style="margin-bottom:14px">
