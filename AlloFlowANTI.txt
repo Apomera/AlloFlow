@@ -4658,6 +4658,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js');
     loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js');
     loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js');
+    loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js');
@@ -26396,6 +26397,9 @@ ${_toolList}
           setHasSelectedRole, setShowWizard, setIsTeacherMode,
           setShowLearningHub, setShowEducatorHub,
           setPendingRole, setIsGateOpen, setShowAIBackendModal
+      })}
+      {isAppReady && !hasSelectedMode && window.AlloModules && window.AlloModules.OnboardingCoach && React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach, {
+          t, setRunTour
       })}
       {isBotVisible && (
           <AlloBot
