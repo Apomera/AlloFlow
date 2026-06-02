@@ -55,7 +55,7 @@
  */
 (function () {
   'use strict';
-  if (window.AlloModules && window.AlloModules.ResearchHub && window.AlloModules.ResearchHub.__tier >= 1) {
+  if (window.AlloModules && window.AlloModules.ResearchHub && window.AlloModules.ResearchHub.__tier >= 2) {
     console.log('[CDN] ResearchHub already loaded, skipping');
     return;
   }
@@ -118,7 +118,7 @@
   // ───────────────────────────────────────────────────────────────────────
   function emptyJournal() {
     return {
-      v: 1,
+      v: 2,                              // Tier 2 substrate revision; lanes migrate older shapes lazily
       createdAt: Date.now(),
       updatedAt: Date.now(),
       devLevel: '6_8',
@@ -126,17 +126,32 @@
       activeStage: null,                 // lane-specific stage key
       // Cross-lane substrate fields:
       questionTitle: '',                 // the inquiry framing in the student's words
-      modelSnapshots: [],                // [{ v, ts, text, confidence }] — Scientific Inquiry
+      // Tier-2: dedicated wonderings substrate (Scientific lane Stage 1). Kept
+      // separate from evidenceCards so the Wonder-sorter gate count is
+      // structural, not parsed — per the gate-enforcement reviewer.
+      wonderings: [],                    // [{ id, ts, text, durationS?, kindFromSorter? }]
+      modelSnapshots: [],                // [{ v, ts, text, confidence, knownUnknowns, loopBackOrigin?, deltaFromPrior? }]
       sources: [],                       // [{ id, ts, kind, citation, notes, sift }]
-      evidenceCards: [],                 // [{ id, ts, kind: 'text'|'voice', text, audioBase64, durationS, tag }]
+      evidenceCards: [],                 // [{ id, ts, kind: 'text'|'voice', text, audioBase64, durationS, tag, surprise? }]
+      // Tier-2: first-class claims substrate (Scientific lane Stage 6) — the
+      // export artifact's headline data lives at the top level, not nested.
+      claims: [],                        // [{ id, ts, text, label, staleLabel?, aiLabelQuestion?, warrantText?, calibrationResponse? }]
       claimEvidenceLinks: [],            // [{ id, claim, evidenceIds, warrant, qualifier, rebuttal }]
       positionality: { text: '', audioBase64: null, durationS: 0 },
       tradeOffLedger: [],                // [{ v, ts, criterion, accepted, justification }]
       constraintMatrix: [],              // [{ id, criterion, target, measured, weight, source, tier }]
-      stageNotes: {},                    // { stageKey: { text, audioBase64, durationS, ts } }
-      loopBacks: [],                     // [{ ts, fromStage, toStage, why }]
-      aiHistory: [],                     // [{ ts, touchpoint, in, out, blocked, reason }]
+      stageNotes: {},                    // { stageKey: { text, audioBase64, durationS, ts, exemplarViewed?, exemplarDismissed?, supersededBy?, acknowledgedSuperseded?, ...stageSpecific } }
+      // Tier-2: loopBacks now carry a whyChipId (1-tap canned reason) so
+      // the field is reliably populated — per the loop-back-architecture
+      // reviewer who flagged the empty-why failure mode.
+      loopBacks: [],                     // [{ ts, fromStage, toStage, whyChipId, why?, returnedToOrigin? }]
+      // Tier-2: aiHistory records BOTH successful calls AND blocked/rejected
+      // ones with bypass_signals + rejectReason for teacher dashboards.
+      aiHistory: [],                     // [{ ts, touchpoint, in?, summary?, blocked, gate_reason?, bypass_signals?, rejectReason?, attemptedShapeKeys?, traceId? }]
       aiCallCount: 0,                    // resets on session reload only
+      // Tier-2: pendingLoopReturn lets the lane offer "return to where I was"
+      // after the student edits an upstream stage during a loop-back.
+      pendingLoopReturn: null,           // null | { fromStage, ts }
       sessionStartedAt: Date.now(),
     };
   }
@@ -168,6 +183,80 @@
       safeLocal(STORAGE_KEY, JSON.stringify(snapshot));
     } catch (_) { /* quota — silently drop, in-memory still works */ }
   }
+
+  // ───────────────────────────────────────────────────────────────────────
+  // Shared helpers exposed for lane plugins — drop-in code from the gate-
+  // enforcement reviewer. Lane gateChecks compose these instead of
+  // re-implementing length/distinctness/keyboard-mash checks (which would
+  // drift across lanes and create inconsistent UX).
+  // ───────────────────────────────────────────────────────────────────────
+  var SHARED_STOP_WORDS = new Set(['the','a','an','is','of','to','in','it','that','this','and',
+    'or','but','i','my','we','our','because','so','for','on','with','at','as','then','than','my','your','its']);
+  var PLACEHOLDER_BLACKLIST = ['test','asdf','idk','untitled','lorem ipsum','placeholder','science thing','dunno','whatever','idc'];
+  var KEYBOARD_ROWS = ['qwertyuiop','asdfghjkl','zxcvbnm','1234567890'];
+
+  function isPlausibleProse(text, minChars, opts) {
+    opts = opts || {};
+    var t = (text || '').trim();
+    if (t.length < minChars) return { ok: false, reason: 'too_short' };
+    var distinctLetters = new Set((t.toLowerCase().match(/[a-z]/g) || [])).size;
+    if (distinctLetters < 4) return { ok: false, reason: 'low_letter_diversity' };
+    if (/(.)\1{5,}/.test(t)) return { ok: false, reason: 'char_run_repeat' };
+    var tokens = t.split(/\s+/).filter(function (w) { return /[a-z]/i.test(w); });
+    if (tokens.length < (opts.minTokens || 2)) return { ok: false, reason: 'too_few_words' };
+    for (var r = 0; r < KEYBOARD_ROWS.length; r++) {
+      var row = KEYBOARD_ROWS[r];
+      for (var i = 0; i < row.length - 4; i++) {
+        if (t.toLowerCase().indexOf(row.slice(i, i + 5)) !== -1) return { ok: false, reason: 'keyboard_mash' };
+      }
+    }
+    var lower = t.toLowerCase();
+    for (var b = 0; b < PLACEHOLDER_BLACKLIST.length; b++) {
+      var bl = PLACEHOLDER_BLACKLIST[b];
+      if (lower === bl || lower.indexOf(bl + ' ') === 0) return { ok: false, reason: 'placeholder_phrase' };
+    }
+    return { ok: true };
+  }
+
+  function normalizeForCompare(s) {
+    if (!s || typeof s !== 'string') return '';
+    var out = s;
+    try { out = out.normalize('NFKC'); } catch (_) {}
+    out = out.toLowerCase();
+    out = out.replace(/[‘’]/g, "'");
+    out = out.replace(/[“”]/g, '"');
+    out = out.replace(/[–—]/g, '-');
+    out = out.replace(/\s+/g, ' ');
+    return out.trim();
+  }
+
+  function tokenJaccard(a, b) {
+    function toks(s) {
+      var set = new Set();
+      normalizeForCompare(s).split(/\W+/).forEach(function (w) {
+        if (w.length > 2 && !SHARED_STOP_WORDS.has(w)) set.add(w);
+      });
+      return set;
+    }
+    var A = toks(a), B = toks(b);
+    if (A.size === 0 || B.size === 0) return 0;
+    var inter = 0;
+    A.forEach(function (x) { if (B.has(x)) inter++; });
+    return inter / (A.size + B.size - inter);
+  }
+
+  // Mechanism verbs the Model-It gate looks for so a student model contains
+  // at least one "does what to what" verb. Per reviewer 1's drop-in code.
+  var MECHANISM_VERBS = ['cause','causes','make','makes','carry','carries','transfer','transfers',
+    'block','blocks','depend','depends','vary','varies','increase','increases','decrease','decreases',
+    'conduct','conducts','radiate','radiates','absorb','absorbs','reflect','reflects','affect','affects',
+    'influence','influences','trigger','triggers','prevent','prevents','enable','enables','flow','flows',
+    'move','moves','push','pushes','pull','pulls','heat','heats','cool','cools','grow','grows',
+    'shrink','shrinks','stop','stops','slow','slows','speed','speeds'];
+
+  // Perspective-taking markers the Steelman gate checks for — signals that
+  // the student is genuinely arguing from another side rather than restating.
+  var PERSPECTIVE_MARKERS_RE = /\b(could|might|someone|alternatively|on the other hand|instead|rather|another way|disagree|opposing|critic|maybe|perhaps|some would say)\b/i;
 
   // ───────────────────────────────────────────────────────────────────────
   // Plugin registry — mirrors window.SelHub.registerTool. Lane plugins
@@ -301,19 +390,86 @@
     return null;
   }
 
+  // Tier-2 strip list: per the schema-autocomplete-leak reviewer, the LLM
+  // must not be allowed to emit fields that are noun-phrase completions of
+  // the student's cognitive work. The wrapper strips these recursively
+  // BEFORE handing to the lane's optional validator. Lane prompts SHOULD
+  // also not request them, but the wrapper is the last line of defense.
+  var FOOTGUN_KEY_PATTERNS = [
+    /^suggested[_-]/i,
+    /^one[_-]revision/i,
+    /^rewrite(_|$)/i,
+    /^improved[_-]/i,
+    /^better[_-]/i,
+    /^proposed[_-]/i,
+    /^corrected[_-]/i,
+    /^relabel/i,
+    /^the[_-]alternative$/i,
+    /^the[_-]correct/i,
+    /^should[_-](be|instead|use)/i,
+    /^revised[_-]claim/i,
+    /^assumption$/i,                      // free-text completion smell — use *_questions
+    /^warrant$/i,
+    /^calibration$/i,
+    /^observation$/i,
+    /^rationale$/i,
+    /^summary$/i,                         // completion-shaped (replaced by quoted_snippet + questions)
+    /^interpretation$/i,
+    /^reading$/i,
+    /^why[_-]relevant$/i,
+    /^what[_-]changed[_-]well$/i,
+    /^confidence[_-]calibration[_-]note$/i,
+    /^coverage[_-]note$/i,
+    /^label[_-]question$/i,               // singular variant — must be plural questions[]
+  ];
   function stripPedagogicalFootguns(obj, depth) {
-    // Recursively drop any field named "suggested_*" or "one_revision_*"
-    // so the model literally cannot ship the student a finished revision.
-    // Depth-cap at 6 to avoid pathological nesting.
     if (depth === undefined) depth = 0;
     if (depth > 6 || obj === null || typeof obj !== 'object') return obj;
     if (Array.isArray(obj)) return obj.map(function (x) { return stripPedagogicalFootguns(x, depth + 1); });
     var out = {};
     Object.keys(obj).forEach(function (k) {
-      if (/^suggested[_-]/i.test(k)) return;             // schema footgun #1
-      if (/^one[_-]revision/i.test(k)) return;           // schema footgun #2
-      if (k === 'rewrite' || k === 'rewrite_for_user') return;  // covert autocomplete
+      for (var i = 0; i < FOOTGUN_KEY_PATTERNS.length; i++) {
+        if (FOOTGUN_KEY_PATTERNS[i].test(k)) return;
+      }
       out[k] = stripPedagogicalFootguns(obj[k], depth + 1);
+    });
+    return out;
+  }
+
+  // Tier-2: global question-format validator. Per reviewer 2's GLOBAL rule:
+  // every string[] field whose key contains "question" must satisfy
+  // (a) each item ends with '?', (b) ≤25 words, (c) no causal-conclusion
+  // markers (because/therefore/since/thus/hence/so). Recurses into nested
+  // structures; rejects entries that fail. Returns the cleaned object plus
+  // a count of rejected entries for telemetry.
+  var CAUSAL_CONCLUSION_RE = /\b(because|therefore|since|thus|hence)\b/i;
+  function wordCount(s) {
+    if (!s || typeof s !== 'string') return 0;
+    return s.trim().split(/\s+/).filter(Boolean).length;
+  }
+  function enforceQuestionFormat(obj, depth, telemetry) {
+    if (!telemetry) telemetry = { rejected: 0, fixedKeys: [] };
+    if (depth === undefined) depth = 0;
+    if (depth > 6 || obj === null || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) {
+      return obj.map(function (x) { return enforceQuestionFormat(x, depth + 1, telemetry); });
+    }
+    var out = {};
+    Object.keys(obj).forEach(function (k) {
+      var v = obj[k];
+      if (/question/i.test(k) && Array.isArray(v)) {
+        var cleaned = v.filter(function (item) {
+          if (typeof item !== 'string') return true;        // nested objects pass through
+          var trimmed = item.trim();
+          if (!trimmed.endsWith('?')) { telemetry.rejected += 1; telemetry.fixedKeys.push(k); return false; }
+          if (wordCount(trimmed) > 25) { telemetry.rejected += 1; telemetry.fixedKeys.push(k); return false; }
+          if (CAUSAL_CONCLUSION_RE.test(trimmed)) { telemetry.rejected += 1; telemetry.fixedKeys.push(k); return false; }
+          return true;
+        });
+        out[k] = cleaned;
+      } else {
+        out[k] = enforceQuestionFormat(v, depth + 1, telemetry);
+      }
     });
     return out;
   }
@@ -716,6 +872,28 @@
     var onCallGemini = deps.onCallGemini;
     var addToast = deps.addToast;
     var nowMs = function () { return Date.now(); };
+
+    // Tier-2: per-touchpoint sub-budgets cap each individual touchpoint so a
+    // single touchpoint can't burn the whole 8/session budget on retries.
+    // Reviewer 1 recommended this exact split.
+    var PER_TOUCHPOINT_CAP = {
+      wonder_sorter: 2,
+      model_surfacer: 3,
+      steelman_second_pass: 2,
+      honest_uncertainty: 2,
+    };
+    // Tier-2: cooldown burst lock. 6+ gate failures in 5 minutes blocks the
+    // AI button for 2 minutes — kills brute-force fuzzing.
+    var BURST_WINDOW_MS = 5 * 60 * 1000;
+    var BURST_THRESHOLD = 6;
+    var BURST_LOCKOUT_MS = 2 * 60 * 1000;
+
+    function appendAiHistory(prevJournal, entry) {
+      var capped = (prevJournal.aiHistory || []).concat([entry]);
+      if (capped.length > 60) capped = capped.slice(-60);
+      return capped;
+    }
+
     return async function askResearchCoach(touchpoint, ctx, signal) {
       var traceId = newTraceId();
       var t0 = nowMs();
@@ -726,19 +904,61 @@
         return { ok: false, blocked: true, blockedReason: 'no_compatible_backend', traceId: traceId, latencyMs: 0 };
       }
 
-      // Cost cap
+      // Total cost cap
       if ((journal.aiCallCount || 0) >= MAX_AI_CALLS_PER_SESSION) {
-        return { ok: false, blocked: true, blockedReason: 'rate_limit_session', traceId: traceId, latencyMs: 0 };
+        return { ok: false, blocked: true, blockedReason: 'rate_limit_session', detail: "You've used all your AI questions for this session. Reload to reset, or keep working on your own.", traceId: traceId, latencyMs: 0 };
       }
 
-      // Student-first gate
+      // Per-touchpoint sub-budget — prevents one touchpoint from being abused
+      var tpId = touchpoint && touchpoint.id;
+      if (tpId && PER_TOUCHPOINT_CAP[tpId]) {
+        var usedForTp = (journal.aiHistory || []).filter(function (h) {
+          return h.touchpoint === tpId && !h.blocked;
+        }).length;
+        if (usedForTp >= PER_TOUCHPOINT_CAP[tpId]) {
+          return { ok: false, blocked: true, blockedReason: 'rate_limit_touchpoint',
+                   detail: "You've used your AI helps for this step. Loop back to gather more, or move forward on your own.",
+                   traceId: traceId, latencyMs: 0 };
+        }
+      }
+
+      // Burst lock — 6+ gate failures in last 5 minutes inside lockout window
+      var recentBlocks = (journal.aiHistory || []).filter(function (h) {
+        return h.blocked && (nowMs() - (h.ts || 0)) < BURST_WINDOW_MS;
+      });
+      if (recentBlocks.length >= BURST_THRESHOLD) {
+        var newestBlockTs = recentBlocks[recentBlocks.length - 1].ts || 0;
+        if ((nowMs() - newestBlockTs) < BURST_LOCKOUT_MS) {
+          return { ok: false, blocked: true, blockedReason: 'rate_limit_burst',
+                   detail: "Take a breath. The AI isn't going anywhere. Try looping back to an earlier stage.",
+                   traceId: traceId, latencyMs: 0 };
+        }
+      }
+
+      // Student-first gate — runs against the journal we're ACTUALLY about to
+      // send. UI button-disabled is a hint; this is the source of truth.
+      // Records bypass_signals + gate_reason to aiHistory so teachers can see
+      // patterns without it being punitive.
       if (touchpoint && typeof touchpoint.gateCheck === 'function') {
-        try {
-          var gate = touchpoint.gateCheck(journal, ctx);
-          if (gate && gate.blocked) {
-            return { ok: false, blocked: true, blockedReason: gate.reason || 'student_authored_required', detail: gate.detail || null, traceId: traceId, latencyMs: 0 };
-          }
-        } catch (_) {}
+        var gate = { ok: true };
+        try { gate = touchpoint.gateCheck(journal, ctx) || { ok: true }; } catch (_) { gate = { ok: true }; }
+        if (gate && gate.ok === false) {
+          setJournal(function (prev) {
+            return Object.assign({}, prev, {
+              aiHistory: appendAiHistory(prev, {
+                ts: Date.now(), touchpoint: tpId, blocked: true,
+                gate_reason: gate.reason || 'student_authored_required',
+                bypass_signals: gate.bypass_signals || [],
+                traceId: traceId,
+              }),
+            });
+          });
+          return { ok: false, blocked: true, blockedReason: 'student_authored_required',
+                   detail: gate.reason || 'Write your own attempt first before asking AI.',
+                   bypass_signals: gate.bypass_signals || [],
+                   retryAfterMs: gate.retryAfterMs || 0,
+                   traceId: traceId, latencyMs: 0 };
+        }
       }
 
       // Build prompt
@@ -817,6 +1037,10 @@
         };
       }
       var stripped = stripPedagogicalFootguns(parsed);
+      // Tier-2: enforce question-format across all string[] fields whose key
+      // contains "question". Counts rejected entries for telemetry.
+      var qTelemetry = { rejected: 0, fixedKeys: [] };
+      stripped = enforceQuestionFormat(stripped, 0, qTelemetry);
       // Truncate any string field deeper than ANSWER_HARD_CAP.
       function truncStrings(o, depth) {
         if (o === null || typeof o !== 'object' || depth > 6) return o;
@@ -833,9 +1057,37 @@
       stripped = truncStrings(stripped, 0);
 
       // Touchpoint-specific validator (optional) — last guard for chip key
-      // allowlists, etc.
+      // allowlists, etc. May return { __rejected: true, rejectReason, attemptedShapeKeys }
+      // to signal a validator failure that refunds the call.
+      var validatorReject = null;
       if (touchpoint && typeof touchpoint.validate === 'function') {
-        try { stripped = touchpoint.validate(stripped, journal, ctx) || stripped; } catch (_) {}
+        try {
+          var validated = touchpoint.validate(stripped, journal, ctx);
+          if (validated && validated.__rejected) {
+            validatorReject = validated;
+          } else if (validated) {
+            stripped = validated;
+          }
+        } catch (_) {}
+      }
+      if (validatorReject) {
+        // Refund the counter — the call burned tokens, but pedagogically we
+        // refund so the student isn't penalized for an AI output that broke
+        // our schema rules. Telemetry persists for tuning.
+        setJournal(function (prev) {
+          var next = Object.assign({}, prev);
+          next.aiCallCount = Math.max(0, (prev.aiCallCount || 1) - 1);
+          next.aiHistory = appendAiHistory(prev, {
+            ts: Date.now(), touchpoint: tpId, blocked: true,
+            rejectReason: validatorReject.rejectReason || 'validator_rejected',
+            attemptedShapeKeys: validatorReject.attemptedShapeKeys || [],
+            traceId: traceId,
+          });
+          return next;
+        });
+        return { ok: false, blocked: true, blockedReason: 'validator_rejected',
+                 detail: validatorReject.rejectReason || 'AI response did not meet the lane rules. Try again.',
+                 traceId: traceId, latencyMs: latencyMs };
       }
 
       // Watermark + persist to journal aiHistory
@@ -843,16 +1095,18 @@
       stripped.__traceId = traceId;
 
       setJournal(function (prev) {
-        var next = Object.assign({}, prev);
-        next.aiHistory = (prev.aiHistory || []).concat([{
-          ts: Date.now(), touchpoint: touchpoint && touchpoint.id, in: prompt.slice(0, 400),
-          summary: typeof stripped.answer === 'string' ? stripped.answer.slice(0, 200) : '',
-          blocked: false,
-        }]).slice(-40);
-        return next;
+        return Object.assign({}, prev, {
+          aiHistory: appendAiHistory(prev, {
+            ts: Date.now(), touchpoint: tpId,
+            in: prompt.slice(0, 400),
+            summary: typeof stripped.answer === 'string' ? stripped.answer.slice(0, 200) : '',
+            qFormatRejected: qTelemetry.rejected,
+            blocked: false, traceId: traceId,
+          }),
+        });
       });
 
-      return { ok: true, blocked: false, data: stripped, raw: rawText, latencyMs: latencyMs, traceId: traceId };
+      return { ok: true, blocked: false, data: stripped, raw: rawText, latencyMs: latencyMs, traceId: traceId, qFormatRejected: qTelemetry.rejected };
     };
   }
 
@@ -1331,7 +1585,7 @@
   // ───────────────────────────────────────────────────────────────────────
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.ResearchHub = ResearchHub;
-  window.AlloModules.ResearchHub.__tier = 1;
+  window.AlloModules.ResearchHub.__tier = 2;
   // Stash primitives on the registry so lane plugins (Tiers 2-4) can import
   // them without re-implementing.
   if (window.ResearchHub) {
@@ -1348,7 +1602,16 @@
       VOICE_NOTE_MAX_SECONDS: VOICE_NOTE_MAX_SECONDS,
       DEV_LEVELS: DEV_LEVELS,
     };
+    // Tier-2: shared gate helpers + token-similarity utility for lane plugins.
+    window.ResearchHub.helpers = {
+      isPlausibleProse: isPlausibleProse,
+      normalizeForCompare: normalizeForCompare,
+      tokenJaccard: tokenJaccard,
+      MECHANISM_VERBS: MECHANISM_VERBS,
+      PERSPECTIVE_MARKERS_RE: PERSPECTIVE_MARKERS_RE,
+      SHARED_STOP_WORDS: SHARED_STOP_WORDS,
+    };
   }
 
-  console.log('[CDN] ResearchHub loaded (Tier 1)');
+  console.log('[CDN] ResearchHub loaded (Tier 2)');
 })();
