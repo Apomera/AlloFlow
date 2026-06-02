@@ -42,6 +42,29 @@ jobs:
       - name: verify:gate (render-refs + lang-json + module contracts)
         run: npm run verify:gate
 
+  unit:
+    name: Unit + golden-master tests (vitest)
+    # BLOCKING. The vitest suite (286 tests) is deterministic and green; it
+    # includes the golden-master characterization tests (word_sounds, arc_city,
+    # symbol_studio, dino_lab) that pin tool render + data behavior. Previously
+    # these ran only locally — CI never executed `npm test`, so a render/data
+    # regression in a pinned tool could reach main ungated.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm install --no-audit --no-fund
+      # The golden-master harnesses render with REAL React 18 resolved from
+      # prismflow-deploy/node_modules (git-ignored, not populated by the root
+      # install). Install just react + react-dom there so the harnesses load.
+      - name: Install React 18 for golden-master harnesses
+        run: npm install --no-audit --no-fund --no-save --prefix prismflow-deploy react@^18.2.0 react-dom@^18.2.0
+      - name: npm test (golden masters + unit suites)
+        run: npm test
+
   verify-full:
     name: Full verify suite (non-blocking visibility)
     runs-on: windows-latest
