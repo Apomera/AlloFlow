@@ -2355,7 +2355,12 @@
       });
     }, []);
 
-    var recordIepTrial = useCallback(function (goalId, success, context) {
+    var recordIepTrial = useCallback(function (goalId, success, context, manual) {
+      // IEP trials are clinician-recorded ONLY (the manual ✓/✗ buttons pass manual=true).
+      // Auto game/AAC/scan events previously called this with success:true, inflating goal
+      // counts, the "Last 10" accuracy, the printed Clinical Report, and the RTI probeHistory
+      // with machine-generated "trials". Those auto-calls are removed; this guard is a backstop.
+      if (!manual) return;
       setIepGoals(function (prev) {
         var updated = prev.map(function (g) {
           if (g.id !== goalId) return g;
@@ -3018,9 +3023,7 @@
       setSrchTotal(function (t) { return t + 1; });
       recordFamiliarity(srchTarget.label, correct ? 'quest-correct' : 'quest-wrong');
       if (!correct && picked.label) recordFamiliarity(picked.label, 'exposure');
-      // IEP trial
-      var receptiveGoal = activeGoals.find(function (g) { return g.type === 'receptive' && g.currentCount < g.targetCount; });
-      if (receptiveGoal) recordIepTrial(receptiveGoal.id, correct, 'search:listen:' + srchTarget.label);
+      // (IEP trials are clinician-recorded only — no auto-logging from Search activity.)
       // Track missed labels for the end-of-session miss list. Use a ref-backed set so we don't
       // re-render the active-session UI on each miss.
       if (!correct) {
@@ -3086,9 +3089,7 @@
           if (ns2 > srchBest) setSrchBest(ns2);
           setSrchScore(function (s) { return s + 15 + (ns2 >= 3 ? 5 : 0); });
           setSrchFeedback({ ok: true, msg: '✅ Perfect phrase! "' + srchSentenceTarget.map(function (w) { return w.label; }).join(' ') + '"' });
-          // IEP trial for expressive goal
-          var expressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
-          if (expressiveGoal) recordIepTrial(expressiveGoal.id, true, 'search:build:' + srchSentenceTarget.map(function (w) { return w.label; }).join('+'));
+          // (IEP trials are clinician-recorded only — no auto-logging from Search activity.)
           srchMaybeCelebrate(ns2);
           srchTimerRef.current = setTimeout(function () { srchPickRound('build', srchPool()); }, 1800);
         } else {
@@ -3111,11 +3112,7 @@
           srchMissedSetRef.current = srchMissedSetRef.current || {};
           srchMissedSetRef.current[expected.label] = (srchMissedSetRef.current[expected.label] || 0) + 1;
         })();
-        // Record IEP trial for Build-mode misses too — was previously only logged on full-phrase
-        // success, which masked struggling students in the goal data. Expressive goals need to
-        // see failures to pace progress correctly.
-        var buildExpressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
-        if (buildExpressiveGoal) recordIepTrial(buildExpressiveGoal.id, false, 'search:build:' + expected.label);
+        // (IEP trials are clinician-recorded only — no auto-logging from Search activity.)
         // Partial-retry pedagogy: keep the words the student already locked in correct, and let
         // them re-attempt just the failed position. Speaking only the expected word (not the
         // whole phrase) keeps the audio cue tight and relevant. Previously a wrong pick reset
@@ -3275,9 +3272,7 @@
       // Record familiarity for target and (if wrong) picked symbol
       recordFamiliarity(questTarget.label, correct ? 'quest-correct' : 'quest-wrong');
       if (!correct && picked.label) recordFamiliarity(picked.label, 'exposure');
-      // Record IEP trial if receptive goals exist
-      var receptiveGoal = activeGoals.find(function (g) { return g.type === 'receptive' && g.currentCount < g.targetCount; });
-      if (receptiveGoal) recordIepTrial(receptiveGoal.id, correct, 'quest:' + questMode + ':' + questTarget.label);
+      // (IEP trials are clinician-recorded only — no auto-logging from Quest activity.)
       if (correct) {
         var ns = questStreak + 1;
         setQuestStreak(ns);
@@ -6197,11 +6192,11 @@
                 // Manual trial buttons
                 e('div', { style: { display: 'flex', gap: '4px', marginTop: '6px' } },
                   e('button', {
-                    onClick: function () { recordIepTrial(g.id, true, 'manual'); },
+                    onClick: function () { recordIepTrial(g.id, true, 'manual', true); },
                     'aria-label': 'Record successful IEP trial', style: { fontSize: '10px', background: '#dcfce7', color: '#16a34a', border: '1px solid #86efac', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
                   }, '✓ Success'),
                   e('button', {
-                    onClick: function () { recordIepTrial(g.id, false, 'manual'); },
+                    onClick: function () { recordIepTrial(g.id, false, 'manual', true); },
                     'aria-label': 'Record unsuccessful IEP trial', style: { fontSize: '10px', background: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
                   }, '✗ No response')
                 )
@@ -7406,9 +7401,7 @@
         setCommLog(function (log) { return log.concat([{ label: cell.label, image: cell.image, boardTitle: boardTitle, ts: new Date().toISOString() }]); });
         recordFamiliarity(cell.label, 'aac-tap');
         speakWordFn(cell.label, cell.audioData);
-        // IEP: record expressive communication trial
-        var expressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
-        if (expressiveGoal) recordIepTrial(expressiveGoal.id, true, 'aac:' + cell.label);
+        // (IEP trials are clinician-recorded only — no auto-logging from AAC taps.)
         // Debounced word prediction
         if (predTimerRef.current) clearTimeout(predTimerRef.current);
         predTimerRef.current = setTimeout(function () {
@@ -7648,9 +7641,7 @@
           applyVoice(utt);
           window.speechSynthesis.speak(utt);
         }
-        // IEP: record expressive communication trial from scanning mode
-        var expressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
-        if (expressiveGoal) recordIepTrial(expressiveGoal.id, true, 'scan:' + cell.label);
+        // (IEP trials are clinician-recorded only — no auto-logging from scanning.)
       };
       var advanceScan = function () { setScanIndex(function (prev) { return (prev + 1) % (scanCells.length || 1); }); };
       var handleScanKeyDown = function (ev) {
