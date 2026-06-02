@@ -14,6 +14,10 @@
   // HTML-escape untrusted text/URLs before interpolating into print/export HTML strings
   // (student names, IEP goals, word labels, AI story text, image URLs all reach document.write).
   var escHtml = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  // Scheme allowlist for image URLs reaching document.write: escHtml blocks quote/angle
+  // breakout but NOT a hostile scheme (javascript:, data:text/html). Permit only http(s),
+  // blob:, and data:image/* (legitimate generated/uploaded symbols); blank anything else.
+  var safeImgUrl = function (u) { u = String(u == null ? '' : u).trim(); return /^(https?:|blob:|data:image\/)/i.test(u) ? u : ''; };
 
   // ── Print CSS injection ───────────────────────────────────────────────────
   (function injectPrintStyles() {
@@ -1759,7 +1763,7 @@
           var desc = w.description ? w.description.replace(/"/g, '&quot;').replace(/</g, '&lt;') : '';
           var altText = desc ? lbl + ': ' + desc : lbl;
           var isFirst = pi === 0 && ci === 0;
-          return '<div role="gridcell" tabindex="' + (isFirst ? '0' : '-1') + '" data-label="' + lbl + '" data-speak="' + (w.translatedLabel || w.label || '').replace(/"/g, '&quot;') + '" aria-label="' + altText + '" style="background:' + bg + ';border:2px solid ' + border + '"><img src="' + escHtml(w.image) + '" alt="' + altText + '" draggable="false"><span aria-hidden="true">' + lbl + '</span>' + (origLbl && w.translatedLabel ? '<span class="orig-label" aria-hidden="true">' + origLbl + '</span>' : '') + '</div>';
+          return '<div role="gridcell" tabindex="' + (isFirst ? '0' : '-1') + '" data-label="' + lbl + '" data-speak="' + (w.translatedLabel || w.label || '').replace(/"/g, '&quot;') + '" aria-label="' + altText + '" style="background:' + bg + ';border:2px solid ' + border + '"><img src="' + escHtml(safeImgUrl(w.image)) + '" alt="' + altText + '" draggable="false"><span aria-hidden="true">' + lbl + '</span>' + (origLbl && w.translatedLabel ? '<span class="orig-label" aria-hidden="true">' + origLbl + '</span>' : '') + '</div>';
         }).join('\n');
         return { cols: pageCols, html: cellsHTML, title: (page.title || 'Page ' + (pi + 1)).replace(/</g, '&lt;'), count: cells.length };
       });
@@ -1875,12 +1879,12 @@
         bodyHTML = '<div class="ft-board" role="group" aria-label="First Then Board">'
           + '<div class="ft-cell" role="button" tabindex="0" data-speak="' + esc(ftFirstLabel || 'First') + '" aria-label="First: ' + esc(ftFirstLabel || 'activity') + '">'
           + '<div class="ft-header" style="background:#f59e0b;">FIRST</div>'
-          + (ftFirstImage ? '<img src="' + ftFirstImage + '" alt="' + esc(ftFirstLabel || 'First activity') + '">' : '<div class="ft-placeholder">?</div>')
+          + (ftFirstImage ? '<img src="' + escHtml(safeImgUrl(ftFirstImage)) + '" alt="' + esc(ftFirstLabel || 'First activity') + '">' : '<div class="ft-placeholder">?</div>')
           + '<div class="ft-label">' + esc(ftFirstLabel || '') + '</div></div>'
           + '<div class="ft-arrow" aria-hidden="true">\u2192</div>'
           + '<div class="ft-cell" role="button" tabindex="0" data-speak="' + esc(ftThenLabel || 'Then') + '" aria-label="Then: ' + esc(ftThenLabel || 'reward') + '">'
           + '<div class="ft-header" style="background:#22c55e;">THEN</div>'
-          + (ftThenImage ? '<img src="' + ftThenImage + '" alt="' + esc(ftThenLabel || 'Then activity') + '">' : '<div class="ft-placeholder">?</div>')
+          + (ftThenImage ? '<img src="' + escHtml(safeImgUrl(ftThenImage)) + '" alt="' + esc(ftThenLabel || 'Then activity') + '">' : '<div class="ft-placeholder">?</div>')
           + '<div class="ft-label">' + esc(ftThenLabel || '') + '</div></div></div>';
       } else { return; }
 
@@ -2115,13 +2119,13 @@
       style.textContent = '@media print { .ss-board-cell { width: ' + sz + 'px !important; height: ' + sz + 'px !important; min-height: unset !important; box-sizing: border-box !important; } .ss-board-cell img { width: ' + imgSz + 'px !important; height: ' + imgSz + 'px !important; } }';
       document.head.appendChild(style);
       // Build a temporary print iframe with all boards in sequence
-      var html = '<!DOCTYPE html><html><head><style>body{font-family:sans-serif;margin:20px}.board-section{page-break-after:always}.board-title{font-size:18px;font-weight:800;margin-bottom:12px}.board-grid{display:grid;grid-template-columns:repeat(' + (boardsInSet[0].cols || 4) + ',1fr);gap:8px}.ss-board-cell{border:2px solid #e5e7eb;border-radius:10px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:5px;width:' + sz + 'px;height:' + sz + 'px;box-sizing:border-box}.ss-board-cell img{width:' + imgSz + 'px;height:' + imgSz + 'px;object-fit:contain}.cell-label{font-size:11px;font-weight:700;text-align:center;line-height:1.3}</style></head><body>';
+      var html = '<!DOCTYPE html><html><head><style>body{font-family:sans-serif;margin:20px}.board-section{page-break-after:always}.board-title{font-size:18px;font-weight:800;margin-bottom:12px}.board-grid{display:grid;grid-template-columns:repeat(' + (Number(boardsInSet[0].cols) || 4) + ',1fr);gap:8px}.ss-board-cell{border:2px solid #e5e7eb;border-radius:10px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:5px;width:' + sz + 'px;height:' + sz + 'px;box-sizing:border-box}.ss-board-cell img{width:' + imgSz + 'px;height:' + imgSz + 'px;object-fit:contain}.cell-label{font-size:11px;font-weight:700;text-align:center;line-height:1.3}</style></head><body>';
       boardsInSet.forEach(function (board, idx) {
-        html += '<div class="board-section"><div class="board-title">' + (board.title || 'Board ' + (idx + 1)) + '</div><div class="board-grid">';
+        html += '<div class="board-section"><div class="board-title">' + escHtml(board.title || ('Board ' + (idx + 1))) +'</div><div class="board-grid">';
         board.words.forEach(function (w) {
           html += '<div class="ss-board-cell">';
-          if (w.image) html += '<img src="' + escHtml(w.image) + '" alt="' + w.label + '">';
-          html += '<span class="cell-label">' + w.label + '</span></div>';
+          if (w.image) html += '<img src="' + escHtml(safeImgUrl(w.image)) + '" alt="' + escHtml(w.label) + '">';
+          html += '<span class="cell-label">' + escHtml(w.label) + '</span></div>';
         });
         html += '</div></div>';
       });
@@ -5007,7 +5011,7 @@
         html += '<div class="words">';
         words.forEach(function (w) {
           html += '<div class="word" style="border:2px solid ' + gl.border + '">';
-          if (w.image) html += '<img src="' + escHtml(w.image) + '" alt="' + String(w.displayLabel || w.label || 'word').replace(/"/g, '&quot;') + '" style="width:48px;height:48px;object-fit:contain;border-radius:8px" />';
+          if (w.image) html += '<img src="' + escHtml(safeImgUrl(w.image)) + '" alt="' + String(w.displayLabel || w.label || 'word').replace(/"/g, '&quot;') + '" style="width:48px;height:48px;object-fit:contain;border-radius:8px" />';
           else html += '<div class="icon">' + gl.icon + '</div>';
           html += '<div class="label">' + escHtml(w.displayLabel) + '</div></div>';
         });
@@ -5072,7 +5076,7 @@
         html += '<div class="words-row">';
         practiceWords.forEach(function (w) {
           html += '<div class="word-card">';
-          if (w.image) html += '<img src="' + escHtml(w.image) + '" alt="' + escHtml(w.displayLabel) + '" />';
+          if (w.image) html += '<img src="' + escHtml(safeImgUrl(w.image)) + '" alt="' + escHtml(w.displayLabel) + '" />';
           html += '<div class="label">' + escHtml(w.displayLabel) + '</div></div>';
         });
         html += '</div>';
