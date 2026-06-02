@@ -646,7 +646,8 @@
 
       // Quest progress persistence
       React.useEffect(function() {
-        try { localStorage.setItem('alloflow_quest_progress', JSON.stringify(_questProgress)); } catch(e) {}
+        try { localStorage.setItem('alloflow_quest_progress', JSON.stringify(_questProgress)); }
+        catch(e) { console.error('[QuestSystem] Failed to save quest progress (quota or permission):', e.message || e); }
       }, [_questProgress]);
 
       // Quest evaluation — watches labToolData for auto-completion
@@ -2937,6 +2938,14 @@
           }, new Date(snap.timestamp).toLocaleTimeString()))))))), stemLabTab === 'explore' && !stemLabTool && (() => {
             var _allStemTools = [
               { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals'), desc: '', color: 'slate', category: true },
+              {
+                id: 'arccity',
+                icon: '🌆',
+                label: 'Arc City',
+                desc: 'Author functions to fire light-beams, clear walls, and re-light a neon city.',
+                color: 'fuchsia',
+                ready: true
+              },
               {
                 id: 'volume',
                 icon: '📦',

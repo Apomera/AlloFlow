@@ -12,9 +12,8 @@
 (function () {
   if (window.AlloModules && window.AlloModules.StemLab) { console.log('[CDN] StemLab already loaded, skipping duplicate'); } else {
     // stem_lab_module.js
-    // Auto-extracted from AlloFlowANTI.txt
+    // Canonical hand-maintained source — edited directly, NOT generated from AlloFlowANTI.txt
     // STEM Lab module for AlloFlow - loaded from GitHub CDN
-    // Version: 1.0.0 (Feb 2026)
 
     // ── AlloStemTheme JS helper (Piece A) ──
     // Exposes the same palette as the --allo-stem-* CSS variables defined
@@ -1073,10 +1072,16 @@
       // This is a safety net — tools should be accessible by default, but this catches gaps.
       if (!window._stemA11yFixerActive) {
         window._stemA11yFixerActive = true;
-        setInterval(function() {
+        window._stemA11yFixerInterval = setInterval(function() {
           try {
             var modal = document.querySelector('.stem-lab-modal');
-            if (!modal) return;
+            if (!modal) {
+              // Lab is closed — stop the polling loop and allow a clean restart on reopen.
+              try { clearInterval(window._stemA11yFixerInterval); } catch (e) {}
+              window._stemA11yFixerInterval = null;
+              window._stemA11yFixerActive = false;
+              return;
+            }
             // 1. Auto-label role=button elements that lack aria-label
             var roleButtons = modal.querySelectorAll('[role="button"]:not([aria-label])');
             roleButtons.forEach(function(el) {
@@ -2932,6 +2937,14 @@
           }, new Date(snap.timestamp).toLocaleTimeString()))))))), stemLabTab === 'explore' && !stemLabTool && (() => {
             var _allStemTools = [
               { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals'), desc: '', color: 'slate', category: true },
+              {
+                id: 'arccity',
+                icon: '🌆',
+                label: 'Arc City',
+                desc: 'Author functions to fire light-beams, clear walls, and re-light a neon city.',
+                color: 'fuchsia',
+                ready: true
+              },
               {
                 id: 'volume',
                 icon: '📦',

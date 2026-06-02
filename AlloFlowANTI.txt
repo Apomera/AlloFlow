@@ -4697,7 +4697,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_fractions.js', 'stem_lab/stem_tool_manipulatives.js', 'stem_lab/stem_tool_money.js',
         'stem_lab/stem_tool_coordgrid.js', 'stem_lab/stem_tool_angles.js', 'stem_lab/stem_tool_archstudio.js',
         'stem_lab/stem_tool_physics.js', 'stem_lab/stem_tool_brainatlas.js', 'stem_lab/stem_tool_inequality.js',
-        'stem_lab/stem_tool_funcgrapher.js', 'stem_lab/stem_tool_multtable.js', 'stem_lab/stem_tool_geosandbox.js',
+        'stem_lab/stem_tool_arccity.js', 'stem_lab/stem_tool_funcgrapher.js', 'stem_lab/stem_tool_multtable.js', 'stem_lab/stem_tool_geosandbox.js',
         'stem_lab/stem_tool_watercycle.js', 'stem_lab/stem_tool_rocks.js', 'stem_lab/stem_tool_platetectonics.js',
         'stem_lab/stem_tool_dissection.js', 'stem_lab/stem_tool_cyberdefense.js',
         'stem_lab/stem_tool_probability.js', 'stem_lab/stem_tool_logiclab.js',

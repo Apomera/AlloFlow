@@ -747,6 +747,7 @@ const PLUGIN_FILES = [
     'ai_backend_module.js',
     'kokoro_tts_loader.js',
     'piper_tts_loader.js',
+    'stem_lab/stem_tool_arccity.js',
     'stem_lab/stem_tool_dna.js',
     'stem_lab/stem_tool_unitconvert.js',
     'stem_lab/stem_tool_logiclab.js',

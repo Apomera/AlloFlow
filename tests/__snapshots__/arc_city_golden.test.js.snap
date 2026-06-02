@@ -1,0 +1,245 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Arc City — adjudication + SR narration per level (golden master) > L1 (First Light) outcome + narration matrix (snapshot) 1`] = `
+{
+  "overshoot (m=1,b=0)": {
+    "equation": "y = m·x + b, with m = 1, b = 0. A straight beam, slope 1, starting at height 0.",
+    "narration": "You reached the node’s street, but the beam missed it by 2.8 units. Fine-tune the controls so the beam meets (8, 4).",
+    "nodeDist": 2.8,
+    "result": "miss",
+    "yAt": null,
+  },
+  "solution slope (m=0.5,b=0)": {
+    "equation": "y = m·x + b, with m = 0.5, b = 0. A straight beam, slope 0.5, starting at height 0.",
+    "narration": "Lit! The beam reached the node at (8, 4). Solved in 1 shot.",
+    "nodeDist": 0,
+    "result": "hit",
+    "yAt": null,
+  },
+  "starting shot, too shallow (m=0.1,b=0)": {
+    "equation": "y = m·x + b, with m = 0.1, b = 0. A straight beam, slope 0.1, starting at height 0.",
+    "narration": "You reached the node’s street, but the beam missed it by 3.2 units. Fine-tune the controls so the beam meets (8, 4).",
+    "nodeDist": 3.2,
+    "result": "miss",
+    "yAt": null,
+  },
+}
+`;
+
+exports[`Arc City — adjudication + SR narration per level (golden master) > L2 (Cross-Street) outcome + narration matrix (snapshot) 1`] = `
+{
+  "in window but overshoots node (m=0,b=4)": {
+    "equation": "y = m·x + b, with m = 0, b = 4. A straight beam, slope 0, starting at height 4.",
+    "narration": "You reached the node’s street, but the beam missed it by 2 units. Fine-tune the controls so the beam meets (9, 2).",
+    "nodeDist": 2,
+    "result": "miss",
+    "yAt": null,
+  },
+  "solution (m=-0.4,b=5.5)": {
+    "equation": "y = m·x + b, with m = -0.4, b = 5.5. A straight beam, slope -0.4, starting at height 5.5.",
+    "narration": "Lit! The beam reached the node at (9, 2). Solved in 1 shot.",
+    "nodeDist": 0.1,
+    "result": "hit",
+    "yAt": null,
+  },
+  "starting flat, misses window (m=0,b=1)": {
+    "equation": "y = m·x + b, with m = 0, b = 1. A straight beam, slope 0, starting at height 1.",
+    "narration": "Blocked at the gate (x = 4): the beam passed at y = 1, but the opening is y = 3 to 5. The beam is too low there — raise the start height b or increase the slope.",
+    "nodeDist": null,
+    "result": "gate",
+    "yAt": 1,
+  },
+}
+`;
+
+exports[`Arc City — adjudication + SR narration per level (golden master) > L3 (Clear the Wall) outcome + narration matrix (snapshot) 1`] = `
+{
+  "arc too tight (a=-0.9,h=5,k=5)": {
+    "equation": "y = a(x − h)² + k, with a = -0.9, h = 5, k = 5. A parabola opening downward, vertex at (5, 5).",
+    "narration": "Blocked at the gate (x = 6.5): the beam passed at y = 3, but the opening is y = 3.4 to 4.3. The beam is too low there — widen the arc or raise k.",
+    "nodeDist": null,
+    "result": "gate",
+    "yAt": 3,
+  },
+  "flat line blocked at gate (a=0,h=5,k=5)": {
+    "equation": "y = a(x − h)² + k, with a = 0, h = 5, k = 5. A parabola a flat line, vertex at (5, 5).",
+    "narration": "Blocked at the gate (x = 6.5): the beam passed at y = 5, but the opening is y = 3.4 to 4.3. The beam is too high there — tighten the arc (more negative a) or lower k.",
+    "nodeDist": null,
+    "result": "gate",
+    "yAt": 5,
+  },
+  "solution (a=-0.5,h=5,k=5)": {
+    "equation": "y = a(x − h)² + k, with a = -0.5, h = 5, k = 5. A parabola opening downward, vertex at (5, 5).",
+    "narration": "Lit! The beam reached the node at (8, 0.5). Solved in 1 shot.",
+    "nodeDist": 0,
+    "result": "hit",
+    "yAt": null,
+  },
+  "starting shot, hits wall (a=-0.2,h=5,k=2)": {
+    "equation": "y = a(x − h)² + k, with a = -0.2, h = 5, k = 2. A parabola opening downward, vertex at (5, 2).",
+    "narration": "Blocked — the beam hit the wall at x = 5. It only reached y = 2, but the wall is 4 tall. Arc higher over the wall: raise the vertex height k, or move the vertex h toward x = 5.",
+    "nodeDist": null,
+    "result": "wall",
+    "yAt": 2,
+  },
+}
+`;
+
+exports[`Arc City — module contract > board readouts for screen readers (snapshot) 1`] = `
+{
+  "L1": "Arc City, level: First Light. Author a straight-line beam. The dark node to light is at x 8, y 4. Aim the beam through any gates, over any walls, to reach the node.",
+  "L2": "Arc City, level: Cross-Street. Author a straight-line beam. The dark node to light is at x 9, y 2. A gate with an opening from y 3 to 5 is at x 4. Aim the beam through any gates, over any walls, to reach the node.",
+  "L3": "Arc City, level: Clear the Wall. Author a parabola beam. The dark node to light is at x 8, y 0.5. A wall 4 units tall stands at x 5. A gate with an opening from y 3.4 to 4.3 is at x 6.5. Aim the beam through any gates, over any walls, to reach the node.",
+}
+`;
+
+exports[`Arc City — module contract > level geometry (snapshot) 1`] = `
+[
+  {
+    "dx": 0.05,
+    "family": "line",
+    "gates": [],
+    "hint": "Tip: this beam starts at the origin (b is locked at 0). Raise the slope m until the beam climbs to meet the node.",
+    "id": "L1",
+    "node": {
+      "r": 0.5,
+      "x": 8,
+      "y": 4,
+    },
+    "paramOrder": [
+      "m",
+      "b",
+    ],
+    "params": {
+      "b": {
+        "default": 0,
+        "label": "b  (start height — locked here)",
+        "locked": true,
+        "max": 8,
+        "min": 0,
+        "step": 0.5,
+      },
+      "m": {
+        "default": 0.1,
+        "label": "m  (slope — your aim)",
+        "max": 2,
+        "min": -1,
+        "step": 0.05,
+      },
+    },
+    "title": "First Light",
+    "walls": [],
+    "world": {
+      "x0": 0,
+      "x1": 10,
+      "y0": 0,
+      "y1": 8,
+    },
+  },
+  {
+    "dx": 0.05,
+    "family": "line",
+    "gates": [
+      {
+        "hi": 5,
+        "lo": 3,
+        "x": 4,
+      },
+    ],
+    "hint": "Tip: a line has two knobs. Use b to set where the beam starts, and m to angle it down through the window and onto the node.",
+    "id": "L2",
+    "node": {
+      "r": 0.5,
+      "x": 9,
+      "y": 2,
+    },
+    "paramOrder": [
+      "m",
+      "b",
+    ],
+    "params": {
+      "b": {
+        "default": 1,
+        "label": "b  (start height)",
+        "max": 8,
+        "min": 0,
+        "step": 0.5,
+      },
+      "m": {
+        "default": 0,
+        "label": "m  (slope)",
+        "max": 1.5,
+        "min": -1.5,
+        "step": 0.05,
+      },
+    },
+    "title": "Cross-Street",
+    "walls": [],
+    "world": {
+      "x0": 0,
+      "x1": 10,
+      "y0": 0,
+      "y1": 8,
+    },
+  },
+  {
+    "dx": 0.05,
+    "family": "parabola",
+    "gates": [
+      {
+        "hi": 4.3,
+        "lo": 3.4,
+        "x": 6.5,
+      },
+    ],
+    "hint": "Tip: raise k so the arc clears the wall, then adjust a so the beam comes back down through the gate and onto the node.",
+    "id": "L3",
+    "node": {
+      "r": 0.6,
+      "x": 8,
+      "y": 0.5,
+    },
+    "paramOrder": [
+      "a",
+      "h",
+      "k",
+    ],
+    "params": {
+      "a": {
+        "default": -0.2,
+        "label": "a  (arc direction & tightness)",
+        "max": 1.5,
+        "min": -1.5,
+        "step": 0.05,
+      },
+      "h": {
+        "default": 5,
+        "label": "h  (vertex horizontal)",
+        "max": 10,
+        "min": 0,
+        "step": 0.25,
+      },
+      "k": {
+        "default": 2,
+        "label": "k  (vertex height)",
+        "max": 8,
+        "min": 0,
+        "step": 0.25,
+      },
+    },
+    "title": "Clear the Wall",
+    "walls": [
+      {
+        "height": 4,
+        "x": 5,
+      },
+    ],
+    "world": {
+      "x0": 0,
+      "x1": 10,
+      "y0": 0,
+      "y1": 8,
+    },
+  },
+]
+`;
