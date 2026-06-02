@@ -197,6 +197,11 @@ function OnboardingCoach(props) {
   })();
 
   // Send handler — gates on consent, then calls askCoach + handles the result.
+  // Passes the live Tier 2 screen scan so the bot can ground its reply in
+  // what's actually on-screen ("you're on the LaunchPad now, the four mode
+  // cards are visible"). FERPA defense-in-depth still applies inside
+  // askCoach — if the question text trips any PII pattern, screen + recent
+  // are both dropped from the outbound payload.
   var doSend = function (questionText) {
     var ao = window.AlloOnboarding;
     if (!ao || typeof ao.askCoach !== 'function') return;
@@ -204,8 +209,13 @@ function OnboardingCoach(props) {
     setInFlight(true);
     var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     abortRef.current = controller;
+    var screenCtx = null;
+    try {
+      if (typeof ao.readVisibleScreen === 'function') screenCtx = ao.readVisibleScreen();
+    } catch (_) {}
     Promise.resolve(ao.askCoach({
       question: questionText,
+      screen: screenCtx,
       signal: controller ? controller.signal : null,
     })).then(function (res) {
       setInFlight(false);

@@ -163,8 +163,14 @@ function OnboardingCoach(props) {
     setInFlight(true);
     var controller = typeof AbortController !== "undefined" ? new AbortController() : null;
     abortRef.current = controller;
+    var screenCtx = null;
+    try {
+      if (typeof ao.readVisibleScreen === "function") screenCtx = ao.readVisibleScreen();
+    } catch (_) {
+    }
     Promise.resolve(ao.askCoach({
       question: questionText,
+      screen: screenCtx,
       signal: controller ? controller.signal : null
     })).then(function(res) {
       setInFlight(false);
