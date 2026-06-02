@@ -26404,7 +26404,33 @@ ${_toolList}
           setPendingRole, setIsGateOpen, setShowAIBackendModal
       })}
       {isAppReady && !hasSelectedMode && window.AlloModules && window.AlloModules.OnboardingCoach && React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach, {
-          t, setRunTour
+          t, setRunTour,
+          // Tier 3 — pickMode dispatch. Mirrors the exact setter sequence each
+          // LaunchPad mode card fires (view_launch_pad_source.jsx:224-241),
+          // including the educator password gate. Single source of truth lives
+          // in the host so the coach module never bypasses the gate.
+          pickMode: function (key) {
+              switch (key) {
+                  case 'full':
+                      setHasSelectedMode(true);
+                      break;
+                  case 'guided':
+                      setHasSelectedMode(true); setGuidedMode(true);
+                      break;
+                  case 'learning_tools':
+                      setShowLearningHub(true); setIsTeacherMode(false); setShowWizard(false);
+                      setHasSelectedRole(true); setHasSelectedMode(true);
+                      break;
+                  case 'educator':
+                      setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false);
+                      if (APP_CONFIG._cfg_validation_key) {
+                          setPendingRole('educator_hub'); setIsGateOpen(true);
+                      } else {
+                          setIsTeacherMode(true); setShowEducatorHub(true);
+                      }
+                      break;
+              }
+          }
       })}
       {isBotVisible && (
           <AlloBot
