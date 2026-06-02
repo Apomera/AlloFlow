@@ -13836,7 +13836,11 @@ Respond helpfully and concisely as AlloBot:`;
     };
 
     // ─── RiskScreening ─────────────────────────────────────────────────
-    // Virginia Threat Assessment aligned screening with AI pattern detection
+    // Safety-reflection checklist with AI pattern detection. NOT a validated
+    // threat-assessment instrument — for formal threat assessment use your
+    // district's protocol (VTA, STAG, or NTAC frameworks). The old
+    // "Aligned with Virginia Threat Assessment Guidelines" framing was an
+    // overclaim and was reframed 2026-06-02 per memory:project_alloflow_pipeline_findings.
     const RiskScreening = ({ studentName, abcEntries, callGemini, t, addToast }) => {
         const [responses, setResponses] = useState({});
         const [aiInsight, setAiInsight] = useState('');
@@ -13895,7 +13899,8 @@ Respond in 150 words or fewer. Use bullet points.`);
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🛡️'),
                 h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.risk_screening_checklist') || 'Risk Screening Checklist'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.aligned_with_virginia_threat_assessment_guidelines') || 'Aligned with Virginia Threat Assessment Guidelines')
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.safety_reflection_checklist_subtitle') || 'Safety reflection checklist — not a validated threat assessment instrument'),
+                h('p', { className: 'text-[10px] text-slate-500 mt-0.5' }, t('behavior_lens.ui.formal_threat_assessment_note') || 'For formal threat assessment, refer to your district\'s protocol (VTA, STAG, or NTAC frameworks).')
             ),
             h('div', { className: 'bg-amber-50 rounded-xl border-2 border-amber-200 p-4' },
                 h('p', { className: 'text-xs font-bold text-amber-800' }, '⚠️ IMPORTANT: This tool is a screening aid only. It does NOT replace professional threat assessment. Always follow your district\'s safety protocols. If a student is in immediate danger, contact administration and/or 911 immediately.'),
@@ -25162,7 +25167,7 @@ Analyze this data and return ONLY valid JSON:
                     id: 'riskscreen',
                     icon: '🛡️',
                     title: t('behavior_lens.hub.riskscreen_title') || 'Risk Screening',
-                    desc: t('behavior_lens.hub.riskscreen_desc') || 'Virginia Threat Assessment aligned screening with AI pattern detection',
+                    desc: t('behavior_lens.hub.riskscreen_desc_v2') || 'Safety reflection checklist + AI pattern detection (not a formal threat-assessment instrument)',
                     color: 'red',
                 },
                 {

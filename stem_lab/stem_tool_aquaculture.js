@@ -7647,7 +7647,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         { id: 'aqchemicals', label: '⚗️ Approved Chemicals' },
         { id: 'disease', label: '🦠 Diseases & Pests' },
         { id: 'diseaseatlas', label: '🦠 Disease Atlas' },
-        { id: 'aqlaboratory', label: '🔬 Pathology Lab' }
+        { id: 'aqlaboratory', label: '🔬 Pathology Lab' },
+        { id: 'stockHunt', label: '🐟 Stocking discovery' }
       ] },
       { id: 'operations', label: 'Farm Operations', color: '#fbbf24', tabs: [
         { id: 'site', label: '📍 Site Selection' },
@@ -19919,6 +19920,154 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         })));
     }
 
+    // === Cycle-13 H7b'' breadth-replication widget: stocking discovery ===
+    // Validated design pattern: continuous sliders + live SVG + DISCRETE state marker
+    // (not gradient) + free-text hypothesis + opt-in open questions + self-mark.
+    // No score, no reveal, no answer dump.
+    function stockHuntTab() {
+      var st = loadState();
+      var sh = st.stockHunt || { density: 12, exchange: 80, feed: 2.5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+      function setSH(patch) {
+        var s = loadState();
+        s.stockHunt = Object.assign({}, sh, patch);
+        saveState(s);
+        if (ctx.forceUpdate) ctx.forceUpdate();
+      }
+      // Real pond biology (simplified): DO at saturation is ~9 mg/L cold, ~7 warm.
+      // Density consumes DO; exchange replenishes; feed-rate consumes via BOD.
+      // Threshold: < 4 mg/L = critical (mortality); 4-6 = stressed; >= 6 = healthy.
+      var DO_SATURATION = 9.0;
+      var consumePerFish = 0.12;          // mg/L/h per fish/m^3
+      var feedBOD = 0.08;                  // mg/L/h per g/day/fish
+      var exchangeReplen = 0.05;          // mg/L/h per (L/min/m^3) of exchange
+      var consumed = sh.density * consumePerFish + sh.feed * feedBOD;
+      var replenished = (sh.exchange / 100) * 9 * exchangeReplen * 60; // scale
+      var doLevel = Math.max(0, Math.min(DO_SATURATION, DO_SATURATION - consumed + replenished));
+      // DISCRETE marker (per H7b'' validated pattern): three-band state, NOT a numeric gradient.
+      var doState = doLevel >= 6 ? 'healthy' : (doLevel >= 4 ? 'stressed' : 'critical');
+      var stateColor = doState === 'healthy' ? '#86efac' : (doState === 'stressed' ? '#fbbf24' : '#fb7185');
+      var stateLabel = doState === 'healthy' ? '🟢 Pond healthy' : (doState === 'stressed' ? '🟡 Fish stressed' : '🔴 Critical — die-off risk');
+      function logObs() {
+        var obs = { d: sh.density, x: sh.exchange, f: sh.feed, doL: parseFloat(doLevel.toFixed(2)), state: doState };
+        setSH({ log: (sh.log || []).concat([obs]).slice(-8) });
+      }
+      // SVG: pond with fish, ripples for exchange rate, DISCRETE state badge
+      function pondSvg() {
+        var fishCount = Math.min(24, Math.round(sh.density * 2));
+        var fish = [];
+        for (var i = 0; i < fishCount; i++) {
+          var fx = 30 + (i * 41) % 260;
+          var fy = 30 + (i * 23) % 70;
+          var fishColor = doState === 'healthy' ? '#fbbf24' : (doState === 'stressed' ? '#a3a3a3' : '#525252');
+          var tilt = doState === 'critical' ? (i % 2 === 0 ? ' rotate(180 ' + fx + ' ' + fy + ')' : '') : '';
+          fish.push(h('g', { key: 'f' + i, transform: tilt },
+            h('ellipse', { cx: fx, cy: fy, rx: 6, ry: 2.5, fill: fishColor, opacity: doState === 'critical' ? 0.6 : 1 }),
+            h('polygon', { points: (fx - 6) + ',' + fy + ' ' + (fx - 10) + ',' + (fy - 2) + ' ' + (fx - 10) + ',' + (fy + 2), fill: fishColor, opacity: doState === 'critical' ? 0.6 : 1 })
+          ));
+        }
+        var ripples = [];
+        var rippleN = Math.round(sh.exchange / 20);
+        for (var r = 0; r < rippleN; r++) {
+          ripples.push(h('path', { key: 'r' + r, d: 'M 10 ' + (115 + r * 4) + ' Q 50 ' + (110 + r * 4) + ' 100 ' + (115 + r * 4) + ' T 200 ' + (115 + r * 4) + ' T 310 ' + (115 + r * 4), stroke: '#67e8f9', strokeWidth: 1, fill: 'none', opacity: 0.5 }));
+        }
+        return h('svg', { viewBox: '0 0 320 140', style: { width: '100%', height: 160, display: 'block' } },
+          h('rect', { x: 0, y: 0, width: 320, height: 140, fill: '#0f1c2f' }),
+          h('rect', { x: 0, y: 20, width: 320, height: 100, fill: '#1e3a5f', opacity: 0.7 }),
+          ripples,
+          fish,
+          // DISCRETE state badge (not a continuous gradient)
+          h('g', { transform: 'translate(260, 130)' },
+            h('rect', { x: -52, y: -10, width: 104, height: 18, rx: 4, fill: stateColor, opacity: 0.85, stroke: stateColor, strokeWidth: 1 }),
+            h('text', { x: 0, y: 4, textAnchor: 'middle', fontSize: 10, fontWeight: 'bold', fill: '#04141f' }, stateLabel)
+          )
+        );
+      }
+      return h('div', { style: { padding: 14, background: 'rgba(15,28,47,0.6)', borderRadius: 10, border: '1px solid rgba(20,184,166,0.3)' } },
+        h('div', { style: { fontSize: 16, fontWeight: 800, color: '#a7f3d0', marginBottom: 6 } }, '🐟 Stocking discovery'),
+        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 10 } },
+          'You manage a recirculating fish pond. Adjust stocking density, water exchange rate, and feed rate. The pond shows you whether fish are healthy, stressed, or in crisis (three discrete states, no numeric score). There is no right answer — and no reveal. Sweep the sliders. Log observations. Type what you discover about the trade-offs.'),
+        h('div', { style: { marginBottom: 10, borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.4)' } }, pondSvg()),
+        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 } },
+          [
+            { key: 'density', label: 'Stocking density (fish/m³)', val: sh.density, min: 2, max: 30 },
+            { key: 'exchange', label: 'Water exchange (% turnover/h)', val: sh.exchange, min: 0, max: 200 },
+            { key: 'feed', label: 'Feed rate (g/day/fish)', val: sh.feed, min: 0.5, max: 8, step: 0.1 }
+          ].map(function(slider) {
+            return h('div', { key: slider.key },
+              h('label', { htmlFor: 'sh-' + slider.key, style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } },
+                slider.label, ': ', h('span', { style: { color: '#67e8f9', fontFamily: 'monospace' } }, slider.val)),
+              h('input', { id: 'sh-' + slider.key, type: 'range', min: slider.min, max: slider.max, step: slider.step || 1, value: slider.val,
+                onChange: function(e) { var p = {}; p[slider.key] = parseFloat(e.target.value); setSH(p); },
+                style: { width: '100%' }, 'aria-label': slider.label }));
+          })
+        ),
+        // Log + reset
+        h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 } },
+          h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#0f1c2f', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '📋 Log observation'),
+          h('button', { onClick: function() { setSH({ density: 12, exchange: 80, feed: 2.5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+            style: { padding: '4px 10px', background: '#0f1c2f', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer' } }, '↺ Reset'),
+          (sh.log || []).length > 0 && h('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (sh.log || []).length + ' observations logged')
+        ),
+        // Log table
+        (sh.log || []).length > 0 && h('div', { style: { overflowX: 'auto', marginBottom: 10 } },
+          h('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1' } },
+            h('thead', null, h('tr', { style: { background: '#1e293b' } },
+              ['density', 'exchange %', 'feed g', 'DO mg/L', 'state'].map(function(c, i) {
+                return h('th', { key: 'h' + i, style: { padding: '4px 8px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c);
+              })
+            )),
+            h('tbody', null, sh.log.map(function(o, idx) {
+              var bg = o.state === 'healthy' ? 'rgba(134,239,172,0.08)' : (o.state === 'stressed' ? 'rgba(251,191,36,0.08)' : 'rgba(251,113,133,0.10)');
+              return h('tr', { key: 'lr' + idx, style: { background: bg } },
+                h('td', { style: { padding: '4px 8px', fontFamily: 'monospace' } }, o.d),
+                h('td', { style: { padding: '4px 8px', fontFamily: 'monospace' } }, o.x),
+                h('td', { style: { padding: '4px 8px', fontFamily: 'monospace' } }, o.f),
+                h('td', { style: { padding: '4px 8px', fontFamily: 'monospace' } }, o.doL),
+                h('td', { style: { padding: '4px 8px' } }, o.state));
+            }))
+          )
+        ),
+        // Free-text hypothesis
+        h('div', { style: { marginBottom: 10 } },
+          h('label', { htmlFor: 'sh-hypo', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } },
+            'Your hypothesis (free text — no right answer):'),
+          h('textarea', { id: 'sh-hypo', value: sh.hypothesis || '',
+            onChange: function(e) { setSH({ hypothesis: e.target.value }); },
+            placeholder: 'What is the relationship between density, exchange rate, and pond health? Is there a single number that matters most? Or trade-offs?',
+            style: { width: '100%', minHeight: 60, padding: 6, background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.5)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }, rows: 3 })
+        ),
+        // Opt-in open questions
+        h('div', { style: { marginBottom: 10 } },
+          !sh.stuckRevealed && h('button', { onClick: function() { setSH({ stuckRevealed: true }); },
+            style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+            '🤔 I\'m stuck — show me questions to think about (no answers)'),
+          sh.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+            h('div', { style: { fontWeight: 700, color: '#fbbf24', marginBottom: 4 } }, 'Open questions — investigate by manipulating:'),
+            h('ul', { style: { margin: 0, paddingLeft: 18 } },
+              h('li', null, 'Start with density at 5. Slowly raise it. At what density does the state flip from healthy to stressed? Now raise exchange. Does the flip-point move?'),
+              h('li', null, 'Try low density (5) with high feed (8). Then high density (25) with low feed (1). Which causes more stress? Why might that be?'),
+              h('li', null, 'Set density and feed to your favorite values. Now move only exchange. How much exchange is enough? Can you have too much?'),
+              h('li', null, 'Log 5 healthy observations. Look at the DO column in your table. What range do they share? Is there a single threshold or a band?'),
+              h('li', null, 'A real fish farmer cannot increase exchange beyond what their water source can supply. What does that constraint imply for stocking decisions?')),
+            h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginTop: 6 } }, 'No answers will be revealed. Investigate.'))
+        ),
+        // Self-mark
+        h('div', { style: { padding: 10, background: 'rgba(134,239,172,0.08)', border: '1px solid rgba(134,239,172,0.3)', borderRadius: 4 } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+            h('input', { type: 'checkbox', id: 'sh-und', checked: !!sh.understood, onChange: function(e) { setSH({ understood: e.target.checked }); }, style: { width: 14, height: 14 } }),
+            h('label', { htmlFor: 'sh-und', style: { fontSize: 12, fontWeight: 700, color: '#86efac', cursor: 'pointer' } },
+              'I think I understand the trade-offs — let me explain them in my own words')),
+          sh.understood && h('textarea', { value: sh.explanation || '',
+            onChange: function(e) { setSH({ explanation: e.target.value }); },
+            placeholder: 'Explain in your own words: what drives oxygen consumption? What replenishes it? Why does feed rate matter even at constant density? What is the trade-off a real fish farmer faces?',
+            style: { width: '100%', minHeight: 80, padding: 6, background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(134,239,172,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }, rows: 4 }),
+          sh.understood && (sh.explanation || '').trim().length >= 40 && h('div', { style: { marginTop: 6, fontSize: 10, fontStyle: 'italic', color: '#86efac' } },
+            '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
+        ),
+        h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,28,47,0.5)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } },
+          'Design note: no numeric score, no reveal button, no chip-selection. DO state is shown as a discrete 3-band marker (healthy / stressed / critical), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.'));
+    }
+
     return h('div', { style: { padding: 16, background: '#021816', minHeight: 400 } },
       tabBar(),
       tab === 'home' ? homeTab() :
@@ -20058,6 +20207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       tab === 'mroenforcement' ? mroEnforcementTab() :
       tab === 'aqmedia' ? aqMediaTab() :
       tab === 'aqlaboratory' ? aqLaboratoryTab() :
+      tab === 'stockHunt' ? stockHuntTab() :
       tab === 'glossary' ? glossaryTab() :
       tab === 'quiz' ? quizTab() :
       h('div', null, 'Unknown tab'));

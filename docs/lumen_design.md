@@ -101,7 +101,7 @@ The power to choose *what is visualized* is the exact mechanism of selective omi
 > **Hiding data to focus is allowed. Hiding *that you hid it* is not.**
 
 Mechanics — do **not** prevent focusing (that makes the tool useless); make omission **visible and recoverable**:
-1. **Subset declaration on the view.** Any view showing fewer than all in-range observations for a shown variable renders a quiet, **non-removable** lineage chip — **"showing 6 of 10 probes."** Focusable + SR-announced (a screen-reader user must get this too).
+1. **Subset declaration — burned into the sentence, not just the chip.** A header/on-canvas "showing 6 of 10 probes" chip is croppable and is **not** captured by SVG export, so it is only a *convenience copy*; the load-bearing channel is the subset fact **burned into each affected sentence's text** ("across these 6 of 10 probes…") and into the SVG where a mark is affected. The chip itself is quiet, **non-removable**, focusable + SR-announced (a screen-reader user must get this too).
 2. **Excluded data is one click away, never deleted** — the chip expands to show what was omitted (and the reason, if given).
 3. **Exports / shared faces carry full-n vs shown-n** in provenance (rides the existing lineage field on every claim — §3). A defensible (IEP-team) export with an *undeclared* subset is a **`check_lumen_floor` + sign-off** concern, parallel to the L3 sign-off gate.
 4. **Statistics compute on the SELECTED data and say so.** A slope over "6 of 10" is labeled as such; the engine never silently computes on a subset (or the full set) without naming which — closing the subtler laundering where a number implies the whole record.
@@ -164,7 +164,7 @@ A single global **CEILING** over L0–L3: the maximum level any element is *allo
 
 **Per-element override is demote-only.** *Pin* freezes an element at its level so a dial change skips it. *Override* can only push an element **down** (own less certainty); there is **no UI path to promote** an AI element above its engine-assigned rung.
 
-**Lowering the dial purges the written slice.** Greying-out above-ceiling elements keeps their burned-in marking and is reversible — *but* because `dataLayer` writes the whole session doc with no field scoping, retained L3 prose would otherwise persist in the synced doc after you "cleaned" the screen. So **lowering below a rung purges that rung's cached prose from the written slice** (held in volatile memory until re-enabled, which re-fires the call).
+**Lowering the dial purges the written slice.** Greying-out above-ceiling elements keeps their burned-in marking and is reversible — *but* because `dataLayer` writes the whole session doc with no field scoping, retained L3 prose would otherwise persist in the synced doc after you "cleaned" the screen. So **lowering below a rung purges that rung's cached prose from the written slice** (held in volatile memory until re-enabled, which re-fires the call). Greyed above-ceiling marks keep their burn, so the header/footer manifest reflects **`maxLevelPresent` / post-purge written state**, not the bare ceiling — it can never read "L1 · no AI" over a chart still carrying faded L3 marks, and greyed cards are excluded from the manifest count ("what you see is what you ship").
 
 **Keyboard + pointer:** the dial is a single native slider — `role="slider"`, `aria-valuemin=0`, `aria-valuemax=3`, `aria-valuenow=ceiling`, `aria-valuetext="Ceiling L1, Derived — your data and transparent math, no AI"`. Arrows move one rung; Home/End jump; presets are quick-jump buttons that *set* the slider (slider stays the single source of truth). Drag announces only the final ceiling.
 
@@ -199,7 +199,7 @@ This turns the riskiest output (one confident causal claim) into the most defens
 
 ### 6.4 The unified certainty grammar
 
-One pure, deterministic resolver — `certaintyGrammar.encode()` (no React, no DOM) — is the **single source of truth** for how any element looks. Every renderer calls it; no renderer hand-picks opacity/dash. This is what makes a claim's two faces unable to visually disagree.
+One pure, deterministic resolver — `certaintyGrammar.encode(level, palette)` (no React, no DOM) — is the **single source of truth** for how any element looks. It takes the theme palette as a parameter and owns dash/opacity/texture/glyph, layering them over the palette's colors (so "single source of truth" means the certainty *encoding*, not the palette). Every renderer calls it; no renderer hand-picks opacity/dash. This is what makes a claim's two faces unable to visually disagree.
 
 **Resolved conflict — AI-level and statistical uncertainty share the grammar but NOT the axis.** A researcher must be able to tell *"the math is uncertain"* from *"the AI guessed."* So two distinct, simultaneously-visible encodings share one channel vocabulary: the **AI-inference ladder** (glyph + level-word + texture + caution-ink) and **statistical uncertainty** (the CI band / interval, styled by opacity + hatch), shown alongside, never merged. The unifying principle *solidity = certainty for both* holds; the viewer can always read *which kind* of doubt is in play.
 
@@ -218,7 +218,7 @@ One pure, deterministic resolver — `certaintyGrammar.encode()` (no React, no D
 
 **Charts** extend `dataplot`'s SVG in place: swap the hardcoded `strokeDasharray`/`fillOpacity` on the regression line, CI band, and points for `bundle.svg.*`. **Texture is the one net-new SVG primitive** — authored as inline `<defs><pattern>` injected once into the SVG root and referenced by `fill="url(#cg-hatch45)"`, because export = `XMLSerializer` (`dataplot:591`) and **CSS-class textures would not travel with the file**.
 
-**Sentences** (the claim-card face — the thing people paste into IEPs): the level token is the **first literal characters of `element.text`** — e.g. `"AI reading, unverified: scores rise after the seating change."` Content, not CSS decoration, so a plain-text copy carries its own status. L3 sentences also get a wavy underline as the visual analogue of hatch.
+**Sentences** (the claim-card face — the thing people paste into IEPs): the level token is the **first literal characters of `element.text`** — e.g. `"AI reading, unverified: scores rise after the seating change."` Content, not CSS decoration, so a plain-text copy carries its own status. L3 sentences also get a wavy underline as the visual analogue of hatch. **Prose-template invariant (the SR-channel guarantee):** every sentence emits the level word **and** the interval/n in a fixed order — so when both visual encodings collapse to text for a screen-reader user (§9), the statistical-uncertainty channel is never silently dropped. The golden master asserts the serialized sentence contains both an L-token and an interval substring.
 
 **Uncertainty-viz technique — adopted vs rejected:**
 - **ADOPTED — frequency framing** for small-n and the Family face (lowest-variance lay reading, Kay et al. 2018), worded as a *description of the procedure*: *"In 1,000 resamples of these 6 points, the slope came out positive 870 times"* — **never** "87% chance the slope is positive."
@@ -260,9 +260,9 @@ Ships as **`LumenStatsCore`** — a self-contained, Node-requirable pure core in
 This is the **core of v1** — the rest of the engine feeds it. Its job: make the epistemic level physically inseparable from every artifact Lumen produces. Honest about its limit: **it makes Lumen's own artifacts un-launderable; it is NOT forgery-proof** — nothing stops a human retyping an L3 sentence into Word. We don't market it as more.
 
 - **`stampElement()` is the only path to the renderer.** The renderer takes a stamped node, not raw props, so an un-marked element is structurally impossible (enforced by single-entry-point convention + golden-master bytes, not a brittle AST proof).
-- **The sole load-bearing channel is the PER-MARK burn**, because a screenshot captures a user-chosen rectangle and a footer strip can simply be cropped. Each mark carries opacity + `strokeDasharray` + inline `<defs>` hatch + a small glyph and level word drawn as **actual `<text>` inside the mark's group** — so a crop of one mark still carries its level, and `XMLSerializer` captures it on SVG export for free.
+- **The sole load-bearing channel is the PER-MARK burn**, because a screenshot captures a user-chosen rectangle and a footer strip can simply be cropped. Each mark carries opacity + `strokeDasharray` + inline `<defs>` hatch + a small glyph and level word drawn as **actual `<text>` inside the mark's group** — so a crop of one mark still carries its level, and `XMLSerializer` captures it on SVG export for free. The level-word `<text>` is its **own `opacity:1.0` child node** (not merged opacity on the `<g>`), or it would fade with the mark. **Lumen REPLACES dataplot's per-mark group**, which today is a `role="button"` whose Enter/Space *deletes the point* (`:976`), with a read-only epistemic-status announcer — extending its `aria-label` is not enough (reusing it would make Enter destroy data on a research instrument).
 - **The sentence burn** (level token = first literal characters of `element.text`) is the prose floor — survives plain-text copy-paste.
-- **Footer/legend, CSV header + per-row `level` column, SR announcement** (wired to the existing `#allo-live-dataplot` region, created-but-unpopulated today), **SVG `<desc>`** mirroring the manifest, and a strippable `<metadata>` block (secondary, honest about it).
+- **Footer/legend, CSV header + per-row `level` column, SR announcement, SVG `<desc>`** mirroring the manifest, and a strippable `<metadata>` block (secondary, honest about it). The dormant `#allo-live-dataplot` region (`:29-39`) is *created-but-never-populated* with no push wiring, so it is **not** reusable infrastructure: Lumen builds its own pipeline and owns its own regions — a **polite** `#allo-live-lumen` (routine changes, recompute fan-out coalesced into one summary) plus a **separate assertive** `#allo-live-lumen-alert` reserved for the safety-critical message ("AI ceiling now L3; sign-off required before IEP export") so a density toggle can never clobber it.
 - **Export reality:** `dataplot` ships **SVG + CSV only, no PNG/raster path** — SVG is covered by the per-mark burn; PNG/print/OS-screenshot are *outside any code Lumen can run*, which is exactly why honesty lives in the on-screen pixels of each mark, not in an export gate.
 - **Legacy `askAI` hole (prerequisite):** `dataplot:595` fires `callGemini` at temp 0.8 and dumps an **unmarked** narrative. The Lumen surface must **reroute/disable** that path so no un-stamped AI render survives.
 - **L3+ human sign-off gate (ships WITH L3 or L3 doesn't ship):** `assertDefensible()` runs before any `audience='iep-team'` export. Each L3 element needs a `signoff` whose hash equals the element's current hash; no signoff ⇒ **export BLOCKED**. The human must **OWN it** (type into a *fixed* attribution string — *"Reviewed by {name} — remains AI reading, not a measured finding"*; owning never bleaches the texture/label) or **DEMOTE it** (re-derive at ≤L2 and re-stamp). **No auto-demote** (it manufactures the exact mislabel it set out to prevent). `elementHash` binds the **actual AI response text** (`promptHash + responseHash`), and the predicate re-checks `dataHash` at export time, so a stale sign-off can't validate new prose/data. Sign-off identity is honestly weak (client-set string through an unauthenticated `dataLayer`) — an honor-system attribution, not a cryptographic actor.
@@ -283,7 +283,7 @@ This is the **core of v1** — the rest of the engine feeds it. Its job: make th
 
 The bound-claim atom is the a11y opportunity: because every claim carries a natural-language render, **the sentence IS the screen-reader peer of the chart**, and it must carry the *same* epistemic status in the accessible tree (n, uncertainty, AI-authorship, descriptive-only) as the visual band carries in pixels — otherwise blind users get a *more* confident artifact than sighted users.
 
-- **Two chart types in v1** (phase-annotated trend + bar), each with full keyboard operation and a **semantically-equivalent navigable data table** + text summary conveying trend/aimline-crossing/phase-change without sight. One honest accessible chart beats five thin ones.
+- **Two chart types in v1** (phase-annotated trend + bar), each with full keyboard operation and a **semantically-equivalent navigable data table** (**net-new, first-class** — `dataplot` has a data-*entry* grid, not an equivalent read view; this is the SR user's chart) carrying a `level` column, an explicit phase-boundary row + per-segment slope, and the full ranked L3 hypothesis set (incl. its non-effect line), plus a text summary conveying trend/aimline-crossing/phase-change without sight. One honest accessible chart beats five thin ones.
 - **Provenance is keyboard-focusable and SR-announced**, not mouse-only.
 - **No silent reflow:** single-device, explicit-action recompute, plus a **"freeze view"** affordance (WCAG 2.2.2).
 - **Keyboard-operable authoring** throughout (bind, override chart, switch face, accept/reject/demote AI). Drag-to-arrange uses an ordered list + move-up/down, not free drag.
@@ -324,13 +324,13 @@ The bound-claim atom is the a11y opportunity: because every claim carries a natu
 ### 10.3 Density is the clutter lever (not a pile of per-thing toggles)
 
 The single best control for "clean and focused" is the **Density** segmented control — one control governs canvas clutter globally, and maps onto the codebase's existing **"Reduced clutter"** UDL knob:
-- **Clean:** chart + the plain sentence only.
+- **Clean:** chart + the plain sentence only — Clean strips the *lineage* chip + CI numbers, but the **level marking and the subset declaration persist at every density** (they ride the per-mark burn + the sentence text, never a Standard-only chip; this resolves the §10.5 invariant).
 - **Standard:** + the quiet uncertainty band + lineage/subset chips. *(default)*
 - **Detailed:** + intervals, the full ranked L3 hypothesis set (§6.3), provenance numbers.
 
 ### 10.4 Default opening state (the answer to "comfortable, clean, focused")
 
-AI dial **L1** · density **Standard** · **one** audience face (Working) · **one** focused view · uncertainty as a soft band with numbers on demand. The canvas opens as *a clean chart + a couple of plain sentences + one dial* — not a cockpit. Everything else is discoverable, not displayed.
+AI dial **L1** · density **Standard** · **one** audience face (Working) · **one** focused view · uncertainty as a soft band with numbers on demand. The canvas opens as *a clean chart + a couple of plain sentences + one dial* — not a cockpit. Only the **AI dial and the subset chip** are persistent (the two integrity signals that must never be a scroll or tap away); **Density, Audience, and the View switcher collapse behind one `[View options ▾]` disclosure, collapsed at first paint** (see §15.1). That is what makes "not a cockpit" literally true on the pilot's 768px viewport. Everything else is discoverable, not displayed.
 
 ### 10.5 Invariants are not toggles (the rule that quietly erodes if unwritten)
 
@@ -344,7 +344,7 @@ Prefer segmented/toggle for categorical controls (clearer, and cheaper for a scr
 
 ## 11. v1 scope — decisive
 
-**SHIPS:** the reactive kernel + provenance-bound-claim atom; ingest (typed + one CSV importer); ladder **L0–L3** + dial (ceiling L0–L3, **default L1**, four presets, L4 visible-but-disabled); `certaintyGrammar.encode()` + inline `<defs>` hatch + swapped `dataplot` styles on the **one** primary scatter/line path (other chart types hidden until stamped); two distinct simultaneous encodings (AI-level glyph ladder + statistical CI band); `LumenStatsCore` (own pure core, data-seeded bootstrap, uncertainty-first `Estimate`, **n<3 refuse / n<8 flag**, nonlinear-as-illustrative); single `callGemini` per L2/L3 element; **probabilistic L3 hypothesis sets** (ranked, ordinal-band confidence, ≥1 non-effect explanation); the full anti-laundering floor + `check_lumen_floor.cjs` + golden master in `verify_all`; two audience faces (IEP-team + Family-with-uncertainty); FERPA gate OFF by default. **Prerequisites:** reroute/disable legacy `askAI`; bind `elementHash` to the AI response text.
+**SHIPS:** the reactive kernel + provenance-bound-claim atom; ingest (typed entry as the first-value path + a **rigid-shape** CSV importer — header + x col + value col + optional phase, comma/dot — sequenced *second*; the multi-column/grouped mapper defers to Phase 1.5); ladder **L0–L3** + dial (ceiling L0–L3, **default L1**, four presets, L4 visible-but-disabled); `certaintyGrammar.encode()` + inline `<defs>` hatch + swapped `dataplot` styles on the **one** primary scatter/line path (other chart types hidden until stamped); two distinct simultaneous encodings (AI-level glyph ladder + statistical CI band); `LumenStatsCore` (own pure core, data-seeded bootstrap, uncertainty-first `Estimate`, **n<3 refuse / n<8 flag**, nonlinear-as-illustrative); single `callGemini` per L2/L3 element; **probabilistic L3 hypothesis sets** (ranked, ordinal-band confidence, ≥1 non-effect explanation); the full anti-laundering floor + `check_lumen_floor.cjs` + golden master in `verify_all`; two audience faces (IEP-team + Family-with-uncertainty); FERPA gate OFF by default. **Prerequisites:** reroute/disable legacy `askAI`; bind `elementHash` to the AI response text.
 
 **CUT (explicit):** **L4/Brainstorm** (deferred to v2 behind the sign-off gate — Aaron's decision); live multi-stakeholder sessions (Phase 3); AI prose beyond the ranked L3 set; the N=3 sampling/"agreement" apparatus; the `effectiveLevel = max(aiLevel, spreadLevel)` axis-collapse; the quantile-dot *visual* (ship the frequency sentence only); the contrast-mode opacity→texture-density swap; HOPs/animation; free-text sign-off "own" statements (fixed string in v1); BCa/inverse-CDF (own t-table + percentile bootstrap, labeled); auto-demote-L3-to-L2; multi-author face-race; a claim-verb detector for L2; the embedded-data living report; the admin face; 3 of 5 chart types; auto-phase-inference (phase lines are human-set).
 
@@ -362,7 +362,7 @@ Prefer segmented/toggle for categorical controls (clearer, and cheaper for a scr
 Facts confirmed by reading the source (line numbers captured 2026-06-02; **re-pin at build time — they drift**):
 
 - **`callGemini(prompt, jsonMode=false, useSearch=false, temperature=null, searchQuery=null, signal=null, useCodeExecution=false)`** — `gemini_api_source.jsx:12`, with `temperature` passthrough at `:25`. Silent **429 model fallback** (`:74`) and **self-healing JSON repair at temp 0.1** (`:104–105`) — the source of the "requested, not actual" provenance honesty.
-- **`dataplot`** (`stem_lab/stem_tool_dataplot.js`, ~1,563 lines): legacy unmarked **`askAI` at `:595`** fires `callGemini(prompt, true, false, 0.8)` (`:605`); button at `:1460` (`disabled` pattern). **Export = `XMLSerializer().serializeToString` → `image/svg+xml` Blob at `:591`; no `toDataURL`/`toBlob`** (SVG/CSV only). Stats (slope/r/IQR/seRegression/Sxx) are **closure-locals** (~`:388–454`), exported nowhere. Hardcoded `bg-white` canvas; live region `#allo-live-dataplot` (~`:29–39`, created-but-unpopulated). A second engine, `stem_tool_datastudio.js` (~1,317 lines), also exists — Lumen extends **`dataplot`**, not a third engine.
+- **`dataplot`** (`stem_lab/stem_tool_dataplot.js`, ~1,563 lines): legacy unmarked **`askAI` at `:595`** fires `callGemini(prompt, true, false, 0.8)` (`:605`); button at `:1460` (`disabled` pattern). **Export = `XMLSerializer().serializeToString` → `image/svg+xml` Blob at `:591`; no `toDataURL`/`toBlob`** (SVG/CSV only). Stats (slope/r/IQR/seRegression/Sxx) are **closure-locals** (~`:388–454`), exported nowhere. Hardcoded `bg-white` canvas; live region `#allo-live-dataplot` (~`:29–39`, created-but-unpopulated). A second engine, `stem_tool_datastudio.js` (~1,317 lines), also exists — Lumen extends **`dataplot`**, not a third engine. **Precisely (feasibility-verified):** Lumen *injects* certainty marks into dataplot's SVG and *re-derives* statistics independently (`LumenStatsCore`, golden-master equivalence); it pattern-copies the rendering idioms and **calls none of them** (`regPath`/`ciPath`/`toSX`/`toSY` and all stats are closure-locals, exported nowhere). There are **five SVG roots** (one per chart type — `:933`/`:1011`/`:1037`/`:1082`/`:1111`) and the export selector grabs the *first* `[data-dataplot-svg]` (`:589`), so Lumen v1 keeps **exactly one** root (the trend path) — a golden-master-pinned ship-blocker — to avoid serializing the wrong SVG.
 - **`dataLayer`** (`src/dataLayer.js`): `onSessionSnapshot(appId, code, cb)` at `:255` subscribes to the **entire** session doc via `onSnapshot` (`:176`) with **no read-side auth/field scoping** → write-time mask is the only sound sharing model.
 - **`window.__alloUtils`** (`AlloFlowANTI.txt:1969–2206`) exposes only url/json/fluency helpers; RTI-tier / Modifiability-Index classifiers are **private closures** (not relevant to Lumen's bring-your-own posture, but confirms there is no shortcut stats API to borrow).
 - **`escHtml`** — the symbol_studio `printBook` escaping pattern (~`:16`) is the reuse target for the FERPA/XSS surface.
@@ -395,11 +395,174 @@ Facts confirmed by reading the source (line numbers captured 2026-06-02; **re-pi
 
 ---
 
+## 15. UX & interaction design
+
+> *Synthesizes four critiqued UX approaches (single-canvas, three-pane, document, single-column) into one shell. Decisive picks where they conflicted; critic findings folded in. The earlier sections settled **what** Lumen is and **what it refuses**; this section settles **what a person actually touches.** Added 2026-06-02.*
+
+### 15.1 The chosen shell — a single vertical "Living Brief" lane, Chromebook-first
+
+**Decision: ship the document/single-column hybrid — one scrollable lane of claim cards under a collapsing control header — and reject the three-pane studio for v1.**
+
+Three approaches converged on the same skeleton (single `h('div')` render tree: header → controls → stacked card siblings, matching the verified `dataplot` shape, §12), and they were right. The deciding factors:
+
+1. **The pilot surface is a 1366×768 Chromebook inside Gemini Canvas (per MEMORY).** A persistent three-column studio collapses to a drawer + slide-over sheet there anyway, which means the three-pane design's headline advantage (all panes at once) only exists on hardware the pilot does not use — while costing *two* hand-rolled focus traps on a surface with no dialog framework. Cut.
+2. **"Lumen *argues*" (§1) is a document thesis, not a dashboard thesis.** A vertical brief you scroll top-to-bottom *is* the argument, and **the on-screen artifact and the export are the same object** (`publishFace` prints the view you were reading — no Excel→PowerPoint seam, the §2 conclusion made literal).
+3. **A vertical document already IS a linear reading order** — the cheapest possible peer-parity for screen readers (§9).
+
+But we fold in the document critic's sharpest correction: **do not oversell "Export simply prints the document" as an honesty guarantee.** Print/OS-screenshot is outside any code Lumen runs (§7, Risk 2); honesty rests *entirely* on the per-mark burn and the sentence prefix, never on the layout. The shell is the convenient carrier of honesty, not its source.
+
+We also take the calm-default fix every critic raised: **the four axes do NOT all sit open in a persistent cockpit.** Resolution: **the AI dial + the subset chip are the only persistent controls; Density, Audience, and the View switcher live behind one `[ View options ▾ ]` disclosure that is collapsed on first paint and expands in place.** This makes §10.4 literally true at first paint and reclaims ~50px on a 768px viewport.
+
+**Default opening state** (dial L1, density Standard, audience Working, one focused view, zero `callGemini`):
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│ ‹ Lumen · "Reyna — ORF/WCPM"                       [⚙] [⛶ freeze]   │  title row (back · settings · freeze-view)
+│ ┌─── sticky header (the ONLY persistent controls) ───────────────┐  │
+│ │ AI ceiling  ●━━○──○──○   L1 · Data only (no AI)        [presets▸]│  │  THE one slider (role=slider, valuetext)
+│ │ showing 6 of 10 probes ⓘ                  [ View options ▾ ]    │  │  subset chip (non-removable) + disclosure
+│ └────────────────────────────────────────────────────────────────┘  │  (Density/Audience/View live in the ▾)
+│                                                                      │
+│ §1  ◈ Derived (math)                                     [⋯ more]   │  LEVEL STRIP: glyph + word, full opacity
+│ ┌──────────────────── chart (bg-white SVG) ───────────────────────┐ │
+│ │  WCPM                                       ___———● ◈            │ │  per-mark BURN: each mark = glyph + level
+│ │   70┤                       ●___———'''  ░░░ CI band (stat unc.)  │ │  <text> inside its <g>, opacity 1.0
+│ │   50┤        ●___———'''                                          │ │  solid L1 line; band = SEPARATE encoding
+│ │     └──┬────┬────┬────┬────┬──►  ┃ phase line (human-set)        │ │  (math-uncertain ≠ AI-guessed)
+│ │       w1   w3   w5   w7   w9     [▦ data table]                  │ │  data-table PEER, one tap away
+│ └──────────────────────────────────────────────────────────────────┘ │
+│ ◈ Derived (math): across these 6 of 10 probes, WCPM rose ~1.8       │  SENTENCE: level word = FIRST literal chars;
+│   words/week (95% interval +0.4 to +3.2; n=6, small).               │  subset "6 of 10" + n burned INTO the prose
+│ [🔗 6 of 10 probes · n=6 · slope, t-interval]                       │  lineage chip (Standard density)
+│                                                                      │
+│ §2  ● Observed: highest score 92 WCPM, week 6.           [⋯ more]   │  a sentence-only card (no chart binding)
+│                                                                      │
+│  + Add observation     + Bind a claim                                │  compose affordances (calm; one tap)
+├──────────────────────────────────────────────────────────────────────┤
+│  [ Export this view ▾ ]      3 claims · max level L1 · Working        │  footer = the view's manifest (= what ships)
+└──────────────────────────────────────────────────────────────────────┘
+  live region #allo-live-lumen (sr-only, polite)  ·  #allo-live-lumen-alert (assertive)
+```
+
+**Richer state** — dial raised to L3, `[⋯ more]` expanded on §1, Density = Detailed. Nothing reflows the chart; the card grows downward:
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│ AI ceiling  ○──○──○──●  L3 · AI proposes readings (export needs sign-off) │
+│ showing 6 of 10 probes ⓘ      [ View options ▴ ]                     │
+│  └ Density [Clean·Std·●Detailed●]   Audience [●Working●·IEP·Family]   │  ← disclosure OPEN: the other 3 axes
+├──────────────────────────────────────────────────────────────────────┤
+│ §1  ◑ AI reading · unverified         ⚠ needs sign-off   [⋯ less]   │  amber band (LAST channel), ◑ glyph
+│ ┌──────────────────── chart ──────────────────────────────────────┐ │
+│ │  ░╱░╱ trend now 45°-HATCHED + amber + ◑ (texture is primary)     │ │  L3 marks: hatch + opacity 0.6 clamp,
+│ │  ░░░ CI band still its OWN encoding (the math-uncertainty axis)  │ │  level <text> stays opacity 1.0
+│ └──────────────────────────────────────────────────────────────────┘ │
+│ ~~AI reading, unverified:~~ the gain may reflect the Tier-2 block.   │  sentence: literal prefix + wavy underline
+│ ▾ Ranked hypotheses  (the model's own ranking, not a probability;    │  L3 = hypothesis SET, ordinal bands
+│    regenerates each run — itself a sign it's a guess)                 │
+│   1  More likely  ◑   Tier-2 phonics block reduced off-task time     │  rank word is LOAD-BEARING (not the fade)
+│   2  Plausible    ◑░  practice / maturation effect over weeks        │  fainter + more hatch = redundant only
+│   3  Less likely  ◑░░ ⊘ regression to the mean — wk1–2 were low (null)│  ≥1 non-effect explanation (forced, §6.3)
+│ ── intervals + provenance (Detailed) ── slope +1.8 [+0.4,+3.2] · req. temp 0.7 │
+│ ⚠ Sign off before IEP-team export:  ( ) Own it   ( ) Demote ≤L2   (•) Block │  inline gate (default = Block)
+│ [🔗 6 of 10 probes]   [▦ data table]                                │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+**Where the four axes (§10.1) physically live:**
+
+| Axis | Home | Persistent? |
+|---|---|---|
+| **AI ceiling** | the one slider, top of the sticky header | **always visible** (the hero; only network/PII gate) |
+| **Selection** | the non-removable subset chip (sticky header) + the View switcher (inside `[View options ▾]`) | chip always; switcher behind disclosure |
+| **Density** | 3-stop segmented, inside `[View options ▾]` | behind disclosure (collapsed at first paint) |
+| **Audience** | 3-stop segmented, inside `[View options ▾]` | behind disclosure |
+
+The subset chip and the dial are persistent *because they are the two integrity signals that must never be a scroll or a tap away* (§15.6). Density/Audience/View are powerful but not safety-critical, so they earn the one-tap disclosure.
+
+### 15.2 The claim-card anatomy
+
+One card = one `ClaimNode` (§3), rendered top-to-bottom so a **vertical crop still carries status first**. Four bands, all driven by the single `styleBundle` from `certaintyGrammar.encode(level, palette)` (§6.4) — chart and sentence cannot disagree because they read the same bundle:
+
+1. **LEVEL STRIP** — left: glyph (`●/◈/◧/◑` as real `<text>`, `aria-hidden`) + the level **word**, at **full opacity even when the marks below fade**. Right: `[⋯ more]` (pin · demote · expand provenance · expand hypotheses · sign-off · view-omitted) and, at L3, a `⚠ needs sign-off` marker. Amber ink only at L3, and only here paired with glyph + word (color is never alone).
+2. **CHART FACE** — `dataplot`'s SVG extended in place (§6.4): per-mark `strokeDasharray`/`fillOpacity`/`opacity` read from `bundle.svg.*`; the 45° hatch is an inline `<defs><pattern id="cg-hatch45">` referenced by `fill="url(#cg-hatch45)"` so it survives `XMLSerializer` export. **Each mark's `<g>` carries its own small glyph + level `<text>` at `opacity:1.0`** — a cropped single mark still states its level. The CI band is a **separate simultaneous encoding** (statistical uncertainty), styled distinctly from the AI-level hatch so "the math is uncertain" reads apart from "the AI guessed."
+3. **SENTENCE FACE** — same binding as prose; the level token is the **first literal characters** of `element.text` (`"AI reading, unverified: …"`). **The subset declaration ("across these 6 of 10 probes") and `n` are burned into the sentence too**, not only the chip — so a cropped/pasted card self-declares both its level *and* its omission. L3 prose also gets a wavy underline (the visual analogue of hatch). **Invariant: the prose template always emits both the level word AND the interval/n, in fixed order** — so the screen-reader peer never loses the statistical channel (§15.5).
+4. **LINEAGE / GATE ROW** — `[🔗 6 of 10 probes · n=6 · method]` chip; at Detailed, the intervals + ranked hypothesis set + `requested temp` provenance unfold here; for L3, the inline `Own it / Demote / Block` sign-off lives here.
+
+**By density** (§10.3):
+
+- **Clean** — LEVEL STRIP + chart + sentence only. **The level marking and the subset declaration survive** (they are in the strip, the per-mark burn, and the sentence text — never in a Standard-only chip). Lineage chip and CI numbers drop.
+- **Standard** *(default)* — + the quiet CI band + lineage/subset chip.
+- **Detailed** — + intervals, the full ranked L3 set, provenance numbers.
+
+### 15.3 The end-to-end journey
+
+1. **Ingest.** Open from the STEM Lab catalog tile (`registerTool('lumen', { icon, label, desc, color:'amber', category:'data', render })`). Empty lane shows `+ Add observation`, `Import CSV`, and a `Use sample ORF data` shortcut, dial parked at L1. Typed entry adds one L0 observation at a time; the v1 CSV importer is a **rigid-shape file picker** (header row, one x col, one value col, optional phase col, comma-delimited, dot-decimal — no delimiter sniffing, no date coercion). No chart yet; binding precedes drawing.
+2. **Define study.** The first set fixes the variable + unit once (editable in `[⚙]`). A human drops the phase line (no auto-phase inference). Compendium now holds variables + observations + phase boundaries; the default Working view is auto-created.
+3. **Bind a claim.** `+ Bind a claim` → pick variable(s) → `LumenStatsCore` derives the L1 slope + interval deterministically (§6.5), zero `callGemini`. A §1 card stamps in. **`n<3` ⇒ a focusable refusal card** ("n=2: too few points — no line drawn"), never a blank.
+4. **Switch view / density / audience.** Open `[View options ▾]`: tap Density → Clean strips to chart + sentence; tap Audience → Family re-words the sentence to plain register **while preserving the interval + frequency-framed caveat** (Pillar 3); the View switcher swaps the pointer-set and the subset chip updates. Each is one `upd()` on `ctx.toolData.lumen`, committed **on release/select (not per-tick)** to avoid 60Hz re-renders, and announced once.
+5. **Dial AI up to L3.** Drag the slider L1→L3 (crossing into L2/L3 shows a "this will call the AI" confirm). **One** `callGemini(prompt, true, false, 0.7)` per element over the PII-free summary (`n≥8` floor, §6.6). The §1 card re-renders as L3: hatch + amber + ◑, a wavy-underlined sentence, and the **ranked hypothesis set** with ≥1 non-effect line, ordinal bands (never a %).
+6. **Sign off.** The L3 card shows `⚠ needs sign-off`; the inline gate offers **Own it** (type into the fixed attribution string), **Demote ≤L2** (re-derive + re-stamp), or **Block** (the pre-selected safe default). `assertDefensible()` hard-blocks any `audience='iep-team'` export until every L3 element's sign-off hash matches its current bytes. No auto-demote (§7).
+7. **Export.** `Export this view` → `publishFace()` writes **only** the granted face (self/raw never written): SVG via `XMLSerializer` (per-mark burn travels), a defensible CSV/JSON with a per-row `level` column, and a methods appendix. FERPA gate OFF by default; identifiable export needs an explicit per-action toggle; every field passes `escHtml` on every render.
+
+### 15.4 First five minutes (the Arc City "Play → zero setup" precedent)
+
+Zero setup, zero AI, zero PII. The tile opens straight into the lane with the dial pre-pinned at L1 and a `Use sample ORF data` shortcut beside the two compose buttons. **Fastest honest path = typed entry**, not CSV: type a few points → the moment `n≥3` an L1 card draws itself (solid line, soft CI band, two plain sentences) with **zero `callGemini`** — a defensible, honestly-marked chart of real data before a single decision about AI, and the dial sitting at L1 quietly advertises "AI is here when you ask, off until you do." If the user types only 2 points, they get the focusable **refusal card**, not a fabricated line — so even the degenerate first run teaches the honesty floor in the first minute.
+
+*(Build-sequencing note, folded from critics: this first-value loop depends on the reactive kernel + `LumenStatsCore` + `encode()` + the SVG-style swap. Phase 0 must prove the kernel on a single card with typed entry only, before the multi-card scroll or CSV — §15.7.)*
+
+### 15.5 The keyboard + screen-reader journey (peer, not fallback)
+
+A non-visual user does the **identical** journey, because a vertical document already *is* a linear reading order. Tab order follows the lane: back → settings → freeze → **dial** → **subset chip** → `[View options ▾]` (then its segmented controls when open) → each claim card → its `[⋯ more]` → compose → export.
+
+- **The sentence IS the chart's SR peer** (§9), carrying the same epistemic status the pixels do. Its **first words are the level token**, so the SR user hears `"AI reading, unverified:"` before the content — never a more confident artifact than the sighted user gets. The prose-template fixed-order invariant (§6.4) guarantees every sentence speaks the level word *and* the interval/n, so the statistical channel is never dropped in linearization; the golden master asserts the serialized sentence contains both an L-token and an interval substring.
+- **The `[▦ data table]` peer** is a first-class deliverable (§9): arrow-navigable, with a `level` column, an explicit phase-boundary row + per-segment slope, and the full ranked L3 hypothesis set incl. its non-effect line.
+- **Per-mark `<g>` interaction is REPLACED, not extended** (§7): the legacy `:976` group is a `role="button"` whose Enter **deletes the point**. Lumen's mark group is a read-only epistemic-status announcer: `aria-label="Trend, L3 AI reading, unverified, hatched, +1.8/week, 95% interval +0.4 to +3.2"`; the glyph is `aria-hidden`, the level **word** is in the accessible name.
+- **The dial** is one native `role="slider"`; arrows move one rung, Home/End jump, `aria-valuetext` speaks the full meaning, change announces **only the final ceiling** (debounced). Density/Audience are `aria-pressed` segmented controls. A `skip to claims` link sits before the header; the header is `role="banner"` and each card is a labeled region.
+- **Live regions, hardened** (§7): a **polite** `#allo-live-lumen` (routine changes, recompute fan-out coalesced into one summary) + a **separate assertive** `#allo-live-lumen-alert` for the safety-critical message ("AI ceiling now L3; sign-off required before IEP export") so a density toggle can never clobber it.
+- **Authoring is fully keyboard-operable** (bind, switch face, accept/demote, sign off); reorder is move-up/down, not free drag; recompute is explicit-action with a freeze-view toggle (WCAG 2.2.2). The subset chip's "view omitted" disclosure is a **focusable inline list with Escape-to-close and focus-restore**, never a hover tooltip.
+
+### 15.6 Integrity-surfacing in the layout
+
+The three signals stay visible *and crop-resistant* without clutter, by living where their job demands:
+
+1. **Level marking — burned, never chrome.** Per-mark (`<text>` glyph + level word inside each `<g>`, opacity 1.0) and per-sentence (literal prefix). It scrolls with the content, survives a crop of one mark, a plain-text paste, and `XMLSerializer` export. **Density never touches it** — even Clean keeps the strip, the per-mark burn, and the sentence prefix.
+2. **Subset chip — persistent AND burned.** It lives in the sticky header (always co-visible with the slice) **and** the "6 of 10" fact is burned into each affected sentence (a cropped single card still declares its omission — the header chip alone is croppable, so it is a convenience copy, not the load-bearing channel). Non-removable, focusable, SR-announced, and **exempt from Clean's chip-stripping** (§10.3/§10.5).
+3. **The dial — pinned, and labeled by what SURVIVES.** It never scrolls away and always shows its current word. The header/footer label reflects **`maxLevelPresent` / post-purge written state** (§6.2), never the bare ceiling — it can never read "L1 · no AI" over a chart still carrying faded L3 marks; greyed above-ceiling cards are excluded from the footer manifest count ("what you see is what you ship").
+
+**Density is the clutter lever (§10.3), not a per-thing toggle pile.** **The honesty floor is structurally not a toggle** (§10.5): no control dims the marking, drags `n<3` to "draw anyway," promotes a level, hides the subset declaration, or disables escHtml/FERPA. The FERPA gate is surfaced visibly **at the export moment**. Amber is the LAST redundant channel; the whole layer reads in grayscale.
+
+### 15.7 v1 UX scope — decisive
+
+**SHIPS (UX):**
+- One vertical "Living Brief" lane: sticky header (dial + subset chip + `[View options ▾]`) → stacked claim cards → footer manifest. Single `h('div')` render tree; state in `ctx.toolData.lumen`; compendium library in `localStorage['alloflow_lumen_compendia']`.
+- The claim-card anatomy at all three densities; per-mark burn + sentence prefix + subset-burned-into-sentence.
+- The one AI-ceiling slider (default L1, L2/L3 confirm-before-callGemini); Density + Audience segmented controls behind the disclosure; the View switcher (the **single** default view; create/name/switch is the only "many views" UI in v1).
+- One chart type (phase-annotated trend) **fully done** — keyboard, SR data-table peer with phase row + per-segment slope + hypothesis set, per-mark burn, export burn — before the bar type is duplicated.
+- The SR data-table peer as a **first-class deliverable**; the polite + assertive live-region pair.
+- Inline L3 sign-off (Own / Demote / Block-default); `assertDefensible()` export gate; `publishFace` write-time mask; FERPA off by default.
+- First-value: typed entry + `Use sample ORF data` fixture + the `n=2` refusal card.
+
+**DEFERS / CUTS (fold critics' cuts):**
+- **Three-pane studio / persistent side panels** → Phase 2 (not needed on Chromebook).
+- **Both hand-rolled modals** (compendium overlay, sign-off sheet) → **eliminated**; compendium edit and sign-off are inline expanding regions, no focus-trap plumbing.
+- **Free-form CSV / "paste from Google Sheets" parser** → rigid-shape file importer in v1; column-mapper, grouped/tier variable, delimiter sniffing → Phase 1.5.
+- **Bar chart** → Phase 1.5 (after the trend chart's full a11y + burn surface is proven on one path).
+- **Detailed-density full provenance-number dump** → ship Clean + Standard fully; Detailed's deepest numbers are a fast-follow.
+- **The four preset quick-jump buttons** → behind a `[presets ▸]` disclosure; the native slider is primary.
+- **Family-face wireframe** → must resolve §14 Q1 before build; ships **only if** uncertainty-preservation is fully built and tested. Working + IEP-team are the must-haves.
+- **Multi-view comparison / split screen, live multi-stakeholder sessions** → per §8, Phase 3+.
+
+**Ship-blockers (the credibility surface — none may slip):** (1) the prose template's level-word-AND-interval fixed-order invariant + its golden-master assertion; (2) the per-mark `<g>` interaction REPLACING the delete-on-Enter contract; (3) the subset declaration burned into the sentence (not chip-only); (4) the header/footer label reflecting `maxLevelPresent`/post-purge state; (5) exactly one `[data-dataplot-svg]` in the DOM (golden-master pinned) so the single-element export selector (`:589`) can never grab the wrong SVG.
+
+---
+
 ## Appendix — provenance of this document
 
-This design was produced over several maintainer conversations and **two multi-agent design workflows** (2026-06-02):
+This design was produced over several maintainer conversations and **three multi-agent design workflows** (2026-06-02):
 1. *alloflow-datacanvas-vision* (14 agents): grounded the concept in the real architecture + practitioner reality + product-evolution landscape; produced the reactive-research-canvas thesis, the provenance-bound-claim primitive, and the dashboard-monitors/Lumen-argues positioning.
 2. *lumen-probabilistic-engine* (11 agents): designed the epistemic ladder, the AI-involvement dial, the unified certainty grammar, the uncertainty-first stats layer, and the anti-laundering floor, each adversarially critiqued and grounded in a verified code audit.
+3. *lumen-ux-and-feasibility* (11 agents): a read-only feasibility spike into the real `dataplot` internals + a 4-approach UX panel (single-canvas / three-pane / document / single-column), adversarially critiqued. Produced §15 (UX & interaction — the "Living Brief" lane) and a set of feasibility-verified corrections folded back into §4.1, §6.2, §6.4, §7, §9, §10.3–§10.4, §11, §12, and §13 (net verdict: *buildable-with-cuts* — no assumption fatally refuted; the "extends dataplot" framing sharpened to "injects + re-derives," and the delete-on-Enter per-mark group flagged for replacement).
 
 The compendium/view separation (§4) and the control surface (§10) were added 2026-06-02 as direct design refinements from follow-up discussion (no workflow); the document was then reflowed into this textbook ordering (compendium/view promoted to §4 after the core primitive; controls placed at §10 after UDL), with all `§` cross-references updated.
 

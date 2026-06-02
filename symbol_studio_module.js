@@ -5444,7 +5444,9 @@
               var isLoading = !!cmLoading[item.id];
               return e('div', {
                 key: item.id,
+                role: 'button', tabIndex: 0, 'aria-label': 'Speak ' + item.label,
                 onClick: function () { speakCell(item.label); },
+                onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                 style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px 10px', border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', background: TEAL_LIGHT, cursor: 'pointer', transition: 'transform 0.1s, box-shadow 0.1s', position: 'relative' },
                 onMouseOver: function (ev) { ev.currentTarget.style.boxShadow = '0 4px 14px rgba(13,148,136,0.2)'; ev.currentTarget.style.transform = 'translateY(-2px)'; },
                 onMouseOut: function (ev) { ev.currentTarget.style.boxShadow = 'none'; ev.currentTarget.style.transform = 'none'; }
@@ -5495,7 +5497,9 @@
               var isLoading = !!snLoading[item.id];
               return e('div', {
                 key: item.id,
+                role: 'button', tabIndex: 0, 'aria-label': 'Speak ' + item.label,
                 onClick: function () { speakCell(item.label); },
+                onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                 style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px 10px', border: '2px solid ' + AMBER_BORDER, borderRadius: '14px', background: AMBER_LIGHT, cursor: 'pointer', transition: 'transform 0.1s, box-shadow 0.1s', position: 'relative' },
                 onMouseOver: function (ev) { ev.currentTarget.style.boxShadow = '0 4px 14px rgba(217,119,6,0.2)'; ev.currentTarget.style.transform = 'translateY(-2px)'; },
                 onMouseOut: function (ev) { ev.currentTarget.style.boxShadow = 'none'; ev.currentTarget.style.transform = 'none'; }
@@ -5540,7 +5544,9 @@
               var isLoading = !!amLoading[item.id];
               return e('div', {
                 key: item.id,
+                role: 'button', tabIndex: 0, 'aria-label': 'Speak ' + item.label,
                 onClick: function () { speakCell(item.label); },
+                onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                 style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px 10px', border: '2px solid ' + BLUE_BORDER, borderRadius: '14px', background: BLUE_LIGHT, cursor: 'pointer', transition: 'transform 0.1s, box-shadow 0.1s', position: 'relative' },
                 onMouseOver: function (ev) { ev.currentTarget.style.boxShadow = '0 4px 14px rgba(37,99,235,0.18)'; ev.currentTarget.style.transform = 'translateY(-2px)'; },
                 onMouseOut: function (ev) { ev.currentTarget.style.boxShadow = 'none'; ev.currentTarget.style.transform = 'none'; }
@@ -5581,7 +5587,9 @@
                   var isSelected = bcPainLevel === level;
                   return e('div', {
                     key: level,
+                    role: 'button', tabIndex: 0, 'aria-pressed': isSelected, 'aria-label': 'Pain level ' + level + ', ' + lbl.split('\n')[1],
                     onClick: function () { setBcPainLevel(isSelected ? null : level); speakCell(lbl.replace('\n', ', ')); },
+                    onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                     style: { width: 52, padding: '8px 4px', borderRadius: '10px', background: PAIN_COLORS[i], border: isSelected ? '3px solid #1e293b' : '3px solid transparent', cursor: 'pointer', textAlign: 'center', boxShadow: isSelected ? '0 0 0 3px rgba(0,0,0,0.2)' : 'none', transition: 'transform 0.1s', transform: isSelected ? 'scale(1.12)' : 'scale(1)' }
                   },
                     e('div', { style: { fontWeight: 800, fontSize: '16px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.4)' } }, level),
@@ -5599,7 +5607,9 @@
                   var isLoading = !!bcLoading[item.id];
                   return e('div', {
                     key: item.id,
+                    role: 'button', tabIndex: 0, 'aria-label': 'Speak ' + item.label,
                     onClick: function () { speakCell(item.label); },
+                    onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                     style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 8px 8px', border: '2px solid ' + ROSE_BORDER, borderRadius: '12px', background: ROSE_LIGHT, cursor: 'pointer', transition: 'transform 0.1s' },
                     onMouseOver: function (ev) { ev.currentTarget.style.transform = 'translateY(-2px)'; },
                     onMouseOut: function (ev) { ev.currentTarget.style.transform = 'none'; }
@@ -5652,7 +5662,9 @@
                 var isCurrent = idx === twStep;
                 return e('div', {
                   key: item.id,
+                  role: 'button', tabIndex: 0, 'aria-pressed': isCurrent, 'aria-label': 'Step ' + (idx + 1) + ', ' + item.label,
                   onClick: function () { setTwStep(idx); speakCell(item.label); },
+                  onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                   style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '10px 8px 8px', border: '2px solid ' + (isCurrent ? INDIGO : INDIGO_BORDER), borderRadius: '12px', background: isCurrent ? INDIGO_LIGHT : '#fff', cursor: 'pointer', outline: isCurrent ? '2px solid ' + INDIGO : '2px solid transparent', transition: 'all 0.1s' }
                 },
                   e('div', { style: { fontSize: '9px', fontWeight: 700, color: isCurrent ? INDIGO : '#6b7280', marginBottom: '2px' } }, 'STEP ' + (idx + 1)),
@@ -6922,7 +6934,9 @@
                       setDragBoardId(null); setDragOverBoardId(null);
                     },
                     onTouchCancel: function () { touchDragRef.current = null; setDragBoardId(null); setDragOverBoardId(null); },
+                    role: 'button', tabIndex: 0, 'aria-label': 'Speak ' + word.label,
                     onClick: function () { speakCell(word.label); },
+                    onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                     style: { background: bg, border: border, borderRadius: '10px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'grab', minHeight: '100px', transition: 'border-color 0.1s, opacity 0.1s', position: 'relative', opacity: dragBoardId === word.id ? 0.45 : 1 }
                   },
                     // Drag handle indicator
@@ -7069,7 +7083,9 @@
                   var isDone = item.complete;
                   return e('div', {
                     key: item.id,
+                    role: 'button', tabIndex: 0, 'aria-pressed': isDone, 'aria-label': item.label + (isNow ? ', current step' : '') + (isDone ? ', done' : ''),
                     onClick: function () { toggleComplete(item.id); },
+                    onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                     style: {
                       display: 'flex',
                       flexDirection: schedOrientation === 'horizontal' ? 'column' : 'row',
@@ -7708,8 +7724,8 @@
       var scanCells = scanBoard ? (scanBoard.words || []).filter(function (w) { return w.image; }) : [];
       var safeIdx = scanCells.length ? scanIndex % scanCells.length : 0;
       var exitScan = function () { setScanBoardId(null); setScanIndex(0); setScanPaused(false); setScanManual(false); };
-      var activateCell = function () {
-        var cell = scanCells[safeIdx];
+      var activateCell = function (i) {
+        var cell = scanCells[typeof i === 'number' ? i : safeIdx];
         if (!cell) return;
         if (onCallTTS) {
           var voice = selectedVoice || 'Kore';
@@ -7785,7 +7801,7 @@
               key: cell.id || idx,
               role: 'gridcell',
               'aria-selected': isHighlighted,
-              onClick: function () { setScanIndex(idx); activateCell(); },
+              onClick: function () { setScanIndex(idx); activateCell(idx); },
               style: {
                 border: isHighlighted ? '5px solid #facc15' : '3px solid #334155',
                 borderRadius: '14px',
