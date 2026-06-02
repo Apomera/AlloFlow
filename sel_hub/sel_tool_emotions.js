@@ -17850,13 +17850,34 @@ window.SelHub = window.SelHub || {
       // hues) intentionally stay vivid. Light-host parity is a later step
       // (it additionally needs the accent text colors themed).
       var _theme = (ctx && ctx.theme) || {};
-      var P = _theme.isContrast ? {
+      var _hcT = !!_theme.isContrast, _lightT = !_hcT && !_theme.isDark;
+      // Follows the host theme exactly like the hub's own _t (contrast >
+      // dark-class > light default). Dark values equal the original literals,
+      // so a .theme-dark host is pixel-identical to before.
+      var P = _hcT ? {
         bg: '#000000', card: '#000000', border: '#ffff00', borderDim: '#ffff00',
         textMuted: '#ffff00', text2: '#ffff00', text3: '#ffffff', text: '#ffff00'
+      } : _lightT ? {
+        bg: '#f8fafc', card: '#ffffff', border: '#cbd5e1', borderDim: '#e2e8f0',
+        textMuted: '#64748b', text2: '#475569', text3: '#334155', text: '#0f172a'
       } : {
         bg: '#0f172a', card: '#1e293b', border: '#334155', borderDim: '#475569',
         textMuted: '#94a3b8', text2: '#cbd5e1', text3: '#e2e8f0', text: '#f1f5f9'
       };
+      // Soft accent TEXT colors: pale-on-dark hues that would wash out on a
+      // light card. ST() keeps the original (dark) value in dark mode (zero
+      // change), darkens to a readable same-hue shade in light mode, and goes
+      // yellow in high-contrast. Applied only to accents confirmed to be bare
+      // text on themed surfaces (never on a hardcoded tinted card).
+      var _SOFT_LIGHT = {
+        '#fbbf24': '#b45309', '#fde68a': '#b45309',
+        '#5eead4': '#0d9488', '#f0fdfa': '#0d9488',
+        '#a7f3d0': '#059669',
+        '#a78bfa': '#7c3aed', '#c4b5fd': '#7c3aed',
+        '#e0e7ff': '#4338ca', '#a5b4fc': '#4f46e5',
+        '#fda4af': '#be123c', '#fb7185': '#be123c'
+      };
+      var ST = function(hex) { return _hcT ? '#ffff00' : (_lightT ? (_SOFT_LIGHT[hex] || hex) : hex); };
 
       // ── Tool-scoped state ──
       var d = (ctx.toolData && ctx.toolData.emotions) || {};
@@ -18214,7 +18235,7 @@ window.SelHub = window.SelHub || {
 
             // Definition card
             quizDef && h('div', { style: { padding: 24, borderRadius: 14, background: P.bg, border: '1px solid #8b5cf644', marginBottom: 20, textAlign: 'center' } },
-              h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Definition'),
+              h('p', { style: { fontSize: 10, color: ST('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Definition'),
               h('p', { style: { fontSize: 16, color: P.text, lineHeight: 1.6, fontStyle: 'italic' } }, '"' + quizDef + '"')
             ),
 
@@ -19133,7 +19154,7 @@ window.SelHub = window.SelHub || {
             (_emotionsTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
             // AI response
             journalAiResp && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 12, background: '#8b5cf618', border: '1px solid #8b5cf644' } },
-              h('p', { style: { fontSize: 10, color: '#a78bfa', fontWeight: 700, marginBottom: 6 } }, '\u2728 Emotion Coach'),
+              h('p', { style: { fontSize: 10, color: ST('#a78bfa'), fontWeight: 700, marginBottom: 6 } }, '\u2728 Emotion Coach'),
               h('p', { style: { fontSize: 13, color: P.text3, lineHeight: 1.6 } }, journalAiResp)
             )
           ),
@@ -19152,7 +19173,7 @@ window.SelHub = window.SelHub || {
                 h('p', { style: { fontSize: 12, color: P.text2, lineHeight: 1.5, margin: 0 } },
                   entry.text.length > 150 ? entry.text.substring(0, 150) + '...' : entry.text
                 ),
-                entry.aiResponse && h('p', { style: { fontSize: 11, color: '#a78bfa', marginTop: 6, fontStyle: 'italic' } },
+                entry.aiResponse && h('p', { style: { fontSize: 11, color: ST('#a78bfa'), marginTop: 6, fontStyle: 'italic' } },
                   '\u2728 ' + (entry.aiResponse.length > 100 ? entry.aiResponse.substring(0, 100) + '...' : entry.aiResponse)
                 )
               );
@@ -19458,7 +19479,7 @@ window.SelHub = window.SelHub || {
           // Mix result (predefined)
           mixResult && mixResult !== 'custom' && h('div', { style: { padding: 24, borderRadius: 16, background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '2px solid #8b5cf666', textAlign: 'center', marginBottom: 20 } },
             h('div', { style: { fontSize: 48, marginBottom: 8 } }, mixResult.emoji),
-            h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4, fontWeight: 700 } }, 'Emotion Mix Result'),
+            h('p', { style: { fontSize: 10, color: ST('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4, fontWeight: 700 } }, 'Emotion Mix Result'),
             h('h4', { style: { margin: '0 0 8px 0', color: P.text, fontSize: 22 } }, mixResult.result),
             (function() {
               var fam1 = EMOTION_FAMILIES.find(function(f) { return f.id === mixEmotion1; });
@@ -19509,12 +19530,12 @@ window.SelHub = window.SelHub || {
                   Sparkles ? h(Sparkles, { size: 14 }) : '\u2728',
                   'AI: What Does This Mix Create?'
                 ),
-                mixAiLoading && h('p', { style: { color: '#a78bfa', fontSize: 13, fontStyle: 'italic' } }, 'Analyzing this emotional blend...'),
+                mixAiLoading && h('p', { style: { color: ST('#a78bfa'), fontSize: 13, fontStyle: 'italic' } }, 'Analyzing this emotional blend...'),
                 !callGemini && !mixAiCustom && h('p', { style: { color: P.textMuted, fontSize: 13 } },
                   'This is a unique combination! Think about what it would feel like to experience both ' + (fam1 ? fam1.label.toLowerCase() : mixEmotion1) + ' and ' + (fam2 ? fam2.label.toLowerCase() : mixEmotion2) + ' at the same time.'
                 ),
                 mixAiCustom && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 12, background: '#8b5cf618', border: '1px solid #8b5cf644' } },
-                  h('p', { style: { fontSize: 10, color: '#a78bfa', fontWeight: 700, marginBottom: 6 } }, '\u2728 AI Emotion Scientist'),
+                  h('p', { style: { fontSize: 10, color: ST('#a78bfa'), fontWeight: 700, marginBottom: 6 } }, '\u2728 AI Emotion Scientist'),
                   h('p', { style: { fontSize: 14, color: P.text3, lineHeight: 1.6 } }, mixAiCustom)
                 )
               );
@@ -19563,7 +19584,7 @@ if (activeTab === 'plutchik') {
     { id: 'fear',         angle:  90, color: '#34d399', mild: { name: 'Apprehension', desc: 'Mild worry, anticipatory unease.' },              moderate: { name: 'Fear',        desc: 'Real threat-response activation.' },           intense: { name: 'Terror',     desc: 'Overwhelm of the threat-response system.' } },
     { id: 'surprise',     angle: 135, color: '#67e8f9', mild: { name: 'Distraction',  desc: 'Briefly drawn off-course by the unexpected.' },   moderate: { name: 'Surprise',    desc: 'Genuine unexpected event response.' },         intense: { name: 'Amazement',  desc: 'World-rearranging surprise.' } },
     { id: 'sadness',      angle: 180, color: '#93c5fd', mild: { name: 'Pensiveness',  desc: 'Quiet melancholy, thoughtful low.' },             moderate: { name: 'Sadness',     desc: 'The full felt loss or disappointment.' },       intense: { name: 'Grief',      desc: 'The depth of mourning; comes in waves.' } },
-    { id: 'disgust',      angle: 225, color: '#c4b5fd', mild: { name: 'Boredom',      desc: 'Mild aversion to the current situation.' },        moderate: { name: 'Disgust',     desc: 'Active rejection — physical or moral.' },      intense: { name: 'Loathing',   desc: 'Deep, settled revulsion.' } },
+    { id: 'disgust',      angle: 225, color: ST('#c4b5fd'), mild: { name: 'Boredom',      desc: 'Mild aversion to the current situation.' },        moderate: { name: 'Disgust',     desc: 'Active rejection — physical or moral.' },      intense: { name: 'Loathing',   desc: 'Deep, settled revulsion.' } },
     { id: 'anger',        angle: 270, color: '#fca5a5', mild: { name: 'Annoyance',    desc: 'Surface-level irritation.' },                     moderate: { name: 'Anger',       desc: 'Energy toward an injustice or block.' },        intense: { name: 'Rage',       desc: 'Overwhelming, fight-response level.' } },
     { id: 'anticipation', angle: 315, color: '#fdba74', mild: { name: 'Interest',     desc: 'Curiosity, drawn toward something.' },            moderate: { name: 'Anticipation',desc: 'Active looking-forward to something.' },        intense: { name: 'Vigilance',  desc: 'Hyper-alert anticipation; can shade into anxiety.' } }
   ];
@@ -19664,7 +19685,7 @@ if (activeTab === 'plutchik') {
       h('h3', { style: { margin: '0 0 6px', color: primary.color, fontSize: 22, fontWeight: 800 } }, info.name),
       h('p', { style: { margin: 0, color: P.text3, fontSize: 14, lineHeight: 1.55 } }, info.desc),
       h('div', { style: { marginTop: 10, padding: '8px 10px', borderRadius: 6, background: P.bg } },
-        h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Intensity ladder for this family'),
+        h('div', { style: { color: ST('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Intensity ladder for this family'),
         h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
           ['mild','moderate','intense'].map(function(tier) {
             var isThis = tier === pwSel.intensity;
@@ -19696,7 +19717,7 @@ if (activeTab === 'plutchik') {
   plutchikContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 14, borderRadius: 10, background: P.card, border: ('1px solid ' + P.border), marginBottom: 12 } },
       h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Plutchik\'s Wheel (1980): '),
+        h('strong', { style: { color: ST('#fbbf24') } }, 'Plutchik\'s Wheel (1980): '),
         '8 primary emotions, each on a 3-step intensity ladder. The wheel teaches that emotions blend (joy + trust = love) and that intensity changes the felt experience without changing the family. Click any petal to explore.'
       )
     ),
@@ -19779,7 +19800,7 @@ if (activeTab === 'face_builder') {
     return h('div', { style: { marginBottom: 12 } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 } },
         h('label', { htmlFor: 'fb-' + key, style: { color: P.text2, fontSize: 12, fontWeight: 600 } }, label),
-        h('span', { style: { color: '#fbbf24', fontSize: 11, fontFamily: 'monospace' } }, val)
+        h('span', { style: { color: ST('#fbbf24'), fontSize: 11, fontFamily: 'monospace' } }, val)
       ),
       h('input', {
         id: 'fb-' + key, type: 'range', min: min, max: max, step: 1, value: val,
@@ -19792,7 +19813,7 @@ if (activeTab === 'face_builder') {
   faceBuilderContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
       h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Face Builder: '),
+        h('strong', { style: { color: ST('#fbbf24') } }, 'Face Builder: '),
         'Drag the sliders to build a face. The reading below is based on Ekman & Friesen\'s FACS framework. Try to make each of the 7 universal emotions: joy, sadness, fear, anger, surprise, disgust, contempt.'
       )
     ),
@@ -19807,9 +19828,9 @@ if (activeTab === 'face_builder') {
       )
     ),
     h('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: '#042f2e', border: '1px solid #14b8a655' } },
-      h('div', { style: { color: '#5eead4', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Likely reading'),
-      h('div', { style: { color: '#f0fdfa', fontSize: 16, fontWeight: 700 } }, likelyEmotion.name),
-      h('div', { style: { color: '#a7f3d0', fontSize: 12, lineHeight: 1.5, marginTop: 4 } }, likelyEmotion.desc)
+      h('div', { style: { color: ST('#5eead4'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Likely reading'),
+      h('div', { style: { color: ST('#f0fdfa'), fontSize: 16, fontWeight: 700 } }, likelyEmotion.name),
+      h('div', { style: { color: ST('#a7f3d0'), fontSize: 12, lineHeight: 1.5, marginTop: 4 } }, likelyEmotion.desc)
     ),
     h('div', { style: { marginTop: 12, textAlign: 'center' } },
       h('button', {
@@ -19902,7 +19923,7 @@ if (activeTab === 'weather') {
   weatherContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
       h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Emotion Weather: '),
+        h('strong', { style: { color: ST('#fbbf24') } }, 'Emotion Weather: '),
         'Emotions move through us like weather — they come, they intensify, they pass. None of them is permanent. Pick a feeling to see its weather pattern.'
       )
     ),
@@ -19918,8 +19939,8 @@ if (activeTab === 'weather') {
     ),
     weatherSvg,
     h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#042f2e', border: '1px solid #14b8a655' } },
-      h('div', { style: { color: '#5eead4', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, scene.label),
-      h('p', { style: { margin: 0, color: '#a7f3d0', fontSize: 13, lineHeight: 1.55 } }, scene.desc)
+      h('div', { style: { color: ST('#5eead4'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, scene.label),
+      h('p', { style: { margin: 0, color: ST('#a7f3d0'), fontSize: 13, lineHeight: 1.55 } }, scene.desc)
     )
   );
 }
@@ -19974,7 +19995,7 @@ if (activeTab === 'iceberg') {
   icebergContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
       h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Emotion Iceberg: '),
+        h('strong', { style: { color: ST('#fbbf24') } }, 'Emotion Iceberg: '),
         'What we show on the outside is often only 10% of what we\'re feeling. The rest sits below the waterline — protected by the visible emotion. Click an iceberg-top emotion to see what often lives beneath it. Then click each hidden emotion to reveal what it might be saying.'
       )
     ),
@@ -20007,7 +20028,7 @@ if (activeTab === 'iceberg') {
       })
     ),
     h('div', { style: { marginTop: 14 } },
-      h('div', { style: { color: '#fbbf24', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } }, 'Hidden underneath:'),
+      h('div', { style: { color: ST('#fbbf24'), fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } }, 'Hidden underneath:'),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
         pair.hidden.map(function(hidden) {
           var revealed = !!ibRevealed[hidden.id];
@@ -20015,7 +20036,7 @@ if (activeTab === 'iceberg') {
             onClick: function() { var n = Object.assign({}, ibRevealed); n[hidden.id] = !n[hidden.id]; upd({ ibRevealed: n }); if (soundEnabled) sfxReveal(); }
           },
             h('div', { style: { color: revealed ? '#5eead4' : P.text2, fontSize: 13, fontWeight: 700 } }, hidden.label),
-            revealed ? h('p', { style: { margin: '6px 0 0', color: '#a7f3d0', fontSize: 12, lineHeight: 1.55 } }, hidden.desc) :
+            revealed ? h('p', { style: { margin: '6px 0 0', color: ST('#a7f3d0'), fontSize: 12, lineHeight: 1.55 } }, hidden.desc) :
                        h('p', { style: { margin: '6px 0 0', color: P.textMuted, fontSize: 11, fontStyle: 'italic' } }, 'Tap to reveal what this might mean')
           );
         })
@@ -20079,7 +20100,7 @@ if (activeTab === 'volcano') {
   volcanoContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
       h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Anger Volcano: '),
+        h('strong', { style: { color: ST('#fbbf24') } }, 'Anger Volcano: '),
         'Anger builds in stages. The volcano metaphor helps you spot WHERE you are on the scale before you erupt. Move the slider to see what each stage feels like — and what to do at each.'
       )
     ),
@@ -20102,15 +20123,15 @@ if (activeTab === 'volcano') {
       h('h3', { style: { margin: 0, color: stage.color, fontSize: 18, fontWeight: 800 } }, stage.label),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginTop: 12 } },
         h('div', null,
-          h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'In the body'),
+          h('div', { style: { color: ST('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'In the body'),
           h('p', { style: { margin: 0, color: P.text3, fontSize: 13, lineHeight: 1.5 } }, stage.bodyCue)
         ),
         h('div', null,
-          h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'In the head'),
+          h('div', { style: { color: ST('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'In the head'),
           h('p', { style: { margin: 0, color: P.text3, fontSize: 13, lineHeight: 1.5 } }, stage.thoughtCue)
         ),
         h('div', null,
-          h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'What to do NOW'),
+          h('div', { style: { color: ST('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'What to do NOW'),
           h('p', { style: { margin: 0, color: P.text3, fontSize: 13, lineHeight: 1.5, fontWeight: 600 } }, stage.actionCue)
         )
       )
@@ -20182,7 +20203,7 @@ if (activeTab === 'arc') {
     arcContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
         h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Mood Arc: '),
+          h('strong', { style: { color: ST('#fbbf24') } }, 'Mood Arc: '),
           'Your last ' + recent.length + ' check-ins as a line chart. Dot color = emotion family; height = intensity. Patterns to look for: which days of the week are heavier? Does intensity rise around tests, social events, or sleep changes? Sharing this with a counselor or trusted adult is 10× more useful than just saying "I feel bad sometimes."'
         )
       ),
@@ -20202,7 +20223,7 @@ if (activeTab === 'arc') {
         )
       ),
       h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: '#042f2e', border: '1px solid #14b8a655' } },
-        h('div', { style: { color: '#5eead4', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Family legend'),
+        h('div', { style: { color: ST('#5eead4'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Family legend'),
         h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
           Object.keys(FAMILY_COLORS).map(function(f) {
             return h('div', { key: f, style: { display: 'flex', alignItems: 'center', gap: 4 } },
@@ -20232,7 +20253,7 @@ if (activeTab === 'nameit') {
     nameItContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
         h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Name It to Tame It: '),
+          h('strong', { style: { color: ST('#fbbf24') } }, 'Name It to Tame It: '),
           'Naming an emotion shrinks it. The fMRI research (Lieberman et al., 2007) shows affect labeling reduces amygdala activation. Pick a starting point that fits how you feel right now.'
         )
       ),
@@ -20242,7 +20263,7 @@ if (activeTab === 'nameit') {
             onClick: function() { upd({ niPromptId: p.id, niStep: 0, niAnswers: {} }); if (soundEnabled) sfxClick(); },
             style: { padding: 14, borderRadius: 10, background: P.card, border: ('1px solid ' + P.borderDim), color: P.text, fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }
           },
-            h('div', { style: { color: '#fbbf24', fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 4 } }, 'When'),
+            h('div', { style: { color: ST('#fbbf24'), fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 4 } }, 'When'),
             h('div', null, p.trigger)
           );
         })
@@ -20263,7 +20284,7 @@ if (activeTab === 'nameit') {
           )
         ),
         step ? h('div', { style: { padding: 18, borderRadius: 12, background: '#042f2e', border: '1px solid #14b8a6' } },
-          h('p', { style: { margin: 0, color: '#f0fdfa', fontSize: 16, lineHeight: 1.6, fontWeight: 500 } }, step.prompt),
+          h('p', { style: { margin: 0, color: ST('#f0fdfa'), fontSize: 16, lineHeight: 1.6, fontWeight: 500 } }, step.prompt),
           step.options && step.options.length ? h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 } },
             step.options.map(function(opt) {
               return h('button', { key: opt,
@@ -20279,9 +20300,9 @@ if (activeTab === 'nameit') {
           }) : null
         ) : null,
         isLast ? h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: P.bg, border: '1px solid #5eead4' } },
-          h('div', { style: { color: '#5eead4', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Closing insight'),
+          h('div', { style: { color: ST('#5eead4'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Closing insight'),
           h('p', { style: { margin: 0, color: P.text3, fontSize: 13, lineHeight: 1.6 } }, prompt.closingInsight),
-          prompt.followUp ? h('p', { style: { margin: '8px 0 0', color: '#5eead4', fontSize: 12, fontStyle: 'italic' } }, prompt.followUp) : null
+          prompt.followUp ? h('p', { style: { margin: '8px 0 0', color: ST('#5eead4'), fontSize: 12, fontStyle: 'italic' } }, prompt.followUp) : null
         ) : null,
         h('div', { style: { marginTop: 14, display: 'flex', justifyContent: 'space-between', gap: 10 } },
           h('button', { disabled: niStep === 0, onClick: function() { upd({ niStep: niStep - 1 }); if (soundEnabled) sfxClick(); },
@@ -20350,7 +20371,7 @@ if (activeTab === 'bodymap') {
   bodyMapContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
       h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Body Map: '),
+        h('strong', { style: { color: ST('#fbbf24') } }, 'Body Map: '),
         'Where do you feel emotions in your body? Based on Nummenmaa et al. (2014) PNAS body topography research. Pick an emotion to see the typical heat map; click any body region for details about what shows up there.'
       )
     ),
@@ -20367,24 +20388,24 @@ if (activeTab === 'bodymap') {
       h('div', { style: { padding: 12, borderRadius: 10, background: P.bg, border: ('1px solid ' + P.border) } }, bodySvg),
       h('div', null,
         bmEntry ? h('div', { style: { padding: 14, borderRadius: 10, background: P.card, border: ('1px solid ' + P.border) } },
-          h('h3', { style: { margin: 0, color: '#fbbf24', fontSize: 18, fontWeight: 800, textTransform: 'capitalize' } }, bmEmotion),
+          h('h3', { style: { margin: 0, color: ST('#fbbf24'), fontSize: 18, fontWeight: 800, textTransform: 'capitalize' } }, bmEmotion),
           h('p', { style: { margin: '6px 0', color: P.text3, fontSize: 13, lineHeight: 1.55 } }, (bmEntry.description || {})[band]),
           bmEntry.bodyFirstSigns && bmEntry.bodyFirstSigns.length ? h('div', { style: { marginTop: 10, padding: '8px 10px', borderRadius: 6, background: P.bg } },
-            h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Early body signs'),
+            h('div', { style: { color: ST('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Early body signs'),
             h('ul', { style: { margin: '4px 0 0 18px', color: P.text2, fontSize: 12, lineHeight: 1.55 } },
               bmEntry.bodyFirstSigns.map(function(s, i) { return h('li', { key: i }, s); })
             )
           ) : null,
           bmEntry.somaticGroundingTip ? h('div', { style: { marginTop: 10, padding: '8px 10px', borderRadius: 6, background: '#042f2e' } },
-            h('div', { style: { color: '#5eead4', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Somatic grounding'),
-            h('p', { style: { margin: 0, color: '#a7f3d0', fontSize: 12, lineHeight: 1.55 } }, bmEntry.somaticGroundingTip)
+            h('div', { style: { color: ST('#5eead4'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Somatic grounding'),
+            h('p', { style: { margin: 0, color: ST('#a7f3d0'), fontSize: 12, lineHeight: 1.55 } }, bmEntry.somaticGroundingTip)
           ) : null,
           bmRegion ? (function() {
             var regionEntry = (typeof BODY_REGIONS !== 'undefined') ? BODY_REGIONS.find(function(r) { return r.id === bmRegion; }) : null;
             return regionEntry ? h('div', { style: { marginTop: 10, padding: '8px 10px', borderRadius: 6, background: '#1e1b4b' } },
-              h('div', { style: { color: '#a78bfa', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, regionEntry.region),
-              h('p', { style: { margin: 0, color: '#e0e7ff', fontSize: 12, lineHeight: 1.55 } }, (regionEntry.explanation || {})[band] || ''),
-              regionEntry.commonSensations && regionEntry.commonSensations.length ? h('div', { style: { marginTop: 6, color: '#a5b4fc', fontSize: 11 } }, 'Common sensations: ' + regionEntry.commonSensations.join(', ')) : null,
+              h('div', { style: { color: ST('#a78bfa'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, regionEntry.region),
+              h('p', { style: { margin: 0, color: ST('#e0e7ff'), fontSize: 12, lineHeight: 1.55 } }, (regionEntry.explanation || {})[band] || ''),
+              regionEntry.commonSensations && regionEntry.commonSensations.length ? h('div', { style: { marginTop: 6, color: ST('#a5b4fc'), fontSize: 11 } }, 'Common sensations: ' + regionEntry.commonSensations.join(', ')) : null,
               regionEntry.interventions && regionEntry.interventions.length ? h('ul', { style: { margin: '6px 0 0 18px', color: '#c7d2fe', fontSize: 11, lineHeight: 1.5 } },
                 regionEntry.interventions.map(function(s, i) { return h('li', { key: i }, s); })
               ) : null
@@ -20423,7 +20444,7 @@ if (activeTab === 'atlas') {
     atlasContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
         h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Emotion Atlas: '),
+          h('strong', { style: { color: ST('#fbbf24') } }, 'Emotion Atlas: '),
           'Some feelings have no English word. ',
           h('em', null, 'Saudade'),
           ' (Portuguese) is the bittersweet ache of missing someone. ',
@@ -20455,15 +20476,15 @@ if (activeTab === 'atlas') {
               h('h4', { style: { margin: 0, color: P.text, fontSize: 17, fontWeight: 800 } }, em.word),
               em.pronunciation ? h('span', { style: { color: P.textMuted, fontSize: 11, fontStyle: 'italic' } }, '(' + em.pronunciation + ')') : null
             ),
-            h('div', { style: { color: '#fbbf24', fontSize: 11, marginTop: 4 } }, em.language + ' · ' + em.culture),
+            h('div', { style: { color: ST('#fbbf24'), fontSize: 11, marginTop: 4 } }, em.language + ' · ' + em.culture),
             h('p', { style: { margin: '8px 0 4px', color: P.text2, fontSize: 13, lineHeight: 1.5 } }, (em.definition || {})[band]),
             isOpen ? h('div', null,
               em.whenYouFeelIt ? h('div', { style: { marginTop: 8, padding: '6px 8px', borderRadius: 6, background: '#042f2e' } },
-                h('div', { style: { color: '#5eead4', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'When you feel it'),
-                h('p', { style: { margin: 0, color: '#a7f3d0', fontSize: 12, lineHeight: 1.55 } }, em.whenYouFeelIt)
+                h('div', { style: { color: ST('#5eead4'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'When you feel it'),
+                h('p', { style: { margin: 0, color: ST('#a7f3d0'), fontSize: 12, lineHeight: 1.55 } }, em.whenYouFeelIt)
               ) : null,
               em.example ? h('div', { style: { marginTop: 8, padding: '6px 8px', borderRadius: 6, background: P.bg, borderLeft: '3px solid #fbbf24' } },
-                h('p', { style: { margin: 0, color: '#fde68a', fontSize: 12, fontStyle: 'italic', lineHeight: 1.55 } }, em.example)
+                h('p', { style: { margin: 0, color: ST('#fde68a'), fontSize: 12, fontStyle: 'italic', lineHeight: 1.55 } }, em.example)
               ) : null,
               em.englishApproximation ? h('p', { style: { margin: '8px 0 0', color: P.textMuted, fontSize: 11, fontStyle: 'italic' } }, 'English approx: ' + em.englishApproximation) : null,
               em.literalMeaning ? h('p', { style: { margin: '4px 0 0', color: P.textMuted, fontSize: 11 } }, 'Literal: ' + em.literalMeaning) : null
@@ -20494,18 +20515,18 @@ if (activeTab === 'empathy_mirror') {
     empathyContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
         h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Empathy Mirror: '),
+          h('strong', { style: { color: ST('#fbbf24') } }, 'Empathy Mirror: '),
           'Read a story. Predict what the character is feeling. Reveal the emotional arc and compare. Story ' + (emIdx + 1) + ' of ' + stories.length + '.'
         )
       ),
       story ? h('div', { style: { padding: 18, borderRadius: 12, background: P.card, border: ('1px solid ' + P.border) } },
-        h('h3', { style: { margin: '0 0 10px', color: '#fbbf24', fontSize: 18, fontWeight: 800 } }, story.title),
+        h('h3', { style: { margin: '0 0 10px', color: ST('#fbbf24'), fontSize: 18, fontWeight: 800 } }, story.title),
         story.contentWarnings && story.contentWarnings.length ? h('div', { style: { padding: '6px 10px', borderRadius: 6, background: '#7f1d1d', color: '#fecaca', fontSize: 11, marginBottom: 10 } },
           '⚠️ Content warnings: ' + story.contentWarnings.join(', ')
         ) : null,
         h('p', { style: { margin: 0, color: P.text3, fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, (story.story || {})[band] || ''),
         firstQuestion ? h('div', { style: { marginTop: 16, padding: 12, borderRadius: 10, background: '#042f2e', border: '1px solid #5eead4' } },
-          h('p', { style: { margin: 0, color: '#5eead4', fontSize: 13, fontWeight: 700 } }, firstQuestion.q),
+          h('p', { style: { margin: 0, color: ST('#5eead4'), fontSize: 13, fontWeight: 700 } }, firstQuestion.q),
           !emRevealed ? h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 } },
             emotionChoices.map(function(em) {
               var sel = emGuess === em;
@@ -20520,17 +20541,17 @@ if (activeTab === 'empathy_mirror') {
           }, 'Reveal the emotional arc') : null
         ) : null,
         emRevealed && story.emotionalArc ? h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: P.card, border: '1px solid #fbbf24' } },
-          h('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 } }, 'Emotional arc'),
+          h('div', { style: { color: ST('#fbbf24'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 } }, 'Emotional arc'),
           story.emotionalArc.map(function(beat, i) {
             return h('div', { key: i, style: { padding: '6px 10px', borderRadius: 6, background: P.bg, marginBottom: 6 } },
-              h('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 700 } }, beat.character + ' — ' + beat.emotion),
+              h('div', { style: { color: ST('#fbbf24'), fontSize: 11, fontWeight: 700 } }, beat.character + ' — ' + beat.emotion),
               h('div', { style: { color: P.text2, fontSize: 12, lineHeight: 1.5, marginTop: 2 } }, beat.momentInStory),
               beat.bodyShows ? h('div', { style: { color: P.textMuted, fontSize: 11, fontStyle: 'italic', marginTop: 2 } }, 'Body shows: ' + beat.bodyShows) : null
             );
           })
         ) : null,
         emRevealed && story.discussionStarters && story.discussionStarters.length ? h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#1e1b4b' } },
-          h('div', { style: { color: '#a78bfa', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'For discussion'),
+          h('div', { style: { color: ST('#a78bfa'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'For discussion'),
           h('ul', { style: { margin: '0 0 0 18px', color: '#c7d2fe', fontSize: 12, lineHeight: 1.6 } },
             story.discussionStarters.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 4 } }, s); })
           )
@@ -20565,13 +20586,13 @@ if (activeTab === 'micro') {
     microContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
         h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Microexpression Spotter: '),
+          h('strong', { style: { color: ST('#fbbf24') } }, 'Microexpression Spotter: '),
           'Read the face description (eyebrows, eyes, mouth, etc.) and guess the emotion. Based on Ekman & Friesen\'s Facial Action Coding System (FACS). ',
           h('em', null, 'Microexpressions reveal feelings, not lies — be gentle with this skill.')
         )
       ),
       h('div', { style: { padding: 18, borderRadius: 12, background: P.card, border: ('1px solid ' + P.border) } },
-        h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Face description'),
+        h('div', { style: { color: ST('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Face description'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 } },
           miEntry.faceFeatures ? Object.keys(miEntry.faceFeatures).map(function(k) {
             var v = miEntry.faceFeatures[k];
@@ -20584,7 +20605,7 @@ if (activeTab === 'micro') {
         ),
         miEntry.durationMs ? h('div', { style: { marginTop: 8, color: P.textMuted, fontSize: 11 } }, 'Typical duration: ' + miEntry.durationMs + 'ms (' + (miEntry.intensity || 'unknown') + ')') : null,
         !miRevealed ? h('div', { style: { marginTop: 14 } },
-          h('div', { style: { color: '#5eead4', fontSize: 12, fontWeight: 700, marginBottom: 8 } }, 'What emotion is this?'),
+          h('div', { style: { color: ST('#5eead4'), fontSize: 12, fontWeight: 700, marginBottom: 8 } }, 'What emotion is this?'),
           h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
             emotionChoices2.map(function(em) {
               var sel = miGuess === em;
@@ -20599,12 +20620,12 @@ if (activeTab === 'micro') {
           }, 'Reveal the answer') : null
         ) : h('div', null,
           h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: miGuess && miGuess.toLowerCase() === (miEntry.emotion || '').toLowerCase() ? '#042f2e' : '#1e1b4b', border: '1px solid ' + (miGuess && miGuess.toLowerCase() === (miEntry.emotion || '').toLowerCase() ? '#5eead4' : '#a78bfa') } },
-            h('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Answer: ' + (miEntry.emotion || 'unknown') + (miGuess && miGuess.toLowerCase() === (miEntry.emotion || '').toLowerCase() ? '  ✓ correct!' : '  — you guessed ' + (miGuess || '?'))),
+            h('div', { style: { color: ST('#fbbf24'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Answer: ' + (miEntry.emotion || 'unknown') + (miGuess && miGuess.toLowerCase() === (miEntry.emotion || '').toLowerCase() ? '  ✓ correct!' : '  — you guessed ' + (miGuess || '?'))),
             miEntry.whatItSignals ? h('p', { style: { margin: '8px 0', color: P.text3, fontSize: 13, lineHeight: 1.55 } }, miEntry.whatItSignals) : null,
             miEntry.oftenMistakenFor && miEntry.oftenMistakenFor.length ? h('div', { style: { color: P.textMuted, fontSize: 11 } }, 'Often mistaken for: ' + miEntry.oftenMistakenFor.join(', ')) : null,
             miEntry.empathyTip ? h('div', { style: { marginTop: 8, padding: '6px 8px', borderRadius: 6, background: P.bg } },
-              h('div', { style: { color: '#5eead4', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Empathy tip'),
-              h('p', { style: { margin: 0, color: '#a7f3d0', fontSize: 12, lineHeight: 1.55 } }, miEntry.empathyTip)
+              h('div', { style: { color: ST('#5eead4'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Empathy tip'),
+              h('p', { style: { margin: 0, color: ST('#a7f3d0'), fontSize: 12, lineHeight: 1.55 } }, miEntry.empathyTip)
             ) : null
           )
         ),
@@ -20642,7 +20663,7 @@ if (activeTab === 'compounds') {
     compoundContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
         h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Compound Emotions: '),
+          h('strong', { style: { color: ST('#fbbf24') } }, 'Compound Emotions: '),
           'Most feelings are blends of two or more primary emotions. Plutchik mapped dyads (joy + trust = love; fear + surprise = awe; disgust + anger = contempt). Self-conscious emotions (shame, pride, guilt) need awareness of self.'
         )
       ),
@@ -20667,28 +20688,28 @@ if (activeTab === 'compounds') {
           },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' } },
               h('h4', { style: { margin: 0, color: P.text, fontSize: 16, fontWeight: 800 } }, em.name),
-              em.category ? h('span', { style: { fontSize: 10, color: '#fbbf24', textTransform: 'uppercase' } }, em.category) : null
+              em.category ? h('span', { style: { fontSize: 10, color: ST('#fbbf24'), textTransform: 'uppercase' } }, em.category) : null
             ),
-            em.components && em.components.length ? h('div', { style: { color: '#a78bfa', fontSize: 11, marginTop: 4 } }, em.components.map(function(c) { return c.emotion + (c.strength ? ' (' + Math.round(c.strength * 100) + '%)' : ''); }).join(' + ')) : null,
+            em.components && em.components.length ? h('div', { style: { color: ST('#a78bfa'), fontSize: 11, marginTop: 4 } }, em.components.map(function(c) { return c.emotion + (c.strength ? ' (' + Math.round(c.strength * 100) + '%)' : ''); }).join(' + ')) : null,
             h('p', { style: { margin: '6px 0', color: P.text2, fontSize: 12, lineHeight: 1.55 } }, (em.definition || {})[band]),
             isOpen ? h('div', null,
-              em.feelsLike ? h('p', { style: { margin: '8px 0 0', color: '#5eead4', fontSize: 12, fontStyle: 'italic' } }, '"' + em.feelsLike + '"') : null,
+              em.feelsLike ? h('p', { style: { margin: '8px 0 0', color: ST('#5eead4'), fontSize: 12, fontStyle: 'italic' } }, '"' + em.feelsLike + '"') : null,
               em.bodyFeels && em.bodyFeels.length ? h('div', { style: { marginTop: 6, color: P.textMuted, fontSize: 11 } }, 'Body: ' + em.bodyFeels.join(', ')) : null,
               em.triggers && em.triggers.length ? h('details', { style: { marginTop: 6 } },
-                h('summary', { style: { cursor: 'pointer', color: '#fbbf24', fontSize: 11, fontWeight: 600 } }, 'Common triggers'),
+                h('summary', { style: { cursor: 'pointer', color: ST('#fbbf24'), fontSize: 11, fontWeight: 600 } }, 'Common triggers'),
                 h('ul', { style: { margin: '4px 0 0 18px', color: P.text2, fontSize: 11, lineHeight: 1.5 } },
                   em.triggers.map(function(t, i) { return h('li', { key: i }, t); })
                 )
               ) : null,
               em.helpfulNext && em.helpfulNext.length ? h('details', { open: true, style: { marginTop: 6 } },
-                h('summary', { style: { cursor: 'pointer', color: '#5eead4', fontSize: 11, fontWeight: 600 } }, 'Helpful next'),
-                h('ul', { style: { margin: '4px 0 0 18px', color: '#a7f3d0', fontSize: 11, lineHeight: 1.5 } },
+                h('summary', { style: { cursor: 'pointer', color: ST('#5eead4'), fontSize: 11, fontWeight: 600 } }, 'Helpful next'),
+                h('ul', { style: { margin: '4px 0 0 18px', color: ST('#a7f3d0'), fontSize: 11, lineHeight: 1.5 } },
                   em.helpfulNext.map(function(t, i) { return h('li', { key: i }, t); })
                 )
               ) : null,
               em.unhelpfulNext && em.unhelpfulNext.length ? h('details', { style: { marginTop: 6 } },
-                h('summary', { style: { cursor: 'pointer', color: '#fbbf24', fontSize: 11, fontWeight: 600 } }, 'What doesn\'t help'),
-                h('ul', { style: { margin: '4px 0 0 18px', color: '#fde68a', fontSize: 11, lineHeight: 1.5 } },
+                h('summary', { style: { cursor: 'pointer', color: ST('#fbbf24'), fontSize: 11, fontWeight: 600 } }, 'What doesn\'t help'),
+                h('ul', { style: { margin: '4px 0 0 18px', color: ST('#fde68a'), fontSize: 11, lineHeight: 1.5 } },
                   em.unhelpfulNext.map(function(t, i) { return h('li', { key: i }, t); })
                 )
               ) : null
@@ -20719,7 +20740,7 @@ if (activeTab === 'coreg') {
     coregContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
         h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Helping Someone Else: '),
+          h('strong', { style: { color: ST('#fbbf24') } }, 'Helping Someone Else: '),
           'Coregulation = lending your calm nervous system to someone whose is overwhelmed. Polyvagal social engagement (Porges). Browse scripts for common scenarios you might face.'
         )
       ),
@@ -20733,11 +20754,11 @@ if (activeTab === 'coreg') {
           return h('div', { key: c.id, style: { padding: 14, borderRadius: 10, background: P.card, border: ('1px solid ' + P.border) } },
             h('h4', { style: { margin: 0, color: P.text, fontSize: 14, fontWeight: 700 } }, c.scenario),
             h('button', { onClick: function() { upd({ crOpen: isOpen ? null : c.id }); if (soundEnabled) sfxClick(); },
-              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? P.border : '#3b82f6', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#64748b' : '#3b82f6', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'View guide'),
             isOpen ? h('div', { style: { marginTop: 10 } },
               c.whatYouSee && c.whatYouSee.length ? h('div', { style: { marginBottom: 8 } },
-                h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'What you might see'),
+                h('div', { style: { color: ST('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'What you might see'),
                 h('ul', { style: { margin: '0 0 0 18px', color: P.text2, fontSize: 12, lineHeight: 1.5 } },
                   c.whatYouSee.map(function(s, i) { return h('li', { key: i }, s); })
                 )
@@ -20749,18 +20770,18 @@ if (activeTab === 'coreg') {
                 )
               ) : null,
               c.whatToDoSteps && c.whatToDoSteps.length ? h('div', { style: { padding: '6px 10px', borderRadius: 6, background: '#042f2e', marginBottom: 8 } },
-                h('div', { style: { color: '#5eead4', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Steps to coregulate'),
-                h('ol', { style: { margin: '0 0 0 18px', color: '#a7f3d0', fontSize: 12, lineHeight: 1.55 } },
+                h('div', { style: { color: ST('#5eead4'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Steps to coregulate'),
+                h('ol', { style: { margin: '0 0 0 18px', color: ST('#a7f3d0'), fontSize: 12, lineHeight: 1.55 } },
                   c.whatToDoSteps.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 3 } }, s); })
                 )
               ) : null,
               c.scripts && c.scripts.length ? h('div', { style: { marginBottom: 8 } },
-                h('div', { style: { color: '#a78bfa', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Scripts'),
+                h('div', { style: { color: ST('#a78bfa'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Scripts'),
                 c.scripts.map(function(s, i) {
                   return h('div', { key: i, style: { padding: '6px 8px', borderRadius: 6, background: '#1e1b4b', marginBottom: 4 } },
-                    h('div', { style: { color: '#a5b4fc', fontSize: 11, fontStyle: 'italic' } }, s.situation),
-                    h('div', { style: { color: '#e0e7ff', fontSize: 12, marginTop: 2, fontWeight: 600 } }, '"' + s.say + '"'),
-                    s.whyItWorks ? h('div', { style: { color: '#a78bfa', fontSize: 10, marginTop: 2 } }, '→ ' + s.whyItWorks) : null
+                    h('div', { style: { color: ST('#a5b4fc'), fontSize: 11, fontStyle: 'italic' } }, s.situation),
+                    h('div', { style: { color: ST('#e0e7ff'), fontSize: 12, marginTop: 2, fontWeight: 600 } }, '"' + s.say + '"'),
+                    s.whyItWorks ? h('div', { style: { color: ST('#a78bfa'), fontSize: 10, marginTop: 2 } }, '→ ' + s.whyItWorks) : null
                   );
                 })
               ) : null,
@@ -20799,7 +20820,7 @@ if (activeTab === 'vocab') {
     vocabContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
         h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Vocabulary Explorer: '),
+          h('strong', { style: { color: ST('#fbbf24') } }, 'Vocabulary Explorer: '),
           EMOTION_VOCAB.length + ' emotion words, organized by family, valence, arousal, and intensity. Includes body sensations, common triggers, opposites, and gentle coping hints for each. ',
           h('em', null, 'Naming an emotion precisely is the first step in regulating it.')
         )
@@ -20837,19 +20858,19 @@ if (activeTab === 'vocab') {
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
               em.emoji ? h('span', { style: { fontSize: 18 } }, em.emoji) : null,
               h('h5', { style: { margin: 0, color: P.text, fontSize: 14, fontWeight: 700, textTransform: 'capitalize' } }, em.word),
-              em.intensity ? h('span', { style: { color: '#fbbf24', fontSize: 10 } }, '◉'.repeat(em.intensity) + '○'.repeat(5 - em.intensity)) : null
+              em.intensity ? h('span', { style: { color: ST('#fbbf24'), fontSize: 10 } }, '◉'.repeat(em.intensity) + '○'.repeat(5 - em.intensity)) : null
             ),
             h('div', { style: { color: P.textMuted, fontSize: 10, marginTop: 2 } }, em.family + ' · ' + (em.valence || '') + ' · ' + (em.arousal || '') + ' arousal'),
             h('p', { style: { margin: '6px 0 0', color: P.text2, fontSize: 12, lineHeight: 1.45 } }, (em.definition || {})[band]),
             isOpen ? h('div', null,
               em.examples && em.examples[band] && em.examples[band].length ? h('div', { style: { marginTop: 6, padding: '4px 8px', borderRadius: 4, background: P.bg, borderLeft: '2px solid ' + color } },
-                em.examples[band].map(function(ex, i) { return h('p', { key: i, style: { margin: '3px 0', color: '#fde68a', fontSize: 11, fontStyle: 'italic', lineHeight: 1.4 } }, '"' + ex + '"'); })
+                em.examples[band].map(function(ex, i) { return h('p', { key: i, style: { margin: '3px 0', color: ST('#fde68a'), fontSize: 11, fontStyle: 'italic', lineHeight: 1.4 } }, '"' + ex + '"'); })
               ) : null,
-              em.bodyFeels && em.bodyFeels.length ? h('div', { style: { marginTop: 6, color: '#a78bfa', fontSize: 11 } }, 'Body: ' + em.bodyFeels.join(', ')) : null,
-              em.similar && em.similar.length ? h('div', { style: { marginTop: 4, color: '#5eead4', fontSize: 11 } }, '≈ ' + em.similar.join(', ')) : null,
-              em.opposite && em.opposite.length ? h('div', { style: { marginTop: 4, color: '#fb7185', fontSize: 11 } }, '↔ ' + em.opposite.join(', ')) : null,
+              em.bodyFeels && em.bodyFeels.length ? h('div', { style: { marginTop: 6, color: ST('#a78bfa'), fontSize: 11 } }, 'Body: ' + em.bodyFeels.join(', ')) : null,
+              em.similar && em.similar.length ? h('div', { style: { marginTop: 4, color: ST('#5eead4'), fontSize: 11 } }, '≈ ' + em.similar.join(', ')) : null,
+              em.opposite && em.opposite.length ? h('div', { style: { marginTop: 4, color: ST('#fb7185'), fontSize: 11 } }, '↔ ' + em.opposite.join(', ')) : null,
               em.copingHints && em.copingHints.length ? h('details', { style: { marginTop: 6 } },
-                h('summary', { style: { cursor: 'pointer', color: '#fbbf24', fontSize: 11, fontWeight: 600 } }, 'Coping hints'),
+                h('summary', { style: { cursor: 'pointer', color: ST('#fbbf24'), fontSize: 11, fontWeight: 600 } }, 'Coping hints'),
                 h('ul', { style: { margin: '4px 0 0 18px', color: P.text2, fontSize: 11, lineHeight: 1.5 } },
                   em.copingHints.map(function(t, i) { return h('li', { key: i }, t); })
                 )
@@ -20880,7 +20901,7 @@ if (activeTab === 'validation') {
     validationContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
         h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Validation Phrases: '),
+          h('strong', { style: { color: ST('#fbbf24') } }, 'Validation Phrases: '),
           'What to say when a friend or family member feels something hard. These are NOT "solving" — they\'re witnessing. Validation = "I see you, you make sense, you\'re not alone."'
         )
       ),
@@ -20896,11 +20917,11 @@ if (activeTab === 'validation') {
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
         filtered.map(function(p) {
           return h('div', { key: p.id, style: { padding: 14, borderRadius: 10, background: P.card, border: ('1px solid ' + P.border) } },
-            h('div', { style: { color: '#5eead4', fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 4 } }, 'For ' + (p.forContext || 'general')),
+            h('div', { style: { color: ST('#5eead4'), fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 4 } }, 'For ' + (p.forContext || 'general')),
             h('p', { style: { margin: 0, color: P.text, fontSize: 15, fontWeight: 600, lineHeight: 1.55, fontStyle: 'italic' } }, '"' + p.phrase + '"'),
             p.whyItWorks ? h('p', { style: { margin: '8px 0 0', color: P.textMuted, fontSize: 11, lineHeight: 1.5 } }, p.whyItWorks) : null,
             p.alternatives && p.alternatives.length ? h('details', { style: { marginTop: 6 } },
-              h('summary', { style: { cursor: 'pointer', color: '#5eead4', fontSize: 11 } }, 'Variations'),
+              h('summary', { style: { cursor: 'pointer', color: ST('#5eead4'), fontSize: 11 } }, 'Variations'),
               h('ul', { style: { margin: '4px 0 0 18px', color: P.text2, fontSize: 12, lineHeight: 1.5 } },
                 p.alternatives.map(function(a, i) { return h('li', { key: i, style: { fontStyle: 'italic' } }, '"' + a + '"'); })
               )
@@ -20929,7 +20950,7 @@ if (activeTab === 'strategies') {
       strategiesContent = h('div', { style: { padding: '0 12px 24px' } },
         h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
           h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-            h('strong', { style: { color: '#fbbf24' } }, 'Emotion → Strategy Bridge: '),
+            h('strong', { style: { color: ST('#fbbf24') } }, 'Emotion → Strategy Bridge: '),
             'Pick the emotion you\'re feeling, then see body-first, thought-first, and connection-based strategies for it. Strategies vary by intensity — what helps at "annoyed" is different from what helps at "rage."'
           )
         ),
@@ -20964,10 +20985,10 @@ if (activeTab === 'strategies') {
             ),
             isOpen ? h('div', { style: { marginTop: 12 } },
               e.bodyFirstStrategies && e.bodyFirstStrategies.length ? h('div', { style: { marginBottom: 10 } },
-                h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '🫁 Body-first'),
+                h('div', { style: { color: ST('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '🫁 Body-first'),
                 e.bodyFirstStrategies.map(function(s, i) {
                   return h('div', { key: i, style: { padding: '6px 8px', borderRadius: 6, background: P.bg, marginBottom: 4 } },
-                    h('div', { style: { color: '#fde68a', fontSize: 12, fontWeight: 700 } }, s.name + (s.duration ? ' (' + s.duration + ')' : '')),
+                    h('div', { style: { color: ST('#fde68a'), fontSize: 12, fontWeight: 700 } }, s.name + (s.duration ? ' (' + s.duration + ')' : '')),
                     s.steps ? h('ol', { style: { margin: '4px 0 0 18px', color: P.text2, fontSize: 11, lineHeight: 1.5 } },
                       s.steps.map(function(stp, j) { return h('li', { key: j }, stp); })
                     ) : null,
@@ -20976,10 +20997,10 @@ if (activeTab === 'strategies') {
                 })
               ) : null,
               e.thoughtFirstStrategies && e.thoughtFirstStrategies.length ? h('div', { style: { marginBottom: 10 } },
-                h('div', { style: { color: '#a78bfa', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '🧠 Thought-first'),
+                h('div', { style: { color: ST('#a78bfa'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '🧠 Thought-first'),
                 e.thoughtFirstStrategies.map(function(s, i) {
                   return h('div', { key: i, style: { padding: '6px 8px', borderRadius: 6, background: P.bg, marginBottom: 4 } },
-                    h('div', { style: { color: '#c4b5fd', fontSize: 12, fontWeight: 700 } }, s.name),
+                    h('div', { style: { color: ST('#c4b5fd'), fontSize: 12, fontWeight: 700 } }, s.name),
                     s.steps ? h('ol', { style: { margin: '4px 0 0 18px', color: P.text2, fontSize: 11, lineHeight: 1.5 } },
                       s.steps.map(function(stp, j) { return h('li', { key: j }, stp); })
                     ) : null
@@ -20987,10 +21008,10 @@ if (activeTab === 'strategies') {
                 })
               ) : null,
               e.connectionStrategies && e.connectionStrategies.length ? h('div', { style: { marginBottom: 10 } },
-                h('div', { style: { color: '#fb7185', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '🤝 Connection'),
+                h('div', { style: { color: ST('#fb7185'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '🤝 Connection'),
                 e.connectionStrategies.map(function(s, i) {
                   return h('div', { key: i, style: { padding: '6px 8px', borderRadius: 6, background: P.bg, marginBottom: 4 } },
-                    h('div', { style: { color: '#fda4af', fontSize: 12, fontWeight: 700 } }, s.name),
+                    h('div', { style: { color: ST('#fda4af'), fontSize: 12, fontWeight: 700 } }, s.name),
                     s.steps ? h('ol', { style: { margin: '4px 0 0 18px', color: P.text2, fontSize: 11, lineHeight: 1.5 } },
                       s.steps.map(function(stp, j) { return h('li', { key: j }, stp); })
                     ) : null
@@ -21046,7 +21067,7 @@ if (activeTab === 'color') {
     return h('div', { style: { marginBottom: 12 } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 } },
         h('label', { htmlFor: 'cp-' + key, style: { color: P.text2, fontSize: 12, fontWeight: 600 } }, label),
-        h('span', { style: { color: '#fbbf24', fontSize: 11, fontFamily: 'monospace' } }, val)
+        h('span', { style: { color: ST('#fbbf24'), fontSize: 11, fontFamily: 'monospace' } }, val)
       ),
       h('input', { id: 'cp-' + key, type: 'range', min: min, max: max, value: val,
         onChange: function(e) { var v = parseInt(e.target.value, 10); var o = {}; o[key] = v; upd(o); },
@@ -21058,14 +21079,14 @@ if (activeTab === 'color') {
   colorContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
       h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Color & Mood Tuner: '),
+        h('strong', { style: { color: ST('#fbbf24') } }, 'Color & Mood Tuner: '),
         'Adams & Osgood (1973) and Palmer & Schloss (2010) found color-emotion associations that are remarkably consistent across cultures. Pick a color that matches how you feel right now — or just play with the wheel to see how hue, saturation, and lightness shift the emotional read.'
       )
     ),
     h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(160px, 1fr) 2fr', gap: 16, alignItems: 'start' } },
       h('div', null,
         h('div', { style: { width: '100%', aspectRatio: '1 / 1', maxWidth: 220, margin: '0 auto', borderRadius: '50%', background: hslColor, border: ('4px solid ' + P.card), boxShadow: '0 4px 20px rgba(0,0,0,0.4), inset 0 -10px 30px rgba(0,0,0,0.15)' } }),
-        h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: P.bg, fontFamily: 'monospace', fontSize: 11, color: '#5eead4', textAlign: 'center' } }, hslColor),
+        h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: P.bg, fontFamily: 'monospace', fontSize: 11, color: ST('#5eead4'), textAlign: 'center' } }, hslColor),
         h('div', { style: { marginTop: 10, display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center' } },
           swatches.map(function(hue) {
             var sel = Math.abs(cpHue - hue) < 15;
@@ -21089,7 +21110,7 @@ if (activeTab === 'color') {
       h('p', { style: { margin: '6px 0 0', color: P.text2, fontSize: 12, fontStyle: 'italic' } }, satMod + '. ' + lightMod)
     ),
     h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: P.card, border: ('1px solid ' + P.border) } },
-      h('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Important caveat'),
+      h('div', { style: { color: ST('#fbbf24'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Important caveat'),
       h('p', { style: { margin: 0, color: P.textMuted, fontSize: 12, lineHeight: 1.55 } },
         'Color-emotion associations are statistical, not universal. Individual experiences (favorite color from childhood, a hated color from a specific memory, cultural meaning specific to your community) override the population average. Your color choice for YOUR feeling is more accurate than any wheel.'
       )
