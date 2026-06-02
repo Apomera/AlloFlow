@@ -892,6 +892,33 @@
       return Math.min(1, interactions / 25) * 0.4 + accuracy * 0.3 + recency * 0.3;
     }
 
+    // ── Symbol-stability lock helpers ──────────────────────────────────
+    // AAC fidelity: regenerating/refining a symbol replaces the exact picture
+    // a student has learned to recognize and motor-plan toward. Before a regen
+    // swaps the image of a symbol already IN USE (on a saved board, or one the
+    // student has interacted with), warn and require confirmation. An explicit
+    // per-symbol/per-cell `locked` flag hard-blocks regen/refine entirely.
+    function symbolUsage(label) {
+      var key = (label || '').toLowerCase().trim();
+      if (!key) return { boards: 0, taps: 0 };
+      var fam = familiarity[key] || {};
+      var taps = (fam.taps || 0) + (fam.questCorrect || 0) + (fam.questWrong || 0);
+      var boards = 0;
+      (savedBoards || []).forEach(function (b) {
+        if ((b.words || []).some(function (w) { return (w.label || '').toLowerCase().trim() === key; })) boards++;
+      });
+      return { boards: boards, taps: taps };
+    }
+    function confirmRegen(label) {
+      var u = symbolUsage(label);
+      if (u.boards <= 0 && u.taps <= 0) return true; // not in use — replace freely
+      var parts = [];
+      if (u.boards > 0) parts.push('used on ' + u.boards + ' saved board' + (u.boards !== 1 ? 's' : ''));
+      if (u.taps > 0) parts.push('the student has interacted with it ' + u.taps + ' time' + (u.taps !== 1 ? 's' : ''));
+      return window.confirm('"' + (label || 'This symbol') + '" is ' + parts.join(' and ') +
+        '. Replacing its picture can disrupt the recognition and motor planning the student has built. Replace it anyway?\n\nTip: use the Lock button to permanently protect a symbol.');
+    }
+
     // Sync story student name when avatar name changes
     useEffect(function () { if (avatarName) setStoryStudentName(avatarName); }, [avatarName]);
 
@@ -1054,6 +1081,8 @@
     var regenSymbol = useCallback(async function (id) {
       var item = gallery.find(function (i) { return i.id === id; });
       if (!item || !onCallImagen) return;
+      if (item.locked) { addToast && addToast('🔒 "' + item.label + '" is locked. Unlock it to change its look.', 'info'); return; }
+      if (!confirmRegen(item.label)) return;
       setSymLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
       try {
         var prompt = buildSymbolPrompt(item.label, item.description, item.style, avatarRef ? avatarDesc : '');
@@ -1063,11 +1092,12 @@
       } catch (e) {
         addToast && addToast(t('toasts.regen_failed'), 'error');
       } finally { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
-    }, [gallery, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast]);
+    }, [gallery, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast, savedBoards, familiarity]);
 
     var refineSymbol = useCallback(async function (id, instruction) {
       var item = gallery.find(function (i) { return i.id === id; });
       if (!item || !instruction.trim()) { addToast && addToast(t('toasts.enter_edit_instruction'), 'error'); return; }
+      if (item.locked) { addToast && addToast('🔒 "' + item.label + '" is locked. Unlock it to edit.', 'info'); return; }
       if (!onCallGeminiImageEdit) { addToast && addToast(t('toasts.image_editing_available_2'), 'error'); return; }
       if (!item.image) { addToast && addToast(t('toasts.image_refine_generate_one_first'), 'error'); return; }
       setSymLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
@@ -1441,6 +1471,8 @@
     var regenBoardCell = useCallback(async function (id) {
       var word = boardWords.find(function (w) { return w.id === id; });
       if (!word || !onCallImagen) return;
+      if (word.locked) { addToast && addToast('🔒 "' + word.label + '" is locked. Unlock the cell to change its look.', 'info'); return; }
+      if (!confirmRegen(word.label)) return;
       setBoardLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
       try {
         var prompt = buildSymbolPrompt(word.label, word.description, globalStyle, avatarRef ? avatarDesc : '');
@@ -1449,7 +1481,20 @@
       } catch (e) {
         addToast && addToast(t('toasts.image_failed') + (word.label || ''), 'error');
       } finally { setBoardLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
-    }, [boardWords, globalStyle, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast]);
+    }, [boardWords, globalStyle, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast, savedBoards, familiarity]);
+
+    // Symbol-stability lock toggles (see helpers above). Gallery flag persists
+    // immediately; board-cell flag rides the board and persists when it's saved.
+    var toggleSymbolLock = useCallback(function (id) {
+      setGallery(function (prev) {
+        var updated = prev.map(function (i) { return i.id === id ? Object.assign({}, i, { locked: !i.locked }) : i; });
+        store(scopedKey(STORAGE_GALLERY), updated);
+        return updated;
+      });
+    }, []);
+    var toggleBoardCellLock = useCallback(function (id) {
+      setBoardWords(function (prev) { return prev.map(function (w) { return w.id === id ? Object.assign({}, w, { locked: !w.locked }) : w; }); });
+    }, []);
 
     // ── Per-cell audio recording ──
     var _cellRecording = useState(null); var cellRecording = _cellRecording[0]; var setCellRecording = _cellRecording[1];
@@ -6406,15 +6451,16 @@
             e('div', { style: { flex: 1 } },
               e('h3', { style: { fontWeight: 700, fontSize: '16px', color: '#111827', margin: '0 0 6px' } }, selectedItem.label),
               e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '10px' } },
-                e('button', { onClick: function () { regenSymbol(selectedItem.id); }, disabled: !!symLoading[selectedItem.id], 'aria-label': 'Regenerate symbol for ' + selectedItem.label, style: S.btn(LIGHT_PURPLE, PURPLE, !!symLoading[selectedItem.id]) }, '🔄 Regen'),
-                e('button', { onClick: function () { refineSymbol(selectedItem.id, 'Remove all text, labels, letters, and words from the image. Keep the illustration clean.'); }, disabled: !!symLoading[selectedItem.id], 'aria-label': 'Remove text from ' + selectedItem.label + ' symbol', style: S.btn('#fee2e2', '#b91c1c', !!symLoading[selectedItem.id]) }, '🚫 Remove Text'),
+                e('button', { onClick: function () { toggleSymbolLock(selectedItem.id); }, 'aria-pressed': !!selectedItem.locked, 'aria-label': (selectedItem.locked ? 'Unlock ' : 'Lock ') + selectedItem.label + (selectedItem.locked ? ' to allow regeneration' : ' to protect it from regeneration and restyling'), title: selectedItem.locked ? 'Locked - protected from regen, refine and restyle. Click to unlock.' : 'Lock to protect this symbol from regen, refine and restyle', style: S.btn(selectedItem.locked ? '#fef9c3' : '#f3f4f6', selectedItem.locked ? '#a16207' : '#374151', false) }, selectedItem.locked ? '🔒 Locked' : '🔓 Lock'),
+                e('button', { onClick: function () { regenSymbol(selectedItem.id); }, disabled: !!symLoading[selectedItem.id] || !!selectedItem.locked, 'aria-label': 'Regenerate symbol for ' + selectedItem.label, style: S.btn(LIGHT_PURPLE, PURPLE, !!symLoading[selectedItem.id] || !!selectedItem.locked) }, '🔄 Regen'),
+                e('button', { onClick: function () { refineSymbol(selectedItem.id, 'Remove all text, labels, letters, and words from the image. Keep the illustration clean.'); }, disabled: !!symLoading[selectedItem.id] || !!selectedItem.locked, 'aria-label': 'Remove text from ' + selectedItem.label + ' symbol', style: S.btn('#fee2e2', '#b91c1c', !!symLoading[selectedItem.id] || !!selectedItem.locked) }, '🚫 Remove Text'),
                 e('button', { onClick: function () { speakCell(selectedItem.label); }, 'aria-label': 'Speak ' + selectedItem.label, style: S.btn('#dcfce7', '#166534', false) }, '🔊 Speak'),
                 e('button', { onClick: function () { downloadSym(selectedItem); }, 'aria-label': 'Download ' + selectedItem.label + ' as PNG', style: S.btn('#dbeafe', '#1e40af', false) }, '⬇️ PNG'),
                 e('button', { onClick: function () { deleteSymbol(selectedItem.id); }, 'aria-label': 'Delete ' + selectedItem.label + ' symbol', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️')
               ),
               e('div', { style: { display: 'flex', gap: '6px' } },
-                e('input', { type: 'text', value: symRefine[selectedItem.id] || '', onChange: function (ev) { var v = ev.target.value; setSymRefine(function (p) { var n = Object.assign({}, p); n[selectedItem.id] = v; return n; }); }, onKeyDown: function (ev) { if (ev.key === 'Enter' && symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, placeholder: 'Edit: make it a girl, add red X, change background...', 'aria-label': 'Refinement instruction for ' + selectedItem.label, style: Object.assign({}, S.input, { border: '1px solid #fbbf24' }) }),
-                e('button', { onClick: function () { if (symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, disabled: !symRefine[selectedItem.id] || !!symLoading[selectedItem.id], 'aria-label': 'Apply refinement to ' + selectedItem.label, style: S.btn('#fef3c7', '#92400e', !symRefine[selectedItem.id] || !!symLoading[selectedItem.id]) }, '✏️')
+                e('input', { type: 'text', disabled: !!selectedItem.locked, value: symRefine[selectedItem.id] || '', onChange: function (ev) { var v = ev.target.value; setSymRefine(function (p) { var n = Object.assign({}, p); n[selectedItem.id] = v; return n; }); }, onKeyDown: function (ev) { if (ev.key === 'Enter' && symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, placeholder: selectedItem.locked ? '🔒 Locked — unlock to edit' : 'Edit: make it a girl, add red X, change background...', 'aria-label': 'Refinement instruction for ' + selectedItem.label, style: Object.assign({}, S.input, { border: '1px solid #fbbf24' }) }),
+                e('button', { onClick: function () { if (symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, disabled: !symRefine[selectedItem.id] || !!symLoading[selectedItem.id] || !!selectedItem.locked, 'aria-label': 'Apply refinement to ' + selectedItem.label, style: S.btn('#fef3c7', '#92400e', !symRefine[selectedItem.id] || !!symLoading[selectedItem.id] || !!selectedItem.locked) }, '✏️')
               )
             )
           ),
@@ -6447,14 +6493,15 @@
                       onKeyDown: function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); setSelectedId(item.id); } },
                       tabIndex: 0,
                       role: 'button',
-                      'aria-label': 'Select symbol: ' + item.label + (item.isFavorite ? ' (favorite)' : ''),
+                      'aria-label': 'Select symbol: ' + item.label + (item.isFavorite ? ' (favorite)' : '') + (item.locked ? ' (locked)' : ''),
                       'aria-pressed': item.id === selectedId ? 'true' : 'false',
                       style: { cursor: 'pointer', borderRadius: '8px', border: item.id === selectedId ? '2px solid ' + PURPLE : '2px solid #e5e7eb', background: item.id === selectedId ? LIGHT_PURPLE : '#fafafa', padding: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', transition: 'border-color 0.15s', position: 'relative' } },
                       symLoading[item.id]
                         ? e('div', { style: { width: 72, height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb', borderRadius: '6px' } }, spinner(20))
                         : e('img', { src: item.image, alt: item.label, style: { width: 72, height: 72, objectFit: 'contain', borderRadius: '6px', background: '#fff' } }),
                       e('span', { style: { fontSize: '10px', color: '#4b5563', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.3 } }, item.label),
-                      e('button', { onClick: function (ev) { ev.stopPropagation(); toggleFavorite(item.id); }, 'aria-label': (item.isFavorite ? 'Remove ' : 'Add ') + item.label + (item.isFavorite ? ' from favorites' : ' to favorites'), style: { position: 'absolute', top: 3, right: 3, background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', opacity: item.isFavorite ? 1 : 0.3, padding: '1px' }, title: item.isFavorite ? 'Remove from favorites' : 'Add to favorites' }, '⭐')
+                      e('button', { onClick: function (ev) { ev.stopPropagation(); toggleFavorite(item.id); }, 'aria-label': (item.isFavorite ? 'Remove ' : 'Add ') + item.label + (item.isFavorite ? ' from favorites' : ' to favorites'), style: { position: 'absolute', top: 3, right: 3, background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', opacity: item.isFavorite ? 1 : 0.3, padding: '1px' }, title: item.isFavorite ? 'Remove from favorites' : 'Add to favorites' }, '⭐'),
+                      item.locked && e('div', { 'aria-hidden': 'true', title: 'Locked - protected from regenerate/refine', style: { position: 'absolute', top: 3, left: 3, fontSize: '11px', lineHeight: 1, pointerEvents: 'none' } }, '🔒')
                     );
                   })
                 )
@@ -6877,6 +6924,8 @@
                       word.translatedLabel || word.label,
                       word.translatedLabel && word.originalLabel && e('span', { style: { display: 'block', fontSize: Math.max(9, boardTextSize - 3) + 'px', fontWeight: 400, color: '#6b7280' } }, word.originalLabel)
                     ),
+                    // Lock toggle \u2014 protects this cell's symbol from regenerate
+                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); toggleBoardCellLock(word.id); }, 'aria-pressed': !!word.locked, 'aria-label': (word.locked ? 'Unlock ' : 'Lock ') + word.label, title: word.locked ? 'Locked - protected from regenerate. Click to unlock.' : 'Lock to protect this symbol from regenerate', style: { position: 'absolute', top: 4, right: 22, background: word.locked ? 'rgba(161,98,7,0.2)' : 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, word.locked ? '\uD83D\uDD12' : '\uD83D\uDD13'),
                     // Regen button
                     e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); regenBoardCell(word.id); }, 'aria-label': 'Regenerate symbol', style: { position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '\uD83D\uDD04'),
                     // Record audio button
