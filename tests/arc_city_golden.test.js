@@ -139,3 +139,64 @@ describe('Arc City — completion-based unlocking (design §5.1)', () => {
     expect(isLevelUnlocked({ L1: { solved: false, shots: 9 } }, 1)).toBe(false);
   });
 });
+
+describe('Arc City — tiers + hidden-preview integrity gate (design §2.4 / §9.2)', () => {
+  it('the three tiers are practice / guided / independent', () => {
+    expect(arc.TIERS).toEqual(['practice', 'guided', 'independent']);
+  });
+
+  it('practice shows the preview; guided/independent hide it until Fire', () => {
+    expect(arc.previewVisible('practice', false)).toBe(true);
+    expect(arc.previewVisible('guided', false)).toBe(false);
+    expect(arc.previewVisible('independent', false)).toBe(false);
+    // firing reveals the result on every tier
+    expect(arc.previewVisible('guided', true)).toBe(true);
+    expect(arc.previewVisible('independent', true)).toBe(true);
+  });
+
+  it('only hidden-preview tiers count as an independent solve', () => {
+    expect(arc.solveIsIndependent('practice')).toBe(false);
+    expect(arc.solveIsIndependent('guided')).toBe(true);
+    expect(arc.solveIsIndependent('independent')).toBe(true);
+  });
+});
+
+describe('Arc City — action-named badges (design §9.4)', () => {
+  const L1 = levelById('L1'), L3 = levelById('L3');
+
+  it('no badge unless the shot is a hit', () => {
+    const miss = classifyShot(L3, { a: -0.2, h: 5, k: 2 });
+    expect(arc.badgesForSolve(L3, miss, 1, 'practice', [])).toEqual([]);
+  });
+
+  it('a first-shot parabola hit in practice earns arc-architect, window-threader, sharp-shooter — but not independent/first-light', () => {
+    const hit = classifyShot(L3, { a: -0.5, h: 5, k: 5 });
+    const earned = arc.badgesForSolve(L3, hit, 1, 'practice', []);
+    expect(earned).toContain('arc-architect');
+    expect(earned).toContain('window-threader');
+    expect(earned).toContain('sharp-shooter');
+    expect(earned).not.toContain('independent'); // practice tier
+    expect(earned).not.toContain('first-light');  // L1 only
+  });
+
+  it('a hidden-preview hit earns the independent badge', () => {
+    const hit = classifyShot(L1, { m: 0.5, b: 0 });
+    const earned = arc.badgesForSolve(L1, hit, 2, 'independent', []);
+    expect(earned).toContain('independent');
+    expect(earned).toContain('first-light');       // L1
+    expect(earned).not.toContain('sharp-shooter');  // took 2 shots
+  });
+
+  it('already-earned badges are not re-awarded', () => {
+    const hit = classifyShot(L1, { m: 0.5, b: 0 });
+    const earned = arc.badgesForSolve(L1, hit, 1, 'practice', ['first-light']);
+    expect(earned).not.toContain('first-light');
+    expect(earned).toContain('sharp-shooter');
+  });
+
+  it('badge labels are action-described, never mastery/ability claims', () => {
+    arc.BADGES.forEach(b => {
+      expect(b.label.toLowerCase()).not.toMatch(/master|mastery|proficient|ability|expert/);
+    });
+  });
+});

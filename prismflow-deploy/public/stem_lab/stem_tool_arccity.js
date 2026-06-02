@@ -187,6 +187,43 @@
     return !!(ps && ps.solved);
   }
 
+  // ── Authoring tiers (design §2.4 / §5.2): the anti-slider-fishing gate. ──
+  // On guided/independent the live preview is HIDDEN until Fire — you must
+  // PREDICT before firing. A solve under a hidden-preview tier is the honest
+  // "solved independently" signal (design §9.2): success required a model of
+  // the function, not slider-fishing against a live curve.
+  var TIERS = ['practice', 'guided', 'independent'];
+  function tierLabel(tier) { return tier === 'practice' ? 'Practice' : (tier === 'guided' ? 'Guided' : 'Independent'); }
+  function tierBlurb(tier) {
+    return tier === 'practice'
+      ? 'Live preview on — see the curve as you tune.'
+      : 'Preview hidden — predict where the beam goes, then Fire.';
+  }
+  function previewVisible(tier, fired) { return tier === 'practice' || !!fired; }
+  function solveIsIndependent(tier) { return tier !== 'practice'; }
+
+  // ── Action-named badges (design §9.4) — never "mastery"/ability claims. ──
+  var BADGES = [
+    { id: 'first-light', label: 'First Light — lit your first node' },
+    { id: 'window-threader', label: 'Window Threader — threaded a gate and lit a node' },
+    { id: 'arc-architect', label: 'Arc Architect — re-lit a node using a parabola' },
+    { id: 'sharp-shooter', label: 'Sharp Shooter — lit a node on the first shot' },
+    { id: 'independent', label: 'Independent — solved with the preview hidden' }
+  ];
+  function badgeLabel(id) { for (var i = 0; i < BADGES.length; i++) { if (BADGES[i].id === id) return BADGES[i].label; } return id; }
+  // Returns the NEW badge ids earned by this solve (excludes already-earned).
+  function badgesForSolve(level, res, shots, tier, earned) {
+    if (res.result !== 'hit') return [];
+    var out = [];
+    function add(id) { if ((earned || []).indexOf(id) === -1 && out.indexOf(id) === -1) out.push(id); }
+    if (level.id === 'L1') add('first-light');
+    if ((level.gates || []).length) add('window-threader');
+    if (level.family === 'parabola') add('arc-architect');
+    if (shots === 1) add('sharp-shooter');
+    if (solveIsIndependent(tier)) add('independent');
+    return out;
+  }
+
   var ArcCityCore = {
     LEVELS: LEVELS,
     levelById: levelById,
@@ -199,7 +236,15 @@
     describeEquation: describeEquation,
     describeResult: describeResult,
     describeBoard: describeBoard,
-    isLevelUnlocked: isLevelUnlocked
+    isLevelUnlocked: isLevelUnlocked,
+    TIERS: TIERS,
+    tierLabel: tierLabel,
+    tierBlurb: tierBlurb,
+    previewVisible: previewVisible,
+    solveIsIndependent: solveIsIndependent,
+    BADGES: BADGES,
+    badgeLabel: badgeLabel,
+    badgesForSolve: badgesForSolve
   };
 
   if (typeof module !== 'undefined' && module.exports) { module.exports = ArcCityCore; }
@@ -312,7 +357,7 @@
         if (!toolData._arccity) {
           if (typeof setToolData === 'function') {
             setToolData(function (prev) {
-              return Object.assign({}, prev, { _arccity: { levelId: 'L1', fired: false, byLevel: {} } });
+              return Object.assign({}, prev, { _arccity: { levelId: 'L1', fired: false, byLevel: {}, tier: 'practice', badges: [] } });
             });
           }
           return h('div', { style: { padding: 24, color: 'var(--allo-stem-text, #e2e8f0)' } }, t('arccity.loading', 'Loading Arc City…'));
@@ -326,6 +371,10 @@
         var ls = (rawLS && rawLS.params) ? rawLS : { params: defaultParams(level), shots: 0, solved: false, misses: 0 };
         var P = Object.assign({}, ls.params);
         var res = classifyShot(level, P);
+        var tier = S.tier || 'practice';
+        var badges = S.badges || [];
+        var showPreview = previewVisible(tier, S.fired);
+        var indepSolved = !!(ls && ls.independent);
 
         // ── state updaters (all via setToolData; no React hooks) ──
         function mergeLevel(prevRoot, partial, paramsOverride) {
@@ -351,18 +400,27 @@
         function fire() {
           if (typeof setToolData !== 'function') return;
           var r = classifyShot(level, P);
+          var shotsNow = (ls.shots || 0) + 1;
+          var newBadges = badgesForSolve(level, r, shotsNow, tier, badges);
+          var indep = r.result === 'hit' && solveIsIndependent(tier);
           setToolData(function (prev) {
             var cur = (prev && prev._arccity) || S;
             var bl = Object.assign({}, cur.byLevel || {});
-            var base = Object.assign({ params: defaultParams(level), shots: 0, solved: false, misses: 0 }, bl[level.id] || {});
+            var base = Object.assign({ params: defaultParams(level), shots: 0, solved: false, misses: 0, independent: false }, bl[level.id] || {});
             var shots = (base.shots || 0) + 1;
             var solved = base.solved || r.result === 'hit';
             var misses = (base.misses || 0) + (r.result === 'hit' ? 0 : 1);
-            bl[level.id] = Object.assign({}, base, { params: P, shots: shots, solved: solved, misses: misses });
-            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: true }) });
+            bl[level.id] = Object.assign({}, base, { params: P, shots: shots, solved: solved, misses: misses, independent: base.independent || indep });
+            var mergedBadges = (cur.badges || []).slice();
+            newBadges.forEach(function (bd) { if (mergedBadges.indexOf(bd) === -1) mergedBadges.push(bd); });
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: true, badges: mergedBadges }) });
           });
-          var msg = describeResult(level, r, (ls.shots || 0) + 1);
-          if (r.result === 'hit' && lIdx < LEVELS.length - 1) msg += ' ' + t('arccity.unlocked', 'Next level unlocked!');
+          var msg = describeResult(level, r, shotsNow);
+          if (r.result === 'hit') {
+            if (indep) msg += ' ' + t('arccity.independent', 'Solved independently — the preview was hidden.');
+            if (lIdx < LEVELS.length - 1) msg += ' ' + t('arccity.unlocked', 'Next level unlocked!');
+            if (newBadges.length) msg += ' ' + t('arccity.badge', 'Badge earned: ') + newBadges.map(badgeLabel).join(', ') + '.';
+          }
           announceArc(ctx, msg);
         }
         function resetLevel() {
@@ -383,6 +441,14 @@
             return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { levelId: id, fired: false }) });
           });
           announceArc(ctx, describeBoard(levelById(id)));
+        }
+        function setTier(tr) {
+          if (typeof setToolData !== 'function') return;
+          setToolData(function (prev) {
+            var cur = (prev && prev._arccity) || S;
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { tier: tr, fired: false }) });
+          });
+          announceArc(ctx, t('arccity.tier', 'Tier:') + ' ' + tierLabel(tr) + '. ' + tierBlurb(tr));
         }
 
         // ── SVG transforms (orthographic, zero shear) ──
@@ -427,7 +493,13 @@
           }
           return s.trim();
         }
-        var previewEl = h('polyline', { key: 'preview', points: ptsStr(null), fill: 'none', stroke: INK, strokeWidth: 2, strokeDasharray: '4 5', opacity: 0.55 });
+        var previewEls = [];
+        if (showPreview) {
+          previewEls.push(h('polyline', { key: 'preview', points: ptsStr(null), fill: 'none', stroke: INK, strokeWidth: 2, strokeDasharray: '4 5', opacity: 0.55 }));
+        } else {
+          // Hidden-preview tier: the curve is concealed until Fire (anti-fishing).
+          previewEls.push(h('text', { key: 'pvhide', x: W / 2, y: 28, textAnchor: 'middle', fill: INK, opacity: 0.6, fontSize: 14 }, t('arccity.preview_hidden', 'Preview hidden — predict, then Fire ⚡')));
+        }
 
         var overlay = [];
         if (S.fired) {
@@ -444,7 +516,7 @@
           key: 'svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%',
           role: 'img', 'aria-label': describeBoard(level),
           style: { display: 'block', maxHeight: '50vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden' }
-        }, [].concat(gridEls, obstacleEls, [previewEl], overlay, [nodeEl]));
+        }, [].concat(gridEls, obstacleEls, previewEls, overlay, [nodeEl]));
 
         // ── Level progression bar ──
         var levelBtns = LEVELS.map(function (lv, i) {
@@ -525,7 +597,7 @@
           h('div', { key: 'result', role: 'status', style: { marginTop: 12, fontSize: 14, lineHeight: 1.5, color: resultColor, minHeight: 42 } }, resultText),
           showHint ? h('div', { key: 'hint', style: { marginTop: 8, fontSize: 13, color: '#fcd34d', padding: '8px 10px', borderRadius: 8, background: 'rgba(252,211,77,0.10)' } }, '💡 ' + level.hint) : null,
           h('div', { key: 'shots', style: { marginTop: 6, fontSize: 12, color: INK, opacity: 0.7 } },
-            (ls.solved ? '✅ ' + t('arccity.solved', 'Node lit!') + '  ' : '') + t('arccity.shots', 'Shots fired:') + ' ' + (ls.shots || 0)),
+            (ls.solved ? '✅ ' + t('arccity.solved', 'Node lit!') + (indepSolved ? ' ' + t('arccity.indep_tag', '(solved independently)') : '') + '  ' : '') + t('arccity.shots', 'Shots fired:') + ' ' + (ls.shots || 0)),
           h('ul', { key: 'coords', style: { listStyle: 'none', padding: 0, margin: '8px 0 0', fontSize: 12, color: INK, opacity: 0.8 } }, coordItems));
 
         var header = h('div', { key: 'hdr', style: { marginBottom: 10 } },
@@ -535,8 +607,32 @@
 
         var levelBar = h('div', { key: 'levelbar', role: 'group', 'aria-label': t('arccity.levels', 'Levels'), style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 } }, levelBtns);
 
+        var tierBtns = TIERS.map(function (tr) {
+          var active = tr === tier;
+          return h('button', {
+            key: 'tier-' + tr, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+            'aria-label': t('arccity.tier', 'Tier:') + ' ' + tierLabel(tr) + ' — ' + tierBlurb(tr),
+            onClick: function () { setTier(tr); },
+            style: {
+              padding: '5px 10px', borderRadius: 8, fontSize: 12, fontWeight: active ? 800 : 600,
+              border: '1px solid ' + (active ? BEAM : GRID), background: active ? 'rgba(34,211,238,0.15)' : 'transparent', color: INK, cursor: 'pointer'
+            }
+          }, tierLabel(tr));
+        });
+        var tierBar = h('div', { key: 'tierbar', role: 'group', 'aria-label': t('arccity.tier_select', 'Authoring tier'), style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 } },
+          [h('span', { key: 'tlab', style: { fontSize: 12, color: INK, opacity: 0.7 } }, t('arccity.tier', 'Tier:'))]
+            .concat(tierBtns)
+            .concat([h('span', { key: 'tblurb', style: { fontSize: 11, color: INK, opacity: 0.6 } }, tierBlurb(tier))]));
+
+        var badgeStrip = badges.length
+          ? h('div', { key: 'badges', role: 'group', 'aria-label': t('arccity.badges', 'Badges earned'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 } },
+            badges.map(function (bid) {
+              return h('span', { key: 'badge-' + bid, title: badgeLabel(bid), style: { fontSize: 11, padding: '3px 8px', borderRadius: 999, border: '1px solid ' + GRID, background: 'rgba(52,211,153,0.12)', color: INK } }, '🏅 ' + badgeLabel(bid));
+            }))
+          : null;
+
         return h('div', { id: 'allo-arccity-root', style: { padding: 16, maxWidth: 760, margin: '0 auto', color: INK } },
-          header, levelBar, svg, controls);
+          header, levelBar, tierBar, svg, controls, badgeStrip);
 
       } catch (e) {
         return h('div', { style: { padding: 16, color: '#fca5a5', fontSize: 14 } },
