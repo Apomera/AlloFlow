@@ -19,6 +19,34 @@ function OnboardingCoach(props) {
   var _open = React.useState(false);
   var isOpen = _open[0];
   var setIsOpen = _open[1];
+  var _tts = React.useState(false);
+  var ttsEnabled = _tts[0];
+  var setTtsEnabled = _tts[1];
+  var _mute = React.useState(false);
+  var globalMuted = _mute[0];
+  var setGlobalMuted = _mute[1];
+  React.useEffect(function() {
+    if (!isOpen) return;
+    var ao = window.AlloOnboarding;
+    if (ao && typeof ao.isOnboardingTTSEnabled === "function") {
+      try {
+        setTtsEnabled(!!ao.isOnboardingTTSEnabled());
+      } catch (_) {
+      }
+    }
+    try {
+      var muted = typeof window.__alloIsGlobalMuted === "function" ? !!window.__alloIsGlobalMuted() : window.localStorage && window.localStorage.getItem("alloflow-global-muted") === "true";
+      setGlobalMuted(muted);
+    } catch (_) {
+    }
+    if (ao && typeof ao.announce === "function") {
+      var msg = t("onboarding.panel_open_announcement") || "AlloBot onboarding open. Four mode options are listed: Full AlloFlow, Guided Mode, Learning Tools, and Educator Tools. A Start the Tour button is at the bottom.";
+      try {
+        ao.announce(msg, { politeness: "polite" });
+      } catch (_) {
+      }
+    }
+  }, [isOpen]);
   var modes = [
     {
       key: "full",
@@ -49,8 +77,37 @@ function OnboardingCoach(props) {
       bestIf: t("onboarding.educator_best_if") || "Best if you\u2019re a teacher, clinician, or school psychologist on a password-protected workstation."
     }
   ];
+  var toggleTTS = function() {
+    var next = !ttsEnabled;
+    var ao = window.AlloOnboarding;
+    if (ao && typeof ao.setOnboardingTTSEnabled === "function") {
+      try {
+        ao.setOnboardingTTSEnabled(next);
+      } catch (_) {
+      }
+    }
+    setTtsEnabled(next);
+    if (next && !globalMuted && ao && typeof ao.speak === "function") {
+      try {
+        ao.speak(t("onboarding.tts_test_cue") || "Voice on. I will read help out loud.");
+      } catch (_) {
+      }
+    } else if (!next && ao && typeof ao.cancel === "function") {
+      try {
+        ao.cancel();
+      } catch (_) {
+      }
+    }
+  };
   var openTour = function() {
     setIsOpen(false);
+    var ao = window.AlloOnboarding;
+    if (ao && typeof ao.isOnboardingTTSEnabled === "function" && ao.isOnboardingTTSEnabled()) {
+      try {
+        ao.speak(t("onboarding.tour_starting_speech") || "Starting the tour.");
+      } catch (_) {
+      }
+    }
     if (typeof setRunTour === "function") setRunTour(true);
   };
   return /* @__PURE__ */ React.createElement(React.Fragment, null, !isOpen && /* @__PURE__ */ React.createElement(
@@ -99,6 +156,7 @@ function OnboardingCoach(props) {
       role: "dialog",
       "aria-modal": "true",
       "aria-label": t("onboarding.panel_aria") || "AlloBot onboarding help",
+      "data-help-key": "onboarding_panel",
       style: {
         position: "fixed",
         inset: 0,
@@ -163,54 +221,134 @@ function OnboardingCoach(props) {
         },
         "\u2715"
       )),
-      /* @__PURE__ */ React.createElement("div", { style: { padding: "18px 22px", display: "flex", flexDirection: "column", gap: "12px" } }, modes.map(function(m) {
-        return /* @__PURE__ */ React.createElement("div", { key: m.key, style: {
-          border: "1px solid #e2e8f0",
-          borderRadius: "14px",
-          padding: "14px",
-          background: "#fafafa",
-          display: "flex",
-          alignItems: "flex-start",
-          gap: "14px"
-        } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "34px", flexShrink: 0, lineHeight: 1 }, "aria-hidden": "true" }, m.icon), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("h3", { style: { margin: 0, fontSize: "15px", fontWeight: 800, color: "#1e293b" } }, m.title), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 6px", fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, m.desc), /* @__PURE__ */ React.createElement("p", { style: {
-          margin: 0,
-          fontSize: "11px",
-          color: "#7c3aed",
-          fontWeight: 700,
-          lineHeight: 1.4
-        } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1} "), m.bestIf)));
-      }), typeof setRunTour === "function" && /* @__PURE__ */ React.createElement("div", { style: {
-        marginTop: "6px",
-        padding: "14px",
-        borderRadius: "14px",
-        background: "linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%)",
-        border: "1px solid #fbbf24",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: "12px",
-        flexWrap: "wrap"
-      } }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: "200px" } }, /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "13px", fontWeight: 700, color: "#78350f" } }, t("onboarding.tour_offer_title") || "Want me to show you around first?"), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "11px", color: "#92400e" } }, t("onboarding.tour_offer_desc") || "I\u2019ll walk you through the workspace before you pick a mode.")), /* @__PURE__ */ React.createElement(
-        "button",
+      /* @__PURE__ */ React.createElement("div", { style: { padding: "18px 22px", display: "flex", flexDirection: "column", gap: "12px" } }, /* @__PURE__ */ React.createElement(
+        "div",
         {
-          type: "button",
-          onClick: openTour,
+          "data-help-key": "onboarding_tts_row",
           style: {
-            padding: "10px 18px",
-            borderRadius: "999px",
-            background: "#d97706",
-            color: "#fff",
-            border: "none",
-            fontWeight: 800,
-            fontSize: "13px",
-            cursor: "pointer",
-            boxShadow: "0 2px 6px rgba(217,119,6,0.45)",
-            whiteSpace: "nowrap"
+            padding: "12px 14px",
+            borderRadius: "12px",
+            border: "1px solid #e2e8f0",
+            background: "#f8fafc",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px"
           }
         },
-        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F3AF} "),
-        t("onboarding.start_tour_cta") || "Start the tour"
-      )), /* @__PURE__ */ React.createElement("p", { style: {
+        /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("label", { htmlFor: "allobot-tts-toggle", style: {
+          margin: 0,
+          fontSize: "13px",
+          fontWeight: 700,
+          color: "#1e293b",
+          display: "block",
+          cursor: "pointer"
+        } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A} "), t("onboarding.tts_toggle_label") || "Read help aloud"), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "11px", color: "#64748b", lineHeight: 1.4 } }, globalMuted ? t("onboarding.tts_unavailable_globally_muted") || "Sound is muted globally. Un-mute in the main toolbar to hear AlloBot." : t("onboarding.tts_toggle_sublabel") || "Off by default. If you use a screen reader, leave this off \u2014 your reader already reads this panel.")),
+        /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            id: "allobot-tts-toggle",
+            type: "button",
+            role: "switch",
+            "aria-checked": ttsEnabled,
+            "aria-label": t("onboarding.tts_toggle_label") || "Read help aloud",
+            onClick: toggleTTS,
+            style: {
+              flexShrink: 0,
+              width: "48px",
+              height: "26px",
+              borderRadius: "999px",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              background: ttsEnabled ? "#22c55e" : "#cbd5e1",
+              position: "relative",
+              transition: "background 0.15s"
+            }
+          },
+          /* @__PURE__ */ React.createElement(
+            "span",
+            {
+              "aria-hidden": "true",
+              style: {
+                position: "absolute",
+                top: "3px",
+                left: ttsEnabled ? "25px" : "3px",
+                width: "20px",
+                height: "20px",
+                borderRadius: "50%",
+                background: "#fff",
+                transition: "left 0.15s",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.25)"
+              }
+            }
+          )
+        )
+      ), modes.map(function(m) {
+        return /* @__PURE__ */ React.createElement(
+          "div",
+          {
+            key: m.key,
+            "data-help-key": "onboarding_mode_" + m.key,
+            style: {
+              border: "1px solid #e2e8f0",
+              borderRadius: "14px",
+              padding: "14px",
+              background: "#fafafa",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "14px"
+            }
+          },
+          /* @__PURE__ */ React.createElement("span", { style: { fontSize: "34px", flexShrink: 0, lineHeight: 1 }, "aria-hidden": "true" }, m.icon),
+          /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("h3", { style: { margin: 0, fontSize: "15px", fontWeight: 800, color: "#1e293b" } }, m.title), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 6px", fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, m.desc), /* @__PURE__ */ React.createElement("p", { style: {
+            margin: 0,
+            fontSize: "11px",
+            color: "#7c3aed",
+            fontWeight: 700,
+            lineHeight: 1.4
+          } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1} "), m.bestIf))
+        );
+      }), typeof setRunTour === "function" && /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          "data-help-key": "onboarding_tour_cta",
+          style: {
+            marginTop: "6px",
+            padding: "14px",
+            borderRadius: "14px",
+            background: "linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%)",
+            border: "1px solid #fbbf24",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px",
+            flexWrap: "wrap"
+          }
+        },
+        /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: "200px" } }, /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "13px", fontWeight: 700, color: "#78350f" } }, t("onboarding.tour_offer_title") || "Want me to show you around first?"), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "11px", color: "#92400e" } }, t("onboarding.tour_offer_desc") || "I\u2019ll walk you through the workspace before you pick a mode.")),
+        /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: openTour,
+            style: {
+              padding: "10px 18px",
+              borderRadius: "999px",
+              background: "#d97706",
+              color: "#fff",
+              border: "none",
+              fontWeight: 800,
+              fontSize: "13px",
+              cursor: "pointer",
+              boxShadow: "0 2px 6px rgba(217,119,6,0.45)",
+              whiteSpace: "nowrap"
+            }
+          },
+          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F3AF} "),
+          t("onboarding.start_tour_cta") || "Start the tour"
+        )
+      ), /* @__PURE__ */ React.createElement("p", { style: {
         margin: "10px 0 0",
         fontSize: "10px",
         color: "#94a3b8",

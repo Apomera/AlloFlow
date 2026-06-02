@@ -1,29 +1,75 @@
 /**
- * AlloFlow — Onboarding Coach Module (Tier 1)
+ * AlloFlow — Onboarding Coach Module (Tier 1 + Tier 2)
  *
- * "Not sure? Ask AlloBot" floating launcher + static help panel that shows
- * the 4 LaunchPad mode descriptions with hand-written "Best if..." guidance,
- * plus a CTA to launch the existing TourOverlay.
+ * Tier 1 surface: "Not sure? Ask AlloBot" floating launcher + static help
+ * panel that shows the 4 LaunchPad mode descriptions plus a CTA to launch
+ * the existing TourOverlay.
  *
- * Tier 1 deliberately ships NO LLM, NO TTS, NO voice — it's a validity probe:
- * do 0-familiarity users actually engage an onboarding bot? If they do, Tier 2
- * adds screen-context helpers + contextual speak() calls. If they don't, the
- * whole LLM-Q&A arc gets cut before the build.
+ * Tier 2 additions (this revision):
+ *   - "Read help aloud" toggle row inside the panel, wired to
+ *     window.AlloOnboarding.setOnboardingTTSEnabled (defaults OFF; layered
+ *     ON TOP of the existing global mute — no parallel state).
+ *   - Panel-open emits an aria-live announce() via window.AlloOnboarding.
+ *     This is the AT-safe channel: NVDA/JAWS/VoiceOver users get the same
+ *     orientation cue without any speech-synthesis collision.
+ *   - "Start the tour" click is a user gesture, so it's safe to fire a
+ *     short TTS cue if the user has opted in — satisfies iOS Safari's
+ *     pre-gesture-unlock requirement on first use.
+ *   - When the user flips the toggle ON, we play a tiny "Voice on…" cue
+ *     so they get immediate confirmation TTS works on their device, and
+ *     (separately) so iOS Safari's gesture-unlock is consumed inside the
+ *     same click handler.
+ *
+ * Tier 2 wiring lives in onboarding_helpers_module.js. This file only
+ * consumes the public window.AlloOnboarding surface. If the helpers
+ * module hasn't loaded yet (or the CDN fetch failed), every Tier 2 path
+ * here degrades to a silent no-op — Tier 1 still works.
  *
  * Visibility: the host should render this only while LaunchPad is showing
  * (same conditional as <LaunchPadView/>) — see AlloFlowANTI.txt render site.
  *
- * Architecture: 1 CDN module, ~250 lines, ≤6 unavoidable AlloFlowANTI.txt
- * lines (loadModule + render + shim). No business logic touches the host.
- *
  * Source for built module: onboarding_coach_module.js (via
- * _build_onboarding_coach_module.js — same pattern as visual_supports).
+ * _build_onboarding_coach_module.js).
  */
 function OnboardingCoach(props) {
-  var t = (typeof props.t === 'function') ? props.t : function(k){ return k; };
+  var t = (typeof props.t === 'function') ? props.t : function (k) { return k; };
   var setRunTour = props.setRunTour;
+
   var _open = React.useState(false);
   var isOpen = _open[0]; var setIsOpen = _open[1];
+
+  // Tier 2 — TTS opt-in state, sourced from AlloOnboarding (which itself
+  // reads localStorage AND respects the global mute). Recomputed on every
+  // panel open so a global-mute toggle elsewhere takes effect without
+  // remounting the coach.
+  var _tts = React.useState(false);
+  var ttsEnabled = _tts[0]; var setTtsEnabled = _tts[1];
+  var _mute = React.useState(false);
+  var globalMuted = _mute[0]; var setGlobalMuted = _mute[1];
+
+  React.useEffect(function () {
+    if (!isOpen) return;
+    var ao = window.AlloOnboarding;
+    if (ao && typeof ao.isOnboardingTTSEnabled === 'function') {
+      try { setTtsEnabled(!!ao.isOnboardingTTSEnabled()); } catch (_) {}
+    }
+    try {
+      var muted = (typeof window.__alloIsGlobalMuted === 'function')
+        ? !!window.__alloIsGlobalMuted()
+        : (window.localStorage && window.localStorage.getItem('alloflow-global-muted') === 'true');
+      setGlobalMuted(muted);
+    } catch (_) { /* private mode — assume not muted */ }
+
+    // AT-safe orientation cue (works regardless of TTS opt-in). The clear+
+    // rewrite inside announce() makes the screen reader pick it up reliably.
+    if (ao && typeof ao.announce === 'function') {
+      var msg = t('onboarding.panel_open_announcement') ||
+        ('AlloBot onboarding open. Four mode options are listed: Full AlloFlow, ' +
+         'Guided Mode, Learning Tools, and Educator Tools. A Start the Tour ' +
+         'button is at the bottom.');
+      try { ao.announce(msg, { politeness: 'polite' }); } catch (_) {}
+    }
+  }, [isOpen]);
 
   // The 4 LaunchPad modes. Title + description draw from the same i18n keys
   // LaunchPad itself uses (so any future lang-pack work flows through here too).
@@ -57,7 +103,7 @@ function OnboardingCoach(props) {
     },
     {
       key: 'educator',
-      icon: '\u{1F6E0}️',
+      icon: '\u{1F6E0}\u{FE0F}',
       title: t('launch_pad.educator_tools_title') || 'Educator Tools',
       desc:  t('launch_pad.educator_tools_desc')  || 'BehaviorLens, Report Writer, and professional clinical tools — password protected.',
       bestIf: t('onboarding.educator_best_if') ||
@@ -65,8 +111,32 @@ function OnboardingCoach(props) {
     },
   ];
 
-  var openTour = function() {
+  // Toggle handler — flips per-feature opt-in and (when turning ON) speaks
+  // a tiny confirmation cue. The cue serves two purposes:
+  //   1. UX: the user gets immediate confirmation TTS works on this device.
+  //   2. Browser: the iOS Safari pre-gesture-unlock requirement is consumed
+  //      inside this very click handler, so subsequent speak() calls within
+  //      the same session are eligible to fire from useEffects later.
+  var toggleTTS = function () {
+    var next = !ttsEnabled;
+    var ao = window.AlloOnboarding;
+    if (ao && typeof ao.setOnboardingTTSEnabled === 'function') {
+      try { ao.setOnboardingTTSEnabled(next); } catch (_) {}
+    }
+    setTtsEnabled(next);
+    if (next && !globalMuted && ao && typeof ao.speak === 'function') {
+      try { ao.speak(t('onboarding.tts_test_cue') || 'Voice on. I will read help out loud.'); } catch (_) {}
+    } else if (!next && ao && typeof ao.cancel === 'function') {
+      try { ao.cancel(); } catch (_) {}
+    }
+  };
+
+  var openTour = function () {
     setIsOpen(false);
+    var ao = window.AlloOnboarding;
+    if (ao && typeof ao.isOnboardingTTSEnabled === 'function' && ao.isOnboardingTTSEnabled()) {
+      try { ao.speak(t('onboarding.tour_starting_speech') || 'Starting the tour.'); } catch (_) {}
+    }
     if (typeof setRunTour === 'function') setRunTour(true);
   };
 
@@ -77,7 +147,7 @@ function OnboardingCoach(props) {
       {!isOpen && (
         <button
           type="button"
-          onClick={function(){ setIsOpen(true); }}
+          onClick={function () { setIsOpen(true); }}
           aria-label={t('onboarding.ask_allobot_aria') || 'Open AlloBot onboarding help'}
           data-help-key="onboarding_ask_allobot_button"
           style={{
@@ -90,32 +160,33 @@ function OnboardingCoach(props) {
             display: 'flex', alignItems: 'center', gap: '8px',
             transition: 'transform 0.15s, box-shadow 0.15s',
           }}
-          onMouseDown={function(e){ e.currentTarget.style.transform = 'scale(0.97)'; }}
-          onMouseUp={function(e){ e.currentTarget.style.transform = 'scale(1)'; }}
-          onMouseLeave={function(e){ e.currentTarget.style.transform = 'scale(1)'; }}
+          onMouseDown={function (e) { e.currentTarget.style.transform = 'scale(0.97)'; }}
+          onMouseUp={function (e) { e.currentTarget.style.transform = 'scale(1)'; }}
+          onMouseLeave={function (e) { e.currentTarget.style.transform = 'scale(1)'; }}
         >
           <span aria-hidden="true">{'\u{1F916}'}</span>
           <span>{t('onboarding.ask_allobot_label') || 'Not sure? Ask AlloBot'}</span>
         </button>
       )}
 
-      {/* Panel overlay — centered modal with the 4 mode cards + tour CTA. */}
+      {/* Panel overlay — centered modal with the TTS toggle, 4 mode cards, and tour CTA. */}
       {isOpen && (
         <div
           role="dialog"
           aria-modal="true"
           aria-label={t('onboarding.panel_aria') || 'AlloBot onboarding help'}
+          data-help-key="onboarding_panel"
           style={{
             position: 'fixed', inset: 0, zIndex: 9100,
             background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(4px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
           }}
-          onClick={function(e){ if (e.target === e.currentTarget) setIsOpen(false); }}
-          onKeyDown={function(e){ if (e.key === 'Escape') setIsOpen(false); }}
+          onClick={function (e) { if (e.target === e.currentTarget) setIsOpen(false); }}
+          onKeyDown={function (e) { if (e.key === 'Escape') setIsOpen(false); }}
           tabIndex={-1}
         >
           <div
-            onClick={function(e){ e.stopPropagation(); }}
+            onClick={function (e) { e.stopPropagation(); }}
             style={{
               background: '#fff', borderRadius: '20px',
               maxWidth: '720px', width: '100%',
@@ -145,7 +216,7 @@ function OnboardingCoach(props) {
               </div>
               <button
                 type="button"
-                onClick={function(){ setIsOpen(false); }}
+                onClick={function () { setIsOpen(false); }}
                 aria-label={t('common.close') || 'Close'}
                 style={{
                   background: 'rgba(255,255,255,0.18)', color: '#fff',
@@ -156,15 +227,77 @@ function OnboardingCoach(props) {
               >{'✕'}</button>
             </div>
 
-            {/* Mode cards */}
+            {/* Body */}
             <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {modes.map(function(m){
-                return (
-                  <div key={m.key} style={{
-                    border: '1px solid #e2e8f0', borderRadius: '14px', padding: '14px',
-                    background: '#fafafa',
-                    display: 'flex', alignItems: 'flex-start', gap: '14px',
+
+              {/* Tier 2 — TTS toggle row.
+                  Placement (above mode cards, below subtitle) per the a11y
+                  reviewer: doesn't compete with the close button (header) and
+                  isn't cropped on small viewports (footer). Honest sub-label
+                  tells AT users to leave it OFF. */}
+              <div
+                data-help-key="onboarding_tts_row"
+                style={{
+                  padding: '12px 14px', borderRadius: '12px',
+                  border: '1px solid #e2e8f0', background: '#f8fafc',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  gap: '12px',
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <label htmlFor="allobot-tts-toggle" style={{
+                    margin: 0, fontSize: '13px', fontWeight: 700, color: '#1e293b',
+                    display: 'block', cursor: 'pointer',
                   }}>
+                    <span aria-hidden="true">{'\u{1F50A} '}</span>
+                    {t('onboarding.tts_toggle_label') || 'Read help aloud'}
+                  </label>
+                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748b', lineHeight: 1.4 }}>
+                    {globalMuted
+                      ? (t('onboarding.tts_unavailable_globally_muted') ||
+                         'Sound is muted globally. Un-mute in the main toolbar to hear AlloBot.')
+                      : (t('onboarding.tts_toggle_sublabel') ||
+                         'Off by default. If you use a screen reader, leave this off — your reader already reads this panel.')}
+                  </p>
+                </div>
+                <button
+                  id="allobot-tts-toggle"
+                  type="button"
+                  role="switch"
+                  aria-checked={ttsEnabled}
+                  aria-label={t('onboarding.tts_toggle_label') || 'Read help aloud'}
+                  onClick={toggleTTS}
+                  style={{
+                    flexShrink: 0,
+                    width: '48px', height: '26px', borderRadius: '999px',
+                    border: 'none', cursor: 'pointer', padding: 0,
+                    background: ttsEnabled ? '#22c55e' : '#cbd5e1',
+                    position: 'relative', transition: 'background 0.15s',
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      top: '3px', left: ttsEnabled ? '25px' : '3px',
+                      width: '20px', height: '20px', borderRadius: '50%',
+                      background: '#fff', transition: 'left 0.15s',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+                    }}
+                  />
+                </button>
+              </div>
+
+              {/* Mode cards */}
+              {modes.map(function (m) {
+                return (
+                  <div key={m.key}
+                    data-help-key={'onboarding_mode_' + m.key}
+                    style={{
+                      border: '1px solid #e2e8f0', borderRadius: '14px', padding: '14px',
+                      background: '#fafafa',
+                      display: 'flex', alignItems: 'flex-start', gap: '14px',
+                    }}>
                     <span style={{ fontSize: '34px', flexShrink: 0, lineHeight: 1 }} aria-hidden="true">
                       {m.icon}
                     </span>
@@ -189,13 +322,16 @@ function OnboardingCoach(props) {
 
               {/* Tour CTA — only fires if setRunTour was actually wired by the host */}
               {typeof setRunTour === 'function' && (
-                <div style={{
-                  marginTop: '6px', padding: '14px', borderRadius: '14px',
-                  background: 'linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%)',
-                  border: '1px solid #fbbf24',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  gap: '12px', flexWrap: 'wrap',
-                }}>
+                <div
+                  data-help-key="onboarding_tour_cta"
+                  style={{
+                    marginTop: '6px', padding: '14px', borderRadius: '14px',
+                    background: 'linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%)',
+                    border: '1px solid #fbbf24',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    gap: '12px', flexWrap: 'wrap',
+                  }}
+                >
                   <div style={{ flex: 1, minWidth: '200px' }}>
                     <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#78350f' }}>
                       {t('onboarding.tour_offer_title') || 'Want me to show you around first?'}
