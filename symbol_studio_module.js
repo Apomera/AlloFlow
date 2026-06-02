@@ -7657,6 +7657,9 @@
         ref: function (el) { if (el) el.focus(); },
         onKeyDown: handleScanKeyDown
       },
+        // Live region: announces the highlighted cell + its position so switch / screen-reader
+        // users can track where the scan is (this overlay renders outside the modal's ssLiveRef).
+        e('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, scanCells[safeIdx] ? (scanCells[safeIdx].label + ' (' + (safeIdx + 1) + ' of ' + scanCells.length + ')') : ''),
         // Scanning header bar
         e('div', { style: { background: '#1e293b', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 } },
           e('span', { style: { color: '#fff', fontWeight: 800, fontSize: '15px' } }, '♿ ' + (scanBoard ? scanBoard.title || 'Board' : 'Board')),
@@ -7691,12 +7694,16 @@
         ),
         // Cell grid
         e('div', {
+          role: 'grid',
+          'aria-label': 'Scanning board — ' + scanCells.length + ' cell' + (scanCells.length === 1 ? '' : 's'),
           style: { flex: 1, display: 'grid', gridTemplateColumns: 'repeat(' + Math.min(scanBoard ? (scanBoard.cols || 4) : 4, scanCells.length) + ', 1fr)', gap: '16px', padding: '20px', overflowY: 'auto', alignContent: 'start' }
         },
           scanCells.map(function (cell, idx) {
             var isHighlighted = idx === safeIdx;
             return e('div', {
               key: cell.id || idx,
+              role: 'gridcell',
+              'aria-selected': isHighlighted,
               onClick: function () { setScanIndex(idx); activateCell(); },
               style: {
                 border: isHighlighted ? '5px solid #facc15' : '3px solid #334155',
