@@ -6986,11 +6986,102 @@ var d = labToolData.dissection || {};
 
                 ),
 
+                // ══ DISSECTION INQUIRY widget (H7b'') ══
+                (function() {
+                  var iq = d.dissInquiry || { specimenSize: 8, layerDepth: 1, careLevel: 5, timePress: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+                  function setIQ(patch) { upd('dissInquiry', Object.assign({}, iq, patch)); }
+                  function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+                  // damage = (depth × timePress) / (care × specimenSize/8)
+                  var damage = (iq.layerDepth * iq.timePress) / Math.max(1, iq.careLevel * (iq.specimenSize / 8));
+                  var insight = (iq.layerDepth * 1.5 + iq.careLevel * 0.8 - iq.timePress * 0.3) * (iq.specimenSize / 8);
+                  var state = damage > 8 ? 'destroyed' : damage > 5 ? 'damaged' : damage > 3 ? 'compromised' : insight > 8 ? 'excellent' : insight > 4 ? 'good' : 'surface';
+                  var sm = ({
+                    destroyed: { label: 'Specimen destroyed', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Damage exceeds tolerance. Anatomy obscured by cuts. Restart with smaller specimen or more care.' },
+                    damaged: { label: 'Significant damage', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Specimen still usable but key relationships obscured. Common with rushed work on small specimens.' },
+                    compromised: { label: 'Compromised', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Visible cut errors but most anatomy intact. Workable for learning if not for documentation.' },
+                    surface: { label: 'Surface only', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'Low effort, low risk, low reward. Good for external anatomy lessons only.' },
+                    good: { label: 'Good progress', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Effective dissection — clean cuts, visible structures, moderate insight.' },
+                    excellent: { label: 'Excellent dissection', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Patient, deep, careful work on a workable-sized specimen. Anatomy maximally exposed.' }
+                  })[state];
+                  return React.createElement("div", { className: "rounded-xl p-3", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                    React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, '🔬 Dissection Inquiry — Predict the Outcome'),
+                    React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, 'Set specimen size, dissection depth, care level, and time pressure. Predict the outcome quality before reading it. No score, no reveal.'),
+                    React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label),
+                    React.createElement("p", { className: "text-[10px] opacity-80 mb-2" }, sm.desc),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
+                      [
+                        { label: 'Damage index', val: damage.toFixed(1) },
+                        { label: 'Insight score', val: insight.toFixed(1) }
+                      ].map(function(m) {
+                        return React.createElement("div", { key: m.label, className: "p-1 rounded text-center", style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
+                          React.createElement("div", { className: "text-[9px] opacity-60" }, m.label),
+                          React.createElement("div", { className: "text-[11px] font-bold font-mono", style: { color: sm.color } }, m.val)
+                        );
+                      })
+                    ),
+                    React.createElement("svg", { width: '100%', height: 100, viewBox: '0 0 320 100', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                      React.createElement("line", { x1: 30, y1: 80, x2: 310, y2: 80, stroke: '#1e293b' }),
+                      React.createElement("rect", { x: 50, y: 80 - Math.min(60, damage * 6), width: 60, height: Math.min(60, damage * 6), fill: '#f87171', opacity: 0.85 }),
+                      React.createElement("text", { x: 80, y: 95, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'damage'),
+                      React.createElement("rect", { x: 200, y: 80 - Math.min(60, insight * 5), width: 60, height: Math.min(60, insight * 5), fill: '#4ade80', opacity: 0.85 }),
+                      React.createElement("text", { x: 230, y: 95, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'insight'),
+                      React.createElement("text", { x: 8, y: 14, fill: '#475569', fontSize: 8 }, 'high'),
+                      React.createElement("text", { x: 8, y: 78, fill: '#475569', fontSize: 8 }, 'low')
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
+                      React.createElement("label", { className: "text-[10px]" },
+                        React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Specimen size (cm)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.specimenSize)),
+                        React.createElement("input", { type: 'range', min: 2, max: 30, step: 1, value: iq.specimenSize, onChange: function(e) { setKey('specimenSize', parseInt(e.target.value, 10)); }, className: "w-full" })
+                      ),
+                      React.createElement("label", { className: "text-[10px]" },
+                        React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Dissection depth (1-5)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.layerDepth)),
+                        React.createElement("input", { type: 'range', min: 1, max: 5, step: 1, value: iq.layerDepth, onChange: function(e) { setKey('layerDepth', parseInt(e.target.value, 10)); }, className: "w-full" })
+                      ),
+                      React.createElement("label", { className: "text-[10px]" },
+                        React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Care level (1-10)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.careLevel)),
+                        React.createElement("input", { type: 'range', min: 1, max: 10, step: 1, value: iq.careLevel, onChange: function(e) { setKey('careLevel', parseInt(e.target.value, 10)); }, className: "w-full" })
+                      ),
+                      React.createElement("label", { className: "text-[10px]" },
+                        React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Time pressure (1-10)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.timePress)),
+                        React.createElement("input", { type: 'range', min: 1, max: 10, step: 1, value: iq.timePress, onChange: function(e) { setKey('timePress', parseInt(e.target.value, 10)); }, className: "w-full" })
+                      )
+                    ),
+                    React.createElement("div", { className: "flex gap-2 mb-2" },
+                      React.createElement("button", { onClick: function() {
+                        var t = new Date().toISOString().slice(11, 19);
+                        setIQ({ log: iq.log.concat([{ t: t, sz: iq.specimenSize, dp: iq.layerDepth, c: iq.careLevel, tp: iq.timePress, dmg: damage.toFixed(1), ins: insight.toFixed(1), state: sm.label }]) });
+                      }, className: "flex-1 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this approach'),
+                      React.createElement("button", { onClick: function() { setIQ({ specimenSize: 8, layerDepth: 1, careLevel: 5, timePress: 5 }); }, className: "px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+                    ),
+                    iq.log.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[9px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                      iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' · sz' + e.sz + ' dp' + e.dp + ' care' + e.c + ' tp' + e.tp + ' → dmg ' + e.dmg + ' ins ' + e.ins); })
+                    ),
+                    React.createElement("label", { className: "block text-[10px] font-bold opacity-85 mb-1" }, 'Your hypothesis (which slider is most overweighted by novice dissectors? Why?)'),
+                    React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., novices push depth too fast on small specimens, destroying anatomy before identifying it...', className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                    !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, className: "px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck — show open questions"),
+                    iq.stuckRevealed && React.createElement("div", { className: "p-2 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                      React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, 'Open questions (no answer key)'),
+                      React.createElement("ul", { className: "pl-4 m-0" },
+                        React.createElement("li", null, 'Why does specimen SIZE matter so much? What\'s easier to dissect — earthworm or pig?'),
+                        React.createElement("li", null, 'When does adding depth start REDUCING insight (because you destroy what you wanted to see)?'),
+                        React.createElement("li", null, 'How does this map to the ethical case for virtual dissection — what insight do you lose?'),
+                        React.createElement("li", null, 'What would happen if you went depth=5, care=10, time=1? Why is that combination contradictory?')
+                      )
+                    ),
+                    React.createElement("label", { className: "flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1" },
+                      React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                      React.createElement("span", null, 'I can explain why this combination of size, depth, care, and time pressure yields this outcome.')
+                    ),
+                    iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                    React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget — no score, no reveal. Damage/insight indices are pedagogical heuristics, not lab-grade rubrics. Real dissection outcomes depend on preservation quality, instrument sharpness, and specific anatomy.')
+                  );
+                })(),
+
                 // Glossary panel
 
                 React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl border border-violet-200 p-3" },
 
-                  React.createElement("div", { 
+                  React.createElement("div", {
 
                     className: "text-[11px] font-bold text-violet-700 mb-1 cursor-pointer",
 

@@ -859,7 +859,8 @@ window.StemLab = window.StemLab || {
           tabBtn('chart', 'Chart', '\uD83D\uDCCA'),
           tabBtn('stats', 'Statistics', '\uD83D\uDCC8'),
           tabBtn('quiz', 'Quiz', '\uD83C\uDFAF'),
-          tabBtn('tools', 'Tools', '\uD83D\uDEE0\uFE0F')
+          tabBtn('tools', 'Tools', '\uD83D\uDEE0\uFE0F'),
+          tabBtn('inquiry', 'Inquiry', '\uD83D\uDD2C')
         ),
 
         // ── Topic-accent hero band per tab ──
@@ -1556,7 +1557,105 @@ window.StemLab = window.StemLab || {
             : Math.abs(regR2) > 0.7 ? '\uD83D\uDCC8 Strong trend! Try the Z-Score Calculator in Statistics to explore individual values.'
             : Math.abs(regR2) < 0.3 ? '\uD83E\uDD14 Weak correlation. Check Spearman \u03C1 \u2014 there may be a non-linear monotonic trend!'
             : '\uD83D\uDCA1 Try Histogram mode and toggle Normal Curve to see how your data compares to a bell curve!'
-        )
+        ),
+
+        // \u2550\u2550 CORRELATION INQUIRY widget (H7b'') \u2550\u2550
+        activeTab === 'inquiry' && (function() {
+          var iq = d.corrInquiry || { trueR: 0.7, n: 30, noiseSD: 1.0, outlierCount: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('corrInquiry', Object.assign({}, iq, patch)); }
+          function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+          function lcg(seed) { var s = seed; return function() { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+          var rng = lcg(Math.round(iq.trueR * 1000) + iq.n * 7 + Math.round(iq.noiseSD * 100) + iq.outlierCount * 1000);
+          var xs = [], ys = [];
+          for (var i = 0; i < iq.n; i++) {
+            var x = rng() * 10 - 5;
+            var noise = (rng() + rng() + rng() - 1.5) * iq.noiseSD;
+            var y = iq.trueR * x + Math.sqrt(1 - iq.trueR * iq.trueR) * noise;
+            xs.push(x); ys.push(y);
+          }
+          for (var oi = 0; oi < iq.outlierCount; oi++) {
+            xs.push(-5 + rng() * 10);
+            ys.push((rng() > 0.5 ? 1 : -1) * (6 + rng() * 4));
+          }
+          var nn = xs.length;
+          var mx = xs.reduce(function(a, b) { return a + b; }, 0) / nn;
+          var my = ys.reduce(function(a, b) { return a + b; }, 0) / nn;
+          var sxy = 0, sxx = 0, syy = 0;
+          for (var j = 0; j < nn; j++) { var dx = xs[j] - mx, dy = ys[j] - my; sxy += dx * dy; sxx += dx * dx; syy += dy * dy; }
+          var observedR = sxy / Math.max(0.0001, Math.sqrt(sxx * syy));
+          var diff = Math.abs(observedR - iq.trueR);
+          var state = diff < 0.05 ? 'agree' : diff < 0.15 ? 'noisy' : diff < 0.30 ? 'masked' : 'misleading';
+          var sm = ({
+            agree: { label: 'Sample reflects truth', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Observed r matches the true population r within 0.05.' },
+            noisy: { label: 'Noisy estimate', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Observed r is off by 0.05-0.15. Expected for small n or moderate noise.' },
+            masked: { label: 'Truth obscured', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Observed r differs by 0.15-0.30. A real effect can look weak (or vice versa).' },
+            misleading: { label: 'Misleading sample', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Observed r is wildly off (>0.30). Outliers or tiny n can completely flip apparent direction.' }
+          })[state];
+          return h('div', { className: 'p-3 rounded-xl', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+            h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, '\uD83D\uDD2C Correlation Inquiry - When Samples Mislead'),
+            h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, 'Set true population r, sample size, noise, outliers. Predict how far observed r drifts. No score, no reveal.'),
+            h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' \u00B7 true r=' + iq.trueR.toFixed(2) + ', observed r=' + observedR.toFixed(2)),
+            h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
+            h('svg', { width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+              h('line', { x1: 30, y1: 100, x2: 310, y2: 100, stroke: '#1e293b' }),
+              h('line', { x1: 160, y1: 10, x2: 160, y2: 190, stroke: '#1e293b' }),
+              xs.map(function(xv, k) {
+                var px = 160 + xv * 20;
+                var py = 100 - ys[k] * 12;
+                if (px < 30 || px > 310 || py < 10 || py > 190) return null;
+                var isOutlier = k >= iq.n;
+                return h('circle', { key: 'p' + k, cx: px, cy: py, r: isOutlier ? 4 : 2.5, fill: isOutlier ? '#f87171' : sm.color, opacity: 0.75 });
+              }),
+              h('text', { x: 160, y: 196, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'n=' + nn + ' points (' + iq.outlierCount + ' outliers in red)')
+            ),
+            h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+              h('label', { className: 'text-[10px]' },
+                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'True population r'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.trueR.toFixed(2))),
+                h('input', { type: 'range', min: -1, max: 1, step: 0.05, value: iq.trueR, onChange: function(e) { setKey('trueR', parseFloat(e.target.value)); }, className: 'w-full' })
+              ),
+              h('label', { className: 'text-[10px]' },
+                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Sample size n'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.n)),
+                h('input', { type: 'range', min: 5, max: 200, step: 1, value: iq.n, onChange: function(e) { setKey('n', parseInt(e.target.value, 10)); }, className: 'w-full' })
+              ),
+              h('label', { className: 'text-[10px]' },
+                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Noise SD'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.noiseSD.toFixed(1))),
+                h('input', { type: 'range', min: 0, max: 3, step: 0.1, value: iq.noiseSD, onChange: function(e) { setKey('noiseSD', parseFloat(e.target.value)); }, className: 'w-full' })
+              ),
+              h('label', { className: 'text-[10px]' },
+                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Outliers'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.outlierCount)),
+                h('input', { type: 'range', min: 0, max: 10, step: 1, value: iq.outlierCount, onChange: function(e) { setKey('outlierCount', parseInt(e.target.value, 10)); }, className: 'w-full' })
+              )
+            ),
+            h('div', { className: 'flex gap-2 mb-2' },
+              h('button', { onClick: function() {
+                var t = new Date().toISOString().slice(11, 19);
+                setIQ({ log: iq.log.concat([{ t: t, tr: iq.trueR.toFixed(2), n: iq.n, sd: iq.noiseSD.toFixed(1), out: iq.outlierCount, obs: observedR.toFixed(2), state: sm.label }]) });
+              }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '\uD83D\uDCCB Log this draw'),
+              h('button', { onClick: function() { setIQ({ trueR: 0.7, n: 30, noiseSD: 1.0, outlierCount: 0 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+            ),
+            iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' \u00B7 tr' + e.tr + ' n' + e.n + ' sd' + e.sd + ' out' + e.out + ' \u2192 obs ' + e.obs); })
+            ),
+            h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, 'Your hypothesis (which single change most distorts the observed r?)'),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., 2 outliers at n=20 do more damage than 10 outliers at n=200...', className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "\uD83E\uDD14 I'm stuck - show open questions"),
+            iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+              h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, 'Open questions (no answer key)'),
+              h('ul', { className: 'pl-4 m-0' },
+                h('li', null, 'Can outliers FLIP the sign of r? Try true r=+0.7 with 3 outliers.'),
+                h('li', null, 'How does increasing n reduce the noisy-estimate state?'),
+                h('li', null, 'When does noise SD swamp the true signal entirely - what does r look like then?'),
+                h('li', null, 'Why is r alone never enough to publish? What else should accompany it (CI, scatter, robustness check)?')
+              )
+            ),
+            h('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
+              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+              h('span', null, 'I can explain why this combination of n, noise, and outliers produces this divergence.')
+            ),
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget - no score, no reveal. Synthetic data uses a deterministic seed from sliders, so the same slider position always reproduces the same draw. Real studies see one draw and have to reason about uncertainty.')
+          );
+        })()
       );
     }
   });

@@ -2506,6 +2506,118 @@ var d = labToolData.universe || {};
               )
             ),
 
+            // \u2550\u2550 HUBBLE / EXPANSION INQUIRY widget (H7b'') \u2550\u2550
+            React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-200') + " rounded-xl p-3 border" },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, "\uD83D\uDD2C Hubble Inquiry \u2014 Universe Expansion"),
+                React.createElement("button", { "aria-label": "Toggle Hubble inquiry section",
+                  onClick: function() { upd('showHubbleInquiry', !d.showHubbleInquiry); },
+                  className: "text-[11px] text-indigo-500 hover:text-indigo-700"
+                }, d.showHubbleInquiry ? 'Hide' : 'Explore \u2192')
+              ),
+              d.showHubbleInquiry && (function() {
+                var iq = d.hubbleInquiry || { distMpc: 100, hubbleConst: 70, darkEnergy: 70, matter: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+                function setIQ(patch) { upd('hubbleInquiry', Object.assign({}, iq, patch)); }
+                function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+                var c = 299792; // km/s
+                var recessionV = iq.hubbleConst * iq.distMpc;
+                var z = recessionV / c;
+                var lookBackGyr = (iq.distMpc * 3.262 / 1000) / (1 - z * 0.5);
+                var ageEstGyr = (1 / iq.hubbleConst) * 977.8; // simplified
+                var oTotal = (iq.darkEnergy + iq.matter) / 100;
+                var fate = iq.darkEnergy / 100 > 0.6 ? 'expanding' : iq.darkEnergy / 100 > 0.3 ? 'coasting' : iq.matter / 100 > 0.7 ? 'collapsing' : 'borderline';
+                var state = z > 1 ? 'highZ' : z > 0.3 ? 'cosmological' : z > 0.05 ? 'extragalactic' : z > 0.001 ? 'local' : 'gravbound';
+                var sm = ({
+                  gravbound: { label: 'Gravitationally bound', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'Distance < ~5 Mpc. Local Group is gravitationally bound \u2014 does not participate in cosmic expansion.' },
+                  local: { label: 'Local universe', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Recession dominates over peculiar motion. Hubble flow visible cleanly.' },
+                  extragalactic: { label: 'Extragalactic', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'z = 0.05\u20130.3. Cosmology starts to matter; need to account for expansion when measuring distance.' },
+                  cosmological: { label: 'Cosmological', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'z = 0.3\u20131. Galaxies appear younger (look-back time several Gyr). Stretching of spectral lines significant.' },
+                  highZ: { label: 'High-redshift / early universe', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'z > 1. Light from billions of years ago. James Webb territory.' }
+                })[state];
+                return React.createElement("div", { className: "p-2 rounded", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                  React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label + ' \u00B7 z=' + z.toFixed(3) + ', v=' + recessionV.toFixed(0) + ' km/s'),
+                  React.createElement("p", { className: "text-[10px] opacity-80 mb-2" }, sm.desc),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2" },
+                    [
+                      { label: 'Recession v', val: recessionV.toFixed(0) + ' km/s' },
+                      { label: 'Look-back', val: lookBackGyr.toFixed(2) + ' Gyr' },
+                      { label: 'H\u2080 age est', val: ageEstGyr.toFixed(1) + ' Gyr' }
+                    ].map(function(m) {
+                      return React.createElement("div", { key: m.label, className: "p-1 rounded text-center", style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
+                        React.createElement("div", { className: "text-[9px] opacity-60" }, m.label),
+                        React.createElement("div", { className: "text-[11px] font-bold font-mono", style: { color: sm.color } }, m.val)
+                      );
+                    })
+                  ),
+                  React.createElement("svg", { width: '100%', height: 120, viewBox: '0 0 320 120', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                    React.createElement("line", { x1: 30, y1: 100, x2: 310, y2: 100, stroke: '#1e293b' }),
+                    React.createElement("line", { x1: 30, y1: 10, x2: 30, y2: 100, stroke: '#1e293b' }),
+                    // Hubble line: v = H * d
+                    (function() {
+                      var pts = '';
+                      for (var dd = 0; dd <= 1000; dd += 25) {
+                        var vv = iq.hubbleConst * dd;
+                        var x = 30 + (dd / 1000) * 280;
+                        var y = 100 - Math.min(90, vv / 800);
+                        pts += x + ',' + y + ' ';
+                      }
+                      return React.createElement("polyline", { points: pts.trim(), fill: 'none', stroke: sm.color, strokeWidth: 1.5, opacity: 0.7 });
+                    })(),
+                    React.createElement("circle", { cx: 30 + (Math.min(1000, iq.distMpc) / 1000) * 280, cy: 100 - Math.min(90, recessionV / 800), r: 5, fill: sm.color, stroke: '#fff', strokeWidth: 1 }),
+                    React.createElement("text", { x: 30, y: 14, fill: '#94a3b8', fontSize: 8 }, 'v (km/s)'),
+                    React.createElement("text", { x: 310, y: 116, fill: '#94a3b8', fontSize: 8, textAnchor: 'end' }, 'distance (Mpc)'),
+                    React.createElement("text", { x: 160, y: 116, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'v = H\u2080d  \u00B7  fate: ' + fate)
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
+                    React.createElement("label", { className: "text-[10px]" },
+                      React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Distance (Mpc)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.distMpc)),
+                      React.createElement("input", { type: 'range', min: 1, max: 4000, step: 1, value: iq.distMpc, onChange: function(e) { setKey('distMpc', parseInt(e.target.value, 10)); }, className: "w-full" })
+                    ),
+                    React.createElement("label", { className: "text-[10px]" },
+                      React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'H\u2080 (km/s/Mpc)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.hubbleConst)),
+                      React.createElement("input", { type: 'range', min: 60, max: 80, step: 0.5, value: iq.hubbleConst, onChange: function(e) { setKey('hubbleConst', parseFloat(e.target.value)); }, className: "w-full" })
+                    ),
+                    React.createElement("label", { className: "text-[10px]" },
+                      React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, '\u03A9 dark energy (%)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.darkEnergy)),
+                      React.createElement("input", { type: 'range', min: 0, max: 100, step: 1, value: iq.darkEnergy, onChange: function(e) { setKey('darkEnergy', parseInt(e.target.value, 10)); }, className: "w-full" })
+                    ),
+                    React.createElement("label", { className: "text-[10px]" },
+                      React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, '\u03A9 matter (%)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.matter)),
+                      React.createElement("input", { type: 'range', min: 0, max: 100, step: 1, value: iq.matter, onChange: function(e) { setKey('matter', parseInt(e.target.value, 10)); }, className: "w-full" })
+                    )
+                  ),
+                  React.createElement("div", { className: "flex gap-2 mb-2" },
+                    React.createElement("button", { onClick: function() {
+                      var t = new Date().toISOString().slice(11, 19);
+                      setIQ({ log: iq.log.concat([{ t: t, d: iq.distMpc, H: iq.hubbleConst, de: iq.darkEnergy, m: iq.matter, z: z.toFixed(3), state: sm.label }]) });
+                    }, className: "flex-1 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '\uD83D\uDCCB Log this cosmology'),
+                    React.createElement("button", { onClick: function() { setIQ({ distMpc: 100, hubbleConst: 70, darkEnergy: 70, matter: 30 }); }, className: "px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+                  ),
+                  iq.log.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[9px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                    iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' \u00B7 d=' + e.d + ' H=' + e.H + ' \u03A9de=' + e.de + ' \u03A9m=' + e.m + ' \u2192 z=' + e.z); })
+                  ),
+                  React.createElement("label", { className: "block text-[10px] font-bold opacity-85 mb-1" }, 'Your hypothesis (why are Planck (~67) and SH0ES (~73) values of H\u2080 in tension?)'),
+                  React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., the early-universe and late-universe methods give different H\u2080 values \u2014 could be systematics or new physics...', className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                  !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, className: "px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "\uD83E\uDD14 I'm stuck \u2014 show open questions"),
+                  iq.stuckRevealed && React.createElement("div", { className: "p-2 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                    React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, 'Open questions (no answer key)'),
+                    React.createElement("ul", { className: "pl-4 m-0" },
+                      React.createElement("li", null, 'At z=1, the universe was about half its current size. What does that mean for the wavelength of light from that era?'),
+                      React.createElement("li", null, 'If H\u2080 were 50 km/s/Mpc instead of 70, would the universe be older or younger?'),
+                      React.createElement("li", null, 'Dark energy ~70% today. What if it were 100% \u2014 what would the fate be? 0%?'),
+                      React.createElement("li", null, 'Why doesn\'t the Local Group expand even though the rest of the universe does?')
+                    )
+                  ),
+                  React.createElement("label", { className: "flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1" },
+                    React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                    React.createElement("span", null, 'I can explain why this distance and \u03A9 mix yields this redshift / fate.')
+                  ),
+                  iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                  React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget \u2014 no score, no reveal. Look-back time uses linear approximation (valid for low z); for z>0.3 use cosmological calculator with full \u039BCDM integration. Hubble tension between Planck (~67) and local (~73) measurements is unresolved as of 2026.')
+                );
+              })()
+            ),
+
             // === SUPERNOVA TYPES ===
             React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-red-50 border-red-200') + " rounded-xl p-3 border" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },

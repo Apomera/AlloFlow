@@ -1382,7 +1382,8 @@ window.StemLab = window.StemLab || {
               { id: 'cents', label: '\uD83E\uDE99 Common Cents', icon: '\uD83E\uDE99' },
               { id: 'word', label: '\uD83D\uDCDD Word Problems', icon: '\uD83D\uDCDD' },
               { id: 'exchange', label: '\uD83C\uDF0D Currency Exchange', icon: '\uD83C\uDF0D' },
-              { id: 'finance', label: '\uD83D\uDCB0 Personal Finance', icon: '\uD83D\uDCB0' }
+              { id: 'finance', label: '\uD83D\uDCB0 Personal Finance', icon: '\uD83D\uDCB0' },
+              { id: 'inquiry', label: '\uD83D\uDD2C Compound Inquiry', icon: '\uD83D\uDD2C' }
             ];
 
             return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto animate-in fade-in duration-200" },
@@ -3096,6 +3097,120 @@ window.StemLab = window.StemLab || {
                   })()
                 )
               ),
+
+              // ══ COMPOUND INQUIRY widget (H7b'') ══
+              tab === 'inquiry' && (function() {
+                var iq = d.compInquiry || { principal: 1000, ratePct: 7, years: 30, contribMonthly: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+                function setIQ(patch) { upd('compInquiry', Object.assign({}, iq, patch)); }
+                function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+                var r = iq.ratePct / 100;
+                var n = iq.years;
+                var monthly = r / 12;
+                var months = n * 12;
+                // FV principal: P*(1+r)^n
+                var fvPrincipal = iq.principal * Math.pow(1 + monthly, months);
+                // FV monthly contribution: PMT * [((1+i)^n - 1) / i]
+                var fvContrib = monthly > 0 ? iq.contribMonthly * (Math.pow(1 + monthly, months) - 1) / monthly : iq.contribMonthly * months;
+                var fv = fvPrincipal + fvContrib;
+                var totalContrib = iq.principal + iq.contribMonthly * months;
+                var interest = fv - totalContrib;
+                var growthRatio = fv / Math.max(1, totalContrib);
+                var state = growthRatio < 1.1 ? 'flat' : growthRatio < 1.5 ? 'modest' : growthRatio < 3 ? 'compounding' : growthRatio < 8 ? 'exponential' : 'astronomic';
+                var sm = ({
+                  flat: { label: 'Flat', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'Almost no growth. Either zero rate or very short horizon.' },
+                  modest: { label: 'Modest', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Money grows by ~50%. Comparable to a bond fund or savings ladder.' },
+                  compounding: { label: 'Compounding', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Money doubles or triples. The textbook "magic of compound interest" zone.' },
+                  exponential: { label: 'Exponential', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Money grows 3-8x. Long horizon + good rate. This is what 401(k) advice optimizes for.' },
+                  astronomic: { label: 'Astronomic', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Money grows 8x+. Long horizons (40+ years) at 8-10% start producing fortune-class outcomes.' }
+                })[state];
+                // SVG: growth curve
+                var pts = [];
+                for (var yr = 0; yr <= n; yr++) {
+                  var m = yr * 12;
+                  var v = iq.principal * Math.pow(1 + monthly, m) + (monthly > 0 ? iq.contribMonthly * (Math.pow(1 + monthly, m) - 1) / monthly : iq.contribMonthly * m);
+                  pts.push({ x: yr, y: v });
+                }
+                var maxY = pts[pts.length - 1].y;
+                var svgPts = pts.map(function(p) { return (30 + (p.x / n) * 280) + ',' + (130 - (p.y / maxY) * 110); }).join(' ');
+                // Contribution-only line
+                var contribPts = [];
+                for (var yr2 = 0; yr2 <= n; yr2++) {
+                  var c = iq.principal + iq.contribMonthly * 12 * yr2;
+                  contribPts.push((30 + (yr2 / n) * 280) + ',' + (130 - (c / maxY) * 110));
+                }
+                return React.createElement("div", { className: "p-3 rounded-xl", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                  React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, '🔬 Compound Interest Inquiry'),
+                  React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, 'Set starting balance, rate, time horizon, and monthly contribution. Predict the growth ratio before reading it. No score, no reveal.'),
+                  React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label + ' · FV $' + fv.toFixed(0) + ' (' + growthRatio.toFixed(2) + 'x contributions)'),
+                  React.createElement("p", { className: "text-[10px] opacity-80 mb-2" }, sm.desc),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2" },
+                    [
+                      { label: 'Future value', val: '$' + fv.toFixed(0) },
+                      { label: 'Total contributed', val: '$' + totalContrib.toFixed(0) },
+                      { label: 'Interest earned', val: '$' + interest.toFixed(0) }
+                    ].map(function(m) {
+                      return React.createElement("div", { key: m.label, className: "p-1 rounded text-center", style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
+                        React.createElement("div", { className: "text-[9px] opacity-60" }, m.label),
+                        React.createElement("div", { className: "text-[11px] font-bold font-mono", style: { color: sm.color } }, m.val)
+                      );
+                    })
+                  ),
+                  React.createElement("svg", { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                    React.createElement("line", { x1: 30, y1: 130, x2: 310, y2: 130, stroke: '#1e293b' }),
+                    React.createElement("line", { x1: 30, y1: 18, x2: 30, y2: 130, stroke: '#1e293b' }),
+                    React.createElement("polyline", { points: contribPts.join(' '), fill: 'none', stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '4 3' }),
+                    React.createElement("polyline", { points: svgPts, fill: 'none', stroke: sm.color, strokeWidth: 2.5 }),
+                    React.createElement("text", { x: 30, y: 14, fill: '#94a3b8', fontSize: 9 }, '$' + maxY.toFixed(0)),
+                    React.createElement("text", { x: 160, y: 154, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, n + ' years · dashed = contributions only · solid = with compound interest')
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
+                    React.createElement("label", { className: "text-[10px]" },
+                      React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Starting balance ($)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.principal)),
+                      React.createElement("input", { type: 'range', min: 0, max: 50000, step: 100, value: iq.principal, onChange: function(e) { setKey('principal', parseInt(e.target.value, 10)); }, className: "w-full" })
+                    ),
+                    React.createElement("label", { className: "text-[10px]" },
+                      React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Annual rate (%)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.ratePct.toFixed(1))),
+                      React.createElement("input", { type: 'range', min: 0, max: 15, step: 0.1, value: iq.ratePct, onChange: function(e) { setKey('ratePct', parseFloat(e.target.value)); }, className: "w-full" })
+                    ),
+                    React.createElement("label", { className: "text-[10px]" },
+                      React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Years'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.years)),
+                      React.createElement("input", { type: 'range', min: 1, max: 50, step: 1, value: iq.years, onChange: function(e) { setKey('years', parseInt(e.target.value, 10)); }, className: "w-full" })
+                    ),
+                    React.createElement("label", { className: "text-[10px]" },
+                      React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Monthly add ($)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.contribMonthly)),
+                      React.createElement("input", { type: 'range', min: 0, max: 2000, step: 25, value: iq.contribMonthly, onChange: function(e) { setKey('contribMonthly', parseInt(e.target.value, 10)); }, className: "w-full" })
+                    )
+                  ),
+                  React.createElement("div", { className: "flex gap-2 mb-2" },
+                    React.createElement("button", { onClick: function() {
+                      var t = new Date().toISOString().slice(11, 19);
+                      setIQ({ log: iq.log.concat([{ t: t, P: iq.principal, r: iq.ratePct, n: iq.years, m: iq.contribMonthly, fv: fv.toFixed(0), state: sm.label }]) });
+                    }, className: "flex-1 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this scenario'),
+                    React.createElement("button", { onClick: function() { setIQ({ principal: 1000, ratePct: 7, years: 30, contribMonthly: 100 }); }, className: "px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+                  ),
+                  iq.log.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[9px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                    iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' · P$' + e.P + ' r' + e.r + '% n' + e.n + 'y +$' + e.m + '/mo → $' + e.fv); })
+                  ),
+                  React.createElement("label", { className: "block text-[10px] font-bold opacity-85 mb-1" }, 'Your hypothesis (which lever — rate, time, or contribution — has the most asymmetric power?)'),
+                  React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., starting 10 years earlier with $0 still beats waiting 10 years and starting with $20k...', className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                  !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, className: "px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck - show open questions"),
+                  iq.stuckRevealed && React.createElement("div", { className: "p-2 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                    React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, 'Open questions (no answer key)'),
+                    React.createElement("ul", { className: "pl-4 m-0" },
+                      React.createElement("li", null, 'Rule of 72: years to double = 72/rate. Check it at r=6% (should be 12 yrs).'),
+                      React.createElement("li", null, 'Starting at 25 with $200/mo vs 45 with $400/mo at age 65 — which gives more? Why?'),
+                      React.createElement("li", null, 'When does inflation eat your gains? (Real rate = nominal rate - inflation.)'),
+                      React.createElement("li", null, 'Why is the gap between dashed and solid line so much bigger in the last 10 years than the first 10?')
+                    )
+                  ),
+                  React.createElement("label", { className: "flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1" },
+                    React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                    React.createElement("span", null, 'I can explain why this principal/rate/time/contribution combination produces this growth state.')
+                  ),
+                  iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                  React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget - no score, no reveal. Compound interest assumes constant rate, no taxes, no inflation. Real-world returns are volatile (sequence-of-returns risk) and net of taxes + inflation.')
+                );
+              })(),
 
               // ── Educational Footer ──
               React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 border border-emerald-200 text-center" },
