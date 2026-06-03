@@ -16374,7 +16374,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { id: 'waterlab', icon: '\uD83E\uDDEA', label: 'Water Lab' },
 
-                { id: 'designer', icon: '\u270F\uFE0F', label: 'Designer' }
+                { id: 'designer', icon: '\u270F\uFE0F', label: 'Designer' },
+
+                { id: 'stressHunt', icon: '\uD83D\uDC1F', label: 'Stress Lab' }
 
               ].map(function (tab) {
 
@@ -19990,6 +19992,59 @@ var d = (labToolData && labToolData._aquarium) || {};
                     )
                   )
                 )
+              );
+            })(),
+
+            // === H7b'' inquiry widget: fish stress monitor ===
+            mode === 'stressHunt' && (function() {
+              var h = React.createElement;
+              var iq = d.stressHunt || { ammonia: 0.1, nitrite: 0.05, tempC: 25, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('stressHunt', Object.assign({}, iq, patch)); }
+              var stress = iq.ammonia * 8 + iq.nitrite * 12 + Math.abs(iq.tempC - 25) * 0.4;
+              var state;
+              if (stress < 0.5) state = 'healthy';
+              else if (stress < 1.5) state = 'warning';
+              else state = 'critical';
+              var sm = {
+                healthy:  { label: '🟢 Healthy', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'All parameters within tolerance. Fish thriving.' },
+                warning:  { label: '🟡 Warning', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Elevated toxins or temp drift. Investigate cause.' },
+                critical: { label: '🔴 Critical', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Acute toxicity / thermal stress. Imminent harm.' }
+              }[state];
+              return h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 shadow-sm space-y-3' },
+                h('h3', { className: 'text-sm font-black text-cyan-700' }, '🐟 Fish stress discovery'),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for ammonia, nitrite, temperature. Discrete 3-state stress level. No score, no reveal.'),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                  h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3' },
+                  [{ k: 'ammonia', l: 'NH₃ (ppm)', mn: 0, mx: 5, st: 0.05 },
+                   { k: 'nitrite', l: 'NO₂ (ppm)', mn: 0, mx: 3, st: 0.05 },
+                   { k: 'tempC', l: 'Temp (°C)', mn: 10, mx: 35, st: 0.5 }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'sh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
+                      h('input', { id: 'sh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.ammonia, n: iq.nitrite, t: iq.tempC, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ ammonia: 0.1, nitrite: 0.05, tempC: 25, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Which parameter is most toxic at what level?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Real tropical tanks: NH₃ should be 0. Investigate why.'),
+                    h('li', null, 'How does temperature change NH₃ toxicity? (Hint: pH/ionization)'))),
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain why nitrogen cycle balance is critical for fish health.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 3-state stress marker; no toxicity score; no reveal — by design.')
               );
             })()
 

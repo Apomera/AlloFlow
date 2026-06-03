@@ -7654,7 +7654,64 @@ var d = (labToolData.companionPlanting) || {};
 
               className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all"
 
-            }, "📸 Snapshot")
+            }, "📸 Snapshot"),
+
+            // === H7b'' inquiry widget: Three Sisters synergy ===
+            (function() {
+              var h = React.createElement;
+              var iq = d.synergyHunt || { cornDensity: 50, beanDensity: 30, squashDensity: 20, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('synergyHunt', Object.assign({}, iq, patch)); }
+              var totalPlants = iq.cornDensity + iq.beanDensity + iq.squashDensity;
+              var balanceScore = Math.min(iq.cornDensity, iq.beanDensity, iq.squashDensity) / 30;
+              var crowding = totalPlants > 130 ? 1 : 0;
+              var state;
+              if (balanceScore > 0.8 && !crowding) state = 'sisters';
+              else if (crowding) state = 'overcrowded';
+              else if (iq.beanDensity < 10) state = 'noFixation';
+              else state = 'unbalanced';
+              var sm = {
+                sisters:     { label: '🌽🫘🎃 Three Sisters thrive', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Balanced trio. Beans fix nitrogen, corn provides poles, squash shades soil.' },
+                overcrowded: { label: '⚠️ Overcrowded', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Competition for light, water, nutrients.' },
+                noFixation:  { label: '🟠 No nitrogen fixation', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Too few beans — soil nitrogen depletes.' },
+                unbalanced:  { label: '🟡 Unbalanced — monoculture risk', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'One species dominates. Synergy reduced.' }
+              }[state];
+              return h('div', { className: 'mt-3 p-4 rounded-xl bg-white border border-emerald-300 shadow-sm space-y-3' },
+                h('h3', { className: 'text-sm font-black text-emerald-700' }, '🌽 Three-sisters synergy discovery'),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for corn, bean, squash density. Discrete 4-state synergy. No score, no reveal.'),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                  h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3' },
+                  [{ k: 'cornDensity', l: 'Corn' },
+                   { k: 'beanDensity', l: 'Beans' },
+                   { k: 'squashDensity', l: 'Squash' }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'sh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-emerald-700' }, iq[s.k])),
+                      h('input', { id: 'sh-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.cornDensity, b: iq.beanDensity, sq: iq.squashDensity, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ cornDensity: 50, beanDensity: 30, squashDensity: 20, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What ratio makes the Three Sisters mutually beneficial?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Haudenosaunee traditional ratios: roughly equal. Investigate why.'),
+                    h('li', null, 'Beans fix nitrogen via Rhizobium. What happens at near-zero beans?'))),
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how each species supports the others.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state synergy marker; no yield score; no reveal — by design.')
+              );
+            })()
 
           );
       })();
