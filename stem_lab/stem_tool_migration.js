@@ -275,7 +275,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         { id: 'wind', label: 'Wind Currents', icon: '\uD83C\uDF2C\uFE0F' },
         { id: 'routes', label: 'Migration Routes', icon: '\uD83D\uDDFA\uFE0F' },
         { id: 'aero', label: 'Aerodynamics', icon: '\u2708\uFE0F' },
-        { id: 'navigate', label: 'Weather & Nav', icon: '\uD83E\uDDED' }
+        { id: 'navigate', label: 'Weather & Nav', icon: '\uD83E\uDDED' },
+        { id: 'inquiry', label: 'Energy Inquiry', icon: '\uD83D\uDD2C' }
       ];
 
       // ── Theme helpers ──
@@ -3309,6 +3310,107 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       else if (tab === 'routes') tabContent = renderRoutes();
       else if (tab === 'aero') tabContent = renderAero();
       else if (tab === 'navigate') tabContent = renderNavigate();
+      else if (tab === 'inquiry') tabContent = renderMigrationInquiry();
+
+      function renderMigrationInquiry() {
+        var iq = d.inquiry || { wingspan: 1.2, mass: 0.8, headwind: 0, vMode: 'V', distance: 4000, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd('inquiry', Object.assign({}, iq, patch)); }
+        function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+        // Approximate energy model. Drag ∝ mass^(2/3) / wingspan; V-formation saves ~22% drag.
+        var baseE = Math.pow(iq.mass, 0.67) / Math.max(0.1, iq.wingspan) * 8 + (iq.headwind * iq.headwind) * 0.04;
+        var fmtSave = iq.vMode === 'V' ? 0.78 : iq.vMode === 'echelon' ? 0.88 : 1.0;
+        var energyPerKm = baseE * fmtSave;
+        var totalKJ = energyPerKm * iq.distance;
+        var fatBurnKJ = iq.mass * 1000 * 0.30 * 39; // 30% fat × 39 kJ/g
+        var feasibility = fatBurnKJ / Math.max(1, totalKJ);
+        var state = feasibility < 0.5 ? 'fatal' : feasibility < 0.9 ? 'borderline' : feasibility < 1.5 ? 'feasible' : feasibility < 3 ? 'comfortable' : 'easy';
+        var sm = ({
+          fatal: { label: 'Fatal', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Energy budget < 50% of distance — bird would starve mid-flight. Stopover required.' },
+          borderline: { label: 'Borderline', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Energy budget near distance — possible with perfect tailwind, otherwise stopovers mandatory.' },
+          feasible: { label: 'Feasible', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Single-leg flight realistic but tight. Most species refuel midway anyway.' },
+          comfortable: { label: 'Comfortable', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Distance is well within energy budget. Bar-tailed godwit-class endurance.' },
+          easy: { label: 'Easy', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: '3×+ reserve. Either short distance or oversized fat stores.' }
+        })[state];
+        // SVG energy budget bar
+        var pct = Math.min(1, totalKJ / fatBurnKJ);
+        return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+          h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Energy Inquiry — Can the bird make it?'),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Pick wingspan, mass, headwind, formation, and distance. Predict the energy state. No score, no reveal.'),
+          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · reserve ratio ' + feasibility.toFixed(2) + 'x'),
+          h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
+            [
+              { label: 'Energy/km', val: energyPerKm.toFixed(2) + ' kJ' },
+              { label: 'Total need', val: totalKJ.toFixed(0) + ' kJ' },
+              { label: 'Fat budget', val: fatBurnKJ.toFixed(0) + ' kJ' }
+            ].map(function(m) {
+              return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
+                h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val)
+              );
+            })
+          ),
+          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+            h('text', { x: 10, y: 18, fill: '#94a3b8', fontSize: 10 }, 'Fat reserve (kJ)'),
+            h('rect', { x: 10, y: 24, width: 300, height: 22, fill: '#0f172a', stroke: '#1e293b' }),
+            h('rect', { x: 10, y: 24, width: Math.min(300, pct * 300), height: 22, fill: sm.color, opacity: 0.85 }),
+            h('text', { x: 160, y: 39, fill: '#fff', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'flight needs ' + (pct * 100).toFixed(0) + '% of fat'),
+            h('text', { x: 10, y: 68, fill: '#94a3b8', fontSize: 9 }, 'distance ' + iq.distance + ' km · headwind ' + iq.headwind + ' m/s · fmt ' + iq.vMode + ' (saves ' + Math.round((1 - fmtSave) * 100) + '%)')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+            h('label', null,
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Wingspan'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.wingspan.toFixed(2) + ' m')),
+              h('input', { type: 'range', min: 0.1, max: 3.0, step: 0.05, value: iq.wingspan, onChange: function(e) { setKey('wingspan', parseFloat(e.target.value)); }, style: { width: '100%' } })
+            ),
+            h('label', null,
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Mass'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.mass.toFixed(2) + ' kg')),
+              h('input', { type: 'range', min: 0.05, max: 12, step: 0.05, value: iq.mass, onChange: function(e) { setKey('mass', parseFloat(e.target.value)); }, style: { width: '100%' } })
+            ),
+            h('label', null,
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Headwind'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.headwind + ' m/s')),
+              h('input', { type: 'range', min: -10, max: 20, step: 1, value: iq.headwind, onChange: function(e) { setKey('headwind', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            ),
+            h('label', null,
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Distance'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.distance + ' km')),
+              h('input', { type: 'range', min: 100, max: 15000, step: 100, value: iq.distance, onChange: function(e) { setKey('distance', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            )
+          ),
+          h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+            ['solo', 'echelon', 'V'].map(function(f) {
+              var active = iq.vMode === f;
+              return h('button', { key: f, onClick: function() { setKey('vMode', f); }, style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + (active ? sm.color : '#1e293b'), background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', cursor: 'pointer' } }, f);
+            })
+          ),
+          h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+            h('button', { onClick: function() {
+              var t = new Date().toISOString().slice(11, 19);
+              setIQ({ log: iq.log.concat([{ t: t, w: iq.wingspan.toFixed(2), m: iq.mass.toFixed(2), hw: iq.headwind, fmt: iq.vMode, d: iq.distance, fr: feasibility.toFixed(2), state: sm.label }]) });
+            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this profile'),
+            h('button', { onClick: function() { setIQ({ wingspan: 1.2, mass: 0.8, headwind: 0, vMode: 'V', distance: 4000 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+          ),
+          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+            iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · w' + e.w + ' m' + e.m + ' hw' + e.hw + ' ' + e.fmt + ' d' + e.d + ' → ' + e.fr + 'x'); })
+          ),
+          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which parameter forces the most stopovers?)'),
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., V-formation savings only pay off above 1500 km because takeoff cost dominates...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+            h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+            h('ul', { style: { margin: 0, paddingLeft: 16 } },
+              h('li', null, 'Why would a heavier bird necessarily need MORE energy per km — what does that have to do with drag?'),
+              h('li', null, 'A 10 m/s headwind doubles the work — what happens if half the journey has 10 m/s tailwind?'),
+              h('li', null, 'Why is V-formation savings about 22%? What does it cost the lead bird?'),
+              h('li', null, 'How does a hummingbird (4 g, 1500 km Gulf of Mexico crossing) even survive its migration?')
+            )
+          ),
+          h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+            h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+            h('span', null, 'I can explain why this profile yields this energy state.')
+          ),
+          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Energy model is illustrative (drag ∝ m^0.67 / wingspan with V-formation savings 22% per Lissaman & Shollenberger 1970). For real-world stopover ecology consult primary literature.')
+        );
+      }
 
       // Topic-accent hero band per tab
       var TAB_META = {

@@ -2009,7 +2009,8 @@ const d = labToolData.solarSystem;
     "Workshop",
     "Transfers",
     "Challenges",
-    "True/False"
+    "True/False",
+    "Kepler Inquiry"
   ];
 
   function setTab(i) { upd("orr_tab", i); }
@@ -2025,7 +2026,7 @@ const d = labToolData.solarSystem;
   /* ====================================================================
    *  4. TAB HEADER
    * ==================================================================== */
-  var TAB_ICONS = ["\uD83C\uDF0C", "I", "II", "III", "\uD83D\uDD27", "\uD83D\uDE80", "\uD83C\uDFC6", "\u2753"];
+  var TAB_ICONS = ["\uD83C\uDF0C", "I", "II", "III", "\uD83D\uDD27", "\uD83D\uDE80", "\uD83C\uDFC6", "\u2753", "\uD83D\uDD2C"];
   var tabHeader = h("div", {
     className: "orr-tab-strip",
     style: {
@@ -5173,7 +5174,105 @@ const d = labToolData.solarSystem;
     case 5: content = buildTransfersTab(); break;
     case 6: content = buildChallengesTab(); break;
     case 7: content = buildTrueFalseTab(); break;
+    case 8: content = buildKeplerInquiryTab(); break;
     default: content = h("div", null, "Unknown tab");
+  }
+
+  function buildKeplerInquiryTab() {
+    var iq = d.keplerInquiry || { a: 1.0, e: 0.0, mass: 1.0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+    function setIQ(patch) { upd('keplerInquiry', Object.assign({}, iq, patch)); }
+    function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+    var period = Math.pow(iq.a, 1.5) * Math.sqrt(1 / iq.mass); // years (Sun-mass units)
+    var perihelion = iq.a * (1 - iq.e);
+    var aphelion = iq.a * (1 + iq.e);
+    var vPeri = 29.78 * Math.sqrt((1 + iq.e) / ((1 - iq.e) * iq.a)) * Math.sqrt(iq.mass);
+    var vAph = 29.78 * Math.sqrt((1 - iq.e) / ((1 + iq.e) * iq.a)) * Math.sqrt(iq.mass);
+    var state = iq.e < 0.05 ? 'circular' : iq.e < 0.25 ? 'elliptical' : iq.e < 0.7 ? 'eccentric' : iq.e < 0.95 ? 'cometary' : 'parabolic';
+    var sm = ({
+      circular: { label: 'Circular', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Eccentricity < 0.05 — essentially circular orbit. Earth (e=0.017) and Venus (e=0.007) live here.' },
+      elliptical: { label: 'Elliptical', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Mildly elliptical — Mercury (e=0.21) and Mars (e=0.09). Noticeable speed variation across orbit.' },
+      eccentric: { label: 'Eccentric', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Highly elliptical — Pluto (e=0.25), many TNOs. Speed at perihelion >> aphelion.' },
+      cometary: { label: 'Cometary', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Halley-class orbit (Halley e=0.97). Spends most of its time far from Sun, brief perihelion passage.' },
+      parabolic: { label: 'Parabolic / hyperbolic', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'e → 1 means object barely bound (parabolic) or unbound (hyperbolic) — could be interstellar.' }
+    })[state];
+    // SVG ellipse
+    var w = 280, hpx = 160, cx = w / 2, cy = hpx / 2;
+    var a = 100, b = a * Math.sqrt(1 - iq.e * iq.e);
+    var foc = a * iq.e;
+    return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+      h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Kepler Inquiry — Orbital Mechanics Sandbox'),
+      h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set semi-major axis, eccentricity, and central-body mass. Predict the orbital class — circular, elliptical, eccentric, cometary. No score, no reveal.'),
+      h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label),
+      h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 10 } },
+        [
+          { label: 'Period', val: period < 1 ? (period * 365).toFixed(1) + ' d' : period.toFixed(2) + ' yr' },
+          { label: 'Perihelion', val: perihelion.toFixed(3) + ' AU' },
+          { label: 'Aphelion', val: aphelion.toFixed(3) + ' AU' },
+          { label: 'v ratio (p/a)', val: (vPeri / vAph).toFixed(2) + 'x' }
+        ].map(function(m) {
+          return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
+            h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
+            h('div', { style: { fontSize: 11, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val)
+          );
+        })
+      ),
+      h('svg', { width: '100%', height: 180, viewBox: '0 0 280 180', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+        h('ellipse', { cx: cx, cy: cy, rx: a, ry: b, fill: 'none', stroke: sm.color, strokeWidth: 1.5 }),
+        h('circle', { cx: cx + foc, cy: cy, r: 5, fill: '#fbbf24' }),
+        h('text', { x: cx + foc + 8, y: cy - 6, fill: '#fbbf24', fontSize: 10, fontWeight: 700 }, '☉ Sun'),
+        h('circle', { cx: cx - foc, cy: cy, r: 2, fill: '#94a3b8' }),
+        h('text', { x: cx - foc + 6, y: cy - 4, fill: '#475569', fontSize: 8 }, 'empty focus'),
+        h('circle', { cx: cx + a, cy: cy, r: 3, fill: '#4ade80' }),
+        h('text', { x: cx + a - 12, y: cy + 14, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, 'aphelion'),
+        h('circle', { cx: cx - a, cy: cy, r: 3, fill: '#fb923c' }),
+        h('text', { x: cx - a + 12, y: cy + 14, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, 'perihelion'),
+        h('line', { x1: cx - a, y1: cy + b + 6, x2: cx + a, y2: cy + b + 6, stroke: '#475569', strokeDasharray: '2 2' }),
+        h('text', { x: cx, y: cy + b + 22, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, '2a (' + (2 * iq.a).toFixed(2) + ' AU)')
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 10 } },
+        h('label', null,
+          h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Semi-major a'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.a.toFixed(2) + ' AU')),
+          h('input', { type: 'range', min: 0.1, max: 50, step: 0.1, value: iq.a, onChange: function(e) { setKey('a', parseFloat(e.target.value)); }, style: { width: '100%' } })
+        ),
+        h('label', null,
+          h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Eccentricity e'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.e.toFixed(3))),
+          h('input', { type: 'range', min: 0, max: 0.98, step: 0.005, value: iq.e, onChange: function(e) { setKey('e', parseFloat(e.target.value)); }, style: { width: '100%' } })
+        ),
+        h('label', null,
+          h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Central mass'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.mass.toFixed(2) + ' M☉')),
+          h('input', { type: 'range', min: 0.05, max: 30, step: 0.05, value: iq.mass, onChange: function(e) { setKey('mass', parseFloat(e.target.value)); }, style: { width: '100%' } })
+        )
+      ),
+      h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+        h('button', { onClick: function() {
+          var t = new Date().toISOString().slice(11, 19);
+          setIQ({ log: iq.log.concat([{ t: t, a: iq.a.toFixed(2), e: iq.e.toFixed(3), m: iq.mass.toFixed(2), p: period.toFixed(2), state: sm.label }]) });
+        }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this orbit'),
+        h('button', { onClick: function() { setIQ({ a: 1.0, e: 0.0, mass: 1.0 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset (Earth)')
+      ),
+      iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+        iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · a' + e.a + ' e' + e.e + ' M' + e.m + ' → T=' + e.p + 'yr'); })
+      ),
+      h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which slider has more effect on PERIOD vs SHAPE?)'),
+      h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., e only changes shape — period is determined by a and mass alone...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+      !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+      iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+        h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+        h('ul', { style: { margin: 0, paddingLeft: 16 } },
+          h('li', null, 'Does eccentricity change orbital PERIOD? Try e=0 vs e=0.5 at same a.'),
+          h('li', null, 'Halley\'s comet has a=17.8 AU, e=0.97. What does that imply for its period — and how often it visits perihelion?'),
+          h('li', null, 'If the Sun lost half its mass instantly, what would happen to Earth\'s orbital period?'),
+          h('li', null, 'At what e value does an orbit become unbound? What determines the boundary?')
+        )
+      ),
+      h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+        h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+        h('span', null, 'I can explain why this a/e/M combination yields this orbital class.')
+      ),
+      iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+      h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. T = √(a³/M) per Kepler III with M in solar masses, a in AU, T in years. Vis-viva used for v at perihelion / aphelion.')
+    );
   }
 
   // Topic-accent hero band per tab
@@ -5185,7 +5284,8 @@ const d = labToolData.solarSystem;
     { accent: "#06b6d4", soft: "rgba(6,182,212,0.10)",  title: "Workshop — build your own orbit",         hint: "Set semi-major axis + eccentricity; the orrery shows the orbit in real time. Try e=0.9 — that's comet territory. Try e=0 — perfect circle." },
     { accent: "#dc2626", soft: "rgba(220,38,38,0.10)",  title: "Hohmann transfers — actual rocket math",  hint: "The minimum-energy way to travel between two circular orbits. Two burns: leave the inner orbit at perihelion of transfer, arrive at the outer orbit at aphelion." },
     { accent: "#fbbf24", soft: "rgba(251,191,36,0.10)", title: "Challenges — apply Kepler's laws",        hint: "Multi-step problems: predict periods from semi-major axis, identify perihelion vs aphelion speeds, compute transfer-orbit Δv. AP Physics 1 + 2 territory." },
-    { accent: "#8b5cf6", soft: "rgba(139,92,246,0.10)", title: "True / False — concept check",            hint: "Quick discrimination quiz on common Kepler misconceptions. Targets the orbital myths (\"closer = slower,\" \"orbits are circles,\" \"all orbits go the same direction\")." }
+    { accent: "#8b5cf6", soft: "rgba(139,92,246,0.10)", title: "True / False — concept check",            hint: "Quick discrimination quiz on common Kepler misconceptions. Targets the orbital myths (\"closer = slower,\" \"orbits are circles,\" \"all orbits go the same direction\")." },
+    { accent: "#14b8a6", soft: "rgba(20,184,166,0.10)", title: "Kepler Inquiry — orbital mechanics sandbox", hint: "Move semi-major axis, eccentricity, and central-body mass. Predict the orbital class — circular, elliptical, eccentric, cometary, parabolic. No score, no reveal." }
   ];
   var meta = TAB_META[stab] || TAB_META[0];
   // Cosmic hero band: radial accent glow + faint star dust (CSS pseudos in

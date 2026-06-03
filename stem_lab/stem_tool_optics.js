@@ -2834,7 +2834,8 @@
             { id: 'reference', label: '📊 Reference', desc: 'Trivia · records · quotes · safety · data · teaching tips' },
             { id: 'sleuth', label: '🕵️ Sleuth', desc: 'Predict image from setup' },
             { id: 'quiz', label: '📝 Quiz', desc: 'AP exam practice' },
-            { id: 'mastery', label: '🏅 Mastery', desc: 'Concept progress + which questions you have nailed' }
+            { id: 'mastery', label: '🏅 Mastery', desc: 'Concept progress + which questions you have nailed' },
+            { id: 'inquiry', label: '🔬 Inquiry', desc: 'Snell\'s law sandbox — predict TIR + dispersion' }
           ].map(function(tab) {
             var sel = d.mode === tab.id;
             return h('button', {
@@ -2909,6 +2910,115 @@
         d.mode === 'quiz' && _renderQuizPanel(d, upd, h, addToast, awardXP, setOpCeleb),
         d.mode === 'viz' && _renderVizPanel(d, upd, h),
         d.mode === 'mastery' && _renderMasteryPanel(d, upd, h),
+        d.mode === 'inquiry' && (function() {
+          var iq = d.snellInquiry || { n1: 1.0, n2: 1.5, angle: 30, wavelength: 550, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('snellInquiry', Object.assign({}, iq, patch)); }
+          function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+          var rad = iq.angle * Math.PI / 180;
+          var sinT2 = (iq.n1 / iq.n2) * Math.sin(rad);
+          var tirCritical = iq.n1 > iq.n2 ? Math.asin(iq.n2 / iq.n1) * 180 / Math.PI : null;
+          var isTIR = sinT2 > 1;
+          var theta2 = isTIR ? null : Math.asin(sinT2) * 180 / Math.PI;
+          // dispersion: lambda affects n by ~0.01 (toy Cauchy approximation)
+          var nDisp = iq.n2 + 0.025 * (550 - iq.wavelength) / 200;
+          var state = isTIR ? 'tir' : iq.n2 > iq.n1 ? (iq.angle > 60 ? 'glancing' : 'denser') : (iq.angle > tirCritical * 0.9 ? 'nearCrit' : 'lighter');
+          var sm = ({
+            tir: { label: 'Total Internal Reflection', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Angle exceeds critical angle. No light transmitted — all reflects back. Basis of fiber optics, diamond brilliance, prism periscopes.' },
+            nearCrit: { label: 'Near critical', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Approaching TIR boundary. Refracted ray runs nearly along the surface; transmitted intensity dropping.' },
+            denser: { label: 'Bend toward normal', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Light entering denser medium (n₁ < n₂). Refracted ray bends TOWARD the normal — slower light in dense medium.' },
+            lighter: { label: 'Bend away from normal', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Light entering less-dense medium. Refracted ray bends AWAY from normal — faster light in light medium.' },
+            glancing: { label: 'Grazing incidence', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Steep angle from normal. Much energy reflected (Fresnel rises), little transmitted.' }
+          })[state];
+          // SVG: incident + refracted rays
+          var cx = 160, cy = 100, len = 80;
+          var incX = cx - Math.sin(rad) * len;
+          var incY = cy - Math.cos(rad) * len;
+          var refX = isTIR ? cx + Math.sin(rad) * len : cx + Math.sin(theta2 * Math.PI / 180) * len;
+          var refY = isTIR ? cy - Math.cos(rad) * len : cy + Math.cos(theta2 * Math.PI / 180) * len;
+          return h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+            h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Snell\'s Law Inquiry — Refraction, TIR, Dispersion'),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set n₁, n₂, incidence angle, and wavelength. Predict where the system transitions from refraction to TIR. No score, no reveal.'),
+            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label),
+            h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
+              [
+                { label: 'θ₂ (refracted)', val: isTIR ? '— (TIR)' : theta2.toFixed(1) + '°' },
+                { label: 'Critical angle', val: tirCritical != null ? tirCritical.toFixed(1) + '°' : '— (n₁ ≤ n₂)' },
+                { label: 'n₂(λ) toy', val: nDisp.toFixed(3) }
+              ].map(function(m) {
+                return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
+                  h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val)
+                );
+              })
+            ),
+            h('svg', { width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+              h('rect', { x: 0, y: 0, width: 320, height: 100, fill: '#0a1a2a', opacity: 0.4 }),
+              h('rect', { x: 0, y: 100, width: 320, height: 100, fill: sm.color, opacity: 0.12 }),
+              h('line', { x1: 0, y1: 100, x2: 320, y2: 100, stroke: '#475569', strokeWidth: 1 }),
+              h('line', { x1: cx, y1: 0, x2: cx, y2: 200, stroke: '#1e293b', strokeDasharray: '3 3' }),
+              h('text', { x: 8, y: 14, fill: '#94a3b8', fontSize: 9 }, 'medium 1 (n₁=' + iq.n1.toFixed(2) + ')'),
+              h('text', { x: 8, y: 116, fill: '#94a3b8', fontSize: 9 }, 'medium 2 (n₂=' + iq.n2.toFixed(2) + ')'),
+              h('text', { x: cx + 4, y: 12, fill: '#475569', fontSize: 8 }, 'normal'),
+              h('line', { x1: incX, y1: incY, x2: cx, y2: cy, stroke: '#fbbf24', strokeWidth: 2 }),
+              h('text', { x: incX - 6, y: incY - 4, fill: '#fbbf24', fontSize: 10, textAnchor: 'end' }, 'θ₁=' + iq.angle + '°'),
+              h('line', { x1: cx, y1: cy, x2: refX, y2: refY, stroke: isTIR ? '#f87171' : sm.color, strokeWidth: 2, strokeDasharray: isTIR ? '5 3' : '0' }),
+              h('text', { x: refX + 6, y: refY + 14, fill: isTIR ? '#f87171' : sm.color, fontSize: 10 }, isTIR ? 'TIR (reflected)' : 'θ₂=' + theta2.toFixed(1) + '°'),
+              h('text', { x: 160, y: 195, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'n₁sinθ₁ = n₂sinθ₂  →  ' + iq.n1.toFixed(2) + '·' + Math.sin(rad).toFixed(3) + ' = ' + (isTIR ? '✗' : iq.n2.toFixed(2) + '·' + sinT2.toFixed(3)))
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+              h('label', null,
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'n₁ (medium 1)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.n1.toFixed(2))),
+                h('input', { type: 'range', min: 1.0, max: 2.5, step: 0.01, value: iq.n1, onChange: function(e) { setKey('n1', parseFloat(e.target.value)); }, style: { width: '100%' } })
+              ),
+              h('label', null,
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'n₂ (medium 2)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.n2.toFixed(2))),
+                h('input', { type: 'range', min: 1.0, max: 2.5, step: 0.01, value: iq.n2, onChange: function(e) { setKey('n2', parseFloat(e.target.value)); }, style: { width: '100%' } })
+              ),
+              h('label', null,
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Incidence angle θ₁'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.angle + '°')),
+                h('input', { type: 'range', min: 0, max: 89, step: 1, value: iq.angle, onChange: function(e) { setKey('angle', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', null,
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Wavelength λ'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.wavelength + ' nm')),
+                h('input', { type: 'range', min: 380, max: 740, step: 10, value: iq.wavelength, onChange: function(e) { setKey('wavelength', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              )
+            ),
+            h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+              [['air', 1.00], ['water', 1.33], ['glass', 1.50], ['acrylic', 1.49], ['diamond', 2.42]].map(function(p) {
+                return h('button', { key: p[0], onClick: function() { setIQ({ n2: p[1] }); }, style: { padding: '3px 8px', fontSize: 10, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, p[0] + ' (' + p[1] + ')');
+              })
+            ),
+            h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+              h('button', { onClick: function() {
+                var t = new Date().toISOString().slice(11, 19);
+                setIQ({ log: iq.log.concat([{ t: t, n1: iq.n1.toFixed(2), n2: iq.n2.toFixed(2), a: iq.angle, l: iq.wavelength, tir: isTIR, state: sm.label }]) });
+              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this configuration'),
+              h('button', { onClick: function() { setIQ({ n1: 1.0, n2: 1.5, angle: 30, wavelength: 550 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+            ),
+            iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · n₁=' + e.n1 + ' n₂=' + e.n2 + ' θ=' + e.a + ' λ=' + e.l + (e.tir ? ' · TIR' : '')); })
+            ),
+            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (where exactly does TIR start, and why does diamond TIR more aggressively than glass?)'),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., diamond has critical angle ~24° vs glass ~42°, so any steeper angle TIRs...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+            iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('ul', { style: { margin: 0, paddingLeft: 16 } },
+                h('li', null, 'Why is there NO critical angle when going from less-dense to more-dense?'),
+                h('li', null, 'Set water→air (n₁=1.33 n₂=1.00). What\'s the critical angle? Why do fish see the world compressed into a cone above?'),
+                h('li', null, 'In a rainbow, why does red bend less than blue? Connect to the wavelength slider.'),
+                h('li', null, 'How does a prism separate white light if all wavelengths obey the same Snell\'s law?')
+              )
+            ),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+              h('span', null, 'I can explain why this n₁/n₂/θ combination yields this refraction state.')
+            ),
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Dispersion model is illustrative (Cauchy-like first-order); real dispersion curves are material-specific (Sellmeier coefficients).')
+          );
+        })(),
         // Concept-mastery celebration overlay — fixed-position, top of screen,
         // self-clears after 3.5s. Renders on top of any view.
         opCeleb && h('div', {

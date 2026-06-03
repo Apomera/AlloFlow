@@ -15761,7 +15761,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
 
-      var BADGE_IDS = ['myNutritionKit','macroLab','microAtlas','labelReader','energyBalance','digestion','myths','foodMood','edAwareness','maineReality','careerPaths','maineDay','deficiencyDetective','hydrationLab'];
+      var BADGE_IDS = ['myNutritionKit','macroLab','microAtlas','labelReader','energyBalance','digestion','myths','foodMood','edAwareness','maineReality','careerPaths','maineDay','deficiencyDetective','hydrationLab','macroInquiry'];
       var goto = function(v) {
         setView(v);
         upd('view', v);
@@ -15976,6 +15976,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             desc: 'Daily-needs calculator (NAM Adequate Intake by age/sex), self-check quiz with the 8-point urine-color scale (ACSM/Armstrong), beverage comparison (water vs sports drink vs soda — sodium, sugar, hydration efficacy), and a sweat-rate calculator for student athletes (NATA standard). Physiology-first framing: hydration as body function, never appetite suppression.',
             color: 'from-sky-500 to-cyan-700',
             ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'macroInquiry', title: 'Macro Inquiry', icon: '🔬',
+            subtitle: 'Predict energy state from macro ratios',
+            desc: 'Move four sliders (carb / protein / fat / fiber). Predict how the macro pattern shifts the energy state — ketogenic, low-carb, balanced, high-carb, sugar-dominant. Includes a satiety estimate and a fiber-adjusted glycemic index proxy. Discrete states, no score, no reveal — you mark your own understanding.',
+            color: 'from-teal-500 to-emerald-700',
+            ring: 'ring-teal-500/40',
             ready: true
           }
         ];
@@ -19616,6 +19624,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         }
       ];
 
+      function MacroInquiryWidget() {
+        var iq = d.macroInquiry || { carbs: 50, protein: 20, fat: 30, fiber: 25, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd('macroInquiry', Object.assign({}, iq, patch)); }
+        function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+        var total = iq.carbs + iq.protein + iq.fat;
+        var pC = total > 0 ? iq.carbs / total : 0.33;
+        var pP = total > 0 ? iq.protein / total : 0.33;
+        var pF = total > 0 ? iq.fat / total : 0.33;
+        // satiety proxy: protein + fiber + fat dominate
+        var satiety = pP * 100 * 1.5 + iq.fiber * 1.0 + pF * 100 * 0.7 + pC * 100 * 0.3;
+        var fiberAdjGI = Math.max(0, Math.min(100, pC * 100 * 1.3 - iq.fiber * 1.4));
+        var state = pC < 0.10 ? 'keto' : pC < 0.30 ? 'lowcarb' : pC < 0.55 ? 'balanced' : pC < 0.75 ? 'highcarb' : 'sugarheavy';
+        var sm = ({
+          keto: { label: 'Ketogenic', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Carbs <10% of macros. Body shifts to fat oxidation; ketone production likely after several days.' },
+          lowcarb: { label: 'Low-carb', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Carbs 10–30%. Stable blood sugar likely; common Mediterranean/paleo range.' },
+          balanced: { label: 'Balanced', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Carbs 30–55%. DGA/MyPlate target zone. Sustainable for most people.' },
+          highcarb: { label: 'High-carb', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Carbs 55–75%. Endurance-athlete or traditional Asian-rice-based pattern; fine with fiber + protein.' },
+          sugarheavy: { label: 'Sugar-heavy', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Carbs >75% and low fiber → glycemic-load risk. Typical Western processed-food trap.' }
+        })[state];
+        // SVG: stacked bar + macro pie
+        var cy = 80;
+        function arc(start, end, r, ir) {
+          var a0 = start * 2 * Math.PI - Math.PI / 2;
+          var a1 = end * 2 * Math.PI - Math.PI / 2;
+          var x0 = 100 + Math.cos(a0) * r, y0 = cy + Math.sin(a0) * r;
+          var x1 = 100 + Math.cos(a1) * r, y1 = cy + Math.sin(a1) * r;
+          var x0i = 100 + Math.cos(a0) * ir, y0i = cy + Math.sin(a0) * ir;
+          var x1i = 100 + Math.cos(a1) * ir, y1i = cy + Math.sin(a1) * ir;
+          var large = (end - start) > 0.5 ? 1 : 0;
+          return 'M' + x0 + ',' + y0 + ' A' + r + ',' + r + ' 0 ' + large + ',1 ' + x1 + ',' + y1 + ' L' + x1i + ',' + y1i + ' A' + ir + ',' + ir + ' 0 ' + large + ',0 ' + x0i + ',' + y0i + ' Z';
+        }
+        return h('div', { className: 'p-4' },
+          h(BackBar, { icon: '🔬', title: 'Macro Inquiry — Predict the Energy State' }),
+          h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5', maxWidth: 720, margin: '0 auto' } },
+            h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Macro Inquiry Widget'),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set carbohydrate, protein, fat (grams) plus fiber. Predict the energy state before reading it. No score, no reveal.'),
+            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · ' + (pC * 100).toFixed(0) + '% carb / ' + (pP * 100).toFixed(0) + '% protein / ' + (pF * 100).toFixed(0) + '% fat'),
+            h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+            h('div', { style: { display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 } },
+              h('svg', { width: 200, height: 160, viewBox: '0 0 200 160', style: { background: '#0a0a1a', borderRadius: 6, flex: '0 0 200px' } },
+                pC > 0.001 && h('path', { d: arc(0, pC, 55, 28), fill: '#22d3ee', opacity: 0.85 }),
+                pP > 0.001 && h('path', { d: arc(pC, pC + pP, 55, 28), fill: '#4ade80', opacity: 0.85 }),
+                pF > 0.001 && h('path', { d: arc(pC + pP, 1, 55, 28), fill: '#fb923c', opacity: 0.85 }),
+                h('text', { x: 100, y: 80, textAnchor: 'middle', fill: sm.color, fontSize: 14, fontWeight: 800 }, total + 'g'),
+                h('text', { x: 100, y: 96, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'total macros')
+              ),
+              h('div', { style: { flex: '1 1 auto', fontSize: 11 } },
+                h('div', { style: { marginBottom: 6 } }, h('span', { style: { display: 'inline-block', width: 10, height: 10, background: '#22d3ee', marginRight: 6, verticalAlign: 'middle' } }), 'Carbs: ', h('b', null, iq.carbs + 'g')),
+                h('div', { style: { marginBottom: 6 } }, h('span', { style: { display: 'inline-block', width: 10, height: 10, background: '#4ade80', marginRight: 6, verticalAlign: 'middle' } }), 'Protein: ', h('b', null, iq.protein + 'g')),
+                h('div', { style: { marginBottom: 6 } }, h('span', { style: { display: 'inline-block', width: 10, height: 10, background: '#fb923c', marginRight: 6, verticalAlign: 'middle' } }), 'Fat: ', h('b', null, iq.fat + 'g')),
+                h('div', { style: { marginTop: 10, padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border } },
+                  h('div', { style: { fontSize: 9, opacity: 0.6 } }, 'Satiety index'),
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: sm.color } }, satiety.toFixed(0))
+                ),
+                h('div', { style: { marginTop: 6, padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border } },
+                  h('div', { style: { fontSize: 9, opacity: 0.6 } }, 'Fiber-adj glycemic proxy'),
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: sm.color } }, fiberAdjGI.toFixed(0))
+                )
+              )
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+              h('label', null,
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Carbs (g)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.carbs)),
+                h('input', { type: 'range', min: 0, max: 300, step: 5, value: iq.carbs, onChange: function(e) { setKey('carbs', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', null,
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Protein (g)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.protein)),
+                h('input', { type: 'range', min: 0, max: 200, step: 5, value: iq.protein, onChange: function(e) { setKey('protein', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', null,
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Fat (g)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.fat)),
+                h('input', { type: 'range', min: 0, max: 150, step: 2, value: iq.fat, onChange: function(e) { setKey('fat', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', null,
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Fiber (g)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.fiber)),
+                h('input', { type: 'range', min: 0, max: 100, step: 1, value: iq.fiber, onChange: function(e) { setKey('fiber', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              )
+            ),
+            h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+              h('button', { onClick: function() {
+                var t = new Date().toISOString().slice(11, 19);
+                setIQ({ log: iq.log.concat([{ t: t, c: iq.carbs, p: iq.protein, f: iq.fat, fb: iq.fiber, sat: satiety.toFixed(0), gi: fiberAdjGI.toFixed(0), state: sm.label }]) });
+              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this macro profile'),
+              h('button', { onClick: function() { setIQ({ carbs: 50, protein: 20, fat: 30, fiber: 25 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+            ),
+            iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · c' + e.c + ' p' + e.p + ' f' + e.f + ' fb' + e.fb + ' → sat ' + e.sat + ' gi ' + e.gi); })
+            ),
+            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which macro most affects satiety? Glycemic load? They\'re different.)'),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., fiber blunts the glycemic load almost 1-for-1 with carb increase...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+            iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('ul', { style: { margin: 0, paddingLeft: 16 } },
+                h('li', null, 'Why might a "high-carb" meal feel different at 200g of oats vs 200g of white rice + sugar?'),
+                h('li', null, 'How does fat slow glycemic response? Try 80g carbs with 5g fat vs 30g fat.'),
+                h('li', null, 'A 100g protein day — what trade-offs would you need to make in the other macros to keep total calories sensible?'),
+                h('li', null, 'When would ketogenic make medical sense? When could it harm? (Hint: epilepsy treatment, athletic performance, kidney disease.)')
+              )
+            ),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+              h('span', null, 'I can explain why this macro split yields this energy state.')
+            ),
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Satiety + GI proxies are illustrative; real glycemic response varies with food matrix, cooking, and individual metabolism. Not medical advice.')
+          )
+        );
+      }
+
       function HydrationLab() {
         var tab_state = usePersistedState('hl_tab', 'needs');
         var tab = tab_state[0], setTab = tab_state[1];
@@ -19987,6 +20105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       if (view === 'maineDay') return h(MaineDayBuilder);
       if (view === 'deficiencyDetective') return h(DeficiencyDetective);
       if (view === 'hydrationLab') return h(HydrationLab);
+      if (view === 'macroInquiry') return h(MacroInquiryWidget);
       if (view === 'myNutritionKit') {
         return h('div', { className: 'min-h-screen bg-slate-50' },
           h(BackBar, { icon: '🥗', title: 'My Nutrition Kit' }),
