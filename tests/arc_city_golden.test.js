@@ -446,4 +446,13 @@ describe('Arc City — Phase 2c: logarithmic family', () => {
     const b = arc.BADGES.find(x => x.id === 'log-climber');
     expect(b.label.toLowerCase()).not.toMatch(/master|mastery|proficient|ability|expert/);
   });
+
+  it('log gate coaching points the RIGHT way for c (∂y/∂c > 0: raising c raises the curve)', () => {
+    const tooHigh = classifyShot(L8, { a: 3, c: 2, k: 2 }); // overshoots the first window high
+    expect(tooHigh.result).toBe('gate');
+    expect(describeResult(L8, tooHigh, 1)).toMatch(/lower the shift c/);
+    const tooLow = classifyShot(L8, { a: 1.5, c: 0.5, k: 0 }); // undershoots the first window low
+    expect(tooLow.result).toBe('gate');
+    expect(describeResult(L8, tooLow, 1)).toMatch(/raise the shift c/);
+  });
 });

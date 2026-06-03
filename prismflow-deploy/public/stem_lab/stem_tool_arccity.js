@@ -153,7 +153,7 @@
         c: { min: 0.5, max: 2, step: 0.1, default: 2, label: 'c  (shift — smaller = steeper early rise)' },
         k: { min: 0, max: 2, step: 0.1, default: 0, label: 'k  (vertical offset)' }
       },
-      hint: 'Tip: a logarithm climbs fast at first, then slows — concave, the mirror of the exponential. Six narrow windows sit on one such climb: set the climb strength a, the shift c, and the offset k so the slowing curve threads them all.'
+      hint: 'Tip: a logarithm climbs fast at first, then slows — concave, the mirror of exponential GROWTH (not the decay you just saw). Six narrow windows sit on one such climb: set the climb strength a, the shift c, and the offset k so the slowing curve threads them all.'
     }
   ];
 
@@ -256,7 +256,7 @@
       if (fam === 'absval') return tooHigh ? 'The beam is too high there — lower the vertex k, or move the vertex h so the V dips into the window.' : 'The beam is too low there — raise the vertex k, or steepen a so the arm climbs through the window.';
       if (fam === 'sine') return tooHigh ? 'The wave is too high at this window — reduce the amplitude a, or change the frequency b so a dip lands here.' : 'The wave is too low at this window — increase the amplitude a, or change the frequency b so a crest lands here.';
       if (fam === 'exp') return tooHigh ? 'The curve is too high here — lower the start height a, decay faster (more negative b), or lower the floor k.' : 'The curve is too low here — raise the start height a, decay slower (less negative b), or raise the floor k.';
-      if (fam === 'log') return tooHigh ? 'The climb is too high here — lower the climb strength a, raise the shift c (gentler), or lower the offset k.' : 'The climb is too low here — raise the climb strength a, lower the shift c (steeper early), or raise the offset k.';
+      if (fam === 'log') return tooHigh ? 'The climb is too high here — lower the climb strength a, lower the shift c, or lower the offset k.' : 'The climb is too low here — raise the climb strength a, raise the shift c, or raise the offset k.';
       return tooHigh ? 'The beam is too high there — tighten the arc (more negative a) or lower k.' : 'The beam is too low there — widen the arc or raise k.';
     }
     return '';
@@ -309,6 +309,8 @@
         '. An exponential ' + etail + '.';
     }
     if (level.family === 'log') {
+      // Copy assumes a > 0 (L8's a slider is positive). Branch on sign like the
+      // exp case if a future log level ever exposes a <= 0 (then it falls, not climbs).
       return 'y = a·ln(x + c) + k, with a = ' + fmtVal(p.a, level.params.a.step) + ', c = ' + fmtVal(p.c, level.params.c.step) + ', k = ' + fmtVal(p.k, level.params.k.step) +
         '. A logarithm — a concave climb that rises fast then slows (the mirror of exponential growth).';
     }
