@@ -19997,7 +19997,76 @@ test('no a11y violations', async () => {
           h('div', { style: { fontSize: '48px', marginBottom: '12px', animation: 'pulse 1.5s infinite' } }, '\uD83D\uDCA1'),
           h('p', { style: { fontSize: '14px', fontWeight: 600 } }, genStep || 'Generating your app...'),
           h('p', { style: { fontSize: '11px', color: '#9ca3af' } }, 'This usually takes 5-15 seconds')
-        )
+        ),
+
+        // \u2550\u2550 PROMPT-CRAFT INQUIRY widget (H7b'') \u2550\u2550
+        !isGenerating && !html && (function() {
+          var iq = d.promptIQ || { specificity: 5, constraints: 5, examples: 0, persona: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('promptIQ', Object.assign({}, iq, patch)); }
+          function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+          var promptQuality = (iq.specificity + iq.constraints + iq.persona) / 3 + iq.examples * 0.5;
+          var brittleness = Math.max(0, 10 - iq.specificity - iq.constraints * 0.5);
+          var state = promptQuality > 8 ? 'precise' : promptQuality > 6 ? 'targeted' : promptQuality > 4 ? 'vague' : brittleness > 5 ? 'underspecified' : 'minimal';
+          var sm = ({
+            precise: { label: 'Precise prompt', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Specificity + constraints + examples + persona aligned. Output highly predictable across runs.' },
+            targeted: { label: 'Targeted', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Mostly clear ask. May need one revision pass.' },
+            vague: { label: 'Vague \u2014 re-runs vary', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Open-ended ask. Same prompt yields different outputs run-to-run. Acceptable for brainstorming.' },
+            underspecified: { label: 'Under-specified', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'AI will fill gaps with plausible-but-wrong defaults. Common cause of "AI hallucinations".' },
+            minimal: { label: 'Minimal prompt', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Roll the dice. Sometimes the model surprises you; usually it produces generic output.' }
+          })[state];
+          return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5', maxWidth: 720, margin: '20px auto' } },
+            h('h3', { style: { margin: '0 0 4px', fontSize: 14, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '\uD83D\uDD2C Prompt-Craft Inquiry \u2014 Predict the Output Variance'),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set how much specificity, constraints, examples, and persona you put into a prompt. Predict how reliable the AI output will be. No score, no reveal.'),
+            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' \u00B7 quality ' + promptQuality.toFixed(1) + ' \u00B7 brittleness ' + brittleness.toFixed(1)),
+            h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+              h('label', { style: { fontSize: 11 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Specificity (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.specificity)),
+                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.specificity, onChange: function(e) { setKey('specificity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', { style: { fontSize: 11 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Constraints stated (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.constraints)),
+                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.constraints, onChange: function(e) { setKey('constraints', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', { style: { fontSize: 11 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Example count (0-5)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.examples)),
+                h('input', { type: 'range', min: 0, max: 5, step: 1, value: iq.examples, onChange: function(e) { setKey('examples', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', { style: { fontSize: 11 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Persona / role clarity'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.persona)),
+                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.persona, onChange: function(e) { setKey('persona', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              )
+            ),
+            h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+              h('button', { onClick: function() {
+                var t = new Date().toISOString().slice(11, 19);
+                setIQ({ log: iq.log.concat([{ t: t, sp: iq.specificity, c: iq.constraints, ex: iq.examples, pe: iq.persona, q: promptQuality.toFixed(1), state: sm.label }]) });
+              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '\uD83D\uDCCB Log this prompt-craft profile'),
+              h('button', { onClick: function() { setIQ({ specificity: 5, constraints: 5, examples: 0, persona: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+            ),
+            iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' \u00B7 sp' + e.sp + ' c' + e.c + ' ex' + e.ex + ' pe' + e.pe + ' \u2192 ' + e.q); })
+            ),
+            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (do examples or constraints reduce variance more?)'),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., one well-chosen example beats five vague constraints because it pins down style + structure simultaneously...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "\uD83E\uDD14 I'm stuck \u2014 show open questions"),
+            iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('ul', { style: { margin: 0, paddingLeft: 16 } },
+                h('li', null, 'Why does adding one good example often beat adding five constraints?'),
+                h('li', null, 'A vague prompt is fine for what tasks? (Hint: divergent vs convergent thinking.)'),
+                h('li', null, 'How does persona ("you are an expert X") change output style \u2014 and when is it manipulative?'),
+                h('li', null, 'When is brittleness actually GOOD? (Hint: reproducible scientific outputs.)')
+              )
+            ),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+              h('span', null, 'I can explain why this prompt-craft profile yields this output variance.')
+            ),
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget \u2014 no score, no reveal. Quality/brittleness indices are heuristics; real prompt engineering depends on model, temperature, system message, and task type. See OpenAI/Anthropic prompt-engineering docs.')
+          );
+        })()
       );
     }
   });
