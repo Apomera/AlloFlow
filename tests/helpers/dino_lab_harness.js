@@ -40,7 +40,7 @@ export const ReactDOMServer = require(resolve(MODULES_DIR, 'react-dom/server'));
 const noop = () => {};
 
 // The 14 tab ids, in the order they appear in the tab bar.
-export const TABS = ['explore', 'timeline', 'deeptime', 'sites', 'ecosystem', 'compare', 'dig', 'classify', 'birds', 'extinction', 'anatomy', 'records', 'quiz', 'notes', 'glossary'];
+export const TABS = ['explore', 'timeline', 'deeptime', 'sites', 'map', 'ecosystem', 'compare', 'dig', 'classify', 'birds', 'extinction', 'anatomy', 'records', 'quiz', 'notes', 'glossary', 'classroom'];
 
 let _tool = null;
 let _internals = null;
@@ -100,6 +100,7 @@ export function baseData(tab) {
   };
   if (tab === 'explore') d.query = 'tyrannosaurus';
   if (tab === 'glossary') d.glossaryQuery = 'fossil';
+  if (tab === 'map') d.mapSel = 'Asia';
   d.tab = tab;
   return d;
 }

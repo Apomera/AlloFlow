@@ -5084,6 +5084,7 @@
   function dColor(id) { return DIET_COLOR[id] || '#64748b'; }
   function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function continentOf(region) { var i = region.indexOf(' ('); return i === -1 ? region : region.slice(0, i); }
   function fmtLength(m) { if (m == null) return '?'; if (m < 1) return Math.round(m * 100) + ' cm'; return (Math.round(m * 10) / 10) + ' m'; }
   function fmtWeight(kg) { if (kg == null) return '?'; if (kg >= 1000) return (Math.round(kg / 100) / 10) + ' t'; return kg + ' kg'; }
   function fmtMya(d) { if (d.myaHi === d.myaLo) return d.myaLo + ' mya'; return d.myaHi + '–' + d.myaLo + ' mya'; }
@@ -5192,12 +5193,70 @@
           announceToSR('Trading card for ' + dn.common + ' opened in a new window.');
         } catch (e) { announceToSR('Could not open the trading card.'); }
       }
+      // Shared print-window opener (pop-up-blocked guard + try/catch).
+      function openPrint(html, okMsg, what) {
+        try {
+          var w = window.open('', '_blank', 'width=820,height=1000');
+          if (!w) { announceToSR('Pop-up blocked. Allow pop-ups to print ' + (what || 'this') + '.'); return; }
+          w.document.open(); w.document.write(html); w.document.close();
+          announceToSR(okMsg);
+        } catch (e) { announceToSR('Could not open the print view.'); }
+      }
+      // Print a cut-out species card deck (for sorting activities). All dynamic
+      // strings are HTML-escaped via esc().
+      function printDeck(list, label) {
+        var rowFor = function (k, v) { return '<tr><th>' + esc(k) + '</th><td>' + esc(v) + '</td></tr>'; };
+        var cards = list.map(function (dn) {
+          return '<div class="card">' +
+            '<div class="per" style="background:' + pColor(dn.period) + '22;border-color:' + pColor(dn.period) + '">' + esc(periodName(dn.period)) + '</div>' +
+            '<div class="nm">' + esc(dn.common) + '</div>' +
+            '<div class="say">' + esc(dn.say) + '</div>' +
+            '<table>' + rowFor('Diet', cap(dn.diet)) + rowFor('Length', fmtLength(dn.lengthM)) + rowFor('When', fmtMya(dn)) + rowFor('Where', dn.region) + rowFor('Group', GROUP_LABEL[dn.group] || cap(dn.group)) + '</table>' +
+            '<div class="fact">' + esc((dn.facts && dn.facts[0]) ? dn.facts[0] : dn.blurb) + '</div>' +
+            '</div>';
+        }).join('');
+        var css = 'body{font:12px/1.4 system-ui,Segoe UI,Arial,sans-serif;color:#0f172a;margin:0;padding:14px}' +
+          '.bar{margin-bottom:12px;font-size:12px;color:#334155}.bar button{font:600 12px system-ui;padding:6px 12px;border-radius:7px;border:1px solid #94a3b8;background:#fff;cursor:pointer;margin-right:6px}' +
+          '.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}' +
+          '.card{border:1px dashed #94a3b8;border-radius:10px;padding:10px;break-inside:avoid;page-break-inside:avoid}' +
+          '.per{display:inline-block;color:#0f172a;font-size:9px;font-weight:700;padding:2px 7px;border:1px solid #cbd5e1;border-radius:999px;margin-bottom:4px}' +
+          '.nm{font-size:15px;font-weight:800}.say{font-size:10px;color:#475569;margin-bottom:6px}' +
+          'table{width:100%;border-collapse:collapse;font-size:10.5px;margin-bottom:6px}th{text-align:left;color:#475569;font-weight:600;width:42%;padding:1px 0}td{text-align:right;font-weight:600;padding:1px 0}' +
+          '.fact{font-size:10px;color:#334155;border-top:1px solid #e2e8f0;padding-top:4px}' +
+          '@media print{.no-print{display:none}}';
+        var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Dino Lab — species card deck</title><style>' + css + '</style></head><body>' +
+          '<div class="bar no-print"><button onclick="window.print()">🖨️ Print</button><button onclick="window.close()">Close</button> ' + list.length + ' cards · ' + esc(label) + ' · cut along the dashed lines, then sort by period, diet, or group.</div>' +
+          '<div class="grid">' + cards + '</div></body></html>';
+        openPrint(html, list.length + ' species cards opened for printing.', 'the card deck');
+      }
+      // Print the quiz as a numbered worksheet + a separate answer key.
+      function printQuizSheet() {
+        var LET = ['A', 'B', 'C', 'D', 'E'];
+        var qhtml = QUIZ.map(function (q, i) {
+          return '<div class="q"><div class="qt">' + (i + 1) + '. ' + esc(q.q) + '</div><ol class="opts" type="A">' + q.options.map(function (o) { return '<li>' + esc(o) + '</li>'; }).join('') + '</ol></div>';
+        }).join('');
+        var khtml = QUIZ.map(function (q, i) {
+          return '<div class="k"><b>' + (i + 1) + '. ' + LET[q.answer] + '</b> &mdash; ' + esc(q.options[q.answer]) + '. <span>' + esc(q.explain) + '</span></div>';
+        }).join('');
+        var css = 'body{font:13px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:#0f172a;margin:0;padding:18px;max-width:760px}' +
+          '.bar{margin-bottom:14px}.bar button{font:600 12px system-ui;padding:6px 12px;border-radius:7px;border:1px solid #94a3b8;background:#fff;cursor:pointer;margin-right:6px}' +
+          'h1{font-size:18px;margin:0 0 4px}h2{font-size:15px;margin:0 0 10px;page-break-before:always}' +
+          '.meta{font-size:12px;color:#475569;margin-bottom:14px}.q{margin-bottom:12px;break-inside:avoid}.qt{font-weight:700}' +
+          'ol.opts{margin:4px 0 0}ol.opts li{margin:2px 0}.k{margin-bottom:8px;font-size:12.5px}.k span{color:#475569}' +
+          '@media print{.no-print{display:none}}';
+        var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Dino Lab — quiz worksheet</title><style>' + css + '</style></head><body>' +
+          '<div class="bar no-print"><button onclick="window.print()">🖨️ Print</button><button onclick="window.close()">Close</button></div>' +
+          '<h1>Dino Lab quiz</h1><div class="meta">Name: ____________________&nbsp;&nbsp;&nbsp;Date: __________&nbsp;&nbsp;&nbsp;(' + QUIZ.length + ' questions)</div>' +
+          qhtml + '<h2>Answer key</h2>' + khtml + '</body></html>';
+        openPrint(html, 'Quiz worksheet and answer key opened for printing.', 'the quiz worksheet');
+      }
 
       var TABS = [
         { id: 'explore', label: 'Explore', icon: '🔍' },
         { id: 'timeline', label: 'Timeline', icon: '⏳' },
         { id: 'deeptime', label: 'Deep Time', icon: '🕰️' },
         { id: 'sites', label: 'Sites', icon: '🗺️' },
+        { id: 'map', label: 'Map', icon: '🌎' },
         { id: 'ecosystem', label: 'Ecosystems', icon: '🌍' },
         { id: 'compare', label: 'Compare', icon: '⚖️' },
         { id: 'dig', label: 'Dig Site', icon: '⛏️' },
@@ -5208,7 +5267,8 @@
         { id: 'records', label: 'Records', icon: '🏆' },
         { id: 'quiz', label: 'Quiz', icon: '🧠' },
         { id: 'notes', label: 'Field Notes', icon: '📓' },
-        { id: 'glossary', label: 'Glossary', icon: '📖' }
+        { id: 'glossary', label: 'Glossary', icon: '📖' },
+        { id: 'classroom', label: 'Classroom', icon: '🍎' }
       ];
       var tabBar = el('div', { role: 'tablist', 'aria-label': 'Dino Lab sections', style: { display: 'flex', flexWrap: 'wrap', gap: 4, padding: '10px 12px', borderBottom: '1px solid ' + T.border, background: T.deeper } }, TABS.map(function (tb) {
         var active = tab === tb.id;
@@ -5397,6 +5457,78 @@
           panel(rows),
           pick,
           panel([el('div', { key: 'n', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.5 } }, 'These dates are a teaching analogy, not exact. Ages are rounded to widely-cited estimates; “first” events mark the oldest good fossils we have, which new finds can push back.')], { marginTop: 12 })
+        );
+      }
+
+      function renderMap() {
+        var byCont = {};
+        DINOS.forEach(function (dn) { if (dn.group === 'other') return; var c = continentOf(dn.region); (byCont[c] = byCont[c] || []).push(dn); });
+        var TILES = [
+          { c: 'North America', emoji: '🦬', left: 5, top: 6, w: 27, h: 30 },
+          { c: 'South America', emoji: '🦥', left: 19, top: 50, w: 18, h: 38 },
+          { c: 'Europe', emoji: '🏰', left: 44, top: 5, w: 14, h: 17 },
+          { c: 'Africa', emoji: '🦒', left: 45, top: 28, w: 20, h: 38 },
+          { c: 'Asia', emoji: '🐼', left: 66, top: 6, w: 29, h: 33 },
+          { c: 'Australia', emoji: '🦘', left: 78, top: 62, w: 17, h: 22 },
+          { c: 'Antarctica', emoji: '🐧', left: 38, top: 85, w: 30, h: 12 }
+        ];
+        var maxN = 1; TILES.forEach(function (t) { maxN = Math.max(maxN, (byCont[t.c] || []).length); });
+        var sel = d.mapSel || null;
+        function heat(n) { return 'hsl(145, 55%, ' + Math.round(90 - (n / maxN) * 36) + '%)'; } // OPAQUE light→medium green: dark text passes WCAG in every theme
+        var tileEls = TILES.map(function (t) {
+          var list = byCont[t.c] || [], active = sel === t.c;
+          return el('button', { key: t.c, onClick: function () { upd('mapSel', active ? null : t.c); announceToSR(t.c + ', ' + list.length + ' dinosaurs found here'); }, 'aria-pressed': active ? 'true' : 'false', 'aria-label': t.c + ', ' + list.length + ' dinosaurs found here', style: { position: 'absolute', left: t.left + '%', top: t.top + '%', width: t.w + '%', height: t.h + '%', borderRadius: 10, cursor: 'pointer', border: '1px solid ' + (active ? '#15803d' : 'rgba(15,23,42,0.25)'), background: heat(list.length), color: '#0f172a', fontWeight: 700, padding: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', boxShadow: active ? '0 0 0 2px #22c55e' : 'none' } },
+            el('span', { key: 'e', 'aria-hidden': 'true', style: { fontSize: 18 } }, t.emoji),
+            el('span', { key: 'n', style: { fontSize: 10.5 } }, t.c),
+            el('span', { key: 'c', style: { fontSize: 14, fontWeight: 800 } }, String(list.length)));
+        });
+        var mapBox = el('div', { role: 'group', 'aria-label': 'Map of where dinosaur fossils are found today, by continent', style: { position: 'relative', width: '100%', height: 0, paddingBottom: '52%', borderRadius: 12, background: 'linear-gradient(180deg, rgba(56,189,248,0.16), rgba(56,189,248,0.05))', border: '1px solid ' + T.border, marginBottom: 8 } }, el('div', { style: { position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 } }, tileEls));
+        var detail;
+        if (sel && byCont[sel]) {
+          var slist = byCont[sel].slice().sort(function (a, b) { return a.common < b.common ? -1 : 1; });
+          detail = panel([
+            el('div', { key: 'h', style: { fontWeight: 800, fontSize: 15, marginBottom: 6 } }, '📍 ' + sel + ' — ' + slist.length + ' dinosaurs found here'),
+            el('div', { key: 'chips', style: { display: 'flex', flexWrap: 'wrap', gap: 5 } }, slist.map(function (dn) { return el('button', { key: dn.id, onClick: function () { upd({ tab: 'explore', selected: dn.id }); }, 'aria-label': 'Open ' + dn.common, style: { fontSize: 11, padding: '3px 9px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: T.deeper, color: T.text } }, dn.common); }))
+          ], { marginTop: 4 });
+        } else {
+          detail = el('div', { style: { fontSize: 12.5, color: T.soft, fontStyle: 'italic', marginTop: 4 } }, 'Tap a continent to meet the dinosaurs found there. A greener tile means more have been dug up there.');
+        }
+        var pangaea = panel([
+          el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 4 } }, '🧩 The map looked different back then'),
+          el('div', { key: 'b', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.55 } }, 'This shows where fossils are dug up today. At the start of the age of dinosaurs the continents were joined as one supercontinent, Pangaea; over the era it split into a northern half (Laurasia) and a southern half (Gondwana), and those kept drifting apart. That is why close dinosaur relatives turn up on lands now separated by whole oceans: the rock drifted apart and carried the fossils with it.')
+        ], { marginTop: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.35)' });
+        var others = DINOS.filter(function (dn) { return dn.group === 'other'; });
+        var foot = el('div', { style: { fontSize: 11.5, color: T.soft, marginTop: 8, lineHeight: 1.5 } }, 'Not plotted: ' + others.map(function (o) { return o.common; }).join(', ') + ' — included as teaching foils (a pterosaur, a marine reptile, and a Permian relative of mammals), none of them true dinosaurs.');
+        return el('div', null, sectionTitle('🌎', 'Where in the world?', 'Every continent — even Antarctica — has yielded dinosaurs. Tap one to explore its finds.'), mapBox, detail, pangaea, foot);
+      }
+
+      function renderClassroom() {
+        var fp = d.filterPeriod || 'all', fdiet = d.filterDiet || 'all', fc = d.filterContinent || 'all', q = (d.query || '').trim().toLowerCase();
+        var filtered = (fp !== 'all' || fdiet !== 'all' || fc !== 'all' || !!q);
+        var list = DINOS.filter(function (dn) {
+          if (fp !== 'all' && dn.period !== fp) return false;
+          if (fdiet !== 'all' && dn.diet !== fdiet) return false;
+          if (fc !== 'all' && continentOf(dn.region) !== fc) return false;
+          if (q) { var hay = (dn.common + ' ' + dn.name + ' ' + dn.meaning + ' ' + dn.clade + ' ' + dn.region).toLowerCase(); if (hay.indexOf(q) === -1) return false; }
+          return true;
+        });
+        var CAP = 40;
+        var STARTER = ['tyrannosaurus', 'triceratops', 'velociraptor', 'stegosaurus', 'brachiosaurus', 'spinosaurus', 'ankylosaurus', 'allosaurus', 'parasaurolophus', 'diplodocus', 'archaeopteryx', 'therizinosaurus', 'gallimimus', 'microraptor', 'iguanodon', 'pachycephalosaurus'];
+        var deckList = filtered ? list.slice(0, CAP) : STARTER.map(byId).filter(Boolean);
+        var deckLabel = filtered ? 'your Explore selection' : 'starter set';
+        var deckEmpty = deckList.length === 0;
+        function resCard(icon, title, body, btnLabel, onClick, disabled) {
+          return panel([
+            el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 4 } }, icon + ' ' + title),
+            el('div', { key: 'b', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5, marginBottom: 10 } }, body),
+            el('button', { key: 'btn', disabled: !!disabled, onClick: disabled ? undefined : onClick, style: { fontSize: 13, fontWeight: 700, padding: '8px 14px', borderRadius: 10, border: '1px solid ' + T.border, background: disabled ? T.deeper : '#15803d', color: disabled ? T.soft : '#fff', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.65 : 1 } }, btnLabel)
+          ], { marginBottom: 10 });
+        }
+        return el('div', null,
+          sectionTitle('🍎', 'Classroom resources', 'Printable activities for teachers and small groups. Each opens in a new window — allow pop-ups, then use your browser’s print.'),
+          resCard('🃏', 'Species card deck', deckEmpty ? 'No species match your current Explore filters, so there is nothing to print yet. Clear a filter or change your search in Explore, then come back.' : ('Cut-out cards for a hands-on sorting activity: group them by period, diet, or family (a tactile version of the Classify tab). ' + (filtered ? ('Prints the ' + deckList.length + ' species your Explore filters select' + (list.length > CAP ? ' (the first ' + CAP + ' of ' + list.length + ').' : '.')) : ('No Explore filter is set, so this prints a ' + deckList.length + '-species starter set. Tip: set filters or a search in Explore to print exactly the set you want.'))), deckEmpty ? '🖨️ Nothing to print' : ('🖨️ Print ' + deckList.length + ' cards'), function () { printDeck(deckList, deckLabel); }, deckEmpty),
+          resCard('📝', 'Quiz worksheet', 'Prints all ' + QUIZ.length + ' questions as a numbered, fill-in worksheet, followed by a separate answer key with the explanations.', '🖨️ Print quiz + answer key', function () { printQuizSheet(); }),
+          panel([el('div', { key: 'n', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.5 } }, 'Cards and answers carry the same facts and the “widely-cited estimate” caveats students see in the app.')], { marginTop: 4 })
         );
       }
 
@@ -5653,6 +5785,7 @@
       else if (tab === 'timeline') content = renderTimeline();
       else if (tab === 'deeptime') content = renderDeepTime();
       else if (tab === 'sites') content = renderSites();
+      else if (tab === 'map') content = renderMap();
       else if (tab === 'ecosystem') content = renderEcosystem();
       else if (tab === 'compare') content = renderCompare();
       else if (tab === 'dig') content = renderDig();
@@ -5664,6 +5797,7 @@
       else if (tab === 'quiz') content = renderQuiz();
       else if (tab === 'notes') content = renderNotes();
       else if (tab === 'glossary') content = renderGlossary();
+      else if (tab === 'classroom') content = renderClassroom();
       else content = renderExplore();
 
       return el('div', { style: { minHeight: '100%', background: T.canvas, color: T.text } }, tabBar, el('div', { id: 'dinopanel', role: 'tabpanel', 'aria-labelledby': 'dinotab-' + tab, style: { padding: 16 } }, content));

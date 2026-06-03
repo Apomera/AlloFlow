@@ -21,7 +21,7 @@ describe('Dino Lab — registration contract', () => {
     expect(meta()).toMatchSnapshot();
   });
 
-  it('exposes exactly the 15 expected tabs as working renderers', () => {
+  it('exposes exactly the 17 expected tabs as working renderers', () => {
     TABS.forEach(tab => {
       const html = renderTab(tab);
       expect(typeof html, tab).toBe('string');
@@ -184,6 +184,21 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/December 13/); // first dinosaurs on the 1-year scale
     expect(html).toMatch(/December 26/); // the K-Pg asteroid
     expect(html).toMatch(/Homo sapiens/); // humans appear in the last sliver
+  });
+
+  it('the Map tab plots all seven continents and gives the honest Pangaea caveat', () => {
+    const html = renderTab('map');
+    ['North America', 'South America', 'Europe', 'Africa', 'Asia', 'Australia', 'Antarctica'].forEach(c => expect(html, c).toMatch(new RegExp(c)));
+    expect(html).toMatch(/Pangaea/);
+    expect(html).toMatch(/dug up today/i); // distinguishes where-found-today from where-they-lived
+  });
+
+  it('the Classroom tab offers a printable card deck and a quiz worksheet', () => {
+    const html = renderTab('classroom');
+    expect(html).toMatch(/Species card deck/);
+    expect(html).toMatch(/Print .* cards/);
+    expect(html).toMatch(/Quiz worksheet/);
+    expect(html).toMatch(/answer key/i);
   });
 });
 
