@@ -1,5 +1,15 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Lumen — AI-involvement layer guards (Phase 1, §6.1/§6.3/§6.6/§7) > audience faces re-project the SAME claim; the Family face PRESERVES uncertainty (snapshot) 1`] = `
+{
+  "family": "Over 10 check-ins, WCPM went up — about 2.7 words/min a week. With only 10 points the true rate could be roughly 2.1 to 3.2 a week, so read this as a direction, not an exact number.",
+  "familyRefused": "There are only 2 check-ins so far — too few to call a direction yet.",
+  "familySmall": "Over 5 check-ins, WCPM went up — about 1.3 words/min a week. With only 5 points the true rate could be roughly -0.1 to 2.7 a week, so read this as a direction, not an exact number.",
+  "iepTeam": "Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). (Ordinary least-squares trend; the interval is a 95% t-interval on the slope. Descriptive — not a percentile, score, or prediction.)",
+  "working": "Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).",
+}
+`;
+
 exports[`Lumen — certainty grammar (design §6.4) > encodes every level (snapshot) 1`] = `
 [
   {
@@ -51,6 +61,260 @@ exports[`Lumen — certainty grammar (design §6.4) > encodes every level (snaps
     "texture": "hatch45",
   },
 ]
+`;
+
+exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > plot geometry (snapshot) 1`] = `
+{
+  "bandPath": "M 44,260 L 464,27.5 L 464,67.5 L 44,220.1 Z",
+  "box": {
+    "h": 280,
+    "padB": 34,
+    "padL": 44,
+    "padR": 16,
+    "padT": 16,
+    "w": 480,
+  },
+  "maxX": 10,
+  "minX": 1,
+  "phaseLines": [
+    {
+      "fromPhase": "baseline",
+      "sx": 254,
+      "toPhase": "tier2",
+      "x": 5.5,
+    },
+  ],
+  "points": [
+    {
+      "phase": "baseline",
+      "sx": 44,
+      "sy": 226.8,
+      "x": 1,
+      "y": 42,
+    },
+    {
+      "phase": "baseline",
+      "sx": 90.7,
+      "sy": 202.9,
+      "x": 2,
+      "y": 45,
+    },
+    {
+      "phase": "baseline",
+      "sx": 137.3,
+      "sy": 210.9,
+      "x": 3,
+      "y": 44,
+    },
+    {
+      "phase": "baseline",
+      "sx": 184,
+      "sy": 178.9,
+      "x": 4,
+      "y": 48,
+    },
+    {
+      "phase": "baseline",
+      "sx": 230.7,
+      "sy": 186.9,
+      "x": 5,
+      "y": 47,
+    },
+    {
+      "phase": "tier2",
+      "sx": 277.3,
+      "sy": 139,
+      "x": 6,
+      "y": 53,
+    },
+    {
+      "phase": "tier2",
+      "sx": 324,
+      "sy": 99.1,
+      "x": 7,
+      "y": 58,
+    },
+    {
+      "phase": "tier2",
+      "sx": 370.7,
+      "sy": 75.1,
+      "x": 8,
+      "y": 61,
+    },
+    {
+      "phase": "tier2",
+      "sx": 417.3,
+      "sy": 83.1,
+      "x": 9,
+      "y": 60,
+    },
+    {
+      "phase": "tier2",
+      "sx": 464,
+      "sy": 35.2,
+      "x": 10,
+      "y": 66,
+    },
+  ],
+  "trendPath": "M 44,240 L 464,47.5",
+  "xTicks": [
+    {
+      "sx": 44,
+      "x": 1,
+    },
+    {
+      "sx": 90.7,
+      "x": 2,
+    },
+    {
+      "sx": 137.3,
+      "x": 3,
+    },
+    {
+      "sx": 184,
+      "x": 4,
+    },
+    {
+      "sx": 230.7,
+      "x": 5,
+    },
+    {
+      "sx": 277.3,
+      "x": 6,
+    },
+    {
+      "sx": 324,
+      "x": 7,
+    },
+    {
+      "sx": 370.7,
+      "x": 8,
+    },
+    {
+      "sx": 417.3,
+      "x": 9,
+    },
+    {
+      "sx": 464,
+      "x": 10,
+    },
+  ],
+  "y0": 39.6,
+  "y1": 68.4,
+  "yTicks": [
+    {
+      "sy": 246,
+      "y": 39.6,
+    },
+    {
+      "sy": 188.5,
+      "y": 46.8,
+    },
+    {
+      "sy": 131,
+      "y": 54,
+    },
+    {
+      "sy": 73.5,
+      "y": 61.2,
+    },
+    {
+      "sy": 16,
+      "y": 68.4,
+    },
+  ],
+}
+`;
+
+exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > the SR data-table peer carries a Level column + phase-boundary row + per-segment slopes (snapshot) 1`] = `
+{
+  "columns": [
+    "Week (x)",
+    "WCPM (y)",
+    "Phase",
+    "Level",
+  ],
+  "level": "L1",
+  "perSegment": [
+    {
+      "n": 5,
+      "phase": "baseline",
+      "slope": 1.3,
+    },
+    {
+      "n": 5,
+      "phase": "tier2",
+      "slope": 2.8,
+    },
+  ],
+  "rows": [
+    {
+      "level": "Derived (math)",
+      "phase": "baseline",
+      "x": 1,
+      "y": 42,
+    },
+    {
+      "level": "Derived (math)",
+      "phase": "baseline",
+      "x": 2,
+      "y": 45,
+    },
+    {
+      "level": "Derived (math)",
+      "phase": "baseline",
+      "x": 3,
+      "y": 44,
+    },
+    {
+      "level": "Derived (math)",
+      "phase": "baseline",
+      "x": 4,
+      "y": 48,
+    },
+    {
+      "level": "Derived (math)",
+      "phase": "baseline",
+      "x": 5,
+      "y": 47,
+    },
+    {
+      "boundary": true,
+      "label": "phase boundary: baseline → tier2",
+    },
+    {
+      "level": "Derived (math)",
+      "phase": "tier2",
+      "x": 6,
+      "y": 53,
+    },
+    {
+      "level": "Derived (math)",
+      "phase": "tier2",
+      "x": 7,
+      "y": 58,
+    },
+    {
+      "level": "Derived (math)",
+      "phase": "tier2",
+      "x": 8,
+      "y": 61,
+    },
+    {
+      "level": "Derived (math)",
+      "phase": "tier2",
+      "x": 9,
+      "y": 60,
+    },
+    {
+      "level": "Derived (math)",
+      "phase": "tier2",
+      "x": 10,
+      "y": 66,
+    },
+  ],
+  "summary": "Trend chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.",
+}
 `;
 
 exports[`Lumen — the Reyna worked scenario (golden master) > full series + a 6-of-10 subset (snapshot) 1`] = `

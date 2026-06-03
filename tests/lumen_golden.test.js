@@ -199,3 +199,103 @@ describe('Lumen — the Reyna worked scenario (golden master)', () => {
     }).toMatchSnapshot();
   });
 });
+
+describe('Lumen — chart geometry + data-table peer (Phase 1, §9/§15)', () => {
+  const { comp } = buildReyna(REYNA);
+  const claim = L.deriveTrendClaim(comp, { id: 'full' });
+
+  it('plot geometry (snapshot)', () => {
+    expect(L.plotGeometry(REYNA, claim)).toMatchSnapshot();
+  });
+
+  it('places a HUMAN-SET phase line between week 5 and 6 (never auto-inferred)', () => {
+    const geo = L.plotGeometry(REYNA, claim);
+    expect(geo.phaseLines.length).toBe(1);
+    expect(geo.phaseLines[0].x).toBe(5.5);
+    expect(geo.phaseLines[0].fromPhase).toBe('baseline');
+    expect(geo.phaseLines[0].toPhase).toBe('tier2');
+  });
+
+  it('the chart and its data-table peer read the SAME points (cannot disagree)', () => {
+    const geo = L.plotGeometry(REYNA, claim);
+    const tbl = L.dataTableModel(REYNA, claim);
+    const tblPoints = tbl.rows.filter(r => !r.boundary).map(r => ({ x: r.x, y: r.y }));
+    const geoPoints = geo.points.map(p => ({ x: p.x, y: p.y }));
+    expect(tblPoints).toEqual(geoPoints);
+  });
+
+  it('the SR data-table peer carries a Level column + phase-boundary row + per-segment slopes (snapshot)', () => {
+    expect(L.dataTableModel(REYNA, claim)).toMatchSnapshot();
+  });
+
+  it('the chart summary names the trend, the interval, and the phase line', () => {
+    const s = L.chartSummaryText(REYNA, claim);
+    expect(s).toMatch(/^Trend chart\./);
+    expect(s).toMatch(/95% interval/);
+    expect(s).toMatch(/human-set phase line at week 5\.5/);
+  });
+});
+
+describe('Lumen — AI-involvement layer guards (Phase 1, §6.1/§6.3/§6.6/§7)', () => {
+  const { comp } = buildReyna(REYNA);
+  const claim = L.deriveTrendClaim(comp, { id: 'full' });
+  const aiCtx = L.buildClaimContext(comp, claim);
+
+  it('the AI context is PII-free aggregate numbers (no names / no raw labelled rows)', () => {
+    const json = JSON.stringify(aiCtx);
+    expect(json).not.toMatch(/name|student|reyna/i);
+    expect(typeof aiCtx.slope).toBe('number');
+    expect(aiCtx.interval.length).toBe(2);
+    expect(aiCtx).not.toHaveProperty('observations');
+    expect(aiCtx).not.toHaveProperty('rows');
+  });
+
+  it('the dial gate: AI is off below L2, and there is a hard n>=8 floor', () => {
+    expect(L.aiAllowed('L1', 10).allowed).toBe(false);
+    expect(L.aiAllowed('L3', 6).allowed).toBe(false); // small distinctive summary -> re-id risk
+    expect(L.aiAllowed('L2', 10).allowed).toBe(true);
+    expect(L.aiAllowed('L3', 10).allowed).toBe(true);
+  });
+
+  it('L2 numeric-whitelist: a clean re-word passes; a fabricated figure is REJECTED', () => {
+    const clean = 'Across 10 check-ins, WCPM rose about 2.68 words a week (95% interval 2.12 to 3.23).';
+    expect(L.lintL2(clean, aiCtx).ok).toBe(true);
+    const bad = 'WCPM improved 50% — huge, near-grade-level gains!';
+    const res = L.lintL2(bad, aiCtx);
+    expect(res.ok).toBe(false);
+    expect(res.offending).toContain(50);
+  });
+
+  it('L3 is a ranked SET needing >=1 non-effect explanation; bands are ordinal, NEVER a percent', () => {
+    const good = L.validateHypotheses([
+      { text: 'The Tier-2 block reduced off-task time.', kind: 'effect', rank: 1 },
+      { text: 'Practice/maturation over the weeks.', kind: 'rival', rank: 2 },
+      { text: 'Regression to the mean — early weeks were low.', kind: 'null', rank: 3 }
+    ]);
+    expect(good.ok).toBe(true);
+    expect(good.hypotheses.map(hp => hp.band)).toEqual(['More likely', 'Plausible', 'Less likely']);
+    good.hypotheses.forEach(hp => expect(hp.band).not.toMatch(/%/));
+    expect(good.caveat).not.toMatch(/%/);
+
+    const effectOnly = L.validateHypotheses([
+      { text: 'The intervention worked.', kind: 'effect', rank: 1 },
+      { text: 'The new curriculum worked.', kind: 'effect', rank: 2 }
+    ]);
+    expect(effectOnly.ok).toBe(false);
+    expect(effectOnly.problems.join(' ')).toMatch(/non-effect/);
+  });
+
+  it('audience faces re-project the SAME claim; the Family face PRESERVES uncertainty (snapshot)', () => {
+    const small = L.deriveTrendClaim(buildReyna(REYNA.slice(0, 5)).comp, { id: 's' });
+    const refused = L.deriveTrendClaim(buildReyna(REYNA.slice(0, 2)).comp, { id: 'r' });
+    expect({
+      working: L.faceFor(claim, 'working'),
+      iepTeam: L.faceFor(claim, 'iep-team'),
+      family: L.faceFor(claim, 'family'),
+      familySmall: L.faceFor(small, 'family'),
+      familyRefused: L.faceFor(refused, 'family')
+    }).toMatchSnapshot();
+    expect(L.faceFor(claim, 'family')).toMatch(/could be roughly/); // range preserved
+    expect(L.faceFor(claim, 'family')).not.toMatch(/tier|percentile|grade level/i); // no jargon/overclaim to a parent
+  });
+});

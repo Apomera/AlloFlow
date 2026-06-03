@@ -2173,7 +2173,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         { id: 'DRO', label: '⏱️ DRO (Differential Reinforcement)', desc: 'Reinforce after N minutes with NO target behavior', tip: 'e.g. DRO-5 = reinforce if no target behavior for 5 min' },
     ];
 
-    const TokenBoard = ({ onClose, studentName, t, addToast, callGemini }) => {
+    const TokenBoard = ({ onClose, studentName, studentKey, t, addToast, callGemini }) => {
         const [slots, setSlots] = useState(5);
         const [tokens, setTokens] = useState([]);
         const [targetBehavior, setTargetBehavior] = useState('');
@@ -2234,13 +2234,15 @@ Return ONLY valid JSON:
         useEffect(() => {
             if (!studentName) return;
             try {
-                const saved = localStorage.getItem(`behaviorLens_tokenHistory_${studentName}`);
+                const idKey = studentKey ? studentKey('behaviorLens_tokenHistory_') : `behaviorLens_tokenHistory_${studentName}`;
+                const legacyKey = `behaviorLens_tokenHistory_${studentName}`;
+                const saved = localStorage.getItem(idKey) || (idKey !== legacyKey ? localStorage.getItem(legacyKey) : null);
                 if (saved && sessionHistory.length === 0) {
                     setSessionHistory(JSON.parse(saved));
                     debugLog('TokenBoard: loaded legacy session history from localStorage');
                 }
             } catch (e) { /* localStorage may be unavailable in Canvas */ }
-        }, [studentName]);
+        }, [studentName, studentKey]);
 
         // Save session history
         const saveSession = useCallback(() => {
@@ -2258,7 +2260,7 @@ Return ONLY valid JSON:
             };
             setSessionHistory(prev => {
                 const updated = [session, ...prev].slice(0, 50);
-                try { localStorage.setItem(`behaviorLens_tokenHistory_${studentName}`, JSON.stringify(updated)); } catch (e) { /* localStorage may be unavailable in Canvas — workspace JSON is primary */ }
+                try { localStorage.setItem(studentKey ? studentKey('behaviorLens_tokenHistory_') : `behaviorLens_tokenHistory_${studentName}`, JSON.stringify(updated)); } catch (e) { /* localStorage may be unavailable in Canvas — workspace JSON is primary */ }
                 return updated;
             });
             if (addToast) addToast(t('behavior_lens.toast.session_saved') || 'Session saved ✨', 'success');
@@ -3461,7 +3463,7 @@ Create a hypothesis diagram and return ONLY valid JSON:
 
     // ─── SmartGoalBuilder ───────────────────────────────────────────────
     // SMART goal construction wizard with AI suggestions
-    const SmartGoalBuilder = ({ abcEntries, aiAnalysis, studentName, callGemini, t, addToast }) => {
+    const SmartGoalBuilder = ({ abcEntries, aiAnalysis, studentName, studentKey, callGemini, t, addToast }) => {
         const [specific, setSpecific] = useState('');
         const [measurable, setMeasurable] = useState('');
         const [achievable, setAchievable] = useState('');
@@ -3473,11 +3475,19 @@ Create a hypothesis diagram and return ONLY valid JSON:
         const [progressScore, setProgressScore] = useState(3);
         const [progressNotes, setProgressNotes] = useState('');
 
-        const goalsKey = `behaviorLens_goals_${studentName || 'default'}`;
+        const goalsKey = studentKey ? studentKey('behaviorLens_goals_') : `behaviorLens_goals_${studentName || 'default'}`;
         const [savedGoals, setSavedGoals] = useState(() => {
             try {
-                const saved = localStorage.getItem(goalsKey);
-                return saved ? JSON.parse(saved) : [];
+                const idVal = localStorage.getItem(goalsKey);
+                if (idVal) return JSON.parse(idVal);
+                // One-shot legacy fallback: read the raw-codename key the first
+                // time the component mounts post-migration.
+                const legacy = `behaviorLens_goals_${studentName || 'default'}`;
+                if (legacy !== goalsKey) {
+                    const legacyVal = localStorage.getItem(legacy);
+                    if (legacyVal) return JSON.parse(legacyVal);
+                }
+                return [];
             } catch { return []; }
         });
 
@@ -3765,9 +3775,20 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
 
     // ─── BehaviorContract ───────────────────────────────────────────────
     // AI-assisted behavior contract builder with persistence + history
-    const BehaviorContract = ({ studentName, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
-        const lsKey = `bl_contracts_${studentName || '_'}`;
-        const loadHistory = () => { try { return JSON.parse(localStorage.getItem(lsKey) || '[]'); } catch { return []; } };
+    const BehaviorContract = ({ studentName, studentKey, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
+        const lsKey = studentKey ? studentKey('bl_contracts_') : `bl_contracts_${studentName || '_'}`;
+        const loadHistory = () => {
+            try {
+                const idVal = localStorage.getItem(lsKey);
+                if (idVal) return JSON.parse(idVal);
+                const legacy = `bl_contracts_${studentName || '_'}`;
+                if (legacy !== lsKey) {
+                    const v = localStorage.getItem(legacy);
+                    if (v) return JSON.parse(v);
+                }
+                return [];
+            } catch { return []; }
+        };
 
         const [target, setTarget] = useState('');
         const [studentExpectations, setStudentExpectations] = useState('');
@@ -3961,8 +3982,9 @@ Generate a behavior contract and return ONLY valid JSON:
 
     // ─── EscalationCycle ────────────────────────────────────────────────
     // Colvin & Sugai 7-phase escalation cycle with persistence + editor
-    const EscalationCycle = ({ abcEntries, aiAnalysis, studentName, callGemini, t, addToast }) => {
-        const lsKey = `bl_escalation_${studentName || '_'}`;
+    const EscalationCycle = ({ abcEntries, aiAnalysis, studentName, studentKey, callGemini, t, addToast }) => {
+        const lsKey = studentKey ? studentKey('bl_escalation_') : `bl_escalation_${studentName || '_'}`;
+        const legacyEscalationKey = `bl_escalation_${studentName || '_'}`;
         const defaultPhases = [
             { name: t('behavior_lens.cycle_calm') || 'Calm', icon: '😌', color: '#22c55e', bg: '#f0fdf4', signs: 'Cooperative, on-task, following routines', response: 'Reinforce positive behavior, build rapport' },
             { name: t('behavior_lens.cycle_triggers') || 'Triggers', icon: '⚡', color: '#eab308', bg: '#fefce8', signs: 'Subtle changes in body language, withdrawal', response: 'Remove/reduce trigger, redirect calmly' },
@@ -3980,10 +4002,12 @@ Generate a behavior contract and return ONLY valid JSON:
         // Load from localStorage on mount
         useEffect(() => {
             try {
-                const saved = JSON.parse(localStorage.getItem(lsKey) || 'null');
+                let raw = localStorage.getItem(lsKey);
+                if (!raw && legacyEscalationKey !== lsKey) raw = localStorage.getItem(legacyEscalationKey);
+                const saved = JSON.parse(raw || 'null');
                 if (saved) setPersonalized(saved);
             } catch { }
-        }, [studentName]);
+        }, [studentName, studentKey]);
 
         const saveCycle = () => {
             try { localStorage.setItem(lsKey, JSON.stringify(personalized)); } catch { }
@@ -4103,7 +4127,7 @@ Personalize each phase of the cycle and return ONLY valid JSON:
     // ─── ReinforcerAssessment ───────────────────────────────────────────
     // Preference inventory across 5 categories with AI suggestions
     // Phase 8: localStorage persistence, date-stamped snapshots, top-3 summary strip
-    const ReinforcerAssessment = ({ studentName, aiAnalysis, callGemini, t, addToast }) => {
+    const ReinforcerAssessment = ({ studentName, studentKey, aiAnalysis, callGemini, t, addToast }) => {
         const categories = {
             social: { label: 'Social', icon: '👥', items: [t('behavior_lens.reinf_verbal_praise') || 'Verbal praise', 'High-five/fist bump', t('behavior_lens.reinf_lunch_with_teacher') || 'Lunch with teacher', 'Phone call home', 'Peer recognition', 'Leadership role'] },
             activity: { label: 'Activity', icon: '🎮', items: [t('behavior_lens.reinf_extra_recess') || 'Extra recess', 'Free choice time', 'Computer time', 'Read aloud to class', 'Helper role', 'Drawing time'] },
@@ -4112,8 +4136,10 @@ Personalize each phase of the cycle and return ONLY valid JSON:
             edible: { label: (t('behavior_lens.raw.fooddrink') || 'Food/Drink'), icon: '🍎', items: ['Healthy snack', 'Water bottle refill', 'Special lunch item', 'Gum/mints'] }
         };
 
-        const lsKey = `bl_reinforcer_${studentName || '_'}`;
-        const snapKey = `bl_reinforcer_snaps_${studentName || '_'}`;
+        const lsKey = studentKey ? studentKey('bl_reinforcer_') : `bl_reinforcer_${studentName || '_'}`;
+        const snapKey = studentKey ? studentKey('bl_reinforcer_snaps_') : `bl_reinforcer_snaps_${studentName || '_'}`;
+        const legacyLsKey = `bl_reinforcer_${studentName || '_'}`;
+        const legacySnapKey = `bl_reinforcer_snaps_${studentName || '_'}`;
 
         const [ratings, setRatings] = useState({});
         const [aiSuggestions, setAiSuggestions] = useState(null);
@@ -4124,14 +4150,18 @@ Personalize each phase of the cycle and return ONLY valid JSON:
         // Load from localStorage on mount
         useEffect(() => {
             try {
-                const saved = JSON.parse(localStorage.getItem(lsKey) || 'null');
+                let raw = localStorage.getItem(lsKey);
+                if (!raw && legacyLsKey !== lsKey) raw = localStorage.getItem(legacyLsKey);
+                const saved = JSON.parse(raw || 'null');
                 if (saved) setRatings(saved);
             } catch { }
             try {
-                const snaps = JSON.parse(localStorage.getItem(snapKey) || '[]');
+                let snapsRaw = localStorage.getItem(snapKey);
+                if (!snapsRaw && legacySnapKey !== snapKey) snapsRaw = localStorage.getItem(legacySnapKey);
+                const snaps = JSON.parse(snapsRaw || '[]');
                 if (Array.isArray(snaps)) setSnapshots(snaps);
             } catch { }
-        }, [studentName]);
+        }, [studentName, studentKey]);
 
         const setRating = (item, value) => {
             setRatings(prev => ({ ...prev, [item]: prev[item] === value ? 0 : value }));
@@ -4838,8 +4868,9 @@ Provide a brief impact interpretation and return ONLY valid JSON:
 
     // ─── CrisisIntervention ─────────────────────────────────────────────
     // 3-tier emergency protocol with persistence + structured contacts
-    const CrisisIntervention = ({ studentName, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
-        const lsKey = `bl_crisis_${studentName || '_'}`;
+    const CrisisIntervention = ({ studentName, studentKey, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
+        const lsKey = studentKey ? studentKey('bl_crisis_') : `bl_crisis_${studentName || '_'}`;
+        const legacyCrisisKey = `bl_crisis_${studentName || '_'}`;
         const tiers = [
             { key: 'prevention', label: (t('behavior_lens.raw.prevention') || 'Prevention'), icon: '🛡️', color: '#22c55e', bg: '#f0fdf4' },
             { key: 'deescalation', label: t('behavior_lens.cycle_de_escalation') || 'De-escalation', icon: '🌊', color: '#3b82f6', bg: '#eff6ff' },
@@ -4854,14 +4885,16 @@ Provide a brief impact interpretation and return ONLY valid JSON:
         // Load from localStorage on mount
         useEffect(() => {
             try {
-                const saved = JSON.parse(localStorage.getItem(lsKey) || 'null');
+                let raw = localStorage.getItem(lsKey);
+                if (!raw && legacyCrisisKey !== lsKey) raw = localStorage.getItem(legacyCrisisKey);
+                const saved = JSON.parse(raw || 'null');
                 if (saved) {
                     if (saved.plan) setPlan(saved.plan);
                     if (saved.contacts && Array.isArray(saved.contacts)) setContacts(saved.contacts);
                     if (saved.lastReviewed) setLastReviewed(saved.lastReviewed);
                 }
             } catch { }
-        }, [studentName]);
+        }, [studentName, studentKey]);
 
         const savePlan = () => {
             const data = { plan, contacts: contacts.filter(c => c.name || c.role || c.phone), lastReviewed: new Date().toISOString() };
@@ -5444,9 +5477,20 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
 
     // ─── FidelityChecklist ──────────────────────────────────────────────
     // Daily BIP adherence tracking with history + streak calendar
-    const FidelityChecklist = ({ studentName, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
-        const lsKey = `bl_fidelity_${studentName || '_'}`;
-        const loadSaved = () => { try { return JSON.parse(localStorage.getItem(lsKey) || '{}'); } catch { return {}; } };
+    const FidelityChecklist = ({ studentName, studentKey, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
+        const lsKey = studentKey ? studentKey('bl_fidelity_') : `bl_fidelity_${studentName || '_'}`;
+        const loadSaved = () => {
+            try {
+                const v = localStorage.getItem(lsKey);
+                if (v) return JSON.parse(v);
+                const legacy = `bl_fidelity_${studentName || '_'}`;
+                if (legacy !== lsKey) {
+                    const lv = localStorage.getItem(legacy);
+                    if (lv) return JSON.parse(lv);
+                }
+                return {};
+            } catch { return {}; }
+        };
 
         const [items, setItems] = useState([]);
         const [checks, setChecks] = useState({});
@@ -6059,7 +6103,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
 
     // ─── HomeBehaviorLog ────────────────────────────────────────────────
     // Simplified ABC logging designed for parents/family context
-    const HomeBehaviorLog = ({ studentName, t, addToast, callGemini, setAbcEntries }) => {
+    const HomeBehaviorLog = ({ studentName, studentKey, t, addToast, callGemini, setAbcEntries }) => {
         const [entries, setEntries] = useState([]);
         const [showForm, setShowForm] = useState(false);
         const [newEntry, setNewEntry] = useState({ context: '', behavior: '', response: '', notes: '', mood: '' });
@@ -6088,17 +6132,19 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
         useEffect(() => {
             if (!studentName) return;
             try {
-                const saved = localStorage.getItem(`behaviorLens_homeLog_${studentName}`);
+                const idKey = studentKey ? studentKey('behaviorLens_homeLog_') : `behaviorLens_homeLog_${studentName}`;
+                const legacyKey = `behaviorLens_homeLog_${studentName}`;
+                const saved = localStorage.getItem(idKey) || (idKey !== legacyKey ? localStorage.getItem(legacyKey) : null);
                 if (saved) setEntries(JSON.parse(saved));
             } catch (e) { /* ignore */ }
-        }, [studentName]);
+        }, [studentName, studentKey]);
 
         const saveEntry = () => {
             if (!newEntry.behavior.trim()) return;
             const entry = { ...newEntry, id: uid(), timestamp: new Date().toISOString() };
             const updated = [entry, ...entries];
             setEntries(updated);
-            try { localStorage.setItem(`behaviorLens_homeLog_${studentName}`, JSON.stringify(updated)); } catch (e) { /* ignore */ }
+            try { localStorage.setItem(studentKey ? studentKey('behaviorLens_homeLog_') : `behaviorLens_homeLog_${studentName}`, JSON.stringify(updated)); } catch (e) { /* ignore */ }
             setNewEntry({ context: '', behavior: '', response: '', notes: '', mood: '' });
             setShowForm(false);
             if (addToast) addToast(t('behavior_lens.toast.entry_saved') || 'Entry saved ✅', 'success');
@@ -6901,7 +6947,7 @@ Respond only with the student's words:`;
 
     // ─── StudentSelfCheck ───────────────────────────────────────────────
     // Student-facing reflection tool: captures the student's own perspective
-    const StudentSelfCheck = ({ studentName, t, addToast, callGemini }) => {
+    const StudentSelfCheck = ({ studentName, studentKey, t, addToast, callGemini }) => {
         const MOODS = [
             { emoji: '😊', label: (t('behavior_lens.raw.good') || 'Good'), color: 'emerald' },
             { emoji: '😐', label: (t('behavior_lens.raw.okay') || 'Okay'), color: 'amber' },
@@ -6914,7 +6960,8 @@ Respond only with the student's words:`;
         const [showForm, setShowForm] = useState(false);
         const [mood, setMood] = useState('');
         const [answers, setAnswers] = useState({ happening: '', feeling: '', needed: '', nextTime: '' });
-        const storageKey = `behaviorLens_selfCheck_${studentName}`;
+        const storageKey = studentKey ? studentKey('behaviorLens_selfCheck_') : `behaviorLens_selfCheck_${studentName}`;
+        const legacySelfCheckKey = `behaviorLens_selfCheck_${studentName}`;
         const [aiReflectionLoading, setAiReflectionLoading] = useState(false);
         const [aiReflectionResult, setAiReflectionResult] = useState('');
 
@@ -6922,10 +6969,10 @@ Respond only with the student's words:`;
         useEffect(() => {
             if (!studentName) return;
             try {
-                const saved = localStorage.getItem(storageKey);
+                const saved = localStorage.getItem(storageKey) || (legacySelfCheckKey !== storageKey ? localStorage.getItem(legacySelfCheckKey) : null);
                 if (saved) setEntries(JSON.parse(saved));
             } catch (e) { /* ignore */ }
-        }, [studentName]);
+        }, [studentName, studentKey]);
 
         const saveReflection = () => {
             if (!mood) return;
@@ -7124,7 +7171,7 @@ Keep language warm and age-appropriate.`;
 
     // ─── SnapshotExchange ────────────────────────────────────────────────
     // Sneakernet JSON export/import for parent-teacher data exchange
-    const SnapshotExchange = ({ studentName, abcEntries, observationSessions, aiAnalysis, setAbcEntries, setObservationSessions, t, addToast, callGemini }) => {
+    const SnapshotExchange = ({ studentName, studentKey, abcEntries, observationSessions, aiAnalysis, setAbcEntries, setObservationSessions, t, addToast, callGemini }) => {
         const [tab, setTab] = useState('export');
         const [role, setRole] = useState('educator');
         const [message, setMessage] = useState('');
@@ -7141,16 +7188,20 @@ Keep language warm and age-appropriate.`;
         // Read home log and self-check entries from localStorage
         const homeLogEntries = useMemo(() => {
             try {
-                const saved = localStorage.getItem(`behaviorLens_homeLog_${studentName}`);
+                const idKey = studentKey ? studentKey('behaviorLens_homeLog_') : `behaviorLens_homeLog_${studentName}`;
+                const legacyKey = `behaviorLens_homeLog_${studentName}`;
+                const saved = localStorage.getItem(idKey) || (idKey !== legacyKey ? localStorage.getItem(legacyKey) : null);
                 return saved ? JSON.parse(saved) : [];
             } catch (e) { return []; }
-        }, [studentName]);
+        }, [studentName, studentKey]);
         const selfCheckEntries = useMemo(() => {
             try {
-                const saved = localStorage.getItem(`behaviorLens_selfCheck_${studentName}`);
+                const idKey = studentKey ? studentKey('behaviorLens_selfCheck_') : `behaviorLens_selfCheck_${studentName}`;
+                const legacyKey = `behaviorLens_selfCheck_${studentName}`;
+                const saved = localStorage.getItem(idKey) || (idKey !== legacyKey ? localStorage.getItem(legacyKey) : null);
                 return saved ? JSON.parse(saved) : [];
             } catch (e) { return []; }
-        }, [studentName]);
+        }, [studentName, studentKey]);
 
         const allChecks = [includeAbc, includeObs, includeAi, includeHomeLog, includeSelfCheck];
         const allSelected = allChecks.every(Boolean);
@@ -7418,7 +7469,7 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
 
     // ─── ConsentManager ──────────────────────────────────────────────────
     // FERPA consent form builder for parent-teacher data exchange
-    const ConsentManager = ({ studentName, t, addToast, callGemini }) => {
+    const ConsentManager = ({ studentName, studentKey, t, addToast, callGemini }) => {
         const DEFAULT_SECTIONS = [
             {
                 id: 'purpose',
@@ -7458,11 +7509,17 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
             },
         ];
 
-        const storageKey = `behaviorLens_consent_${studentName || 'default'}`;
+        const storageKey = studentKey ? studentKey('behaviorLens_consent_') : `behaviorLens_consent_${studentName || 'default'}`;
         const [sections, setSections] = useState(() => {
             try {
-                const saved = localStorage.getItem(storageKey);
-                return saved ? JSON.parse(saved) : DEFAULT_SECTIONS;
+                const v = localStorage.getItem(storageKey);
+                if (v) return JSON.parse(v);
+                const legacy = `behaviorLens_consent_${studentName || 'default'}`;
+                if (legacy !== storageKey) {
+                    const lv = localStorage.getItem(legacy);
+                    if (lv) return JSON.parse(lv);
+                }
+                return DEFAULT_SECTIONS;
             } catch { return DEFAULT_SECTIONS; }
         });
         const [editingId, setEditingId] = useState(null);
@@ -13462,9 +13519,20 @@ Keep it encouraging and professional. Under 300 words.`;
 
     // ─── AlloBotChat ────────────────────────────────────────────────────
     // Conversational AI chat panel for behavioral analysis questions
-    const AlloBotChat = ({ callGemini, studentName, studentProfile, sessionNotes, abcEntries, aiAnalysis, buildStudentContext, t, addToast, alloBotRef }) => {
-        const chatLsKey = `bl_allobot_${studentName || '_'}`;
-        const loadChatHistory = () => { try { return JSON.parse(localStorage.getItem(chatLsKey) || '[]'); } catch { return []; } };
+    const AlloBotChat = ({ callGemini, studentName, studentKey, studentProfile, sessionNotes, abcEntries, aiAnalysis, buildStudentContext, t, addToast, alloBotRef }) => {
+        const chatLsKey = studentKey ? studentKey('bl_allobot_') : `bl_allobot_${studentName || '_'}`;
+        const loadChatHistory = () => {
+            try {
+                const v = localStorage.getItem(chatLsKey);
+                if (v) return JSON.parse(v);
+                const legacy = `bl_allobot_${studentName || '_'}`;
+                if (legacy !== chatLsKey) {
+                    const lv = localStorage.getItem(legacy);
+                    if (lv) return JSON.parse(lv);
+                }
+                return [];
+            } catch { return []; }
+        };
         const [messages, setMessages] = useState(() => loadChatHistory());
         const [input, setInput] = useState('');
         const [isSending, setIsSending] = useState(false);
@@ -17079,7 +17147,7 @@ Keep under 200 words. Use bullet points.`);
     };
 
     // ─── BIPGenerator ───────────────────────────────────────────────────
-    const BIPGenerator = ({ studentName, abcEntries, callGemini, t, addToast }) => {
+    const BIPGenerator = ({ studentName, studentKey, abcEntries, callGemini, t, addToast }) => {
         const [plan, setPlan] = useState('');
         const [loading, setLoading] = useState(false);
         const [isEditing, setIsEditing] = useState(false);
@@ -17092,8 +17160,12 @@ Keep under 200 words. Use bullet points.`);
                 const storedStudents = JSON.parse(localStorage.getItem('students_data') || '[]');
                 const studentProfile = storedStudents.find(s => s.name === studentName) || {};
 
-                // Get PrefAssess
-                const preAssessData = localStorage.getItem(`prefassess_${studentName}`) || 'No formal preference assessment generated.';
+                // Get PrefAssess (prefer studentId-scoped key, fall back to legacy codename key)
+                const _prefIdKey = studentKey ? studentKey('prefassess_') : `prefassess_${studentName}`;
+                const _prefLegacyKey = `prefassess_${studentName}`;
+                const preAssessData = localStorage.getItem(_prefIdKey)
+                    || (_prefIdKey !== _prefLegacyKey ? localStorage.getItem(_prefLegacyKey) : null)
+                    || 'No formal preference assessment generated.';
 
                 const prompt = `Draft a formal Behavior Intervention Plan (BIP) for ${studentName}.
 Based on the following aggregated data:
@@ -23805,8 +23877,19 @@ IMPORTANT rules for expert keys:
         });
 
         // ─── Student Roster for multi-student quick-switch ───────────────
+        // Each roster entry has an immutable `id` (UUID via uid()). Per-student
+        // storage keys are scoped to that id — see studentKey() below — so
+        // recreating or changing a codename in the picker no longer orphans
+        // the student's ABC entries / goals / contracts / etc. under a
+        // stale key. The initializer backfills `id` onto any legacy roster
+        // entry loaded from localStorage that predates this change.
         const [studentRoster, setStudentRoster] = useState(() => {
-            try { return JSON.parse(localStorage.getItem('bl_student_roster') || '[]'); } catch { return []; }
+            try {
+                const raw = JSON.parse(localStorage.getItem('bl_student_roster') || '[]');
+                return Array.isArray(raw)
+                    ? raw.map(r => (r && typeof r === 'object' && r.id) ? r : { ...r, id: uid() })
+                    : [];
+            } catch { return []; }
         });
         const [showRosterDropdown, setShowRosterDropdown] = useState(false);
 
@@ -23819,17 +23902,114 @@ IMPORTANT rules for expert keys:
             }
         }, [studentRoster]);
 
-        // Auto-add current student to roster when selectedStudent changes
+        // Auto-add current student to roster when selectedStudent changes.
+        // NEW entries always get an immutable `id`; existing ones only refresh lastAccessed.
         useEffect(() => {
             if (!selectedStudent) return;
             setStudentRoster(prev => {
                 const existing = prev.find(r => r.name === selectedStudent);
                 if (existing) {
-                    return prev.map(r => r.name === selectedStudent ? { ...r, lastAccessed: new Date().toISOString() } : r);
+                    return prev.map(r => r.name === selectedStudent
+                        ? { ...r, id: r.id || uid(), lastAccessed: new Date().toISOString() }
+                        : r);
                 }
-                return [{ name: selectedStudent, lastAccessed: new Date().toISOString() }, ...prev].slice(0, 20);
+                return [{ id: uid(), name: selectedStudent, lastAccessed: new Date().toISOString() }, ...prev].slice(0, 20);
             });
         }, [selectedStudent]);
+
+        // ─── Stable storage-id resolution + studentKey helper ────────────
+        // Resolve the active student's immutable id by name lookup. Null
+        // when no student is selected, or briefly null on the first render
+        // after a new codename is picked (the auto-add useEffect above
+        // creates the roster entry on the NEXT tick). studentKey()
+        // tolerates that window by falling back to a slugified codename.
+        const activeStudentId = useMemo(() => {
+            if (!selectedStudent) return null;
+            const r = studentRoster.find(r => r.name === selectedStudent);
+            return (r && r.id) ? r.id : null;
+        }, [selectedStudent, studentRoster]);
+
+        // Build a storage key for the active student. Prefer the immutable
+        // id (survives codename changes). Slugify the codename as a
+        // transitional fallback so we never produce a literal undefined/_
+        // when the user has actively picked a student. Final '_' fallback
+        // matches the original `studentName || '_'` shape from before this
+        // migration so existing read-or-empty patterns stay intact.
+        const studentKey = useCallback((prefix) => {
+            if (activeStudentId) return prefix + activeStudentId;
+            if (selectedStudent) return prefix + String(selectedStudent).replace(/[^A-Za-z0-9_-]/g, '_');
+            return prefix + '_';
+        }, [activeStudentId, selectedStudent]);
+
+        // ─── One-time legacy localStorage migration ──────────────────────
+        // Pre-migration data was keyed by raw codename ("behaviorLens_abc_Brave Otter").
+        // On first load post-upgrade, walk known prefixes, find/create a
+        // roster entry for each legacy name, and copy its data under
+        // prefix+id. Legacy keys are LEFT IN PLACE as a recovery backup
+        // until a future cleanup pass — there is no destructive delete here
+        // because users have no way to recover if this migration is wrong.
+        const _legacyStorageMigrationDone = useRef(false);
+        useEffect(() => {
+            if (_legacyStorageMigrationDone.current) return;
+            _legacyStorageMigrationDone.current = true;
+            try {
+                const FLAG = 'bl_studentkey_migrated_v1';
+                if (localStorage.getItem(FLAG)) return;
+                const PREFIXES = [
+                    'behaviorLens_abc_', 'behaviorLens_obs_', 'behaviorLens_homeLog_',
+                    'behaviorLens_selfCheck_', 'behaviorLens_consent_',
+                    'behaviorLens_tokenHistory_', 'behaviorLens_goals_',
+                    'bl_contracts_', 'bl_escalation_', 'bl_reinforcer_',
+                    'bl_reinforcer_snaps_', 'bl_crisis_', 'bl_fidelity_',
+                    'bl_allobot_', 'prefassess_'
+                ];
+                const ID_SHAPE = /^[a-z0-9]{8,20}$/; // shape of uid() output — already-migrated key
+                const nameToId = new Map();
+                let rosterChanged = false;
+                const rosterCopy = studentRoster.map(r => {
+                    if (r && r.name && r.id) nameToId.set(r.name, r.id);
+                    return r;
+                });
+
+                const legacyKeys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    if (!k) continue;
+                    for (const p of PREFIXES) {
+                        if (!k.startsWith(p)) continue;
+                        const suffix = k.slice(p.length);
+                        if (!suffix || suffix === '_' || suffix === 'default') break;
+                        if (ID_SHAPE.test(suffix)) break; // already id-shape — assume already migrated
+                        let id = nameToId.get(suffix);
+                        if (!id) {
+                            id = uid();
+                            nameToId.set(suffix, id);
+                            rosterCopy.push({ id, name: suffix, lastAccessed: new Date().toISOString() });
+                            rosterChanged = true;
+                        }
+                        legacyKeys.push({ k, p, id });
+                        break;
+                    }
+                }
+
+                let migrated = 0;
+                legacyKeys.forEach(({ k, p, id }) => {
+                    const newK = p + id;
+                    if (localStorage.getItem(newK) == null) {
+                        const v = localStorage.getItem(k);
+                        if (v != null) {
+                            try { localStorage.setItem(newK, v); migrated++; } catch {}
+                        }
+                    }
+                });
+
+                if (rosterChanged) setStudentRoster(rosterCopy.slice(0, 20));
+                try { localStorage.setItem(FLAG, '1'); } catch {}
+                if (migrated > 0) debugLog('BehaviorLens: migrated ' + migrated + ' legacy storage keys to studentId-scoped form');
+            } catch (e) {
+                debugLog('BehaviorLens: legacy storage migration skipped', e);
+            }
+        }, []);
 
         // Build a summary object from full workspace data (for comparisonWorkspaces entries)
         const buildWorkspaceSummary = useCallback((data) => {
@@ -24369,16 +24549,21 @@ Use professional language. Refer to "the student" (not the codename).`;
                         debugLog('CloudSync: cloud load failed, falling back to localStorage');
                     }
                 }
-                // localStorage fallback
+                // localStorage fallback — prefer the studentId-scoped key; fall
+                // back to the raw codename key for users whose legacy data
+                // hasn't been migrated yet (multi-tab race or migration flag
+                // pre-set without the data move actually happening).
                 try {
-                    const key = `behaviorLens_abc_${selectedStudent}`;
-                    const saved = localStorage.getItem(key);
+                    const idKey = studentKey('behaviorLens_abc_');
+                    const legacyKey = `behaviorLens_abc_${selectedStudent}`;
+                    const saved = localStorage.getItem(idKey) || (idKey !== legacyKey ? localStorage.getItem(legacyKey) : null);
                     if (saved && abcEntries.length === 0) {
                         setAbcEntries(JSON.parse(saved));
                         debugLog('BehaviorLens: loaded legacy ABC data from localStorage');
                     }
-                    const obsKey = `behaviorLens_obs_${selectedStudent}`;
-                    const savedObs = localStorage.getItem(obsKey);
+                    const idObsKey = studentKey('behaviorLens_obs_');
+                    const legacyObsKey = `behaviorLens_obs_${selectedStudent}`;
+                    const savedObs = localStorage.getItem(idObsKey) || (idObsKey !== legacyObsKey ? localStorage.getItem(legacyObsKey) : null);
                     if (savedObs && observationSessions.length === 0) {
                         setObservationSessions(JSON.parse(savedObs));
                         debugLog('BehaviorLens: loaded legacy obs data from localStorage');
@@ -24388,14 +24573,14 @@ Use professional language. Refer to "the student" (not the codename).`;
                 }
             };
             loadData();
-        }, [selectedStudent, cloudSync.userId]);
+        }, [selectedStudent, cloudSync.userId, activeStudentId]);
 
         // Auto-save ABC entries (localStorage + cloud write-through)
         const cloudSaveTimer = useRef(null);
         useEffect(() => {
             if (!selectedStudent || abcEntries.length === 0) return;
             try {
-                localStorage.setItem(`behaviorLens_abc_${selectedStudent}`, JSON.stringify(abcEntries));
+                localStorage.setItem(studentKey('behaviorLens_abc_'), JSON.stringify(abcEntries));
             } catch (e) {
                 // Silently fail — Canvas/iframe may block localStorage
             }
@@ -24417,13 +24602,13 @@ Use professional language. Refer to "the student" (not the codename).`;
                 }, 2000);
             }
             return () => { if (cloudSaveTimer.current) clearTimeout(cloudSaveTimer.current); };
-        }, [abcEntries, selectedStudent]);
+        }, [abcEntries, selectedStudent, activeStudentId]);
 
         // Auto-save observation sessions (localStorage + cloud write-through)
         useEffect(() => {
             if (!selectedStudent || observationSessions.length === 0) return;
             try {
-                localStorage.setItem(`behaviorLens_obs_${selectedStudent}`, JSON.stringify(observationSessions));
+                localStorage.setItem(studentKey('behaviorLens_obs_'), JSON.stringify(observationSessions));
             } catch (e) {
                 // Silently fail — Canvas/iframe may block localStorage
             }
@@ -24444,7 +24629,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     }).catch(() => {});
                 }, 2000);
             }
-        }, [observationSessions, selectedStudent]);
+        }, [observationSessions, selectedStudent, activeStudentId]);
 
         // Track data changes for save reminder
         useEffect(() => { setDataChangedSinceSave(true); }, [abcEntries, observationSessions, sessionHistory, sessionNotes, designPhases]);

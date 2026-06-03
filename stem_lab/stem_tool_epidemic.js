@@ -89,7 +89,8 @@ window.StemLab = window.StemLab || {
     { id: 'scenarios',   icon: '\uD83C\uDFAD', label: 'Scenarios' },
     { id: 'challenge',   icon: '\uD83C\uDFAF', label: 'Challenge' },
     { id: 'battle',      icon: '\u2694\uFE0F', label: 'Battle' },
-    { id: 'learn',       icon: '\uD83D\uDCDA', label: 'Learn' }
+    { id: 'learn',       icon: '\uD83D\uDCDA', label: 'Learn' },
+    { id: 'inquiry',     icon: '\uD83D\uDD2C', label: 'Inquiry' }
   ];
 
   // ── Disease Presets ──
@@ -1521,7 +1522,8 @@ window.StemLab = window.StemLab || {
             scenarios:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83C\uDFAD', title: 'Scenario walk-through',               hint: 'Step through historical and hypothetical outbreaks. Practice intervention sequencing under uncertainty \u2014 the actual job of public health.' },
             challenge:     { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAF', title: 'Daily challenge',                     hint: 'A new outbreak puzzle every session: pick interventions, optimize timing, minimize deaths. Streak counter tracks daily wins.' },
             battle:        { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\u2694\uFE0F',  title: 'Battle mode \u2014 head-to-head',     hint: 'Two players race to contain identical outbreaks with limited resources. Tests intervention literacy under speed pressure.' },
-            learn:         { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: 'Reference + glossary',               hint: 'R\u2080, R-effective, attack rate, case fatality rate, generation interval \u2014 the glossary you keep coming back to as you read epi papers.' }
+            learn:         { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: 'Reference + glossary',               hint: 'R\u2080, R-effective, attack rate, case fatality rate, generation interval \u2014 the glossary you keep coming back to as you read epi papers.' },
+            inquiry:       { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)', icon: '\uD83D\uDD2C', title: 'Inquiry \u2014 when does an outbreak become observable?', hint: 'Three sliders: contact frequency, intervention adoption, pathogen transmissibility. Discrete regime: contained / emerging / pandemic. No score, no reveal \u2014 just sweep and observe.' }
           };
           var meta = TAB_META[tab] || TAB_META.sir;
           return h('div', {
@@ -3297,6 +3299,114 @@ window.StemLab = window.StemLab || {
             })
           )
         ),
+
+        // ═══ INQUIRY TAB (Cycle 16 — H7b'' validated design pattern) ═══
+        tab === 'inquiry' && (function() {
+          var iq = d.inquiry || { contact: 50, intervention: 30, transmissibility: 2.5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('inquiry', Object.assign({}, iq, patch)); }
+          // Effective R = transmissibility * (contact/100) * (1 - intervention/100 * 0.7)
+          var contactF = iq.contact / 100;
+          var interventionF = iq.intervention / 100;
+          var rEff = iq.transmissibility * contactF * (1 - interventionF * 0.7);
+          // Discrete 3-band regime
+          var regime = rEff < 0.9 ? 'contained' : (rEff < 1.5 ? 'emerging' : 'pandemic');
+          var regimeMeta = {
+            contained: { label: '🟢 Contained', desc: 'R_eff < 1: outbreak dies out before becoming detectable. No pandemic.', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+            emerging:  { label: '🟡 Emerging',  desc: 'R_eff just above 1: outbreak grows slowly. Visible to surveillance but not pandemic.', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+            pandemic:  { label: '🔴 Pandemic',  desc: 'R_eff well above 1: exponential growth. Pandemic scale within weeks-months.', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+          }[regime];
+          function logObs() {
+            var obs = { c: iq.contact, i: iq.intervention, t: iq.transmissibility, rE: parseFloat(rEff.toFixed(2)), reg: regime };
+            setIQ({ log: (iq.log || []).concat([obs]).slice(-8) });
+          }
+          return h('div', { className: 'space-y-4' },
+            h('div', { className: glassCard },
+              h('h4', { className: 'text-sm font-black text-slate-700 mb-1' }, '🔬 Epidemic threshold discovery'),
+              h('p', { className: 'text-xs text-slate-600 mb-3 leading-relaxed' },
+                'Three sliders: contact frequency, intervention adoption, pathogen transmissibility. Sweep them. The outbreak will settle into one of three discrete regimes (no numeric score, no death-toll). There is no right answer — and no reveal. Log observations. Type what you discover about when an outbreak becomes a pandemic.'),
+              // Discrete regime marker
+              h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: regimeMeta.bg, border: '2px solid ' + regimeMeta.border } },
+                h('div', { className: 'text-lg font-black mb-1', style: { color: regimeMeta.color } }, regimeMeta.label),
+                h('div', { className: 'text-[11px] text-slate-700' }, regimeMeta.desc)
+              ),
+              // 3 sliders
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
+                [
+                  { key: 'contact', label: 'Contact frequency (%)', val: iq.contact, min: 0, max: 100, step: 1 },
+                  { key: 'intervention', label: 'Intervention adoption (%)', val: iq.intervention, min: 0, max: 100, step: 1 },
+                  { key: 'transmissibility', label: 'Transmissibility (R₀)', val: iq.transmissibility, min: 0.5, max: 8, step: 0.1 }
+                ].map(function(s) {
+                  return h('div', { key: s.key },
+                    h('label', { htmlFor: 'ep-' + s.key, className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                      s.label + ': ', h('span', { className: 'font-mono text-cyan-700' }, s.val)),
+                    h('input', { id: 'ep-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
+                      onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
+                      className: 'w-full', 'aria-label': s.label }));
+                })
+              ),
+              // Log + reset
+              h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
+                h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log observation'),
+                h('button', { onClick: function() { setIQ({ contact: 50, intervention: 30, transmissibility: 2.5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                  className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' observations logged')
+              ),
+              // Log table
+              (iq.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
+                h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
+                  h('thead', null, h('tr', { className: 'bg-slate-100' },
+                    ['contact %', 'intervention %', 'R₀', 'R_eff', 'regime'].map(function(c, i) {
+                      return h('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-200 text-left' }, c);
+                    }))),
+                  h('tbody', null, iq.log.map(function(o, idx) {
+                    var rowBg = o.reg === 'contained' ? 'rgba(16,185,129,0.08)' : (o.reg === 'emerging' ? 'rgba(217,119,6,0.08)' : 'rgba(220,38,38,0.10)');
+                    return h('tr', { key: 'lr' + idx, style: { background: rowBg } },
+                      h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.c),
+                      h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.i),
+                      h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.t),
+                      h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.rE),
+                      h('td', { className: 'px-2 py-1 border border-slate-200' }, o.reg));
+                  })))
+              ),
+              h('div', { className: 'mb-3' },
+                h('label', { htmlFor: 'ep-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                  'Your hypothesis (free text — no right answer):'),
+                h('textarea', { id: 'ep-hypo', value: iq.hypothesis || '',
+                  onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+                  placeholder: 'Which slider is the most efficient lever to flip a pandemic into emerging or contained? Is there a single combined number that predicts the regime? Type your own theory.',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 })
+              ),
+              h('div', { className: 'mb-3' },
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+                  className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300' },
+                  '🤔 I\'m stuck — show me questions to think about (no answers)'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  h('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open questions — investigate by manipulating:'),
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Set transmissibility to 5 (high). Can you keep the regime contained using only intervention adoption? At what level?'),
+                    h('li', null, 'A real pandemic has interventions usually 30-50% adoption. Above what R₀ does even strong intervention fail?'),
+                    h('li', null, 'Log 4-5 contained observations. Look at the R_eff column. Is the boundary always at the same R_eff value? Why might that be?'),
+                    h('li', null, 'Try contact=20, intervention=0. Then contact=80, intervention=70. Same regime? Same R_eff? What does this tell you about the interaction?'),
+                    h('li', null, 'In real epidemiology the threshold value is R_eff = 1. Why exactly 1 and not 0 or 2?')),
+                  h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, 'No answers will be revealed. Investigate.'))
+              ),
+              h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                h('div', { className: 'flex items-center gap-2 mb-2' },
+                  h('input', { type: 'checkbox', id: 'ep-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  h('label', { htmlFor: 'ep-und', className: 'text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                    'I think I understand the trade-offs — let me explain them in my own words')),
+                iq.understood && h('textarea', { value: iq.explanation || '',
+                  onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                  placeholder: 'Explain in your own words: what is the relationship between contact frequency, intervention adoption, transmissibility, and outbreak regime? What single equation could capture it? Why is the threshold at R_eff = 1?',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
+                iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
+                  '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
+              ),
+              h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] italic text-slate-600' },
+                'Design note: no death-toll counter, no peak-infection chart, no quiz validation. Outcome is shown as a discrete 3-regime marker (contained / emerging / pandemic), not a continuous indicator — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.')
+            )
+          );
+        })(),
 
         // SR status
         h('div', { className: 'sr-only', role: 'status', 'aria-live': 'polite' }, 'Epidemic Lab: ' + tab + ' view')

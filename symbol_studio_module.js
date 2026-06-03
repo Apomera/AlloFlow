@@ -2469,7 +2469,22 @@
         store(scopedKey(STORAGE_GOALS), updated);
         return updated;
       });
-    }, []);
+      // Also purge this goal's legacy auto-logged AAC probes from the RTI dashboard store —
+      // recordIepTrial pushed {type:'aac', goalId, context} per auto-event before the
+      // manual-only fix, inflating RTI tiering. Remove ONLY aac probes for THIS goal with a
+      // non-manual context; keep manual probes + every non-AAC probe (e.g. Word Sounds 'orf').
+      if (setDashboardData && selectedStudentId) {
+        setDashboardData(function (dd) {
+          return (dd || []).map(function (s) {
+            if (s.id !== selectedStudentId) return s;
+            var cleaned = (s.probeHistory || []).filter(function (p) {
+              return !(p.type === 'aac' && p.goalId === goalId && p.context !== 'manual');
+            });
+            return Object.assign({}, s, { probeHistory: cleaned });
+          });
+        });
+      }
+    }, [setDashboardData, selectedStudentId]);
 
     var removeIepGoal = useCallback(function (goalId) {
       setIepGoals(function (prev) {
@@ -6295,7 +6310,7 @@
                   e('span', { style: { fontSize: '9px', color: '#92400e', flex: 1, minWidth: '150px' } }, '⚠ Includes ' + autoTrials + ' auto-logged trial' + (autoTrials !== 1 ? 's' : '') + ' from before manual-only tracking — progress may be inflated.'),
                   e('button', {
                     onClick: function () {
-                      if (!window.confirm('Recompute "' + g.text + '" from clinician trials only?\n\nProgress will be set to count only your manual ✓ Success entries (' + manualSuccesses + '), and ' + autoTrials + ' auto-logged tap/game/scan trial' + (autoTrials !== 1 ? 's' : '') + ' (recorded before manual-only tracking) will be removed from this goal’s record. This cannot be undone.')) return;
+                      if (!window.confirm('Recompute "' + g.text + '" from clinician trials only?\n\nProgress will be set to count only your manual ✓ Success entries (' + manualSuccesses + '), and ' + autoTrials + ' auto-logged tap/game/scan trial' + (autoTrials !== 1 ? 's' : '') + ' (recorded before manual-only tracking) will be removed from this goal’s record (and from the RTI dashboard history, if connected). This cannot be undone.')) return;
                       recomputeIepGoal(g.id);
                       addToast && addToast('Recomputed “' + g.text + '” from clinician trials (' + manualSuccesses + ' success' + (manualSuccesses !== 1 ? 'es' : '') + ').', 'success');
                     },
