@@ -5046,7 +5046,114 @@ window.StemLab = window.StemLab || {
               'A BMX bike weighs ~12 kg vs a skateboard\'s ~4 kg, and the wheels are much bigger. Moment of inertia I = m·r² determines how much torque you need to spin. Same arm strength → less rotation per second. That\'s why BMX flips and spins look more deliberate than skate spins — the rider is fighting more rotational mass for the same air time.'
             )
           )
-        )
+        ),
+        // ═══ AIR/SPIN INQUIRY widget (H7b'') ═══
+        (function() {
+          var iq = d.spinIQ || { speed: 6, angle: 45, mass: 70, rotSpeed: 360, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd({ spinIQ: Object.assign({}, iq, patch) }); }
+          function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+          var g = 9.81;
+          var theta = iq.angle * Math.PI / 180;
+          var vy = iq.speed * Math.sin(theta);
+          var hangTime = (2 * vy) / g; // seconds
+          var apex = (vy * vy) / (2 * g); // meters
+          var range = (iq.speed * iq.speed * Math.sin(2 * theta)) / g;
+          var possibleDeg = hangTime * iq.rotSpeed;
+          var ke = 0.5 * iq.mass * iq.speed * iq.speed;
+          var maxTrick = possibleDeg >= 1080 ? '1080+' : possibleDeg >= 720 ? '720' : possibleDeg >= 540 ? '540' : possibleDeg >= 360 ? '360' : possibleDeg >= 180 ? '180' : 'flat';
+          var state = hangTime < 0.3 ? 'flatground' : hangTime < 0.7 ? 'air180' : hangTime < 1.1 ? 'air360' : hangTime < 1.5 ? 'big540' : 'pro720';
+          var sm = ({
+            flatground: { label: 'Flat-ground', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'Hang time < 0.3 s — manual / shove-it territory. No rotation room.' },
+            air180: { label: '180-class air', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Hang ≈ 0.3–0.7 s. Half-rotations and ollies possible.' },
+            air360: { label: '360-class air', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Hang ≈ 0.7–1.1 s. Full rotation possible with average spin rate.' },
+            big540: { label: 'Big-air 540', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Hang ≈ 1.1–1.5 s. Park/vert range. 540 and 720 possible if spin rate is high.' },
+            pro720: { label: 'Pro 720+', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Hang > 1.5 s. Mega-ramp / Olympic-level. 900 and 1080 territory.' }
+          })[state];
+          // SVG: trajectory parabola
+          var npts = 30;
+          var pts = [];
+          for (var i = 0; i <= npts; i++) {
+            var t = (hangTime * i) / npts;
+            var x = (iq.speed * Math.cos(theta)) * t;
+            var y = (iq.speed * Math.sin(theta)) * t - 0.5 * g * t * t;
+            pts.push([x, y]);
+          }
+          var maxX = Math.max(0.1, range);
+          var maxY = Math.max(0.1, apex);
+          var svgPts = pts.map(function(p) { return (20 + (p[0] / maxX) * 280) + ',' + (130 - (p[1] / maxY) * 110); }).join(' ');
+          return h('div', { style: { background: sm.bg, border: '1px solid ' + sm.border, borderRadius: 12, padding: 14, marginBottom: 12, color: '#e8f0f5' } },
+            h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Air / Spin Inquiry'),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set takeoff speed, angle, mass, and your rotation rate. Predict the biggest rotation you can land cleanly. No score, no reveal.'),
+            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · feasible max ≈ ' + maxTrick),
+            h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 10 } },
+              [
+                { label: 'Hang time', val: hangTime.toFixed(2) + ' s' },
+                { label: 'Apex height', val: apex.toFixed(2) + ' m' },
+                { label: 'Range', val: range.toFixed(2) + ' m' },
+                { label: 'Takeoff KE', val: (ke / 1000).toFixed(2) + ' kJ' }
+              ].map(function(m) {
+                return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
+                  h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val)
+                );
+              })
+            ),
+            h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+              h('line', { x1: 20, y1: 130, x2: 310, y2: 130, stroke: '#1e293b' }),
+              h('line', { x1: 20, y1: 18, x2: 20, y2: 130, stroke: '#1e293b' }),
+              h('polyline', { points: svgPts, fill: 'none', stroke: sm.color, strokeWidth: 2 }),
+              h('text', { x: 24, y: 28, fill: '#94a3b8', fontSize: 9 }, 'apex ' + apex.toFixed(2) + 'm'),
+              h('text', { x: 160, y: 152, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'trajectory · range ' + range.toFixed(2) + 'm · hang ' + hangTime.toFixed(2) + 's')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+              h('label', null,
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Takeoff speed'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.speed.toFixed(1) + ' m/s')),
+                h('input', { type: 'range', min: 1, max: 18, step: 0.5, value: iq.speed, onChange: function(e) { setKey('speed', parseFloat(e.target.value)); }, style: { width: '100%' } })
+              ),
+              h('label', null,
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Takeoff angle'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.angle + '°')),
+                h('input', { type: 'range', min: 5, max: 85, step: 1, value: iq.angle, onChange: function(e) { setKey('angle', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', null,
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Rider + board mass'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.mass + ' kg')),
+                h('input', { type: 'range', min: 30, max: 120, step: 1, value: iq.mass, onChange: function(e) { setKey('mass', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', null,
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Rotation rate'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.rotSpeed + '°/s')),
+                h('input', { type: 'range', min: 90, max: 900, step: 30, value: iq.rotSpeed, onChange: function(e) { setKey('rotSpeed', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              )
+            ),
+            h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+              h('button', { onClick: function() {
+                var t = new Date().toISOString().slice(11, 19);
+                setIQ({ log: iq.log.concat([{ t: t, v: iq.speed.toFixed(1), a: iq.angle, m: iq.mass, r: iq.rotSpeed, hang: hangTime.toFixed(2), max: maxTrick, state: sm.label }]) });
+              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this physics setup'),
+              h('button', { onClick: function() { setIQ({ speed: 6, angle: 45, mass: 70, rotSpeed: 360 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+            ),
+            iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · v' + e.v + ' θ' + e.a + ' m' + e.m + ' ω' + e.r + ' → hang ' + e.hang + 's, max ' + e.max); })
+            ),
+            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which slider buys hang time fastest — angle, speed, or mass?)'),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., angle gives diminishing returns past 60° because horizontal speed vanishes...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+            iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('ul', { style: { margin: 0, paddingLeft: 16 } },
+                h('li', null, 'Does mass appear anywhere in the air formulas? Why or why not?'),
+                h('li', null, 'At what angle is RANGE maximized vs HANG TIME maximized? Are they the same?'),
+                h('li', null, 'Why does the BMX rider need MORE hang time for the same rotation count?'),
+                h('li', null, 'How would you choose your sliders to land a 540 with the least KE?')
+              )
+            ),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+              h('span', null, 'I can explain why this v/θ/m combination lands at this max-rotation state.')
+            ),
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Treats takeoff as point projectile; real airs add drag, board-spin coupling, and rotation-rate-changes mid-air (tucking ↑ rate).')
+          );
+        })()
       );
     }
   });

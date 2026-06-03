@@ -2136,7 +2136,8 @@ window.StemLab = window.StemLab || {
             { id: 'sp', label: 'Series vs parallel', icon: '⇊' },
             { id: 'patterns', label: 'Common circuits', icon: '🔌' },
             { id: 'symbols', label: 'Schematic symbols', icon: '⊜' },
-            { id: 'fields', label: 'E & M fields', icon: '⚡' }
+            { id: 'fields', label: 'E & M fields', icon: '⚡' },
+            { id: 'ohmInquiry', label: 'Ohm Inquiry', icon: '🔬' }
           ] },
           { id: 'components', label: 'Components', color: 'sky', tabs: [
             { id: 'components', label: 'Components', icon: '⏛' },
@@ -3123,7 +3124,103 @@ window.StemLab = window.StemLab || {
         );
       }
 
+      function renderOhmInquirySection() {
+        var iq = d2.ohmInquiry || { voltage: 9, resistance: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { setExp({ ohmInquiry: Object.assign({}, iq, patch) }); }
+        function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+        var current = iq.voltage / Math.max(0.01, iq.resistance); // A
+        var power = iq.voltage * current; // W
+        var mA = current * 1000;
+        // discrete safety state
+        var state = power < 0.25 ? 'tiny' : power < 1 ? 'lowpower' : power < 5 ? 'midpower' : power < 25 ? 'hot' : 'dangerous';
+        var sm = ({
+          tiny: { label: 'Tiny load', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Sub-watt. Anything from a quarter-watt resistor will handle this fine.' },
+          lowpower: { label: 'Low power', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Up to ~1 W. Use a half-watt resistor or larger. Battery-friendly.' },
+          midpower: { label: 'Mid power', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: '1–5 W. Resistor will warm; consider 5 W component or heatsink.' },
+          hot: { label: 'Hot', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: '5–25 W. Resistor will get hot enough to burn skin. Mount on heatsink.' },
+          dangerous: { label: 'Dangerous', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: '>25 W in a small resistor will smoke or fail. Redesign to limit current.' }
+        })[state];
+        // SVG: linear I vs R curve at current V
+        var rs = [];
+        for (var r = 1; r <= 1000; r += 25) { rs.push(r); }
+        var pts = rs.map(function(r) {
+          var i = iq.voltage / r;
+          var x = (r / 1000) * 280 + 30;
+          var y = 130 - Math.min(120, i * 100);
+          return x + ',' + y;
+        }).join(' ');
+        var hereX = (Math.min(1000, iq.resistance) / 1000) * 280 + 30;
+        var hereY = 130 - Math.min(120, current * 100);
+        return h('div', { className: 'rounded-xl p-4', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+          h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Ohm Inquiry — V/I/R/P Discovery'),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set voltage and resistance. Predict where the dissipation crosses from harmless to component-killing. No score, no reveal — you mark your own understanding.'),
+          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label),
+          h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
+            [
+              { label: 'Current', val: (mA >= 1 ? mA.toFixed(1) + ' mA' : (mA * 1000).toFixed(0) + ' µA') },
+              { label: 'Power', val: power.toFixed(3) + ' W' },
+              { label: 'Ohm check', val: (iq.voltage).toFixed(2) + 'V = ' + current.toFixed(3) + 'A × ' + iq.resistance + 'Ω' }
+            ].map(function(m) {
+              return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
+                h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val)
+              );
+            })
+          ),
+          h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+            h('line', { x1: 30, y1: 130, x2: 310, y2: 130, stroke: '#1e293b' }),
+            h('line', { x1: 30, y1: 10, x2: 30, y2: 130, stroke: '#1e293b' }),
+            [0, 250, 500, 750, 1000].map(function(r, i) { return h('text', { key: 'rx' + i, x: 30 + (r / 1000) * 280, y: 145, fill: '#64748b', fontSize: 8, textAnchor: 'middle' }, r + 'Ω'); }),
+            [0, 0.3, 0.6, 0.9, 1.2].map(function(i, j) { return h('text', { key: 'iy' + j, x: 24, y: 132 - i * 100, fill: '#64748b', fontSize: 8, textAnchor: 'end' }, i + 'A'); }),
+            h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 1.5, opacity: 0.7 }),
+            h('circle', { cx: hereX, cy: hereY, r: 5, fill: sm.color, stroke: '#fff', strokeWidth: 1 }),
+            h('text', { x: hereX + 8, y: hereY - 4, fill: sm.color, fontSize: 10, fontWeight: 700 }, '↘ now'),
+            h('text', { x: 160, y: 158, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'I = V/R at V = ' + iq.voltage + 'V')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 10 } },
+            h('label', null,
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Voltage'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.voltage + ' V')),
+              h('input', { type: 'range', min: 1, max: 48, step: 0.5, value: iq.voltage, onChange: function(e) { setKey('voltage', parseFloat(e.target.value)); }, style: { width: '100%' } })
+            ),
+            h('label', null,
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Resistance'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.resistance + ' Ω')),
+              h('input', { type: 'range', min: 1, max: 1000, step: 1, value: iq.resistance, onChange: function(e) { setKey('resistance', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            )
+          ),
+          h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+            h('button', { onClick: function() {
+              var t = new Date().toISOString().slice(11, 19);
+              setIQ({ log: iq.log.concat([{ t: t, V: iq.voltage, R: iq.resistance, I: current.toFixed(3), P: power.toFixed(3), state: sm.label }]) });
+            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this V/R/I/P snapshot'),
+            h('button', { onClick: function() { setIQ({ voltage: 9, resistance: 100 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+          ),
+          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+            iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · V' + e.V + ' R' + e.R + ' I' + e.I + ' P' + e.P); })
+          ),
+          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which moves dissipation fastest — voltage or resistance? In which direction?)'),
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., doubling voltage quadruples power; halving resistance also quadruples — wait, does it?', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+            h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+            h('ul', { style: { margin: 0, paddingLeft: 16 } },
+              h('li', null, 'P = V²/R and P = I²R both express power. When does each form make intuition easier?'),
+              h('li', null, 'If you double V and double R, what happens to I? to P?'),
+              h('li', null, 'A 1 kΩ resistor at 48 V — what state? What about a 10 Ω resistor at 5 V?'),
+              h('li', null, 'When does heat dissipation become the binding constraint on a circuit design?')
+            )
+          ),
+          h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+            h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+            h('span', null, 'I can explain why this V/R combination yields this dissipation state.')
+          ),
+          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. P/Resistor wattage thresholds are typical for through-hole carbon-film; SMD and wirewound differ.')
+        );
+      }
+
       function renderActiveSection() {
+        if (expSection === 'ohmInquiry') return renderOhmInquirySection();
         if (expSection === 'laws') return renderLawsSection();
         if (expSection === 'components') return renderComponentsSection();
         if (expSection === 'sp') return renderSpSection();

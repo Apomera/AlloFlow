@@ -2898,7 +2898,8 @@ window.StemLab = window.StemLab || {
             { id: 'translation', label: 'Translation', icon: '🏭' },
             { id: 'dnarna', label: 'DNA vs RNA', icon: '⇌' },
             { id: 'mutations', label: 'Mutations', icon: '⚠' },
-            { id: 'amino', label: 'Amino acids', icon: '⚕' }
+            { id: 'amino', label: 'Amino acids', icon: '⚕' },
+            { id: 'mutInquiry', label: 'Mutation Inquiry', icon: '🔬' }
           ] },
           { id: 'cell', label: 'Cell & Organelles', color: 'teal', tabs: [
             { id: 'organelles', label: 'Cell organelles', icon: '🔬' },
@@ -3748,7 +3749,110 @@ window.StemLab = window.StemLab || {
         );
       }
 
+      function renderMutInquirySection() {
+        var iq = d2.mutInquiry || { mutRate: 1e-7, popSize: 1e6, generations: 100, selection: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { setExp({ mutInquiry: Object.assign({}, iq, patch) }); }
+        function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+        // expected number of beneficial mutations: μ * N * G * f_beneficial (≈1%)
+        var totalMuts = iq.mutRate * iq.popSize * iq.generations;
+        var beneficial = totalMuts * 0.01;
+        // probability one beneficial sweeps to fixation given selection coeff s ≈ 2s (Haldane)
+        var fixProb = Math.min(0.95, Math.max(0, 2 * iq.selection));
+        var expectedFixed = beneficial * fixProb;
+        var state = expectedFixed < 0.01 ? 'static' : expectedFixed < 0.5 ? 'driftdom' : expectedFixed < 5 ? 'slowevo' : expectedFixed < 50 ? 'fastevo' : 'runaway';
+        var sm = ({
+          static: { label: 'Static', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'Essentially no beneficial fixation expected. Population is in mutation-selection balance or drift-only.' },
+          driftdom: { label: 'Drift-dominated', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Drift dominates: few expected fixations even though mutations occur. Common in small populations.' },
+          slowevo: { label: 'Slow evolution', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'A handful of beneficial mutations expected to fix. Standard for most natural populations.' },
+          fastevo: { label: 'Fast evolution', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Many fixations expected — strong selection, large population, or both. E.g., bacterial antibiotic resistance.' },
+          runaway: { label: 'Runaway adaptation', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Extreme regime: viruses, cancer cell lines, asexual lab populations. Many simultaneous adaptive sweeps.' }
+        })[state];
+        // SVG: log-log mutation×population scatter with current point
+        function logX(v) { return 30 + (Math.log10(Math.max(1, v)) / 9) * 270; }
+        function logY(v) { return 130 - Math.min(110, (Math.log10(Math.max(1e-12, v)) + 12) / 12 * 110); }
+        return h('div', { className: 'rounded-xl p-4', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+          h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Mutation Inquiry — Drift, Selection, Fixation'),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set per-base mutation rate, population size, generations, and selection coefficient. Predict how many beneficial mutations actually sweep to fixation. No score, no reveal.'),
+          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · ~' + expectedFixed.toFixed(2) + ' fixations expected'),
+          h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
+            [
+              { label: 'Total mutations', val: totalMuts.toExponential(2) },
+              { label: '~Beneficial', val: beneficial.toExponential(2) },
+              { label: 'Fix prob (≈2s)', val: (fixProb * 100).toFixed(2) + '%' }
+            ].map(function(m) {
+              return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
+                h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val)
+              );
+            })
+          ),
+          h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+            h('line', { x1: 30, y1: 130, x2: 300, y2: 130, stroke: '#1e293b' }),
+            h('line', { x1: 30, y1: 20, x2: 30, y2: 130, stroke: '#1e293b' }),
+            [1, 1000, 1e6, 1e9].map(function(p, i) { return h('text', { key: 'nx' + i, x: logX(p), y: 145, fill: '#64748b', fontSize: 8, textAnchor: 'middle' }, '10^' + Math.log10(p).toFixed(0)); }),
+            [1e-10, 1e-7, 1e-4, 1e-1].map(function(r, i) { return h('text', { key: 'ry' + i, x: 24, y: logY(r), fill: '#64748b', fontSize: 8, textAnchor: 'end' }, '10^' + Math.log10(r).toFixed(0)); }),
+            // background zones (drift vs selection regimes for human, bacterial, virus)
+            h('circle', { cx: logX(1e4), cy: logY(1e-8), r: 14, fill: '#22d3ee', opacity: 0.2 }),
+            h('text', { x: logX(1e4) + 18, y: logY(1e-8) + 3, fill: '#22d3ee', fontSize: 8, fontWeight: 700 }, 'human (drift)'),
+            h('circle', { cx: logX(1e9), cy: logY(1e-9), r: 14, fill: '#4ade80', opacity: 0.2 }),
+            h('text', { x: logX(1e9) - 5, y: logY(1e-9) + 3, fill: '#4ade80', fontSize: 8, fontWeight: 700, textAnchor: 'end' }, 'bacterial'),
+            h('circle', { cx: logX(1e8), cy: logY(1e-5), r: 14, fill: '#f87171', opacity: 0.2 }),
+            h('text', { x: logX(1e8) + 18, y: logY(1e-5) + 3, fill: '#f87171', fontSize: 8, fontWeight: 700 }, 'virus'),
+            h('circle', { cx: logX(iq.popSize), cy: logY(iq.mutRate), r: 6, fill: sm.color, stroke: '#fff', strokeWidth: 1.5 }),
+            h('text', { x: 160, y: 158, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'log₁₀(N) vs log₁₀(μ) — circles = typical regimes')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+            h('label', null,
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Mutation rate μ (log)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.mutRate.toExponential(1))),
+              h('input', { type: 'range', min: -10, max: -2, step: 0.5, value: Math.log10(iq.mutRate), onChange: function(e) { setKey('mutRate', Math.pow(10, parseFloat(e.target.value))); }, style: { width: '100%' } })
+            ),
+            h('label', null,
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Population size N (log)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.popSize.toExponential(1))),
+              h('input', { type: 'range', min: 1, max: 10, step: 0.5, value: Math.log10(iq.popSize), onChange: function(e) { setKey('popSize', Math.pow(10, parseFloat(e.target.value))); }, style: { width: '100%' } })
+            ),
+            h('label', null,
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Generations'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.generations)),
+              h('input', { type: 'range', min: 1, max: 10000, step: 1, value: iq.generations, onChange: function(e) { setKey('generations', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            ),
+            h('label', null,
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Selection coef s'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.selection.toFixed(3))),
+              h('input', { type: 'range', min: 0, max: 0.5, step: 0.005, value: iq.selection, onChange: function(e) { setKey('selection', parseFloat(e.target.value)); }, style: { width: '100%' } })
+            )
+          ),
+          h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+            h('button', { onClick: function() {
+              var t = new Date().toISOString().slice(11, 19);
+              setIQ({ log: iq.log.concat([{ t: t, mu: iq.mutRate.toExponential(1), N: iq.popSize.toExponential(1), g: iq.generations, s: iq.selection.toFixed(3), fix: expectedFixed.toFixed(2), state: sm.label }]) });
+            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this evolutionary regime'),
+            h('button', { onClick: function() { setIQ({ mutRate: 1e-7, popSize: 1e6, generations: 100, selection: 0 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+          ),
+          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+            iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · μ' + e.mu + ' N' + e.N + ' g' + e.g + ' s' + e.s + ' → ' + e.fix); })
+          ),
+          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which slider has the biggest leverage on fixation rate? Why?)'),
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., selection has more leverage than μ once N is large enough...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+            h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+            h('ul', { style: { margin: 0, paddingLeft: 16 } },
+              h('li', null, 'When does the regime move from drift-dominated to selection-dominated? What does N·s tell you?'),
+              h('li', null, 'Why are antibiotic resistance and viral evolution so fast — which sliders are at their extreme?'),
+              h('li', null, 'A neutral mutation (s = 0) has fixation probability 1/(2N). What does that mean for large populations?'),
+              h('li', null, 'Could the same population size be "drift-dominated" for weak mutations and "selection-dominated" for strong ones simultaneously?')
+            )
+          ),
+          h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+            h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+            h('span', null, 'I can explain why this μ × N × g × s combination yields this regime.')
+          ),
+          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Uses Haldane fix prob ≈ 2s (haploid, large-N); for diploids and small populations, full Kimura formula gives ~(1−e^(−2s))/(1−e^(−4Ns)).')
+        );
+      }
+
       function renderActiveSection() {
+        if (expSection === 'mutInquiry') return renderMutInquirySection();
         if (expSection === 'bases') return renderBasesSection();
         if (expSection === 'code') return renderCodeSection();
         if (expSection === 'replication') return renderReplicationSection();
