@@ -6511,7 +6511,43 @@
                   fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
                 }
               }, '⛶')
-            )
+            ),
+            // === H7b'' inquiry widget: transformation discovery ===
+            (function() {
+              var iq = d._transformHunt || { rot: 0, scale: 1, shear: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('_transformHunt', Object.assign({}, iq, patch)); }
+              var volume = iq.scale * iq.scale * iq.scale;
+              var state;
+              if (volume < 0.05) state = 'degenerate';
+              else if (Math.abs(iq.shear) > 30) state = 'skewed';
+              else if (iq.scale < 0.9 || iq.scale > 1.1) state = 'scaled';
+              else state = 'aligned';
+              var sm = {
+                aligned:    { label: '🟢 Aligned (axes preserved)', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+                scaled:     { label: '🔵 Scaled (volume changed)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+                skewed:     { label: '🟠 Skewed (shape deformed)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+                degenerate: { label: '💀 Degenerate (volume → 0)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+              }[state];
+              return el('div', { style: { position: 'absolute', top: 12, right: 12, zIndex: 30, background: '#0f172a', border: '1px solid #a78bfa', borderRadius: 8, padding: 10, color: '#e2e8f0', maxWidth: 280 } },
+                el('h3', { style: { fontSize: 12, fontWeight: 800, color: '#a78bfa', margin: '0 0 4px 0' } }, '📐 Transform discovery'),
+                el('div', { style: { padding: 6, borderRadius: 4, textAlign: 'center', background: sm.bg, border: '1px solid ' + sm.border, marginBottom: 6 } },
+                  el('div', { style: { fontSize: 11, fontWeight: 900, color: sm.color } }, sm.label)
+                ),
+                ['rot', 'scale', 'shear'].map(function(k) {
+                  var conf = { rot: { l: 'Rot°', mn: 0, mx: 360, st: 5 }, scale: { l: 'Scale', mn: 0.1, mx: 2, st: 0.1 }, shear: { l: 'Shear', mn: -45, mx: 45, st: 5 } }[k];
+                  return el('div', { key: k, style: { marginBottom: 4 } },
+                    el('label', { htmlFor: 'tr-' + k, style: { fontSize: 10, fontWeight: 'bold' } }, conf.l + ': ', el('span', { style: { fontFamily: 'monospace', color: '#a78bfa' } }, iq[k])),
+                    el('input', { id: 'tr-' + k, type: 'range', min: conf.mn, max: conf.mx, step: conf.st, value: iq[k],
+                      onChange: function(e) { var p = {}; p[k] = parseFloat(e.target.value); setIQ(p); },
+                      style: { width: '100%' }, 'aria-label': conf.l }));
+                }),
+                el('div', { style: { display: 'flex', gap: 4, marginTop: 6 } },
+                  el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); }, style: { padding: '2px 6px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '📋'),
+                  el('button', { onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '2px 6px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺')
+                ),
+                el('div', { style: { fontSize: 9, fontStyle: 'italic', color: '#64748b', marginTop: 4 } }, 'Design: discrete 4-state transform marker; no reveal.')
+              );
+            })()
       );
     }
   });
