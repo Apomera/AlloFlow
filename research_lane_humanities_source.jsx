@@ -2460,6 +2460,12 @@
           id: 'fr' + Date.now() + '_' + Math.floor(Math.random()*1000),
           ts: Date.now(),
         })]);
+        // V1.1: PositionalityCard staleness fires when a new framing is
+        // added — every new framing shifts what the standpoint should
+        // foreground/obscure, per the design rule.
+        if (next.positionality) {
+          next.positionality = Object.assign({}, next.positionality, { staleLabel: true });
+        }
         return next;
       });
       setDraft({ frameKindChip: '', label: '', framingPrompt: '', whatItForegrounds: '', whatItOccludes: '', whichVettedSourcesFitIt: [] });
@@ -2666,6 +2672,7 @@
     var _aiResult = useState(null); var aiResult = _aiResult[0]; var setAiResult = _aiResult[1];
     var _busy = useState(false); var busy = _busy[0]; var setBusy = _busy[1];
     var _targetLinkId = useState(null); var targetLinkId = _targetLinkId[0]; var setTargetLinkId = _targetLinkId[1];
+    var _probeModal = useState(null); var probeModal = _probeModal[0]; var setProbeModal = _probeModal[1];
 
     var _hpDraft = useState(hp || { text: '', label: '', whatThisClaimDoesNotSpeakTo: '', positionalityLinkText: '' });
     var hpDraft = _hpDraft[0]; var setHpDraft = _hpDraft[1];
@@ -2726,7 +2733,7 @@
       });
     };
 
-    var setProbeVerdict = function (linkId, framingId, verdict, studentRationale, quotedSnippetRef) {
+    var setProbeVerdict = function (linkId, framingId, verdict, studentRationale, quotedSnippetRef, allSurvivesJustification) {
       setJournal(function (prev) {
         var next = Object.assign({}, prev);
         next.framingProbes = (prev.framingProbes || []).concat([{
@@ -2736,7 +2743,24 @@
           verdict: verdict,
           studentRationale: studentRationale,
           quotedSnippetRef: quotedSnippetRef || null,
+          allSurvivesJustification: allSurvivesJustification || null,
         }]);
+        // qualifierRevisionLog trigger: warrant_contracts verdicts log a
+        // qualifier revision opportunity. The actual qualifier change happens
+        // when the student edits the qualifier — but log the trigger here.
+        if (verdict === 'warrant_contracts') {
+          next.claimEvidenceLinks = (prev.claimEvidenceLinks || []).map(function (lnk) {
+            if (lnk.id !== linkId) return lnk;
+            return Object.assign({}, lnk, {
+              qualifierRevisionLog: (lnk.qualifierRevisionLog || []).concat([{
+                ts: Date.now(),
+                fromQualifier: lnk.qualifier || '',
+                toQualifier: null, // populated when student edits qualifier
+                triggeredByFramingProbeId: 'fp_pending', // updated on next render via the probe id
+              }]),
+            });
+          });
+        }
         return next;
       });
     };
@@ -2942,11 +2966,7 @@
                               {['warrant_survives','warrant_contracts','warrant_fails'].map(function (v) {
                                 return (
                                   <button key={v} type="button"
-                                    onClick={function () {
-                                      var rationale = window.prompt('Rationale for ' + v.replace(/_/g, ' ') + ' (≥60 chars, must include a content word from this framing or one of your sources):', '');
-                                      if (!rationale || rationale.length < 60) return;
-                                      setProbeVerdict(l.id, f.id, v, rationale);
-                                    }}
+                                    onClick={function () { setProbeModal({ linkId: l.id, framingId: f.id, verdict: v }); }}
                                     style={{ padding: '3px 8px', borderRadius: '999px',
                                       background: 'transparent', color:
                                         v === 'warrant_survives' ? '#16a34a' :
@@ -2972,6 +2992,167 @@
         {aiResult && !aiResult.blocked && aiResult.data && (
           <AiResultPanel t={t} data={aiResult.data} primitives={primitives} journal={journal} />
         )}
+
+        {probeModal && (
+          <FramingProbeModal t={t} journal={journal}
+            linkId={probeModal.linkId}
+            framingId={probeModal.framingId}
+            verdict={probeModal.verdict}
+            onCommit={function (payload) {
+              setProbeVerdict(probeModal.linkId, probeModal.framingId, probeModal.verdict, payload.rationale, payload.quotedSnippetRef, payload.allSurvivesJustification);
+              setProbeModal(null);
+            }}
+            onCancel={function () { setProbeModal(null); }} />
+        )}
+      </div>
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────────────────
+  // FramingProbeModal — V1.1 replacement for window.prompt. Validates
+  // studentRationale against FRAMING_PROBE_RATIONALE_TEMPLATE_DENYLIST,
+  // requires a content-word ≥4c from a linked source's notes (or framing
+  // foregrounding text), and demands ≥120c justification when this verdict
+  // would complete an all-survives distribution on the targeted link.
+  // ───────────────────────────────────────────────────────────────────────
+  function FramingProbeModal(props) {
+    var t = props.t || function (k) { return k; };
+    var journal = props.journal;
+    var linkId = props.linkId, framingId = props.framingId, verdict = props.verdict;
+    var onCommit = props.onCommit, onCancel = props.onCancel;
+    var link = (journal.claimEvidenceLinks || []).filter(function (l) { return l.id === linkId; })[0] || {};
+    var framing = (journal.framings || []).filter(function (f) { return f.id === framingId; })[0] || {};
+    var linkedSources = (journal.sources || []).filter(function (s) {
+      return (link.evidenceIds || []).indexOf(s.id) !== -1;
+    });
+    var contentSourceText = linkedSources.map(function (s) { return s.notes || ''; }).join(' ')
+      + ' ' + (framing.whatItForegrounds || '')
+      + ' ' + (framing.framingPrompt || '');
+    var validContentTokens = new Set();
+    contentTokens(contentSourceText).forEach(function (tk) { if (tk.length >= 4) validContentTokens.add(tk); });
+
+    var _rationale = useState(''); var rationale = _rationale[0]; var setRationale = _rationale[1];
+    var _allSurvivesJust = useState(''); var asJust = _allSurvivesJust[0]; var setAsJust = _allSurvivesJust[1];
+
+    var existingProbes = (journal.framingProbes || []).filter(function (p) { return p.linkId === linkId; });
+    var totalFramings = (journal.framings || []).length;
+    var existingSurviveCount = existingProbes.filter(function (p) { return p.verdict === 'warrant_survives'; }).length;
+    var wouldBeAllSurvives = verdict === 'warrant_survives' &&
+      // would this verdict complete an all-survives distribution? Count distinct framings probed.
+      (function () {
+        var probedFramings = new Set();
+        existingProbes.forEach(function (p) {
+          if (p.verdict === 'warrant_survives') probedFramings.add(p.framingId);
+        });
+        probedFramings.add(framingId);
+        return probedFramings.size === totalFramings && totalFramings >= 2;
+      })();
+
+    var rationaleLengthOk = rationale.trim().length >= 60;
+    var rationaleDenylistOk = !inDenylist(rationale, FRAMING_PROBE_RATIONALE_TEMPLATE_DENYLIST);
+    var rationaleTokens = contentTokens(rationale);
+    var rationaleContentOk = validContentTokens.size === 0 || rationaleTokens.some(function (tk) {
+      return validContentTokens.has(tk);
+    });
+    var asJustOk = !wouldBeAllSurvives || asJust.trim().length >= 120;
+
+    var canCommit = rationaleLengthOk && rationaleDenylistOk && rationaleContentOk && asJustOk;
+
+    var color = verdict === 'warrant_survives' ? '#16a34a' :
+                verdict === 'warrant_contracts' ? '#d97706' : '#dc2626';
+
+    return (
+      <div role="dialog" aria-modal="true"
+        aria-label={t('humanities.framing_probe_modal_title') || 'Record framing probe verdict'}
+        style={{ position: 'fixed', inset: 0, zIndex: 90,
+          background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+        onClick={function (e) { if (e.target === e.currentTarget) onCancel(); }}>
+        <div onClick={function (e) { e.stopPropagation(); }}
+          style={{ background: '#fff', borderRadius: '16px', maxWidth: '520px', width: '100%',
+            padding: '20px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', maxHeight: '90vh', overflowY: 'auto' }}>
+          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#1e293b' }}>
+            <span aria-hidden="true" style={{ color: color, marginRight: '6px' }}>{'\u{25CF}'}</span>
+            {t('humanities.framing_probe_modal_title') || 'Record framing probe verdict'}
+          </h3>
+          <p style={{ margin: '6px 0', fontSize: '11px', color: '#475569', lineHeight: 1.5 }}>
+            Framing: <strong>{framing.label || '(unnamed)'}</strong>
+            {' · '}Verdict: <strong style={{ color: color }}>{verdict.replace('warrant_', '').replace(/_/g, ' ')}</strong>
+          </p>
+          <label style={{ display: 'block', marginTop: '8px', fontSize: '11px', fontWeight: 700, color: '#1e293b' }}>
+            {t('humanities.probe_rationale_label') || 'Rationale (≥60 chars, not a platitude, must mention a content word from a linked source or this framing)'}
+            <textarea value={rationale} rows={4} maxLength={1500}
+              onChange={function (e) { setRationale(e.target.value); }}
+              placeholder={
+                verdict === 'warrant_survives' ? 'How does this framing read your evidence and your warrant still hold?' :
+                verdict === 'warrant_contracts' ? 'What scope does this framing force you to give up?' :
+                'How does this framing make your warrant fail?'}
+              style={{ marginTop: '4px', width: '100%', boxSizing: 'border-box',
+                padding: '8px 10px', borderRadius: '8px',
+                border: '1px solid ' + ((!rationaleLengthOk && rationale) || !rationaleDenylistOk || !rationaleContentOk ? '#dc2626' : '#cbd5e1'),
+                fontSize: '12px', fontFamily: 'inherit', resize: 'vertical', minHeight: '70px' }} />
+          </label>
+          {rationale && !rationaleLengthOk && (
+            <p style={{ margin: '4px 0', fontSize: '10px', color: '#dc2626' }}>
+              ≥60 chars required ({rationale.trim().length} so far).
+            </p>
+          )}
+          {rationale && !rationaleDenylistOk && (
+            <p style={{ margin: '4px 0', fontSize: '10px', color: '#dc2626' }}>
+              Rationale reads as a platitude (FRAMING_PROBE_RATIONALE_TEMPLATE_DENYLIST). Engage substantively.
+            </p>
+          )}
+          {rationale && rationaleLengthOk && !rationaleContentOk && validContentTokens.size > 0 && (
+            <p style={{ margin: '4px 0', fontSize: '10px', color: '#dc2626' }}>
+              Mention a content word from the linked source(s) or this framing's foregrounding text. Examples: {Array.from(validContentTokens).slice(0, 6).join(', ')}{validContentTokens.size > 6 ? '…' : ''}
+            </p>
+          )}
+          {wouldBeAllSurvives && (
+            <div style={{ marginTop: '10px', padding: '10px',
+              background: '#fef3c7', border: '1px solid #fbbf24',
+              borderRadius: '8px' }}>
+              <strong style={{ fontSize: '11px', color: '#92400e' }}>
+                {t('humanities.all_survives_warning') || 'All-survives distribution detected.'}
+              </strong>
+              <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#92400e', lineHeight: 1.5 }}>
+                Every framing probe so far returned "warrant survives." That is unusual — frameworks usually contract under at least one alternative reading. Author a ≥120-char justification explaining why your warrant genuinely survives every framing.
+              </p>
+              <textarea value={asJust} rows={3} maxLength={1200}
+                onChange={function (e) { setAsJust(e.target.value); }}
+                placeholder="Why does the warrant truly survive every framing? Be specific about which evidence resists which framing."
+                style={{ marginTop: '6px', width: '100%', boxSizing: 'border-box',
+                  padding: '8px 10px', borderRadius: '8px',
+                  border: '1px solid ' + (asJust && asJust.length < 120 ? '#dc2626' : '#fbbf24'),
+                  fontSize: '11px', fontFamily: 'inherit' }} />
+              {asJust && asJust.length < 120 && (
+                <p style={{ margin: '4px 0 0', fontSize: '10px', color: '#dc2626' }}>
+                  ≥120 chars required ({asJust.length} so far).
+                </p>
+              )}
+            </div>
+          )}
+          <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <button type="button" onClick={onCancel}
+              style={{ padding: '8px 14px', borderRadius: '999px',
+                background: '#f1f5f9', color: '#475569', border: 'none',
+                fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}>
+              {t('common.cancel') || 'Cancel'}
+            </button>
+            <button type="button" disabled={!canCommit}
+              onClick={function () {
+                if (!canCommit) return;
+                onCommit({
+                  rationale: rationale.trim(),
+                  allSurvivesJustification: wouldBeAllSurvives ? asJust.trim() : null,
+                });
+              }}
+              style={{ padding: '8px 14px', borderRadius: '999px',
+                background: canCommit ? color : '#cbd5e1', color: '#fff', border: 'none',
+                fontWeight: 800, fontSize: '12px', cursor: canCommit ? 'pointer' : 'not-allowed' }}>
+              {t('humanities.framing_probe_commit') || 'Record verdict'}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
