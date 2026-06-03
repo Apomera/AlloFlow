@@ -2961,7 +2961,95 @@ var d = (labToolData.probability) || {};
               d._aiExplanation && React.createElement("div", { className: "rounded-xl p-3", style: { background: isDark||isContrast?'rgba(139,92,246,0.08)':'rgba(139,92,246,0.04)', border: '1px solid ' + (isDark||isContrast?'rgba(139,92,246,0.2)':'#ddd6fe') } },
                 React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider mb-1", style: { color: isDark||isContrast?'#c4b5fd':'#7c3aed' } }, '\uD83E\uDD16 AI Explanation (' + (gradeLevel||'5th Grade') + ')'),
                 React.createElement("p", { className: "text-xs leading-relaxed", style: { color: isDark||isContrast?'#e2e8f0':'#374151' } }, d._aiExplanation)
-              )
+              ),
+              // === H7b'' inquiry widget: distribution skewer ===
+              (function() {
+                var h = React.createElement;
+                var iq = d.distribHunt || { pLow: 33, pMid: 34, pHigh: 33, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+                function setIQ(patch) { upd('distribHunt', Object.assign({}, iq, patch)); }
+                var total = iq.pLow + iq.pMid + iq.pHigh;
+                var normLow = total > 0 ? iq.pLow / total : 0.33;
+                var normMid = total > 0 ? iq.pMid / total : 0.34;
+                var normHigh = total > 0 ? iq.pHigh / total : 0.33;
+                // Discrete shape classification based on the three normalized probabilities
+                var maxP = Math.max(normLow, normMid, normHigh);
+                var minP = Math.min(normLow, normMid, normHigh);
+                var spread = maxP - minP;
+                var shape;
+                if (spread < 0.08) shape = 'uniform';
+                else if (normMid > Math.max(normLow, normHigh) + 0.10) shape = 'peaked';
+                else if (normLow > normHigh + 0.10 || normHigh > normLow + 0.10) shape = 'skewed';
+                else shape = 'mixed';
+                var shapeMeta = {
+                  uniform: { label: '\u2B1B Uniform (flat)',  color: '#0891b2', bg: 'rgba(8,145,178,0.08)', border: '#67e8f9', desc: 'All outcomes nearly equal in probability.' },
+                  peaked:  { label: '\uD83D\uDD3A Peaked (center)', color: '#7c3aed', bg: 'rgba(124,58,237,0.08)', border: '#c4b5fd', desc: 'Middle outcome dominates. Approaches normal-like shape with more buckets.' },
+                  skewed:  { label: '\u2197\uFE0F Skewed',          color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: '#fcd34d', desc: 'One tail much heavier than the other. Asymmetric distribution.' },
+                  mixed:   { label: '\uD83D\uDD00 Mixed',           color: '#64748b', bg: 'rgba(100,116,139,0.08)', border: '#cbd5e1', desc: 'Two outcomes share roughly equal probability with the third much lower or higher.' }
+                }[shape];
+                function logObs() {
+                  setIQ({ log: (iq.log || []).concat([{ l: iq.pLow, m: iq.pMid, hi: iq.pHigh, sh: shape }]).slice(-8) });
+                }
+                return h('div', { className: 'rounded-xl border p-3 mt-3', style: { background: isDark||isContrast?'rgba(8,145,178,0.06)':'#f0fdfa', borderColor: isDark||isContrast?'rgba(8,145,178,0.3)':'#a5f3fc' } },
+                  h('p', { className: 'text-[11px] font-bold uppercase tracking-wider mb-1', style: { color: isDark||isContrast?'#67e8f9':'#0891b2' } }, '\u2754 Distribution shape discovery'),
+                  h('p', { className: 'text-[11px] leading-relaxed mb-2', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } },
+                    'Three sliders set the relative probabilities of low / mid / high outcomes. The distribution shape is classified into one of four discrete shapes. No score, no reveal \u2014 sweep and notice.'),
+                  h('div', { className: 'mb-2 p-2 rounded text-center', style: { background: shapeMeta.bg, border: '1px solid ' + shapeMeta.border } },
+                    h('div', { className: 'text-sm font-black', style: { color: shapeMeta.color } }, shapeMeta.label),
+                    h('div', { className: 'text-[10px] mt-1', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } }, shapeMeta.desc),
+                    h('div', { className: 'text-[10px] mt-1 font-mono', style: { color: isDark||isContrast?'#94a3b8':'#64748b' } }, 'P(low)=' + (normLow*100).toFixed(0) + '%  P(mid)=' + (normMid*100).toFixed(0) + '%  P(high)=' + (normHigh*100).toFixed(0) + '%')
+                  ),
+                  h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
+                    [
+                      { key: 'pLow',  label: 'P(low) weight',  val: iq.pLow },
+                      { key: 'pMid',  label: 'P(mid) weight',  val: iq.pMid },
+                      { key: 'pHigh', label: 'P(high) weight', val: iq.pHigh }
+                    ].map(function(s) {
+                      return h('div', { key: s.key },
+                        h('label', { htmlFor: 'dh-' + s.key, className: 'block text-[10px] font-bold mb-0.5', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } },
+                          s.label + ': ', h('span', { className: 'font-mono', style: { color: isDark||isContrast?'#67e8f9':'#0891b2' } }, s.val)),
+                        h('input', { id: 'dh-' + s.key, type: 'range', min: 0, max: 100, step: 1, value: s.val,
+                          onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
+                          className: 'w-full', 'aria-label': s.label }));
+                    })
+                  ),
+                  h('div', { className: 'flex gap-2 items-center mb-2 flex-wrap' },
+                    h('button', { onClick: logObs, className: 'px-2 py-0.5 rounded text-[10px] font-bold', style: { background: isDark||isContrast?'rgba(8,145,178,0.2)':'#cffafe', color: isDark||isContrast?'#67e8f9':'#0891b2' } }, '\uD83D\uDCCB Log'),
+                    h('button', { onClick: function() { setIQ({ pLow: 33, pMid: 34, pHigh: 33, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                      className: 'px-2 py-0.5 rounded text-[10px] font-semibold border', style: { color: isDark||isContrast?'#94a3b8':'#64748b', borderColor: isDark||isContrast?'rgba(100,116,139,0.4)':'#cbd5e1' } }, '\u21BA Reset'),
+                    (iq.log || []).length > 0 && h('span', { className: 'text-[10px] italic', style: { color: isDark||isContrast?'#94a3b8':'#64748b' } }, (iq.log || []).length + ' logged')
+                  ),
+                  (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse mb-2', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } },
+                    h('thead', null, h('tr', { style: { background: isDark||isContrast?'rgba(8,145,178,0.15)':'#cffafe' } },
+                      ['low', 'mid', 'high', 'shape'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border text-left', style: { borderColor: isDark||isContrast?'rgba(100,116,139,0.3)':'#cbd5e1' } }, c); }))),
+                    h('tbody', null, iq.log.map(function(o, idx) {
+                      return h('tr', { key: 'lr' + idx },
+                        h('td', { className: 'px-1 border font-mono', style: { borderColor: isDark||isContrast?'rgba(100,116,139,0.3)':'#cbd5e1' } }, o.l),
+                        h('td', { className: 'px-1 border font-mono', style: { borderColor: isDark||isContrast?'rgba(100,116,139,0.3)':'#cbd5e1' } }, o.m),
+                        h('td', { className: 'px-1 border font-mono', style: { borderColor: isDark||isContrast?'rgba(100,116,139,0.3)':'#cbd5e1' } }, o.hi),
+                        h('td', { className: 'px-1 border', style: { borderColor: isDark||isContrast?'rgba(100,116,139,0.3)':'#cbd5e1' } }, o.sh));
+                    }))
+                  ),
+                  h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+                    placeholder: 'Hypothesis (free text): What combination produces uniform? What about peaked?',
+                    className: 'w-full text-[11px] rounded p-1 font-mono leading-snug mb-2', style: { background: isDark||isContrast?'rgba(15,23,42,0.6)':'#ffffff', color: isDark||isContrast?'#e2e8f0':'#1e293b', border: '1px solid ' + (isDark||isContrast?'rgba(100,116,139,0.4)':'#cbd5e1') }, rows: 2 }),
+                  !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+                    className: 'px-2 py-0.5 rounded text-[10px] font-bold mb-2', style: { background: isDark||isContrast?'rgba(251,191,36,0.15)':'#fef3c7', color: isDark||isContrast?'#fbbf24':'#92400e' } }, '\uD83E\uDD14 Stuck \u2014 show open prompts'),
+                  iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[10px] leading-relaxed mb-2', style: { background: isDark||isContrast?'rgba(251,191,36,0.08)':'#fffbeb', color: isDark||isContrast?'#cbd5e1':'#475569', border: '1px solid ' + (isDark||isContrast?'rgba(251,191,36,0.3)':'#fcd34d') } },
+                    h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                      h('li', null, 'Hold two sliders steady. Move one. Watch the shape.'),
+                      h('li', null, 'Find two settings that produce the same shape.'),
+                      h('li', null, 'What raw weights produce a peaked shape?'))),
+                  h('div', { className: 'p-2 rounded', style: { background: isDark||isContrast?'rgba(16,185,129,0.08)':'#ecfdf5', border: '1px solid ' + (isDark||isContrast?'rgba(16,185,129,0.3)':'#a7f3d0') } },
+                    h('label', { className: 'flex items-center gap-1 text-[11px] font-bold cursor-pointer', style: { color: isDark||isContrast?'#34d399':'#059669' } },
+                      h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
+                      'I understand \u2014 explain in my own words'),
+                    iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                      placeholder: 'Explain how relative weights produce shape.',
+                      className: 'w-full text-[11px] rounded p-1 font-mono leading-snug mt-1', style: { background: isDark||isContrast?'rgba(15,23,42,0.6)':'#ffffff', color: isDark||isContrast?'#e2e8f0':'#1e293b', border: '1px solid ' + (isDark||isContrast?'rgba(16,185,129,0.3)':'#a7f3d0') }, rows: 3 })),
+                  h('div', { className: 'mt-2 text-[9px] italic', style: { color: isDark||isContrast?'#64748b':'#94a3b8' } },
+                    'Design note: discrete 4-shape classification; no goodness-of-fit score; no reveal \u2014 by design.')
+                );
+              })()
             )
 
           );

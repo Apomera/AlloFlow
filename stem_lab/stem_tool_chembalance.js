@@ -93,7 +93,8 @@
     { id: 'records', icon: '\uD83C\uDFC5', label: 'Chemistry Records', desc: 'Strongest acid, hottest fire, etc.' },
     { id: 'glossary', icon: '\uD83D\uDCD6', label: 'Glossary', desc: '200+ chemistry terms' },
     { id: 'datatables', icon: '\uD83D\uDCCB', label: 'Data Tables', desc: 'Reference tables for chem' },
-    { id: 'finale', icon: '\uD83C\uDF86', label: '20K Finale', desc: 'You did it!' }
+    { id: 'finale', icon: '\uD83C\uDF86', label: '20K Finale', desc: 'You did it!' },
+    { id: 'pHHunt', icon: '\uD83E\uDDEA', label: 'pH Discovery', desc: 'Adjust H+ concentration, buffer, temperature \u2014 discover pH regimes' }
   ];
 
   var CHEM_CATEGORIES = [
@@ -20370,6 +20371,93 @@
             h('div', { className: 'text-center mt-6 text-xs text-slate-500 italic' }, 'ChemBalance v3.x · AlloFlow STEM Lab')
           ),
 
+          // === H7b'' inquiry widget: pH discovery ===
+          subtool === 'pHHunt' && (function() {
+            var iq = d.pHHunt || { hExpo: -7, buffer: 0, tempC: 25, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('pHHunt', Object.assign({}, iq, patch)); }
+            // pH = -log[H+]. Buffer dampens shift. Temp shifts neutral point (pure water pH 7.0 at 25C; ~6.14 at 100C)
+            var neutralPH = 7.0 - (iq.tempC - 25) * 0.012;
+            var rawPH = -iq.hExpo;
+            var pH = neutralPH + (rawPH - 7) * (1 - iq.buffer / 100 * 0.85);
+            pH = Math.max(0, Math.min(14, pH));
+            var band;
+            if (pH < 3) band = 'strong-acid';
+            else if (pH < 6) band = 'weak-acid';
+            else if (pH < 8) band = 'neutral';
+            else if (pH < 11) band = 'weak-base';
+            else band = 'strong-base';
+            var bandMeta = {
+              'strong-acid': { label: '🔴 Strong acid (pH < 3)',     color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+              'weak-acid':   { label: '🟠 Weak acid (3 ≤ pH < 6)',   color: '#ea580c', bg: '#fff7ed', border: '#fdba74' },
+              'neutral':     { label: '🟢 Near neutral (6 ≤ pH < 8)', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+              'weak-base':   { label: '🔵 Weak base (8 ≤ pH < 11)',  color: '#2563eb', bg: '#eff6ff', border: '#93c5fd' },
+              'strong-base': { label: '🟣 Strong base (pH ≥ 11)',    color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' }
+            }[band];
+            function logObs() {
+              setIQ({ log: (iq.log || []).concat([{ h: iq.hExpo, b: iq.buffer, t: iq.tempC, p: parseFloat(pH.toFixed(2)), bd: band }]).slice(-8) });
+            }
+            return h('div', { className: 'rounded-2xl bg-white border border-cyan-300 p-4 shadow-sm' },
+              h('h3', { className: 'text-sm font-black text-cyan-700 mb-1' }, '🧪 pH discovery'),
+              h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+                'Three sliders: H⁺ exponent (log scale), buffer capacity, temperature. The solution shows one of five discrete pH bands. No score, no reveal — sweep and notice.'),
+              h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: bandMeta.bg, border: '2px solid ' + bandMeta.border } },
+                h('div', { className: 'text-lg font-black', style: { color: bandMeta.color } }, bandMeta.label),
+                h('div', { className: 'text-[11px] text-slate-700 mt-1' }, 'pH ≈ ' + pH.toFixed(2))
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
+                [
+                  { key: 'hExpo',  label: 'H⁺ exponent (10^)',  val: iq.hExpo,  min: -14, max: 0,  step: 1   },
+                  { key: 'buffer', label: 'Buffer capacity (%)', val: iq.buffer, min: 0,   max: 100, step: 5   },
+                  { key: 'tempC',  label: 'Temp (°C)',           val: iq.tempC,  min: 0,   max: 100, step: 5   }
+                ].map(function(s) {
+                  return h('div', { key: s.key },
+                    h('label', { htmlFor: 'ph-' + s.key, className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                      s.label + ': ', h('span', { className: 'font-mono text-cyan-700' }, s.val)),
+                    h('input', { id: 'ph-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
+                      onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
+                      className: 'w-full', 'aria-label': s.label }));
+                })
+              ),
+              h('div', { className: 'flex gap-2 items-center mb-2 flex-wrap' },
+                h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                h('button', { onClick: function() { setIQ({ hExpo: -7, buffer: 0, tempC: 25, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                  className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+              ),
+              (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-2' },
+                h('thead', null, h('tr', { className: 'bg-slate-100' },
+                  ['H⁺ exp', 'buffer %', 'temp °C', 'pH', 'band'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                h('tbody', null, iq.log.map(function(o, idx) {
+                  return h('tr', { key: 'lr' + idx },
+                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.h),
+                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.b),
+                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.t),
+                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p),
+                    h('td', { className: 'px-1 border border-slate-200' }, o.bd));
+                }))
+              ),
+              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+                placeholder: 'Hypothesis (free text — no right answer): How does buffer affect the H+ → pH relationship?',
+                className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-2', rows: 3 }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+                className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300 mb-2' }, '🤔 Stuck — show open prompts'),
+              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-2' },
+                h('ul', { className: 'list-disc pl-5 space-y-1' },
+                  h('li', null, 'Hold two sliders steady. Move the third. Watch what happens.'),
+                  h('li', null, 'What happens to pure water (H⁺ exp = -7) as you change temperature?'),
+                  h('li', null, 'Find two settings producing the same band. What do they share?'),
+                  h('li', null, 'Investigate: why is the pH scale logarithmic?'))),
+              h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I think I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                  placeholder: 'Explain how H⁺ concentration, buffering, and temperature jointly determine pH.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+              h('div', { className: 'mt-2 text-[10px] italic text-slate-500' },
+                'Design note: discrete 5-band pH marker; no numeric optimization target; no reveal — by design.')
+            );
+          })(),
 
           // ── Footer ──
           h('div', { className: 'flex gap-2 mt-4 pt-3 border-t border-slate-200' },

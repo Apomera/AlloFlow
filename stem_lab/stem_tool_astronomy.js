@@ -444,7 +444,8 @@
         { id: 'history',      icon: '📜', label: 'History' },
         { id: 'observe',      icon: '🔭', label: 'Observing' },
         { id: 'quiz',         icon: '📝', label: 'Quiz' },
-        { id: 'print',        icon: '🖨', label: 'Print' }
+        { id: 'print',        icon: '🖨', label: 'Print' },
+        { id: 'hrDiagram',    icon: '⭐', label: 'HR Diagram' }
       ];
 
       var tabBar = h('div', {
@@ -6495,6 +6496,85 @@
         );
       }
 
+      // === H7b'' inquiry widget: HR diagram discovery ===
+      function renderHRDiagram() {
+        var iq = d.hrHunt || { mass: 1, tempK: 5800, lumin: 1, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd({ hrHunt: Object.assign({}, iq, patch) }); }
+        // Classify into 4 stellar types based on T and L
+        var category;
+        if (iq.tempK < 4500 && iq.lumin < 1) category = 'redDwarf';
+        else if (iq.tempK >= 4500 && iq.tempK < 7500 && iq.lumin >= 0.3 && iq.lumin < 10) category = 'sunLike';
+        else if (iq.tempK < 5000 && iq.lumin >= 100) category = 'redGiant';
+        else if (iq.lumin >= 10000) category = 'supergiant';
+        else category = 'mainSeq';
+        var catMeta = {
+          redDwarf:   { label: '🔴 Red dwarf',  color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Cool, faint, low-mass. Most common stars in galaxy. Lifespan trillions of years.' },
+          sunLike:    { label: '🟡 Sun-like',   color: '#facc15', bg: '#fefce8', border: '#fde047', desc: 'Yellow-white main-sequence dwarf. Fusion-stable for billions of years.' },
+          redGiant:   { label: '🟠 Red giant',  color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Evolved star. Hydrogen shell-burning. Bloated outer envelope.' },
+          supergiant: { label: '💎 Supergiant', color: '#3b82f6', bg: '#eff6ff', border: '#93c5fd', desc: 'Massive, luminous, short-lived. End in supernova explosions.' },
+          mainSeq:    { label: '⭐ Main sequence', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Stable hydrogen-burning. Specific class depends on mass + temp.' }
+        }[category];
+        function logObs() {
+          setIQ({ log: (iq.log || []).concat([{ m: iq.mass, t: iq.tempK, l: iq.lumin, c: category }]).slice(-8) });
+        }
+        return h('div', { style: { padding: 16 } },
+          h('div', { style: { padding: 16, background: '#0f172a', borderRadius: 12, color: '#e2e8f0' } },
+            h('h3', { style: { fontSize: 16, fontWeight: 800, color: '#fde047', marginBottom: 6 } }, '⭐ HR diagram discovery'),
+            h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 12 } },
+              'Adjust stellar mass, surface temperature, and luminosity. The widget classifies your star into one of five discrete categories. No score, no reveal — sweep and notice.'),
+            h('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: catMeta.bg, border: '2px solid ' + catMeta.border, marginBottom: 12 } },
+              h('div', { style: { fontSize: 15, fontWeight: 900, color: catMeta.color } }, catMeta.label),
+              h('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, catMeta.desc)
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 } },
+              [
+                { key: 'mass',   label: 'Mass (M☉)',          val: iq.mass,   min: 0.1, max: 20, step: 0.1 },
+                { key: 'tempK',  label: 'Surface T (K)',      val: iq.tempK,  min: 2000, max: 50000, step: 100 },
+                { key: 'lumin',  label: 'Luminosity (L☉)',    val: iq.lumin,  min: 0.001, max: 100000, step: 0.1 }
+              ].map(function(s) {
+                return h('div', { key: s.key },
+                  h('label', { htmlFor: 'hr-' + s.key, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } },
+                    s.label + ': ', h('span', { style: { color: '#fde047', fontFamily: 'monospace' } }, s.val)),
+                  h('input', { id: 'hr-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
+                    onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
+                    style: { width: '100%' }, 'aria-label': s.label }));
+              })
+            ),
+            h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 } },
+              h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+              h('button', { onClick: function() { setIQ({ mass: 1, tempK: 5800, lumin: 1, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset'),
+              (iq.log || []).length > 0 && h('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (iq.log || []).length + ' logged')
+            ),
+            (iq.log || []).length > 0 && h('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: 12 } },
+              h('thead', null, h('tr', { style: { background: '#1e293b' } }, ['mass', 'T (K)', 'L', 'category'].map(function(c, i) { return h('th', { key: 'h' + i, style: { padding: '4px 6px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c); }))),
+              h('tbody', null, iq.log.map(function(o, idx) {
+                return h('tr', { key: 'lr' + idx },
+                  h('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.m),
+                  h('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.t),
+                  h('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.l),
+                  h('td', { style: { padding: '4px 6px' } }, o.c));
+              }))
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): What relationships among mass, temp, luminosity define each star type?',
+              style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 3 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
+              h('ul', { style: { margin: 0, paddingLeft: 18 } },
+                h('li', null, 'Set mass = 1 M☉ and vary temp + luminosity. Where does the Sun sit?'),
+                h('li', null, 'Find two stars in different categories. What do they have in common?'),
+                h('li', null, 'Real stars cluster on the "main sequence." Investigate why.'))),
+            h('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+                h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                'I understand — explain in own words'),
+              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how mass, temperature, and luminosity define a stellar category.',
+                style: { width: '100%', minHeight: 80, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
+            h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,28,47,0.5)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#64748b' } },
+              'Design note: discrete 5-category star marker; no luminosity-class score; no reveal — by design.')
+          )
+        );
+      }
+
       // ──────────────────────────────────────────────────────────────
       // PRINT
       // ──────────────────────────────────────────────────────────────
@@ -6620,6 +6700,7 @@
         case 'observe':        body = renderObserve(); break;
         case 'quiz':           body = renderQuiz(); break;
         case 'print':          body = renderPrint(); break;
+        case 'hrDiagram':      body = renderHRDiagram(); break;
         default:               body = renderTonight();
       }
 

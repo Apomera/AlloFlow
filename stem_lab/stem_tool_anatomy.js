@@ -4272,6 +4272,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               onClick: function() { upd('_activeTab', 'flashcards'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-700 text-white' : 'bg-teal-50 text-teal-600 hover:bg-teal-100 border border-teal-600')
             }, '\uD83C\uDCCF Cards'),
+            h('button', { 'aria-label': 'Homeostasis discovery',
+              role: 'tab', 'aria-selected': activeTab === 'homeoHunt', tabIndex: activeTab === 'homeoHunt' ? 0 : -1,
+              onClick: function() { upd('_activeTab', 'homeoHunt'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'homeoHunt' ? 'bg-indigo-700 text-white' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-600')
+            }, '\uD83C\uDFE0 Homeostasis'),
             h('span', { className: 'ml-auto text-[11px] font-bold text-amber-600 self-center' }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ' badges')
           ),
 
@@ -5119,7 +5124,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     )
                   ) : h('p', { className: 'text-xs text-slate-600 italic' }, 'No flashcards available for this complexity level.')
                 )
-              ) : null
+              ) : activeTab === 'homeoHunt' ? (function() {
+                var iq = d.homeoHunt || { tempC: 37, pH: 7.4, glucose: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+                function setIQ(patch) { upd('homeoHunt', Object.assign({}, iq, patch)); }
+                var tempStress = Math.abs(iq.tempC - 37) / 2;
+                var pHStress = Math.abs(iq.pH - 7.4) * 5;
+                var gluStress = Math.abs(iq.glucose - 90) / 30;
+                var totalStress = tempStress + pHStress + gluStress;
+                var state;
+                if (totalStress < 0.6) state = 'normal';
+                else if (totalStress < 1.5) state = 'mildStress';
+                else if (totalStress < 2.8) state = 'severeStress';
+                else state = 'critical';
+                var stateMeta = {
+                  normal:       { label: '🟢 Normal — homeostasis maintained', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'All vital signs within physiologic range.' },
+                  mildStress:   { label: '🟡 Mild stress — feedback engaged',  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Compensatory mechanisms activated. Body restoring set points.' },
+                  severeStress: { label: '🟠 Severe stress — strain',           color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Multiple systems strained. Risk of decompensation.' },
+                  critical:     { label: '🔴 Critical — life-threatening',     color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Acid-base + glucose + thermal disturbance overwhelms compensation.' }
+                }[state];
+                function logObs() {
+                  setIQ({ log: (iq.log || []).concat([{ t: iq.tempC, p: iq.pH, g: iq.glucose, st: state }]).slice(-8) });
+                }
+                return h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-4 space-y-3' },
+                  h('h4', { className: 'font-bold text-indigo-800 text-sm' }, '🏠 Homeostasis discovery'),
+                  h('p', { className: 'text-xs text-slate-700 leading-relaxed' },
+                    'You are monitoring a patient. Adjust body temperature, blood pH, and glucose. The widget shows one of four discrete states (normal / mild / severe / critical). No score, no reveal — sweep and notice.'),
+                  h('div', { className: 'p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
+                    h('div', { className: 'text-sm font-black', style: { color: stateMeta.color } }, stateMeta.label),
+                    h('div', { className: 'text-[11px] text-slate-700 mt-1' }, stateMeta.desc)
+                  ),
+                  h('div', { className: 'grid grid-cols-3 gap-3' },
+                    [
+                      { key: 'tempC',   label: 'Body temp (°C)', val: iq.tempC,   min: 30, max: 43, step: 0.1 },
+                      { key: 'pH',      label: 'Blood pH',       val: iq.pH,      min: 6.8, max: 7.8, step: 0.05 },
+                      { key: 'glucose', label: 'Glucose (mg/dL)', val: iq.glucose, min: 30, max: 400, step: 5 }
+                    ].map(function(s) {
+                      return h('div', { key: s.key },
+                        h('label', { htmlFor: 'hh-' + s.key, className: 'block text-[11px] font-bold text-slate-700' },
+                          s.label + ': ', h('span', { className: 'font-mono text-indigo-700' }, s.val)),
+                        h('input', { id: 'hh-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
+                          onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
+                          className: 'w-full', 'aria-label': s.label }));
+                    })
+                  ),
+                  h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                    h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                    h('button', { onClick: function() { setIQ({ tempC: 37, pH: 7.4, glucose: 100, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                    (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                  ),
+                  (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
+                    h('thead', null, h('tr', { className: 'bg-slate-100' }, ['temp °C', 'pH', 'gluc', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                    h('tbody', null, iq.log.map(function(o, idx) {
+                      return h('tr', { key: 'lr' + idx },
+                        h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.t),
+                        h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p),
+                        h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.g),
+                        h('td', { className: 'px-1 border border-slate-200' }, o.st));
+                    }))
+                  ),
+                  h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Which vital sign tolerates the least deviation?',
+                    className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                  !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                  iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                    h('ul', { className: 'list-disc pl-5 space-y-1' },
+                      h('li', null, 'Hold two vital signs steady. Move the third. Watch.'),
+                      h('li', null, 'Real human pH range is 7.35-7.45. Investigate why so tight.'),
+                      h('li', null, 'Find two settings producing critical state. What do they share?'))),
+                  h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                    h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                      h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                      'I understand — explain in own words'),
+                    iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain why homeostasis is fragile to multi-variable deviation.',
+                      className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+                  h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state vital marker; no clinical score; no reveal — by design.')
+                );
+              })() : null
             )
           ),
 

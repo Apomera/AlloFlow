@@ -6843,6 +6843,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       if (view === 'curriculumGuide') return h(CurriculumGuide);
       if (view === 'moduleMap') return h(ModuleMap);
       if (view === 'standardsCrosswalk') return h(StandardsCrosswalk);
+      if (view === 'pressureHunt') return h(function() {
+        var iq = (toolData.evoLab && toolData.evoLab.pressureHunt) || { camouflage: 50, vision: 50, harshness: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) {
+          setToolData(function(prev) {
+            var prior = (prev && prev.evoLab) || {};
+            var st = Object.assign({}, prior.pressureHunt || iq, patch);
+            return Object.assign({}, prev, { evoLab: Object.assign({}, prior, { pressureHunt: st }) });
+          });
+        }
+        var preyFitness = iq.camouflage * 0.4 + (100 - iq.harshness) * 0.3;
+        var predatorFitness = iq.vision * 0.5 + iq.harshness * 0.2;
+        var balance = preyFitness - predatorFitness;
+        var state;
+        if (balance > 12) state = 'preyDom';
+        else if (balance < -12) state = 'predDom';
+        else state = 'balanced';
+        var stateMeta = {
+          preyDom:  { label: '🌿 Prey-dominated', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Prey camouflage + low harshness outpace predator vision. Prey population stable.' },
+          balanced: { label: '⚖️ Coevolutionary balance', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Both pressures roughly equal. Classic Red Queen arms race.' },
+          predDom:  { label: '🦅 Predator-dominated', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Predator vision + environmental stress overwhelm prey defenses. Prey decline.' }
+        }[state];
+        function logObs() {
+          setIQ({ log: (iq.log || []).concat([{ c: iq.camouflage, v: iq.vision, h: iq.harshness, st: state }]).slice(-8) });
+        }
+        var H = function(t, p, c) { return c === undefined ? React.createElement(t, p) : React.createElement.apply(null, arguments); };
+        return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
+          H('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Back to menu'),
+          H('div', { style: { padding: 16, background: 'rgba(15,23,42,0.6)', borderRadius: 10, border: '1px solid rgba(16,185,129,0.3)', color: '#e2e8f0' } },
+            H('h3', { style: { fontSize: 16, fontWeight: 800, color: '#34d399', margin: '0 0 6px 0' } }, '🌿 Selection pressure discovery'),
+            H('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 12 } },
+              'Adjust prey camouflage, predator vision, and environmental harshness. Widget shows one of three discrete coevolutionary regimes. No score, no reveal — sweep and notice.'),
+            H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: stateMeta.bg, border: '2px solid ' + stateMeta.border, marginBottom: 12 } },
+              H('div', { style: { fontSize: 15, fontWeight: 900, color: stateMeta.color } }, stateMeta.label),
+              H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, stateMeta.desc)
+            ),
+            H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 } },
+              [
+                { key: 'camouflage', label: 'Prey camouflage (%)',   val: iq.camouflage },
+                { key: 'vision',     label: 'Predator vision (%)',   val: iq.vision },
+                { key: 'harshness',  label: 'Environment harshness (%)', val: iq.harshness }
+              ].map(function(s) {
+                return H('div', { key: s.key },
+                  H('label', { htmlFor: 'ph-' + s.key, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } },
+                    s.label + ': ', H('span', { style: { color: '#34d399', fontFamily: 'monospace' } }, s.val)),
+                  H('input', { id: 'ph-' + s.key, type: 'range', min: 0, max: 100, step: 1, value: s.val,
+                    onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
+                    style: { width: '100%' }, 'aria-label': s.label }));
+              })
+            ),
+            H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 } },
+              H('button', { onClick: logObs, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+              H('button', { onClick: function() { setIQ({ camouflage: 50, vision: 50, harshness: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset'),
+              (iq.log || []).length > 0 && H('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (iq.log || []).length + ' logged')
+            ),
+            (iq.log || []).length > 0 && H('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: 12 } },
+              H('thead', null, H('tr', { style: { background: '#1e293b' } }, ['camou', 'vision', 'harsh', 'state'].map(function(c, i) { return H('th', { key: 'h' + i, style: { padding: '4px 6px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c); }))),
+              H('tbody', null, iq.log.map(function(o, idx) {
+                return H('tr', { key: 'lr' + idx },
+                  H('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.c),
+                  H('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.v),
+                  H('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.h),
+                  H('td', { style: { padding: '4px 6px' } }, o.st));
+              }))
+            ),
+            H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): When does the environment tip the balance?',
+              style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 3 }),
+            !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
+              H('ul', { style: { margin: 0, paddingLeft: 18 } },
+                H('li', null, 'Hold two sliders steady. Move one. Watch.'),
+                H('li', null, 'Find two settings producing balanced. What do they share?'),
+                H('li', null, 'In real ecosystems, the "Red Queen" hypothesis explains coevolution. Investigate why.'))),
+            H('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },
+              H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+                H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                'I understand — explain in own words'),
+              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how camouflage, predator vision, and environment co-determine population outcomes.',
+                style: { width: '100%', minHeight: 80, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
+            H('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,28,47,0.5)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#64748b' } },
+              'Design note: discrete 3-state regime marker; no fitness score; no reveal — by design.')
+          )
+        );
+      });
       return h(MainMenu);
     }
   });

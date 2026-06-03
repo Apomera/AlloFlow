@@ -20960,6 +20960,81 @@ var d = labToolData.cell;
               React.createElement('p', { className: 'text-sm text-amber-700 italic' }, 'You explored a microscopic universe of life.')
             ),
 
+            // === H7b'' inquiry widget: osmosis discovery ===
+            d.mode === 'osmoHunt' && (function() {
+              var h = React.createElement;
+              var iq = d._osmoHunt || { inside: 50, outside: 50, perm: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('_osmoHunt', Object.assign({}, iq, patch)); }
+              var concDiff = iq.outside - iq.inside;
+              var permFactor = iq.perm / 100;
+              var flow = concDiff * permFactor;
+              var state;
+              if (Math.abs(flow) < 5) state = 'isotonic';
+              else if (flow > 0) state = 'plasmolysis';
+              else state = 'lysis';
+              var stateMeta = {
+                isotonic:    { label: '🟢 Isotonic — equilibrium', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Equal solute concentration outside and in. No net water flow. Cell stable.' },
+                plasmolysis: { label: '🟠 Plasmolysis — water exits cell', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Hypertonic external solution. Water leaves cell, membrane pulls from wall.' },
+                lysis:       { label: '💥 Lysis — water floods cell',     color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Hypotonic external solution. Water enters cell. Animal cell would burst; plant cell turgid.' }
+              }[state];
+              function logObs() {
+                setIQ({ log: (iq.log || []).concat([{ i: iq.inside, o: iq.outside, p: iq.perm, st: state }]).slice(-8) });
+              }
+              return h('div', { className: 'mt-4 bg-white rounded-xl border-2 border-cyan-300 p-4 space-y-3' },
+                h('h3', { className: 'text-sm font-black text-cyan-700' }, '💧 Osmosis discovery'),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' },
+                  'Adjust solute concentration inside the cell, outside, and membrane permeability. Widget shows one of three discrete states. No score, no reveal — sweep and notice.'),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
+                  h('div', { className: 'text-base font-black', style: { color: stateMeta.color } }, stateMeta.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, stateMeta.desc)
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3' },
+                  [
+                    { key: 'inside',  label: 'Inside conc (mOsm)',  val: iq.inside },
+                    { key: 'outside', label: 'Outside conc (mOsm)', val: iq.outside },
+                    { key: 'perm',    label: 'Membrane perm (%)',   val: iq.perm }
+                  ].map(function(s) {
+                    return h('div', { key: s.key },
+                      h('label', { htmlFor: 'oh-' + s.key, className: 'block text-[11px] font-bold text-slate-700' },
+                        s.label + ': ', h('span', { className: 'font-mono text-cyan-700' }, s.val)),
+                      h('input', { id: 'oh-' + s.key, type: 'range', min: 0, max: 200, step: 1, value: s.val,
+                        onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.label }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ inside: 50, outside: 50, perm: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                  (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                ),
+                (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
+                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['inside', 'outside', 'perm', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                  h('tbody', null, iq.log.map(function(o, idx) {
+                    return h('tr', { key: 'lr' + idx },
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.i),
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.o),
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p),
+                      h('td', { className: 'px-1 border border-slate-200' }, o.st));
+                  }))
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Does permeability matter when concentrations are equal?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Set inside = outside. Change permeability. Anything happen?'),
+                    h('li', null, 'Find two settings producing isotonic. What do they share?'),
+                    h('li', null, 'Why do plant cells survive lysis but animal cells burst? Investigate.'))),
+                h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                  h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                    h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                    'I understand — explain in own words'),
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how concentration gradient and membrane permeability jointly drive osmosis.',
+                    className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 3-state osmosis marker; no membrane-integrity score; no reveal — by design.')
+              );
+            })(),
+
             // ── Vocabulary Concept Flashcard Overlay (Modal) ──
             (function() {
               if (!d._studyConcept) return null;

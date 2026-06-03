@@ -1793,7 +1793,8 @@ window.StemLab = window.StemLab || {
             { id: 'explore', icon: '\uD83D\uDCCF', label: 'Explore' },
             { id: 'challenges', icon: '\uD83C\uDFAF', label: 'Challenges' },
             { id: 'skipcount', icon: '\uD83D\uDD22', label: 'Skip Count' },
-            { id: 'fracdec', icon: '\u00BD', label: 'Frac \u2194 Dec' }
+            { id: 'fracdec', icon: '\u00BD', label: 'Frac \u2194 Dec' },
+            { id: 'magCompare', icon: '\uD83D\uDD04', label: 'Compare' }
           ];
 
           return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
@@ -1863,6 +1864,79 @@ window.StemLab = window.StemLab || {
             })(),
 
             // Active tab
+            tab === 'magCompare' && (function() {
+              var iq = d.magHunt || { numA: 1, denA: 2, numB: 1, denB: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd({ magHunt: Object.assign({}, iq, patch) }); }
+              var fracA = iq.numA / iq.denA;
+              var fracB = iq.numB / iq.denB;
+              var diff = Math.abs(fracA - fracB);
+              var state;
+              if (diff < 0.01) state = 'equal';
+              else if (Math.abs(fracA - 0.5) < 0.02 || Math.abs(fracB - 0.5) < 0.02) state = 'halfLandmark';
+              else if (fracA < fracB) state = 'aSmaller';
+              else state = 'bSmaller';
+              var stateMeta = {
+                equal:          { label: '🟰 Equivalent fractions',    color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
+                halfLandmark:   { label: '⭐ One is the ½ landmark',    color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+                aSmaller:       { label: '🔼 A < B',                    color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+                bSmaller:       { label: '🔽 A > B',                    color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+              }[state];
+              function logObs() {
+                setIQ({ log: (iq.log || []).concat([{ a: iq.numA + '/' + iq.denA, b: iq.numB + '/' + iq.denB, va: fracA.toFixed(2), vb: fracB.toFixed(2), st: state }]).slice(-8) });
+              }
+              return h('div', { className: 'p-3 rounded-xl bg-white border border-blue-200 shadow-sm' },
+                h('h3', { className: 'text-sm font-black text-blue-700 mb-1' }, '🔄 Magnitude discovery'),
+                h('p', { className: 'text-[11px] text-slate-700 mb-2 leading-relaxed' }, 'Adjust the numerators and denominators of two fractions. The widget tells you one of four discrete relationships. No score, no reveal — just sweep and notice.'),
+                h('div', { className: 'mb-2 p-2 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
+                  h('div', { className: 'text-sm font-black', style: { color: stateMeta.color } }, stateMeta.label),
+                  h('div', { className: 'text-[10px] text-slate-700 mt-0.5 font-mono' }, 'A = ' + iq.numA + '/' + iq.denA + ' ≈ ' + fracA.toFixed(2) + '   B = ' + iq.numB + '/' + iq.denB + ' ≈ ' + fracB.toFixed(2))
+                ),
+                h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                  [
+                    { key: 'numA', label: 'A num', val: iq.numA, max: 10 }, { key: 'denA', label: 'A den', val: iq.denA, max: 10 },
+                    { key: 'numB', label: 'B num', val: iq.numB, max: 10 }, { key: 'denB', label: 'B den', val: iq.denB, max: 10 }
+                  ].map(function(s) {
+                    return h('div', { key: s.key },
+                      h('label', { htmlFor: 'mh-' + s.key, className: 'block text-[10px] font-bold text-slate-700' },
+                        s.label + ': ', h('span', { className: 'font-mono text-blue-700' }, s.val)),
+                      h('input', { id: 'mh-' + s.key, type: 'range', min: 1, max: s.max, step: 1, value: s.val,
+                        onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.label }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center mb-2 flex-wrap' },
+                  h('button', { onClick: logObs, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ numA: 1, denA: 2, numB: 1, denB: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                  (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                ),
+                (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-2' },
+                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['A', 'B', '≈A', '≈B', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                  h('tbody', null, iq.log.map(function(o, idx) {
+                    return h('tr', { key: 'lr' + idx },
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.a),
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.b),
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.va),
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.vb),
+                      h('td', { className: 'px-1 border border-slate-200' }, o.st));
+                  }))
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): When do two fractions equal each other? When is one near ½?',
+                  className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300 mb-2' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700 leading-relaxed mb-2' },
+                  h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                    h('li', null, 'Find two fractions with different numerators and denominators that are equal.'),
+                    h('li', null, 'What makes a fraction close to ½? What about close to 1?'),
+                    h('li', null, 'When are two fractions easy to compare? When are they hard?'))),
+                h('div', { className: 'p-2 rounded bg-emerald-50 border border-emerald-200' },
+                  h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-emerald-800 cursor-pointer' },
+                    h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
+                    'I understand — explain in my own words'),
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how to compare two fractions without converting to decimals.',
+                    className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 })),
+                h('div', { className: 'mt-2 text-[9px] italic text-slate-500' }, 'Design note: discrete 4-state outcome; no fraction-comparison score; no reveal — by design.')
+              );
+            })(),
             tab === 'explore' && renderExplore(),
             tab === 'challenges' && renderChallenges(),
             tab === 'skipcount' && renderSkipCount(),

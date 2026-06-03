@@ -1937,6 +1937,83 @@ const d = labToolData.waterCycle;
           if (wcMode === 'steward') {
             return renderStewardCampaign();
           }
+          // === H7b'' inquiry widget: precipitation discovery ===
+          if (wcMode === 'precipHunt') {
+            var iq = d.precipHunt || { moisture: 50, tempC: 20, wind: 10, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('precipHunt', Object.assign({}, iq, patch)); }
+            // Precipitation type: depends on temp + moisture + wind interaction
+            var cloudCondensation = (iq.moisture / 100) * Math.max(0, (35 - iq.tempC) / 35);
+            var liftEffect = iq.wind / 60;
+            var rate = cloudCondensation * 0.7 + liftEffect * 0.3;
+            var ptype;
+            if (rate < 0.15) ptype = 'clear';
+            else if (rate < 0.35) ptype = 'drizzle';
+            else if (rate < 0.65) ptype = 'rain';
+            else ptype = 'storm';
+            var ptMeta = {
+              clear:   { label: '☀️ Clear / very light', color: '#facc15', bg: '#fefce8', border: '#fde047', desc: 'Insufficient condensation — too warm or too dry.' },
+              drizzle: { label: '🌦️ Light drizzle',      color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Slow condensation. Steady but gentle precipitation.' },
+              rain:    { label: '🌧️ Moderate rain',     color: '#0284c7', bg: '#e0f2fe', border: '#7dd3fc', desc: 'Strong condensation. Typical rainfall.' },
+              storm:   { label: '⛈️ Storm burst',        color: '#1e40af', bg: '#dbeafe', border: '#60a5fa', desc: 'High moisture + cool temp + strong lift → heavy convective precipitation.' }
+            }[ptype];
+            function logObs() {
+              setIQ({ log: (iq.log || []).concat([{ m: iq.moisture, t: iq.tempC, w: iq.wind, p: ptype }]).slice(-8) });
+            }
+            return h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-200 shadow-sm space-y-3' },
+              h('button', { onClick: function() { upd('wcMode', 'explorer'); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700' }, '← Back to Explorer'),
+              h('h3', { className: 'text-sm font-black text-cyan-700' }, '🌧️ Precipitation discovery'),
+              h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' },
+                'Adjust cloud moisture, temperature, and wind. Widget classifies precipitation into one of four discrete types. No score, no reveal — sweep and notice.'),
+              h('div', { className: 'p-3 rounded-lg text-center', style: { background: ptMeta.bg, border: '2px solid ' + ptMeta.border } },
+                h('div', { className: 'text-base font-black', style: { color: ptMeta.color } }, ptMeta.label),
+                h('div', { className: 'text-[11px] text-slate-700 mt-1' }, ptMeta.desc)
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-3' },
+                [
+                  { key: 'moisture', label: 'Moisture (%)',  val: iq.moisture, min: 0, max: 100, step: 1 },
+                  { key: 'tempC',    label: 'Temp (°C)',     val: iq.tempC,    min: -10, max: 40, step: 1 },
+                  { key: 'wind',     label: 'Wind (m/s)',    val: iq.wind,     min: 0, max: 60, step: 1 }
+                ].map(function(s) {
+                  return h('div', { key: s.key },
+                    h('label', { htmlFor: 'ph-' + s.key, className: 'block text-[11px] font-bold text-slate-700' },
+                      s.label + ': ', h('span', { className: 'font-mono text-cyan-700' }, s.val)),
+                    h('input', { id: 'ph-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
+                      onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
+                      className: 'w-full', 'aria-label': s.label }));
+                })
+              ),
+              h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                h('button', { onClick: function() { setIQ({ moisture: 50, tempC: 20, wind: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+              ),
+              (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
+                h('thead', null, h('tr', { className: 'bg-slate-100' }, ['moisture', 'temp', 'wind', 'type'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                h('tbody', null, iq.log.map(function(o, idx) {
+                  return h('tr', { key: 'lr' + idx },
+                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.m),
+                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.t),
+                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.w),
+                    h('td', { className: 'px-1 border border-slate-200' }, o.p));
+                }))
+              ),
+              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): What triggers a storm vs drizzle?',
+                className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                h('ul', { className: 'list-disc pl-5 space-y-1' },
+                  h('li', null, 'Hold two sliders steady. Move one. Watch.'),
+                  h('li', null, 'Find two settings producing the same type.'),
+                  h('li', null, 'Real storms need both moisture and instability. Investigate.'))),
+              h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how moisture, temperature, and wind jointly determine precipitation type.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+              h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-type precipitation marker; no rainfall-rate score; no reveal — by design.')
+            );
+          }
 
           // ═══ GRADE BAND HELPER ═══
           var GRADE_BANDS = ['K-2', '3-5', '6-8', '9-12'];
@@ -3538,11 +3615,17 @@ const d = labToolData.waterCycle;
 
               React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-sky-950/50 text-sky-400 border border-sky-900/50" : "bg-sky-100 text-sky-700") }, "ANIMATED"),
 
-              React.createElement("button", { 
+              React.createElement("button", {
                 onClick: () => switchMode('steward'),
                 className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-sky-500 to-emerald-500 text-white hover:from-sky-600 hover:to-emerald-600 shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                 'aria-label': 'Switch to Watershed Steward 10-year campaign'
-              }, "\uD83D\uDCA7 Watershed Steward \u2192")
+              }, "\uD83D\uDCA7 Watershed Steward \u2192"),
+
+              React.createElement("button", {
+                onClick: () => switchMode('precipHunt'),
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none",
+                'aria-label': 'Switch to Precipitation Discovery widget'
+              }, "\uD83C\uDF27\uFE0F Precipitation Lab \u2192")
 
             ),
 

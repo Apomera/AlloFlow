@@ -1679,7 +1679,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         { id: 'quiz',        icon: '📝',     label: '18-question quiz',  desc: 'Test your understanding of all sources.' },
         { id: 'mastery',     icon: '🏅',     label: 'Energy Mastery',     desc: 'Cross-attempt log of every quiz question you have nailed, rolled up by source.' },
         { id: 'siteSelector', icon: '🕵️',  label: 'Site Selector',     desc: '10 location profiles. For each, pick the best renewable from 8 options (rooftop solar / utility solar / onshore wind / offshore wind / hydro / geothermal / wave-tidal / biomass). Maine + global scenarios; tests siting reasoning.' },
-        { id: 'resources',   icon: '📚',     label: 'Resources',         desc: 'Every org cited in this tool.' }
+        { id: 'resources',   icon: '📚',     label: 'Resources',         desc: 'Every org cited in this tool.' },
+        // Inquiry-pattern widget (H7b'' validated design)
+        { id: 'gridBalance', icon: '⚡',     label: 'Grid balance discovery', desc: 'Adjust generation, demand, storage. Discover the 3 regimes (blackout/balanced/curtailed). No score, no reveal — open inquiry.' }
       ];
 
       function renderMenu() {
@@ -5251,6 +5253,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         );
       }
 
+      // === H7b'' inquiry widget: grid balance discovery ===
+      function renderGridBalance() {
+        var iq = d.gridHunt || { gen: 1000, demand: 1000, storage: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd('gridHunt', Object.assign({}, iq, patch)); }
+        var imbalance = iq.gen - iq.demand;
+        var bufferCapacity = iq.storage * 10; // MW absorbed/released
+        var absImbalance = Math.abs(imbalance);
+        var bufferedImbalance = Math.max(0, absImbalance - bufferCapacity);
+        var state;
+        if (bufferedImbalance < 50) state = 'balanced';
+        else if (imbalance < 0) state = 'blackout';
+        else state = 'curtailed';
+        var stateMeta = {
+          balanced:  { label: '🟢 Grid balanced', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Supply meets demand within buffer tolerance. Frequency stable.' },
+          blackout:  { label: '🔴 Brownout / blackout risk', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Demand exceeds generation + storage discharge. Frequency falling.' },
+          curtailed: { label: '🟡 Excess generation curtailed', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Generation exceeds demand + storage absorption. Renewables shut off.' }
+        }[state];
+        function logObs() {
+          setIQ({ log: (iq.log || []).concat([{ g: iq.gen, d: iq.demand, s: iq.storage, st: state }]).slice(-8) });
+        }
+        return h('div', { className: 'p-4 rounded-xl bg-white border border-emerald-200 shadow-sm' },
+          h('h3', { className: 'text-sm font-black text-emerald-700 mb-1' }, '⚡ Grid balance discovery'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+            'You are a grid operator. Adjust generation, demand, and storage capacity. The grid will show one of three discrete states: balanced / blackout / curtailed. No score, no reveal — sweep and notice.'),
+          h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
+            h('div', { className: 'text-lg font-black', style: { color: stateMeta.color } }, stateMeta.label),
+            h('div', { className: 'text-[11px] text-slate-700 mt-1' }, stateMeta.desc)
+          ),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
+            [
+              { key: 'gen',     label: 'Generation (MW)', val: iq.gen,     min: 0,    max: 2500, step: 50 },
+              { key: 'demand',  label: 'Demand (MW)',     val: iq.demand,  min: 0,    max: 2500, step: 50 },
+              { key: 'storage', label: 'Storage (MWh)',   val: iq.storage, min: 0,    max: 200,  step: 5  }
+            ].map(function(s) {
+              return h('div', { key: s.key },
+                h('label', { htmlFor: 'gb-' + s.key, className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                  s.label + ': ', h('span', { className: 'font-mono text-emerald-700' }, s.val)),
+                h('input', { id: 'gb-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
+                  onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
+                  className: 'w-full', 'aria-label': s.label }));
+            })
+          ),
+          h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
+            h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+            h('button', { onClick: function() { setIQ({ gen: 1000, demand: 1000, storage: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+              className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+            (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+          ),
+          (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-3' },
+            h('thead', null, h('tr', { className: 'bg-slate-100' },
+              ['gen MW', 'demand MW', 'storage MWh', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+            h('tbody', null, iq.log.map(function(o, idx) {
+              return h('tr', { key: 'lr' + idx },
+                h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.g),
+                h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.d),
+                h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.s),
+                h('td', { className: 'px-1 border border-slate-200' }, o.st));
+            }))
+          ),
+          h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+            placeholder: 'Hypothesis (free text): How much storage offsets a given gen-demand mismatch?',
+            className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+            className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' },
+            '🤔 Stuck — show open prompts'),
+          iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-3' },
+            h('ul', { className: 'list-disc pl-5 space-y-1' },
+              h('li', null, 'Hold two sliders steady. Move the third. Watch.'),
+              h('li', null, 'Find two settings that produce the same state. What do they share?'),
+              h('li', null, 'Renewables are intermittent. Investigate how storage size affects the band.'),
+              h('li', null, 'Real grids run at ±1% frequency. Why might that be?'))),
+          h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+            h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+              'I think I understand — let me explain'),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
+              placeholder: 'Explain how generation, demand, and storage interact to determine grid state.',
+              className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+          h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] italic text-slate-600' },
+            'Design note: discrete 3-state outcome; no numeric stability score; no reveal — discourages optimization-gaming.')
+        );
+      }
+
       // ─────────────────────────────────────────
       // VIEW ROUTER — wraps view in a fragment with the celebration overlay.
       // ─────────────────────────────────────────
@@ -5286,6 +5371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         case 'resources':    viewBody = renderResources(); break;
         case 'mastery':      viewBody = renderRenewablesMastery(); break;
         case 'siteSelector': viewBody = renderSiteSelector(); break;
+        case 'gridBalance':  viewBody = renderGridBalance(); break;
         case 'menu':
         default:             viewBody = renderMenu(); break;
       }

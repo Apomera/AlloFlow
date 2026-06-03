@@ -52,7 +52,8 @@
     { id: 'oven', icon: '\uD83D\uDD25', label: 'Oven Timeline', desc: 'What happens at each temperature', color: 'rose' },
     { id: 'diagnosis', icon: '\uD83D\uDD0D', label: 'Bake Diagnosis', desc: 'Figure out why a bake went wrong', color: 'pink' },
     { id: 'gluten', icon: '\uD83E\uDDF5', label: 'Gluten Lab', desc: 'See how flour, water, and kneading build the network', color: 'teal' },
-    { id: 'browning', icon: '\uD83E\uDD69', label: 'Browning Lab', desc: 'Maillard vs. caramelization head-to-head', color: 'orange' }
+    { id: 'browning', icon: '\uD83E\uDD69', label: 'Browning Lab', desc: 'Maillard vs. caramelization head-to-head', color: 'orange' },
+    { id: 'caramelHunt', icon: '\uD83C\uDF6F', label: 'Caramel Discovery', desc: 'Discover sugar caramelization stages via open inquiry', color: 'amber' }
   ];
 
   // ── Browning Lab data ──
@@ -2115,6 +2116,121 @@
           }, child, makeAiPanel());
         }
 
+        // === H7b'' inquiry widget: caramel discovery ===
+        function renderCaramelHunt() {
+          var iq = d.caramelHunt || { temp: 280, time: 6, moisture: 'dry', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('caramelHunt', Object.assign({}, iq, patch)); }
+          // Real caramelization stages: <230F = no change; 230-300 = light amber;
+          // 300-340 = amber/dark; 340-360 = mahogany/dark caramel; >360 = burnt.
+          // Time multiplies effect; moisture (dry) accelerates browning.
+          var moistureMult = iq.moisture === 'dry' ? 1.25 : 0.85;
+          var thermalScore = (iq.temp - 220) * 0.011 * Math.sqrt(iq.time) * moistureMult;
+          var stage = thermalScore < 0.3 ? 'raw' : (thermalScore < 1.0 ? 'light' : (thermalScore < 1.7 ? 'perfect' : 'burnt'));
+          var stageMeta = {
+            raw:     { label: '⚪ Raw sugar',      color: '#fbbf24', bg: '#fef3c7', border: '#fcd34d', desc: 'Below caramelization threshold or not heated long enough.' },
+            light:   { label: '🟡 Light amber',    color: '#d97706', bg: '#fef3c7', border: '#f59e0b', desc: 'Beginning caramelization. Color and flavor still subtle.' },
+            perfect: { label: '🟠 Perfect caramel', color: '#9a3412', bg: '#ffedd5', border: '#fb923c', desc: 'Rich amber-mahogany, full caramel flavor compounds present.' },
+            burnt:   { label: '⚫ Burnt sugar',    color: '#3f3f46', bg: '#fef2f2', border: '#52525b', desc: 'Pyrolysis dominates — bitter, acrid; sugar molecules broken to char.' }
+          }[stage];
+          function logObs() {
+            var obs = { t: iq.temp, m: iq.time, w: iq.moisture, stage: stage };
+            setIQ({ log: (iq.log || []).concat([obs]).slice(-8) });
+          }
+          return h('div', { className: 'p-4 rounded-xl bg-white border border-amber-200 shadow-sm' },
+            h('h3', { className: 'text-sm font-black text-amber-700 mb-1' }, '🍯 Caramel discovery'),
+            h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+              'You are heating sugar. Adjust temperature, time, and moisture. The pan will show you one of four discrete stages (raw / light / perfect / burnt). There is no right answer and no reveal. Sweep the sliders. Log observations. Type what you discover.'),
+            // Discrete stage marker — large and prominent
+            h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: stageMeta.bg, border: '2px solid ' + stageMeta.border } },
+              h('div', { className: 'text-lg font-black mb-1', style: { color: stageMeta.color } }, stageMeta.label),
+              h('div', { className: 'text-[11px] text-slate-700' }, stageMeta.desc)
+            ),
+            // Sliders
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
+              h('div', null,
+                h('label', { htmlFor: 'ch-temp', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                  'Temperature: ', h('span', { className: 'font-mono text-amber-700' }, iq.temp + ' °F')),
+                h('input', { id: 'ch-temp', type: 'range', min: 200, max: 400, step: 5, value: iq.temp,
+                  onChange: function(e) { setIQ({ temp: parseInt(e.target.value, 10) }); },
+                  className: 'w-full', 'aria-label': 'Temperature' })),
+              h('div', null,
+                h('label', { htmlFor: 'ch-time', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                  'Time: ', h('span', { className: 'font-mono text-amber-700' }, iq.time + ' min')),
+                h('input', { id: 'ch-time', type: 'range', min: 0, max: 15, step: 1, value: iq.time,
+                  onChange: function(e) { setIQ({ time: parseInt(e.target.value, 10) }); },
+                  className: 'w-full', 'aria-label': 'Time' })),
+              h('div', null,
+                h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, 'Moisture:'),
+                h('div', { className: 'flex gap-1' },
+                  ['dry', 'wet'].map(function(m) {
+                    var active = iq.moisture === m;
+                    return h('button', { key: m,
+                      onClick: function() { setIQ({ moisture: m }); },
+                      className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors ' + (active ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-amber-50') }, m);
+                  })))
+            ),
+            // Log + reset
+            h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
+              h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log observation'),
+              h('button', { onClick: function() { setIQ({ temp: 280, time: 6, moisture: 'dry', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+              (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+            ),
+            (iq.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
+              h('table', { className: 'text-[10px] w-full border-collapse' },
+                h('thead', null, h('tr', { className: 'bg-slate-100' },
+                  ['temp °F', 'time min', 'moisture', 'stage'].map(function(c, i) {
+                    return h('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-200 text-left' }, c);
+                  }))),
+                h('tbody', null, iq.log.map(function(o, idx) {
+                  return h('tr', { key: 'lr' + idx },
+                    h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.t),
+                    h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.m),
+                    h('td', { className: 'px-2 py-1 border border-slate-200' }, o.w),
+                    h('td', { className: 'px-2 py-1 border border-slate-200' }, o.stage));
+                })))
+            ),
+            // Free-text hypothesis
+            h('div', { className: 'mb-3' },
+              h('label', { htmlFor: 'ch-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' }, 'Your hypothesis (free text — no right answer):'),
+              h('textarea', { id: 'ch-hypo', value: iq.hypothesis || '',
+                onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+                placeholder: 'Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?',
+                className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 })
+            ),
+            // Opt-in open questions
+            h('div', { className: 'mb-3' },
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+                className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300' },
+                '🤔 I\'m stuck — show me questions to think about (no answers)'),
+              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                h('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open prompts — investigate by manipulating:'),
+                h('ul', { className: 'list-disc pl-5 space-y-1' },
+                  h('li', null, 'Hold two sliders steady. Move the third. Watch what happens.'),
+                  h('li', null, 'Log observations from each of the four stages. What patterns appear in the table?'),
+                  h('li', null, 'Find two different settings that both produce the same stage. What do they share?'),
+                  h('li', null, 'Notice where a small change flips the stage versus where larger changes do nothing.'),
+                  h('li', null, 'Real caramel chefs talk about "controlling the rate of Maillard." Investigate why moisture matters.')),
+                h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, 'No answers, no specific values. Investigate.'))
+            ),
+            // Self-mark
+            h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+              h('div', { className: 'flex items-center gap-2 mb-2' },
+                h('input', { type: 'checkbox', id: 'ch-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                h('label', { htmlFor: 'ch-und', className: 'text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  'I think I understand the trade-offs — let me explain them in my own words')),
+              iq.understood && h('textarea', { value: iq.explanation || '',
+                onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                placeholder: 'Explain in your own words: how do temperature, time, and moisture interact? What makes perfect caramel hard?',
+                className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
+              iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
+                '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
+            ),
+            h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] italic text-slate-600' },
+              'Design note: no caramel-quality score, no reveal button. Stage is shown as a discrete 4-band marker, not a continuous gradient — by design, to discourage optimization-gaming behavior.')
+          );
+        }
+
         if (subtool === 'leavening') return wrapWithA11y(renderLeavening());
         if (subtool === 'emulsion')  return wrapWithA11y(renderEmulsion());
         if (subtool === 'scaler')    return wrapWithA11y(renderScaler());
@@ -2122,6 +2238,7 @@
         if (subtool === 'diagnosis') return wrapWithA11y(renderDiagnosis());
         if (subtool === 'gluten')    return wrapWithA11y(renderGluten());
         if (subtool === 'browning')  return wrapWithA11y(renderBrowning());
+        if (subtool === 'caramelHunt') return wrapWithA11y(renderCaramelHunt());
         return wrapWithA11y(renderMenu());
       })();
     }

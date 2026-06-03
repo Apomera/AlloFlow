@@ -85,7 +85,8 @@ window.StemLab = window.StemLab || {
     { id: 'dna2protein', icon: '\uD83E\uDDEA', label: 'DNA\u2192Protein', desc: 'Codon table & translation' },
     { id: 'challenge', icon: '\uD83C\uDFC6', label: 'Challenge', desc: 'Test your genetics knowledge' },
     { id: 'battle', icon: '\u2694\uFE0F', label: 'Gene Defense', desc: 'Battle with genetics questions' },
-    { id: 'learn', icon: '\uD83D\uDCD6', label: 'Learn', desc: 'Genetics concepts by grade' }
+    { id: 'learn', icon: '\uD83D\uDCD6', label: 'Learn', desc: 'Genetics concepts by grade' },
+    { id: 'freqDyn', icon: '\uD83D\uDCCA', label: 'Allele Discovery', desc: 'Discover allele frequency dynamics via open inquiry' }
   ];
 
   // ── Badge definitions (14 total) ──
@@ -3206,6 +3207,87 @@ window.StemLab = window.StemLab || {
                 }, '\uD83D\uDD0A Read Aloud')
               )
             ),
+
+            // === H7b'' inquiry widget: allele frequency dynamics ===
+            subtool === 'freqDyn' && (function() {
+              var iq = d.freqDyn || { p: 50, selection: 0, mutation: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('freqDyn', Object.assign({}, iq, patch)); }
+              var pFrac = iq.p / 100;
+              var q = 1 - pFrac;
+              var s = iq.selection / 100;
+              var mu = iq.mutation / 1000;
+              var newP = pFrac * (1 - s) + mu * q;
+              newP = Math.max(0, Math.min(1, newP));
+              var deltaP = Math.abs(newP - pFrac);
+              var state;
+              if (deltaP < 0.005) state = 'equilibrium';
+              else if (Math.abs(s) > 0.10) state = 'selectionStrong';
+              else if (mu > 0.005) state = 'mutationDriven';
+              else state = 'driftPotential';
+              var stateMeta = {
+                equilibrium:     { label: '⚖️ Near Hardy-Weinberg equilibrium', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+                selectionStrong: { label: '🎯 Strong selection signal',          color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+                mutationDriven:  { label: '🧬 Mutation-driven shift',            color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
+                driftPotential:  { label: '🎲 Drift potential (weak forces)',   color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' }
+              }[state];
+              function logObs() {
+                setIQ({ log: (iq.log || []).concat([{ p: iq.p, s: iq.selection, m: iq.mutation, dp: (deltaP*100).toFixed(2), st: state }]).slice(-8) });
+              }
+              return h('div', { className: 'p-4 rounded-xl bg-white border border-violet-200 shadow-sm' },
+                h('h3', { className: 'text-sm font-black text-violet-700 mb-1' }, '📊 Allele frequency discovery'),
+                h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+                  'Adjust p, selection s, mutation μ. Widget shows one of four discrete population states. No score, no reveal.'),
+                h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
+                  h('div', { className: 'text-base font-black', style: { color: stateMeta.color } }, stateMeta.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1 font-mono' }, 'p = ' + iq.p + '%, q = ' + (100 - iq.p) + '%, Δp ≈ ' + (deltaP * 100).toFixed(2) + '%')
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
+                  [
+                    { key: 'p',         label: 'allele freq p (%)',  val: iq.p,         min: 1,  max: 99, step: 1 },
+                    { key: 'selection', label: 'selection s (%)',    val: iq.selection, min: -50, max: 50, step: 1 },
+                    { key: 'mutation',  label: 'mutation μ (×0.001)', val: iq.mutation,  min: 0,  max: 20, step: 1 }
+                  ].map(function(sl) {
+                    return h('div', { key: sl.key },
+                      h('label', { htmlFor: 'fd-' + sl.key, className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                        sl.label + ': ', h('span', { className: 'font-mono text-violet-700' }, sl.val)),
+                      h('input', { id: 'fd-' + sl.key, type: 'range', min: sl.min, max: sl.max, step: sl.step, value: sl.val,
+                        onChange: function(e) { var p = {}; p[sl.key] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': sl.label }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
+                  h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ p: 50, selection: 0, mutation: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                  (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                ),
+                (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-3' },
+                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['p %', 's %', 'μ', 'Δp %', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                  h('tbody', null, iq.log.map(function(o, idx) {
+                    return h('tr', { key: 'lr' + idx },
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p),
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.s),
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.m),
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.dp),
+                      h('td', { className: 'px-1 border border-slate-200' }, o.st));
+                  }))
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text — no right answer):',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-3' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Hold two sliders steady. Move the third. Watch.'),
+                    h('li', null, 'Find two settings producing the same state.'),
+                    h('li', null, 'How much selection cancels mutation? Investigate.'))),
+                h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                  h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                    h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                    'I understand — explain in own words'),
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how selection, mutation, and frequency interact.',
+                    className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+                h('div', { className: 'mt-3 text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state outcome; no fitness optimization; no reveal — by design.')
+              );
+            })(),
 
             // ── Footer ──
             h('div', { className: 'flex gap-2 mt-4 pt-3 border-t border-slate-200' },
