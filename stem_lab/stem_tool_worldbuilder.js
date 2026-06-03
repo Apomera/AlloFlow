@@ -1027,6 +1027,133 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           )
         ),
 
+        // ═══ WORLDBUILDING INQUIRY widget (H7b'') ═══
+        !selectedWorld && (function() {
+          var iq = d.worldInquiry || { biome: 'temperate', popMillions: 50, techLevel: 5, conflictLevel: 3, govStability: 7, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('worldInquiry', Object.assign({}, iq, patch)); }
+          function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+          var biomes = ({
+            arctic: { name: 'Arctic', carrying: 0.3, color: '#22d3ee', emoji: '❄️' },
+            desert: { name: 'Desert', carrying: 0.4, color: '#facc15', emoji: '🏜️' },
+            steppe: { name: 'Steppe', carrying: 0.7, color: '#a3a3a3', emoji: '🌾' },
+            temperate: { name: 'Temperate', carrying: 1.5, color: '#4ade80', emoji: '🌳' },
+            tropical: { name: 'Tropical', carrying: 2.5, color: '#16a34a', emoji: '🌴' },
+            island: { name: 'Island archipelago', carrying: 0.8, color: '#0ea5e9', emoji: '🏝️' }
+          });
+          var biome = biomes[iq.biome] || biomes.temperate;
+          var maxPop = biome.carrying * 200;
+          var popPressure = iq.popMillions / maxPop;
+          // composite world-fragility index
+          var fragility = popPressure * 0.35 + (iq.conflictLevel / 10) * 0.25 + ((10 - iq.govStability) / 10) * 0.25 + ((10 - iq.techLevel) / 10) * 0.15;
+          var state = fragility < 0.20 ? 'utopian' : fragility < 0.40 ? 'stable' : fragility < 0.60 ? 'tense' : fragility < 0.80 ? 'fracturing' : 'collapsing';
+          var sm = ({
+            utopian: { label: 'Utopian', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Low pressure on all axes. Plot tension must come from outside (mystery, exploration, internal character).' },
+            stable: { label: 'Stable', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Functioning society — small local conflicts. Great backdrop for slice-of-life or coming-of-age.' },
+            tense: { label: 'Tense', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Multiple stressors visible. Players can feel the pressure but choice still has weight.' },
+            fracturing: { label: 'Fracturing', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Society pulling apart. Hard-mode storytelling — high-stakes choices, factional conflict.' },
+            collapsing: { label: 'Collapsing', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Apocalypse/post-apocalypse territory. Survival > diplomacy.' }
+          })[state];
+          // SVG: 5-axis radar
+          var axes = [
+            { label: 'Pop pressure', val: popPressure },
+            { label: 'Conflict', val: iq.conflictLevel / 10 },
+            { label: 'Govt instability', val: (10 - iq.govStability) / 10 },
+            { label: 'Tech gap', val: (10 - iq.techLevel) / 10 },
+            { label: 'Biome stress', val: 1 - biome.carrying / 2.5 }
+          ];
+          var center = 80, radius = 60, n = 5;
+          var pts = axes.map(function(a, i) {
+            var ang = -Math.PI / 2 + (i * 2 * Math.PI / n);
+            var r = Math.max(0, Math.min(1, a.val)) * radius;
+            return [center + Math.cos(ang) * r, center + Math.sin(ang) * r];
+          });
+          var labelPts = axes.map(function(a, i) {
+            var ang = -Math.PI / 2 + (i * 2 * Math.PI / n);
+            return [center + Math.cos(ang) * (radius + 12), center + Math.sin(ang) * (radius + 12)];
+          });
+          return h('div', { className: 'rounded-xl p-3 mb-3', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+            h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, '🔬 World Inquiry — Predict the Story Tension'),
+            h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, 'Set biome, population, tech, conflict, and government. Predict the world-state before writing your first scene. No score, no reveal.'),
+            h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, biome.emoji + ' ' + biome.name + ' · ' + sm.label),
+            h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
+            h('div', { className: 'flex gap-3 items-center mb-2 flex-wrap' },
+              h('svg', { width: 160, height: 160, viewBox: '0 0 160 160', style: { flex: '0 0 160px' } },
+                [0.25, 0.5, 0.75, 1.0].map(function(s, i) {
+                  var rr = s * radius;
+                  var poly = '';
+                  for (var k = 0; k < n; k++) {
+                    var a = -Math.PI / 2 + (k * 2 * Math.PI / n);
+                    poly += (center + Math.cos(a) * rr) + ',' + (center + Math.sin(a) * rr) + ' ';
+                  }
+                  return h('polygon', { key: 'g' + i, points: poly.trim(), fill: 'none', stroke: '#1e293b', strokeWidth: 1, strokeDasharray: i === 3 ? '0' : '2 3' });
+                }),
+                h('polygon', { points: pts.map(function(p) { return p[0] + ',' + p[1]; }).join(' '), fill: sm.color + '44', stroke: sm.color, strokeWidth: 2 }),
+                pts.map(function(p, i) { return h('circle', { key: 'p' + i, cx: p[0], cy: p[1], r: 3, fill: sm.color }); }),
+                labelPts.map(function(lp, i) { return h('text', { key: 'l' + i, x: lp[0], y: lp[1], textAnchor: 'middle', fill: '#94a3b8', fontSize: 7 }, ['Pop', 'War', 'Govt', 'Tech', 'Bio'][i]); })
+              ),
+              h('div', { className: 'flex-1 text-[10px] min-w-[200px]' },
+                h('div', { className: 'font-bold mb-1 opacity-85' }, 'World metrics'),
+                h('div', { className: 'flex justify-between py-0.5 border-b border-slate-700' }, h('span', null, 'Population'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.popMillions + 'M (' + (popPressure * 100).toFixed(0) + '% of carrying)')),
+                h('div', { className: 'flex justify-between py-0.5 border-b border-slate-700' }, h('span', null, 'Carrying cap'), h('span', { className: 'font-mono', style: { color: sm.color } }, maxPop.toFixed(0) + 'M')),
+                h('div', { className: 'flex justify-between py-0.5 border-b border-slate-700' }, h('span', null, 'Fragility index'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, (fragility * 100).toFixed(0) + '%')),
+                h('div', { className: 'flex justify-between py-0.5 border-b border-slate-700' }, h('span', null, 'Story tension'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, sm.label))
+              )
+            ),
+            h('div', { className: 'flex flex-wrap gap-1 mb-2' },
+              Object.keys(biomes).map(function(b) {
+                var active = iq.biome === b;
+                return h('button', { key: b, onClick: function() { setKey('biome', b); }, className: 'px-2 py-1 rounded text-[10px] font-bold', style: { background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', border: '1px solid ' + (active ? sm.color : '#1e293b'), cursor: 'pointer' } }, biomes[b].emoji + ' ' + biomes[b].name);
+              })
+            ),
+            h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+              h('label', { className: 'text-[10px]' },
+                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Population (M)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.popMillions)),
+                h('input', { type: 'range', min: 1, max: 500, step: 1, value: iq.popMillions, onChange: function(e) { setKey('popMillions', parseInt(e.target.value, 10)); }, className: 'w-full' })
+              ),
+              h('label', { className: 'text-[10px]' },
+                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Tech level (1-10)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.techLevel)),
+                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.techLevel, onChange: function(e) { setKey('techLevel', parseInt(e.target.value, 10)); }, className: 'w-full' })
+              ),
+              h('label', { className: 'text-[10px]' },
+                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Conflict (1-10)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.conflictLevel)),
+                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.conflictLevel, onChange: function(e) { setKey('conflictLevel', parseInt(e.target.value, 10)); }, className: 'w-full' })
+              ),
+              h('label', { className: 'text-[10px]' },
+                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Govt stability'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.govStability)),
+                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.govStability, onChange: function(e) { setKey('govStability', parseInt(e.target.value, 10)); }, className: 'w-full' })
+              )
+            ),
+            h('div', { className: 'flex gap-2 mb-2' },
+              h('button', { onClick: function() {
+                var t = new Date().toISOString().slice(11, 19);
+                setIQ({ log: iq.log.concat([{ t: t, b: iq.biome, p: iq.popMillions, tech: iq.techLevel, conf: iq.conflictLevel, gov: iq.govStability, frag: (fragility * 100).toFixed(0), state: sm.label }]) });
+              }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this world'),
+              h('button', { onClick: function() { setIQ({ biome: 'temperate', popMillions: 50, techLevel: 5, conflictLevel: 3, govStability: 7 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+            ),
+            iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · ' + e.b + ' · p' + e.p + ' tech' + e.tech + ' conf' + e.conf + ' gov' + e.gov + ' → frag ' + e.frag + '%'); })
+            ),
+            h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, 'Your hypothesis (what slider would tip your world into collapse fastest? Why?)'),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., a desert biome at carrying capacity can survive only if govt stays stable...', className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck — show open questions"),
+            iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+              h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, 'Open questions (no answer key)'),
+              h('ul', { className: 'pl-4 m-0' },
+                h('li', null, 'What does "carrying capacity" mean for a story? When does it bend, when does it break?'),
+                h('li', null, 'Why might a "utopian" world be hard to write good stories in?'),
+                h('li', null, 'Can high tech REDUCE fragility, or does it shift it elsewhere?'),
+                h('li', null, 'When is the right time in a story to flip a slider — and would your reader notice?')
+              )
+            ),
+            h('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
+              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+              h('span', null, 'I can explain why this combo yields this story-tension state.')
+            ),
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget — no score, no reveal. Carrying capacities are pedagogical heuristics, not population biology; use as story scaffolding, not policy modeling.')
+          );
+        })(),
+
         // ═══ WORLD SELECTION ═══
         !selectedWorld && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-4' },

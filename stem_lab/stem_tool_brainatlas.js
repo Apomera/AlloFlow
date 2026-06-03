@@ -3491,6 +3491,102 @@ var d = labToolData.brainAtlas || {};
 
             ),
 
+            // \u2550\u2550 NEUROTRANSMITTER INQUIRY widget (H7b'') \u2550\u2550
+            (function() {
+              var iq = d.ntInquiry || { dopamine: 50, serotonin: 50, gaba: 50, glutamate: 50, norepi: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('ntInquiry', Object.assign({}, iq, patch)); }
+              function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+              var arousal = (iq.norepi + iq.glutamate - iq.gaba) / 3;
+              var mood = (iq.serotonin + iq.dopamine * 0.5 - iq.norepi * 0.3) / 2;
+              var attention = (iq.dopamine + iq.norepi - iq.gaba * 0.3) / 2.5;
+              var anxiety = (iq.norepi + iq.glutamate - iq.gaba - iq.serotonin * 0.4) / 3;
+              var state = anxiety > 35 ? 'anxious' : arousal > 50 && mood < 20 ? 'agitated' : mood > 50 && attention > 40 ? 'focused' : mood < 5 && attention < 15 ? 'depressed' : 'baseline';
+              var sm = ({
+                anxious: { label: 'Anxious / hyperaroused', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'GABA low relative to norepi + glutamate. Felt as racing thoughts, restlessness, hypervigilance.' },
+                agitated: { label: 'Agitated', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'High arousal + low mood. Common in withdrawal, certain mood-episode mixtures.' },
+                focused: { label: 'Focused / well-regulated', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Dopamine + serotonin balanced, modest arousal. Felt as on-task, calm, engaged.' },
+                depressed: { label: 'Low energy / depressed-like', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Low dopamine + low norepi + low serotonin. Felt as anhedonia, fatigue, motivation gap.' },
+                baseline: { label: 'Baseline / neutral', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'No system dominates. Most everyday states live here.' }
+              })[state];
+              var nts = [
+                { k: 'dopamine', label: 'Dopamine', short: 'DA', col: '#fb923c' },
+                { k: 'serotonin', label: 'Serotonin', short: '5-HT', col: '#22d3ee' },
+                { k: 'gaba', label: 'GABA', short: 'GABA', col: '#a78bfa' },
+                { k: 'glutamate', label: 'Glutamate', short: 'Glu', col: '#f87171' },
+                { k: 'norepi', label: 'Norepinephrine', short: 'NE', col: '#facc15' }
+              ];
+              // SVG: bars
+              return React.createElement('div', { className: 'p-3 rounded-xl mb-3', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                React.createElement('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, '\uD83D\uDD2C Neurotransmitter Inquiry \u2014 Predict the State'),
+                React.createElement('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, 'Set five neurotransmitter levels. Predict the felt state before reading it. No score, no reveal \u2014 and no clinical interpretation.'),
+                React.createElement('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
+                React.createElement('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
+                React.createElement('div', { className: 'grid grid-cols-4 gap-1 mb-2' },
+                  [
+                    { label: 'Arousal', val: arousal.toFixed(0) },
+                    { label: 'Mood', val: mood.toFixed(0) },
+                    { label: 'Attention', val: attention.toFixed(0) },
+                    { label: 'Anxiety idx', val: anxiety.toFixed(0) }
+                  ].map(function(m) {
+                    return React.createElement('div', { key: m.label, className: 'p-1 rounded text-center', style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
+                      React.createElement('div', { className: 'text-[8px] opacity-60' }, m.label),
+                      React.createElement('div', { className: 'text-[11px] font-bold font-mono', style: { color: sm.color } }, m.val)
+                    );
+                  })
+                ),
+                React.createElement('svg', { width: '100%', height: 140, viewBox: '0 0 320 140', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                  React.createElement('line', { x1: 30, y1: 110, x2: 310, y2: 110, stroke: '#1e293b' }),
+                  nts.map(function(nt, i) {
+                    var x = 50 + i * 55;
+                    var hh = (iq[nt.k] / 100) * 90;
+                    return React.createElement('g', { key: nt.k },
+                      React.createElement('rect', { x: x, y: 110 - hh, width: 40, height: hh, fill: nt.col, opacity: 0.85 }),
+                      React.createElement('text', { x: x + 20, y: 125, fill: '#cbd5e1', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, nt.short),
+                      React.createElement('text', { x: x + 20, y: 135, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, iq[nt.k])
+                    );
+                  }),
+                  React.createElement('text', { x: 6, y: 28, fill: '#475569', fontSize: 8 }, '100'),
+                  React.createElement('text', { x: 6, y: 110, fill: '#475569', fontSize: 8 }, '0')
+                ),
+                React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2 mb-2' },
+                  nts.map(function(nt) {
+                    return React.createElement('label', { key: nt.k, className: 'text-[10px]' },
+                      React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, nt.label), React.createElement('span', { className: 'font-mono font-bold', style: { color: nt.col } }, iq[nt.k])),
+                      React.createElement('input', { type: 'range', min: 0, max: 100, step: 5, value: iq[nt.k], onChange: function(e) { setKey(nt.k, parseInt(e.target.value, 10)); }, className: 'w-full' })
+                    );
+                  })
+                ),
+                React.createElement('div', { className: 'flex gap-2 mb-2' },
+                  React.createElement('button', { onClick: function() {
+                    var t = new Date().toISOString().slice(11, 19);
+                    setIQ({ log: iq.log.concat([{ t: t, da: iq.dopamine, sh: iq.serotonin, ga: iq.gaba, glu: iq.glutamate, ne: iq.norepi, state: sm.label }]) });
+                  }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '\uD83D\uDCCB Log this profile'),
+                  React.createElement('button', { onClick: function() { setIQ({ dopamine: 50, serotonin: 50, gaba: 50, glutamate: 50, norepi: 50 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+                ),
+                iq.log.length > 0 && React.createElement('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                  iq.log.slice(-5).map(function(e, i) { return React.createElement('div', { key: i }, e.t + '  ' + e.state + ' \u00B7 DA' + e.da + ' 5HT' + e.sh + ' GABA' + e.ga + ' Glu' + e.glu + ' NE' + e.ne); })
+                ),
+                React.createElement('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, 'Your hypothesis (which two neurotransmitters most strongly trade off in shaping affect?)'),
+                React.createElement('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., GABA and glutamate are functional opposites (inhibitory vs excitatory)...', className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "\uD83E\uDD14 I'm stuck \u2014 show open questions"),
+                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                  React.createElement('div', { className: 'font-bold mb-1', style: { color: sm.color } }, 'Open questions (no answer key)'),
+                  React.createElement('ul', { className: 'pl-4 m-0' },
+                    React.createElement('li', null, 'GABA and glutamate are inhibitory/excitatory \u2014 what does that mean at the synapse, not just at the system level?'),
+                    React.createElement('li', null, 'Dopamine is often called the "reward" chemical. Is that the right frame? (See Schultz reward-prediction-error work.)'),
+                    React.createElement('li', null, 'Why is the "low serotonin \u2192 depression" claim contested in current research?'),
+                    React.createElement('li', null, 'What states would you NOT expect to see in this five-axis space, and what would they require?')
+                  )
+                ),
+                React.createElement('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
+                  React.createElement('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                  React.createElement('span', null, 'I can explain why this NT profile is associated with this functional state.')
+                ),
+                iq.understood && React.createElement('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                React.createElement('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget \u2014 no score, no reveal. Mapping from neurotransmitter levels to felt states is a teaching heuristic, NOT a clinical model. The "chemical imbalance" theory of mood disorders is contested; receptor sensitivity, network dynamics, and lifecycle/context matter at least as much.')
+              );
+            })(),
+
             // View tabs
 
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },

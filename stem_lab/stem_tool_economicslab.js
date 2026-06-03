@@ -1463,7 +1463,9 @@ var d = labToolData || {};
 
                 { id: 'entrepreneur', label: '\uD83C\uDFEA Business Sim' },
 
-                { id: 'macro', label: '\uD83C\uDFDB\uFE0F National Economy' }
+                { id: 'macro', label: '\uD83C\uDFDB\uFE0F National Economy' },
+
+                { id: 'inquiry', label: '\uD83D\uDD2C Policy Inquiry' }
 
               ].map(function (tab) {
 
@@ -3967,7 +3969,104 @@ var d = labToolData || {};
 
               }, '\u267B Close Business & Start New')
 
-            )
+            ),
+
+            // \u2550\u2550 POLICY INQUIRY widget (H7b'') \u2550\u2550
+            econTab === 'inquiry' && (function() {
+              var iq = d.policyIQ || { taxCut: 0, govSpend: 0, rateChange: 0, tariff: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('policyIQ', Object.assign({}, iq, patch)); }
+              function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+              // simple toy model: \u0394GDP, \u0394inflation, \u0394unemployment
+              var dGDP = iq.taxCut * 0.5 + iq.govSpend * 0.8 - iq.rateChange * 0.6 - iq.tariff * 0.3;
+              var dInflation = iq.taxCut * 0.2 + iq.govSpend * 0.4 - iq.rateChange * 0.7 + iq.tariff * 0.5;
+              var dUnemployment = -iq.taxCut * 0.1 - iq.govSpend * 0.3 + iq.rateChange * 0.4 + iq.tariff * 0.2;
+              var stagflation = dInflation > 1.5 && dGDP < -0.5;
+              var recession = dGDP < -1.5;
+              var overheat = dInflation > 2 && dGDP > 1;
+              var state = recession ? 'recession' : stagflation ? 'stagflation' : overheat ? 'overheat' : dGDP > 0.5 && dInflation < 1.5 ? 'expansion' : 'mild';
+              var sm = ({
+                recession: { label: 'Recession', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'GDP contracting. Unemployment climbing. Aggregate demand insufficient.' },
+                stagflation: { label: 'Stagflation', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Rare and ugly: high inflation + low growth. 1970s OPEC shock pattern. Hard to fix.' },
+                overheat: { label: 'Overheating', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Growth strong but inflation spiking. Central bank likely to brake hard.' },
+                expansion: { label: 'Healthy expansion', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'GDP up, inflation contained. Goldilocks zone \u2014 sustainable for now.' },
+                mild: { label: 'Mild / mixed', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Small net effect. Policy levers roughly cancel out.' }
+              })[state];
+              return React.createElement('div', { className: 'mt-4 p-3 rounded-xl', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                React.createElement('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, '\uD83D\uDD2C Policy Inquiry \u2014 Predict the Macro Outcome'),
+                React.createElement('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, 'Move four policy levers (tax, govt spending, interest rate, tariffs). Predict the macro state before reading it. No score, no reveal.'),
+                React.createElement('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
+                React.createElement('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
+                React.createElement('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
+                  [
+                    { label: '\u0394GDP', val: (dGDP > 0 ? '+' : '') + dGDP.toFixed(2) + '%' },
+                    { label: '\u0394Inflation', val: (dInflation > 0 ? '+' : '') + dInflation.toFixed(2) + 'pp' },
+                    { label: '\u0394Unemploy', val: (dUnemployment > 0 ? '+' : '') + dUnemployment.toFixed(2) + 'pp' }
+                  ].map(function(m) {
+                    return React.createElement('div', { key: m.label, className: 'p-2 rounded text-center', style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
+                      React.createElement('div', { className: 'text-[9px] opacity-60' }, m.label),
+                      React.createElement('div', { className: 'text-[12px] font-bold font-mono', style: { color: sm.color } }, m.val)
+                    );
+                  })
+                ),
+                React.createElement('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                  React.createElement('line', { x1: 30, y1: 60, x2: 310, y2: 60, stroke: '#475569', strokeWidth: 1 }),
+                  React.createElement('text', { x: 30, y: 110, fill: '#94a3b8', fontSize: 9 }, '\u0394GDP'),
+                  React.createElement('text', { x: 130, y: 110, fill: '#94a3b8', fontSize: 9 }, '\u0394Inflation'),
+                  React.createElement('text', { x: 230, y: 110, fill: '#94a3b8', fontSize: 9 }, '\u0394Unemploy'),
+                  React.createElement('rect', { x: 50, y: dGDP > 0 ? 60 - dGDP * 15 : 60, width: 40, height: Math.abs(dGDP) * 15, fill: dGDP > 0 ? '#4ade80' : '#f87171' }),
+                  React.createElement('rect', { x: 150, y: dInflation > 0 ? 60 - dInflation * 15 : 60, width: 40, height: Math.abs(dInflation) * 15, fill: dInflation > 0 ? '#facc15' : '#22d3ee' }),
+                  React.createElement('rect', { x: 250, y: dUnemployment > 0 ? 60 - dUnemployment * 15 : 60, width: 40, height: Math.abs(dUnemployment) * 15, fill: dUnemployment > 0 ? '#f87171' : '#4ade80' }),
+                  React.createElement('text', { x: 4, y: 8, fill: '#475569', fontSize: 8 }, 'up'),
+                  React.createElement('text', { x: 4, y: 118, fill: '#475569', fontSize: 8 }, 'down')
+                ),
+                React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                  React.createElement('label', { className: 'text-[10px]' },
+                    React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, 'Tax cut (%)'), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.taxCut.toFixed(1))),
+                    React.createElement('input', { type: 'range', min: -5, max: 5, step: 0.5, value: iq.taxCut, onChange: function(e) { setKey('taxCut', parseFloat(e.target.value)); }, className: 'w-full' })
+                  ),
+                  React.createElement('label', { className: 'text-[10px]' },
+                    React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, 'Govt spending (%)'), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.govSpend.toFixed(1))),
+                    React.createElement('input', { type: 'range', min: -5, max: 5, step: 0.5, value: iq.govSpend, onChange: function(e) { setKey('govSpend', parseFloat(e.target.value)); }, className: 'w-full' })
+                  ),
+                  React.createElement('label', { className: 'text-[10px]' },
+                    React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, 'Interest rate \u0394'), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.rateChange.toFixed(1) + 'pp')),
+                    React.createElement('input', { type: 'range', min: -3, max: 3, step: 0.25, value: iq.rateChange, onChange: function(e) { setKey('rateChange', parseFloat(e.target.value)); }, className: 'w-full' })
+                  ),
+                  React.createElement('label', { className: 'text-[10px]' },
+                    React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, 'Tariff (%)'), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.tariff.toFixed(1))),
+                    React.createElement('input', { type: 'range', min: 0, max: 25, step: 1, value: iq.tariff, onChange: function(e) { setKey('tariff', parseFloat(e.target.value)); }, className: 'w-full' })
+                  )
+                ),
+                React.createElement('div', { className: 'flex gap-2 mb-2' },
+                  React.createElement('button', { onClick: function() {
+                    var t = new Date().toISOString().slice(11, 19);
+                    setIQ({ log: iq.log.concat([{ t: t, tx: iq.taxCut, sp: iq.govSpend, r: iq.rateChange, tr: iq.tariff, gdp: dGDP.toFixed(2), inf: dInflation.toFixed(2), state: sm.label }]) });
+                  }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '\uD83D\uDCCB Log this policy mix'),
+                  React.createElement('button', { onClick: function() { setIQ({ taxCut: 0, govSpend: 0, rateChange: 0, tariff: 0 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+                ),
+                iq.log.length > 0 && React.createElement('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                  iq.log.slice(-5).map(function(e, i) { return React.createElement('div', { key: i }, e.t + '  ' + e.state + ' \u00B7 tx' + e.tx + ' sp' + e.sp + ' r' + e.r + ' tar' + e.tr + ' \u2192 gdp' + e.gdp + ' inf' + e.inf); })
+                ),
+                React.createElement('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, 'Your hypothesis (which lever has the most disagreement among economists in real life? Why?)'),
+                React.createElement('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., tariffs hit prices fast but the GDP effect depends on retaliation...', className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "\uD83E\uDD14 I'm stuck \u2014 show open questions"),
+                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                  React.createElement('div', { className: 'font-bold mb-1', style: { color: sm.color } }, 'Open questions (no answer key)'),
+                  React.createElement('ul', { className: 'pl-4 m-0' },
+                    React.createElement('li', null, 'What combination produces "stagflation"? Why was it so politically painful in the 1970s?'),
+                    React.createElement('li', null, 'Tax cuts and govt spending both stimulate GDP. Which generates more inflation per dollar of stimulus? Why?'),
+                    React.createElement('li', null, 'When would a central bank deliberately CAUSE a recession? (Volcker 1979\u201382.)'),
+                    React.createElement('li', null, 'Do tariffs help domestic workers in the long run, or do they raise prices for everyone? Both? Trade-off where?')
+                  )
+                ),
+                React.createElement('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
+                  React.createElement('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                  React.createElement('span', null, 'I can explain why this policy mix yields this macroeconomic state.')
+                ),
+                iq.understood && React.createElement('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                React.createElement('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget \u2014 no score, no reveal. Coefficients are pedagogical heuristics, NOT a real macro model; real responses depend on monetary regime, slack, expectations, foreign trade. Macro is contested \u2014 economists disagree on signs and magnitudes.')
+              );
+            })()
 
           );
       })();

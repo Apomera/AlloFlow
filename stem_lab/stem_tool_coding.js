@@ -1793,6 +1793,114 @@
               )
             ),
 
+            // ══ COMPLEXITY INQUIRY widget (H7b'') ══
+            (function() {
+              var iq = d.complexityIQ || { n: 100, loopDepth: 1, dataStruct: 'array', recursion: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('complexityIQ', Object.assign({}, iq, patch)); }
+              function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+              var dsLookup = ({
+                array: { name: 'Array index', big: 'O(1)', factor: 1 },
+                arrayScan: { name: 'Array scan', big: 'O(n)', factor: iq.n },
+                hash: { name: 'Hash map', big: 'O(1)', factor: 1 },
+                bst: { name: 'Balanced BST', big: 'O(log n)', factor: Math.log2(Math.max(1, iq.n)) },
+                linkedList: { name: 'Linked list scan', big: 'O(n)', factor: iq.n }
+              });
+              var ds = dsLookup[iq.dataStruct] || dsLookup.array;
+              var loopOps = Math.pow(iq.n, iq.loopDepth);
+              var recOps = iq.recursion === 0 ? 1 : iq.recursion === 1 ? iq.n : iq.recursion === 2 ? iq.n * Math.log2(Math.max(2, iq.n)) : Math.pow(2, Math.min(20, iq.n));
+              var totalOps = loopOps * ds.factor * recOps;
+              var msAt1GHz = totalOps / 1e9 * 1000;
+              var state = totalOps < 1e3 ? 'instant' : totalOps < 1e6 ? 'fast' : totalOps < 1e9 ? 'noticeable' : totalOps < 1e12 ? 'slow' : 'intractable';
+              var sm = ({
+                instant: { label: 'Instant', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Sub-millisecond. Imperceptible to user. Safe for hot inner loops.' },
+                fast: { label: 'Fast', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: '< 1 ms. Well within frame-rate budget; safe for UI event handlers.' },
+                noticeable: { label: 'Noticeable', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: '1ms–1s. Will visibly lag UI; needs progress bar or move off main thread.' },
+                slow: { label: 'Slow', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Seconds to minutes. Batch-job territory; user gets coffee.' },
+                intractable: { label: 'Intractable', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Practically infinite at this scale. Need a better algorithm or smaller input.' }
+              })[state];
+              return React.createElement("div", { className: "col-span-2 rounded-xl p-3", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, '🔬 Big-O Inquiry — Predict the Slowdown'),
+                React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, 'Set input size, loop depth, data structure, and recursion shape. Predict how fast (or slow) your code will run before testing it. No score, no reveal.'),
+                React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label + ' · ~' + totalOps.toExponential(1) + ' ops · ~' + (msAt1GHz < 1 ? (msAt1GHz * 1000).toFixed(2) + ' µs' : msAt1GHz < 1000 ? msAt1GHz.toFixed(1) + ' ms' : (msAt1GHz / 1000).toFixed(1) + ' s')),
+                React.createElement("p", { className: "text-[10px] opacity-80 mb-2" }, sm.desc),
+                React.createElement("svg", { width: '100%', height: 100, viewBox: '0 0 320 100', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                  React.createElement("line", { x1: 30, y1: 80, x2: 310, y2: 80, stroke: '#1e293b' }),
+                  React.createElement("line", { x1: 30, y1: 10, x2: 30, y2: 80, stroke: '#1e293b' }),
+                  // Reference curves: O(1) O(log n) O(n) O(n²) O(2^n)
+                  [
+                    { lab: 'O(1)', col: '#4ade80', f: function() { return 1; } },
+                    { lab: 'O(log n)', col: '#22d3ee', f: function(nn) { return Math.log2(nn); } },
+                    { lab: 'O(n)', col: '#facc15', f: function(nn) { return nn; } },
+                    { lab: 'O(n²)', col: '#fb923c', f: function(nn) { return nn * nn; } },
+                    { lab: 'O(2ⁿ)', col: '#f87171', f: function(nn) { return Math.pow(2, Math.min(20, nn)); } }
+                  ].map(function(c) {
+                    var pts = '';
+                    for (var nn = 2; nn <= 100; nn += 2) {
+                      var x = 30 + (nn / 100) * 280;
+                      var y = 80 - Math.max(0, Math.min(70, Math.log10(Math.max(1, c.f(nn))) * 10));
+                      pts += x + ',' + y + ' ';
+                    }
+                    return React.createElement("polyline", { key: c.lab, points: pts.trim(), fill: 'none', stroke: c.col, strokeWidth: 1, opacity: 0.5 });
+                  }),
+                  React.createElement("circle", { cx: 30 + (Math.min(100, iq.n) / 100) * 280, cy: 80 - Math.max(0, Math.min(70, Math.log10(Math.max(1, totalOps)) * 5)), r: 4, fill: sm.color, stroke: '#fff', strokeWidth: 1.5 }),
+                  React.createElement("text", { x: 160, y: 96, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, 'log scale — green=O(1), red=O(2ⁿ); dot=your config at n=' + iq.n)
+                ),
+                React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
+                  React.createElement("label", { className: "text-[10px]" },
+                    React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Input size n'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.n)),
+                    React.createElement("input", { type: 'range', min: 1, max: 100, step: 1, value: iq.n, onChange: function(e) { setKey('n', parseInt(e.target.value, 10)); }, className: "w-full" })
+                  ),
+                  React.createElement("label", { className: "text-[10px]" },
+                    React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Nested loop depth'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.loopDepth)),
+                    React.createElement("input", { type: 'range', min: 0, max: 4, step: 1, value: iq.loopDepth, onChange: function(e) { setKey('loopDepth', parseInt(e.target.value, 10)); }, className: "w-full" })
+                  ),
+                  React.createElement("label", { className: "text-[10px]" },
+                    React.createElement("div", { className: "mb-0.5" }, 'Data structure access'),
+                    React.createElement("select", { value: iq.dataStruct, onChange: function(e) { setKey('dataStruct', e.target.value); }, className: "w-full p-1 rounded text-[10px]", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                      Object.keys(dsLookup).map(function(k) { return React.createElement("option", { key: k, value: k }, dsLookup[k].name + ' ' + dsLookup[k].big); })
+                    )
+                  ),
+                  React.createElement("label", { className: "text-[10px]" },
+                    React.createElement("div", { className: "mb-0.5" }, 'Recursion shape'),
+                    React.createElement("select", { value: iq.recursion, onChange: function(e) { setKey('recursion', parseInt(e.target.value, 10)); }, className: "w-full p-1 rounded text-[10px]", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                      React.createElement("option", { value: 0 }, 'none'),
+                      React.createElement("option", { value: 1 }, 'linear (×n)'),
+                      React.createElement("option", { value: 2 }, 'divide & conquer (×n log n)'),
+                      React.createElement("option", { value: 3 }, 'exponential (×2ⁿ)')
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "flex gap-2 mb-2" },
+                  React.createElement("button", { onClick: function() {
+                    var t = new Date().toISOString().slice(11, 19);
+                    setIQ({ log: iq.log.concat([{ t: t, n: iq.n, ld: iq.loopDepth, ds: iq.dataStruct, rec: iq.recursion, ops: totalOps.toExponential(1), state: sm.label }]) });
+                  }, className: "flex-1 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this complexity'),
+                  React.createElement("button", { onClick: function() { setIQ({ n: 100, loopDepth: 1, dataStruct: 'array', recursion: 0 }); }, className: "px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+                ),
+                iq.log.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[9px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                  iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' · n' + e.n + ' ld' + e.ld + ' ' + e.ds + ' rec' + e.rec + ' → ' + e.ops + ' ops'); })
+                ),
+                React.createElement("label", { className: "block text-[10px] font-bold opacity-85 mb-1" }, 'Your hypothesis (which change buys the biggest speedup — smaller n, fewer loops, or different data structure?)'),
+                React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., swapping array scan for hash lookup drops outer-loop cost by a factor of n...', className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, className: "px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck — show open questions"),
+                iq.stuckRevealed && React.createElement("div", { className: "p-2 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                  React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, 'Open questions (no answer key)'),
+                  React.createElement("ul", { className: "pl-4 m-0" },
+                    React.createElement("li", null, 'Why does loop depth multiply rather than add to operation count?'),
+                    React.createElement("li", null, 'When does it matter that hash lookup is O(1) — at n=10? n=1,000? n=1,000,000?'),
+                    React.createElement("li", null, 'Exponential recursion explodes after roughly what n? Where exactly does the wall hit?'),
+                    React.createElement("li", null, 'For very small n, sometimes O(n²) BEATS O(n log n). Why?')
+                  )
+                ),
+                React.createElement("label", { className: "flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1" },
+                  React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                  React.createElement("span", null, 'I can explain why this combination of n, depth, data structure, and recursion lands here.')
+                ),
+                iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget — no score, no reveal. Ops counts are illustrative pedagogical estimates assuming ~1 GHz effective throughput; real performance depends on cache, branch prediction, JIT, and constants in front of the Big-O term.')
+              );
+            })(),
+
             // ── Header bar ──
             React.createElement("div", {
               className: "col-span-2 flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg"
