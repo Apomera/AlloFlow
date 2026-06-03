@@ -74,6 +74,31 @@
         k: { min: 0, max: 8, step: 0.25, default: 3, label: 'k  (vertex height — bottom of the V)' }
       },
       hint: 'Tip: this beam bends into a sharp V. Lower the vertex height k down onto the node, then raise a until the V is steep enough that its two arms still pass through both high windows.'
+    },
+    {
+      id: 'L5', title: 'Sine Boulevard', family: 'sine',
+      world: { x0: 0, x1: 10, y0: 0, y1: 8 },
+      walls: [], gates: [{ x: 1.5, lo: 5.5, hi: 7 }, { x: 4.7, lo: 1, hi: 3 }, { x: 7.85, lo: 5.5, hi: 7 }], node: { x: 9.4, y: 4, r: 0.6 }, dx: 0.05,
+      paramOrder: ['a', 'b', 'c', 'k'],
+      params: {
+        a: { min: 0, max: 4, step: 0.25, default: 1, label: 'a  (amplitude — wave height)' },
+        b: { min: 0.5, max: 1.5, step: 0.05, default: 0.5, label: 'b  (frequency — how tight the wave)' },
+        c: { min: 0, max: 0, step: 1, default: 0, locked: true, label: 'c  (phase — locked at 0)' },
+        k: { min: 4, max: 4, step: 1, default: 4, locked: true, label: 'k  (midline — locked at 4)' }
+      },
+      hint: 'Tip: the wave is centered on the midline y = 4. Set b so its peaks and dips line up with the windows, and a so it reaches high/low enough to thread each one.'
+    },
+    {
+      id: 'L6', title: 'Tilt Gate', family: 'parabola',
+      world: { x0: 0, x1: 10, y0: 0, y1: 8 },
+      walls: [], gates: [{ x: 5.5, lo: 3.5, hi: 4.7, slope: { value: -1.2, tol: 0.5 } }], node: { x: 6.5, y: 2.5, r: 0.6 }, dx: 0.05,
+      paramOrder: ['a', 'h', 'k'],
+      params: {
+        a: { min: -1.5, max: 1.5, step: 0.05, default: -0.2, label: 'a  (arc direction & tightness)' },
+        h: { min: 0, max: 10, step: 0.25, default: 5, label: 'h  (vertex horizontal)' },
+        k: { min: 0, max: 8, step: 0.25, default: 2, label: 'k  (vertex height)' }
+      },
+      hint: 'Tip: this gate is TILTED — the beam must pass through the opening AND be angled right (descending at about the gate’s slope) as it goes through. Shape the arc so it is coming down at the correct steepness exactly at the gate.'
     }
   ];
 
@@ -86,7 +111,16 @@
   function fnY(family, p, x) {
     if (family === 'line') return p.m * x + p.b;
     if (family === 'absval') return p.a * Math.abs(x - p.h) + p.k; // absolute value (vertex form)
+    if (family === 'sine') return p.a * Math.sin(p.b * x + p.c) + p.k; // sine: amplitude/frequency/phase/midline
     return p.a * (x - p.h) * (x - p.h) + p.k; // parabola (vertex form)
+  }
+
+  // Numeric central-difference derivative f'(x) for slope-gates (§3.2): the SAME
+  // analytic-style slope the gate checks, the tangent tick draws, and the SR
+  // readout announces — never a crude adjacent-sample secant.
+  function fPrime(family, p, x) {
+    var e = 0.001;
+    return (fnY(family, p, x + e) - fnY(family, p, x - e)) / (2 * e);
   }
 
   function defaultParams(level) {
@@ -125,6 +159,12 @@
         if (yo < o.g.lo || yo > o.g.hi) {
           return { result: 'gate', at: o.x, yAt: yo, obstacle: o.g, nodeDist: null, killedAt: { x: o.x, y: yo } };
         }
+        if (o.g.slope) {
+          var slopeAt = fPrime(level.family, params, o.x);
+          if (Math.abs(slopeAt - o.g.slope.value) > o.g.slope.tol) {
+            return { result: 'slope', at: o.x, yAt: yo, slopeAt: slopeAt, obstacle: o.g, nodeDist: null, killedAt: { x: o.x, y: yo } };
+          }
+        }
       }
     }
 
@@ -144,12 +184,14 @@
     if (res.result === 'wall') {
       if (fam === 'line') return 'Lift the beam over the wall — increase the slope (or the start height) so it clears y = ' + res.obstacle.height + '.';
       if (fam === 'absval') return 'Bend the V over the wall — raise the vertex height k, or move the vertex h toward x = ' + res.at + '.';
+      if (fam === 'sine') return 'Reshape the wave — raise the amplitude a so a crest rises over the wall.';
       return 'Arc higher over the wall: raise the vertex height k, or move the vertex h toward x = ' + res.at + '.';
     }
     if (res.result === 'gate') {
       var tooHigh = res.yAt > res.obstacle.hi;
       if (fam === 'line') return tooHigh ? 'The beam is too high there — lower the start height b or reduce the slope.' : 'The beam is too low there — raise the start height b or increase the slope.';
       if (fam === 'absval') return tooHigh ? 'The beam is too high there — lower the vertex k, or move the vertex h so the V dips into the window.' : 'The beam is too low there — raise the vertex k, or steepen a so the arm climbs through the window.';
+      if (fam === 'sine') return tooHigh ? 'The wave is too high at this window — reduce the amplitude a, or change the frequency b so a dip lands here.' : 'The wave is too low at this window — increase the amplitude a, or change the frequency b so a crest lands here.';
       return tooHigh ? 'The beam is too high there — tighten the arc (more negative a) or lower k.' : 'The beam is too low there — widen the arc or raise k.';
     }
     return '';
@@ -169,6 +211,11 @@
       return 'Blocked at the gate (x = ' + res.at + '): the beam passed at y = ' + round1(res.yAt) +
         ', but the opening is y = ' + res.obstacle.lo + ' to ' + res.obstacle.hi + '. ' + actionHint(level, res);
     }
+    if (res.result === 'slope') {
+      return 'Through the opening at x = ' + res.at + ', but at the wrong angle — your beam’s slope there was ' + round1(res.slopeAt) +
+        ', and this tilted gate needs about ' + res.obstacle.slope.value + ' (± ' + res.obstacle.slope.tol + '). ' +
+        (res.slopeAt > res.obstacle.slope.value ? 'Make the beam descend more steeply as it passes through.' : 'Make the beam flatter (or climbing) as it passes through.');
+    }
     return 'You reached the node’s street, but the beam missed it by ' + round1(res.nodeDist) +
       ' units. Fine-tune the controls so the beam meets (' + level.node.x + ', ' + level.node.y + ').';
   }
@@ -183,6 +230,10 @@
       return 'y = a·|x − h| + k, with a = ' + round1(p.a) + ', h = ' + round1(p.h) + ', k = ' + round1(p.k) +
         '. ' + vshape + '-shaped beam that bends at the vertex (' + round1(p.h) + ', ' + round1(p.k) + ').';
     }
+    if (level.family === 'sine') {
+      return 'y = a·sin(b·x + c) + k, with a = ' + round1(p.a) + ', b = ' + round1(p.b) + ', c = ' + round1(p.c) + ', k = ' + round1(p.k) +
+        '. A wave of amplitude ' + round1(p.a) + ' centered on the midline y = ' + round1(p.k) + '.';
+    }
     var dir = p.a < 0 ? 'opening downward' : (p.a > 0 ? 'opening upward' : 'a flat line');
     return 'y = a(x − h)² + k, with a = ' + round1(p.a) + ', h = ' + round1(p.h) + ', k = ' + round1(p.k) +
       '. A parabola ' + dir + ', vertex at (' + round1(p.h) + ', ' + round1(p.k) + ').';
@@ -190,10 +241,10 @@
 
   function describeBoard(level) {
     var s = 'Arc City, level: ' + level.title + '. ';
-    s += level.family === 'line' ? 'Author a straight-line beam. ' : (level.family === 'absval' ? 'Author a V-shaped, absolute-value beam. ' : 'Author a parabola beam. ');
+    s += level.family === 'line' ? 'Author a straight-line beam. ' : (level.family === 'absval' ? 'Author a V-shaped, absolute-value beam. ' : (level.family === 'sine' ? 'Author a sine-wave beam. ' : 'Author a parabola beam. '));
     s += 'The dark node to light is at x ' + level.node.x + ', y ' + level.node.y + '. ';
     (level.walls || []).forEach(function (w) { s += 'A wall ' + w.height + ' units tall stands at x ' + w.x + '. '; });
-    (level.gates || []).forEach(function (g) { s += 'A gate with an opening from y ' + g.lo + ' to ' + g.hi + ' is at x ' + g.x + '. '; });
+    (level.gates || []).forEach(function (g) { s += 'A gate with an opening from y ' + g.lo + ' to ' + g.hi + ' is at x ' + g.x + (g.slope ? ', which the beam must pass at a slope near ' + g.slope.value : '') + '. '; });
     s += 'Aim the beam through any gates, over any walls, to reach the node.';
     return s;
   }
@@ -227,6 +278,8 @@
     { id: 'window-threader', label: 'Window Threader — threaded a gate and lit a node' },
     { id: 'arc-architect', label: 'Arc Architect — re-lit a node using a parabola' },
     { id: 'switchback', label: 'Switchback — re-lit a node using an absolute-value V' },
+    { id: 'wave-rider', label: 'Wave Rider — re-lit a node using a sine wave' },
+    { id: 'tilt-threader', label: 'Tilt Threader — passed a tilted slope-gate at the right angle' },
     { id: 'sharp-shooter', label: 'Sharp Shooter — lit a node on the first shot' },
     { id: 'independent', label: 'Independent — solved with the preview hidden' }
   ];
@@ -240,6 +293,8 @@
     if ((level.gates || []).length) add('window-threader');
     if (level.family === 'parabola') add('arc-architect');
     if (level.family === 'absval') add('switchback');
+    if (level.family === 'sine') add('wave-rider');
+    if ((level.gates || []).some(function (g) { return g.slope; })) add('tilt-threader');
     if (shots === 1) add('sharp-shooter');
     if (solveIsIndependent(tier)) add('independent');
     return out;
@@ -330,6 +385,7 @@
     defaultParams: defaultParams,
     sampleCurve: sampleCurve,
     classifyShot: classifyShot,
+    fPrime: fPrime,
     describeEquation: describeEquation,
     describeResult: describeResult,
     describeBoard: describeBoard,
@@ -686,6 +742,10 @@
         (level.gates || []).forEach(function (g, i) {
           obstacleEls.push(h('rect', { key: 'gateLo' + i, x: sx(g.x) - 4, y: sy(g.lo), width: 8, height: sy(0) - sy(g.lo), fill: GATE, opacity: 0.85, rx: 2 }));
           obstacleEls.push(h('rect', { key: 'gateHi' + i, x: sx(g.x) - 4, y: sy(wy1), width: 8, height: sy(g.hi) - sy(wy1), fill: GATE, opacity: 0.85, rx: 2 }));
+          if (g.slope) { // tangent tick showing the required entry slope (the "tilt")
+            var smy = (g.lo + g.hi) / 2, sdx = 0.9;
+            obstacleEls.push(h('line', { key: 'gslope' + i, x1: sx(g.x - sdx), y1: sy(smy - g.slope.value * sdx), x2: sx(g.x + sdx), y2: sy(smy + g.slope.value * sdx), stroke: PAL.warn, strokeWidth: 2.5, strokeDasharray: '5 3', strokeLinecap: 'round' }));
+          }
         });
 
         var nodeR = (W / (wx1 - wx0)) * level.node.r;
@@ -739,14 +799,14 @@
               onPointerDown: function (e) { startHandleDrag(e, function (wx, wy) { return parabolaVertexParams(wx, wy, level); }); }
             }));
             handleEls.push(h('text', { key: 'vhl', x: sx(P.h) + 12, y: sy(P.k) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, 'vertex (h, k)'));
-          } else if (level.params.b && level.params.b.locked) {
+          } else if (level.family === 'line' && level.params.b && level.params.b.locked) {
             var xH = level.node.x, yH = fnY('line', P, xH);
             handleEls.push(h('circle', {
               key: 'lh', cx: sx(xH), cy: sy(yH), r: 9, fill: HANDLE, opacity: 0.95, stroke: '#06262b', strokeWidth: 2,
               style: { cursor: 'grab' }, 'aria-hidden': 'true',
               onPointerDown: function (e) { startHandleDrag(e, function (wx, wy) { return linePivotParams(xH, wy, 0, 0, level); }); }
             }));
-          } else {
+          } else if (level.family === 'line') {
             var xA = 2, xB = 8, yA = fnY('line', P, xA), yB = fnY('line', P, xB);
             handleEls.push(h('circle', {
               key: 'lhA', cx: sx(xA), cy: sy(yA), r: 9, fill: HANDLE, opacity: 0.95, stroke: '#06262b', strokeWidth: 2,
@@ -835,7 +895,7 @@
 
         var coordItems = [h('li', { key: 'cn' }, '🎯 ' + t('arccity.node', 'Node (target):') + ' x ' + level.node.x + ', y ' + level.node.y)];
         (level.walls || []).forEach(function (w, i) { coordItems.push(h('li', { key: 'cw' + i }, '🧱 ' + t('arccity.wall', 'Wall:') + ' x ' + w.x + ', height ' + w.height)); });
-        (level.gates || []).forEach(function (g, i) { coordItems.push(h('li', { key: 'cg' + i }, '🚪 ' + t('arccity.gate', 'Gate:') + ' x ' + g.x + ', opening y ' + g.lo + ' to ' + g.hi)); });
+        (level.gates || []).forEach(function (g, i) { coordItems.push(h('li', { key: 'cg' + i }, '🚪 ' + t('arccity.gate', 'Gate:') + ' x ' + g.x + ', opening y ' + g.lo + ' to ' + g.hi + (g.slope ? ', slope ≈ ' + g.slope.value : ''))); });
 
         var controls = h('div', { key: 'controls', style: { marginTop: 14 } },
           h('div', { key: 'eq', 'aria-label': describeEquation(level, P), style: { fontSize: 15, color: INK, marginBottom: 6, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', fontVariantNumeric: 'tabular-nums' } },
@@ -843,7 +903,9 @@
               ? ['y = ', h('span', { key: 'm', style: { color: BEAM, fontWeight: 800 } }, round1(P.m)), ' · x + ', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, round1(P.b))]
               : (level.family === 'absval'
                 ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' · |x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, round1(P.h)), '| + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]
-                : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, round1(P.h)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))])),
+                : (level.family === 'sine'
+                  ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' · sin(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, round1(P.b)), '·x + ', h('span', { key: 'c', style: { color: BEAM, fontWeight: 800 } }, round1(P.c)), ') + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]
+                  : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, round1(P.h)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]))),
           tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.6, marginBottom: 10 } }, t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.')) : null,
           h('div', { key: 'rows' }, paramRows),
           h('div', { key: 'btns', style: { display: 'flex', gap: 10, marginTop: 6 } },

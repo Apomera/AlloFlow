@@ -40,6 +40,16 @@ const CASES = {
     { label: 'starting V too high above node (a=0.5,h=5,k=3)', p: { a: 0.5, h: 5, k: 3 } },
     { label: 'near miss, vertex just above node (a=1.3,h=5,k=2)', p: { a: 1.3, h: 5, k: 2 } },
     { label: 'flat line blocked at the window (a=0,h=5,k=1)', p: { a: 0, h: 5, k: 1 } }
+  ],
+  L5: [
+    { label: 'solution (a=2.5,b=1)', p: { a: 2.5, b: 1, c: 0, k: 4 } },
+    { label: 'starting shot, too shallow (a=1,b=0.5)', p: { a: 1, b: 0.5, c: 0, k: 4 } },
+    { label: 'right amplitude, wrong frequency (a=2.5,b=0.7)', p: { a: 2.5, b: 0.7, c: 0, k: 4 } }
+  ],
+  L6: [
+    { label: 'solution through tilted gate (a=-0.4,h=4,k=5)', p: { a: -0.4, h: 4, k: 5 } },
+    { label: 'starting shot, blocked at gate (a=-0.2,h=5,k=2)', p: { a: -0.2, h: 5, k: 2 } },
+    { label: 'in the window but wrong angle (a=-0.05,h=5.5,k=4.2)', p: { a: -0.05, h: 5.5, k: 4.2 } }
   ]
 };
 
@@ -51,7 +61,7 @@ describe('Arc City — module contract', () => {
     expect(typeof describeBoard).toBe('function');
     expect(typeof isLevelUnlocked).toBe('function');
     expect(Array.isArray(LEVELS)).toBe(true);
-    expect(LEVELS.map(l => l.id)).toEqual(['L1', 'L2', 'L3', 'L4']);
+    expect(LEVELS.map(l => l.id)).toEqual(['L1', 'L2', 'L3', 'L4', 'L5', 'L6']);
   });
 
   it('level geometry (snapshot)', () => {
@@ -294,7 +304,7 @@ describe('Arc City — teacher summary (honest, deterministic; design §9.5/§9.
     };
     const s = arc.teacherSummary(byLevel, ['first-light']);
     expect(s.nodesReLit).toBe(2);
-    expect(s.totalLevels).toBe(4);
+    expect(s.totalLevels).toBe(LEVELS.length); // robust as levels are added
     expect(s.families.absval).toBe('not started'); // L4 family present, untouched in this mock
     expect(s.families.line).toBe('used independently'); // L1 solved independently
     expect(s.families.parabola).toBe('explored');        // L3 attempted, not solved
@@ -326,5 +336,47 @@ describe('Arc City — teacher summary (honest, deterministic; design §9.5/§9.
   it('export text is plain (no HTML) — safe for FERPA-gated export', () => {
     const s = arc.teacherSummary({ L1: { solved: true, independent: true, shots: 1 } }, ['first-light']);
     expect(arc.teacherSummaryText(s)).not.toMatch(/[<>]/);
+  });
+});
+
+describe('Arc City — Phase 2: sine family + slope-gates (§3.2)', () => {
+  const L5 = levelById('L5'), L6 = levelById('L6');
+
+  it('the sine family evaluates correctly and L5 is solvable', () => {
+    // y = 4 + 2*sin(π/2) = 6
+    expect(arc.fnY('sine', { a: 2, b: 1, c: 0, k: 4 }, Math.PI / 2)).toBeCloseTo(6, 5);
+    expect(classifyShot(L5, { a: 2.5, b: 1, c: 0, k: 4 }).result).toBe('hit');
+  });
+
+  it('fPrime is the analytic derivative (central difference)', () => {
+    // parabola y = -0.4(x-4)^2 + 5 → y' = -0.8(x-4); at x=5.5 → -1.2
+    expect(arc.fPrime('parabola', { a: -0.4, h: 4, k: 5 }, 5.5)).toBeCloseTo(-1.2, 3);
+    // line y = 2x + 1 → y' = 2 everywhere
+    expect(arc.fPrime('line', { m: 2, b: 1 }, 3)).toBeCloseTo(2, 6);
+  });
+
+  it('slope-gate: right window but wrong angle is blocked as "slope" (not a hit)', () => {
+    const res = classifyShot(L6, { a: -0.05, h: 5.5, k: 4.2 });
+    expect(res.result).toBe('slope');
+    expect(describeResult(L6, res, 2)).toMatch(/wrong angle/);
+  });
+
+  it('slope-gate: the correctly-angled arc threads the tilt and lights the node', () => {
+    expect(classifyShot(L6, { a: -0.4, h: 4, k: 5 }).result).toBe('hit');
+  });
+
+  it('Phase 2 solves earn their action-named badges (wave-rider, tilt-threader)', () => {
+    const hit5 = classifyShot(L5, { a: 2.5, b: 1, c: 0, k: 4 });
+    expect(arc.badgesForSolve(L5, hit5, 1, 'practice', [])).toContain('wave-rider');
+    const hit6 = classifyShot(L6, { a: -0.4, h: 4, k: 5 });
+    expect(arc.badgesForSolve(L6, hit6, 1, 'practice', [])).toContain('tilt-threader');
+  });
+
+  it('Phase 2 badge labels stay action-named (no mastery/ability)', () => {
+    ['wave-rider', 'tilt-threader'].forEach(id => {
+      const b = arc.BADGES.find(x => x.id === id);
+      expect(b).toBeTruthy();
+      expect(b.label.toLowerCase()).not.toMatch(/master|mastery|proficient|ability|expert/);
+    });
   });
 });
