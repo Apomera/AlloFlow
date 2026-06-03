@@ -7603,6 +7603,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         case 'tires':      return renderTires();
         case 'walk':       return renderWalkAround();
         case 'resources':  return renderResources();
+        case 'engineHunt': return (function() {
+          var iq = d.engineHunt || { advance: 20, overlap: 30, compression: 10, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd({ engineHunt: Object.assign({}, iq, patch) }); }
+          var state;
+          if (iq.compression > 11 && iq.advance > 30) state = 'knock';
+          else if (iq.advance < 10 || iq.overlap > 50) state = 'misfire';
+          else if (iq.advance >= 18 && iq.advance <= 30 && iq.overlap <= 40 && iq.compression <= 11) state = 'peak';
+          else state = 'idle';
+          var sm = {
+            knock:   { label: '💥 Pre-ignition / knock', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Too much advance + high compression → spontaneous detonation. Engine damage.' },
+            misfire: { label: '⚠️ Misfire', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Insufficient timing or excessive overlap → unstable combustion.' },
+            idle:    { label: '🟢 Smooth idle', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Engine runs smoothly but not at peak output.' },
+            peak:    { label: '🚀 Peak performance', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Sweet spot. Maximum power without detonation.' }
+          }[state];
+          var H = ctx.React.createElement;
+          return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
+            H('button', { onClick: function() { setView('menu'); }, style: { padding: '6px 12px', background: '#e0f2fe', color: '#0369a1', border: '1px solid #93c5fd', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Menu'),
+            H('div', { style: { padding: 16, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 10 } },
+              H('h3', { style: { fontSize: 14, fontWeight: 800, color: '#0c4a6e', margin: '0 0 6px 0' } }, '⚙️ Engine timing discovery'),
+              H('p', { style: { fontSize: 12, color: '#475569', marginBottom: 12 } }, 'Sliders for ignition advance, valve overlap, compression ratio. Discrete 4-state combustion outcome. No score, no reveal.'),
+              H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
+                H('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
+                H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc)
+              ),
+              H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
+                [{ k: 'advance', l: 'Ignition advance (°)', mn: 0, mx: 40, st: 1 },
+                 { k: 'overlap', l: 'Valve overlap (°)', mn: 0, mx: 60, st: 1 },
+                 { k: 'compression', l: 'Compression ratio', mn: 8, mx: 14, st: 0.1 }].map(function(s) {
+                  return H('div', { key: s.k },
+                    H('label', { htmlFor: 'eh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: '#0c4a6e', fontFamily: 'monospace' } }, iq[s.k])),
+                    H('input', { id: 'eh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                      onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
+                      style: { width: '100%' }, 'aria-label': s.l }));
+                })
+              ),
+              H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
+                H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.advance, o: iq.overlap, c: iq.compression, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+                H('button', { onClick: function() { setIQ({ advance: 20, overlap: 30, compression: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: '#fff', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+              ),
+              H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What combination triggers knock?',
+                style: { width: '100%', minHeight: 50, padding: 6, border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
+              !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
+              iq.stuckRevealed && H('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 4, fontSize: 11, color: '#475569', marginBottom: 8 } },
+                H('ul', { style: { margin: 0, paddingLeft: 18 } },
+                  H('li', null, 'High-performance race engines use 12:1 compression + premium fuel. Why?'),
+                  H('li', null, 'What does valve overlap do at idle vs at redline?'))),
+              H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#059669', cursor: 'pointer' } },
+                H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
+              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain why timing must match compression and fuel.',
+                style: { width: '100%', minHeight: 60, padding: 6, border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
+              H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state combustion marker; no horsepower score; no reveal — by design.')
+            )
+          );
+        })();
         case 'menu':
         default:           return renderMenu();
       }

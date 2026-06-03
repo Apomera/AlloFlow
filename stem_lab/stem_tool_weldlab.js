@@ -9503,6 +9503,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       else if (view === 'safetyHealth') viewBody = h(SafetyHealthDeepDive);
       else if (view === 'mathBlueprint') viewBody = h(MathBlueprintLab);
       else if (view === 'careerStories') viewBody = h(CareerStories);
+      else if (view === 'heatHunt') viewBody = h(function() {
+        var d2 = (toolData && toolData.weldLab) || {};
+        var iq = d2.heatHunt || { amperage: 150, travelSpeed: 8, voltage: 22, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) {
+          setToolData(function(prev) {
+            var prior = (prev && prev.weldLab) || {};
+            var st = Object.assign({}, prior.heatHunt || iq, patch);
+            return Object.assign({}, prev, { weldLab: Object.assign({}, prior, { heatHunt: st }) });
+          });
+        }
+        var heatInput = (iq.amperage * iq.voltage * 60) / (iq.travelSpeed * 1000);
+        var state;
+        if (heatInput < 0.8) state = 'cold';
+        else if (heatInput < 2.0) state = 'optimal';
+        else if (heatInput < 3.5) state = 'hot';
+        else state = 'burnthrough';
+        var sm = {
+          cold:         { label: '🧊 Cold weld (insufficient fusion)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Not enough heat. Cold lap defects, poor penetration.' },
+          optimal:      { label: '🟢 Optimal heat input', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Good penetration, fusion, minimal distortion.' },
+          hot:          { label: '🟠 Excessive heat', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'High distortion, wide HAZ, possible undercut.' },
+          burnthrough:  { label: '🔥 Burn-through risk', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Excessive — base metal melts through.' }
+        }[state];
+        var H = React.createElement;
+        return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
+          H('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: '#fef2f2', color: '#9f1239', border: '1px solid #fca5a5', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Menu'),
+          H('div', { style: { padding: 16, background: '#0f172a', borderRadius: 10, color: '#e2e8f0', border: '1px solid #fb7185' } },
+            H('h3', { style: { fontSize: 14, fontWeight: 800, color: '#fb7185', margin: '0 0 6px 0' } }, '🔥 Heat input discovery'),
+            H('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } }, 'Sliders for amperage, travel speed, voltage. Discrete 4-state heat-input regime. No score, no reveal.'),
+            H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
+              H('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
+              H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
+              H('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } }, 'Heat input ≈ ' + heatInput.toFixed(2) + ' kJ/mm')
+            ),
+            H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
+              [{ k: 'amperage', l: 'Amperage (A)', mn: 50, mx: 350, st: 5 },
+               { k: 'travelSpeed', l: 'Travel speed (mm/s)', mn: 1, mx: 25, st: 0.5 },
+               { k: 'voltage', l: 'Voltage (V)', mn: 12, mx: 32, st: 0.5 }].map(function(s) {
+                return H('div', { key: s.k },
+                  H('label', { htmlFor: 'hh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: '#fb7185', fontFamily: 'monospace' } }, iq[s.k])),
+                  H('input', { id: 'hh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                    onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
+                    style: { width: '100%' }, 'aria-label': s.l }));
+              })
+            ),
+            H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
+              H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.amperage, t: iq.travelSpeed, v: iq.voltage, h: heatInput.toFixed(2), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+              H('button', { onClick: function() { setIQ({ amperage: 150, travelSpeed: 8, voltage: 22, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+            ),
+            H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does travel speed compensate for amperage?',
+              style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
+            !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 8 } },
+              H('ul', { style: { margin: 0, paddingLeft: 18 } },
+                H('li', null, 'Real welds: kJ/mm spec is given. Investigate why.'),
+                H('li', null, 'Doubling speed at same amps — what changes?'))),
+            H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+              H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
+            iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how amperage, voltage, and speed compose heat input.',
+              style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
+            H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state heat-input marker; no quality score; no reveal — by design.')
+          )
+        );
+      });
       else viewBody = h(MainMenu);
       return h(React.Fragment, null, defectCelebOverlay(), viewBody);
     }
