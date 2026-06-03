@@ -5196,6 +5196,7 @@
       var TABS = [
         { id: 'explore', label: 'Explore', icon: '🔍' },
         { id: 'timeline', label: 'Timeline', icon: '⏳' },
+        { id: 'deeptime', label: 'Deep Time', icon: '🕰️' },
         { id: 'sites', label: 'Sites', icon: '🗺️' },
         { id: 'ecosystem', label: 'Ecosystems', icon: '🌍' },
         { id: 'compare', label: 'Compare', icon: '⚖️' },
@@ -5298,6 +5299,105 @@
           );
         });
         return el('div', null, sectionTitle('⏳', 'Walk the Mesozoic', 'The "age of dinosaurs" spans more than 180 million years. Bar width shows how long each period lasted.'), panel(rows), panel([el('div', { key: 't', style: { fontSize: 13, fontWeight: 700, marginBottom: 4 } }, '🤯 Deep time check'), el('div', { key: 'b', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.55 } }, 'Stegosaurus (about 150 million years ago) lived closer in time to you than to Tyrannosaurus (about 66 million years ago).')], { marginTop: 12, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.35)' }));
+      }
+
+      function renderDeepTime() {
+        var scale = d.dtScale === 'day' ? 'day' : 'year';
+        var ORIGIN = 4600; // mya Earth formed — the start of the compressed clock
+        var MONTHS = [['January', 31], ['February', 28], ['March', 31], ['April', 30], ['May', 31], ['June', 30], ['July', 31], ['August', 31], ['September', 30], ['October', 31], ['November', 30], ['December', 31]];
+        function pad(n) { return (n < 10 ? '0' : '') + n; }
+        function posOf(mya) { return (ORIGIN - Math.max(0, mya)) / ORIGIN; } // 0 (Earth forms) .. 1 (now)
+        function clock(mya) {
+          if (mya <= 0) return scale === 'day' ? 'the final midnight' : 'the stroke of midnight, Dec 31';
+          var pos = posOf(mya);
+          if (scale === 'day') {
+            var secs = pos * 86400, hh = Math.floor(secs / 3600), mm = Math.floor((secs % 3600) / 60), ss = Math.floor(secs % 60);
+            var ap = hh < 12 ? 'AM' : 'PM', h12 = hh % 12 || 12;
+            return h12 + ':' + pad(mm) + ':' + pad(ss) + ' ' + ap;
+          }
+          var rem = pos * 365, mi = 0;
+          for (mi = 0; mi < 12; mi++) { if (rem < MONTHS[mi][1]) break; rem -= MONTHS[mi][1]; }
+          if (mi > 11) { mi = 11; rem = 31; }
+          var lbl = MONTHS[mi][0] + ' ' + Math.min(MONTHS[mi][1], Math.floor(rem) + 1);
+          if (mi === 11) {
+            var s2 = (rem - Math.floor(rem)) * 86400, H = Math.floor(s2 / 3600), M = Math.floor((s2 % 3600) / 60);
+            var ap2 = H < 12 ? 'AM' : 'PM', H12 = H % 12 || 12;
+            lbl += ', ' + H12 + ':' + pad(M) + ' ' + ap2;
+          }
+          return lbl;
+        }
+        var EVENTS = [
+          { mya: 4600, icon: '🌍', label: 'Earth forms' },
+          { mya: 3800, icon: '🦠', label: 'First life — simple microbes' },
+          { mya: 2400, icon: '🫧', label: 'Microbes fill the air with oxygen' },
+          { mya: 1800, icon: '🔬', label: 'First complex (eukaryotic) cells' },
+          { mya: 600, icon: '🪼', label: 'First animals' },
+          { mya: 538, icon: '🦐', label: 'Cambrian explosion — animals diversify' },
+          { mya: 470, icon: '🌿', label: 'Plants spread onto land' },
+          { mya: 375, icon: '🐟', label: 'First four-legged animals walk on land' },
+          { mya: 320, icon: '🦎', label: 'First reptiles' },
+          { mya: 252, icon: '💀', label: 'The Great Dying (end-Permian extinction)', dino: true },
+          { mya: 233, icon: '🦕', label: 'First dinosaurs appear', dino: true },
+          { mya: 225, icon: '🐭', label: 'First mammals', dino: true },
+          { mya: 150, icon: '🪶', label: 'First birds (Archaeopteryx)', dino: true },
+          { mya: 66, icon: '☄️', label: 'Asteroid — non-bird dinosaurs end', dino: true },
+          { mya: 7, icon: '🐒', label: 'First human ancestors (hominins)' },
+          { mya: 0.3, icon: '🧑', label: 'First Homo sapiens (us)' },
+          { mya: 0, icon: '📍', label: 'Right now' }
+        ];
+        var DINO_LO = 66, DINO_HI = 233;
+        var unit = scale === 'day' ? 'a single 24-hour day' : 'a single calendar year';
+        var dinoSpan = (DINO_HI - DINO_LO) / ORIGIN * (scale === 'day' ? 24 * 60 : 365);
+        var dinoSpanStr = scale === 'day' ? (Math.round(dinoSpan) + ' minutes') : (Math.round(dinoSpan) + ' days');
+        var humanLast = scale === 'day' ? (Math.round(0.3 / ORIGIN * 86400) + ' seconds') : (Math.round(0.3 / ORIGIN * 365 * 24 * 60) + ' minutes');
+
+        var toggle = el('div', { style: { display: 'flex', gap: 6, marginBottom: 12 } }, [['year', '📅 Calendar year'], ['day', '🕛 24-hour clock']].map(function (o) {
+          var on = scale === o[0];
+          return el('button', { key: o[0], onClick: function () { upd('dtScale', o[0]); }, 'aria-pressed': on ? 'true' : 'false', style: { fontSize: 12.5, fontWeight: 700, padding: '6px 12px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + (on ? '#15803d' : T.border), background: on ? '#15803d' : 'transparent', color: on ? '#fff' : T.soft } }, o[1]);
+        }));
+
+        var bandL = posOf(DINO_HI) * 100, bandW = (posOf(DINO_LO) - posOf(DINO_HI)) * 100;
+        var ticks = EVENTS.filter(function (e) { return e.mya > 0; }).map(function (e) {
+          return el('div', { key: 'tk' + e.mya, 'aria-hidden': 'true', style: { position: 'absolute', left: posOf(e.mya) * 100 + '%', top: 0, width: 2, height: '100%', background: T.text, opacity: 0.45 } });
+        });
+        var bar = el('div', { key: 'bar' },
+          el('div', { style: { position: 'relative', height: 30, borderRadius: 8, background: T.deeper, border: '1px solid ' + T.border, overflow: 'hidden' } }, [].concat(ticks, [
+            el('div', { key: 'band', 'aria-hidden': 'true', style: { position: 'absolute', left: bandL + '%', width: Math.max(0.8, bandW) + '%', top: 0, height: '100%', background: '#22c55e', opacity: 0.85 } }),
+            el('div', { key: 'now', 'aria-hidden': 'true', title: 'Now', style: { position: 'absolute', right: 0, top: 0, width: 3, height: '100%', background: '#ef4444' } })
+          ])),
+          el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.soft, marginTop: 4 } }, el('span', { key: 'l' }, '⟵ 4.6 billion years ago'), el('span', { key: 'r' }, 'now ⟶')),
+          el('div', { style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic', marginTop: 4 } }, 'The whole age of dinosaurs is that green sliver near the far right. Everything before it is the long empty stretch.')
+        );
+
+        var headline = panel([
+          el('div', { key: 'h', style: { fontSize: 13.5, lineHeight: 1.6 } }, 'Squeeze all 4.6 billion years of Earth’s history into ', el('strong', { key: 's' }, unit), '. Then:'),
+          el('ul', { key: 'u', style: { margin: '8px 0 0', paddingLeft: 18, fontSize: 13, lineHeight: 1.65 } },
+            el('li', { key: 'a' }, '🦕 The first dinosaurs show up on ', el('strong', null, clock(233)), '.'),
+            el('li', { key: 'b' }, 'They rule for about ', el('strong', null, dinoSpanStr), ', until the asteroid on ', el('strong', null, clock(66)), '.'),
+            el('li', { key: 'c' }, '🧑 Our species appears only in the very last ', el('strong', null, humanLast), '.'))
+        ], { marginBottom: 12, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.35)' });
+
+        var rows = EVENTS.map(function (e) {
+          return el('div', { key: 'ev' + e.mya, style: { display: 'flex', alignItems: 'baseline', gap: 10, padding: '6px 8px', borderRadius: 8, marginBottom: 4, background: e.dino ? 'rgba(34,197,94,0.10)' : 'transparent', border: '1px solid ' + (e.dino ? 'rgba(34,197,94,0.30)' : T.border) } },
+            el('span', { key: 'i', 'aria-hidden': 'true', style: { fontSize: 16, width: 22, textAlign: 'center' } }, e.icon),
+            el('span', { key: 'l', style: { flex: 1, fontSize: 13, color: T.text } }, e.label),
+            el('span', { key: 'm', style: { fontSize: 11.5, color: T.soft, minWidth: 90, textAlign: 'right' } }, e.mya > 0 ? (e.mya >= 1000 ? (e.mya / 1000) + ' billion yrs' : e.mya + ' mya') : 'today'),
+            el('span', { key: 'c', style: { fontSize: 12, fontWeight: 700, color: T.text, minWidth: 130, textAlign: 'right' } }, clock(e.mya)));
+        });
+
+        var sel = d.selected ? byId(d.selected) : null;
+        var pick = sel
+          ? panel([el('div', { key: 'p', style: { fontSize: 13, lineHeight: 1.55 } }, '🦖 Your pick, ', el('strong', null, sel.common), ', first appears around ', el('strong', null, clock(sel.myaHi)), ' (' + fmtMya(sel) + ').')], { marginTop: 12, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.30)' })
+          : el('div', { style: { marginTop: 12, fontSize: 12.5, color: T.soft, fontStyle: 'italic' } }, 'Tip: open any dinosaur in Explore, then return here to see exactly where it falls on the ' + scale + '.');
+
+        return el('div', null,
+          sectionTitle('🕰️', 'Deep time: the whole story on one clock', 'Millions of years are impossible to picture. So shrink all of Earth’s history down to something you already know.'),
+          toggle, bar, headline,
+          el('div', { style: { fontSize: 13, fontWeight: 800, margin: '4px 0 6px' } }, 'Every big moment, in order'),
+          panel(rows),
+          pick,
+          panel([el('div', { key: 'n', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.5 } }, 'These dates are a teaching analogy, not exact. Ages are rounded to widely-cited estimates; “first” events mark the oldest good fossils we have, which new finds can push back.')], { marginTop: 12 })
+        );
       }
 
       function renderCompare() {
@@ -5551,6 +5651,7 @@
       var content;
       if (tab === 'explore') content = renderExplore();
       else if (tab === 'timeline') content = renderTimeline();
+      else if (tab === 'deeptime') content = renderDeepTime();
       else if (tab === 'sites') content = renderSites();
       else if (tab === 'ecosystem') content = renderEcosystem();
       else if (tab === 'compare') content = renderCompare();

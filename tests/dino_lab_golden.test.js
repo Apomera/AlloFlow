@@ -21,7 +21,7 @@ describe('Dino Lab — registration contract', () => {
     expect(meta()).toMatchSnapshot();
   });
 
-  it('exposes exactly the 14 expected tabs as working renderers', () => {
+  it('exposes exactly the 15 expected tabs as working renderers', () => {
     TABS.forEach(tab => {
       const html = renderTab(tab);
       expect(typeof html, tab).toBe('string');
@@ -176,6 +176,14 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     const html = renderTab('explore');
     expect(html).toMatch(/Print a trading card/); // aria-label on the button
     expect(html).toMatch(/🖨️ Card/);
+  });
+
+  it('the Deep Time tab places the cosmic-calendar milestones correctly', () => {
+    const html = renderTab('deeptime');
+    expect(html).toMatch(/Deep time/);
+    expect(html).toMatch(/December 13/); // first dinosaurs on the 1-year scale
+    expect(html).toMatch(/December 26/); // the K-Pg asteroid
+    expect(html).toMatch(/Homo sapiens/); // humans appear in the last sliver
   });
 });
 

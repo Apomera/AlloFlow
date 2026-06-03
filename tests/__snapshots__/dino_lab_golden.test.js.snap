@@ -522,6 +522,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the anatomy tab (
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
@@ -631,6 +632,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the birds tab (sn
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
@@ -750,6 +752,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the classify tab 
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
@@ -860,6 +863,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="true" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:700;background:#15803d;color:#fff;white-space:nowrap">⚖️ Compare</button>
@@ -1728,11 +1732,210 @@ exports[`Dino Lab — render per tab (golden master) > renders the compare tab (
 </div>"
 `;
 
+exports[`Dino Lab — render per tab (golden master) > renders the deeptime tab (snapshot) 1`] = `
+"<div style="min-height:100%;background:var(--allo-stem-canvas, #0f172a);color:var(--allo-stem-text, #f1f5f9)">
+<div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
+<button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
+<button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="true" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:700;background:#15803d;color:#fff;white-space:nowrap">🕰️ Deep Time</button>
+<button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
+<button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
+<button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
+<button id="dinotab-dig" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⛏️ Dig Site</button>
+<button id="dinotab-classify" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌳 Classify</button>
+<button id="dinotab-birds" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🐦 Bird Link</button>
+<button id="dinotab-extinction" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">☄️ Extinction</button>
+<button id="dinotab-anatomy" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🦴 Anatomy</button>
+<button id="dinotab-records" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🏆 Records</button>
+<button id="dinotab-quiz" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🧠 Quiz</button>
+<button id="dinotab-notes" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">📓 Field Notes</button>
+<button id="dinotab-glossary" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">📖 Glossary</button>
+</div>
+<div id="dinopanel" role="tabpanel" aria-labelledby="dinotab-deeptime" style="padding:16px">
+<div>
+<div style="margin-bottom:12px">
+<div style="font-size:18px;font-weight:800">🕰️ Deep time: the whole story on one clock</div>
+<div style="font-size:12.5px;color:var(--allo-stem-text-soft, #94a3b8);margin-top:2px">Millions of years are impossible to picture. So shrink all of Earth’s history down to something you already know.</div>
+</div>
+<div style="display:flex;gap:6px;margin-bottom:12px">
+<button aria-pressed="true" style="font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:999px;cursor:pointer;border:1px solid #15803d;background:#15803d;color:#fff">📅 Calendar year</button>
+<button aria-pressed="false" style="font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:999px;cursor:pointer;border:1px solid var(--allo-stem-border, #334155);background:transparent;color:var(--allo-stem-text-soft, #94a3b8)">🕛 24-hour clock</button>
+</div>
+<div>
+<div style="position:relative;height:30px;border-radius:8px;background:var(--allo-stem-deeper, #0b1220);border:1px solid var(--allo-stem-border, #334155);overflow:hidden">
+<div aria-hidden="true" style="position:absolute;left:0%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:17.391304347826086%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:47.82608695652174%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:60.86956521739131%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:86.95652173913044%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:88.30434782608695%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:89.78260869565217%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:91.84782608695652%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:93.04347826086956%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:94.52173913043478%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:94.93478260869566%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:95.1086956521739%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:96.73913043478261%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:98.56521739130434%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:99.84782608695653%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:99.99347826086957%;top:0;width:2px;height:100%;background:var(--allo-stem-text, #f1f5f9);opacity:0.45">
+</div>
+<div aria-hidden="true" style="position:absolute;left:94.93478260869566%;width:3.6304347826086936%;top:0;height:100%;background:#22c55e;opacity:0.85">
+</div>
+<div aria-hidden="true" title="Now" style="position:absolute;right:0;top:0;width:3px;height:100%;background:#ef4444">
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--allo-stem-text-soft, #94a3b8);margin-top:4px">
+<span>⟵ 4.6 billion years ago</span>
+<span>now ⟶</span>
+</div>
+<div style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);font-style:italic;margin-top:4px">The whole age of dinosaurs is that green sliver near the far right. Everything before it is the long empty stretch.</div>
+</div>
+<div style="background:rgba(168,85,247,0.10);border:1px solid rgba(168,85,247,0.35);border-radius:14px;padding:14px;color:var(--allo-stem-text, #f1f5f9);margin-bottom:12px">
+<div style="font-size:13.5px;line-height:1.6">Squeeze all 4.6 billion years of Earth’s history into <strong>a single calendar year</strong>. Then:</div>
+<ul style="margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.65">
+<li>🦕 The first dinosaurs show up on <strong>December 13, 12:17 PM</strong>.</li>
+<li>They rule for about <strong>13 days</strong>, until the asteroid on <strong>December 26, 6:18 PM</strong>.</li>
+<li>🧑 Our species appears only in the very last <strong>34 minutes</strong>.</li>
+</ul>
+</div>
+<div style="font-size:13px;font-weight:800;margin:4px 0 6px">Every big moment, in order</div>
+<div style="background:var(--allo-stem-panel, #1e293b);border:1px solid var(--allo-stem-border, #334155);border-radius:14px;padding:14px;color:var(--allo-stem-text, #f1f5f9)">
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:transparent;border:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🌍</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">Earth forms</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">4.6 billion yrs</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">January 1</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:transparent;border:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🦠</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">First life — simple microbes</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">3.8 billion yrs</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">March 5</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:transparent;border:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🫧</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">Microbes fill the air with oxygen</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">2.4 billion yrs</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">June 24</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:transparent;border:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🔬</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">First complex (eukaryotic) cells</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">1.8 billion yrs</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">August 11</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:transparent;border:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🪼</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">First animals</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">600 mya</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">November 14</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:transparent;border:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🦐</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">Cambrian explosion — animals diversify</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">538 mya</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">November 19</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:transparent;border:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🌿</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">Plants spread onto land</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">470 mya</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">November 24</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:transparent;border:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🐟</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">First four-legged animals walk on land</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">375 mya</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">December 2, 5:52 AM</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:transparent;border:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🦎</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">First reptiles</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">320 mya</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">December 6, 2:36 PM</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.30)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">💀</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">The Great Dying (end-Permian extinction)</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">252 mya</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">December 12, 12:06 AM</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.30)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🦕</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">First dinosaurs appear</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">233 mya</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">December 13, 12:17 PM</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.30)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🐭</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">First mammals</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">225 mya</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">December 14, 3:31 AM</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.30)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🪶</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">First birds (Archaeopteryx)</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">150 mya</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">December 20, 2:20 AM</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.30)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">☄️</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">Asteroid — non-bird dinosaurs end</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">66 mya</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">December 26, 6:18 PM</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:transparent;border:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🐒</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">First human ancestors (hominins)</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">7 mya</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">December 31, 10:40 AM</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:transparent;border:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">🧑</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">First Homo sapiens (us)</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">0.3 mya</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">December 31, 11:25 PM</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:transparent;border:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">📍</span>
+<span style="flex:1;font-size:13px;color:var(--allo-stem-text, #f1f5f9)">Right now</span>
+<span style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);min-width:90px;text-align:right">today</span>
+<span style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);min-width:130px;text-align:right">the stroke of midnight, Dec 31</span>
+</div>
+</div>
+<div style="background:rgba(56,189,248,0.10);border:1px solid rgba(56,189,248,0.30);border-radius:14px;padding:14px;color:var(--allo-stem-text, #f1f5f9);margin-top:12px">
+<div style="font-size:13px;line-height:1.55">🦖 Your pick, <strong>T. rex</strong>, first appears around <strong>December 26, 2:30 PM</strong> (68–66 mya).</div>
+</div>
+<div style="background:var(--allo-stem-panel, #1e293b);border:1px solid var(--allo-stem-border, #334155);border-radius:14px;padding:14px;color:var(--allo-stem-text, #f1f5f9);margin-top:12px">
+<div style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.5">These dates are a teaching analogy, not exact. Ages are rounded to widely-cited estimates; “first” events mark the oldest good fossils we have, which new finds can push back.</div>
+</div>
+</div>
+</div>
+</div>"
+`;
+
 exports[`Dino Lab — render per tab (golden master) > renders the dig tab (snapshot) 1`] = `
 "<div style="min-height:100%;background:var(--allo-stem-canvas, #0f172a);color:var(--allo-stem-text, #f1f5f9)">
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
@@ -2185,6 +2388,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the ecosystem tab
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="true" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:700;background:#15803d;color:#fff;white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
@@ -2305,6 +2509,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the explore tab (
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="true" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:700;background:#15803d;color:#fff;white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
@@ -2472,6 +2677,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the extinction ta
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
@@ -2615,6 +2821,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the glossary tab 
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
@@ -2675,6 +2882,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the notes tab (sn
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
@@ -2782,6 +2990,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the quiz tab (sna
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
@@ -2832,6 +3041,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the records tab (
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
@@ -2983,6 +3193,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the sites tab (sn
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="true" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:700;background:#15803d;color:#fff;white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
@@ -3098,6 +3309,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the timeline tab 
 <div role="tablist" aria-label="Dino Lab sections" style="display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220)">
 <button id="dinotab-explore" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🔍 Explore</button>
 <button id="dinotab-timeline" role="tab" aria-selected="true" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:700;background:#15803d;color:#fff;white-space:nowrap">⏳ Timeline</button>
+<button id="dinotab-deeptime" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🕰️ Deep Time</button>
 <button id="dinotab-sites" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🗺️ Sites</button>
 <button id="dinotab-ecosystem" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">🌍 Ecosystems</button>
 <button id="dinotab-compare" role="tab" aria-selected="false" aria-controls="dinopanel" style="padding:7px 11px;border-radius:9px;border:none;cursor:pointer;font-size:12.5px;font-weight:500;background:transparent;color:var(--allo-stem-text-soft, #94a3b8);white-space:nowrap">⚖️ Compare</button>
