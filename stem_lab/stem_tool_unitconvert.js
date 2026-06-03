@@ -424,7 +424,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           // Tool tabs
           h('div', { className: 'flex gap-0 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': 'Unit Converter sections' },
-            [['convert', '\uD83D\uDD04 Convert'], ['table', '\uD83D\uDCCA All Units'], ['quiz', '\uD83E\uDDE0 Quiz'], ['wordproblem', '\uD83D\uDCDD Word Problem']].map(function(item, idx) {
+            [['convert', '\uD83D\uDD04 Convert'], ['table', '\uD83D\uDCCA All Units'], ['quiz', '\uD83E\uDDE0 Quiz'], ['wordproblem', '\uD83D\uDCDD Word Problem'], ['magHunt', '\u2699\uFE0F Magnitude']].map(function(item, idx) {
               return h('button', { key: item[0],
                 onClick: function() { upd('tab', item[0]); },
                 role: 'tab', 'aria-selected': tab === item[0],
@@ -983,6 +983,62 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             )
 
           ),
+
+          tab === 'magHunt' && (function() {
+            var iq = d.magHunt || { sourceExp: 0, targetExp: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('magHunt', Object.assign({}, iq, patch)); }
+            var diff = Math.abs(iq.targetExp - iq.sourceExp);
+            var mag;
+            if (diff < 2) mag = 'tiny';
+            else if (diff < 5) mag = 'small';
+            else if (diff < 9) mag = 'medium';
+            else if (diff < 13) mag = 'large';
+            else mag = 'massive';
+            var mm = {
+              tiny:    { label: '🐜 Tiny scale change', color: '#475569', bg: '#f1f5f9', border: '#cbd5e1', desc: '<2 orders of magnitude — close cousins (cm→m).' },
+              small:   { label: '🟢 Small scale change', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: '2-4 OOM — same domain (g→kg).' },
+              medium:  { label: '🟡 Medium scale change', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: '5-8 OOM — biology to geology scales.' },
+              large:   { label: '🔴 Large scale change', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: '9-12 OOM — micro to macro span.' },
+              massive: { label: '🌌 Massive scale change', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: '13+ OOM — atomic to cosmic.' }
+            }[mag];
+            return h('div', { key: 'mh', className: 'p-3' },
+              h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 space-y-3' },
+                h('h3', { className: 'text-sm font-black text-cyan-700' }, '⚙️ Magnitude discovery'),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Adjust source and target exponents (10^N). Widget classifies magnitude change into 5 discrete bands. No score, no reveal.'),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: mm.bg, border: '2px solid ' + mm.border } },
+                  h('div', { className: 'text-base font-black', style: { color: mm.color } }, mm.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, mm.desc),
+                  h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, '10^' + iq.sourceExp + ' → 10^' + iq.targetExp + ' (Δ ' + diff + ' OOM)')
+                ),
+                h('div', { className: 'grid grid-cols-2 gap-3' },
+                  [{ k: 'sourceExp', l: 'source 10^' }, { k: 'targetExp', l: 'target 10^' }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'mh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
+                      h('input', { id: 'mh-' + s.k, type: 'range', min: -18, max: 24, step: 1, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ s: iq.sourceExp, t: iq.targetExp, m: mag }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ sourceExp: 0, targetExp: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What real-world examples span each magnitude band?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Compare cm→km, mm→light-year. How many OOM each?'),
+                    h('li', null, 'Why are scientists trained in orders of magnitude?'))),
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain why dimensional reasoning across many OOM is hard.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 5-state magnitude marker; no error score; no reveal — by design.')
+              )
+            );
+          })(),
 
           // ── Keyboard shortcuts legend ──
           h('div', { className: 'text-[11px] text-slate-600 text-center mt-3 space-x-3' },

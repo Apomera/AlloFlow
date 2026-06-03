@@ -2740,7 +2740,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           { id: 'visualizer', label: 'Visualizer', icon: '\uD83C\uDFA4' },
           { id: 'practice', label: 'Practice', icon: '\uD83D\uDCDD' },
           { id: 'multilingual', label: 'Multilingual', icon: '\uD83C\uDF10' },
-          { id: 'report', label: 'Report', icon: '\uD83D\uDCCB' }
+          { id: 'report', label: 'Report', icon: '\uD83D\uDCCB' },
+          { id: 'prosodyHunt', label: 'Prosody', icon: '\u2699\uFE0F' }
         ];
 
         // ═══════════════════════════════════════
@@ -3964,7 +3965,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             activeTab === 'visualizer' && renderVisualizer(),
             activeTab === 'practice' && renderPractice(),
             activeTab === 'multilingual' && renderMultilingual(),
-            activeTab === 'report' && renderReport()
+            activeTab === 'report' && renderReport(),
+            activeTab === 'prosodyHunt' && (function() {
+              var iq = d.prosodyHunt || { pitch: 100, pace: 1.0, volume: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('prosodyHunt', Object.assign({}, iq, patch)); }
+              var tempo;
+              if (iq.pace < 0.7) tempo = 'slow';
+              else if (iq.pace < 1.1) tempo = 'conversational';
+              else if (iq.pace < 1.6) tempo = 'fast';
+              else tempo = 'sprint';
+              var tm = {
+                slow: { label: '🐢 Slow / deliberate', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Suited to emphasis, reflection, gravitas.' },
+                conversational: { label: '🗣 Conversational', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Default for most speaking. Natural rhythm.' },
+                fast: { label: '⚡ Fast / urgent', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Conveys excitement, urgency, energy.' },
+                sprint: { label: '🚀 Sprint', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Too fast — comprehension drops.' }
+              }[tempo];
+              return h('div', { className: 'p-4 rounded-xl border ' + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-300') + ' space-y-3' },
+                h('h3', { className: 'text-sm font-black' }, '⚙️ Prosody discovery'),
+                h('p', { className: 'text-[12px] leading-relaxed' }, 'Adjust pitch offset, pacing, volume. Discrete 4-tempo classification. No score, no reveal.'),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: tm.bg, border: '2px solid ' + tm.border } },
+                  h('div', { className: 'text-base font-black', style: { color: tm.color } }, tm.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, tm.desc)
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3' },
+                  [{ k: 'pitch', l: 'Pitch (+Hz)', mn: 0, mx: 200, st: 5 },
+                   { k: 'pace', l: 'Pace ×', mn: 0.5, mx: 2.0, st: 0.05 },
+                   { k: 'volume', l: 'Volume gain dB', mn: -12, mx: 12, st: 0.5 }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'ph-' + s.k, className: 'block text-[11px] font-bold' }, s.l + ': ', h('span', { className: 'font-mono' }, iq[s.k])),
+                      h('input', { id: 'ph-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pitch, c: iq.pace, v: iq.volume, t: tempo }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-200 text-[11px] font-bold text-slate-700' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ pitch: 100, pace: 1.0, volume: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does pace affect audience comprehension?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] leading-relaxed' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Most TED talks are ~150 wpm. Investigate why.'),
+                    h('li', null, 'When does pitch variation help vs distract?'))),
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how prosody shapes oratory impact.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-tempo marker; no delivery score; no reveal — by design.')
+              );
+            })()
           ),
 
           // Bottom info for SLPs

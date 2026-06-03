@@ -2505,7 +2505,7 @@
 
             // Tab Bar
             el('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', padding: '0 24px' } },
-              [{ id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: 'Cyber Detective' }, { id: 'password', icon: '\uD83D\uDD10', label: 'Password Forge' }, { id: 'cipher', icon: '\uD83D\uDD11', label: 'Cipher Lab' }, { id: 'network', icon: '\uD83D\uDCE1', label: 'Traffic Analyzer' }, { id: 'social', icon: '\uD83C\uDFAD', label: 'Social Engineering' }, { id: 'warroom', icon: '\u2694\uFE0F', label: 'SOC War Room' }].map(function(tab) {
+              [{ id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: 'Cyber Detective' }, { id: 'password', icon: '\uD83D\uDD10', label: 'Password Forge' }, { id: 'cipher', icon: '\uD83D\uDD11', label: 'Cipher Lab' }, { id: 'network', icon: '\uD83D\uDCE1', label: 'Traffic Analyzer' }, { id: 'social', icon: '\uD83C\uDFAD', label: 'Social Engineering' }, { id: 'warroom', icon: '\u2694\uFE0F', label: 'SOC War Room' }, { id: 'defenseHunt', icon: '\uD83D\uDEE1\uFE0F', label: 'Defense Metrics' }].map(function(tab) {
                 var isActive = cyberTab === tab.id;
                 return el('button', { key: tab.id, onClick: function() { upd('cyberTab', tab.id); },
                   style: { padding: '12px 20px', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: isActive ? '2px solid #6366f1' : '2px solid transparent', background: 'none', color: isActive ? '#a5b4fc' : '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' } },
@@ -5332,7 +5332,61 @@
                     )
                   )
                 )
-              )
+              ),
+              // === H7b'' inquiry widget: defense metrics ===
+              cyberTab === 'defenseHunt' && (function() {
+                var iq = d.defenseHunt || { detection: 50, response: 50, training: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+                function setIQ(patch) { upd('defenseHunt', Object.assign({}, iq, patch)); }
+                var defense = iq.detection * 0.4 + iq.response * 0.35 + iq.training * 0.25;
+                var state;
+                if (defense > 80) state = 'mitigated';
+                else if (defense > 55) state = 'detected';
+                else if (defense > 30) state = 'succeeded';
+                else state = 'lost';
+                var sm = {
+                  mitigated: { label: '🛡️ Mitigated', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Attack blocked before damage. Strong defense.' },
+                  detected:  { label: '🟡 Detected (alert raised)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Attack visible. Containment depends on response speed.' },
+                  succeeded: { label: '🔴 Attack succeeded', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Initial breach. Containment slow.' },
+                  lost:      { label: '⚫ Compromise (data lost)', color: '#1e293b', bg: '#f1f5f9', border: '#475569', desc: 'Defenses insufficient. Major incident.' }
+                }[state];
+                return el('div', { style: { padding: 24 } },
+                  el('div', { style: { padding: 16, background: 'rgba(15,23,42,0.6)', borderRadius: 10, border: '1px solid rgba(99,102,241,0.3)', color: '#e2e8f0' } },
+                    el('h3', { style: { fontSize: 14, fontWeight: 800, color: '#a5b4fc', margin: '0 0 6px 0' } }, '🛡️ Defense metrics discovery'),
+                    el('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 12 } }, 'Adjust detection, response, training capability. Widget shows 4 discrete defense outcomes. No score, no reveal.'),
+                    el('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
+                      el('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
+                      el('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc)
+                    ),
+                    el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
+                      [{ k: 'detection', l: 'Detection (%)' },
+                       { k: 'response', l: 'Response speed (%)' },
+                       { k: 'training', l: 'Staff training (%)' }].map(function(s) {
+                        return el('div', { key: s.k },
+                          el('label', { htmlFor: 'dh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } }, s.l + ': ', el('span', { style: { color: '#a5b4fc', fontFamily: 'monospace' } }, iq[s.k])),
+                          el('input', { id: 'dh-' + s.k, type: 'range', min: 0, max: 100, step: 1, value: iq[s.k],
+                            onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                            style: { width: '100%' }, 'aria-label': s.l }));
+                      })
+                    ),
+                    el('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
+                      el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ d: iq.detection, r: iq.response, t: iq.training, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+                      el('button', { onClick: function() { setIQ({ detection: 50, response: 50, training: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+                    ),
+                    el('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Which is the strongest defense lever?',
+                      style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
+                    !iq.stuckRevealed && el('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
+                    iq.stuckRevealed && el('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 8 } },
+                      el('ul', { style: { margin: 0, paddingLeft: 18 } },
+                        el('li', null, 'Detection without response speed = breach. Investigate.'),
+                        el('li', null, 'Real SOCs weight training high. Why?'))),
+                    el('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+                      el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
+                    iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how detection, response, and training compose security posture.',
+                      style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
+                    el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state defense marker; no security score; no reveal — by design.')
+                  )
+                );
+              })()
             )
           );
 

@@ -1824,7 +1824,8 @@ window.StemLab = window.StemLab || {
           [
             { id: 'explore', icon: '\uD83D\uDCCD', label: 'Explore' },
             { id: 'quadrants', icon: '\uD83D\uDDFA', label: 'Quadrant Tour' },
-            { id: 'maps', icon: '\uD83C\uDF10', label: 'Real-World Maps' }
+            { id: 'maps', icon: '\uD83C\uDF10', label: 'Real-World Maps' },
+            { id: 'quadHunt', icon: '\uD83C\uDFAF', label: 'Quadrant Hunt' }
           ].map(function(t2) {
             return h('button', {
               key: 't-' + t2.id,
@@ -2074,6 +2075,63 @@ window.StemLab = window.StemLab || {
 
         // REAL-WORLD MAPS TAB content
         cgTab === 'maps' && renderRealWorldMaps(),
+
+        // === H7b'' inquiry widget: quadrant discovery ===
+        cgTab === 'quadHunt' && (function() {
+          var iq = d._quadHunt || { x: 3, y: 4, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { updCG({ _quadHunt: Object.assign({}, iq, patch) }); }
+          var quadrant;
+          if (iq.x === 0 && iq.y === 0) quadrant = 'origin';
+          else if (iq.x === 0) quadrant = 'yAxis';
+          else if (iq.y === 0) quadrant = 'xAxis';
+          else if (iq.x > 0 && iq.y > 0) quadrant = 'q1';
+          else if (iq.x < 0 && iq.y > 0) quadrant = 'q2';
+          else if (iq.x < 0 && iq.y < 0) quadrant = 'q3';
+          else quadrant = 'q4';
+          var qm = {
+            q1:     { label: '↗️ Quadrant I (+, +)', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+            q2:     { label: '↖️ Quadrant II (−, +)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+            q3:     { label: '↙️ Quadrant III (−, −)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
+            q4:     { label: '↘️ Quadrant IV (+, −)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+            xAxis:  { label: '↔️ on X-axis (y = 0)',  color: '#475569', bg: '#f1f5f9', border: '#cbd5e1' },
+            yAxis:  { label: '↕️ on Y-axis (x = 0)',  color: '#475569', bg: '#f1f5f9', border: '#cbd5e1' },
+            origin: { label: '🎯 at the Origin (0, 0)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+          }[quadrant];
+          return h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 space-y-3' },
+            h('h3', { className: 'text-sm font-black text-cyan-700' }, '🎯 Quadrant discovery'),
+            h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for x and y. Widget tells you which discrete region you are in. No score, no reveal.'),
+            h('div', { className: 'p-3 rounded-lg text-center', style: { background: qm.bg, border: '2px solid ' + qm.border } },
+              h('div', { className: 'text-base font-black', style: { color: qm.color } }, qm.label),
+              h('div', { className: 'text-[11px] text-slate-700 mt-1 font-mono' }, '(x, y) = (' + iq.x + ', ' + iq.y + ')')
+            ),
+            h('div', { className: 'grid grid-cols-2 gap-3' },
+              [{ k: 'x', l: 'x coordinate' }, { k: 'y', l: 'y coordinate' }].map(function(s) {
+                return h('div', { key: s.k },
+                  h('label', { htmlFor: 'qh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
+                  h('input', { id: 'qh-' + s.k, type: 'range', min: -10, max: 10, step: 1, value: iq[s.k],
+                    onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                    className: 'w-full', 'aria-label': s.l }));
+              })
+            ),
+            h('div', { className: 'flex gap-2 items-center flex-wrap' },
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ x: iq.x, y: iq.y, q: quadrant }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+              h('button', { onClick: function() { setIQ({ x: 3, y: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What sign combinations define each quadrant?',
+              className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+              h('ul', { className: 'list-disc pl-5 space-y-1' },
+                h('li', null, 'Place a point in each quadrant. Look at the signs.'),
+                h('li', null, 'What happens exactly on an axis?'))),
+            h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+              'I understand — explain in own words'),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain the sign pattern that defines each quadrant.',
+              className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+            h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 7-state region marker; no coordinate score; no reveal — by design.')
+          );
+        })(),
 
         // Badges (shared across tabs)
         renderBadges(),
