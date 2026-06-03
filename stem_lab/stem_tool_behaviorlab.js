@@ -3452,7 +3452,78 @@ dataRef.current = d;
 
                 className: "w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold text-base shadow-lg shadow-amber-500/30 hover:from-amber-600 hover:to-orange-600 transition-all hover:scale-[1.02]"
 
-              }, "\uD83D\uDE80 Start Experiment")
+              }, "\uD83D\uDE80 Start Experiment"),
+
+              // \u2550\u2550 REINFORCEMENT INQUIRY widget (H7b'') \u2550\u2550
+              (function() {
+                var iq = d.reinforceIQ || { schedule: 'FR3', reinforcerStrength: 5, alternativeReward: 3, extinctionTime: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+                var setIQ = function(patch) { upd('reinforceIQ', Object.assign({}, iq, patch)); };
+                var setKey = function(k, v) { var p = {}; p[k] = v; setIQ(p); };
+                var persistence = (iq.schedule === 'CRF' ? 2 : iq.schedule === 'FR3' ? 5 : iq.schedule === 'VR5' ? 8 : iq.schedule === 'FI30' ? 4 : 7) + iq.reinforcerStrength * 0.5 - iq.alternativeReward * 0.5;
+                var extinctionResistance = (iq.schedule === 'CRF' ? 1 : iq.schedule === 'FR3' ? 3 : iq.schedule === 'VR5' ? 9 : iq.schedule === 'FI30' ? 4 : 8);
+                var state = persistence > 9 ? 'addictive' : persistence > 6 ? 'durable' : persistence > 4 ? 'moderate' : persistence > 2 ? 'fragile' : 'extinguishing';
+                var sm = ({
+                  addictive: { label: 'Addictive pattern', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'VR schedule + strong reinforcer + no alternative = gambling/scrolling pattern. Hardest to extinguish.' },
+                  durable: { label: 'Durable habit', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Behavior persists through occasional non-reinforcement. Typical of well-trained skills.' },
+                  moderate: { label: 'Moderate persistence', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Standard reinforcement; behavior maintained while contingency holds.' },
+                  fragile: { label: 'Fragile', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'CRF or low strength + alternatives available. Extinction begins quickly when reinforcement stops.' },
+                  extinguishing: { label: 'Already extinguishing', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'Reinforcer too weak vs alternative \u2014 behavior dropping in frequency right now.' }
+                })[state];
+                return React.createElement("div", { style: { marginTop: 14, padding: 12, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                  React.createElement("h4", { style: { margin: '0 0 4px', fontSize: 12, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '\uD83D\uDD2C Reinforcement Inquiry \u2014 Predict Persistence'),
+                  React.createElement("p", { style: { margin: '0 0 6px', fontSize: 10, opacity: 0.85, lineHeight: 1.4 } }, 'Set schedule, reinforcer strength, alternatives, extinction time. Predict the persistence band. No score, no reveal.'),
+                  React.createElement("div", { style: { display: 'inline-block', padding: '3px 8px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 10, fontWeight: 800, marginBottom: 6 } }, sm.label + ' \u00B7 persist ' + persistence.toFixed(1) + ' \u00B7 ext-resist ' + extinctionResistance),
+                  React.createElement("p", { style: { margin: '0 0 6px', fontSize: 10, opacity: 0.8 } }, sm.desc),
+                  React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 } },
+                    ['CRF', 'FR3', 'VR5', 'FI30', 'VI30'].map(function(sch) {
+                      var active = iq.schedule === sch;
+                      return React.createElement("button", { key: sch, onClick: function() { setKey('schedule', sch); }, style: { padding: '3px 8px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid ' + (active ? sm.color : '#1e293b'), background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', cursor: 'pointer' } }, sch);
+                    })
+                  ),
+                  React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 8 } },
+                    React.createElement("label", { style: { fontSize: 10 } },
+                      React.createElement("div", { style: { marginBottom: 2 } }, 'Strength ', React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.reinforcerStrength)),
+                      React.createElement("input", { type: 'range', min: 1, max: 10, step: 1, value: iq.reinforcerStrength, onChange: function(e) { setKey('reinforcerStrength', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                    ),
+                    React.createElement("label", { style: { fontSize: 10 } },
+                      React.createElement("div", { style: { marginBottom: 2 } }, 'Alternative ', React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.alternativeReward)),
+                      React.createElement("input", { type: 'range', min: 0, max: 10, step: 1, value: iq.alternativeReward, onChange: function(e) { setKey('alternativeReward', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                    ),
+                    React.createElement("label", { style: { fontSize: 10 } },
+                      React.createElement("div", { style: { marginBottom: 2 } }, 'Ext time ', React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.extinctionTime)),
+                      React.createElement("input", { type: 'range', min: 0, max: 30, step: 1, value: iq.extinctionTime, onChange: function(e) { setKey('extinctionTime', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                    )
+                  ),
+                  React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 6 } },
+                    React.createElement("button", { onClick: function() {
+                      var t = new Date().toISOString().slice(11, 19);
+                      setIQ({ log: iq.log.concat([{ t: t, s: iq.schedule, str: iq.reinforcerStrength, alt: iq.alternativeReward, ext: iq.extinctionTime, p: persistence.toFixed(1), state: sm.label }]) });
+                    }, style: { flex: 1, padding: 4, fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '\uD83D\uDCCB Log'),
+                    React.createElement("button", { onClick: function() { setIQ({ schedule: 'FR3', reinforcerStrength: 5, alternativeReward: 3, extinctionTime: 5 }); }, style: { padding: '4px 8px', fontSize: 10, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+                  ),
+                  iq.log.length > 0 && React.createElement("div", { style: { maxHeight: 60, overflow: 'auto', padding: 4, borderRadius: 4, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 6, fontSize: 9, fontFamily: 'monospace', lineHeight: 1.4 } },
+                    iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' \u00B7 ' + e.s + ' str' + e.str + ' alt' + e.alt + ' \u2192 ' + e.p); })
+                  ),
+                  React.createElement("label", { style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 3 } }, 'Hypothesis (why does VR resist extinction so much?)'),
+                  React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., VR makes every action potentially the rewarded one \u2014 extinction never feels conclusive...', style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
+                  !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 8px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 6 } }, "\uD83E\uDD14 Stuck \u2014 open questions"),
+                  iq.stuckRevealed && React.createElement("div", { style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 10, marginBottom: 6, lineHeight: 1.5 } },
+                    React.createElement("div", { style: { fontWeight: 700, color: sm.color, marginBottom: 3 } }, 'Open questions'),
+                    React.createElement("ul", { style: { margin: 0, paddingLeft: 14 } },
+                      React.createElement("li", null, 'Why is VR (variable ratio) the schedule behind slot machines + scrolling apps?'),
+                      React.createElement("li", null, 'When does adding an alternative reinforcer FASTER extinguish a behavior than just removing the original?'),
+                      React.createElement("li", null, 'What pattern of responding shows during an FI (fixed interval) schedule? Why "scalloping"?'),
+                      React.createElement("li", null, 'How does extinction TIME interact with schedule type? (Hint: partial reinforcement extinction effect.)')
+                    )
+                  ),
+                  React.createElement("label", { style: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, cursor: 'pointer', marginBottom: 4 } },
+                    React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                    React.createElement("span", null, 'I can explain why this schedule + strength + alternative yields this persistence band.')
+                  ),
+                  iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
+                  React.createElement("p", { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget \u2014 no score, no reveal. Skinner box terminology + matching-law extension. Persistence is multi-dimensional in real life; this is a teaching heuristic.')
+                );
+              })()
 
             );
 
