@@ -1537,10 +1537,19 @@
     var source = props.source;
     var onUpdate = props.onUpdate;
     var allSources = props.allSources || [];
+    var devLevel = props.devLevel || '6_8';
     var _open = useState(props.startOpen ? 'stop' : null);
     var openGate = _open[0]; var setOpenGate = _open[1];
     var sift = source.sift || {};
     var srcHost = hostnameFromRef(source.citation || '');
+    // V2: AP historiographical gate — for scholarly_article sources at AP
+    // devLevel, require scholar-contestation fields before primary_corroborated
+    // tier is reachable. Scholar citation is allowed but requires the student
+    // to declare how the scholar is contested (counter-citation + epistemic
+    // status + contestation note). Honors the V1 same-rule-for-all design
+    // decision (AI never names scholars) while unlocking richer student-
+    // authored scholar citation at AP.
+    var isHistoricalScholarly = (devLevel === 'ap' || devLevel === '9_12') && source.kind === 'scholarly_article';
 
     var updateSift = function (path, value) {
       var next = JSON.parse(JSON.stringify(sift));
@@ -1585,7 +1594,15 @@
                    return sh && sh !== srcHost && s.sift && s.sift.stop && s.sift.stop.firstReactionText;
                  });
     var traceOk = (trace.originalContextCitation || trace.isOriginal) && (trace.contextualizationNote || '').trim().length >= 30;
-    var allGatesOk = stopOk && invOk && findOk && traceOk;
+    // V2: AP historiographical gate
+    var scholar = source.scholarMeta || {};
+    var counterIdValid = scholar.counterCitationSourceId &&
+      allSources.some(function (s) { return s.id === scholar.counterCitationSourceId; });
+    var histOk = !isHistoricalScholarly ||
+      (!!scholar.scholarEpistemicStatus &&
+       counterIdValid &&
+       (scholar.scholarContestationNote || '').trim().length >= 60);
+    var allGatesOk = stopOk && invOk && findOk && traceOk && histOk;
 
     var gateRow = function (key, label, ok, content) {
       var isOpen = openGate === key;
@@ -1807,6 +1824,56 @@
                 onChange={function (e) { updateSift('trace.contextualizationNote', e.target.value); }}
                 style={{ marginTop: '2px', width: '100%', boxSizing: 'border-box',
                   padding: '5px 8px', borderRadius: '6px', border: '1px solid #cbd5e1',
+                  fontSize: '11px', fontFamily: 'inherit' }} />
+            </label>
+          </div>
+        ))}
+        {isHistoricalScholarly && gateRow('historiographical', 'Historiographical — scholar contestation (AP/9-12 only)', histOk, (
+          <div>
+            <p style={{ margin: '0 0 6px', fontSize: '10px', color: '#475569', lineHeight: 1.5 }}>
+              Scholarly articles are not inherently more reliable — they sit within ongoing scholarly debates.
+              At AP / 9-12, citing a scholarly source requires showing you know where the scholar sits in that
+              debate. (This unlocks richer scholar citation while preserving the V1 rule that AI never names scholars.)
+            </p>
+            <label style={{ fontSize: '10px', fontWeight: 700, color: '#475569', display: 'block' }}>
+              Where does this scholar sit? *
+              <select value={scholar.scholarEpistemicStatus || ''}
+                onChange={function (e) { onUpdate(Object.assign({}, source, { scholarMeta: Object.assign({}, scholar, { scholarEpistemicStatus: e.target.value }) })); }}
+                style={{ marginTop: '2px', width: '100%', padding: '5px 8px', borderRadius: '6px',
+                  border: '1px solid #cbd5e1', fontSize: '11px' }}>
+                <option value="">—</option>
+                <option value="established_consensus">established consensus (most of the field agrees)</option>
+                <option value="contested">contested (the field is openly debating this)</option>
+                <option value="contesting_consensus">contesting consensus (this scholar challenges the mainstream)</option>
+                <option value="fringe">fringe (most of the field rejects this)</option>
+                <option value="contemporary_debate">contemporary debate (no settled position yet)</option>
+              </select>
+            </label>
+            <label style={{ fontSize: '10px', fontWeight: 700, color: '#475569', display: 'block', marginTop: '6px' }}>
+              Counter-citation: another source in your list that contests or complicates this scholar *
+              <select value={scholar.counterCitationSourceId || ''}
+                onChange={function (e) { onUpdate(Object.assign({}, source, { scholarMeta: Object.assign({}, scholar, { counterCitationSourceId: e.target.value }) })); }}
+                style={{ marginTop: '2px', width: '100%', padding: '5px 8px', borderRadius: '6px',
+                  border: '1px solid #cbd5e1', fontSize: '11px' }}>
+                <option value="">—</option>
+                {allSources.filter(function (s) { return s.id !== source.id; }).map(function (s) {
+                  return <option key={s.id} value={s.id}>{(s.citation || s.id).slice(0, 60)}</option>;
+                })}
+              </select>
+              {scholar.counterCitationSourceId && !counterIdValid && (
+                <span style={{ fontSize: '10px', color: '#dc2626' }}>
+                  Counter-citation source not found — re-pick from the dropdown.
+                </span>
+              )}
+            </label>
+            <label style={{ fontSize: '10px', fontWeight: 700, color: '#475569', display: 'block', marginTop: '6px' }}>
+              How is this scholar contested? (≥60 chars; name what the counter-citation argues) *
+              <textarea value={scholar.scholarContestationNote || ''} rows={3} maxLength={1000}
+                onChange={function (e) { onUpdate(Object.assign({}, source, { scholarMeta: Object.assign({}, scholar, { scholarContestationNote: e.target.value }) })); }}
+                placeholder="e.g. Wineburg argues lateral reading is essential; Caulfield extends with SIFT but adds 'find better coverage' as a discrete move Wineburg did not name. The debate concerns whether 'investigate the source' is sufficient or whether trace-to-original is required."
+                style={{ marginTop: '2px', width: '100%', boxSizing: 'border-box',
+                  padding: '5px 8px', borderRadius: '6px',
+                  border: '1px solid ' + (scholar.scholarContestationNote && scholar.scholarContestationNote.length < 60 ? '#dc2626' : '#cbd5e1'),
                   fontSize: '11px', fontFamily: 'inherit' }} />
             </label>
           </div>
@@ -2352,6 +2419,7 @@
             return (
               <li key={s.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <SIFTGateRow t={t} source={s} allSources={sources}
+                  devLevel={journal.devLevel || '6_8'}
                   onUpdate={function (patched) { updateSource(s.id, patched); }}
                   onRemove={function () { removeSource(s.id); }} />
                 {s.sift && s.sift.tier === 'unvetted' && (

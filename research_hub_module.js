@@ -1100,6 +1100,8 @@
       dominated_solution_finder: 2,
       failure_mode_critic: 2,
       stakeholder_translator: 2,
+      tradeoff_inverter: 1,
+      // V2 ship — antagonist mirror at plan_test; lowest cap because highest harvest-risk
       // Tier-4 Humanities & Social Research lane (Inquiry Studio). Sum = 8
       // (1+2+1+3+0+1). Flat-map design honors the lane-rotation intent under
       // the global 8/session cap: each lane only renders its own touchpoint

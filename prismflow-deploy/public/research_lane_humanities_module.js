@@ -1881,11 +1881,13 @@
     var source = props.source;
     var onUpdate = props.onUpdate;
     var allSources = props.allSources || [];
+    var devLevel = props.devLevel || "6_8";
     var _open = useState(props.startOpen ? "stop" : null);
     var openGate = _open[0];
     var setOpenGate = _open[1];
     var sift = source.sift || {};
     var srcHost = hostnameFromRef(source.citation || "");
+    var isHistoricalScholarly = (devLevel === "ap" || devLevel === "9_12") && source.kind === "scholarly_article";
     var updateSift = function(path, value) {
       var next = JSON.parse(JSON.stringify(sift));
       var keys = path.split(".");
@@ -1924,7 +1926,12 @@
       return sh && sh !== srcHost && s.sift && s.sift.stop && s.sift.stop.firstReactionText;
     });
     var traceOk = (trace.originalContextCitation || trace.isOriginal) && (trace.contextualizationNote || "").trim().length >= 30;
-    var allGatesOk = stopOk && invOk && findOk && traceOk;
+    var scholar = source.scholarMeta || {};
+    var counterIdValid = scholar.counterCitationSourceId && allSources.some(function(s) {
+      return s.id === scholar.counterCitationSourceId;
+    });
+    var histOk = !isHistoricalScholarly || !!scholar.scholarEpistemicStatus && counterIdValid && (scholar.scholarContestationNote || "").trim().length >= 60;
+    var allGatesOk = stopOk && invOk && findOk && traceOk && histOk;
     var gateRow = function(key, label, ok, content) {
       var isOpen = openGate === key;
       return /* @__PURE__ */ React.createElement("div", { key, style: { borderBottom: "1px solid #f3e8ff" } }, /* @__PURE__ */ React.createElement(
@@ -2239,6 +2246,71 @@
           padding: "5px 8px",
           borderRadius: "6px",
           border: "1px solid #cbd5e1",
+          fontSize: "11px",
+          fontFamily: "inherit"
+        }
+      }
+    )))), isHistoricalScholarly && gateRow("historiographical", "Historiographical \u2014 scholar contestation (AP/9-12 only)", histOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 6px", fontSize: "10px", color: "#475569", lineHeight: 1.5 } }, "Scholarly articles are not inherently more reliable \u2014 they sit within ongoing scholarly debates. At AP / 9-12, citing a scholarly source requires showing you know where the scholar sits in that debate. (This unlocks richer scholar citation while preserving the V1 rule that AI never names scholars.)"), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569", display: "block" } }, "Where does this scholar sit? *", /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        value: scholar.scholarEpistemicStatus || "",
+        onChange: function(e) {
+          onUpdate(Object.assign({}, source, { scholarMeta: Object.assign({}, scholar, { scholarEpistemicStatus: e.target.value }) }));
+        },
+        style: {
+          marginTop: "2px",
+          width: "100%",
+          padding: "5px 8px",
+          borderRadius: "6px",
+          border: "1px solid #cbd5e1",
+          fontSize: "11px"
+        }
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014"),
+      /* @__PURE__ */ React.createElement("option", { value: "established_consensus" }, "established consensus (most of the field agrees)"),
+      /* @__PURE__ */ React.createElement("option", { value: "contested" }, "contested (the field is openly debating this)"),
+      /* @__PURE__ */ React.createElement("option", { value: "contesting_consensus" }, "contesting consensus (this scholar challenges the mainstream)"),
+      /* @__PURE__ */ React.createElement("option", { value: "fringe" }, "fringe (most of the field rejects this)"),
+      /* @__PURE__ */ React.createElement("option", { value: "contemporary_debate" }, "contemporary debate (no settled position yet)")
+    )), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569", display: "block", marginTop: "6px" } }, "Counter-citation: another source in your list that contests or complicates this scholar *", /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        value: scholar.counterCitationSourceId || "",
+        onChange: function(e) {
+          onUpdate(Object.assign({}, source, { scholarMeta: Object.assign({}, scholar, { counterCitationSourceId: e.target.value }) }));
+        },
+        style: {
+          marginTop: "2px",
+          width: "100%",
+          padding: "5px 8px",
+          borderRadius: "6px",
+          border: "1px solid #cbd5e1",
+          fontSize: "11px"
+        }
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014"),
+      allSources.filter(function(s) {
+        return s.id !== source.id;
+      }).map(function(s) {
+        return /* @__PURE__ */ React.createElement("option", { key: s.id, value: s.id }, (s.citation || s.id).slice(0, 60));
+      })
+    ), scholar.counterCitationSourceId && !counterIdValid && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", color: "#dc2626" } }, "Counter-citation source not found \u2014 re-pick from the dropdown.")), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569", display: "block", marginTop: "6px" } }, "How is this scholar contested? (\u226560 chars; name what the counter-citation argues) *", /* @__PURE__ */ React.createElement(
+      "textarea",
+      {
+        value: scholar.scholarContestationNote || "",
+        rows: 3,
+        maxLength: 1e3,
+        onChange: function(e) {
+          onUpdate(Object.assign({}, source, { scholarMeta: Object.assign({}, scholar, { scholarContestationNote: e.target.value }) }));
+        },
+        placeholder: "e.g. Wineburg argues lateral reading is essential; Caulfield extends with SIFT but adds 'find better coverage' as a discrete move Wineburg did not name. The debate concerns whether 'investigate the source' is sufficient or whether trace-to-original is required.",
+        style: {
+          marginTop: "2px",
+          width: "100%",
+          boxSizing: "border-box",
+          padding: "5px 8px",
+          borderRadius: "6px",
+          border: "1px solid " + (scholar.scholarContestationNote && scholar.scholarContestationNote.length < 60 ? "#dc2626" : "#cbd5e1"),
           fontSize: "11px",
           fontFamily: "inherit"
         }
@@ -3064,6 +3136,7 @@
           t,
           source: s,
           allSources: sources,
+          devLevel: journal.devLevel || "6_8",
           onUpdate: function(patched) {
             updateSource(s.id, patched);
           },

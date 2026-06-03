@@ -804,6 +804,150 @@
     }
     return out;
   }
+  function tradeoffInverterGate(journal) {
+    var floors = devFloors(journal.devLevel || "6_8");
+    var ledger = journal.tradeOffLedger || [];
+    if (ledger.length < 1) {
+      return {
+        ok: false,
+        reason: "Record at least one trade-off in the ledger first.",
+        bypass_signals: ["no_tradeoff_ledger"]
+      };
+    }
+    var planNote = (journal.stageNotes || {}).plan_test || {};
+    var decl = (planNote.tradeOffDeclaration || "").trim();
+    if (decl.length < floors.tradeOffDecl) {
+      return {
+        ok: false,
+        reason: "Trade-off declaration needs \u2265" + floors.tradeOffDecl + " chars before AI can invert.",
+        bypass_signals: ["decl_short"]
+      };
+    }
+    var declNorm = normalizeForCompare(decl);
+    var critHits = 0;
+    var critsAndCons = [].concat(journal.criteria || [], (journal.constraintMatrix || []).map(function(c) {
+      return { name: c.criterion };
+    }));
+    var seen = /* @__PURE__ */ new Set();
+    critsAndCons.forEach(function(item) {
+      var nm = normalizeForCompare(item.name || "");
+      if (nm && declNorm.indexOf(nm) !== -1 && !seen.has(nm)) {
+        critHits++;
+        seen.add(nm);
+      }
+    });
+    if (critHits < 2) {
+      return {
+        ok: false,
+        reason: "Declaration must mention TWO distinct criterion or constraint names by their actual names.",
+        bypass_signals: ["decl_one_criterion"]
+      };
+    }
+    var hasWhose = ledger.some(function(r) {
+      return (r.whoseInterestThisServes || "").trim().length >= 10;
+    });
+    if (!hasWhose) {
+      return {
+        ok: false,
+        reason: "At least one trade-off must name whose interest it serves (\u226510 chars).",
+        bypass_signals: ["no_whose_interest"]
+      };
+    }
+    var priorCalls = (journal.aiHistory || []).filter(function(h) {
+      return h.touchpoint === "tradeoff_inverter" && !h.blocked;
+    });
+    if (priorCalls.length > 0) {
+      var syn = (planNote.tradeoffSynthesis || "").trim();
+      if (syn.length < 80) {
+        return {
+          ok: false,
+          reason: "After a prior trade-off inversion you must author a \u226580-char tradeoffSynthesis before AI can fire again.",
+          bypass_signals: ["no_post_ai_synthesis"]
+        };
+      }
+    }
+    if (!exemplarOk(journal, "plan_test")) {
+      return {
+        ok: false,
+        reason: "Look at the example pair for this step first.",
+        bypass_signals: ["exemplar_not_viewed"]
+      };
+    }
+    return { ok: true };
+  }
+  function tradeoffInverterPrompt(journal) {
+    var devLevel = journal.devLevel || "6_8";
+    var sp = journal.stakeholderProfile || {};
+    var ledger = (journal.tradeOffLedger || []).map(function(r, i) {
+      var gained = ((journal.constraintMatrix || []).filter(function(c) {
+        return c.id === r.criterion;
+      })[0] || {}).criterion || ((journal.criteria || []).filter(function(c) {
+        return c.id === r.criterion;
+      })[0] || {}).name || r.criterion;
+      var sac = ((journal.constraintMatrix || []).filter(function(c) {
+        return c.id === r.sacrificedCriterion;
+      })[0] || {}).criterion || ((journal.criteria || []).filter(function(c) {
+        return c.id === r.sacrificedCriterion;
+      })[0] || {}).name || r.sacrificedCriterion;
+      return i + 1 + '. gained "' + gained + '", sacrificed "' + sac + '", justification: "' + (r.justification || r.accepted || "").slice(0, 200) + '", whoseInterestThisServes: "' + (r.whoseInterestThisServes || "") + '"';
+    }).join("\n");
+    var decl = ((journal.stageNotes || {}).plan_test || {}).tradeOffDeclaration || "";
+    return [
+      "SYSTEM: You are an engineering-design coach voicing a stakeholder with INVERTED priorities \u2014 the stakeholder who would have rejected the student's trade-off.",
+      'You MUST NOT tell the student their priorities are wrong. You MUST NOT suggest a different chosen candidate. You MUST NOT propose a "correct" trade-off.',
+      "For each tradeOffLedger entry: mirror VERBATIM a \u22648-word substring from the student's justification text (quoted_phrase field), then voice a stakeholder who valued the SACRIFICED criterion above the GAINED criterion and ask what THAT stakeholder would ask of the design.",
+      'Every question ends with "?", \u226425 words, avoids causal markers AND imperative verbs.',
+      "You are an antagonist, not a coach. Be sharp.",
+      "",
+      "USER:",
+      "devLevel: " + devLevel,
+      "primary stakeholder (whose interests the student is serving): " + (sp.name || "?"),
+      "student trade-off declaration (verbatim, do not edit): " + decl,
+      "trade-off ledger:\n" + ledger,
+      "",
+      'Return ONLY JSON: { "per_tradeoff": [{ "tradeoff_v": number, "quoted_phrase": string (verbatim \u22648-word substring from student justification), "inversion_questions": string[], "stakeholder_voice_questions": string[] }], "what_did_you_not_consider_questions": string[] }'
+    ].join("\n");
+  }
+  function tradeoffInverterValidate(out, journal) {
+    if (!out) return { __rejected: true, rejectReason: "no_output", attemptedShapeKeys: [] };
+    if (!Array.isArray(out.per_tradeoff)) {
+      return { __rejected: true, rejectReason: "missing_per_tradeoff", attemptedShapeKeys: Object.keys(out || {}) };
+    }
+    var ledger = journal.tradeOffLedger || [];
+    var declNorm = normalizeForCompare(((journal.stageNotes || {}).plan_test || {}).tradeOffDeclaration || "");
+    var allJustText = ledger.map(function(r) {
+      return normalizeForCompare(r.justification || r.accepted || "");
+    }).join(" ");
+    for (var i = 0; i < out.per_tradeoff.length; i++) {
+      var pt = out.per_tradeoff[i];
+      if (!pt || typeof pt.quoted_phrase !== "string") {
+        return { __rejected: true, rejectReason: "missing_quoted_phrase_at_" + i, attemptedShapeKeys: ["per_tradeoff"] };
+      }
+      var qn = normalizeForCompare(pt.quoted_phrase);
+      if (!qn) {
+        return { __rejected: true, rejectReason: "empty_quoted_phrase_at_" + i, attemptedShapeKeys: ["per_tradeoff", "quoted_phrase"] };
+      }
+      if (allJustText.indexOf(qn) === -1) {
+        return { __rejected: true, rejectReason: "quoted_phrase_not_in_student_justifications_at_" + i, attemptedShapeKeys: ["per_tradeoff", "quoted_phrase"] };
+      }
+      var wc = qn.split(/\s+/).filter(Boolean).length;
+      if (wc > 8) {
+        return { __rejected: true, rejectReason: "quoted_phrase_too_long_at_" + i, attemptedShapeKeys: ["per_tradeoff", "quoted_phrase"] };
+      }
+    }
+    var allAiText = JSON.stringify(out);
+    var aiNorm = normalizeForCompare(allAiText);
+    if (declNorm.length > 24) {
+      var declWords = declNorm.split(/\s+/);
+      for (var w = 0; w + 6 <= declWords.length; w++) {
+        var gram = declWords.slice(w, w + 6).join(" ");
+        if (gram.length > 12 && aiNorm.indexOf(gram) !== -1) {
+          return { __rejected: true, rejectReason: "ai_parrots_student_decl", attemptedShapeKeys: ["*"] };
+        }
+      }
+    }
+    return out;
+  }
   var TOUCHPOINTS = {
     constraint_excavator: {
       id: "constraint_excavator",
@@ -820,6 +964,14 @@
       gateCheck: dominatedSolutionFinderGate,
       buildPrompt: dominatedSolutionFinderPrompt,
       validate: dominatedSolutionFinderValidate
+    },
+    tradeoff_inverter: {
+      id: "tradeoff_inverter",
+      stage: "plan_test",
+      label: "Voice the stakeholder with inverted priorities",
+      gateCheck: tradeoffInverterGate,
+      buildPrompt: tradeoffInverterPrompt,
+      validate: tradeoffInverterValidate
     },
     failure_mode_critic: {
       id: "failure_mode_critic",
@@ -3086,6 +3238,15 @@
     var _dominatedJust = useState(stageNote.dominatedPickJustification || "");
     var domJust = _dominatedJust[0];
     var setDomJust = _dominatedJust[1];
+    var _syn = useState(stageNote.tradeoffSynthesis || "");
+    var tradeoffSyn = _syn[0];
+    var setTradeoffSyn = _syn[1];
+    var _invResult = useState(null);
+    var invResult = _invResult[0];
+    var setInvResult = _invResult[1];
+    var _invBusy = useState(false);
+    var invBusy = _invBusy[0];
+    var setInvBusy = _invBusy[1];
     var paretoDominated = useMemo(function() {
       return computeParetoDominated(concepts, crits, journal.decisionMatrix || []);
     }, [concepts, crits, journal.decisionMatrix]);
@@ -3098,11 +3259,12 @@
           selectedCandidateId: selected,
           tradeOffDeclaration: decl,
           dominatedPickJustification: domJust,
+          tradeoffSynthesis: tradeoffSyn,
           ts: Date.now()
         });
         return next;
       });
-    }, [selected, decl, domJust]);
+    }, [selected, decl, domJust, tradeoffSyn]);
     var addTradeoff = function(entry) {
       setJournal(function(prev) {
         var next = Object.assign({}, prev);
@@ -3362,7 +3524,82 @@
           }
         }
       ));
-    }))), /* @__PURE__ */ React.createElement("p", { style: { margin: "6px 0 0", fontSize: "11px", color: "#64748b", fontStyle: "italic" } }, t("engineering.plan_no_ai_note") || "There's no AI helper on this stage by design. AI here would design the test for you or pick the trade-off axes \u2014 and the discipline of named sacrifice IS engineering."));
+    }))), /* @__PURE__ */ React.createElement("div", { style: {
+      padding: "12px",
+      borderRadius: "12px",
+      background: "#fef2f2",
+      border: "1px solid #fca5a5"
+    } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: "0 0 6px", fontSize: "13px", fontWeight: 800, color: "#991b1b" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F441}\uFE0F "), t("engineering.tradeoff_inverter_title") || "Inversion check (antagonist AI)"), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", fontSize: "11px", color: "#7f1d1d", lineHeight: 1.5 } }, t("engineering.tradeoff_inverter_help") || "The single most under-defended move in engineering is conviction about a trade-off without ever voicing the inverse stakeholder. This AI is an antagonist \u2014 it voices a stakeholder who valued your sacrificed criterion above your gained one. It will NOT suggest a different design. After it fires, you must author a synthesis (\u226580c) reckoning with what you heard."), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        disabled: invBusy,
+        onClick: async function() {
+          setInvBusy(true);
+          setInvResult(null);
+          try {
+            var res = await ctx.ask(TOUCHPOINTS.tradeoff_inverter, ctx);
+            setInvResult(res);
+          } finally {
+            setInvBusy(false);
+          }
+        },
+        style: {
+          alignSelf: "flex-start",
+          padding: "8px 16px",
+          borderRadius: "999px",
+          background: invBusy ? "#cbd5e1" : "#991b1b",
+          color: "#fff",
+          border: "none",
+          fontWeight: 800,
+          fontSize: "12px",
+          cursor: invBusy ? "wait" : "pointer"
+        }
+      },
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F916} "),
+      invBusy ? t("engineering.inverting") || "Voicing the antagonist\u2026" : t("engineering.tradeoff_inverter_button") || "Voice the stakeholder with inverted priorities"
+    ), invResult && invResult.blocked && /* @__PURE__ */ React.createElement(BlockedNote, { t, reason: invResult.detail || invResult.blockedReason }), invResult && !invResult.blocked && invResult.data && /* @__PURE__ */ React.createElement("div", { style: {
+      marginTop: "10px",
+      padding: "12px",
+      background: "#fff",
+      border: "1px solid #fca5a5",
+      borderRadius: "10px"
+    } }, primitives.SuggestionBadge && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "6px" } }, /* @__PURE__ */ React.createElement(primitives.SuggestionBadge, { t })), Array.isArray(invResult.data.per_tradeoff) && invResult.data.per_tradeoff.map(function(pt, i) {
+      return /* @__PURE__ */ React.createElement("div", { key: i, style: {
+        marginBottom: "10px",
+        paddingBottom: "8px",
+        borderBottom: i < invResult.data.per_tradeoff.length - 1 ? "1px dashed #fca5a5" : "none"
+      } }, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 6px", fontSize: "11px", color: "#1e293b", fontStyle: "italic" } }, "You wrote: ", /* @__PURE__ */ React.createElement("strong", null, '"', pt.quoted_phrase, '"')), Array.isArray(pt.inversion_questions) && pt.inversion_questions.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#991b1b" } }, "An inverse stakeholder would ask:"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "20px", fontSize: "12px", color: "#1e293b" } }, pt.inversion_questions.map(function(q, j) {
+        return /* @__PURE__ */ React.createElement("li", { key: j }, q);
+      }))), Array.isArray(pt.stakeholder_voice_questions) && pt.stakeholder_voice_questions.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#991b1b" } }, "In their voice:"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "20px", fontSize: "12px", color: "#1e293b" } }, pt.stakeholder_voice_questions.map(function(q, j) {
+        return /* @__PURE__ */ React.createElement("li", { key: j }, q);
+      }))));
+    }), Array.isArray(invResult.data.what_did_you_not_consider_questions) && invResult.data.what_did_you_not_consider_questions.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#991b1b" } }, "What did you not consider?"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "20px", fontSize: "12px", color: "#1e293b" } }, invResult.data.what_did_you_not_consider_questions.map(function(q, j) {
+      return /* @__PURE__ */ React.createElement("li", { key: j }, q);
+    })))), (journal.aiHistory || []).some(function(h) {
+      return h.touchpoint === "tradeoff_inverter" && !h.blocked;
+    }) && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "10px" } }, /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "11px", fontWeight: 700, color: "#991b1b" } }, t("engineering.tradeoff_synthesis_label") || "Trade-off synthesis (\u226580 chars; you author this, not AI)", /* @__PURE__ */ React.createElement(
+      "textarea",
+      {
+        value: tradeoffSyn,
+        rows: 3,
+        maxLength: 1500,
+        onChange: function(e) {
+          setTradeoffSyn(e.target.value);
+        },
+        placeholder: t("engineering.tradeoff_synthesis_ph") || "What did you take from the antagonist's voice? Were they right? Did your trade-off hold? Your words only \u2014 do not echo the AI's phrasing back.",
+        style: {
+          marginTop: "4px",
+          width: "100%",
+          boxSizing: "border-box",
+          padding: "8px 10px",
+          borderRadius: "8px",
+          border: "1px solid " + (tradeoffSyn && tradeoffSyn.length < 80 ? "#dc2626" : "#cbd5e1"),
+          fontSize: "12px",
+          fontFamily: "inherit"
+        }
+      }
+    )), tradeoffSyn && tradeoffSyn.length < 80 && /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 0", fontSize: "10px", color: "#dc2626" } }, "\u226580 chars required (", tradeoffSyn.trim().length, " so far)."))), /* @__PURE__ */ React.createElement("p", { style: { margin: "6px 0 0", fontSize: "11px", color: "#64748b", fontStyle: "italic" } }, t("engineering.plan_one_ai_note") || "Only one AI helper on this stage by design \u2014 the antagonist inversion above. AI cannot design your test, pick your trade-off axes, or tell you whose interest matters. The discipline of named sacrifice IS engineering."));
   }
   function BuildTestStage(props) {
     var t = props.t, ctx = props.ctx;
