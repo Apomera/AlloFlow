@@ -133,6 +133,27 @@
         k: { min: 0.5, max: 1.0, step: 0.1, default: 1.0, label: 'k  (the floor / asymptote it approaches but never crosses — always below the node)' }
       },
       hint: 'Tip: this beam decays toward a floor (k) it never touches. The five narrow windows all sit on one decay curve — set the floor k, the start height a, and the decay rate b so the curve threads every window on its way down.'
+    },
+    {
+      id: 'L8', title: 'Logarithm Heights', family: 'log',
+      world: { x0: 0, x1: 10, y0: 0, y1: 8 },
+      // SIX narrow windows lie on one logarithmic climb y = k + a·ln(x + c) — a
+      // concave, ever-slowing rise. Six points over-determine any 3-parameter
+      // family; no line, V, parabola, or EXPONENTIAL (opposite, convex curvature)
+      // can thread them all — only a logarithm fits its own slowing climb, with
+      // the node at the flat far-right end. Verified forcing certificate (only log
+      // wins) in tests/arc_city_solvability.test.js. Intended ≈ a=2, c=1, k=1.
+      // (Logs are above the 8th-grade core — a reach/enrichment level.)
+      walls: [],
+      gates: [{ x: 0.5, lo: 1.68, hi: 1.94 }, { x: 1, lo: 2.26, hi: 2.52 }, { x: 3, lo: 3.64, hi: 3.9 }, { x: 5, lo: 4.45, hi: 4.71 }, { x: 7, lo: 5.03, hi: 5.29 }, { x: 9, lo: 5.47, hi: 5.73 }],
+      node: { x: 9.5, y: 5.7, r: 0.3 }, dx: 0.05,
+      paramOrder: ['a', 'c', 'k'],
+      params: {
+        a: { min: 1.5, max: 3, step: 0.1, default: 1.5, label: 'a  (climb strength — how high it rises)' },
+        c: { min: 0.5, max: 2, step: 0.1, default: 2, label: 'c  (shift — smaller = steeper early rise)' },
+        k: { min: 0, max: 2, step: 0.1, default: 0, label: 'k  (vertical offset)' }
+      },
+      hint: 'Tip: a logarithm climbs fast at first, then slows — concave, the mirror of the exponential. Six narrow windows sit on one such climb: set the climb strength a, the shift c, and the offset k so the slowing curve threads them all.'
     }
   ];
 
@@ -151,6 +172,7 @@
     if (family === 'absval') return p.a * Math.abs(x - p.h) + p.k; // absolute value (vertex form)
     if (family === 'sine') return p.a * Math.sin(p.b * x + p.c) + p.k; // sine: amplitude/frequency/phase/midline
     if (family === 'exp') return p.k + p.a * Math.exp(p.b * x); // exponential: floor k + a·e^(b·x); b<0 decays toward k
+    if (family === 'log') return p.k + p.a * Math.log(x + p.c); // logarithm: concave slow climb; c>0 keeps x+c>0 over the world
     return p.a * (x - p.h) * (x - p.h) + p.k; // parabola (vertex form)
   }
 
@@ -225,6 +247,7 @@
       if (fam === 'absval') return 'Bend the V over the wall — raise the vertex height k, or move the vertex h toward x = ' + res.at + '.';
       if (fam === 'sine') return 'Reshape the wave — raise the amplitude a so a crest rises over the wall.';
       if (fam === 'exp') return 'Raise the start height a or the floor k so the curve clears the wall.';
+      if (fam === 'log') return 'Raise the climb strength a or the offset k so the curve clears the wall.';
       return 'Arc higher over the wall: raise the vertex height k, or move the vertex h toward x = ' + res.at + '.';
     }
     if (res.result === 'gate') {
@@ -233,6 +256,7 @@
       if (fam === 'absval') return tooHigh ? 'The beam is too high there — lower the vertex k, or move the vertex h so the V dips into the window.' : 'The beam is too low there — raise the vertex k, or steepen a so the arm climbs through the window.';
       if (fam === 'sine') return tooHigh ? 'The wave is too high at this window — reduce the amplitude a, or change the frequency b so a dip lands here.' : 'The wave is too low at this window — increase the amplitude a, or change the frequency b so a crest lands here.';
       if (fam === 'exp') return tooHigh ? 'The curve is too high here — lower the start height a, decay faster (more negative b), or lower the floor k.' : 'The curve is too low here — raise the start height a, decay slower (less negative b), or raise the floor k.';
+      if (fam === 'log') return tooHigh ? 'The climb is too high here — lower the climb strength a, raise the shift c (gentler), or lower the offset k.' : 'The climb is too low here — raise the climb strength a, lower the shift c (steeper early), or raise the offset k.';
       return tooHigh ? 'The beam is too high there — tighten the arc (more negative a) or lower k.' : 'The beam is too low there — widen the arc or raise k.';
     }
     return '';
@@ -284,6 +308,10 @@
       return 'y = a·e^(b·x) + k, with a = ' + fmtVal(p.a, level.params.a.step) + ', b = ' + fmtVal(p.b, level.params.b.step) + ', k = ' + ek +
         '. An exponential ' + etail + '.';
     }
+    if (level.family === 'log') {
+      return 'y = a·ln(x + c) + k, with a = ' + fmtVal(p.a, level.params.a.step) + ', c = ' + fmtVal(p.c, level.params.c.step) + ', k = ' + fmtVal(p.k, level.params.k.step) +
+        '. A logarithm — a concave climb that rises fast then slows (the mirror of exponential growth).';
+    }
     var dir = p.a < 0 ? 'opening downward' : (p.a > 0 ? 'opening upward' : 'a flat line');
     return 'y = a(x − h)² + k, with a = ' + fmtVal(p.a, level.params.a.step) + ', h = ' + fmtVal(p.h, level.params.h.step) + ', k = ' + fmtVal(p.k, level.params.k.step) +
       '. A parabola ' + dir + ', vertex at (' + fmtVal(p.h, level.params.h.step) + ', ' + fmtVal(p.k, level.params.k.step) + ').';
@@ -291,7 +319,7 @@
 
   function describeBoard(level) {
     var s = 'Arc City, level: ' + level.title + '. ';
-    s += level.family === 'line' ? 'Author a straight-line beam. ' : (level.family === 'absval' ? 'Author a V-shaped, absolute-value beam. ' : (level.family === 'sine' ? 'Author a sine-wave beam. ' : (level.family === 'exp' ? 'Author an exponential beam that curves toward a floor it never touches. ' : 'Author a parabola beam. ')));
+    s += level.family === 'line' ? 'Author a straight-line beam. ' : (level.family === 'absval' ? 'Author a V-shaped, absolute-value beam. ' : (level.family === 'sine' ? 'Author a sine-wave beam. ' : (level.family === 'exp' ? 'Author an exponential beam that curves toward a floor it never touches. ' : (level.family === 'log' ? 'Author a logarithmic beam — a concave climb that rises fast then slows. ' : 'Author a parabola beam. '))));
     s += 'The dark node to light is at x ' + level.node.x + ', y ' + level.node.y + '. ';
     (level.walls || []).forEach(function (w) { s += 'A wall ' + w.height + ' units tall stands at x ' + w.x + '. '; });
     (level.gates || []).forEach(function (g) { s += 'A gate with an opening from y ' + g.lo + ' to ' + g.hi + ' is at x ' + g.x + (g.slope ? ', which the beam must pass while ' + (g.slope.value < 0 ? 'descending' : (g.slope.value > 0 ? 'climbing' : 'level')) + ' at a slope near ' + g.slope.value + ' (give or take ' + g.slope.tol + ')' : '') + '. '; });
@@ -330,6 +358,7 @@
     { id: 'switchback', label: 'Switchback — re-lit a node using an absolute-value V' },
     { id: 'wave-rider', label: 'Wave Rider — re-lit a node using a sine wave' },
     { id: 'decay-rider', label: 'Decay Rider — re-lit a node riding an exponential to its asymptote' },
+    { id: 'log-climber', label: 'Log Climber — re-lit a node riding a logarithm’s slowing climb' },
     { id: 'tilt-threader', label: 'Tilt Threader — passed a tilted slope-gate at the right angle' },
     { id: 'sharp-shooter', label: 'Sharp Shooter — lit a node on the first shot' },
     { id: 'independent', label: 'Independent — solved with the preview hidden' }
@@ -346,6 +375,7 @@
     if (level.family === 'absval') add('switchback');
     if (level.family === 'sine') add('wave-rider');
     if (level.family === 'exp') add('decay-rider');
+    if (level.family === 'log') add('log-climber');
     if ((level.gates || []).some(function (g) { return g.slope; })) add('tilt-threader');
     if (shots === 1) add('sharp-shooter');
     if (solveIsIndependent(tier)) add('independent');
@@ -960,7 +990,9 @@
                   ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · sin(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step)), '·x + ', h('span', { key: 'c', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.c, level.params.c.step)), ') + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
                   : (level.family === 'exp'
                     ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · e^(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step)), '·x) + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
-                    : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.h, level.params.h.step)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))])))),
+                    : (level.family === 'log'
+                      ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · ln(x + ', h('span', { key: 'c', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.c, level.params.c.step)), ') + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
+                      : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.h, level.params.h.step)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]))))),
           tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.6, marginBottom: 10 } }, handleEls.length ? t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.') : t('arccity.slider_hint', 'Tip: use the sliders (or the +/− buttons and arrow keys) to shape the beam.')) : null,
           h('div', { key: 'rows' }, paramRows),
           h('div', { key: 'btns', style: { display: 'flex', gap: 10, marginTop: 6 } },

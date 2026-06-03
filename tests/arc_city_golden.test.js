@@ -55,6 +55,11 @@ const CASES = {
     { label: 'solution: decay curve through all 5 windows (a=5,b=-0.4,k=1)', p: { a: 5, b: -0.4, k: 1 } },
     { label: 'starting shot, blocked at the first window (a=3,b=-0.25,k=1)', p: { a: 3, b: -0.25, k: 1 } },
     { label: 'decays too fast (a=5,b=-0.6,k=1)', p: { a: 5, b: -0.6, k: 1 } }
+  ],
+  L8: [
+    { label: 'solution: log climb through all 6 windows (a=2,c=1,k=1)', p: { a: 2, c: 1, k: 1 } },
+    { label: 'starting shot, blocked at the first window (a=1.5,c=2,k=0)', p: { a: 1.5, c: 2, k: 0 } },
+    { label: 'climb too strong (a=3,c=0.5,k=1)', p: { a: 3, c: 0.5, k: 1 } }
   ]
 };
 
@@ -66,7 +71,7 @@ describe('Arc City — module contract', () => {
     expect(typeof describeBoard).toBe('function');
     expect(typeof isLevelUnlocked).toBe('function');
     expect(Array.isArray(LEVELS)).toBe(true);
-    expect(LEVELS.map(l => l.id)).toEqual(['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7']);
+    expect(LEVELS.map(l => l.id)).toEqual(['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8']);
   });
 
   it('level geometry (snapshot)', () => {
@@ -420,5 +425,25 @@ describe('Arc City — Phase 2b: exponential family + asymptote', () => {
     expect(growth).toMatch(/growing away/);
     expect(growth).not.toMatch(/never crosses/);
     expect(describeEquation(expLvl, { a: -5, b: -0.4, k: 6 })).toMatch(/ceiling/); // a<0 → k is a ceiling
+  });
+});
+
+describe('Arc City — Phase 2c: logarithmic family', () => {
+  const L8 = levelById('L8');
+
+  it('the log family evaluates correctly and L8 is solvable', () => {
+    expect(arc.fnY('log', { a: 2, c: 1, k: 1 }, 0)).toBeCloseTo(1, 6); // 1 + 2*ln(1) = 1
+    expect(classifyShot(L8, { a: 2, c: 1, k: 1 }).result).toBe('hit');
+  });
+
+  it('the log read-back describes the concave, slowing climb (mirror of exp)', () => {
+    expect(describeEquation(L8, { a: 2, c: 1, k: 1 })).toMatch(/concave climb that rises fast then slows/);
+  });
+
+  it('a log solve earns the log-climber badge (action-named, no mastery claim)', () => {
+    const hit = classifyShot(L8, { a: 2, c: 1, k: 1 });
+    expect(arc.badgesForSolve(L8, hit, 1, 'practice', [])).toContain('log-climber');
+    const b = arc.BADGES.find(x => x.id === 'log-climber');
+    expect(b.label.toLowerCase()).not.toMatch(/master|mastery|proficient|ability|expert/);
   });
 });

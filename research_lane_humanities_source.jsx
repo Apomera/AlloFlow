@@ -3484,6 +3484,74 @@
       finally { setBusy(false); }
     };
 
+    // C: StoryForge handoff egress (Hub-side). Writes a self-describing
+    // payload to a known localStorage key for StoryForge to discover on its
+    // own load. One-way: Humanities → StoryForge. StoryForge-side reader is
+    // a separate PR (it currently does not accept incoming-artifact props).
+    var _egress = useState(null); var egress = _egress[0]; var setEgress = _egress[1];
+    var sendToStoryForge = function () {
+      if (!latest) {
+        window.alert('Save a composition first.'); return;
+      }
+      var payload = {
+        version: 1,
+        sourceModule: 'ResearchHub',
+        sourceLane: 'humanities',
+        ts: Date.now(),
+        composition: {
+          v: latest.v,
+          genre: latest.genreChoice,
+          bodyText: latest.bodyText,
+          foreclosureCodaText: latest.foreclosureCodaText,
+          foreclosureCodaHash: latest.foreclosureCodaHash,
+          publicAccountabilityTarget: latest.publicAccountabilityTarget,
+          publicAccountabilityNote: latest.publicAccountabilityNote,
+        },
+        question: {
+          title: journal.questionTitle || '',
+          stakesAudience: (journal.stakesAudience && journal.stakesAudience.label) || (journal.stakesAudience && journal.stakesAudience.chip) || '',
+        },
+        position: {
+          text: (journal.humanitiesPosition && journal.humanitiesPosition.text) || '',
+          label: (journal.humanitiesPosition && journal.humanitiesPosition.label) || '',
+          whatThisClaimDoesNotSpeakTo: (journal.humanitiesPosition && journal.humanitiesPosition.whatThisClaimDoesNotSpeakTo) || '',
+        },
+        standpoint: {
+          materialRelationship: (ps.length && ps[ps.length - 1].materialRelationshipText) || (journal.positionality && journal.positionality.text) || '',
+          visibility: (ps.length && ps[ps.length - 1].visibilityField) || '',
+          obscuring: (ps.length && ps[ps.length - 1].obscuringField) || '',
+          epistemicStatus: (ps.length && ps[ps.length - 1].epistemicStatus) || '',
+          snapshotCount: ps.length,
+        },
+        absentVoices: (journal.absentVoices || []).map(function (a) {
+          return { whoseVoiceText: a.whoseVoiceText, whyAbsentChip: a.whyAbsentChip };
+        }),
+        provenance: {
+          // SIFT pass IS the provenance. Send aggregate counts, not source list
+          // (URLs may carry session metadata; teachers can re-open the Hub to
+          // see the full source list if they need it).
+          totalSources: (journal.sources || []).length,
+          vettedSources: (journal.sources || []).filter(function (s) {
+            return s.sift && (s.sift.tier === 'primary_corroborated' || s.sift.tier === 'secondary_corroborated');
+          }).length,
+          failedSIFT: (journal.sources || []).filter(function (s) {
+            return s.sift && s.sift.tier === 'failed_SIFT';
+          }).length,
+          framingsConsidered: (journal.framings || []).length,
+          framingProbesRun: (journal.framingProbes || []).length,
+        },
+      };
+      try {
+        window.localStorage.setItem('__alloHubEgressToStoryForge', JSON.stringify(payload));
+        // Also fire a custom event so a listening StoryForge module can react
+        // immediately if it's loaded in the same Canvas session.
+        try { window.dispatchEvent(new CustomEvent('alloflow:hub-egress', { detail: { target: 'StoryForge', payload: payload } })); } catch (_) {}
+        setEgress({ ok: true, ts: Date.now() });
+      } catch (e) {
+        setEgress({ ok: false, error: (e && e.message) || 'localStorage write failed' });
+      }
+    };
+
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <ExemplarGate t={t} stageKey="genre_composition" journal={journal} setJournal={setJournal}
@@ -3579,6 +3647,32 @@
               <span aria-hidden="true">{'\u{1F916} '}</span>
               {busy ? (t('humanities.mirroring') || 'Mirroring…') : (t('humanities.mirror_button') || 'Mirror my standpoint against my draft')}
             </button>
+            {latest && (
+              <button type="button" onClick={sendToStoryForge}
+                title={t('humanities.send_to_storyforge_title') || 'Stage this composition for StoryForge to pick up (egress only — StoryForge-side import shipped separately)'}
+                style={{ padding: '10px 18px', borderRadius: '999px',
+                  background: '#7c3aed', color: '#fff', border: 'none',
+                  fontWeight: 800, fontSize: '12px', cursor: 'pointer' }}>
+                <span aria-hidden="true">{'\u{1F4DA} '}</span>
+                {t('humanities.send_to_storyforge') || 'Send to StoryForge'}
+              </button>
+            )}
+          </div>
+        )}
+        {egress && egress.ok && (
+          <div role="status" style={{ padding: '10px 12px', borderRadius: '10px',
+            background: '#f5f3ff', border: '1px solid #c4b5fd',
+            fontSize: '11px', color: '#5b21b6', lineHeight: 1.5 }}>
+            <strong>{'\u{2705} '}{t('humanities.egress_ok') || 'Composition staged for StoryForge.'}</strong>{' '}
+            {t('humanities.egress_ok_detail') ||
+              'Payload (composition + standpoint + foreclosure coda + provenance counts) written to localStorage["__alloHubEgressToStoryForge"]. Open StoryForge in this session to import; the data is your own and stays on this device.'}
+          </div>
+        )}
+        {egress && !egress.ok && (
+          <div role="alert" style={{ padding: '10px 12px', borderRadius: '10px',
+            background: '#fef2f2', border: '1px solid #fca5a5',
+            fontSize: '11px', color: '#7f1d1d' }}>
+            {t('humanities.egress_failed') || 'Could not stage payload: '} {egress.error}
           </div>
         )}
         {aiResult && aiResult.blocked && (<BlockedNote t={t} reason={aiResult.detail || aiResult.blockedReason} />)}

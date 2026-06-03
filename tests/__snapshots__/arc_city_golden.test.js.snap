@@ -196,6 +196,32 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L7
 }
 `;
 
+exports[`Arc City — adjudication + SR narration per level (golden master) > L8 (Logarithm Heights) outcome + narration matrix (snapshot) 1`] = `
+{
+  "climb too strong (a=3,c=0.5,k=1)": {
+    "equation": "y = a·ln(x + c) + k, with a = 3.0, c = 0.5, k = 1.0. A logarithm — a concave climb that rises fast then slows (the mirror of exponential growth).",
+    "narration": "Blocked at the gate (x = 0.5): the beam passed at y = 1, but the opening is y = 1.68 to 1.94. The climb is too low here — raise the climb strength a, lower the shift c (steeper early), or raise the offset k.",
+    "nodeDist": null,
+    "result": "gate",
+    "yAt": 1,
+  },
+  "solution: log climb through all 6 windows (a=2,c=1,k=1)": {
+    "equation": "y = a·ln(x + c) + k, with a = 2.0, c = 1.0, k = 1.0. A logarithm — a concave climb that rises fast then slows (the mirror of exponential growth).",
+    "narration": "Lit! The beam reached the node at (9.5, 5.7). Solved in 1 shot.",
+    "nodeDist": 0,
+    "result": "hit",
+    "yAt": null,
+  },
+  "starting shot, blocked at the first window (a=1.5,c=2,k=0)": {
+    "equation": "y = a·ln(x + c) + k, with a = 1.5, c = 2.0, k = 0.0. A logarithm — a concave climb that rises fast then slows (the mirror of exponential growth).",
+    "narration": "Blocked at the gate (x = 0.5): the beam passed at y = 1.4, but the opening is y = 1.68 to 1.94. The climb is too low here — raise the climb strength a, lower the shift c (steeper early), or raise the offset k.",
+    "nodeDist": null,
+    "result": "gate",
+    "yAt": 1.4,
+  },
+}
+`;
+
 exports[`Arc City — module contract > board readouts for screen readers (snapshot) 1`] = `
 {
   "L1": "Arc City, level: First Light. Author a straight-line beam. The dark node to light is at x 8, y 4. Aim the beam through any gates, over any walls, to reach the node.",
@@ -205,6 +231,7 @@ exports[`Arc City — module contract > board readouts for screen readers (snaps
   "L5": "Arc City, level: Sine Boulevard. Author a sine-wave beam. The dark node to light is at x 9.4, y 4. A gate with an opening from y 6 to 6.9 is at x 1.5. A gate with an opening from y 1.1 to 2 is at x 4.7. A gate with an opening from y 6 to 6.9 is at x 7.85. Aim the beam through any gates, over any walls, to reach the node.",
   "L6": "Arc City, level: Tilt Gates. Author a parabola beam. The dark node to light is at x 8.5, y 0.5. A gate with an opening from y 2.5 to 4.5 is at x 3, which the beam must pass while climbing at a slope near 1.5 (give or take 0.5). A gate with an opening from y 2.5 to 4.5 is at x 7, which the beam must pass while descending at a slope near -1.5 (give or take 0.5). Aim the beam through any gates, over any walls, to reach the node.",
   "L7": "Arc City, level: Exponent Reach. Author an exponential beam that curves toward a floor it never touches. The dark node to light is at x 9.5, y 1.1. A gate with an opening from y 4.2 to 4.5 is at x 1. A gate with an opening from y 2.36 to 2.66 is at x 3. A gate with an opening from y 1.53 to 1.83 is at x 5. A gate with an opening from y 1.15 to 1.45 is at x 7. A gate with an opening from y 1 to 1.3 is at x 9. Aim the beam through any gates, over any walls, to reach the node.",
+  "L8": "Arc City, level: Logarithm Heights. Author a logarithmic beam — a concave climb that rises fast then slows. The dark node to light is at x 9.5, y 5.7. A gate with an opening from y 1.68 to 1.94 is at x 0.5. A gate with an opening from y 2.26 to 2.52 is at x 1. A gate with an opening from y 3.64 to 3.9 is at x 3. A gate with an opening from y 4.45 to 4.71 is at x 5. A gate with an opening from y 5.03 to 5.29 is at x 7. A gate with an opening from y 5.47 to 5.73 is at x 9. Aim the beam through any gates, over any walls, to reach the node.",
 }
 `;
 
@@ -622,6 +649,85 @@ exports[`Arc City — module contract > level geometry (snapshot) 1`] = `
       },
     },
     "title": "Exponent Reach",
+    "walls": [],
+    "world": {
+      "x0": 0,
+      "x1": 10,
+      "y0": 0,
+      "y1": 8,
+    },
+  },
+  {
+    "dx": 0.05,
+    "family": "log",
+    "gates": [
+      {
+        "hi": 1.94,
+        "lo": 1.68,
+        "x": 0.5,
+      },
+      {
+        "hi": 2.52,
+        "lo": 2.26,
+        "x": 1,
+      },
+      {
+        "hi": 3.9,
+        "lo": 3.64,
+        "x": 3,
+      },
+      {
+        "hi": 4.71,
+        "lo": 4.45,
+        "x": 5,
+      },
+      {
+        "hi": 5.29,
+        "lo": 5.03,
+        "x": 7,
+      },
+      {
+        "hi": 5.73,
+        "lo": 5.47,
+        "x": 9,
+      },
+    ],
+    "hint": "Tip: a logarithm climbs fast at first, then slows — concave, the mirror of the exponential. Six narrow windows sit on one such climb: set the climb strength a, the shift c, and the offset k so the slowing curve threads them all.",
+    "id": "L8",
+    "node": {
+      "r": 0.3,
+      "x": 9.5,
+      "y": 5.7,
+    },
+    "paramOrder": [
+      "a",
+      "c",
+      "k",
+    ],
+    "params": {
+      "a": {
+        "default": 1.5,
+        "label": "a  (climb strength — how high it rises)",
+        "max": 3,
+        "min": 1.5,
+        "step": 0.1,
+      },
+      "c": {
+        "default": 2,
+        "label": "c  (shift — smaller = steeper early rise)",
+        "max": 2,
+        "min": 0.5,
+        "step": 0.1,
+      },
+      "k": {
+        "default": 0,
+        "label": "k  (vertical offset)",
+        "max": 2,
+        "min": 0,
+        "step": 0.1,
+      },
+    },
+    "title": "Logarithm Heights",
     "walls": [],
     "world": {
       "x0": 0,

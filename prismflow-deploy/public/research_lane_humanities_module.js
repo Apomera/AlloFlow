@@ -4571,6 +4571,73 @@
         setBusy(false);
       }
     };
+    var _egress = useState(null);
+    var egress = _egress[0];
+    var setEgress = _egress[1];
+    var sendToStoryForge = function() {
+      if (!latest) {
+        window.alert("Save a composition first.");
+        return;
+      }
+      var payload = {
+        version: 1,
+        sourceModule: "ResearchHub",
+        sourceLane: "humanities",
+        ts: Date.now(),
+        composition: {
+          v: latest.v,
+          genre: latest.genreChoice,
+          bodyText: latest.bodyText,
+          foreclosureCodaText: latest.foreclosureCodaText,
+          foreclosureCodaHash: latest.foreclosureCodaHash,
+          publicAccountabilityTarget: latest.publicAccountabilityTarget,
+          publicAccountabilityNote: latest.publicAccountabilityNote
+        },
+        question: {
+          title: journal.questionTitle || "",
+          stakesAudience: journal.stakesAudience && journal.stakesAudience.label || journal.stakesAudience && journal.stakesAudience.chip || ""
+        },
+        position: {
+          text: journal.humanitiesPosition && journal.humanitiesPosition.text || "",
+          label: journal.humanitiesPosition && journal.humanitiesPosition.label || "",
+          whatThisClaimDoesNotSpeakTo: journal.humanitiesPosition && journal.humanitiesPosition.whatThisClaimDoesNotSpeakTo || ""
+        },
+        standpoint: {
+          materialRelationship: ps.length && ps[ps.length - 1].materialRelationshipText || journal.positionality && journal.positionality.text || "",
+          visibility: ps.length && ps[ps.length - 1].visibilityField || "",
+          obscuring: ps.length && ps[ps.length - 1].obscuringField || "",
+          epistemicStatus: ps.length && ps[ps.length - 1].epistemicStatus || "",
+          snapshotCount: ps.length
+        },
+        absentVoices: (journal.absentVoices || []).map(function(a) {
+          return { whoseVoiceText: a.whoseVoiceText, whyAbsentChip: a.whyAbsentChip };
+        }),
+        provenance: {
+          // SIFT pass IS the provenance. Send aggregate counts, not source list
+          // (URLs may carry session metadata; teachers can re-open the Hub to
+          // see the full source list if they need it).
+          totalSources: (journal.sources || []).length,
+          vettedSources: (journal.sources || []).filter(function(s) {
+            return s.sift && (s.sift.tier === "primary_corroborated" || s.sift.tier === "secondary_corroborated");
+          }).length,
+          failedSIFT: (journal.sources || []).filter(function(s) {
+            return s.sift && s.sift.tier === "failed_SIFT";
+          }).length,
+          framingsConsidered: (journal.framings || []).length,
+          framingProbesRun: (journal.framingProbes || []).length
+        }
+      };
+      try {
+        window.localStorage.setItem("__alloHubEgressToStoryForge", JSON.stringify(payload));
+        try {
+          window.dispatchEvent(new CustomEvent("alloflow:hub-egress", { detail: { target: "StoryForge", payload } }));
+        } catch (_) {
+        }
+        setEgress({ ok: true, ts: Date.now() });
+      } catch (e) {
+        setEgress({ ok: false, error: e && e.message || "localStorage write failed" });
+      }
+    };
     return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "12px" } }, /* @__PURE__ */ React.createElement(
       ExemplarGate,
       {
@@ -4702,7 +4769,41 @@
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F916} "),
       busy ? t("humanities.mirroring") || "Mirroring\u2026" : t("humanities.mirror_button") || "Mirror my standpoint against my draft"
-    )), aiResult && aiResult.blocked && /* @__PURE__ */ React.createElement(BlockedNote, { t, reason: aiResult.detail || aiResult.blockedReason }), aiResult && !aiResult.blocked && aiResult.data && /* @__PURE__ */ React.createElement(AiResultPanel, { t, data: aiResult.data, primitives, journal }));
+    ), latest && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: sendToStoryForge,
+        title: t("humanities.send_to_storyforge_title") || "Stage this composition for StoryForge to pick up (egress only \u2014 StoryForge-side import shipped separately)",
+        style: {
+          padding: "10px 18px",
+          borderRadius: "999px",
+          background: "#7c3aed",
+          color: "#fff",
+          border: "none",
+          fontWeight: 800,
+          fontSize: "12px",
+          cursor: "pointer"
+        }
+      },
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4DA} "),
+      t("humanities.send_to_storyforge") || "Send to StoryForge"
+    )), egress && egress.ok && /* @__PURE__ */ React.createElement("div", { role: "status", style: {
+      padding: "10px 12px",
+      borderRadius: "10px",
+      background: "#f5f3ff",
+      border: "1px solid #c4b5fd",
+      fontSize: "11px",
+      color: "#5b21b6",
+      lineHeight: 1.5
+    } }, /* @__PURE__ */ React.createElement("strong", null, "\u2705 ", t("humanities.egress_ok") || "Composition staged for StoryForge."), " ", t("humanities.egress_ok_detail") || 'Payload (composition + standpoint + foreclosure coda + provenance counts) written to localStorage["__alloHubEgressToStoryForge"]. Open StoryForge in this session to import; the data is your own and stays on this device.'), egress && !egress.ok && /* @__PURE__ */ React.createElement("div", { role: "alert", style: {
+      padding: "10px 12px",
+      borderRadius: "10px",
+      background: "#fef2f2",
+      border: "1px solid #fca5a5",
+      fontSize: "11px",
+      color: "#7f1d1d"
+    } }, t("humanities.egress_failed") || "Could not stage payload: ", " ", egress.error), aiResult && aiResult.blocked && /* @__PURE__ */ React.createElement(BlockedNote, { t, reason: aiResult.detail || aiResult.blockedReason }), aiResult && !aiResult.blocked && aiResult.data && /* @__PURE__ */ React.createElement(AiResultPanel, { t, data: aiResult.data, primitives, journal }));
   }
   function LaneRoot(props) {
     var ctx = props.ctx;
