@@ -557,12 +557,233 @@ The three signals stay visible *and crop-resistant* without clutter, by living w
 
 ---
 
+## 16. Sourced provenance — external & benchmark data
+
+> *Synthesizes four critiqued facets (data-model, AI-assist, render, curated-spine) into one specification for a fourth provenance — external/benchmark facts such as ORF norms, percentiles, and literature statistics. Decisive picks where facets conflicted; every critic finding folded in. Added 2026-06-02. The kernel function names below were re-verified against the real bytes of `stem_lab/stem_tool_lumen.js` (the Phase-1 33-test-green pure core).*
+
+### 16.1 Why Sourced is a fourth, *orthogonal* provenance — and the one rule that keeps it honest
+
+The L0–L3 ladder answers exactly one question: **how was *this number* produced from the researcher's own data?** Observed (L0) → Derived by Lumen's math (L1) → AI-reorganized (L2) → AI-reading (L3). A **pulled fact** — "the Hasbrouck & Tindal 2017 grade-4 winter 50th-percentile ORF is 120 words/min" — does not belong anywhere on that ladder, because its truth was **never produced from this child's dots at all.** Its truth lives in a **citation.** A national norm is not "more certain than an AI reading" or "less certain than an observation"; it is a *different kind* of claim whose warrant is an external source you can open and check.
+
+So Sourced is a **second, orthogonal axis**, keyed `'SRC'`, kept **out of the `LEVELS` array**. This is not cosmetic: keeping `LEVELS = ['L0','L1','L2','L3']` means `levelIndex`, `aiAllowed`, and the export `maxLevel` math are structurally blind to a benchmark — the AI dial can never touch it, and a benchmark can never inflate the AI level of an export. The ship-gate already pins this (`check_lumen_floor.cjs:30` asserts `LEVELS` unchanged; `:34` asserts `caution` is L3-only) — the orthogonal-`'SRC'` choice is the one design that slots in without breaking either assertion or the `encodes every level` golden snapshot (which maps over `LEVELS`, never over `'SRC'`).
+
+**The one rule that keeps it honest** (the worst case is a parent or IEP team reading the norm line as *the child's score* — "she's at 120!"): a Sourced fact is **structurally never the student's data, in all four channels at once.**
+1. **Data-model separation** — a Sourced fact lives in `comp.sourceRefs[]`, a *separate array* from `comp.observations[]`. Because `deriveTrendClaim` and `markDirty` read only `observations`, a benchmark **cannot** be regressed through, re-derived, or listed as a student data row. The misread is impossible by construction, not styled-away.
+2. **Render separation** — the benchmark draws as a **line with no data marker** (no `<circle>`). The marker's *absence* is load-bearing and survives grayscale, print, and a crop.
+3. **Sentence separation** — every Sourced sentence is hard-prefixed `External benchmark (not this student): …` with the **full norm key inline**, exactly the way `trendSentence` already burns `across these 6 of 10 probes`. The prefix is *content*, not CSS, so it travels through copy/paste, the SR peer, and a one-mark crop.
+4. **Face separation** — the Family face states the norm as *"where a typical 4th-grade reader is in winter"* and **never blends it into the child's growth sentence.**
+
+### 16.2 The data model — the Sourced element, the citation, the verification state, and how it slots into the built kernel
+
+**The atom** — `sourceRef`, parallel to an `observation`, never pushed into `comp.observations`:
+
+```js
+sourceRef = {
+  id: 'src1',                 // makeSourceRef assigns 's'+seq, mirroring addObservation's 'o'+seq
+  provenance: 'SRC',          // the orthogonal origin (NOT a member of LEVELS)
+  kind: 'percentile',         // v1: 'percentile' | 'cut-point'.  ('aimline-target','growth-norm' = Phase 2)
+  measure: 'ORF-WCPM',        // an ENUMERATED measure code — must equal comp.measure (refuse, not warn)
+  unit: 'words/min',          // must equal comp.unit (refuse on mismatch)
+  grade: 4, season: 'winter', percentile: 50,   // the load-bearing KEY (mis-key = mis-apply)
+  value: 120,                 // the y the reference line sits at — LOOKED UP, never user-typed (curated path)
+  // ── the citation record: a citation is the truth-bearer; no citation => no existence ──
+  source: 'Hasbrouck & Tindal', year: 2017,
+  population: 'national compiled (DIBELS / DIBELS Next / easyCBM)',
+  table: 'Tech. Rpt. 1702 — Grade 4',                 // the SPECIFIC cell used (anti-misapplication)
+  locator: 'https://files.eric.ed.gov/fulltext/ED594994.pdf',  // resolvable URL/DOI/report# — MANDATORY
+  citation: 'Hasbrouck, J. & Tindal, G. (2017). An update to compiled ORF norms (Tech. Rpt. 1702). U. of Oregon, BRT.',
+  keyLabel: 'H&T 2017 · G4 · winter · 50th %ile · national compiled',  // printed inline on chart + sentence
+  // ── verification state ──
+  verified: true,             // curated spine = true; AI-retrieved (Phase 2) = false by construction
+  retrievedBy: 'curated',     // 'curated' | 'ai-search'
+  reviewedOn: '2026-06-02',   // when a human signed THIS cell against the source (see §16.3)
+  _hash: cyrb53(JSON.stringify([     // EVERY truth-bearing field — folds in the critics' "hash too narrow" fix
+    measure, grade, season, percentile, value, unit,
+    source, year, population, table, locator, citation
+  ]))
+};
+```
+
+**Slots into the built kernel by *additive widening* of named functions — no rewrites, every new param trailing-optional:**
+
+| Real function | Extension | Empty-`sourceRefs` behaviour |
+|---|---|---|
+| `encode(level, palette)` | add `GRAMMAR.SRC` + `GRAMMAR['SRC-U']` (unverified) sibling keys, add `pal.reference` to `DEFAULT_PALETTE`, return `isReference: g.reference === true` so the render layer knows to draw a line not a dot. `LEVELS` is **untouched.** | unchanged — `'SRC'` reached only via `encode('SRC')` |
+| `plotGeometry(observations, claim, box, sourceRefs)` | new trailing arg; reuse the existing internal `sx`/`sy` closures to emit a new `refLines:[{ id, sy, dPath, label, bundle, verified }]` field; expand the y-window to include each `value` so a high norm never clips. `points`/`trendPath`/`bandPath`/`phaseLines`/`xTicks`/`yTicks` **byte-identical.** | `refLines: []` — output diffs only by gaining one empty key |
+| `dataTableModel(observations, claim, sourceRefs)` | append `{ reference:true, label:'External benchmark (not this student): …', verified }` rows **after** the data rows, reusing the existing `{boundary:true}` row branch in the table render | no reference rows emitted |
+| `chartSummaryText(observations, claim, sourceRefs)` | append one clause per ref naming the benchmark, its key, and the "not this student's data" status | unchanged |
+| `faceFor(claim, audience)` | leave claim faces untouched; add sibling `sourcedFace(ref, audience)` (working / iep-team / family) | n/a |
+| `assertDefensible(req)` | add sibling `assertSourcedDefensible(req)`; both fold into **one** `assertExportClean(req)` (see §16.4) | returns `{ok:true}` with no refs |
+| `buildExportHtml` / `buildExportCsv` | add an escHtml'd **"References"** section / aggregate benchmark rows; route both through `assertExportClean` | no References section |
+| `makeCompendium(variable, unit, meta)` | add `sourceRefs:[]`, `_srcSeq:0`, and **`measure`/`grade`/`seasonWindow`** to the returned object; `schemaVersion` 1→2 (defensive read for v1 docs) | a v1 compendium reads as before |
+
+**The new `GRAMMAR` entries** (verified to pass `check_lumen_floor.cjs:34` because `caution:false`):
+
+```js
+GRAMMAR.SRC   = { label:'Sourced — verified', glyph:'▣', opacity:1.00, dash:'2 4', texture:'reference', caution:false, reference:true };
+GRAMMAR['SRC-U'] = { label:'Sourced — AI-retrieved, UNVERIFIED — check the source',
+                     glyph:'▢', opacity:1.00, dash:'1 4', texture:'reference', caution:false, reference:true }; // Phase 2 only
+DEFAULT_PALETTE.reference = '#0e7490';   // reserved teal — NOT pal.neutral (student ink), NOT pal.caution (L3 amber)
+```
+
+### 16.3 The curated norm spine — the default, and the only thing that renders in v1
+
+The spine is a small, hand-keyed, **citation-complete** table that Lumen *owns* (the repo's `FLUENCY_BENCHMARKS` is grade×season single-value with no percentile / year / citation metadata, and — critically — gives **G4 winter = 112**, a *different, non-percentile* number; it must **not** seed the spine. See the risk ledger). The norm-record shape and the honest seed:
+
+```js
+NORM_SPINE = {
+  schemaVersion: 1, source: 'Hasbrouck & Tindal', year: 2017, edition: '2017 compiled (Tech. Rpt. 1702)',
+  measure: 'ORF-WCPM', unit: 'words/min', population: 'national compiled (DIBELS/DIBELS Next/easyCBM)',
+  citation: 'Hasbrouck, J. & Tindal, G. (2017). An update to compiled ORF norms (Tech. Rpt. 1702). U. of Oregon, BRT.',
+  locator: 'https://files.eric.ed.gov/fulltext/ED594994.pdf',
+  gradeRange: [1, 6],     // EXPLICIT — H&T does NOT cover K (no spring ORF) or 7/8. selectNorm REFUSES outside it.
+  reviewedOn: null,       // set ONLY after a human transcribes every cell against ED594994 (release blocker — §16.7)
+  cells: { /* cells[grade][season] = {p50, p25, wg}; values transcribed + double-checked before reviewedOn is set */ }
+};
+```
+
+> **The year is load-bearing and stays in the key.** `H&T 2017` is the current compiled edition; `1992`/`2006` differ materially and DIBELS-8 (2020) uses *cut-points*, not percentiles. The edition + `reviewedOn` print in the chip and the export footer so staleness is **visible**, not invisible metadata. **Only one edition per measure ships live** — never two contradictory tables.
+
+**Right-norm selection + mis-selection prevention** — the #1 domain hazard is a norm *correct in the abstract, wrong in context.* Three structural defenses:
+- **Keyed lookup, never free-text.** `selectNorm(NORM_SPINE, { measure, grade, season, percentile })` is a pure *lookup*; the value is never typed. This eliminates the transcription-error class for the curated path.
+- **Refuse — not warn — on hard mismatch** (folds in every render/curated critic): `selectNorm` returns `{ ok:false, refused:true, hazard }` and **draws nothing** when (a) `measure` ≠ `comp.measure` (an *enumerated code*, not a unit string — catches "right unit, wrong construct," e.g. maze vs ORF), (b) `unit` ≠ `comp.unit`, (c) `grade` outside `gradeRange`, or (d) the cell value is `null` (e.g. G1 fall). **Season is never inferred** from the x-window — it is a *mandatory explicit pick* (the Jan-vs-spring error is the most common real one, so the picker forces it).
+- **Auto-bind PRE-FILLS, never finalizes.** The picker pre-fills `grade`/`season` from `comp.grade`/`comp.seasonWindow` (now real fields, §16.2) for human confirmation; it never silently selects a cell, because a wrong `comp.grade` would otherwise launder the wrong norm as authoritative.
+
+**The King 8th-grade pilot is the concrete case the refusal is built for.** H&T tops out at G6, so a G7/G8 request **hard-refuses** with a pointer: *"H&T 2017 covers grades 1–6; grade 8 is out of range. Use a DIBELS-8 cut-point table or a constructed aimline."* The tool *knows the gap* rather than extrapolating a plausible-but-wrong line. **Consequence, decided:** v1 ships a second curated **DIBELS-8 ORF cut-point** entry covering G7/G8 (`kind:'cut-point'`) so the pilot's flagship overlay actually exists for its own classroom — *not* deferred (a spine empty for the only grades the pilot serves would mean the safe path doesn't exist for the real users).
+
+**Updatability** — bump `year`/`edition`/`cells`/`locator`/`reviewedOn` together; the `_hash` over every truth-bearing field means any cell edit invalidates a stale verification automatically.
+
+### 16.4 AI-assist-then-verify — **Phase 2**, specified now so the seam is right
+
+AI-search is a strictly-optional *"help me find it"* assist, never the default, and **cut from v1.0** (it concentrates every hallucination and screenshot-laundering risk, and the policy already calls it assist-only). It is specified here so v1's seams are correct and the critics' real-API corrections are recorded.
+
+**Flow (Phase 2):** `findNormViaAI(query)` builds a **PII-free, numberless** retrieval request (only `measure/grade/season/percentile` — leaner than `buildClaimContext`, zero student data) and calls the **real** signature:
+
+```js
+callGemini(prompt, /*jsonMode*/ true, /*useSearch*/ true, /*temperature*/ 0.2)
+// on useSearch the return is { text, groundingMetadata } — NOT a string (gemini_api_source.jsx:140–146)
+```
+
+**Two corrections the critics verified against real bytes (do not repeat the facets' errors):**
+1. There is **no 5th `searchQuery` arg** that does anything — the query *is* the prompt; the provider derives any sub-query internally. The signature is 4 meaningful args here.
+2. **`processGrounding` is NOT a `{url,title}` extractor** — it returns *annotated prose + an optional bibliography string.* Resolvable locators live in **`result.groundingMetadata.groundingChunks[].web.{uri,title}`**; read those directly (and a locator must come from a real chunk, never model free-text).
+
+**Always-unverified by construction.** The result is a **candidate**, never a `sourceRef` with `verified:true` — the AI has *no code path* to set `verified:true`. It is marked `Sourced — AI-retrieved, UNVERIFIED — check the source`, and:
+- **It does not draw on the chart and does not print its load-bearing number** until a human opens the locator. (This closes the screenshot-laundering hole *at the source* — an unverified line/number that never reaches pixels can't be screenshotted past the gate. The candidate lives in a verify panel showing citation + locator, value revealed only after the human opens the source.)
+- A null/absent `groundingMetadata` (best-effort and nullable even with `useSearch=true`) → **no resolvable locator → born already-failing**, value never shown.
+
+**Human-verify + sign-off (reuses the L3 mechanism verbatim).** Opening the locator and clicking *"Verify against source"* sets `verified:true`, stamps `reviewedOn`, and stores `sourceSignoff[id] = sourcedSignoffHash(ref)` over **every truth-bearing field**. Editing *any* of them (value, citation, **population**, year, locator…) changes `_hash`, orphans the signoff, and **re-blocks** — exactly like a regenerated `aiHyps` invalidates `signoff`.
+
+**The hard block.** `assertSourcedDefensible(req)` returns the same `{ ok, blocked, need, reason }` contract as `assertDefensible`. Both are folded into **one** export entry point — **`assertExportClean(req)`** — that ANDs them and through which **every** artifact (HTML *and* CSV, present + future) must route. (Today `buildExportCsv` has *no* defensible gate; the unified entry point closes that ungated path.) `verified:false` everywhere is treated as unverified, **including a `stale` (edited-after-signoff) ref** — stale is unverified, not "verified-but-edited," so a stale number is hidden everywhere, not just at the export boundary.
+
+### 16.5 The benchmark reference line — render, chip, SR peer, color/contrast
+
+**Distinct from data, trend, and band, by construction:**
+- **Channel:** reserved **teal `#0e7490`** + dotted-dash **`'2 4'`** + flag glyph **`▣`** — neither the solid L0/L1 student ink (`pal.neutral`) nor the L3 amber+hatch (`pal.caution` + `hatch45`, dash `'6 3'`). Four dash vocabularies now coexist (data solid, phase `'2 3'`, band fill, reference `'2 4'`); because dash-as-meaning degrades for low-vision and is invisible to SR users, **every** distinction is also carried in the SR peer and summary text (below).
+- **No data marker.** `plotGeometry` emits the benchmark in `refLines[]` as a `dPath`, never in `points[]` — so it is impossible to read it as a measurement at the mark level.
+- **Layer order:** gridlines → band → **reference line** → phase lines → trend → data points (data on top).
+
+**The citation chip** is a real focusable element: an accessible group named with `keyLabel`, and the locator a real `<a>` whose `href` is **escHtml'd AND scheme-allowlisted to http/https** (a `javascript:` locator from any pasted/AI text is *blocked*, not merely escaped — the symbol_studio `printBook` href/scheme lesson). The flag `▣` must **never clip** (it is the print/grayscale fallback channel); confirm `▣`/`▢` (U+25A3/U+25A2, both BMP) render in the Canvas font stack rather than tofu.
+
+**SR / data-table peer** (the design's strongest dimension — keep it). `dataTableModel` prepends/appends a labeled `{ reference:true }` row peer to the existing `{ boundary:true }` phase rows: *"External benchmark (not this student): H&T 2017 G4 winter 50th = 120 words/min [verified]"* — and the row label **carries the verify state in words** (`[verified]` / `[UNVERIFIED — check the source]`), so an SR user hears the trust status, not just sighted users. `chartSummaryText` (which **is** the SVG `role="img"` `aria-label`) names every benchmark aloud with its full key and the not-this-student clause. **Do not** promise a per-line `aria-label` — children of a `role="img"` subtree are atomic and would be swallowed; the summary + the table row are the real SR channels.
+
+**Color/contrast (asserted-but-wrong figures corrected).** Teal `#0e7490` on white is **≈3.9:1**, which **passes** WCAG 1.4.11's 3:1 bar for the **1.5px line and the glyph** but **fails** 4.5:1 for normal text. Therefore **chip text is near-black `#0f172a`; teal is used only for the line, border, and glyph.** `markOpacity` is 1.0 (a benchmark is a fact, never faded) and clamped above `OPACITY_FLOOR`. A new `check_lumen_floor.cjs` assertion pins that `pal.reference` is non-caution and color-distinct (Δ from both neutral and caution) across shipped palettes.
+
+### 16.6 The no-external-data default — strictly opt-in, fully robust with none
+
+**`comp.sourceRefs` starts `[]` and the tool is 100% functional with zero benchmarks.** Every widened function is **byte-identical** to today on the empty array: `plotGeometry` returns `refLines:[]` and an otherwise unchanged object; `dataTableModel`/`chartSummaryText` emit no reference content; `encode` is reached for `'SRC'` only when a ref exists. The deterministic-L1, n<3-refusal, graceful-fallback "no-AI / no-external" path remains the robust default — Sourced never degrades it.
+
+**The regression test that pins it** (added to the golden-master suite + `check_lumen_floor.cjs`):
+
+```js
+// EMPTY-SOURCED INVARIANCE — the no-external-data default must not move.
+const g0 = L.plotGeometry(comp.observations, claim, undefined);          // pre-Sourced call shape
+const g1 = L.plotGeometry(comp.observations, claim, undefined, []);      // new arg, empty
+delete g1.refLines;                                                      // the only permitted new key
+ok(JSON.stringify(g0) === JSON.stringify(g1), 'empty sourceRefs must leave plotGeometry byte-identical');
+ok(JSON.stringify(L.dataTableModel(comp.observations, claim)) ===
+   JSON.stringify(L.dataTableModel(comp.observations, claim, [])),       'empty sourceRefs must leave the SR peer byte-identical');
+ok(JSON.stringify(L.LEVELS) === JSON.stringify(['L0','L1','L2','L3']),   'SRC must NOT enter LEVELS');
+```
+
+### 16.7 v1.x scope — decisive
+
+**SHIPS (v1.0 — curated-only, zero `callGemini`):**
+- `GRAMMAR.SRC` + `pal.reference`, `encode('SRC')` with `isReference`; `LEVELS` untouched.
+- `sourceRefs[]` on the compendium (physically separate from `observations`); `makeSourceRef`/`addSourceRef` mirroring the `'o'+seq` id pattern; `comp.measure`/`grade`/`seasonWindow` (schema 1→2, defensive read).
+- The **curated spine**: H&T 2017 ORF percentiles **G1–G6** (`kind:'percentile'`) **plus one DIBELS-8 G7/G8 cut-point** entry (`kind:'cut-point'`) so the King pilot has an in-range source. Each cell **byte-transcribed and double-checked against ED594994** before `reviewedOn` is set — a **release blocker**.
+- `selectNorm` keyed lookup with **hard refuse** on measure/unit/grade-range/null-cell mismatch; **mandatory explicit season** (no inference); auto-bind **pre-fills only**.
+- **One** flat horizontal reference line at a time (default = the p50 aimline for the chart's season; 25th available as the "some-risk" floor) — a one-active-reference cap kills the benchmark-vs-benchmark misread.
+- `plotGeometry` `refLines`, `dataTableModel` `{reference:true}` peer (with verify-state in words), `chartSummaryText` benchmark clause, `sourcedFace` (working/iep-team/family) with the **population caveat inline** ("a national reference, not an individualized goal").
+- One unified **`assertExportClean`** gate through which **both** `buildExportHtml` and `buildExportCsv` route; benchmarks rendered in an escHtml'd + scheme-allowlisted **"References"** section; `maxLevel` unchanged (Sourced reported on a separate footer line: *"External references: N verified"*).
+- New `check_lumen_floor.cjs` assertions (LEVELS-unchanged, SRC-non-caution + color-distinct, empty-Sourced invariance, fronted-cell-equals-published-value) + golden-master cell snapshot of the spine.
+
+**CUT (explicit, folding every critic's cut):**
+- **The entire AI-search assist** (`findNormViaAI`, grounding extraction, the candidate state machine, `assertSourcedDefensible`, the on-line UNVERIFIED stamp) → **Phase 2**, behind a golden-master extension, using the corrected `callGemini`/`groundingChunks` APIs (§16.4). Because v1 renders **only verified** lines, screenshot-laundering of an unverified number is *structurally impossible* and no on-line UNVERIFIED stamp is needed this round.
+- **`aimline-target` and `growth-norm` kinds** (sloped/constructed lines) — the slope-vs-source provenance-blending question is unresolved and `plotGeometry` draws horizontal lines only; ship `percentile` + `cut-point`. The killer use case is fully served by a horizontal reference line.
+- **Seeding from the repo `FLUENCY_BENCHMARKS`** — it injects a wrong number (112 ≠ the H&T 50th-percentile). Hand-key from the primary source instead.
+- **Season inference** from the x-window; **silent auto-bind**; the **per-SVG-line `aria-label`** promise.
+
+### 16.8 Risk ledger (top four + the mitigating decision)
+
+| # | Risk | Mitigating decision (decided) |
+|---|---|---|
+| **S1** | **Screenshot/print launders an unverified number** — the export gate never fires on a Canvas screenshot, and an unverified line in the same teal channel reads as authoritative external *fact* (worse than an L3 reading). | **v1 renders only `verified` curated lines** — an unverified number never reaches pixels. When the AI path lands (Phase 2), the candidate value is **hidden until a human opens the locator** and never auto-draws; gate the *line*, not just the file. |
+| **S2** | **"Verified" conflates "from our table" with "the number is correct."** A hand-recalled cell with a real citation stapled on is the worst laundering — and the facets' headline number (G4 winter = 120) was *recalled, not byte-checked*, and the repo's own table says 112. | **`verified` means "a human signed THIS cell against the source."** Every spine cell is byte-transcribed + independently double-checked against ED594994 and snapshot-pinned **before `reviewedOn` is set**; a wrong cell is a **release blocker**, not an open tension. A `check_lumen_floor` assertion pins the fronted cell against the published value. |
+| **S3** | **Misapplication** — right number, wrong *grade/season/measure/population/year* (the #1 domain hazard). | **Keyed lookup + refuse-not-warn** on out-of-range grade / wrong unit / **wrong enumerated measure code** (catches right-unit-wrong-construct) / null cell; **mandatory explicit season** (no inference); **population caveat inline** in the iep-team & family faces; **edition + `reviewedOn` in the chip + footer** so staleness is visible; **G7/G8 hard-refuse → DIBELS-8/aimline** for the King pilot. |
+| **S4** | **Two contradictory ORF tables ship in one product** (`FLUENCY_BENCHMARKS` G4-winter=112 vs the spine's 120) — a clinician sees conflicting "benchmarks." | The spine **does not seed from** `FLUENCY_BENCHMARKS`; the two are **date+namespaced** (the legacy table is the fluency-module's own non-percentile median; the spine is the citable H&T 2017 percentile set) so the discrepancy is *explained*, not duplicated. Reconciling/deprecating the legacy table is a tracked follow-up. |
+
+### 16.9 Pure-function contracts to build next (brains-first, golden-master pinned)
+
+Net-new `LumenCore` exports for the v1.0 (curated-only) slice. All pure, Node-requirable, no DOM, deterministic (no `Date`/`Math.random`). Build + snapshot these *before* any render wiring, the same brains-first pattern that put 33 tests green.
+
+```js
+// ── spine + selection ──
+NORM_SPINE                                  // the curated, citation-complete table (data, release-gated)
+DIBELS8_ORF                                 // the curated G7/G8 cut-point table (data, release-gated)
+selectNorm(spine, { measure, grade, season, percentile })
+  -> { ok:true, ref:<sourceRef> }
+   | { ok:false, refused:true, hazard:'wrong-measure'|'wrong-unit'|'out-of-range'|'no-cell', reason:string }
+
+// ── the atom ──
+makeSourceRef(spec, comp)                   // builds + validates a sourceRef; THROWS on missing citation/locator
+                                            //   or measure/unit mismatch; computes keyLabel + _hash. -> sourceRef
+addSourceRef(comp, ref)                     // comp._srcSeq+=1; ref.id='s'+seq; comp.sourceRefs.push(ref) -> id
+sourcedRenderable(ref)                      // false (announceably, never silently) if citation/locator absent
+                                            //   or locator scheme not http/https -> { ok:bool, reason:string }
+
+// ── encoding (the one encode() widening + a hue check) ──
+encode('SRC' | 'SRC-U', palette)            // -> bundle incl. { ink:pal.reference, isReference:true, caution:false }
+referenceContrastOK(palette)                // -> bool: pal.reference is Δ-distinct from neutral AND caution
+
+// ── geometry + peers (the trailing-optional widenings) ──
+plotGeometry(observations, claim, box, sourceRefs)      // adds refLines:[{id,sy,dPath,label,bundle,verified}]
+dataTableModel(observations, claim, sourceRefs)         // adds {reference:true,label,verified} rows (state in words)
+chartSummaryText(observations, claim, sourceRefs)       // appends one not-this-student benchmark clause per ref
+benchmarkChipText(ref)                                  // -> 'External benchmark (not this student): '+keyLabel+' = '+value+' '+unit
+
+// ── faces + the unified export gate ──
+sourcedFace(ref, audience)                  // 'working' | 'iep-team' (full citation + population caveat) | 'family'
+sourcedSignoffHash(ref)                     // cyrb53 over EVERY truth-bearing field (Phase-2 verify; defined now)
+assertSourcedDefensible(req)                // {ok,blocked,need,reason} — Phase-2 (no-op pass in v1: all verified)
+assertExportClean(req)                      // ANDs assertDefensible + assertSourcedDefensible; THE export entry point
+```
+
+**Build order:** (1) `NORM_SPINE`/`DIBELS8_ORF` data + cell golden-master + fronted-cell-vs-published assertion; (2) `selectNorm` + refusal tests; (3) `makeSourceRef`/`addSourceRef`/`sourcedRenderable`; (4) `encode('SRC')` + `referenceContrastOK` + the LEVELS-unchanged + empty-Sourced invariance assertions; (5) the four geometry/peer/face widenings; (6) `assertExportClean` routing both export builders. Then wire the render.
+
+---
+
+**Bottom line:** §16 lets Lumen **pull external stats safely — or use none at all.** The curated, byte-checked, citation-mandatory spine renders external benchmarks in their own channel, structurally separate from the student's data, refusing the wrong norm rather than drawing it; the no-external-data path stays the robust default; and the AI-retrieval assist is deferred behind the same proven sign-off gate — so this adds a fourth provenance **without reopening the overclaim debt.**
+
+---
+
 ## Appendix — provenance of this document
 
-This design was produced over several maintainer conversations and **three multi-agent design workflows** (2026-06-02):
+This design was produced over several maintainer conversations and **four multi-agent design workflows** (2026-06-02):
 1. *alloflow-datacanvas-vision* (14 agents): grounded the concept in the real architecture + practitioner reality + product-evolution landscape; produced the reactive-research-canvas thesis, the provenance-bound-claim primitive, and the dashboard-monitors/Lumen-argues positioning.
 2. *lumen-probabilistic-engine* (11 agents): designed the epistemic ladder, the AI-involvement dial, the unified certainty grammar, the uncertainty-first stats layer, and the anti-laundering floor, each adversarially critiqued and grounded in a verified code audit.
 3. *lumen-ux-and-feasibility* (11 agents): a read-only feasibility spike into the real `dataplot` internals + a 4-approach UX panel (single-canvas / three-pane / document / single-column), adversarially critiqued. Produced §15 (UX & interaction — the "Living Brief" lane) and a set of feasibility-verified corrections folded back into §4.1, §6.2, §6.4, §7, §9, §10.3–§10.4, §11, §12, and §13 (net verdict: *buildable-with-cuts* — no assumption fatally refuted; the "extends dataplot" framing sharpened to "injects + re-derives," and the delete-on-Enter per-mark group flagged for replacement).
+4. *lumen-sourced-provenance* (grounded against the built Phase-1 kernel + 4 critiqued facets: data-model / AI-assist / render / curated-spine): produced §16 (Sourced — the fourth, orthogonal provenance for external & benchmark data). Decisive synthesis verdict *buildable-with-cuts*: cut the AI-search path, the sloped-aimline kind, and `FLUENCY_BENCHMARKS` seeding to Phase 2/never; ship a curated-only, byte-checked, citation-mandatory H&T-2017 + DIBELS-8 spine that renders verified horizontal benchmarks in their own teal/`▣` channel, physically separate from `comp.observations`, refusing the wrong norm rather than drawing it. Folded-in critic fixes: render-only-verified closes the screenshot hole; `verified` redefined as a human cell sign-off (not table-membership); the signoff hash widened to every truth-bearing field; one unified `assertExportClean` gates both export sinks; corrected the fictional `callGemini` 5th-arg + `processGrounding`-as-extractor errors (read `groundingMetadata.groundingChunks[].web` directly); corrected the asserted teal contrast (≈3.9:1 — line/glyph only, chip text near-black).
 
 The compendium/view separation (§4) and the control surface (§10) were added 2026-06-02 as direct design refinements from follow-up discussion (no workflow); the document was then reflowed into this textbook ordering (compendium/view promoted to §4 after the core primitive; controls placed at §10 after UDL), with all `§` cross-references updated.
 

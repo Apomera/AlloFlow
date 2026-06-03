@@ -299,3 +299,168 @@ describe('Lumen — AI-involvement layer guards (Phase 1, §6.1/§6.3/§6.6/§7)
     expect(L.faceFor(claim, 'family')).not.toMatch(/tier|percentile|grade level/i); // no jargon/overclaim to a parent
   });
 });
+
+describe('Lumen — export, FERPA gate & L3 sign-off (Phase 1, §7/§8)', () => {
+  const { comp } = buildReyna(REYNA);
+  const claim = L.deriveTrendClaim(comp, { id: 'full' });
+  const hyps = L.validateHypotheses([
+    { text: 'Tier-2 block reduced off-task time.', kind: 'effect', rank: 1 },
+    { text: 'Regression to the mean — early weeks were low.', kind: 'null', rank: 2 }
+  ]).hypotheses;
+
+  it('escHtml neutralizes an injection in any exported field', () => {
+    expect(L.escHtml('<script>alert(1)</script>&"\'')).toBe('&lt;script&gt;alert(1)&lt;/script&gt;&amp;&quot;&#39;');
+  });
+
+  it('the HTML brief is XSS-safe even with a hostile variable name (the printBook lesson)', () => {
+    const evil = L.makeCompendium('WCPM<img src=x onerror=alert(1)>', 'w/min');
+    REYNA.forEach(p => L.addObservation(evil, p));
+    const out = L.buildExportHtml(evil, L.deriveTrendClaim(evil, {}), { audience: 'iep-team' });
+    expect(out.html).not.toMatch(/<img src=x onerror/);
+    expect(out.html).toMatch(/&lt;img src=x onerror/);
+  });
+
+  it('an IEP-team export is BLOCKED with an unsigned AI reading; owning it unblocks; a stale sign-off re-blocks', () => {
+    expect(L.assertDefensible({ audience: 'working', aiHyps: hyps, signoff: null }).blocked).toBe(false); // not gated
+    expect(L.assertDefensible({ audience: 'iep-team', aiHyps: hyps, signoff: null }).blocked).toBe(true);
+    const sig = L.signoffHash(hyps);
+    expect(L.assertDefensible({ audience: 'iep-team', aiHyps: hyps, signoff: sig }).blocked).toBe(false);
+    expect(L.assertDefensible({ audience: 'iep-team', aiHyps: hyps, signoff: 'stale-hash' }).blocked).toBe(true);
+    expect(L.assertDefensible({ audience: 'iep-team', aiHyps: null, signoff: null }).blocked).toBe(false); // no L3 content
+  });
+
+  it('CSV is aggregate-only by default; identifiable rows require the FERPA opt-in', () => {
+    const agg = L.buildExportCsv(comp, claim, {});
+    expect(agg.csv).toMatch(/aggregate only/);
+    expect(agg.csv).toMatch(/slope,2.68/);
+    expect(agg.csv).not.toMatch(/^1,42/m); // no raw weekly rows leaked
+    const pii = L.buildExportCsv(comp, claim, { includePII: true });
+    expect(pii.csv).toMatch(/CONFIDENTIAL/);
+    expect(pii.filename).toMatch(/CONFIDENTIAL/);
+    expect(pii.csv).toMatch(/^1,42,baseline,Derived \(math\)/m);
+  });
+
+  it('an AI-inclusive brief carries the level word, the method, and the verify-yourself caveat', () => {
+    const out = L.buildExportHtml(comp, claim, { audience: 'iep-team', aiHyps: hyps, includeAI: true });
+    expect(out.maxLevel).toBe('L3');
+    expect(out.html).toMatch(/AI reading \(L3\)/);
+    expect(out.html).toMatch(/verify yourself/);
+    expect(out.html).toMatch(/95% t-interval/);
+  });
+});
+
+describe('Lumen — Sourced provenance engine (Phase 1.x, §16)', () => {
+  // SYNTHETIC fixture — value 999 / source TEST is deliberately NOT a real norm.
+  const SPEC = {
+    kind: 'percentile', measure: 'ORF-WCPM', unit: 'words/min', grade: 4, season: 'winter', percentile: 50,
+    value: 999, source: 'TEST', year: 2099, population: 'synthetic', table: 'fixture',
+    locator: 'https://example.org/fixture', citation: 'Synthetic test fixture (not a real norm).', verified: true
+  };
+  const comp = L.makeCompendium('WCPM', 'words/min', { measure: 'ORF-WCPM', grade: 4, seasonWindow: 'winter' });
+  const ref = L.makeSourceRef(SPEC, comp);
+  ref.id = 'sTest';
+
+  it('SRC is a FOURTH provenance kept OUT of the L0-L3 ladder', () => {
+    expect(L.LEVELS).toEqual(['L0', 'L1', 'L2', 'L3']);
+    const b = L.encode('SRC');
+    expect(b.isReference).toBe(true);
+    expect(b.caution).toBe(false);              // never the L3 amber
+    expect(b.ink).toBe(L.DEFAULT_PALETTE.reference);
+    expect(L.referenceContrastOK()).toBe(true); // teal distinct from neutral + caution
+  });
+
+  it('the curated spine ships EMPTY (no fabricated norms); selectNorm REFUSES, never warns', () => {
+    expect(Object.keys(L.NORM_SPINE.cells).length).toBe(0);
+    expect(L.NORM_SPINE.reviewedOn).toBeNull();
+    expect(L.selectNorm(L.NORM_SPINE, comp, { grade: 4, season: 'winter', percentile: 50 }).hazard).toBe('no-cell');
+    expect(L.selectNorm(L.NORM_SPINE, comp, { grade: 8, season: 'winter' }).hazard).toBe('out-of-range'); // H&T tops at G6
+    expect(L.selectNorm(L.NORM_SPINE, { measure: 'maze', unit: 'words/min' }, { grade: 4, season: 'winter' }).hazard).toBe('wrong-measure');
+    expect(L.selectNorm(L.NORM_SPINE, comp, { grade: 4 }).hazard).toBe('no-season'); // season never inferred
+  });
+
+  it('a benchmark cannot become a student observation, and needs a citation + matching measure', () => {
+    const c2 = L.makeCompendium('WCPM', 'words/min', { measure: 'ORF-WCPM' });
+    const id = L.addSourceRef(c2, L.makeSourceRef(SPEC, c2));
+    expect(id).toBe('s1');
+    expect(c2.sourceRefs.length).toBe(1);
+    expect(c2.observations.length).toBe(0); // never pushed into observations
+    expect(() => L.makeSourceRef({ value: 1, measure: 'ORF-WCPM', unit: 'words/min' }, c2)).toThrow(/citation/);
+    expect(() => L.makeSourceRef({ value: 1, measure: 'maze', unit: 'words/min', citation: 'x', locator: 'https://x' }, c2)).toThrow(/measure/);
+  });
+
+  it('renderable only when verified + http(s) locator + numeric value (blocks javascript: locators)', () => {
+    expect(L.sourcedRenderable(ref).ok).toBe(true);
+    expect(L.sourcedRenderable(Object.assign({}, ref, { verified: false })).ok).toBe(false);
+    expect(L.sourcedRenderable(Object.assign({}, ref, { locator: 'javascript:alert(1)' })).ok).toBe(false);
+  });
+
+  it('faces never blend the benchmark into the student; Family calls it a reference, not a goal', () => {
+    expect(L.benchmarkChipText(ref)).toMatch(/External benchmark \(not this student\)/);
+    expect(L.sourcedFace(ref, 'family')).toMatch(/not this student's goal/);
+    expect(L.sourcedFace(ref, 'iep-team')).toMatch(/national reference, not an individualized goal/);
+  });
+
+  it('the unified export gate blocks an unverified/stale benchmark in an IEP-team export', () => {
+    expect(L.assertExportClean({ audience: 'iep-team', sourceRefs: [Object.assign({}, ref, { verified: false })] }).blocked).toBe(true);
+    expect(L.assertExportClean({ audience: 'iep-team', sourceRefs: [ref] }).blocked).toBe(false); // verified curated is clean
+    const stale = {}; stale[ref.id] = 'old-hash';
+    expect(L.assertExportClean({ audience: 'iep-team', sourceRefs: [ref], sourceSignoffs: stale }).blocked).toBe(true); // stale re-blocks
+    expect(L.assertExportClean({ audience: 'working', sourceRefs: [Object.assign({}, ref, { verified: false })] }).blocked).toBe(false); // working never gated
+    const aiHyps = L.validateHypotheses([{ text: 'a', kind: 'effect', rank: 1 }, { text: 'b', kind: 'null', rank: 2 }]).hypotheses;
+    expect(L.assertExportClean({ audience: 'iep-team', aiHyps: aiHyps, signoff: null, sourceRefs: [ref] }).blocked).toBe(true); // still ANDs the L3 gate
+  });
+});
+
+describe('Lumen — Sourced rendering integration + the no-external-data invariant (§16.5/§16.6)', () => {
+  const comp = L.makeCompendium('WCPM', 'words/min', { measure: 'ORF-WCPM', grade: 4, seasonWindow: 'winter' });
+  REYNA.forEach(p => L.addObservation(comp, p));
+  const claim = L.deriveTrendClaim(comp, {});
+  const ref = L.makeSourceRef({
+    kind: 'percentile', measure: 'ORF-WCPM', unit: 'words/min', grade: 4, season: 'winter', percentile: 50,
+    value: 75, source: 'TEST', year: 2099, population: 'synthetic',
+    locator: 'https://example.org/fixture', citation: 'Synthetic test fixture (not a real norm).', verified: true
+  }, comp);
+  ref.id = 's1';
+
+  it('EMPTY sourceRefs leaves plotGeometry / dataTableModel BYTE-IDENTICAL (the no-external-data default)', () => {
+    const g0 = L.plotGeometry(comp.observations, claim, undefined);
+    const g1 = L.plotGeometry(comp.observations, claim, undefined, []);
+    expect(g1.refLines).toBeUndefined();
+    expect(JSON.stringify(g0)).toBe(JSON.stringify(g1));
+    expect(JSON.stringify(L.dataTableModel(comp.observations, claim)))
+      .toBe(JSON.stringify(L.dataTableModel(comp.observations, claim, [])));
+    expect(L.LEVELS).toEqual(['L0', 'L1', 'L2', 'L3']); // SRC never enters LEVELS
+  });
+
+  it('a verified benchmark renders as a no-marker reference line + a worded SR/table peer', () => {
+    const geo = L.plotGeometry(comp.observations, claim, undefined, [ref]);
+    expect(geo.refLines.length).toBe(1);
+    expect(geo.refLines[0].dPath).toMatch(/^M /);   // a horizontal line, not a point
+    expect(geo.refLines[0].verified).toBe(true);
+    expect(geo.y1).toBeGreaterThanOrEqual(75);      // window expanded to include the 75 benchmark (no clip)
+    const tbl = L.dataTableModel(comp.observations, claim, [ref]);
+    const refRows = tbl.rows.filter(r => r.reference);
+    expect(refRows.length).toBe(1);
+    expect(refRows[0].label).toMatch(/External benchmark \(not this student\).*\[verified\]/);
+    expect(tbl.summary).toMatch(/External benchmark \(not this student\)/);
+  });
+
+  it('an UNVERIFIED benchmark does NOT render (no line, no row) — only verified renders in v1', () => {
+    const unver = Object.assign({}, ref, { verified: false });
+    expect(L.plotGeometry(comp.observations, claim, undefined, [unver]).refLines).toBeUndefined();
+    expect(L.dataTableModel(comp.observations, claim, [unver]).rows.filter(r => r.reference).length).toBe(0);
+  });
+
+  it('exports carry a References section / reference row (scheme-safe, XSS-safe)', () => {
+    const html = L.buildExportHtml(comp, claim, { audience: 'iep-team', sourceRefs: [ref] }).html;
+    expect(html).toMatch(/External references/);
+    expect(html).toMatch(/not this student's measured data or individualized goals/);
+    expect(html).toMatch(/href="https:\/\/example\.org\/fixture"/);
+    expect(html).not.toMatch(/<script/);
+    const csv = L.buildExportCsv(comp, claim, { sourceRefs: [ref] }).csv;
+    expect(csv).toMatch(/external references/);
+    expect(csv).toMatch(/^reference,/m);
+    // a no-refs export is unchanged (no References section)
+    expect(L.buildExportHtml(comp, claim, { audience: 'iep-team' }).html).not.toMatch(/External references/);
+  });
+});

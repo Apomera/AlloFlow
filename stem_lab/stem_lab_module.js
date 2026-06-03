@@ -3237,6 +3237,12 @@
                 color: 'cyan', ready: true
               },
               {
+                // @tool lumen
+                id: 'lumen', icon: '💡', label: 'Lumen',
+                desc: 'Reactive research canvas — collect, analyze & present as one honest, provenance-bound object. (In development.)',
+                color: 'amber', ready: false
+              },
+              {
                 id: 'opticsLab', icon: '🔆', label: 'OpticsLab AP',
                 desc: 'AP Physics 2 geometric + wave optics: ray diagrams, Snell\'s law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, AP exam quiz, and AI-graded explanations.',
                 color: 'sky', ready: true

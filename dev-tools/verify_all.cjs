@@ -192,6 +192,11 @@ const checks = [
     description: 'Every registerTool(id) has a matching tile in _allStemTools (BirdLab bug class)',
   },
   {
+    name: 'Lumen honesty floor',
+    cmd: ['node', 'dev-tools/check_lumen_floor.cjs', '--quiet'],
+    description: 'Lumen integrity invariants: ladder, amber-only-L3, small-n + AI n-floor, L2 whitelist, L3 non-effect, escHtml XSS, IEP sign-off block',
+  },
+  {
     name: 'window.* icon assignment',
     cmd: ['node', 'dev-tools/check_window_icons.cjs', '--quiet'],
     description: 'Every lucide import is assigned to window for CDN modules (HeaderBar bug class)',
