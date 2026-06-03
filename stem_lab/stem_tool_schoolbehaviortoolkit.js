@@ -1450,7 +1450,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           { id: 'cico', label: 'CICO Template', icon: '📋' },
           { id: 'equity', label: 'Equity & Disparities', icon: '⚖️' },
           { id: 'maine', label: 'Maine Resources', icon: '🦞' },
-          { id: 'connect', label: 'Connect', icon: '🔗' }
+          { id: 'connect', label: 'Connect', icon: '🔗' },
+          { id: 'inquiry', label: 'Behavior Inquiry', icon: '🧪' }
         ];
         return h('div', { role: 'tablist', 'aria-label': 'School Behavior Toolkit sections',
           style: { display: 'flex', gap: 4, padding: '14px 18px 0', overflowX: 'auto', borderBottom: '1px solid rgba(20,184,166,0.15)', alignItems: 'flex-end' } },
@@ -1969,7 +1970,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       else if (section === 'equity') content = renderEquity();
       else if (section === 'maine') content = renderMaine();
       else if (section === 'connect') content = renderConnect();
+      else if (section === 'inquiry') content = renderBehaviorInquiry();
       else content = renderPbis();
+
+      function renderBehaviorInquiry() {
+        var iq = d.behIQ || { tier: 2, intensity: 5, functionConfidence: 5, environmentStability: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { setSBT({ behIQ: Object.assign({}, iq, patch) }); }
+        function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+        // intervention fit: tier appropriateness for intensity, function confidence required at higher tiers
+        var tierMatch = (iq.tier === 1 && iq.intensity < 4) || (iq.tier === 2 && iq.intensity >= 3 && iq.intensity <= 7) || (iq.tier === 3 && iq.intensity >= 6);
+        var fbaNeeded = iq.tier === 3;
+        var ready = tierMatch && (!fbaNeeded || iq.functionConfidence >= 7) && iq.environmentStability >= 4;
+        var state = !tierMatch ? 'tiermismatch' : fbaNeeded && iq.functionConfidence < 5 ? 'fbafirst' : ready ? 'implementable' : iq.environmentStability < 4 ? 'unstable' : 'partial';
+        var sm = ({
+          tiermismatch: { label: 'Tier mismatch', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Selected tier does not match observed intensity. Move up (under-supporting) or down (over-pathologizing) accordingly.' },
+          fbafirst: { label: 'FBA needed first', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Tier 3 BIP requires function knowledge. Function confidence below 7 means you cannot ethically design a function-based plan yet.' },
+          unstable: { label: 'Environment too unstable', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Any plan will look like it failed if the setting events are constantly shifting. Stabilize the environment before measuring outcomes.' },
+          partial: { label: 'Partially ready', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Most pieces in place. Address the weakest dimension before going live.' },
+          implementable: { label: 'Implementable plan', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Tier matched to intensity, function confidence adequate, environment stable enough. Pilot the plan with progress monitoring.' }
+        })[state];
+        return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+          h('h3', { style: { margin: '0 0 4px', fontSize: 14, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🧪 Behavior Plan Inquiry — Is This Plan Ready to Pilot?'),
+          h('p', { style: { margin: '0 0 8px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, 'Set tier, observed intensity, function confidence, environment stability. Predict whether the plan is ready to implement. No score, no reveal.'),
+          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label),
+          h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+            [1, 2, 3].map(function(tier) {
+              var x = 20 + (tier - 1) * 100;
+              var w = 80;
+              var active = iq.tier === tier;
+              return h('g', { key: 't' + tier },
+                h('rect', { x: x, y: 20, width: w, height: 40, fill: active ? sm.color : '#0f172a', stroke: active ? sm.color : '#1e293b', strokeWidth: active ? 2 : 1 }),
+                h('text', { x: x + w / 2, y: 35, fill: active ? '#000' : '#94a3b8', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'Tier ' + tier),
+                h('text', { x: x + w / 2, y: 50, fill: active ? '#000' : '#64748b', fontSize: 8, textAnchor: 'middle' }, tier === 1 ? 'universal' : tier === 2 ? 'targeted' : 'intensive')
+              );
+            }),
+            h('text', { x: 160, y: 75, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'PBIS multi-tiered system of supports')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'PBIS Tier'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, 'Tier ' + iq.tier)),
+              h('input', { type: 'range', min: 1, max: 3, step: 1, value: iq.tier, onChange: function(e) { setKey('tier', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            ),
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Behavior intensity (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.intensity)),
+              h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.intensity, onChange: function(e) { setKey('intensity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            ),
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Function confidence (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.functionConfidence)),
+              h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.functionConfidence, onChange: function(e) { setKey('functionConfidence', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            ),
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Environment stability (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.environmentStability)),
+              h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.environmentStability, onChange: function(e) { setKey('environmentStability', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            )
+          ),
+          h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+            h('button', { onClick: function() {
+              var t = new Date().toISOString().slice(11, 19);
+              setIQ({ log: iq.log.concat([{ t: t, tr: iq.tier, i: iq.intensity, fc: iq.functionConfidence, es: iq.environmentStability, state: sm.label }]) });
+            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this case'),
+            h('button', { onClick: function() { setIQ({ tier: 2, intensity: 5, functionConfidence: 5, environmentStability: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+          ),
+          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+            iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · T' + e.tr + ' int' + e.i + ' fc' + e.fc + ' env' + e.es); })
+          ),
+          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (when does an unstable environment matter MORE than function knowledge?)'),
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., if setting events are dominant, even a perfect function-based plan fails because the antecedent context keeps changing...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+            h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+            h('ul', { style: { margin: 0, paddingLeft: 16 } },
+              h('li', null, 'Why does a Tier 3 plan require FBA-level function confidence before you can ethically design it?'),
+              h('li', null, 'A high-intensity behavior in a stable environment vs the same intensity in chaos — same plan?'),
+              h('li', null, 'When is "tier mismatch" actually a sign that adult bias is driving over-pathologizing (especially across race/disability lines)?'),
+              h('li', null, 'How would you communicate "not implementable yet" to a frustrated team or parent without sounding dismissive?')
+            )
+          ),
+          h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+            h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+            h('span', null, 'I can explain why this tier/intensity/function/environment combination yields this state.')
+          ),
+          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. PBIS tier-matching heuristics from CASEL/PBIS Center; real plans should be team-developed and parent/family-centered. Equity audit (see Equity tab) is essential before assuming a tier-3 case is purely behavioral.')
+        );
+      }
 
       return h('div', { style: rootStyle, role: 'region', 'aria-label': 'School Behavior Toolkit' },
         renderHeader(),
