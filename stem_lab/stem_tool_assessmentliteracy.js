@@ -8629,7 +8629,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           { id: 'junk', icon: '\uD83D\uDD0D', label: 'Spot the Junk Science — Capstone', desc: 'Read real-world test claims. Rate each: Legit / Suspect / Pseudoscience. Learn the tells that expose Barnum effects, popularity appeals, proprietary black boxes, and commercial inflation. Capstone challenge.', color: 'from-fuchsia-600 to-rose-600' },
           { id: 'sources', icon: '\uD83D\uDCDA', label: 'Sources & Further Reading', desc: 'Primary-source citations organized by module — textbooks, peer-reviewed articles, legal rulings, and online resources. For students heading to grad school or anyone who wants to go deeper.', color: 'from-slate-600 to-slate-800' },
           { id: 'teacher', icon: '\uD83C\uDF93', label: 'Teacher / Instructor Mode', desc: 'Course alignment, module-by-module learning objectives, 10 discussion prompts, 8 in-class activities, 5-dimension assessment rubric. For adopting this tool in a Psych, Ed Psych, or I/O course.', color: 'from-indigo-600 to-violet-700' },
-          { id: 'glossary', icon: '\uD83D\uDCD6', label: 'Glossary', desc: '60+ term glossary covering terms across all modules. Filter by keyword. For navigating a tool with lots of jargon.', color: 'from-stone-600 to-zinc-700' }
+          { id: 'glossary', icon: '\uD83D\uDCD6', label: 'Glossary', desc: '60+ term glossary covering terms across all modules. Filter by keyword. For navigating a tool with lots of jargon.', color: 'from-stone-600 to-zinc-700' },
+          { id: 'inquiry', icon: '\uD83D\uDD2C', label: 'Reliability Inquiry \u2014 Capstone Sandbox', desc: 'Move four sliders (instrument reliability, SEM, observed score, decision stakes). Predict the confidence interval width and the action-readiness of the score. No score, no reveal \u2014 you mark your own understanding.', color: 'from-teal-600 to-emerald-700' }
         ];
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6' },
           h('header', { className: 'mb-6' },
@@ -9710,7 +9711,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       if (s.view === 'sources') return renderSources();
       if (s.view === 'teacher') return renderTeacher();
       if (s.view === 'glossary') return renderGlossary();
+      if (s.view === 'inquiry') return renderReliabilityInquiry();
       return renderMenu();
+
+      function renderReliabilityInquiry() {
+        var iq = (s.relIQ) || { reliability: 0.85, sem: 5, observed: 100, stakes: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd({ relIQ: Object.assign({}, iq, patch) }); }
+        function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+        // 95% CI ≈ ± 1.96 × SEM
+        var ciHalf = 1.96 * iq.sem;
+        var ciLow = iq.observed - ciHalf;
+        var ciHigh = iq.observed + ciHalf;
+        // action confidence: high reliability narrows CI, high stakes raises bar
+        var actionReady = iq.reliability > 0.90 && ciHalf < (iq.stakes < 5 ? 15 : 8);
+        var state = actionReady ? 'actready' : iq.reliability < 0.70 ? 'unreliable' : iq.reliability < 0.85 ? 'screeningonly' : iq.stakes > 7 ? 'needmore' : 'usewithci';
+        var sm = ({
+          actready: { label: 'Action-ready', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'High reliability + narrow CI relative to stakes. Suitable as one input to a decision (still triangulate).' },
+          usewithci: { label: 'Use with CI', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Reasonable reliability but report the confidence interval — never the point estimate alone.' },
+          screeningonly: { label: 'Screening only', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Reliability 0.70-0.85 — fine for routine screening, NOT for placement or eligibility decisions.' },
+          needmore: { label: 'Insufficient for high stakes', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'CI is wide relative to the consequences of a wrong decision. Gather more data before acting.' },
+          unreliable: { label: 'Unreliable for any decision', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Reliability < 0.70 — true score is essentially indistinguishable from noise. Do not use for individual decisions.' }
+        })[state];
+        return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6' },
+          h('header', { className: 'mb-4 flex items-center gap-3' },
+            ArrowLeft && h('button', { onClick: function() { upd({ view: null, sub: null }); }, className: 'p-2 hover:bg-slate-100 rounded-lg' }, h(ArrowLeft, { size: 18 })),
+            h('h1', { className: 'text-xl font-black text-teal-200' }, '🔬 Reliability Inquiry — Sandbox Capstone')
+          ),
+          h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+            h('p', { className: 'text-sm opacity-85 mb-3 leading-snug' }, 'Adjust the four sliders. Predict whether this score is action-ready. No score, no reveal — you mark your own understanding.'),
+            h('div', { className: 'inline-block px-3 py-1 rounded-full text-xs font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' · CI ' + ciLow.toFixed(1) + '-' + ciHigh.toFixed(1)),
+            h('p', { className: 'text-xs opacity-80 mb-3' }, sm.desc),
+            h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 12 } },
+              h('line', { x1: 30, y1: 60, x2: 290, y2: 60, stroke: '#475569' }),
+              h('rect', { x: Math.max(30, 30 + ((ciLow - 60) / 80) * 260), y: 50, width: Math.max(2, Math.min(260, ((ciHigh - ciLow) / 80) * 260)), height: 20, fill: sm.color, opacity: 0.45 }),
+              h('line', { x1: Math.max(30, Math.min(290, 30 + ((iq.observed - 60) / 80) * 260)), y1: 30, x2: Math.max(30, Math.min(290, 30 + ((iq.observed - 60) / 80) * 260)), y2: 90, stroke: sm.color, strokeWidth: 2 }),
+              h('text', { x: Math.max(30, Math.min(290, 30 + ((iq.observed - 60) / 80) * 260)), y: 26, fill: sm.color, fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, iq.observed.toFixed(0)),
+              [60, 80, 100, 120, 140].map(function(v, i) { return h('text', { key: 'x' + i, x: 30 + ((v - 60) / 80) * 260, y: 110, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, v); }),
+              h('text', { x: 160, y: 16, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, 'observed score with 95% CI · ±' + ciHalf.toFixed(1))
+            ),
+            h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
+              h('label', { className: 'text-xs' },
+                h('div', { className: 'flex justify-between mb-1' }, h('span', null, 'Reliability (r)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.reliability.toFixed(2))),
+                h('input', { type: 'range', min: 0.5, max: 0.99, step: 0.01, value: iq.reliability, onChange: function(e) { setKey('reliability', parseFloat(e.target.value)); }, className: 'w-full' })
+              ),
+              h('label', { className: 'text-xs' },
+                h('div', { className: 'flex justify-between mb-1' }, h('span', null, 'SEM (standard error)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.sem.toFixed(1))),
+                h('input', { type: 'range', min: 1, max: 15, step: 0.5, value: iq.sem, onChange: function(e) { setKey('sem', parseFloat(e.target.value)); }, className: 'w-full' })
+              ),
+              h('label', { className: 'text-xs' },
+                h('div', { className: 'flex justify-between mb-1' }, h('span', null, 'Observed score'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.observed)),
+                h('input', { type: 'range', min: 60, max: 140, step: 1, value: iq.observed, onChange: function(e) { setKey('observed', parseInt(e.target.value, 10)); }, className: 'w-full' })
+              ),
+              h('label', { className: 'text-xs' },
+                h('div', { className: 'flex justify-between mb-1' }, h('span', null, 'Decision stakes (1-10)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.stakes)),
+                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.stakes, onChange: function(e) { setKey('stakes', parseInt(e.target.value, 10)); }, className: 'w-full' })
+              )
+            ),
+            h('div', { className: 'flex gap-2 mb-3' },
+              h('button', { onClick: function() {
+                var t = new Date().toISOString().slice(11, 19);
+                setIQ({ log: iq.log.concat([{ t: t, r: iq.reliability.toFixed(2), sem: iq.sem, obs: iq.observed, stk: iq.stakes, ci: ciLow.toFixed(0) + '-' + ciHigh.toFixed(0), state: sm.label }]) });
+              }, className: 'flex-1 px-3 py-2 rounded text-xs font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this configuration'),
+              h('button', { onClick: function() { setIQ({ reliability: 0.85, sem: 5, observed: 100, stakes: 5 }); }, className: 'px-3 py-2 rounded text-xs', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+            ),
+            iq.log.length > 0 && h('div', { className: 'p-2 rounded text-xs font-mono mb-3', style: { background: '#0a0a1a', maxHeight: 100, overflow: 'auto', border: '1px solid #1e293b' } },
+              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · r=' + e.r + ' SEM=' + e.sem + ' obs=' + e.obs + ' stk=' + e.stk + ' → CI ' + e.ci); })
+            ),
+            h('label', { className: 'block text-xs font-bold opacity-85 mb-1' }, 'Your hypothesis (which slider should weigh most when stakes are high?)'),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 3, placeholder: 'e.g., for special education eligibility we should never act on r<.90 even if the point estimate looks clear...', className: 'w-full p-2 rounded text-xs mb-3', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-3 py-2 rounded text-xs font-bold mb-3', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck — show open questions"),
+            iq.stuckRevealed && h('div', { className: 'p-3 rounded text-xs mb-3', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.6 } },
+              h('div', { className: 'font-bold mb-2', style: { color: sm.color } }, 'Open questions (no answer key)'),
+              h('ul', { className: 'pl-5 m-0 space-y-1' },
+                h('li', null, 'Why is the 95% CI ±1.96 × SEM, not ±1 × SEM or ±2 × SEM?'),
+                h('li', null, 'A standard score of 100 with r=.95, SEM=3 vs r=.75, SEM=10 — which is action-ready and why?'),
+                h('li', null, 'AAIDD requires r > .90 for ID determination. Why do high-stakes decisions need higher reliability?'),
+                h('li', null, 'When does a SCREENING-grade tool become inappropriate (and what is the harm)?')
+              )
+            ),
+            h('label', { className: 'flex items-center gap-2 text-xs font-bold cursor-pointer mb-2' },
+              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+              h('span', null, 'I can explain why this reliability/SEM/score/stakes combination yields this action-readiness state.')
+            ),
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 3, placeholder: 'Explain in your own words...', className: 'w-full p-2 rounded text-xs mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            h('p', { className: 'm-0 text-xs italic opacity-60' }, 'Inquiry widget — no score, no reveal. CIs assume normal sampling distribution; for very small samples use the appropriate t-distribution. Reliability is necessary but not sufficient — validity matters too. Always consult test manuals and standards (AAIDD-12, AERA/APA/NCME Standards).')
+          )
+        );
+      }
     }
   });
 

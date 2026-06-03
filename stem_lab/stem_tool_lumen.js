@@ -1180,6 +1180,76 @@
             if (d.exportMsg) kids.push(h('div', { key: 'expmsg', className: 'mt-1 text-xs italic text-slate-500' }, d.exportMsg));
           }
 
+          // ══ EVIDENCE INQUIRY widget (H7b'') ══
+          kids.push((function() {
+            var iq = d.evidenceIQ || { trendStrength: 0.5, sampleSize: 8, baseline: 50, aiLevel: 1, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('evidenceIQ', Object.assign({}, iq, patch)); }
+            function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+            var slopeConfidence = Math.abs(iq.trendStrength) * Math.sqrt(iq.sampleSize / 12);
+            var aiAmplification = iq.aiLevel * 0.5;
+            var driftRisk = aiAmplification - slopeConfidence;
+            var state = slopeConfidence < 0.4 ? 'insufficient' : slopeConfidence < 0.8 ? 'suggestive' : driftRisk > 0 ? 'overinterpreted' : slopeConfidence > 1.5 ? 'robust' : 'supported';
+            var sm = ({
+              insufficient: { label: 'Insufficient evidence', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'Slope-to-noise ratio too low. Anything you claim will be defensible only as a hypothesis to test next.' },
+              suggestive: { label: 'Suggestive', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.' },
+              supported: { label: 'Supported', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Clear trend with adequate sample. Reasonable basis for action with continued monitoring.' },
+              robust: { label: 'Robust', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Strong slope and large sample. Could probably re-derive same conclusion from another subset.' },
+              overinterpreted: { label: 'Over-interpreted', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'AI dial cranked too high relative to evidence. The narrative confidence outruns the data — exactly what Lumen\'s ladder is designed to prevent.' }
+            })[state];
+            return h('div', { key: 'evIQ', className: 'mt-3 p-3 rounded-lg', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+              h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, '🔬 Evidence Inquiry — Should I Trust This Trend?'),
+              h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, 'Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.'),
+              h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' · slope/noise ' + slopeConfidence.toFixed(2)),
+              h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
+              h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                h('label', { className: 'text-[10px]' },
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Trend strength'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.trendStrength.toFixed(2))),
+                  h('input', { type: 'range', min: 0, max: 2, step: 0.05, value: iq.trendStrength, onChange: function(e) { setKey('trendStrength', parseFloat(e.target.value)); }, className: 'w-full' })
+                ),
+                h('label', { className: 'text-[10px]' },
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Observations'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.sampleSize)),
+                  h('input', { type: 'range', min: 2, max: 40, step: 1, value: iq.sampleSize, onChange: function(e) { setKey('sampleSize', parseInt(e.target.value, 10)); }, className: 'w-full' })
+                ),
+                h('label', { className: 'text-[10px]' },
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Baseline value'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.baseline)),
+                  h('input', { type: 'range', min: 0, max: 200, step: 1, value: iq.baseline, onChange: function(e) { setKey('baseline', parseInt(e.target.value, 10)); }, className: 'w-full' })
+                ),
+                h('label', { className: 'text-[10px]' },
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'AI ladder (L0-L3)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, 'L' + iq.aiLevel)),
+                  h('input', { type: 'range', min: 0, max: 3, step: 1, value: iq.aiLevel, onChange: function(e) { setKey('aiLevel', parseInt(e.target.value, 10)); }, className: 'w-full' })
+                )
+              ),
+              h('div', { className: 'flex gap-2 mb-2' },
+                h('button', { onClick: function() {
+                  var t = new Date().toISOString().slice(11, 19);
+                  setIQ({ log: iq.log.concat([{ t: t, ts: iq.trendStrength.toFixed(2), n: iq.sampleSize, bl: iq.baseline, ai: 'L' + iq.aiLevel, sc: slopeConfidence.toFixed(2), state: sm.label }]) });
+                }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this evidence call'),
+                h('button', { onClick: function() { setIQ({ trendStrength: 0.5, sampleSize: 8, baseline: 50, aiLevel: 1 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+              ),
+              iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · trend ' + e.ts + ' n' + e.n + ' bl' + e.bl + ' ' + e.ai + ' → s/n ' + e.sc); })
+              ),
+              h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, 'Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)'),
+              h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty...', className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck — show open questions"),
+              iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, 'Open questions (no answer key)'),
+                h('ul', { className: 'pl-4 m-0' },
+                  h('li', null, 'Why does Lumen DEFAULT to L1 (math only) and force you to opt up?'),
+                  h('li', null, 'A flat baseline with n=40 vs noisy slope with n=8 — which would you act on?'),
+                  h('li', null, 'How would you communicate "suggestive" vs "supported" to a parent at an IEP meeting?'),
+                  h('li', null, 'When is regression to the mean the real explanation for an apparent trend?')
+                )
+              ),
+              h('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
+                h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                h('span', null, 'I can explain why this evidence configuration yields this evidentiary state.')
+              ),
+              iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+              h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).')
+            );
+          })());
+
           kids.push(h('p', { key: 'foot', className: 'mt-3 text-[10px] text-slate-400' },
             'Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.'));
 

@@ -19940,7 +19940,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       else if (view === 'cumulative')      content = h(_ViewWrapper, { key: 'cumulative',      _render: renderCumulative });
       else if (view === 'askPrinter')      content = h(_ViewWrapper, { key: 'askPrinter',      _render: renderAskPrinter });
       else if (view === 'resources')       content = h(_ViewWrapper, { key: 'resources',       _render: renderResources });
+      else if (view === 'pressInquiry')    content = h(_ViewWrapper, { key: 'pressInquiry',    _render: renderPressInquiry });
       else                                 content = h(_ViewWrapper, { key: 'menu',            _render: renderMenu });
+
+      function renderPressInquiry() {
+        var iq = d.pressIQ || { typeSize: 12, lineLength: 65, leading: 1.4, paperContrast: 80, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd('pressIQ', Object.assign({}, iq, patch)); }
+        function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+        // legibility heuristics: optimal 9-12pt, 60-75 chars per line, leading 1.4-1.6
+        var sizeScore = iq.typeSize >= 9 && iq.typeSize <= 14 ? 100 : Math.max(0, 100 - Math.abs(iq.typeSize - 11) * 10);
+        var lengthScore = iq.lineLength >= 55 && iq.lineLength <= 80 ? 100 : Math.max(0, 100 - Math.abs(iq.lineLength - 67) * 2);
+        var leadingScore = iq.leading >= 1.3 && iq.leading <= 1.7 ? 100 : Math.max(0, 100 - Math.abs(iq.leading - 1.5) * 100);
+        var contrastScore = iq.paperContrast > 70 ? 100 : iq.paperContrast > 50 ? 70 : iq.paperContrast > 30 ? 40 : 10;
+        var totalScore = (sizeScore + lengthScore + leadingScore + contrastScore) / 4;
+        var state = totalScore > 85 ? 'optimal' : totalScore > 65 ? 'readable' : totalScore > 45 ? 'uncomfortable' : totalScore > 25 ? 'strain' : 'unreadable';
+        var sm = ({
+          optimal: { label: 'Optimal typography', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'All four dimensions in the historical sweet spot. Reader can sustain long sessions without fatigue.' },
+          readable: { label: 'Readable', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Generally fine. One parameter is suboptimal but compensated by the others.' },
+          uncomfortable: { label: 'Uncomfortable', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Multiple dimensions are off. Reader will tire quickly. Sales-killer for a book.' },
+          strain: { label: 'Eye strain', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Active discomfort. Causes saccade errors, mis-reading, headaches. Drops comprehension by 20-40%.' },
+          unreadable: { label: 'Unreadable in practice', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Reader gives up. The text physically exists but does not function.' }
+        })[state];
+        return h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5', maxWidth: 720, margin: '0 auto' } },
+          h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Typography Inquiry — Predict the Legibility'),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set type size, line length, leading, paper contrast. Predict where the layout lands on the legibility curve. No score, no reveal.'),
+          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · ' + totalScore.toFixed(0) + '/100'),
+          h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 10 } },
+            [
+              { label: 'Size', val: sizeScore.toFixed(0) },
+              { label: 'Length', val: lengthScore.toFixed(0) },
+              { label: 'Leading', val: leadingScore.toFixed(0) },
+              { label: 'Contrast', val: contrastScore.toFixed(0) }
+            ].map(function(m) {
+              return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
+                h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val)
+              );
+            })
+          ),
+          h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(' + (255 - iq.paperContrast * 2) + ',' + (250 - iq.paperContrast * 2) + ',' + (230 - iq.paperContrast * 2) + ',0.9)', color: '#000', marginBottom: 10, fontFamily: 'Georgia, serif', fontSize: iq.typeSize, lineHeight: iq.leading, maxWidth: iq.lineLength * 7 + 'px' } },
+            'Quick brown foxes jumped over the lazy dog. This sample renders at your selected ' + iq.typeSize + 'pt with leading ' + iq.leading + ' and line length ' + iq.lineLength + ' characters. Move sliders to see how legibility shifts in real time — the print shops of 1450 figured this out by trial and error.'
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Type size (pt)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.typeSize)),
+              h('input', { type: 'range', min: 6, max: 24, step: 1, value: iq.typeSize, onChange: function(e) { setKey('typeSize', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            ),
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Line length (chars)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.lineLength)),
+              h('input', { type: 'range', min: 20, max: 120, step: 1, value: iq.lineLength, onChange: function(e) { setKey('lineLength', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            ),
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Leading (multiplier)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.leading.toFixed(2))),
+              h('input', { type: 'range', min: 0.8, max: 2.5, step: 0.05, value: iq.leading, onChange: function(e) { setKey('leading', parseFloat(e.target.value)); }, style: { width: '100%' } })
+            ),
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Paper contrast'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.paperContrast)),
+              h('input', { type: 'range', min: 0, max: 100, step: 5, value: iq.paperContrast, onChange: function(e) { setKey('paperContrast', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            )
+          ),
+          h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+            h('button', { onClick: function() {
+              var t = new Date().toISOString().slice(11, 19);
+              setIQ({ log: iq.log.concat([{ t: t, sz: iq.typeSize, ln: iq.lineLength, ld: iq.leading.toFixed(2), c: iq.paperContrast, sc: totalScore.toFixed(0), state: sm.label }]) });
+            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this layout'),
+            h('button', { onClick: function() { setIQ({ typeSize: 12, lineLength: 65, leading: 1.4, paperContrast: 80 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset'),
+            h('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, '← Menu')
+          ),
+          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+            iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · sz' + e.sz + ' ln' + e.ln + ' ld' + e.ld + ' c' + e.c + ' → ' + e.sc); })
+          ),
+          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which slider drops legibility fastest? Why?)'),
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., line length matters most because saccades break down past ~80 chars...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+            h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+            h('ul', { style: { margin: 0, paddingLeft: 16 } },
+              h('li', null, 'Why is the optimal line length ~65 characters (Tschichold, Bringhurst)?'),
+              h('li', null, 'How does this change for screen vs print? For dyslexic readers?'),
+              h('li', null, 'Gutenberg used 11-point text with 1.4 leading on cream paper. Why did that work for 30+ million Bibles printed by 1500?'),
+              h('li', null, 'A children\'s picture book uses 22pt with 1.7 leading. Why so different from an adult novel?')
+            )
+          ),
+          h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+            h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+            h('span', null, 'I can explain why this typography combination yields this legibility state.')
+          ),
+          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Legibility heuristics from Tschichold, Bringhurst, Tinker; real reading rates also depend on typeface design, reader age, content density, and lighting.')
+        );
+      }
 
       // Outer wrapper. Uses both 100% and 100vh as fallbacks because the
       // StemLab modal parent doesn't always have an explicit height — without
