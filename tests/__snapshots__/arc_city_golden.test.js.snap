@@ -170,6 +170,32 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L6
 }
 `;
 
+exports[`Arc City — adjudication + SR narration per level (golden master) > L7 (Exponent Reach) outcome + narration matrix (snapshot) 1`] = `
+{
+  "decays too fast (a=5,b=-0.6,k=1)": {
+    "equation": "y = a·e^(b·x) + k, with a = 5, b = -0.6, k = 1. An exponential decaying toward the floor y = 1, which it approaches but never crosses.",
+    "narration": "Blocked at the gate (x = 1): the beam passed at y = 3.7, but the opening is y = 4.2 to 4.5. The curve is too low here — raise the start height a, decay slower (less negative b), or raise the floor k.",
+    "nodeDist": null,
+    "result": "gate",
+    "yAt": 3.7,
+  },
+  "solution: decay curve through all 5 windows (a=5,b=-0.4,k=1)": {
+    "equation": "y = a·e^(b·x) + k, with a = 5, b = -0.4, k = 1. An exponential decaying toward the floor y = 1, which it approaches but never crosses.",
+    "narration": "Lit! The beam reached the node at (9.5, 1.1). Solved in 1 shot.",
+    "nodeDist": 0,
+    "result": "hit",
+    "yAt": null,
+  },
+  "starting shot, blocked at the first window (a=3,b=-0.25,k=1.5)": {
+    "equation": "y = a·e^(b·x) + k, with a = 3, b = -0.2, k = 1.5. An exponential decaying toward the floor y = 1.5, which it approaches but never crosses.",
+    "narration": "Blocked at the gate (x = 1): the beam passed at y = 3.8, but the opening is y = 4.2 to 4.5. The curve is too low here — raise the start height a, decay slower (less negative b), or raise the floor k.",
+    "nodeDist": null,
+    "result": "gate",
+    "yAt": 3.8,
+  },
+}
+`;
+
 exports[`Arc City — module contract > board readouts for screen readers (snapshot) 1`] = `
 {
   "L1": "Arc City, level: First Light. Author a straight-line beam. The dark node to light is at x 8, y 4. Aim the beam through any gates, over any walls, to reach the node.",
@@ -178,6 +204,7 @@ exports[`Arc City — module contract > board readouts for screen readers (snaps
   "L4": "Arc City, level: Switchback. Author a V-shaped, absolute-value beam. The dark node to light is at x 5, y 1. A gate with an opening from y 4 to 6 is at x 2. A gate with an opening from y 4 to 6 is at x 8. Aim the beam through any gates, over any walls, to reach the node.",
   "L5": "Arc City, level: Sine Boulevard. Author a sine-wave beam. The dark node to light is at x 9.4, y 4. A gate with an opening from y 6 to 6.9 is at x 1.5. A gate with an opening from y 1.1 to 2 is at x 4.7. A gate with an opening from y 6 to 6.9 is at x 7.85. Aim the beam through any gates, over any walls, to reach the node.",
   "L6": "Arc City, level: Tilt Gates. Author a parabola beam. The dark node to light is at x 8.5, y 0.5. A gate with an opening from y 2.5 to 4.5 is at x 3, which the beam must pass while climbing at a slope near 1.5 (give or take 0.5). A gate with an opening from y 2.5 to 4.5 is at x 7, which the beam must pass while descending at a slope near -1.5 (give or take 0.5). Aim the beam through any gates, over any walls, to reach the node.",
+  "L7": "Arc City, level: Exponent Reach. Author an exponential beam that curves toward a floor it never touches. The dark node to light is at x 9.5, y 1.1. A gate with an opening from y 4.2 to 4.5 is at x 1. A gate with an opening from y 2.36 to 2.66 is at x 3. A gate with an opening from y 1.53 to 1.83 is at x 5. A gate with an opening from y 1.15 to 1.45 is at x 7. A gate with an opening from y 1 to 1.3 is at x 9. Aim the beam through any gates, over any walls, to reach the node.",
 }
 `;
 
@@ -521,6 +548,80 @@ exports[`Arc City — module contract > level geometry (snapshot) 1`] = `
       },
     },
     "title": "Tilt Gates",
+    "walls": [],
+    "world": {
+      "x0": 0,
+      "x1": 10,
+      "y0": 0,
+      "y1": 8,
+    },
+  },
+  {
+    "dx": 0.05,
+    "family": "exp",
+    "gates": [
+      {
+        "hi": 4.5,
+        "lo": 4.2,
+        "x": 1,
+      },
+      {
+        "hi": 2.66,
+        "lo": 2.36,
+        "x": 3,
+      },
+      {
+        "hi": 1.83,
+        "lo": 1.53,
+        "x": 5,
+      },
+      {
+        "hi": 1.45,
+        "lo": 1.15,
+        "x": 7,
+      },
+      {
+        "hi": 1.3,
+        "lo": 1,
+        "x": 9,
+      },
+    ],
+    "hint": "Tip: this beam decays toward a floor (k) it never touches. The five narrow windows all sit on one decay curve — set the floor k, the start height a, and the decay rate b so the curve threads every window on its way down.",
+    "id": "L7",
+    "node": {
+      "r": 0.4,
+      "x": 9.5,
+      "y": 1.1,
+    },
+    "paramOrder": [
+      "a",
+      "b",
+      "k",
+    ],
+    "params": {
+      "a": {
+        "default": 3,
+        "label": "a  (starting height above the floor)",
+        "max": 6,
+        "min": 3,
+        "step": 0.25,
+      },
+      "b": {
+        "default": -0.25,
+        "label": "b  (decay rate — more negative drops faster)",
+        "max": -0.25,
+        "min": -0.6,
+        "step": 0.025,
+      },
+      "k": {
+        "default": 1.5,
+        "label": "k  (the floor / asymptote it approaches but never crosses)",
+        "max": 1.5,
+        "min": 0.5,
+        "step": 0.1,
+      },
+    },
+    "title": "Exponent Reach",
     "walls": [],
     "world": {
       "x0": 0,

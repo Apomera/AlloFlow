@@ -50,6 +50,11 @@ const CASES = {
     { label: 'solution: concave-down arc through both tilts (a=-0.4,h=5,k=5.5)', p: { a: -0.4, h: 5, k: 5.5 } },
     { label: 'starting shot, blocked at the first gate (a=-0.2,h=5,k=2)', p: { a: -0.2, h: 5, k: 2 } },
     { label: 'flat line: in the window but wrong angle (a=0,h=5,k=4)', p: { a: 0, h: 5, k: 4 } }
+  ],
+  L7: [
+    { label: 'solution: decay curve through all 5 windows (a=5,b=-0.4,k=1)', p: { a: 5, b: -0.4, k: 1 } },
+    { label: 'starting shot, blocked at the first window (a=3,b=-0.25,k=1.5)', p: { a: 3, b: -0.25, k: 1.5 } },
+    { label: 'decays too fast (a=5,b=-0.6,k=1)', p: { a: 5, b: -0.6, k: 1 } }
   ]
 };
 
@@ -61,7 +66,7 @@ describe('Arc City — module contract', () => {
     expect(typeof describeBoard).toBe('function');
     expect(typeof isLevelUnlocked).toBe('function');
     expect(Array.isArray(LEVELS)).toBe(true);
-    expect(LEVELS.map(l => l.id)).toEqual(['L1', 'L2', 'L3', 'L4', 'L5', 'L6']);
+    expect(LEVELS.map(l => l.id)).toEqual(['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7']);
   });
 
   it('level geometry (snapshot)', () => {
@@ -378,5 +383,25 @@ describe('Arc City — Phase 2: sine family + slope-gates (§3.2)', () => {
       expect(b).toBeTruthy();
       expect(b.label.toLowerCase()).not.toMatch(/master|mastery|proficient|ability|expert/);
     });
+  });
+});
+
+describe('Arc City — Phase 2b: exponential family + asymptote', () => {
+  const L7 = levelById('L7');
+
+  it('the exp family evaluates correctly and L7 is solvable', () => {
+    expect(arc.fnY('exp', { a: 5, b: -0.4, k: 1 }, 0)).toBeCloseTo(6, 6); // 1 + 5*e^0 = 6
+    expect(classifyShot(L7, { a: 5, b: -0.4, k: 1 }).result).toBe('hit');
+  });
+
+  it('the equation read-back names the asymptote it never crosses', () => {
+    expect(describeEquation(L7, { a: 5, b: -0.4, k: 1 })).toMatch(/floor y = 1.*never crosses/);
+  });
+
+  it('an exp solve earns the decay-rider badge (action-named, no mastery claim)', () => {
+    const hit = classifyShot(L7, { a: 5, b: -0.4, k: 1 });
+    expect(arc.badgesForSolve(L7, hit, 1, 'practice', [])).toContain('decay-rider');
+    const b = arc.BADGES.find(x => x.id === 'decay-rider');
+    expect(b.label.toLowerCase()).not.toMatch(/master|mastery|proficient|ability|expert/);
   });
 });

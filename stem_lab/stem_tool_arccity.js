@@ -113,6 +113,26 @@
         k: { min: 0, max: 8, step: 0.25, default: 2, label: 'k  (vertex height)' }
       },
       hint: 'Tip: two TILTED gates demand opposite angles — the beam must be CLIMBING through the first and DESCENDING through the second. A straight beam can’t do both; only an arc whose slope changes will thread them. Raise k to lift the arc, then set a so it bends from rising to falling between the gates.'
+    },
+    {
+      id: 'L7', title: 'Exponent Reach', family: 'exp',
+      world: { x0: 0, x1: 10, y0: 0, y1: 8 },
+      // Five NARROW windows lie on a single decay curve y = k + a·e^(b·x). Five
+      // points over-determine any 3-parameter family, so no line, V, or parabola
+      // can thread them all — only an exponential, whose (y−k) ratio is constant,
+      // rides the whole sequence down toward the floor it never crosses; the node
+      // hugs that asymptote at the far right. Verified forcing certificate (only
+      // exp wins) in tests/arc_city_solvability.test.js. Intended ≈ a=5, b=-0.4, k=1.
+      walls: [],
+      gates: [{ x: 1, lo: 4.2, hi: 4.5 }, { x: 3, lo: 2.36, hi: 2.66 }, { x: 5, lo: 1.53, hi: 1.83 }, { x: 7, lo: 1.15, hi: 1.45 }, { x: 9, lo: 1.0, hi: 1.3 }],
+      node: { x: 9.5, y: 1.1, r: 0.4 }, dx: 0.05,
+      paramOrder: ['a', 'b', 'k'],
+      params: {
+        a: { min: 3, max: 6, step: 0.25, default: 3, label: 'a  (starting height above the floor)' },
+        b: { min: -0.6, max: -0.25, step: 0.025, default: -0.25, label: 'b  (decay rate — more negative drops faster)' },
+        k: { min: 0.5, max: 1.5, step: 0.1, default: 1.5, label: 'k  (the floor / asymptote it approaches but never crosses)' }
+      },
+      hint: 'Tip: this beam decays toward a floor (k) it never touches. The five narrow windows all sit on one decay curve — set the floor k, the start height a, and the decay rate b so the curve threads every window on its way down.'
     }
   ];
 
@@ -126,6 +146,7 @@
     if (family === 'line') return p.m * x + p.b;
     if (family === 'absval') return p.a * Math.abs(x - p.h) + p.k; // absolute value (vertex form)
     if (family === 'sine') return p.a * Math.sin(p.b * x + p.c) + p.k; // sine: amplitude/frequency/phase/midline
+    if (family === 'exp') return p.k + p.a * Math.exp(p.b * x); // exponential: floor k + a·e^(b·x); b<0 decays toward k
     return p.a * (x - p.h) * (x - p.h) + p.k; // parabola (vertex form)
   }
 
@@ -199,6 +220,7 @@
       if (fam === 'line') return 'Lift the beam over the wall — increase the slope (or the start height) so it clears y = ' + res.obstacle.height + '.';
       if (fam === 'absval') return 'Bend the V over the wall — raise the vertex height k, or move the vertex h toward x = ' + res.at + '.';
       if (fam === 'sine') return 'Reshape the wave — raise the amplitude a so a crest rises over the wall.';
+      if (fam === 'exp') return 'Raise the start height a or the floor k so the curve clears the wall.';
       return 'Arc higher over the wall: raise the vertex height k, or move the vertex h toward x = ' + res.at + '.';
     }
     if (res.result === 'gate') {
@@ -206,6 +228,7 @@
       if (fam === 'line') return tooHigh ? 'The beam is too high there — lower the start height b or reduce the slope.' : 'The beam is too low there — raise the start height b or increase the slope.';
       if (fam === 'absval') return tooHigh ? 'The beam is too high there — lower the vertex k, or move the vertex h so the V dips into the window.' : 'The beam is too low there — raise the vertex k, or steepen a so the arm climbs through the window.';
       if (fam === 'sine') return tooHigh ? 'The wave is too high at this window — reduce the amplitude a, or change the frequency b so a dip lands here.' : 'The wave is too low at this window — increase the amplitude a, or change the frequency b so a crest lands here.';
+      if (fam === 'exp') return tooHigh ? 'The curve is too high here — lower the start height a, decay faster (more negative b), or lower the floor k.' : 'The curve is too low here — raise the start height a, decay slower (less negative b), or raise the floor k.';
       return tooHigh ? 'The beam is too high there — tighten the arc (more negative a) or lower k.' : 'The beam is too low there — widen the arc or raise k.';
     }
     return '';
@@ -249,6 +272,10 @@
         '. A wave of amplitude ' + round1(p.a) + ' centered on the midline y = ' + round1(p.k) +
         (p.b ? ', one full wave about every ' + round1((2 * Math.PI) / p.b) + ' units.' : '.');
     }
+    if (level.family === 'exp') {
+      return 'y = a·e^(b·x) + k, with a = ' + round1(p.a) + ', b = ' + round1(p.b) + ', k = ' + round1(p.k) +
+        '. An exponential ' + (p.b < 0 ? 'decaying' : 'growing') + ' toward the floor y = ' + round1(p.k) + ', which it approaches but never crosses.';
+    }
     var dir = p.a < 0 ? 'opening downward' : (p.a > 0 ? 'opening upward' : 'a flat line');
     return 'y = a(x − h)² + k, with a = ' + round1(p.a) + ', h = ' + round1(p.h) + ', k = ' + round1(p.k) +
       '. A parabola ' + dir + ', vertex at (' + round1(p.h) + ', ' + round1(p.k) + ').';
@@ -256,7 +283,7 @@
 
   function describeBoard(level) {
     var s = 'Arc City, level: ' + level.title + '. ';
-    s += level.family === 'line' ? 'Author a straight-line beam. ' : (level.family === 'absval' ? 'Author a V-shaped, absolute-value beam. ' : (level.family === 'sine' ? 'Author a sine-wave beam. ' : 'Author a parabola beam. '));
+    s += level.family === 'line' ? 'Author a straight-line beam. ' : (level.family === 'absval' ? 'Author a V-shaped, absolute-value beam. ' : (level.family === 'sine' ? 'Author a sine-wave beam. ' : (level.family === 'exp' ? 'Author an exponential beam that curves toward a floor it never touches. ' : 'Author a parabola beam. ')));
     s += 'The dark node to light is at x ' + level.node.x + ', y ' + level.node.y + '. ';
     (level.walls || []).forEach(function (w) { s += 'A wall ' + w.height + ' units tall stands at x ' + w.x + '. '; });
     (level.gates || []).forEach(function (g) { s += 'A gate with an opening from y ' + g.lo + ' to ' + g.hi + ' is at x ' + g.x + (g.slope ? ', which the beam must pass while ' + (g.slope.value < 0 ? 'descending' : (g.slope.value > 0 ? 'climbing' : 'level')) + ' at a slope near ' + g.slope.value + ' (give or take ' + g.slope.tol + ')' : '') + '. '; });
@@ -294,6 +321,7 @@
     { id: 'arc-architect', label: 'Arc Architect — re-lit a node using a parabola' },
     { id: 'switchback', label: 'Switchback — re-lit a node using an absolute-value V' },
     { id: 'wave-rider', label: 'Wave Rider — re-lit a node using a sine wave' },
+    { id: 'decay-rider', label: 'Decay Rider — re-lit a node riding an exponential to its asymptote' },
     { id: 'tilt-threader', label: 'Tilt Threader — passed a tilted slope-gate at the right angle' },
     { id: 'sharp-shooter', label: 'Sharp Shooter — lit a node on the first shot' },
     { id: 'independent', label: 'Independent — solved with the preview hidden' }
@@ -309,6 +337,7 @@
     if (level.family === 'parabola') add('arc-architect');
     if (level.family === 'absval') add('switchback');
     if (level.family === 'sine') add('wave-rider');
+    if (level.family === 'exp') add('decay-rider');
     if ((level.gates || []).some(function (g) { return g.slope; })) add('tilt-threader');
     if (shots === 1) add('sharp-shooter');
     if (solveIsIndependent(tier)) add('independent');
@@ -920,7 +949,9 @@
                 ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' · |x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, round1(P.h)), '| + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]
                 : (level.family === 'sine'
                   ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' · sin(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, round1(P.b)), '·x + ', h('span', { key: 'c', style: { color: BEAM, fontWeight: 800 } }, round1(P.c)), ') + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]
-                  : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, round1(P.h)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]))),
+                  : (level.family === 'exp'
+                    ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' · e^(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, round1(P.b)), '·x) + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]
+                    : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, round1(P.h)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))])))),
           tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.6, marginBottom: 10 } }, handleEls.length ? t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.') : t('arccity.slider_hint', 'Tip: use the sliders (or the +/− buttons and arrow keys) to shape the beam.')) : null,
           h('div', { key: 'rows' }, paramRows),
           h('div', { key: 'btns', style: { display: 'flex', gap: 10, marginTop: 6 } },

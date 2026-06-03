@@ -103,4 +103,22 @@ describe('Arc City — shape-necessity / forcing certificate (§13.2.4)', () => 
     expect(wins).toBeGreaterThan(0);   // still solvable
     expect(wrongShape).toBe(0);        // every win is a genuine concave-down arc (a<0)
   }, 30000);
+
+  it('L7 "Exponent Reach" can ONLY be won by an exponential — no line, parabola, or V threads all 5 windows', () => {
+    const L7 = arc.levelById('L7');
+    const range = (min, max, st) => { const o = []; for (let v = min; v <= max + 1e-9; v += st) o.push(Math.round(v * 1000) / 1000); return o; };
+    function anyWin(family, grids) {
+      const keys = Object.keys(grids); let won = false;
+      (function rec(i, p) {
+        if (won) return;
+        if (i === keys.length) { if (arc.classifyShot(Object.assign({}, L7, { family: family }), p).result === 'hit') won = true; return; }
+        for (const v of grids[keys[i]]) { if (won) return; const q = Object.assign({}, p); q[keys[i]] = v; rec(i + 1, q); }
+      })(0, {});
+      return won;
+    }
+    expect(anyWin('exp', { a: range(3, 6, 0.25), b: range(-0.6, -0.25, 0.025), k: range(0.5, 1.5, 0.1) })).toBe(true);   // solvable by exp
+    expect(anyWin('line', { m: range(-2, 2, 0.1), b: range(0, 8, 0.25) })).toBe(false);                                  // no straight line
+    expect(anyWin('parabola', { a: range(-1.5, 1.5, 0.05), h: range(0, 10, 0.25), k: range(0, 8, 0.25) })).toBe(false);  // no parabola
+    expect(anyWin('absval', { a: range(-2, 2, 0.1), h: range(0, 10, 0.25), k: range(0, 8, 0.25) })).toBe(false);         // no V
+  }, 60000);
 });
