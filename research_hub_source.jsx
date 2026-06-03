@@ -55,7 +55,7 @@
  */
 (function () {
   'use strict';
-  if (window.AlloModules && window.AlloModules.ResearchHub && window.AlloModules.ResearchHub.__tier >= 3) {
+  if (window.AlloModules && window.AlloModules.ResearchHub && window.AlloModules.ResearchHub.__tier >= 4) {
     console.log('[CDN] ResearchHub already loaded, skipping');
     return;
   }
@@ -118,7 +118,7 @@
   // ───────────────────────────────────────────────────────────────────────
   function emptyJournal() {
     return {
-      v: 3,                              // Tier 3 substrate revision; lanes migrate older shapes lazily
+      v: 4,                              // Tier 4 substrate revision; lanes migrate older shapes lazily
       createdAt: Date.now(),
       updatedAt: Date.now(),
       devLevel: '6_8',
@@ -159,6 +159,22 @@
       stakeholderFeedback: [],           // [{ id, ts, prototypeVersionRef, verbatimResponse?, proxyJustification?, audioBase64?, durationS?, observerNotes, surprises, criteriaJudgments: [{ criterionId, stakeholderJudgment }] }]
       failureLog: [],                    // [{ id, ts, fromTestRunId, modeText, causeHypothesisText, changedVariable: { name, fromValue, toValue }, predictedEffectText, retestRunId, predictionVsRealityRadio? }]
       designClaims: [],                  // [{ id, ts, text, kind: 'serves_stakeholder'|'satisfies_criterion'|'acknowledges_limit', label, staleLabel?, claimEvidenceRunIds, constraintRefs, tradeoffRefs, aiLabelQuestion?, calibrationResponse? }]
+      // Tier-4 Humanities & Social Research lane top-level fields. Each is
+      // justified as top-level because cross-stage gates, AI validators, the
+      // ForeclosureCoda substring-link composition, and the WarrantTrajectoryRibbon
+      // assessment artifact all need direct array access. See
+      // docs/research_lane_humanities_design.md.
+      framings: [],                      // [{ id, ts, label, framingPrompt, frameKindChip, whatItForegrounds, whatItOccludes, whichVettedSourcesFitIt, domain, staleLabel?, supersededBy? }]
+      humanitiesPosition: null,          // { text, ts, staleLabel, label, whatThisClaimDoesNotSpeakTo, positionalityLinkText } — SINGLETON (Humanities artifacts organize around one defensible stance)
+      framingProbes: [],                 // append-only: [{ id, ts, framingId, linkId, verdict: 'warrant_survives'|'warrant_contracts'|'warrant_fails', studentRationale, quotedSnippetRef, loopBackOrigin?, allSurvivesJustification? }]
+      positionalitySnapshots: [],        // append-only versioned: [{ v, ts, materialRelationshipText, visibilityField, obscuringField, whoseStandpointIsStructurallyAbsentText, partialIncorporationCommitmentsText, epistemicStatus, audioBase64?, durationS?, deltaFromPriorText?, loopBackOrigin?, devLevelMode }]
+      absentVoices: [],                  // [{ id, ts, whoseVoiceText, whyAbsentChip, whatTheyMightSeeText, partialIncorporationAttemptText?, sourceIdContext?, staleLabel? }]
+      questionStakeholders: [],          // [{ id, ts, whoseQuestionIsThis, whyTheyCareText, whatThisFramingForegrounds, whatThisFramingObscures, staleLabel? }] — distinct from singleton Engineering stakeholderProfile (humanities needs plural)
+      humanitiesPlausibleAnswers: [],    // [{ id, ts, text, isWorkingPosition, staleLabel? }]
+      stakesAudience: null,              // { chip: 'school_community'|'city'|'named_public'|'historical_record'|'policymakers', label, ts, staleLabel? } — closed enum (no free-text escape)
+      genreChoice: null,                 // { genre: 'op_ed'|'policy_memo'|'civic_action_statement'|'exhibit_text', ts, lockUntilSubstrateLinkPass, staleLabel? }
+      compositions: [],                  // append-only versioned: [{ id, v, ts, genreChoice, bodyText, bodyClaimTags, loadBearingClaimId, publicAccountabilityTarget, publicAccountabilityNote, foreclosureCodaText, foreclosureCodaHash, audioBase64?, durationS?, loopBackOrigin?, deltaFromPriorText?, no_ai_notes }]
+      authorshipLog: [],                 // [{ ts, field, eventKind: 'paste'|'large_insert', acknowledged, whereFromNote? }] — anti-laundering structural friction
       stageNotes: {},                    // { stageKey: { text, audioBase64, durationS, ts, exemplarViewed?, exemplarDismissed?, supersededBy?, acknowledgedSuperseded?, ...stageSpecific } }
       // Tier-2: loopBacks now carry a whyChipId (1-tap canned reason) so
       // the field is reliably populated — per the loop-back-architecture
@@ -186,7 +202,7 @@
       // returned at Tier 2). Accept v in {1, 2, 3} and migrate forward so
       // mid-pilot sessions don't lose their inquiry on a deploy.
       var v = parsed.v;
-      if (v !== 1 && v !== 2 && v !== 3) return emptyJournal();
+      if (v !== 1 && v !== 2 && v !== 3 && v !== 4) return emptyJournal();
       // Merge defaults so an older shape doesn't crash readers.
       var fresh = emptyJournal();
       Object.keys(fresh).forEach(function (k) {
@@ -212,8 +228,26 @@
             return row;
           });
         }
-        parsed.v = 3;
       }
+      // v:1/v:2/v:3 → v:4 — Humanities lane adds 11 new top-level fields
+      // (defaulted above via fresh-merge) and may benefit from seeding
+      // positionalitySnapshots from singleton positionality if it has content.
+      if (v === 1 || v === 2 || v === 3) {
+        if (parsed.positionality && parsed.positionality.text &&
+            Array.isArray(parsed.positionalitySnapshots) && parsed.positionalitySnapshots.length === 0) {
+          parsed.positionalitySnapshots = [{
+            v: 1, ts: parsed.positionality.ts || Date.now(),
+            materialRelationshipText: parsed.positionality.text || '',
+            visibilityField: '', obscuringField: '',
+            whoseStandpointIsStructurallyAbsentText: '',
+            partialIncorporationCommitmentsText: '',
+            epistemicStatus: '', audioBase64: parsed.positionality.audioBase64 || null,
+            durationS: parsed.positionality.durationS || 0,
+            devLevelMode: 'structured',
+          }];
+        }
+      }
+      parsed.v = 4;
       // aiCallCount resets per page-load — quota is a per-session anti-spam
       // gate, not anti-cost; documented explicitly so this isn't surprising.
       parsed.aiCallCount = 0;
@@ -491,6 +525,48 @@
     /^corrected[_-]cause/i,
     /^improvement$/i,                     // completion noun
     /^dominated[_-]judgment$/i,
+    // Tier-4 Humanities & Social Research lane FOOTGUN extensions at SUBSTRATE
+    // level so this is the LAST line of defense against AI outputs that would
+    // name scholars, summarize sources, judge tiers, polish prose, or assert
+    // false balance. Honor the Tier-1 prohibition: "Counter-Evidence Hunters
+    // that name specific scholars or sources" must never be permitted.
+    /^suggested[_-]framing/i,
+    /^better[_-]framing/i,
+    /^scholar[_-]/i,                      // any scholar-shaped key
+    /^according[_-]to/i,                  // attribution-shaped key
+    /^as[_-](argued|noted|claimed)[_-]by/i,
+    /^school[_-]of[_-]thought/i,
+    /^theorist/i,
+    /^attributed[_-]to/i,
+    /^source[_-]summary$/i,               // refusing source-summary keeps SIFT load-bearing
+    /^source[_-]credibility[_-]judgment/i,
+    /^suggested[_-]warrant/i,
+    /^proposed[_-]warrant/i,
+    /^better[_-]thesis/i,
+    /^suggested[_-]thesis/i,
+    /^thesis$/i,                          // completion noun
+    /^suggested[_-]positionality/i,
+    /^inferred[_-]identity/i,
+    /^balanced[_-]view$/i,                // false-balance verdict
+    /^both[_-]sides/i,                    // false-balance verdict
+    /^the[_-]other[_-]side$/i,
+    /^accurate[_-]reading$/i,             // approval verdict
+    /^correct[_-]interpretation/i,
+    /^correct[_-]positionality/i,
+    /^suggested[_-]tier/i,                // refuse AI assigning SIFT tiers
+    /^source[_-]should[_-]be[_-]tier/i,
+    /^drafted[_-]/i,                      // composition drafting
+    /^polished[_-]/i,
+    /^the[_-]stronger[_-]reading/i,
+    /^objective[_-]view/i,
+    /^balanced[_-]take/i,
+    /^well[_-]warranted/i,                // approval verdict
+    /^standing[_-]earned[_-]judgment$/i,
+    /^expert[_-]opinion/i,
+    /^quote$/i,                           // completion noun (AI quoting from invented scholars)
+    /^citation[_-]suggestion/i,
+    /^proposed[_-]qualifier/i,
+    /^proposed[_-]rebuttal/i,
   ];
   function stripPedagogicalFootguns(obj, depth) {
     if (depth === undefined) depth = 0;
@@ -958,6 +1034,19 @@
       dominated_solution_finder: 2,
       failure_mode_critic: 2,
       stakeholder_translator: 2,
+      // Tier-4 Humanities & Social Research lane (Inquiry Studio). Sum = 8
+      // (1+2+1+3+0+1). Flat-map design honors the lane-rotation intent under
+      // the global 8/session cap: each lane only renders its own touchpoint
+      // buttons, and the global cap binds across lanes naturally. The
+      // no_ai_stage_sentinel is the structural Stage-5 NO-AI guard — cap 0
+      // means any call attempt blocks as rate_limit_touchpoint, logged in
+      // aiHistory for educator-dashboard transparency.
+      contestability_probe: 1,
+      source_lateral_probe: 2,
+      counter_framing_voicer: 1,
+      warrant_questioner: 3,           // folds 3 former touchpoints via sub-trigger branching
+      no_ai_stage_sentinel: 0,         // intentional zero — Stage 5 NO-AI structural guard
+      standpoint_mirror: 1,
     };
     // Tier-2: cooldown burst lock. 6+ gate failures in 5 minutes blocks the
     // AI button for 2 minutes — kills brute-force fuzzing.
@@ -1662,7 +1751,7 @@
   // ───────────────────────────────────────────────────────────────────────
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.ResearchHub = ResearchHub;
-  window.AlloModules.ResearchHub.__tier = 3;
+  window.AlloModules.ResearchHub.__tier = 4;
   // Stash primitives on the registry so lane plugins (Tiers 2-4) can import
   // them without re-implementing.
   if (window.ResearchHub) {
@@ -1690,5 +1779,5 @@
     };
   }
 
-  console.log('[CDN] ResearchHub loaded (Tier 3)');
+  console.log('[CDN] ResearchHub loaded (Tier 4)');
 })();
