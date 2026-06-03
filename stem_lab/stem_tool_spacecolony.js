@@ -3033,7 +3033,122 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 className: 'mt-2 w-full py-2 rounded-xl text-[11px] font-bold transition-all hover:scale-[1.01]',
                 style: { background: 'linear-gradient(135deg, #1e293b, #0f172a)', color: '#94a3b8', border: '1px solid #334155', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }
               }, '\u267B Abandon & Start New')
-            )
+            ),
+
+            // === H7b'' RICH inquiry widget: life-support balance ===
+            (function() {
+              var iq = d._lifeSupport || { o2: 80, water: 75, co2: 70, humidity: 50, radiation: 60, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('_lifeSupport', Object.assign({}, iq, patch)); }
+              var balanceScore = (iq.o2 + iq.water + iq.co2 + iq.humidity + iq.radiation) / 5;
+              var minSys = Math.min(iq.o2, iq.water, iq.co2, iq.humidity, iq.radiation);
+              var state;
+              if (minSys < 30) state = 'critical';
+              else if (balanceScore < 50) state = 'struggling';
+              else if (balanceScore < 70 || minSys < 60) state = 'stable';
+              else if (balanceScore >= 85) state = 'thriving';
+              else state = 'optimal';
+              var sm = {
+                critical:    { label: '\uD83D\uDEA8 Critical (settler health failing)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Failure imminent. One subsystem in critical zone.' },
+                struggling:  { label: '\uD83D\uDD34 Struggling (low capacity)', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Multiple subsystems below adequate. Colony stressed.' },
+                stable:      { label: '\uD83D\uDFE1 Stable (adequate)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: '2 good, 1 adequate. Limited margin for events.' },
+                optimal:     { label: '\uD83D\uDFE2 Optimal (3+ good)', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'All subsystems comfortable. Sustained growth possible.' },
+                thriving:    { label: '\uD83C\uDF1F Thriving (all optimized)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Best-case scenario. Population growth bonus active.' }
+              }[state];
+              // SVG gauge visualization \u2014 5 circular gauges
+              var systems = [
+                { key: 'o2', label: 'O\u2082', val: iq.o2, color: '#0ea5e9' },
+                { key: 'water', label: '\uD83D\uDCA7', val: iq.water, color: '#06b6d4' },
+                { key: 'co2', label: 'CO\u2082', val: iq.co2, color: '#10b981' },
+                { key: 'humidity', label: 'Hu', val: iq.humidity, color: '#a78bfa' },
+                { key: 'radiation', label: 'Rad', val: iq.radiation, color: '#fb923c' }
+              ];
+              return React.createElement('div', { className: 'mt-3 p-3 rounded-xl border', style: { background: '#0f172a', borderColor: '#7c3aed', color: '#e2e8f0' } },
+                React.createElement('h3', { style: { fontSize: 14, fontWeight: 800, color: '#a78bfa', margin: '0 0 6px 0' } }, '\uD83D\uDEF0\uFE0F Life-support balance discovery'),
+                React.createElement('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 10 } },
+                  'Five sliders allocate energy to each life-support subsystem. Widget classifies colony state into 5 discrete levels and renders animated gauge visualization. No score on tuning \u2014 find the equilibrium that lets settlers thrive.'),
+                // Discrete state badge
+                React.createElement('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
+                  React.createElement('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
+                  React.createElement('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
+                  React.createElement('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } },
+                    'Balance avg = ' + balanceScore.toFixed(0) + '%, min subsystem = ' + minSys + '%')
+                ),
+                // SVG: 5 circular gauges side by side
+                React.createElement('div', { style: { padding: 10, background: 'rgba(15,23,42,0.6)', borderRadius: 8, marginBottom: 12 } },
+                  React.createElement('svg', { viewBox: '0 0 360 100', style: { width: '100%', height: 100 } },
+                    systems.map(function(sys, i) {
+                      var cx = 36 + i * 72;
+                      var cy = 50;
+                      var radius = 28;
+                      var circumference = 2 * Math.PI * radius;
+                      var dashOffset = circumference * (1 - sys.val / 100);
+                      return React.createElement('g', { key: 'g' + i },
+                        // background ring
+                        React.createElement('circle', { cx: cx, cy: cy, r: radius, fill: 'none', stroke: '#1e293b', strokeWidth: 6 }),
+                        // value arc
+                        React.createElement('circle', { cx: cx, cy: cy, r: radius, fill: 'none', stroke: sys.color, strokeWidth: 6,
+                          strokeDasharray: circumference, strokeDashoffset: dashOffset, strokeLinecap: 'round',
+                          transform: 'rotate(-90 ' + cx + ' ' + cy + ')' }),
+                        // value text
+                        React.createElement('text', { x: cx, y: cy + 4, textAnchor: 'middle', fontSize: 13, fontWeight: 'bold', fill: sys.color }, sys.val + '%'),
+                        // label
+                        React.createElement('text', { x: cx, y: cy + 36, textAnchor: 'middle', fontSize: 10, fill: '#94a3b8' }, sys.label)
+                      );
+                    })
+                  ),
+                  React.createElement('div', { style: { fontSize: 10, color: '#64748b', textAlign: 'center', fontStyle: 'italic', marginTop: 4 } },
+                    'Gauges fill from 0 to 100%. Any single gauge below 30% threatens colony.')
+                ),
+                // Sliders
+                React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
+                  [{ k: 'o2', l: 'O\u2082 generation %' },
+                   { k: 'water', l: 'Water recycling %' },
+                   { k: 'co2', l: 'CO\u2082 scrubbing %' },
+                   { k: 'humidity', l: 'Humidity %' },
+                   { k: 'radiation', l: 'Radiation shielding %' }].map(function(s) {
+                    return React.createElement('div', { key: s.k },
+                      React.createElement('label', { htmlFor: 'ls-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } }, s.l + ': ', React.createElement('span', { style: { color: '#a78bfa', fontFamily: 'monospace' } }, iq[s.k])),
+                      React.createElement('input', { id: 'ls-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        style: { width: '100%' }, 'aria-label': s.l }));
+                  })
+                ),
+                React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
+                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ o: iq.o2, w: iq.water, c: iq.co2, h: iq.humidity, r: iq.radiation, b: balanceScore.toFixed(0), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCB Log'),
+                  React.createElement('button', { onClick: function() { setIQ({ o2: 80, water: 75, co2: 70, humidity: 50, radiation: 60, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '\u21BA Reset')
+                ),
+                (iq.log || []).length > 0 && React.createElement('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: 10 } },
+                  React.createElement('thead', null, React.createElement('tr', { style: { background: '#1e293b' } },
+                    ['O\u2082', 'H\u2082O', 'CO\u2082', 'Hum', 'Rad', 'avg', 'state'].map(function(c, i) { return React.createElement('th', { key: 'h' + i, style: { padding: '4px 6px', border: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c); }))),
+                  React.createElement('tbody', null, iq.log.map(function(o, idx) {
+                    return React.createElement('tr', { key: 'lr' + idx },
+                      React.createElement('td', { style: { padding: '4px 6px', border: '1px solid rgba(100,116,139,0.4)', fontFamily: 'monospace' } }, o.o),
+                      React.createElement('td', { style: { padding: '4px 6px', border: '1px solid rgba(100,116,139,0.4)', fontFamily: 'monospace' } }, o.w),
+                      React.createElement('td', { style: { padding: '4px 6px', border: '1px solid rgba(100,116,139,0.4)', fontFamily: 'monospace' } }, o.c),
+                      React.createElement('td', { style: { padding: '4px 6px', border: '1px solid rgba(100,116,139,0.4)', fontFamily: 'monospace' } }, o.h),
+                      React.createElement('td', { style: { padding: '4px 6px', border: '1px solid rgba(100,116,139,0.4)', fontFamily: 'monospace' } }, o.r),
+                      React.createElement('td', { style: { padding: '4px 6px', border: '1px solid rgba(100,116,139,0.4)', fontFamily: 'monospace' } }, o.b),
+                      React.createElement('td', { style: { padding: '4px 6px', border: '1px solid rgba(100,116,139,0.4)' } }, o.st));
+                  }))
+                ),
+                React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Which subsystem is the bottleneck for thriving? Can you sacrifice one and still thrive?',
+                  style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 3 }),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, '\uD83E\uDD14 Stuck \u2014 show open prompts'),
+                iq.stuckRevealed && React.createElement('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
+                  React.createElement('ul', { style: { margin: 0, paddingLeft: 18 } },
+                    React.createElement('li', null, 'Set one subsystem to 100% and the rest to 50%. Compare to all-uniform 60%.'),
+                    React.createElement('li', null, 'Real space habitats run O\u2082 at ~95%. Why so high?'),
+                    React.createElement('li', null, 'Find two settings that produce same state. What\'s the shared minimum?'),
+                    React.createElement('li', null, 'Can you reach "thriving" with one subsystem at 50%? What does that imply about balance vs peak?'))),
+                React.createElement('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },
+                  React.createElement('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+                    React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand life-support tradeoffs \u2014 explain in own words'),
+                  iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how the 5 subsystems interact. What determines colony health: average or minimum?',
+                    style: { width: '100%', minHeight: 80, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
+                React.createElement('div', { style: { marginTop: 8, padding: 8, background: 'rgba(15,28,47,0.5)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#64748b' } },
+                  'Design note: discrete 5-state colony marker; SVG gauges show real-time subsystem fill; no settler-survival score \u2014 by design.')
+              );
+            })()
           );
 
     }
