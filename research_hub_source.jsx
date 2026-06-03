@@ -349,6 +349,7 @@
     window.ResearchHub = {
       _lanes: {},
       _order: [],
+      _educatorView: null,
       registerLane: function (id, config) {
         if (!id || !config) return;
         config.id = id;
@@ -364,6 +365,17 @@
         var self = this;
         return this._order.map(function (id) { return self._lanes[id]; }).filter(Boolean);
       },
+      // V2: educator-view registry — a plugin (research_hub_educator_module.js)
+      // registers a dashboard renderer here; the Hub renders it when the
+      // header toggle is on. Single registration; last-write-wins so the
+      // plugin can hot-reload during dev. The Hub falls back to a tiny
+      // placeholder when no educator view is registered.
+      registerEducatorView: function (config) {
+        if (!config || typeof config.render !== 'function') return;
+        this._educatorView = config;
+        console.log('[ResearchHub] Registered educator view');
+      },
+      getEducatorView: function () { return this._educatorView; },
       __tier: 1,
     };
   }
@@ -1382,6 +1394,14 @@
 
     var lanes = resolveLanes();
     var activeLane = journal.activeLane ? lanes.filter(function (L) { return L.id === journal.activeLane; })[0] : null;
+    // V2: educator-view toggle. Session-only React state (not journal —
+    // a teacher's view preference doesn't need to persist across reloads,
+    // and the dashboard reads journal substrate directly so there's no
+    // local state to preserve).
+    var _eduView = useState(false);
+    var educatorViewOn = _eduView[0]; var setEducatorViewOn = _eduView[1];
+    var educatorView = window.ResearchHub && window.ResearchHub.getEducatorView
+      ? window.ResearchHub.getEducatorView() : null;
 
     var setActiveLane = useCallback(function (laneId) {
       setJournal(function (prev) {
@@ -1469,6 +1489,25 @@
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <CostMeter t={t} used={journal.aiCallCount || 0} cap={MAX_AI_CALLS_PER_SESSION} />
               <DevLevelSelector t={t} value={journal.devLevel} onChange={setDevLevel} />
+              {educatorView && (
+                <button
+                  type="button"
+                  onClick={function () { setEducatorViewOn(!educatorViewOn); }}
+                  aria-pressed={educatorViewOn}
+                  aria-label={t('research_hub.educator_view_toggle_aria') || 'Toggle educator view'}
+                  title={t('research_hub.educator_view_toggle_title') || 'Educator view — read-only inquiry trajectory'}
+                  style={{
+                    background: educatorViewOn ? '#fbbf24' : 'rgba(255,255,255,0.18)',
+                    color: educatorViewOn ? '#7c2d12' : '#fff',
+                    border: '1px solid ' + (educatorViewOn ? '#fbbf24' : 'rgba(255,255,255,0.3)'),
+                    borderRadius: '999px', padding: '6px 12px',
+                    cursor: 'pointer', fontSize: '11px', fontWeight: 800,
+                  }}
+                >
+                  <span aria-hidden="true">{'\u{1F393} '}</span>
+                  {educatorViewOn ? (t('research_hub.educator_view_on') || 'Educator view') : (t('research_hub.educator_view_off') || 'Educator view')}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={function () { if (typeof onClose === 'function') onClose(); }}
@@ -1538,8 +1577,20 @@
               </p>
             </div>
 
-            {/* Lane selector OR active-lane workspace */}
-            {!activeLane ? (
+            {/* V2: Educator view takes precedence when toggled on */}
+            {educatorViewOn && educatorView ? (
+              <EducatorViewShell t={t} journal={journal}
+                onExit={function () { setEducatorViewOn(false); }}
+                educatorView={educatorView}
+                primitives={{ SuggestionBadge: SuggestionBadge, ExemplarPair: ExemplarPair,
+                              VoiceNoteBlock: VoiceNoteBlock, CostMeter: CostMeter,
+                              DevLevelSelector: DevLevelSelector }}
+                constants={{ MAX_AI_CALLS_PER_SESSION: MAX_AI_CALLS_PER_SESSION,
+                             ANSWER_HARD_CAP: ANSWER_HARD_CAP,
+                             VOICE_NOTE_MAX_SECONDS: VOICE_NOTE_MAX_SECONDS }} />
+            ) :
+            /* Lane selector OR active-lane workspace */
+            !activeLane ? (
               <React.Fragment>
                 <h3 style={{ margin: '4px 0 0', fontSize: '14px', fontWeight: 800, color: '#1e293b' }}>
                   {t('research_hub.lane_selector_title') || 'Pick a lane to start (or switch any time)'}
@@ -1689,6 +1740,51 @@
             </span>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────────────────
+  // EducatorViewShell — thin shim that delegates to the registered educator-
+  // view plugin's render(ctx). The dashboard reads journal directly and is
+  // READ-ONLY by contract — it MUST NOT call setJournal. (The Hub passes no
+  // setJournal in ctx so it is structurally enforced.)
+  // ───────────────────────────────────────────────────────────────────────
+  function EducatorViewShell(props) {
+    var t = props.t;
+    var journal = props.journal;
+    var onExit = props.onExit;
+    var educatorView = props.educatorView;
+    var ctx = {
+      t: t,
+      journal: journal,
+      primitives: props.primitives || {},
+      constants: props.constants || {},
+      onExit: onExit,
+    };
+    if (educatorView && typeof educatorView.render === 'function') {
+      try { return educatorView.render(ctx); }
+      catch (e) {
+        console.error('[ResearchHub] Educator view render error', e);
+        return (
+          <div style={{ padding: '14px', borderRadius: '12px',
+            background: '#fef2f2', border: '1px solid #fca5a5',
+            color: '#7f1d1d', fontSize: '12px' }}>
+            {t('research_hub.educator_view_error') || 'The educator dashboard failed to render. Toggling back to student view.'}
+            <button type="button" onClick={onExit} style={{
+              marginLeft: '8px', textDecoration: 'underline',
+              background: 'transparent', border: 'none', color: '#7f1d1d', cursor: 'pointer' }}>
+              {t('research_hub.educator_view_back') || 'Exit educator view'}
+            </button>
+          </div>
+        );
+      }
+    }
+    return (
+      <div style={{ padding: '14px', borderRadius: '12px',
+        background: '#fffbeb', border: '1px solid #fcd34d',
+        color: '#92400e', fontSize: '12px' }}>
+        {t('research_hub.educator_view_missing') || 'No educator view registered yet. Load research_hub_educator_module.js to enable.'}
       </div>
     );
   }

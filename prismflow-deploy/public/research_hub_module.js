@@ -367,6 +367,7 @@
     window.ResearchHub = {
       _lanes: {},
       _order: [],
+      _educatorView: null,
       registerLane: function(id, config) {
         if (!id || !config) return;
         config.id = id;
@@ -385,6 +386,19 @@
         return this._order.map(function(id) {
           return self._lanes[id];
         }).filter(Boolean);
+      },
+      // V2: educator-view registry — a plugin (research_hub_educator_module.js)
+      // registers a dashboard renderer here; the Hub renders it when the
+      // header toggle is on. Single registration; last-write-wins so the
+      // plugin can hot-reload during dev. The Hub falls back to a tiny
+      // placeholder when no educator view is registered.
+      registerEducatorView: function(config) {
+        if (!config || typeof config.render !== "function") return;
+        this._educatorView = config;
+        console.log("[ResearchHub] Registered educator view");
+      },
+      getEducatorView: function() {
+        return this._educatorView;
       },
       __tier: 1
     };
@@ -1428,6 +1442,10 @@
     var activeLane = journal.activeLane ? lanes.filter(function(L) {
       return L.id === journal.activeLane;
     })[0] : null;
+    var _eduView = useState(false);
+    var educatorViewOn = _eduView[0];
+    var setEducatorViewOn = _eduView[1];
+    var educatorView = window.ResearchHub && window.ResearchHub.getEducatorView ? window.ResearchHub.getEducatorView() : null;
     var setActiveLane = useCallback(function(laneId) {
       setJournal(function(prev) {
         var next = Object.assign({}, prev);
@@ -1508,7 +1526,30 @@
           gap: "12px",
           flexWrap: "wrap",
           borderRadius: "20px 20px 0 0"
-        } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "28px" } }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("research_hub.modal_title") || "Investigation & Research Hub"), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "11px", opacity: 0.85 } }, studentCodename ? (t("research_hub.modal_subtitle_with_codename") || "Inquiry journal for ") + studentCodename : t("research_hub.modal_subtitle") || "Loop, model, source, and argue your way through a question worth asking."))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(CostMeter, { t, used: journal.aiCallCount || 0, cap: MAX_AI_CALLS_PER_SESSION }), /* @__PURE__ */ React.createElement(DevLevelSelector, { t, value: journal.devLevel, onChange: setDevLevel }), /* @__PURE__ */ React.createElement(
+        } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "28px" } }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("research_hub.modal_title") || "Investigation & Research Hub"), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "11px", opacity: 0.85 } }, studentCodename ? (t("research_hub.modal_subtitle_with_codename") || "Inquiry journal for ") + studentCodename : t("research_hub.modal_subtitle") || "Loop, model, source, and argue your way through a question worth asking."))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(CostMeter, { t, used: journal.aiCallCount || 0, cap: MAX_AI_CALLS_PER_SESSION }), /* @__PURE__ */ React.createElement(DevLevelSelector, { t, value: journal.devLevel, onChange: setDevLevel }), educatorView && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: function() {
+              setEducatorViewOn(!educatorViewOn);
+            },
+            "aria-pressed": educatorViewOn,
+            "aria-label": t("research_hub.educator_view_toggle_aria") || "Toggle educator view",
+            title: t("research_hub.educator_view_toggle_title") || "Educator view \u2014 read-only inquiry trajectory",
+            style: {
+              background: educatorViewOn ? "#fbbf24" : "rgba(255,255,255,0.18)",
+              color: educatorViewOn ? "#7c2d12" : "#fff",
+              border: "1px solid " + (educatorViewOn ? "#fbbf24" : "rgba(255,255,255,0.3)"),
+              borderRadius: "999px",
+              padding: "6px 12px",
+              cursor: "pointer",
+              fontSize: "11px",
+              fontWeight: 800
+            }
+          },
+          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F393} "),
+          educatorViewOn ? t("research_hub.educator_view_on") || "Educator view" : t("research_hub.educator_view_off") || "Educator view"
+        ), /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
@@ -1585,71 +1626,96 @@
           alignItems: "center",
           gap: "10px",
           flexWrap: "wrap"
-        } }, /* @__PURE__ */ React.createElement(SuggestionBadge, { t }), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#78350f", lineHeight: 1.5, flex: 1, minWidth: "200px" } }, t("research_hub.ai_convention_banner") || "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.")), !activeLane ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { style: { margin: "4px 0 0", fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, t("research_hub.lane_selector_title") || "Pick a lane to start (or switch any time)"), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "12px", color: "#475569", lineHeight: 1.55 } }, t("research_hub.lane_selector_help") || "These three lanes share one inquiry journal. Evidence cards, voice notes, and your model history carry across \u2014 so a question that starts as scientific inquiry can finish as a humanities op-ed without losing the work."), /* @__PURE__ */ React.createElement("div", { style: {
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-          gap: "12px"
-        } }, lanes.map(function(L) {
-          return /* @__PURE__ */ React.createElement(
-            "button",
-            {
-              key: L.id,
-              type: "button",
-              "data-help-key": "research_hub_lane_" + L.id,
-              onClick: function() {
-                setActiveLane(L.id);
-              },
-              style: {
-                padding: "16px",
-                borderRadius: "14px",
-                border: "1px solid #cbd5e1",
-                background: "#ffffff",
-                textAlign: "left",
-                cursor: "pointer",
-                display: "flex",
-                flexDirection: "column",
-                gap: "8px",
-                transition: "transform 0.15s, box-shadow 0.15s"
-              },
-              onMouseEnter: function(e) {
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
-              },
-              onMouseLeave: function(e) {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }
-            },
-            /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "32px" } }, L.icon), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, L.label), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "11px", color: "#64748b" } }, L.tagline))),
-            /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, L.blurb),
-            L._placeholder && /* @__PURE__ */ React.createElement("span", { style: {
-              alignSelf: "flex-start",
-              padding: "3px 8px",
-              borderRadius: "999px",
-              fontSize: "10px",
-              fontWeight: 800,
-              background: "#fef3c7",
-              color: "#92400e",
-              border: "1px solid #fbbf24",
-              textTransform: "uppercase",
-              letterSpacing: "0.4px"
-            } }, t("research_hub.lane_coming_soon") || "Lane shipping soon")
-          );
-        }))) : activeLane._placeholder ? /* @__PURE__ */ React.createElement(PlaceholderLaneView, { t, lane: activeLane, onBack: function() {
-          setActiveLane(null);
-        } }) : /* @__PURE__ */ React.createElement(
-          ActiveLaneView,
+        } }, /* @__PURE__ */ React.createElement(SuggestionBadge, { t }), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#78350f", lineHeight: 1.5, flex: 1, minWidth: "200px" } }, t("research_hub.ai_convention_banner") || "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.")), educatorViewOn && educatorView ? /* @__PURE__ */ React.createElement(
+          EducatorViewShell,
           {
             t,
-            lane: activeLane,
             journal,
-            setJournal,
-            ask,
-            onBack: function() {
-              setActiveLane(null);
+            onExit: function() {
+              setEducatorViewOn(false);
             },
-            deps: props
+            educatorView,
+            primitives: {
+              SuggestionBadge,
+              ExemplarPair,
+              VoiceNoteBlock,
+              CostMeter,
+              DevLevelSelector
+            },
+            constants: {
+              MAX_AI_CALLS_PER_SESSION,
+              ANSWER_HARD_CAP,
+              VOICE_NOTE_MAX_SECONDS
+            }
           }
+        ) : (
+          /* Lane selector OR active-lane workspace */
+          !activeLane ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { style: { margin: "4px 0 0", fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, t("research_hub.lane_selector_title") || "Pick a lane to start (or switch any time)"), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "12px", color: "#475569", lineHeight: 1.55 } }, t("research_hub.lane_selector_help") || "These three lanes share one inquiry journal. Evidence cards, voice notes, and your model history carry across \u2014 so a question that starts as scientific inquiry can finish as a humanities op-ed without losing the work."), /* @__PURE__ */ React.createElement("div", { style: {
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: "12px"
+          } }, lanes.map(function(L) {
+            return /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                key: L.id,
+                type: "button",
+                "data-help-key": "research_hub_lane_" + L.id,
+                onClick: function() {
+                  setActiveLane(L.id);
+                },
+                style: {
+                  padding: "16px",
+                  borderRadius: "14px",
+                  border: "1px solid #cbd5e1",
+                  background: "#ffffff",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px",
+                  transition: "transform 0.15s, box-shadow 0.15s"
+                },
+                onMouseEnter: function(e) {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
+                },
+                onMouseLeave: function(e) {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
+                }
+              },
+              /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "32px" } }, L.icon), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, L.label), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "11px", color: "#64748b" } }, L.tagline))),
+              /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, L.blurb),
+              L._placeholder && /* @__PURE__ */ React.createElement("span", { style: {
+                alignSelf: "flex-start",
+                padding: "3px 8px",
+                borderRadius: "999px",
+                fontSize: "10px",
+                fontWeight: 800,
+                background: "#fef3c7",
+                color: "#92400e",
+                border: "1px solid #fbbf24",
+                textTransform: "uppercase",
+                letterSpacing: "0.4px"
+              } }, t("research_hub.lane_coming_soon") || "Lane shipping soon")
+            );
+          }))) : activeLane._placeholder ? /* @__PURE__ */ React.createElement(PlaceholderLaneView, { t, lane: activeLane, onBack: function() {
+            setActiveLane(null);
+          } }) : /* @__PURE__ */ React.createElement(
+            ActiveLaneView,
+            {
+              t,
+              lane: activeLane,
+              journal,
+              setJournal,
+              ask,
+              onBack: function() {
+                setActiveLane(null);
+              },
+              deps: props
+            }
+          )
         ), /* @__PURE__ */ React.createElement("details", { style: {
           padding: "12px 14px",
           borderRadius: "12px",
@@ -1710,6 +1776,49 @@
         } }, /* @__PURE__ */ React.createElement("span", null, t("research_hub.footer_persistence_note") || "Your inquiry journal is saved on this device. Switching codenames mid-investigation will show prior work \u2014 clear the inquiry above to start fresh."), /* @__PURE__ */ React.createElement("span", { style: { fontStyle: "italic" } }, t("research_hub.footer_tier_note") || "Hub shell v1 \u2014 lane workspaces shipping next."))
       )
     );
+  }
+  function EducatorViewShell(props) {
+    var t = props.t;
+    var journal = props.journal;
+    var onExit = props.onExit;
+    var educatorView = props.educatorView;
+    var ctx = {
+      t,
+      journal,
+      primitives: props.primitives || {},
+      constants: props.constants || {},
+      onExit
+    };
+    if (educatorView && typeof educatorView.render === "function") {
+      try {
+        return educatorView.render(ctx);
+      } catch (e) {
+        console.error("[ResearchHub] Educator view render error", e);
+        return /* @__PURE__ */ React.createElement("div", { style: {
+          padding: "14px",
+          borderRadius: "12px",
+          background: "#fef2f2",
+          border: "1px solid #fca5a5",
+          color: "#7f1d1d",
+          fontSize: "12px"
+        } }, t("research_hub.educator_view_error") || "The educator dashboard failed to render. Toggling back to student view.", /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onExit, style: {
+          marginLeft: "8px",
+          textDecoration: "underline",
+          background: "transparent",
+          border: "none",
+          color: "#7f1d1d",
+          cursor: "pointer"
+        } }, t("research_hub.educator_view_back") || "Exit educator view"));
+      }
+    }
+    return /* @__PURE__ */ React.createElement("div", { style: {
+      padding: "14px",
+      borderRadius: "12px",
+      background: "#fffbeb",
+      border: "1px solid #fcd34d",
+      color: "#92400e",
+      fontSize: "12px"
+    } }, t("research_hub.educator_view_missing") || "No educator view registered yet. Load research_hub_educator_module.js to enable.");
   }
   function ActiveLaneView(props) {
     var t = props.t;
