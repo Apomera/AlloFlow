@@ -312,7 +312,8 @@ window.StemLab = window.StemLab || {
         { id: 'moorelaw',   icon: '\uD83D\uDCC9', label: 'Moore\'s Law', short: 'Moore' },
         { id: 'qwell',     icon: '\uD83C\uDF0A', label: 'Quantum Wells', short: 'QWell' },
         { id: 'memory',    icon: '\uD83D\uDCBE', label: 'Memory Cells',  short: 'Memory' },
-        { id: 'amplifier', icon: '\uD83D\uDD09', label: 'Amplifier',     short: 'Amp' }
+        { id: 'amplifier', icon: '\uD83D\uDD09', label: 'Amplifier',     short: 'Amp' },
+        { id: 'dopeHunt',  icon: '\u2697\uFE0F', label: 'Doping Discovery', short: 'Dope?' }
       ];
 
       // ═══ SHARED HELPERS ═══
@@ -3656,6 +3657,65 @@ window.StemLab = window.StemLab || {
         else if (subtool === 'qwell') content = renderQuantumWell();
         else if (subtool === 'memory') content = renderMemoryCells();
         else if (subtool === 'amplifier') content = renderAmplifier();
+        else if (subtool === 'dopeHunt') content = (function() {
+          var h = React.createElement;
+          var iq = d.dopeHunt || { conc: 5, tempK: 300, material: 'Si', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('dopeHunt', Object.assign({}, iq, patch)); }
+          var carrierConc = Math.pow(10, 15 + iq.conc) * (iq.tempK / 300);
+          var state;
+          if (iq.conc < 2) state = 'intrinsic';
+          else if (iq.conc < 6) state = 'light';
+          else if (iq.conc < 11) state = 'moderate';
+          else state = 'heavy';
+          var sm = {
+            intrinsic: { label: '🔘 Intrinsic', color: '#64748b', bg: '#f1f5f9', border: '#cbd5e1', desc: 'Minimal dopant. Pure semiconductor — high resistivity.' },
+            light:     { label: '🟢 Lightly doped', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Some carriers introduced. Typical extrinsic regime.' },
+            moderate:  { label: '🟡 Moderately doped', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Strong conductivity, used in transistors.' },
+            heavy:     { label: '🔴 Heavily doped', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Approaching metallic behavior. Used for contacts.' }
+          }[state];
+          return h('div', { className: 'p-4 rounded-xl bg-white border border-amber-300 shadow-sm space-y-3' },
+            h('h3', { className: 'text-sm font-black text-amber-700' }, '⚗️ Doping discovery'),
+            h('p', { className: 'text-[12px] text-slate-700' }, 'Adjust dopant concentration, temperature, material. Discrete 4-band regime. No score, no reveal.'),
+            h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+              h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+              h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc),
+              h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, 'Carriers ≈ ' + carrierConc.toExponential(1) + ' cm⁻³')
+            ),
+            h('div', { className: 'flex gap-2' },
+              ['Si', 'Ge', 'GaAs'].map(function(m) {
+                var active = iq.material === m;
+                return h('button', { key: m, onClick: function() { setIQ({ material: m }); }, className: 'px-2 py-1 rounded text-[11px] font-bold border ' + (active ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300') }, m);
+              })
+            ),
+            h('div', { className: 'grid grid-cols-2 gap-3' },
+              [{ k: 'conc', l: 'Dopant log10 conc', mn: 0, mx: 15, st: 1 },
+               { k: 'tempK', l: 'Temperature (K)', mn: 100, mx: 500, st: 10 }].map(function(s) {
+                return h('div', { key: s.k },
+                  h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-700' }, iq[s.k])),
+                  h('input', { id: 'dh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                    onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                    className: 'w-full', 'aria-label': s.l }));
+              })
+            ),
+            h('div', { className: 'flex gap-2 items-center flex-wrap' },
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.conc, t: iq.tempK, m: iq.material, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+              h('button', { onClick: function() { setIQ({ conc: 5, tempK: 300, material: 'Si', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does temperature affect carrier concentration?',
+              className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+              h('ul', { className: 'list-disc pl-5 space-y-1' },
+                h('li', null, 'Compare Si and GaAs at same concentration. Why differ?'),
+                h('li', null, 'Find two settings producing same regime.'))),
+            h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+              'I understand — explain in own words'),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how concentration, temperature, and material jointly set the regime.',
+              className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+            h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state marker; no carrier-density score; no reveal — by design.')
+          );
+        })();
         else content = renderBandGap();
       }
 

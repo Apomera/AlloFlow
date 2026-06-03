@@ -1342,7 +1342,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             { id: 'tipping', icon: '\u26A0\uFE0F', label: 'Tipping Points' },
             { id: 'justice', icon: '\u2696\uFE0F', label: 'Climate Justice' },
             { id: 'solutions', icon: '\uD83D\uDCA1', label: 'Solutions' },
-            { id: 'pathways', icon: '\uD83D\uDDFA\uFE0F', label: 'Policy Pathways' }
+            { id: 'pathways', icon: '\uD83D\uDDFA\uFE0F', label: 'Policy Pathways' },
+            { id: 'forceHunt', icon: '\u2600\uFE0F', label: 'Radiative Forcing' }
           ].map(function(t) {
             var active = tab === t.id;
             return el('button', { key: t.id, onClick: function() { visitTab(t.id); },
@@ -3965,6 +3966,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, 'Period actions'),
                 path.yearActions.map(function(a, ai) { return el('div', { key: ai }, '\u00b7 ' + a.tech + ' \u2192 ' + a.target + ' (' + a.hours + 'h)'); })
               ) : el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'No actions yet this period. Pick a sector, pick a technique.')
+            );
+          })(),
+
+          // === H7b'' inquiry widget: radiative forcing ===
+          tab === 'forceHunt' && (function() {
+            var iq = d.forceHunt || { albedo: 30, cloudFB: 0, ghg: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd({ forceHunt: Object.assign({}, iq, patch) }); }
+            // Simplified forcing: ghg adds W/m², albedo subtracts, cloudFB amplifies/dampens
+            var forcingWm2 = (iq.ghg - 50) * 0.05 - (iq.albedo - 30) * 0.05 + iq.cloudFB * 0.02;
+            var state;
+            if (forcingWm2 > 1.5) state = 'runaway';
+            else if (forcingWm2 < -1.5) state = 'cooling';
+            else if (Math.abs(forcingWm2) < 0.5) state = 'stable';
+            else state = 'paradox';
+            var sm = {
+              runaway: { label: '🔥 Runaway warming', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Positive feedback dominates. Energy in >> energy out.' },
+              cooling: { label: '🧊 Rapid cooling',   color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'High albedo + negative feedback. Ice-age trajectory.' },
+              stable:  { label: '🟢 Stable climate',  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Net forcing ≈ 0 W/m². Earth equilibrium.' },
+              paradox: { label: '⚖️ Albedo paradox',  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Forcings partially offset. Climate slowly drifts.' }
+            }[state];
+            return el('div', { style: { padding: 16, background: '#f8fafc', borderRadius: 12, border: '1px solid #cbd5e1' } },
+              el('h3', { style: { fontSize: 14, fontWeight: 800, color: '#0891b2', margin: '0 0 6px 0' } }, '☀️ Radiative forcing discovery'),
+              el('p', { style: { fontSize: 12, color: '#475569', marginBottom: 10 } }, 'Sliders for albedo, cloud feedback, GHG forcing. Discrete 4-state climate regime. No score, no reveal.'),
+              el('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 10 } },
+                el('div', { style: { fontSize: 15, fontWeight: 900, color: sm.color } }, sm.label),
+                el('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
+                el('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } }, 'Net forcing ≈ ' + forcingWm2.toFixed(2) + ' W/m²')
+              ),
+              el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
+                [{ k: 'albedo', l: 'Albedo (%)', mn: 0, mx: 100, st: 1 },
+                 { k: 'cloudFB', l: 'Cloud feedback (%)', mn: -50, mx: 50, st: 1 },
+                 { k: 'ghg', l: 'GHG forcing (%)', mn: 0, mx: 100, st: 1 }].map(function(s) {
+                  return el('div', { key: s.k },
+                    el('label', { htmlFor: 'fh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 } }, s.l + ': ', el('span', { style: { color: '#0891b2', fontFamily: 'monospace' } }, iq[s.k])),
+                    el('input', { id: 'fh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                      onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                      style: { width: '100%' }, 'aria-label': s.l }));
+                })
+              ),
+              el('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
+                el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.albedo, c: iq.cloudFB, g: iq.ghg, f: forcingWm2.toFixed(2), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+                el('button', { onClick: function() { setIQ({ albedo: 30, cloudFB: 0, ghg: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: '#fff', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+              ),
+              el('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When does albedo overcome GHG forcing?',
+                style: { width: '100%', minHeight: 50, padding: 6, background: '#fff', color: '#1e293b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
+              !iq.stuckRevealed && el('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
+              iq.stuckRevealed && el('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 4, fontSize: 11, color: '#475569', marginBottom: 8 } },
+                el('ul', { style: { margin: 0, paddingLeft: 18 } },
+                  el('li', null, 'Real Earth albedo ≈ 30%. What if it drops to 15%?'),
+                  el('li', null, 'Cloud feedback uncertainty is the biggest climate-projection uncertainty. Investigate why.'))),
+              el('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#059669', cursor: 'pointer' } },
+                el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
+              iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how albedo, cloud feedback, and GHGs jointly drive climate state.',
+                style: { width: '100%', minHeight: 60, padding: 6, background: '#fff', color: '#1e293b', border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
+              el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state climate marker; no temperature score; no reveal — by design.')
             );
           })()
         )

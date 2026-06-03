@@ -2144,7 +2144,60 @@
       // ── Coach panel ──
       el('div', { style: { padding: '8px 14px', background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
         coachTip
-      )
+      ),
+
+      // === H7b'' inquiry widget: gravity-rigidity discovery ===
+      (function() {
+        var iq = d.gravRigid || { gravMult: 1, rigidity: 80, mass: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd('gravRigid', Object.assign({}, iq, patch)); }
+        var stress = (iq.mass / 50) * iq.gravMult * (100 - iq.rigidity) / 100;
+        var state;
+        if (stress < 0.5) state = 'ultra';
+        else if (stress < 1.2) state = 'stable';
+        else if (stress < 2.5) state = 'mod';
+        else state = 'unstable';
+        var sm = {
+          ultra:    { label: '🏛️ Ultra-stable', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Low effective stress. Structure tolerates extreme conditions.' },
+          stable:   { label: '🟢 Stable',        color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Within design margins. Survives normal loads.' },
+          mod:      { label: '🟡 Moderate',       color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Approaching failure threshold. Marginal under stress.' },
+          unstable: { label: '🔴 Unstable',       color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Likely collapse under load.' }
+        }[state];
+        return el('div', { style: { padding: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid #334155', color: '#e2e8f0' } },
+          el('h3', { style: { fontSize: 13, fontWeight: 800, color: '#a78bfa', margin: '0 0 6px 0' } }, '⚖️ Gravity-rigidity discovery'),
+          el('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 8 } }, 'Sliders for gravity multiplier, rigidity, mass. Discrete stability outcome. No score, no reveal.'),
+          el('div', { style: { padding: 8, borderRadius: 6, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 8 } },
+            el('div', { style: { fontSize: 13, fontWeight: 900, color: sm.color } }, sm.label),
+            el('div', { style: { fontSize: 10, color: '#475569', marginTop: 2 } }, sm.desc)
+          ),
+          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 8 } },
+            [{ k: 'gravMult', l: 'Gravity ×', mn: 0.5, mx: 8, st: 0.1 },
+             { k: 'rigidity', l: 'Rigidity %', mn: 30, mx: 100, st: 5 },
+             { k: 'mass',     l: 'Load mass', mn: 10, mx: 200, st: 5 }].map(function(s) {
+              return el('div', { key: s.k },
+                el('label', { htmlFor: 'gr-' + s.k, style: { display: 'block', fontSize: 10, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 2 } }, s.l + ': ', el('span', { style: { color: '#a78bfa', fontFamily: 'monospace' } }, iq[s.k])),
+                el('input', { id: 'gr-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                  onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
+                  style: { width: '100%' }, 'aria-label': s.l }));
+            })
+          ),
+          el('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 } },
+            el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ g: iq.gravMult, r: iq.rigidity, m: iq.mass, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#0f172a', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+            el('button', { onClick: function() { setIQ({ gravMult: 1, rigidity: 80, mass: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺ Reset')
+          ),
+          el('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When does rigidity rescue an overloaded structure?',
+            style: { width: '100%', minHeight: 50, padding: 6, background: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
+          !iq.stuckRevealed && el('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 10, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
+          iq.stuckRevealed && el('div', { style: { padding: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 10, color: '#cbd5e1', marginBottom: 8 } },
+            el('ul', { style: { margin: 0, paddingLeft: 14 } },
+              el('li', null, 'Find a setting where doubling rigidity moves you up one state.'),
+              el('li', null, 'On Mars (gravMult=0.4), what mass becomes stable?'))),
+          el('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+            el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
+          iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how gravity, rigidity, and mass interact to determine stability.',
+            style: { width: '100%', minHeight: 60, padding: 6, background: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 11, fontFamily: 'monospace', marginTop: 4 }, rows: 3 }),
+          el('div', { style: { marginTop: 6, fontSize: 9, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state structural marker; no FEM score; no reveal — by design.')
+        );
+      })()
     );
   }});
 })();

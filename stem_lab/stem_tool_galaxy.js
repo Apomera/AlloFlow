@@ -1372,7 +1372,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "flex gap-1 ml-auto bg-slate-100 rounded-lg p-0.5" },
 
-                [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy' }, { key: 'star', icon: '\u2B50', label: 'Star Life' }, { key: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }].map(function (m) {
+                [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy' }, { key: 'star', icon: '\u2B50', label: 'Star Life' }, { key: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }, { key: 'metalHunt', icon: '\uD83C\uDF1F', label: 'Metallicity' }].map(function (m) {
 
                   var isActive = m.key === 'quiz' ? d.quizMode : (!d.quizMode && simMode === m.key);
 
@@ -2937,6 +2937,60 @@ if (!window._galaxyHasLoadedOnce) {
               // (Snapshot button moved inside canvas container)
 
             ),
+
+            // === H7b'' inquiry widget: stellar metallicity discovery ===
+            !d.quizMode && simMode === 'metalHunt' && (function() {
+              var h = React.createElement;
+              var iq = d.metalHunt || { metallicity: 1, mass: 1, age: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('metalHunt', Object.assign({}, iq, patch)); }
+              var state;
+              if (iq.metallicity < 0.05) state = 'popIII';
+              else if (iq.metallicity < 0.3) state = 'poor';
+              else if (iq.metallicity < 1.3) state = 'solar';
+              else state = 'rich';
+              var sm = {
+                popIII: { label: '🌌 Population III (zero-metal)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Hypothetical first stars. Pure H+He. Extremely massive.' },
+                poor:   { label: '🔵 Metal-poor (Population II)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Old halo stars. Globular clusters. Long-lived.' },
+                solar:  { label: '🟡 Solar-metallicity (Pop I)', color: '#facc15', bg: '#fefce8', border: '#fde047', desc: 'Sun-like. Modern disk stars. Planets possible.' },
+                rich:   { label: '🟠 Metal-rich (super-solar)', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Young inner-disk stars. High planet formation rate.' }
+              }[state];
+              return h('div', { className: 'p-4 rounded-xl bg-slate-900 text-slate-100 border border-purple-400 space-y-3' },
+                h('h3', { className: 'text-sm font-black text-purple-300' }, '🌟 Stellar metallicity discovery'),
+                h('p', { className: 'text-[12px] text-slate-300 leading-relaxed' }, 'Adjust metallicity (Z/Z☉), stellar mass, age. Widget shows 4 discrete stellar populations. No score, no reveal.'),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                  h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3' },
+                  [{ k: 'metallicity', l: 'Metallicity (Z☉)', mn: 0.001, mx: 2, st: 0.01 },
+                   { k: 'mass', l: 'Mass (M☉)', mn: 0.1, mx: 50, st: 0.1 },
+                   { k: 'age', l: 'Age (Gyr)', mn: 0, mx: 14, st: 0.1 }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'mh-' + s.k, className: 'block text-[11px] font-bold text-slate-300' }, s.l + ': ', h('span', { className: 'font-mono text-purple-300' }, iq[s.k])),
+                      h('input', { id: 'mh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ z: iq.metallicity, m: iq.mass, a: iq.age, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200 border border-slate-600' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ metallicity: 1, mass: 1, age: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-transparent text-[11px] font-semibold text-slate-400 border border-slate-600' }, '↺ Reset')
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What does metallicity tell us about a star’s history?',
+                  className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-slate-600 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-700/30 text-[11px] font-bold text-amber-300 border border-amber-700' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-slate-200 leading-relaxed' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Old globular clusters have low Z. Investigate why.'),
+                    h('li', null, 'Planets need metals. Which population is most planet-friendly?'))),
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-300 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how metallicity shaped the early Universe vs today.',
+                  className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-emerald-700 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state population marker; no luminosity score; no reveal — by design.')
+              );
+            })()
 
           );
       })();
