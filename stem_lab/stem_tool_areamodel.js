@@ -1119,7 +1119,58 @@ window.StemLab = window.StemLab || {
               style: { width: '100%', height: '100%', display: 'block' }
             })
           )
-        )
+        ),
+        // === H7b'' inquiry widget: area discovery ===
+        (function() {
+          var iq = d._areaHunt || { rows: 4, cols: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('_areaHunt', Object.assign({}, iq, patch)); }
+          var area = iq.rows * iq.cols;
+          var state;
+          if (area === iq.rows + iq.cols) state = 'special';
+          else if (iq.rows === iq.cols) state = 'square';
+          else if (area > 50) state = 'large';
+          else state = 'rectangle';
+          var sm = {
+            special:   { label: '✨ Special case (area = perimeter sum)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
+            square:    { label: '🟦 Square (rows = cols)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+            large:     { label: '🟧 Large rectangle (area > 50)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+            rectangle: { label: '🟩 Standard rectangle', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+          }[state];
+          return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-emerald-300 space-y-2' },
+            h('h3', { className: 'text-sm font-black text-emerald-700' }, '📐 Area discovery'),
+            h('p', { className: 'text-[11px] text-slate-700' }, 'Sliders for rows × cols. Discrete 4-state classification. No score, no reveal.'),
+            h('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
+              h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
+              h('div', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, iq.rows + ' × ' + iq.cols + ' = ' + area + ' sq units')
+            ),
+            h('div', { className: 'grid grid-cols-2 gap-2' },
+              [{ k: 'rows', l: 'rows' }, { k: 'cols', l: 'cols' }].map(function(s) {
+                return h('div', { key: s.k },
+                  h('label', { htmlFor: 'ar-' + s.k, className: 'block text-[10px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-emerald-700' }, iq[s.k])),
+                  h('input', { id: 'ar-' + s.k, type: 'range', min: 1, max: 12, step: 1, value: iq[s.k],
+                    onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                    className: 'w-full', 'aria-label': s.l }));
+              })
+            ),
+            h('div', { className: 'flex gap-2 items-center flex-wrap' },
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rows, c: iq.cols, a: area, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+              h('button', { onClick: function() { setIQ({ rows: 4, cols: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When does area = rows + cols?',
+              className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
+              h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                h('li', null, 'Find sizes where area = perimeter (rare integers).'),
+                h('li', null, 'When does swapping rows/cols change anything?'))),
+            h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
+              'I understand — explain in own words'),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain commutative property + area = length × width.',
+              className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
+            h('div', { className: 'text-[9px] italic text-slate-500' }, 'Design note: discrete 4-state classification; no area-test score; no reveal — by design.')
+          );
+        })()
       );
     }
   });
