@@ -3106,6 +3106,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         case 'aiPractice':      viewBody = renderAiPractice(); break;
         case 'resources':       viewBody = renderResources(); break;
         case 'mastery':         viewBody = renderResponderMastery(); break;
+        case 'decisionHunt':    viewBody = (function() {
+          var iq = d.decisionHunt || { speed: 50, accuracy: 50, consistency: 50, recall: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('decisionHunt', Object.assign({}, iq, patch)); }
+          var readiness = (iq.speed * 0.2 + iq.accuracy * 0.3 + iq.consistency * 0.25 + iq.recall * 0.25) / 100;
+          var state;
+          if (readiness < 0.3) state = 'novice';
+          else if (readiness < 0.55) state = 'developing';
+          else if (readiness < 0.8) state = 'competent';
+          else state = 'expert';
+          var sm = {
+            novice:     { label: '🌱 Novice responder', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Build foundational recognition first.' },
+            developing: { label: '🟡 Developing', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Practice scenarios; build automaticity.' },
+            competent:  { label: '🟢 Competent', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Reliable in familiar situations.' },
+            expert:     { label: '🌟 Expert', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Calibrated across diverse vignettes.' }
+          }[state];
+          var H = function(t, p, c) { return ctx.React.createElement.apply(null, arguments); };
+          return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
+            H('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Menu'),
+            H('div', { style: { padding: 16, background: T.card, borderRadius: 10, color: T.text, border: '1px solid ' + T.border } },
+              H('h3', { style: { fontSize: 14, fontWeight: 800, color: T.accent, margin: '0 0 6px 0' } }, '🧭 Decision-calibration discovery'),
+              H('p', { style: { fontSize: 12, color: T.textMuted, marginBottom: 12 } }, 'Four sliders self-rate response capabilities. Discrete 4-state readiness + SVG capability heatmap. No score, no reveal.'),
+              H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
+                H('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
+                H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
+                H('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } }, 'Readiness ' + (readiness * 100).toFixed(0) + '%')
+              ),
+              // SVG capability heatmap
+              H('div', { style: { padding: 10, background: 'rgba(15,23,42,0.4)', borderRadius: 8, marginBottom: 12 } },
+                H('svg', { viewBox: '0 0 280 80', style: { width: '100%', height: 80 } },
+                  ['speed', 'accuracy', 'consistency', 'recall'].map(function(k, i) {
+                    var val = iq[k];
+                    var color = val > 75 ? '#059669' : (val > 50 ? '#d97706' : (val > 25 ? '#ea580c' : '#dc2626'));
+                    return H('g', { key: 'h' + i },
+                      H('rect', { x: 20 + i * 65, y: 20, width: 50, height: 40, fill: color, rx: 4, opacity: 0.3 + val / 150 }),
+                      H('text', { x: 45 + i * 65, y: 45, textAnchor: 'middle', fontSize: 12, fontWeight: 'bold', fill: '#fff' }, val + '%'),
+                      H('text', { x: 45 + i * 65, y: 72, textAnchor: 'middle', fontSize: 9, fill: '#94a3b8' }, k)
+                    );
+                  })
+                )
+              ),
+              H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 10 } },
+                [{ k: 'speed', l: 'Response speed (%)' },
+                 { k: 'accuracy', l: 'Action accuracy (%)' },
+                 { k: 'consistency', l: 'Scenario consistency (%)' },
+                 { k: 'recall', l: 'Critical-action recall (%)' }].map(function(s) {
+                  return H('div', { key: s.k },
+                    H('label', { htmlFor: 'dc-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: T.textMuted, marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: T.accent, fontFamily: 'monospace' } }, iq[s.k])),
+                    H('input', { id: 'dc-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
+                      onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                      style: { width: '100%' }, 'aria-label': s.l }));
+                })
+              ),
+              H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
+                H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ sp: iq.speed, a: iq.accuracy, c: iq.consistency, r: iq.recall, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: T.bg2 || '#1e293b', color: T.text, border: '1px solid ' + T.border, borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+                H('button', { onClick: function() { setIQ({ speed: 50, accuracy: 50, consistency: 50, recall: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: T.textMuted, border: '1px solid ' + T.border, borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+              ),
+              H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: which capability matters most for first-aid response?',
+                style: { width: '100%', minHeight: 50, padding: 6, background: T.bg2 || '#1e293b', color: T.text, border: '1px solid ' + T.border, borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
+              !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — open prompts'),
+              iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: T.text, marginBottom: 8 } },
+                H('ul', { style: { margin: 0, paddingLeft: 18 } },
+                  H('li', null, 'In real emergencies, what matters more: speed or accuracy?'),
+                  H('li', null, 'Real EMTs run drills until response is automatic. Why?'))),
+              H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+                H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain'),
+              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain readiness composition.',
+                style: { width: '100%', minHeight: 60, padding: 6, background: T.bg2 || '#1e293b', color: T.text, border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
+              H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: T.textMuted } }, 'Design note: discrete 4-state readiness marker; SVG capability map; no certification score — by design.')
+            )
+          );
+        })(); break;
         case 'menu':
         default:                viewBody = renderMenu(); break;
       }
