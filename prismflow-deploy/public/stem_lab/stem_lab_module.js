@@ -646,7 +646,8 @@
 
       // Quest progress persistence
       React.useEffect(function() {
-        try { localStorage.setItem('alloflow_quest_progress', JSON.stringify(_questProgress)); } catch(e) {}
+        try { localStorage.setItem('alloflow_quest_progress', JSON.stringify(_questProgress)); }
+        catch(e) { console.error('[QuestSystem] Failed to save quest progress (quota or permission):', e.message || e); }
       }, [_questProgress]);
 
       // Quest evaluation — watches labToolData for auto-completion
@@ -2938,14 +2939,6 @@
             var _allStemTools = [
               { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals'), desc: '', color: 'slate', category: true },
               {
-                id: 'arccity',
-                icon: '🌆',
-                label: 'Arc City',
-                desc: 'Author functions to fire light-beams, clear walls, and re-light a neon city.',
-                color: 'fuchsia',
-                ready: true
-              },
-              {
                 id: 'volume',
                 icon: '📦',
                 label: '3D Volume Explorer',
@@ -3064,6 +3057,7 @@
                 color: 'teal', ready: true
               },
               { id: '_cat_Life&EarthScience', icon: '', label: t('stem.tools_menu.life_earth_science'), desc: '', color: 'slate', category: true },
+              { id: 'dinoLab', icon: '🦕', label: 'Dino Lab', desc: 'Explore 360+ dinosaurs across deep time: search, compare, dig fossils, build food webs, and meet the bird connection — with how-we-know notes on every species.', color: 'emerald', ready: true },
               {
                 // @tool cell
                 id: 'cell', icon: '🔬', label: t('stem.tools_menu.cell_simulator'),
@@ -3425,6 +3419,7 @@
               },
 
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
+              { id: 'arccity', icon: '🌆', label: 'Arc City', desc: 'Author linear & quadratic functions to fire light-beams, clear walls, and re-light a neon city.', color: 'fuchsia', ready: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
               { id: 'spaceExplorer', label: 'Space Explorer', icon: '\uD83C\uDF0C', desc: 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
               { id: 'alloBotSage', label: 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true },
@@ -4718,7 +4713,15 @@
           // setStemLabTab / setToolSnapshots / shared explore setters during
           // render could trigger "Cannot update a component while rendering
           // a different component" because those setters were raw.
-          var _safeSetStemLabTool = typeof setStemLabTool === 'function' ? _deferSafe(setStemLabTool) : function() {};
+          // Wrap setStemLabTool so any tool switch first runs the universe tool's cleanup
+          // (animationFrame, ResizeObserver, tracked setTimeouts, time-lapse interval).
+          // The cleanup is idempotent + no-op if universe was never mounted, so safe for every switch.
+          var _safeSetStemLabTool = typeof setStemLabTool === 'function' ? _deferSafe(function() {
+            if (typeof window !== 'undefined' && typeof window._universeCleanupAll === 'function') {
+              try { window._universeCleanupAll(); } catch(e) {}
+            }
+            setStemLabTool.apply(null, arguments);
+          }) : function() {};
           var _safeSetStemLabTab = typeof setStemLabTab === 'function' ? _deferSafe(setStemLabTab) : function() {};
           var _safeSetToolSnapshots = typeof setToolSnapshots === 'function' ? _deferSafe(setToolSnapshots) : function() {};
           var _ctx = {

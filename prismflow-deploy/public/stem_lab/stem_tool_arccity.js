@@ -245,6 +245,17 @@
     return out;
   }
 
+  // ── Theme-aware accent palette (design §7.1): functional colors must pass
+  // WCAG on each theme's canvas. The DEFAULT theme is LIGHT (#ffffff), so the
+  // old fixed dark-substrate accents failed there — these palettes fix it.
+  // Pure + testable; the golden master asserts each palette passes contrast. ──
+  var THEME_CANVAS = { light: '#ffffff', dark: '#0f172a', contrast: '#000000' };
+  function arcPalette(theme) {
+    if (theme === 'contrast') return { accent: '#ffff00', nodeOff: '#ffffff', nodeOn: '#00ff00', gate: '#00ffff', wall: '#ffffff', warn: '#ffff00', danger: '#ff5555', btnText: '#000000' };
+    if (theme === 'dark') return { accent: '#22d3ee', nodeOff: '#f0abfc', nodeOn: '#34d399', gate: '#a78bfa', wall: '#64748b', warn: '#fbbf24', danger: '#f87171', btnText: '#06262b' };
+    return { accent: '#0e7490', nodeOff: '#c026d3', nodeOn: '#047857', gate: '#6d28d9', wall: '#475569', warn: '#b45309', danger: '#b91c1c', btnText: '#ffffff' }; // light (default :root / .theme-default)
+  }
+
   var ArcCityCore = {
     LEVELS: LEVELS,
     levelById: levelById,
@@ -268,7 +279,9 @@
     badgesForSolve: badgesForSolve,
     snapToRange: snapToRange,
     parabolaVertexParams: parabolaVertexParams,
-    linePivotParams: linePivotParams
+    linePivotParams: linePivotParams,
+    THEME_CANVAS: THEME_CANVAS,
+    arcPalette: arcPalette
   };
 
   if (typeof module !== 'undefined' && module.exports) { module.exports = ArcCityCore; }
@@ -334,6 +347,15 @@
 
   function clampStep(val, r) { return snapToRange(val, r); }
 
+  // Detect the active theme by class (default :root / .theme-default = light).
+  function arcTheme() {
+    try {
+      if (document.querySelector('.theme-contrast')) return 'contrast';
+      if (document.querySelector('.theme-dark')) return 'dark';
+    } catch (e) { }
+    return 'light';
+  }
+
   function beamRef(el) {
     if (!el) return;
     try {
@@ -364,7 +386,7 @@
     label: 'Arc City',
     desc: 'Author functions to fire light-beams, clear walls, and re-light a neon city.',
     color: 'fuchsia',
-    category: 'math',
+    category: 'strategy',
     render: function (ctx) {
       var React = ctx && ctx.React;
       if (!React) { return null; }
@@ -374,16 +396,20 @@
         var setToolData = ctx.setToolData;
         var t = ctx.t || function (k, d) { return d || k; };
 
-        if (!toolData._arccity) {
-          if (typeof setToolData === 'function') {
-            setToolData(function (prev) {
-              return Object.assign({}, prev, { _arccity: { levelId: 'L1', fired: false, byLevel: {}, tier: 'practice', badges: [] } });
-            });
-          }
-          return h('div', { style: { padding: 24, color: 'var(--allo-stem-text, #e2e8f0)' } }, t('arccity.loading', 'Loading Arc City…'));
+        // Render the board immediately from an inline default; persist the initial
+        // state in the background. This previously returned a "Loading…" placeholder
+        // and gated the first board render on a setToolData round-trip — but that
+        // setState runs DURING render, so the host defers it (setTimeout via
+        // _renderingFlag), which left the tool STUCK on "Loading…". Reading a default
+        // inline (the same pattern Dino Lab uses) renders the board on the first
+        // pass; interactions still persist via the event-handler setToolData calls.
+        var S = toolData._arccity || { levelId: 'L1', fired: false, byLevel: {}, tier: 'practice', badges: [] };
+        if (!toolData._arccity && typeof setToolData === 'function') {
+          setToolData(function (prev) {
+            if (prev && prev._arccity) return prev;
+            return Object.assign({}, prev, { _arccity: { levelId: 'L1', fired: false, byLevel: {}, tier: 'practice', badges: [] } });
+          });
         }
-
-        var S = toolData._arccity;
         var byLevel = S.byLevel || {};
         var level = levelById(S.levelId || 'L1');
         var lIdx = levelIndex(level.id);
@@ -505,7 +531,8 @@
 
         var INK = 'var(--allo-stem-text, #e2e8f0)';
         var GRID = 'var(--allo-stem-border, #334155)';
-        var BEAM = '#22d3ee', NODE_OFF = '#f0abfc', NODE_ON = '#34d399', GATE = '#a78bfa', WALL = '#64748b';
+        var PAL = arcPalette(arcTheme());
+        var BEAM = PAL.accent, NODE_OFF = PAL.nodeOff, NODE_ON = PAL.nodeOn, GATE = PAL.gate, WALL = PAL.wall;
 
         var gridEls = [];
         for (var gx = 0; gx <= 10; gx++) gridEls.push(h('line', { key: 'gx' + gx, x1: sx(gx), y1: sy(wy0), x2: sx(gx), y2: sy(wy1), stroke: GRID, strokeWidth: gx === 0 ? 1.5 : 0.5, opacity: gx === 0 ? 0.9 : 0.4 }));
@@ -553,8 +580,8 @@
           overlay.push(h('polyline', { key: 'beam-' + (ls.shots || 0), ref: beamRef, points: ptsStr(function (pt) { return pt.x <= killX + 0.0001; }), fill: 'none', stroke: res.result === 'hit' ? NODE_ON : BEAM, strokeWidth: 3.5, strokeLinecap: 'round', style: { filter: 'drop-shadow(0 0 4px ' + (res.result === 'hit' ? NODE_ON : BEAM) + ')' } }));
           if (res.killedAt) {
             var kx = sx(res.killedAt.x), ky = sy(res.killedAt.y), mk = 7;
-            overlay.push(h('line', { key: 'kx1', x1: kx - mk, y1: ky - mk, x2: kx + mk, y2: ky + mk, stroke: '#f87171', strokeWidth: 3, strokeLinecap: 'round' }));
-            overlay.push(h('line', { key: 'kx2', x1: kx - mk, y1: ky + mk, x2: kx + mk, y2: ky - mk, stroke: '#f87171', strokeWidth: 3, strokeLinecap: 'round' }));
+            overlay.push(h('line', { key: 'kx1', x1: kx - mk, y1: ky - mk, x2: kx + mk, y2: ky + mk, stroke: PAL.danger, strokeWidth: 3, strokeLinecap: 'round' }));
+            overlay.push(h('line', { key: 'kx2', x1: kx - mk, y1: ky + mk, x2: kx + mk, y2: ky - mk, stroke: PAL.danger, strokeWidth: 3, strokeLinecap: 'round' }));
           }
         }
 
@@ -657,11 +684,11 @@
 
         var paramRows = level.paramOrder.map(function (n) { return paramRow(n); });
 
-        var fireBtnStyle = { flex: 1, padding: '10px 14px', borderRadius: 10, border: 'none', background: BEAM, color: '#06262b', fontWeight: 800, fontSize: 15, cursor: 'pointer' };
+        var fireBtnStyle = { flex: 1, padding: '10px 14px', borderRadius: 10, border: 'none', background: BEAM, color: PAL.btnText, fontWeight: 800, fontSize: 15, cursor: 'pointer' };
         var resetBtnStyle = { padding: '10px 14px', borderRadius: 10, border: '1px solid ' + GRID, background: 'transparent', color: INK, fontWeight: 700, fontSize: 14, cursor: 'pointer' };
 
         var resultText = S.fired ? describeResult(level, res, ls.shots || 0) : describeBoard(level);
-        var resultColor = !S.fired ? INK : (res.result === 'hit' ? NODE_ON : (res.result === 'miss' ? '#fbbf24' : '#f87171'));
+        var resultColor = !S.fired ? INK : (res.result === 'hit' ? NODE_ON : (res.result === 'miss' ? PAL.warn : PAL.danger));
 
         var showHint = !ls.solved && (ls.misses || 0) >= HINT_AFTER;
 
@@ -680,7 +707,7 @@
             h('button', { key: 'fire', type: 'button', onClick: fire, style: fireBtnStyle }, '⚡ ' + t('arccity.fire', 'Fire beam')),
             h('button', { key: 'reset', type: 'button', onClick: resetLevel, style: resetBtnStyle }, t('arccity.reset_btn', 'Reset'))),
           h('div', { key: 'result', role: 'status', style: { marginTop: 12, fontSize: 14, lineHeight: 1.5, color: resultColor, minHeight: 42 } }, resultText),
-          showHint ? h('div', { key: 'hint', style: { marginTop: 8, fontSize: 13, color: '#fcd34d', padding: '8px 10px', borderRadius: 8, background: 'rgba(252,211,77,0.10)' } }, '💡 ' + level.hint) : null,
+          showHint ? h('div', { key: 'hint', style: { marginTop: 8, fontSize: 13, color: PAL.warn, padding: '8px 10px', borderRadius: 8, background: 'rgba(252,211,77,0.10)' } }, '💡 ' + level.hint) : null,
           h('div', { key: 'shots', style: { marginTop: 6, fontSize: 12, color: INK, opacity: 0.7 } },
             (ls.solved ? '✅ ' + t('arccity.solved', 'Node lit!') + (indepSolved ? ' ' + t('arccity.indep_tag', '(solved independently)') : '') + '  ' : '') + t('arccity.shots', 'Shots fired:') + ' ' + (ls.shots || 0)),
           h('ul', { key: 'coords', style: { listStyle: 'none', padding: 0, margin: '8px 0 0', fontSize: 12, color: INK, opacity: 0.8 } }, coordItems));
