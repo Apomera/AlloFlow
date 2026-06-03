@@ -19993,6 +19993,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       }
 
       if (view === 'quotes') return h(QuotesView);
+      if (view === 'wingHunt') return h(function() {
+        var d2 = (toolData && toolData.birdLab) || {};
+        var iq = d2.wingHunt || { wingArea: 4, mass: 500, ar: 8, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) {
+          setToolData(function(prev) {
+            var prior = (prev && prev.birdLab) || {};
+            var st = Object.assign({}, prior.wingHunt || iq, patch);
+            return Object.assign({}, prev, { birdLab: Object.assign({}, prior, { wingHunt: st }) });
+          });
+        }
+        var wingLoading = iq.mass / iq.wingArea;
+        var flightStyle;
+        if (wingLoading < 25 && iq.ar > 10) flightStyle = 'soarer';
+        else if (wingLoading < 50) flightStyle = 'flapper';
+        else if (wingLoading >= 150) flightStyle = 'diver';
+        else flightStyle = 'general';
+        var fsMeta = {
+          soarer:  { label: '🦅 Soarer (low load, high AR)', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Albatross-like. Glides on thermals, minimal flapping.' },
+          flapper: { label: '🐦 Flapper (medium load)',       color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Songbird-like. Active wing motion, moderate efficiency.' },
+          diver:   { label: '🦆 Diver (high load)',           color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Duck/loon-like. Heavy fast flight, body-density adapted.' },
+          general: { label: '🪶 General-purpose',             color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Mixed strategy. Crow-like or hawk-like.' }
+        }[flightStyle];
+        var H = React.createElement;
+        return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
+          H('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Back to menu'),
+          H('div', { style: { padding: 16, background: '#0f172a', borderRadius: 10, color: '#e2e8f0' } },
+            H('h3', { style: { fontSize: 16, fontWeight: 800, color: '#67e8f9', margin: '0 0 6px 0' } }, '🦅 Wing loading discovery'),
+            H('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 12 } }, 'Adjust wing area, body mass, and aspect ratio. Widget classifies flight style into one of four discrete categories. No score, no reveal.'),
+            H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: fsMeta.bg, border: '2px solid ' + fsMeta.border, marginBottom: 12 } },
+              H('div', { style: { fontSize: 15, fontWeight: 900, color: fsMeta.color } }, fsMeta.label),
+              H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, fsMeta.desc),
+              H('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontFamily: 'monospace' } }, 'Wing loading ≈ ' + wingLoading.toFixed(1) + ' g/m²')
+            ),
+            H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 } },
+              [{ k: 'wingArea', l: 'Wing area (m²)', v: iq.wingArea, mn: 0.5, mx: 10, st: 0.1 },
+               { k: 'mass', l: 'Body mass (g)', v: iq.mass, mn: 5, mx: 5000, st: 5 },
+               { k: 'ar', l: 'Aspect ratio', v: iq.ar, mn: 3, mx: 18, st: 0.5 }].map(function(s) {
+                return H('div', { key: s.k },
+                  H('label', { htmlFor: 'wh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: '#67e8f9', fontFamily: 'monospace' } }, s.v)),
+                  H('input', { id: 'wh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: s.v,
+                    onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
+                    style: { width: '100%' }, 'aria-label': s.l }));
+              })
+            ),
+            H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
+              H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ wa: iq.wingArea, m: iq.mass, ar: iq.ar, st: flightStyle }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+              H('button', { onClick: function() { setIQ({ wingArea: 4, mass: 500, ar: 8, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+            ),
+            H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What body+wing combinations enable soaring?',
+              style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 2 }),
+            !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, '🤔 Stuck — open prompts'),
+            iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
+              H('ul', { style: { margin: 0, paddingLeft: 18 } },
+                H('li', null, 'Find two settings producing the same flight style.'),
+                H('li', null, 'Albatross has aspect ratio ~16. Investigate why.'))),
+            H('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },
+              H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+                H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
+              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'How do wing loading + aspect ratio shape flight strategy?',
+                style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 })),
+            H('div', { style: { marginTop: 10, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-style flight marker; no efficiency score; no reveal — by design.')
+          )
+        );
+      });
       return h(MainMenu);
     }
   });

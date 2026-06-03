@@ -1799,6 +1799,57 @@ window.StemLab = window.StemLab || {
           )
         ),
 
+        // === H7b'' inquiry widget: volume predictor ===
+        (function() {
+          var iq = d._volPred || { lpred: 3, wpred: 3, hpred: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd({ _volPred: Object.assign({}, iq, patch) }); }
+          var predicted = iq.lpred * iq.wpred * iq.hpred;
+          var actual = (dims.l || 1) * (dims.w || 1) * (dims.h || 1);
+          var diff = Math.abs(predicted - actual);
+          var state = diff < 2 ? 'close' : (diff < 8 ? 'mid' : 'far');
+          var sm = {
+            close: { label: '🎯 Close match', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+            mid:   { label: '🟡 In the ballpark', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+            far:   { label: '🔴 Far off', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+          }[state];
+          return h('div', { className: 'mt-3 mb-3 p-3 rounded-xl bg-white border border-indigo-200' },
+            h('h4', { className: 'text-sm font-black text-indigo-700 mb-1' }, '📊 Volume predictor — sense-check'),
+            h('p', { className: 'text-[11px] text-slate-700 mb-2 leading-relaxed' }, 'Adjust your PREDICTED dimensions, compare to actual prism. Discrete outcome: close/mid/far. No score, no reveal.'),
+            h('div', { className: 'mb-2 p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
+              h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
+              h('div', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, 'Pred: ' + iq.lpred + '×' + iq.wpred + '×' + iq.hpred + ' = ' + predicted + '   |   Actual: ' + actual)
+            ),
+            h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
+              [{ k: 'lpred', l: 'L pred' }, { k: 'wpred', l: 'W pred' }, { k: 'hpred', l: 'H pred' }].map(function(s) {
+                return h('div', { key: s.k },
+                  h('label', { htmlFor: 'vp-' + s.k, className: 'block text-[10px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-indigo-700' }, iq[s.k])),
+                  h('input', { id: 'vp-' + s.k, type: 'range', min: 1, max: 10, step: 1, value: iq[s.k],
+                    onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                    className: 'w-full', 'aria-label': s.l }));
+              })
+            ),
+            h('div', { className: 'flex gap-2 items-center flex-wrap mb-2' },
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: predicted, a: actual, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+              h('button', { onClick: function() { setIQ({ lpred: 3, wpred: 3, hpred: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+              (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How do you build intuition for predicting volume?',
+              className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300 mb-2' }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700 leading-relaxed mb-2' },
+              h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                h('li', null, 'Which dimension affects volume the most?'),
+                h('li', null, 'Try halving one dimension — what happens to volume?'),
+                h('li', null, 'When are predictions hardest? When easiest?'))),
+            h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-emerald-800 cursor-pointer' },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
+              'I understand — explain in own words'),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how each dimension contributes to total volume.',
+              className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
+            h('div', { className: 'mt-2 text-[9px] italic text-slate-500' }, 'Design note: discrete 3-state outcome; no exact-volume score; no reveal — by design.')
+          );
+        })(),
+
         // Challenge buttons (skip in word mode — it has its own challenge built in)
         !isWord && h('div', { className: 'flex gap-2 flex-wrap' },
           mode === 'slider' ? h(React.Fragment, null,

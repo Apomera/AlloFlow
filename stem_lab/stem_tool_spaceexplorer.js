@@ -1812,6 +1812,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         );
       }
 
+      // === H7b'' inquiry widget: orbital mechanics discovery ===
+      if (missionPhase === 'orbitHunt') {
+        var iqOh = d.orbitHunt || { sma: 2, ecc: 0.1, drag: 10, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setOh(patch) { updAll({ orbitHunt: Object.assign({}, iqOh, patch) }); }
+        var perihelion = iqOh.sma * (1 - iqOh.ecc);
+        var aphelion = iqOh.sma * (1 + iqOh.ecc);
+        var ohState;
+        if (perihelion < 0.3) ohState = 'crash';
+        else if (iqOh.drag > 50 && perihelion < 1) ohState = 'decay';
+        else if (iqOh.ecc > 0.85) ohState = 'escape';
+        else ohState = 'stable';
+        var sm = {
+          stable: { label: '🟢 Stable orbit', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Spacecraft orbits indefinitely. Mission viable.' },
+          decay:  { label: '🟠 Orbital decay', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Atmospheric drag slowly lowers orbit.' },
+          escape: { label: '🚀 Escape trajectory', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Eccentricity too high — leaves system.' },
+          crash:  { label: '💥 Crash impact',  color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Perihelion inside surface.' }
+        }[ohState];
+        return h('div', { className: 'p-4 rounded-xl bg-slate-900 border border-purple-400 text-slate-100 space-y-3' },
+          h('button', { onClick: function() { updAll({ missionPhase: 'select' }); }, className: 'px-2 py-1 rounded bg-purple-700/30 text-[11px] font-bold text-purple-200 border border-purple-500' }, '← Back to missions'),
+          h('h3', { className: 'text-sm font-black text-purple-300' }, '🛰️ Orbital mechanics discovery'),
+          h('p', { className: 'text-[12px] text-slate-300 leading-relaxed' }, 'Adjust SMA, eccentricity, drag. Widget shows 4 discrete orbital outcomes. No score, no reveal.'),
+          h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+            h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+            h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc),
+            h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, 'Periapsis ≈ ' + perihelion.toFixed(2) + ' AU, Apoapsis ≈ ' + aphelion.toFixed(2) + ' AU')
+          ),
+          h('div', { className: 'grid grid-cols-3 gap-3' },
+            [{ k: 'sma', l: 'Semi-major axis (AU)', mn: 0.4, mx: 10, st: 0.1 },
+             { k: 'ecc', l: 'Eccentricity', mn: 0, mx: 0.95, st: 0.01 },
+             { k: 'drag', l: 'Atm. drag (%)', mn: 0, mx: 100, st: 1 }].map(function(s) {
+              return h('div', { key: s.k },
+                h('label', { htmlFor: 'oh-' + s.k, className: 'block text-[11px] font-bold text-slate-300' }, s.l + ': ', h('span', { className: 'font-mono text-purple-300' }, iqOh[s.k])),
+                h('input', { id: 'oh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iqOh[s.k],
+                  onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setOh(p); },
+                  className: 'w-full', 'aria-label': s.l }));
+            })
+          ),
+          h('div', { className: 'flex gap-2 items-center flex-wrap' },
+            h('button', { onClick: function() { setOh({ log: (iqOh.log || []).concat([{ s: iqOh.sma, e: iqOh.ecc, d: iqOh.drag, st: ohState }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200 border border-slate-600' }, '📋 Log'),
+            h('button', { onClick: function() { setOh({ sma: 2, ecc: 0.1, drag: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-transparent text-[11px] font-semibold text-slate-400 border border-slate-600' }, '↺ Reset')
+          ),
+          h('textarea', { value: iqOh.hypothesis || '', onChange: function(e) { setOh({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What combination produces escape?',
+            className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-slate-600 rounded p-2 font-mono leading-snug', rows: 3 }),
+          !iqOh.stuckRevealed && h('button', { onClick: function() { setOh({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-700/30 text-[11px] font-bold text-amber-300 border border-amber-700' }, '🤔 Stuck — show open prompts'),
+          iqOh.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-slate-200 leading-relaxed' },
+            h('ul', { className: 'list-disc pl-5 space-y-1' },
+              h('li', null, 'Find two stable orbits with very different SMA.'),
+              h('li', null, 'Why does increasing eccentricity at high SMA cause escape but not crash?'))),
+          h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-300 cursor-pointer' },
+            h('input', { type: 'checkbox', checked: !!iqOh.understood, onChange: function(e) { setOh({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+            'I understand — explain in own words'),
+          iqOh.understood && h('textarea', { value: iqOh.explanation || '', onChange: function(e) { setOh({ explanation: e.target.value }); }, placeholder: 'Explain how SMA, eccentricity, and drag jointly determine orbital fate.',
+            className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-emerald-700 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+          h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state orbital marker; no fuel-efficiency score; no reveal — by design.')
+        );
+      }
+
       // Fallback
       return h('div', { className: 'text-center p-6 text-slate-600 text-xs' }, 'Loading Space Explorer...');
     }

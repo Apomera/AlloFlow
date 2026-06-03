@@ -699,7 +699,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         { id: 'waves', label: 'Sound Waves', icon: '\uD83C\uDF0A' },
         { id: 'doppler', label: 'Doppler Effect', icon: '\uD83D\uDEA8' },
         { id: 'biology', label: 'Bat Biology', icon: '\uD83E\uDDA0' },
-        { id: 'ecology', label: 'Acoustic Ecology', icon: '\uD83C\uDF33' }
+        { id: 'ecology', label: 'Acoustic Ecology', icon: '\uD83C\uDF33' },
+        { id: 'sweepHunt', label: 'Sweep Discovery', icon: '\uD83C\uDFB5' }
       ];
 
       // ── WCAG: Live region for SR announcements ──
@@ -5028,7 +5029,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         tab === 'waves' && renderWavesTab(),
         tab === 'doppler' && renderDopplerTab(),
         tab === 'biology' && renderBiologyTab(),
-        tab === 'ecology' && renderEcologyTab()
+        tab === 'ecology' && renderEcologyTab(),
+        tab === 'sweepHunt' && (function() {
+          var iq = d.sweepHunt || { fmin: 40, fmax: 100, sweepMs: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('sweepHunt', Object.assign({}, iq, patch)); }
+          var bandwidth = iq.fmax - iq.fmin;
+          var category;
+          if (bandwidth < 20 && iq.sweepMs > 30) category = 'cf';
+          else if (bandwidth >= 50 && iq.sweepMs < 20) category = 'fm';
+          else if (bandwidth >= 30) category = 'mixed';
+          else category = 'narrow';
+          var cMeta = {
+            cf:     { label: '🎵 CF (constant-frequency)',     color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Long narrow-band call. Horseshoe-bat style. Detects fluttering prey.' },
+            fm:     { label: '〽️ FM (chirp/sweep)',            color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Short broadband sweep. Most microbats. Excellent range/distance.' },
+            mixed:  { label: '🎶 Mixed CF-FM',                 color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Long-tailed bat style. Long CF + terminal FM chirp.' },
+            narrow: { label: '🔉 Narrow short tone',           color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Limited band. Less useful for echolocation.' }
+          }[category];
+          return h('div', { className: 'p-4 rounded-xl bg-white border border-purple-300' },
+            h('h3', { className: 'text-sm font-black text-purple-700 mb-1' }, '🎵 Sonar sweep discovery'),
+            h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Adjust min/max frequency and sweep duration. Widget classifies call type into 4 discrete categories used by real bats. No score, no reveal.'),
+            h('div', { className: 'mb-3 p-3 rounded text-center', style: { background: cMeta.bg, border: '2px solid ' + cMeta.border } },
+              h('div', { className: 'text-base font-black', style: { color: cMeta.color } }, cMeta.label),
+              h('div', { className: 'text-[11px] text-slate-700 mt-1' }, cMeta.desc),
+              h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, 'BW = ' + bandwidth + ' kHz, dur = ' + iq.sweepMs + ' ms')
+            ),
+            h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
+              [{ k: 'fmin', l: 'Min freq (kHz)', mn: 10, mx: 200, st: 1 },
+               { k: 'fmax', l: 'Max freq (kHz)', mn: 10, mx: 200, st: 1 },
+               { k: 'sweepMs', l: 'Sweep (ms)',  mn: 1,  mx: 100, st: 1 }].map(function(s) {
+                return h('div', { key: s.k },
+                  h('label', { htmlFor: 'sh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-purple-700' }, iq[s.k])),
+                  h('input', { id: 'sh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                    onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                    className: 'w-full', 'aria-label': s.l }));
+              })
+            ),
+            h('div', { className: 'flex gap-2 items-center flex-wrap mb-3' },
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ mn: iq.fmin, mx: iq.fmax, dur: iq.sweepMs, c: category }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+              h('button', { onClick: function() { setIQ({ fmin: 40, fmax: 100, sweepMs: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When does the call become FM vs CF?',
+              className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-3' },
+              h('ul', { className: 'list-disc pl-5 space-y-1' },
+                h('li', null, 'Bats use CF for cluttered environments, FM for open. Investigate why.'),
+                h('li', null, 'Find two settings producing the same category.'))),
+            h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+              h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                'I understand — explain in own words'),
+              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain why call shape (bandwidth + duration) determines suitability for different prey.',
+                className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+            h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, 'Design note: discrete 4-category sonar marker; no detection-rate score; no reveal — by design.')
+          );
+        })()
       );
     }
   });
