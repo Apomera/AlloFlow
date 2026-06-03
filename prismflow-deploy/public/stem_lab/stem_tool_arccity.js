@@ -447,6 +447,40 @@
     } catch (e) { try { el.style.strokeDashoffset = '0'; } catch (e2) { } }
   }
 
+  // ── Audio: OFF by default (§7.3), always redundant to the text/announce,
+  // max gain ~0.1, never autoplay, fully try/catch (no AudioContext → no-op). ──
+  var _arcAC = null;
+  function getArcAC() {
+    try {
+      if (!_arcAC && (window.AudioContext || window.webkitAudioContext)) _arcAC = new (window.AudioContext || window.webkitAudioContext)();
+      if (_arcAC && _arcAC.state === 'suspended') { try { _arcAC.resume(); } catch (e) { } }
+    } catch (e) { _arcAC = null; }
+    return _arcAC;
+  }
+  function arcTone(freq, dur, type, vol, delay) {
+    var ac = getArcAC(); if (!ac) return;
+    try {
+      var t0 = ac.currentTime + (delay || 0);
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t0);
+      g.gain.setValueAtTime(Math.min(0.1, vol == null ? 0.06 : vol), t0);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + (dur || 0.12));
+      o.connect(g); g.connect(ac.destination);
+      o.start(t0); o.stop(t0 + (dur || 0.12) + 0.02);
+    } catch (e) { }
+  }
+  function sfxFire() {
+    var ac = getArcAC(); if (!ac) return;
+    try {
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'triangle'; o.frequency.setValueAtTime(420, ac.currentTime); o.frequency.exponentialRampToValueAtTime(720, ac.currentTime + 0.12);
+      g.gain.setValueAtTime(0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.16);
+      o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.18);
+    } catch (e) { }
+  }
+  function sfxHit() { arcTone(660, 0.12, 'sine', 0.07, 0.16); arcTone(990, 0.16, 'sine', 0.07, 0.27); }   // pleasant two-note chime
+  function sfxBlock() { arcTone(150, 0.16, 'sine', 0.08, 0.16); }                                          // soft low thud
+
   // ══════════════════════════════════════════════════════════════════════
   // Registration + render
   // ══════════════════════════════════════════════════════════════════════
@@ -492,6 +526,7 @@
         var indepSolved = !!(ls && ls.independent);
         var view = S.view || 'play';
         var exportEnabled = !!S.exportEnabled;
+        var muted = S.muted !== false; // audio OFF by default (§7.3)
 
         // ── state updaters (all via setToolData; no React hooks) ──
         function mergeLevel(prevRoot, partial, paramsOverride) {
@@ -552,6 +587,15 @@
             if (newBadges.length) msg += ' ' + t('arccity.badge', 'Badge earned: ') + newBadges.map(badgeLabel).join(', ') + '.';
           }
           announceArc(ctx, msg);
+          if (!muted) { try { sfxFire(); if (r.result === 'hit') sfxHit(); else sfxBlock(); } catch (e) { } }
+        }
+        function toggleMute() {
+          if (typeof setToolData !== 'function') return;
+          setToolData(function (prev) {
+            var cur = (prev && prev._arccity) || S;
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { muted: !(cur.muted !== false) }) });
+          });
+          announceArc(ctx, muted ? t('arccity.sound_on', 'Sound on.') : t('arccity.sound_off', 'Sound off.'));
         }
         function resetLevel() {
           if (typeof setToolData !== 'function') return;
@@ -804,7 +848,8 @@
           h('div', { key: 'rows' }, paramRows),
           h('div', { key: 'btns', style: { display: 'flex', gap: 10, marginTop: 6 } },
             h('button', { key: 'fire', type: 'button', onClick: fire, style: fireBtnStyle }, '⚡ ' + t('arccity.fire', 'Fire beam')),
-            h('button', { key: 'reset', type: 'button', onClick: resetLevel, style: resetBtnStyle }, t('arccity.reset_btn', 'Reset'))),
+            h('button', { key: 'reset', type: 'button', onClick: resetLevel, style: resetBtnStyle }, t('arccity.reset_btn', 'Reset')),
+            h('button', { key: 'mute', type: 'button', 'aria-label': muted ? t('arccity.unmute', 'Sound is off — turn on') : t('arccity.mute', 'Sound is on — turn off'), onClick: toggleMute, style: resetBtnStyle }, muted ? '🔇' : '🔊')),
           h('div', { key: 'result', role: 'status', style: { marginTop: 12, fontSize: 14, lineHeight: 1.5, color: resultColor, minHeight: 42 } }, resultText),
           showHint ? h('div', { key: 'hint', style: { marginTop: 8, fontSize: 13, color: PAL.warn, padding: '8px 10px', borderRadius: 8, background: 'rgba(252,211,77,0.10)' } }, '💡 ' + level.hint) : null,
           h('div', { key: 'shots', style: { marginTop: 6, fontSize: 12, color: INK, opacity: 0.7 } },
