@@ -1304,7 +1304,8 @@
           { id: 'states', label: '\uD83C\uDF21\uFE0F States', color: 'sky' },
           { id: 'visualize', label: '\uD83C\uDFA8 Atoms', color: 'indigo' },
           { id: 'quiz', label: '\uD83E\uDDE0 Quiz', color: 'emerald' },
-          { id: 'tutor', label: '\uD83E\uDD16 AI Tutor', color: 'purple' }
+          { id: 'tutor', label: '\uD83E\uDD16 AI Tutor', color: 'purple' },
+          { id: 'decompHunt', label: '\u23F1\uFE0F Decompose', color: 'lime' }
         ];
 
 
@@ -3015,6 +3016,60 @@
             )
           ),
 
+          tab === 'decompHunt' && (function() {
+            var iq = d.decompHunt || { tempC: 25, humidity: 70, oxygen: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('decompHunt', Object.assign({}, iq, patch)); }
+            var rate = (iq.tempC > 15 && iq.tempC < 40 ? 1 : 0.2) * (iq.humidity / 100) * (iq.oxygen / 100);
+            var state;
+            if (rate < 0.05) state = 'stopped';
+            else if (rate < 0.25) state = 'slow';
+            else if (rate < 0.6) state = 'medium';
+            else state = 'fast';
+            var sm = {
+              stopped: { label: '🧊 Stopped', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Temperature out of range or no moisture/oxygen.' },
+              slow:    { label: '🐢 Slow', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Marginal conditions. Months to years.' },
+              medium:  { label: '🟢 Medium', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Normal compost conditions. Weeks to months.' },
+              fast:    { label: '🔥 Fast (hot compost)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Optimal: 30-40°C, 70%+ humidity, abundant O₂. Days to weeks.' }
+            }[state];
+            return h('div', null,
+              h('div', { className: 'p-4 rounded-xl bg-white border border-lime-300 shadow-sm space-y-3' },
+                h('h3', { className: 'text-sm font-black text-lime-700' }, '⏱️ Decomposition rate discovery'),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for temperature, humidity, oxygen. Discrete 4-state rate. No score, no reveal.'),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                  h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3' },
+                  [{ k: 'tempC', l: 'Temp (°C)', mn: -10, mx: 60, st: 1 },
+                   { k: 'humidity', l: 'Humidity (%)', mn: 0, mx: 100, st: 5 },
+                   { k: 'oxygen', l: 'Oxygen (%)', mn: 0, mx: 100, st: 5 }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-lime-700' }, iq[s.k])),
+                      h('input', { id: 'dh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempC, h: iq.humidity, o: iq.oxygen, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ tempC: 25, humidity: 70, oxygen: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Which condition is most important for decomposition?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Why do compost bins need turning?'),
+                    h('li', null, 'What happens to decomposition below 0°C?'))),
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how temperature, humidity, and oxygen jointly drive decomposition.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state decomposition marker; no rate score; no reveal — by design.')
+              )
+            );
+          })(),
 
           /* ═══════════════════════════════════════════════════
              Badges Section (always visible)

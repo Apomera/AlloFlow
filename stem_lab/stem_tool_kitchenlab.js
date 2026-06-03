@@ -1798,7 +1798,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           { id: 'heat', label: 'Heat & Technique', icon: '🔥' },
           { id: 'maillard', label: 'Maillard', icon: '🟫' },
           { id: 'recipe', label: 'Recipe Sim', icon: '🍽️' },
-          { id: 'resources', label: 'Resources', icon: '📚' }
+          { id: 'resources', label: 'Resources', icon: '📚' },
+          { id: 'maillardHunt', label: 'Browning Lab', icon: '🔬' }
         ];
         return h('div', { role: 'tablist', 'aria-label': 'Kitchen Lab sections',
           style: { display: 'flex', flexWrap: 'wrap', gap: 0, padding: '0 16px',
@@ -4034,6 +4035,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       else if (section === 'maillard') content = renderMaillard();
       else if (section === 'recipe') content = renderRecipe();
       else if (section === 'resources') content = renderResources();
+      else if (section === 'maillardHunt') content = (function() {
+        var iq = d.maillardHunt || { tempF: 350, aminoPct: 50, sugarPct: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd('maillardHunt', Object.assign({}, iq, patch)); }
+        var reactivity = (iq.tempF > 280 ? (iq.tempF - 280) / 200 : 0) * (iq.aminoPct / 100) * (iq.sugarPct / 100);
+        var state;
+        if (reactivity < 0.05) state = 'noReact';
+        else if (reactivity < 0.3) state = 'beginning';
+        else if (reactivity < 0.6) state = 'active';
+        else if (reactivity < 0.9) state = 'deep';
+        else state = 'burnt';
+        var sm = {
+          noReact:   { label: '⚪ No reaction', color: '#475569', bg: '#f1f5f9', border: '#cbd5e1', desc: 'Below threshold — no Maillard activity.' },
+          beginning: { label: '🟡 Browning begins', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Light tan color, mild aroma.' },
+          active:    { label: '🟠 Active Maillard', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Golden-brown, rich aroma compounds forming.' },
+          deep:      { label: '🟤 Deep brown', color: '#92400e', bg: '#fef3c7', border: '#fbbf24', desc: 'Strong flavors. Approaching upper limit.' },
+          burnt:     { label: '⚫ Burnt / acrylamide risk', color: '#1e293b', bg: '#fef2f2', border: '#fca5a5', desc: 'Pyrolysis. Bitter, potential acrylamide formation.' }
+        }[state];
+        return h('div', { className: 'p-4 rounded-xl bg-white border border-orange-300 space-y-3' },
+          h('h3', { className: 'text-sm font-black text-orange-700' }, '🔬 Maillard browning discovery'),
+          h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for surface temp, amino-acid %, sugar %. Discrete 5-state browning stage. No score, no reveal.'),
+          h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+            h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+            h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
+          ),
+          h('div', { className: 'grid grid-cols-3 gap-3' },
+            [{ k: 'tempF', l: 'Surface °F', mn: 200, mx: 500, st: 5 },
+             { k: 'aminoPct', l: 'Amino acid %', mn: 0, mx: 100, st: 5 },
+             { k: 'sugarPct', l: 'Sugar %', mn: 0, mx: 100, st: 5 }].map(function(s) {
+              return h('div', { key: s.k },
+                h('label', { htmlFor: 'mh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-orange-700' }, iq[s.k])),
+                h('input', { id: 'mh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                  onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                  className: 'w-full', 'aria-label': s.l }));
+            })
+          ),
+          h('div', { className: 'flex gap-2 items-center flex-wrap' },
+            h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempF, a: iq.aminoPct, s: iq.sugarPct, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+            h('button', { onClick: function() { setIQ({ tempF: 350, aminoPct: 50, sugarPct: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+          ),
+          h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Both amino + sugar needed? Or one is enough?',
+            className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+          iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+            h('ul', { className: 'list-disc pl-5 space-y-1' },
+              h('li', null, 'What happens at 100% amino but 0% sugar?'),
+              h('li', null, 'Why does crust form on bread above 320°F?'))),
+          h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+            h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+            'I understand — explain in own words'),
+          iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain the chemistry of Maillard browning.',
+            className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+          h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 5-state browning marker; no flavor score; no reveal — by design.')
+        );
+      })();
       else content = renderSafety();
 
       return h('div', { style: rootStyle, role: 'region', 'aria-label': 'Kitchen Lab' },
