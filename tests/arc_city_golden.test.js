@@ -236,3 +236,36 @@ describe('Arc City — drag↔equation binding (design §4.2)', () => {
     expect(classifyShot(L2, params).result).toBe('hit');
   });
 });
+
+describe('Arc City — theme-aware palette passes WCAG on every canvas (design §7.1)', () => {
+  // WCAG relative luminance + contrast ratio (sRGB).
+  function lum(hex) {
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const ch = i => { const c = parseInt(hex.slice(i, i + 2), 16) / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+    return 0.2126 * ch(0) + 0.7152 * ch(2) + 0.0722 * ch(4);
+  }
+  function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+
+  const TEXT = ['accent', 'warn', 'danger'];        // used as text → need 4.5:1
+  const GFX = ['nodeOff', 'nodeOn', 'gate', 'wall']; // graphical objects → need 3.0:1
+
+  ['light', 'dark', 'contrast'].forEach(theme => {
+    const pal = arc.arcPalette(theme);
+    const canvas = arc.THEME_CANVAS[theme];
+
+    it(`${theme}: text accents are >= 4.5:1 vs the canvas`, () => {
+      TEXT.forEach(k => expect(ratio(pal[k], canvas)).toBeGreaterThanOrEqual(4.5));
+    });
+    it(`${theme}: graphical accents are >= 3.0:1 vs the canvas`, () => {
+      GFX.forEach(k => expect(ratio(pal[k], canvas)).toBeGreaterThanOrEqual(3.0));
+    });
+    it(`${theme}: Fire-button text is >= 4.5:1 vs the accent button background`, () => {
+      expect(ratio(pal.btnText, pal.accent)).toBeGreaterThanOrEqual(4.5);
+    });
+  });
+
+  it('the default theme is light (matching :root / .theme-default canvas #ffffff)', () => {
+    expect(arc.THEME_CANVAS.light).toBe('#ffffff');
+  });
+});
