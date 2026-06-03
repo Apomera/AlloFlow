@@ -2417,6 +2417,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       else if (view === 'cumulative') content = renderCumulative();
       else if (view === 'askLifeguard') content = renderAskLifeguard();
       else if (view === 'resources') content = renderResources();
+      else if (view === 'strokeHunt') content = (function() {
+        var iq = d.strokeHunt || { rate: 50, length: 50, kick: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd('strokeHunt', Object.assign({}, iq, patch)); }
+        var efficiency = iq.length * 0.5 + iq.kick * 0.3 - Math.abs(iq.rate - 50) * 0.4;
+        var state;
+        if (efficiency > 50) state = 'elite';
+        else if (efficiency > 30) state = 'efficient';
+        else if (efficiency > 10) state = 'recreational';
+        else state = 'inefficient';
+        var sm = {
+          elite:        { label: '🏊 Elite efficiency', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'High distance per stroke, balanced kick, optimal rate.' },
+          efficient:    { label: '🟢 Efficient stroke', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Good fundamentals. Sustainable for distance.' },
+          recreational: { label: '🟡 Recreational', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Casual swimming. Tires sooner.' },
+          inefficient:  { label: '🔴 Inefficient stroke', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Wasted energy. Suboptimal length or kick.' }
+        }[state];
+        return h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
+          h('div', { style: { padding: 16, background: T.bg2 || '#0f172a', borderRadius: 10, color: T.text, border: '1px solid #0891b2' } },
+            h('h3', { style: { fontSize: 14, fontWeight: 800, color: '#67e8f9' } }, '🏊 Stroke efficiency discovery'),
+            h('p', { style: { fontSize: 12, marginBottom: 10 } }, 'Sliders for stroke rate, length per stroke, kick intensity. Discrete 4-state efficiency. No score, no reveal.'),
+            h('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 10 } },
+              h('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
+              h('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc)
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
+              [{ k: 'rate', l: 'Stroke rate' }, { k: 'length', l: 'Length per stroke' }, { k: 'kick', l: 'Kick intensity' }].map(function(s) {
+                return h('div', { key: s.k },
+                  h('label', { htmlFor: 'sh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold' } }, s.l + ': ', h('span', { style: { fontFamily: 'monospace', color: '#67e8f9' } }, iq[s.k])),
+                  h('input', { id: 'sh-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
+                    onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                    style: { width: '100%' }, 'aria-label': s.l }));
+              })
+            ),
+            h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 } },
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rate, l: iq.length, k: iq.kick, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+              h('button', { onClick: function() { setIQ({ rate: 50, length: 50, kick: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Rate vs length — which matters more?',
+              style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 8 } },
+              h('ul', { style: { margin: 0, paddingLeft: 18 } },
+                h('li', null, 'Elite swimmers use slower stroke rate, longer pulls. Why?'),
+                h('li', null, 'What happens with super-fast rate but tiny length?'))),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain stroke efficiency physics.',
+              style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
+            h('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state stroke marker; no time score; no reveal — by design.')
+          )
+        );
+      })();
       else content = renderMenu();
 
       return h('div', { style: { background: T.bg, minHeight: '100%', color: T.text, fontFamily: 'system-ui, -apple-system, "Segoe UI", sans-serif' } },
