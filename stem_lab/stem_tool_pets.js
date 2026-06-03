@@ -1223,6 +1223,140 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             Object.keys(badges).map(function(bid) {
               return h('span', { key: bid, style: { fontSize: 11, padding: '4px 10px', borderRadius: 999, background: T.accent, color: '#1f1612', fontWeight: 700 } }, badges[bid].label || bid);
             }))),
+        // ═══ CARE TRADEOFF inquiry widget (H7b'') ═══
+        (function() {
+          var iq = d.careTradeoff || { food: 50, exercise: 50, social: 50, vet: 50, training: 50, species: 'dog', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('careTradeoff', Object.assign({}, iq, patch)); }
+          function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+          // species multipliers
+          var sp = ({
+            dog: { food: 1.0, exercise: 1.2, social: 1.1, vet: 1.0, training: 1.2, label: '🐕 Dog' },
+            cat: { food: 0.7, exercise: 0.5, social: 0.6, vet: 0.9, training: 0.7, label: '🐈 Cat' },
+            rabbit: { food: 0.5, exercise: 0.8, social: 0.7, vet: 1.1, training: 0.6, label: '🐰 Rabbit' },
+            parrot: { food: 0.4, exercise: 0.6, social: 1.3, vet: 1.2, training: 1.0, label: '🦜 Parrot' },
+            reptile: { food: 0.2, exercise: 0.2, social: 0.1, vet: 0.8, training: 0.3, label: '🦎 Reptile' }
+          })[iq.species] || { food: 1, exercise: 1, social: 1, vet: 1, training: 1, label: '🐾 Pet' };
+          // welfare score (each is need_provided vs need_required)
+          function gap(provided, mult) { var need = mult * 50; return Math.max(0, need - provided) + Math.max(0, provided - need - 20) * 0.3; }
+          var gFood = gap(iq.food, sp.food);
+          var gEx = gap(iq.exercise, sp.exercise);
+          var gSoc = gap(iq.social, sp.social);
+          var gVet = gap(iq.vet, sp.vet);
+          var gTrain = gap(iq.training, sp.training);
+          var totalGap = gFood + gEx + gSoc + gVet + gTrain;
+          var state = totalGap < 15 ? 'thriving' : totalGap < 40 ? 'healthy' : totalGap < 80 ? 'compromised' : totalGap < 130 ? 'atrisk' : 'crisis';
+          var sm = ({
+            thriving: { label: 'Thriving', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'All five welfare domains met. Animal is comfortable, expressing natural behavior.' },
+            healthy: { label: 'Healthy', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Minor mismatches — adjust one or two domains for optimal welfare.' },
+            compromised: { label: 'Compromised', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Visible welfare concerns — likely behavioral or physical signs of unmet needs.' },
+            atrisk: { label: 'At risk', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Serious deficits across multiple domains. Long-term harm if not addressed.' },
+            crisis: { label: 'Welfare crisis', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Severe neglect or overprovision pattern. Veterinary/behavioral intervention indicated.' }
+          })[state];
+          var domains = [
+            { k: 'food', label: 'Food/nutrition', provided: iq.food, gap: gFood, need: sp.food * 50 },
+            { k: 'exercise', label: 'Exercise', provided: iq.exercise, gap: gEx, need: sp.exercise * 50 },
+            { k: 'social', label: 'Social contact', provided: iq.social, gap: gSoc, need: sp.social * 50 },
+            { k: 'vet', label: 'Vet care', provided: iq.vet, gap: gVet, need: sp.vet * 50 },
+            { k: 'training', label: 'Training/enrichment', provided: iq.training, gap: gTrain, need: sp.training * 50 }
+          ];
+          // SVG: pentagon radar chart
+          var center = 80;
+          var radius = 60;
+          var n = 5;
+          var pts = domains.map(function(d, i) {
+            var angle = -Math.PI / 2 + (i * 2 * Math.PI / n);
+            var r = (Math.min(100, d.provided) / 100) * radius;
+            return [center + Math.cos(angle) * r, center + Math.sin(angle) * r];
+          });
+          var needPts = domains.map(function(d, i) {
+            var angle = -Math.PI / 2 + (i * 2 * Math.PI / n);
+            var r = (Math.min(100, d.need) / 100) * radius;
+            return [center + Math.cos(angle) * r, center + Math.sin(angle) * r];
+          });
+          var labelPts = domains.map(function(d, i) {
+            var angle = -Math.PI / 2 + (i * 2 * Math.PI / n);
+            return [center + Math.cos(angle) * (radius + 14), center + Math.sin(angle) * (radius + 14)];
+          });
+          return h('div', { style: { marginTop: 14, padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+            h('h4', { style: { margin: '0 0 4px', fontSize: 13, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '⚖️ Care Tradeoff — Inquiry Widget'),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Pick a species. Set five care domains. Predict where mismatches with species-typical needs will show up. No score, no reveal — you mark your own understanding.'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 } },
+              ['dog', 'cat', 'rabbit', 'parrot', 'reptile'].map(function(s) {
+                var active = iq.species === s;
+                return h('button', { key: s, onClick: function() { setKey('species', s); }, style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + (active ? sm.color : '#1e293b'), background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', cursor: 'pointer' } }, ({ dog: '🐕', cat: '🐈', rabbit: '🐰', parrot: '🦜', reptile: '🦎' })[s] + ' ' + s);
+              })
+            ),
+            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 10, fontWeight: 800, marginBottom: 6 } }, sp.label + ' — ' + sm.label),
+            h('p', { style: { margin: '0 0 10px', fontSize: 10, opacity: 0.8 } }, sm.desc),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, flexWrap: 'wrap' } },
+              h('svg', { width: 160, height: 160, viewBox: '0 0 160 160', style: { flex: '0 0 160px' } },
+                [0.25, 0.5, 0.75, 1.0].map(function(s, i) {
+                  var rr = s * radius;
+                  var poly = '';
+                  for (var k = 0; k < n; k++) {
+                    var a = -Math.PI / 2 + (k * 2 * Math.PI / n);
+                    poly += (center + Math.cos(a) * rr) + ',' + (center + Math.sin(a) * rr) + ' ';
+                  }
+                  return h('polygon', { key: 'g' + i, points: poly.trim(), fill: 'none', stroke: '#1e293b', strokeWidth: 1, strokeDasharray: i === 3 ? '0' : '2 3' });
+                }),
+                h('polygon', { points: needPts.map(function(p) { return p[0] + ',' + p[1]; }).join(' '), fill: 'none', stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '4 3' }),
+                h('polygon', { points: pts.map(function(p) { return p[0] + ',' + p[1]; }).join(' '), fill: sm.color + '33', stroke: sm.color, strokeWidth: 2 }),
+                pts.map(function(p, i) { return h('circle', { key: 'p' + i, cx: p[0], cy: p[1], r: 3, fill: sm.color }); }),
+                labelPts.map(function(lp, i) { return h('text', { key: 'l' + i, x: lp[0], y: lp[1], textAnchor: 'middle', fill: '#94a3b8', fontSize: 8 }, ['Food', 'Ex', 'Soc', 'Vet', 'Train'][i]); })
+              ),
+              h('div', { style: { flex: '1 1 auto', minWidth: 200, fontSize: 10 } },
+                h('div', { style: { fontWeight: 700, marginBottom: 4, opacity: 0.85 } }, 'Gap analysis (provided vs species need)'),
+                domains.map(function(d) {
+                  var sev = d.gap < 5 ? '#4ade80' : d.gap < 15 ? '#facc15' : d.gap < 30 ? '#fb923c' : '#f87171';
+                  return h('div', { key: d.k, style: { display: 'flex', justifyContent: 'space-between', padding: '2px 0', borderBottom: '1px dashed #1e293b' } },
+                    h('span', null, d.label),
+                    h('span', { style: { fontFamily: 'monospace', color: sev, fontWeight: 700 } }, 'gap ' + d.gap.toFixed(1))
+                  );
+                }),
+                h('div', { style: { marginTop: 6, fontSize: 10, opacity: 0.7 } }, 'Total mismatch: ', h('span', { style: { color: sm.color, fontWeight: 700 } }, totalGap.toFixed(1)))
+              )
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px 10px', marginBottom: 10 } },
+              domains.map(function(s) {
+                return h('label', { key: s.k, style: { display: 'block', fontSize: 10 } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } },
+                    h('span', null, s.label),
+                    h('span', { style: { fontFamily: 'monospace', color: sm.color, fontWeight: 700 } }, s.provided)
+                  ),
+                  h('input', { type: 'range', min: 0, max: 100, step: 5, value: s.provided, onChange: function(e) { setKey(s.k, parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                );
+              })
+            ),
+            h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+              h('button', { onClick: function() {
+                var t = new Date().toISOString().slice(11, 19);
+                setIQ({ log: iq.log.concat([{ t: t, sp: iq.species, gap: totalGap.toFixed(1), state: sm.label }]) });
+              }, style: { flex: 1, padding: 6, fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this scenario'),
+              h('button', { onClick: function() { setIQ({ food: 50, exercise: 50, social: 50, vet: 50, training: 50 }); }, style: { padding: '6px 10px', fontSize: 10, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+            ),
+            iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 9, fontFamily: 'monospace', lineHeight: 1.4 } },
+              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.sp + ' · ' + e.state + ' · gap ' + e.gap); })
+            ),
+            h('label', { style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which species is hardest to keep thriving — and why?)'),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., parrots need high social provision because flock behavior...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+            iq.stuckRevealed && h('div', { style: { padding: 8, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 10, marginBottom: 10, lineHeight: 1.5 } },
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('ul', { style: { margin: 0, paddingLeft: 16 } },
+                h('li', null, 'Which two domains tend to trade off in your real household?'),
+                h('li', null, 'When you switch species, which slider needs to move most? Why?'),
+                h('li', null, 'Can over-provision (too much of one thing) cause a welfare issue? Where would you see it first?'),
+                h('li', null, 'How would the radar shape differ for a working dog vs a companion dog?')
+              )
+            ),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+              h('span', null, 'I can explain why this species shows this welfare state at these slider settings.')
+            ),
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Welfare frameworks: Five Domains (Mellor 2017), Five Freedoms (Brambell 1965).')
+          );
+        })(),
         footer()
       );
     }

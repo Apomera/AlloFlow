@@ -9050,6 +9050,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var status = statusHook[0], setStatus = statusHook[1];
     var lifeLogHook = useState(stateInit.lifeLog || []);
     var lifeLog = lifeLogHook[0], setLifeLog = lifeLogHook[1];
+    var aqCondHook = useState({ temp: 12, salinity: 32, oxygen: 7, current: 1.5, depth: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] });
+    var aqCondIQ = aqCondHook[0], setAqCondIQ = aqCondHook[1];
     var canvasRef = useRef(null);
     var harborRef = useRef(null);
 
@@ -9267,6 +9269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // ─── Tab bar
     var TABS = [
       { id: 'home', label: '🏠 Home' },
+      { id: 'aqcond', label: '🌊 Conditions Lab' },
       { id: 'sim', label: '🎮 3D Sim' },
       { id: 'chart', label: '🗺 Chart Room' },
       { id: 'buoyage', label: '🟢 Buoyage' },
@@ -9387,7 +9390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       { id: 'safety', label: '🛟 Seamanship & Safety', name: 'Safety & Seamanship', icon: '🛟', tabs: ['buoyage', 'colregs', 'vhf', 'knots', 'knotsteps', 'survival', 'safety', 'boatskills', 'boatregs', 'emergency', 'safetyman', 'safetychk', 'seamanship', 'maintenance', 'engmaint', 'law', 'yearplan'] },
       { id: 'biology', label: '🐟 Biology & Ecology', name: 'Biology & Ecology', icon: '🐟', tabs: ['species', 'extspecies', 'idkey', 'habitats', 'inverts', 'seabirds', 'mammals', 'invasives', 'deepdives', 'rightwhale', 'watercolumn', 'ecosystem', 'coddeep', 'striperdeep', 'alewifedeep', 'tunadeep'] },
       { id: 'fisheries', label: '🦞 Fisheries & Gear', name: 'Fisheries & Gear', icon: '🦞', tabs: ['gear', 'gearmaster', 'bait', 'boats', 'vessels', 'zones', 'regs', 'regsdeep', 'regframework', 'lobsterconserve', 'license', 'conservation', 'mpas', 'mgmtmile', 'ethics', 'techguides'] },
-      { id: 'science', label: '🌡️ Weather & Science', name: 'Weather & Science', icon: '🌡️', tabs: ['climate', 'climatedeep', 'weather', 'weathertips', 'navmath', 'navprob'] },
+      { id: 'science', label: '🌡️ Weather & Science', name: 'Weather & Science', icon: '🌡️', tabs: ['aqcond', 'climate', 'climatedeep', 'weather', 'weathertips', 'navmath', 'navprob'] },
       { id: 'culture', label: '🌲 Culture & History', name: 'Culture & History', icon: '🌲', tabs: ['wabanaki', 'wabfigures', 'history', 'ports', 'harbors', 'regional', 'culinary', 'voices', 'notablepeople', 'books', 'women', 'families', 'waterfrontdeep', 'success'] },
       { id: 'careers', label: '🧰 Student & Careers', name: 'Student & Careers', icon: '🧰', tabs: ['lessonplans', 'activities', 'studyguide', 'training', 'mentorship', 'careers', 'studcareer', 'workforce', 'community', 'fishfacts', 'fishessays', 'termessays', 'playbooks'] },
       { id: 'study', label: '🎓 Study Tools & Quiz', name: 'Study & Quiz', icon: '🎓', tabs: ['quiz', 'achievements', 'glossary', 'extglossary', 'bibliography', 'bibext', 'refnumbers', 'events', 'studentfaq', 'faqpub', 'textbook', 'globalcontext', 'indgroups', 'future'] }
@@ -9472,6 +9475,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('span', { style: { marginLeft: 'auto', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
           'Port: ', h('b', { style: { color: '#bae6fd' } }, REGIONS[region].portName || REGIONS.maine.portName),
           ' · Buoyage: ', h('b', { style: { color: '#bae6fd' } }, REGIONS[region].buoyage)));
+    }
+
+    // ─── AQUACULTURE CONDITIONS LAB (H7b'' inquiry widget)
+    function aqCondTab() {
+      var iq = aqCondIQ;
+      function setIQ(patch) { setAqCondIQ(Object.assign({}, iq, patch)); }
+      function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+      // species tolerance ranges for Gulf of Maine (approximate, illustrative — not for stocking decisions)
+      var species = [
+        { name: 'Cod',     temp: [2, 12],  sal: [30, 35], o2: [5, 12], cur: [0.2, 2.5], dep: [10, 200], color: '#94a3b8' },
+        { name: 'Striper', temp: [10, 22], sal: [10, 35], o2: [5, 12], cur: [0.3, 2.0], dep: [0, 30],   color: '#22d3ee' },
+        { name: 'Lobster', temp: [3, 18],  sal: [28, 35], o2: [5, 12], cur: [0.1, 1.5], dep: [5, 100],  color: '#fb923c' },
+        { name: 'Mackerel',temp: [8, 18],  sal: [30, 35], o2: [5, 12], cur: [0.5, 3.0], dep: [0, 50],   color: '#22c55e' },
+        { name: 'Halibut', temp: [3, 9],   sal: [31, 35], o2: [5, 12], cur: [0.2, 2.0], dep: [50, 400], color: '#a78bfa' }
+      ];
+      function inRange(v, r) { return v >= r[0] && v <= r[1]; }
+      function fitness(sp) {
+        var n = 0; if (inRange(iq.temp, sp.temp)) n++; if (inRange(iq.salinity, sp.sal)) n++; if (inRange(iq.oxygen, sp.o2)) n++; if (inRange(iq.current, sp.cur)) n++; if (inRange(iq.depth, sp.dep)) n++;
+        return n;
+      }
+      var fits = species.map(function(s) { return { sp: s, n: fitness(s) }; });
+      var fav = fits.slice().sort(function(a, b) { return b.n - a.n; });
+      var topN = fav[0].n;
+      var state = topN === 0 ? 'barren' : topN <= 2 ? 'fringe' : topN === 3 ? 'mixed' : topN === 4 ? 'productive' : 'optimal';
+      var sm = ({
+        barren: { label: 'Barren', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'No species meets all parameters. Consider this a hostile column for this set.' },
+        fringe: { label: 'Fringe', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Marginal — only edge-tolerant individuals likely; low catch composition predicted.' },
+        mixed: { label: 'Mixed', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Several species partially fit; community structure favors generalists.' },
+        productive: { label: 'Productive', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Most species fit most parameters. Diverse catch likely.' },
+        optimal: { label: 'Optimal', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'All five parameters in range for one or more species. Strong stock predicted.' }
+      })[state];
+      var sliders = [
+        { k: 'temp', label: 'Water temp', min: 0, max: 25, step: 0.5, unit: '°C' },
+        { k: 'salinity', label: 'Salinity', min: 0, max: 36, step: 0.5, unit: 'ppt' },
+        { k: 'oxygen', label: 'Dissolved O₂', min: 0, max: 14, step: 0.2, unit: 'mg/L' },
+        { k: 'current', label: 'Current speed', min: 0, max: 4, step: 0.1, unit: 'kt' },
+        { k: 'depth', label: 'Depth', min: 0, max: 400, step: 5, unit: 'm' }
+      ];
+      return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+        h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🌊 Conditions Lab — Aquaculture Inquiry Widget'),
+        h('p', { style: { margin: '0 0 8px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, 'Move five environmental sliders. Predict which Gulf of Maine species the column favors — and where the tradeoffs lie. No score, no answer key.'),
+        h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, 'Column state: ' + sm.label + ' (' + topN + '/5 params fit for top species)'),
+        h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+        // SVG: stacked species fitness bars
+        h('svg', { width: '100%', height: 140, viewBox: '0 0 320 140', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+          [1, 2, 3, 4].map(function(g) { return h('line', { key: 'g' + g, x1: 60 + g * 50, y1: 12, x2: 60 + g * 50, y2: 122, stroke: '#1e293b', strokeDasharray: '2 3' }); }),
+          species.map(function(s, i) {
+            var n = fitness(s);
+            var y = 14 + i * 22;
+            var w = (n / 5) * 250;
+            return h('g', { key: s.name },
+              h('text', { x: 4, y: y + 14, fill: '#cbd5e1', fontSize: 10, fontWeight: 600 }, s.name),
+              h('rect', { x: 60, y: y, width: 250, height: 18, fill: '#0f172a', stroke: '#1e293b' }),
+              h('rect', { x: 60, y: y, width: w, height: 18, fill: s.color, opacity: 0.8 }),
+              h('text', { x: 60 + w + 4, y: y + 13, fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, n + '/5')
+            );
+          }),
+          h('text', { x: 60, y: 134, fill: '#64748b', fontSize: 8 }, '0'),
+          h('text', { x: 185, y: 134, fill: '#64748b', fontSize: 8 }, '↑ more parameters in tolerance →'),
+          h('text', { x: 295, y: 134, fill: '#64748b', fontSize: 8 }, '5')
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px 10px', marginBottom: 10 } },
+          sliders.map(function(s) {
+            return h('label', { key: s.k, style: { display: 'block', fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } },
+                h('span', null, s.label),
+                h('span', { style: { fontFamily: 'monospace', color: sm.color, fontWeight: 700 } }, (s.step < 1 ? iq[s.k].toFixed(1) : iq[s.k]) + ' ' + s.unit)
+              ),
+              h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: iq[s.k], onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+            );
+          })
+        ),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+          fav.slice(0, 3).map(function(f, i) {
+            return h('div', { key: f.sp.name, style: { padding: '4px 10px', borderRadius: 6, background: '#0a0a1a', border: '1px solid ' + f.sp.color, fontSize: 11 } },
+              h('span', { style: { color: f.sp.color, fontWeight: 700 } }, ['🥇', '🥈', '🥉'][i] + ' ' + f.sp.name),
+              h('span', { style: { opacity: 0.7, marginLeft: 6 } }, f.n + '/5 fit')
+            );
+          })
+        ),
+        h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+          h('button', { onClick: function() {
+            var t = new Date().toISOString().slice(11, 19);
+            setIQ({ log: iq.log.concat([{ t: t, temp: iq.temp, sal: iq.salinity, o2: iq.oxygen, cur: iq.current, dep: iq.depth, top: fav[0].sp.name, state: sm.label }]) });
+          }, style: { flex: 1, padding: 8, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this condition profile'),
+          h('button', { onClick: function() { setIQ({ temp: 12, salinity: 32, oxygen: 7, current: 1.5, depth: 30 }); }, style: { padding: '8px 12px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+        ),
+        iq.log.length > 0 && h('div', { style: { maxHeight: 100, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+          iq.log.slice(-6).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · top:' + e.top + ' · T' + e.temp + ' S' + e.sal + ' O' + e.o2 + ' C' + e.cur + ' D' + e.dep); })
+        ),
+        h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which parameter most often disqualifies a species?)'),
+        h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., depth eliminates halibut on the inshore profile but rescued by salinity...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+        !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+        iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+          h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+          h('ul', { style: { margin: 0, paddingLeft: 16 } },
+            h('li', null, 'Which two parameters are most tightly coupled in real Gulf of Maine columns (think upwelling, freshets)?'),
+            h('li', null, 'How would warming temperature shift the species shortlist over the next decade?'),
+            h('li', null, 'What single slider, if pushed to its edge, kills your top species fastest?'),
+            h('li', null, 'Are these tolerance ranges symmetric, or does cold-edge fail differently than warm-edge?')
+          )
+        ),
+        h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+          h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+          h('span', null, 'I can explain why these parameters yield this species ranking.')
+        ),
+        iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+        h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — illustrative tolerance ranges only; do not use for actual stocking or fishery decisions. Always consult primary literature and DMR for production use.')
+      );
     }
 
     // ─── HOME tab
@@ -11957,6 +12069,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return h('div', { style: { padding: 16, background: '#031523', minHeight: 400 } },
       tabBar(),
       tab === 'home' ? homeTab() :
+      tab === 'aqcond' ? aqCondTab() :
       tab === 'sim' ? simTab() :
       tab === 'chart' ? chartTab() :
       tab === 'buoyage' ? buoyageTab() :

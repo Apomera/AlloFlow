@@ -1369,6 +1369,178 @@ window.StemLab = window.StemLab || {
               )
             ),
 
+            // ═══ STRETCH ANALYZER inquiry widget (H7b'') ═══
+            mode === 'stretch' && construction.objects.length > 0 && (function() {
+              var iq = gd.analyzerIQ || { focus: 'all', viewAngle: 30, edgeStyle: 'colored', detail: 1, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('analyzerIQ', Object.assign({}, iq, patch)); }
+              function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+              var dimOf = { point: 0, segment: 1, rect: 2, prism: 3 };
+              var objs = construction.objects;
+              var byDim = [0, 0, 0, 0];
+              var totalLen = 0, totalArea = 0, totalVol = 0;
+              var cx = 0, cy = 0, cz = 0;
+              objs.forEach(function(o) {
+                var d = dimOf[o.type] != null ? dimOf[o.type] : 0;
+                byDim[d]++;
+                cx += (o.position && o.position[0]) || 0;
+                cy += (o.position && o.position[1]) || 0;
+                cz += (o.position && o.position[2]) || 0;
+                if (o.type === 'segment' && o.vector) {
+                  totalLen += Math.sqrt(o.vector[0]*o.vector[0] + o.vector[1]*o.vector[1] + o.vector[2]*o.vector[2]);
+                } else if (o.type === 'rect' && o.u && o.v) {
+                  var uLen = Math.sqrt(o.u[0]*o.u[0] + o.u[1]*o.u[1] + o.u[2]*o.u[2]);
+                  var vLen = Math.sqrt(o.v[0]*o.v[0] + o.v[1]*o.v[1] + o.v[2]*o.v[2]);
+                  totalArea += uLen * vLen;
+                } else if (o.type === 'prism' && o.u && o.v && o.w) {
+                  var pu = Math.sqrt(o.u[0]*o.u[0] + o.u[1]*o.u[1] + o.u[2]*o.u[2]);
+                  var pv = Math.sqrt(o.v[0]*o.v[0] + o.v[1]*o.v[1] + o.v[2]*o.v[2]);
+                  var pw = Math.sqrt(o.w[0]*o.w[0] + o.w[1]*o.w[1] + o.w[2]*o.w[2]);
+                  totalVol += pu * pv * pw;
+                }
+              });
+              var n = Math.max(1, objs.length);
+              var avgDim = (byDim[0]*0 + byDim[1]*1 + byDim[2]*2 + byDim[3]*3) / n;
+              cx /= n; cy /= n; cz /= n;
+              var state = avgDim < 0.5 ? 'pointcloud' : avgDim < 1.5 ? 'linear' : avgDim < 2.5 ? 'planar' : 'volumetric';
+              var sm = ({
+                pointcloud: { label: 'Point cloud (0D)', color: '#a78bfa', bg: '#1a0a2e', border: '#7c3aed', desc: 'Mostly points — stretch any to begin building line segments.' },
+                linear: { label: 'Linear (1D)', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Line segments dominate. Stretching them perpendicular yields planes.' },
+                planar: { label: 'Planar (2D)', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Rectangles dominate. Stretch perpendicular to a plane to extrude prisms.' },
+                volumetric: { label: 'Volumetric (3D)', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Solids dominate. Each prism has interior volume and surface boundary.' }
+              })[state];
+              // SVG isometric projection
+              var ang = iq.viewAngle * Math.PI / 180;
+              function project(p) {
+                var x = p[0], y = p[1], z = p[2];
+                var sx = (x - z) * Math.cos(ang) * 22;
+                var sy = (y + (x + z) * Math.sin(ang) * 0.5) * -22;
+                return [120 + sx, 90 + sy];
+              }
+              var dimColors = ['#a78bfa', '#22d3ee', '#facc15', '#4ade80'];
+              var svgEls = [];
+              objs.forEach(function(o, i) {
+                var d = dimOf[o.type] != null ? dimOf[o.type] : 0;
+                var col = iq.edgeStyle === 'colored' ? dimColors[d] : '#e2e8f0';
+                if (iq.focus !== 'all' && iq.focus !== o.type) return;
+                if (o.type === 'point') {
+                  var p = project(o.position);
+                  svgEls.push(h('circle', { key: 'o' + i, cx: p[0], cy: p[1], r: 3, fill: col }));
+                } else if (o.type === 'segment') {
+                  var a = project(o.position);
+                  var b = project([o.position[0] + (o.vector ? o.vector[0] : 0), o.position[1] + (o.vector ? o.vector[1] : 0), o.position[2] + (o.vector ? o.vector[2] : 0)]);
+                  svgEls.push(h('line', { key: 'o' + i, x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: col, strokeWidth: 2 }));
+                } else if (o.type === 'rect' && o.u && o.v) {
+                  var p0 = o.position;
+                  var p1 = [p0[0] + o.u[0], p0[1] + o.u[1], p0[2] + o.u[2]];
+                  var p2 = [p1[0] + o.v[0], p1[1] + o.v[1], p1[2] + o.v[2]];
+                  var p3 = [p0[0] + o.v[0], p0[1] + o.v[1], p0[2] + o.v[2]];
+                  var pts = [p0, p1, p2, p3].map(project).map(function(q) { return q[0] + ',' + q[1]; }).join(' ');
+                  svgEls.push(h('polygon', { key: 'o' + i, points: pts, fill: col + '33', stroke: col, strokeWidth: 1.5 }));
+                } else if (o.type === 'prism' && o.u && o.v && o.w) {
+                  var pp = o.position;
+                  var corners = [
+                    pp,
+                    [pp[0]+o.u[0], pp[1]+o.u[1], pp[2]+o.u[2]],
+                    [pp[0]+o.u[0]+o.v[0], pp[1]+o.u[1]+o.v[1], pp[2]+o.u[2]+o.v[2]],
+                    [pp[0]+o.v[0], pp[1]+o.v[1], pp[2]+o.v[2]],
+                    [pp[0]+o.w[0], pp[1]+o.w[1], pp[2]+o.w[2]],
+                    [pp[0]+o.u[0]+o.w[0], pp[1]+o.u[1]+o.w[1], pp[2]+o.u[2]+o.w[2]],
+                    [pp[0]+o.u[0]+o.v[0]+o.w[0], pp[1]+o.u[1]+o.v[1]+o.w[1], pp[2]+o.u[2]+o.v[2]+o.w[2]],
+                    [pp[0]+o.v[0]+o.w[0], pp[1]+o.v[1]+o.w[1], pp[2]+o.v[2]+o.w[2]]
+                  ].map(project);
+                  var edges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+                  edges.forEach(function(e, j) {
+                    svgEls.push(h('line', { key: 'o' + i + '-e' + j, x1: corners[e[0]][0], y1: corners[e[0]][1], x2: corners[e[1]][0], y2: corners[e[1]][1], stroke: col, strokeWidth: 1.2, opacity: 0.85 }));
+                  });
+                }
+              });
+              var metrics = [
+                { k: 'count', label: 'Objects', val: objs.length },
+                { k: 'dim', label: 'Avg dim', val: avgDim.toFixed(2) },
+                { k: 'len', label: 'Σ length', val: totalLen.toFixed(2) },
+                { k: 'area', label: 'Σ area', val: totalArea.toFixed(2) },
+                { k: 'vol', label: 'Σ volume', val: totalVol.toFixed(2) }
+              ];
+              return h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-purple-700/40', style: { color: '#e8f0f5' } },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider mb-1', style: { color: sm.color } }, '📐 Stretch Analyzer — Inquiry Widget'),
+                h('div', { className: 'text-[10px] opacity-80 mb-2' }, 'Predict geometry properties as you stretch. No answer key — you mark your own understanding.'),
+                h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
+                h('div', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
+                h('div', { className: 'grid grid-cols-5 gap-1 mb-2' },
+                  metrics.map(function(m) {
+                    return h('div', { key: m.k, className: 'text-center p-1 rounded', style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
+                      h('div', { className: 'text-[8px] uppercase tracking-wide opacity-70' }, m.label),
+                      h('div', { className: 'text-[11px] font-bold', style: { color: sm.color } }, m.val)
+                    );
+                  })
+                ),
+                h('div', { className: 'grid grid-cols-4 gap-1 mb-2' },
+                  ['point', 'segment', 'rect', 'prism'].map(function(t, di) {
+                    return h('div', { key: t, className: 'text-center p-1 rounded text-[9px]', style: { background: byDim[di] ? '#0a0a1a' : '#050510', border: '1px solid ' + (byDim[di] ? dimColors[di] : '#1a1a2a'), color: byDim[di] ? dimColors[di] : '#475569' } },
+                      di + 'D · ' + byDim[di]
+                    );
+                  })
+                ),
+                h('svg', { width: '100%', height: 180, viewBox: '0 0 240 180', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                  h('line', { x1: 0, y1: 90, x2: 240, y2: 90, stroke: '#1e293b', strokeDasharray: '2 4' }),
+                  h('line', { x1: 120, y1: 0, x2: 120, y2: 180, stroke: '#1e293b', strokeDasharray: '2 4' }),
+                  svgEls,
+                  h('text', { x: 8, y: 14, fill: '#64748b', fontSize: 9 }, 'centroid (' + cx.toFixed(1) + ', ' + cy.toFixed(1) + ', ' + cz.toFixed(1) + ')'),
+                  h('text', { x: 8, y: 172, fill: '#64748b', fontSize: 9 }, 'view ' + iq.viewAngle + '°  · focus ' + iq.focus)
+                ),
+                h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                  h('label', { className: 'text-[10px]' },
+                    h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'View angle'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.viewAngle + '°')),
+                    h('input', { type: 'range', min: 0, max: 60, step: 5, value: iq.viewAngle, onChange: function(e) { setKey('viewAngle', parseInt(e.target.value, 10)); }, className: 'w-full' })
+                  ),
+                  h('label', { className: 'text-[10px]' },
+                    h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Detail level'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.detail)),
+                    h('input', { type: 'range', min: 1, max: 3, step: 1, value: iq.detail, onChange: function(e) { setKey('detail', parseInt(e.target.value, 10)); }, className: 'w-full' })
+                  ),
+                  h('label', { className: 'text-[10px]' },
+                    h('div', { className: 'mb-0.5' }, 'Focus on type'),
+                    h('select', { value: iq.focus, onChange: function(e) { setKey('focus', e.target.value); }, className: 'w-full p-1 rounded bg-slate-900 border border-purple-700/40 text-[10px]', style: { color: '#e8f0f5' } },
+                      ['all', 'point', 'segment', 'rect', 'prism'].map(function(t) { return h('option', { key: t, value: t }, t); })
+                    )
+                  ),
+                  h('label', { className: 'text-[10px]' },
+                    h('div', { className: 'mb-0.5' }, 'Edge style'),
+                    h('select', { value: iq.edgeStyle, onChange: function(e) { setKey('edgeStyle', e.target.value); }, className: 'w-full p-1 rounded bg-slate-900 border border-purple-700/40 text-[10px]', style: { color: '#e8f0f5' } },
+                      [['colored', 'colored by dimension'], ['plain', 'plain white']].map(function(o) { return h('option', { key: o[0], value: o[0] }, o[1]); })
+                    )
+                  )
+                ),
+                h('div', { className: 'flex gap-2 mb-2' },
+                  h('button', { onClick: function() {
+                    var t = new Date().toISOString().slice(11, 19);
+                    setIQ({ log: iq.log.concat([{ t: t, n: objs.length, dim: avgDim.toFixed(2), len: totalLen.toFixed(2), area: totalArea.toFixed(2), vol: totalVol.toFixed(2) }]) });
+                  }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log snapshot'),
+                  h('button', { onClick: function() { setIQ({ log: [] }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Clear log')
+                ),
+                iq.log.length > 0 && h('div', { className: 'mb-2 p-1.5 rounded text-[9px] font-mono', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                  iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  n=' + e.n + ' d=' + e.dim + ' L=' + e.len + ' A=' + e.area + ' V=' + e.vol); })
+                ),
+                h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, 'Your hypothesis (what stretches grow length faster — area faster — volume faster?)'),
+                h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., stretching a segment perpendicular doubles area but volume needs a second stretch...', className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck — show open questions"),
+                iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                  h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, 'Open questions (no answer key)'),
+                  h('ul', { className: 'pl-4 m-0' },
+                    h('li', null, 'When you stretch a segment perpendicular to itself, what happens to its dimension count?'),
+                    h('li', null, 'If centroid shifts after a stretch, what direction did you stretch most?'),
+                    h('li', null, 'How does total volume change vs total area as you stretch the same axis twice?'),
+                    h('li', null, 'What would make this construction symmetric about its centroid?')
+                  )
+                ),
+                h('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
+                  h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                  h('span', null, 'I can explain why these metrics scale the way they do as I stretch.')
+                ),
+                iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget — no score, no reveal, no answer dump.')
+              );
+            })(),
+
             // Property sliders (single-shape mode only)
             mode === 'single' && h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
               h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, 'Properties'),
