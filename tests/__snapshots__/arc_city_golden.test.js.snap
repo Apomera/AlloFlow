@@ -121,22 +121,22 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L4
 exports[`Arc City — adjudication + SR narration per level (golden master) > L5 (Sine Boulevard) outcome + narration matrix (snapshot) 1`] = `
 {
   "right amplitude, wrong frequency (a=2.5,b=0.7)": {
-    "equation": "y = a·sin(b·x + c) + k, with a = 2.5, b = 0.7, c = 0, k = 4. A wave of amplitude 2.5 centered on the midline y = 4.",
-    "narration": "Blocked at the gate (x = 4.7): the beam passed at y = 3.6, but the opening is y = 1 to 3. The wave is too high at this window — reduce the amplitude a, or change the frequency b so a dip lands here.",
+    "equation": "y = a·sin(b·x + c) + k, with a = 2.5, b = 0.7, c = 0, k = 4. A wave of amplitude 2.5 centered on the midline y = 4, one full wave about every 9 units.",
+    "narration": "Blocked at the gate (x = 4.7): the beam passed at y = 3.6, but the opening is y = 1.1 to 2. The wave is too high at this window — reduce the amplitude a, or change the frequency b so a dip lands here.",
     "nodeDist": null,
     "result": "gate",
     "yAt": 3.6,
   },
   "solution (a=2.5,b=1)": {
-    "equation": "y = a·sin(b·x + c) + k, with a = 2.5, b = 1, c = 0, k = 4. A wave of amplitude 2.5 centered on the midline y = 4.",
+    "equation": "y = a·sin(b·x + c) + k, with a = 2.5, b = 1, c = 0, k = 4. A wave of amplitude 2.5 centered on the midline y = 4, one full wave about every 6.3 units.",
     "narration": "Lit! The beam reached the node at (9.4, 4). Solved in 1 shot.",
     "nodeDist": 0.1,
     "result": "hit",
     "yAt": null,
   },
   "starting shot, too shallow (a=1,b=0.5)": {
-    "equation": "y = a·sin(b·x + c) + k, with a = 1, b = 0.5, c = 0, k = 4. A wave of amplitude 1 centered on the midline y = 4.",
-    "narration": "Blocked at the gate (x = 1.5): the beam passed at y = 4.7, but the opening is y = 5.5 to 7. The wave is too low at this window — increase the amplitude a, or change the frequency b so a crest lands here.",
+    "equation": "y = a·sin(b·x + c) + k, with a = 1, b = 0.5, c = 0, k = 4. A wave of amplitude 1 centered on the midline y = 4, one full wave about every 12.6 units.",
+    "narration": "Blocked at the gate (x = 1.5): the beam passed at y = 4.7, but the opening is y = 6 to 6.9. The wave is too low at this window — increase the amplitude a, or change the frequency b so a crest lands here.",
     "nodeDist": null,
     "result": "gate",
     "yAt": 4.7,
@@ -144,28 +144,28 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L5
 }
 `;
 
-exports[`Arc City — adjudication + SR narration per level (golden master) > L6 (Tilt Gate) outcome + narration matrix (snapshot) 1`] = `
+exports[`Arc City — adjudication + SR narration per level (golden master) > L6 (Tilt Gates) outcome + narration matrix (snapshot) 1`] = `
 {
-  "in the window but wrong angle (a=-0.05,h=5.5,k=4.2)": {
-    "equation": "y = a(x − h)² + k, with a = 0, h = 5.5, k = 4.2. A parabola opening downward, vertex at (5.5, 4.2).",
-    "narration": "Through the opening at x = 5.5, but at the wrong angle — your beam’s slope there was 0, and this tilted gate needs about -1.2 (± 0.5). Make the beam descend more steeply as it passes through.",
+  "flat line: in the window but wrong angle (a=0,h=5,k=4)": {
+    "equation": "y = a(x − h)² + k, with a = 0, h = 5, k = 4. A parabola a flat line, vertex at (5, 4).",
+    "narration": "Through the opening at x = 3, but at the wrong angle — your beam’s slope there was 0, and this tilted gate needs about 1.5 (± 0.5). Make the beam flatter (or climbing) as it passes through.",
     "nodeDist": null,
     "result": "slope",
-    "yAt": 4.2,
+    "yAt": 4,
   },
-  "solution through tilted gate (a=-0.4,h=4,k=5)": {
-    "equation": "y = a(x − h)² + k, with a = -0.4, h = 4, k = 5. A parabola opening downward, vertex at (4, 5).",
-    "narration": "Lit! The beam reached the node at (6.5, 2.5). Solved in 1 shot.",
-    "nodeDist": 0,
+  "solution: concave-down arc through both tilts (a=-0.4,h=5,k=5.5)": {
+    "equation": "y = a(x − h)² + k, with a = -0.4, h = 5, k = 5.5. A parabola opening downward, vertex at (5, 5.5).",
+    "narration": "Lit! The beam reached the node at (8.5, 0.5). Solved in 1 shot.",
+    "nodeDist": 0.1,
     "result": "hit",
     "yAt": null,
   },
-  "starting shot, blocked at gate (a=-0.2,h=5,k=2)": {
+  "starting shot, blocked at the first gate (a=-0.2,h=5,k=2)": {
     "equation": "y = a(x − h)² + k, with a = -0.2, h = 5, k = 2. A parabola opening downward, vertex at (5, 2).",
-    "narration": "Blocked at the gate (x = 5.5): the beam passed at y = 2, but the opening is y = 3.5 to 4.7. The beam is too low there — widen the arc or raise k.",
+    "narration": "Blocked at the gate (x = 3): the beam passed at y = 1.2, but the opening is y = 2.5 to 4.5. The beam is too low there — widen the arc or raise k.",
     "nodeDist": null,
     "result": "gate",
-    "yAt": 2,
+    "yAt": 1.2,
   },
 }
 `;
@@ -176,8 +176,8 @@ exports[`Arc City — module contract > board readouts for screen readers (snaps
   "L2": "Arc City, level: Cross-Street. Author a straight-line beam. The dark node to light is at x 9, y 2. A gate with an opening from y 3 to 5 is at x 4. Aim the beam through any gates, over any walls, to reach the node.",
   "L3": "Arc City, level: Clear the Wall. Author a parabola beam. The dark node to light is at x 8, y 0.5. A wall 4 units tall stands at x 5. A gate with an opening from y 3.4 to 4.3 is at x 6.5. Aim the beam through any gates, over any walls, to reach the node.",
   "L4": "Arc City, level: Switchback. Author a V-shaped, absolute-value beam. The dark node to light is at x 5, y 1. A gate with an opening from y 4 to 6 is at x 2. A gate with an opening from y 4 to 6 is at x 8. Aim the beam through any gates, over any walls, to reach the node.",
-  "L5": "Arc City, level: Sine Boulevard. Author a sine-wave beam. The dark node to light is at x 9.4, y 4. A gate with an opening from y 5.5 to 7 is at x 1.5. A gate with an opening from y 1 to 3 is at x 4.7. A gate with an opening from y 5.5 to 7 is at x 7.85. Aim the beam through any gates, over any walls, to reach the node.",
-  "L6": "Arc City, level: Tilt Gate. Author a parabola beam. The dark node to light is at x 6.5, y 2.5. A gate with an opening from y 3.5 to 4.7 is at x 5.5, which the beam must pass at a slope near -1.2. Aim the beam through any gates, over any walls, to reach the node.",
+  "L5": "Arc City, level: Sine Boulevard. Author a sine-wave beam. The dark node to light is at x 9.4, y 4. A gate with an opening from y 6 to 6.9 is at x 1.5. A gate with an opening from y 1.1 to 2 is at x 4.7. A gate with an opening from y 6 to 6.9 is at x 7.85. Aim the beam through any gates, over any walls, to reach the node.",
+  "L6": "Arc City, level: Tilt Gates. Author a parabola beam. The dark node to light is at x 8.5, y 0.5. A gate with an opening from y 2.5 to 4.5 is at x 3, which the beam must pass while climbing at a slope near 1.5 (give or take 0.5). A gate with an opening from y 2.5 to 4.5 is at x 7, which the beam must pass while descending at a slope near -1.5 (give or take 0.5). Aim the beam through any gates, over any walls, to reach the node.",
 }
 `;
 
@@ -393,25 +393,25 @@ exports[`Arc City — module contract > level geometry (snapshot) 1`] = `
     "family": "sine",
     "gates": [
       {
-        "hi": 7,
-        "lo": 5.5,
+        "hi": 6.9,
+        "lo": 6,
         "x": 1.5,
       },
       {
-        "hi": 3,
-        "lo": 1,
+        "hi": 2,
+        "lo": 1.1,
         "x": 4.7,
       },
       {
-        "hi": 7,
-        "lo": 5.5,
+        "hi": 6.9,
+        "lo": 6,
         "x": 7.85,
       },
     ],
     "hint": "Tip: the wave is centered on the midline y = 4. Set b so its peaks and dips line up with the windows, and a so it reaches high/low enough to thread each one.",
     "id": "L5",
     "node": {
-      "r": 0.6,
+      "r": 0.7,
       "x": 9.4,
       "y": 4,
     },
@@ -424,14 +424,14 @@ exports[`Arc City — module contract > level geometry (snapshot) 1`] = `
     "params": {
       "a": {
         "default": 1,
-        "label": "a  (amplitude — wave height)",
+        "label": "a  (amplitude — how tall the wave)",
         "max": 4,
         "min": 0,
         "step": 0.25,
       },
       "b": {
         "default": 0.5,
-        "label": "b  (frequency — how tight the wave)",
+        "label": "b  (squeezes/stretches the wave — line peaks up with the windows)",
         "max": 1.5,
         "min": 0.5,
         "step": 0.05,
@@ -467,21 +467,30 @@ exports[`Arc City — module contract > level geometry (snapshot) 1`] = `
     "family": "parabola",
     "gates": [
       {
-        "hi": 4.7,
-        "lo": 3.5,
+        "hi": 4.5,
+        "lo": 2.5,
         "slope": {
           "tol": 0.5,
-          "value": -1.2,
+          "value": 1.5,
         },
-        "x": 5.5,
+        "x": 3,
+      },
+      {
+        "hi": 4.5,
+        "lo": 2.5,
+        "slope": {
+          "tol": 0.5,
+          "value": -1.5,
+        },
+        "x": 7,
       },
     ],
-    "hint": "Tip: this gate is TILTED — the beam must pass through the opening AND be angled right (descending at about the gate’s slope) as it goes through. Shape the arc so it is coming down at the correct steepness exactly at the gate.",
+    "hint": "Tip: two TILTED gates demand opposite angles — the beam must be CLIMBING through the first and DESCENDING through the second. A straight beam can’t do both; only an arc whose slope changes will thread them. Raise k to lift the arc, then set a so it bends from rising to falling between the gates.",
     "id": "L6",
     "node": {
       "r": 0.6,
-      "x": 6.5,
-      "y": 2.5,
+      "x": 8.5,
+      "y": 0.5,
     },
     "paramOrder": [
       "a",
@@ -511,7 +520,7 @@ exports[`Arc City — module contract > level geometry (snapshot) 1`] = `
         "step": 0.25,
       },
     },
-    "title": "Tilt Gate",
+    "title": "Tilt Gates",
     "walls": [],
     "world": {
       "x0": 0,

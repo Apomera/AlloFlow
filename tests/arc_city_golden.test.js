@@ -47,9 +47,9 @@ const CASES = {
     { label: 'right amplitude, wrong frequency (a=2.5,b=0.7)', p: { a: 2.5, b: 0.7, c: 0, k: 4 } }
   ],
   L6: [
-    { label: 'solution through tilted gate (a=-0.4,h=4,k=5)', p: { a: -0.4, h: 4, k: 5 } },
-    { label: 'starting shot, blocked at gate (a=-0.2,h=5,k=2)', p: { a: -0.2, h: 5, k: 2 } },
-    { label: 'in the window but wrong angle (a=-0.05,h=5.5,k=4.2)', p: { a: -0.05, h: 5.5, k: 4.2 } }
+    { label: 'solution: concave-down arc through both tilts (a=-0.4,h=5,k=5.5)', p: { a: -0.4, h: 5, k: 5.5 } },
+    { label: 'starting shot, blocked at the first gate (a=-0.2,h=5,k=2)', p: { a: -0.2, h: 5, k: 2 } },
+    { label: 'flat line: in the window but wrong angle (a=0,h=5,k=4)', p: { a: 0, h: 5, k: 4 } }
   ]
 };
 
@@ -356,19 +356,19 @@ describe('Arc City — Phase 2: sine family + slope-gates (§3.2)', () => {
   });
 
   it('slope-gate: right window but wrong angle is blocked as "slope" (not a hit)', () => {
-    const res = classifyShot(L6, { a: -0.05, h: 5.5, k: 4.2 });
+    const res = classifyShot(L6, { a: 0, h: 5, k: 4 }); // flat line: in window, wrong angle
     expect(res.result).toBe('slope');
     expect(describeResult(L6, res, 2)).toMatch(/wrong angle/);
   });
 
   it('slope-gate: the correctly-angled arc threads the tilt and lights the node', () => {
-    expect(classifyShot(L6, { a: -0.4, h: 4, k: 5 }).result).toBe('hit');
+    expect(classifyShot(L6, { a: -0.4, h: 5, k: 5.5 }).result).toBe('hit');
   });
 
   it('Phase 2 solves earn their action-named badges (wave-rider, tilt-threader)', () => {
     const hit5 = classifyShot(L5, { a: 2.5, b: 1, c: 0, k: 4 });
     expect(arc.badgesForSolve(L5, hit5, 1, 'practice', [])).toContain('wave-rider');
-    const hit6 = classifyShot(L6, { a: -0.4, h: 4, k: 5 });
+    const hit6 = classifyShot(L6, { a: -0.4, h: 5, k: 5.5 });
     expect(arc.badgesForSolve(L6, hit6, 1, 'practice', [])).toContain('tilt-threader');
   });
 

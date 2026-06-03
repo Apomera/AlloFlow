@@ -84,3 +84,23 @@ describe('Arc City — the math is load-bearing (not trivially winnable, §2.4)'
     }, 20000);
   });
 });
+
+describe('Arc City — shape-necessity / forcing certificate (§13.2.4)', () => {
+  // A level can pass "solvable + low-hit-rate" yet still be secretly winnable by a
+  // SIMPLER/wrong shape (e.g. a straight line or an upward bowl), which would
+  // undercut the "math is the mechanic" north star. The two opposite-slope gates
+  // on L6 "Tilt Gates" are meant to make a concave-down arc (a<0) MANDATORY —
+  // assert that property over the whole grid so it can't silently regress.
+  it('L6 can ONLY be won by a concave-down arc (a<0) — no line, no upward bowl', () => {
+    const L6 = arc.levelById('L6');
+    let wins = 0, wrongShape = 0;
+    for (let a = -1.5; a <= 1.5 + 1e-9; a += 0.05)
+      for (let h = 0; h <= 10 + 1e-9; h += 0.25)
+        for (let k = 0; k <= 8 + 1e-9; k += 0.25) {
+          const p = { a: Math.round(a * 100) / 100, h: Math.round(h * 100) / 100, k: Math.round(k * 100) / 100 };
+          if (arc.classifyShot(L6, p).result === 'hit') { wins++; if (p.a >= 0) wrongShape++; }
+        }
+    expect(wins).toBeGreaterThan(0);   // still solvable
+    expect(wrongShape).toBe(0);        // every win is a genuine concave-down arc (a<0)
+  }, 30000);
+});

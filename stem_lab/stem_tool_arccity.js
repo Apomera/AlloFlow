@@ -78,27 +78,41 @@
     {
       id: 'L5', title: 'Sine Boulevard', family: 'sine',
       world: { x0: 0, x1: 10, y0: 0, y1: 8 },
-      walls: [], gates: [{ x: 1.5, lo: 5.5, hi: 7 }, { x: 4.7, lo: 1, hi: 3 }, { x: 7.85, lo: 5.5, hi: 7 }], node: { x: 9.4, y: 4, r: 0.6 }, dx: 0.05,
+      // Windows narrowed so AMPLITUDE genuinely matters (a must be ~2.5, not any
+      // big value). Gates sit at sin(x)'s extrema (π/2, 3π/2, 5π/2) so the
+      // intended period is 2π (b=1); c and k are locked as the interim
+      // tractability measure (design §3.1 snapped-periods + crest-grabber are
+      // DEFERRED to Phase 2b). The node is the end landing zone; the gates are
+      // the real constraint.
+      walls: [], gates: [{ x: 1.5, lo: 6, hi: 6.9 }, { x: 4.7, lo: 1.1, hi: 2 }, { x: 7.85, lo: 6, hi: 6.9 }], node: { x: 9.4, y: 4, r: 0.7 }, dx: 0.05,
       paramOrder: ['a', 'b', 'c', 'k'],
       params: {
-        a: { min: 0, max: 4, step: 0.25, default: 1, label: 'a  (amplitude — wave height)' },
-        b: { min: 0.5, max: 1.5, step: 0.05, default: 0.5, label: 'b  (frequency — how tight the wave)' },
+        a: { min: 0, max: 4, step: 0.25, default: 1, label: 'a  (amplitude — how tall the wave)' },
+        b: { min: 0.5, max: 1.5, step: 0.05, default: 0.5, label: 'b  (squeezes/stretches the wave — line peaks up with the windows)' },
         c: { min: 0, max: 0, step: 1, default: 0, locked: true, label: 'c  (phase — locked at 0)' },
         k: { min: 4, max: 4, step: 1, default: 4, locked: true, label: 'k  (midline — locked at 4)' }
       },
       hint: 'Tip: the wave is centered on the midline y = 4. Set b so its peaks and dips line up with the windows, and a so it reaches high/low enough to thread each one.'
     },
     {
-      id: 'L6', title: 'Tilt Gate', family: 'parabola',
+      id: 'L6', title: 'Tilt Gates', family: 'parabola',
       world: { x0: 0, x1: 10, y0: 0, y1: 8 },
-      walls: [], gates: [{ x: 5.5, lo: 3.5, hi: 4.7, slope: { value: -1.2, tol: 0.5 } }], node: { x: 6.5, y: 2.5, r: 0.6 }, dx: 0.05,
+      walls: [],
+      // Two gates demand OPPOSITE slopes (climbing +1.5, then descending -1.5).
+      // A straight beam has one constant slope and cannot satisfy both; the slope
+      // DIFFERENCE forces a concave-down arc (a < 0) of a specific curvature. So
+      // the derivative is genuinely load-bearing — verified in
+      // tests/arc_city_solvability.test.js: every grid win has a < 0 (the §13.2.4
+      // forcing certificate). Intended solution ≈ a=-0.4, h=5, k=5.5.
+      gates: [{ x: 3, lo: 2.5, hi: 4.5, slope: { value: 1.5, tol: 0.5 } }, { x: 7, lo: 2.5, hi: 4.5, slope: { value: -1.5, tol: 0.5 } }],
+      node: { x: 8.5, y: 0.5, r: 0.6 }, dx: 0.05,
       paramOrder: ['a', 'h', 'k'],
       params: {
         a: { min: -1.5, max: 1.5, step: 0.05, default: -0.2, label: 'a  (arc direction & tightness)' },
         h: { min: 0, max: 10, step: 0.25, default: 5, label: 'h  (vertex horizontal)' },
         k: { min: 0, max: 8, step: 0.25, default: 2, label: 'k  (vertex height)' }
       },
-      hint: 'Tip: this gate is TILTED — the beam must pass through the opening AND be angled right (descending at about the gate’s slope) as it goes through. Shape the arc so it is coming down at the correct steepness exactly at the gate.'
+      hint: 'Tip: two TILTED gates demand opposite angles — the beam must be CLIMBING through the first and DESCENDING through the second. A straight beam can’t do both; only an arc whose slope changes will thread them. Raise k to lift the arc, then set a so it bends from rising to falling between the gates.'
     }
   ];
 
@@ -232,7 +246,8 @@
     }
     if (level.family === 'sine') {
       return 'y = a·sin(b·x + c) + k, with a = ' + round1(p.a) + ', b = ' + round1(p.b) + ', c = ' + round1(p.c) + ', k = ' + round1(p.k) +
-        '. A wave of amplitude ' + round1(p.a) + ' centered on the midline y = ' + round1(p.k) + '.';
+        '. A wave of amplitude ' + round1(p.a) + ' centered on the midline y = ' + round1(p.k) +
+        (p.b ? ', one full wave about every ' + round1((2 * Math.PI) / p.b) + ' units.' : '.');
     }
     var dir = p.a < 0 ? 'opening downward' : (p.a > 0 ? 'opening upward' : 'a flat line');
     return 'y = a(x − h)² + k, with a = ' + round1(p.a) + ', h = ' + round1(p.h) + ', k = ' + round1(p.k) +
@@ -244,7 +259,7 @@
     s += level.family === 'line' ? 'Author a straight-line beam. ' : (level.family === 'absval' ? 'Author a V-shaped, absolute-value beam. ' : (level.family === 'sine' ? 'Author a sine-wave beam. ' : 'Author a parabola beam. '));
     s += 'The dark node to light is at x ' + level.node.x + ', y ' + level.node.y + '. ';
     (level.walls || []).forEach(function (w) { s += 'A wall ' + w.height + ' units tall stands at x ' + w.x + '. '; });
-    (level.gates || []).forEach(function (g) { s += 'A gate with an opening from y ' + g.lo + ' to ' + g.hi + ' is at x ' + g.x + (g.slope ? ', which the beam must pass at a slope near ' + g.slope.value : '') + '. '; });
+    (level.gates || []).forEach(function (g) { s += 'A gate with an opening from y ' + g.lo + ' to ' + g.hi + ' is at x ' + g.x + (g.slope ? ', which the beam must pass while ' + (g.slope.value < 0 ? 'descending' : (g.slope.value > 0 ? 'climbing' : 'level')) + ' at a slope near ' + g.slope.value + ' (give or take ' + g.slope.tol + ')' : '') + '. '; });
     s += 'Aim the beam through any gates, over any walls, to reach the node.';
     return s;
   }
@@ -895,7 +910,7 @@
 
         var coordItems = [h('li', { key: 'cn' }, '🎯 ' + t('arccity.node', 'Node (target):') + ' x ' + level.node.x + ', y ' + level.node.y)];
         (level.walls || []).forEach(function (w, i) { coordItems.push(h('li', { key: 'cw' + i }, '🧱 ' + t('arccity.wall', 'Wall:') + ' x ' + w.x + ', height ' + w.height)); });
-        (level.gates || []).forEach(function (g, i) { coordItems.push(h('li', { key: 'cg' + i }, '🚪 ' + t('arccity.gate', 'Gate:') + ' x ' + g.x + ', opening y ' + g.lo + ' to ' + g.hi + (g.slope ? ', slope ≈ ' + g.slope.value : ''))); });
+        (level.gates || []).forEach(function (g, i) { coordItems.push(h('li', { key: 'cg' + i }, '🚪 ' + t('arccity.gate', 'Gate:') + ' x ' + g.x + ', opening y ' + g.lo + ' to ' + g.hi + (g.slope ? ', slope ≈ ' + g.slope.value + ' ±' + g.slope.tol + ' (' + (g.slope.value < 0 ? 'descending' : 'climbing') + ')' : ''))); });
 
         var controls = h('div', { key: 'controls', style: { marginTop: 14 } },
           h('div', { key: 'eq', 'aria-label': describeEquation(level, P), style: { fontSize: 15, color: INK, marginBottom: 6, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', fontVariantNumeric: 'tabular-nums' } },
@@ -906,7 +921,7 @@
                 : (level.family === 'sine'
                   ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' · sin(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, round1(P.b)), '·x + ', h('span', { key: 'c', style: { color: BEAM, fontWeight: 800 } }, round1(P.c)), ') + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]
                   : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, round1(P.h)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]))),
-          tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.6, marginBottom: 10 } }, t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.')) : null,
+          tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.6, marginBottom: 10 } }, handleEls.length ? t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.') : t('arccity.slider_hint', 'Tip: use the sliders (or the +/− buttons and arrow keys) to shape the beam.')) : null,
           h('div', { key: 'rows' }, paramRows),
           h('div', { key: 'btns', style: { display: 'flex', gap: 10, marginTop: 6 } },
             h('button', { key: 'fire', type: 'button', onClick: fire, style: fireBtnStyle }, '⚡ ' + t('arccity.fire', 'Fire beam')),
