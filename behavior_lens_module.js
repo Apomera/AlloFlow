@@ -323,6 +323,26 @@
         const d = new Date(iso);
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
+    // HTML-escape helper for the print/PDF report pipelines.
+    // PURPOSE: every place we interpolate user-supplied or AI-supplied data
+    // into a template literal that ends up inside `w.document.write(html)`
+    // is an XSS surface — a malicious or mistyped student note can run
+    // arbitrary JS in the print-preview window (which on Canvas shares the
+    // localStorage of every other profile open in the same browser session).
+    // This helper neutralizes the four characters HTML treats specially,
+    // plus the apostrophe so attribute-context interpolations are safe.
+    // RETURN: always a string. `esc(null)` and `esc(undefined)` return '',
+    // which is what the existing `${e.field || '—'}` patterns already
+    // expect when the field is missing.
+    const esc = (s) => {
+        if (s == null) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
     const fmtTime = (iso) => {
         if (!iso) return '';
         const d = new Date(iso);
@@ -2906,7 +2926,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 h('button', { onClick: () => {
                         const student = studentName || 'Student';
                         const now = new Date().toLocaleString();
-                        let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>BehaviorLens Portfolio — ${student}</title><style>
+                        let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>BehaviorLens Portfolio — ${esc(student)}</title><style>
                             body { font-family: 'Segoe UI', Tahoma, sans-serif; max-width: 800px; margin: 0 auto; padding: 24px; color: #1e293b; font-size: 11pt; }
                             h1 { font-size: 18pt; border-bottom: 3px solid #334155; padding-bottom: 8px; margin-bottom: 4px; }
                             h2 { font-size: 14pt; color: #475569; margin-top: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
@@ -2921,7 +2941,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                             .ai-box { background: #f5f3ff; border: 1px solid #c4b5fd; border-radius: 8px; padding: 12px; margin-top: 8px; }
                             @media print { body { padding: 0; } @page { margin: 0.75in; } }
                         </style></head><body>`;
-                        html += `<h1>📊 BehaviorLens Portfolio</h1><div class="subtitle">Student: <strong>${student}</strong> | Generated: ${now}</div>`;
+                        html += `<h1>📊 BehaviorLens Portfolio</h1><div class="subtitle">Student: <strong>${esc(student)}</strong> | Generated: ${esc(now)}</div>`;
                         // Summary stats
                         const avgInt = filteredAbc.length > 0 ? (filteredAbc.reduce((s, e) => s + (e.intensity || 0), 0) / filteredAbc.length).toFixed(1) : '—';
                         html += `<div class="stat-row"><div class="stat"><div class="stat-value">${filteredAbc.length}</div><div class="stat-label">${t('bl.abc_entries') || 'ABC Entries'}</div></div><div class="stat"><div class="stat-value">${filteredObs.length}</div><div class="stat-label">${t('bl.observations') || 'Observations'}</div></div><div class="stat"><div class="stat-value">${avgInt}</div><div class="stat-label">${t('bl.avg_intensity') || 'Avg Intensity'}</div></div></div>`;
@@ -2931,7 +2951,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                             filteredAbc.forEach((e, i) => {
                                 const phaseColors = { baseline: '#94a3b8', intervention: '#10b981', maintenance: '#3b82f6', 'return to baseline': '#f97316' };
                                 const phaseBadge = e.phase ? `<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:8pt;font-weight:700;background:${phaseColors[e.phase] || '#e2e8f0'};color:white;">${e.phase === 'baseline' ? 'A' : e.phase === 'intervention' ? 'B' : e.phase === 'maintenance' ? 'M' : "A'"}</span>` : '—';
-                                html += `<tr><td>${i + 1}</td><td>${fmtDate(e.timestamp)}</td><td>${e.antecedent || '—'}</td><td>${e.behavior || '—'}</td><td>${e.consequence || '—'}</td><td>${e.setting || '—'}</td><td>${phaseBadge}</td><td>${e.intensity || '—'}</td></tr>`;
+                                html += `<tr><td>${i + 1}</td><td>${fmtDate(e.timestamp)}</td><td>${esc(e.antecedent) || '—'}</td><td>${esc(e.behavior) || '—'}</td><td>${esc(e.consequence) || '—'}</td><td>${esc(e.setting) || '—'}</td><td>${phaseBadge}</td><td>${esc(e.intensity) || '—'}</td></tr>`;
                             });
                             html += '</table>';
                         }
@@ -2939,19 +2959,19 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         if (filteredObs.length > 0) {
                             html += `<h2>🔍 Observation Sessions</h2><table><tr><th>#</th><th>Date</th><th>${t('bl.method') || 'Method'}</th><th>${t('bl.duration') || 'Duration'}</th><th>${t('bl.result') || 'Result'}</th></tr>`;
                             filteredObs.forEach((s, i) => {
-                                const detail = s.method === 'frequency' ? `${s.data?.count || 0} (${s.data?.rate || 0}/min)` : s.method === 'interval' ? `${s.data?.occurredCount || 0}/${s.data?.totalIntervals || 0} intervals` : s.method === 'duration' ? `${s.data?.totalDuration || 0}s` : '—';
-                                html += `<tr><td>${i + 1}</td><td>${fmtDate(s.timestamp)}</td><td>${s.method || '—'}</td><td>${fmtDuration(s.duration)}</td><td>${detail}</td></tr>`;
+                                const detail = s.method === 'frequency' ? `${Number(s.data?.count) || 0} (${Number(s.data?.rate) || 0}/min)` : s.method === 'interval' ? `${Number(s.data?.occurredCount) || 0}/${Number(s.data?.totalIntervals) || 0} intervals` : s.method === 'duration' ? `${Number(s.data?.totalDuration) || 0}s` : '—';
+                                html += `<tr><td>${i + 1}</td><td>${fmtDate(s.timestamp)}</td><td>${esc(s.method) || '—'}</td><td>${fmtDuration(s.duration)}</td><td>${detail}</td></tr>`;
                             });
                             html += '</table>';
                         }
                         // AI Analysis
                         if (aiAnalysis) {
                             html += '<h2>🧠 AI Analysis</h2><div class="ai-box">';
-                            if (aiAnalysis.hypothesizedFunction) html += `<p><strong>Hypothesized Function:</strong> ${aiAnalysis.hypothesizedFunction} (${aiAnalysis.confidence || '?'}% confidence)</p>`;
-                            if (aiAnalysis.summary) html += `<p>${aiAnalysis.summary}</p>`;
+                            if (aiAnalysis.hypothesizedFunction) html += `<p><strong>Hypothesized Function:</strong> ${esc(aiAnalysis.hypothesizedFunction)} (${esc(aiAnalysis.confidence) || '?'}% confidence)</p>`;
+                            if (aiAnalysis.summary) html += `<p>${esc(aiAnalysis.summary)}</p>`;
                             if (aiAnalysis.recommendations && Array.isArray(aiAnalysis.recommendations)) {
                                 html += '<p><strong>Recommendations:</strong></p><ul>';
-                                aiAnalysis.recommendations.forEach(r => { html += `<li>${r}</li>`; });
+                                aiAnalysis.recommendations.forEach(r => { html += `<li>${esc(r)}</li>`; });
                                 html += '</ul>';
                             }
                             html += '</div>';
@@ -3014,14 +3034,15 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         const bar = (label, count, max, color) => {
                             const pct = Math.round((count/max)*100);
                             const entPct = Math.round((count/total)*100);
+                            const safeLabel = esc(label);
                             return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-                                <div style="width:180px;font-size:9pt;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;" title="${label}">${label}</div>
+                                <div style="width:180px;font-size:9pt;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;" title="${safeLabel}">${safeLabel}</div>
                                 <div style="flex:1;height:20px;background:#f1f5f9;border-radius:3px;overflow:hidden;">
                                     <div style="width:${pct}%;height:100%;background:${color};border-radius:3px;display:flex;align-items:center;padding-left:6px;">
                                         ${pct>15?`<span style="font-size:8pt;font-weight:700;color:white;">${entPct}%</span>`:''}
                                     </div>
                                 </div>
-                                <div style="width:42px;text-align:right;font-size:9pt;font-weight:700;color:#374151;">${count}</div>
+                                <div style="width:42px;text-align:right;font-size:9pt;font-weight:700;color:#374151;">${Number(count) || 0}</div>
                             </div>`;
                         };
 
@@ -3036,7 +3057,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         // ── Phase colors ────────────────────────────────────────
                         const phaseColors = {baseline:'#64748b',intervention:'#059669',maintenance:'#3b82f6','return to baseline':'#f97316'};
                         const phaseRows = Object.entries(phaseData).map(([ph,d]) =>
-                            `<tr><td><span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${phaseColors[ph]||'#e2e8f0'};color:white;font-weight:700;font-size:8.5pt;">${ph}</span></td><td>${d.count}</td><td>${Math.round(d.count/total*100)}%</td><td>${d.count>0?(d.totalInt/d.count).toFixed(1):'—'}</td></tr>`
+                            `<tr><td><span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${phaseColors[ph]||'#e2e8f0'};color:white;font-weight:700;font-size:8.5pt;">${esc(ph)}</span></td><td>${Number(d.count) || 0}</td><td>${Math.round(d.count/total*100)}%</td><td>${d.count>0?(d.totalInt/d.count).toFixed(1):'—'}</td></tr>`
                         ).join('');
 
                         // ── Temporal grid ───────────────────────────────────────
@@ -3046,7 +3067,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                                 const v = temporal[di+'_'+slot]||0;
                                 return `<td style="text-align:center;background:${cellColor(v,maxTemporal)};padding:6px 10px;border:1px solid #e2e8f0;font-size:8.5pt;font-weight:${v>0?700:400};color:${v>0?'#1e293b':'#94a3b8'};">${v||'—'}</td>`;
                             }).join('');
-                            return `<tr><td style="padding:6px 10px;font-size:8.5pt;font-weight:600;color:#374151;border:1px solid #e2e8f0;white-space:nowrap;">${slot}</td>${cells}</tr>`;
+                            return `<tr><td style="padding:6px 10px;font-size:8.5pt;font-weight:600;color:#374151;border:1px solid #e2e8f0;white-space:nowrap;">${esc(slot)}</td>${cells}</tr>`;
                         }).join('');
 
                         // ── Build HTML ──────────────────────────────────────────
@@ -3080,17 +3101,17 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                             @media print{body{padding:0}@page{margin:.75in;size:letter}section{page-break-inside:avoid}}
                         `;
 
-                        let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>FBA Report — ${student}</title><style>${css}</style></head><body>`;
+                        let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>FBA Report — ${esc(student)}</title><style>${css}</style></head><body>`;
 
                         // Cover
                         html += `<div class="cover">
                             <h1>📊 Functional Behavior Assessment</h1>
                             <div style="font-size:11pt;color:#64748b">Data Summary Report — Prepared by BehaviorLens</div>
                             <div class="meta">
-                                <div class="meta-item"><div class="meta-label">Student</div><strong>${student}</strong></div>
-                                <div class="meta-item"><div class="meta-label">Report Generated</div>${now}</div>
-                                <div class="meta-item"><div class="meta-label">Assessment Period</div>${firstDate} – ${lastDate} (${spanDays} days)</div>
-                                <div class="meta-item"><div class="meta-label">Total Incidents</div>${total} ABC entries</div>
+                                <div class="meta-item"><div class="meta-label">Student</div><strong>${esc(student)}</strong></div>
+                                <div class="meta-item"><div class="meta-label">Report Generated</div>${esc(now)}</div>
+                                <div class="meta-item"><div class="meta-label">Assessment Period</div>${esc(firstDate)} – ${esc(lastDate)} (${Number(spanDays) || 0} days)</div>
+                                <div class="meta-item"><div class="meta-label">Total Incidents</div>${Number(total) || 0} ABC entries</div>
                             </div>
                         </div>`;
 
@@ -3102,7 +3123,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                                 <div class="stat-card"><div class="stat-val">${avgInt}</div><div class="stat-lbl">Avg Intensity (1–5)</div></div>
                                 <div class="stat-card"><div class="stat-val">${spanDays}</div><div class="stat-lbl">Days of Data</div></div>
                             </div>
-                            ${topS.length?`<p style="font-size:9.5pt;color:#475569;margin:0"><strong>Most common setting:</strong> ${topSetting} (${topS[0][1]} incidents, ${Math.round(topS[0][1]/total*100)}% of entries)</p>`:''}
+                            ${topS.length?`<p style="font-size:9.5pt;color:#475569;margin:0"><strong>Most common setting:</strong> ${esc(topSetting)} (${Number(topS[0][1]) || 0} incidents, ${Math.round(topS[0][1]/total*100)}% of entries)</p>`:''}
                         </section>`;
 
                         // Section 2: Behavioral Function Hypothesis
@@ -3110,9 +3131,9 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                             html += `<section class="page-break"><h2>2. Behavioral Function Analysis</h2>`;
                             if (aiAnalysis && aiAnalysis.hypothesizedFunction) {
                                 html += `<div class="hyp-box">
-                                    <div class="hyp-badge">${aiAnalysis.hypothesizedFunction}</div>
-                                    <div style="font-size:9.5pt;color:#374151"><strong>Confidence:</strong> ${aiAnalysis.confidence||'?'}%</div>
-                                    ${aiAnalysis.summary?`<p style="margin:10px 0 0;font-size:10pt;">${aiAnalysis.summary}</p>`:''}
+                                    <div class="hyp-badge">${esc(aiAnalysis.hypothesizedFunction)}</div>
+                                    <div style="font-size:9.5pt;color:#374151"><strong>Confidence:</strong> ${esc(aiAnalysis.confidence) || '?'}%</div>
+                                    ${aiAnalysis.summary?`<p style="margin:10px 0 0;font-size:10pt;">${esc(aiAnalysis.summary)}</p>`:''}
                                 </div>`;
                             }
                             if (topF.length) {
@@ -3173,23 +3194,23 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                             const d = new Date(e.timestamp||e.date);
                             const dateStr = isNaN(d)?'—':d.toLocaleDateString();
                             const timeStr = isNaN(d)?'—':d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-                            html += `<tr><td>${i+1}</td><td style="white-space:nowrap">${dateStr}</td><td style="white-space:nowrap">${timeStr}</td><td>${e.antecedent||'—'}</td><td>${e.behavior||'—'}</td><td>${e.consequence||'—'}</td><td>${e.setting||'—'}</td><td style="text-align:center">${e.intensity||'—'}</td></tr>`;
+                            html += `<tr><td>${i+1}</td><td style="white-space:nowrap">${esc(dateStr)}</td><td style="white-space:nowrap">${esc(timeStr)}</td><td>${esc(e.antecedent) || '—'}</td><td>${esc(e.behavior) || '—'}</td><td>${esc(e.consequence) || '—'}</td><td>${esc(e.setting) || '—'}</td><td style="text-align:center">${esc(e.intensity) || '—'}</td></tr>`;
                         });
                         html += `</table></section>`;
 
                         // Section 9: Recommendations
                         if (aiAnalysis && (aiAnalysis.recommendations||aiAnalysis.summary)) {
                             html += `<section><h2>9. AI Analysis &amp; Recommendations</h2>`;
-                            if (aiAnalysis.summary) html += `<p>${aiAnalysis.summary}</p>`;
+                            if (aiAnalysis.summary) html += `<p>${esc(aiAnalysis.summary)}</p>`;
                             if (aiAnalysis.recommendations&&Array.isArray(aiAnalysis.recommendations)&&aiAnalysis.recommendations.length) {
                                 html += `<h3>Recommended Interventions</h3><ul class="rec-list">`;
-                                aiAnalysis.recommendations.forEach(r => { html += `<li>${r}</li>`; });
+                                aiAnalysis.recommendations.forEach(r => { html += `<li>${esc(r)}</li>`; });
                                 html += `</ul>`;
                             }
                             html += `</section>`;
                         }
 
-                        html += `<div class="footer">Generated by BehaviorLens — AlloFlow UDL Platform &bull; ${now} &bull; CONFIDENTIAL: For educational use only</div></body></html>`;
+                        html += `<div class="footer">Generated by BehaviorLens — AlloFlow UDL Platform &bull; ${esc(now)} &bull; CONFIDENTIAL: For educational use only</div></body></html>`;
 
                         const w = window.open('', '_blank');
                         if (w) { w.document.write(html); w.document.close(); setTimeout(function(){ w.print(); }, 400); }
@@ -7551,7 +7572,7 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
 
         const handlePrint = () => {
             const printContent = `
-                <html><head><title>FERPA Consent - ${studentName || 'Student'}</title>
+                <html><head><title>FERPA Consent - ${esc(studentName) || 'Student'}</title>
                 <style>
                     body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; color: #1e293b; line-height: 1.6; }
                     h1 { font-size: 20px; text-align: center; border-bottom: 2px solid #0891b2; padding-bottom: 12px; }
@@ -7566,9 +7587,9 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                     @media print { body { margin: 20px; } }
                 </style></head><body>
                 <h1>📋 Consent for Behavioral Data Exchange</h1>
-                <div class="meta">${schoolName ? schoolName + ' — ' : ''}${teacherName ? 'Prepared by ' + teacherName + ' — ' : ''}${new Date().toLocaleDateString()}</div>
-                <p style="font-size:11px;color:#64748b;">Student Codename: <strong>${studentName || '_______________'}</strong></p>
-                ${sections.map(s => `<h2>${s.title}</h2><p>${s.content.replace(/\n/g, '<br>')}</p>`).join('')}
+                <div class="meta">${schoolName ? esc(schoolName) + ' — ' : ''}${teacherName ? 'Prepared by ' + esc(teacherName) + ' — ' : ''}${esc(new Date().toLocaleDateString())}</div>
+                <p style="font-size:11px;color:#64748b;">Student Codename: <strong>${esc(studentName) || '_______________'}</strong></p>
+                ${sections.map(s => `<h2>${esc(s.title)}</h2><p>${esc(s.content).replace(/\n/g, '<br>')}</p>`).join('')}
                 <div class="sig-block">
                     <p style="font-size:13px;font-weight:bold;">{t('bl.consent_options') || 'Consent Options'}</p>
                     <div class="checkbox-line">I consent to the exchange of behavioral data as described above.</div>
@@ -16064,7 +16085,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             if (!svg) return;
             const svgData = new XMLSerializer().serializeToString(svg);
             const printWin = window.open('', '_blank');
-            printWin.document.write(`<html><head><title>${graphTitle || 'ABA Graph'}</title><style>body{margin:20px;font-family:Arial,sans-serif}svg{width:100%;max-width:800px}@media print{body{margin:0}}</style></head><body>${svgData}<br/><p style="font-size:10px;color:#666">Generated by BehaviorLens — ${new Date().toLocaleDateString()}</p></body></html>`);
+            printWin.document.write(`<html><head><title>${esc(graphTitle) || 'ABA Graph'}</title><style>body{margin:20px;font-family:Arial,sans-serif}svg{width:100%;max-width:800px}@media print{body{margin:0}}</style></head><body>${svgData}<br/><p style="font-size:10px;color:#666">Generated by BehaviorLens — ${esc(new Date().toLocaleDateString())}</p></body></html>`);
             printWin.document.close();
             printWin.print();
         };
@@ -22672,7 +22693,7 @@ Format as a numbered list. Be concise but specific.`;
             // X labels
             const xIdxs = data.length <= 10 ? data.map((_, i) => i) : [0, Math.floor(data.length * 0.25), Math.floor(data.length * 0.5), Math.floor(data.length * 0.75), data.length - 1];
             xIdxs.forEach(i => {
-                if (data[i]) svg += `<text x="${xS(i)}" y="${H - 8}" text-anchor="middle" fill="#94a3b8" font-size="9">${data[i].date.slice(5)}</text>`;
+                if (data[i]) svg += `<text x="${xS(i)}" y="${H - 8}" text-anchor="middle" fill="#94a3b8" font-size="9">${esc(data[i].date.slice(5))}</text>`;
             });
             // Trend line
             if (analytics.trend) {
@@ -22708,7 +22729,7 @@ Format as a numbered list. Be concise but specific.`;
             items.forEach(([name, count]) => {
                 const pct = ((count / total) * 100).toFixed(1);
                 const barW = Math.round((count / items[0][1]) * 100);
-                html += `<tr><td style="padding:5px 10px;border-bottom:1px solid #f1f5f9;"><div style="background:linear-gradient(90deg,#e0e7ff ${barW}%,transparent ${barW}%);padding:2px 6px;border-radius:4px;">${name}</td><td style="text-align:right;padding:5px 10px;border-bottom:1px solid #f1f5f9;font-weight:600;">${count}</td><td style="text-align:right;padding:5px 10px;border-bottom:1px solid #f1f5f9;color:#64748b;">${pct}%</td></tr>`;
+                html += `<tr><td style="padding:5px 10px;border-bottom:1px solid #f1f5f9;"><div style="background:linear-gradient(90deg,#e0e7ff ${barW}%,transparent ${barW}%);padding:2px 6px;border-radius:4px;">${esc(name)}</td><td style="text-align:right;padding:5px 10px;border-bottom:1px solid #f1f5f9;font-weight:600;">${Number(count) || 0}</td><td style="text-align:right;padding:5px 10px;border-bottom:1px solid #f1f5f9;color:#64748b;">${pct}%</td></tr>`;
             });
             html += '</table>';
             return html;
@@ -22723,8 +22744,11 @@ Format as a numbered list. Be concise but specific.`;
             const audienceLabel = audience === 'parent' ? 'Parent Progress Report' : audience === 'iep' ? 'IEP Team Progress Report' : 'Clinical Behavior Analysis Report';
             const rangeLabel = dateRange === 'all' ? 'All Available Data' : dateRange === 'week' ? 'Last 7 Days' : dateRange === 'month' ? 'Last 30 Days' : `${customFrom || '?'} to ${customTo || 'present'}`;
             const trendLabel = analytics.trend ? (analytics.trend.slope > 0.1 ? 'Increasing' : analytics.trend.slope < -0.1 ? 'Decreasing' : 'Stable') : 'Insufficient data';
+            // Filename slug must survive an inline JS string context (line ~22790 onclick handler)
+            // AND an HTML attribute context. Strip everything but [A-Za-z0-9_-] so it can't escape either.
+            const safeFilenameSlug = String(student || 'student').replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 80) || 'student';
 
-            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${audienceLabel} — ${student}</title>
+            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${esc(audienceLabel)} — ${esc(student)}</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -22766,20 +22790,20 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
             // ── Print button (hidden in print) ──
             html += `<div class="no-print" style="text-align:right;margin-bottom:16px;">
                 <button onclick="window.print()" style="padding:10px 24px;background:#6366f1;color:white;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">🖨️ Print / Save as PDF</button>
-                <button onclick="(() => { const b=new Blob([document.documentElement.outerHTML],{type:'text/html'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='progress_report_${(student || 'student').replace(/\s/g, '_')}.html'; a.click(); })()" style="padding:10px 24px;background:#f1f5f9;color:#334155;border:1px solid #e2e8f0;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;margin-left:8px;">💾 Save HTML</button>
+                <button onclick="(() => { const b=new Blob([document.documentElement.outerHTML],{type:'text/html'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='progress_report_${safeFilenameSlug}.html'; a.click(); })()" style="padding:10px 24px;background:#f1f5f9;color:#334155;border:1px solid #e2e8f0;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;margin-left:8px;">💾 Save HTML</button>
             </div>`;
 
             // ── Cover Page ──
             if (sections.cover) {
                 html += `<div class="cover-header">
                     <div style="font-size:28px;margin-bottom:8px;">📊</div>
-                    <h1>${audienceLabel}</h1>
+                    <h1>${esc(audienceLabel)}</h1>
                     <div class="subtitle">{t('bl.progress_documentation') || 'BehaviorLens Progress Documentation'}</div>
                     <div class="cover-meta">
-                        <span>👤 <strong>${student}</strong></span>
-                        <span>📅 ${dateStr}</span>
-                        <span>📋 ${rangeLabel}</span>
-                        ${bcbaName ? `<span>🎓 ${bcbaName}</span>` : ''}
+                        <span>👤 <strong>${esc(student)}</strong></span>
+                        <span>📅 ${esc(dateStr)}</span>
+                        <span>📋 ${esc(rangeLabel)}</span>
+                        ${bcbaName ? `<span>🎓 ${esc(bcbaName)}</span>` : ''}
                     </div>
                 </div>`;
                 if (audience === 'clinical') {
@@ -22800,7 +22824,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                 if (profileItems.length > 0) {
                     html += `<h2>👤 Student Profile</h2><div class="profile-grid">`;
                     profileItems.forEach(([label, value]) => {
-                        html += `<div class="profile-item"><div class="label">${label}</div><div class="value">${value}</div></div>`;
+                        html += `<div class="profile-item"><div class="label">${esc(label)}</div><div class="value">${esc(value)}</div></div>`;
                     });
                     html += `</div>`;
                 }
@@ -22866,16 +22890,16 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
             if (sections.aiAnalysis && aiAnalysis) {
                 html += `<h2>🧠 Functional Behavior Analysis</h2>`;
                 html += `<div class="stat-grid" style="grid-template-columns:1fr 1fr;">
-                    <div class="stat-card"><div class="val">${aiAnalysis.hypothesizedFunction || '—'}</div><div class="lbl">{t('bl.hypothesized_function') || 'Hypothesized Function'}</div></div>
-                    <div class="stat-card"><div class="val">${aiAnalysis.confidence || '—'}%</div><div class="lbl">{t('bl.confidence_level') || 'Confidence Level'}</div></div>
+                    <div class="stat-card"><div class="val">${esc(aiAnalysis.hypothesizedFunction) || '—'}</div><div class="lbl">{t('bl.hypothesized_function') || 'Hypothesized Function'}</div></div>
+                    <div class="stat-card"><div class="val">${esc(aiAnalysis.confidence) || '—'}%</div><div class="lbl">{t('bl.confidence_level') || 'Confidence Level'}</div></div>
                 </div>`;
                 if (aiAnalysis.summary) {
-                    html += `<p style="margin-top:8px;">${aiAnalysis.summary}</p>`;
+                    html += `<p style="margin-top:8px;">${esc(aiAnalysis.summary)}</p>`;
                 }
                 if (audience === 'clinical' && aiAnalysis.patterns) {
                     html += `<h3>{t('bl.identified_patterns') || 'Identified Patterns'}</h3><ul style="font-size:12px;padding-left:20px;">`;
                     (Array.isArray(aiAnalysis.patterns) ? aiAnalysis.patterns : [aiAnalysis.patterns]).forEach(p => {
-                        html += `<li style="margin-bottom:4px;">${typeof p === 'string' ? p : JSON.stringify(p)}</li>`;
+                        html += `<li style="margin-bottom:4px;">${esc(typeof p === 'string' ? p : JSON.stringify(p))}</li>`;
                     });
                     html += `</ul>`;
                 }
@@ -22888,15 +22912,15 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                 html += `<ol class="rec-list">`;
                 lines.forEach(line => {
                     const cleaned = line.replace(/^\d+[\.\)]\s*/, '').trim();
-                    if (cleaned) html += `<li>${cleaned}</li>`;
+                    if (cleaned) html += `<li>${esc(cleaned)}</li>`;
                 });
                 html += `</ol>`;
             }
 
             // ── Footer ──
             html += `<div class="footer">
-                <p>Generated by <strong>BehaviorLens</strong> on ${dateStr}${bcbaName ? ` | Prepared by ${bcbaName}` : ''}</p>
-                <p>Data range: ${rangeLabel} | ${analytics.totalEntries} entries | ${analytics.totalSessions} sessions</p>
+                <p>Generated by <strong>BehaviorLens</strong> on ${esc(dateStr)}${bcbaName ? ` | Prepared by ${esc(bcbaName)}` : ''}</p>
+                <p>Data range: ${esc(rangeLabel)} | ${Number(analytics.totalEntries) || 0} entries | ${Number(analytics.totalSessions) || 0} sessions</p>
             </div>`;
 
             html += `</div></body></html>`;

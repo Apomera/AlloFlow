@@ -2454,6 +2454,23 @@
       });
     }, [setDashboardData, selectedStudentId]);
 
+    // Recompute a goal's progress from CLINICIAN (manual) trials only — drops the
+    // historical auto-logged tap/game/scan trials recorded before the manual-only
+    // fix (@cb96ee45) so currentCount + the Last-10 / Clinical Report / CSV reflect
+    // only clinician-observed data. Clinician-triggered + confirmed (never silent).
+    var recomputeIepGoal = useCallback(function (goalId) {
+      setIepGoals(function (prev) {
+        var updated = prev.map(function (g) {
+          if (g.id !== goalId) return g;
+          var manualTrials = (g.trials || []).filter(function (t) { return t.context === 'manual'; });
+          var manualSuccesses = manualTrials.filter(function (t) { return t.success; }).length;
+          return Object.assign({}, g, { currentCount: manualSuccesses, trials: manualTrials });
+        });
+        store(scopedKey(STORAGE_GOALS), updated);
+        return updated;
+      });
+    }, []);
+
     var removeIepGoal = useCallback(function (goalId) {
       setIepGoals(function (prev) {
         var updated = prev.filter(function (g) { return g.id !== goalId; });
@@ -6224,6 +6241,8 @@
               var pct = g.targetCount > 0 ? Math.round((g.currentCount / g.targetCount) * 100) : 0;
               var recentTrials = (g.trials || []).slice(-10);
               var recentAcc = recentTrials.length > 0 ? Math.round((recentTrials.filter(function (t) { return t.success; }).length / recentTrials.length) * 100) : 0;
+              var autoTrials = (g.trials || []).filter(function (t) { return t.context !== 'manual'; }).length;
+              var manualSuccesses = (g.trials || []).filter(function (t) { return t.context === 'manual' && t.success; }).length;
               var goalTypeColors = { expressive: '#7c3aed', receptive: '#2563eb', social: '#059669', pragmatic: '#c026d3', articulation: '#ea580c' };
               var typeColor = goalTypeColors[g.type] || '#6b7280';
               // Compute a days-until-target readout (if a target date is set).
@@ -6269,6 +6288,20 @@
                     return e('span', { key: ti, style: { width: '8px', height: '8px', borderRadius: '50%', background: t.success ? '#16a34a' : '#dc2626', display: 'inline-block' } });
                   }),
                   e('span', { style: { fontSize: '9px', fontWeight: 700, color: recentAcc >= 80 ? '#16a34a' : recentAcc >= 60 ? '#d97706' : '#dc2626', marginLeft: '4px' } }, recentAcc + '% acc')
+                ),
+                // Legacy auto-trial cleanup: pre-manual-only data inflated this goal. Offer a
+                // clinician-triggered, confirmed recompute (never silent — see recomputeIepGoal).
+                autoTrials > 0 && e('div', { style: { marginTop: '5px', padding: '5px 7px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' } },
+                  e('span', { style: { fontSize: '9px', color: '#92400e', flex: 1, minWidth: '150px' } }, '⚠ Includes ' + autoTrials + ' auto-logged trial' + (autoTrials !== 1 ? 's' : '') + ' from before manual-only tracking — progress may be inflated.'),
+                  e('button', {
+                    onClick: function () {
+                      if (!window.confirm('Recompute "' + g.text + '" from clinician trials only?\n\nProgress will be set to count only your manual ✓ Success entries (' + manualSuccesses + '), and ' + autoTrials + ' auto-logged tap/game/scan trial' + (autoTrials !== 1 ? 's' : '') + ' (recorded before manual-only tracking) will be removed from this goal’s record. This cannot be undone.')) return;
+                      recomputeIepGoal(g.id);
+                      addToast && addToast('Recomputed “' + g.text + '” from clinician trials (' + manualSuccesses + ' success' + (manualSuccesses !== 1 ? 'es' : '') + ').', 'success');
+                    },
+                    'aria-label': 'Recompute ' + g.text + ' from clinician trials only',
+                    style: { fontSize: '9px', background: '#fde68a', color: '#92400e', border: '1px solid #fbbf24', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 700, flexShrink: 0 }
+                  }, '↻ Recompute')
                 ),
                 // Manual trial buttons
                 e('div', { style: { display: 'flex', gap: '4px', marginTop: '6px' } },

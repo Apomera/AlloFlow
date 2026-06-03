@@ -1,0 +1,201 @@
+// Lumen golden master (Phase 0 — the reactive kernel).
+//
+// Pins the PURE, DOM-free kernel of stem_tool_lumen.js so the certainty
+// grammar, the uncertainty-first stats, the deterministic bootstrap, the
+// small-n refusal, the reactive dirty-tracking, and the prose-template
+// invariant can be refactored with a safety net. A diff here means a behavior
+// change — re-baseline deliberately with `vitest -u` ONLY when reviewed.
+//
+// Importing the module under (jsdom) only registers the tool harmlessly; these
+// tests exercise its pure core (window/document access is typeof-guarded, so
+// the import is also safe under a plain node environment).
+
+import { describe, it, expect } from 'vitest';
+import * as LumenMod from '../stem_lab/stem_tool_lumen.js';
+
+const L = LumenMod.default || LumenMod;
+
+// Worked scenario (design §15): "Reyna — ORF/WCPM", 10 weekly probes across two
+// phases (a Tier-2 block starts at week 6). The 6-of-10 subset exercises the
+// anti-cherry-picking subset declaration.
+const REYNA = [
+  { x: 1, y: 42, phase: 'baseline' }, { x: 2, y: 45, phase: 'baseline' },
+  { x: 3, y: 44, phase: 'baseline' }, { x: 4, y: 48, phase: 'baseline' },
+  { x: 5, y: 47, phase: 'baseline' }, { x: 6, y: 53, phase: 'tier2' },
+  { x: 7, y: 58, phase: 'tier2' },    { x: 8, y: 61, phase: 'tier2' },
+  { x: 9, y: 60, phase: 'tier2' },    { x: 10, y: 66, phase: 'tier2' }
+];
+
+function buildReyna(points) {
+  const comp = L.makeCompendium('WCPM', 'words/min');
+  const ids = points.map(p => L.addObservation(comp, p));
+  return { comp, ids };
+}
+
+// Project a claim to a stable, float-safe shape for snapshots.
+function projectClaim(c) {
+  if (c.refused) return { id: c.id, level: c.level, n: c.n, refused: true, shownOf: c.shownOf, text: c.text };
+  const e = c.estimate;
+  return {
+    id: c.id, level: c.level, n: c.n, shownOf: c.shownOf, small: !!c.small,
+    slope: L.round2(e.slope), intercept: L.round2(e.intercept), r: L.round2(e.r),
+    interval: [L.round2(e.interval[0]), L.round2(e.interval[1])],
+    bootstrap: [L.round2(e.bootstrap[0]), L.round2(e.bootstrap[1])],
+    text: c.text
+  };
+}
+
+describe('Lumen — kernel contract', () => {
+  it('exposes the pure kernel', () => {
+    ['encode', 'levelWord', 'linregress', 'slopeInterval', 'bootstrapSlopeCI', 'predictY',
+      'smallNStatus', 'makeCompendium', 'addObservation', 'markDirty', 'deriveTrendClaim',
+      'trendSentence', 'cyrb53', 'mulberry32'].forEach(fn => expect(typeof L[fn]).toBe('function'));
+    expect(L.LEVELS).toEqual(['L0', 'L1', 'L2', 'L3']); // L4 deferred to v2
+    expect(L.SMALL_N).toEqual({ refuseBelow: 3, flagBelow: 8 });
+  });
+});
+
+describe('Lumen — certainty grammar (design §6.4)', () => {
+  it('encodes every level (snapshot)', () => {
+    expect(L.LEVELS.map(lvl => L.encode(lvl))).toMatchSnapshot();
+  });
+
+  it('opacity is floored to >=0.6 for legibility on white; the level word never fades', () => {
+    L.LEVELS.forEach(lvl => {
+      const b = L.encode(lvl);
+      expect(b.markOpacity).toBeGreaterThanOrEqual(0.6);
+      expect(b.labelOpacity).toBe(1.0);
+      expect(b.srWord.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('caution ink (amber) appears ONLY at L3; color is never the only channel', () => {
+    expect(L.encode('L0').caution).toBe(false);
+    expect(L.encode('L1').caution).toBe(false);
+    expect(L.encode('L2').caution).toBe(false);
+    expect(L.encode('L3').caution).toBe(true);
+    expect(L.encode('L3').texture).toBe('hatch45'); // redundant non-color channel
+    expect(L.encode('L3').glyph.length).toBeGreaterThan(0);
+  });
+
+  it('level labels are descriptive, never mastery/ability claims', () => {
+    Object.keys(L.GRAMMAR).forEach(k => {
+      expect(L.GRAMMAR[k].label.toLowerCase()).not.toMatch(/master|mastery|proficient|ability|expert/);
+    });
+  });
+});
+
+describe('Lumen — uncertainty-first stats (design §6.5)', () => {
+  it('fits a known-linear series exactly', () => {
+    const pts = [{ x: 0, y: 0 }, { x: 1, y: 2 }, { x: 2, y: 4 }, { x: 3, y: 6 }];
+    const fit = L.linregress(pts);
+    expect(L.round2(fit.slope)).toBe(2);
+    expect(L.round2(fit.intercept)).toBe(0);
+    expect(L.round2(fit.r)).toBe(1);
+  });
+
+  it('every estimate carries an interval (never a bare point)', () => {
+    const ci = L.slopeInterval(REYNA.map(p => ({ x: p.x, y: p.y })));
+    expect(ci).not.toBeNull();
+    expect(ci.lo).toBeLessThan(ci.slope);
+    expect(ci.hi).toBeGreaterThan(ci.slope);
+  });
+
+  it('refuses to extrapolate beyond the observed x-range', () => {
+    const pts = REYNA.map(p => ({ x: p.x, y: p.y }));
+    expect(L.predictY(pts, 6).refused).toBeUndefined();       // inside range
+    expect(L.predictY(pts, 20).refused).toBe(true);           // beyond range
+    expect(L.predictY(pts, 20).reason).toBe('extrapolation');
+  });
+
+  it('a degenerate (zero-variance-x) fit does not fabricate a slope', () => {
+    expect(L.linregress([{ x: 3, y: 1 }, { x: 3, y: 9 }]).degenerate).toBe(true);
+  });
+});
+
+describe('Lumen — the small-n rule (n<3 refuse, n<8 flag) is first-class', () => {
+  it('classifies n correctly', () => {
+    expect(L.smallNStatus(2)).toBe('refuse');
+    expect(L.smallNStatus(3)).toBe('flag');
+    expect(L.smallNStatus(7)).toBe('flag');
+    expect(L.smallNStatus(8)).toBe('ok');
+  });
+
+  it('n<3 emits a real, announceable refusal claim — never a silent null', () => {
+    const { comp, ids } = buildReyna(REYNA.slice(0, 2));
+    const c = L.deriveTrendClaim(comp, { obsIds: ids });
+    expect(c.refused).toBe(true);
+    expect(c.estimate).toBeNull();
+    expect(c.text).toMatch(/^Derived \(math\): n=2/);
+    expect(c.text).toMatch(/too few points/);
+  });
+
+  it('3<=n<8 derives a trend but flags it small', () => {
+    const { comp, ids } = buildReyna(REYNA.slice(0, 5));
+    const c = L.deriveTrendClaim(comp, { obsIds: ids });
+    expect(c.refused).toBeUndefined();
+    expect(c.small).toBe(true);
+    expect(c.text).toMatch(/n=5, small/);
+  });
+});
+
+describe('Lumen — determinism (bootstrap is data-seeded, design §6.5)', () => {
+  it('the bootstrap interval is identical across runs', () => {
+    const pts = REYNA.map(p => ({ x: p.x, y: p.y }));
+    const a = L.bootstrapSlopeCI(pts, 1000, 'WCPM:reyna');
+    const b = L.bootstrapSlopeCI(pts, 1000, 'WCPM:reyna');
+    expect(a).toEqual(b);
+  });
+
+  it('deriving the same claim twice yields an identical provenance hash + sentence', () => {
+    const r1 = buildReyna(REYNA), r2 = buildReyna(REYNA);
+    const c1 = L.deriveTrendClaim(r1.comp, { id: 'c1' });
+    const c2 = L.deriveTrendClaim(r2.comp, { id: 'c1' });
+    expect(c1._hash).toBe(c2._hash);
+    expect(c1.text).toBe(c2.text);
+    expect(c1.estimate).toEqual(c2.estimate);
+  });
+});
+
+describe('Lumen — reactive dirty-tracking (design §4/§5)', () => {
+  it('marks a claim dirty only when an observation it depends on changes', () => {
+    const { comp, ids } = buildReyna(REYNA);
+    comp.claims.push(L.deriveTrendClaim(comp, { id: 'cFull', obsIds: ids }));            // all 10
+    comp.claims.push(L.deriveTrendClaim(comp, { id: 'cBaseline', obsIds: ids.slice(0, 5) })); // weeks 1-5
+    // a baseline-week observation changed -> both the full claim and the baseline claim are dirty
+    expect(L.markDirty(comp, [ids[0]]).sort()).toEqual(['cBaseline', 'cFull']);
+    // a tier-2-only observation changed -> only the full claim is dirty
+    expect(L.markDirty(comp, [ids[8]])).toEqual(['cFull']);
+  });
+});
+
+describe('Lumen — the prose-template invariant (the SR-channel guarantee, §6.4/§15.5)', () => {
+  it('every estimate-bearing sentence leads with the level word AND names the interval + n', () => {
+    const { comp } = buildReyna(REYNA);
+    const c = L.deriveTrendClaim(comp, {});
+    expect(c.text).toMatch(/^Derived \(math\):/); // level word first
+    expect(c.text).toMatch(/95% interval/);        // statistical channel never dropped
+    expect(c.text).toMatch(/n=10/);
+  });
+
+  it('a subset claim DECLARES its omission in the sentence itself (anti-cherry-picking, §4.1)', () => {
+    const { comp, ids } = buildReyna(REYNA);
+    const c = L.deriveTrendClaim(comp, { obsIds: ids.slice(0, 6) }); // show 6 of 10
+    expect(c.shownOf).toEqual({ shown: 6, total: 10 });
+    expect(c.text).toMatch(/across these 6 of 10 probes/);
+  });
+});
+
+describe('Lumen — the Reyna worked scenario (golden master)', () => {
+  it('full series + a 6-of-10 subset (snapshot)', () => {
+    const { comp, ids } = buildReyna(REYNA);
+    const full = L.deriveTrendClaim(comp, { id: 'full' });
+    const subset = L.deriveTrendClaim(comp, { id: 'subset', obsIds: ids.slice(0, 6) });
+    const tooFew = L.deriveTrendClaim(comp, { id: 'tooFew', obsIds: ids.slice(0, 2) });
+    expect({
+      full: projectClaim(full),
+      subset: projectClaim(subset),
+      tooFew: projectClaim(tooFew)
+    }).toMatchSnapshot();
+  });
+});

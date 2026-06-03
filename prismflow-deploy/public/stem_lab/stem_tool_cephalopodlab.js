@@ -17356,7 +17356,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 var y2 = 80 + Math.abs(Math.sin(ang)) * 50;
                 return h('path', { key: 't' + ti, d: 'M 160 80 Q ' + (160 + (x2-160)*0.4) + ' 120 ' + x2 + ' ' + y2, stroke: octoColor(), strokeWidth: 4, fill: 'none', strokeLinecap: 'round' });
               }),
-              // Discrete state marker (Cycle 11 refactor: replaces fading-eye pseudo-score with binary state).
+              // Discrete state marker (per validated H7b'' design): binary feedback, not a continuous gradient.
               // The threshold (30) is intentionally not shown to the learner — they observe the flip, they do not optimize toward a number.
               (function() {
                 var hidden = detection < 30;

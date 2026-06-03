@@ -1,0 +1,114 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Lumen — certainty grammar (design §6.4) > encodes every level (snapshot) 1`] = `
+[
+  {
+    "caution": false,
+    "glyph": "●",
+    "ink": "#0f172a",
+    "label": "Observed",
+    "labelOpacity": 1,
+    "level": "L0",
+    "markOpacity": 1,
+    "srWord": "Observed",
+    "strokeDasharray": "none",
+    "texture": "solid",
+  },
+  {
+    "caution": false,
+    "glyph": "◈",
+    "ink": "#0f172a",
+    "label": "Derived (math)",
+    "labelOpacity": 1,
+    "level": "L1",
+    "markOpacity": 1,
+    "srWord": "Derived (math)",
+    "strokeDasharray": "none",
+    "texture": "solid",
+  },
+  {
+    "caution": false,
+    "glyph": "◧",
+    "ink": "#0f172a",
+    "label": "AI-organized",
+    "labelOpacity": 1,
+    "level": "L2",
+    "markOpacity": 0.85,
+    "srWord": "AI-organized",
+    "strokeDasharray": "none",
+    "texture": "solid",
+  },
+  {
+    "caution": true,
+    "glyph": "◑",
+    "ink": "#b45309",
+    "label": "AI reading",
+    "labelOpacity": 1,
+    "level": "L3",
+    "markOpacity": 0.6,
+    "srWord": "AI reading",
+    "strokeDasharray": "6 3",
+    "texture": "hatch45",
+  },
+]
+`;
+
+exports[`Lumen — the Reyna worked scenario (golden master) > full series + a 6-of-10 subset (snapshot) 1`] = `
+{
+  "full": {
+    "bootstrap": [
+      2.27,
+      3.25,
+    ],
+    "id": "full",
+    "intercept": 37.67,
+    "interval": [
+      2.12,
+      3.23,
+    ],
+    "level": "L1",
+    "n": 10,
+    "r": 0.97,
+    "shownOf": {
+      "shown": 10,
+      "total": 10,
+    },
+    "slope": 2.68,
+    "small": false,
+    "text": "Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).",
+  },
+  "subset": {
+    "bootstrap": [
+      0.84,
+      2.87,
+    ],
+    "id": "subset",
+    "intercept": 40,
+    "interval": [
+      0.65,
+      3.06,
+    ],
+    "level": "L1",
+    "n": 6,
+    "r": 0.91,
+    "shownOf": {
+      "shown": 6,
+      "total": 10,
+    },
+    "slope": 1.86,
+    "small": true,
+    "text": "Derived (math): across these 6 of 10 probes, WCPM rose ~1.86 words/min per step (95% interval +0.65 to +3.06; n=6, small).",
+  },
+  "tooFew": {
+    "id": "tooFew",
+    "level": "L1",
+    "n": 2,
+    "refused": true,
+    "shownOf": {
+      "shown": 2,
+      "total": 10,
+    },
+    "text": "Derived (math): n=2 — too few points to estimate a trend; no line drawn (need at least 3).",
+  },
+}
+`;
