@@ -116,7 +116,7 @@ describe('Arc City — shape-necessity / forcing certificate (§13.2.4)', () => 
       })(0, {});
       return won;
     }
-    expect(anyWin('exp', { a: range(3, 6, 0.25), b: range(-0.6, -0.25, 0.025), k: range(0.5, 1.5, 0.1) })).toBe(true);   // solvable by exp
+    expect(anyWin('exp', { a: range(3, 6, 0.25), b: range(-0.6, -0.25, 0.025), k: range(0.5, 1.0, 0.1) })).toBe(true);   // solvable by exp
     expect(anyWin('line', { m: range(-2, 2, 0.1), b: range(0, 8, 0.25) })).toBe(false);                                  // no straight line
     expect(anyWin('parabola', { a: range(-1.5, 1.5, 0.05), h: range(0, 10, 0.25), k: range(0, 8, 0.25) })).toBe(false);  // no parabola
     expect(anyWin('absval', { a: range(-2, 2, 0.1), h: range(0, 10, 0.25), k: range(0, 8, 0.25) })).toBe(false);         // no V

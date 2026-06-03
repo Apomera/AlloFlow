@@ -3,21 +3,21 @@
 exports[`Arc City — adjudication + SR narration per level (golden master) > L1 (First Light) outcome + narration matrix (snapshot) 1`] = `
 {
   "overshoot (m=1,b=0)": {
-    "equation": "y = m·x + b, with m = 1, b = 0. A straight beam, slope 1, starting at height 0.",
+    "equation": "y = m·x + b, with m = 1.00, b = 0.0. A straight beam, slope 1.00, starting at height 0.0.",
     "narration": "You reached the node’s street, but the beam missed it by 2.8 units. Fine-tune the controls so the beam meets (8, 4).",
     "nodeDist": 2.8,
     "result": "miss",
     "yAt": null,
   },
   "solution slope (m=0.5,b=0)": {
-    "equation": "y = m·x + b, with m = 0.5, b = 0. A straight beam, slope 0.5, starting at height 0.",
+    "equation": "y = m·x + b, with m = 0.50, b = 0.0. A straight beam, slope 0.50, starting at height 0.0.",
     "narration": "Lit! The beam reached the node at (8, 4). Solved in 1 shot.",
     "nodeDist": 0,
     "result": "hit",
     "yAt": null,
   },
   "starting shot, too shallow (m=0.1,b=0)": {
-    "equation": "y = m·x + b, with m = 0.1, b = 0. A straight beam, slope 0.1, starting at height 0.",
+    "equation": "y = m·x + b, with m = 0.10, b = 0.0. A straight beam, slope 0.10, starting at height 0.0.",
     "narration": "You reached the node’s street, but the beam missed it by 3.2 units. Fine-tune the controls so the beam meets (8, 4).",
     "nodeDist": 3.2,
     "result": "miss",
@@ -29,21 +29,21 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L1
 exports[`Arc City — adjudication + SR narration per level (golden master) > L2 (Cross-Street) outcome + narration matrix (snapshot) 1`] = `
 {
   "in window but overshoots node (m=0,b=4)": {
-    "equation": "y = m·x + b, with m = 0, b = 4. A straight beam, slope 0, starting at height 4.",
+    "equation": "y = m·x + b, with m = 0.00, b = 4.0. A straight beam, slope 0.00, starting at height 4.0.",
     "narration": "You reached the node’s street, but the beam missed it by 2 units. Fine-tune the controls so the beam meets (9, 2).",
     "nodeDist": 2,
     "result": "miss",
     "yAt": null,
   },
   "solution (m=-0.4,b=5.5)": {
-    "equation": "y = m·x + b, with m = -0.4, b = 5.5. A straight beam, slope -0.4, starting at height 5.5.",
+    "equation": "y = m·x + b, with m = -0.40, b = 5.5. A straight beam, slope -0.40, starting at height 5.5.",
     "narration": "Lit! The beam reached the node at (9, 2). Solved in 1 shot.",
     "nodeDist": 0.1,
     "result": "hit",
     "yAt": null,
   },
   "starting flat, misses window (m=0,b=1)": {
-    "equation": "y = m·x + b, with m = 0, b = 1. A straight beam, slope 0, starting at height 1.",
+    "equation": "y = m·x + b, with m = 0.00, b = 1.0. A straight beam, slope 0.00, starting at height 1.0.",
     "narration": "Blocked at the gate (x = 4): the beam passed at y = 1, but the opening is y = 3 to 5. The beam is too low there — raise the start height b or increase the slope.",
     "nodeDist": null,
     "result": "gate",
@@ -55,28 +55,28 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L2
 exports[`Arc City — adjudication + SR narration per level (golden master) > L3 (Clear the Wall) outcome + narration matrix (snapshot) 1`] = `
 {
   "arc too tight (a=-0.9,h=5,k=5)": {
-    "equation": "y = a(x − h)² + k, with a = -0.9, h = 5, k = 5. A parabola opening downward, vertex at (5, 5).",
+    "equation": "y = a(x − h)² + k, with a = -0.90, h = 5.00, k = 5.00. A parabola opening downward, vertex at (5.00, 5.00).",
     "narration": "Blocked at the gate (x = 6.5): the beam passed at y = 3, but the opening is y = 3.4 to 4.3. The beam is too low there — widen the arc or raise k.",
     "nodeDist": null,
     "result": "gate",
     "yAt": 3,
   },
   "flat line blocked at gate (a=0,h=5,k=5)": {
-    "equation": "y = a(x − h)² + k, with a = 0, h = 5, k = 5. A parabola a flat line, vertex at (5, 5).",
+    "equation": "y = a(x − h)² + k, with a = 0.00, h = 5.00, k = 5.00. A parabola a flat line, vertex at (5.00, 5.00).",
     "narration": "Blocked at the gate (x = 6.5): the beam passed at y = 5, but the opening is y = 3.4 to 4.3. The beam is too high there — tighten the arc (more negative a) or lower k.",
     "nodeDist": null,
     "result": "gate",
     "yAt": 5,
   },
   "solution (a=-0.5,h=5,k=5)": {
-    "equation": "y = a(x − h)² + k, with a = -0.5, h = 5, k = 5. A parabola opening downward, vertex at (5, 5).",
+    "equation": "y = a(x − h)² + k, with a = -0.50, h = 5.00, k = 5.00. A parabola opening downward, vertex at (5.00, 5.00).",
     "narration": "Lit! The beam reached the node at (8, 0.5). Solved in 1 shot.",
     "nodeDist": 0,
     "result": "hit",
     "yAt": null,
   },
   "starting shot, hits wall (a=-0.2,h=5,k=2)": {
-    "equation": "y = a(x − h)² + k, with a = -0.2, h = 5, k = 2. A parabola opening downward, vertex at (5, 2).",
+    "equation": "y = a(x − h)² + k, with a = -0.20, h = 5.00, k = 2.00. A parabola opening downward, vertex at (5.00, 2.00).",
     "narration": "Blocked — the beam hit the wall at x = 5. It only reached y = 2, but the wall is 4 tall. Arc higher over the wall: raise the vertex height k, or move the vertex h toward x = 5.",
     "nodeDist": null,
     "result": "wall",
@@ -88,28 +88,28 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L3
 exports[`Arc City — adjudication + SR narration per level (golden master) > L4 (Switchback) outcome + narration matrix (snapshot) 1`] = `
 {
   "flat line blocked at the window (a=0,h=5,k=1)": {
-    "equation": "y = a·|x − h| + k, with a = 0, h = 5, k = 1. a flat line-shaped beam that bends at the vertex (5, 1).",
+    "equation": "y = a·|x − h| + k, with a = 0.00, h = 5.00, k = 1.00. a flat line-shaped beam that bends at the vertex (5.00, 1.00).",
     "narration": "Blocked at the gate (x = 2): the beam passed at y = 1, but the opening is y = 4 to 6. The beam is too low there — raise the vertex k, or steepen a so the arm climbs through the window.",
     "nodeDist": null,
     "result": "gate",
     "yAt": 1,
   },
   "near miss, vertex just above node (a=1.3,h=5,k=2)": {
-    "equation": "y = a·|x − h| + k, with a = 1.3, h = 5, k = 2. a V-shaped beam that bends at the vertex (5, 2).",
+    "equation": "y = a·|x − h| + k, with a = 1.30, h = 5.00, k = 2.00. a V-shaped beam that bends at the vertex (5.00, 2.00).",
     "narration": "You reached the node’s street, but the beam missed it by 1 units. Fine-tune the controls so the beam meets (5, 1).",
     "nodeDist": 1,
     "result": "miss",
     "yAt": null,
   },
   "solution (a=1.3,h=5,k=1)": {
-    "equation": "y = a·|x − h| + k, with a = 1.3, h = 5, k = 1. a V-shaped beam that bends at the vertex (5, 1).",
+    "equation": "y = a·|x − h| + k, with a = 1.30, h = 5.00, k = 1.00. a V-shaped beam that bends at the vertex (5.00, 1.00).",
     "narration": "Lit! The beam reached the node at (5, 1). Solved in 1 shot.",
     "nodeDist": 0,
     "result": "hit",
     "yAt": null,
   },
   "starting V too high above node (a=0.5,h=5,k=3)": {
-    "equation": "y = a·|x − h| + k, with a = 0.5, h = 5, k = 3. a V-shaped beam that bends at the vertex (5, 3).",
+    "equation": "y = a·|x − h| + k, with a = 0.50, h = 5.00, k = 3.00. a V-shaped beam that bends at the vertex (5.00, 3.00).",
     "narration": "You reached the node’s street, but the beam missed it by 2 units. Fine-tune the controls so the beam meets (5, 1).",
     "nodeDist": 2,
     "result": "miss",
@@ -121,21 +121,21 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L4
 exports[`Arc City — adjudication + SR narration per level (golden master) > L5 (Sine Boulevard) outcome + narration matrix (snapshot) 1`] = `
 {
   "right amplitude, wrong frequency (a=2.5,b=0.7)": {
-    "equation": "y = a·sin(b·x + c) + k, with a = 2.5, b = 0.7, c = 0, k = 4. A wave of amplitude 2.5 centered on the midline y = 4, one full wave about every 9 units.",
+    "equation": "y = a·sin(b·x + c) + k, with a = 2.50, b = 0.70, c = 0, k = 4. A wave of amplitude 2.50 centered on the midline y = 4, one full wave about every 9 units.",
     "narration": "Blocked at the gate (x = 4.7): the beam passed at y = 3.6, but the opening is y = 1.1 to 2. The wave is too high at this window — reduce the amplitude a, or change the frequency b so a dip lands here.",
     "nodeDist": null,
     "result": "gate",
     "yAt": 3.6,
   },
   "solution (a=2.5,b=1)": {
-    "equation": "y = a·sin(b·x + c) + k, with a = 2.5, b = 1, c = 0, k = 4. A wave of amplitude 2.5 centered on the midline y = 4, one full wave about every 6.3 units.",
+    "equation": "y = a·sin(b·x + c) + k, with a = 2.50, b = 1.00, c = 0, k = 4. A wave of amplitude 2.50 centered on the midline y = 4, one full wave about every 6.3 units.",
     "narration": "Lit! The beam reached the node at (9.4, 4). Solved in 1 shot.",
     "nodeDist": 0.1,
     "result": "hit",
     "yAt": null,
   },
   "starting shot, too shallow (a=1,b=0.5)": {
-    "equation": "y = a·sin(b·x + c) + k, with a = 1, b = 0.5, c = 0, k = 4. A wave of amplitude 1 centered on the midline y = 4, one full wave about every 12.6 units.",
+    "equation": "y = a·sin(b·x + c) + k, with a = 1.00, b = 0.50, c = 0, k = 4. A wave of amplitude 1.00 centered on the midline y = 4, one full wave about every 12.6 units.",
     "narration": "Blocked at the gate (x = 1.5): the beam passed at y = 4.7, but the opening is y = 6 to 6.9. The wave is too low at this window — increase the amplitude a, or change the frequency b so a crest lands here.",
     "nodeDist": null,
     "result": "gate",
@@ -147,21 +147,21 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L5
 exports[`Arc City — adjudication + SR narration per level (golden master) > L6 (Tilt Gates) outcome + narration matrix (snapshot) 1`] = `
 {
   "flat line: in the window but wrong angle (a=0,h=5,k=4)": {
-    "equation": "y = a(x − h)² + k, with a = 0, h = 5, k = 4. A parabola a flat line, vertex at (5, 4).",
+    "equation": "y = a(x − h)² + k, with a = 0.00, h = 5.00, k = 4.00. A parabola a flat line, vertex at (5.00, 4.00).",
     "narration": "Through the opening at x = 3, but at the wrong angle — your beam’s slope there was 0, and this tilted gate needs about 1.5 (± 0.5). Make the beam flatter (or climbing) as it passes through.",
     "nodeDist": null,
     "result": "slope",
     "yAt": 4,
   },
   "solution: concave-down arc through both tilts (a=-0.4,h=5,k=5.5)": {
-    "equation": "y = a(x − h)² + k, with a = -0.4, h = 5, k = 5.5. A parabola opening downward, vertex at (5, 5.5).",
+    "equation": "y = a(x − h)² + k, with a = -0.40, h = 5.00, k = 5.50. A parabola opening downward, vertex at (5.00, 5.50).",
     "narration": "Lit! The beam reached the node at (8.5, 0.5). Solved in 1 shot.",
     "nodeDist": 0.1,
     "result": "hit",
     "yAt": null,
   },
   "starting shot, blocked at the first gate (a=-0.2,h=5,k=2)": {
-    "equation": "y = a(x − h)² + k, with a = -0.2, h = 5, k = 2. A parabola opening downward, vertex at (5, 2).",
+    "equation": "y = a(x − h)² + k, with a = -0.20, h = 5.00, k = 2.00. A parabola opening downward, vertex at (5.00, 2.00).",
     "narration": "Blocked at the gate (x = 3): the beam passed at y = 1.2, but the opening is y = 2.5 to 4.5. The beam is too low there — widen the arc or raise k.",
     "nodeDist": null,
     "result": "gate",
@@ -173,25 +173,25 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L6
 exports[`Arc City — adjudication + SR narration per level (golden master) > L7 (Exponent Reach) outcome + narration matrix (snapshot) 1`] = `
 {
   "decays too fast (a=5,b=-0.6,k=1)": {
-    "equation": "y = a·e^(b·x) + k, with a = 5, b = -0.6, k = 1. An exponential decaying toward the floor y = 1, which it approaches but never crosses.",
+    "equation": "y = a·e^(b·x) + k, with a = 5.00, b = -0.600, k = 1.0. An exponential decaying toward the floor y = 1.0, which it approaches but never crosses.",
     "narration": "Blocked at the gate (x = 1): the beam passed at y = 3.7, but the opening is y = 4.2 to 4.5. The curve is too low here — raise the start height a, decay slower (less negative b), or raise the floor k.",
     "nodeDist": null,
     "result": "gate",
     "yAt": 3.7,
   },
   "solution: decay curve through all 5 windows (a=5,b=-0.4,k=1)": {
-    "equation": "y = a·e^(b·x) + k, with a = 5, b = -0.4, k = 1. An exponential decaying toward the floor y = 1, which it approaches but never crosses.",
+    "equation": "y = a·e^(b·x) + k, with a = 5.00, b = -0.400, k = 1.0. An exponential decaying toward the floor y = 1.0, which it approaches but never crosses.",
     "narration": "Lit! The beam reached the node at (9.5, 1.1). Solved in 1 shot.",
     "nodeDist": 0,
     "result": "hit",
     "yAt": null,
   },
-  "starting shot, blocked at the first window (a=3,b=-0.25,k=1.5)": {
-    "equation": "y = a·e^(b·x) + k, with a = 3, b = -0.2, k = 1.5. An exponential decaying toward the floor y = 1.5, which it approaches but never crosses.",
-    "narration": "Blocked at the gate (x = 1): the beam passed at y = 3.8, but the opening is y = 4.2 to 4.5. The curve is too low here — raise the start height a, decay slower (less negative b), or raise the floor k.",
+  "starting shot, blocked at the first window (a=3,b=-0.25,k=1)": {
+    "equation": "y = a·e^(b·x) + k, with a = 3.00, b = -0.250, k = 1.0. An exponential decaying toward the floor y = 1.0, which it approaches but never crosses.",
+    "narration": "Blocked at the gate (x = 1): the beam passed at y = 3.3, but the opening is y = 4.2 to 4.5. The curve is too low here — raise the start height a, decay slower (less negative b), or raise the floor k.",
     "nodeDist": null,
     "result": "gate",
-    "yAt": 3.8,
+    "yAt": 3.3,
   },
 }
 `;
@@ -614,9 +614,9 @@ exports[`Arc City — module contract > level geometry (snapshot) 1`] = `
         "step": 0.025,
       },
       "k": {
-        "default": 1.5,
-        "label": "k  (the floor / asymptote it approaches but never crosses)",
-        "max": 1.5,
+        "default": 1,
+        "label": "k  (the floor / asymptote it approaches but never crosses — always below the node)",
+        "max": 1,
         "min": 0.5,
         "step": 0.1,
       },

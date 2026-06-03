@@ -53,7 +53,7 @@ const CASES = {
   ],
   L7: [
     { label: 'solution: decay curve through all 5 windows (a=5,b=-0.4,k=1)', p: { a: 5, b: -0.4, k: 1 } },
-    { label: 'starting shot, blocked at the first window (a=3,b=-0.25,k=1.5)', p: { a: 3, b: -0.25, k: 1.5 } },
+    { label: 'starting shot, blocked at the first window (a=3,b=-0.25,k=1)', p: { a: 3, b: -0.25, k: 1 } },
     { label: 'decays too fast (a=5,b=-0.6,k=1)', p: { a: 5, b: -0.6, k: 1 } }
   ]
 };
@@ -403,5 +403,22 @@ describe('Arc City — Phase 2b: exponential family + asymptote', () => {
     expect(arc.badgesForSolve(L7, hit, 1, 'practice', [])).toContain('decay-rider');
     const b = arc.BADGES.find(x => x.id === 'decay-rider');
     expect(b.label.toLowerCase()).not.toMatch(/master|mastery|proficient|ability|expert/);
+  });
+
+  it('readouts show params at their STEP precision (b at 0.025 — no frozen "-0.4")', () => {
+    expect(arc.fmtVal(-0.425, 0.025)).toBe('-0.425');
+    expect(arc.fmtVal(-0.4, 0.025)).toBe('-0.400');
+    // the bug: adjacent b-steps both rendered "-0.4"; they must now differ
+    expect(arc.fmtVal(-0.425, 0.025)).not.toBe(arc.fmtVal(-0.4, 0.025));
+    expect(arc.fmtVal(1, 0.1)).toBe('1.0');
+  });
+
+  it('exp narration is sign-correct: growth does NOT claim a floor it never crosses', () => {
+    const expLvl = { family: 'exp', params: { a: { step: 0.25 }, b: { step: 0.025 }, k: { step: 0.1 } } };
+    expect(describeEquation(expLvl, { a: 5, b: -0.4, k: 1 })).toMatch(/decaying toward the floor.*never crosses/);
+    const growth = describeEquation(expLvl, { a: 5, b: 0.3, k: 1 });
+    expect(growth).toMatch(/growing away/);
+    expect(growth).not.toMatch(/never crosses/);
+    expect(describeEquation(expLvl, { a: -5, b: -0.4, k: 6 })).toMatch(/ceiling/); // a<0 → k is a ceiling
   });
 });

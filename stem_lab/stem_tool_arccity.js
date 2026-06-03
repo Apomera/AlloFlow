@@ -130,7 +130,7 @@
       params: {
         a: { min: 3, max: 6, step: 0.25, default: 3, label: 'a  (starting height above the floor)' },
         b: { min: -0.6, max: -0.25, step: 0.025, default: -0.25, label: 'b  (decay rate — more negative drops faster)' },
-        k: { min: 0.5, max: 1.5, step: 0.1, default: 1.5, label: 'k  (the floor / asymptote it approaches but never crosses)' }
+        k: { min: 0.5, max: 1.0, step: 0.1, default: 1.0, label: 'k  (the floor / asymptote it approaches but never crosses — always below the node)' }
       },
       hint: 'Tip: this beam decays toward a floor (k) it never touches. The five narrow windows all sit on one decay curve — set the floor k, the start height a, and the decay rate b so the curve threads every window on its way down.'
     }
@@ -140,6 +140,10 @@
   function levelIndex(id) { for (var i = 0; i < LEVELS.length; i++) { if (LEVELS[i].id === id) return i; } return 0; }
 
   function round1(n) { return Math.round(n * 10) / 10; }
+  // Format a value at the precision of its slider STEP, so the readout/equation/
+  // aria never freeze while a sub-0.1-step param (e.g. exp's b, step 0.025) is
+  // tuned. (round1 stayed at 1 decimal and collapsed distinct states to one string.)
+  function fmtVal(val, step) { var s = String(step); var d = s.indexOf('.') >= 0 ? s.length - s.indexOf('.') - 1 : 0; return Number(val).toFixed(d); }
 
   // Family evaluators — the only "weapons" in Phase 1.
   function fnY(family, p, x) {
@@ -259,26 +263,30 @@
 
   function describeEquation(level, p) {
     if (level.family === 'line') {
-      return 'y = m·x + b, with m = ' + round1(p.m) + ', b = ' + round1(p.b) +
-        '. A straight beam, slope ' + round1(p.m) + ', starting at height ' + round1(p.b) + '.';
+      return 'y = m·x + b, with m = ' + fmtVal(p.m, level.params.m.step) + ', b = ' + fmtVal(p.b, level.params.b.step) +
+        '. A straight beam, slope ' + fmtVal(p.m, level.params.m.step) + ', starting at height ' + fmtVal(p.b, level.params.b.step) + '.';
     }
     if (level.family === 'absval') {
       var vshape = p.a < 0 ? 'an upside-down V' : (p.a > 0 ? 'a V' : 'a flat line');
-      return 'y = a·|x − h| + k, with a = ' + round1(p.a) + ', h = ' + round1(p.h) + ', k = ' + round1(p.k) +
-        '. ' + vshape + '-shaped beam that bends at the vertex (' + round1(p.h) + ', ' + round1(p.k) + ').';
+      return 'y = a·|x − h| + k, with a = ' + fmtVal(p.a, level.params.a.step) + ', h = ' + fmtVal(p.h, level.params.h.step) + ', k = ' + fmtVal(p.k, level.params.k.step) +
+        '. ' + vshape + '-shaped beam that bends at the vertex (' + fmtVal(p.h, level.params.h.step) + ', ' + fmtVal(p.k, level.params.k.step) + ').';
     }
     if (level.family === 'sine') {
-      return 'y = a·sin(b·x + c) + k, with a = ' + round1(p.a) + ', b = ' + round1(p.b) + ', c = ' + round1(p.c) + ', k = ' + round1(p.k) +
-        '. A wave of amplitude ' + round1(p.a) + ' centered on the midline y = ' + round1(p.k) +
+      return 'y = a·sin(b·x + c) + k, with a = ' + fmtVal(p.a, level.params.a.step) + ', b = ' + fmtVal(p.b, level.params.b.step) + ', c = ' + fmtVal(p.c, level.params.c.step) + ', k = ' + fmtVal(p.k, level.params.k.step) +
+        '. A wave of amplitude ' + fmtVal(p.a, level.params.a.step) + ' centered on the midline y = ' + fmtVal(p.k, level.params.k.step) +
         (p.b ? ', one full wave about every ' + round1((2 * Math.PI) / p.b) + ' units.' : '.');
     }
     if (level.family === 'exp') {
-      return 'y = a·e^(b·x) + k, with a = ' + round1(p.a) + ', b = ' + round1(p.b) + ', k = ' + round1(p.k) +
-        '. An exponential ' + (p.b < 0 ? 'decaying' : 'growing') + ' toward the floor y = ' + round1(p.k) + ', which it approaches but never crosses.';
+      var ek = fmtVal(p.k, level.params.k.step);
+      var etail = (p.b < 0)
+        ? (p.a < 0 ? 'rising toward the ceiling y = ' + ek + ', which it approaches but never crosses' : 'decaying toward the floor y = ' + ek + ', which it approaches but never crosses')
+        : 'growing away from the baseline y = ' + ek + ' (its starting level, not a limit it reaches)';
+      return 'y = a·e^(b·x) + k, with a = ' + fmtVal(p.a, level.params.a.step) + ', b = ' + fmtVal(p.b, level.params.b.step) + ', k = ' + ek +
+        '. An exponential ' + etail + '.';
     }
     var dir = p.a < 0 ? 'opening downward' : (p.a > 0 ? 'opening upward' : 'a flat line');
-    return 'y = a(x − h)² + k, with a = ' + round1(p.a) + ', h = ' + round1(p.h) + ', k = ' + round1(p.k) +
-      '. A parabola ' + dir + ', vertex at (' + round1(p.h) + ', ' + round1(p.k) + ').';
+    return 'y = a(x − h)² + k, with a = ' + fmtVal(p.a, level.params.a.step) + ', h = ' + fmtVal(p.h, level.params.h.step) + ', k = ' + fmtVal(p.k, level.params.k.step) +
+      '. A parabola ' + dir + ', vertex at (' + fmtVal(p.h, level.params.h.step) + ', ' + fmtVal(p.k, level.params.k.step) + ').';
   }
 
   function describeBoard(level) {
@@ -445,6 +453,7 @@
     snapToRange: snapToRange,
     parabolaVertexParams: parabolaVertexParams,
     linePivotParams: linePivotParams,
+    fmtVal: fmtVal,
     THEME_CANVAS: THEME_CANVAS,
     arcPalette: arcPalette,
     TEACHER_CAVEAT: TEACHER_CAVEAT,
@@ -899,7 +908,7 @@
           if (spec.locked) {
             return h('div', { key: 'row-' + name, style: { marginBottom: 10, fontSize: 13, color: INK, opacity: 0.7 } },
               h('span', { key: 'l' }, spec.label + ': '),
-              h('span', { key: 'v', style: { fontWeight: 700 } }, String(round1(val))));
+              h('span', { key: 'v', style: { fontWeight: 700 } }, fmtVal(val, spec.step)));
           }
           var pct = (val - spec.min) / (spec.max - spec.min);
           function onKey(e) {
@@ -913,12 +922,12 @@
           return h('div', { key: 'row-' + name, role: 'group', 'aria-label': spec.label, style: { marginBottom: 10 } },
             h('div', { key: 'hdr', style: { display: 'flex', justifyContent: 'space-between', fontSize: 13, color: INK, marginBottom: 4 } },
               h('span', { key: 'l' }, spec.label),
-              h('span', { key: 'v', style: { fontVariantNumeric: 'tabular-nums', fontWeight: 700 } }, String(round1(val)))),
+              h('span', { key: 'v', style: { fontVariantNumeric: 'tabular-nums', fontWeight: 700 } }, fmtVal(val, spec.step))),
             h('div', { key: 'ctl', style: { display: 'flex', alignItems: 'center', gap: 8 } },
               h('button', { key: 'dec', type: 'button', 'aria-label': 'Decrease ' + spec.label, onClick: function () { setParam(name, val - spec.step); }, style: btn }, '−'),
               h('div', {
                 key: 'sld', role: 'slider', tabIndex: 0, 'aria-label': spec.label,
-                'aria-valuemin': spec.min, 'aria-valuemax': spec.max, 'aria-valuenow': round1(val), 'aria-valuetext': spec.label + ' ' + round1(val),
+                'aria-valuemin': spec.min, 'aria-valuemax': spec.max, 'aria-valuenow': val, 'aria-valuetext': spec.label + ' ' + fmtVal(val, spec.step),
                 onKeyDown: onKey,
                 style: { position: 'relative', flex: 1, height: 10, borderRadius: 6, background: 'rgba(148,163,184,0.25)' }
               },
@@ -944,14 +953,14 @@
         var controls = h('div', { key: 'controls', style: { marginTop: 14 } },
           h('div', { key: 'eq', 'aria-label': describeEquation(level, P), style: { fontSize: 15, color: INK, marginBottom: 6, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', fontVariantNumeric: 'tabular-nums' } },
             level.family === 'line'
-              ? ['y = ', h('span', { key: 'm', style: { color: BEAM, fontWeight: 800 } }, round1(P.m)), ' · x + ', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, round1(P.b))]
+              ? ['y = ', h('span', { key: 'm', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.m, level.params.m.step)), ' · x + ', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step))]
               : (level.family === 'absval'
-                ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' · |x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, round1(P.h)), '| + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]
+                ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · |x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.h, level.params.h.step)), '| + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
                 : (level.family === 'sine'
-                  ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' · sin(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, round1(P.b)), '·x + ', h('span', { key: 'c', style: { color: BEAM, fontWeight: 800 } }, round1(P.c)), ') + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]
+                  ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · sin(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step)), '·x + ', h('span', { key: 'c', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.c, level.params.c.step)), ') + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
                   : (level.family === 'exp'
-                    ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' · e^(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, round1(P.b)), '·x) + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]
-                    : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, round1(P.h)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))])))),
+                    ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · e^(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step)), '·x) + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
+                    : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.h, level.params.h.step)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))])))),
           tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.6, marginBottom: 10 } }, handleEls.length ? t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.') : t('arccity.slider_hint', 'Tip: use the sliders (or the +/− buttons and arrow keys) to shape the beam.')) : null,
           h('div', { key: 'rows' }, paramRows),
           h('div', { key: 'btns', style: { display: 'flex', gap: 10, marginTop: 6 } },
