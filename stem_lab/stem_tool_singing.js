@@ -2038,7 +2038,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           { id: 'vibrato', label: 'Vibrato Lab', icon: '\uD83C\uDF0A' },
           { id: 'intervals', label: 'Interval Singer', icon: '\uD83C\uDFB5' },
           { id: 'warmups', label: 'Warm-ups', icon: '\u2764\uFE0F' },
-          { id: 'sightread', label: 'Sight Reading', icon: '\uD83C\uDFBC' }
+          { id: 'sightread', label: 'Sight Reading', icon: '\uD83C\uDFBC' },
+          { id: 'resoHunt', label: 'Resonance Lab', icon: '\uD83C\uDF99\uFE0F' }
         ];
 
         var tabState = React.useState('pitch');
@@ -4535,7 +4536,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             activeTab === 'vibrato' && renderVibratoLab(),
             activeTab === 'intervals' && renderIntervalSinger(),
             activeTab === 'warmups' && renderWarmups(),
-            activeTab === 'sightread' && renderSightReading()
+            activeTab === 'sightread' && renderSightReading(),
+            activeTab === 'resoHunt' && (function() {
+              var iq = d._resoHunt || { throat: 50, palate: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('_resoHunt', Object.assign({}, iq, patch)); }
+              var tone;
+              if (iq.throat > 60 && iq.palate > 60) tone = 'rich';
+              else if (iq.throat > 60 && iq.palate < 40) tone = 'bright';
+              else if (iq.throat < 40 && iq.palate > 60) tone = 'warm';
+              else tone = 'nasal';
+              var tm = {
+                rich:   { label: '🎶 Rich (open + lifted)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Operatic / professional tone. Full resonance.' },
+                bright: { label: '✨ Bright (open + lowered)', color: '#facc15', bg: '#fefce8', border: '#fde047', desc: 'Forward placement. Pop / belt style.' },
+                warm:   { label: '🌅 Warm (narrow + lifted)', color: '#f97316', bg: '#fff7ed', border: '#fdba74', desc: 'Mellow tone. Choral / acoustic.' },
+                nasal:  { label: '🐝 Nasal (narrow + lowered)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Tight resonance. Often unintended.' }
+              }[tone];
+              return h('div', { className: cardClass + ' space-y-3' },
+                h('h3', { className: 'text-sm font-black' }, '🎙️ Resonance discovery'),
+                h('p', { className: 'text-[12px]' }, 'Sliders for throat openness, soft palate lift. Discrete 4-tone classification. No score, no reveal.'),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: tm.bg, border: '2px solid ' + tm.border } },
+                  h('div', { className: 'text-base font-black', style: { color: tm.color } }, tm.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, tm.desc)
+                ),
+                h('div', { className: 'grid grid-cols-2 gap-3' },
+                  [{ k: 'throat', l: 'Throat openness (%)' }, { k: 'palate', l: 'Soft palate lift (%)' }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'rh-' + s.k, className: 'block text-[11px] font-bold' }, s.l + ': ', h('span', { className: 'font-mono' }, iq[s.k])),
+                      h('input', { id: 'rh-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.throat, p: iq.palate, st: tone }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-200 text-[11px] font-bold text-slate-700' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ throat: 50, palate: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What anatomical adjustments produce rich tone?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] leading-relaxed' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Why do classical singers lift the palate?'),
+                    h('li', null, 'How does throat openness affect overtone series?'))),
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how resonance cavity shape controls vocal tone.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-tone marker; no acoustic score; no reveal — by design.')
+              );
+            })()
           ),
 
           // Bottom info
