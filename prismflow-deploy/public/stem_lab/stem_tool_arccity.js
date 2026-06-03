@@ -303,7 +303,7 @@
       return { id: l.id, title: l.title, family: l.family, status: status, independent: !!st.independent, shots: st.shots || 0, exploredAdjustments: st.misses || 0 };
     });
     var families = {};
-    ['line', 'parabola', 'absval'].forEach(function (f) { families[f] = familyStatus(byLevel, f); });
+    LEVELS.map(function (l) { return l.family; }).filter(function (f, i, a) { return a.indexOf(f) === i; }).forEach(function (f) { families[f] = familyStatus(byLevel, f); });
     var nodesReLit = levels.filter(function (l) { return l.status === 'completed'; }).length;
     return { caveat: TEACHER_CAVEAT, families: families, levels: levels, nodesReLit: nodesReLit, totalLevels: LEVELS.length, badges: badges.map(badgeLabel) };
   }
@@ -314,7 +314,7 @@
     summary.levels.forEach(function (l) {
       var bit = l.status;
       if (l.status === 'completed') bit += l.independent ? ' (independently)' : ' (with live preview)';
-      if (l.status !== 'not started') bit += ' — ' + l.shots + ' shot' + (l.shots === 1 ? '' : 's') + ', ' + l.exploredAdjustments + ' exploring adjustments';
+      if (l.status !== 'not started') bit += ' — ' + l.shots + ' shot' + (l.shots === 1 ? '' : 's') + ' (' + l.exploredAdjustments + ' missed)';
       lines.push('  - ' + l.title + ': ' + bit);
     });
     if (summary.badges.length) { lines.push(''); lines.push('Badges: ' + summary.badges.join(', ')); }
@@ -529,7 +529,10 @@
           var r = classifyShot(level, P);
           var shotsNow = (ls.shots || 0) + 1;
           var newBadges = badgesForSolve(level, r, shotsNow, tier, badges);
-          var indep = r.result === 'hit' && solveIsIndependent(tier);
+          // §9.2: "used independently" requires hidden-preview tier (a/c) AND no
+          // directive hint used (b). The hint shows at >= HINT_AFTER misses, so a
+          // solve after that many misses is hint-assisted → not counted independent.
+          var indep = r.result === 'hit' && solveIsIndependent(tier) && (ls.misses || 0) < HINT_AFTER;
           setToolData(function (prev) {
             var cur = (prev && prev._arccity) || S;
             var bl = Object.assign({}, cur.byLevel || {});
@@ -593,6 +596,7 @@
           });
         }
         function copySummary() {
+          if (!exportEnabled) { announceArc(ctx, t('arccity.export_disabled', 'Enable export first.')); return; }
           try {
             var txt = teacherSummaryText(teacherSummary(byLevel, badges));
             if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) window.navigator.clipboard.writeText(txt);
@@ -853,22 +857,24 @@
         var summary = teacherSummary(byLevel, badges);
         var teacherPanel = h('div', { key: 'teacherpanel', style: { marginTop: 4 } },
           h('div', { key: 'caveat', role: 'note', style: { fontSize: 13, lineHeight: 1.5, color: INK, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + GRID, background: 'rgba(148,163,184,0.10)', marginBottom: 12 } }, '⚠️ ' + summary.caveat),
+          h('h3', { key: 'psh', style: { fontSize: 15, margin: '0 0 8px', color: INK } }, t('arccity.progress_summary', 'Progress summary')),
           h('div', { key: 'relit', style: { fontSize: 14, fontWeight: 700, color: INK, marginBottom: 10 } }, t('arccity.nodes_relit', 'Nodes re-lit:') + ' ' + summary.nodesReLit + ' / ' + summary.totalLevels),
           h('h3', { key: 'fh', style: { fontSize: 14, margin: '0 0 6px', color: INK } }, t('arccity.functions', 'Functions')),
           h('ul', { key: 'fams', style: { listStyle: 'none', padding: 0, margin: '0 0 12px', fontSize: 13, color: INK } },
             Object.keys(summary.families).map(function (f) { return h('li', { key: 'fam-' + f, style: { marginBottom: 3 } }, f + ': ' + summary.families[f]); })),
+          h('div', { key: 'indepnote', style: { fontSize: 11, color: INK, opacity: 0.65, margin: '0 0 12px' } }, t('arccity.indep_def', '"Used independently" = solved with the preview hidden and without using the hint.')),
           h('h3', { key: 'lh', style: { fontSize: 14, margin: '0 0 6px', color: INK } }, t('arccity.levels', 'Levels')),
           h('ul', { key: 'lvls', style: { listStyle: 'none', padding: 0, margin: '0 0 12px', fontSize: 13, color: INK } },
             summary.levels.map(function (l) {
               var bit = l.status;
               if (l.status === 'completed') bit += l.independent ? ' (independently)' : ' (with live preview)';
-              if (l.status !== 'not started') bit += ' — ' + l.shots + ' shot' + (l.shots === 1 ? '' : 's') + ', ' + l.exploredAdjustments + ' exploring adjustments';
+              if (l.status !== 'not started') bit += ' — ' + l.shots + ' shot' + (l.shots === 1 ? '' : 's') + ' (' + l.exploredAdjustments + ' missed)';
               return h('li', { key: 'tl-' + l.id, style: { marginBottom: 3 } }, l.title + ': ' + bit);
             })),
           summary.badges.length ? h('div', { key: 'tbadges', style: { fontSize: 13, color: INK, marginBottom: 12 } }, t('arccity.badges', 'Badges earned') + ': ' + summary.badges.join(', ')) : null,
           h('div', { key: 'exportbox', style: { borderTop: '1px solid ' + GRID, paddingTop: 10 } },
             h('label', { key: 'el', style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: INK } },
-              h('input', { key: 'ec', type: 'checkbox', checked: exportEnabled, onChange: toggleExport, 'aria-label': t('arccity.enable_export', 'Enable export') }),
+              h('input', { key: 'ec', type: 'checkbox', checked: exportEnabled, onChange: toggleExport }),
               t('arccity.export_note', 'Enable export (off by default — local only, contains no student names)')),
             h('button', { key: 'eb', type: 'button', disabled: !exportEnabled, onClick: copySummary,
               style: { marginTop: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + GRID, background: exportEnabled ? 'rgba(34,211,238,0.12)' : 'transparent', color: INK, fontSize: 13, fontWeight: 700, cursor: exportEnabled ? 'pointer' : 'not-allowed', opacity: exportEnabled ? 1 : 0.5 } },
