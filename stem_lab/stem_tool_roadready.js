@@ -27267,6 +27267,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         );
       }
 
+      // === H7b'' RICH inquiry widget: braking performance ===
+      if (view === 'brakingHunt') {
+        var iq = d.brakingHunt || { mass: 1500, speed: 50, decel: 7, grade: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd('brakingHunt', Object.assign({}, iq, patch)); }
+        var v = iq.speed * 0.27778;
+        var effDecel = iq.decel - Math.sin(iq.grade * Math.PI / 180) * 9.8;
+        var stopDist = effDecel > 0 ? (v * v) / (2 * effDecel) : 9999;
+        var energy = 0.5 * iq.mass * v * v / 1000;
+        var brakeTemp = energy / 1000 * 20;
+        var gForce = effDecel / 9.8;
+        var state;
+        if (stopDist > 100) state = 'unsafe';
+        else if (gForce > 1) state = 'aggressive';
+        else if (stopDist > 50) state = 'long';
+        else state = 'controlled';
+        var sm = {
+          unsafe:     { label: '🚨 Unsafe stopping distance (>100m)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Cannot stop in time for typical road hazard.' },
+          aggressive: { label: '⚠️ Aggressive (>1g deceleration)', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Hard braking. Risk of skid, ABS engagement.' },
+          long:       { label: '🟡 Long stop (50-100m)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Acceptable but marginal. Longer than typical city block.' },
+          controlled: { label: '🟢 Controlled stop (<50m)', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Safe deceleration. Comfortable for passengers.' }
+        }[state];
+        return h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: '#e0f2fe', color: '#0369a1', border: '1px solid #93c5fd', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Menu'),
+          h('div', { style: { padding: 16, background: '#fff', borderRadius: 12, border: '1px solid #cbd5e1' } },
+            h('h3', { style: { fontSize: 16, fontWeight: 800, color: '#0c4a6e', margin: '0 0 6px 0' } }, '🚗 Braking performance discovery'),
+            h('p', { style: { fontSize: 12, color: '#475569', marginBottom: 12 } },
+              'Four sliders: mass, speed, deceleration capability, road grade. Widget classifies braking outcome into 4 discrete states + renders SVG force diagram. No score, no reveal.'),
+            h('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
+              h('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
+              h('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
+              h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } },
+                'Stop ≈ ' + stopDist.toFixed(1) + 'm | Energy ≈ ' + energy.toFixed(1) + ' kJ | Brake heat ' + brakeTemp.toFixed(0) + '°C rise | ' + gForce.toFixed(2) + 'g')
+            ),
+            h('div', { style: { padding: 10, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', marginBottom: 12 } },
+              h('svg', { viewBox: '0 0 360 130', style: { width: '100%', height: 130 } },
+                // Road
+                h('line', { x1: 10, y1: 100, x2: 350, y2: 100, stroke: '#475569', strokeWidth: 2 }),
+                h('line', { x1: 10, y1: 102, x2: 350, y2: 102, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '5 5' }),
+                // Car
+                h('rect', { x: 20, y: 78, width: 50, height: 22, fill: sm.color, rx: 4 }),
+                h('text', { x: 45, y: 93, textAnchor: 'middle', fontSize: 10, fill: '#fff', fontWeight: 'bold' }, iq.mass + 'kg'),
+                // Stop distance bar
+                h('line', { x1: 20, y1: 60, x2: Math.min(350, 20 + stopDist * 3), y2: 60, stroke: sm.color, strokeWidth: 4 }),
+                h('text', { x: 20 + Math.min(330, stopDist * 3) / 2, y: 52, textAnchor: 'middle', fontSize: 10, fontWeight: 'bold', fill: sm.color }, stopDist.toFixed(1) + 'm'),
+                // Grade indicator
+                iq.grade !== 0 && h('text', { x: 180, y: 120, textAnchor: 'middle', fontSize: 10, fill: '#64748b' }, 'Road grade: ' + iq.grade + '°'),
+                // Energy bar
+                h('rect', { x: 20, y: 15, width: Math.min(330, energy * 0.5), height: 8, fill: '#f59e0b' }),
+                h('text', { x: 30, y: 12, fontSize: 9, fill: '#475569' }, 'Kinetic energy → ' + energy.toFixed(0) + ' kJ')
+              )
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 10 } },
+              [{ k: 'mass', l: 'Mass (kg)', mn: 500, mx: 5000, st: 50 },
+               { k: 'speed', l: 'Initial speed (km/h)', mn: 10, mx: 150, st: 5 },
+               { k: 'decel', l: 'Deceleration (m/s²)', mn: 2, mx: 12, st: 0.5 },
+               { k: 'grade', l: 'Road grade (°)', mn: -15, mx: 15, st: 1 }].map(function(s) {
+                return h('div', { key: s.k },
+                  h('label', { htmlFor: 'bh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 } }, s.l + ': ', h('span', { style: { color: '#0c4a6e', fontFamily: 'monospace' } }, iq[s.k])),
+                  h('input', { id: 'bh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                    onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
+                    style: { width: '100%' }, 'aria-label': s.l }));
+              })
+            ),
+            h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ m: iq.mass, s: iq.speed, d: iq.decel, g: iq.grade, sd: stopDist.toFixed(1), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+              h('button', { onClick: function() { setIQ({ mass: 1500, speed: 50, decel: 7, grade: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: '#fff', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+            ),
+            (iq.log || []).length > 0 && h('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#475569', marginBottom: 10 } },
+              h('thead', null, h('tr', { style: { background: '#f1f5f9' } },
+                ['mass', 'kph', 'decel', 'grade°', 'stop m', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, style: { padding: '4px 6px', border: '1px solid #cbd5e1', textAlign: 'left' } }, c); }))),
+              h('tbody', null, iq.log.map(function(o, idx) {
+                return h('tr', { key: 'lr' + idx },
+                  h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1', fontFamily: 'monospace' } }, o.m),
+                  h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1', fontFamily: 'monospace' } }, o.s),
+                  h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1', fontFamily: 'monospace' } }, o.d),
+                  h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1', fontFamily: 'monospace' } }, o.g),
+                  h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1', fontFamily: 'monospace' } }, o.sd),
+                  h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1' } }, o.st));
+              }))
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Why does kinetic energy grow with v² but only linearly with mass?',
+              style: { width: '100%', minHeight: 60, padding: 6, border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 3 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 4, fontSize: 11, color: '#475569', marginBottom: 10 } },
+              h('ul', { style: { margin: 0, paddingLeft: 18 } },
+                h('li', null, 'Double speed: does stop distance double or quadruple? Test.'),
+                h('li', null, 'A 1500kg car at 100 km/h vs 5000kg truck at 50 km/h — which stops sooner?'),
+                h('li', null, 'Why does a 5° downhill grade dramatically extend stopping?'),
+                h('li', null, 'ABS achieves ~9 m/s². What does real-world friction coefficient imply about this?'))),
+            h('div', { style: { padding: 10, background: '#ecfdf5', border: '1px solid #86efac', borderRadius: 4 } },
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#059669', cursor: 'pointer' } },
+                h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
+              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain: why does v² dominate stopping distance? What surprised you about grade?',
+                style: { width: '100%', minHeight: 80, padding: 6, border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
+            h('div', { style: { marginTop: 10, padding: 8, background: '#f1f5f9', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#64748b' } },
+              'Design note: discrete 4-state braking marker; SVG force/energy diagram; no safety score — by design.')
+          )
+        );
+      }
+
       // ── PARALLEL PARKING (2D) ──
       if (view === 'parking') {
         return h(ParkingMode, { key: 'parking-mode', ctx: ctx, h: h, React: React,
