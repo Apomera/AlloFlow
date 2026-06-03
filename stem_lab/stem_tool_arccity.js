@@ -62,6 +62,18 @@
         k: { min: 0, max: 8, step: 0.25, default: 2, label: 'k  (vertex height)' }
       },
       hint: 'Tip: raise k so the arc clears the wall, then adjust a so the beam comes back down through the gate and onto the node.'
+    },
+    {
+      id: 'L4', title: 'Switchback', family: 'absval',
+      world: { x0: 0, x1: 10, y0: 0, y1: 8 },
+      walls: [], gates: [{ x: 2, lo: 4, hi: 6 }, { x: 8, lo: 4, hi: 6 }], node: { x: 5, y: 1, r: 0.6 }, dx: 0.05,
+      paramOrder: ['a', 'h', 'k'],
+      params: {
+        a: { min: 0, max: 2, step: 0.05, default: 0.5, label: 'a  (how steep the V bends)' },
+        h: { min: 0, max: 10, step: 0.25, default: 5, label: 'h  (vertex horizontal)' },
+        k: { min: 0, max: 8, step: 0.25, default: 3, label: 'k  (vertex height — bottom of the V)' }
+      },
+      hint: 'Tip: this beam bends into a sharp V. Lower the vertex height k down onto the node, then raise a until the V is steep enough that its two arms still pass through both high windows.'
     }
   ];
 
@@ -73,6 +85,7 @@
   // Family evaluators — the only "weapons" in Phase 1.
   function fnY(family, p, x) {
     if (family === 'line') return p.m * x + p.b;
+    if (family === 'absval') return p.a * Math.abs(x - p.h) + p.k; // absolute value (vertex form)
     return p.a * (x - p.h) * (x - p.h) + p.k; // parabola (vertex form)
   }
 
@@ -129,13 +142,14 @@
   function actionHint(level, res) {
     var fam = level.family;
     if (res.result === 'wall') {
-      return fam === 'line'
-        ? 'Lift the beam over the wall — increase the slope (or the start height) so it clears y = ' + res.obstacle.height + '.'
-        : 'Arc higher over the wall: raise the vertex height k, or move the vertex h toward x = ' + res.at + '.';
+      if (fam === 'line') return 'Lift the beam over the wall — increase the slope (or the start height) so it clears y = ' + res.obstacle.height + '.';
+      if (fam === 'absval') return 'Bend the V over the wall — raise the vertex height k, or move the vertex h toward x = ' + res.at + '.';
+      return 'Arc higher over the wall: raise the vertex height k, or move the vertex h toward x = ' + res.at + '.';
     }
     if (res.result === 'gate') {
       var tooHigh = res.yAt > res.obstacle.hi;
       if (fam === 'line') return tooHigh ? 'The beam is too high there — lower the start height b or reduce the slope.' : 'The beam is too low there — raise the start height b or increase the slope.';
+      if (fam === 'absval') return tooHigh ? 'The beam is too high there — lower the vertex k, or move the vertex h so the V dips into the window.' : 'The beam is too low there — raise the vertex k, or steepen a so the arm climbs through the window.';
       return tooHigh ? 'The beam is too high there — tighten the arc (more negative a) or lower k.' : 'The beam is too low there — widen the arc or raise k.';
     }
     return '';
@@ -164,6 +178,11 @@
       return 'y = m·x + b, with m = ' + round1(p.m) + ', b = ' + round1(p.b) +
         '. A straight beam, slope ' + round1(p.m) + ', starting at height ' + round1(p.b) + '.';
     }
+    if (level.family === 'absval') {
+      var vshape = p.a < 0 ? 'an upside-down V' : (p.a > 0 ? 'a V' : 'a flat line');
+      return 'y = a·|x − h| + k, with a = ' + round1(p.a) + ', h = ' + round1(p.h) + ', k = ' + round1(p.k) +
+        '. ' + vshape + '-shaped beam that bends at the vertex (' + round1(p.h) + ', ' + round1(p.k) + ').';
+    }
     var dir = p.a < 0 ? 'opening downward' : (p.a > 0 ? 'opening upward' : 'a flat line');
     return 'y = a(x − h)² + k, with a = ' + round1(p.a) + ', h = ' + round1(p.h) + ', k = ' + round1(p.k) +
       '. A parabola ' + dir + ', vertex at (' + round1(p.h) + ', ' + round1(p.k) + ').';
@@ -171,7 +190,7 @@
 
   function describeBoard(level) {
     var s = 'Arc City, level: ' + level.title + '. ';
-    s += level.family === 'line' ? 'Author a straight-line beam. ' : 'Author a parabola beam. ';
+    s += level.family === 'line' ? 'Author a straight-line beam. ' : (level.family === 'absval' ? 'Author a V-shaped, absolute-value beam. ' : 'Author a parabola beam. ');
     s += 'The dark node to light is at x ' + level.node.x + ', y ' + level.node.y + '. ';
     (level.walls || []).forEach(function (w) { s += 'A wall ' + w.height + ' units tall stands at x ' + w.x + '. '; });
     (level.gates || []).forEach(function (g) { s += 'A gate with an opening from y ' + g.lo + ' to ' + g.hi + ' is at x ' + g.x + '. '; });
@@ -207,6 +226,7 @@
     { id: 'first-light', label: 'First Light — lit your first node' },
     { id: 'window-threader', label: 'Window Threader — threaded a gate and lit a node' },
     { id: 'arc-architect', label: 'Arc Architect — re-lit a node using a parabola' },
+    { id: 'switchback', label: 'Switchback — re-lit a node using an absolute-value V' },
     { id: 'sharp-shooter', label: 'Sharp Shooter — lit a node on the first shot' },
     { id: 'independent', label: 'Independent — solved with the preview hidden' }
   ];
@@ -219,6 +239,7 @@
     if (level.id === 'L1') add('first-light');
     if ((level.gates || []).length) add('window-threader');
     if (level.family === 'parabola') add('arc-architect');
+    if (level.family === 'absval') add('switchback');
     if (shots === 1) add('sharp-shooter');
     if (solveIsIndependent(tier)) add('independent');
     return out;
@@ -256,6 +277,50 @@
     return { accent: '#0e7490', nodeOff: '#c026d3', nodeOn: '#047857', gate: '#6d28d9', wall: '#475569', warn: '#b45309', danger: '#b91c1c', btnText: '#ffffff' }; // light (default :root / .theme-default)
   }
 
+  // ── Teacher summary (design §9.5 / §9.2 / §9.4): deterministic, template-built
+  // from logged events (NO AI verdict), anonymous, honest-language only. Captures
+  // observed BEHAVIOR — never ability/mastery/score. The caveat is non-removable. ──
+  var TEACHER_CAVEAT = 'These are observations of what this player did inside Arc City — which functions they used and how. They are NOT a test score, a grade, a measure of ability, or a prediction. Use them as one piece of formative evidence alongside your own observation.';
+  function familyStatus(byLevel, family) {
+    byLevel = byLevel || {};
+    var anyIndep = false, anySolved = false, anyTried = false;
+    for (var i = 0; i < LEVELS.length; i++) {
+      var l = LEVELS[i]; if (l.family !== family) continue;
+      var st = byLevel[l.id]; if (!st) continue;
+      if (st.solved) { anySolved = true; if (st.independent) anyIndep = true; }
+      if ((st.shots || 0) > 0 || (st.misses || 0) > 0) anyTried = true;
+    }
+    if (anyIndep) return 'used independently';
+    if (anySolved) return 'used with scaffold';
+    if (anyTried) return 'explored';
+    return 'not started';
+  }
+  function teacherSummary(byLevel, badges) {
+    byLevel = byLevel || {}; badges = badges || [];
+    var levels = LEVELS.map(function (l) {
+      var st = byLevel[l.id] || {};
+      var status = st.solved ? 'completed' : (((st.shots || 0) > 0 || (st.misses || 0) > 0) ? 'explored' : 'not started');
+      return { id: l.id, title: l.title, family: l.family, status: status, independent: !!st.independent, shots: st.shots || 0, exploredAdjustments: st.misses || 0 };
+    });
+    var families = {};
+    ['line', 'parabola', 'absval'].forEach(function (f) { families[f] = familyStatus(byLevel, f); });
+    var nodesReLit = levels.filter(function (l) { return l.status === 'completed'; }).length;
+    return { caveat: TEACHER_CAVEAT, families: families, levels: levels, nodesReLit: nodesReLit, totalLevels: LEVELS.length, badges: badges.map(badgeLabel) };
+  }
+  function teacherSummaryText(summary) {
+    var lines = ['Arc City — progress summary', '', summary.caveat, '', 'Nodes re-lit: ' + summary.nodesReLit + ' of ' + summary.totalLevels, '', 'Functions:'];
+    Object.keys(summary.families).forEach(function (f) { lines.push('  - ' + f + ': ' + summary.families[f]); });
+    lines.push(''); lines.push('Levels:');
+    summary.levels.forEach(function (l) {
+      var bit = l.status;
+      if (l.status === 'completed') bit += l.independent ? ' (independently)' : ' (with live preview)';
+      if (l.status !== 'not started') bit += ' — ' + l.shots + ' shot' + (l.shots === 1 ? '' : 's') + ', ' + l.exploredAdjustments + ' exploring adjustments';
+      lines.push('  - ' + l.title + ': ' + bit);
+    });
+    if (summary.badges.length) { lines.push(''); lines.push('Badges: ' + summary.badges.join(', ')); }
+    return lines.join('\n');
+  }
+
   var ArcCityCore = {
     LEVELS: LEVELS,
     levelById: levelById,
@@ -281,7 +346,11 @@
     parabolaVertexParams: parabolaVertexParams,
     linePivotParams: linePivotParams,
     THEME_CANVAS: THEME_CANVAS,
-    arcPalette: arcPalette
+    arcPalette: arcPalette,
+    TEACHER_CAVEAT: TEACHER_CAVEAT,
+    familyStatus: familyStatus,
+    teacherSummary: teacherSummary,
+    teacherSummaryText: teacherSummaryText
   };
 
   if (typeof module !== 'undefined' && module.exports) { module.exports = ArcCityCore; }
@@ -421,6 +490,8 @@
         var badges = S.badges || [];
         var showPreview = previewVisible(tier, S.fired);
         var indepSolved = !!(ls && ls.independent);
+        var view = S.view || 'play';
+        var exportEnabled = !!S.exportEnabled;
 
         // ── state updaters (all via setToolData; no React hooks) ──
         function mergeLevel(prevRoot, partial, paramsOverride) {
@@ -505,6 +576,28 @@
             return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { tier: tr, fired: false }) });
           });
           announceArc(ctx, t('arccity.tier', 'Tier:') + ' ' + tierLabel(tr) + '. ' + tierBlurb(tr));
+        }
+        function setView(v) {
+          if (typeof setToolData !== 'function') return;
+          setToolData(function (prev) {
+            var cur = (prev && prev._arccity) || S;
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { view: v }) });
+          });
+          announceArc(ctx, v === 'teacher' ? t('arccity.view_teacher', 'Teacher view.') : t('arccity.view_play', 'Play view.'));
+        }
+        function toggleExport() {
+          if (typeof setToolData !== 'function') return;
+          setToolData(function (prev) {
+            var cur = (prev && prev._arccity) || S;
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { exportEnabled: !cur.exportEnabled }) });
+          });
+        }
+        function copySummary() {
+          try {
+            var txt = teacherSummaryText(teacherSummary(byLevel, badges));
+            if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) window.navigator.clipboard.writeText(txt);
+            announceArc(ctx, t('arccity.copied', 'Summary copied to clipboard.'));
+          } catch (e) { announceArc(ctx, t('arccity.copy_fail', 'Copy failed — select and copy the summary text manually.')); }
         }
 
         // ── SVG transforms (orthographic, zero shear) ──
@@ -591,7 +684,7 @@
         var HANDLE = BEAM;
         var handleEls = [];
         if (tier === 'practice') {
-          if (level.family === 'parabola') {
+          if (level.family === 'parabola' || level.family === 'absval') {
             handleEls.push(h('circle', {
               key: 'vh', cx: sx(P.h), cy: sy(P.k), r: 9, fill: HANDLE, opacity: 0.95, stroke: '#06262b', strokeWidth: 2,
               style: { cursor: 'grab' }, 'aria-hidden': 'true',
@@ -700,7 +793,9 @@
           h('div', { key: 'eq', 'aria-label': describeEquation(level, P), style: { fontSize: 15, color: INK, marginBottom: 6, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', fontVariantNumeric: 'tabular-nums' } },
             level.family === 'line'
               ? ['y = ', h('span', { key: 'm', style: { color: BEAM, fontWeight: 800 } }, round1(P.m)), ' · x + ', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, round1(P.b))]
-              : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, round1(P.h)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]),
+              : (level.family === 'absval'
+                ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' · |x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, round1(P.h)), '| + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))]
+                : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, round1(P.a)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, round1(P.h)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, round1(P.k))])),
           tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.6, marginBottom: 10 } }, t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.')) : null,
           h('div', { key: 'rows' }, paramRows),
           h('div', { key: 'btns', style: { display: 'flex', gap: 10, marginTop: 6 } },
@@ -743,8 +838,48 @@
             }))
           : null;
 
+        // ── View toggle (Play ↔ Teacher) ──
+        function viewBtn(v, label) {
+          var active = view === v;
+          return h('button', {
+            key: 'view-' + v, type: 'button', 'aria-pressed': active ? 'true' : 'false', onClick: function () { setView(v); },
+            style: { padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: active ? 800 : 600, border: '1px solid ' + (active ? BEAM : GRID), background: active ? 'rgba(34,211,238,0.15)' : 'transparent', color: INK, cursor: 'pointer' }
+          }, label);
+        }
+        var viewToggle = h('div', { key: 'viewtoggle', role: 'group', 'aria-label': t('arccity.view', 'View'), style: { display: 'flex', gap: 6, marginBottom: 12 } },
+          viewBtn('play', '🎮 ' + t('arccity.play', 'Play')), viewBtn('teacher', '📋 ' + t('arccity.teacher', 'Teacher view')));
+
+        // ── Teacher panel: honest, anonymous, deterministic; FERPA export OFF by default (§9.5) ──
+        var summary = teacherSummary(byLevel, badges);
+        var teacherPanel = h('div', { key: 'teacherpanel', style: { marginTop: 4 } },
+          h('div', { key: 'caveat', role: 'note', style: { fontSize: 13, lineHeight: 1.5, color: INK, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + GRID, background: 'rgba(148,163,184,0.10)', marginBottom: 12 } }, '⚠️ ' + summary.caveat),
+          h('div', { key: 'relit', style: { fontSize: 14, fontWeight: 700, color: INK, marginBottom: 10 } }, t('arccity.nodes_relit', 'Nodes re-lit:') + ' ' + summary.nodesReLit + ' / ' + summary.totalLevels),
+          h('h3', { key: 'fh', style: { fontSize: 14, margin: '0 0 6px', color: INK } }, t('arccity.functions', 'Functions')),
+          h('ul', { key: 'fams', style: { listStyle: 'none', padding: 0, margin: '0 0 12px', fontSize: 13, color: INK } },
+            Object.keys(summary.families).map(function (f) { return h('li', { key: 'fam-' + f, style: { marginBottom: 3 } }, f + ': ' + summary.families[f]); })),
+          h('h3', { key: 'lh', style: { fontSize: 14, margin: '0 0 6px', color: INK } }, t('arccity.levels', 'Levels')),
+          h('ul', { key: 'lvls', style: { listStyle: 'none', padding: 0, margin: '0 0 12px', fontSize: 13, color: INK } },
+            summary.levels.map(function (l) {
+              var bit = l.status;
+              if (l.status === 'completed') bit += l.independent ? ' (independently)' : ' (with live preview)';
+              if (l.status !== 'not started') bit += ' — ' + l.shots + ' shot' + (l.shots === 1 ? '' : 's') + ', ' + l.exploredAdjustments + ' exploring adjustments';
+              return h('li', { key: 'tl-' + l.id, style: { marginBottom: 3 } }, l.title + ': ' + bit);
+            })),
+          summary.badges.length ? h('div', { key: 'tbadges', style: { fontSize: 13, color: INK, marginBottom: 12 } }, t('arccity.badges', 'Badges earned') + ': ' + summary.badges.join(', ')) : null,
+          h('div', { key: 'exportbox', style: { borderTop: '1px solid ' + GRID, paddingTop: 10 } },
+            h('label', { key: 'el', style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: INK } },
+              h('input', { key: 'ec', type: 'checkbox', checked: exportEnabled, onChange: toggleExport, 'aria-label': t('arccity.enable_export', 'Enable export') }),
+              t('arccity.export_note', 'Enable export (off by default — local only, contains no student names)')),
+            h('button', { key: 'eb', type: 'button', disabled: !exportEnabled, onClick: copySummary,
+              style: { marginTop: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + GRID, background: exportEnabled ? 'rgba(34,211,238,0.12)' : 'transparent', color: INK, fontSize: 13, fontWeight: 700, cursor: exportEnabled ? 'pointer' : 'not-allowed', opacity: exportEnabled ? 1 : 0.5 } },
+              '📋 ' + t('arccity.copy_summary', 'Copy summary'))));
+
+        var body = view === 'teacher'
+          ? teacherPanel
+          : h('div', { key: 'game' }, levelBar, tierBar, svg, controls, badgeStrip);
+
         return h('div', { id: 'allo-arccity-root', style: { padding: 16, maxWidth: 760, margin: '0 auto', color: INK } },
-          header, levelBar, tierBar, svg, controls, badgeStrip);
+          header, viewToggle, body);
 
       } catch (e) {
         return h('div', { style: { padding: 16, color: '#fca5a5', fontSize: 14 } },

@@ -85,11 +85,45 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L3
 }
 `;
 
+exports[`Arc City — adjudication + SR narration per level (golden master) > L4 (Switchback) outcome + narration matrix (snapshot) 1`] = `
+{
+  "flat line blocked at the window (a=0,h=5,k=1)": {
+    "equation": "y = a·|x − h| + k, with a = 0, h = 5, k = 1. a flat line-shaped beam that bends at the vertex (5, 1).",
+    "narration": "Blocked at the gate (x = 2): the beam passed at y = 1, but the opening is y = 4 to 6. The beam is too low there — raise the vertex k, or steepen a so the arm climbs through the window.",
+    "nodeDist": null,
+    "result": "gate",
+    "yAt": 1,
+  },
+  "near miss, vertex just above node (a=1.3,h=5,k=2)": {
+    "equation": "y = a·|x − h| + k, with a = 1.3, h = 5, k = 2. a V-shaped beam that bends at the vertex (5, 2).",
+    "narration": "You reached the node’s street, but the beam missed it by 1 units. Fine-tune the controls so the beam meets (5, 1).",
+    "nodeDist": 1,
+    "result": "miss",
+    "yAt": null,
+  },
+  "solution (a=1.3,h=5,k=1)": {
+    "equation": "y = a·|x − h| + k, with a = 1.3, h = 5, k = 1. a V-shaped beam that bends at the vertex (5, 1).",
+    "narration": "Lit! The beam reached the node at (5, 1). Solved in 1 shot.",
+    "nodeDist": 0,
+    "result": "hit",
+    "yAt": null,
+  },
+  "starting V too high above node (a=0.5,h=5,k=3)": {
+    "equation": "y = a·|x − h| + k, with a = 0.5, h = 5, k = 3. a V-shaped beam that bends at the vertex (5, 3).",
+    "narration": "You reached the node’s street, but the beam missed it by 2 units. Fine-tune the controls so the beam meets (5, 1).",
+    "nodeDist": 2,
+    "result": "miss",
+    "yAt": null,
+  },
+}
+`;
+
 exports[`Arc City — module contract > board readouts for screen readers (snapshot) 1`] = `
 {
   "L1": "Arc City, level: First Light. Author a straight-line beam. The dark node to light is at x 8, y 4. Aim the beam through any gates, over any walls, to reach the node.",
   "L2": "Arc City, level: Cross-Street. Author a straight-line beam. The dark node to light is at x 9, y 2. A gate with an opening from y 3 to 5 is at x 4. Aim the beam through any gates, over any walls, to reach the node.",
   "L3": "Arc City, level: Clear the Wall. Author a parabola beam. The dark node to light is at x 8, y 0.5. A wall 4 units tall stands at x 5. A gate with an opening from y 3.4 to 4.3 is at x 6.5. Aim the beam through any gates, over any walls, to reach the node.",
+  "L4": "Arc City, level: Switchback. Author a V-shaped, absolute-value beam. The dark node to light is at x 5, y 1. A gate with an opening from y 4 to 6 is at x 2. A gate with an opening from y 4 to 6 is at x 8. Aim the beam through any gates, over any walls, to reach the node.",
 }
 `;
 
@@ -234,6 +268,65 @@ exports[`Arc City — module contract > level geometry (snapshot) 1`] = `
         "x": 5,
       },
     ],
+    "world": {
+      "x0": 0,
+      "x1": 10,
+      "y0": 0,
+      "y1": 8,
+    },
+  },
+  {
+    "dx": 0.05,
+    "family": "absval",
+    "gates": [
+      {
+        "hi": 6,
+        "lo": 4,
+        "x": 2,
+      },
+      {
+        "hi": 6,
+        "lo": 4,
+        "x": 8,
+      },
+    ],
+    "hint": "Tip: this beam bends into a sharp V. Lower the vertex height k down onto the node, then raise a until the V is steep enough that its two arms still pass through both high windows.",
+    "id": "L4",
+    "node": {
+      "r": 0.6,
+      "x": 5,
+      "y": 1,
+    },
+    "paramOrder": [
+      "a",
+      "h",
+      "k",
+    ],
+    "params": {
+      "a": {
+        "default": 0.5,
+        "label": "a  (how steep the V bends)",
+        "max": 2,
+        "min": 0,
+        "step": 0.05,
+      },
+      "h": {
+        "default": 5,
+        "label": "h  (vertex horizontal)",
+        "max": 10,
+        "min": 0,
+        "step": 0.25,
+      },
+      "k": {
+        "default": 3,
+        "label": "k  (vertex height — bottom of the V)",
+        "max": 8,
+        "min": 0,
+        "step": 0.25,
+      },
+    },
+    "title": "Switchback",
+    "walls": [],
     "world": {
       "x0": 0,
       "x1": 10,

@@ -34,6 +34,12 @@ const CASES = {
     { label: 'starting shot, hits wall (a=-0.2,h=5,k=2)', p: { a: -0.2, h: 5, k: 2 } },
     { label: 'flat line blocked at gate (a=0,h=5,k=5)', p: { a: 0, h: 5, k: 5 } },
     { label: 'arc too tight (a=-0.9,h=5,k=5)', p: { a: -0.9, h: 5, k: 5 } }
+  ],
+  L4: [
+    { label: 'solution (a=1.3,h=5,k=1)', p: { a: 1.3, h: 5, k: 1 } },
+    { label: 'starting V too high above node (a=0.5,h=5,k=3)', p: { a: 0.5, h: 5, k: 3 } },
+    { label: 'near miss, vertex just above node (a=1.3,h=5,k=2)', p: { a: 1.3, h: 5, k: 2 } },
+    { label: 'flat line blocked at the window (a=0,h=5,k=1)', p: { a: 0, h: 5, k: 1 } }
   ]
 };
 
@@ -45,7 +51,7 @@ describe('Arc City — module contract', () => {
     expect(typeof describeBoard).toBe('function');
     expect(typeof isLevelUnlocked).toBe('function');
     expect(Array.isArray(LEVELS)).toBe(true);
-    expect(LEVELS.map(l => l.id)).toEqual(['L1', 'L2', 'L3']);
+    expect(LEVELS.map(l => l.id)).toEqual(['L1', 'L2', 'L3', 'L4']);
   });
 
   it('level geometry (snapshot)', () => {
@@ -83,6 +89,15 @@ describe('Arc City — load-bearing invariants (the math IS the mechanic)', () =
     expect(classifyShot(levelById('L1'), { m: 0.5, b: 0 }).result).toBe('hit');
     expect(classifyShot(levelById('L2'), { m: -0.4, b: 5.5 }).result).toBe('hit');
     expect(classifyShot(levelById('L3'), { a: -0.5, h: 5, k: 5 }).result).toBe('hit');
+    expect(classifyShot(levelById('L4'), { a: 1.3, h: 5, k: 1 }).result).toBe('hit');
+  });
+
+  it('L4: an absolute-value V lights a node a smooth curve would float over', () => {
+    expect(levelById('L4').family).toBe('absval');
+    expect(classifyShot(levelById('L4'), { a: 0, h: 5, k: 1 }).result).toBe('gate'); // flat line can't dip
+    const hit = classifyShot(levelById('L4'), { a: 1.3, h: 5, k: 1 });
+    expect(describeResult(levelById('L4'), hit, 1)).toMatch(/Lit!/);
+    expect(describeEquation(levelById('L4'), { a: 1.3, h: 5, k: 1 })).toMatch(/\|x − /); // absolute-value notation
   });
 
   it('every level\'s starting defaults are NOT a win (you must solve)', () => {
@@ -267,5 +282,49 @@ describe('Arc City — theme-aware palette passes WCAG on every canvas (design �
 
   it('the default theme is light (matching :root / .theme-default canvas #ffffff)', () => {
     expect(arc.THEME_CANVAS.light).toBe('#ffffff');
+  });
+});
+
+describe('Arc City — teacher summary (honest, deterministic; design §9.5/§9.2/§9.4)', () => {
+  it('summarizes observed behavior deterministically', () => {
+    const byLevel = {
+      L1: { solved: true, independent: true, shots: 2, misses: 1 },
+      L2: { solved: true, independent: false, shots: 5, misses: 4 },
+      L3: { solved: false, shots: 3, misses: 3 }
+    };
+    const s = arc.teacherSummary(byLevel, ['first-light']);
+    expect(s.nodesReLit).toBe(2);
+    expect(s.totalLevels).toBe(4);
+    expect(s.families.absval).toBe('not started'); // L4 family present, untouched in this mock
+    expect(s.families.line).toBe('used independently'); // L1 solved independently
+    expect(s.families.parabola).toBe('explored');        // L3 attempted, not solved
+    const l1 = s.levels.find(l => l.id === 'L1');
+    expect(l1.status).toBe('completed');
+    expect(l1.independent).toBe(true);
+    expect(s.levels.find(l => l.id === 'L3').status).toBe('explored');
+  });
+
+  it('family status ladder: not started → explored → used with scaffold → used independently', () => {
+    expect(arc.familyStatus({}, 'line')).toBe('not started');
+    expect(arc.familyStatus({ L1: { shots: 2 } }, 'line')).toBe('explored');
+    expect(arc.familyStatus({ L1: { solved: true, independent: false } }, 'line')).toBe('used with scaffold');
+    expect(arc.familyStatus({ L2: { solved: true, independent: true } }, 'line')).toBe('used independently');
+  });
+
+  it('never makes mastery/ability/aptitude claims (and keeps the disclaiming caveat)', () => {
+    const byLevel = { L1: { solved: true, independent: true, shots: 1 }, L2: { solved: true, independent: false, shots: 3, misses: 2 }, L3: { solved: true, independent: true, shots: 2 } };
+    const s = arc.teacherSummary(byLevel, arc.BADGES.map(b => b.id));
+    const blob = (JSON.stringify(s) + ' ' + arc.teacherSummaryText(s)).toLowerCase();
+    // overclaim words that must never appear as a positive claim
+    ['mastered', 'mastery', 'proficient', 'percentile', 'aptitude', 'iq '].forEach(bad => {
+      expect(blob.includes(bad)).toBe(false);
+    });
+    // the non-removable caveat DOES disclaim score/grade/ability — must be present
+    expect(arc.teacherSummaryText(s)).toMatch(/NOT a test score, a grade, a measure of ability/);
+  });
+
+  it('export text is plain (no HTML) — safe for FERPA-gated export', () => {
+    const s = arc.teacherSummary({ L1: { solved: true, independent: true, shots: 1 } }, ['first-light']);
+    expect(arc.teacherSummaryText(s)).not.toMatch(/[<>]/);
   });
 });
