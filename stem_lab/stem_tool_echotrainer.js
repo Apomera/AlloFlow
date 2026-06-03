@@ -1902,7 +1902,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             h('p', { style: { marginTop: '4px', fontStyle: 'italic', fontSize: '9px', color: isDark ? '#94a3b8' : '#94a3b8' } }, '\uD83D\uDC7B Ghost outlines: After sonar pulses hit surfaces, a faint persistent glow remains to help you build a mental map. Higher difficulties reduce or eliminate ghost outlines.')
           )
         ),
-        h('div', { style: { fontSize: '9px', color: isDark ? '#475569' : '#94a3b8', textAlign: 'center', padding: '6px 0', borderTop: '1px solid ' + (isDark ? '#1e293b' : '#e2e8f0') } }, '\u26A0\uFE0F This is an educational simulation. Do not rely on simulation experience for real-world navigation. Consult a qualified O&M specialist for echolocation training.')
+        h('div', { style: { fontSize: '9px', color: isDark ? '#475569' : '#94a3b8', textAlign: 'center', padding: '6px 0', borderTop: '1px solid ' + (isDark ? '#1e293b' : '#e2e8f0') } }, '\u26A0\uFE0F This is an educational simulation. Do not rely on simulation experience for real-world navigation. Consult a qualified O&M specialist for echolocation training.'),
+
+        // === H7b'' inquiry widget: echo timing ===
+        (function() {
+          var iq = d._echoHunt || { distance: 10, speed: 340, surface: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('_echoHunt', Object.assign({}, iq, patch)); }
+          var echoMs = (iq.distance * 2 / iq.speed) * 1000;
+          var state;
+          if (echoMs < 30) state = 'tooFast';
+          else if (echoMs < 100) state = 'crisp';
+          else if (echoMs < 250) state = 'distinct';
+          else state = 'reverb';
+          var sm = {
+            tooFast:  { label: '\u26A1 Too fast (no echo detect)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Surface too close. Brain merges echo with click.' },
+            crisp:    { label: '\uD83D\uDFE2 Crisp echo', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Optimal range. Brain can localize surface.' },
+            distinct: { label: '\uD83D\uDFE1 Distinct delay', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Surface noticeable but distant.' },
+            reverb:   { label: '\uD83D\uDD0A Reverberant', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Far surface, multiple bounces.' }
+          }[state];
+          return h('div', { style: { margin: '8px', padding: '12px', background: isDark ? '#1e293b' : '#fff', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 8 } },
+            h('h3', { style: { fontSize: 13, fontWeight: 800, color: isDark ? '#67e8f9' : '#0891b2', marginBottom: 6 } }, '\uD83C\uDFB5 Echo timing discovery'),
+            h('p', { style: { fontSize: 11, color: isDark ? '#cbd5e1' : '#475569', marginBottom: 8 } }, 'Sliders for distance, speed, surface. Discrete 4-state echo. No score, no reveal.'),
+            h('div', { style: { padding: 10, borderRadius: 6, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 8 } },
+              h('div', { style: { fontSize: 13, fontWeight: 900, color: sm.color } }, sm.label),
+              h('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
+              h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } }, 'Round-trip \u2248 ' + echoMs.toFixed(1) + ' ms')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 8 } },
+              [{ k: 'distance', l: 'Distance (m)', mn: 0.5, mx: 100, st: 0.5 },
+               { k: 'speed', l: 'Speed (m/s)', mn: 200, mx: 400, st: 5 },
+               { k: 'surface', l: 'Reflect (%)', mn: 0, mx: 100, st: 5 }].map(function(s) {
+                return h('div', { key: s.k },
+                  h('label', { htmlFor: 'eh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: isDark ? '#cbd5e1' : '#475569' } }, s.l + ': ', h('span', { style: { color: isDark ? '#67e8f9' : '#0891b2', fontFamily: 'monospace' } }, iq[s.k])),
+                  h('input', { id: 'eh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                    onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
+                    style: { width: '100%' }, 'aria-label': s.l }));
+              })
+            ),
+            h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 } },
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ d: iq.distance, s: iq.speed, sr: iq.surface, ms: echoMs.toFixed(1), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: isDark ? '#0f172a' : '#f1f5f9', color: isDark ? '#cbd5e1' : '#475569', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCB Log'),
+              h('button', { onClick: function() { setIQ({ distance: 10, speed: 340, surface: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '\u21BA Reset')
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: At what distance does echo become detectable?',
+              style: { width: '100%', minHeight: 50, padding: 6, background: isDark ? '#0f172a' : '#fff', color: isDark ? '#e2e8f0' : '#1e293b', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '\uD83E\uDD14 Stuck \u2014 show open prompts'),
+            iq.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: isDark ? '#cbd5e1' : '#475569', marginBottom: 8 } },
+              h('ul', { style: { margin: 0, paddingLeft: 18 } },
+                h('li', null, 'Sound in air = 343 m/s. Investigate the formula.'),
+                h('li', null, 'Why do bats use high-frequency clicks?'))),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand \u2014 explain in own words'),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain echo physics.',
+              style: { width: '100%', minHeight: 60, padding: 6, background: isDark ? '#0f172a' : '#fff', color: isDark ? '#e2e8f0' : '#1e293b', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
+            h('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state echo marker; no detection score; no reveal \u2014 by design.')
+          );
+        })()
       );
     }
   });
