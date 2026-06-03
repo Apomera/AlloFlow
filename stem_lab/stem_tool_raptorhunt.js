@@ -20446,7 +20446,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'twenty_k_finale' && render20kFinale(),
           activeSection === 'glossary' && renderGlossary(),
           activeSection === 'quiz' && renderQuiz(),
-          activeSection === 'resources' && renderResources()
+          activeSection === 'resources' && renderResources(),
+          activeSection === 'strategyHunt' && (function() {
+            var iq = d._strategyHunt || { stealth: 50, speed: 50, ambush: 50, persistence: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { setRH('_strategyHunt', Object.assign({}, iq, patch)); }
+            var strat;
+            if (iq.stealth > 70 && iq.ambush > 70) strat = 'ambush';
+            else if (iq.speed > 70 && iq.persistence > 60) strat = 'pursuit';
+            else if (iq.persistence > 80) strat = 'endurance';
+            else if (iq.speed > 80) strat = 'sprint';
+            else strat = 'opportunist';
+            var sm = {
+              ambush:      { label: '🌳 Ambush (stealth + surprise)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Goshawk-style: hide in cover, single strike.' },
+              pursuit:     { label: '🏃 Pursuit (speed + tracking)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Peregrine-style: high-speed chase + dive.' },
+              endurance:   { label: '🦅 Endurance (long persistence)', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Harrier-style: low slow patrolling.' },
+              sprint:      { label: '⚡ Sprint (burst)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Falcon-stoop tactic. Energy-intensive.' },
+              opportunist: { label: '🦉 Opportunist (mixed)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Generalist. Owl-style; uses whatever works.' }
+            }[strat];
+            var H = h;
+            return H('div', { style: { padding: 16, background: '#fff', borderRadius: 10, border: '1px solid #cbd5e1' } },
+              H('h3', { style: { fontSize: 14, fontWeight: 800, color: '#7c3aed', margin: '0 0 6px 0' } }, '🎯 Predator strategy discovery'),
+              H('p', { style: { fontSize: 12, color: '#475569', marginBottom: 12 } }, '4 sliders for hunting attributes. Discrete 5-strategy classification + SVG radar chart. No score, no reveal.'),
+              H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
+                H('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
+                H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc)
+              ),
+              // SVG radar chart of 4 attributes
+              H('div', { style: { padding: 10, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', marginBottom: 12 } },
+                H('svg', { viewBox: '0 0 200 200', style: { width: 200, height: 200, display: 'block', margin: '0 auto' } },
+                  // Grid circles
+                  [25, 50, 75, 100].map(function(r) { return H('circle', { key: 'g' + r, cx: 100, cy: 100, r: r * 0.8, fill: 'none', stroke: '#cbd5e1', strokeWidth: 0.5 }); }),
+                  // Axes
+                  H('line', { x1: 100, y1: 20, x2: 100, y2: 180, stroke: '#94a3b8', strokeWidth: 1 }),
+                  H('line', { x1: 20, y1: 100, x2: 180, y2: 100, stroke: '#94a3b8', strokeWidth: 1 }),
+                  // Attribute polygon (4 vertices)
+                  (function() {
+                    var pts = [
+                      [100, 100 - iq.stealth * 0.8],     // top (stealth)
+                      [100 + iq.speed * 0.8, 100],        // right (speed)
+                      [100, 100 + iq.ambush * 0.8],       // bottom (ambush)
+                      [100 - iq.persistence * 0.8, 100]   // left (persistence)
+                    ];
+                    return H('polygon', { points: pts.map(function(p) { return p.join(','); }).join(' '), fill: sm.color, fillOpacity: 0.35, stroke: sm.color, strokeWidth: 2 });
+                  })(),
+                  // Labels
+                  H('text', { x: 100, y: 16, textAnchor: 'middle', fontSize: 10, fill: '#475569', fontWeight: 'bold' }, 'Stealth ' + iq.stealth),
+                  H('text', { x: 188, y: 104, textAnchor: 'end', fontSize: 10, fill: '#475569', fontWeight: 'bold' }, 'Speed ' + iq.speed),
+                  H('text', { x: 100, y: 196, textAnchor: 'middle', fontSize: 10, fill: '#475569', fontWeight: 'bold' }, 'Ambush ' + iq.ambush),
+                  H('text', { x: 12, y: 104, fontSize: 10, fill: '#475569', fontWeight: 'bold' }, 'Pers ' + iq.persistence)
+                )
+              ),
+              H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 10 } },
+                [{ k: 'stealth', l: 'Stealth (%)' },
+                 { k: 'speed', l: 'Speed (%)' },
+                 { k: 'ambush', l: 'Ambush ability (%)' },
+                 { k: 'persistence', l: 'Persistence (%)' }].map(function(s) {
+                  return H('div', { key: s.k },
+                    H('label', { htmlFor: 'sh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: '#7c3aed', fontFamily: 'monospace' } }, iq[s.k])),
+                    H('input', { id: 'sh-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
+                      onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                      style: { width: '100%' }, 'aria-label': s.l }));
+                })
+              ),
+              H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
+                H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ st: iq.stealth, sp: iq.speed, a: iq.ambush, p: iq.persistence, str: strat }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+                H('button', { onClick: function() { setIQ({ stealth: 50, speed: 50, ambush: 50, persistence: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: '#fff', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+              ),
+              H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Which strategy is most energy-efficient?',
+                style: { width: '100%', minHeight: 50, padding: 6, border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
+              !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
+              iq.stuckRevealed && H('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 4, fontSize: 11, color: '#475569', marginBottom: 8 } },
+                H('ul', { style: { margin: 0, paddingLeft: 18 } },
+                  H('li', null, 'Match real raptor species to a strategy (peregrine, goshawk, harrier).'),
+                  H('li', null, 'Why has natural selection produced 5+ distinct hunting strategies?'),
+                  H('li', null, 'What environment favors ambush vs pursuit?'))),
+              H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#059669', cursor: 'pointer' } },
+                H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain'),
+              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how raptor traits compose hunting strategy.',
+                style: { width: '100%', minHeight: 60, padding: 6, border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
+              H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 5-strategy marker; SVG radar chart; no hunt-success score — by design.')
+            );
+          })()
         )
       );
     }
