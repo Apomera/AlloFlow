@@ -13290,6 +13290,121 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           case 'drill-intro':    viewContent = renderDrillIntro(); break;
           case 'summary':        viewContent = renderSummary(); break;
           case 'settings':       viewContent = renderSettings(); break;
+          case 'tradeoffHunt':   viewContent = (function() {
+            var d2 = state || {};
+            var iq = d2.tradeoffHunt || { targetWpm: 40, accFloor: 92, errPenalty: 5, momentum: 50, sessionLen: 60, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) {
+              setState(function(prev) {
+                return Object.assign({}, prev, { tradeoffHunt: Object.assign({}, prev.tradeoffHunt || iq, patch) });
+              });
+            }
+            // Compute predicted outcomes
+            var effectiveWpm = iq.targetWpm * (iq.momentum / 100 + 0.5);
+            var deficitGap = Math.max(0, 60 - effectiveWpm);
+            var quality = (iq.accFloor - 80) * 2 - iq.errPenalty + iq.momentum * 0.3;
+            var state5;
+            if (effectiveWpm < 20) state5 = 'beginner';
+            else if (effectiveWpm < 35 && iq.accFloor >= 90) state5 = 'developing';
+            else if (effectiveWpm < 55 && iq.accFloor >= 92) state5 = 'optimal';
+            else if (effectiveWpm >= 55 && iq.accFloor < 88) state5 = 'overreach';
+            else state5 = 'proficient';
+            var sm = {
+              beginner:   { label: '🌱 Beginner zone', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Build foundation. Slow + accurate beats fast + sloppy.' },
+              developing: { label: '🟢 Developing', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Steady progression. Maintain accuracy floor.' },
+              optimal:    { label: '🎯 Optimal zone', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Speed + accuracy in productive band. Sustainable practice.' },
+              proficient: { label: '⚡ Proficient', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'High WPM achieved. Diminishing returns from speed.' },
+              overreach:  { label: '⚠️ Overreaching (accuracy drops)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Speed exceeded accuracy budget. Backtrack to slower target.' }
+            }[state5];
+            // SVG scatter plot: WPM vs accuracy with student's "target" + Pareto frontier
+            var scatterPoints = [];
+            for (var w = 10; w <= 100; w += 10) {
+              // Pareto frontier — accuracy vs WPM tradeoff (approximate)
+              var pAcc = Math.max(70, 100 - Math.pow(w, 1.4) / 50);
+              scatterPoints.push([20 + (w / 100) * 280, 130 - (pAcc - 70) * 4]);
+            }
+            var pathStr = 'M ' + scatterPoints.map(function(pt) { return pt[0].toFixed(1) + ',' + pt[1].toFixed(1); }).join(' L ');
+            var currentX = 20 + (iq.targetWpm / 100) * 280;
+            var currentY = 130 - (iq.accFloor - 70) * 4;
+            return h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
+              h('button', { onClick: function() { setState(function(p) { return Object.assign({}, p, { view: 'menu' }); }); }, style: { padding: '6px 12px', background: '#e0f2fe', color: '#0369a1', border: '1px solid #93c5fd', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Menu'),
+              h('div', { style: { padding: 16, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 12 } },
+                h('h3', { style: { fontSize: 16, fontWeight: 800, color: '#0c4a6e', margin: '0 0 6px 0' } }, '⚡ WPM-accuracy tradeoff discovery'),
+                h('p', { style: { fontSize: 12, color: '#475569', marginBottom: 12 } },
+                  'Five sliders tune your practice target. Widget classifies your zone into one of 5 discrete states and renders the WPM-accuracy Pareto frontier. No score on your tuning — the inquiry is in finding sustainable practice points.'),
+                // Discrete state marker
+                h('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
+                  h('div', { style: { fontSize: 15, fontWeight: 900, color: sm.color } }, sm.label),
+                  h('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
+                  h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } },
+                    'Effective WPM ≈ ' + effectiveWpm.toFixed(1) + ' | Deficit-to-60 ≈ ' + deficitGap.toFixed(1) + ' | Quality index ' + quality.toFixed(1))
+                ),
+                // SVG scatter
+                h('div', { style: { padding: 10, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', marginBottom: 12 } },
+                  h('svg', { viewBox: '0 0 320 150', style: { width: '100%', height: 160 } },
+                    h('line', { x1: 20, y1: 130, x2: 300, y2: 130, stroke: '#94a3b8', strokeWidth: 1 }),
+                    h('line', { x1: 20, y1: 10, x2: 20, y2: 130, stroke: '#94a3b8', strokeWidth: 1 }),
+                    h('path', { d: pathStr, stroke: '#7c3aed', strokeWidth: 2, fill: 'none', strokeDasharray: '4 4' }),
+                    h('circle', { cx: currentX, cy: currentY, r: 8, fill: sm.color, stroke: '#fff', strokeWidth: 2 }),
+                    h('line', { x1: currentX - 12, y1: currentY, x2: currentX + 12, y2: currentY, stroke: sm.color, strokeWidth: 1 }),
+                    h('line', { x1: currentX, y1: currentY - 12, x2: currentX, y2: currentY + 12, stroke: sm.color, strokeWidth: 1 }),
+                    h('text', { x: 160, y: 145, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, 'WPM target →'),
+                    h('text', { x: 12, y: 75, textAnchor: 'middle', fontSize: 10, fill: '#475569', transform: 'rotate(-90 12 75)' }, 'Accuracy floor'),
+                    h('text', { x: 260, y: 25, fontSize: 9, fill: '#7c3aed' }, '── Pareto frontier'),
+                    h('text', { x: currentX + 12, y: currentY - 5, fontSize: 9, fill: sm.color, fontWeight: 'bold' }, 'YOU')
+                  ),
+                  h('div', { style: { fontSize: 10, color: '#64748b', textAlign: 'center', fontStyle: 'italic', marginTop: 4 } },
+                    'Pareto curve = best accuracy achievable at each WPM. Above = unrealistic; below = room to grow.')
+                ),
+                // Sliders
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 12 } },
+                  [{ k: 'targetWpm', l: 'Target WPM', mn: 10, mx: 100, st: 5 },
+                   { k: 'accFloor', l: 'Accuracy floor (%)', mn: 70, mx: 100, st: 1 },
+                   { k: 'errPenalty', l: 'Error penalty weight', mn: 0, mx: 20, st: 1 },
+                   { k: 'momentum', l: 'Momentum ramp (%)', mn: 0, mx: 100, st: 5 },
+                   { k: 'sessionLen', l: 'Session length (s)', mn: 30, mx: 600, st: 15 }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'th-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 } }, s.l + ': ', h('span', { style: { color: '#0c4a6e', fontFamily: 'monospace' } }, iq[s.k])),
+                      h('input', { id: 'th-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        style: { width: '100%' }, 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ w: iq.targetWpm, a: iq.accFloor, ep: iq.errPenalty, m: iq.momentum, sl: iq.sessionLen, st: state5 }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ targetWpm: 40, accFloor: 92, errPenalty: 5, momentum: 50, sessionLen: 60, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: '#fff', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+                ),
+                (iq.log || []).length > 0 && h('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#475569', marginBottom: 10 } },
+                  h('thead', null, h('tr', { style: { background: '#f1f5f9' } },
+                    ['WPM', 'acc%', 'pen', 'momentum', 'sessSec', 'zone'].map(function(c, i) { return h('th', { key: 'h' + i, style: { padding: '4px 6px', border: '1px solid #cbd5e1', textAlign: 'left' } }, c); }))),
+                  h('tbody', null, iq.log.map(function(o, idx) {
+                    return h('tr', { key: 'lr' + idx },
+                      h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1', fontFamily: 'monospace' } }, o.w),
+                      h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1', fontFamily: 'monospace' } }, o.a),
+                      h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1', fontFamily: 'monospace' } }, o.ep),
+                      h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1', fontFamily: 'monospace' } }, o.m),
+                      h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1', fontFamily: 'monospace' } }, o.sl),
+                      h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1' } }, o.st));
+                  }))
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): What is your sustainable target? How does accuracy floor change effective WPM?',
+                  style: { width: '100%', minHeight: 60, padding: 6, border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 4, fontSize: 11, color: '#475569', marginBottom: 10 } },
+                  h('ul', { style: { margin: 0, paddingLeft: 18 } },
+                    h('li', null, 'Set WPM=80, accuracy=98. Realistic? Compare to your zone marker.'),
+                    h('li', null, 'Drop accuracy floor to 80%. Does effective WPM rise?'),
+                    h('li', null, 'Pros sustain 95%+ at 70+ WPM. Investigate what training paths get there.'),
+                    h('li', null, 'A slower target with high accuracy may produce more text per session. Test.'))),
+                h('div', { style: { padding: 10, background: '#ecfdf5', border: '1px solid #86efac', borderRadius: 4 } },
+                  h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#059669', cursor: 'pointer' } },
+                    h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand the tradeoff — explain in own words'),
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain in your own words: how do WPM, accuracy, and momentum interact? What does the Pareto frontier mean for typing practice?',
+                    style: { width: '100%', minHeight: 80, padding: 6, border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
+                h('div', { style: { marginTop: 10, padding: 8, background: '#f1f5f9', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#64748b' } },
+                  'Design note: discrete 5-zone marker; Pareto curve shows tradeoff space; no "correct" target — by design.')
+              )
+            );
+          })(); break;
           case 'progress':       viewContent = renderProgress(); break;
           case 'passage-setup':  viewContent = renderPassageSetup(); break;
           case 'custom-setup':   viewContent = renderCustomSetup(); break;
