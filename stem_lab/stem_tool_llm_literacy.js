@@ -5851,7 +5851,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         { id: 'anatomy', title: '4. Prompt Anatomy',        color: '#9333ea' },
         { id: 'spotter', title: '5. Hallucination Spotter', color: '#059669' },
         { id: 'udl',     title: '6. When to Use AI',        color: '#db2777' },
-        { id: 'ref',     title: '7. Quick Reference',       color: '#0f766e' }
+        { id: 'ref',     title: '7. Quick Reference',       color: '#0f766e' },
+        { id: 'inquiry', title: '8. Inquiry: Trust Calibration', color: '#14b8a6' }
       ];
       // Per-section check-for-understanding. State is kept in toolData so
       // completions persist and correct answers aren't re-awarded. We key the
@@ -6053,7 +6054,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         if (section === 'spotter') return h(HallucinationSpotter);
         if (section === 'udl')     return h(UDLRubric);
         if (section === 'ref')     return h(QuickReference);
+        if (section === 'inquiry') return h(TrustCalibrationInquiry);
         return renderHome();
+      }
+
+      function TrustCalibrationInquiry() {
+        var iq = d.trustIQ || { taskFamiliarity: 5, stakes: 5, sourceQuality: 5, modelConfidence: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd('trustIQ', Object.assign({}, iq, patch)); }
+        function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+        // trust budget: low familiarity + high stakes = need higher source-quality bar
+        var risk = (10 - iq.taskFamiliarity) * 0.3 + iq.stakes * 0.5;
+        var trustThreshold = Math.max(0, Math.min(100, 30 + risk * 6 + (100 - iq.modelConfidence) * 0.3));
+        var trustGap = iq.sourceQuality * 10 - trustThreshold;
+        var state = trustGap > 30 ? 'safetouse' : trustGap > 10 ? 'verifyone' : trustGap > -10 ? 'verifymany' : trustGap > -30 ? 'risky' : 'dontuse';
+        var sm = ({
+          safetouse: { label: 'Safe to use', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Low stakes, high familiarity, high source quality. Spot-check still good practice, but you can trust the output.' },
+          verifyone: { label: 'Verify one source', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Trust most of it, but check one or two key claims against an authoritative source before acting.' },
+          verifymany: { label: 'Verify multiple', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Treat as draft. Every concrete claim (number, name, quote) needs independent verification.' },
+          risky: { label: 'Risky', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'High stakes or low source quality. Use only for brainstorming; do not present any AI output as a final answer.' },
+          dontuse: { label: "Don't use for this", color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Medical diagnosis, legal advice, citing primary sources you cannot verify — wrong tool for the job. Use a human expert or authoritative source.' }
+        })[state];
+        return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+          h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Trust Calibration — How Much Should I Trust This Output?'),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set task familiarity, stakes, source quality, and stated model confidence. Predict where the trust threshold lands. No score, no reveal.'),
+          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · gap ' + trustGap.toFixed(0)),
+          h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+            h('rect', { x: 30, y: 28, width: 260, height: 26, fill: '#0f172a', stroke: '#1e293b' }),
+            h('rect', { x: 30, y: 28, width: Math.max(0, Math.min(260, trustThreshold * 2.6)), height: 26, fill: '#f87171', opacity: 0.5 }),
+            h('rect', { x: 30, y: 28, width: Math.max(0, Math.min(260, iq.sourceQuality * 26)), height: 26, fill: sm.color, opacity: 0.85 }),
+            h('text', { x: 160, y: 46, fill: '#fff', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, 'source quality ' + (iq.sourceQuality * 10).toFixed(0) + ' vs threshold ' + trustThreshold.toFixed(0)),
+            h('text', { x: 30, y: 22, fill: '#94a3b8', fontSize: 9 }, '0'),
+            h('text', { x: 290, y: 22, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, '100'),
+            h('text', { x: 160, y: 70, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'green > red = safer to use')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Your familiarity (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.taskFamiliarity)),
+              h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.taskFamiliarity, onChange: function(e) { setKey('taskFamiliarity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            ),
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Stakes (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.stakes)),
+              h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.stakes, onChange: function(e) { setKey('stakes', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            ),
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Source quality (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.sourceQuality)),
+              h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.sourceQuality, onChange: function(e) { setKey('sourceQuality', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            ),
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Model confidence (%)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.modelConfidence)),
+              h('input', { type: 'range', min: 0, max: 100, step: 5, value: iq.modelConfidence, onChange: function(e) { setKey('modelConfidence', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            )
+          ),
+          h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+            h('button', { onClick: function() {
+              var t = new Date().toISOString().slice(11, 19);
+              setIQ({ log: iq.log.concat([{ t: t, f: iq.taskFamiliarity, s: iq.stakes, sq: iq.sourceQuality, mc: iq.modelConfidence, gap: trustGap.toFixed(0), state: sm.label }]) });
+            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this calibration'),
+            h('button', { onClick: function() { setIQ({ taskFamiliarity: 5, stakes: 5, sourceQuality: 5, modelConfidence: 50 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+          ),
+          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+            iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · fam' + e.f + ' stk' + e.s + ' sq' + e.sq + ' mc' + e.mc + ' → gap ' + e.gap); })
+          ),
+          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which slider should weigh MOST in the threshold? Does stated confidence even belong here?)'),
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., stakes should dominate everything else — confidently wrong on low stakes < uncertainly right on high stakes...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+            h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+            h('ul', { style: { margin: 0, paddingLeft: 16 } },
+              h('li', null, 'Why does YOUR familiarity matter? What does the model not know that you might?'),
+              h('li', null, 'When LLMs report 95% confidence, what does that actually mean? Are they calibrated?'),
+              h('li', null, 'When should you NEVER use an LLM, regardless of source quality?'),
+              h('li', null, 'How would your trust threshold differ for a math proof vs a creative essay vs a citation?')
+            )
+          ),
+          h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+            h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+            h('span', null, 'I can explain why this combination yields this trust state.')
+          ),
+          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Trust formula is a heuristic, not a published framework. LLMs are NOT well-calibrated — stated confidence often diverges from accuracy. Always verify high-stakes outputs against authoritative sources.')
+        );
       }
       try {
         return h('div', { style: { position: 'relative' } },

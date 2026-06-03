@@ -903,7 +903,8 @@ window.StemLab = window.StemLab || {
            { id: 'glossary',      icon: '\uD83D\uDCD6', label: 'Glossary' },
            { id: 'standards',     icon: '\uD83D\uDCDC', label: 'Standards' },
            { id: 'library',       icon: '\uD83D\uDCDA', label: 'Library' },
-           { id: 'teacher',       icon: '\uD83D\uDC69\u200D\uD83C\uDFEB', label: 'Teacher' }
+           { id: 'teacher',       icon: '\uD83D\uDC69\u200D\uD83C\uDFEB', label: 'Teacher' },
+           { id: 'inquiry',       icon: '\uD83D\uDD2C', label: 'Math Inquiry' }
           ].map(function(m) {
             return h('button', { 'aria-label': 'Switch to ' + m.label + ' mode',
               key: m.id, onClick: function() { switchMode(m.id); },
@@ -3239,6 +3240,87 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-slate-50 rounded-lg p-3 border border-slate-200 text-xs text-slate-700' },
             '💡 The library lives in your browser. Use ', h('b', null, 'Export JSON'), ' to back it up or share saved constructions across devices. ',
             'Teachers: pre-save a sequence of "look at this" examples to walk a small group through.'
+          )
+        );
+      }
+
+      // ══ MATH INQUIRY widget (H7b'') ══
+      if (manipMode === 'inquiry') {
+        var iq = _m.mathInquiry || { gradeLevel: 4, abstractness: 3, scaffoldDensity: 5, errorTolerance: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var setIQ = function(patch) { upd({ mathInquiry: Object.assign({}, iq, patch) }); };
+        var setKey = function(k, v) { var p = {}; p[k] = v; setIQ(p); };
+        var gradeAbstractMatch = Math.abs(iq.gradeLevel - iq.abstractness * 2) < 2 ? 'aligned' : 'mismatched';
+        var loadIndex = (iq.abstractness * 1.5) - (iq.scaffoldDensity * 0.6) - (iq.errorTolerance * 0.4) + (10 - iq.gradeLevel) * 0.3;
+        var state = gradeAbstractMatch === 'mismatched' ? 'mismatch' : loadIndex < 2 ? 'sandbox' : loadIndex < 4 ? 'productive' : loadIndex < 7 ? 'stretching' : 'overload';
+        var sm = ({
+          mismatch: { label: 'Grade-abstractness mismatch', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Picked abstractness is far from grade-typical (e.g., K students with abstract algebra). Students will be lost or bored.' },
+          sandbox: { label: 'Sandbox / play', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Low cognitive load. Heavy scaffolding + concrete tools = exploration-friendly. Good for first exposure.' },
+          productive: { label: 'Productive struggle', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Sweet spot. Challenging enough to require thought; scaffolded enough to make progress. The growth zone.' },
+          stretching: { label: 'Stretching', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Approaching the upper bound of productive challenge. Risk of frustration without teacher proximity.' },
+          overload: { label: 'Cognitive overload', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Too abstract, too little scaffold, too little tolerance. Students freeze, give up, or develop math anxiety.' }
+        })[state];
+        return h('div', { className: 'p-4' },
+          h('div', { className: 'flex items-center gap-3 mb-3' },
+            ArrowLeft && h('button', { onClick: function() { switchMode(_m.lastMode || 'blocks'); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg' }, h(ArrowLeft, { size: 18 })),
+            h('div', null, h('h3', { className: 'text-base font-bold text-slate-800' }, '🔬 Math Inquiry — Pick the Productive-Struggle Zone'), h('p', { className: 'text-xs text-slate-600' }, 'No right answer. Tune four dials. Predict where you land.'))
+          ),
+          h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · load index ' + loadIndex.toFixed(1)),
+            h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+            h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+              h('rect', { x: 30, y: 30, width: 260, height: 26, fill: '#0f172a', stroke: '#1e293b' }),
+              h('rect', { x: 30 + Math.max(0, Math.min(220, 60)), y: 30, width: 60, height: 26, fill: '#4ade80', opacity: 0.4 }),
+              h('text', { x: 120, y: 22, fill: '#4ade80', fontSize: 9, textAnchor: 'middle' }, 'sweet spot'),
+              h('circle', { cx: 30 + Math.max(0, Math.min(260, (loadIndex + 2) * 20)), cy: 43, r: 6, fill: sm.color, stroke: '#fff', strokeWidth: 1.5 }),
+              h('text', { x: 30, y: 72, fill: '#94a3b8', fontSize: 9 }, 'too easy'),
+              h('text', { x: 290, y: 72, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, 'too hard')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+              h('label', { style: { fontSize: 11 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Grade level (K=0 to 8)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.gradeLevel)),
+                h('input', { type: 'range', min: 0, max: 8, step: 1, value: iq.gradeLevel, onChange: function(e) { setKey('gradeLevel', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', { style: { fontSize: 11 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Abstractness (concrete 1 → symbolic 5)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.abstractness)),
+                h('input', { type: 'range', min: 1, max: 5, step: 1, value: iq.abstractness, onChange: function(e) { setKey('abstractness', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', { style: { fontSize: 11 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Scaffold density (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.scaffoldDensity)),
+                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.scaffoldDensity, onChange: function(e) { setKey('scaffoldDensity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', { style: { fontSize: 11 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Error tolerance (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.errorTolerance)),
+                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.errorTolerance, onChange: function(e) { setKey('errorTolerance', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              )
+            ),
+            h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+              h('button', { onClick: function() {
+                var t = new Date().toISOString().slice(11, 19);
+                setIQ({ log: iq.log.concat([{ t: t, g: iq.gradeLevel, a: iq.abstractness, sc: iq.scaffoldDensity, et: iq.errorTolerance, idx: loadIndex.toFixed(1), state: sm.label }]) });
+              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this lesson design'),
+              h('button', { onClick: function() { setIQ({ gradeLevel: 4, abstractness: 3, scaffoldDensity: 5, errorTolerance: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+            ),
+            iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · g' + e.g + ' abs' + e.a + ' sc' + e.sc + ' et' + e.et + ' → idx ' + e.idx); })
+            ),
+            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which slider should a beginning teacher worry about most? Why?)'),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., abstractness mismatch causes the most damage because students can\'t see what they\'re even working on...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+            iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('ul', { style: { margin: 0, paddingLeft: 16 } },
+                h('li', null, 'What does "productive struggle" look like vs "frustration"? How would you tell the difference in a classroom?'),
+                h('li', null, 'Bruner\'s CPA: Concrete → Pictorial → Abstract. Map your abstractness slider to this progression.'),
+                h('li', null, 'High error tolerance means more room to be wrong. When is that helpful and when is it cruel?'),
+                h('li', null, 'Why does the same task feel different in K vs 5th grade vs 8th grade?')
+              )
+            ),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+              h('span', null, 'I can explain why this lesson design lands in this state.')
+            ),
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Load index is a heuristic; real lesson design depends on prior knowledge, motivation, peer dynamics, and many more dimensions than four.')
           )
         );
       }

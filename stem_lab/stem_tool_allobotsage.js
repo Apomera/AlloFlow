@@ -2183,6 +2183,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         );
       }
 
+      // ══ AI-WORKLOAD INQUIRY widget (H7b'') ══
+      if (phase === 'inquiry') {
+        var iq = d.aiInquiry || { aiAssist: 50, learnerEffort: 50, novelty: 5, errorCost: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var setIQ = function(patch) { updKey('aiInquiry', Object.assign({}, iq, patch)); };
+        var setKey = function(k, v) { var p = {}; p[k] = v; setIQ(p); };
+        // learning gain = effort × novelty, dampened by over-assist
+        var overAssist = Math.max(0, iq.aiAssist + iq.learnerEffort - 100);
+        var learnGain = (iq.learnerEffort / 100) * iq.novelty * 1.2 - (overAssist / 100) * 3;
+        var efficiency = (iq.aiAssist / 100) * iq.novelty * 0.8 + (100 - iq.aiAssist) / 100 * 0.2;
+        var risk = iq.errorCost * (1 - iq.learnerEffort / 100) * (iq.aiAssist / 100);
+        var state = learnGain > 5 && risk < 3 ? 'ideal' : learnGain > 3 && risk < 5 ? 'productive' : risk > 6 ? 'risky' : learnGain < 1 ? 'shortcircuit' : 'mixed';
+        var sm = ({
+          ideal: { label: 'Ideal AI partnership', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'AI scaffolds while learner does most of the cognitive work. Genuine learning + reasonable safety.' },
+          productive: { label: 'Productive', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Real learning happens with AI assist. Trade-offs balanced.' },
+          mixed: { label: 'Mixed signals', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Some learning, some risk. Watch for over-reliance creep.' },
+          risky: { label: 'Risky', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'High error cost + low learner effort + AI in the loop = brittle outputs that look correct but fail in production.' },
+          shortcircuit: { label: 'Learning short-circuit', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'AI doing all the work. Learner gets answer but no understanding. Skills atrophy or never develop.' }
+        })[state];
+        return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5', maxWidth: 720, margin: '0 auto' } },
+          h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 AI Workload Inquiry — Who Is Doing The Thinking?'),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set AI assistance level, learner effort, task novelty, and error cost. Predict the learning state. No score, no reveal.'),
+          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · learn ' + learnGain.toFixed(1) + ' · risk ' + risk.toFixed(1)),
+          h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+          h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+            h('line', { x1: 160, y1: 10, x2: 160, y2: 110, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
+            h('line', { x1: 30, y1: 60, x2: 290, y2: 60, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
+            h('text', { x: 160, y: 8, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, 'high learning'),
+            h('text', { x: 160, y: 118, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, 'low learning'),
+            h('text', { x: 30, y: 64, fill: '#94a3b8', fontSize: 8 }, 'safe'),
+            h('text', { x: 290, y: 64, fill: '#94a3b8', fontSize: 8, textAnchor: 'end' }, 'risky'),
+            h('circle', { cx: 30 + Math.min(260, Math.max(0, risk * 20 + 130)), cy: 60 - Math.min(50, Math.max(-50, learnGain * 5)), r: 6, fill: sm.color, stroke: '#fff', strokeWidth: 1.5 }),
+            h('text', { x: 160, y: 78, fill: sm.color, fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, sm.label)
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'AI assistance (%)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.aiAssist)),
+              h('input', { type: 'range', min: 0, max: 100, step: 5, value: iq.aiAssist, onChange: function(e) { setKey('aiAssist', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            ),
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Learner effort (%)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.learnerEffort)),
+              h('input', { type: 'range', min: 0, max: 100, step: 5, value: iq.learnerEffort, onChange: function(e) { setKey('learnerEffort', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            ),
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Task novelty (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.novelty)),
+              h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.novelty, onChange: function(e) { setKey('novelty', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            ),
+            h('label', { style: { fontSize: 11 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Error cost (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.errorCost)),
+              h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.errorCost, onChange: function(e) { setKey('errorCost', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+            )
+          ),
+          h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+            h('button', { onClick: function() {
+              var t = new Date().toISOString().slice(11, 19);
+              setIQ({ log: iq.log.concat([{ t: t, ai: iq.aiAssist, le: iq.learnerEffort, nov: iq.novelty, ec: iq.errorCost, lg: learnGain.toFixed(1), rk: risk.toFixed(1), state: sm.label }]) });
+            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this workload split'),
+            h('button', { onClick: function() { setIQ({ aiAssist: 50, learnerEffort: 50, novelty: 5, errorCost: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset'),
+            h('button', { onClick: function() { updKey('phase', 'hub'); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, '← Hub')
+          ),
+          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+            iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · ai' + e.ai + ' le' + e.le + ' nov' + e.nov + ' ec' + e.ec + ' → learn ' + e.lg + ' risk ' + e.rk); })
+          ),
+          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (when does AI assist help vs hurt? Where would you draw the line?)'),
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., on high-novelty tasks AI is a brainstorm partner; on routine work it short-circuits skill...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+            h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+            h('ul', { style: { margin: 0, paddingLeft: 16 } },
+              h('li', null, 'AI assist + learner effort sums to > 100 — what does over-assist do to learning gain?'),
+              h('li', null, 'Why does novelty matter for both learning AND risk?'),
+              h('li', null, 'When is AI doing 90% of the work actually the right call? (Hint: error cost low, novelty low, time-pressured production.)'),
+              h('li', null, 'How would you design a class where AI is allowed but doesn\'t short-circuit learning?')
+            )
+          ),
+          h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+            h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+            h('span', null, 'I can explain why this AI/effort/novelty/cost combo yields this state.')
+          ),
+          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. "Learning gain" is a heuristic; real measures need pre/post assessment, transfer tasks, retention checks. AI assist effects vary by domain (creative vs technical vs reflective).')
+        );
+      }
+
       // ─────────────────────────────────────────────────
       // ── PHASE: LOADOUT
       // ─────────────────────────────────────────────────

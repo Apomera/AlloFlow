@@ -1923,6 +1923,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: { background: 'rgba(134,239,172,0.10)', border: '1px solid #86efac', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', color: '#86efac', fontSize: 12, fontWeight: 700 } }, '🧭 Take the tour')
         ),
 
+        // ══ STEWARDSHIP INQUIRY widget (H7b'') ══
+        (function() {
+          var iq = hub.stewIQ || { investment: 50, timeHorizon: 10, communityBuyin: 5, ecologicalComplex: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { setHub({ stewIQ: Object.assign({}, iq, patch) }); }
+          function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+          // outcome heuristics
+          var successOdds = (iq.investment / 100) * 0.3 + (Math.min(50, iq.timeHorizon) / 50) * 0.35 + (iq.communityBuyin / 10) * 0.25 - (iq.ecologicalComplex / 10) * 0.15;
+          successOdds = Math.max(0, Math.min(1, successOdds + 0.2));
+          var roi = (iq.timeHorizon * iq.communityBuyin * 0.05) - (iq.investment / 1000);
+          var state = successOdds > 0.75 ? 'flourishing' : successOdds > 0.55 ? 'positive' : successOdds > 0.35 ? 'tenuous' : successOdds > 0.15 ? 'struggling' : 'failing';
+          var sm = ({
+            flourishing: { label: 'Flourishing', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'High investment, long horizon, strong community — landscape recovers and self-sustains.' },
+            positive: { label: 'Positive trajectory', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Real progress visible. Continued effort builds on early wins.' },
+            tenuous: { label: 'Tenuous', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Mixed results. One bad season or funding cut could reverse gains.' },
+            struggling: { label: 'Struggling', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Low investment or weak community engagement. Effort visible but ecosystem still declining.' },
+            failing: { label: 'Failing', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Too little, too late, or wrong approach. Tipping point passed or imminent.' }
+          })[state];
+          return h('div', { style: { padding: 14, marginBottom: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+            h('h4', { style: { margin: '0 0 4px', fontSize: 13, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Stewardship Inquiry — Predict the Trajectory'),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Pick a hypothetical project setting. Predict how investment, time, community, and ecological complexity combine. No score, no reveal.'),
+            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · success odds ' + (successOdds * 100).toFixed(0) + '% · ROI proxy ' + roi.toFixed(2)),
+            h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+            h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+              h('rect', { x: 30, y: 30, width: 260, height: 60, fill: '#0f172a', stroke: '#1e293b' }),
+              h('rect', { x: 30, y: 30, width: successOdds * 260, height: 60, fill: sm.color, opacity: 0.7 }),
+              h('text', { x: 160, y: 65, fill: '#fff', fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, 'success ' + (successOdds * 100).toFixed(0) + '%'),
+              h('text', { x: 30, y: 24, fill: '#94a3b8', fontSize: 9 }, 'failing'),
+              h('text', { x: 290, y: 24, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, 'flourishing'),
+              h('text', { x: 160, y: 105, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'ROI proxy = ' + roi.toFixed(2) + ' (time × community / investment)')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+              h('label', { style: { fontSize: 11 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Investment ($K)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.investment)),
+                h('input', { type: 'range', min: 1, max: 500, step: 5, value: iq.investment, onChange: function(e) { setKey('investment', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', { style: { fontSize: 11 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Time horizon (yr)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.timeHorizon)),
+                h('input', { type: 'range', min: 1, max: 50, step: 1, value: iq.timeHorizon, onChange: function(e) { setKey('timeHorizon', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', { style: { fontSize: 11 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Community buy-in'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.communityBuyin)),
+                h('input', { type: 'range', min: 0, max: 10, step: 1, value: iq.communityBuyin, onChange: function(e) { setKey('communityBuyin', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              ),
+              h('label', { style: { fontSize: 11 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Ecological complexity'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.ecologicalComplex)),
+                h('input', { type: 'range', min: 0, max: 10, step: 1, value: iq.ecologicalComplex, onChange: function(e) { setKey('ecologicalComplex', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              )
+            ),
+            h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+              h('button', { onClick: function() {
+                var t = new Date().toISOString().slice(11, 19);
+                setIQ({ log: iq.log.concat([{ t: t, inv: iq.investment, hor: iq.timeHorizon, comm: iq.communityBuyin, ec: iq.ecologicalComplex, odds: (successOdds * 100).toFixed(0), state: sm.label }]) });
+              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this project'),
+              h('button', { onClick: function() { setIQ({ investment: 50, timeHorizon: 10, communityBuyin: 5, ecologicalComplex: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+            ),
+            iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · $' + e.inv + 'K · ' + e.hor + 'yr · comm ' + e.comm + ' · eco ' + e.ec + ' → ' + e.odds + '%'); })
+            ),
+            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which campaign would benefit most from MORE community buy-in vs MORE investment?)'),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., Yellowstone wolves needed 50 years of community shift before reintroduction was politically possible — money alone wouldn\'t have worked...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+            iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('ul', { style: { margin: 0, paddingLeft: 16 } },
+                h('li', null, 'Why does ecological COMPLEXITY decrease success odds — what intervention dynamics does that capture?'),
+                h('li', null, 'Time horizon × community buy-in dominates the ROI proxy. Is that realistic? When is it wrong?'),
+                h('li', null, 'A $500K, 1-year intervention with zero community buy-in — what trajectory? Why?'),
+                h('li', null, 'When does this model fail badly? (Hint: discrete tipping points, irreversibility.)')
+              )
+            ),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+              h('span', null, 'I can explain why this project profile yields this stewardship trajectory.')
+            ),
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Linear scoring is pedagogical only; real stewardship has tipping points, lag effects, and qualitative shifts that don\'t fit a single index.')
+          );
+        })(),
+
         // Aggregate progress strip
         h('div', {
           style: {
