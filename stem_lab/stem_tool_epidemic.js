@@ -3329,6 +3329,46 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-lg font-black mb-1', style: { color: regimeMeta.color } }, regimeMeta.label),
                 h('div', { className: 'text-[11px] text-slate-700' }, regimeMeta.desc)
               ),
+              // Live SIR-curve time-series (Cycle 19 — H8 test). Unannotated by design —
+              // shows DYNAMICS that produce the regime, not a number to optimize.
+              (function() {
+                // Simple deterministic SIR forward-simulation. beta = rEff/period, gamma = 1/period.
+                var period = 10;
+                var beta = rEff / period;
+                var gamma = 1 / period;
+                var steps = 100;
+                var dt = 1.0;
+                var S = 0.99, I = 0.01, R = 0;
+                var sPts = [], iPts = [], rPts = [];
+                for (var t = 0; t <= steps; t++) {
+                  sPts.push(S); iPts.push(I); rPts.push(R);
+                  var dS = -beta * S * I * dt;
+                  var dI = (beta * S * I - gamma * I) * dt;
+                  var dR = gamma * I * dt;
+                  S = Math.max(0, S + dS); I = Math.max(0, I + dI); R = Math.min(1, R + dR);
+                }
+                function toPath(arr) {
+                  return 'M ' + arr.map(function(v, i) { return (10 + (i / steps) * 300).toFixed(1) + ',' + (90 - v * 80).toFixed(1); }).join(' L ');
+                }
+                return h('div', { className: 'mb-3 rounded border border-slate-200 bg-slate-50 p-2' },
+                  h('svg', { viewBox: '0 0 320 105', className: 'w-full h-28 block' },
+                    // Baseline
+                    h('line', { x1: 10, y1: 90, x2: 310, y2: 90, stroke: '#cbd5e1', strokeWidth: 0.5 }),
+                    h('line', { x1: 10, y1: 10, x2: 10, y2: 90, stroke: '#cbd5e1', strokeWidth: 0.5 }),
+                    // S, I, R curves
+                    h('path', { d: toPath(sPts), stroke: '#0ea5e9', strokeWidth: 1.5, fill: 'none' }),
+                    h('path', { d: toPath(iPts), stroke: '#dc2626', strokeWidth: 2, fill: 'none' }),
+                    h('path', { d: toPath(rPts), stroke: '#10b981', strokeWidth: 1.5, fill: 'none' }),
+                    // Axis labels — minimal, no numeric values
+                    h('text', { x: 14, y: 18, fontSize: 9, fill: '#0ea5e9', fontWeight: 'bold' }, 'S'),
+                    h('text', { x: 14, y: 30, fontSize: 9, fill: '#dc2626', fontWeight: 'bold' }, 'I'),
+                    h('text', { x: 14, y: 42, fontSize: 9, fill: '#10b981', fontWeight: 'bold' }, 'R'),
+                    h('text', { x: 160, y: 102, textAnchor: 'middle', fontSize: 9, fill: '#64748b' }, 'time →')
+                  ),
+                  h('div', { className: 'text-[10px] italic text-slate-500 text-center' },
+                    'SIR trajectories (Susceptible / Infected / Recovered). Axes unlabeled by design — focus on the shape, not the number.')
+                );
+              })(),
               // 3 sliders
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
                 [
@@ -3381,14 +3421,14 @@ window.StemLab = window.StemLab || {
                   className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300' },
                   '🤔 I\'m stuck — show me questions to think about (no answers)'),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
-                  h('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open questions — investigate by manipulating:'),
+                  h('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open prompts — investigate by manipulating:'),
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, 'Set transmissibility to 5 (high). Can you keep the regime contained using only intervention adoption? At what level?'),
-                    h('li', null, 'A real pandemic has interventions usually 30-50% adoption. Above what R₀ does even strong intervention fail?'),
-                    h('li', null, 'Log 4-5 contained observations. Look at the R_eff column. Is the boundary always at the same R_eff value? Why might that be?'),
-                    h('li', null, 'Try contact=20, intervention=0. Then contact=80, intervention=70. Same regime? Same R_eff? What does this tell you about the interaction?'),
-                    h('li', null, 'In real epidemiology the threshold value is R_eff = 1. Why exactly 1 and not 0 or 2?')),
-                  h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, 'No answers will be revealed. Investigate.'))
+                    h('li', null, 'Hold two sliders steady. Move the third. Watch what happens. Repeat with each.'),
+                    h('li', null, 'Log observations from each of the three regimes. What patterns do you notice in the table?'),
+                    h('li', null, 'Try to find two completely different slider settings that produce the same regime. What do they share?'),
+                    h('li', null, 'Notice where a small slider change flips the regime versus where large changes do nothing. What might explain the difference?'),
+                    h('li', null, 'Look up what R_eff means in real epidemiology. Compare it to what you observe here.')),
+                  h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, 'No answers, no specific values, no directions. Investigate.'))
               ),
               h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                 h('div', { className: 'flex items-center gap-2 mb-2' },
