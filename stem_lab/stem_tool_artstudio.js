@@ -1412,7 +1412,7 @@ const d = labToolData.artStudio || {};
 
             React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-400", role: 'tablist', 'aria-label': 'Art Studio sections' },
 
-              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: 'Color Wheel' }, { id: 'mixer', icon: '\uD83E\uDDEA', label: 'Color Mixer' }, { id: 'pixel', icon: '\uD83D\uDDBC', label: 'Pixel Art' }, { id: 'symmetry', icon: '\u2728', label: 'Symmetry' }, { id: 'spirograph', icon: '\uD83C\uDF00', label: 'Spirograph' }, { id: 'generative', icon: '\uD83C\uDF86', label: 'Generative' }, { id: 'spinArt', icon: '\uD83C\uDF00', label: 'Spin Art' }, { id: 'stringArt', icon: '\uD83D\uDD78', label: 'String Art' }, { id: 'opArt', icon: '\uD83D\uDC41', label: 'Op Art' }, { id: 'tessellation', icon: '\uD83D\uDD37', label: 'Tessellation' }, { id: 'fractal', icon: '\uD83D\uDD2E', label: 'Fractals' }, { id: 'gradient', icon: '\uD83C\uDF08', label: 'Gradient' }, { id: 'stereogram', icon: '\uD83D\uDC53', label: 'Stereogram' }, { id: 'life', icon: '\uD83E\uDDEC', label: 'Game of Life' }, { id: 'contrast', icon: '\u267F', label: 'Contrast' }].map(function (tb) {
+              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: 'Color Wheel' }, { id: 'mixer', icon: '\uD83E\uDDEA', label: 'Color Mixer' }, { id: 'pixel', icon: '\uD83D\uDDBC', label: 'Pixel Art' }, { id: 'symmetry', icon: '\u2728', label: 'Symmetry' }, { id: 'spirograph', icon: '\uD83C\uDF00', label: 'Spirograph' }, { id: 'generative', icon: '\uD83C\uDF86', label: 'Generative' }, { id: 'spinArt', icon: '\uD83C\uDF00', label: 'Spin Art' }, { id: 'stringArt', icon: '\uD83D\uDD78', label: 'String Art' }, { id: 'opArt', icon: '\uD83D\uDC41', label: 'Op Art' }, { id: 'tessellation', icon: '\uD83D\uDD37', label: 'Tessellation' }, { id: 'fractal', icon: '\uD83D\uDD2E', label: 'Fractals' }, { id: 'gradient', icon: '\uD83C\uDF08', label: 'Gradient' }, { id: 'stereogram', icon: '\uD83D\uDC53', label: 'Stereogram' }, { id: 'life', icon: '\uD83E\uDDEC', label: 'Game of Life' }, { id: 'contrast', icon: '\u267F', label: 'Contrast' }, { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: 'Harmony' }].map(function (tb) {
 
                 return React.createElement("button", { "aria-label": 'Switch to ' + tb.label + ' tab', key: tb.id, onClick: function () { upd('tab', tb.id); if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'tabSwitch', 'Switched to ' + tb.label + ' canvas tool.', { debounce: 500 }); }, role: 'tab', 'aria-selected': tab === tb.id, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-600 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
 
@@ -1816,6 +1816,144 @@ const d = labToolData.artStudio || {};
               )
 
             ),
+
+            // === H7b'' RICH inquiry widget: color harmony ===
+            tab === 'harmonyHunt' && (function() {
+              var iq = d._harmonyHunt || { baseHue: 200, satBlend: 70, litVar: 50, rotation: 0, paletteSize: 6, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('_harmonyHunt', Object.assign({}, iq, patch)); }
+              // Generate harmony palette based on base hue + offset
+              var palette = [];
+              var harmonyType;
+              for (var i = 0; i < iq.paletteSize; i++) {
+                var hue = (iq.baseHue + (360 / iq.paletteSize) * i + iq.rotation) % 360;
+                var sat = 50 + (iq.satBlend / 100) * 40;
+                var lit = 40 + (iq.litVar / 100) * 30;
+                palette.push({ hue: hue, sat: sat, lit: lit, css: 'hsl(' + hue + ',' + sat + '%,' + lit + '%)' });
+              }
+              // Classify harmony type by palette spread
+              var hueSpread = 360 / iq.paletteSize;
+              if (iq.paletteSize === 2) harmonyType = 'complementary';
+              else if (iq.paletteSize === 3) harmonyType = 'triadic';
+              else if (iq.paletteSize === 4) harmonyType = 'tetradic';
+              else if (iq.paletteSize <= 6 && iq.satBlend < 30) harmonyType = 'analogous';
+              else harmonyType = 'rainbow';
+              var hMeta = {
+                complementary: { label: '⚫⚪ Complementary (2 opposites)', desc: 'Maximum contrast. Pop art, brand accents.' },
+                triadic:       { label: '🔺 Triadic (3 equidistant)', desc: 'Vibrant but balanced. Childrens books, cartoons.' },
+                tetradic:      { label: '◇ Tetradic (4 corners)', desc: 'Rich palette with two opposing pairs.' },
+                analogous:     { label: '🌅 Analogous (low saturation neighbors)', desc: 'Calm, harmonious — landscape painting.' },
+                rainbow:       { label: '🌈 Rainbow (many vivid hues)', desc: 'Energetic, playful — childrens design.' }
+              }[harmonyType];
+              function logObs() {
+                setIQ({ log: (iq.log || []).concat([{ h: iq.baseHue, s: iq.satBlend, l: iq.litVar, r: iq.rotation, n: iq.paletteSize, t: harmonyType }]).slice(-8) });
+              }
+              return React.createElement('div', { className: 'space-y-3' },
+                React.createElement('div', { className: 'p-4 rounded-xl bg-white border border-pink-300 shadow-sm space-y-3' },
+                  React.createElement('h3', { className: 'text-sm font-black text-pink-700' }, '🎶 Color harmony discovery'),
+                  React.createElement('p', { className: 'text-[12px] text-slate-700 leading-relaxed' },
+                    'Adjust base hue, saturation, lightness variation, rotation, and palette size. Widget renders a live harmony palette and classifies it into one of 5 discrete harmony types. No score, no reveal — sweep and notice which combinations produce which harmonies.'),
+                  // Classification badge
+                  React.createElement('div', { className: 'p-3 rounded-lg text-center', style: { background: '#f5f3ff', border: '2px solid #c4b5fd' } },
+                    React.createElement('div', { className: 'text-base font-black text-violet-700' }, hMeta.label),
+                    React.createElement('div', { className: 'text-[11px] text-slate-700 mt-1' }, hMeta.desc)
+                  ),
+                  // SVG harmony wheel visualization
+                  React.createElement('div', { className: 'flex justify-center p-3 bg-slate-50 rounded border border-slate-200' },
+                    React.createElement('svg', { viewBox: '0 0 240 240', className: 'w-64 h-64' },
+                      // Background hue ring (reference)
+                      Array.from({ length: 36 }, function(_, i) {
+                        var hue = i * 10;
+                        var a1 = (hue - 5 - 90) * Math.PI / 180;
+                        var a2 = (hue + 5 - 90) * Math.PI / 180;
+                        var rIn = 95, rOut = 110;
+                        var x1 = 120 + rIn * Math.cos(a1), y1 = 120 + rIn * Math.sin(a1);
+                        var x2 = 120 + rOut * Math.cos(a1), y2 = 120 + rOut * Math.sin(a1);
+                        var x3 = 120 + rOut * Math.cos(a2), y3 = 120 + rOut * Math.sin(a2);
+                        var x4 = 120 + rIn * Math.cos(a2), y4 = 120 + rIn * Math.sin(a2);
+                        return React.createElement('path', { key: 'r' + i, d: 'M ' + x1 + ' ' + y1 + ' L ' + x2 + ' ' + y2 + ' A ' + rOut + ' ' + rOut + ' 0 0 1 ' + x3 + ' ' + y3 + ' L ' + x4 + ' ' + y4 + ' A ' + rIn + ' ' + rIn + ' 0 0 0 ' + x1 + ' ' + y1 + ' Z',
+                          fill: 'hsl(' + hue + ',75%,60%)', opacity: 0.35 });
+                      }),
+                      // Palette markers — show selected harmony positions
+                      palette.map(function(p, i) {
+                        var ang = (p.hue - 90) * Math.PI / 180;
+                        var cx = 120 + 78 * Math.cos(ang);
+                        var cy = 120 + 78 * Math.sin(ang);
+                        return React.createElement('g', { key: 'p' + i },
+                          React.createElement('circle', { cx: cx, cy: cy, r: 18, fill: p.css, stroke: '#1e293b', strokeWidth: 1.5 }),
+                          React.createElement('text', { x: cx, y: cy + 4, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: p.lit > 50 ? '#1e293b' : '#fff' }, (i + 1))
+                        );
+                      }),
+                      // Center label
+                      React.createElement('text', { x: 120, y: 118, textAnchor: 'middle', fontSize: 12, fontWeight: 'bold', fill: '#475569' }, 'base ' + iq.baseHue + '°'),
+                      React.createElement('text', { x: 120, y: 132, textAnchor: 'middle', fontSize: 10, fill: '#64748b' }, harmonyType)
+                    )
+                  ),
+                  // Palette swatches with HSL values
+                  React.createElement('div', { className: 'flex flex-wrap gap-1' },
+                    palette.map(function(p, i) {
+                      return React.createElement('div', { key: 'sw' + i, className: 'flex-1 min-w-[60px] rounded text-center text-[10px] font-mono', style: { background: p.css, color: p.lit > 50 ? '#1e293b' : '#fff', padding: '8px 4px' } },
+                        '#' + (i + 1), React.createElement('div', null, p.hue.toFixed(0) + '°'));
+                    })
+                  ),
+                  // Sliders
+                  React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+                    [{ k: 'baseHue', l: 'Base hue (°)', mn: 0, mx: 359, st: 5 },
+                     { k: 'satBlend', l: 'Saturation blend (%)', mn: 0, mx: 100, st: 5 },
+                     { k: 'litVar', l: 'Lightness variation (%)', mn: 0, mx: 100, st: 5 },
+                     { k: 'rotation', l: 'Rotation (°)', mn: -90, mx: 90, st: 5 },
+                     { k: 'paletteSize', l: 'Palette size', mn: 2, mx: 12, st: 1 }].map(function(s) {
+                      return React.createElement('div', { key: s.k },
+                        React.createElement('label', { htmlFor: 'hh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-pink-700' }, iq[s.k])),
+                        React.createElement('input', { id: 'hh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                          onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                          className: 'w-full', 'aria-label': s.l }));
+                    })
+                  ),
+                  // Log + reset
+                  React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
+                    React.createElement('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                    React.createElement('button', { onClick: function() { setIQ({ baseHue: 200, satBlend: 70, litVar: 50, rotation: 0, paletteSize: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                    (iq.log || []).length > 0 && React.createElement('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                  ),
+                  // Log table
+                  (iq.log || []).length > 0 && React.createElement('div', { className: 'overflow-x-auto' },
+                    React.createElement('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
+                      React.createElement('thead', null, React.createElement('tr', { className: 'bg-slate-100' },
+                        ['base', 'sat', 'lit', 'rot', 'n', 'harmony'].map(function(c, i) { return React.createElement('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                      React.createElement('tbody', null, iq.log.map(function(o, idx) {
+                        return React.createElement('tr', { key: 'lr' + idx },
+                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.h),
+                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.s),
+                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.l),
+                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.r),
+                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.n),
+                          React.createElement('td', { className: 'px-1 border border-slate-200' }, o.t));
+                      }))
+                    )
+                  ),
+                  React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text — no right answer): What makes a palette feel harmonious vs jarring?',
+                    className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                  !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts (no answers)'),
+                  iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                    React.createElement('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open prompts — investigate by manipulating:'),
+                    React.createElement('ul', { className: 'list-disc pl-5 space-y-1' },
+                      React.createElement('ul', { className: 'list-disc pl-3' },
+                        React.createElement('li', null, 'Find the smallest palette that still feels "complete" to you.'),
+                        React.createElement('li', null, 'Real impressionists used analogous palettes. Why might that be?'),
+                        React.createElement('li', null, 'Some color schemes have proper names (complementary, split-complementary, triadic). Look those up and try to reproduce them.'),
+                        React.createElement('li', null, 'High saturation + many colors = busy. Try desaturating with the blend slider — what happens to "harmony"?')))),
+                  React.createElement('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                    React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+                      React.createElement('input', { type: 'checkbox', id: 'hh-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                      React.createElement('label', { htmlFor: 'hh-und', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
+                        'I think I understand color harmony now — let me explain it in my own words')),
+                    iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain in your own words: how do hue spacing, saturation, and palette size determine "harmony"?',
+                      className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 })),
+                  React.createElement('div', { className: 'mt-3 text-[10px] italic text-slate-500' },
+                    'Design note: discrete 5-state harmony marker; SVG wheel shows palette positions; no "good palette" score — by design.')
+                )
+              );
+            })(),
 
             // ═══ SPIROGRAPH TAB ═══
 
