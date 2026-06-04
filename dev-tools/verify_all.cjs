@@ -125,6 +125,12 @@ const checks = [
     informational: true,
   },
   {
+    name: 'Dead-code / fossil audit',
+    cmd: ['node', 'dev-tools/check_dead_modules.cjs', '--strict', '--quiet'],
+    description: 'Unreferenced PascalCase components / cross-file fossils / orphaned modules (informational; allowlist = triage ledger)',
+    informational: true,
+  },
+  {
     name: 'Firebase functions surface',
     cmd: ['node', 'dev-tools/check_firebase_functions.cjs', '--quiet'],
     description: '12 expected Firebase function exports present + well-shaped',

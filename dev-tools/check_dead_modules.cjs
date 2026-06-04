@@ -43,6 +43,7 @@ const eslintScope = require(path.join(MODS, 'eslint-scope'));
 
 const args = process.argv.slice(2);
 const STRICT = args.includes('--strict');
+const QUIET = args.includes('--quiet'); // silent unless something is actionable
 const classArg = (args.find((a) => a.startsWith('--class=')) || '').split('=')[1];
 const wantClass = (c) => !classArg || classArg.toUpperCase() === c;
 
@@ -141,39 +142,45 @@ for (const f of fs.readdirSync(ROOT)) {
 }
 
 // ── report ───────────────────────────────────────────────────────────────────
+const LINES = [];
+const P = (s) => LINES.push(s);
 let nonAllowedDead = 0;
 if (wantClass('A')) {
-  console.log('=== Class A: DEAD COMPONENTS (PascalCase, 0 references) ===');
-  if (!dead.length) console.log('  (none)');
+  P('=== Class A: DEAD COMPONENTS (PascalCase, 0 references) ===');
+  if (!dead.length) P('  (none)');
   dead.sort((a, b) => (a.file === b.file ? a.line - b.line : a.file.localeCompare(b.file))).forEach((d) => {
     const twin = (defsByName[d.name] || []).filter((x) => !(x.file === d.file && x.line === d.line) && x.refs > 0);
     const entry = allowEntry(d.file, d.name);
     if (!entry) nonAllowedDead++;
-    console.log(`  ${d.file}:${d.line}  ${d.name}  [${d.kind}]`
+    P(`  ${d.file}:${d.line}  ${d.name}  [${d.kind}]`
       + (twin.length ? `  ⚑ live twin in ${twin.map((t) => t.file).join(', ')}` : '')
       + (entry ? `\n      ↳ allowlisted: ${entry.reason}` : '  ← NEW (triage: dead? unfinished? intentional?)'));
   });
 }
 if (wantClass('B')) {
-  console.log('\n=== Class B: DUPLICATE COMPONENT NAMES (defined in 2+ files) ===');
+  P('\n=== Class B: DUPLICATE COMPONENT NAMES (defined in 2+ files) ===');
   const dups = Object.entries(defsByName).filter(([, defs]) => new Set(defs.map((d) => d.file)).size > 1);
-  if (!dups.length) console.log('  (none)');
+  if (!dups.length) P('  (none)');
   dups.sort().forEach(([name, defs]) => {
-    console.log(`  ${name}:`);
-    defs.forEach((d) => console.log(`      ${d.file}:${d.line}  (refs=${d.refs}${d.refs === 0 ? ' ← DEAD copy' : ''})`));
+    P(`  ${name}:`);
+    defs.forEach((d) => P(`      ${d.file}:${d.line}  (refs=${d.refs}${d.refs === 0 ? ' ← DEAD copy' : ''})`));
   });
 }
 if (wantClass('C')) {
-  console.log('\n=== Class C: ORPHANED ROOT *_module.js (basename not in AlloFlowANTI.txt or build.js) ===');
-  if (!orphanFiles.length) console.log('  (none)');
-  orphanFiles.sort().forEach((f) => console.log('  ' + f));
+  P('\n=== Class C: ORPHANED ROOT *_module.js (basename not in AlloFlowANTI.txt or build.js) ===');
+  if (!orphanFiles.length) P('  (none)');
+  orphanFiles.sort().forEach((f) => P('  ' + f));
 }
-
-console.log('\n--- parse/scope failures: ' + parseErrors.length + ' ---');
-parseErrors.slice(0, 15).forEach((e) => console.log('  ' + e));
-console.log(`\nSummary: ${dead.length} dead component(s) (${nonAllowedDead} non-allowlisted), `
+P('\n--- parse/scope failures: ' + parseErrors.length + ' ---');
+parseErrors.slice(0, 15).forEach((e) => P('  ' + e));
+P(`\nSummary: ${dead.length} dead component(s) (${nonAllowedDead} non-allowlisted), `
   + `${Object.values(defsByName).filter((d) => new Set(d.map((x) => x.file)).size > 1).length} duplicate name(s), `
   + `${orphanFiles.length} orphaned file(s).`);
+
+// --quiet: stay silent unless something is actionable (a NEW non-allowlisted
+// dead component, or an orphaned file). Everything else is informational.
+const actionable = nonAllowedDead > 0 || orphanFiles.length > 0;
+if (!QUIET || actionable) console.log(LINES.join('\n'));
 
 if (STRICT && nonAllowedDead > 0) process.exit(1);
 process.exit(0);
