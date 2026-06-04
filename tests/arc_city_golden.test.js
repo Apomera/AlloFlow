@@ -168,6 +168,24 @@ describe('Arc City — The Gauntlet (L9): adaptive, integrative capstone (§11)'
     expect(s).toMatch(/every function family/i);
     expect(s).not.toMatch(/node to light is at x undefined/); // no crash on the empty stub
   });
+
+  it('tier-lock semantics: the locked "independent" tier hides the preview and counts as independent', () => {
+    // The render forces tier='independent' in the Gauntlet; these are the pure
+    // facts that makes that a genuine preview-hidden proving ground.
+    expect(arc.previewVisible('independent', false)).toBe(false); // hidden until Fire
+    expect(arc.previewVisible('independent', true)).toBe(true);   // shown after Fire (review the shot)
+    expect(arc.solveIsIndependent('independent')).toBe(true);     // a solve here is "independent"
+  });
+
+  it('restart re-evaluates the order from STANDALONE history only — clone (L9-*) state never skews it', () => {
+    // resetGauntlet() clears 'L9-*' keys then re-runs gauntletOrder; the order must
+    // depend only on real-level progress, so leftover/cleared clone state is inert.
+    const cloneOnly = { 'L9-L3': { solved: true, independent: true }, 'L9-L7': { solved: true } };
+    expect(arc.gauntletOrder(cloneOnly, STAGES)).toEqual(STAGES); // clones ignored → natural order
+    // and a standalone independent solve DOES move its family to the back
+    const real = { L3: { solved: true, independent: true } };
+    expect(arc.gauntletOrder(real, STAGES)[STAGES.length - 1]).toBe('L3');
+  });
 });
 
 describe('Arc City — load-bearing invariants (the math IS the mechanic)', () => {

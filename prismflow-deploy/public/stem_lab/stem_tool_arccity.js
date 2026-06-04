@@ -383,7 +383,7 @@
     { id: 'tilt-threader', label: 'Tilt Threader — passed a tilted slope-gate at the right angle' },
     { id: 'sharp-shooter', label: 'Sharp Shooter — lit a node on the first shot' },
     { id: 'independent', label: 'Independent — solved with the preview hidden' },
-    { id: 'grand-tour', label: 'Grand Tour — completed the Gauntlet, re-lighting a node with every function family' }
+    { id: 'grand-tour', label: 'Grand Tour — re-lit a node with every function family in the Gauntlet' }
   ];
   function badgeLabel(id) { for (var i = 0; i < BADGES.length; i++) { if (BADGES[i].id === id) return BADGES[i].label; } return id; }
   // Returns the NEW badge ids earned by this solve (excludes already-earned).
@@ -475,7 +475,7 @@
   function gauntletWhy(byLevel, stageId) {
     var lv = levelById(stageId); if (!lv) return '';
     var st = familyStatus(byLevel, lv.family);
-    return st === 'used independently' ? 'you’ve used this independently — prove it once more'
+    return st === 'used independently' ? 'you’ve solved this independently — here’s one more'
       : (st === 'used with scaffold' ? 'you’ve used this with the preview on — now try it your way'
         : (st === 'explored' ? 'you’d only explored this — let’s solidify it'
           : 'a family you haven’t solved yet — here’s your shot'));
@@ -726,10 +726,17 @@
         var gauntlet = null;
         var level;
         if (rawLevel.family === 'gauntlet') {
-          var gOrder = (S.gauntlet && S.gauntlet.order && S.gauntlet.order.length) ? S.gauntlet.order : gauntletOrder(byLevel, rawLevel.stages);
           var gIdx = (S.gauntlet && typeof S.gauntlet.idx === 'number') ? S.gauntlet.idx : 0;
-          if (gIdx > gOrder.length - 1) gIdx = gOrder.length - 1;
           if (gIdx < 0) gIdx = 0;
+          // Fresh run (idx 0): RE-EVALUATE the adaptive order against the player's
+          // CURRENT standalone history, so re-entering after progress made elsewhere
+          // reflects it (honours the "adaptive" contract). Mid-run (idx>0): keep the
+          // cached order so stages never reorder under the player. resetGauntlet()
+          // rebuilds then sets idx 0, which this path then re-evaluates.
+          var gOrder = (gIdx > 0 && S.gauntlet && S.gauntlet.order && S.gauntlet.order.length)
+            ? S.gauntlet.order
+            : gauntletOrder(byLevel, rawLevel.stages);
+          if (gIdx > gOrder.length - 1) gIdx = gOrder.length - 1;
           var gStageId = gOrder[gIdx];
           level = Object.assign({}, levelById(gStageId), { id: 'L9-' + gStageId });
           gauntlet = { order: gOrder, idx: gIdx, total: gOrder.length, stageId: gStageId, why: gauntletWhy(byLevel, gStageId) };
@@ -750,7 +757,11 @@
         var ls = (rawLS && rawLS.params) ? rawLS : { params: defaultParams(level), shots: 0, solved: false, misses: 0 };
         var P = Object.assign({}, ls.params);
         var res = classifyShot(level, P);
-        var tier = S.tier || 'practice';
+        // The Gauntlet LOCKS to the independent (preview-hidden-until-Fire) tier so
+        // every stage is solved by prediction — the Grand Tour run is genuinely
+        // preview-hidden, not a fished result. The proactive miss hint (>= HINT_AFTER
+        // misses) still fires, so it stays humane, not punitive.
+        var tier = gauntlet ? 'independent' : (S.tier || 'practice');
         var badges = S.badges || [];
         var showPreview = previewVisible(tier, S.fired);
         var indepSolved = !!(ls && ls.independent);
@@ -801,7 +812,7 @@
           // Grand Tour: only on the final stage's solve — and the gauntlet only
           // advances on a solve, so reaching the last index means every prior
           // family was already re-lit (no false award).
-          if (gauntlet && r.result === 'hit' && gauntlet.idx === gauntlet.total - 1 && newBadges.indexOf('grand-tour') === -1) newBadges.push('grand-tour');
+          if (gauntlet && r.result === 'hit' && gauntlet.idx === gauntlet.total - 1 && badges.indexOf('grand-tour') === -1 && newBadges.indexOf('grand-tour') === -1) newBadges.push('grand-tour');
           setToolData(function (prev) {
             var cur = (prev && prev._arccity) || S;
             var bl = Object.assign({}, cur.byLevel || {});
@@ -834,11 +845,26 @@
           var ni = Math.min(gauntlet.idx + 1, gauntlet.total - 1);
           setToolData(function (prev) {
             var cur = (prev && prev._arccity) || S;
-            var g = (cur.gauntlet && cur.gauntlet.order) ? cur.gauntlet : { order: gauntlet.order, idx: 0 };
-            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { gauntlet: Object.assign({}, g, { idx: ni }), fired: false }) });
+            // Persist the render's CURRENT order (the fresh idx-0 evaluation) so the
+            // rest of the run is frozen to what the player just started on.
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { gauntlet: { order: gauntlet.order, idx: ni }, fired: false }) });
           });
           var nextLv = levelById(gauntlet.order[ni]);
           announceArc(ctx, t('arccity.challenge', 'Challenge') + ' ' + (ni + 1) + ' / ' + gauntlet.total + ': ' + nextLv.title + '. ' + describeBoard(nextLv));
+        }
+        function resetGauntlet() {
+          if (typeof setToolData !== 'function' || !gauntlet) return;
+          setToolData(function (prev) {
+            var cur = (prev && prev._arccity) || S;
+            // Clear only this run's per-stage clone state ('L9-*'); standalone level
+            // progress (which drives the adaptive order) is untouched, so the fresh
+            // order is RE-EVALUATED against the player's current standalone history.
+            var bl = Object.assign({}, cur.byLevel || {});
+            Object.keys(bl).forEach(function (k) { if (k.indexOf('L9-') === 0) delete bl[k]; });
+            var fresh = gauntletOrder(bl, levelById('L9').stages);
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, gauntlet: { order: fresh, idx: 0 }, fired: false }) });
+          });
+          announceArc(ctx, t('arccity.gauntlet_restarted', 'Gauntlet restarted — a fresh run, preview hidden. Predict, then Fire.'));
         }
         function toggleMute() {
           if (typeof setToolData !== 'function') return;
@@ -1190,23 +1216,44 @@
               '📋 ' + t('arccity.copy_summary', 'Copy summary'))));
 
         // ── Gauntlet banner (progress + transparent "why this one") + advance ──
+        var gDoneCount = gauntlet ? gauntlet.order.filter(function (sid) { var st = byLevel['L9-' + sid]; return !!(st && st.solved); }).length : 0;
         var gauntletBanner = gauntlet ? h('div', { key: 'gbanner', role: 'status', style: { marginBottom: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.10)', color: INK } },
-          h('div', { key: 'gt', style: { fontSize: 14, fontWeight: 800 } }, '🏆 ' + t('arccity.gauntlet', 'The Gauntlet') + ' — ' + t('arccity.challenge', 'Challenge') + ' ' + (gauntlet.idx + 1) + '/' + gauntlet.total + ': ' + levelById(gauntlet.stageId).title),
+          // The heading is the SR text-equivalent for the (aria-hidden) dot row, so
+          // it must carry the completion count too — not just the current position.
+          h('div', { key: 'gt', style: { fontSize: 14, fontWeight: 800 } }, '🏆 ' + t('arccity.gauntlet', 'The Gauntlet') + ' — ' + t('arccity.challenge', 'Challenge') + ' ' + (gauntlet.idx + 1) + '/' + gauntlet.total + ' (' + gDoneCount + ' ' + t('arccity.done', 'done') + '): ' + levelById(gauntlet.stageId).title),
           h('div', { key: 'gw', style: { fontSize: 12, opacity: 0.85, marginTop: 2 } }, gauntlet.why),
-          h('div', { key: 'gd', 'aria-hidden': 'true', style: { display: 'flex', gap: 6, marginTop: 8 } }, gauntlet.order.map(function (sid, gi) {
+          // Dots are decorative (aria-hidden — the heading is the SR equivalent). Each
+          // state is distinguished by COLOR + SHAPE so it survives low-vision and
+          // colour-blindness: done = filled green w/ ✓, current = filled teal w/ ring +
+          // larger, to-do = empty w/ outline. Colours are the contrast-tested palette
+          // tokens (NODE_ON/BEAM), not low-opacity tints.
+          h('div', { key: 'gd', 'aria-hidden': 'true', style: { display: 'flex', gap: 6, marginTop: 8, alignItems: 'center' } }, gauntlet.order.map(function (sid, gi) {
             var done = !!(byLevel['L9-' + sid] && byLevel['L9-' + sid].solved);
             var cur = gi === gauntlet.idx;
-            return h('span', { key: 'gdot-' + sid, title: levelById(sid).title, style: { width: 12, height: 12, borderRadius: 999, border: '1px solid ' + (cur ? BEAM : GRID), background: done ? 'rgba(52,211,153,0.85)' : (cur ? 'rgba(34,211,238,0.45)' : 'transparent') } });
+            return h('span', { key: 'gdot-' + sid, title: levelById(sid).title, style: {
+              width: cur ? 16 : 13, height: cur ? 16 : 13, borderRadius: 999,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 9, fontWeight: 800, color: '#ffffff', lineHeight: 1,
+              border: '2px solid ' + (done ? NODE_ON : (cur ? INK : GRID)),
+              background: done ? NODE_ON : (cur ? BEAM : 'transparent')
+            } }, done ? '✓' : '');
           }))) : null;
         var gauntletNav = (gauntlet && ls.solved)
           ? (gauntlet.idx < gauntlet.total - 1
-            ? h('button', { key: 'gnext', type: 'button', onClick: advanceGauntlet, style: { marginTop: 12, padding: '10px 16px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.15)', color: INK, fontSize: 14, fontWeight: 800, cursor: 'pointer' } }, t('arccity.next_challenge', 'Next challenge →'))
-            : h('div', { key: 'gdone', role: 'status', style: { marginTop: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + GRID, background: 'rgba(52,211,153,0.12)', color: INK, fontSize: 14, fontWeight: 800 } }, '🏆 ' + t('arccity.gauntlet_done', 'Gauntlet complete — every function family used to re-light a node!')))
+            ? h('button', { key: 'gnext', type: 'button', onClick: advanceGauntlet, 'aria-label': t('arccity.next_challenge_aria', 'Next challenge — advance to the next function family in the Gauntlet'), style: { marginTop: 12, padding: '10px 16px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.15)', color: INK, fontSize: 14, fontWeight: 800, cursor: 'pointer' } }, t('arccity.next_challenge', 'Next challenge →'))
+            : h('div', { key: 'gdonewrap', style: { marginTop: 12 } },
+              h('div', { key: 'gdone', role: 'status', style: { padding: '10px 12px', borderRadius: 10, border: '1px solid ' + GRID, background: 'rgba(52,211,153,0.12)', color: INK, fontSize: 14, fontWeight: 800 } }, '🏆 ' + t('arccity.gauntlet_done', 'Gauntlet complete — every function family used to re-light a node!')),
+              h('button', { key: 'grestart', type: 'button', onClick: resetGauntlet, 'aria-label': t('arccity.restart_gauntlet_aria', 'Restart the Gauntlet — clear this run and start a fresh adaptive sequence'), style: { marginTop: 10, padding: '9px 14px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'transparent', color: INK, fontSize: 13, fontWeight: 700, cursor: 'pointer' } }, '🔄 ' + t('arccity.restart_gauntlet', 'Restart Gauntlet (fresh adaptive run)'))))
           : null;
+
+        // In the Gauntlet the tier is locked (preview-hidden), so swap the tier
+        // picker for a plain notice explaining the proving-ground rule.
+        var gauntletTierLock = gauntlet ? h('div', { key: 'gtierlock', role: 'note', style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: INK, opacity: 0.85, marginBottom: 12, padding: '6px 10px', borderRadius: 8, border: '1px solid ' + GRID, background: 'rgba(148,163,184,0.10)' } },
+          '🔒 ' + t('arccity.gauntlet_tier_lock', 'The Gauntlet runs preview-hidden — predict where the beam goes, then Fire. A hint appears if you miss a few times.')) : null;
 
         var body = view === 'teacher'
           ? teacherPanel
-          : h('div', { key: 'game' }, levelBar, gauntletBanner, tierBar, svg, controls, gauntletNav, badgeStrip);
+          : h('div', { key: 'game' }, levelBar, gauntletBanner, (gauntlet ? gauntletTierLock : tierBar), svg, controls, gauntletNav, badgeStrip);
 
         return h('div', { id: 'allo-arccity-root', style: { padding: 16, maxWidth: 760, margin: '0 auto', color: INK } },
           header, viewToggle, body);
