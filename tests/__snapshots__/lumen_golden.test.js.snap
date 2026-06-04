@@ -1027,6 +1027,125 @@ exports[`Lumen — histogram chart type (distribution of values) > histogram geo
 }
 `;
 
+exports[`Lumen — multi-series line (categories of ONE measure on a shared axis) > grouped bar: bars per (phase × series) mean, 0-baseline, one slot per series (snapshot) 1`] = `
+{
+  "baseline": 246,
+  "box": {
+    "h": 280,
+    "padB": 34,
+    "padL": 44,
+    "padR": 16,
+    "padT": 16,
+    "w": 480,
+  },
+  "chartType": "groupedBar",
+  "groups": [
+    {
+      "bars": [
+        {
+          "bh": 130.5,
+          "bw": 84.1,
+          "bx": 62.9,
+          "by": 115.5,
+          "colorIdx": 0,
+          "empty": false,
+          "level": "L1",
+          "n": 4,
+          "series": "cold",
+          "small": true,
+          "value": 44,
+        },
+        {
+          "bh": 166.1,
+          "bw": 84.1,
+          "bx": 149,
+          "by": 79.9,
+          "colorIdx": 1,
+          "empty": false,
+          "level": "L1",
+          "n": 4,
+          "series": "practiced",
+          "small": true,
+          "value": 56,
+        },
+      ],
+      "cx": 149,
+      "phase": "baseline",
+    },
+    {
+      "bars": [
+        {
+          "bh": 169.1,
+          "bw": 84.1,
+          "bx": 272.9,
+          "by": 76.9,
+          "colorIdx": 0,
+          "empty": false,
+          "level": "L1",
+          "n": 4,
+          "series": "cold",
+          "small": true,
+          "value": 57,
+        },
+        {
+          "bh": 209.1,
+          "bw": 84.1,
+          "bx": 359,
+          "by": 36.9,
+          "colorIdx": 1,
+          "empty": false,
+          "level": "L1",
+          "n": 4,
+          "series": "practiced",
+          "small": true,
+          "value": 70.5,
+        },
+      ],
+      "cx": 359,
+      "phase": "tier2",
+    },
+  ],
+  "keys": [
+    "cold",
+    "practiced",
+  ],
+  "xTicks": [
+    {
+      "label": "baseline",
+      "sx": 149,
+    },
+    {
+      "label": "tier2",
+      "sx": 359,
+    },
+  ],
+  "y0": 0,
+  "y1": 77.6,
+  "yTicks": [
+    {
+      "sy": 246,
+      "y": 0,
+    },
+    {
+      "sy": 188.5,
+      "y": 19.4,
+    },
+    {
+      "sy": 131,
+      "y": 38.8,
+    },
+    {
+      "sy": 73.5,
+      "y": 58.2,
+    },
+    {
+      "sy": 16,
+      "y": 77.6,
+    },
+  ],
+}
+`;
+
 exports[`Lumen — multi-series line (categories of ONE measure on a shared axis) > multiSeriesGeometry: one L0 polyline+points per series; colour guard holds (snapshot) 1`] = `
 {
   "box": {

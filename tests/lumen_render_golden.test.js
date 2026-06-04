@@ -116,6 +116,10 @@ describe('Lumen — render golden master (SSR, §15)', () => {
   it('multi-series pathway — a coloured line + points per series, one sentence each', () => {
     expect(renderState({ observations: MULTI, chartType: 'multiSeriesLine', seriesLabels: MULTI_LABELS })).toMatchSnapshot();
   });
+
+  it('grouped-bar pathway — bars per phase × series mean, legend, raw-data table', () => {
+    expect(renderState({ observations: MULTI, chartType: 'groupedBar', seriesLabels: MULTI_LABELS, showTable: true })).toMatchSnapshot();
+  });
 });
 
 describe('Lumen — render invariants (no snapshot, just contracts)', () => {
@@ -186,6 +190,18 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
     expect(html).toMatch(/#be123c/);                                     // series colour 1 (distinct from amber/teal)
     expect((html.match(/<circle/g) || []).length).toBe(MULTI.length);    // one observed point per row
     expect(html).not.toMatch(/Generate AI|Export this view/);            // no single pooled claim -> no AI/export
+  });
+
+  it('the grouped-bar pathway draws mean bars + a legend, names every cell, raw points in the table', () => {
+    const html = renderState({ observations: MULTI, chartType: 'groupedBar', seriesLabels: MULTI_LABELS, showTable: true });
+    expect(html).toMatch(/aria-label="Grouped bar \(mean per phase/);
+    expect(html).toMatch(/Cold read/);                                   // legend label
+    expect(html).toMatch(/<rect/);                                       // the mean bars
+    expect(html).toMatch(/#1d4ed8/);                                     // series colour 0
+    expect(html).toMatch(/#be123c/);                                     // series colour 1
+    expect(html).toMatch(/<th[^>]*>Series<\/th>/);                       // the raw-data peer carries a Series column
+    expect((html.match(/<tbody>[\s\S]*<tr/g) || []).length).toBeGreaterThan(0);
+    expect(html).not.toMatch(/Generate AI|Export this view/);            // comparison view, no single pooled claim
   });
 
   it('the histogram pathway renders count bars + its own SR label, with no trend line or data circles', () => {

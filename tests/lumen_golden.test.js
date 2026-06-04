@@ -840,4 +840,43 @@ describe('Lumen — multi-series line (categories of ONE measure on a shared axi
     expect(JSON.stringify(L.plotGeometry(comp.observations, c, undefined, [])))
       .toBe(JSON.stringify(L.plotGeometry(comp.observations, c, undefined, [], 'trend')));
   });
+
+  it('grouped bar: bars per (phase × series) mean, 0-baseline, one slot per series (snapshot)', () => {
+    const g = L.plotGeometry(comp.observations, null, undefined, [], 'groupedBar');
+    expect(g.chartType).toBe('groupedBar');
+    expect(g.y0).toBeLessThanOrEqual(0);                                   // baseline includes 0 (honest heights)
+    expect(g.groups.map(gr => gr.phase)).toEqual(['baseline', 'tier2']);
+    g.groups.forEach(gr => {
+      expect(gr.bars.length).toBe(2);                                      // cold + practiced
+      gr.bars.forEach(b => { expect(b.bh).toBeGreaterThanOrEqual(0); });   // non-negative heights
+    });
+    expect(g).toMatchSnapshot();
+  });
+
+  it('grouped bar: an empty (phase × series) cell draws no bar; a small cell (n<3) is flagged', () => {
+    const gap = L.makeCompendium('v', 'u');
+    [{ x: 1, y: 5, phase: 'a', series: 'p' }, { x: 1, y: 9, phase: 'b', series: 'p' }, { x: 2, y: 8, phase: 'b', series: 'p' }, { x: 3, y: 7, phase: 'b', series: 'p' },
+     { x: 1, y: 8, phase: 'b', series: 'q' }, { x: 2, y: 7, phase: 'b', series: 'q' }, { x: 3, y: 9, phase: 'b', series: 'q' }].forEach(p => L.addObservation(gap, p));
+    const g = L.plotGeometry(gap.observations, null, undefined, [], 'groupedBar');
+    const aGrp = g.groups.find(x => x.phase === 'a');
+    expect(aGrp.bars.find(b => b.series === 'q').empty).toBe(true);        // no 'q' in phase 'a' -> empty, no bar
+    expect(aGrp.bars.find(b => b.series === 'p').small).toBe(true);        // 'p' in 'a' has n=1 -> small
+  });
+
+  it('a <=1-series grouped bar DELEGATES to the legacy bar (byte-identity)', () => {
+    expect(L.plotGeometry(REYNA, L.deriveTrendClaim(buildReyna(REYNA).comp, {}), undefined, [], 'groupedBar').chartType).toBe('bar');
+  });
+
+  it('grouped-bar summary names every cell mean + n + the means/spread caveat', () => {
+    const txt = L.chartSummaryText(comp.observations, null, [], 'groupedBar');
+    expect(txt).toMatch(/^Grouped bar \(mean per phase/);
+    expect(txt).toMatch(/baseline \/ cold: mean/);
+    expect(txt).toMatch(/per-cell means/);
+  });
+
+  it('the trend default stays byte-identical (the grouped-bar dispatch did not disturb it)', () => {
+    const c = L.deriveTrendClaim(comp, {});
+    expect(JSON.stringify(L.plotGeometry(comp.observations, c, undefined, [])))
+      .toBe(JSON.stringify(L.plotGeometry(comp.observations, c, undefined, [], 'trend')));
+  });
 });

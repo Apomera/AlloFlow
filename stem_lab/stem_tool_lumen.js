@@ -727,9 +727,49 @@
     return out;
   }
 
+  // TRUE grouped bar — bars side-by-side per (phase × series), each bar the MEAN of that cell, on a
+  // 0-baseline (mirrors barGeometry:527 so heights are honest, never truncated). Per-cell n<3 => small
+  // (rendered faded + labelled n), an empty cell draws NO bar (never a fabricated zero). NOT stacked
+  // (a stacked bar implies a part-whole that isn't there). <=1 series delegates to the legacy bar.
+  function groupedBarGeometry(observations, box, sourceRefs) {
+    box = box || DEFAULT_BOX;
+    var keys = seriesKeys(observations);
+    if (keys.length <= 1) return barGeometry(observations, box, sourceRefs); // byte-identity: a 1-series grouped bar IS a bar
+    var innerW = box.w - box.padL - box.padR, innerH = box.h - box.padT - box.padB;
+    var sorted = observations.slice().sort(function (a, b) { return a.x - b.x; });
+    var groupOrder = [], gseen = {};
+    sorted.forEach(function (o) { var g = o.phase == null ? '(all)' : o.phase; if (!gseen[g]) { gseen[g] = true; groupOrder.push(g); } });
+    function cellPts(g, k) { return observations.filter(function (o) { return (o.phase == null ? '(all)' : o.phase) === g && o.series === k; }); }
+    var means = [];
+    groupOrder.forEach(function (g) { keys.forEach(function (k) { var pts = cellPts(g, k); if (pts.length) means.push(mean(pts.map(function (o) { return o.y; }))); }); });
+    var refs = (sourceRefs || []).filter(function (r) { return sourcedRenderable(r).ok; }), refVals = refs.map(function (r) { return r.value; });
+    var minY = Math.min.apply(null, means.concat(refVals).concat([0])); // baseline includes 0 — honest heights
+    var maxY = Math.max.apply(null, means.concat(refVals).concat([0]));
+    var padY = (maxY - minY) * 0.1 || 1, y0 = minY, y1 = maxY + padY;
+    function sy(y) { return box.padT + innerH - (y1 === y0 ? 0 : (y - y0) / (y1 - y0)) * innerH; }
+    var baseline = round1(sy(y0));
+    var ng = groupOrder.length, slotW = innerW / ng, innerPad = slotW * 0.18, bandW = slotW - innerPad, barW = bandW / keys.length;
+    var groups = groupOrder.map(function (g, gi) {
+      var gx0 = box.padL + slotW * gi + innerPad / 2;
+      var bars = keys.map(function (k, ki) {
+        var pts = cellPts(g, k), nC = pts.length;
+        var m = nC ? round2(mean(pts.map(function (o) { return o.y; }))) : null;
+        var top = m == null ? null : round1(sy(m));
+        return { series: k, colorIdx: ki, value: m, n: nC, empty: nC === 0, small: nC > 0 && nC < SMALL_N.flagBelow, level: 'L1', bx: round1(gx0 + barW * ki), bw: round1(Math.max(3, barW - 2)), by: top, bh: (m == null ? 0 : round1(baseline - top)) };
+      });
+      return { phase: g, cx: round1(box.padL + slotW * (gi + 0.5)), bars: bars };
+    });
+    var xTicks = groups.map(function (gg) { return { label: gg.phase, sx: gg.cx }; });
+    var yTicks = []; for (var t = 0; t <= 4; t++) { var yv = y0 + (y1 - y0) * t / 4; yTicks.push({ y: round1(yv), sy: round1(sy(yv)) }); }
+    var out = { box: box, chartType: 'groupedBar', baseline: baseline, y0: round1(y0), y1: round1(y1), keys: keys, groups: groups, xTicks: xTicks, yTicks: yTicks };
+    if (refs.length) out.refLines = refs.map(function (r) { var ry = round1(sy(r.value)); return { id: r.id, value: r.value, sy: ry, dPath: 'M ' + box.padL + ',' + ry + ' L ' + (box.w - box.padR) + ',' + ry, label: benchmarkChipText(r), verified: r.verified === true }; });
+    return out;
+  }
+
   function plotGeometry(observations, claim, box, sourceRefs, chartType) {
     box = box || DEFAULT_BOX;
     if (chartType === 'multiSeriesLine') return multiSeriesGeometry(observations, claim, box, sourceRefs); // claim = ARRAY of per-series claims
+    if (chartType === 'groupedBar') return groupedBarGeometry(observations, box, sourceRefs); // bars per (phase × series) mean
     if (chartType === 'bar') return barGeometry(observations, box, sourceRefs); // dispatch; trend code below is untouched
     if (chartType === 'dot') return dotGeometry(observations, box, sourceRefs);
     if (chartType === 'box') return boxGeometry(observations, box, sourceRefs);
@@ -856,6 +896,17 @@
     // Scatter (association) has a different axis grammar (x = a measure, not week), so it does NOT
     // describe trend phase lines or a y=value benchmark. The association sentence already carries
     // r + interval + n + the not-causation caveat, so it IS the complete summary.
+    // Grouped bar: name every (phase × series) MEAN + n; bars are means, small cells flagged, spread in
+    // the table. <=1 series delegates to a plain bar (no groups), so it names itself as a bar chart.
+    if (chartType === 'groupedBar') {
+      var gg = groupedBarGeometry(observations, undefined, []);
+      if (gg.groups) {
+        var cells = [];
+        gg.groups.forEach(function (grp) { grp.bars.forEach(function (bar) { if (!bar.empty) cells.push(grp.phase + ' / ' + bar.series + ': mean ' + bar.value + ' (n=' + bar.n + (bar.small ? ', small' : '') + ')'); }); });
+        return 'Grouped bar (mean per phase × series, same measure). ' + cells.join('; ') + '. Bars are per-cell means; small cells (n<3) are faded — the data table lists every point.';
+      }
+      return 'Bar chart. ' + (claim ? claim.text : 'no data yet.');
+    }
     // Multi-series line: ONE sentence per series (refused series included — anti-cherry-pick), all on
     // the same measure/axis. claim is the ARRAY of per-series claims.
     if (chartType === 'multiSeriesLine') {
@@ -1291,7 +1342,7 @@
     // chart geometry + SR data-table peer (Phase 1)
     REYNA_SAMPLE: REYNA_SAMPLE, PAIRED_SAMPLE: PAIRED_SAMPLE, MULTI_SAMPLE: MULTI_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
     quantiles: quantiles, dotGeometry: dotGeometry, boxGeometry: boxGeometry, histogramBins: histogramBins, histogramGeometry: histogramGeometry,
-    scatterGeometry: scatterGeometry, slopeGeometry: slopeGeometry, multiSeriesGeometry: multiSeriesGeometry,
+    scatterGeometry: scatterGeometry, slopeGeometry: slopeGeometry, multiSeriesGeometry: multiSeriesGeometry, groupedBarGeometry: groupedBarGeometry,
     SERIES_PALETTE: SERIES_PALETTE, seriesColor: seriesColor, seriesColorOK: seriesColorOK,
     perSegmentSlopes: perSegmentSlopes, chartSummaryText: chartSummaryText, dataTableModel: dataTableModel, associationTableModel: associationTableModel, multiSeriesTableModel: multiSeriesTableModel,
     // AI-involvement layer (Phase 1) — pure guards + audience faces
@@ -1399,6 +1450,10 @@
           // refusal — never a pooled multi-slope). seriesKeys enumerates EVERY series (anti-cherry-pick).
           var multiKeys = (chartType === 'multiSeriesLine' && obs.length) ? seriesKeys(obs) : [];
           var multiClaims = multiKeys.length ? multiKeys.map(function (k) { return deriveTrendClaim(comp, { series: k, id: 'cs_' + k }); }) : null;
+          // Grouped bar = a true (phase × series) comparison; it only "groups" when there's >1 series.
+          // gbLabels is a label-carrier (claim-shaped) so the grouped-bar SR table reuses the multi-series peer.
+          var groupedMulti = (chartType === 'groupedBar' && obs.length) ? (seriesKeys(obs).length > 1) : false;
+          var gbLabels = groupedMulti ? seriesKeys(obs).map(function (k) { return { seriesKey: k, seriesLabel: (comp.seriesLabels && comp.seriesLabels[k]) || k, variable: comp.variable }; }) : null;
           var bundle = encode('L1');
           // The AI fires ONLY on demand, ONLY over the PII-free context, and its
           // output is gated by the tested guards before it is ever shown (§6.1/§6.3).
@@ -1493,7 +1548,7 @@
           };
           kids.push(h('div', { key: 'charttype', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Chart type' },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Chart:'),
-            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box'), ctBtn('histogram', 'Histogram'), ctBtn('scatter', 'Scatter'), ctBtn('slope', 'Slope'), ctBtn('multiSeriesLine', 'Multi-line')));
+            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box'), ctBtn('histogram', 'Histogram'), ctBtn('scatter', 'Scatter'), ctBtn('slope', 'Slope'), ctBtn('multiSeriesLine', 'Multi-line'), ctBtn('groupedBar', 'Grouped bar')));
 
           if (!obs.length) {
             kids.push(h('p', { key: 'empty', className: 'mt-2 text-sm text-slate-600' },
@@ -1549,6 +1604,19 @@
                   h('span', { 'aria-hidden': 'true', style: { color: seriesColor(i), fontSize: '14px', lineHeight: '1' } }, '●'),
                   h('span', null, c.text));
               }))));
+          } else if (groupedMulti) {
+            // Grouped bar: a colour legend (swatch + label per series) + a descriptive note. The per-cell
+            // means + n are in the SR summary; every raw point is in the data table (bars never hide spread).
+            kids.push(h('div', { key: 'claim', className: 'mt-3 p-2 rounded bg-white border border-slate-200' },
+              h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
+                h('span', null, bundle.label + ' · ' + comp.variable + ' mean per phase × series')),
+              h('div', { className: 'mt-1 flex items-center gap-3 flex-wrap text-xs text-slate-700' }, seriesKeys(obs).map(function (k, i) {
+                return h('span', { key: 'leg' + i, className: 'flex items-center gap-1' },
+                  h('span', { 'aria-hidden': 'true', style: { color: seriesColor(i), fontSize: '14px', lineHeight: '1' } }, '■'),
+                  h('span', null, (comp.seriesLabels && comp.seriesLabels[k]) || k));
+              })),
+              h('p', { className: 'mt-1 text-[11px] text-slate-500' }, 'Bars are per-cell means (descriptive); small cells (n<3) are faded. Every point is in the data table.')));
           } else if (activeClaim) {
             kids.push(h('div', { key: 'claim', className: 'mt-3 p-2 rounded bg-white border border-slate-200' },
               h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
@@ -1644,6 +1712,19 @@
                 sk.push(h('text', { key: 'segl' + i, x: (s.sx1 + s.sx2) / 2, y: Math.min(s.sy1, s.sy2) - 4, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l1seg.ink, 'aria-hidden': 'true' }, (s.slope > 0 ? '+' : '') + s.slope + (s.small ? '*' : '')));
               });
             }
+            // Grouped-bar pathway: bars side-by-side per (phase × series) mean, on a 0-baseline. A small
+            // cell (n<3) is faded + dashed + labelled n (provisional, not a confident bar); empty cells
+            // draw nothing. The claim-card swatches are the legend.
+            if (geo.groups) {
+              geo.groups.forEach(function (grp, gi) {
+                grp.bars.forEach(function (bar, bi) {
+                  if (bar.empty) return; // no fabricated bar for a missing cell
+                  var gcol = seriesColor(bar.colorIdx);
+                  sk.push(h('rect', { key: 'gb' + gi + '_' + bi, x: bar.bx, y: bar.by, width: bar.bw, height: Math.max(0, bar.bh), rx: 1, fill: gcol, fillOpacity: bar.small ? 0.4 : 0.88, stroke: gcol, strokeWidth: bar.small ? 1 : 0, strokeDasharray: bar.small ? '2 2' : undefined }));
+                  if (bar.small) sk.push(h('text', { key: 'gbf' + gi + '_' + bi, x: bar.bx + bar.bw / 2, y: bar.by - 2, textAnchor: 'middle', style: { fontSize: '7px' }, fill: gcol, 'aria-hidden': 'true' }, 'n=' + bar.n));
+                });
+              });
+            }
             // Multi-series pathway: one literal L0 data polyline + observed points per series, each in
             // its own categorical colour (the claim-card colour dots are the legend). No regression line —
             // the per-series slope is reported in words in the claim list.
@@ -1673,8 +1754,10 @@
             }, sk));
           }
 
-          var tableClaim = (chartType === 'multiSeriesLine') ? multiClaims : activeClaim;
-          var showTableSection = (chartType === 'multiSeriesLine') ? !!multiClaims : (activeClaim && !activeClaim.refused);
+          // Grouped bar (>1 series) shows the RAW data peer (every point, with its series) so the mean
+          // bars can't hide spread; otherwise the trend/scatter/multi peer applies.
+          var tableClaim = (chartType === 'multiSeriesLine') ? multiClaims : (groupedMulti ? gbLabels : activeClaim);
+          var showTableSection = (chartType === 'multiSeriesLine') ? !!multiClaims : (groupedMulti ? true : (activeClaim && !activeClaim.refused));
           if (showTableSection) {
             var tbl = dataTableModel(obs, tableClaim, sourceRefs);
             kids.push(h('button', { key: 'tbtn', className: 'mt-2 text-xs underline text-slate-600', onClick: function () { upd('showTable', !d.showTable); } },
@@ -1700,7 +1783,7 @@
           // The AI section — only at the L2/L3 ceiling, only when the n-floor gate allows. The AI
           // interpretation layer is trend-shaped (buildClaimContext sends slope/interval), so it is
           // OFF in the scatter view: scatter v1 is a pure L1 correlation (data-only, no AI re-word).
-          if (claim && !claim.refused && levelIndex(ceiling) >= 2 && chartType !== 'scatter' && chartType !== 'multiSeriesLine') {
+          if (claim && !claim.refused && levelIndex(ceiling) >= 2 && chartType !== 'scatter' && chartType !== 'multiSeriesLine' && chartType !== 'groupedBar') {
             var gate = aiAllowed(ceiling, claim.n);
             if (!gate.allowed) {
               kids.push(h('div', { key: 'aigate', className: 'mt-3 text-xs italic text-slate-500' }, gate.reason));
@@ -1787,8 +1870,8 @@
 
           // Export builds the trend (primary-y) brief; the scatter-specific export is deferred, so the
           // buttons are hidden in the scatter view rather than exporting a mismatched trend document.
-          // Multi-series is also hidden: the export brief is a single trend (it would pool the series).
-          if (claim && !claim.refused && chartType !== 'scatter' && chartType !== 'multiSeriesLine') {
+          // Multi-series + grouped-bar are also hidden: the export brief is a single trend (it would pool the series).
+          if (claim && !claim.refused && chartType !== 'scatter' && chartType !== 'multiSeriesLine' && chartType !== 'groupedBar') {
             kids.push(h('div', { key: 'exp', className: 'mt-3 flex items-center gap-2 flex-wrap' },
               h('span', { className: 'text-xs text-slate-500' }, 'Export this view:'),
               h('button', { className: 'px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: exportHtml }, 'Brief (HTML)'),

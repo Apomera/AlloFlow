@@ -127,6 +127,18 @@ ok(L.sourcedRenderable({ verified: true, citation: 'c', locator: 'javascript:ale
   [1, 2, 3, 4, 5, 6, 7, 8].forEach(function (x) { var y = x * 1.5 + (x % 2 ? 2 : -1); L.addObservation(twin, { x: x, y: y, series: 'a' }); L.addObservation(twin, { x: x, y: y, series: 'b' }); });
   var ca = L.deriveTrendClaim(twin, { series: 'a' }), cb = L.deriveTrendClaim(twin, { series: 'b' });
   ok(JSON.stringify(ca.estimate.bootstrap) !== JSON.stringify(cb.estimate.bootstrap), 'two series with IDENTICAL points must get distinct (series-seeded) bootstrap intervals — the per-series-seed footgun');
+
+  // grouped bar: 0-baseline (no truncated-axis lie), one slot per series per group, empty cell => no bar,
+  // and the <=1-series delegation to the legacy bar (byte-identity).
+  var gb = L.plotGeometry(multi.observations, null, undefined, [], 'groupedBar');
+  ok(gb.chartType === 'groupedBar' && gb.y0 <= 0, 'grouped bar must include 0 in the value axis (no truncated-axis lie)');
+  ok(gb.groups.length >= 1 && gb.groups[0].bars.length === mkeys.length, 'grouped bar: one bar slot per series within each phase group');
+  ok(L.plotGeometry(L.REYNA_SAMPLE, null, undefined, [], 'groupedBar').chartType === 'bar', 'a <=1-series grouped bar must DELEGATE to the legacy bar (byte-identity)');
+  var gap = L.makeCompendium('v', 'u');
+  [{ x: 1, y: 5, phase: 'a', series: 'p' }, { x: 2, y: 6, phase: 'a', series: 'p' }, { x: 1, y: 9, phase: 'b', series: 'p' }, { x: 1, y: 8, phase: 'b', series: 'q' }, { x: 2, y: 7, phase: 'b', series: 'q' }].forEach(function (o) { L.addObservation(gap, o); });
+  var gg = L.plotGeometry(gap.observations, null, undefined, [], 'groupedBar');
+  var aGrp = gg.groups.filter(function (x) { return x.phase === 'a'; })[0];
+  ok(aGrp && aGrp.bars.some(function (b) { return b.empty === true; }), 'an empty (phase × series) cell must be flagged empty — no fabricated bar');
 })();
 
 if (fails.length) {
