@@ -20,6 +20,7 @@ const { LEVELS, classifyShot } = arc;
 // Values a param can take on the real control: a locked param is pinned to its
 // default (the UI hides its slider); otherwise the full min..max step grid.
 function paramValues(spec) {
+  if (spec.snapValues) return spec.snapValues.slice(); // sine period: only the snapped b's are authorable
   if (spec.locked) return [spec.default];
   const out = [];
   for (let v = spec.min; v <= spec.max + 1e-9; v += spec.step) out.push(Math.round(v * 1000) / 1000);
@@ -69,6 +70,7 @@ describe('Arc City — the math is load-bearing (not trivially winnable, §2.4)'
       // coarse sample (every 3rd grid step) just to bound the rate cheaply
       const grids = order.map(n => {
         const s = level.params[n];
+        if (s.snapValues) return s.snapValues.slice();
         if (s.locked) return [s.default];
         const out = [];
         for (let v = s.min; v <= s.max + 1e-9; v += s.step * 3) out.push(Math.round(v * 1000) / 1000);

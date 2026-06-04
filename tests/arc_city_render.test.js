@@ -92,6 +92,21 @@ describe('Arc City render — Grand Tour award through the Fire handler', () => 
   });
 });
 
+describe('Arc City render — Sine Boulevard §3.1 affordances', () => {
+  it('practice tier shows the crest-grabber handle + ghost target dots + period-framed label', () => {
+    const r = render({ levelId: 'L5', byLevel: {}, tier: 'practice', fired: false, badges: [] });
+    expect(r.find('sh')).not.toBeNull();        // crest-grabber handle
+    expect(r.find('ghost-0')).not.toBeNull();   // ghost target dot at a window centre
+    expect(r.text).toMatch(/one full wave every N units/); // the b slider is framed as period
+  });
+
+  it('hidden-preview tiers do NOT show the crest handle (the anti-fishing integrity gate)', () => {
+    const r = render({ levelId: 'L5', byLevel: {}, tier: 'independent', fired: false, badges: [] });
+    expect(r.find('sh')).toBeNull();
+    expect(r.find('ghost-0')).toBeNull();
+  });
+});
+
 describe('Arc City render — leaving/returning preserves the run (no silent data loss)', () => {
   it('switching to a normal level mid-run keeps the gauntlet state; returning resumes at the same stage', () => {
     const mid = {

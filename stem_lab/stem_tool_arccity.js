@@ -78,21 +78,25 @@
     {
       id: 'L5', title: 'Sine Boulevard', family: 'sine',
       world: { x0: 0, x1: 10, y0: 0, y1: 8 },
-      // Windows narrowed so AMPLITUDE genuinely matters (a must be ~2.5, not any
-      // big value). Gates sit at sin(x)'s extrema (π/2, 3π/2, 5π/2) so the
-      // intended period is 2π (b=1); c and k are locked as the interim
-      // tractability measure (design §3.1 snapped-periods + crest-grabber are
-      // DEFERRED to Phase 2b). The node is the end landing zone; the gates are
-      // the real constraint.
-      walls: [], gates: [{ x: 1.5, lo: 6, hi: 6.9 }, { x: 4.7, lo: 1.1, hi: 2 }, { x: 7.85, lo: 6, hi: 6.9 }], node: { x: 9.4, y: 4, r: 0.7 }, dx: 0.05,
+      // §3.1 refinement (high-school REACH, not 8th-grade core): the full 3-parameter
+      // sine, made tractable. PERIOD snaps to whole numbers (b = 2π/P, P ∈ {4,5,6,8})
+      // so the player thinks "one wave every N units"; PHASE c is authored by a
+      // crest-grabber drag handle (drag a peak onto a window — phase is spatial, not a
+      // number hunt); k (midline) is locked. ε is generous (windows ±0.45, node r 0.6).
+      // Intended period 6 (b≈1.047), amplitude 2.5, phase 1.0: crests at x≈0.5 & 6.5,
+      // trough at x≈3.5, ending in the trough node. Verified solvable + load-bearing
+      // (27/1300 ≈ 2% on the authored grid) in arc_city_solvability.test.js.
+      walls: [], gates: [{ x: 0.5, lo: 6.05, hi: 6.95 }, { x: 3.5, lo: 1.05, hi: 1.95 }, { x: 6.5, lo: 6.05, hi: 6.95 }], node: { x: 9.5, y: 1.5, r: 0.6 }, dx: 0.05,
       paramOrder: ['a', 'b', 'c', 'k'],
       params: {
-        a: { min: 0, max: 4, step: 0.25, default: 1, label: 'a  (amplitude — how tall the wave)' },
-        b: { min: 0.5, max: 1.5, step: 0.05, default: 0.5, label: 'b  (squeezes/stretches the wave — line peaks up with the windows)' },
-        c: { min: 0, max: 0, step: 1, default: 0, locked: true, label: 'c  (phase — locked at 0)' },
+        a: { min: 0.5, max: 3.5, step: 0.25, default: 1, label: 'a  (amplitude — how tall the wave)' },
+        // b is authored as PERIOD: the slider snaps to b = 2π/P for whole-number P and
+        // shows "one wave every N units" (asPeriod). 1.5708=P4, 1.2566=P5, 1.0472=P6, 0.7854=P8.
+        b: { min: 0.7854, max: 1.5708, step: 0.05, snapValues: [1.5708, 1.2566, 1.0472, 0.7854], asPeriod: true, default: 1.5708, label: 'period  (one full wave every N units)' },
+        c: { min: 0, max: 6, step: 0.25, default: 0, label: 'c  (phase — slides the wave sideways; drag a crest to set it)' },
         k: { min: 4, max: 4, step: 1, default: 4, locked: true, label: 'k  (midline — locked at 4)' }
       },
-      hint: 'Tip: the wave is centered on the midline y = 4. Set b so its peaks and dips line up with the windows, and a so it reaches high/low enough to thread each one.'
+      hint: 'High-school reach: the full sine. Drag a crest (the glowing handle) onto a high window to set the phase, set the PERIOD so the next crest/trough lands on the other windows, and the amplitude a so it reaches them. Midline is locked at y = 4.'
     },
     {
       id: 'L6', title: 'Tilt Gates', family: 'parabola',
@@ -348,7 +352,7 @@
     if (level.family === 'sine') {
       return 'y = a·sin(b·x + c) + k, with a = ' + fmtVal(p.a, level.params.a.step) + ', b = ' + fmtVal(p.b, level.params.b.step) + ', c = ' + fmtVal(p.c, level.params.c.step) + ', k = ' + fmtVal(p.k, level.params.k.step) +
         '. A wave of amplitude ' + fmtVal(p.a, level.params.a.step) + ' centered on the midline y = ' + fmtVal(p.k, level.params.k.step) +
-        (p.b ? ', one full wave about every ' + round1((2 * Math.PI) / p.b) + ' units.' : '.');
+        (p.b ? ', one full wave every ' + periodOf(p.b) + ' units.' : '.');
     }
     if (level.family === 'exp') {
       var ek = fmtVal(p.k, level.params.k.step);
@@ -442,11 +446,29 @@
     return out;
   }
 
-  // ── Snap a value to a param's [min,max] grid (shared by sliders + drag). ──
+  // ── Snap a value to a param's grid (shared by sliders + drag). If the spec lists
+  // snapValues, snap to the NEAREST of those (used for sine's whole-number periods,
+  // §3.1 — b = 2π/P only ever lands on clean periods); otherwise snap to the step. ──
   function snapToRange(val, r) {
+    if (r.snapValues && r.snapValues.length) {
+      var best = r.snapValues[0], bd = Math.abs(val - best);
+      for (var i = 1; i < r.snapValues.length; i++) { var d = Math.abs(val - r.snapValues[i]); if (d < bd) { bd = d; best = r.snapValues[i]; } }
+      return best;
+    }
     var v = Math.max(r.min, Math.min(r.max, val));
     var snapped = Math.round(v / r.step) * r.step;
     return Math.round(snapped * 1000) / 1000;
+  }
+  // The period (in world units) of a snapped sine frequency b = 2π/P, for display.
+  function periodOf(b) { return b ? Math.round((2 * Math.PI) / b) : 0; }
+  // Crest-grabber (§3.1): drag a peak → back-solve amplitude (height above midline)
+  // and PHASE c so a crest lands at the dragged x (phase is spatial, not a number
+  // hunt). b (period) and k (midline) stay as authored. Pure + testable.
+  function sineCrestParams(worldX, worldY, level, b, k) {
+    var a = snapToRange(worldY - k, level.params.a);
+    var TAU = 2 * Math.PI;
+    var c = ((Math.PI / 2 - b * worldX) % TAU + TAU) % TAU; // crest at worldX ⇒ b·x + c ≡ π/2
+    return { a: a, c: snapToRange(c, level.params.c) };
   }
 
   // ── Drag → params (pure, testable): the concrete end of the drag↔equation
@@ -585,6 +607,8 @@
     snapToRange: snapToRange,
     parabolaVertexParams: parabolaVertexParams,
     linePivotParams: linePivotParams,
+    sineCrestParams: sineCrestParams,
+    periodOf: periodOf,
     fmtVal: fmtVal,
     THEME_CANVAS: THEME_CANVAS,
     arcPalette: arcPalette,
@@ -1079,14 +1103,37 @@
               style: { cursor: 'grab' }, 'aria-hidden': 'true',
               onPointerDown: (function (ax, ay) { return function (e) { startHandleDrag(e, function (wx, wy) { return linePivotParams(xB, wy, ax, ay, level); }); }; })(xA, yA)
             }));
+          } else if (level.family === 'sine') {
+            // Crest-grabber (§3.1): a handle on the first visible peak. Drag it up/down
+            // to set amplitude, left/right to set phase so a crest lands where you drop it.
+            var TAU = 2 * Math.PI;
+            var xc = (Math.PI / 2 - P.c) / P.b; // first crest of a·sin(b·x+c)+k
+            while (xc < wx0) xc += TAU / P.b;
+            while (xc > wx1) xc -= TAU / P.b;
+            var yc = P.k + P.a;
+            handleEls.push(h('circle', {
+              key: 'sh', cx: sx(xc), cy: sy(yc), r: 9, fill: HANDLE, opacity: 0.95, stroke: '#06262b', strokeWidth: 2,
+              style: { cursor: 'grab' }, 'aria-hidden': 'true',
+              onPointerDown: function (e) { startHandleDrag(e, function (wx, wy) { return sineCrestParams(wx, wy, level, P.b, P.k); }); }
+            }));
+            handleEls.push(h('text', { key: 'shl', x: sx(xc) + 12, y: sy(yc) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, 'crest — drag onto a window'));
           }
+        }
+
+        // Ghost target dots (§3.1): on the scaffold tier, mark each window's centre so
+        // the crest-grabber has a visible target to drop a peak/trough onto.
+        var ghostEls = [];
+        if (tier === 'practice' && level.family === 'sine') {
+          (level.gates || []).forEach(function (g, i) {
+            ghostEls.push(h('circle', { key: 'ghost-' + i, cx: sx(g.x), cy: sy((g.lo + g.hi) / 2), r: 4, fill: 'none', stroke: HANDLE, strokeWidth: 1.5, strokeDasharray: '2 2', opacity: 0.6, 'aria-hidden': 'true' }));
+          });
         }
 
         var svg = h('svg', {
           key: 'svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%',
           role: 'img', 'aria-label': describeBoard(level),
           style: { display: 'block', maxHeight: '50vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden', touchAction: 'none' }
-        }, [].concat(gridEls, obstacleEls, previewEls, overlay, [nodeEl], handleEls));
+        }, [].concat(gridEls, obstacleEls, ghostEls, previewEls, overlay, [nodeEl], handleEls));
 
         // ── Level progression bar ──
         var levelBtns = LEVELS.map(function (lv, i) {
@@ -1116,35 +1163,46 @@
         function paramRow(name) {
           var spec = level.params[name];
           var val = P[name];
+          // asPeriod params display the whole-number period ("6 units"), not raw b.
+          var valLabel = spec.asPeriod ? (periodOf(val) + ' units') : fmtVal(val, spec.step);
           if (spec.locked) {
             return h('div', { key: 'row-' + name, style: { marginBottom: 10, fontSize: 13, color: INK, opacity: 0.7 } },
               h('span', { key: 'l' }, spec.label + ': '),
-              h('span', { key: 'v', style: { fontWeight: 700 } }, fmtVal(val, spec.step)));
+              h('span', { key: 'v', style: { fontWeight: 700 } }, valLabel));
           }
-          var pct = (val - spec.min) / (spec.max - spec.min);
+          // snapValues params (sine period) step between their discrete values by INDEX
+          // — a plain ±step would snap back to the same value and feel stuck.
+          var snaps = spec.snapValues;
+          var idx = 0;
+          if (snaps) { var bd = Infinity; for (var j = 0; j < snaps.length; j++) { var d = Math.abs(snaps[j] - val); if (d < bd) { bd = d; idx = j; } } }
+          var pct = snaps ? (snaps.length > 1 ? idx / (snaps.length - 1) : 0) : (val - spec.min) / (spec.max - spec.min);
+          function bump(dir, big) {
+            if (snaps) { setParam(name, snaps[Math.max(0, Math.min(snaps.length - 1, idx + dir))]); }
+            else { setParam(name, val + dir * (big ? spec.step * 5 : spec.step)); }
+          }
           function onKey(e) {
             var key = e.key;
-            if (key === 'ArrowRight' || key === 'ArrowUp') { e.preventDefault(); setParam(name, val + (e.shiftKey ? spec.step * 5 : spec.step)); }
-            else if (key === 'ArrowLeft' || key === 'ArrowDown') { e.preventDefault(); setParam(name, val - (e.shiftKey ? spec.step * 5 : spec.step)); }
-            else if (key === 'Home') { e.preventDefault(); setParam(name, spec.min); }
-            else if (key === 'End') { e.preventDefault(); setParam(name, spec.max); }
+            if (key === 'ArrowRight' || key === 'ArrowUp') { e.preventDefault(); bump(1, e.shiftKey); }
+            else if (key === 'ArrowLeft' || key === 'ArrowDown') { e.preventDefault(); bump(-1, e.shiftKey); }
+            else if (key === 'Home') { e.preventDefault(); setParam(name, snaps ? snaps[0] : spec.min); }
+            else if (key === 'End') { e.preventDefault(); setParam(name, snaps ? snaps[snaps.length - 1] : spec.max); }
           }
           var btn = { width: 30, height: 30, borderRadius: 8, border: '1px solid ' + GRID, background: 'rgba(255,255,255,0.06)', color: INK, fontSize: 18, lineHeight: '26px', cursor: 'pointer' };
           return h('div', { key: 'row-' + name, role: 'group', 'aria-label': spec.label, style: { marginBottom: 10 } },
             h('div', { key: 'hdr', style: { display: 'flex', justifyContent: 'space-between', fontSize: 13, color: INK, marginBottom: 4 } },
               h('span', { key: 'l' }, spec.label),
-              h('span', { key: 'v', style: { fontVariantNumeric: 'tabular-nums', fontWeight: 700 } }, fmtVal(val, spec.step))),
+              h('span', { key: 'v', style: { fontVariantNumeric: 'tabular-nums', fontWeight: 700 } }, valLabel)),
             h('div', { key: 'ctl', style: { display: 'flex', alignItems: 'center', gap: 8 } },
-              h('button', { key: 'dec', type: 'button', 'aria-label': 'Decrease ' + spec.label, onClick: function () { setParam(name, val - spec.step); }, style: btn }, '−'),
+              h('button', { key: 'dec', type: 'button', 'aria-label': 'Decrease ' + spec.label, onClick: function () { bump(-1); }, style: btn }, '−'),
               h('div', {
                 key: 'sld', role: 'slider', tabIndex: 0, 'aria-label': spec.label,
-                'aria-valuemin': spec.min, 'aria-valuemax': spec.max, 'aria-valuenow': val, 'aria-valuetext': spec.label + ' ' + fmtVal(val, spec.step),
+                'aria-valuemin': spec.min, 'aria-valuemax': spec.max, 'aria-valuenow': val, 'aria-valuetext': spec.label + ' ' + valLabel,
                 onKeyDown: onKey,
                 style: { position: 'relative', flex: 1, height: 10, borderRadius: 6, background: 'rgba(148,163,184,0.25)' }
               },
                 h('div', { key: 'fill', style: { position: 'absolute', left: 0, top: 0, height: 10, width: (pct * 100) + '%', background: BEAM, borderRadius: 6, opacity: 0.5 } }),
                 h('div', { key: 'thumb', style: { position: 'absolute', top: -3, left: 'calc(' + (pct * 100) + '% - 8px)', width: 16, height: 16, borderRadius: '50%', background: BEAM, boxShadow: '0 0 6px ' + BEAM } })),
-              h('button', { key: 'inc', type: 'button', 'aria-label': 'Increase ' + spec.label, onClick: function () { setParam(name, val + spec.step); }, style: btn }, '+')));
+              h('button', { key: 'inc', type: 'button', 'aria-label': 'Increase ' + spec.label, onClick: function () { bump(1); }, style: btn }, '+')));
         }
 
         var paramRows = level.paramOrder.map(function (n) { return paramRow(n); });

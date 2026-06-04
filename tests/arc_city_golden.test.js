@@ -42,9 +42,9 @@ const CASES = {
     { label: 'flat line blocked at the window (a=0,h=5,k=1)', p: { a: 0, h: 5, k: 1 } }
   ],
   L5: [
-    { label: 'solution (a=2.5,b=1)', p: { a: 2.5, b: 1, c: 0, k: 4 } },
-    { label: 'starting shot, too shallow (a=1,b=0.5)', p: { a: 1, b: 0.5, c: 0, k: 4 } },
-    { label: 'right amplitude, wrong frequency (a=2.5,b=0.7)', p: { a: 2.5, b: 0.7, c: 0, k: 4 } }
+    { label: 'solution: period 6, amp 2.5, phase 1.0 (a=2.5,b=2π/6,c=1)', p: { a: 2.5, b: 1.0472, c: 1, k: 4 } },
+    { label: 'starting shot, period 4 & no phase (a=1,b=2π/4,c=0)', p: { a: 1, b: 1.5708, c: 0, k: 4 } },
+    { label: 'right period & amp, phase off (a=2.5,b=2π/6,c=3)', p: { a: 2.5, b: 1.0472, c: 3, k: 4 } }
   ],
   L6: [
     { label: 'solution: concave-down arc through both tilts (a=-0.4,h=5,k=5.5)', p: { a: -0.4, h: 5, k: 5.5 } },
@@ -190,6 +190,37 @@ describe('Arc City — The Gauntlet (L10): adaptive, integrative capstone (§11)
     // and a standalone independent solve DOES move its family to the back
     const real = { L3: { solved: true, independent: true } };
     expect(arc.gauntletOrder(real, STAGES)[STAGES.length - 1]).toBe('L3');
+  });
+});
+
+describe('Arc City — Sine Boulevard §3.1 (snapped period + crest-grabber)', () => {
+  const L5 = levelById('L5');
+
+  it('period snaps to whole numbers: b = 2π/P for P ∈ {4,5,6,8}', () => {
+    expect(L5.params.b.snapValues).toEqual([1.5708, 1.2566, 1.0472, 0.7854]);
+    expect(arc.snapToRange(1.1, L5.params.b)).toBe(1.0472);  // nudge → nearest period (6)
+    expect(arc.snapToRange(1.45, L5.params.b)).toBe(1.5708); // → period 4
+    expect(arc.periodOf(1.0472)).toBe(6);
+    expect(arc.periodOf(1.5708)).toBe(4);
+  });
+
+  it('phase c is free (authored by the crest-grabber); midline k stays locked', () => {
+    expect(L5.params.c.locked).toBeFalsy();
+    expect(L5.params.k.locked).toBe(true);
+  });
+
+  it('crest-grabber back-solves amplitude + phase so a crest lands where dropped — and that solves the level', () => {
+    // drop a crest on the first high window (x=0.5, y=6.5), at period 6, midline 4
+    const cp = arc.sineCrestParams(0.5, 6.5, L5, 1.0472, 4);
+    expect(cp.a).toBe(2.5); // amplitude = height above the midline
+    const y = arc.fnY('sine', { a: cp.a, b: 1.0472, c: cp.c, k: 4 }, 0.5);
+    expect(Math.abs(y - 6.5)).toBeLessThan(0.05); // it IS a peak at x≈0.5
+    // period 6 then puts the next crest at 6.5 and the trough at 3.5 → threads all gates
+    expect(classifyShot(L5, { a: cp.a, b: 1.0472, c: cp.c, k: 4 }).result).toBe('hit');
+  });
+
+  it('describeEquation reports the period in whole units, not raw b', () => {
+    expect(describeEquation(L5, { a: 2.5, b: 1.0472, c: 1, k: 4 })).toMatch(/every 6 units/);
   });
 });
 
@@ -450,7 +481,8 @@ describe('Arc City — Phase 2: sine family + slope-gates (§3.2)', () => {
   it('the sine family evaluates correctly and L5 is solvable', () => {
     // y = 4 + 2*sin(π/2) = 6
     expect(arc.fnY('sine', { a: 2, b: 1, c: 0, k: 4 }, Math.PI / 2)).toBeCloseTo(6, 5);
-    expect(classifyShot(L5, { a: 2.5, b: 1, c: 0, k: 4 }).result).toBe('hit');
+    // §3.1 redesign: solution is period 6 (b=2π/6), amplitude 2.5, phase 1.0
+    expect(classifyShot(L5, { a: 2.5, b: 1.0472, c: 1, k: 4 }).result).toBe('hit');
   });
 
   it('fPrime is the analytic derivative (central difference)', () => {
@@ -471,7 +503,7 @@ describe('Arc City — Phase 2: sine family + slope-gates (§3.2)', () => {
   });
 
   it('Phase 2 solves earn their action-named badges (wave-rider, tilt-threader)', () => {
-    const hit5 = classifyShot(L5, { a: 2.5, b: 1, c: 0, k: 4 });
+    const hit5 = classifyShot(L5, { a: 2.5, b: 1.0472, c: 1, k: 4 });
     expect(arc.badgesForSolve(L5, hit5, 1, 'practice', [])).toContain('wave-rider');
     const hit6 = classifyShot(L6, { a: -0.4, h: 5, k: 5.5 });
     expect(arc.badgesForSolve(L6, hit6, 1, 'practice', [])).toContain('tilt-threader');
