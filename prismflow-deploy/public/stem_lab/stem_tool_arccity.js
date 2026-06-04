@@ -672,8 +672,17 @@
       '#allo-arccity-root [role="slider"]:focus{outline:3px solid #22d3ee;outline-offset:2px;border-radius:6px;}' +
       '#allo-arccity-root [role="slider"]:focus-visible{outline:3px solid #22d3ee;outline-offset:2px;border-radius:6px;}' +
       '#allo-arccity-root button:focus-visible{outline:2px solid #22d3ee;outline-offset:2px;border-radius:6px;}' +
-      '@keyframes arccityPulse{0%,100%{opacity:1;}50%{opacity:.45;}}' +
-      '#allo-arccity-root .arccity-node-unlit{animation:arccityPulse 1.8s ease-in-out infinite;}';
+      // burst ring is invisible unless the (reduced-motion-gated) animation reveals it
+      '#allo-arccity-root .arccity-burst{transform-box:fill-box;transform-origin:center;opacity:0;}' +
+      '@keyframes arccityPulse{0%,100%{opacity:1;}50%{opacity:.5;}}' +
+      '@keyframes arccityBurst{0%{transform:scale(.3);opacity:.9;}100%{transform:scale(2.7);opacity:0;}}' +
+      '@keyframes arccityHalo{0%,100%{opacity:.28;}50%{opacity:.12;}}' +
+      // ALL motion is opt-in: nothing animates when the user prefers reduced motion.
+      '@media (prefers-reduced-motion: no-preference){' +
+      '#allo-arccity-root .arccity-node-unlit{animation:arccityPulse 1.8s ease-in-out infinite;}' +
+      '#allo-arccity-root .arccity-burst{animation:arccityBurst .65s ease-out forwards;}' +
+      '#allo-arccity-root .arccity-halo{animation:arccityHalo 2.6s ease-in-out infinite;}' +
+      '}';
     document.head.appendChild(st);
   })();
 
@@ -1013,8 +1022,33 @@
 
         var INK = 'var(--allo-stem-text, #e2e8f0)';
         var GRID = 'var(--allo-stem-border, #334155)';
-        var PAL = arcPalette(arcTheme());
+        var THEME = arcTheme();
+        var PAL = arcPalette(THEME);
         var BEAM = PAL.accent, NODE_OFF = PAL.nodeOff, NODE_ON = PAL.nodeOn, GATE = PAL.gate, WALL = PAL.wall;
+
+        // ── Neon-city atmosphere (decorative, aria-hidden, theme-aware). Glow filters
+        // only ADD a halo around the beam/node/gates — the cores keep their tested
+        // colours, so contrast is never reduced. The sky stays within a hair of the
+        // canvas colour on the light theme (and contrast theme keeps a plain canvas)
+        // so the WCAG-verified palette contrast holds. ──
+        var SKY = THEME === 'dark' ? [['0%', '#141c38'], ['55%', '#0a0e1c'], ['100%', '#05070f']]
+          : (THEME === 'contrast' ? null
+            : [['0%', '#ffffff'], ['72%', '#f6f9fc'], ['100%', '#eef3f9']]);
+        var defs = h('defs', { key: 'defs' },
+          h('filter', { key: 'g', id: 'arc-glow', x: '-30%', y: '-30%', width: '160%', height: '160%' },
+            h('feGaussianBlur', { key: 'b', stdDeviation: 2.4, result: 'gb' }),
+            h('feMerge', { key: 'm' }, h('feMergeNode', { key: 'n1', in: 'gb' }), h('feMergeNode', { key: 'n2', in: 'SourceGraphic' }))),
+          h('filter', { key: 'gs', id: 'arc-glow-strong', x: '-70%', y: '-70%', width: '240%', height: '240%' },
+            h('feGaussianBlur', { key: 'b', stdDeviation: 4.5, result: 'gb' }),
+            h('feMerge', { key: 'm' }, h('feMergeNode', { key: 'n1', in: 'gb' }), h('feMergeNode', { key: 'n2', in: 'SourceGraphic' }))),
+          SKY ? h('radialGradient', { key: 'sky', id: 'arc-sky', cx: '50%', cy: '40%', r: '78%' },
+            SKY.map(function (s, i) { return h('stop', { key: 'st' + i, offset: s[0], stopColor: s[1] }); })) : null,
+          THEME === 'dark' ? h('linearGradient', { key: 'hz', id: 'arc-horizon', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { key: 'h0', offset: '0%', stopColor: BEAM, stopOpacity: 0 }),
+            h('stop', { key: 'h1', offset: '100%', stopColor: BEAM, stopOpacity: 0.2 })) : null);
+        var backdropEls = [];
+        if (SKY) backdropEls.push(h('rect', { key: 'backdrop', x: 0, y: 0, width: W, height: H, fill: 'url(#arc-sky)', 'aria-hidden': 'true' }));
+        if (THEME === 'dark') backdropEls.push(h('rect', { key: 'horizon', x: 0, y: H * 0.6, width: W, height: H * 0.4, fill: 'url(#arc-horizon)', 'aria-hidden': 'true' }));
 
         var gridEls = [];
         for (var gx = 0; gx <= 10; gx++) gridEls.push(h('line', { key: 'gx' + gx, x1: sx(gx), y1: sy(wy0), x2: sx(gx), y2: sy(wy1), stroke: GRID, strokeWidth: gx === 0 ? 1.5 : 0.5, opacity: gx === 0 ? 0.9 : 0.4 }));
@@ -1022,11 +1056,11 @@
 
         var obstacleEls = [];
         (level.walls || []).forEach(function (w, i) {
-          obstacleEls.push(h('rect', { key: 'wall' + i, x: sx(w.x) - 4, y: sy(w.height), width: 8, height: sy(0) - sy(w.height), fill: WALL, rx: 2 }));
+          obstacleEls.push(h('rect', { key: 'wall' + i, x: sx(w.x) - 4, y: sy(w.height), width: 8, height: sy(0) - sy(w.height), fill: WALL, rx: 2, filter: 'url(#arc-glow)' }));
         });
         (level.gates || []).forEach(function (g, i) {
-          obstacleEls.push(h('rect', { key: 'gateLo' + i, x: sx(g.x) - 4, y: sy(g.lo), width: 8, height: sy(0) - sy(g.lo), fill: GATE, opacity: 0.85, rx: 2 }));
-          obstacleEls.push(h('rect', { key: 'gateHi' + i, x: sx(g.x) - 4, y: sy(wy1), width: 8, height: sy(g.hi) - sy(wy1), fill: GATE, opacity: 0.85, rx: 2 }));
+          obstacleEls.push(h('rect', { key: 'gateLo' + i, x: sx(g.x) - 4, y: sy(g.lo), width: 8, height: sy(0) - sy(g.lo), fill: GATE, opacity: 0.85, rx: 2, filter: 'url(#arc-glow)' }));
+          obstacleEls.push(h('rect', { key: 'gateHi' + i, x: sx(g.x) - 4, y: sy(wy1), width: 8, height: sy(g.hi) - sy(wy1), fill: GATE, opacity: 0.85, rx: 2, filter: 'url(#arc-glow)' }));
           if (g.slope) { // tangent tick showing the required entry slope (the "tilt")
             var smy = (g.lo + g.hi) / 2, sdx = 0.9;
             obstacleEls.push(h('line', { key: 'gslope' + i, x1: sx(g.x - sdx), y1: sy(smy - g.slope.value * sdx), x2: sx(g.x + sdx), y2: sy(smy + g.slope.value * sdx), stroke: PAL.warn, strokeWidth: 2.5, strokeDasharray: '5 3', strokeLinecap: 'round' }));
@@ -1035,11 +1069,16 @@
 
         var nodeR = (W / (wx1 - wx0)) * level.node.r;
         var lit = ls.solved || res.result === 'hit';
+        var ncx = sx(level.node.x), ncy = sy(level.node.y);
         var nodeEl = h('circle', {
-          key: 'node', cx: sx(level.node.x), cy: sy(level.node.y), r: nodeR,
+          key: 'node', cx: ncx, cy: ncy, r: nodeR,
           fill: lit ? NODE_ON : NODE_OFF, opacity: lit ? 1 : 0.85,
+          filter: lit ? 'url(#arc-glow-strong)' : 'url(#arc-glow)',
           className: lit ? '' : 'arccity-node-unlit', stroke: lit ? NODE_ON : NODE_OFF, strokeWidth: 2
         });
+        // Soft halo behind a lit node; expanding burst ring the moment it's lit.
+        var nodeGlowEls = lit ? [h('circle', { key: 'nodehalo', cx: ncx, cy: ncy, r: nodeR * 1.9, fill: NODE_ON, opacity: 0.24, filter: 'url(#arc-glow-strong)', className: 'arccity-halo', 'aria-hidden': 'true' })] : [];
+        var nodeBurstEls = (S.fired && res.result === 'hit') ? [h('circle', { key: 'burst', cx: ncx, cy: ncy, r: nodeR, fill: 'none', stroke: NODE_ON, strokeWidth: 3, className: 'arccity-burst', 'aria-hidden': 'true' })] : [];
 
         var samples = sampleCurve(level, P);
         function ptsStr(filterFn) {
@@ -1063,7 +1102,7 @@
         var overlay = [];
         if (S.fired) {
           var killX = res.killedAt ? res.killedAt.x : wx1;
-          overlay.push(h('polyline', { key: 'beam-' + (ls.shots || 0), ref: beamRef, points: ptsStr(function (pt) { return pt.x <= killX + 0.0001; }), fill: 'none', stroke: res.result === 'hit' ? NODE_ON : BEAM, strokeWidth: 3.5, strokeLinecap: 'round', style: { filter: 'drop-shadow(0 0 4px ' + (res.result === 'hit' ? NODE_ON : BEAM) + ')' } }));
+          overlay.push(h('polyline', { key: 'beam-' + (ls.shots || 0), ref: beamRef, points: ptsStr(function (pt) { return pt.x <= killX + 0.0001; }), fill: 'none', stroke: res.result === 'hit' ? NODE_ON : BEAM, strokeWidth: 3.5, strokeLinecap: 'round', filter: 'url(#arc-glow)' }));
           if (res.killedAt) {
             var kx = sx(res.killedAt.x), ky = sy(res.killedAt.y), mk = 7;
             overlay.push(h('line', { key: 'kx1', x1: kx - mk, y1: ky - mk, x2: kx + mk, y2: ky + mk, stroke: PAL.danger, strokeWidth: 3, strokeLinecap: 'round' }));
@@ -1133,7 +1172,7 @@
           key: 'svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%',
           role: 'img', 'aria-label': describeBoard(level),
           style: { display: 'block', maxHeight: '50vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden', touchAction: 'none' }
-        }, [].concat(gridEls, obstacleEls, ghostEls, previewEls, overlay, [nodeEl], handleEls));
+        }, [].concat([defs], backdropEls, gridEls, obstacleEls, ghostEls, previewEls, overlay, nodeGlowEls, [nodeEl], nodeBurstEls, handleEls));
 
         // ── Level progression bar ──
         var levelBtns = LEVELS.map(function (lv, i) {

@@ -92,6 +92,44 @@ describe('Arc City render — Grand Tour award through the Fire handler', () => 
   });
 });
 
+describe('Arc City render — neon-city visual layer (decorative, a11y-safe)', () => {
+  // helper: does any node in the tree satisfy pred?
+  function some(r, pred) {
+    let found = false;
+    (function walk(n) {
+      if (found || n == null || n === false) return;
+      if (Array.isArray(n)) { n.forEach(walk); return; }
+      if (typeof n === 'object') { if (pred(n)) { found = true; return; } if (n.children) n.children.forEach(walk); }
+    })(r.tree);
+    return found;
+  }
+
+  it('defines glow filters + a theme sky, and lays a backdrop behind the board (light theme)', () => {
+    const r = render({ levelId: 'L3', byLevel: {}, tier: 'practice', fired: false, badges: [] });
+    expect(some(r, n => n.props && n.props.id === 'arc-glow')).toBe(true);        // glow filter defined
+    expect(some(r, n => n.props && n.props.id === 'arc-glow-strong')).toBe(true);
+    expect(r.find('backdrop')).not.toBeNull();                                     // sky backdrop present
+    // glow is applied to the gates (additive halo — never lowers their tested contrast)
+    expect(some(r, n => n.props && n.props.key === 'gateLo0' && n.props.filter === 'url(#arc-glow)')).toBe(true);
+  });
+
+  it('decorative layers are aria-hidden (no SR noise)', () => {
+    const r = render({ levelId: 'L3', byLevel: {}, tier: 'practice', fired: false, badges: [] });
+    expect(r.find('backdrop').props['aria-hidden']).toBe('true');
+  });
+
+  it('a lit node gets a halo, and FIRING a hit spawns the burst ring', () => {
+    const lit = render({ levelId: 'L1', byLevel: { L1: { params: { m: 0.5, b: 0 }, shots: 1, solved: true } }, tier: 'practice', fired: true, badges: [] });
+    expect(lit.find('nodehalo')).not.toBeNull();
+    expect(lit.find('burst')).not.toBeNull();
+    expect(lit.find('burst').props.className).toMatch(/arccity-burst/); // CSS gates its animation behind prefers-reduced-motion
+    // an UNlit board has neither
+    const unlit = render({ levelId: 'L1', byLevel: {}, tier: 'practice', fired: false, badges: [] });
+    expect(unlit.find('nodehalo')).toBeNull();
+    expect(unlit.find('burst')).toBeNull();
+  });
+});
+
 describe('Arc City render — Sine Boulevard §3.1 affordances', () => {
   it('practice tier shows the crest-grabber handle + ghost target dots + period-framed label', () => {
     const r = render({ levelId: 'L5', byLevel: {}, tier: 'practice', fired: false, badges: [] });
