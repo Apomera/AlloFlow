@@ -1027,6 +1027,232 @@ exports[`Lumen — histogram chart type (distribution of values) > histogram geo
 }
 `;
 
+exports[`Lumen — multi-series line (categories of ONE measure on a shared axis) > multiSeriesGeometry: one L0 polyline+points per series; colour guard holds (snapshot) 1`] = `
+{
+  "box": {
+    "h": 280,
+    "padB": 34,
+    "padL": 44,
+    "padR": 16,
+    "padT": 16,
+    "w": 480,
+  },
+  "chartType": "multiSeriesLine",
+  "maxX": 8,
+  "minX": 1,
+  "seriesGeo": [
+    {
+      "colorIdx": 0,
+      "label": "Cold read",
+      "linePath": "M 44,226.8 L 104,210.9 L 164,200.2 L 224,184.2 L 284,162.9 L 344,147 L 404,125.7 L 464,109.7",
+      "n": 8,
+      "points": [
+        {
+          "level": "L0",
+          "phase": "baseline",
+          "sx": 44,
+          "sy": 226.8,
+          "x": 1,
+          "y": 40,
+        },
+        {
+          "level": "L0",
+          "phase": "baseline",
+          "sx": 104,
+          "sy": 210.9,
+          "x": 2,
+          "y": 43,
+        },
+        {
+          "level": "L0",
+          "phase": "baseline",
+          "sx": 164,
+          "sy": 200.2,
+          "x": 3,
+          "y": 45,
+        },
+        {
+          "level": "L0",
+          "phase": "baseline",
+          "sx": 224,
+          "sy": 184.2,
+          "x": 4,
+          "y": 48,
+        },
+        {
+          "level": "L0",
+          "phase": "tier2",
+          "sx": 284,
+          "sy": 162.9,
+          "x": 5,
+          "y": 52,
+        },
+        {
+          "level": "L0",
+          "phase": "tier2",
+          "sx": 344,
+          "sy": 147,
+          "x": 6,
+          "y": 55,
+        },
+        {
+          "level": "L0",
+          "phase": "tier2",
+          "sx": 404,
+          "sy": 125.7,
+          "x": 7,
+          "y": 59,
+        },
+        {
+          "level": "L0",
+          "phase": "tier2",
+          "sx": 464,
+          "sy": 109.7,
+          "x": 8,
+          "y": 62,
+        },
+      ],
+      "refused": false,
+      "series": "cold",
+      "slope": 3.1904761904761907,
+    },
+    {
+      "colorIdx": 1,
+      "label": "Practiced",
+      "linePath": "M 44,162.9 L 104,147 L 164,136.3 L 224,120.4 L 284,93.7 L 344,72.4 L 404,56.5 L 464,35.2",
+      "n": 8,
+      "points": [
+        {
+          "level": "L0",
+          "phase": "baseline",
+          "sx": 44,
+          "sy": 162.9,
+          "x": 1,
+          "y": 52,
+        },
+        {
+          "level": "L0",
+          "phase": "baseline",
+          "sx": 104,
+          "sy": 147,
+          "x": 2,
+          "y": 55,
+        },
+        {
+          "level": "L0",
+          "phase": "baseline",
+          "sx": 164,
+          "sy": 136.3,
+          "x": 3,
+          "y": 57,
+        },
+        {
+          "level": "L0",
+          "phase": "baseline",
+          "sx": 224,
+          "sy": 120.4,
+          "x": 4,
+          "y": 60,
+        },
+        {
+          "level": "L0",
+          "phase": "tier2",
+          "sx": 284,
+          "sy": 93.7,
+          "x": 5,
+          "y": 65,
+        },
+        {
+          "level": "L0",
+          "phase": "tier2",
+          "sx": 344,
+          "sy": 72.4,
+          "x": 6,
+          "y": 69,
+        },
+        {
+          "level": "L0",
+          "phase": "tier2",
+          "sx": 404,
+          "sy": 56.5,
+          "x": 7,
+          "y": 72,
+        },
+        {
+          "level": "L0",
+          "phase": "tier2",
+          "sx": 464,
+          "sy": 35.2,
+          "x": 8,
+          "y": 76,
+        },
+      ],
+      "refused": false,
+      "series": "practiced",
+      "slope": 3.5,
+    },
+  ],
+  "xTicks": [
+    {
+      "sx": 44,
+      "x": 1,
+    },
+    {
+      "sx": 104,
+      "x": 2,
+    },
+    {
+      "sx": 164,
+      "x": 3,
+    },
+    {
+      "sx": 224,
+      "x": 4,
+    },
+    {
+      "sx": 284,
+      "x": 5,
+    },
+    {
+      "sx": 344,
+      "x": 6,
+    },
+    {
+      "sx": 404,
+      "x": 7,
+    },
+    {
+      "sx": 464,
+      "x": 8,
+    },
+  ],
+  "y0": 36.4,
+  "y1": 79.6,
+  "yTicks": [
+    {
+      "sy": 246,
+      "y": 36.4,
+    },
+    {
+      "sy": 188.5,
+      "y": 47.2,
+    },
+    {
+      "sy": 131,
+      "y": 58,
+    },
+    {
+      "sy": 73.5,
+      "y": 68.8,
+    },
+    {
+      "sy": 16,
+      "y": 79.6,
+    },
+  ],
+}
+`;
+
 exports[`Lumen — slope chart (per-phase fitted trends, descriptive — NOT a causal effect) > slope geometry: one fitted L1 segment per phase, observed L0 dots beneath (snapshot) 1`] = `
 {
   "box": {

@@ -95,6 +95,26 @@
   // that must remain legible is clamped to >= 0.6 (design §6.4).
   var OPACITY_FLOOR = 0.6;
 
+  // Categorical palette for MULTI-SERIES lines — distinct hues chosen to NOT collide with the L3
+  // caution amber (pal.caution) or the SRC reference teal (pal.reference); color is a convenience,
+  // the LEGEND label + the SR table are the non-color channel (so it survives colour-blindness).
+  var SERIES_PALETTE = ['#1d4ed8', '#be123c', '#7c3aed', '#15803d', '#db2777', '#4338ca'];
+  function seriesColor(idx) { return SERIES_PALETTE[((idx % SERIES_PALETTE.length) + SERIES_PALETTE.length) % SERIES_PALETTE.length]; }
+  // Guard (mirrors referenceContrastOK): no series colour may equal the caution/reference/neutral ink,
+  // and all series colours must be mutually distinct — so a series line can never read as the L3 signal.
+  function seriesColorOK(palette) {
+    var p = palette || DEFAULT_PALETTE;
+    var reserved = [p.caution, p.reference, p.neutral, p.line];
+    var seen = {};
+    for (var i = 0; i < SERIES_PALETTE.length; i++) {
+      var c = SERIES_PALETTE[i];
+      if (reserved.indexOf(c) !== -1) return false;
+      if (seen[c]) return false;
+      seen[c] = true;
+    }
+    return true;
+  }
+
   function encode(level, palette) {
     var g = GRAMMAR[level];
     if (!g) throw new Error('encode: unknown level ' + level);
@@ -304,15 +324,19 @@
       ? ('across these ' + claim.shownOf.shown + ' of ' + claim.shownOf.total + ' probes, ')
       : '';
     var dir = e.slope > 0 ? 'rose' : (e.slope < 0 ? 'fell' : 'held flat');
+    // A per-series claim leads with its series LABEL; the primary trend leads with the variable (unchanged).
+    var subject = claim.seriesLabel ? (claim.seriesLabel + ' ' + claim.variable) : claim.variable;
     // INVARIANT: level word first, then the interval and n, in fixed order.
-    return word + ': ' + subset + claim.variable + ' ' + dir + ' ~' + round2(Math.abs(e.slope)) +
+    return word + ': ' + subset + subject + ' ' + dir + ' ~' + round2(Math.abs(e.slope)) +
       ' ' + claim.unit + ' per step (95% interval ' + signed(e.interval[0]) + ' to ' + signed(e.interval[1]) +
       '; n=' + e.n + (e.small ? ', small' : '') + ').';
   }
 
   function refusalSentence(claim) {
-    // A refusal still leads with the level word and names n (no interval exists).
-    return levelWord(claim.level) + ': n=' + claim.n +
+    // A refusal still leads with the level word and names n (no interval exists). A per-series refusal
+    // names its series so it cannot hide behind another series' line (anti-cherry-pick).
+    var lead = claim.seriesLabel ? (claim.seriesLabel + ', n=' + claim.n) : ('n=' + claim.n);
+    return levelWord(claim.level) + ': ' + lead +
       ' — too few points to estimate a trend; no line drawn (need at least ' + SMALL_N.refuseBelow + ').';
   }
 
@@ -320,10 +344,14 @@
   // observation ids — the rest are HIDDEN, and the omission self-declares).
   function deriveTrendClaim(comp, opts) {
     opts = opts || {};
+    // opts.series filters to ONE series (multi-series line); each series is its OWN claim with its OWN
+    // n / interval / refusal (never a pooled multi-slope). With no series, the pool IS comp.observations,
+    // so the primary trend claim is byte-identical to before.
+    var pool = opts.series != null ? comp.observations.filter(function (o) { return o.series === opts.series; }) : comp.observations;
     var obs = opts.obsIds
-      ? comp.observations.filter(function (o) { return opts.obsIds.indexOf(o.id) >= 0; })
-      : comp.observations.slice();
-    var total = comp.observations.length;
+      ? pool.filter(function (o) { return opts.obsIds.indexOf(o.id) >= 0; })
+      : pool.slice();
+    var total = pool.length;
     var shown = obs.length;
     var n = obs.length;
     var status = smallNStatus(n);
@@ -337,6 +365,12 @@
       shownOf: { shown: shown, total: total },
       n: n
     };
+    // seriesKey/seriesLabel are added ONLY for a per-series claim and are EXCLUDED from _hash (which hashes
+    // estimate + shownOf), so the primary trend's claim shape + _hash stay byte-identical.
+    if (opts.series != null) {
+      base.seriesKey = opts.series;
+      base.seriesLabel = (comp.seriesLabels && comp.seriesLabels[opts.series]) || opts.series;
+    }
     if (status === 'refuse') {
       base.refused = true;
       base.estimate = null;
@@ -346,7 +380,10 @@
     }
     var points = obs.map(function (o) { return { x: o.x, y: o.y }; });
     var ci = slopeInterval(points);
-    var boot = bootstrapSlopeCI(points, 1000, comp.variable + ':' + JSON.stringify(points));
+    // Per-series seed includes the series key so two series with identical points still get distinct
+    // (reproducible) bootstrap intervals; the primary (no-series) seed is unchanged => byte-identical.
+    var seedPrefix = comp.variable + (opts.series != null ? (':' + opts.series) : '') + ':';
+    var boot = bootstrapSlopeCI(points, 1000, seedPrefix + JSON.stringify(points));
     var fit = linregress(points);
     base.estimate = {
       slope: fit.slope, intercept: fit.intercept, r: fit.r, n: n,
@@ -447,6 +484,19 @@
     { x: 5, y: 47, phase: 'baseline', y2: 60 }, { x: 6, y: 53, phase: 'tier2', y2: 66 },
     { x: 7, y: 58, phase: 'tier2', y2: 71 }, { x: 8, y: 61, phase: 'tier2', y2: 73 },
     { x: 9, y: 60, phase: 'tier2', y2: 72 }, { x: 10, y: 66, phase: 'tier2', y2: 79 }
+  ];
+
+  // A MULTI-SERIES sample — ONE student, ONE measure (WCPM), TWO CONDITIONS (cold vs practiced read)
+  // on a shared axis. series is a CATEGORY/condition, never a different student or a different unit.
+  var MULTI_SAMPLE = [
+    { x: 1, y: 40, phase: 'baseline', series: 'cold' }, { x: 1, y: 52, phase: 'baseline', series: 'practiced' },
+    { x: 2, y: 43, phase: 'baseline', series: 'cold' }, { x: 2, y: 55, phase: 'baseline', series: 'practiced' },
+    { x: 3, y: 45, phase: 'baseline', series: 'cold' }, { x: 3, y: 57, phase: 'baseline', series: 'practiced' },
+    { x: 4, y: 48, phase: 'baseline', series: 'cold' }, { x: 4, y: 60, phase: 'baseline', series: 'practiced' },
+    { x: 5, y: 52, phase: 'tier2', series: 'cold' }, { x: 5, y: 65, phase: 'tier2', series: 'practiced' },
+    { x: 6, y: 55, phase: 'tier2', series: 'cold' }, { x: 6, y: 69, phase: 'tier2', series: 'practiced' },
+    { x: 7, y: 59, phase: 'tier2', series: 'cold' }, { x: 7, y: 72, phase: 'tier2', series: 'practiced' },
+    { x: 8, y: 62, phase: 'tier2', series: 'cold' }, { x: 8, y: 76, phase: 'tier2', series: 'practiced' }
   ];
 
   // Sorted-unique series tags present in the data ([] => the legacy single-series world).
@@ -644,8 +694,42 @@
     return { box: box, chartType: 'scatter', minX: round1(minX), maxX: round1(maxX), y0: round1(y0), y1: round1(y1), scatterPoints: scatterPoints, fitPath: fitPath, xTicks: xTicks, yTicks: yTicks };
   }
 
+  // Multi-series line — ONE measure on a shared y-axis, multiple CATEGORY series over a shared x.
+  // Each series is a literal L0 data polyline (connect the observed points); the per-series trend
+  // SLOPE lives in its own claim sentence (claims is an ARRAY, one claim per series). seriesKeys
+  // enumerates EVERY series so none can be silently dropped (anti-cherry-pick). When there is <=1
+  // series this is never reached (the render delegates to the legacy trend), keeping byte-identity.
+  function multiSeriesGeometry(observations, claims, box, sourceRefs) {
+    box = box || DEFAULT_BOX;
+    var keys = seriesKeys(observations);
+    var all = observations.slice();
+    var xs = all.map(function (o) { return o.x; }), ys = all.map(function (o) { return o.y; });
+    var refs = (sourceRefs || []).filter(function (r) { return sourcedRenderable(r).ok; }), refVals = refs.map(function (r) { return r.value; });
+    var innerW = box.w - box.padL - box.padR, innerH = box.h - box.padT - box.padB;
+    var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+    var minY = Math.min.apply(null, ys.concat(refVals)), maxY = Math.max.apply(null, ys.concat(refVals));
+    var padY = (maxY - minY) * 0.1 || 1, y0 = minY - padY, y1 = maxY + padY;
+    function sx(x) { return box.padL + (maxX === minX ? 0 : (x - minX) / (maxX - minX)) * innerW; }
+    function sy(y) { return box.padT + innerH - (y1 === y0 ? 0 : (y - y0) / (y1 - y0)) * innerH; }
+    var claimByKey = {}; (claims || []).forEach(function (c) { if (c && c.seriesKey != null) claimByKey[c.seriesKey] = c; });
+    var seriesGeo = keys.map(function (k, idx) {
+      var c = claimByKey[k];
+      var pts = all.filter(function (o) { return o.series === k; }).slice().sort(function (a, b) { return a.x - b.x; });
+      var points = pts.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
+      var linePath = points.length >= 2 ? ('M ' + points.map(function (p) { return p.sx + ',' + p.sy; }).join(' L ')) : null;
+      return { series: k, label: (c && c.seriesLabel) || k, colorIdx: idx, refused: !!(c && c.refused), n: pts.length, slope: (c && c.estimate) ? c.estimate.slope : null, points: points, linePath: linePath };
+    });
+    var xvals = xs.filter(function (v, i, a) { return a.indexOf(v) === i; }).sort(function (a, b) { return a - b; });
+    var xTicks = xvals.map(function (v) { return { x: v, sx: round1(sx(v)) }; });
+    var yTicks = []; for (var t = 0; t <= 4; t++) { var yv = y0 + (y1 - y0) * t / 4; yTicks.push({ y: round1(yv), sy: round1(sy(yv)) }); }
+    var out = { box: box, chartType: 'multiSeriesLine', minX: minX, maxX: maxX, y0: round1(y0), y1: round1(y1), seriesGeo: seriesGeo, xTicks: xTicks, yTicks: yTicks };
+    if (refs.length) out.refLines = refs.map(function (r) { var ry = round1(sy(r.value)); return { id: r.id, value: r.value, sy: ry, dPath: 'M ' + box.padL + ',' + ry + ' L ' + (box.w - box.padR) + ',' + ry, label: benchmarkChipText(r), verified: r.verified === true }; });
+    return out;
+  }
+
   function plotGeometry(observations, claim, box, sourceRefs, chartType) {
     box = box || DEFAULT_BOX;
+    if (chartType === 'multiSeriesLine') return multiSeriesGeometry(observations, claim, box, sourceRefs); // claim = ARRAY of per-series claims
     if (chartType === 'bar') return barGeometry(observations, box, sourceRefs); // dispatch; trend code below is untouched
     if (chartType === 'dot') return dotGeometry(observations, box, sourceRefs);
     if (chartType === 'box') return boxGeometry(observations, box, sourceRefs);
@@ -772,6 +856,12 @@
     // Scatter (association) has a different axis grammar (x = a measure, not week), so it does NOT
     // describe trend phase lines or a y=value benchmark. The association sentence already carries
     // r + interval + n + the not-causation caveat, so it IS the complete summary.
+    // Multi-series line: ONE sentence per series (refused series included — anti-cherry-pick), all on
+    // the same measure/axis. claim is the ARRAY of per-series claims.
+    if (chartType === 'multiSeriesLine') {
+      var mc = Array.isArray(claim) ? claim : [];
+      return 'Multi-series line (' + mc.length + ' series, same measure on one axis). ' + mc.map(function (c) { return c.text; }).join(' ');
+    }
     if (chartType === 'scatter') {
       var sn = 'Scatter (association). ';
       return sn + (claim ? claim.text : 'no paired data yet.');
@@ -813,7 +903,20 @@
     return { columns: columns, rows: rows, perSegment: [], summary: chartSummaryText(withY, claim, [], 'scatter'), level: claim.level, kind: 'association' };
   }
 
+  // The SR data-table peer for a multi-series line: one row per observation, with a Series column.
+  // Each row is an OBSERVED (L0) data point; the per-series SLOPE lives in the claim sentences (summary).
+  function multiSeriesTableModel(observations, claims) {
+    var word = levelWord('L0');
+    var labelByKey = {}; (claims || []).forEach(function (c) { if (c && c.seriesKey != null) labelByKey[c.seriesKey] = c.seriesLabel || c.seriesKey; });
+    var variable = (claims && claims[0] && claims[0].variable) || 'value';
+    var obs = observations.slice().sort(function (a, b) { return (a.x - b.x) || String(a.series).localeCompare(String(b.series)); });
+    var columns = ['Week (x)', variable + ' (y)', 'Series', 'Phase', 'Level'];
+    var rows = obs.map(function (o) { return { x: o.x, y: o.y, series: (labelByKey[o.series] || o.series || '—'), phase: o.phase || '—', level: word }; });
+    return { columns: columns, rows: rows, perSegment: [], summary: chartSummaryText(observations, claims, [], 'multiSeriesLine'), level: 'L1', kind: 'multiSeries' };
+  }
+
   function dataTableModel(observations, claim, sourceRefs) {
+    if (Array.isArray(claim)) return multiSeriesTableModel(observations, claim); // multi-series peer (claim = per-series array)
     if (claim && claim.kind === 'association') return associationTableModel(observations, claim); // scatter peer; legacy path below is untouched
     var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
     var word = levelWord(claim ? claim.level : 'L0');
@@ -1186,10 +1289,11 @@
     deriveTrendClaim: deriveTrendClaim, deriveAssociationClaim: deriveAssociationClaim, associationSentence: associationSentence,
     trendSentence: trendSentence, refusalSentence: refusalSentence,
     // chart geometry + SR data-table peer (Phase 1)
-    REYNA_SAMPLE: REYNA_SAMPLE, PAIRED_SAMPLE: PAIRED_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
+    REYNA_SAMPLE: REYNA_SAMPLE, PAIRED_SAMPLE: PAIRED_SAMPLE, MULTI_SAMPLE: MULTI_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
     quantiles: quantiles, dotGeometry: dotGeometry, boxGeometry: boxGeometry, histogramBins: histogramBins, histogramGeometry: histogramGeometry,
-    scatterGeometry: scatterGeometry, slopeGeometry: slopeGeometry,
-    perSegmentSlopes: perSegmentSlopes, chartSummaryText: chartSummaryText, dataTableModel: dataTableModel, associationTableModel: associationTableModel,
+    scatterGeometry: scatterGeometry, slopeGeometry: slopeGeometry, multiSeriesGeometry: multiSeriesGeometry,
+    SERIES_PALETTE: SERIES_PALETTE, seriesColor: seriesColor, seriesColorOK: seriesColorOK,
+    perSegmentSlopes: perSegmentSlopes, chartSummaryText: chartSummaryText, dataTableModel: dataTableModel, associationTableModel: associationTableModel, multiSeriesTableModel: multiSeriesTableModel,
     // AI-involvement layer (Phase 1) — pure guards + audience faces
     AI_CAVEAT: AI_CAVEAT, HYP_CAVEAT: HYP_CAVEAT, AI_N_FLOOR: AI_N_FLOOR, levelIndex: levelIndex,
     aiAllowed: aiAllowed, buildClaimContext: buildClaimContext, allowedNumbers: allowedNumbers,
@@ -1283,7 +1387,7 @@
             } catch (eP) { return null; }
           };
           // At the default L1 ceiling NO callGemini fires — the trend is pure math.
-          var comp = makeCompendium(d.variable || 'WCPM', d.unit || 'words/min', { measure: d.measure || 'ORF-WCPM', grade: d.benchGrade, seasonWindow: d.benchSeason, variable2: d.variable2, unit2: d.unit2 });
+          var comp = makeCompendium(d.variable || 'WCPM', d.unit || 'words/min', { measure: d.measure || 'ORF-WCPM', grade: d.benchGrade, seasonWindow: d.benchSeason, variable2: d.variable2, unit2: d.unit2, seriesLabels: d.seriesLabels });
           obs.forEach(function (o) { addObservation(comp, o); });
           var claim = obs.length ? deriveTrendClaim(comp, {}) : null;
           // Scatter argues an ASSOCIATION claim (2nd variable y2 vs primary y), not the trend. activeClaim
@@ -1291,6 +1395,10 @@
           // trend claim, so those paths are byte-identical. The AI/export layer stays bound to the trend.
           var assoc = (chartType === 'scatter' && obs.length) ? deriveAssociationClaim(comp, {}) : null;
           var activeClaim = assoc || claim;
+          // Multi-series line: ONE provenance-bound claim PER series tag (each its own n / interval /
+          // refusal — never a pooled multi-slope). seriesKeys enumerates EVERY series (anti-cherry-pick).
+          var multiKeys = (chartType === 'multiSeriesLine' && obs.length) ? seriesKeys(obs) : [];
+          var multiClaims = multiKeys.length ? multiKeys.map(function (k) { return deriveTrendClaim(comp, { series: k, id: 'cs_' + k }); }) : null;
           var bundle = encode('L1');
           // The AI fires ONLY on demand, ONLY over the PII-free context, and its
           // output is gated by the tested guards before it is ever shown (§6.1/§6.3).
@@ -1385,7 +1493,7 @@
           };
           kids.push(h('div', { key: 'charttype', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Chart type' },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Chart:'),
-            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box'), ctBtn('histogram', 'Histogram'), ctBtn('scatter', 'Scatter'), ctBtn('slope', 'Slope')));
+            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box'), ctBtn('histogram', 'Histogram'), ctBtn('scatter', 'Scatter'), ctBtn('slope', 'Slope'), ctBtn('multiSeriesLine', 'Multi-line')));
 
           if (!obs.length) {
             kids.push(h('p', { key: 'empty', className: 'mt-2 text-sm text-slate-600' },
@@ -1400,6 +1508,9 @@
             // The 2nd-measure input appears ONLY in the scatter view (calm-by-default: the trend entry stays two fields).
             (chartType === 'scatter' ? h('label', { key: 'y2lab', className: 'text-xs text-slate-600 flex flex-col' }, (comp.variable2 || 'value₂') + ' (y2)',
               h('input', { type: 'number', value: d.draftY2 == null ? '' : d.draftY2, onChange: function (ev) { upd('draftY2', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' })) : null),
+            // The series (category) input appears ONLY in the multi-series view — a category/condition, NOT a person.
+            (chartType === 'multiSeriesLine' ? h('label', { key: 'seslab', className: 'text-xs text-slate-600 flex flex-col' }, 'Series (category)',
+              h('input', { type: 'text', value: d.draftSeries == null ? '' : d.draftSeries, onChange: function (ev) { upd('draftSeries', ev.target.value); }, className: 'w-28 px-2 py-1 border rounded' })) : null),
             h('button', {
               className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500',
               onClick: function () {
@@ -1408,9 +1519,10 @@
                 var row = { x: x, y: y, phase: d.draftPhase || null };
                 var y2 = parseFloat(d.draftY2);
                 if (chartType === 'scatter' && !isNaN(y2)) row.y2 = y2; // paired 2nd measure, scatter only
+                if (chartType === 'multiSeriesLine' && d.draftSeries) row.series = d.draftSeries; // category tag, multi-series only
                 var next = obs.concat([row]);
                 upd('observations', next); upd('draftX', ''); upd('draftY', ''); upd('draftY2', '');
-                announce('Added week ' + x + ' equals ' + y + (row.y2 != null ? (' (and ' + row.y2 + ')') : '') + '. ' + next.length + ' observations.');
+                announce('Added week ' + x + ' equals ' + y + (row.y2 != null ? (' (and ' + row.y2 + ')') : '') + (row.series ? (' [' + row.series + ']') : '') + '. ' + next.length + ' observations.');
               }
             }, '+ Add'),
             h('button', {
@@ -1419,10 +1531,25 @@
             }, 'Use sample (Reyna ORF)'),
             // A PAIRED sample (WCPM + comprehension) only in the scatter view, so the correlation has data to read.
             (chartType === 'scatter' ? h('button', { key: 'paired', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
-              onClick: function () { upd('observations', PAIRED_SAMPLE.slice()); announce('Loaded the paired sample: 10 probes with WCPM and comprehension.'); } }, 'Use paired sample') : null)
+              onClick: function () { upd('observations', PAIRED_SAMPLE.slice()); announce('Loaded the paired sample: 10 probes with WCPM and comprehension.'); } }, 'Use paired sample') : null),
+            // A MULTI-SERIES sample (one student, two conditions of one measure) only in the multi-line view.
+            (chartType === 'multiSeriesLine' ? h('button', { key: 'multi', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
+              onClick: function () { upd('observations', MULTI_SAMPLE.slice()); announce('Loaded the multi-series sample: cold vs practiced WCPM across 8 weeks.'); } }, 'Use multi-series sample') : null)
           ));
 
-          if (activeClaim) {
+          // Multi-series: ONE provenance-bound sentence PER series (refused ones included — anti-cherry-pick).
+          // The colour dot beside each is the legend (maps the line colour to its series label).
+          if (chartType === 'multiSeriesLine' && multiClaims) {
+            kids.push(h('div', { key: 'claim', className: 'mt-3 p-2 rounded bg-white border border-slate-200' },
+              h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
+                h('span', null, bundle.label + ' · ' + multiClaims.length + ' series (same measure)')),
+              h('ul', { className: 'mt-1 text-sm' }, multiClaims.map(function (c, i) {
+                return h('li', { key: 'msc' + i, className: 'flex items-start gap-2' },
+                  h('span', { 'aria-hidden': 'true', style: { color: seriesColor(i), fontSize: '14px', lineHeight: '1' } }, '●'),
+                  h('span', null, c.text));
+              }))));
+          } else if (activeClaim) {
             kids.push(h('div', { key: 'claim', className: 'mt-3 p-2 rounded bg-white border border-slate-200' },
               h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
                 h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
@@ -1432,7 +1559,14 @@
               h('p', { className: 'text-sm text-slate-800 mt-1' }, assoc ? assoc.text : faceFor(claim, audience))));
           }
 
-          var geo = (obs.length >= 2 && activeClaim && !activeClaim.refused) ? plotGeometry(obs, activeClaim, undefined, sourceRefs, chartType) : null;
+          var geo;
+          if (chartType === 'multiSeriesLine') {
+            // Renders even if SOME series refuse — multiSeriesGeometry shows each series' observed points,
+            // and a refused series declares itself in the claim list + SR table.
+            geo = (multiClaims && obs.length >= 2) ? plotGeometry(obs, multiClaims, undefined, sourceRefs, chartType) : null;
+          } else {
+            geo = (obs.length >= 2 && activeClaim && !activeClaim.refused) ? plotGeometry(obs, activeClaim, undefined, sourceRefs, chartType) : null;
+          }
           if (geo) {
             var b = geo.box, sk = [];
             geo.yTicks.forEach(function (t, i) {
@@ -1510,6 +1644,18 @@
                 sk.push(h('text', { key: 'segl' + i, x: (s.sx1 + s.sx2) / 2, y: Math.min(s.sy1, s.sy2) - 4, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l1seg.ink, 'aria-hidden': 'true' }, (s.slope > 0 ? '+' : '') + s.slope + (s.small ? '*' : '')));
               });
             }
+            // Multi-series pathway: one literal L0 data polyline + observed points per series, each in
+            // its own categorical colour (the claim-card colour dots are the legend). No regression line —
+            // the per-series slope is reported in words in the claim list.
+            if (geo.seriesGeo) {
+              geo.seriesGeo.forEach(function (s, si) {
+                var col = seriesColor(s.colorIdx);
+                if (s.linePath) sk.push(h('path', { key: 'msl' + si, d: s.linePath, fill: 'none', stroke: col, strokeWidth: 2, strokeOpacity: 0.9 }));
+                s.points.forEach(function (p, pi) {
+                  sk.push(h('circle', { key: 'msc' + si + '_' + pi, cx: p.sx, cy: p.sy, r: 3, fill: col, fillOpacity: 0.95 }));
+                });
+              });
+            }
             // §16: benchmark reference line(s) — teal, dashed, NO data marker (a fact, not a measurement).
             // Horizontal (y=value) for time-series charts; VERTICAL (x=value) for the histogram.
             if (geo.refLines) geo.refLines.forEach(function (rl, i) {
@@ -1523,12 +1669,14 @@
             });
             kids.push(h('svg', {
               key: 'svg', viewBox: '0 0 ' + b.w + ' ' + b.h, className: 'w-full mt-3 bg-white rounded-lg border border-slate-200',
-              role: 'img', 'aria-label': chartSummaryText(obs, activeClaim, sourceRefs, chartType)
+              role: 'img', 'aria-label': chartSummaryText(obs, (chartType === 'multiSeriesLine' ? multiClaims : activeClaim), sourceRefs, chartType)
             }, sk));
           }
 
-          if (activeClaim && !activeClaim.refused) {
-            var tbl = dataTableModel(obs, activeClaim, sourceRefs);
+          var tableClaim = (chartType === 'multiSeriesLine') ? multiClaims : activeClaim;
+          var showTableSection = (chartType === 'multiSeriesLine') ? !!multiClaims : (activeClaim && !activeClaim.refused);
+          if (showTableSection) {
+            var tbl = dataTableModel(obs, tableClaim, sourceRefs);
             kids.push(h('button', { key: 'tbtn', className: 'mt-2 text-xs underline text-slate-600', onClick: function () { upd('showTable', !d.showTable); } },
               d.showTable ? 'Hide data table' : 'Show data table (the chart as a table)'));
             if (d.showTable) {
@@ -1540,6 +1688,9 @@
                   return h('tr', { key: 'tr' + i },
                     h('td', { className: 'border px-2 py-0.5' }, String(r.x)),
                     h('td', { className: 'border px-2 py-0.5' }, String(r.y)),
+                    // the Series column appears only for the multi-series peer (r.series present); a null
+                    // child renders nothing, so the trend/scatter tables stay byte-identical.
+                    (r.series !== undefined ? h('td', { className: 'border px-2 py-0.5' }, String(r.series)) : null),
                     h('td', { className: 'border px-2 py-0.5' }, String(r.phase)),
                     h('td', { className: 'border px-2 py-0.5' }, r.level));
                 }))));
@@ -1549,7 +1700,7 @@
           // The AI section — only at the L2/L3 ceiling, only when the n-floor gate allows. The AI
           // interpretation layer is trend-shaped (buildClaimContext sends slope/interval), so it is
           // OFF in the scatter view: scatter v1 is a pure L1 correlation (data-only, no AI re-word).
-          if (claim && !claim.refused && levelIndex(ceiling) >= 2 && chartType !== 'scatter') {
+          if (claim && !claim.refused && levelIndex(ceiling) >= 2 && chartType !== 'scatter' && chartType !== 'multiSeriesLine') {
             var gate = aiAllowed(ceiling, claim.n);
             if (!gate.allowed) {
               kids.push(h('div', { key: 'aigate', className: 'mt-3 text-xs italic text-slate-500' }, gate.reason));
@@ -1636,7 +1787,8 @@
 
           // Export builds the trend (primary-y) brief; the scatter-specific export is deferred, so the
           // buttons are hidden in the scatter view rather than exporting a mismatched trend document.
-          if (claim && !claim.refused && chartType !== 'scatter') {
+          // Multi-series is also hidden: the export brief is a single trend (it would pool the series).
+          if (claim && !claim.refused && chartType !== 'scatter' && chartType !== 'multiSeriesLine') {
             kids.push(h('div', { key: 'exp', className: 'mt-3 flex items-center gap-2 flex-wrap' },
               h('span', { className: 'text-xs text-slate-500' }, 'Export this view:'),
               h('button', { className: 'px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: exportHtml }, 'Brief (HTML)'),

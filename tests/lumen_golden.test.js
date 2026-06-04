@@ -746,3 +746,98 @@ describe('Lumen — slope chart (per-phase fitted trends, descriptive — NOT a 
       .toBe(JSON.stringify(L.plotGeometry(REYNA, claim, undefined, [], 'trend')));
   });
 });
+
+describe('Lumen — multi-series line (categories of ONE measure on a shared axis)', () => {
+  // ONE student, ONE measure (WCPM), TWO conditions (cold vs practiced). series = category, NOT a person.
+  const MULTI = [
+    { x: 1, y: 40, phase: 'baseline', series: 'cold' }, { x: 1, y: 52, phase: 'baseline', series: 'practiced' },
+    { x: 2, y: 43, phase: 'baseline', series: 'cold' }, { x: 2, y: 55, phase: 'baseline', series: 'practiced' },
+    { x: 3, y: 45, phase: 'baseline', series: 'cold' }, { x: 3, y: 57, phase: 'baseline', series: 'practiced' },
+    { x: 4, y: 48, phase: 'baseline', series: 'cold' }, { x: 4, y: 60, phase: 'baseline', series: 'practiced' },
+    { x: 5, y: 52, phase: 'tier2', series: 'cold' },    { x: 5, y: 65, phase: 'tier2', series: 'practiced' },
+    { x: 6, y: 55, phase: 'tier2', series: 'cold' },    { x: 6, y: 69, phase: 'tier2', series: 'practiced' },
+    { x: 7, y: 59, phase: 'tier2', series: 'cold' },    { x: 7, y: 72, phase: 'tier2', series: 'practiced' },
+    { x: 8, y: 62, phase: 'tier2', series: 'cold' },    { x: 8, y: 76, phase: 'tier2', series: 'practiced' }
+  ];
+  function buildMulti() {
+    const comp = L.makeCompendium('WCPM', 'words/min', { seriesLabels: { cold: 'Cold read', practiced: 'Practiced' } });
+    MULTI.forEach(p => L.addObservation(comp, p));
+    return comp;
+  }
+  const comp = buildMulti();
+  const keys = L.seriesKeys(comp.observations);
+  const claims = keys.map(k => L.deriveTrendClaim(comp, { series: k, id: 'cs_' + k }));
+
+  it('seriesKeys enumerates every tag, sorted (anti-cherry-pick)', () => {
+    expect(keys).toEqual(['cold', 'practiced']);
+  });
+
+  it('each series is its OWN single-slope L1 claim (never a pooled multi-slope), tagged + labelled', () => {
+    expect(claims.length).toBe(2);
+    claims.forEach(c => {
+      expect(c.kind).toBe('trend');
+      expect(c.level).toBe('L1');
+      expect(typeof c.estimate.slope).toBe('number');                          // ONE slope per claim
+      expect(c.seriesKey).toBeTruthy();
+    });
+    expect(claims.find(c => c.seriesKey === 'cold').seriesLabel).toBe('Cold read'); // label from seriesLabels
+    expect(claims.find(c => c.seriesKey === 'practiced').text).toMatch(/Practiced/); // sentence leads with the label
+  });
+
+  it('a per-series refusal names its series (cannot hide behind another series line)', () => {
+    const sparse = L.makeCompendium('WCPM', 'words/min', { seriesLabels: { a: 'Set A' } });
+    [{ x: 1, y: 5, series: 'a' }, { x: 2, y: 6, series: 'a' },
+     { x: 1, y: 9, series: 'b' }, { x: 2, y: 8, series: 'b' }, { x: 3, y: 7, series: 'b' }, { x: 4, y: 10, series: 'b' }].forEach(p => L.addObservation(sparse, p));
+    const cA = L.deriveTrendClaim(sparse, { series: 'a' });   // n=2 -> refuse
+    expect(cA.refused).toBe(true);
+    expect(cA.text).toMatch(/Set A/);
+    expect(L.deriveTrendClaim(sparse, { series: 'b' }).refused).toBeFalsy(); // n=4 renders
+  });
+
+  it('per-series determinism: identical points, different series keys -> distinct seeded intervals', () => {
+    const twin = L.makeCompendium('v', 'u');
+    [1, 2, 3, 4, 5, 6, 7, 8].forEach(x => { const y = x * 1.5 + (x % 2 ? 2 : -1); L.addObservation(twin, { x, y, series: 'a' }); L.addObservation(twin, { x, y, series: 'b' }); });
+    const a = L.deriveTrendClaim(twin, { series: 'a' }), b = L.deriveTrendClaim(twin, { series: 'b' });
+    expect(a.estimate.slope).toBe(b.estimate.slope);                                        // closed-form identical (same points)
+    expect(JSON.stringify(a.estimate.bootstrap)).not.toBe(JSON.stringify(b.estimate.bootstrap)); // series-keyed seed differs
+  });
+
+  it('the primary (no-series) trend claim is byte-identical to before (no seriesKey, seed unchanged)', () => {
+    const c = L.deriveTrendClaim(buildReyna(REYNA).comp, {});
+    expect('seriesKey' in c).toBe(false);
+    expect('seriesLabel' in c).toBe(false);
+    expect(c._hash).toBe(L.deriveTrendClaim(buildReyna(REYNA).comp, {})._hash);
+  });
+
+  it('multiSeriesGeometry: one L0 polyline+points per series; colour guard holds (snapshot)', () => {
+    const g = L.plotGeometry(comp.observations, claims, undefined, [], 'multiSeriesLine');
+    expect(g.chartType).toBe('multiSeriesLine');
+    expect(g.seriesGeo.length).toBe(2);
+    g.seriesGeo.forEach(s => {
+      expect(s.points.every(p => p.level === 'L0')).toBe(true);
+      expect(typeof s.linePath).toBe('string');
+      expect(s.points.length).toBe(8);
+    });
+    expect(g.trendPath).toBeUndefined();
+    expect(g.points).toBeUndefined();
+    expect(L.seriesColorOK()).toBe(true);
+    expect(g).toMatchSnapshot();
+  });
+
+  it('summary + data table cover EVERY series', () => {
+    const txt = L.chartSummaryText(comp.observations, claims, [], 'multiSeriesLine');
+    expect(txt).toMatch(/^Multi-series line \(2 series/);
+    expect(txt).toMatch(/Cold read/);
+    expect(txt).toMatch(/Practiced/);
+    const tbl = L.dataTableModel(comp.observations, claims, []);
+    expect(tbl.kind).toBe('multiSeries');
+    expect(tbl.columns).toContain('Series');
+    expect(tbl.rows.length).toBe(16);
+  });
+
+  it('the trend default stays byte-identical (the multi-series dispatch did not disturb it)', () => {
+    const c = L.deriveTrendClaim(comp, {});
+    expect(JSON.stringify(L.plotGeometry(comp.observations, c, undefined, [])))
+      .toBe(JSON.stringify(L.plotGeometry(comp.observations, c, undefined, [], 'trend')));
+  });
+});

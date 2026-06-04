@@ -110,6 +110,23 @@ ok(L.sourcedRenderable({ verified: true, citation: 'c', locator: 'javascript:ale
   ok(sg.points === undefined && sg.trendPath === undefined, 'scatter must not emit the trend points/line keys');
   ok(JSON.stringify(L.seriesKeys(L.REYNA_SAMPLE)) === '[]', 'seriesKeys must be [] for legacy single-series data');
   ok(JSON.stringify(L.dataTableModel(L.REYNA_SAMPLE, ct)) === JSON.stringify(L.dataTableModel(L.REYNA_SAMPLE, ct, [])), 'a legacy trend data table must be byte-identical with/without the sourceRefs arg');
+
+  // multi-series line: colour-channel guard, per-series single-slope claims, per-series determinism,
+  // and the no-series (pooled) trend claim staying byte-identity-clean (no seriesKey).
+  ok(L.seriesColorOK(), 'series colours must be distinct from the caution/reference/neutral ink (no L3-amber collision)');
+  var multi = L.makeCompendium('WCPM', 'words/min');
+  L.MULTI_SAMPLE.forEach(function (o) { L.addObservation(multi, o); });
+  var mkeys = L.seriesKeys(multi.observations);
+  ok(mkeys.length === 2, 'seriesKeys must enumerate every series tag (anti-cherry-pick)');
+  var msClaims = mkeys.map(function (k) { return L.deriveTrendClaim(multi, { series: k }); });
+  ok(msClaims.every(function (c) { return typeof c.estimate.slope === 'number' && c.seriesKey != null; }), 'each per-series claim carries ONE slope (single-slope-per-claim) tagged with its seriesKey');
+  ok(L.deriveTrendClaim(multi, {}).seriesKey === undefined, 'the no-series (pooled) trend claim must carry NO seriesKey (byte-identity)');
+  var mg = L.plotGeometry(multi.observations, msClaims, undefined, [], 'multiSeriesLine');
+  ok(mg.seriesGeo.length === 2 && mg.seriesGeo.every(function (s) { return s.points.every(function (p) { return p.level === 'L0'; }); }), 'multiSeriesGeometry: one series-geo per tag, observed (L0) points');
+  var twin = L.makeCompendium('v', 'u');
+  [1, 2, 3, 4, 5, 6, 7, 8].forEach(function (x) { var y = x * 1.5 + (x % 2 ? 2 : -1); L.addObservation(twin, { x: x, y: y, series: 'a' }); L.addObservation(twin, { x: x, y: y, series: 'b' }); });
+  var ca = L.deriveTrendClaim(twin, { series: 'a' }), cb = L.deriveTrendClaim(twin, { series: 'b' });
+  ok(JSON.stringify(ca.estimate.bootstrap) !== JSON.stringify(cb.estimate.bootstrap), 'two series with IDENTICAL points must get distinct (series-seeded) bootstrap intervals — the per-series-seed footgun');
 })();
 
 if (fails.length) {

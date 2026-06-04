@@ -30,6 +30,19 @@ benchRef.id = 's1';
 // A PAIRED fixture (each probe carries a 2nd measure y2) for the scatter pathway.
 const PAIRED = REYNA.map((p, i) => ({ ...p, y2: [55, 58, 56, 62, 60, 66, 71, 73, 72, 79][i] }));
 
+// A MULTI-SERIES fixture: ONE measure (WCPM), TWO conditions (cold vs practiced) of one student.
+const MULTI = [
+  { x: 1, y: 40, phase: 'baseline', series: 'cold' }, { x: 1, y: 52, phase: 'baseline', series: 'practiced' },
+  { x: 2, y: 43, phase: 'baseline', series: 'cold' }, { x: 2, y: 55, phase: 'baseline', series: 'practiced' },
+  { x: 3, y: 45, phase: 'baseline', series: 'cold' }, { x: 3, y: 57, phase: 'baseline', series: 'practiced' },
+  { x: 4, y: 48, phase: 'baseline', series: 'cold' }, { x: 4, y: 60, phase: 'baseline', series: 'practiced' },
+  { x: 5, y: 52, phase: 'tier2', series: 'cold' },    { x: 5, y: 65, phase: 'tier2', series: 'practiced' },
+  { x: 6, y: 55, phase: 'tier2', series: 'cold' },    { x: 6, y: 69, phase: 'tier2', series: 'practiced' },
+  { x: 7, y: 59, phase: 'tier2', series: 'cold' },    { x: 7, y: 72, phase: 'tier2', series: 'practiced' },
+  { x: 8, y: 62, phase: 'tier2', series: 'cold' },    { x: 8, y: 76, phase: 'tier2', series: 'practiced' }
+];
+const MULTI_LABELS = { cold: 'Cold read', practiced: 'Practiced' };
+
 const aiHyps = L.validateHypotheses([
   { text: 'The Tier-2 block reduced off-task time.', kind: 'effect', rank: 1 },
   { text: 'Regression to the mean — early weeks were low.', kind: 'null', rank: 2 }
@@ -99,6 +112,10 @@ describe('Lumen — render golden master (SSR, §15)', () => {
   it('slope pathway — per-phase fitted segments + observed dots', () => {
     expect(renderState({ observations: REYNA, chartType: 'slope' })).toMatchSnapshot();
   });
+
+  it('multi-series pathway — a coloured line + points per series, one sentence each', () => {
+    expect(renderState({ observations: MULTI, chartType: 'multiSeriesLine', seriesLabels: MULTI_LABELS })).toMatchSnapshot();
+  });
 });
 
 describe('Lumen — render invariants (no snapshot, just contracts)', () => {
@@ -158,6 +175,17 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
     expect(html).toMatch(/not proof the change caused it/i);
     expect((html.match(/<circle/g) || []).length).toBe(REYNA.length);   // observed dots
     expect((html.match(/<rect/g) || []).length).toBe(0);                 // not bars/histogram
+  });
+
+  it('the multi-series pathway draws a line + points per series, names every series, no AI/export', () => {
+    const html = renderState({ observations: MULTI, chartType: 'multiSeriesLine', seriesLabels: MULTI_LABELS });
+    expect(html).toMatch(/aria-label="Multi-series line \(2 series/);
+    expect(html).toMatch(/Cold read/);
+    expect(html).toMatch(/Practiced/);
+    expect(html).toMatch(/#1d4ed8/);                                     // series colour 0
+    expect(html).toMatch(/#be123c/);                                     // series colour 1 (distinct from amber/teal)
+    expect((html.match(/<circle/g) || []).length).toBe(MULTI.length);    // one observed point per row
+    expect(html).not.toMatch(/Generate AI|Export this view/);            // no single pooled claim -> no AI/export
   });
 
   it('the histogram pathway renders count bars + its own SR label, with no trend line or data circles', () => {
