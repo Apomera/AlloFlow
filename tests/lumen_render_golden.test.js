@@ -68,6 +68,14 @@ describe('Lumen — render golden master (SSR, §15)', () => {
   it('bar chart pathway — rect bars + axes + phase line, no trend line', () => {
     expect(renderState({ observations: REYNA, chartType: 'bar' })).toMatchSnapshot();
   });
+
+  it('dot/strip pathway — points only (no line, no bars)', () => {
+    expect(renderState({ observations: REYNA, chartType: 'dot' })).toMatchSnapshot();
+  });
+
+  it('box pathway — per-phase five-number boxes', () => {
+    expect(renderState({ observations: REYNA, chartType: 'box' })).toMatchSnapshot();
+  });
 });
 
 describe('Lumen — render invariants (no snapshot, just contracts)', () => {
@@ -95,5 +103,14 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
     expect(html).toMatch(/<rect/);
     expect(html).toMatch(/aria-label="Bar chart\./);
     expect((html.match(/<circle/g) || []).length).toBe(0); // bars, not points
+  });
+
+  it('dot & box pathways render with their own SR labels', () => {
+    const dot = renderState({ observations: REYNA, chartType: 'dot' });
+    expect(dot).toMatch(/aria-label="Dot plot\./);
+    expect((dot.match(/<circle/g) || []).length).toBeGreaterThanOrEqual(REYNA.length); // a circle per point
+    const box = renderState({ observations: REYNA, chartType: 'box' });
+    expect(box).toMatch(/aria-label="Box plot/);
+    expect(box).toMatch(/<rect/); // the IQR boxes
   });
 });

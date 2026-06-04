@@ -498,3 +498,50 @@ describe('Lumen — bar chart type (multi-pathway visualization)', () => {
     expect(L.plotGeometry(REYNA, claim, undefined, [ref], 'bar').refLines.length).toBe(1);
   });
 });
+
+describe('Lumen — dot & box chart types', () => {
+  const { comp } = buildReyna(REYNA);
+  const claim = L.deriveTrendClaim(comp, { id: 'full' });
+
+  it('quantiles: five-number summary on a known set', () => {
+    const q = L.quantiles([1, 2, 3, 4, 5]);
+    expect(q.min).toBe(1); expect(q.median).toBe(3); expect(q.max).toBe(5);
+    expect(q.q1).toBe(2); expect(q.q3).toBe(4); expect(q.iqr).toBe(2);
+  });
+
+  it('dot geometry: one L0 point per observation, no line, no bars (snapshot)', () => {
+    const g = L.plotGeometry(REYNA, claim, undefined, [], 'dot');
+    expect(g.chartType).toBe('dot');
+    expect(g.dots.length).toBe(REYNA.length);
+    expect(g.dots.every(p => p.level === 'L0')).toBe(true);
+    expect(g.trendPath).toBeUndefined();
+    expect(g.bars).toBeUndefined();
+    expect(g).toMatchSnapshot();
+  });
+
+  it('box geometry: one five-number box per phase, ordered min<=q1<=median<=q3<=max (snapshot)', () => {
+    const g = L.plotGeometry(REYNA, claim, undefined, [], 'box');
+    expect(g.chartType).toBe('box');
+    expect(g.boxes.map(b => b.phase)).toEqual(['baseline', 'tier2']);
+    g.boxes.forEach(b => {
+      expect(b.min).toBeLessThanOrEqual(b.q1);
+      expect(b.q1).toBeLessThanOrEqual(b.median);
+      expect(b.median).toBeLessThanOrEqual(b.q3);
+      expect(b.q3).toBeLessThanOrEqual(b.max);
+    });
+    expect(g).toMatchSnapshot();
+  });
+
+  it('the trend default is still byte-identical (the dot/box dispatch did not disturb it)', () => {
+    expect(JSON.stringify(L.plotGeometry(REYNA, claim, undefined, [])))
+      .toBe(JSON.stringify(L.plotGeometry(REYNA, claim, undefined, [], 'trend')));
+  });
+
+  it('summary names the chart type; the benchmark line works on dot & box too', () => {
+    expect(L.chartSummaryText(REYNA, claim, [], 'dot')).toMatch(/^Dot plot\./);
+    expect(L.chartSummaryText(REYNA, claim, [], 'box')).toMatch(/^Box plot/);
+    const ref = L.makeSourceRef({ kind: 'percentile', measure: 'ORF-WCPM', unit: 'words/min', grade: 4, season: 'winter', percentile: 50, value: 75, source: 'TEST', year: 2099, locator: 'https://example.org/x', citation: 'fixture', verified: true }, L.makeCompendium('WCPM', 'words/min', { measure: 'ORF-WCPM' }));
+    expect(L.plotGeometry(REYNA, claim, undefined, [ref], 'dot').refLines.length).toBe(1);
+    expect(L.plotGeometry(REYNA, claim, undefined, [ref], 'box').refLines.length).toBe(1);
+  });
+});

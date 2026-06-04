@@ -520,6 +520,264 @@ exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > the SR
 }
 `;
 
+exports[`Lumen — dot & box chart types > box geometry: one five-number box per phase, ordered min<=q1<=median<=q3<=max (snapshot) 1`] = `
+{
+  "box": {
+    "h": 280,
+    "padB": 34,
+    "padL": 44,
+    "padR": 16,
+    "padT": 16,
+    "w": 480,
+  },
+  "boxes": [
+    {
+      "bw": 48,
+      "cx": 149,
+      "iqr": 3,
+      "level": "L0",
+      "max": 48,
+      "median": 45,
+      "min": 42,
+      "n": 5,
+      "phase": "baseline",
+      "q1": 44,
+      "q3": 47,
+      "syMax": 178.9,
+      "syMed": 202.9,
+      "syMin": 226.8,
+      "syQ1": 210.9,
+      "syQ3": 186.9,
+    },
+    {
+      "bw": 48,
+      "cx": 359,
+      "iqr": 3,
+      "level": "L0",
+      "max": 66,
+      "median": 60,
+      "min": 53,
+      "n": 5,
+      "phase": "tier2",
+      "q1": 58,
+      "q3": 61,
+      "syMax": 35.2,
+      "syMed": 83.1,
+      "syMin": 139,
+      "syQ1": 99.1,
+      "syQ3": 75.1,
+    },
+  ],
+  "chartType": "box",
+  "xTicks": [
+    {
+      "label": "baseline",
+      "sx": 149,
+    },
+    {
+      "label": "tier2",
+      "sx": 359,
+    },
+  ],
+  "y0": 39.6,
+  "y1": 68.4,
+  "yTicks": [
+    {
+      "sy": 246,
+      "y": 39.6,
+    },
+    {
+      "sy": 188.5,
+      "y": 46.8,
+    },
+    {
+      "sy": 131,
+      "y": 54,
+    },
+    {
+      "sy": 73.5,
+      "y": 61.2,
+    },
+    {
+      "sy": 16,
+      "y": 68.4,
+    },
+  ],
+}
+`;
+
+exports[`Lumen — dot & box chart types > dot geometry: one L0 point per observation, no line, no bars (snapshot) 1`] = `
+{
+  "box": {
+    "h": 280,
+    "padB": 34,
+    "padL": 44,
+    "padR": 16,
+    "padT": 16,
+    "w": 480,
+  },
+  "chartType": "dot",
+  "dots": [
+    {
+      "level": "L0",
+      "phase": "baseline",
+      "sx": 44,
+      "sy": 226.8,
+      "x": 1,
+      "y": 42,
+    },
+    {
+      "level": "L0",
+      "phase": "baseline",
+      "sx": 90.7,
+      "sy": 202.9,
+      "x": 2,
+      "y": 45,
+    },
+    {
+      "level": "L0",
+      "phase": "baseline",
+      "sx": 137.3,
+      "sy": 210.9,
+      "x": 3,
+      "y": 44,
+    },
+    {
+      "level": "L0",
+      "phase": "baseline",
+      "sx": 184,
+      "sy": 178.9,
+      "x": 4,
+      "y": 48,
+    },
+    {
+      "level": "L0",
+      "phase": "baseline",
+      "sx": 230.7,
+      "sy": 186.9,
+      "x": 5,
+      "y": 47,
+    },
+    {
+      "level": "L0",
+      "phase": "tier2",
+      "sx": 277.3,
+      "sy": 139,
+      "x": 6,
+      "y": 53,
+    },
+    {
+      "level": "L0",
+      "phase": "tier2",
+      "sx": 324,
+      "sy": 99.1,
+      "x": 7,
+      "y": 58,
+    },
+    {
+      "level": "L0",
+      "phase": "tier2",
+      "sx": 370.7,
+      "sy": 75.1,
+      "x": 8,
+      "y": 61,
+    },
+    {
+      "level": "L0",
+      "phase": "tier2",
+      "sx": 417.3,
+      "sy": 83.1,
+      "x": 9,
+      "y": 60,
+    },
+    {
+      "level": "L0",
+      "phase": "tier2",
+      "sx": 464,
+      "sy": 35.2,
+      "x": 10,
+      "y": 66,
+    },
+  ],
+  "maxX": 10,
+  "minX": 1,
+  "phaseLines": [
+    {
+      "fromPhase": "baseline",
+      "sx": 254,
+      "toPhase": "tier2",
+      "x": 5.5,
+    },
+  ],
+  "xTicks": [
+    {
+      "sx": 44,
+      "x": 1,
+    },
+    {
+      "sx": 90.7,
+      "x": 2,
+    },
+    {
+      "sx": 137.3,
+      "x": 3,
+    },
+    {
+      "sx": 184,
+      "x": 4,
+    },
+    {
+      "sx": 230.7,
+      "x": 5,
+    },
+    {
+      "sx": 277.3,
+      "x": 6,
+    },
+    {
+      "sx": 324,
+      "x": 7,
+    },
+    {
+      "sx": 370.7,
+      "x": 8,
+    },
+    {
+      "sx": 417.3,
+      "x": 9,
+    },
+    {
+      "sx": 464,
+      "x": 10,
+    },
+  ],
+  "y0": 39.6,
+  "y1": 68.4,
+  "yTicks": [
+    {
+      "sy": 246,
+      "y": 39.6,
+    },
+    {
+      "sy": 188.5,
+      "y": 46.8,
+    },
+    {
+      "sy": 131,
+      "y": 54,
+    },
+    {
+      "sy": 73.5,
+      "y": 61.2,
+    },
+    {
+      "sy": 16,
+      "y": 68.4,
+    },
+  ],
+}
+`;
+
 exports[`Lumen — the Reyna worked scenario (golden master) > full series + a 6-of-10 subset (snapshot) 1`] = `
 {
   "full": {

@@ -396,9 +396,68 @@
     return out;
   }
 
+  // Five-number summary (linear-interpolation quantiles) — the honest spread stat.
+  function quantiles(values) {
+    var v = values.slice().sort(function (a, b) { return a - b; });
+    var k = v.length;
+    if (!k) return null;
+    function q(p) { var idx = p * (k - 1), lo = Math.floor(idx), hi = Math.ceil(idx); return v[lo] + (v[hi] - v[lo]) * (idx - lo); }
+    var q1 = q(0.25), median = q(0.5), q3 = q(0.75);
+    return { min: v[0], q1: q1, median: median, q3: q3, max: v[k - 1], iqr: q3 - q1, n: k };
+  }
+
+  // Dot/strip pathway — every observation as an L0 OBSERVED point (no connecting
+  // line); ideal for small-n honesty. Shares the trend's y=value axis.
+  function dotGeometry(observations, box, sourceRefs) {
+    box = box || DEFAULT_BOX;
+    var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
+    var n = obs.length, innerW = box.w - box.padL - box.padR, innerH = box.h - box.padT - box.padB;
+    var xs = obs.map(function (o) { return o.x; }), ys = obs.map(function (o) { return o.y; });
+    var refs = (sourceRefs || []).filter(function (r) { return sourcedRenderable(r).ok; }), refVals = refs.map(function (r) { return r.value; });
+    var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+    var minY = Math.min.apply(null, ys.concat(refVals)), maxY = Math.max.apply(null, ys.concat(refVals));
+    var padY = (maxY - minY) * 0.1 || 1, y0 = minY - padY, y1 = maxY + padY;
+    function sx(x) { return box.padL + (maxX === minX ? 0 : (x - minX) / (maxX - minX)) * innerW; }
+    function sy(y) { return box.padT + innerH - (y1 === y0 ? 0 : (y - y0) / (y1 - y0)) * innerH; }
+    var dots = obs.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
+    var phaseLines = [];
+    for (var i = 1; i < n; i++) { if (obs[i].phase !== obs[i - 1].phase) { var px = (obs[i].x + obs[i - 1].x) / 2; phaseLines.push({ x: round1(px), sx: round1(sx(px)), fromPhase: obs[i - 1].phase, toPhase: obs[i].phase }); } }
+    var xTicks = obs.map(function (o) { return { x: o.x, sx: round1(sx(o.x)) }; });
+    var yTicks = []; for (var t = 0; t <= 4; t++) { var yv = y0 + (y1 - y0) * t / 4; yTicks.push({ y: round1(yv), sy: round1(sy(yv)) }); }
+    var out = { box: box, chartType: 'dot', minX: minX, maxX: maxX, y0: round1(y0), y1: round1(y1), dots: dots, phaseLines: phaseLines, xTicks: xTicks, yTicks: yTicks };
+    if (refs.length) { out.refLines = refs.map(function (r) { var ry = round1(sy(r.value)); return { id: r.id, value: r.value, sy: ry, dPath: 'M ' + box.padL + ',' + ry + ' L ' + (box.w - box.padR) + ',' + ry, label: benchmarkChipText(r), verified: r.verified === true }; }); }
+    return out;
+  }
+
+  // Box pathway — a five-number summary box+whisker PER PHASE (shows spread, the
+  // honest complement to a single trend line). x = phase, y = value.
+  function boxGeometry(observations, box, sourceRefs) {
+    box = box || DEFAULT_BOX;
+    var innerW = box.w - box.padL - box.padR, innerH = box.h - box.padT - box.padB;
+    var groups = [], gmap = {};
+    observations.forEach(function (o) { var key = o.phase == null ? '(all)' : o.phase; if (!gmap[key]) { gmap[key] = { phase: key, vals: [] }; groups.push(gmap[key]); } gmap[key].vals.push(o.y); });
+    var allY = observations.map(function (o) { return o.y; });
+    var refs = (sourceRefs || []).filter(function (r) { return sourcedRenderable(r).ok; }), refVals = refs.map(function (r) { return r.value; });
+    var minY = Math.min.apply(null, allY.concat(refVals)), maxY = Math.max.apply(null, allY.concat(refVals));
+    var padY = (maxY - minY) * 0.1 || 1, y0 = minY - padY, y1 = maxY + padY;
+    function sy(y) { return box.padT + innerH - (y1 === y0 ? 0 : (y - y0) / (y1 - y0)) * innerH; }
+    var ng = groups.length, slotW = innerW / ng;
+    var boxes = groups.map(function (g, i) {
+      var qn = quantiles(g.vals), center = box.padL + slotW * (i + 0.5), bw = Math.min(48, slotW * 0.5);
+      return { phase: g.phase, n: qn.n, level: 'L0', min: round2(qn.min), q1: round2(qn.q1), median: round2(qn.median), q3: round2(qn.q3), max: round2(qn.max), iqr: round2(qn.iqr), cx: round1(center), bw: round1(bw), syMin: round1(sy(qn.min)), syQ1: round1(sy(qn.q1)), syMed: round1(sy(qn.median)), syQ3: round1(sy(qn.q3)), syMax: round1(sy(qn.max)) };
+    });
+    var xTicks = boxes.map(function (b) { return { label: b.phase, sx: b.cx }; });
+    var yTicks = []; for (var t = 0; t <= 4; t++) { var yv = y0 + (y1 - y0) * t / 4; yTicks.push({ y: round1(yv), sy: round1(sy(yv)) }); }
+    var out = { box: box, chartType: 'box', y0: round1(y0), y1: round1(y1), boxes: boxes, xTicks: xTicks, yTicks: yTicks };
+    if (refs.length) { out.refLines = refs.map(function (r) { var ry = round1(sy(r.value)); return { id: r.id, value: r.value, sy: ry, dPath: 'M ' + box.padL + ',' + ry + ' L ' + (box.w - box.padR) + ',' + ry, label: benchmarkChipText(r), verified: r.verified === true }; }); }
+    return out;
+  }
+
   function plotGeometry(observations, claim, box, sourceRefs, chartType) {
     box = box || DEFAULT_BOX;
     if (chartType === 'bar') return barGeometry(observations, box, sourceRefs); // dispatch; trend code below is untouched
+    if (chartType === 'dot') return dotGeometry(observations, box, sourceRefs);
+    if (chartType === 'box') return boxGeometry(observations, box, sourceRefs);
     var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
     var n = obs.length;
     var innerW = box.w - box.padL - box.padR;
@@ -480,7 +539,7 @@
   }
 
   function chartSummaryText(observations, claim, sourceRefs, chartType) {
-    var name = chartType === 'bar' ? 'Bar chart.' : 'Trend chart.';
+    var name = chartType === 'bar' ? 'Bar chart.' : chartType === 'dot' ? 'Dot plot.' : chartType === 'box' ? 'Box plot (per phase).' : 'Trend chart.';
     if (!claim || claim.refused) return name + ' ' + (claim ? claim.text : 'no data yet.');
     var parts = [name, claim.text];
     plotGeometry(observations, claim).phaseLines.forEach(function (p) {
@@ -866,6 +925,7 @@
     deriveTrendClaim: deriveTrendClaim, trendSentence: trendSentence, refusalSentence: refusalSentence,
     // chart geometry + SR data-table peer (Phase 1)
     REYNA_SAMPLE: REYNA_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
+    quantiles: quantiles, dotGeometry: dotGeometry, boxGeometry: boxGeometry,
     perSegmentSlopes: perSegmentSlopes, chartSummaryText: chartSummaryText, dataTableModel: dataTableModel,
     // AI-involvement layer (Phase 1) — pure guards + audience faces
     AI_CAVEAT: AI_CAVEAT, HYP_CAVEAT: HYP_CAVEAT, AI_N_FLOOR: AI_N_FLOOR, levelIndex: levelIndex,
@@ -1057,7 +1117,7 @@
           };
           kids.push(h('div', { key: 'charttype', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Chart type' },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Chart:'),
-            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar')));
+            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box')));
 
           if (!obs.length) {
             kids.push(h('p', { key: 'empty', className: 'mt-2 text-sm text-slate-600' },
@@ -1101,10 +1161,10 @@
               sk.push(h('text', { key: 'yl' + i, x: b.padL - 4, y: t.sy + 3, textAnchor: 'end', style: { fontSize: '9px' }, fill: '#64748b' }, String(t.y)));
             });
             geo.xTicks.forEach(function (t, i) {
-              sk.push(h('text', { key: 'xl' + i, x: t.sx, y: b.h - b.padB + 14, textAnchor: 'middle', style: { fontSize: '9px' }, fill: '#64748b' }, String(t.x)));
+              sk.push(h('text', { key: 'xl' + i, x: t.sx, y: b.h - b.padB + 14, textAnchor: 'middle', style: { fontSize: '9px' }, fill: '#64748b' }, String(t.x != null ? t.x : t.label)));
             });
             if (geo.bandPath) sk.push(h('path', { key: 'band', d: geo.bandPath, fill: bundle.ink, fillOpacity: 0.10, stroke: 'none' }));
-            geo.phaseLines.forEach(function (p, i) {
+            if (geo.phaseLines) geo.phaseLines.forEach(function (p, i) {
               sk.push(h('line', { key: 'ph' + i, x1: p.sx, y1: b.padT, x2: p.sx, y2: b.h - b.padB, stroke: '#0f172a', strokeWidth: 1.5, strokeDasharray: '2 3' }));
               sk.push(h('text', { key: 'phl' + i, x: p.sx + 3, y: b.padT + 9, style: { fontSize: '8px' }, fill: '#0f172a' }, 'phase'));
             });
@@ -1122,6 +1182,24 @@
               geo.bars.forEach(function (bar, i) {
                 sk.push(h('rect', { key: 'bar' + i, x: bar.bx, y: bar.by, width: bar.bw, height: Math.max(0, bar.bh), rx: 1, fill: l0.ink, fillOpacity: 0.85 }));
                 sk.push(h('text', { key: 'barg' + i, x: bar.cx, y: bar.by - 2, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l0.ink, 'aria-hidden': 'true' }, l0.glyph));
+              });
+            }
+            // Dot pathway: each point is an L0 OBSERVED mark.
+            if (geo.dots) {
+              var l0d = encode('L0');
+              geo.dots.forEach(function (p, i) {
+                sk.push(h('circle', { key: 'dot' + i, cx: p.sx, cy: p.sy, r: 4, fill: l0d.ink, fillOpacity: l0d.markOpacity }));
+              });
+            }
+            // Box pathway: a five-number box+whisker per phase (L0 observed spread — q3 on top, q1 on bottom).
+            if (geo.boxes) {
+              var l0b = encode('L0');
+              geo.boxes.forEach(function (bxx, i) {
+                var x0 = bxx.cx - bxx.bw / 2, x1 = bxx.cx + bxx.bw / 2;
+                sk.push(h('line', { key: 'bw' + i, x1: bxx.cx, y1: bxx.syMax, x2: bxx.cx, y2: bxx.syMin, stroke: l0b.ink, strokeWidth: 1 }));
+                sk.push(h('rect', { key: 'bb' + i, x: x0, y: bxx.syQ3, width: bxx.bw, height: Math.max(1, bxx.syQ1 - bxx.syQ3), fill: l0b.ink, fillOpacity: 0.15, stroke: l0b.ink, strokeWidth: 1 }));
+                sk.push(h('line', { key: 'bm' + i, x1: x0, y1: bxx.syMed, x2: x1, y2: bxx.syMed, stroke: l0b.ink, strokeWidth: 2 }));
+                sk.push(h('text', { key: 'bg' + i, x: bxx.cx, y: bxx.syMax - 3, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l0b.ink, 'aria-hidden': 'true' }, l0b.glyph));
               });
             }
             // §16: benchmark reference line(s) — teal, dashed, NO data marker (a fact, not a measurement).
