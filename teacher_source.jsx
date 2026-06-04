@@ -810,8 +810,8 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
               {t(`escape_room.team_${userTeam.toLowerCase()}`, { defaultValue: `${userTeam} Team` })}
             </div>
             <div className="text-white font-mono" data-help-key="escape_room_progress">
-              <span className="text-purple-700">{solvedPuzzlesSet.size}</span>
-              <span className="text-slate-600">/{puzzles.length}</span>
+              <span className="text-purple-300">{solvedPuzzlesSet.size}</span>
+              <span className="text-slate-400">/{puzzles.length}</span>
             </div>
             {escapeState.maxLives < 99 && (
               <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50" title={t('escape_room.lives')} data-help-key="escape_room_lives">
@@ -839,7 +839,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         </div>
       </div>
       <div className="fixed right-4 top-24 bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-purple-500/30 z-40" data-help-key="escape_room_leaderboard">
-        <h4 className="text-xs font-bold text-slate-600 uppercase mb-3">{t('escape_room.live_progress')}</h4>
+        <h4 className="text-xs font-bold text-slate-300 uppercase mb-3">{t('escape_room.live_progress')}</h4>
         {allTeams.map(team => {
           const progress = escapeState.teamProgress?.[team] || { solvedPuzzles: [] };
           const solved = (progress.solvedPuzzles || []).length;
@@ -850,7 +850,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             <div key={team} className={`mb-2 ${team === userTeam ? 'ring-2 ring-white/50 rounded-lg p-1' : ''}`}>
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className={`font-bold ${colors.text}`}>{team}</span>
-                <span className="text-slate-600">{solved}/{puzzles.length}</span>
+                <span className="text-slate-400">{solved}/{puzzles.length}</span>
               </div>
               <div className="w-32 h-2 bg-slate-700 rounded-full overflow-hidden">
                 <div className={`h-full ${colors.bg} transition-all duration-300`} style={{ width: `${percent}%` }} />
