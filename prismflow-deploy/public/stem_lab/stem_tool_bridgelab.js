@@ -498,7 +498,8 @@
         { id: 'cases',     icon: '📚', label: 'Case Studies' },
         { id: 'cycle',     icon: '🔁', label: 'Design Cycle' },
         { id: 'quiz',      icon: '📝', label: 'Quiz' },
-        { id: 'print',     icon: '🖨', label: 'Print' }
+        { id: 'print',     icon: '🖨', label: 'Print' },
+        { id: 'inquiry',   icon: '🔬', label: 'Inquiry' }
       ];
 
       var tabBar = h('div', {
@@ -4081,6 +4082,136 @@
       }
 
       // ──────────────────────────────────────────────────────────────
+      // INQUIRY (Cycle 14 — H7b'' validated design pattern)
+      // Continuous sliders + DISCRETE 3-state safety marker + free-text
+      // hypothesis + opt-in open questions + self-mark. No scoring.
+      // ──────────────────────────────────────────────────────────────
+      function renderInquiry() {
+        var iq = d.inquiry || { spanM: 18, areaMm2: 1500, materialId: d.materialId || 'steel_a36', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd({ inquiry: Object.assign({}, iq, patch) }); }
+        var mat = MATERIALS.find(function(m) { return m.id === iq.materialId; }) || MATERIALS[3];
+        // Use existing analyzeTruss with this inquiry's spans
+        var nBays = 4, height = 3, loadPerJoint = 50; // fixed defaults for inquiry simplicity
+        var a = analyzeTruss(iq.spanM, height, nBays, loadPerJoint);
+        var stressMax = Math.max(a.maxChord, a.maxDiag) * 1000 / iq.areaMm2;
+        var sf = mat.yieldMPa / stressMax;
+        var status = sf >= 2 ? 'safe' : sf >= 1 ? 'marginal' : 'failed';
+        var stateColor = status === 'safe' ? '#10b981' : status === 'marginal' ? '#f59e0b' : '#ef4444';
+        var stateBg = status === 'safe' ? '#064e3b' : status === 'marginal' ? '#78350f' : '#7f1d1d';
+        var stateLabel = status === 'safe' ? '🟢 SAFE' : status === 'marginal' ? '🟡 MARGINAL' : '🔴 FAILS';
+        function logObs() {
+          var obs = { span: iq.spanM, area: iq.areaMm2, mat: mat.id, sf: parseFloat(sf.toFixed(2)), state: status };
+          setIQ({ log: (iq.log || []).concat([obs]).slice(-8) });
+        }
+        return h('div', { style: { padding: 16 } },
+          h('div', { style: { background: '#0a1525', borderRadius: 12, padding: 16, border: '1px solid rgba(245,158,11,0.3)' } },
+            h('h3', { style: { margin: '0 0 6px 0', color: '#fbbf24', fontSize: 16, fontWeight: 800 } }, '🔬 Load-bearing discovery'),
+            h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 14 } },
+              'You are designing a truss bridge. Adjust span, cross-section area, and material. The bridge will show you whether it SAFE, MARGINAL, or FAILS (three discrete states — no numeric score). There is no right answer and no reveal. Sweep the sliders. Log observations. Type what you discover about the trade-offs.'),
+            // Discrete state badge — large, prominent
+            h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 12 } },
+              h('div', { style: { padding: '12px 24px', borderRadius: 8, background: stateBg, border: '2px solid ' + stateColor, color: stateColor, fontSize: 18, fontWeight: 900, letterSpacing: '0.05em' } }, stateLabel)),
+            // Quick stats
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14, fontSize: 11, color: '#94a3b8' } },
+              h('div', { style: { background: '#1e293b', padding: 6, borderRadius: 4, textAlign: 'center' } }, 'Span: ', h('span', { style: { color: '#fbbf24', fontFamily: 'monospace', fontWeight: 700 } }, iq.spanM + ' m')),
+              h('div', { style: { background: '#1e293b', padding: 6, borderRadius: 4, textAlign: 'center' } }, 'Area: ', h('span', { style: { color: '#fbbf24', fontFamily: 'monospace', fontWeight: 700 } }, iq.areaMm2 + ' mm²')),
+              h('div', { style: { background: '#1e293b', padding: 6, borderRadius: 4, textAlign: 'center' } }, 'Material: ', h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, mat.name))
+            ),
+            // Sliders
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 } },
+              h('div', null,
+                h('label', { htmlFor: 'iq-span', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, 'Span length: ', h('span', { style: { color: '#fbbf24', fontFamily: 'monospace' } }, iq.spanM + ' m')),
+                h('input', { id: 'iq-span', type: 'range', min: 6, max: 60, step: 1, value: iq.spanM,
+                  onChange: function(e) { setIQ({ spanM: parseInt(e.target.value, 10) }); },
+                  style: { width: '100%' }, 'aria-label': 'Span length in meters' })),
+              h('div', null,
+                h('label', { htmlFor: 'iq-area', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, 'Cross-section area: ', h('span', { style: { color: '#fbbf24', fontFamily: 'monospace' } }, iq.areaMm2 + ' mm²')),
+                h('input', { id: 'iq-area', type: 'range', min: 200, max: 8000, step: 100, value: iq.areaMm2,
+                  onChange: function(e) { setIQ({ areaMm2: parseInt(e.target.value, 10) }); },
+                  style: { width: '100%' }, 'aria-label': 'Cross-section area in square millimeters' }))
+            ),
+            // Material picker (discrete environment, not answer)
+            h('div', { style: { marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, 'Material:'),
+              h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+                MATERIALS.map(function(m) {
+                  var active = iq.materialId === m.id;
+                  return h('button', { key: m.id,
+                    onClick: function() { setIQ({ materialId: m.id }); },
+                    style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (active ? '#fbbf24' : 'rgba(100,116,139,0.4)'), background: active ? 'rgba(245,158,11,0.25)' : 'transparent', color: active ? '#fbbf24' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, m.name);
+                })
+              )
+            ),
+            // Log + reset
+            h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 } },
+              h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '📋 Log observation'),
+              h('button', { onClick: function() { setIQ({ spanM: 18, areaMm2: 1500, materialId: 'steel_a36', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                style: { padding: '4px 10px', background: '#0a1525', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer' } }, '↺ Reset'),
+              (iq.log || []).length > 0 && h('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (iq.log || []).length + ' observations logged')
+            ),
+            // Log table
+            (iq.log || []).length > 0 && h('div', { style: { overflowX: 'auto', marginBottom: 12 } },
+              h('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1' } },
+                h('thead', null, h('tr', { style: { background: '#1e293b' } },
+                  ['span', 'area', 'material', 'safety factor', 'state'].map(function(c, i) {
+                    return h('th', { key: 'h' + i, style: { padding: '4px 8px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c);
+                  })
+                )),
+                h('tbody', null, iq.log.map(function(o, idx) {
+                  var bg = o.state === 'safe' ? 'rgba(16,185,129,0.08)' : (o.state === 'marginal' ? 'rgba(245,158,11,0.08)' : 'rgba(239,68,68,0.10)');
+                  return h('tr', { key: 'lr' + idx, style: { background: bg } },
+                    h('td', { style: { padding: '4px 8px', fontFamily: 'monospace' } }, o.span),
+                    h('td', { style: { padding: '4px 8px', fontFamily: 'monospace' } }, o.area),
+                    h('td', { style: { padding: '4px 8px' } }, o.mat),
+                    h('td', { style: { padding: '4px 8px', fontFamily: 'monospace' } }, o.sf),
+                    h('td', { style: { padding: '4px 8px' } }, o.state));
+                }))
+              )
+            ),
+            // Free-text hypothesis
+            h('div', { style: { marginBottom: 12 } },
+              h('label', { htmlFor: 'iq-hypo', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } },
+                'Your hypothesis (free text — no right answer):'),
+              h('textarea', { id: 'iq-hypo', value: iq.hypothesis || '',
+                onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+                placeholder: 'What single change is the most efficient way to move a FAILED bridge into SAFE? Does doubling span require doubling area? Type your own theory.',
+                style: { width: '100%', minHeight: 60, padding: 6, background: '#0a1525', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }, rows: 3 })
+            ),
+            // Opt-in questions
+            h('div', { style: { marginBottom: 12 } },
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+                style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                '🤔 I\'m stuck — show me questions to think about (no answers)'),
+              iq.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                h('div', { style: { fontWeight: 700, color: '#fbbf24', marginBottom: 4 } }, 'Open questions — investigate by manipulating:'),
+                h('ul', { style: { margin: 0, paddingLeft: 18 } },
+                  h('li', null, 'Hold material and area fixed. Sweep span from 6 to 60 m. At what span does the state flip from SAFE to MARGINAL? Now change material — does the flip-point move?'),
+                  h('li', null, 'Pick a span where the bridge FAILS. What is cheaper: doubling the cross-section area, or switching to a stronger material? Test both and compare.'),
+                  h('li', null, 'Some materials have very high strength but are heavy or expensive in real life. The simulation does not penalize this. What would change about your hypotheses if cost mattered?'),
+                  h('li', null, 'Log 4-5 SAFE configurations. Look at the safety factor column. What range do they share? Is there a single threshold or a band?'),
+                  h('li', null, 'In real engineering, the rule of thumb is safety factor ≥ 1.5 for steel structures. Why might the simulation show MARGINAL at sf 1-2 but SAFE only at sf ≥ 2?')),
+                h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginTop: 6 } }, 'No answers will be revealed. Investigate.'))
+            ),
+            // Self-mark
+            h('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                h('input', { type: 'checkbox', id: 'iq-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, style: { width: 14, height: 14 } }),
+                h('label', { htmlFor: 'iq-und', style: { fontSize: 12, fontWeight: 700, color: '#10b981', cursor: 'pointer' } },
+                  'I think I understand the trade-offs — let me explain them in my own words')),
+              iq.understood && h('textarea', { value: iq.explanation || '',
+                onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                placeholder: 'Explain in your own words: how do span, cross-section area, and material strength interact to determine load-bearing capacity? Which one matters most? What is the trade-off a real engineer faces?',
+                style: { width: '100%', minHeight: 80, padding: 6, background: '#0a1525', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }, rows: 4 }),
+              iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { style: { marginTop: 6, fontSize: 10, fontStyle: 'italic', color: '#10b981' } },
+                '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
+            ),
+            h('div', { style: { marginTop: 12, padding: 8, background: 'rgba(10,21,37,0.5)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } },
+              'Design note: no numeric safety-factor target, no reveal button, no quiz validation. Safety is shown as a discrete 3-state marker (SAFE / MARGINAL / FAILS), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.')
+          )
+        );
+      }
+
+      // ──────────────────────────────────────────────────────────────
       // PRINT
       // ──────────────────────────────────────────────────────────────
       function renderPrint() {
@@ -4196,6 +4327,7 @@
         case 'cycle':     body = renderCycle(); break;
         case 'quiz':      body = renderQuiz(); break;
         case 'print':     body = renderPrint(); break;
+        case 'inquiry':   body = renderInquiry(); break;
         default:          body = renderBuild();
       }
 

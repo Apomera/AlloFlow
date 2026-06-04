@@ -2980,11 +2980,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
         // ── Mode tabs (4 tabs now) ──
         h('div', { className: 'flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1', role: 'tablist', 'aria-label': 'Ecosystem Explorer sections' },
-          ['explore', 'sandbox', 'conserve', 'quiz', 'badges'].map(function(t2) {
+          ['explore', 'sandbox', 'conserve', 'inquiry', 'quiz', 'badges'].map(function(t2) {
             var tabLabel = '';
             if (t2 === 'explore') tabLabel = '\uD83C\uDF3F Explore';
             else if (t2 === 'sandbox') tabLabel = '\uD83E\uDDEA Sandbox';
             else if (t2 === 'conserve') tabLabel = '\uD83C\uDF32 Conservation';
+            else if (t2 === 'inquiry') tabLabel = '\u2754 Inquiry';
             else if (t2 === 'quiz') tabLabel = '\u2753 Quiz';
             else tabLabel = '\uD83C\uDFC5 Badges (' + badgeCount + '/' + BADGES.length + ')';
             return h('button', { key: t2,
@@ -3013,6 +3014,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             explore: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '\uD83C\uDF3F', title: 'Explore the food web',          hint: 'Click any species to see what it eats and what eats it. Trophic-level cascades become obvious \u2014 remove a top predator and watch the system reorganize.' },
             sandbox: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83E\uDDEA', title: 'Sandbox \u2014 your ecosystem', hint: 'Drop in producers, consumers, and predators; watch population dynamics emerge. Lotka-Volterra cycles appear when you have one predator + one prey + nothing else.' },
             conserve: { accent: '#15803d', soft: 'rgba(21,128,61,0.10)', icon: '\uD83C\uDF32', title: 'Conservation Manager \u2014 Maine campaign', hint: 'Steward a real Maine ecosystem across 10 years. Six species (wolf, beaver, moose, deer, salmon, brook trout) with population, habitat, and public-support metrics. Trophic-cascade rules tie them together.' },
+            inquiry: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)', icon: '\u2754', title: 'Inquiry \u2014 predator-prey dynamics', hint: 'Adjust predator birth, prey lifespan, and resource scarcity. Watch which discrete regime the system settles into. No score, no reveal, no answer dump \u2014 just slider sweep and observation.' },
             quiz:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\u2753', title: 'Quiz \u2014 concepts in context',     hint: 'Multi-choice items on energy flow (10% rule), keystone species, biomagnification, succession. Each question links back to the explore + sandbox modes.' },
             badges:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC5', title: 'Badges \u2014 what you have learned', hint: 'Achievements track which ecological concepts you have demonstrated, not just visited. Trophic-cascade badge requires you to actually trigger one in the sandbox.' }
           };
@@ -4637,6 +4639,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 return h('div', { key: ai }, '· ' + a.tech + ' → ' + a.species + ' (' + a.hours + 'h)');
               })
             ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'No actions yet this year. Pick a species, pick a technique.')
+          );
+        })(),
+
+        // ═══ INQUIRY TAB (Cycle 15 — H7b'' validated design pattern) ═══
+        tab === 'inquiry' && (function() {
+          var iq = d.inquiry || { predBirth: 50, preyLife: 50, resScarcity: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('inquiry', Object.assign({}, iq, patch)); }
+          // Simple Lotka-Volterra-style outcome classifier with resource scarcity penalty
+          var birthRate = iq.predBirth / 100;
+          var prey = iq.preyLife / 100;
+          var scarcity = iq.resScarcity / 100;
+          var boomIndex = birthRate - prey * 0.6 - scarcity * 0.3;
+          var collapseIndex = scarcity * 1.3 - prey * 0.5;
+          var outcome = collapseIndex > 0.4 ? 'collapse' : (boomIndex > 0.25 ? 'boom' : 'balanced');
+          var outcomeMeta = {
+            boom: { label: '📈 Predator Boom', desc: 'High predator birth + low resource scarcity → predators overshoot, prey crash later.', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+            balanced: { label: '🔄 Balanced Cycle', desc: 'Predator and prey oscillate in a Lotka-Volterra rhythm. Neither dominates indefinitely.', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+            collapse: { label: '⬇️ Prey Collapse', desc: 'Resource scarcity outpaces prey lifespan → prey die off → predators starve.', color: '#b91c1c', bg: '#fef2f2', border: '#fb7185' }
+          }[outcome];
+          function logObs() {
+            var obs = { pb: iq.predBirth, pl: iq.preyLife, rs: iq.resScarcity, out: outcome };
+            setIQ({ log: (iq.log || []).concat([obs]).slice(-8) });
+          }
+          return h('div', { className: 'space-y-3' },
+            h('div', { className: 'p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm' },
+              h('h4', { className: 'text-sm font-black text-slate-800 dark:text-slate-200 mb-1' }, '❔ Predator-prey discovery'),
+              h('p', { className: 'text-[12px] text-slate-700 dark:text-slate-300 mb-3 leading-relaxed' },
+                'Three sliders: predator birth rate, prey lifespan, resource scarcity. Sweep them. The ecosystem will settle into one of three discrete regimes (no numeric score). There is no right answer — and no reveal. Log observations. Type what you discover about the trade-offs.'),
+              // Discrete outcome marker
+              h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: outcomeMeta.bg, border: '2px solid ' + outcomeMeta.border } },
+                h('div', { className: 'text-lg font-black mb-1', style: { color: outcomeMeta.color } }, outcomeMeta.label),
+                h('div', { className: 'text-[11px] text-slate-700' }, outcomeMeta.desc)
+              ),
+              // 3 sliders
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
+                [
+                  { key: 'predBirth', label: 'Predator birth rate', val: iq.predBirth },
+                  { key: 'preyLife', label: 'Prey lifespan', val: iq.preyLife },
+                  { key: 'resScarcity', label: 'Resource scarcity', val: iq.resScarcity }
+                ].map(function(s) {
+                  return h('div', { key: s.key },
+                    h('label', { htmlFor: 'eq-' + s.key, className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1' },
+                      s.label + ': ', h('span', { className: 'font-mono text-emerald-700 dark:text-emerald-400' }, s.val + '%')),
+                    h('input', { id: 'eq-' + s.key, type: 'range', min: 0, max: 100, step: 1, value: s.val,
+                      onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
+                      className: 'w-full', 'aria-label': s.label }));
+                })
+              ),
+              // Log + reset
+              h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
+                h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[11px] font-bold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600' }, '📋 Log observation'),
+                h('button', { onClick: function() { setIQ({ predBirth: 50, preyLife: 50, resScarcity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                  className: 'px-2 py-1 rounded bg-white dark:bg-slate-900 hover:bg-slate-50 text-[11px] font-semibold text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-600' }, '↺ Reset'),
+                (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' observations logged')
+              ),
+              // Log table
+              (iq.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
+                h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 dark:text-slate-300' },
+                  h('thead', null, h('tr', { className: 'bg-slate-100 dark:bg-slate-700' },
+                    ['pred birth %', 'prey life %', 'resource scarcity %', 'outcome'].map(function(c, i) {
+                      return h('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-200 dark:border-slate-600 text-left' }, c);
+                    }))),
+                  h('tbody', null, iq.log.map(function(o, idx) {
+                    var rowBg = o.out === 'balanced' ? 'rgba(16,185,129,0.08)' : (o.out === 'boom' ? 'rgba(220,38,38,0.08)' : 'rgba(127,29,29,0.10)');
+                    return h('tr', { key: 'lr' + idx, style: { background: rowBg } },
+                      h('td', { className: 'px-2 py-1 border border-slate-200 dark:border-slate-600 font-mono' }, o.pb),
+                      h('td', { className: 'px-2 py-1 border border-slate-200 dark:border-slate-600 font-mono' }, o.pl),
+                      h('td', { className: 'px-2 py-1 border border-slate-200 dark:border-slate-600 font-mono' }, o.rs),
+                      h('td', { className: 'px-2 py-1 border border-slate-200 dark:border-slate-600' }, o.out));
+                  })))
+              ),
+              // Free-text hypothesis
+              h('div', { className: 'mb-3' },
+                h('label', { htmlFor: 'eq-hypo', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1' },
+                  'Your hypothesis (free text — no right answer):'),
+                h('textarea', { id: 'eq-hypo', value: iq.hypothesis || '',
+                  onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+                  placeholder: 'Which slider matters MOST for triggering a collapse? Can you balance the system with predator birth at 80%? Type your own theory.',
+                  className: 'w-full text-[12px] border border-slate-300 dark:border-slate-600 rounded p-2 font-mono leading-snug bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200', rows: 3 })
+              ),
+              // Opt-in
+              h('div', { className: 'mb-3' },
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+                  className: 'px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 text-[11px] font-bold text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700' },
+                  '🤔 I\'m stuck — show me questions to think about (no answers)'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed' },
+                  h('div', { className: 'font-bold text-amber-900 dark:text-amber-300 mb-1' }, 'Open questions — investigate by manipulating:'),
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Start with all three at 50%. What outcome do you get? Now raise predator birth slowly. At what point does the regime flip?'),
+                    h('li', null, 'Set predator birth high (80%). Can you save the system by changing ONLY prey lifespan? What if you change only resource scarcity?'),
+                    h('li', null, 'Try to find TWO different settings that both produce a balanced cycle. What do they have in common?'),
+                    h('li', null, 'Log 4-5 observations of each regime (boom, balanced, collapse). Look for patterns in the table — are there single-variable thresholds, or do they interact?'),
+                    h('li', null, 'In real ecology, the "10% rule" says only ~10% of energy passes between trophic levels. What does that imply about how easily a top-predator population can swing the system?')),
+                  h('div', { className: 'text-[10px] italic text-amber-700 dark:text-amber-400 mt-2' }, 'No answers will be revealed. Investigate.'))
+              ),
+              // Self-mark
+              h('div', { className: 'p-3 rounded bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700' },
+                h('div', { className: 'flex items-center gap-2 mb-2' },
+                  h('input', { type: 'checkbox', id: 'eq-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  h('label', { htmlFor: 'eq-und', className: 'text-[12px] font-bold text-emerald-800 dark:text-emerald-300 cursor-pointer' },
+                    'I think I understand the trade-offs — let me explain them in my own words')),
+                iq.understood && h('textarea', { value: iq.explanation || '',
+                  onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                  placeholder: 'Explain in your own words: how do predator birth, prey lifespan, and resource scarcity interact? Why does balanced cycling require something specific? When do predators win? When does the system collapse?',
+                  className: 'w-full text-[12px] border border-emerald-300 dark:border-emerald-700 rounded p-2 font-mono leading-snug bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200', rows: 4 }),
+                iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700 dark:text-emerald-400' },
+                  '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
+              ),
+              h('div', { className: 'mt-3 p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] italic text-slate-600 dark:text-slate-400' },
+                'Design note: no numeric population graph, no reveal button, no quiz validation. Outcome is shown as a discrete 3-regime marker (boom / balanced / collapse), not a continuous indicator — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.')
+            )
           );
         })(),
 

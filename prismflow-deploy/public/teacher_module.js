@@ -1143,7 +1143,14 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   const groupsForRouting = sessionData?.groups || {};
   const groupEntriesForRouting = Object.entries(groupsForRouting).filter(([_, g2]) => g2 !== null);
   const currentRules = quizRoutingRulesByQ[currentQuestionIndex] || [];
+  const _currentQuestionIsLikert = question && question.itemType === "likert";
   const addQuizRoutingRule = () => {
+    if (_currentQuestionIsLikert) {
+      if (typeof window !== "undefined" && window.console) {
+        console.warn("[TeacherLiveQuizControls] Refusing single-item routing rule on a Likert question \u2014 aggregation across >=2 items is required for measurement reliability.");
+      }
+      return;
+    }
     setQuizRoutingRulesByQ((prev) => {
       const next = { ...prev };
       const existing = Array.isArray(next[currentQuestionIndex]) ? next[currentQuestionIndex].slice() : [];
@@ -1630,6 +1637,18 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     /* @__PURE__ */ React.createElement("span", { className: "font-normal text-amber-700" }, "(", currentRules.length, " rule", currentRules.length === 1 ? "" : "s", ")")
   ), showQuizRoutingPanel && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 leading-snug" }, "When a student answers, auto-assign them to a group. Use this for ", /* @__PURE__ */ React.createElement("strong", null, "choice"), ' (e.g., "Pirate Crew vs Space Crew") or ', /* @__PURE__ */ React.createElement("strong", null, "formative-assessment"), " routing. Group resources can then be staged per group via the Groups panel above."), groupEntriesForRouting.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 italic" }, t("teacher.quiz_routing.no_groups_warning") || "Create at least one group in the Groups panel above before adding routing rules."), currentRules.map((rule) => {
     const hiddenIds = Array.isArray(rule.then.hiddenResourceIds) ? rule.then.hiddenResourceIds : [];
+    if (rule.when && rule.when.aggregate) {
+      const across = Array.isArray(rule.when.acrossQuestions) ? rule.when.acrossQuestions : [];
+      return /* @__PURE__ */ React.createElement("div", { key: rule.id, className: "bg-white border border-purple-200 rounded p-1.5 text-xs space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "px-1 py-0.5 rounded bg-purple-100 text-purple-800 text-[10px] font-bold uppercase tracking-wide" }, "Aggregation"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, String(rule.when.aggregate), " of items ", across.map((i) => `Q${i + 1}`).join(", ") || "(none)", " ", rule.when.predicate, " ", String(rule.when.value)), across.length < 2 && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] text-red-700 italic" }, "\u2014 needs \u22652 items to fire"), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => removeQuizRoutingRule(rule.id),
+          "aria-label": "Remove aggregation rule",
+          className: "ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
+        },
+        "\u2715"
+      )), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 italic pl-1" }, "Aggregation-rule editing lands in a future update. Pre-authored or AI-generated rules can be deleted but not edited inline yet."));
+    }
     return /* @__PURE__ */ React.createElement("div", { key: rule.id, className: "bg-white border border-amber-200 rounded p-1.5 text-xs space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, t("teacher.quiz_routing.when_answer_label") || "When answer"), /* @__PURE__ */ React.createElement(
       "select",
       {
@@ -1682,7 +1701,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         }
       ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 uppercase text-[9px] font-bold min-w-[40px]" }, item.type), /* @__PURE__ */ React.createElement("span", { className: "truncate flex-1" }, label));
     }))));
-  }), /* @__PURE__ */ React.createElement(
+  }), _currentQuestionIsLikert ? /* @__PURE__ */ React.createElement("div", { className: "rounded border border-purple-200 bg-purple-50 px-2 py-1.5 text-[11px] text-purple-900 leading-snug" }, /* @__PURE__ */ React.createElement("strong", { className: "font-bold" }, "Likert routing:"), " single-item Likert routing is refused \u2014 a single self-report tick is not measurement-reliable. Multi-item aggregation rules (avg / min / max across \u22652 items) are supported by the router and can be pre-authored or AI-generated; in-editor rule creation lands in a future update.") : /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: addQuizRoutingRule,

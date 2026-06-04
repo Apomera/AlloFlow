@@ -196,7 +196,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -398,7 +398,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -628,7 +628,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -840,7 +840,7 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -1018,7 +1018,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -1169,7 +1169,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -1446,7 +1446,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -1614,7 +1614,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -1706,7 +1706,7 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -1983,7 +1983,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -2145,7 +2145,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -2297,7 +2297,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -2481,7 +2481,7 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -2579,7 +2579,7 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -2735,7 +2735,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -2836,7 +2836,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -3010,7 +3010,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
