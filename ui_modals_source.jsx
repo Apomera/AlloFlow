@@ -214,6 +214,44 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                     </p>
                 )}
             </div>
+            {/* Phase C (poll subtype): Likert items render as a horizontal 1..N tick
+                strip with low/high labels above the strip. submitQuizResponse(idx)
+                writes the 0-based array index just like MCQ; the host synthesizes
+                options=['1','2',...,'N'] so the wire format and rule-eval path
+                stay uniform. Polls have NO correct answer, so revealed-state
+                styling intentionally never shows a "right" tick. */}
+            {currentQuestion?.itemType === 'likert' ? (
+              <div className="w-full max-w-3xl mt-8 px-4">
+                <div className="flex justify-between text-xs md:text-sm font-bold text-white/80 mb-2 uppercase tracking-wider">
+                  <span>{currentQuestion.scale?.lowLabel || t('quiz.likert_strongly_disagree') || 'Strongly disagree'}</span>
+                  <span>{currentQuestion.scale?.highLabel || t('quiz.likert_strongly_agree') || 'Strongly agree'}</span>
+                </div>
+                <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.max(3, Math.min(7, currentQuestion.scale?.steps || (currentQuestion.options?.length || 5)))}, minmax(0, 1fr))` }}>
+                  {(currentQuestion.options || []).map((tickLabel, idx) => {
+                    const isSelected = selectedOptionIndex === idx;
+                    const isDisabled = hasAnswered || phase !== 'answering';
+                    let btnClass = 'bg-white text-slate-800 border-slate-200 hover:border-purple-300 hover:bg-purple-50';
+                    if (isSelected) btnClass = 'bg-purple-500 text-white border-purple-700 scale-[1.05] ring-4 ring-purple-300/40 z-10';
+                    else if (isDisabled) btnClass = 'bg-slate-800 text-slate-300 border-slate-900 opacity-60 cursor-not-allowed';
+                    return (
+                      <button
+                        key={idx}
+                        data-help-key="quiz_student_likert_tick"
+                        onClick={() => submitQuizResponse(idx)}
+                        disabled={isDisabled}
+                        aria-label={`${tickLabel} of ${currentQuestion.options.length}`}
+                        className={`relative p-4 md:p-6 rounded-2xl font-black text-2xl md:text-3xl transition-all transform duration-200 shadow-xl border-b-4 active:border-b-0 active:translate-y-1 ${btnClass}`}
+                      >
+                        {tickLabel}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="mt-4 text-center text-[11px] md:text-xs text-white/60 italic">
+                  {t('quiz.no_right_answer') || 'There are no right or wrong answers here.'}
+                </p>
+              </div>
+            ) : (
             <div className="w-full max-w-4xl grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 px-4">
                 {currentQuestion?.options?.map((option, idx) => {
                     const isSelected = selectedOptionIndex === idx;
@@ -285,6 +323,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                     );
                 })}
             </div>
+            )}
             <div className="mt-8 min-h-16 flex items-center justify-center w-full mb-8">
                 {phase === 'answering' && (
                     hasAnswered ? (
@@ -301,7 +340,15 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                         </div>
                     )
                 )}
-                {phase === 'revealed' && (
+                {phase === 'revealed' && currentQuestion?.itemType === 'likert' && (
+                    <div className="flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 px-4">
+                        <div className="w-full px-8 py-6 rounded-3xl font-bold text-lg shadow-xl flex items-center justify-center gap-4 border-2 border-purple-300 bg-purple-50 text-purple-900">
+                            <span>🗣️</span>
+                            <span>{t('quiz.poll_completed') || 'Thanks for sharing your take.'}</span>
+                        </div>
+                    </div>
+                )}
+                {phase === 'revealed' && currentQuestion?.itemType !== 'likert' && (
                     <div className="flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 px-4">
                         <div className={`
                             w-full px-8 py-6 rounded-3xl font-black text-2xl shadow-2xl flex items-center justify-center gap-6 border-4 transform transition-transform hover:scale-105

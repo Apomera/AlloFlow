@@ -3605,6 +3605,11 @@
     "loading_question": "Loading question...",
     "question_label": "Question",
     "question_progress": "Question {current} of {total}",
+    "likert_strongly_disagree": "Strongly disagree",
+    "likert_strongly_agree": "Strongly agree",
+    "no_right_answer": "There are no right or wrong answers here.",
+    "poll_completed": "Thanks for sharing your take.",
+    "poll_intro": "There are no right or wrong answers here — your honest take helps your teacher and helps you.",
     "status": {
       "answer_sent": "Answer Sent! Waiting for results...",
       "choose_option": "Choose an option above...",
@@ -3797,6 +3802,7 @@
     "mode_pre_check": "🎯 Pre-Check (Readiness)",
     "mode_formative": "🌡️ Formative Check",
     "mode_review": "🔁 Spaced Review",
+    "mode_poll": "🗣️ Poll (student voice)",
     "visuals_label": "Visuals:",
     "visuals_aria": "MCQ visual mode",
     "visuals_tooltip": "Visuals (MCQ items only): None = text-only (free, fastest). Question = generate one image per question stem. Options = generate 4 images per question (one per option). Both = question + options. Image gen takes ~3-5s per image and uses Imagen credits.",
@@ -3810,7 +3816,8 @@
     "style_tooltip": "Optional. Applied to every image in the quiz (question + options). Empty = default style. Persisted with the quiz so refine actions stay on-brand.",
     "generate_pre_check": "Generate Pre-Check",
     "generate_formative": "Generate Formative Check",
-    "generate_review": "Generate Spaced Review"
+    "generate_review": "Generate Spaced Review",
+    "generate_poll": "Generate Poll"
   },
   "outline": {
     "title": "Visual Organizer",

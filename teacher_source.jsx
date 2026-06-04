@@ -1470,7 +1470,25 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     const groupsForRouting = sessionData?.groups || {};
     const groupEntriesForRouting = Object.entries(groupsForRouting).filter(([_, g]) => g !== null);
     const currentRules = quizRoutingRulesByQ[currentQuestionIndex] || [];
+    // Phase E (poll subtype): structural single-tick block. Likert items cannot
+    // be routed on a single-item basis — single-tick self-report is not
+    // measurement-reliable enough to drive placement decisions. This is the
+    // load-bearing scientific-integrity guardrail. Refuse at AUTHORING time
+    // (not fire time) so the teacher never gets a chance to ship a single-tick
+    // rule. Aggregation rules are created via a separate addQuizAggregationRule
+    // path that initializes with when.aggregate and a 2-item acrossQuestions
+    // floor.
+    const _currentQuestionIsLikert = (question && question.itemType === 'likert');
     const addQuizRoutingRule = () => {
+      if (_currentQuestionIsLikert) {
+        // Should never be hit — the UI hides the "Add rule" button when
+        // _currentQuestionIsLikert. Guard anyway in case a future refactor
+        // re-enables it without the integrity check.
+        if (typeof window !== 'undefined' && window.console) {
+          console.warn('[TeacherLiveQuizControls] Refusing single-item routing rule on a Likert question — aggregation across >=2 items is required for measurement reliability.');
+        }
+        return;
+      }
       setQuizRoutingRulesByQ(prev => {
         const next = { ...prev };
         const existing = Array.isArray(next[currentQuestionIndex]) ? next[currentQuestionIndex].slice() : [];
@@ -1486,6 +1504,12 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         return next;
       });
     };
+    // Phase E (poll subtype) — note: aggregation-rule CREATION in the inline
+    // editor is deferred to V1.1 (requires a chip-picker UI for acrossQuestions).
+    // Pre-authored / AI-generated aggregation rules ARE renderable + deletable
+    // in the rule list, and the router (AlloFlowANTI.txt _aggregateResponse)
+    // evaluates them. The Likert banner in the rule panel explains this state
+    // to the teacher.
     const removeQuizRoutingRule = (rid) => {
       setQuizRoutingRulesByQ(prev => {
         const next = { ...prev };
@@ -2073,6 +2097,36 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                  )}
                                  {currentRules.map(rule => {
                                      const hiddenIds = Array.isArray(rule.then.hiddenResourceIds) ? rule.then.hiddenResourceIds : [];
+                                     // Phase E (poll subtype): aggregation rules have a different
+                                     // shape (rule.when.aggregate + acrossQuestions). They're
+                                     // routable by the router (Phase B) but the in-editor creator
+                                     // doesn't ship with a chip picker for acrossQuestions in V1,
+                                     // so pre-authored / AI-generated aggregation rules render as
+                                     // a read-only summary with a delete affordance only.
+                                     if (rule.when && rule.when.aggregate) {
+                                       const across = Array.isArray(rule.when.acrossQuestions) ? rule.when.acrossQuestions : [];
+                                       return (
+                                         <div key={rule.id} className="bg-white border border-purple-200 rounded p-1.5 text-xs space-y-1">
+                                           <div className="flex flex-wrap items-center gap-1">
+                                             <span className="px-1 py-0.5 rounded bg-purple-100 text-purple-800 text-[10px] font-bold uppercase tracking-wide">Aggregation</span>
+                                             <span className="text-slate-700">
+                                               {String(rule.when.aggregate)} of items {across.map(i => `Q${i + 1}`).join(', ') || '(none)'} {rule.when.predicate} {String(rule.when.value)}
+                                             </span>
+                                             {across.length < 2 && (
+                                               <span className="ml-1 text-[10px] text-red-700 italic">— needs ≥2 items to fire</span>
+                                             )}
+                                             <button
+                                                 onClick={() => removeQuizRoutingRule(rule.id)}
+                                                 aria-label="Remove aggregation rule"
+                                                 className="ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
+                                             >✕</button>
+                                           </div>
+                                           <div className="text-[10px] text-slate-500 italic pl-1">
+                                             Aggregation-rule editing lands in a future update. Pre-authored or AI-generated rules can be deleted but not edited inline yet.
+                                           </div>
+                                         </div>
+                                       );
+                                     }
                                      return (
                                      <div key={rule.id} className="bg-white border border-amber-200 rounded p-1.5 text-xs space-y-1">
                                        <div className="flex flex-wrap items-center gap-1">
@@ -2151,11 +2205,23 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                      </div>
                                      );
                                  })}
-                                 <button
-                                     onClick={addQuizRoutingRule}
-                                     disabled={groupEntriesForRouting.length === 0}
-                                     className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-amber-500 text-amber-800 hover:bg-amber-100'}`}
-                                 >+ Add rule</button>
+                                 {/* Phase E (poll subtype): show the appropriate Add button
+                                     for the current question's item type. Likert items REQUIRE
+                                     aggregation across >=2 distinct items (single-tick routing
+                                     is structurally refused — single self-report ticks aren't
+                                     measurement-reliable for placement decisions per the
+                                     CBM-style discipline Aaron applies in Word Sounds). */}
+                                 {_currentQuestionIsLikert ? (
+                                   <div className="rounded border border-purple-200 bg-purple-50 px-2 py-1.5 text-[11px] text-purple-900 leading-snug">
+                                     <strong className="font-bold">Likert routing:</strong> single-item Likert routing is refused — a single self-report tick is not measurement-reliable. Multi-item aggregation rules (avg / min / max across ≥2 items) are supported by the router and can be pre-authored or AI-generated; in-editor rule creation lands in a future update.
+                                   </div>
+                                 ) : (
+                                   <button
+                                       onClick={addQuizRoutingRule}
+                                       disabled={groupEntriesForRouting.length === 0}
+                                       className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-amber-500 text-amber-800 hover:bg-amber-100'}`}
+                                   >+ Add rule</button>
+                                 )}
                              </div>
                          )}
                      </div>

@@ -98,6 +98,35 @@
       },
       aggregation: 'live-heatmap',
     },
+    'poll': {
+      key: 'poll',
+      label: 'Poll (student voice)',
+      icon: '🗣️',
+      generation: {
+        promptFrame: 'Create a short student-voice POLL — NOT a quiz. Items have NO correct answer. Use Likert (rate 1-5 on a scale the student writes about) or opinion-MCQ (pick which framing fits, with no "right" choice). Items should surface PREFERENCE / SELF-REPORT / CONFIDENCE, not knowledge. Prompts should be neutrally worded — do NOT imply the student should pick a particular answer.',
+        questionTargets: 'student self-report — preference, confidence, feeling about the lesson, prior comfort with a topic. NOT new content recall, NOT prerequisite knowledge, NOT misconceptions.',
+        defaultItemCount: 4,
+        allowedItemTypes: ['likert', 'opinion-mcq'],
+        defaultItemTypeMix: { 'likert': 3, 'opinion-mcq': 1 },
+      },
+      render: {
+        intro: 'There are no right or wrong answers here — your honest take helps your teacher and helps you.',
+        completionMessage: 'Thanks for sharing your take. Some resources may now look different based on what you said.',
+        // Polls are non-evaluative by definition. Aiding "explanations on fail"
+        // would imply there was a wrong answer, which there isn't.
+        aiExplainerOnFail: false,
+        // No "I don't know" affordance — the student CHOOSES; choosing nothing
+        // is its own data point (an opt-out) handled at the response layer.
+        allowIDontKnow: false,
+        // Confidence rating is the data — having a SECOND confidence layer over
+        // a self-report would be measurement-validity nonsense.
+        allowConfidenceRating: false,
+      },
+      // Aggregation is multi-item by design (per Aaron's measurement-integrity
+      // discipline: single-tick Likert routing is structurally refused at the
+      // rule editor; routing requires when.aggregate + acrossQuestions.length>=2).
+      aggregation: 'self-report-distribution',
+    },
     'review': {
       key: 'review',
       label: 'Spaced Review',
@@ -143,5 +172,5 @@
     getStrategy: getStrategy,
     listModes: listModes,
   };
-  console.log('[CDN] QuizModeStrategies loaded (4 modes: exit-ticket, pre-check, formative, review)');
+  console.log('[CDN] QuizModeStrategies loaded (5 modes: exit-ticket, pre-check, formative, review, poll)');
 })();
