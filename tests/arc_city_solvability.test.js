@@ -42,7 +42,7 @@ function findSolution(level) {
 }
 
 describe('Arc City — every level is solvable on its own slider grid (§9.6)', () => {
-  LEVELS.forEach(level => {
+  LEVELS.filter(l => l.family !== 'gauntlet').forEach(level => {
     it(`${level.id} (${level.title}) has at least one winning combo`, () => {
       const sol = findSolution(level);
       expect(sol, `no winning param combo found for ${level.id} on its grid`).not.toBeNull();
@@ -51,7 +51,7 @@ describe('Arc City — every level is solvable on its own slider grid (§9.6)', 
 });
 
 describe('Arc City — shipped sampling does not mask a sub-sample miss (§9.6/§10.1)', () => {
-  LEVELS.forEach(level => {
+  LEVELS.filter(l => l.family !== 'gauntlet').forEach(level => {
     it(`${level.id}: a grid solution stays a hit at 5x-finer sampling`, () => {
       const sol = findSolution(level);
       expect(sol).not.toBeNull();
@@ -63,7 +63,7 @@ describe('Arc City — shipped sampling does not mask a sub-sample miss (§9.6/�
 });
 
 describe('Arc City — the math is load-bearing (not trivially winnable, §2.4)', () => {
-  LEVELS.forEach(level => {
+  LEVELS.filter(l => l.family !== 'gauntlet').forEach(level => {
     it(`${level.id}: random-grid hit rate stays low`, () => {
       const order = level.paramOrder;
       // coarse sample (every 3rd grid step) just to bound the rate cheaply

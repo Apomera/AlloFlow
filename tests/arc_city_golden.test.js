@@ -71,7 +71,7 @@ describe('Arc City — module contract', () => {
     expect(typeof describeBoard).toBe('function');
     expect(typeof isLevelUnlocked).toBe('function');
     expect(Array.isArray(LEVELS)).toBe(true);
-    expect(LEVELS.map(l => l.id)).toEqual(['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8']);
+    expect(LEVELS.map(l => l.id)).toEqual(['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9']);
   });
 
   it('level geometry (snapshot)', () => {
@@ -86,7 +86,9 @@ describe('Arc City — module contract', () => {
 });
 
 describe('Arc City — adjudication + SR narration per level (golden master)', () => {
-  LEVELS.forEach(level => {
+  // L9 (The Gauntlet) is a meta-level with no function geometry of its own — it
+  // sequences the other levels' clones — so it has no per-shot CASES matrix.
+  LEVELS.filter(l => l.family !== 'gauntlet').forEach(level => {
     it(`${level.id} (${level.title}) outcome + narration matrix (snapshot)`, () => {
       const out = {};
       CASES[level.id].forEach((c, i) => {
@@ -101,6 +103,70 @@ describe('Arc City — adjudication + SR narration per level (golden master)', (
       });
       expect(out).toMatchSnapshot();
     });
+  });
+});
+
+describe('Arc City — The Gauntlet (L9): adaptive, integrative capstone (§11)', () => {
+  const STAGES = ['L1', 'L3', 'L4', 'L5', 'L7', 'L8'];
+
+  it('L9 is a gauntlet meta-level sequencing one challenge per family', () => {
+    const L9 = levelById('L9');
+    expect(L9.family).toBe('gauntlet');
+    expect(L9.stages).toEqual(STAGES);
+    // each referenced stage exists and is a DISTINCT function family
+    const fams = L9.stages.map(id => levelById(id).family);
+    expect(fams).toEqual(['line', 'parabola', 'absval', 'sine', 'exp', 'log']);
+    expect(new Set(fams).size).toBe(fams.length); // every family represented once
+  });
+
+  it('with no history, the order is the natural family progression (stable)', () => {
+    expect(arc.gauntletOrder({}, STAGES)).toEqual(STAGES);
+  });
+
+  it('ADAPTS: least-practiced families come first, most-mastered last (transparent, deterministic)', () => {
+    // player has used parabola (L3) independently, only explored sine (L5),
+    // never touched the rest → independent sinks to the back, unexplored stay up.
+    const by = { L3: { solved: true, independent: true }, L5: { shots: 2 } };
+    const ord = arc.gauntletOrder(by, STAGES);
+    expect(ord[ord.length - 1]).toBe('L3');           // mastered → last
+    expect(ord.indexOf('L5')).toBeGreaterThan(ord.indexOf('L1')); // explored after never-tried
+    expect(ord.indexOf('L5')).toBeLessThan(ord.indexOf('L3'));    // but before mastered
+    // deterministic: same input → same output
+    expect(arc.gauntletOrder(by, STAGES)).toEqual(ord);
+  });
+
+  it('gauntletWhy speaks the adaptive reason honestly (no mastery claim)', () => {
+    const by = { L3: { solved: true, independent: true }, L5: { shots: 2 } };
+    expect(arc.gauntletWhy(by, 'L3')).toMatch(/independently/);
+    expect(arc.gauntletWhy(by, 'L5')).toMatch(/explored/);
+    expect(arc.gauntletWhy(by, 'L7')).toMatch(/haven’t solved/);
+    // never asserts ability/mastery — it describes what the player DID
+    STAGES.forEach(id => expect(arc.gauntletWhy(by, id)).not.toMatch(/master|mastery|smart|talent/i));
+  });
+
+  it('gauntletComplete is true only when every stage clone is solved', () => {
+    expect(arc.gauntletComplete({}, STAGES)).toBe(false);
+    const partial = {}; STAGES.slice(0, 5).forEach(id => { partial['L9-' + id] = { solved: true }; });
+    expect(arc.gauntletComplete(partial, STAGES)).toBe(false); // 5/6 → not done
+    const all = {}; STAGES.forEach(id => { all['L9-' + id] = { solved: true }; });
+    expect(arc.gauntletComplete(all, STAGES)).toBe(true);
+  });
+
+  it('each stage stays solvable through its namespaced clone (inherits its forcing cert)', () => {
+    // the clone shares geometry+family, so a known solution for the base level
+    // still wins through the clone id the gauntlet uses.
+    const sols = { L1: { m: 0.5, b: 0 }, L3: { a: -0.5, h: 5, k: 5 }, L4: { a: 1.3, h: 5, k: 1 } };
+    Object.keys(sols).forEach(id => {
+      const clone = Object.assign({}, levelById(id), { id: 'L9-' + id });
+      expect(classifyShot(clone, sols[id]).result).toBe('hit');
+    });
+  });
+
+  it('describeBoard(L9) is an honest capstone summary (no geometry it does not have)', () => {
+    const s = describeBoard(levelById('L9'));
+    expect(s).toMatch(/adaptive/i);
+    expect(s).toMatch(/every function family/i);
+    expect(s).not.toMatch(/node to light is at x undefined/); // no crash on the empty stub
   });
 });
 
@@ -121,7 +187,7 @@ describe('Arc City — load-bearing invariants (the math IS the mechanic)', () =
   });
 
   it('every level\'s starting defaults are NOT a win (you must solve)', () => {
-    LEVELS.forEach(l => {
+    LEVELS.filter(l => l.family !== 'gauntlet').forEach(l => {
       const def = {};
       l.paramOrder.forEach(n => { def[n] = l.params[n].default; });
       expect(classifyShot(l, def).result).not.toBe('hit');
@@ -314,7 +380,11 @@ describe('Arc City — teacher summary (honest, deterministic; design §9.5/§9.
     };
     const s = arc.teacherSummary(byLevel, ['first-light']);
     expect(s.nodesReLit).toBe(2);
-    expect(s.totalLevels).toBe(LEVELS.length); // robust as levels are added
+    // counts FUNCTION levels only — the Gauntlet (meta) is excluded so the
+    // denominator never reads "8 of 9" and "The Gauntlet: not started" never shows.
+    expect(s.totalLevels).toBe(LEVELS.filter(l => l.family !== 'gauntlet').length);
+    expect(s.families.gauntlet).toBeUndefined();            // not a function family
+    expect(s.levels.find(l => l.id === 'L9')).toBeUndefined(); // not a node row
     expect(s.families.absval).toBe('not started'); // L4 family present, untouched in this mock
     expect(s.families.line).toBe('used independently'); // L1 solved independently
     expect(s.families.parabola).toBe('explored');        // L3 attempted, not solved

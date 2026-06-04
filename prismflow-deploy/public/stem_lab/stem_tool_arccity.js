@@ -154,6 +154,24 @@
         k: { min: 0, max: 2, step: 0.1, default: 0, label: 'k  (vertical offset)' }
       },
       hint: 'Tip: a logarithm climbs fast at first, then slows — concave, the mirror of exponential GROWTH (not the decay you just saw). Six narrow windows sit on one such climb: set the climb strength a, the shift c, and the offset k so the slowing curve threads them all.'
+    },
+    {
+      // ── L9: The Gauntlet — adaptive, integrative capstone (design §11 boss world). ──
+      // Not a function level itself: it SEQUENCES one challenge from every family
+      // (line, parabola, V, sine, exponential, logarithm) in an order ADAPTED to the
+      // player — the families they've practiced LEAST come first, surfaced out loud
+      // (gauntletWhy). "Adaptive" = honest re-sequencing by demonstrated practice,
+      // NOT a hidden difficulty knob (§9 integrity). Each stage reuses an already
+      // forcing-certified level's geometry via a namespaced clone (id 'L9-Lx'), so
+      // it inherits that level's solvability proof — no new forcing risk. Re-light a
+      // node with EVERY function type to finish. The stub geometry below is never
+      // played directly (render always resolves to the current stage clone); it only
+      // keeps LEVELS-iterating code (level bar, unlock chain) total.
+      id: 'L9', title: 'The Gauntlet', family: 'gauntlet',
+      stages: ['L1', 'L3', 'L4', 'L5', 'L7', 'L8'],
+      world: { x0: 0, x1: 10, y0: 0, y1: 8 }, walls: [], gates: [], node: { x: 5, y: 4, r: 0.5 }, dx: 0.05,
+      paramOrder: [], params: {},
+      hint: 'The Gauntlet: one challenge from every function family, ordered to put your weakest first. Re-light a node with each — line, parabola, V, sine, exponential, and logarithm — to win.'
     }
   ];
 
@@ -320,6 +338,7 @@
   }
 
   function describeBoard(level) {
+    if (level.family === 'gauntlet') return 'Arc City, ' + level.title + ': an adaptive capstone — one challenge from every function family, weakest first.';
     var s = 'Arc City, level: ' + level.title + '. ';
     s += level.family === 'line' ? 'Author a straight-line beam. ' : (level.family === 'absval' ? 'Author a V-shaped, absolute-value beam. ' : (level.family === 'sine' ? 'Author a sine-wave beam. ' : (level.family === 'exp' ? 'Author an exponential beam that curves toward a floor it never touches. ' : (level.family === 'log' ? 'Author a logarithmic beam — a concave climb that rises fast then slows. ' : 'Author a parabola beam. '))));
     s += 'The dark node to light is at x ' + level.node.x + ', y ' + level.node.y + '. ';
@@ -363,7 +382,8 @@
     { id: 'log-climber', label: 'Log Climber — re-lit a node riding a logarithm’s slowing climb' },
     { id: 'tilt-threader', label: 'Tilt Threader — passed a tilted slope-gate at the right angle' },
     { id: 'sharp-shooter', label: 'Sharp Shooter — lit a node on the first shot' },
-    { id: 'independent', label: 'Independent — solved with the preview hidden' }
+    { id: 'independent', label: 'Independent — solved with the preview hidden' },
+    { id: 'grand-tour', label: 'Grand Tour — completed the Gauntlet, re-lighting a node with every function family' }
   ];
   function badgeLabel(id) { for (var i = 0; i < BADGES.length; i++) { if (BADGES[i].id === id) return BADGES[i].label; } return id; }
   // Returns the NEW badge ids earned by this solve (excludes already-earned).
@@ -434,17 +454,57 @@
     if (anyTried) return 'explored';
     return 'not started';
   }
+
+  // ── The Gauntlet (L9): adaptive ORDER over the family stages (design §11). ──
+  // "Adaptive" here = honest, transparent re-sequencing by demonstrated practice,
+  // NOT a hidden difficulty knob (§9 integrity: no black-box manipulation, no
+  // overclaim). Rank each stage by how far the player has gotten with its family
+  // (never solved → explored → solved-with-scaffold → solved-independently) and
+  // present the LEAST-practiced first, so the run leans into where the player is
+  // weakest — and gauntletWhy() says so out loud. Deterministic; stable for ties.
+  function gauntletRank(byLevel, stageId) {
+    var lv = levelById(stageId); if (!lv) return 9;
+    var st = familyStatus(byLevel, lv.family);
+    return st === 'used independently' ? 3 : (st === 'used with scaffold' ? 2 : (st === 'explored' ? 1 : 0));
+  }
+  function gauntletOrder(byLevel, stageIds) {
+    return (stageIds || []).map(function (id, i) { return { id: id, r: gauntletRank(byLevel, id), i: i }; })
+      .sort(function (a, b) { return a.r - b.r || a.i - b.i; })
+      .map(function (o) { return o.id; });
+  }
+  function gauntletWhy(byLevel, stageId) {
+    var lv = levelById(stageId); if (!lv) return '';
+    var st = familyStatus(byLevel, lv.family);
+    return st === 'used independently' ? 'you’ve used this independently — prove it once more'
+      : (st === 'used with scaffold' ? 'you’ve used this with the preview on — now try it your way'
+        : (st === 'explored' ? 'you’d only explored this — let’s solidify it'
+          : 'a family you haven’t solved yet — here’s your shot'));
+  }
+  // True once every stage's namespaced clone (byLevel['L9-' + stageId]) is solved.
+  function gauntletComplete(byLevel, stageIds) {
+    byLevel = byLevel || {};
+    return (stageIds || []).length > 0 && (stageIds || []).every(function (sid) {
+      var st = byLevel['L9-' + sid]; return !!(st && st.solved);
+    });
+  }
+
   function teacherSummary(byLevel, badges) {
     byLevel = byLevel || {}; badges = badges || [];
-    var levels = LEVELS.map(function (l) {
+    // The Gauntlet (family 'gauntlet') is a meta-level that replays the others
+    // under namespaced 'L9-*' state — it is NOT a node or a function family, so it
+    // is excluded from the per-level list, the family roster, and the node count
+    // (its completion is reported via the 'grand-tour' badge instead). Including it
+    // would otherwise read "The Gauntlet: not started" forever and skew "N of M".
+    var fnLevels = LEVELS.filter(function (l) { return l.family !== 'gauntlet'; });
+    var levels = fnLevels.map(function (l) {
       var st = byLevel[l.id] || {};
       var status = st.solved ? 'completed' : (((st.shots || 0) > 0 || (st.misses || 0) > 0) ? 'explored' : 'not started');
       return { id: l.id, title: l.title, family: l.family, status: status, independent: !!st.independent, shots: st.shots || 0, exploredAdjustments: st.misses || 0 };
     });
     var families = {};
-    LEVELS.map(function (l) { return l.family; }).filter(function (f, i, a) { return a.indexOf(f) === i; }).forEach(function (f) { families[f] = familyStatus(byLevel, f); });
+    fnLevels.map(function (l) { return l.family; }).filter(function (f, i, a) { return a.indexOf(f) === i; }).forEach(function (f) { families[f] = familyStatus(byLevel, f); });
     var nodesReLit = levels.filter(function (l) { return l.status === 'completed'; }).length;
-    return { caveat: TEACHER_CAVEAT, families: families, levels: levels, nodesReLit: nodesReLit, totalLevels: LEVELS.length, badges: badges.map(badgeLabel) };
+    return { caveat: TEACHER_CAVEAT, families: families, levels: levels, nodesReLit: nodesReLit, totalLevels: fnLevels.length, badges: badges.map(badgeLabel) };
   }
   function teacherSummaryText(summary) {
     var lines = ['Arc City — progress summary', '', summary.caveat, '', 'Nodes re-lit: ' + summary.nodesReLit + ' of ' + summary.totalLevels, '', 'Functions:'];
@@ -490,6 +550,9 @@
     arcPalette: arcPalette,
     TEACHER_CAVEAT: TEACHER_CAVEAT,
     familyStatus: familyStatus,
+    gauntletOrder: gauntletOrder,
+    gauntletWhy: gauntletWhy,
+    gauntletComplete: gauntletComplete,
     teacherSummary: teacherSummary,
     teacherSummaryText: teacherSummaryText
   };
@@ -655,7 +718,33 @@
           });
         }
         var byLevel = S.byLevel || {};
-        var level = levelById(S.levelId || 'L1');
+        // ── Level resolution. For the Gauntlet (L9) the EFFECTIVE level is the
+        // current stage's geometry, cloned under a namespaced id ('L9-Lx') so every
+        // downstream updater/byLevel key/classifyShot works unchanged — the gauntlet
+        // is pure orchestration on top of the existing one-family-per-level machine. ──
+        var rawLevel = levelById(S.levelId || 'L1');
+        var gauntlet = null;
+        var level;
+        if (rawLevel.family === 'gauntlet') {
+          var gOrder = (S.gauntlet && S.gauntlet.order && S.gauntlet.order.length) ? S.gauntlet.order : gauntletOrder(byLevel, rawLevel.stages);
+          var gIdx = (S.gauntlet && typeof S.gauntlet.idx === 'number') ? S.gauntlet.idx : 0;
+          if (gIdx > gOrder.length - 1) gIdx = gOrder.length - 1;
+          if (gIdx < 0) gIdx = 0;
+          var gStageId = gOrder[gIdx];
+          level = Object.assign({}, levelById(gStageId), { id: 'L9-' + gStageId });
+          gauntlet = { order: gOrder, idx: gIdx, total: gOrder.length, stageId: gStageId, why: gauntletWhy(byLevel, gStageId) };
+          // Persist the adaptive order once (built from the player's standalone
+          // history at entry), so it stays stable across renders/sessions.
+          if ((!S.gauntlet || !S.gauntlet.order) && typeof setToolData === 'function') {
+            setToolData(function (prev) {
+              var cur = (prev && prev._arccity) || S;
+              if (cur.gauntlet && cur.gauntlet.order) return prev;
+              return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { gauntlet: { order: gOrder, idx: 0 } }) });
+            });
+          }
+        } else {
+          level = rawLevel;
+        }
         var lIdx = levelIndex(level.id);
         var rawLS = byLevel[level.id];
         var ls = (rawLS && rawLS.params) ? rawLS : { params: defaultParams(level), shots: 0, solved: false, misses: 0 };
@@ -709,6 +798,10 @@
           // directive hint used (b). The hint shows at >= HINT_AFTER misses, so a
           // solve after that many misses is hint-assisted → not counted independent.
           var indep = r.result === 'hit' && solveIsIndependent(tier) && (ls.misses || 0) < HINT_AFTER;
+          // Grand Tour: only on the final stage's solve — and the gauntlet only
+          // advances on a solve, so reaching the last index means every prior
+          // family was already re-lit (no false award).
+          if (gauntlet && r.result === 'hit' && gauntlet.idx === gauntlet.total - 1 && newBadges.indexOf('grand-tour') === -1) newBadges.push('grand-tour');
           setToolData(function (prev) {
             var cur = (prev && prev._arccity) || S;
             var bl = Object.assign({}, cur.byLevel || {});
@@ -724,11 +817,28 @@
           var msg = describeResult(level, r, shotsNow);
           if (r.result === 'hit') {
             if (indep) msg += ' ' + t('arccity.independent', 'Solved independently — the preview was hidden.');
-            if (lIdx < LEVELS.length - 1) msg += ' ' + t('arccity.unlocked', 'Next level unlocked!');
+            if (gauntlet) {
+              msg += gauntlet.idx < gauntlet.total - 1
+                ? ' ' + t('arccity.stage_cleared', 'Stage cleared — press Next challenge.')
+                : ' ' + t('arccity.gauntlet_complete', 'Gauntlet complete — you re-lit a node with every function family!');
+            } else if (lIdx < LEVELS.length - 1) {
+              msg += ' ' + t('arccity.unlocked', 'Next level unlocked!');
+            }
             if (newBadges.length) msg += ' ' + t('arccity.badge', 'Badge earned: ') + newBadges.map(badgeLabel).join(', ') + '.';
           }
           announceArc(ctx, msg);
           if (!muted) { try { sfxFire(); if (r.result === 'hit') sfxHit(); else sfxBlock(); } catch (e) { } }
+        }
+        function advanceGauntlet() {
+          if (typeof setToolData !== 'function' || !gauntlet) return;
+          var ni = Math.min(gauntlet.idx + 1, gauntlet.total - 1);
+          setToolData(function (prev) {
+            var cur = (prev && prev._arccity) || S;
+            var g = (cur.gauntlet && cur.gauntlet.order) ? cur.gauntlet : { order: gauntlet.order, idx: 0 };
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { gauntlet: Object.assign({}, g, { idx: ni }), fired: false }) });
+          });
+          var nextLv = levelById(gauntlet.order[ni]);
+          announceArc(ctx, t('arccity.challenge', 'Challenge') + ' ' + (ni + 1) + ' / ' + gauntlet.total + ': ' + nextLv.title + '. ' + describeBoard(nextLv));
         }
         function toggleMute() {
           if (typeof setToolData !== 'function') return;
@@ -915,8 +1025,11 @@
         // ── Level progression bar ──
         var levelBtns = LEVELS.map(function (lv, i) {
           var unlocked = isLevelUnlocked(byLevel, i);
-          var solved = !!(byLevel[lv.id] && byLevel[lv.id].solved);
-          var current = lv.id === level.id;
+          // The Gauntlet keys its stage progress under 'L9-Lx', so its tile reads
+          // "solved" from completion of all stages, and "current" from the selected
+          // raw level id (the resolved `level` is the stage clone, not L9).
+          var solved = lv.family === 'gauntlet' ? gauntletComplete(byLevel, lv.stages) : !!(byLevel[lv.id] && byLevel[lv.id].solved);
+          var current = lv.id === (S.levelId || 'L1');
           var face = (solved ? '✅ ' : (unlocked ? '' : '🔒 ')) + lv.title;
           return h('button', {
             key: 'lvl-' + lv.id, type: 'button', disabled: !unlocked,
@@ -1076,9 +1189,24 @@
               style: { marginTop: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + GRID, background: exportEnabled ? 'rgba(34,211,238,0.12)' : 'transparent', color: INK, fontSize: 13, fontWeight: 700, cursor: exportEnabled ? 'pointer' : 'not-allowed', opacity: exportEnabled ? 1 : 0.5 } },
               '📋 ' + t('arccity.copy_summary', 'Copy summary'))));
 
+        // ── Gauntlet banner (progress + transparent "why this one") + advance ──
+        var gauntletBanner = gauntlet ? h('div', { key: 'gbanner', role: 'status', style: { marginBottom: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.10)', color: INK } },
+          h('div', { key: 'gt', style: { fontSize: 14, fontWeight: 800 } }, '🏆 ' + t('arccity.gauntlet', 'The Gauntlet') + ' — ' + t('arccity.challenge', 'Challenge') + ' ' + (gauntlet.idx + 1) + '/' + gauntlet.total + ': ' + levelById(gauntlet.stageId).title),
+          h('div', { key: 'gw', style: { fontSize: 12, opacity: 0.85, marginTop: 2 } }, gauntlet.why),
+          h('div', { key: 'gd', 'aria-hidden': 'true', style: { display: 'flex', gap: 6, marginTop: 8 } }, gauntlet.order.map(function (sid, gi) {
+            var done = !!(byLevel['L9-' + sid] && byLevel['L9-' + sid].solved);
+            var cur = gi === gauntlet.idx;
+            return h('span', { key: 'gdot-' + sid, title: levelById(sid).title, style: { width: 12, height: 12, borderRadius: 999, border: '1px solid ' + (cur ? BEAM : GRID), background: done ? 'rgba(52,211,153,0.85)' : (cur ? 'rgba(34,211,238,0.45)' : 'transparent') } });
+          }))) : null;
+        var gauntletNav = (gauntlet && ls.solved)
+          ? (gauntlet.idx < gauntlet.total - 1
+            ? h('button', { key: 'gnext', type: 'button', onClick: advanceGauntlet, style: { marginTop: 12, padding: '10px 16px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.15)', color: INK, fontSize: 14, fontWeight: 800, cursor: 'pointer' } }, t('arccity.next_challenge', 'Next challenge →'))
+            : h('div', { key: 'gdone', role: 'status', style: { marginTop: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + GRID, background: 'rgba(52,211,153,0.12)', color: INK, fontSize: 14, fontWeight: 800 } }, '🏆 ' + t('arccity.gauntlet_done', 'Gauntlet complete — every function family used to re-light a node!')))
+          : null;
+
         var body = view === 'teacher'
           ? teacherPanel
-          : h('div', { key: 'game' }, levelBar, tierBar, svg, controls, badgeStrip);
+          : h('div', { key: 'game' }, levelBar, gauntletBanner, tierBar, svg, controls, gauntletNav, badgeStrip);
 
         return h('div', { id: 'allo-arccity-root', style: { padding: 16, maxWidth: 760, margin: '0 auto', color: INK } },
           header, viewToggle, body);
