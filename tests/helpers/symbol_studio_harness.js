@@ -62,11 +62,45 @@ function ensureMainContent() {
   return m;
 }
 
+// Symbol Studio reads `new Date().getHours()` at symbol_studio_module.js:6472
+// (time-of-day greeting in the AAC quick-board), which bypasses any Date.now
+// stub. Without freezing the Date CONSTRUCTOR too, snapshots drift every time
+// the wall clock crosses a time bucket (9/12/14/16) and red-mark the suite for
+// reasons unrelated to component changes. Stub by replacing the global Date
+// with a thin wrapper class that always represents FROZEN_EPOCH for the
+// no-arg construction path — and leaves all other call shapes intact (parsed
+// strings, explicit epoch ms, etc.) so the rest of the module sees a real Date.
+function freezeDate() {
+  const RealDate = globalThis.Date;
+  if (RealDate.__symbolStudioFrozen) return;
+  const FrozenDate = function () {
+    if (arguments.length === 0) return new RealDate(FROZEN_EPOCH);
+    if (arguments.length === 1) return new RealDate(arguments[0]);
+    if (arguments.length === 2) return new RealDate(arguments[0], arguments[1]);
+    if (arguments.length === 3) return new RealDate(arguments[0], arguments[1], arguments[2]);
+    if (arguments.length === 4) return new RealDate(arguments[0], arguments[1], arguments[2], arguments[3]);
+    if (arguments.length === 5) return new RealDate(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+    if (arguments.length === 6) return new RealDate(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
+    return new RealDate(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]);
+  };
+  // Re-export the static methods + prototype so `Date.now()`, `Date.parse()`,
+  // `Date.UTC()`, and instanceof checks keep working.
+  FrozenDate.now = function () { return FROZEN_EPOCH; };
+  FrozenDate.parse = RealDate.parse.bind(RealDate);
+  FrozenDate.UTC = RealDate.UTC.bind(RealDate);
+  FrozenDate.prototype = RealDate.prototype;
+  FrozenDate.__symbolStudioFrozen = true;
+  FrozenDate.__realDate = RealDate;
+  globalThis.Date = FrozenDate;
+  if (typeof window !== 'undefined') window.Date = FrozenDate;
+}
+
 /** Load SymbolStudio into the jsdom window with a deterministic environment. Idempotent. */
 export function setupSymbolStudio() {
   if (_loaded) return api();
 
   globalThis.Math.random = () => 0.42;
+  freezeDate();
   globalThis.Date.now = () => FROZEN_EPOCH;
 
   installAmbientGlobals();
