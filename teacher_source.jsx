@@ -1278,7 +1278,14 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
   const allTeams = Object.keys(escapeState.teamProgress || {});
   const puzzles = escapeState.puzzles || [];
   const totalPuzzles = puzzles.length;
-  const escapedTeams = useMemo(() => allTeams.filter(t => escapeState.teamProgress?.[t]?.isEscaped), [allTeams, escapeState, isEscaped, teamProgress]);
+  // Drop bogus deps `isEscaped`, `teamProgress` — those vars belong to a
+  // different component scope (the student-side EscapeRoomStudentView) and
+  // reading them here crashes the render. The function body only references
+  // allTeams and escapeState.teamProgress[t].isEscaped, so those are the
+  // correct deps. Surfaced by check_render_refs gate on 2026-06-04 when
+  // rebuilding teacher_module.js after a hand-edit had silently removed
+  // the bad deps from the build artifact without backporting to source.
+  const escapedTeams = useMemo(() => allTeams.filter(t => escapeState.teamProgress?.[t]?.isEscaped), [allTeams, escapeState]);
   const studentsAssigned = Object.keys(escapeState.teams || {}).length;
   const handlePauseToggle = async () => {
     try {
@@ -1401,7 +1408,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
   );
 });
 // @section LIVE_QUIZ — Teacher live quiz broadcast controls
-const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup, history = [] }) => {
+const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup, onUpdateQuestionRoutingRules, history = [] }) => {
     const { t } = useContext(LanguageContext);
     const { quizState, roster } = sessionData;
     const { currentQuestionIndex, phase, responses, mode, bossStats, teamScores } = quizState;
@@ -1410,13 +1417,56 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     const [bossDifficulty, setBossDifficulty] = useState('normal');
     // Phase-2 quiz auto-routing: per-question rules. Mirrored to window
     // so the App-level useEffect (AlloFlowANTI.txt, near rosterKey
-    // auto-grouping) can read them. Rule schema reused from LivePolling:
-    // { id, when: { predicate, value }, then: { groupId } }.
-    const [quizRoutingRulesByQ, setQuizRoutingRulesByQ] = useState({});
+    // auto-grouping) can read them. Rule schema:
+    //   { id, version, when: { predicate, value }, then: { groupId?, hiddenResourceIds? } }
+    //
+    // PERSISTENCE CONTRACT (PHASE A — added 2026-06-04):
+    //   1. SEED ON MOUNT: initial state is read from question.routingRules on
+    //      every question in generatedContent. Pre-authored rules (AI-generated,
+    //      imported from a quiz pack, or persisted from a prior teacher session)
+    //      are visible to the editor immediately. Before this fix, the state
+    //      initialized to {} and pre-authored rules were silently hidden.
+    //   2. WRITE-THROUGH: every state change fires onUpdateQuestionRoutingRules
+    //      (the callback prop) so the host can mirror the rules back onto
+    //      generatedContent.data.questions[i].routingRules. The host then
+    //      writes generatedContent into history, which the saveHistory debounce
+    //      persists to IndexedDB (allo_offline_history). Result: rules survive
+    //      teacher-tab reload AND ride with the quiz resource when exported.
+    //   3. WINDOW MIRROR (legacy): window.__alloQuizRoutingRules is still
+    //      written for the runtime consumer at AlloFlowANTI.txt:11444 which
+    //      uses it as a fallback when generatedContent isn't yet hydrated.
+    //      Both sources are now reconciled via the same useEffect below.
+    const [quizRoutingRulesByQ, setQuizRoutingRulesByQ] = useState(() => {
+      const seeded = {};
+      const qs = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions))
+        ? generatedContent.data.questions : [];
+      qs.forEach((q, i) => {
+        if (q && Array.isArray(q.routingRules) && q.routingRules.length > 0) {
+          // Stamp version on legacy rules that lack one so subsequent edits
+          // have something to increment. Idempotent — only adds version, leaves
+          // existing version values alone.
+          seeded[i] = q.routingRules.map(r =>
+            (r && typeof r === 'object' && (r.version == null))
+              ? Object.assign({}, r, { version: 1 })
+              : r
+          );
+        }
+      });
+      return seeded;
+    });
     const [showQuizRoutingPanel, setShowQuizRoutingPanel] = useState(false);
     useEffect(() => {
+      // Mirror to window for the legacy runtime consumer fallback.
       if (typeof window !== 'undefined') window.__alloQuizRoutingRules = quizRoutingRulesByQ;
-    }, [quizRoutingRulesByQ]);
+      // Phase A round-trip: fire the host callback so rules persist onto
+      // generatedContent.data.questions[i].routingRules and ride into
+      // allo_offline_history via the host's saveHistory debounce. The host
+      // owns the merge strategy (it writes a single setGeneratedContent that
+      // updates each question's routingRules in one batched call).
+      if (typeof onUpdateQuestionRoutingRules === 'function') {
+        try { onUpdateQuestionRoutingRules(quizRoutingRulesByQ); } catch (_) { /* host write errors are non-fatal */ }
+      }
+    }, [quizRoutingRulesByQ, onUpdateQuestionRoutingRules]);
     const groupsForRouting = sessionData?.groups || {};
     const groupEntriesForRouting = Object.entries(groupsForRouting).filter(([_, g]) => g !== null);
     const currentRules = quizRoutingRulesByQ[currentQuestionIndex] || [];
@@ -1428,6 +1478,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         const firstGroup = (groupEntriesForRouting[0] && groupEntriesForRouting[0][0]) || '';
         existing.push({
           id: 'qr-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 5),
+          version: 1,
           when: { predicate: 'eq', value: firstOption },
           then: { groupId: firstGroup }
         });
@@ -1449,6 +1500,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
           if (r.id !== rid) return r;
           return {
             ...r,
+            version: (typeof r.version === 'number' ? r.version : 0) + 1,
             when: patch.when ? { ...r.when, ...patch.when } : r.when,
             then: patch.then ? { ...r.then, ...patch.then } : r.then,
           };
@@ -1467,7 +1519,11 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
           const current = Array.isArray(r.then.hiddenResourceIds) ? r.then.hiddenResourceIds : [];
           const has = current.indexOf(resourceId) !== -1;
           const updated = has ? current.filter(x => x !== resourceId) : current.concat([resourceId]);
-          return { ...r, then: { ...r.then, hiddenResourceIds: updated } };
+          return {
+            ...r,
+            version: (typeof r.version === 'number' ? r.version : 0) + 1,
+            then: { ...r.then, hiddenResourceIds: updated },
+          };
         });
         return next;
       });

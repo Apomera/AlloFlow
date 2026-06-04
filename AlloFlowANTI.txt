@@ -8744,7 +8744,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
   };
   const saveToCloud = async () => {
-      if (!user || !isCloudSyncEnabled || !isHistoryLoaded || !isCloudInitialized) return;
+      // FERPA: teacherHistory cloud-sync is for the TEACHER's lesson catalog
+      // only. If isTeacherMode is false the caller is a student and we MUST
+      // NOT capture their session/history into a doc named "teacherHistory"
+      // under their own user.uid. The Firestore path is intended for teacher
+      // content; the gate enforces that intent.
+      if (!user || !isTeacherMode || !isCloudSyncEnabled || !isHistoryLoaded || !isCloudInitialized) return;
       setCloudSyncStatus('syncing');
       try {
           const sanitizedHistory = sanitizeHistoryForCloud(history);
@@ -8819,12 +8824,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
   }, [isCloudSyncEnabled, user]);
   useEffect(() => {
-      if (!isCloudSyncEnabled || !user) return;
+      // FERPA: teacher-only cloud sync gate (see saveToCloud for rationale).
+      if (!isCloudSyncEnabled || !user || !isTeacherMode) return;
       const timeoutId = setTimeout(() => {
           saveToCloud();
       }, 3000);
       return () => clearTimeout(timeoutId);
-  }, [history, isCloudSyncEnabled, user]);
+  }, [history, isCloudSyncEnabled, user, isTeacherMode]);
   useEffect(() => {
       if (!user) {
           return;
@@ -18678,6 +18684,48 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: newData } : item));
   };
+  // PHASE A — routing-rule persistence round-trip. TeacherLiveQuizControls
+  // (teacher_source.jsx) keeps its rules in React state and fires this callback
+  // on every change. We mirror the rules onto generatedContent.data.questions
+  // [i].routingRules so they (a) survive teacher-tab reload, (b) ride into
+  // allo_offline_history via the existing saveHistory debounce, and (c) get
+  // picked up by the runtime consumer at the auto-routing useEffect which
+  // already prefers question.routingRules over the window mirror.
+  //
+  // Contract: rulesByQ is { [questionIndex]: routingRules[] }. We write each
+  // entry into the matching question, leaving questions with no entry in
+  // rulesByQ untouched (so the host can incrementally update one question's
+  // rules without clobbering others authored elsewhere — e.g. via AI generation
+  // or quiz-pack import).
+  const handleUpdateQuestionRoutingRules = useCallback((rulesByQ) => {
+    if (!rulesByQ || typeof rulesByQ !== 'object') return;
+    setGeneratedContent(prev => {
+      if (!prev || prev.type !== 'quiz' || !prev.data || !Array.isArray(prev.data.questions)) return prev;
+      let changed = false;
+      const nextQuestions = prev.data.questions.map((q, i) => {
+        if (!Object.prototype.hasOwnProperty.call(rulesByQ, i)) return q;
+        const incoming = rulesByQ[i];
+        const incomingArr = Array.isArray(incoming) ? incoming : [];
+        const currentArr = Array.isArray(q && q.routingRules) ? q.routingRules : [];
+        // Cheap equality check: same length AND every rule has matching
+        // id+version. Avoids re-rendering the whole content tree on identical
+        // writes (e.g. mount-time seeding writes the SAME rules back).
+        if (currentArr.length === incomingArr.length && currentArr.every((r, idx) => {
+          const o = incomingArr[idx];
+          return r && o && r.id === o.id && r.version === o.version;
+        })) {
+          return q;
+        }
+        changed = true;
+        return Object.assign({}, q, { routingRules: incomingArr });
+      });
+      if (!changed) return prev;
+      const nextData = Object.assign({}, prev.data, { questions: nextQuestions });
+      // Mirror to history so the saveHistory debounce picks it up.
+      setHistory(h => h.map(item => item.id === prev.id ? Object.assign({}, item, { data: nextData }) : item));
+      return Object.assign({}, prev, { data: nextData });
+    });
+  }, [setGeneratedContent, setHistory]);
   const handleReflectionChange = (rIndex, value, isEn = false) => {
     if (!generatedContent || generatedContent.type !== 'quiz') return;
     const newData = { ...generatedContent?.data };
@@ -24961,6 +25009,7 @@ ${_toolList}
                     handleFillinAnswer, handleFinalDoorAnswer, handleRevealHint, derangeShuffle,
                     handleCreateGroup, handleAssignStudent, handleSetGroupResource,
                     handleSetGroupLanguage, handleSetGroupProfile, handleDeleteGroup,
+                    handleUpdateQuestionRoutingRules,
                     callGemini, callTTS, callImagen, callGeminiImageEdit,
                     gradeLevel,
                     getRows, formatInlineText, renderFormattedText,
