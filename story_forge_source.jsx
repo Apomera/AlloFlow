@@ -2720,6 +2720,10 @@ show();
   // ═══════════════════════════════════════════════════════════
 
   const exportDraftJSON = () => {
+    // FERPA reminder: this draft is de-identified (codename, never a real name), but it still
+    // carries the student's full writing, the AI feedback/grade, and progress analytics — so a
+    // local download is a confirmed, informed action. (Network egress stays gated in shareToSession.)
+    if (!window.confirm(`Export this student's full draft as a file?\n\nThe file is de-identified — it uses the codename, not a real name — but it contains the student's complete writing, the AI feedback/grade, and progress analytics. Save it to a school-approved location and handle it per your district's student-records policy.\n\nContinue?`)) return;
     const draft = {
       _storyForgeVersion: 2,
       // ── Story content ──

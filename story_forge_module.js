@@ -2554,6 +2554,11 @@ show();
     }
   };
   const exportDraftJSON = () => {
+    if (!window.confirm(`Export this student's full draft as a file?
+
+The file is de-identified \u2014 it uses the codename, not a real name \u2014 but it contains the student's complete writing, the AI feedback/grade, and progress analytics. Save it to a school-approved location and handle it per your district's student-records policy.
+
+Continue?`)) return;
     const draft = {
       _storyForgeVersion: 2,
       // ── Story content ──
