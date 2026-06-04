@@ -14,10 +14,13 @@ import { render, click } from './helpers/arc_harness.js';
 
 const ORDER = ['L1', 'L3', 'L4', 'L5', 'L7', 'L8', 'L9']; // 7 families; L9 = cubic, last
 const LAST = ORDER.length - 1;
+// The gauntlet now sequences only SOLVED families and unlocks after ≥4; this "all
+// families cleared" history populates it to the full 7-stage run for these tests.
+const SOLVED = { L1: { solved: true }, L3: { solved: true }, L4: { solved: true }, L5: { solved: true }, L7: { solved: true }, L8: { solved: true }, L9: { solved: true } };
 
 describe('Arc City render — Gauntlet tier lock (proving ground)', () => {
   it('LOCKS the tier in the gauntlet: tier picker is swapped for a lock notice, preview hidden even if saved tier is practice', () => {
-    const r = render({ levelId: 'L10', byLevel: {}, tier: 'practice', fired: false, badges: [] });
+    const r = render({ levelId: 'L10', byLevel: SOLVED, tier: 'practice', fired: false, badges: [] });
     expect(r.find('tier-guided')).toBeNull();      // tier picker gone
     expect(r.find('tier-practice')).toBeNull();
     expect(r.find('gtierlock')).not.toBeNull();     // lock notice present
@@ -29,12 +32,19 @@ describe('Arc City render — Gauntlet tier lock (proving ground)', () => {
     expect(r.find('tier-guided')).not.toBeNull();
     expect(r.text).not.toMatch(/Preview hidden/);
   });
+
+  it('with too few solved families, the Gauntlet shows a gentle note instead of a board (no crash)', () => {
+    const r = render({ levelId: 'L10', byLevel: {}, tier: 'independent', fired: false, badges: [] });
+    expect(r.text).toMatch(/replays the ones you/); // "solve a few families first" note
+    expect(r.find('svg')).toBeNull();               // no board built
+    expect(r.find('fire')).toBeNull();              // no controls built
+  });
 });
 
 describe('Arc City render — Gauntlet Next / Restart handlers', () => {
   it('Next challenge advances idx by one and freezes the run order', () => {
     const next = click(
-      { levelId: 'L10', byLevel: { 'G-L1': { solved: true, params: {} } }, gauntlet: { order: ORDER, idx: 0 }, tier: 'independent', fired: true, badges: [] },
+      { levelId: 'L10', byLevel: Object.assign({}, SOLVED, { 'G-L1': { solved: true, params: {} } }), gauntlet: { order: ORDER, idx: 0 }, tier: 'independent', fired: true, badges: [] },
       'gnext'
     );
     expect(next.gauntlet.idx).toBe(1);
@@ -52,8 +62,8 @@ describe('Arc City render — Gauntlet Next / Restart handlers', () => {
         'G-L4': { solved: true, params: {} }, 'G-L5': { solved: true, params: {} },
         'G-L7': { solved: true, params: {} }, 'G-L8': { solved: true, params: {} },
         'G-L9': { solved: true, params: {} },
-        // ... plus standalone history that should survive the restart and drive re-ranking
-        L1: { solved: true }, L3: { solved: true, independent: true }, L9: { solved: true }
+        // ... plus ≥4 solved standalone families that survive the restart and drive re-ranking
+        L1: { solved: true }, L4: { solved: true }, L5: { solved: true }, L3: { solved: true, independent: true }
       },
       gauntlet: { order: ORDER, idx: LAST }, tier: 'independent', fired: true, badges: ['grand-tour']
     };
@@ -84,7 +94,7 @@ describe('Arc City render — Grand Tour award through the Fire handler', () => 
   it('does NOT award Grand Tour on a non-final stage solve', () => {
     const atFirst = {
       levelId: 'L10',
-      byLevel: { 'G-L1': { params: { m: 0.5, b: 0 }, shots: 0, solved: false, misses: 0 } },
+      byLevel: Object.assign({}, SOLVED, { 'G-L1': { params: { m: 0.5, b: 0 }, shots: 0, solved: false, misses: 0 } }),
       gauntlet: { order: ORDER, idx: 0 }, tier: 'independent', fired: false, badges: []
     };
     const fired = click(atFirst, 'fire');
@@ -149,7 +159,7 @@ describe('Arc City render — leaving/returning preserves the run (no silent dat
   it('switching to a normal level mid-run keeps the gauntlet state; returning resumes at the same stage', () => {
     const mid = {
       levelId: 'L10',
-      byLevel: { 'G-L1': { solved: true, params: {} }, L9: { solved: true } }, // L9 solved ⇒ L10 (gauntlet) unlocked
+      byLevel: Object.assign({}, SOLVED, { 'G-L1': { solved: true, params: {} } }), // ≥4 families solved ⇒ L10 unlocked
       gauntlet: { order: ORDER, idx: 1 }, tier: 'independent', fired: false, badges: []
     };
     const left = click(mid, 'lvl-L1');

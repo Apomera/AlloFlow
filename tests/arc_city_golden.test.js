@@ -124,20 +124,33 @@ describe('Arc City — The Gauntlet (L10): adaptive, integrative capstone (§11)
     expect(new Set(fams).size).toBe(fams.length); // every family represented once
   });
 
-  it('with no history, the order is the natural family progression (stable)', () => {
-    expect(arc.gauntletOrder({}, STAGES)).toEqual(STAGES);
+  it('sequences ONLY families the player has solved standalone (never an unmet family)', () => {
+    expect(arc.gauntletOrder({}, STAGES)).toEqual([]);            // nothing solved → empty run
+    // explored-but-not-solved does NOT count; only a solve enters the gauntlet
+    expect(arc.gauntletOrder({ L5: { shots: 3 } }, STAGES)).toEqual([]);
+    const some = { L1: { solved: true }, L4: { solved: true } };
+    expect(arc.gauntletOrder(some, STAGES)).toEqual(['L1', 'L4']); // only the two solved families
   });
 
-  it('ADAPTS: least-practiced families come first, most-mastered last (transparent, deterministic)', () => {
-    // player has used parabola (L3) independently, only explored sine (L5),
-    // never touched the rest → independent sinks to the back, unexplored stay up.
-    const by = { L3: { solved: true, independent: true }, L5: { shots: 2 } };
+  it('ADAPTS among SOLVED families: scaffolded-first, independent-last (transparent, deterministic)', () => {
+    // all four solved, but L3/L5 with the preview (scaffold) and L1/L4 independently
+    const by = {
+      L1: { solved: true, independent: true }, L4: { solved: true, independent: true },
+      L3: { solved: true, independent: false }, L5: { solved: true, independent: false }
+    };
     const ord = arc.gauntletOrder(by, STAGES);
-    expect(ord[ord.length - 1]).toBe('L3');           // mastered → last
-    expect(ord.indexOf('L5')).toBeGreaterThan(ord.indexOf('L1')); // explored after never-tried
-    expect(ord.indexOf('L5')).toBeLessThan(ord.indexOf('L3'));    // but before mastered
-    // deterministic: same input → same output
-    expect(arc.gauntletOrder(by, STAGES)).toEqual(ord);
+    expect(ord).toEqual(['L3', 'L5', 'L1', 'L4']);   // scaffolded (weaker) first, independent last; stable within tier
+    expect(arc.gauntletOrder(by, STAGES)).toEqual(ord); // deterministic
+  });
+
+  it('GROWS as the player learns more, and unlocks only after the core (≥4 families)', () => {
+    const L10idx = LEVELS.findIndex(l => l.id === 'L10');
+    const core = { L1: { solved: true }, L3: { solved: true }, L4: { solved: true }, L5: { solved: true } };
+    expect(arc.isLevelUnlocked({ L1: { solved: true }, L3: { solved: true }, L4: { solved: true } }, L10idx)).toBe(false); // 3 < 4
+    expect(arc.isLevelUnlocked(core, L10idx)).toBe(true);                 // 4 → unlocked
+    expect(arc.gauntletOrder(core, STAGES).length).toBe(4);               // 4-stage capstone for a core student
+    const reach = Object.assign({}, core, { L7: { solved: true }, L8: { solved: true }, L9: { solved: true } });
+    expect(arc.gauntletOrder(reach, STAGES).length).toBe(7);              // grows to all 7 once reach levels are solved
   });
 
   it('gauntletWhy speaks the adaptive reason honestly (no mastery claim)', () => {
@@ -183,13 +196,13 @@ describe('Arc City — The Gauntlet (L10): adaptive, integrative capstone (§11)
   });
 
   it('restart re-evaluates the order from STANDALONE history only — clone (G-*) state never skews it', () => {
-    // resetGauntlet() clears 'G-*' keys then re-runs gauntletOrder; the order must
-    // depend only on real-level progress, so leftover/cleared clone state is inert.
+    // resetGauntlet() clears 'G-*' keys then re-runs gauntletOrder; the order depends
+    // only on real-level progress, so leftover/cleared clone state is inert.
     const cloneOnly = { 'G-L3': { solved: true, independent: true }, 'G-L7': { solved: true } };
-    expect(arc.gauntletOrder(cloneOnly, STAGES)).toEqual(STAGES); // clones ignored → natural order
-    // and a standalone independent solve DOES move its family to the back
+    expect(arc.gauntletOrder(cloneOnly, STAGES)).toEqual([]); // clones don't count as solved families
+    // a standalone solve DOES put its family into the run
     const real = { L3: { solved: true, independent: true } };
-    expect(arc.gauntletOrder(real, STAGES)[STAGES.length - 1]).toBe('L3');
+    expect(arc.gauntletOrder(real, STAGES)).toEqual(['L3']);
   });
 });
 

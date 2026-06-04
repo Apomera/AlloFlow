@@ -388,9 +388,14 @@
     return s;
   }
 
-  // A level is unlocked if it's the first, or the previous level is solved.
+  // A level is unlocked if it's the first, or the previous level is solved. The
+  // Gauntlet (capstone) is the exception: it unlocks once the player has solved
+  // GAUNTLET_MIN_FAMILIES families — so the core path reaches it without first
+  // clearing the reach levels (exp/log/cubic). It then sequences only what's solved.
   function isLevelUnlocked(byLevel, idx) {
     if (idx <= 0) return true;
+    var lvl = LEVELS[idx];
+    if (lvl && lvl.family === 'gauntlet') return solvedFamilies(byLevel, lvl.stages).length >= GAUNTLET_MIN_FAMILIES;
     var prev = LEVELS[idx - 1];
     var ps = byLevel && byLevel[prev.id];
     return !!(ps && ps.solved);
@@ -527,8 +532,22 @@
     var st = familyStatus(byLevel, lv.family);
     return st === 'used independently' ? 3 : (st === 'used with scaffold' ? 2 : (st === 'explored' ? 1 : 0));
   }
+  // A family belongs in the gauntlet only once the player has SOLVED it standalone —
+  // the capstone replays what you've LEARNED, never a family you haven't met. This
+  // keeps the run honest AND (with the unlock rule below) lets a core-path student
+  // reach a right-sized gauntlet without first clearing the above-grade reach levels.
+  var GAUNTLET_MIN_FAMILIES = 4; // the gauntlet unlocks once this many families are solved
+  function solvedFamilies(byLevel, stageIds) {
+    return (stageIds || []).filter(function (id) {
+      var st = familyStatus(byLevel, levelById(id).family);
+      return st === 'used with scaffold' || st === 'used independently';
+    });
+  }
   function gauntletOrder(byLevel, stageIds) {
-    return (stageIds || []).map(function (id, i) { return { id: id, r: gauntletRank(byLevel, id), i: i }; })
+    // only the families solved standalone, ordered weakest-of-those first (stable);
+    // grows on a fresh run as the player learns more families.
+    return solvedFamilies(byLevel, stageIds)
+      .map(function (id, i) { return { id: id, r: gauntletRank(byLevel, id), i: i }; })
       .sort(function (a, b) { return a.r - b.r || a.i - b.i; })
       .map(function (o) { return o.id; });
   }
@@ -809,18 +828,26 @@
           var gOrder = (gIdx > 0 && S.gauntlet && S.gauntlet.order && S.gauntlet.order.length)
             ? S.gauntlet.order
             : gauntletOrder(byLevel, rawLevel.stages);
-          if (gIdx > gOrder.length - 1) gIdx = gOrder.length - 1;
-          var gStageId = gOrder[gIdx];
-          level = Object.assign({}, levelById(gStageId), { id: 'G-' + gStageId });
-          gauntlet = { order: gOrder, idx: gIdx, total: gOrder.length, stageId: gStageId, why: gauntletWhy(byLevel, gStageId) };
-          // Persist the adaptive order once (built from the player's standalone
-          // history at entry), so it stays stable across renders/sessions.
-          if ((!S.gauntlet || !S.gauntlet.order) && typeof setToolData === 'function') {
-            setToolData(function (prev) {
-              var cur = (prev && prev._arccity) || S;
-              if (cur.gauntlet && cur.gauntlet.order) return prev;
-              return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { gauntlet: { order: gOrder, idx: 0 } }) });
-            });
+          if (!gOrder.length) {
+            // No solved families to sequence (only reachable via odd state — the
+            // unlock rule needs >= GAUNTLET_MIN_FAMILIES). Show a gentle note instead
+            // of resolving a phantom stage.
+            gauntlet = { order: [], idx: 0, total: 0, stageId: null, why: '', empty: true };
+            level = rawLevel;
+          } else {
+            if (gIdx > gOrder.length - 1) gIdx = gOrder.length - 1;
+            var gStageId = gOrder[gIdx];
+            level = Object.assign({}, levelById(gStageId), { id: 'G-' + gStageId });
+            gauntlet = { order: gOrder, idx: gIdx, total: gOrder.length, stageId: gStageId, why: gauntletWhy(byLevel, gStageId) };
+            // Persist the adaptive order once (built from the player's standalone
+            // history at entry), so it stays stable across renders/sessions.
+            if ((!S.gauntlet || !S.gauntlet.order) && typeof setToolData === 'function') {
+              setToolData(function (prev) {
+                var cur = (prev && prev._arccity) || S;
+                if (cur.gauntlet && cur.gauntlet.order) return prev;
+                return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { gauntlet: { order: gOrder, idx: 0 } }) });
+              });
+            }
           }
         } else {
           level = rawLevel;
@@ -920,7 +947,10 @@
             var cur = (prev && prev._arccity) || S;
             // Persist the render's CURRENT order (the fresh idx-0 evaluation) so the
             // rest of the run is frozen to what the player just started on.
-            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { gauntlet: { order: gauntlet.order, idx: ni }, fired: false }) });
+            // _focusFire: move keyboard focus to the Fire button after this re-render
+            // (the Next button the user just clicked is gone — otherwise focus drops
+            // to <body>). focusFireRef clears the flag once it has focused.
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { gauntlet: { order: gauntlet.order, idx: ni }, fired: false, _focusFire: true }) });
           });
           var nextLv = levelById(gauntlet.order[ni]);
           announceArc(ctx, t('arccity.challenge', 'Challenge') + ' ' + (ni + 1) + ' / ' + gauntlet.total + ': ' + nextLv.title + '. ' + describeBoard(nextLv));
@@ -935,9 +965,21 @@
             var bl = Object.assign({}, cur.byLevel || {});
             Object.keys(bl).forEach(function (k) { if (k.indexOf('G-') === 0) delete bl[k]; });
             var fresh = gauntletOrder(bl, rawLevel.stages);
-            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, gauntlet: { order: fresh, idx: 0 }, fired: false }) });
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, gauntlet: { order: fresh, idx: 0 }, fired: false, _focusFire: true }) });
           });
           announceArc(ctx, t('arccity.gauntlet_restarted', 'Gauntlet restarted — a fresh run, preview hidden. Predict, then Fire.'));
+        }
+        // Ref on the Fire button: when a control that just vanished (Next/Restart) set
+        // _focusFire, move focus here so keyboard users aren't dropped to <body>, then
+        // clear the flag (a post-commit callback, so this setToolData is safe).
+        function focusFireRef(el) {
+          if (!el || !S._focusFire || typeof setToolData !== 'function') return;
+          try { el.focus(); } catch (e) { }
+          setToolData(function (prev) {
+            var cur = (prev && prev._arccity) || S;
+            if (!cur._focusFire) return prev;
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { _focusFire: false }) });
+          });
         }
         function toggleMute() {
           if (typeof setToolData !== 'function') return;
@@ -1020,8 +1062,12 @@
           try { window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); } catch (e) { }
         }
 
-        var INK = 'var(--allo-stem-text, #e2e8f0)';
-        var GRID = 'var(--allo-stem-border, #334155)';
+        // Fallbacks match the DEFAULT (light) theme — if the host CSS var is ever
+        // missing (tool mounted before/outside the themed container), we're almost
+        // certainly in that default context, so INK must be DARK (#0f172a) to stay
+        // legible on the white canvas. A light fallback (#e2e8f0) was invisible there.
+        var INK = 'var(--allo-stem-text, #0f172a)';
+        var GRID = 'var(--allo-stem-border, #94a3b8)';
         var THEME = arcTheme();
         var PAL = arcPalette(THEME);
         var BEAM = PAL.accent, NODE_OFF = PAL.nodeOff, NODE_ON = PAL.nodeOn, GATE = PAL.gate, WALL = PAL.wall;
@@ -1168,7 +1214,7 @@
           });
         }
 
-        var svg = h('svg', {
+        var svg = (gauntlet && gauntlet.empty) ? null : h('svg', {
           key: 'svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%',
           role: 'img', 'aria-label': describeBoard(level),
           style: { display: 'block', maxHeight: '50vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden', touchAction: 'none' }
@@ -1180,7 +1226,7 @@
           // The Gauntlet keys its stage progress under 'G-Lx', so its tile reads
           // "solved" from completion of all stages, and "current" from the selected
           // raw level id (the resolved `level` is the stage clone, not L9).
-          var solved = lv.family === 'gauntlet' ? gauntletComplete(byLevel, lv.stages) : !!(byLevel[lv.id] && byLevel[lv.id].solved);
+          var solved = lv.family === 'gauntlet' ? gauntletComplete(byLevel, gauntletOrder(byLevel, lv.stages)) : !!(byLevel[lv.id] && byLevel[lv.id].solved);
           var current = lv.id === (S.levelId || 'L1');
           var face = (solved ? '✅ ' : (unlocked ? '' : '🔒 ')) + lv.title;
           return h('button', {
@@ -1258,7 +1304,7 @@
         (level.walls || []).forEach(function (w, i) { coordItems.push(h('li', { key: 'cw' + i }, '🧱 ' + t('arccity.wall', 'Wall:') + ' x ' + w.x + ', height ' + w.height)); });
         (level.gates || []).forEach(function (g, i) { coordItems.push(h('li', { key: 'cg' + i }, '🚪 ' + t('arccity.gate', 'Gate:') + ' x ' + g.x + ', opening y ' + g.lo + ' to ' + g.hi + (g.slope ? ', slope ≈ ' + g.slope.value + ' ±' + g.slope.tol + ' (' + (g.slope.value < 0 ? 'descending' : 'climbing') + ')' : ''))); });
 
-        var controls = h('div', { key: 'controls', style: { marginTop: 14 } },
+        var controls = (gauntlet && gauntlet.empty) ? null : h('div', { key: 'controls', style: { marginTop: 14 } },
           h('div', { key: 'eq', 'aria-label': describeEquation(level, P), style: { fontSize: 15, color: INK, marginBottom: 6, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', fontVariantNumeric: 'tabular-nums' } },
             level.family === 'line'
               ? ['y = ', h('span', { key: 'm', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.m, level.params.m.step)), ' · x + ', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step))]
@@ -1276,7 +1322,7 @@
           tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.6, marginBottom: 10 } }, handleEls.length ? t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.') : t('arccity.slider_hint', 'Tip: use the sliders (or the +/− buttons and arrow keys) to shape the beam.')) : null,
           h('div', { key: 'rows' }, paramRows),
           h('div', { key: 'btns', style: { display: 'flex', gap: 10, marginTop: 6 } },
-            h('button', { key: 'fire', type: 'button', onClick: fire, style: fireBtnStyle }, '⚡ ' + t('arccity.fire', 'Fire beam')),
+            h('button', { key: 'fire', type: 'button', ref: focusFireRef, onClick: fire, style: fireBtnStyle }, '⚡ ' + t('arccity.fire', 'Fire beam')),
             h('button', { key: 'reset', type: 'button', onClick: resetLevel, style: resetBtnStyle }, t('arccity.reset_btn', 'Reset')),
             h('button', { key: 'mute', type: 'button', 'aria-label': muted ? t('arccity.unmute', 'Sound is off — turn on') : t('arccity.mute', 'Sound is on — turn off'), onClick: toggleMute, style: resetBtnStyle }, muted ? '🔇' : '🔊')),
           h('div', { key: 'result', role: 'status', style: { marginTop: 12, fontSize: 14, lineHeight: 1.5, color: resultColor, minHeight: 42 } }, resultText),
@@ -1355,8 +1401,11 @@
               '📋 ' + t('arccity.copy_summary', 'Copy summary'))));
 
         // ── Gauntlet banner (progress + transparent "why this one") + advance ──
-        var gDoneCount = gauntlet ? gauntlet.order.filter(function (sid) { var st = byLevel['G-' + sid]; return !!(st && st.solved); }).length : 0;
-        var gauntletBanner = gauntlet ? h('div', { key: 'gbanner', role: 'status', style: { marginBottom: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.10)', color: INK } },
+        var gDoneCount = (gauntlet && !gauntlet.empty) ? gauntlet.order.filter(function (sid) { var st = byLevel['G-' + sid]; return !!(st && st.solved); }).length : 0;
+        var gauntletBanner = !gauntlet ? null : (gauntlet.empty
+          ? h('div', { key: 'gbanner', role: 'status', style: { marginBottom: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.10)', color: INK, fontSize: 14, fontWeight: 700 } },
+            '🏆 ' + t('arccity.gauntlet', 'The Gauntlet') + ' — ' + t('arccity.gauntlet_empty', 'Solve a few function families first, then come back — the Gauntlet replays the ones you’ve learned.'))
+          : h('div', { key: 'gbanner', role: 'status', style: { marginBottom: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.10)', color: INK } },
           // The heading is the SR text-equivalent for the (aria-hidden) dot row, so
           // it must carry the completion count too — not just the current position.
           h('div', { key: 'gt', style: { fontSize: 14, fontWeight: 800 } }, '🏆 ' + t('arccity.gauntlet', 'The Gauntlet') + ' — ' + t('arccity.challenge', 'Challenge') + ' ' + (gauntlet.idx + 1) + '/' + gauntlet.total + ' (' + gDoneCount + ' ' + t('arccity.done', 'done') + '): ' + levelById(gauntlet.stageId).title),
@@ -1376,7 +1425,7 @@
               border: '2px solid ' + (done ? NODE_ON : (cur ? INK : GRID)),
               background: done ? NODE_ON : (cur ? BEAM : 'transparent')
             } }, done ? '✓' : '');
-          }))) : null;
+          }))));
         var gauntletNav = (gauntlet && ls.solved)
           ? (gauntlet.idx < gauntlet.total - 1
             ? h('button', { key: 'gnext', type: 'button', onClick: advanceGauntlet, 'aria-label': t('arccity.next_challenge_aria', 'Next challenge — advance to the next function family in the Gauntlet'), style: { marginTop: 12, padding: '10px 16px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.15)', color: INK, fontSize: 14, fontWeight: 800, cursor: 'pointer' } }, t('arccity.next_challenge', 'Next challenge →'))
@@ -1392,7 +1441,9 @@
 
         var body = view === 'teacher'
           ? teacherPanel
-          : h('div', { key: 'game' }, levelBar, gauntletBanner, (gauntlet ? gauntletTierLock : tierBar), svg, controls, gauntletNav, badgeStrip);
+          : ((gauntlet && gauntlet.empty)
+            ? h('div', { key: 'game' }, levelBar, gauntletBanner) // no board until families are solved
+            : h('div', { key: 'game' }, levelBar, gauntletBanner, (gauntlet ? gauntletTierLock : tierBar), svg, controls, gauntletNav, badgeStrip));
 
         return h('div', { id: 'allo-arccity-root', style: { padding: 16, maxWidth: 760, margin: '0 auto', color: INK } },
           header, viewToggle, body);
