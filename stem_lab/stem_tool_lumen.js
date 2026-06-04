@@ -345,8 +345,60 @@
 
   var DEFAULT_BOX = { w: 480, h: 280, padL: 44, padR: 16, padT: 16, padB: 34 };
 
-  function plotGeometry(observations, claim, box, sourceRefs) {
+  // A second chart pathway — a bar per observation (each an L0 OBSERVED mark) on a
+  // shared baseline so heights are honest. Same axes / phase line / benchmark
+  // reference line / SR peer as the trend. plotGeometry dispatches here on chartType='bar'.
+  function barGeometry(observations, box, sourceRefs) {
     box = box || DEFAULT_BOX;
+    var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
+    var n = obs.length;
+    var innerW = box.w - box.padL - box.padR;
+    var innerH = box.h - box.padT - box.padB;
+    var xs = obs.map(function (o) { return o.x; });
+    var ys = obs.map(function (o) { return o.y; });
+    var refs = (sourceRefs || []).filter(function (r) { return sourcedRenderable(r).ok; });
+    var refVals = refs.map(function (r) { return r.value; });
+    var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+    // Baseline includes 0 so a bar's height is proportional to its value (no truncated-axis lie).
+    var minY = Math.min.apply(null, ys.concat(refVals).concat([0]));
+    var maxY = Math.max.apply(null, ys.concat(refVals));
+    var padY = (maxY - minY) * 0.1 || 1;
+    var y0 = minY, y1 = maxY + padY;
+    function sx(x) { return box.padL + (maxX === minX ? 0.5 : (x - minX) / (maxX - minX)) * innerW; }
+    function sy(y) { return box.padT + innerH - (y1 === y0 ? 0 : (y - y0) / (y1 - y0)) * innerH; }
+    var baseline = round1(sy(y0));
+    var slot = n > 1 ? innerW / (n - 1) : innerW;
+    var bw = Math.max(4, Math.min(40, slot * 0.6));
+    var bars = obs.map(function (o) {
+      var cx = sx(o.x), top = sy(o.y);
+      return {
+        x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: 'L0',
+        cx: round1(cx), bx: round1(cx - bw / 2), bw: round1(bw), by: round1(top), bh: round1(baseline - top)
+      };
+    });
+    var phaseLines = [];
+    for (var i = 1; i < n; i++) {
+      if (obs[i].phase !== obs[i - 1].phase) {
+        var px = (obs[i].x + obs[i - 1].x) / 2;
+        phaseLines.push({ x: round1(px), sx: round1(sx(px)), fromPhase: obs[i - 1].phase, toPhase: obs[i].phase });
+      }
+    }
+    var xTicks = obs.map(function (o) { return { x: o.x, sx: round1(sx(o.x)) }; });
+    var yTicks = [];
+    for (var t = 0; t <= 4; t++) { var yv = y0 + (y1 - y0) * t / 4; yTicks.push({ y: round1(yv), sy: round1(sy(yv)) }); }
+    var out = { box: box, chartType: 'bar', minX: minX, maxX: maxX, y0: round1(y0), y1: round1(y1), baseline: baseline, bars: bars, phaseLines: phaseLines, xTicks: xTicks, yTicks: yTicks };
+    if (refs.length) {
+      out.refLines = refs.map(function (r) {
+        var ry = round1(sy(r.value));
+        return { id: r.id, value: r.value, sy: ry, dPath: 'M ' + box.padL + ',' + ry + ' L ' + (box.w - box.padR) + ',' + ry, label: benchmarkChipText(r), verified: r.verified === true };
+      });
+    }
+    return out;
+  }
+
+  function plotGeometry(observations, claim, box, sourceRefs, chartType) {
+    box = box || DEFAULT_BOX;
+    if (chartType === 'bar') return barGeometry(observations, box, sourceRefs); // dispatch; trend code below is untouched
     var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
     var n = obs.length;
     var innerW = box.w - box.padL - box.padR;
@@ -427,9 +479,10 @@
     });
   }
 
-  function chartSummaryText(observations, claim, sourceRefs) {
-    if (!claim || claim.refused) return 'Trend chart. ' + (claim ? claim.text : 'no data yet.');
-    var parts = ['Trend chart.', claim.text];
+  function chartSummaryText(observations, claim, sourceRefs, chartType) {
+    var name = chartType === 'bar' ? 'Bar chart.' : 'Trend chart.';
+    if (!claim || claim.refused) return name + ' ' + (claim ? claim.text : 'no data yet.');
+    var parts = [name, claim.text];
     plotGeometry(observations, claim).phaseLines.forEach(function (p) {
       parts.push('A human-set phase line at week ' + p.x + ' divides ' +
         (p.fromPhase || 'the prior phase') + ' from ' + (p.toPhase || 'the next phase') + '.');
@@ -812,7 +865,7 @@
     // claims / prose
     deriveTrendClaim: deriveTrendClaim, trendSentence: trendSentence, refusalSentence: refusalSentence,
     // chart geometry + SR data-table peer (Phase 1)
-    REYNA_SAMPLE: REYNA_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry,
+    REYNA_SAMPLE: REYNA_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
     perSegmentSlopes: perSegmentSlopes, chartSummaryText: chartSummaryText, dataTableModel: dataTableModel,
     // AI-involvement layer (Phase 1) — pure guards + audience faces
     AI_CAVEAT: AI_CAVEAT, HYP_CAVEAT: HYP_CAVEAT, AI_N_FLOOR: AI_N_FLOOR, levelIndex: levelIndex,
@@ -896,6 +949,7 @@
           var ceiling = d.ceiling || 'L1';
           var audience = d.audience || 'working';
           var sourceRefs = Array.isArray(d.sourceRefs) ? d.sourceRefs : []; // §16 external benchmarks
+          var chartType = d.chartType || 'trend'; // visualization pathway (trend | bar)
           var callGemini = (ctx.callGemini) || (typeof window !== 'undefined' && window.callGemini) || null;
           var parseJson = function (raw) {
             try {
@@ -997,6 +1051,13 @@
           kids.push(h('div', { key: 'faces', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Audience face' },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Audience:'),
             faceBtn('working', 'Working'), faceBtn('iep-team', 'IEP team'), faceBtn('family', 'Family')));
+          // Chart-type switcher — multiple visualization pathways for the same provenance-bound data.
+          var ctBtn = function (tp, label) {
+            return h('button', { key: 'ct' + tp, 'aria-pressed': chartType === tp ? 'true' : 'false', className: (chartType === tp ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-700 border-slate-300') + ' px-2 py-1 text-xs rounded border', onClick: function () { upd('chartType', tp); } }, label);
+          };
+          kids.push(h('div', { key: 'charttype', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Chart type' },
+            h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Chart:'),
+            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar')));
 
           if (!obs.length) {
             kids.push(h('p', { key: 'empty', className: 'mt-2 text-sm text-slate-600' },
@@ -1032,7 +1093,7 @@
               h('p', { className: 'text-sm text-slate-800 mt-1' }, faceFor(claim, audience))));
           }
 
-          var geo = (obs.length >= 2 && claim && !claim.refused) ? plotGeometry(obs, claim, undefined, sourceRefs) : null;
+          var geo = (obs.length >= 2 && claim && !claim.refused) ? plotGeometry(obs, claim, undefined, sourceRefs, chartType) : null;
           if (geo) {
             var b = geo.box, sk = [];
             geo.yTicks.forEach(function (t, i) {
@@ -1048,13 +1109,21 @@
               sk.push(h('text', { key: 'phl' + i, x: p.sx + 3, y: b.padT + 9, style: { fontSize: '8px' }, fill: '#0f172a' }, 'phase'));
             });
             if (geo.trendPath) sk.push(h('path', { key: 'trend', d: geo.trendPath, fill: 'none', stroke: bundle.ink, strokeWidth: 2, strokeOpacity: bundle.markOpacity, strokeDasharray: bundle.strokeDasharray === 'none' ? undefined : bundle.strokeDasharray }));
-            geo.points.forEach(function (p, i) {
+            if (geo.points) geo.points.forEach(function (p, i) {
               sk.push(h('g', { key: 'pt' + i },
                 h('circle', { cx: p.sx, cy: p.sy, r: 3.5, fill: bundle.ink, fillOpacity: bundle.markOpacity }),
                 // the per-mark BURN: each mark carries its own level glyph at full opacity
                 h('text', { x: p.sx + 4, y: p.sy - 4, style: { fontSize: '8px' }, fill: bundle.ink, fillOpacity: 1, 'aria-hidden': 'true' }, bundle.glyph)
               ));
             });
+            // Bar pathway: each bar is an L0 OBSERVED mark (neutral ink) carrying its level glyph above it.
+            if (geo.bars) {
+              var l0 = encode('L0');
+              geo.bars.forEach(function (bar, i) {
+                sk.push(h('rect', { key: 'bar' + i, x: bar.bx, y: bar.by, width: bar.bw, height: Math.max(0, bar.bh), rx: 1, fill: l0.ink, fillOpacity: 0.85 }));
+                sk.push(h('text', { key: 'barg' + i, x: bar.cx, y: bar.by - 2, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l0.ink, 'aria-hidden': 'true' }, l0.glyph));
+              });
+            }
             // §16: benchmark reference line(s) — teal, dashed, NO data marker (a fact, not a measurement).
             if (geo.refLines) geo.refLines.forEach(function (rl, i) {
               sk.push(h('line', { key: 'rl' + i, x1: b.padL, y1: rl.sy, x2: b.w - b.padR, y2: rl.sy, stroke: '#0e7490', strokeWidth: 1.5, strokeDasharray: '2 4' }));
@@ -1062,7 +1131,7 @@
             });
             kids.push(h('svg', {
               key: 'svg', viewBox: '0 0 ' + b.w + ' ' + b.h, className: 'w-full mt-3 bg-white rounded-lg border border-slate-200',
-              role: 'img', 'aria-label': chartSummaryText(obs, claim, sourceRefs)
+              role: 'img', 'aria-label': chartSummaryText(obs, claim, sourceRefs, chartType)
             }, sk));
           }
 

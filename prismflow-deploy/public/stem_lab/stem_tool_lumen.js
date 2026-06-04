@@ -345,8 +345,60 @@
 
   var DEFAULT_BOX = { w: 480, h: 280, padL: 44, padR: 16, padT: 16, padB: 34 };
 
-  function plotGeometry(observations, claim, box, sourceRefs) {
+  // A second chart pathway — a bar per observation (each an L0 OBSERVED mark) on a
+  // shared baseline so heights are honest. Same axes / phase line / benchmark
+  // reference line / SR peer as the trend. plotGeometry dispatches here on chartType='bar'.
+  function barGeometry(observations, box, sourceRefs) {
     box = box || DEFAULT_BOX;
+    var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
+    var n = obs.length;
+    var innerW = box.w - box.padL - box.padR;
+    var innerH = box.h - box.padT - box.padB;
+    var xs = obs.map(function (o) { return o.x; });
+    var ys = obs.map(function (o) { return o.y; });
+    var refs = (sourceRefs || []).filter(function (r) { return sourcedRenderable(r).ok; });
+    var refVals = refs.map(function (r) { return r.value; });
+    var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+    // Baseline includes 0 so a bar's height is proportional to its value (no truncated-axis lie).
+    var minY = Math.min.apply(null, ys.concat(refVals).concat([0]));
+    var maxY = Math.max.apply(null, ys.concat(refVals));
+    var padY = (maxY - minY) * 0.1 || 1;
+    var y0 = minY, y1 = maxY + padY;
+    function sx(x) { return box.padL + (maxX === minX ? 0.5 : (x - minX) / (maxX - minX)) * innerW; }
+    function sy(y) { return box.padT + innerH - (y1 === y0 ? 0 : (y - y0) / (y1 - y0)) * innerH; }
+    var baseline = round1(sy(y0));
+    var slot = n > 1 ? innerW / (n - 1) : innerW;
+    var bw = Math.max(4, Math.min(40, slot * 0.6));
+    var bars = obs.map(function (o) {
+      var cx = sx(o.x), top = sy(o.y);
+      return {
+        x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: 'L0',
+        cx: round1(cx), bx: round1(cx - bw / 2), bw: round1(bw), by: round1(top), bh: round1(baseline - top)
+      };
+    });
+    var phaseLines = [];
+    for (var i = 1; i < n; i++) {
+      if (obs[i].phase !== obs[i - 1].phase) {
+        var px = (obs[i].x + obs[i - 1].x) / 2;
+        phaseLines.push({ x: round1(px), sx: round1(sx(px)), fromPhase: obs[i - 1].phase, toPhase: obs[i].phase });
+      }
+    }
+    var xTicks = obs.map(function (o) { return { x: o.x, sx: round1(sx(o.x)) }; });
+    var yTicks = [];
+    for (var t = 0; t <= 4; t++) { var yv = y0 + (y1 - y0) * t / 4; yTicks.push({ y: round1(yv), sy: round1(sy(yv)) }); }
+    var out = { box: box, chartType: 'bar', minX: minX, maxX: maxX, y0: round1(y0), y1: round1(y1), baseline: baseline, bars: bars, phaseLines: phaseLines, xTicks: xTicks, yTicks: yTicks };
+    if (refs.length) {
+      out.refLines = refs.map(function (r) {
+        var ry = round1(sy(r.value));
+        return { id: r.id, value: r.value, sy: ry, dPath: 'M ' + box.padL + ',' + ry + ' L ' + (box.w - box.padR) + ',' + ry, label: benchmarkChipText(r), verified: r.verified === true };
+      });
+    }
+    return out;
+  }
+
+  function plotGeometry(observations, claim, box, sourceRefs, chartType) {
+    box = box || DEFAULT_BOX;
+    if (chartType === 'bar') return barGeometry(observations, box, sourceRefs); // dispatch; trend code below is untouched
     var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
     var n = obs.length;
     var innerW = box.w - box.padL - box.padR;
@@ -427,9 +479,10 @@
     });
   }
 
-  function chartSummaryText(observations, claim, sourceRefs) {
-    if (!claim || claim.refused) return 'Trend chart. ' + (claim ? claim.text : 'no data yet.');
-    var parts = ['Trend chart.', claim.text];
+  function chartSummaryText(observations, claim, sourceRefs, chartType) {
+    var name = chartType === 'bar' ? 'Bar chart.' : 'Trend chart.';
+    if (!claim || claim.refused) return name + ' ' + (claim ? claim.text : 'no data yet.');
+    var parts = [name, claim.text];
     plotGeometry(observations, claim).phaseLines.forEach(function (p) {
       parts.push('A human-set phase line at week ' + p.x + ' divides ' +
         (p.fromPhase || 'the prior phase') + ' from ' + (p.toPhase || 'the next phase') + '.');
@@ -812,7 +865,7 @@
     // claims / prose
     deriveTrendClaim: deriveTrendClaim, trendSentence: trendSentence, refusalSentence: refusalSentence,
     // chart geometry + SR data-table peer (Phase 1)
-    REYNA_SAMPLE: REYNA_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry,
+    REYNA_SAMPLE: REYNA_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
     perSegmentSlopes: perSegmentSlopes, chartSummaryText: chartSummaryText, dataTableModel: dataTableModel,
     // AI-involvement layer (Phase 1) — pure guards + audience faces
     AI_CAVEAT: AI_CAVEAT, HYP_CAVEAT: HYP_CAVEAT, AI_N_FLOOR: AI_N_FLOOR, levelIndex: levelIndex,
@@ -896,6 +949,7 @@
           var ceiling = d.ceiling || 'L1';
           var audience = d.audience || 'working';
           var sourceRefs = Array.isArray(d.sourceRefs) ? d.sourceRefs : []; // §16 external benchmarks
+          var chartType = d.chartType || 'trend'; // visualization pathway (trend | bar)
           var callGemini = (ctx.callGemini) || (typeof window !== 'undefined' && window.callGemini) || null;
           var parseJson = function (raw) {
             try {
@@ -997,6 +1051,13 @@
           kids.push(h('div', { key: 'faces', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Audience face' },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Audience:'),
             faceBtn('working', 'Working'), faceBtn('iep-team', 'IEP team'), faceBtn('family', 'Family')));
+          // Chart-type switcher — multiple visualization pathways for the same provenance-bound data.
+          var ctBtn = function (tp, label) {
+            return h('button', { key: 'ct' + tp, 'aria-pressed': chartType === tp ? 'true' : 'false', className: (chartType === tp ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-700 border-slate-300') + ' px-2 py-1 text-xs rounded border', onClick: function () { upd('chartType', tp); } }, label);
+          };
+          kids.push(h('div', { key: 'charttype', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Chart type' },
+            h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Chart:'),
+            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar')));
 
           if (!obs.length) {
             kids.push(h('p', { key: 'empty', className: 'mt-2 text-sm text-slate-600' },
@@ -1032,7 +1093,7 @@
               h('p', { className: 'text-sm text-slate-800 mt-1' }, faceFor(claim, audience))));
           }
 
-          var geo = (obs.length >= 2 && claim && !claim.refused) ? plotGeometry(obs, claim, undefined, sourceRefs) : null;
+          var geo = (obs.length >= 2 && claim && !claim.refused) ? plotGeometry(obs, claim, undefined, sourceRefs, chartType) : null;
           if (geo) {
             var b = geo.box, sk = [];
             geo.yTicks.forEach(function (t, i) {
@@ -1048,13 +1109,21 @@
               sk.push(h('text', { key: 'phl' + i, x: p.sx + 3, y: b.padT + 9, style: { fontSize: '8px' }, fill: '#0f172a' }, 'phase'));
             });
             if (geo.trendPath) sk.push(h('path', { key: 'trend', d: geo.trendPath, fill: 'none', stroke: bundle.ink, strokeWidth: 2, strokeOpacity: bundle.markOpacity, strokeDasharray: bundle.strokeDasharray === 'none' ? undefined : bundle.strokeDasharray }));
-            geo.points.forEach(function (p, i) {
+            if (geo.points) geo.points.forEach(function (p, i) {
               sk.push(h('g', { key: 'pt' + i },
                 h('circle', { cx: p.sx, cy: p.sy, r: 3.5, fill: bundle.ink, fillOpacity: bundle.markOpacity }),
                 // the per-mark BURN: each mark carries its own level glyph at full opacity
                 h('text', { x: p.sx + 4, y: p.sy - 4, style: { fontSize: '8px' }, fill: bundle.ink, fillOpacity: 1, 'aria-hidden': 'true' }, bundle.glyph)
               ));
             });
+            // Bar pathway: each bar is an L0 OBSERVED mark (neutral ink) carrying its level glyph above it.
+            if (geo.bars) {
+              var l0 = encode('L0');
+              geo.bars.forEach(function (bar, i) {
+                sk.push(h('rect', { key: 'bar' + i, x: bar.bx, y: bar.by, width: bar.bw, height: Math.max(0, bar.bh), rx: 1, fill: l0.ink, fillOpacity: 0.85 }));
+                sk.push(h('text', { key: 'barg' + i, x: bar.cx, y: bar.by - 2, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l0.ink, 'aria-hidden': 'true' }, l0.glyph));
+              });
+            }
             // §16: benchmark reference line(s) — teal, dashed, NO data marker (a fact, not a measurement).
             if (geo.refLines) geo.refLines.forEach(function (rl, i) {
               sk.push(h('line', { key: 'rl' + i, x1: b.padL, y1: rl.sy, x2: b.w - b.padR, y2: rl.sy, stroke: '#0e7490', strokeWidth: 1.5, strokeDasharray: '2 4' }));
@@ -1062,7 +1131,7 @@
             });
             kids.push(h('svg', {
               key: 'svg', viewBox: '0 0 ' + b.w + ' ' + b.h, className: 'w-full mt-3 bg-white rounded-lg border border-slate-200',
-              role: 'img', 'aria-label': chartSummaryText(obs, claim, sourceRefs)
+              role: 'img', 'aria-label': chartSummaryText(obs, claim, sourceRefs, chartType)
             }, sk));
           }
 
@@ -1179,6 +1248,76 @@
                 'Include identifiable data (FERPA)')));
             if (d.exportMsg) kids.push(h('div', { key: 'expmsg', className: 'mt-1 text-xs italic text-slate-500' }, d.exportMsg));
           }
+
+          // ══ EVIDENCE INQUIRY widget (H7b'') ══
+          kids.push((function() {
+            var iq = d.evidenceIQ || { trendStrength: 0.5, sampleSize: 8, baseline: 50, aiLevel: 1, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('evidenceIQ', Object.assign({}, iq, patch)); }
+            function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+            var slopeConfidence = Math.abs(iq.trendStrength) * Math.sqrt(iq.sampleSize / 12);
+            var aiAmplification = iq.aiLevel * 0.5;
+            var driftRisk = aiAmplification - slopeConfidence;
+            var state = slopeConfidence < 0.4 ? 'insufficient' : slopeConfidence < 0.8 ? 'suggestive' : driftRisk > 0 ? 'overinterpreted' : slopeConfidence > 1.5 ? 'robust' : 'supported';
+            var sm = ({
+              insufficient: { label: 'Insufficient evidence', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'Slope-to-noise ratio too low. Anything you claim will be defensible only as a hypothesis to test next.' },
+              suggestive: { label: 'Suggestive', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.' },
+              supported: { label: 'Supported', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Clear trend with adequate sample. Reasonable basis for action with continued monitoring.' },
+              robust: { label: 'Robust', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Strong slope and large sample. Could probably re-derive same conclusion from another subset.' },
+              overinterpreted: { label: 'Over-interpreted', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'AI dial cranked too high relative to evidence. The narrative confidence outruns the data — exactly what Lumen\'s ladder is designed to prevent.' }
+            })[state];
+            return h('div', { key: 'evIQ', className: 'mt-3 p-3 rounded-lg', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+              h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, '🔬 Evidence Inquiry — Should I Trust This Trend?'),
+              h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, 'Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.'),
+              h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' · slope/noise ' + slopeConfidence.toFixed(2)),
+              h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
+              h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                h('label', { className: 'text-[10px]' },
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Trend strength'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.trendStrength.toFixed(2))),
+                  h('input', { type: 'range', min: 0, max: 2, step: 0.05, value: iq.trendStrength, onChange: function(e) { setKey('trendStrength', parseFloat(e.target.value)); }, className: 'w-full' })
+                ),
+                h('label', { className: 'text-[10px]' },
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Observations'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.sampleSize)),
+                  h('input', { type: 'range', min: 2, max: 40, step: 1, value: iq.sampleSize, onChange: function(e) { setKey('sampleSize', parseInt(e.target.value, 10)); }, className: 'w-full' })
+                ),
+                h('label', { className: 'text-[10px]' },
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Baseline value'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.baseline)),
+                  h('input', { type: 'range', min: 0, max: 200, step: 1, value: iq.baseline, onChange: function(e) { setKey('baseline', parseInt(e.target.value, 10)); }, className: 'w-full' })
+                ),
+                h('label', { className: 'text-[10px]' },
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'AI ladder (L0-L3)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, 'L' + iq.aiLevel)),
+                  h('input', { type: 'range', min: 0, max: 3, step: 1, value: iq.aiLevel, onChange: function(e) { setKey('aiLevel', parseInt(e.target.value, 10)); }, className: 'w-full' })
+                )
+              ),
+              h('div', { className: 'flex gap-2 mb-2' },
+                h('button', { onClick: function() {
+                  var t = new Date().toISOString().slice(11, 19);
+                  setIQ({ log: iq.log.concat([{ t: t, ts: iq.trendStrength.toFixed(2), n: iq.sampleSize, bl: iq.baseline, ai: 'L' + iq.aiLevel, sc: slopeConfidence.toFixed(2), state: sm.label }]) });
+                }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this evidence call'),
+                h('button', { onClick: function() { setIQ({ trendStrength: 0.5, sampleSize: 8, baseline: 50, aiLevel: 1 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+              ),
+              iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · trend ' + e.ts + ' n' + e.n + ' bl' + e.bl + ' ' + e.ai + ' → s/n ' + e.sc); })
+              ),
+              h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, 'Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)'),
+              h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty...', className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck — show open questions"),
+              iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, 'Open questions (no answer key)'),
+                h('ul', { className: 'pl-4 m-0' },
+                  h('li', null, 'Why does Lumen DEFAULT to L1 (math only) and force you to opt up?'),
+                  h('li', null, 'A flat baseline with n=40 vs noisy slope with n=8 — which would you act on?'),
+                  h('li', null, 'How would you communicate "suggestive" vs "supported" to a parent at an IEP meeting?'),
+                  h('li', null, 'When is regression to the mean the real explanation for an apparent trend?')
+                )
+              ),
+              h('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
+                h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                h('span', null, 'I can explain why this evidence configuration yields this evidentiary state.')
+              ),
+              iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+              h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).')
+            );
+          })());
 
           kids.push(h('p', { key: 'foot', className: 'mt-3 text-[10px] text-slate-400' },
             'Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.'));

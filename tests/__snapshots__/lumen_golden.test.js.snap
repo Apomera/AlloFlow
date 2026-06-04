@@ -10,6 +10,209 @@ exports[`Lumen — AI-involvement layer guards (Phase 1, §6.1/§6.3/§6.6/§7) 
 }
 `;
 
+exports[`Lumen — bar chart type (multi-pathway visualization) > bar geometry (snapshot) 1`] = `
+{
+  "bars": [
+    {
+      "bh": 133.1,
+      "bw": 28,
+      "bx": 30,
+      "by": 112.9,
+      "cx": 44,
+      "level": "L0",
+      "phase": "baseline",
+      "x": 1,
+      "y": 42,
+    },
+    {
+      "bh": 142.6,
+      "bw": 28,
+      "bx": 76.7,
+      "by": 103.4,
+      "cx": 90.7,
+      "level": "L0",
+      "phase": "baseline",
+      "x": 2,
+      "y": 45,
+    },
+    {
+      "bh": 139.4,
+      "bw": 28,
+      "bx": 123.3,
+      "by": 106.6,
+      "cx": 137.3,
+      "level": "L0",
+      "phase": "baseline",
+      "x": 3,
+      "y": 44,
+    },
+    {
+      "bh": 152.1,
+      "bw": 28,
+      "bx": 170,
+      "by": 93.9,
+      "cx": 184,
+      "level": "L0",
+      "phase": "baseline",
+      "x": 4,
+      "y": 48,
+    },
+    {
+      "bh": 148.9,
+      "bw": 28,
+      "bx": 216.7,
+      "by": 97.1,
+      "cx": 230.7,
+      "level": "L0",
+      "phase": "baseline",
+      "x": 5,
+      "y": 47,
+    },
+    {
+      "bh": 167.9,
+      "bw": 28,
+      "bx": 263.3,
+      "by": 78.1,
+      "cx": 277.3,
+      "level": "L0",
+      "phase": "tier2",
+      "x": 6,
+      "y": 53,
+    },
+    {
+      "bh": 183.7,
+      "bw": 28,
+      "bx": 310,
+      "by": 62.3,
+      "cx": 324,
+      "level": "L0",
+      "phase": "tier2",
+      "x": 7,
+      "y": 58,
+    },
+    {
+      "bh": 193.3,
+      "bw": 28,
+      "bx": 356.7,
+      "by": 52.7,
+      "cx": 370.7,
+      "level": "L0",
+      "phase": "tier2",
+      "x": 8,
+      "y": 61,
+    },
+    {
+      "bh": 190.1,
+      "bw": 28,
+      "bx": 403.3,
+      "by": 55.9,
+      "cx": 417.3,
+      "level": "L0",
+      "phase": "tier2",
+      "x": 9,
+      "y": 60,
+    },
+    {
+      "bh": 209.1,
+      "bw": 28,
+      "bx": 450,
+      "by": 36.9,
+      "cx": 464,
+      "level": "L0",
+      "phase": "tier2",
+      "x": 10,
+      "y": 66,
+    },
+  ],
+  "baseline": 246,
+  "box": {
+    "h": 280,
+    "padB": 34,
+    "padL": 44,
+    "padR": 16,
+    "padT": 16,
+    "w": 480,
+  },
+  "chartType": "bar",
+  "maxX": 10,
+  "minX": 1,
+  "phaseLines": [
+    {
+      "fromPhase": "baseline",
+      "sx": 254,
+      "toPhase": "tier2",
+      "x": 5.5,
+    },
+  ],
+  "xTicks": [
+    {
+      "sx": 44,
+      "x": 1,
+    },
+    {
+      "sx": 90.7,
+      "x": 2,
+    },
+    {
+      "sx": 137.3,
+      "x": 3,
+    },
+    {
+      "sx": 184,
+      "x": 4,
+    },
+    {
+      "sx": 230.7,
+      "x": 5,
+    },
+    {
+      "sx": 277.3,
+      "x": 6,
+    },
+    {
+      "sx": 324,
+      "x": 7,
+    },
+    {
+      "sx": 370.7,
+      "x": 8,
+    },
+    {
+      "sx": 417.3,
+      "x": 9,
+    },
+    {
+      "sx": 464,
+      "x": 10,
+    },
+  ],
+  "y0": 0,
+  "y1": 72.6,
+  "yTicks": [
+    {
+      "sy": 246,
+      "y": 0,
+    },
+    {
+      "sy": 188.5,
+      "y": 18.2,
+    },
+    {
+      "sy": 131,
+      "y": 36.3,
+    },
+    {
+      "sy": 73.5,
+      "y": 54.5,
+    },
+    {
+      "sy": 16,
+      "y": 72.6,
+    },
+  ],
+}
+`;
+
 exports[`Lumen — certainty grammar (design §6.4) > encodes every level (snapshot) 1`] = `
 [
   {

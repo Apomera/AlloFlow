@@ -1,0 +1,99 @@
+// Lumen RENDER golden master (SSR, design §15) — pins the actual rendered output
+// across the key states so the render can be refactored with a safety net and the
+// blank-tool / regression bug class is caught. Deterministic (data-seeded math),
+// so snapshots are byte-stable. Re-baseline deliberately with `vitest -u` ONLY
+// when a render change is reviewed and expected.
+
+import { describe, it, expect } from 'vitest';
+import * as LumenMod from '../stem_lab/stem_tool_lumen.js';
+import { renderState, meta } from './helpers/lumen_harness.js';
+
+const L = LumenMod.default || LumenMod;
+
+const REYNA = [
+  { x: 1, y: 42, phase: 'baseline' }, { x: 2, y: 45, phase: 'baseline' },
+  { x: 3, y: 44, phase: 'baseline' }, { x: 4, y: 48, phase: 'baseline' },
+  { x: 5, y: 47, phase: 'baseline' }, { x: 6, y: 53, phase: 'tier2' },
+  { x: 7, y: 58, phase: 'tier2' }, { x: 8, y: 61, phase: 'tier2' },
+  { x: 9, y: 60, phase: 'tier2' }, { x: 10, y: 66, phase: 'tier2' }
+];
+
+// A verified SYNTHETIC benchmark (value 75 / source TEST — not a real norm).
+const benchComp = L.makeCompendium('WCPM', 'words/min', { measure: 'ORF-WCPM' });
+const benchRef = L.makeSourceRef({
+  kind: 'percentile', measure: 'ORF-WCPM', unit: 'words/min', grade: 4, season: 'winter', percentile: 50,
+  value: 75, source: 'TEST', year: 2099, population: 'synthetic',
+  locator: 'https://example.org/fixture', citation: 'Synthetic fixture (not a real norm).', verified: true
+}, benchComp);
+benchRef.id = 's1';
+
+const aiHyps = L.validateHypotheses([
+  { text: 'The Tier-2 block reduced off-task time.', kind: 'effect', rank: 1 },
+  { text: 'Regression to the mean — early weeks were low.', kind: 'null', rank: 2 }
+]).hypotheses;
+
+describe('Lumen — render golden master (SSR, §15)', () => {
+  it('registration metadata', () => {
+    expect(meta()).toMatchSnapshot();
+  });
+
+  it('empty state — no observations (entry + sample, no chart)', () => {
+    expect(renderState({})).toMatchSnapshot();
+  });
+
+  it('n<3 refusal — too few points draws no line, shows a refusal sentence', () => {
+    expect(renderState({ observations: REYNA.slice(0, 1) })).toMatchSnapshot();
+  });
+
+  it('L1 chart (no AI, working face) — the default opening state', () => {
+    expect(renderState({ observations: REYNA, ceiling: 'L1', audience: 'working' })).toMatchSnapshot();
+  });
+
+  it('data table shown — the screen-reader peer', () => {
+    expect(renderState({ observations: REYNA, showTable: true })).toMatchSnapshot();
+  });
+
+  it('Family face — re-worded, uncertainty preserved', () => {
+    expect(renderState({ observations: REYNA, audience: 'family' })).toMatchSnapshot();
+  });
+
+  it('L3 ceiling + ranked hypothesis set + IEP-team sign-off', () => {
+    expect(renderState({ observations: REYNA, ceiling: 'L3', audience: 'iep-team', aiHyps: aiHyps })).toMatchSnapshot();
+  });
+
+  it('a verified benchmark renders the teal reference line + citation chip', () => {
+    expect(renderState({ observations: REYNA, sourceRefs: [benchRef] })).toMatchSnapshot();
+  });
+
+  it('bar chart pathway — rect bars + axes + phase line, no trend line', () => {
+    expect(renderState({ observations: REYNA, chartType: 'bar' })).toMatchSnapshot();
+  });
+});
+
+describe('Lumen — render invariants (no snapshot, just contracts)', () => {
+  it('never returns null/blank — always a visible element (the blank-tool bug class)', () => {
+    expect(renderState({}).length).toBeGreaterThan(50);
+    expect(renderState({ observations: REYNA }).length).toBeGreaterThan(200);
+  });
+
+  it('the working render carries the L1 level word + the AI-ceiling control, no AI output', () => {
+    const html = renderState({ observations: REYNA });
+    expect(html).toMatch(/Derived \(math\)/);   // the claim's level word
+    expect(html).toMatch(/AI ceiling/);          // the dial is present
+    expect(html).not.toMatch(/Generate AI|ranked hypotheses/); // no AI affordance / L3 card at the L1 default
+  });
+
+  it('the benchmark renders in its own teal channel with the not-this-student chip', () => {
+    const html = renderState({ observations: REYNA, sourceRefs: [benchRef] });
+    expect(html).toMatch(/#0e7490/);                                   // teal reference ink
+    expect(html).toMatch(/External benchmark \(not this student\)/);   // the chip
+    expect(html).toMatch(/href="https:\/\/example\.org\/fixture"/);    // scheme-checked source link
+  });
+
+  it('the bar pathway renders rect bars + a "Bar chart" SR label, with no data-point circles', () => {
+    const html = renderState({ observations: REYNA, chartType: 'bar' });
+    expect(html).toMatch(/<rect/);
+    expect(html).toMatch(/aria-label="Bar chart\./);
+    expect((html.match(/<circle/g) || []).length).toBe(0); // bars, not points
+  });
+});

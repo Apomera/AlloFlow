@@ -464,3 +464,37 @@ describe('Lumen — Sourced rendering integration + the no-external-data invaria
     expect(L.buildExportHtml(comp, claim, { audience: 'iep-team' }).html).not.toMatch(/External references/);
   });
 });
+
+describe('Lumen — bar chart type (multi-pathway visualization)', () => {
+  const { comp } = buildReyna(REYNA);
+  const claim = L.deriveTrendClaim(comp, { id: 'full' });
+
+  it('bar geometry (snapshot)', () => {
+    expect(L.plotGeometry(REYNA, claim, undefined, [], 'bar')).toMatchSnapshot();
+  });
+
+  it('one bar per observation, all L0 (observed), non-negative heights on a shared baseline', () => {
+    const g = L.plotGeometry(REYNA, claim, undefined, [], 'bar');
+    expect(g.chartType).toBe('bar');
+    expect(g.bars.length).toBe(REYNA.length);
+    expect(g.bars.every(b => b.level === 'L0')).toBe(true);   // bars are OBSERVED data
+    expect(g.bars.every(b => b.bh >= 0)).toBe(true);          // heights non-negative (baseline includes 0)
+    expect(g.points).toBeUndefined();                          // bars, not points
+    expect(typeof g.baseline).toBe('number');
+  });
+
+  it('the trend default is byte-identical with or without the chartType param', () => {
+    expect(JSON.stringify(L.plotGeometry(REYNA, claim, undefined, [])))
+      .toBe(JSON.stringify(L.plotGeometry(REYNA, claim, undefined, [], 'trend')));
+  });
+
+  it('the chart summary names the chart type', () => {
+    expect(L.chartSummaryText(REYNA, claim, [], 'bar')).toMatch(/^Bar chart\./);
+    expect(L.chartSummaryText(REYNA, claim, [])).toMatch(/^Trend chart\./);
+  });
+
+  it('a benchmark reference line works on the bar chart too', () => {
+    const ref = L.makeSourceRef({ kind: 'percentile', measure: 'ORF-WCPM', unit: 'words/min', grade: 4, season: 'winter', percentile: 50, value: 75, source: 'TEST', year: 2099, locator: 'https://example.org/x', citation: 'fixture', verified: true }, L.makeCompendium('WCPM', 'words/min', { measure: 'ORF-WCPM' }));
+    expect(L.plotGeometry(REYNA, claim, undefined, [ref], 'bar').refLines.length).toBe(1);
+  });
+});

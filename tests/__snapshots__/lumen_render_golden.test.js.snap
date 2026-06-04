@@ -1,0 +1,1446 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded, uncertainty preserved 1`] = `
+"<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-bold text-amber-800">💡 Lumen</span>
+<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+</div>
+<div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
+<span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
+<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<span class="text-xs text-slate-500 mr-1">Audience:</span>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Family</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
+<span class="text-xs text-slate-500 mr-1">Chart:</span>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Trend</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Bar</button>
+</div>
+<div class="mt-3 flex items-end gap-2 flex-wrap">
+<label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+</label>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+</div>
+<div class="mt-3 p-2 rounded bg-white border border-slate-200">
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+<span aria-hidden="true" style="font-size:14px">◈</span>
+<span>Derived (math)</span>
+</div>
+<p class="text-sm text-slate-800 mt-1">Over 10 check-ins, WCPM went up — about 2.7 words/min a week. With only 10 points the true rate could be roughly 2.1 to 3.2 a week, so read this as a direction, not an exact number.</p>
+</div>
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">39.6</text>
+<line x1="44" y1="188.5" x2="464" y2="188.5" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="191.5" text-anchor="end" style="font-size:9px" fill="#64748b">46.8</text>
+<line x1="44" y1="131" x2="464" y2="131" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="134" text-anchor="end" style="font-size:9px" fill="#64748b">54</text>
+<line x1="44" y1="73.5" x2="464" y2="73.5" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="76.5" text-anchor="end" style="font-size:9px" fill="#64748b">61.2</text>
+<line x1="44" y1="16" x2="464" y2="16" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="19" text-anchor="end" style="font-size:9px" fill="#64748b">68.4</text>
+<text x="44" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">1</text>
+<text x="90.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">2</text>
+<text x="137.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">3</text>
+<text x="184" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">4</text>
+<text x="230.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">5</text>
+<text x="277.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">6</text>
+<text x="324" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">7</text>
+<text x="370.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">8</text>
+<text x="417.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">9</text>
+<text x="464" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">10</text>
+<path d="M 44,260 L 464,27.5 L 464,67.5 L 44,220.1 Z" fill="#0f172a" fill-opacity="0.1" stroke="none">
+</path>
+<line x1="254" y1="16" x2="254" y2="246" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="2 3">
+</line>
+<text x="257" y="25" style="font-size:8px" fill="#0f172a">phase</text>
+<path d="M 44,240 L 464,47.5" fill="none" stroke="#0f172a" stroke-width="2" stroke-opacity="1">
+</path>
+<g>
+<circle cx="44" cy="226.8" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="90.7" cy="202.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="94.7" y="198.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="137.3" cy="210.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="141.3" y="206.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="184" cy="178.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="188" y="174.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="230.7" cy="186.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="234.7" y="182.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="277.3" cy="139" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="281.3" y="135" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="324" cy="99.1" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="328" y="95.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="370.7" cy="75.1" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="374.7" y="71.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="417.3" cy="83.1" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="421.3" y="79.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="464" cy="35.2" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="468" y="31.200000000000003" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+</svg>
+<button class="mt-2 text-xs underline text-slate-600">Show data table (the chart as a table)</button>
+<div class="mt-2 flex items-end gap-2 flex-wrap">
+<span class="text-xs text-slate-500">Add ORF benchmark:</span>
+<label class="text-xs text-slate-600 flex flex-col">Grade<input type="number" class="w-16 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">Season<select class="px-2 py-1 border rounded">
+<option value="fall">fall</option>
+<option value="winter" selected="">winter</option>
+<option value="spring">spring</option>
+</select>
+</label>
+<button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
+</div>
+<div class="mt-3 flex items-center gap-2 flex-wrap">
+<span class="text-xs text-slate-500">Export this view:</span>
+<button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
+<button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
+<label class="text-xs text-slate-600 flex items-center gap-1">
+<input type="checkbox"/>Include identifiable data (FERPA)</label>
+</div>
+<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
+<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
+<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
+<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
+<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
+<div class="grid grid-cols-2 gap-2 mb-2">
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Trend strength</span>
+<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
+</div>
+<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Observations</span>
+<span class="font-mono font-bold" style="color:#22d3ee">8</span>
+</div>
+<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Baseline value</span>
+<span class="font-mono font-bold" style="color:#22d3ee">50</span>
+</div>
+<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>AI ladder (L0-L3)</span>
+<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
+</div>
+<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
+</label>
+</div>
+<div class="flex gap-2 mb-2">
+<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
+<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
+</div>
+<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
+<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
+</textarea>
+<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
+<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
+<input type="checkbox"/>
+<span>I can explain why this evidence configuration yields this evidentiary state.</span>
+</label>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+</div>
+<p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+</div>"
+`;
+
+exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working face) — the default opening state 1`] = `
+"<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-bold text-amber-800">💡 Lumen</span>
+<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+</div>
+<div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
+<span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
+<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<span class="text-xs text-slate-500 mr-1">Audience:</span>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
+<span class="text-xs text-slate-500 mr-1">Chart:</span>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Trend</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Bar</button>
+</div>
+<div class="mt-3 flex items-end gap-2 flex-wrap">
+<label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+</label>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+</div>
+<div class="mt-3 p-2 rounded bg-white border border-slate-200">
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+<span aria-hidden="true" style="font-size:14px">◈</span>
+<span>Derived (math)</span>
+</div>
+<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+</div>
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">39.6</text>
+<line x1="44" y1="188.5" x2="464" y2="188.5" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="191.5" text-anchor="end" style="font-size:9px" fill="#64748b">46.8</text>
+<line x1="44" y1="131" x2="464" y2="131" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="134" text-anchor="end" style="font-size:9px" fill="#64748b">54</text>
+<line x1="44" y1="73.5" x2="464" y2="73.5" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="76.5" text-anchor="end" style="font-size:9px" fill="#64748b">61.2</text>
+<line x1="44" y1="16" x2="464" y2="16" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="19" text-anchor="end" style="font-size:9px" fill="#64748b">68.4</text>
+<text x="44" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">1</text>
+<text x="90.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">2</text>
+<text x="137.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">3</text>
+<text x="184" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">4</text>
+<text x="230.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">5</text>
+<text x="277.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">6</text>
+<text x="324" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">7</text>
+<text x="370.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">8</text>
+<text x="417.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">9</text>
+<text x="464" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">10</text>
+<path d="M 44,260 L 464,27.5 L 464,67.5 L 44,220.1 Z" fill="#0f172a" fill-opacity="0.1" stroke="none">
+</path>
+<line x1="254" y1="16" x2="254" y2="246" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="2 3">
+</line>
+<text x="257" y="25" style="font-size:8px" fill="#0f172a">phase</text>
+<path d="M 44,240 L 464,47.5" fill="none" stroke="#0f172a" stroke-width="2" stroke-opacity="1">
+</path>
+<g>
+<circle cx="44" cy="226.8" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="90.7" cy="202.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="94.7" y="198.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="137.3" cy="210.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="141.3" y="206.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="184" cy="178.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="188" y="174.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="230.7" cy="186.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="234.7" y="182.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="277.3" cy="139" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="281.3" y="135" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="324" cy="99.1" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="328" y="95.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="370.7" cy="75.1" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="374.7" y="71.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="417.3" cy="83.1" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="421.3" y="79.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="464" cy="35.2" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="468" y="31.200000000000003" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+</svg>
+<button class="mt-2 text-xs underline text-slate-600">Show data table (the chart as a table)</button>
+<div class="mt-2 flex items-end gap-2 flex-wrap">
+<span class="text-xs text-slate-500">Add ORF benchmark:</span>
+<label class="text-xs text-slate-600 flex flex-col">Grade<input type="number" class="w-16 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">Season<select class="px-2 py-1 border rounded">
+<option value="fall">fall</option>
+<option value="winter" selected="">winter</option>
+<option value="spring">spring</option>
+</select>
+</label>
+<button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
+</div>
+<div class="mt-3 flex items-center gap-2 flex-wrap">
+<span class="text-xs text-slate-500">Export this view:</span>
+<button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
+<button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
+<label class="text-xs text-slate-600 flex items-center gap-1">
+<input type="checkbox"/>Include identifiable data (FERPA)</label>
+</div>
+<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
+<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
+<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
+<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
+<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
+<div class="grid grid-cols-2 gap-2 mb-2">
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Trend strength</span>
+<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
+</div>
+<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Observations</span>
+<span class="font-mono font-bold" style="color:#22d3ee">8</span>
+</div>
+<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Baseline value</span>
+<span class="font-mono font-bold" style="color:#22d3ee">50</span>
+</div>
+<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>AI ladder (L0-L3)</span>
+<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
+</div>
+<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
+</label>
+</div>
+<div class="flex gap-2 mb-2">
+<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
+<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
+</div>
+<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
+<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
+</textarea>
+<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
+<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
+<input type="checkbox"/>
+<span>I can explain why this evidence configuration yields this evidentiary state.</span>
+</label>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+</div>
+<p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+</div>"
+`;
+
+exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypothesis set + IEP-team sign-off 1`] = `
+"<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-bold text-amber-800">💡 Lumen</span>
+<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+</div>
+<div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
+<span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
+<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<span class="text-xs text-slate-500 mr-1">Audience:</span>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">IEP team</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
+<span class="text-xs text-slate-500 mr-1">Chart:</span>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Trend</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Bar</button>
+</div>
+<div class="mt-3 flex items-end gap-2 flex-wrap">
+<label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+</label>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+</div>
+<div class="mt-3 p-2 rounded bg-white border border-slate-200">
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+<span aria-hidden="true" style="font-size:14px">◈</span>
+<span>Derived (math)</span>
+</div>
+<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). (Ordinary least-squares trend; the interval is a 95% t-interval on the slope. Descriptive — not a percentile, score, or prediction.)</p>
+</div>
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">39.6</text>
+<line x1="44" y1="188.5" x2="464" y2="188.5" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="191.5" text-anchor="end" style="font-size:9px" fill="#64748b">46.8</text>
+<line x1="44" y1="131" x2="464" y2="131" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="134" text-anchor="end" style="font-size:9px" fill="#64748b">54</text>
+<line x1="44" y1="73.5" x2="464" y2="73.5" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="76.5" text-anchor="end" style="font-size:9px" fill="#64748b">61.2</text>
+<line x1="44" y1="16" x2="464" y2="16" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="19" text-anchor="end" style="font-size:9px" fill="#64748b">68.4</text>
+<text x="44" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">1</text>
+<text x="90.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">2</text>
+<text x="137.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">3</text>
+<text x="184" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">4</text>
+<text x="230.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">5</text>
+<text x="277.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">6</text>
+<text x="324" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">7</text>
+<text x="370.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">8</text>
+<text x="417.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">9</text>
+<text x="464" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">10</text>
+<path d="M 44,260 L 464,27.5 L 464,67.5 L 44,220.1 Z" fill="#0f172a" fill-opacity="0.1" stroke="none">
+</path>
+<line x1="254" y1="16" x2="254" y2="246" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="2 3">
+</line>
+<text x="257" y="25" style="font-size:8px" fill="#0f172a">phase</text>
+<path d="M 44,240 L 464,47.5" fill="none" stroke="#0f172a" stroke-width="2" stroke-opacity="1">
+</path>
+<g>
+<circle cx="44" cy="226.8" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="90.7" cy="202.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="94.7" y="198.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="137.3" cy="210.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="141.3" y="206.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="184" cy="178.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="188" y="174.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="230.7" cy="186.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="234.7" y="182.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="277.3" cy="139" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="281.3" y="135" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="324" cy="99.1" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="328" y="95.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="370.7" cy="75.1" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="374.7" y="71.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="417.3" cy="83.1" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="421.3" y="79.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="464" cy="35.2" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="468" y="31.200000000000003" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+</svg>
+<button class="mt-2 text-xs underline text-slate-600">Show data table (the chart as a table)</button>
+<div class="mt-3 flex items-center gap-2 flex-wrap">
+<button class="px-3 py-1 text-sm rounded bg-violet-600 text-white hover:bg-violet-500">Generate AI reading (hypotheses)</button>
+<span class="text-[10px] text-slate-500">AI reading · AI-generated — verify yourself.</span>
+</div>
+<div class="mt-2 p-2 rounded border" style="border-color:#b45309;background:#fffbeb">
+<div class="flex items-center gap-2 text-xs font-semibold" style="color:#b45309">
+<span aria-hidden="true">◑</span>
+<span>AI reading · ranked hypotheses</span>
+</div>
+<ul class="mt-1 text-sm">
+<li class="flex gap-2" style="opacity:1">
+<span class="font-semibold text-xs" style="color:#b45309">More likely</span>
+<span>The Tier-2 block reduced off-task time.</span>
+</li>
+<li class="flex gap-2" style="opacity:0.85">
+<span class="font-semibold text-xs" style="color:#b45309">Plausible</span>
+<span>Regression to the mean — early weeks were low. (null)</span>
+</li>
+</ul>
+<p class="mt-1 text-[10px] text-slate-500">the model&#x27;s own ranking of its guesses, not a measured probability. Regenerates each run. Export needs your sign-off.</p>
+<div class="mt-1 text-xs">
+<span>
+<span class="text-amber-700 mr-2">⚠ Sign off before an IEP-team export:</span>
+<button class="underline mr-2">Own it</button>
+<button class="underline">Demote (remove)</button>
+</span>
+</div>
+</div>
+<div class="mt-2 flex items-end gap-2 flex-wrap">
+<span class="text-xs text-slate-500">Add ORF benchmark:</span>
+<label class="text-xs text-slate-600 flex flex-col">Grade<input type="number" class="w-16 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">Season<select class="px-2 py-1 border rounded">
+<option value="fall">fall</option>
+<option value="winter" selected="">winter</option>
+<option value="spring">spring</option>
+</select>
+</label>
+<button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
+</div>
+<div class="mt-3 flex items-center gap-2 flex-wrap">
+<span class="text-xs text-slate-500">Export this view:</span>
+<button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
+<button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
+<label class="text-xs text-slate-600 flex items-center gap-1">
+<input type="checkbox"/>Include identifiable data (FERPA)</label>
+</div>
+<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
+<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
+<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
+<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
+<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
+<div class="grid grid-cols-2 gap-2 mb-2">
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Trend strength</span>
+<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
+</div>
+<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Observations</span>
+<span class="font-mono font-bold" style="color:#22d3ee">8</span>
+</div>
+<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Baseline value</span>
+<span class="font-mono font-bold" style="color:#22d3ee">50</span>
+</div>
+<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>AI ladder (L0-L3)</span>
+<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
+</div>
+<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
+</label>
+</div>
+<div class="flex gap-2 mb-2">
+<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
+<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
+</div>
+<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
+<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
+</textarea>
+<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
+<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
+<input type="checkbox"/>
+<span>I can explain why this evidence configuration yields this evidentiary state.</span>
+</label>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+</div>
+<p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+</div>"
+`;
+
+exports[`Lumen — render golden master (SSR, §15) > a verified benchmark renders the teal reference line + citation chip 1`] = `
+"<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-bold text-amber-800">💡 Lumen</span>
+<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+</div>
+<div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
+<span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
+<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<span class="text-xs text-slate-500 mr-1">Audience:</span>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
+<span class="text-xs text-slate-500 mr-1">Chart:</span>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Trend</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Bar</button>
+</div>
+<div class="mt-3 flex items-end gap-2 flex-wrap">
+<label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+</label>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+</div>
+<div class="mt-3 p-2 rounded bg-white border border-slate-200">
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+<span aria-hidden="true" style="font-size:14px">◈</span>
+<span>Derived (math)</span>
+</div>
+<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+</div>
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2. External benchmark (not this student): TEST · 2099 · G4 · winter · 50th %ile · synthetic = 75 words/min.">
+<line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">38.7</text>
+<line x1="44" y1="188.5" x2="464" y2="188.5" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="191.5" text-anchor="end" style="font-size:9px" fill="#64748b">48.6</text>
+<line x1="44" y1="131" x2="464" y2="131" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="134" text-anchor="end" style="font-size:9px" fill="#64748b">58.5</text>
+<line x1="44" y1="73.5" x2="464" y2="73.5" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="76.5" text-anchor="end" style="font-size:9px" fill="#64748b">68.4</text>
+<line x1="44" y1="16" x2="464" y2="16" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="19" text-anchor="end" style="font-size:9px" fill="#64748b">78.3</text>
+<text x="44" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">1</text>
+<text x="90.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">2</text>
+<text x="137.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">3</text>
+<text x="184" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">4</text>
+<text x="230.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">5</text>
+<text x="277.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">6</text>
+<text x="324" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">7</text>
+<text x="370.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">8</text>
+<text x="417.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">9</text>
+<text x="464" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">10</text>
+<path d="M 44,251 L 464,81.9 L 464,111 L 44,221.9 Z" fill="#0f172a" fill-opacity="0.1" stroke="none">
+</path>
+<line x1="254" y1="16" x2="254" y2="246" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="2 3">
+</line>
+<text x="257" y="25" style="font-size:8px" fill="#0f172a">phase</text>
+<path d="M 44,236.4 L 464,96.4" fill="none" stroke="#0f172a" stroke-width="2" stroke-opacity="1">
+</path>
+<g>
+<circle cx="44" cy="226.8" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="90.7" cy="209.4" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="94.7" y="205.4" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="137.3" cy="215.2" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="141.3" y="211.2" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="184" cy="192" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="188" y="188" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="230.7" cy="197.8" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="234.7" y="193.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="277.3" cy="162.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="281.3" y="158.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="324" cy="133.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="328" y="129.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="370.7" cy="116.5" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="374.7" y="112.5" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="417.3" cy="122.3" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="421.3" y="118.3" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="464" cy="87.4" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="468" y="83.4" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<line x1="44" y1="35.2" x2="464" y2="35.2" stroke="#0e7490" stroke-width="1.5" stroke-dasharray="2 4">
+</line>
+<text x="46" y="32.2" style="font-size:9px" fill="#0e7490" aria-hidden="true">▣</text>
+</svg>
+<button class="mt-2 text-xs underline text-slate-600">Show data table (the chart as a table)</button>
+<div class="mt-2 flex flex-col gap-1">
+<div class="text-xs" style="color:#0e7490">
+<span aria-hidden="true">▣ </span>
+<span>External benchmark (not this student): TEST · 2099 · G4 · winter · 50th %ile · synthetic = 75 words/min </span>
+<a href="https://example.org/fixture" target="_blank" rel="noopener noreferrer" class="underline">source</a>
+</div>
+</div>
+<div class="mt-2 flex items-end gap-2 flex-wrap">
+<span class="text-xs text-slate-500">Add ORF benchmark:</span>
+<label class="text-xs text-slate-600 flex flex-col">Grade<input type="number" class="w-16 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">Season<select class="px-2 py-1 border rounded">
+<option value="fall">fall</option>
+<option value="winter" selected="">winter</option>
+<option value="spring">spring</option>
+</select>
+</label>
+<button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
+</div>
+<div class="mt-3 flex items-center gap-2 flex-wrap">
+<span class="text-xs text-slate-500">Export this view:</span>
+<button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
+<button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
+<label class="text-xs text-slate-600 flex items-center gap-1">
+<input type="checkbox"/>Include identifiable data (FERPA)</label>
+</div>
+<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
+<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
+<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
+<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
+<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
+<div class="grid grid-cols-2 gap-2 mb-2">
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Trend strength</span>
+<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
+</div>
+<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Observations</span>
+<span class="font-mono font-bold" style="color:#22d3ee">8</span>
+</div>
+<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Baseline value</span>
+<span class="font-mono font-bold" style="color:#22d3ee">50</span>
+</div>
+<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>AI ladder (L0-L3)</span>
+<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
+</div>
+<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
+</label>
+</div>
+<div class="flex gap-2 mb-2">
+<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
+<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
+</div>
+<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
+<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
+</textarea>
+<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
+<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
+<input type="checkbox"/>
+<span>I can explain why this evidence configuration yields this evidentiary state.</span>
+</label>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+</div>
+<p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+</div>"
+`;
+
+exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect bars + axes + phase line, no trend line 1`] = `
+"<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-bold text-amber-800">💡 Lumen</span>
+<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+</div>
+<div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
+<span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
+<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<span class="text-xs text-slate-500 mr-1">Audience:</span>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
+<span class="text-xs text-slate-500 mr-1">Chart:</span>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Trend</button>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Bar</button>
+</div>
+<div class="mt-3 flex items-end gap-2 flex-wrap">
+<label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+</label>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+</div>
+<div class="mt-3 p-2 rounded bg-white border border-slate-200">
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+<span aria-hidden="true" style="font-size:14px">◈</span>
+<span>Derived (math)</span>
+</div>
+<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+</div>
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Bar chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">0</text>
+<line x1="44" y1="188.5" x2="464" y2="188.5" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="191.5" text-anchor="end" style="font-size:9px" fill="#64748b">18.2</text>
+<line x1="44" y1="131" x2="464" y2="131" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="134" text-anchor="end" style="font-size:9px" fill="#64748b">36.3</text>
+<line x1="44" y1="73.5" x2="464" y2="73.5" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="76.5" text-anchor="end" style="font-size:9px" fill="#64748b">54.5</text>
+<line x1="44" y1="16" x2="464" y2="16" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="19" text-anchor="end" style="font-size:9px" fill="#64748b">72.6</text>
+<text x="44" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">1</text>
+<text x="90.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">2</text>
+<text x="137.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">3</text>
+<text x="184" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">4</text>
+<text x="230.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">5</text>
+<text x="277.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">6</text>
+<text x="324" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">7</text>
+<text x="370.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">8</text>
+<text x="417.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">9</text>
+<text x="464" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">10</text>
+<line x1="254" y1="16" x2="254" y2="246" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="2 3">
+</line>
+<text x="257" y="25" style="font-size:8px" fill="#0f172a">phase</text>
+<rect x="30" y="112.9" width="28" height="133.1" rx="1" fill="#0f172a" fill-opacity="0.85">
+</rect>
+<text x="44" y="110.9" text-anchor="middle" style="font-size:8px" fill="#0f172a" aria-hidden="true">●</text>
+<rect x="76.7" y="103.4" width="28" height="142.6" rx="1" fill="#0f172a" fill-opacity="0.85">
+</rect>
+<text x="90.7" y="101.4" text-anchor="middle" style="font-size:8px" fill="#0f172a" aria-hidden="true">●</text>
+<rect x="123.3" y="106.6" width="28" height="139.4" rx="1" fill="#0f172a" fill-opacity="0.85">
+</rect>
+<text x="137.3" y="104.6" text-anchor="middle" style="font-size:8px" fill="#0f172a" aria-hidden="true">●</text>
+<rect x="170" y="93.9" width="28" height="152.1" rx="1" fill="#0f172a" fill-opacity="0.85">
+</rect>
+<text x="184" y="91.9" text-anchor="middle" style="font-size:8px" fill="#0f172a" aria-hidden="true">●</text>
+<rect x="216.7" y="97.1" width="28" height="148.9" rx="1" fill="#0f172a" fill-opacity="0.85">
+</rect>
+<text x="230.7" y="95.1" text-anchor="middle" style="font-size:8px" fill="#0f172a" aria-hidden="true">●</text>
+<rect x="263.3" y="78.1" width="28" height="167.9" rx="1" fill="#0f172a" fill-opacity="0.85">
+</rect>
+<text x="277.3" y="76.1" text-anchor="middle" style="font-size:8px" fill="#0f172a" aria-hidden="true">●</text>
+<rect x="310" y="62.3" width="28" height="183.7" rx="1" fill="#0f172a" fill-opacity="0.85">
+</rect>
+<text x="324" y="60.3" text-anchor="middle" style="font-size:8px" fill="#0f172a" aria-hidden="true">●</text>
+<rect x="356.7" y="52.7" width="28" height="193.3" rx="1" fill="#0f172a" fill-opacity="0.85">
+</rect>
+<text x="370.7" y="50.7" text-anchor="middle" style="font-size:8px" fill="#0f172a" aria-hidden="true">●</text>
+<rect x="403.3" y="55.9" width="28" height="190.1" rx="1" fill="#0f172a" fill-opacity="0.85">
+</rect>
+<text x="417.3" y="53.9" text-anchor="middle" style="font-size:8px" fill="#0f172a" aria-hidden="true">●</text>
+<rect x="450" y="36.9" width="28" height="209.1" rx="1" fill="#0f172a" fill-opacity="0.85">
+</rect>
+<text x="464" y="34.9" text-anchor="middle" style="font-size:8px" fill="#0f172a" aria-hidden="true">●</text>
+</svg>
+<button class="mt-2 text-xs underline text-slate-600">Show data table (the chart as a table)</button>
+<div class="mt-2 flex items-end gap-2 flex-wrap">
+<span class="text-xs text-slate-500">Add ORF benchmark:</span>
+<label class="text-xs text-slate-600 flex flex-col">Grade<input type="number" class="w-16 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">Season<select class="px-2 py-1 border rounded">
+<option value="fall">fall</option>
+<option value="winter" selected="">winter</option>
+<option value="spring">spring</option>
+</select>
+</label>
+<button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
+</div>
+<div class="mt-3 flex items-center gap-2 flex-wrap">
+<span class="text-xs text-slate-500">Export this view:</span>
+<button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
+<button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
+<label class="text-xs text-slate-600 flex items-center gap-1">
+<input type="checkbox"/>Include identifiable data (FERPA)</label>
+</div>
+<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
+<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
+<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
+<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
+<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
+<div class="grid grid-cols-2 gap-2 mb-2">
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Trend strength</span>
+<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
+</div>
+<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Observations</span>
+<span class="font-mono font-bold" style="color:#22d3ee">8</span>
+</div>
+<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Baseline value</span>
+<span class="font-mono font-bold" style="color:#22d3ee">50</span>
+</div>
+<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>AI ladder (L0-L3)</span>
+<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
+</div>
+<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
+</label>
+</div>
+<div class="flex gap-2 mb-2">
+<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
+<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
+</div>
+<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
+<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
+</textarea>
+<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
+<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
+<input type="checkbox"/>
+<span>I can explain why this evidence configuration yields this evidentiary state.</span>
+</label>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+</div>
+<p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+</div>"
+`;
+
+exports[`Lumen — render golden master (SSR, §15) > data table shown — the screen-reader peer 1`] = `
+"<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-bold text-amber-800">💡 Lumen</span>
+<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+</div>
+<div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
+<span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
+<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<span class="text-xs text-slate-500 mr-1">Audience:</span>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
+<span class="text-xs text-slate-500 mr-1">Chart:</span>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Trend</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Bar</button>
+</div>
+<div class="mt-3 flex items-end gap-2 flex-wrap">
+<label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+</label>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+</div>
+<div class="mt-3 p-2 rounded bg-white border border-slate-200">
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+<span aria-hidden="true" style="font-size:14px">◈</span>
+<span>Derived (math)</span>
+</div>
+<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+</div>
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">39.6</text>
+<line x1="44" y1="188.5" x2="464" y2="188.5" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="191.5" text-anchor="end" style="font-size:9px" fill="#64748b">46.8</text>
+<line x1="44" y1="131" x2="464" y2="131" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="134" text-anchor="end" style="font-size:9px" fill="#64748b">54</text>
+<line x1="44" y1="73.5" x2="464" y2="73.5" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="76.5" text-anchor="end" style="font-size:9px" fill="#64748b">61.2</text>
+<line x1="44" y1="16" x2="464" y2="16" stroke="#e2e8f0" stroke-width="1">
+</line>
+<text x="40" y="19" text-anchor="end" style="font-size:9px" fill="#64748b">68.4</text>
+<text x="44" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">1</text>
+<text x="90.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">2</text>
+<text x="137.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">3</text>
+<text x="184" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">4</text>
+<text x="230.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">5</text>
+<text x="277.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">6</text>
+<text x="324" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">7</text>
+<text x="370.7" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">8</text>
+<text x="417.3" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">9</text>
+<text x="464" y="260" text-anchor="middle" style="font-size:9px" fill="#64748b">10</text>
+<path d="M 44,260 L 464,27.5 L 464,67.5 L 44,220.1 Z" fill="#0f172a" fill-opacity="0.1" stroke="none">
+</path>
+<line x1="254" y1="16" x2="254" y2="246" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="2 3">
+</line>
+<text x="257" y="25" style="font-size:8px" fill="#0f172a">phase</text>
+<path d="M 44,240 L 464,47.5" fill="none" stroke="#0f172a" stroke-width="2" stroke-opacity="1">
+</path>
+<g>
+<circle cx="44" cy="226.8" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="90.7" cy="202.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="94.7" y="198.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="137.3" cy="210.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="141.3" y="206.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="184" cy="178.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="188" y="174.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="230.7" cy="186.9" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="234.7" y="182.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="277.3" cy="139" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="281.3" y="135" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="324" cy="99.1" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="328" y="95.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="370.7" cy="75.1" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="374.7" y="71.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="417.3" cy="83.1" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="421.3" y="79.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+<g>
+<circle cx="464" cy="35.2" r="3.5" fill="#0f172a" fill-opacity="1">
+</circle>
+<text x="468" y="31.200000000000003" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+</g>
+</svg>
+<button class="mt-2 text-xs underline text-slate-600">Hide data table</button>
+<table class="mt-2 text-xs border-collapse">
+<thead>
+<tr>
+<th class="border px-2 py-0.5 text-left bg-slate-50">Week (x)</th>
+<th class="border px-2 py-0.5 text-left bg-slate-50">WCPM (y)</th>
+<th class="border px-2 py-0.5 text-left bg-slate-50">Phase</th>
+<th class="border px-2 py-0.5 text-left bg-slate-50">Level</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="border px-2 py-0.5">1</td>
+<td class="border px-2 py-0.5">42</td>
+<td class="border px-2 py-0.5">baseline</td>
+<td class="border px-2 py-0.5">Derived (math)</td>
+</tr>
+<tr>
+<td class="border px-2 py-0.5">2</td>
+<td class="border px-2 py-0.5">45</td>
+<td class="border px-2 py-0.5">baseline</td>
+<td class="border px-2 py-0.5">Derived (math)</td>
+</tr>
+<tr>
+<td class="border px-2 py-0.5">3</td>
+<td class="border px-2 py-0.5">44</td>
+<td class="border px-2 py-0.5">baseline</td>
+<td class="border px-2 py-0.5">Derived (math)</td>
+</tr>
+<tr>
+<td class="border px-2 py-0.5">4</td>
+<td class="border px-2 py-0.5">48</td>
+<td class="border px-2 py-0.5">baseline</td>
+<td class="border px-2 py-0.5">Derived (math)</td>
+</tr>
+<tr>
+<td class="border px-2 py-0.5">5</td>
+<td class="border px-2 py-0.5">47</td>
+<td class="border px-2 py-0.5">baseline</td>
+<td class="border px-2 py-0.5">Derived (math)</td>
+</tr>
+<tr>
+<td colSpan="4" class="border px-2 py-0.5 italic text-slate-500">phase boundary: baseline → tier2</td>
+</tr>
+<tr>
+<td class="border px-2 py-0.5">6</td>
+<td class="border px-2 py-0.5">53</td>
+<td class="border px-2 py-0.5">tier2</td>
+<td class="border px-2 py-0.5">Derived (math)</td>
+</tr>
+<tr>
+<td class="border px-2 py-0.5">7</td>
+<td class="border px-2 py-0.5">58</td>
+<td class="border px-2 py-0.5">tier2</td>
+<td class="border px-2 py-0.5">Derived (math)</td>
+</tr>
+<tr>
+<td class="border px-2 py-0.5">8</td>
+<td class="border px-2 py-0.5">61</td>
+<td class="border px-2 py-0.5">tier2</td>
+<td class="border px-2 py-0.5">Derived (math)</td>
+</tr>
+<tr>
+<td class="border px-2 py-0.5">9</td>
+<td class="border px-2 py-0.5">60</td>
+<td class="border px-2 py-0.5">tier2</td>
+<td class="border px-2 py-0.5">Derived (math)</td>
+</tr>
+<tr>
+<td class="border px-2 py-0.5">10</td>
+<td class="border px-2 py-0.5">66</td>
+<td class="border px-2 py-0.5">tier2</td>
+<td class="border px-2 py-0.5">Derived (math)</td>
+</tr>
+</tbody>
+</table>
+<div class="mt-2 flex items-end gap-2 flex-wrap">
+<span class="text-xs text-slate-500">Add ORF benchmark:</span>
+<label class="text-xs text-slate-600 flex flex-col">Grade<input type="number" class="w-16 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">Season<select class="px-2 py-1 border rounded">
+<option value="fall">fall</option>
+<option value="winter" selected="">winter</option>
+<option value="spring">spring</option>
+</select>
+</label>
+<button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
+</div>
+<div class="mt-3 flex items-center gap-2 flex-wrap">
+<span class="text-xs text-slate-500">Export this view:</span>
+<button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
+<button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
+<label class="text-xs text-slate-600 flex items-center gap-1">
+<input type="checkbox"/>Include identifiable data (FERPA)</label>
+</div>
+<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
+<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
+<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
+<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
+<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
+<div class="grid grid-cols-2 gap-2 mb-2">
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Trend strength</span>
+<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
+</div>
+<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Observations</span>
+<span class="font-mono font-bold" style="color:#22d3ee">8</span>
+</div>
+<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Baseline value</span>
+<span class="font-mono font-bold" style="color:#22d3ee">50</span>
+</div>
+<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>AI ladder (L0-L3)</span>
+<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
+</div>
+<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
+</label>
+</div>
+<div class="flex gap-2 mb-2">
+<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
+<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
+</div>
+<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
+<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
+</textarea>
+<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
+<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
+<input type="checkbox"/>
+<span>I can explain why this evidence configuration yields this evidentiary state.</span>
+</label>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+</div>
+<p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+</div>"
+`;
+
+exports[`Lumen — render golden master (SSR, §15) > empty state — no observations (entry + sample, no chart) 1`] = `
+"<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-bold text-amber-800">💡 Lumen</span>
+<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+</div>
+<div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
+<span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
+<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<span class="text-xs text-slate-500 mr-1">Audience:</span>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
+<span class="text-xs text-slate-500 mr-1">Chart:</span>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Trend</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Bar</button>
+</div>
+<p class="mt-2 text-sm text-slate-600">No observations yet. Type a few points, or load a sample, to see an honestly-marked trend.</p>
+<div class="mt-3 flex items-end gap-2 flex-wrap">
+<label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+</label>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+</div>
+<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
+<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
+<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
+<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
+<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
+<div class="grid grid-cols-2 gap-2 mb-2">
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Trend strength</span>
+<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
+</div>
+<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Observations</span>
+<span class="font-mono font-bold" style="color:#22d3ee">8</span>
+</div>
+<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Baseline value</span>
+<span class="font-mono font-bold" style="color:#22d3ee">50</span>
+</div>
+<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>AI ladder (L0-L3)</span>
+<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
+</div>
+<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
+</label>
+</div>
+<div class="flex gap-2 mb-2">
+<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
+<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
+</div>
+<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
+<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
+</textarea>
+<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
+<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
+<input type="checkbox"/>
+<span>I can explain why this evidence configuration yields this evidentiary state.</span>
+</label>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+</div>
+<p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+</div>"
+`;
+
+exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few points draws no line, shows a refusal sentence 1`] = `
+"<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-bold text-amber-800">💡 Lumen</span>
+<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+</div>
+<div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
+<span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
+<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<span class="text-xs text-slate-500 mr-1">Audience:</span>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+</div>
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
+<span class="text-xs text-slate-500 mr-1">Chart:</span>
+<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Trend</button>
+<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Bar</button>
+</div>
+<div class="mt-3 flex items-end gap-2 flex-wrap">
+<label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
+</label>
+<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+</label>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+</div>
+<div class="mt-3 p-2 rounded bg-white border border-slate-200">
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+<span aria-hidden="true" style="font-size:14px">◈</span>
+<span>Derived (math)</span>
+</div>
+<p class="text-sm text-slate-800 mt-1">Derived (math): n=1 — too few points to estimate a trend; no line drawn (need at least 3).</p>
+</div>
+<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
+<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
+<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
+<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
+<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
+<div class="grid grid-cols-2 gap-2 mb-2">
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Trend strength</span>
+<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
+</div>
+<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Observations</span>
+<span class="font-mono font-bold" style="color:#22d3ee">8</span>
+</div>
+<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>Baseline value</span>
+<span class="font-mono font-bold" style="color:#22d3ee">50</span>
+</div>
+<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
+</label>
+<label class="text-[10px]">
+<div class="flex justify-between mb-0.5">
+<span>AI ladder (L0-L3)</span>
+<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
+</div>
+<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
+</label>
+</div>
+<div class="flex gap-2 mb-2">
+<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
+<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
+</div>
+<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
+<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
+</textarea>
+<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
+<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
+<input type="checkbox"/>
+<span>I can explain why this evidence configuration yields this evidentiary state.</span>
+</label>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+</div>
+<p class="mt-3 text-[10px] text-slate-400">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+</div>"
+`;
+
+exports[`Lumen — render golden master (SSR, §15) > registration metadata 1`] = `
+{
+  "category": "data",
+  "color": "amber",
+  "icon": "💡",
+  "label": "Lumen",
+  "ready": false,
+}
+`;

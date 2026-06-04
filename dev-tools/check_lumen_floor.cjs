@@ -67,10 +67,19 @@ ok(L.assertDefensible({ audience: 'iep-team', aiHyps: hyps, signoff: L.signoffHa
 // 8. The prose-template invariant: level word first, then the interval + n.
 ok(/^Derived \(math\):/.test(claim.text) && /interval/.test(claim.text) && /n=/.test(claim.text), 'prose invariant (level word + interval + n) must hold');
 
+// 9. Sourced provenance (§16): orthogonal SRC, curated spine refuses-on-empty, unverified export blocked.
+ok(L.encode('SRC').isReference === true && L.encode('SRC').caution === false, 'SRC must be a non-caution reference channel');
+ok(L.referenceContrastOK(), 'pal.reference must be colour-distinct from neutral + caution');
+ok(JSON.stringify(L.LEVELS).indexOf('SRC') === -1, 'SRC must stay OUT of the LEVELS ladder');
+ok(L.selectNorm(L.NORM_SPINE, { measure: 'ORF-WCPM', unit: 'words/min' }, { grade: 4, season: 'winter', percentile: 50 }).hazard === 'no-cell', 'curated spine ships EMPTY -> selectNorm refuses (no fabricated norm renders)');
+ok(L.selectNorm(L.NORM_SPINE, { measure: 'ORF-WCPM', unit: 'words/min' }, { grade: 9, season: 'winter' }).hazard === 'out-of-range', 'selectNorm refuses an out-of-range grade');
+ok(L.assertSourcedDefensible({ audience: 'iep-team', sourceRefs: [{ id: 's1', verified: false, citation: 'c', locator: 'https://x', value: 1 }] }).blocked === true, 'an unverified benchmark must block an IEP-team export');
+ok(L.sourcedRenderable({ verified: true, citation: 'c', locator: 'javascript:alert(1)', value: 1 }).ok === false, 'a javascript: locator must not be renderable');
+
 if (fails.length) {
   console.error('check_lumen_floor: ' + fails.length + ' FAILED');
   fails.forEach(function (f) { console.error('  x ' + f); });
   process.exit(1);
 }
-if (!QUIET) console.log('check_lumen_floor: OK — Lumen honesty-floor invariants hold (8 groups).');
+if (!QUIET) console.log('check_lumen_floor: OK — Lumen honesty-floor invariants hold (9 groups).');
 process.exit(0);
