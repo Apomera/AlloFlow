@@ -4341,7 +4341,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'fd35ce17';
+    var pluginCdnVersion = '05a86ce8';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -4528,7 +4528,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js'); }; })();
     window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js'); }; })();
     window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js'); }; })();
-    window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); }; })();
+    window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
     loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js');
     loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js');
     loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js');
@@ -4784,6 +4784,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // fundamentals. Anchor exhibits for the King Middle Spring 2026 pilot.
         'stem_lab/stem_tool_fisherlab.js',
         'stem_lab/stem_tool_aquaculture.js',
+        // Jun 2026: Lumen — provenance-bound reactive research canvas (9 honesty-gated chart
+        // types). Pairs with the lumen tile (ready:true) + _pluginOnlyTools flag in stem_lab_module.js.
+        'stem_lab/stem_tool_lumen.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
@@ -8741,7 +8744,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
   };
   const saveToCloud = async () => {
-      if (!user || !isCloudSyncEnabled || !isHistoryLoaded || !isCloudInitialized) return;
+      // FERPA: teacherHistory cloud-sync is for the TEACHER's lesson catalog
+      // only. If isTeacherMode is false the caller is a student and we MUST
+      // NOT capture their session/history into a doc named "teacherHistory"
+      // under their own user.uid. The Firestore path is intended for teacher
+      // content; the gate enforces that intent.
+      if (!user || !isTeacherMode || !isCloudSyncEnabled || !isHistoryLoaded || !isCloudInitialized) return;
       setCloudSyncStatus('syncing');
       try {
           const sanitizedHistory = sanitizeHistoryForCloud(history);
@@ -8816,12 +8824,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
   }, [isCloudSyncEnabled, user]);
   useEffect(() => {
-      if (!isCloudSyncEnabled || !user) return;
+      // FERPA: teacher-only cloud sync gate (see saveToCloud for rationale).
+      if (!isCloudSyncEnabled || !user || !isTeacherMode) return;
       const timeoutId = setTimeout(() => {
           saveToCloud();
       }, 3000);
       return () => clearTimeout(timeoutId);
-  }, [history, isCloudSyncEnabled, user]);
+  }, [history, isCloudSyncEnabled, user, isTeacherMode]);
   useEffect(() => {
       if (!user) {
           return;
@@ -11471,15 +11480,78 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               default: return false;
           }
       };
-      const _findMatchedThen = (response) => {
+      // Phase B (poll subtype): aggregation primitive. Rules can target multiple
+      // questions via when.acrossQuestions and aggregate the responses with
+      // when.aggregate before the predicate fires. The pedagogical motivation
+      // is scientific-integrity discipline — single-item Likert ticks are not
+      // measurement-reliable enough to drive routing; aggregation across >=2
+      // items raises the reliability floor. The rule editor in
+      // teacher_source.jsx structurally refuses single-Likert routing rules.
+      // Aggregates: 'avg' (mean of responses), 'min', 'max'. Each returns a
+      // number; the predicate then compares it to when.value as usual. ALL
+      // questions in acrossQuestions must be answered by the student — partial
+      // sets do not fire (the rule waits until the aggregation set is
+      // complete).
+      const _aggregateResponse = (when, uid) => {
+          if (!when || !Array.isArray(when.acrossQuestions) || when.acrossQuestions.length === 0) return null;
+          if (!when.aggregate) return null;
+          // Phase E scientific-integrity floor: refuse single-item aggregation.
+          // The whole point of aggregation rules on Likert is to raise the
+          // measurement-reliability floor by averaging across >=2 items. Letting
+          // a length-1 acrossQuestions slip through would defeat the floor.
+          if (when.acrossQuestions.length < 2) return null;
+          const allByUidLocal = (sessionData && sessionData.quizState && sessionData.quizState.allResponses) || {};
+          const uidEntry = allByUidLocal[uid];
+          if (!uidEntry) return null;
+          const allQuestions = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions)) ? generatedContent.data.questions : [];
+          const values = [];
+          for (let i = 0; i < when.acrossQuestions.length; i++) {
+              const targetIdx = when.acrossQuestions[i];
+              const entry = uidEntry[targetIdx];
+              if (!entry || typeof entry.answer === 'undefined' || entry.answer === null) return null; // partial set — wait
+              // Likert items store the 0-based option index but the rule
+              // semantics are numeric ticks (1..N). Convert via the target
+              // question's options[] (synthesized to ['1','2',...,'N'] for
+              // Likert items by handleQuizChange), parseFloat to a number.
+              let raw = entry.answer;
+              const tq = allQuestions[targetIdx];
+              if (tq && Array.isArray(tq.options) && typeof raw === 'number' && tq.options[raw] !== undefined) {
+                  const parsed = parseFloat(tq.options[raw]);
+                  raw = isNaN(parsed) ? raw : parsed;
+              } else if (typeof raw === 'string') {
+                  const parsed = parseFloat(raw);
+                  raw = isNaN(parsed) ? raw : parsed;
+              }
+              if (typeof raw !== 'number') return null; // can't aggregate non-numeric
+              values.push(raw);
+          }
+          if (values.length === 0) return null;
+          switch (when.aggregate) {
+              case 'avg': return values.reduce((s, v) => s + v, 0) / values.length;
+              case 'min': return Math.min.apply(null, values);
+              case 'max': return Math.max.apply(null, values);
+              default: return null;
+          }
+      };
+      const _findMatchedThen = (response, uid) => {
           for (let i = 0; i < rules.length; i++) {
               const r = rules[i];
-              if (r && r.when && r.then && _matchPred(r.when, response)) return r.then;
+              if (!r || !r.when || !r.then) continue;
+              // Aggregation rules ignore the single-response argument and pull
+              // the student's responses across acrossQuestions instead.
+              if (r.when.aggregate && Array.isArray(r.when.acrossQuestions)) {
+                  const agg = _aggregateResponse(r.when, uid);
+                  if (agg == null) continue;
+                  if (_matchPred(r.when, agg)) return r.then;
+                  continue;
+              }
+              // Legacy single-response path (existing behavior preserved).
+              if (_matchPred(r.when, response)) return r.then;
           }
           return null;
       };
       const _applyMatch = (uid, responseValue) => {
-          const then = _findMatchedThen(responseValue);
+          const then = _findMatchedThen(responseValue, uid);
           if (!then) return;
           const patch = {};
           if (then.groupId) patch[`roster.${uid}.groupId`] = then.groupId;
@@ -15651,7 +15723,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (!activeSessionCode || !user || !user.uid) return;
       if (!payload || typeof payload.questionIdx !== 'number') return;
       const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-      const STRUCTURED_ITEM_TYPES = new Set(['mcq', 'multiple-choice', 'true-false', 'tf', 'match', 'sequence', 'numeric', 'order']);
+      // Phase B (poll subtype): add likert + opinion-mcq to the structured
+      // wire-format allowlist. likert is a numeric rating (1-5 by default,
+      // configurable). opinion-mcq is an MCQ without a correctAnswer (no
+      // grading). Both are routable via question.routingRules.
+      const STRUCTURED_ITEM_TYPES = new Set(['mcq', 'multiple-choice', 'true-false', 'tf', 'match', 'sequence', 'numeric', 'order', 'likert', 'opinion-mcq']);
       const isStructured = STRUCTURED_ITEM_TYPES.has(String(payload.itemType || 'mcq').toLowerCase());
       const responsePayload = {
           itemType: payload.itemType || 'mcq',
@@ -18612,6 +18688,44 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         }
     } else if (field === 'correctAnswer') {
          updatedQuestion.correctAnswer = value;
+    } else if (field === 'itemType') {
+         // Phase B (poll subtype): allow switching a question between item types.
+         // When switching INTO likert, scrub the correctAnswer field (polls have
+         // no correct answer) and ensure a scale shape exists. When switching OUT
+         // of likert, leave the prior options[] intact so the teacher can recover.
+         updatedQuestion.itemType = value;
+         if (value === 'likert') {
+             delete updatedQuestion.correctAnswer;
+             if (!updatedQuestion.scale || typeof updatedQuestion.scale !== 'object') {
+                 updatedQuestion.scale = { steps: 5, lowLabel: 'Strongly disagree', highLabel: 'Strongly agree' };
+             }
+             // Synthesize numeric options so the wire format stays uniform with
+             // MCQ: responses[uid] = 0-based array index → option text '1'..'N'
+             // → parseFloat-able tick for the router's aggregation primitive.
+             const steps = (updatedQuestion.scale && updatedQuestion.scale.steps) || 5;
+             updatedQuestion.options = Array.from({ length: steps }, (_, i) => String(i + 1));
+         } else if (value === 'opinion-mcq') {
+             // opinion-mcq: same shape as mcq but no correct-answer notion. Keep
+             // options[] intact (the teacher's already-written option text is
+             // the substance), just strip correctAnswer.
+             delete updatedQuestion.correctAnswer;
+         }
+    } else if (field === 'scaleSteps') {
+         // Phase B (poll subtype): Likert scale step count. Clamp to [3, 7] —
+         // 2-point Likert is degenerate (it's just yes/no, use opinion-mcq), and
+         // >7 steps measurably hurts test-retest reliability per the social-science
+         // measurement literature Aaron's CBM-style discipline draws from.
+         const steps = Math.max(3, Math.min(7, parseInt(value, 10) || 5));
+         if (!updatedQuestion.scale) updatedQuestion.scale = { steps: 5, lowLabel: 'Strongly disagree', highLabel: 'Strongly agree' };
+         else updatedQuestion.scale = { ...updatedQuestion.scale, steps: steps };
+         // Re-synthesize numeric options to match new step count.
+         updatedQuestion.options = Array.from({ length: steps }, (_, i) => String(i + 1));
+    } else if (field === 'scaleLowLabel') {
+         if (!updatedQuestion.scale) updatedQuestion.scale = { steps: 5, lowLabel: '', highLabel: 'Strongly agree' };
+         updatedQuestion.scale = { ...updatedQuestion.scale, lowLabel: String(value || '').slice(0, 80) };
+    } else if (field === 'scaleHighLabel') {
+         if (!updatedQuestion.scale) updatedQuestion.scale = { steps: 5, lowLabel: 'Strongly disagree', highLabel: '' };
+         updatedQuestion.scale = { ...updatedQuestion.scale, highLabel: String(value || '').slice(0, 80) };
     }
     newQuestions[qIndex] = updatedQuestion;
     newData.questions = newQuestions;
@@ -18675,6 +18789,48 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: newData } : item));
   };
+  // PHASE A — routing-rule persistence round-trip. TeacherLiveQuizControls
+  // (teacher_source.jsx) keeps its rules in React state and fires this callback
+  // on every change. We mirror the rules onto generatedContent.data.questions
+  // [i].routingRules so they (a) survive teacher-tab reload, (b) ride into
+  // allo_offline_history via the existing saveHistory debounce, and (c) get
+  // picked up by the runtime consumer at the auto-routing useEffect which
+  // already prefers question.routingRules over the window mirror.
+  //
+  // Contract: rulesByQ is { [questionIndex]: routingRules[] }. We write each
+  // entry into the matching question, leaving questions with no entry in
+  // rulesByQ untouched (so the host can incrementally update one question's
+  // rules without clobbering others authored elsewhere — e.g. via AI generation
+  // or quiz-pack import).
+  const handleUpdateQuestionRoutingRules = useCallback((rulesByQ) => {
+    if (!rulesByQ || typeof rulesByQ !== 'object') return;
+    setGeneratedContent(prev => {
+      if (!prev || prev.type !== 'quiz' || !prev.data || !Array.isArray(prev.data.questions)) return prev;
+      let changed = false;
+      const nextQuestions = prev.data.questions.map((q, i) => {
+        if (!Object.prototype.hasOwnProperty.call(rulesByQ, i)) return q;
+        const incoming = rulesByQ[i];
+        const incomingArr = Array.isArray(incoming) ? incoming : [];
+        const currentArr = Array.isArray(q && q.routingRules) ? q.routingRules : [];
+        // Cheap equality check: same length AND every rule has matching
+        // id+version. Avoids re-rendering the whole content tree on identical
+        // writes (e.g. mount-time seeding writes the SAME rules back).
+        if (currentArr.length === incomingArr.length && currentArr.every((r, idx) => {
+          const o = incomingArr[idx];
+          return r && o && r.id === o.id && r.version === o.version;
+        })) {
+          return q;
+        }
+        changed = true;
+        return Object.assign({}, q, { routingRules: incomingArr });
+      });
+      if (!changed) return prev;
+      const nextData = Object.assign({}, prev.data, { questions: nextQuestions });
+      // Mirror to history so the saveHistory debounce picks it up.
+      setHistory(h => h.map(item => item.id === prev.id ? Object.assign({}, item, { data: nextData }) : item));
+      return Object.assign({}, prev, { data: nextData });
+    });
+  }, [setGeneratedContent, setHistory]);
   const handleReflectionChange = (rIndex, value, isEn = false) => {
     if (!generatedContent || generatedContent.type !== 'quiz') return;
     const newData = { ...generatedContent?.data };
@@ -24958,6 +25114,7 @@ ${_toolList}
                     handleFillinAnswer, handleFinalDoorAnswer, handleRevealHint, derangeShuffle,
                     handleCreateGroup, handleAssignStudent, handleSetGroupResource,
                     handleSetGroupLanguage, handleSetGroupProfile, handleDeleteGroup,
+                    handleUpdateQuestionRoutingRules,
                     callGemini, callTTS, callImagen, callGeminiImageEdit,
                     gradeLevel,
                     getRows, formatInlineText, renderFormattedText,
