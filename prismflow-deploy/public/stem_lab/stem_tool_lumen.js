@@ -1249,6 +1249,38 @@
     return { ok: true, value: cell[pctKey], key: key };
   }
 
+  // Honesty gate for the curated norm spine. A spine is shippable ONLY in two CLEAN states:
+  //   'empty'  — no cells AND reviewedOn null   (renders nothing; selectNorm refuses every cell)
+  //   'ready'  — cells populated AND reviewedOn set AND every value a positive number, p25<=p50
+  // Anything else is 'invalid' and MUST block release:
+  //   • filled-but-unreviewed  = shipping un-verified norms (the laundering risk this whole spine exists to prevent)
+  //   • reviewed-but-empty     = claiming a verification that did not happen
+  //   • non-numeric / p25>p50  = a transcription error caught before it reaches a student's chart
+  // Pure; used by the build gate (check_lumen_floor / check_lumen_spine) and safe for a human to call.
+  function validateNormSpine(spine) {
+    if (!spine) return { status: 'invalid', cellCount: 0, problems: ['spine missing'] };
+    var problems = [], cellCount = 0, hasCells = false;
+    var cells = spine.cells || {};
+    Object.keys(cells).forEach(function (g) {
+      var seasons = cells[g] || {};
+      Object.keys(seasons).forEach(function (s) {
+        var cell = seasons[s] || {};
+        Object.keys(cell).forEach(function (pk) {
+          hasCells = true; cellCount++;
+          var v = cell[pk];
+          if (typeof v !== 'number' || !isFinite(v) || v <= 0) problems.push('grade ' + g + ' ' + s + ' ' + pk + ': value must be a positive number (got ' + JSON.stringify(v) + ')');
+        });
+        if (typeof cell.p25 === 'number' && typeof cell.p50 === 'number' && cell.p25 > cell.p50) problems.push('grade ' + g + ' ' + s + ': p25 (' + cell.p25 + ') > p50 (' + cell.p50 + ') — transcription error?');
+      });
+    });
+    var reviewed = spine.reviewedOn != null;
+    if (!hasCells && !reviewed) return { status: 'empty', cellCount: 0, problems: [] };
+    if (hasCells && !reviewed) problems.push('cells are populated but reviewedOn is null — transcribed norms must be human-verified (set reviewedOn) before release');
+    if (!hasCells && reviewed) problems.push('reviewedOn is set but no cells are present — a reviewed-but-empty spine claims a verification it has not done');
+    if (problems.length) return { status: 'invalid', cellCount: cellCount, problems: problems };
+    return { status: 'ready', cellCount: cellCount, problems: [] };
+  }
+
   // The atom. A citation + resolvable locator are MANDATORY (no citation, no render).
   function makeSourceRef(spec, comp) {
     if (!spec) throw new Error('makeSourceRef: spec required');
@@ -1353,7 +1385,7 @@
     escHtml: escHtml, csvSafe: csvSafe, slug: slug, signoffHash: signoffHash, assertDefensible: assertDefensible,
     buildExportHtml: buildExportHtml, buildExportCsv: buildExportCsv,
     // Sourced provenance (Phase 1.x, §16) — engine + curated spine + gates
-    NORM_SPINE: NORM_SPINE, DIBELS8_ORF: DIBELS8_ORF, selectNorm: selectNorm,
+    NORM_SPINE: NORM_SPINE, DIBELS8_ORF: DIBELS8_ORF, selectNorm: selectNorm, validateNormSpine: validateNormSpine,
     makeSourceRef: makeSourceRef, addSourceRef: addSourceRef, sourcedRenderable: sourcedRenderable,
     benchmarkChipText: benchmarkChipText, sourcedFace: sourcedFace, referenceContrastOK: referenceContrastOK,
     sourcedSignoffHash: sourcedSignoffHash, assertSourcedDefensible: assertSourcedDefensible, assertExportClean: assertExportClean
@@ -1948,7 +1980,7 @@
                 h('span', null, 'I can explain why this evidence configuration yields this evidentiary state.')
               ),
               iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-              h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget — no score, no reveal. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).')
+              h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).')
             );
           })());
 

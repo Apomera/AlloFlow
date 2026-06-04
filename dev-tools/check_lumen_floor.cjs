@@ -71,8 +71,17 @@ ok(/^Derived \(math\):/.test(claim.text) && /interval/.test(claim.text) && /n=/.
 ok(L.encode('SRC').isReference === true && L.encode('SRC').caution === false, 'SRC must be a non-caution reference channel');
 ok(L.referenceContrastOK(), 'pal.reference must be colour-distinct from neutral + caution');
 ok(JSON.stringify(L.LEVELS).indexOf('SRC') === -1, 'SRC must stay OUT of the LEVELS ladder');
-ok(L.selectNorm(L.NORM_SPINE, { measure: 'ORF-WCPM', unit: 'words/min' }, { grade: 4, season: 'winter', percentile: 50 }).hazard === 'no-cell', 'curated spine ships EMPTY -> selectNorm refuses (no fabricated norm renders)');
+// The REAL spines must be in a CLEAN state — empty now, or fully reviewed later — but NEVER the
+// filled-but-unreviewed laundering state. (State-aware so it keeps passing once a human populates+verifies.)
+ok(L.validateNormSpine(L.NORM_SPINE).status !== 'invalid', 'NORM_SPINE must be empty-or-reviewed, never filled-but-unreviewed: ' + JSON.stringify(L.validateNormSpine(L.NORM_SPINE).problems));
+ok(L.validateNormSpine(L.DIBELS8_ORF).status !== 'invalid', 'DIBELS8_ORF must be empty-or-reviewed, never filled-but-unreviewed: ' + JSON.stringify(L.validateNormSpine(L.DIBELS8_ORF).problems));
+// selectNorm still refuses an empty cell — pinned on a guaranteed-empty SYNTHETIC spine, independent of the real spine's fill state.
+ok(L.selectNorm({ measure: 'ORF-WCPM', unit: 'words/min', source: 'TEST', gradeRange: [1, 6], reviewedOn: null, cells: {} }, { measure: 'ORF-WCPM', unit: 'words/min' }, { grade: 4, season: 'winter', percentile: 50 }).hazard === 'no-cell', 'selectNorm must refuse an empty cell (no fabricated norm renders)');
 ok(L.selectNorm(L.NORM_SPINE, { measure: 'ORF-WCPM', unit: 'words/min' }, { grade: 9, season: 'winter' }).hazard === 'out-of-range', 'selectNorm refuses an out-of-range grade');
+// The gate BLOCKS the laundering states: filled-but-unreviewed, and reviewed-but-empty.
+ok(L.validateNormSpine({ reviewedOn: null, cells: { 4: { winter: { p50: 112 } } } }).status === 'invalid', 'a filled-but-unreviewed spine MUST be invalid (blocks shipping unverified norms)');
+ok(L.validateNormSpine({ reviewedOn: '2026-01-01', cells: {} }).status === 'invalid', 'a reviewed-but-empty spine MUST be invalid (no false verification claim)');
+ok(L.validateNormSpine({ reviewedOn: '2026-01-01', cells: { 4: { winter: { p25: 130, p50: 112 } } } }).status === 'invalid', 'p25 > p50 MUST be invalid (catches a transcription error)');
 ok(L.assertSourcedDefensible({ audience: 'iep-team', sourceRefs: [{ id: 's1', verified: false, citation: 'c', locator: 'https://x', value: 1 }] }).blocked === true, 'an unverified benchmark must block an IEP-team export');
 ok(L.sourcedRenderable({ verified: true, citation: 'c', locator: 'javascript:alert(1)', value: 1 }).ok === false, 'a javascript: locator must not be renderable');
 

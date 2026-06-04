@@ -880,3 +880,33 @@ describe('Lumen — multi-series line (categories of ONE measure on a shared axi
       .toBe(JSON.stringify(L.plotGeometry(comp.observations, c, undefined, [], 'trend')));
   });
 });
+
+describe('Lumen — norm-spine honesty gate (validateNormSpine)', () => {
+  it('the shipped spines are currently EMPTY (nothing fabricated can render)', () => {
+    expect(L.validateNormSpine(L.NORM_SPINE).status).toBe('empty');
+    expect(L.validateNormSpine(L.DIBELS8_ORF).status).toBe('empty');
+  });
+
+  it('a fully populated + reviewed spine is READY', () => {
+    const v = L.validateNormSpine({ reviewedOn: '2026-06-04', cells: { 4: { winter: { p50: 120, p25: 95 } } } });
+    expect(v.status).toBe('ready');
+    expect(v.cellCount).toBe(2);
+    expect(v.problems).toEqual([]);
+  });
+
+  it('filled-but-unreviewed is INVALID — the laundering state the spine exists to prevent', () => {
+    const v = L.validateNormSpine({ reviewedOn: null, cells: { 4: { winter: { p50: 120 } } } });
+    expect(v.status).toBe('invalid');
+    expect(v.problems.join(' ')).toMatch(/reviewedOn is null|human-verified/i);
+  });
+
+  it('reviewed-but-empty is INVALID — no false verification claim', () => {
+    expect(L.validateNormSpine({ reviewedOn: '2026-06-04', cells: {} }).status).toBe('invalid');
+  });
+
+  it('catches transcription errors: p25 > p50, and non-numeric values', () => {
+    expect(L.validateNormSpine({ reviewedOn: '2026-06-04', cells: { 3: { spring: { p50: 100, p25: 140 } } } }).status).toBe('invalid');
+    expect(L.validateNormSpine({ reviewedOn: '2026-06-04', cells: { 3: { spring: { p50: 'one hundred' } } } }).status).toBe('invalid');
+    expect(L.validateNormSpine({ reviewedOn: '2026-06-04', cells: { 3: { spring: { p50: -5 } } } }).status).toBe('invalid');
+  });
+});
