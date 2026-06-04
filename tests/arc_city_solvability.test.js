@@ -140,4 +140,27 @@ describe('Arc City — shape-necessity / forcing certificate (§13.2.4)', () => 
     expect(anyWin('absval', { a: range(-2, 2, 0.1), h: range(0, 10, 0.25), k: range(0, 8, 0.25) })).toBe(false);
     expect(anyWin('exp', { a: range(-6, 6, 0.5), b: range(-0.6, 0.6, 0.05), k: range(-2, 6, 0.25) })).toBe(false);
   }, 60000);
+
+  it('L9 "Cubic Switchback" can ONLY be won by a cubic — no line, parabola, V, sine, exp, or log threads the asymmetric wiggle', () => {
+    const L9 = arc.levelById('L9');
+    const range = (mn, mx, st) => { const o = []; for (let v = mn; v <= mx + 1e-9; v += st) o.push(Math.round(v * 1000) / 1000); return o; };
+    function anyWin(family, grids) {
+      const keys = Object.keys(grids); let won = false;
+      (function rec(i, p) {
+        if (won) return;
+        if (i === keys.length) { if (arc.classifyShot(Object.assign({}, L9, { family: family }), p).result === 'hit') won = true; return; }
+        for (const v of grids[keys[i]]) { if (won) return; const q = Object.assign({}, p); q[keys[i]] = v; rec(i + 1, q); }
+      })(0, {});
+      return won;
+    }
+    // solvable by the cubic on its own (k-locked) grid
+    expect(anyWin('poly', { a: range(0.06, 0.2, 0.01), p: range(1.5, 3.5, 0.25), q: range(5.5, 7.5, 0.25), k: range(4, 4, 1) })).toBe(true);
+    expect(anyWin('line', { m: range(-2, 2, 0.05), b: range(0, 8, 0.25) })).toBe(false);
+    expect(anyWin('parabola', { a: range(-1.5, 1.5, 0.05), h: range(0, 10, 0.25), k: range(0, 8, 0.25) })).toBe(false);
+    expect(anyWin('absval', { a: range(-2, 2, 0.1), h: range(0, 10, 0.25), k: range(0, 8, 0.25) })).toBe(false);
+    // sine swept densely (amplitude/frequency/phase/midline) — the wiggle is asymmetric, not periodic
+    expect(anyWin('sine', { a: range(0.5, 4, 0.2), b: range(0.15, 1.6, 0.05), c: range(0, 6.2, 0.4), k: range(0, 8, 0.4) })).toBe(false);
+    expect(anyWin('exp', { a: range(-6, 6, 0.5), b: range(-0.6, 0.6, 0.05), k: range(-2, 6, 0.5) })).toBe(false);
+    expect(anyWin('log', { a: range(-3, 3, 0.25), c: range(0.5, 3, 0.25), k: range(0, 8, 0.5) })).toBe(false);
+  }, 90000);
 });

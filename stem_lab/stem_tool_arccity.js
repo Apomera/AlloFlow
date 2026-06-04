@@ -156,22 +156,47 @@
       hint: 'Tip: a logarithm climbs fast at first, then slows — concave, the mirror of exponential GROWTH (not the decay you just saw). Six narrow windows sit on one such climb: set the climb strength a, the shift c, and the offset k so the slowing curve threads them all.'
     },
     {
-      // ── L9: The Gauntlet — adaptive, integrative capstone (design §11 boss world). ──
+      // ── L9: Cubic Switchback — the POLYNOMIAL (cubic) family, turning-point form. ──
+      // y = a[x³/3 − ½(p+q)x² + p·q·x] + k. The player AUTHORS THE TURNING POINTS:
+      // p = where the curve crests (local max), q = where it dips (local min), a =
+      // steepness; k is fixed by the level. FIVE windows trace an asymmetric
+      // up-crest-down-dip-up wiggle that ONLY a two-turning-point cubic can thread —
+      // a line/V (≤1 kink), a parabola (1 turn), an exponential/logarithm (monotonic
+      // curvature), and even a sine (the wiggle is asymmetric, not periodic) all fail.
+      // Verified forcing certificate (only poly wins) in arc_city_solvability.test.js.
+      // Intended ≈ a=0.12, p=2.5, q=6.5, k=4. (Cubics are above the 8th-grade core —
+      // a reach/enrichment level, like the logarithm.)
+      id: 'L9', title: 'Cubic Switchback', family: 'poly',
+      world: { x0: 0, x1: 10, y0: 0, y1: 8 },
+      walls: [],
+      gates: [{ x: 1, lo: 5.11, hi: 5.79 }, { x: 2.5, lo: 5.79, hi: 6.47 }, { x: 4.5, lo: 5.15, hi: 5.82 }, { x: 6, lo: 4.56, hi: 5.24 }, { x: 8.5, lo: 5.79, hi: 6.47 }],
+      node: { x: 9.4, y: 7.84, r: 0.34 }, dx: 0.05,
+      paramOrder: ['a', 'p', 'q', 'k'],
+      params: {
+        a: { min: 0.06, max: 0.2, step: 0.01, default: 0.06, label: 'a  (steepness — how sharp the bends are)' },
+        p: { min: 1.5, max: 3.5, step: 0.25, default: 1.5, label: 'p  (where it crests — the first turning point)' },
+        q: { min: 5.5, max: 7.5, step: 0.25, default: 7.5, label: 'q  (where it dips — the second turning point)' },
+        k: { min: 4, max: 4, step: 1, default: 4, locked: true, label: 'k  (vertical offset — fixed this level)' }
+      },
+      hint: 'Tip: a cubic has TWO turning points — it rises, crests, dips, then rises again. Place the crest p and the dip q under the windows, then set the steepness a so the wiggle threads them all on its way to the node.'
+    },
+    {
+      // ── L10: The Gauntlet — adaptive, integrative capstone (design §11 boss world). ──
       // Not a function level itself: it SEQUENCES one challenge from every family
-      // (line, parabola, V, sine, exponential, logarithm) in an order ADAPTED to the
-      // player — the families they've practiced LEAST come first, surfaced out loud
-      // (gauntletWhy). "Adaptive" = honest re-sequencing by demonstrated practice,
+      // (line, parabola, V, sine, exponential, logarithm, cubic) in an order ADAPTED
+      // to the player — the families they've practiced LEAST come first, surfaced out
+      // loud (gauntletWhy). "Adaptive" = honest re-sequencing by demonstrated practice,
       // NOT a hidden difficulty knob (§9 integrity). Each stage reuses an already
-      // forcing-certified level's geometry via a namespaced clone (id 'L9-Lx'), so
-      // it inherits that level's solvability proof — no new forcing risk. Re-light a
-      // node with EVERY function type to finish. The stub geometry below is never
-      // played directly (render always resolves to the current stage clone); it only
-      // keeps LEVELS-iterating code (level bar, unlock chain) total.
-      id: 'L9', title: 'The Gauntlet', family: 'gauntlet',
-      stages: ['L1', 'L3', 'L4', 'L5', 'L7', 'L8'],
+      // forcing-certified level's geometry via a namespaced clone (id 'G-Lx'), so it
+      // inherits that level's solvability proof — no new forcing risk. Re-light a node
+      // with EVERY function type to finish. The stub geometry below is never played
+      // directly (render always resolves to the current stage clone); it only keeps
+      // LEVELS-iterating code (level bar, unlock chain) total.
+      id: 'L10', title: 'The Gauntlet', family: 'gauntlet',
+      stages: ['L1', 'L3', 'L4', 'L5', 'L7', 'L8', 'L9'],
       world: { x0: 0, x1: 10, y0: 0, y1: 8 }, walls: [], gates: [], node: { x: 5, y: 4, r: 0.5 }, dx: 0.05,
       paramOrder: [], params: {},
-      hint: 'The Gauntlet: one challenge from every function family, ordered to put your weakest first. Re-light a node with each — line, parabola, V, sine, exponential, and logarithm — to win.'
+      hint: 'The Gauntlet: one challenge from every function family, ordered to put your weakest first. Re-light a node with each — line, parabola, V, sine, exponential, logarithm, and cubic — to win.'
     }
   ];
 
@@ -191,6 +216,11 @@
     if (family === 'sine') return p.a * Math.sin(p.b * x + p.c) + p.k; // sine: amplitude/frequency/phase/midline
     if (family === 'exp') return p.k + p.a * Math.exp(p.b * x); // exponential: floor k + a·e^(b·x); b<0 decays toward k
     if (family === 'log') return p.k + p.a * Math.log(x + p.c); // logarithm: concave slow climb; c>0 keeps x+c>0 over the world
+    // cubic in TURNING-POINT form: y'(x) = a(x−p)(x−q), so the curve has its two
+    // turning points exactly at x = p and x = q (local max then local min for a>0).
+    // Integrating: y = a[ x³/3 − ½(p+q)x² + p·q·x ] + k. The player authors the two
+    // turn positions (p, q) and the steepness (a); k is fixed per level.
+    if (family === 'poly') return p.a * (x * x * x / 3 - (p.p + p.q) / 2 * x * x + p.p * p.q * x) + p.k;
     return p.a * (x - p.h) * (x - p.h) + p.k; // parabola (vertex form)
   }
 
@@ -266,6 +296,7 @@
       if (fam === 'sine') return 'Reshape the wave — raise the amplitude a so a crest rises over the wall.';
       if (fam === 'exp') return 'Raise the start height a or the floor k so the curve clears the wall.';
       if (fam === 'log') return 'Raise the climb strength a or the offset k so the curve clears the wall.';
+      if (fam === 'poly') return 'Reshape the cubic — increase the steepness a, or move the crest p / dip q so a rise clears the wall.';
       return 'Arc higher over the wall: raise the vertex height k, or move the vertex h toward x = ' + res.at + '.';
     }
     if (res.result === 'gate') {
@@ -275,6 +306,7 @@
       if (fam === 'sine') return tooHigh ? 'The wave is too high at this window — reduce the amplitude a, or change the frequency b so a dip lands here.' : 'The wave is too low at this window — increase the amplitude a, or change the frequency b so a crest lands here.';
       if (fam === 'exp') return tooHigh ? 'The curve is too high here — lower the start height a, decay faster (more negative b), or lower the floor k.' : 'The curve is too low here — raise the start height a, decay slower (less negative b), or raise the floor k.';
       if (fam === 'log') return tooHigh ? 'The climb is too high here — lower the climb strength a, lower the shift c, or lower the offset k.' : 'The climb is too low here — raise the climb strength a, raise the shift c, or raise the offset k.';
+      if (fam === 'poly') return tooHigh ? 'The wiggle sits too high here — nudge the crest p or the dip q toward this window, or ease the steepness a.' : 'The wiggle sits too low here — nudge the crest p or the dip q toward this window, or increase the steepness a.';
       return tooHigh ? 'The beam is too high there — tighten the arc (more negative a) or lower k.' : 'The beam is too low there — widen the arc or raise k.';
     }
     return '';
@@ -332,6 +364,10 @@
       return 'y = a·ln(x + c) + k, with a = ' + fmtVal(p.a, level.params.a.step) + ', c = ' + fmtVal(p.c, level.params.c.step) + ', k = ' + fmtVal(p.k, level.params.k.step) +
         '. A logarithm — a concave climb that rises fast then slows (the mirror of exponential growth).';
     }
+    if (level.family === 'poly') {
+      return 'y = a·[x³⁄3 − ½(p+q)x² + p·q·x] + k, with a = ' + fmtVal(p.a, level.params.a.step) + ', p = ' + fmtVal(p.p, level.params.p.step) + ', q = ' + fmtVal(p.q, level.params.q.step) + ', k = ' + fmtVal(p.k, level.params.k.step) +
+        '. A cubic with two turning points — it crests at x = ' + fmtVal(p.p, level.params.p.step) + ', dips at x = ' + fmtVal(p.q, level.params.q.step) + ', then rises again.';
+    }
     var dir = p.a < 0 ? 'opening downward' : (p.a > 0 ? 'opening upward' : 'a flat line');
     return 'y = a(x − h)² + k, with a = ' + fmtVal(p.a, level.params.a.step) + ', h = ' + fmtVal(p.h, level.params.h.step) + ', k = ' + fmtVal(p.k, level.params.k.step) +
       '. A parabola ' + dir + ', vertex at (' + fmtVal(p.h, level.params.h.step) + ', ' + fmtVal(p.k, level.params.k.step) + ').';
@@ -340,7 +376,7 @@
   function describeBoard(level) {
     if (level.family === 'gauntlet') return 'Arc City, ' + level.title + ': an adaptive capstone — one challenge from every function family, weakest first.';
     var s = 'Arc City, level: ' + level.title + '. ';
-    s += level.family === 'line' ? 'Author a straight-line beam. ' : (level.family === 'absval' ? 'Author a V-shaped, absolute-value beam. ' : (level.family === 'sine' ? 'Author a sine-wave beam. ' : (level.family === 'exp' ? 'Author an exponential beam that curves toward a floor it never touches. ' : (level.family === 'log' ? 'Author a logarithmic beam — a concave climb that rises fast then slows. ' : 'Author a parabola beam. '))));
+    s += level.family === 'line' ? 'Author a straight-line beam. ' : (level.family === 'absval' ? 'Author a V-shaped, absolute-value beam. ' : (level.family === 'sine' ? 'Author a sine-wave beam. ' : (level.family === 'exp' ? 'Author an exponential beam that curves toward a floor it never touches. ' : (level.family === 'log' ? 'Author a logarithmic beam — a concave climb that rises fast then slows. ' : (level.family === 'poly' ? 'Author a cubic beam — an S-shaped curve with two turning points, a crest then a dip, set by placing p and q. ' : 'Author a parabola beam. ')))));
     s += 'The dark node to light is at x ' + level.node.x + ', y ' + level.node.y + '. ';
     (level.walls || []).forEach(function (w) { s += 'A wall ' + w.height + ' units tall stands at x ' + w.x + '. '; });
     (level.gates || []).forEach(function (g) { s += 'A gate with an opening from y ' + g.lo + ' to ' + g.hi + ' is at x ' + g.x + (g.slope ? ', which the beam must pass while ' + (g.slope.value < 0 ? 'descending' : (g.slope.value > 0 ? 'climbing' : 'level')) + ' at a slope near ' + g.slope.value + ' (give or take ' + g.slope.tol + ')' : '') + '. '; });
@@ -380,6 +416,7 @@
     { id: 'wave-rider', label: 'Wave Rider — re-lit a node using a sine wave' },
     { id: 'decay-rider', label: 'Decay Rider — re-lit a node riding an exponential to its asymptote' },
     { id: 'log-climber', label: 'Log Climber — re-lit a node riding a logarithm’s slowing climb' },
+    { id: 'twin-turn', label: 'Twin Turn — re-lit a node by threading a cubic’s two turning points' },
     { id: 'tilt-threader', label: 'Tilt Threader — passed a tilted slope-gate at the right angle' },
     { id: 'sharp-shooter', label: 'Sharp Shooter — lit a node on the first shot' },
     { id: 'independent', label: 'Independent — solved with the preview hidden' },
@@ -398,6 +435,7 @@
     if (level.family === 'sine') add('wave-rider');
     if (level.family === 'exp') add('decay-rider');
     if (level.family === 'log') add('log-climber');
+    if (level.family === 'poly') add('twin-turn');
     if ((level.gates || []).some(function (g) { return g.slope; })) add('tilt-threader');
     if (shots === 1) add('sharp-shooter');
     if (solveIsIndependent(tier)) add('independent');
@@ -480,18 +518,20 @@
         : (st === 'explored' ? 'you’d only explored this — let’s solidify it'
           : 'a family you haven’t solved yet — here’s your shot'));
   }
-  // True once every stage's namespaced clone (byLevel['L9-' + stageId]) is solved.
+  // True once every stage's namespaced clone (byLevel['G-' + stageId]) is solved.
+  // 'G-' is a fixed gauntlet-stage namespace, deliberately decoupled from the
+  // gauntlet level's id so renumbering the level never disturbs saved run state.
   function gauntletComplete(byLevel, stageIds) {
     byLevel = byLevel || {};
     return (stageIds || []).length > 0 && (stageIds || []).every(function (sid) {
-      var st = byLevel['L9-' + sid]; return !!(st && st.solved);
+      var st = byLevel['G-' + sid]; return !!(st && st.solved);
     });
   }
 
   function teacherSummary(byLevel, badges) {
     byLevel = byLevel || {}; badges = badges || [];
     // The Gauntlet (family 'gauntlet') is a meta-level that replays the others
-    // under namespaced 'L9-*' state — it is NOT a node or a function family, so it
+    // under namespaced 'G-*' state — it is NOT a node or a function family, so it
     // is excluded from the per-level list, the family roster, and the node count
     // (its completion is reported via the 'grand-tour' badge instead). Including it
     // would otherwise read "The Gauntlet: not started" forever and skew "N of M".
@@ -719,7 +759,7 @@
         }
         var byLevel = S.byLevel || {};
         // ── Level resolution. For the Gauntlet (L9) the EFFECTIVE level is the
-        // current stage's geometry, cloned under a namespaced id ('L9-Lx') so every
+        // current stage's geometry, cloned under a namespaced id ('G-Lx') so every
         // downstream updater/byLevel key/classifyShot works unchanged — the gauntlet
         // is pure orchestration on top of the existing one-family-per-level machine. ──
         var rawLevel = levelById(S.levelId || 'L1');
@@ -738,7 +778,7 @@
             : gauntletOrder(byLevel, rawLevel.stages);
           if (gIdx > gOrder.length - 1) gIdx = gOrder.length - 1;
           var gStageId = gOrder[gIdx];
-          level = Object.assign({}, levelById(gStageId), { id: 'L9-' + gStageId });
+          level = Object.assign({}, levelById(gStageId), { id: 'G-' + gStageId });
           gauntlet = { order: gOrder, idx: gIdx, total: gOrder.length, stageId: gStageId, why: gauntletWhy(byLevel, gStageId) };
           // Persist the adaptive order once (built from the player's standalone
           // history at entry), so it stays stable across renders/sessions.
@@ -856,12 +896,12 @@
           if (typeof setToolData !== 'function' || !gauntlet) return;
           setToolData(function (prev) {
             var cur = (prev && prev._arccity) || S;
-            // Clear only this run's per-stage clone state ('L9-*'); standalone level
+            // Clear only this run's per-stage clone state ('G-*'); standalone level
             // progress (which drives the adaptive order) is untouched, so the fresh
             // order is RE-EVALUATED against the player's current standalone history.
             var bl = Object.assign({}, cur.byLevel || {});
-            Object.keys(bl).forEach(function (k) { if (k.indexOf('L9-') === 0) delete bl[k]; });
-            var fresh = gauntletOrder(bl, levelById('L9').stages);
+            Object.keys(bl).forEach(function (k) { if (k.indexOf('G-') === 0) delete bl[k]; });
+            var fresh = gauntletOrder(bl, rawLevel.stages);
             return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, gauntlet: { order: fresh, idx: 0 }, fired: false }) });
           });
           announceArc(ctx, t('arccity.gauntlet_restarted', 'Gauntlet restarted — a fresh run, preview hidden. Predict, then Fire.'));
@@ -1051,7 +1091,7 @@
         // ── Level progression bar ──
         var levelBtns = LEVELS.map(function (lv, i) {
           var unlocked = isLevelUnlocked(byLevel, i);
-          // The Gauntlet keys its stage progress under 'L9-Lx', so its tile reads
+          // The Gauntlet keys its stage progress under 'G-Lx', so its tile reads
           // "solved" from completion of all stages, and "current" from the selected
           // raw level id (the resolved `level` is the stage clone, not L9).
           var solved = lv.family === 'gauntlet' ? gauntletComplete(byLevel, lv.stages) : !!(byLevel[lv.id] && byLevel[lv.id].solved);
@@ -1133,7 +1173,9 @@
                     ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · e^(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step)), '·x) + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
                     : (level.family === 'log'
                       ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · ln(x + ', h('span', { key: 'c', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.c, level.params.c.step)), ') + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
-                      : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.h, level.params.h.step)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]))))),
+                      : (level.family === 'poly'
+                        ? ['y = cubic — crest x=', h('span', { key: 'p', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.p, level.params.p.step)), ', dip x=', h('span', { key: 'q', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.q, level.params.q.step)), ', steepness ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step))]
+                        : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.h, level.params.h.step)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))])))))),
           tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.6, marginBottom: 10 } }, handleEls.length ? t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.') : t('arccity.slider_hint', 'Tip: use the sliders (or the +/− buttons and arrow keys) to shape the beam.')) : null,
           h('div', { key: 'rows' }, paramRows),
           h('div', { key: 'btns', style: { display: 'flex', gap: 10, marginTop: 6 } },
@@ -1216,7 +1258,7 @@
               '📋 ' + t('arccity.copy_summary', 'Copy summary'))));
 
         // ── Gauntlet banner (progress + transparent "why this one") + advance ──
-        var gDoneCount = gauntlet ? gauntlet.order.filter(function (sid) { var st = byLevel['L9-' + sid]; return !!(st && st.solved); }).length : 0;
+        var gDoneCount = gauntlet ? gauntlet.order.filter(function (sid) { var st = byLevel['G-' + sid]; return !!(st && st.solved); }).length : 0;
         var gauntletBanner = gauntlet ? h('div', { key: 'gbanner', role: 'status', style: { marginBottom: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.10)', color: INK } },
           // The heading is the SR text-equivalent for the (aria-hidden) dot row, so
           // it must carry the completion count too — not just the current position.
@@ -1228,7 +1270,7 @@
           // larger, to-do = empty w/ outline. Colours are the contrast-tested palette
           // tokens (NODE_ON/BEAM), not low-opacity tints.
           h('div', { key: 'gd', 'aria-hidden': 'true', style: { display: 'flex', gap: 6, marginTop: 8, alignItems: 'center' } }, gauntlet.order.map(function (sid, gi) {
-            var done = !!(byLevel['L9-' + sid] && byLevel['L9-' + sid].solved);
+            var done = !!(byLevel['G-' + sid] && byLevel['G-' + sid].solved);
             var cur = gi === gauntlet.idx;
             return h('span', { key: 'gdot-' + sid, title: levelById(sid).title, style: {
               width: cur ? 16 : 13, height: cur ? 16 : 13, borderRadius: 999,
