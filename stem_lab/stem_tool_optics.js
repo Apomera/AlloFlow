@@ -2915,13 +2915,14 @@
           function setIQ(patch) { upd('snellInquiry', Object.assign({}, iq, patch)); }
           function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
           var rad = iq.angle * Math.PI / 180;
-          var sinT2 = (iq.n1 / iq.n2) * Math.sin(rad);
-          var tirCritical = iq.n1 > iq.n2 ? Math.asin(iq.n2 / iq.n1) * 180 / Math.PI : null;
+          // dispersion: lambda affects n by ~0.01 (toy Cauchy approximation).
+          // Blue (short λ) → higher n; red (long λ) → lower n. Same family as Sellmeier.
+          var nDisp = iq.n2 + 0.025 * (550 - iq.wavelength) / 200;
+          var sinT2 = (iq.n1 / nDisp) * Math.sin(rad);
+          var tirCritical = iq.n1 > nDisp ? Math.asin(nDisp / iq.n1) * 180 / Math.PI : null;
           var isTIR = sinT2 > 1;
           var theta2 = isTIR ? null : Math.asin(sinT2) * 180 / Math.PI;
-          // dispersion: lambda affects n by ~0.01 (toy Cauchy approximation)
-          var nDisp = iq.n2 + 0.025 * (550 - iq.wavelength) / 200;
-          var state = isTIR ? 'tir' : iq.n2 > iq.n1 ? (iq.angle > 60 ? 'glancing' : 'denser') : (iq.angle > tirCritical * 0.9 ? 'nearCrit' : 'lighter');
+          var state = isTIR ? 'tir' : nDisp > iq.n1 ? (iq.angle > 60 ? 'glancing' : 'denser') : (tirCritical != null && iq.angle > tirCritical * 0.9 ? 'nearCrit' : 'lighter');
           var sm = ({
             tir: { label: 'Total Internal Reflection', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Angle exceeds critical angle. No light transmitted — all reflects back. Basis of fiber optics, diamond brilliance, prism periscopes.' },
             nearCrit: { label: 'Near critical', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Approaching TIR boundary. Refracted ray runs nearly along the surface; transmitted intensity dropping.' },
@@ -2944,7 +2945,7 @@
               [
                 { label: 'θ₂ (refracted)', val: isTIR ? '— (TIR)' : theta2.toFixed(1) + '°' },
                 { label: 'Critical angle', val: tirCritical != null ? tirCritical.toFixed(1) + '°' : '— (n₁ ≤ n₂)' },
-                { label: 'n₂(λ) toy', val: nDisp.toFixed(3) }
+                { label: 'n₂(λ) toy', val: nDisp.toFixed(3) + ' (used in ray math)' }
               ].map(function(m) {
                 return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
                   h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
@@ -2962,9 +2963,25 @@
               h('text', { x: cx + 4, y: 12, fill: '#475569', fontSize: 8 }, 'normal'),
               h('line', { x1: incX, y1: incY, x2: cx, y2: cy, stroke: '#fbbf24', strokeWidth: 2 }),
               h('text', { x: incX - 6, y: incY - 4, fill: '#fbbf24', fontSize: 10, textAnchor: 'end' }, 'θ₁=' + iq.angle + '°'),
-              h('line', { x1: cx, y1: cy, x2: refX, y2: refY, stroke: isTIR ? '#f87171' : sm.color, strokeWidth: 2, strokeDasharray: isTIR ? '5 3' : '0' }),
-              h('text', { x: refX + 6, y: refY + 14, fill: isTIR ? '#f87171' : sm.color, fontSize: 10 }, isTIR ? 'TIR (reflected)' : 'θ₂=' + theta2.toFixed(1) + '°'),
-              h('text', { x: 160, y: 195, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'n₁sinθ₁ = n₂sinθ₂  →  ' + iq.n1.toFixed(2) + '·' + Math.sin(rad).toFixed(3) + ' = ' + (isTIR ? '✗' : iq.n2.toFixed(2) + '·' + sinT2.toFixed(3)))
+              // wavelength → visible-light color (rough mapping for the refracted ray;
+              // makes dispersion visible as you sweep the λ slider).
+              (function() {
+                var lam = iq.wavelength;
+                var rayColor = isTIR ? '#f87171'
+                  : lam < 440 ? '#8b5cf6'
+                  : lam < 490 ? '#3b82f6'
+                  : lam < 520 ? '#22d3ee'
+                  : lam < 565 ? '#22c55e'
+                  : lam < 590 ? '#facc15'
+                  : lam < 625 ? '#fb923c'
+                  : lam < 700 ? '#ef4444'
+                  : '#7f1d1d';
+                return [
+                  h('line', { key: 'ray', x1: cx, y1: cy, x2: refX, y2: refY, stroke: rayColor, strokeWidth: 2, strokeDasharray: isTIR ? '5 3' : '0' }),
+                  h('text', { key: 'rayLabel', x: refX + 6, y: refY + 14, fill: rayColor, fontSize: 10 }, isTIR ? 'TIR (reflected)' : 'θ₂=' + theta2.toFixed(1) + '° (λ=' + lam + 'nm)')
+                ];
+              })(),
+              h('text', { x: 160, y: 195, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'n₁sinθ₁ = n₂(λ)·sinθ₂  →  ' + iq.n1.toFixed(2) + '·' + Math.sin(rad).toFixed(3) + ' = ' + (isTIR ? '✗' : nDisp.toFixed(2) + '·' + sinT2.toFixed(3)))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
               h('label', null,

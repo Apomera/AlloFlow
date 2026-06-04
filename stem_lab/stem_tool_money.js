@@ -3130,7 +3130,10 @@ window.StemLab = window.StemLab || {
                   var v = iq.principal * Math.pow(1 + monthly, m) + (monthly > 0 ? iq.contribMonthly * (Math.pow(1 + monthly, m) - 1) / monthly : iq.contribMonthly * m);
                   pts.push({ x: yr, y: v });
                 }
-                var maxY = pts[pts.length - 1].y;
+                // Guard against the all-zero slider case (principal=0, ratePct=0,
+                // contribMonthly=0 → final balance=0 → /0 yields NaN, polyline silently
+                // breaks). Matches the defensive pattern in skatelab + statslab.
+                var maxY = Math.max(1, pts[pts.length - 1].y);
                 var svgPts = pts.map(function(p) { return (30 + (p.x / n) * 280) + ',' + (130 - (p.y / maxY) * 110); }).join(' ');
                 // Contribution-only line
                 var contribPts = [];

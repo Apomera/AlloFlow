@@ -3501,12 +3501,17 @@ var d = labToolData.brainAtlas || {};
               var attention = (iq.dopamine + iq.norepi - iq.gaba * 0.3) / 2.5;
               var anxiety = (iq.norepi + iq.glutamate - iq.gaba - iq.serotonin * 0.4) / 3;
               var state = anxiety > 35 ? 'anxious' : arousal > 50 && mood < 20 ? 'agitated' : mood > 50 && attention > 40 ? 'focused' : mood < 5 && attention < 15 ? 'depressed' : 'baseline';
+              // State labels are reframed in conditional/model-bound language: the
+              // simple monoamine framing predicts these associations, but the actual
+              // neurobiology of mood, anxiety, and attention is contested (Moncrieff
+              // et al. 2022 for the serotonin-depression claim; receptor sensitivity
+              // and network dynamics matter as much or more than absolute levels).
               var sm = ({
-                anxious: { label: 'Anxious / hyperaroused', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'GABA low relative to norepi + glutamate. Felt as racing thoughts, restlessness, hypervigilance.' },
-                agitated: { label: 'Agitated', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'High arousal + low mood. Common in withdrawal, certain mood-episode mixtures.' },
-                focused: { label: 'Focused / well-regulated', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Dopamine + serotonin balanced, modest arousal. Felt as on-task, calm, engaged.' },
-                depressed: { label: 'Low energy / depressed-like', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Low dopamine + low norepi + low serotonin. Felt as anhedonia, fatigue, motivation gap.' },
-                baseline: { label: 'Baseline / neutral', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'No system dominates. Most everyday states live here.' }
+                anxious: { label: 'Monoamine model: anxious / hyperaroused profile', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'In the simplified monoamine framing, low GABA relative to norepi + glutamate is associated with racing thoughts, restlessness, hypervigilance. Real anxiety has many causes (receptor sensitivity, cortisol axis, context) — this is one toy mapping.' },
+                agitated: { label: 'Monoamine model: agitated profile', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'High arousal + low mood in the toy mapping. Patterns labeled "agitated" in clinical settings can come from many sources including medication side-effects, withdrawal, and mixed mood states.' },
+                focused: { label: 'Monoamine model: well-regulated profile', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Dopamine + serotonin in mid-range with modest arousal — the toy mapping calls this on-task / engaged. Real attention regulation depends on prefrontal-striatal circuits, not just transmitter levels.' },
+                depressed: { label: 'Monoamine model: low-energy profile', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Low DA + NE + 5-HT in the toy mapping is historically associated with anhedonia and fatigue. The "chemical imbalance" theory of depression is contested in current research (see Moncrieff et al., 2022); receptor sensitivity, network dynamics, and life context matter as much.' },
+                baseline: { label: 'Monoamine model: baseline / neutral', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'No single system dominates. Most everyday states live here in the toy mapping.' }
               })[state];
               var nts = [
                 { k: 'dopamine', label: 'Dopamine', short: 'DA', col: '#fb923c' },
