@@ -95,6 +95,10 @@ describe('Lumen — render golden master (SSR, §15)', () => {
   it('scatter with too few pairs refuses (no chart), naming the paired n', () => {
     expect(renderState({ observations: PAIRED.slice(0, 2), chartType: 'scatter', variable2: 'Comprehension', unit2: '%' })).toMatchSnapshot();
   });
+
+  it('slope pathway — per-phase fitted segments + observed dots', () => {
+    expect(renderState({ observations: REYNA, chartType: 'slope' })).toMatchSnapshot();
+  });
 });
 
 describe('Lumen — render invariants (no snapshot, just contracts)', () => {
@@ -146,6 +150,14 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
   it('scatter is data-only L1: no AI affordance, no export, no benchmark picker in this view', () => {
     const html = renderState({ observations: PAIRED, chartType: 'scatter', ceiling: 'L3', audience: 'iep-team', variable2: 'Comprehension', unit2: '%' });
     expect(html).not.toMatch(/Generate AI|Export this view|Add ORF benchmark/);
+  });
+
+  it('the slope pathway draws per-phase segments + observed dots + a not-an-effect caveat', () => {
+    const html = renderState({ observations: REYNA, chartType: 'slope' });
+    expect(html).toMatch(/aria-label="Slope \(per-phase trends\)/);
+    expect(html).toMatch(/not proof the change caused it/i);
+    expect((html.match(/<circle/g) || []).length).toBe(REYNA.length);   // observed dots
+    expect((html.match(/<rect/g) || []).length).toBe(0);                 // not bars/histogram
   });
 
   it('the histogram pathway renders count bars + its own SR label, with no trend line or data circles', () => {

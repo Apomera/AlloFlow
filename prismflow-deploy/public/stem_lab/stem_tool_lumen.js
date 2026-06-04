@@ -651,6 +651,7 @@
     if (chartType === 'box') return boxGeometry(observations, box, sourceRefs);
     if (chartType === 'histogram') return histogramGeometry(observations, box, sourceRefs);
     if (chartType === 'scatter') return scatterGeometry(observations, claim, box, sourceRefs); // claim = association claim (for the fit line)
+    if (chartType === 'slope') return slopeGeometry(observations, box); // per-phase fitted segments (reuses the trend claim)
     var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
     var n = obs.length;
     var innerW = box.w - box.padL - box.padR;
@@ -731,6 +732,42 @@
     });
   }
 
+  // Slope pathway — per-phase fitted trend SEGMENTS on the shared y=value axis, anchored to the
+  // human-set phase lines. Each segment is L1 (derived); the observed points sit beneath as L0 marks.
+  // DESCRIPTIVE: a steeper post-phase slope is not proof the phase change caused it (caveat in the summary).
+  // A phase with <2 points draws no segment (slope null) — never a fabricated line.
+  function slopeGeometry(observations, box) {
+    box = box || DEFAULT_BOX;
+    var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
+    var n = obs.length, innerW = box.w - box.padL - box.padR, innerH = box.h - box.padT - box.padB;
+    var xs = obs.map(function (o) { return o.x; }), ys = obs.map(function (o) { return o.y; });
+    var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+    var minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+    var padY = (maxY - minY) * 0.1 || 1, y0 = minY - padY, y1 = maxY + padY;
+    function sx(x) { return box.padL + (maxX === minX ? 0 : (x - minX) / (maxX - minX)) * innerW; }
+    function sy(y) { return box.padT + innerH - (y1 === y0 ? 0 : (y - y0) / (y1 - y0)) * innerH; }
+    var groups = [], gmap = {};
+    obs.forEach(function (o) { var k = o.phase == null ? '(none)' : o.phase; if (!gmap[k]) { gmap[k] = { phase: k, pts: [] }; groups.push(gmap[k]); } gmap[k].pts.push({ x: o.x, y: o.y }); });
+    var segments = groups.map(function (g) {
+      var gxs = g.pts.map(function (p) { return p.x; });
+      var gmin = Math.min.apply(null, gxs), gmax = Math.max.apply(null, gxs);
+      var fit = g.pts.length >= 2 ? linregress(g.pts) : null;
+      var fok = fit && !fit.degenerate;
+      return {
+        phase: g.phase, n: g.pts.length, level: 'L1', small: g.pts.length < SMALL_N.flagBelow,
+        slope: fok ? round2(fit.slope) : null,
+        sx1: fok ? round1(sx(gmin)) : null, sy1: fok ? round1(sy(fit.slope * gmin + fit.intercept)) : null,
+        sx2: fok ? round1(sx(gmax)) : null, sy2: fok ? round1(sy(fit.slope * gmax + fit.intercept)) : null
+      };
+    });
+    var dots = obs.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
+    var phaseLines = [];
+    for (var i = 1; i < n; i++) { if (obs[i].phase !== obs[i - 1].phase) { var px = (obs[i].x + obs[i - 1].x) / 2; phaseLines.push({ x: round1(px), sx: round1(sx(px)), fromPhase: obs[i - 1].phase, toPhase: obs[i].phase }); } }
+    var xTicks = obs.map(function (o) { return { x: o.x, sx: round1(sx(o.x)) }; });
+    var yTicks = []; for (var t = 0; t <= 4; t++) { var yv = y0 + (y1 - y0) * t / 4; yTicks.push({ y: round1(yv), sy: round1(sy(yv)) }); }
+    return { box: box, chartType: 'slope', y0: round1(y0), y1: round1(y1), segments: segments, dots: dots, phaseLines: phaseLines, xTicks: xTicks, yTicks: yTicks };
+  }
+
   function chartSummaryText(observations, claim, sourceRefs, chartType) {
     // Scatter (association) has a different axis grammar (x = a measure, not week), so it does NOT
     // describe trend phase lines or a y=value benchmark. The association sentence already carries
@@ -738,6 +775,14 @@
     if (chartType === 'scatter') {
       var sn = 'Scatter (association). ';
       return sn + (claim ? claim.text : 'no paired data yet.');
+    }
+    // Slope view: per-phase fitted trends (reuses the trend claim). Names the per-phase slopes and
+    // carries the DESCRIPTIVE caveat — a steeper post-phase slope is not proof the change caused it.
+    if (chartType === 'slope') {
+      var sln = 'Slope (per-phase trends). ';
+      if (!claim || claim.refused) return sln + (claim ? claim.text : 'no data yet.');
+      var sp = perSegmentSlopes(observations).map(function (s) { return s.phase + ': ' + (s.slope == null ? 'too few points' : ('~' + s.slope + ' per step')); }).join('; ');
+      return sln + claim.text + ' Per-phase fitted slopes — ' + sp + '. These are descriptive per-phase trends; a steeper slope after a phase change is not proof the change caused it.';
     }
     var name = chartType === 'bar' ? 'Bar chart.' : chartType === 'dot' ? 'Dot plot.' : chartType === 'box' ? 'Box plot (per phase).' : chartType === 'histogram' ? 'Histogram (distribution of values).' : 'Trend chart.';
     if (!claim || claim.refused) return name + ' ' + (claim ? claim.text : 'no data yet.');
@@ -1143,7 +1188,7 @@
     // chart geometry + SR data-table peer (Phase 1)
     REYNA_SAMPLE: REYNA_SAMPLE, PAIRED_SAMPLE: PAIRED_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
     quantiles: quantiles, dotGeometry: dotGeometry, boxGeometry: boxGeometry, histogramBins: histogramBins, histogramGeometry: histogramGeometry,
-    scatterGeometry: scatterGeometry,
+    scatterGeometry: scatterGeometry, slopeGeometry: slopeGeometry,
     perSegmentSlopes: perSegmentSlopes, chartSummaryText: chartSummaryText, dataTableModel: dataTableModel, associationTableModel: associationTableModel,
     // AI-involvement layer (Phase 1) — pure guards + audience faces
     AI_CAVEAT: AI_CAVEAT, HYP_CAVEAT: HYP_CAVEAT, AI_N_FLOOR: AI_N_FLOOR, levelIndex: levelIndex,
@@ -1340,7 +1385,7 @@
           };
           kids.push(h('div', { key: 'charttype', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Chart type' },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Chart:'),
-            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box'), ctBtn('histogram', 'Histogram'), ctBtn('scatter', 'Scatter')));
+            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box'), ctBtn('histogram', 'Histogram'), ctBtn('scatter', 'Scatter'), ctBtn('slope', 'Slope')));
 
           if (!obs.length) {
             kids.push(h('p', { key: 'empty', className: 'mt-2 text-sm text-slate-600' },
@@ -1453,6 +1498,16 @@
               if (geo.fitPath) sk.push(h('path', { key: 'fit', d: geo.fitPath, fill: 'none', stroke: l1s.ink, strokeWidth: 1.5, strokeOpacity: 0.7, strokeDasharray: '4 3' }));
               geo.scatterPoints.forEach(function (p, i) {
                 sk.push(h('circle', { key: 'sc' + i, cx: p.sx, cy: p.sy, r: 3.5, fill: l0s.ink, fillOpacity: l0s.markOpacity }));
+              });
+            }
+            // Slope pathway: per-phase fitted trend segments (L1 derived); a refused phase (n<2) draws none.
+            // The observed points render via the shared geo.dots branch above.
+            if (geo.segments) {
+              var l1seg = encode('L1');
+              geo.segments.forEach(function (s, i) {
+                if (s.sx1 == null) return;
+                sk.push(h('line', { key: 'seg' + i, x1: s.sx1, y1: s.sy1, x2: s.sx2, y2: s.sy2, stroke: l1seg.ink, strokeWidth: 2.5, strokeOpacity: l1seg.markOpacity }));
+                sk.push(h('text', { key: 'segl' + i, x: (s.sx1 + s.sx2) / 2, y: Math.min(s.sy1, s.sy2) - 4, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l1seg.ink, 'aria-hidden': 'true' }, (s.slope > 0 ? '+' : '') + s.slope + (s.small ? '*' : '')));
               });
             }
             // §16: benchmark reference line(s) — teal, dashed, NO data marker (a fact, not a measurement).

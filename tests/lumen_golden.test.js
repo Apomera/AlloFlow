@@ -707,3 +707,42 @@ describe('Lumen — 2nd variable: scatter / association (correlation, NOT causat
     expect(JSON.stringify(L.dataTableModel(REYNA, c))).toBe(JSON.stringify(L.dataTableModel(REYNA, c, [])));
   });
 });
+
+describe('Lumen — slope chart (per-phase fitted trends, descriptive — NOT a causal effect)', () => {
+  const { comp } = buildReyna(REYNA);
+  const claim = L.deriveTrendClaim(comp, { id: 'full' });
+
+  it('slope geometry: one fitted L1 segment per phase, observed L0 dots beneath (snapshot)', () => {
+    const g = L.plotGeometry(REYNA, claim, undefined, [], 'slope');
+    expect(g.chartType).toBe('slope');
+    expect(g.segments.map(s => s.phase)).toEqual(['baseline', 'tier2']);
+    expect(g.segments.every(s => s.level === 'L1')).toBe(true);
+    expect(g.segments.every(s => typeof s.slope === 'number')).toBe(true);  // both phases have >=2 points
+    expect(g.dots.length).toBe(REYNA.length);
+    expect(g.dots.every(p => p.level === 'L0')).toBe(true);
+    expect(g.trendPath).toBeUndefined();
+    expect(g.points).toBeUndefined();
+    expect(g).toMatchSnapshot();
+  });
+
+  it('a phase with <2 points draws NO segment (slope null), never a fabricated line', () => {
+    const sparse = [{ x: 1, y: 40, phase: 'a' }, { x: 2, y: 50, phase: 'b' }, { x: 3, y: 52, phase: 'b' }, { x: 4, y: 55, phase: 'b' }];
+    const g = L.plotGeometry(sparse, claim, undefined, [], 'slope');
+    const a = g.segments.find(s => s.phase === 'a');
+    expect(a.slope).toBe(null);
+    expect(a.sx1).toBe(null);
+    expect(g.segments.find(s => s.phase === 'b').slope).not.toBe(null);
+  });
+
+  it('the slope summary carries the per-phase slopes + the not-an-effect caveat', () => {
+    const txt = L.chartSummaryText(REYNA, claim, [], 'slope');
+    expect(txt).toMatch(/^Slope \(per-phase trends\)\./);
+    expect(txt).toMatch(/baseline:/);
+    expect(txt).toMatch(/not proof the change caused it/i);
+  });
+
+  it('the trend default stays byte-identical (the slope dispatch did not disturb it)', () => {
+    expect(JSON.stringify(L.plotGeometry(REYNA, claim, undefined, [])))
+      .toBe(JSON.stringify(L.plotGeometry(REYNA, claim, undefined, [], 'trend')));
+  });
+});
