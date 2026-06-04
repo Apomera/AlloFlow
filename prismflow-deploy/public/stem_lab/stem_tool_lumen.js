@@ -215,6 +215,26 @@
     return { lo: pct(0.025), hi: pct(0.975), B: B, kept: slopes.length };
   }
 
+  // Deterministic percentile bootstrap of the correlation r (seed = hash of the pairs),
+  // for the association claim's interval. Same reproducible-resample contract as the slope CI.
+  function bootstrapRCI(points, B, seedStr) {
+    B = B || 1000;
+    var n = points.length;
+    if (n < 3) return null;
+    var rng = mulberry32(cyrb53(seedStr || JSON.stringify(points)) >>> 0);
+    var rs = [];
+    for (var b = 0; b < B; b++) {
+      var sample = [];
+      for (var i = 0; i < n; i++) sample.push(points[(rng() * n) | 0]);
+      var fit = linregress(sample);
+      if (fit && !fit.degenerate && fit.r != null) rs.push(fit.r);
+    }
+    if (rs.length < 2) return null;
+    rs.sort(function (a, c) { return a - c; });
+    function pct(p) { var idx = Math.min(rs.length - 1, Math.max(0, Math.round(p * (rs.length - 1)))); return rs[idx]; }
+    return { lo: pct(0.025), hi: pct(0.975), B: B, kept: rs.length };
+  }
+
   function predictY(points, x) {
     var fit = linregress(points);
     if (!fit || fit.degenerate) return { refused: true, reason: 'no fit' };
@@ -239,14 +259,26 @@
       // §16: external benchmarks live HERE — never pushed into observations.
       sourceRefs: [], _srcSeq: 0,
       measure: meta.measure || null, grade: meta.grade == null ? null : meta.grade, seasonWindow: meta.seasonWindow || null,
-      schemaVersion: 2
+      // 2nd-variable / multi-series extension — all OPTIONAL, null by default. comp.variable/comp.unit
+      // always stay the SINGULAR primary y; variable2/unit2 label the paired 2nd measure (scatter).
+      // A single-var compendium stays schemaVersion 2; only a multi-var one bumps to 3.
+      variable2: meta.variable2 || null, unit2: meta.unit2 || null, seriesLabels: meta.seriesLabels || null,
+      schemaVersion: (meta.variable2 || meta.seriesLabels) ? 3 : 2
     };
   }
 
   function addObservation(comp, obs) {
     comp._seq += 1;
     var id = 'o' + comp._seq;
-    comp.observations.push({ id: id, x: obs.x, y: obs.y, phase: obs.phase == null ? null : obs.phase });
+    // CONDITIONAL SPREAD is load-bearing for byte-identity: y2/series are written ONLY when supplied,
+    // never as `y2: undefined`, so a legacy {id,x,y,phase} row serializes byte-identically and the
+    // pinned single-var tests/snapshots re-pass with NO re-baseline. y2 = paired 2nd value (scatter);
+    // series = a CATEGORY tag (multi-series line / grouped-bar) — NOT a person (multi-subject is out of scope).
+    comp.observations.push(Object.assign(
+      { id: id, x: obs.x, y: obs.y, phase: obs.phase == null ? null : obs.phase },
+      (obs.y2 != null ? { y2: obs.y2 } : {}),
+      (obs.series != null ? { series: String(obs.series) } : {})
+    ));
     return id;
   }
 
@@ -330,6 +362,70 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════
+  // THE ASSOCIATION CLAIM (2nd-variable / scatter) — correlation, NOT causation.
+  // An L1 claim over rows that carry BOTH the primary y and a paired y2. r is
+  // Pearson's from linregress; the interval is the deterministic r-bootstrap.
+  // The not-causation + confound caveat is a NON-OPTIONAL substring of .text
+  // (built inline, like the level word) so it survives a plain-text copy. There
+  // is deliberately NO uncertainty band on a scatter (a band over-claims a model).
+  // ══════════════════════════════════════════════════════════════════════
+
+  function associationSentence(claim) {
+    var e = claim.estimate;
+    var word = levelWord(claim.level);
+    var subset = (claim.shownOf.shown < claim.shownOf.total)
+      ? ('across these ' + claim.shownOf.shown + ' of ' + claim.shownOf.total + ' paired probes, ')
+      : '';
+    // INVARIANT: level word first, then r + interval + n; the not-causation caveat ALWAYS trails.
+    return word + ': ' + subset + claim.variable + ' and ' + claim.variable2 +
+      ' move together (Pearson r=' + signed(e.r) + '; 95% interval ' + signed(e.rInterval[0]) + ' to ' + signed(e.rInterval[1]) +
+      '; n=' + e.n + (e.small ? ', small' : '') + '). This is association, not causation; an unmeasured third factor may drive both.';
+  }
+
+  // Derive an L1 association claim between the primary y and the paired y2. Pairwise-complete:
+  // shownOf.total = rows that COULD pair (have y), shown = rows with BOTH — so dropped rows self-declare.
+  function deriveAssociationClaim(comp, opts) {
+    opts = opts || {};
+    var withY = comp.observations.filter(function (o) { return o.y != null; });
+    var pairs = withY.filter(function (o) { return o.y2 != null; });
+    var total = withY.length, shown = pairs.length, n = pairs.length;
+    var status = smallNStatus(n);
+    var base = {
+      id: opts.id || ('c' + (comp.claims.length + 1)),
+      kind: 'association',
+      level: 'L1', // provenance: Lumen's own deterministic correlation math
+      variable: comp.variable, unit: comp.unit,
+      variable2: comp.variable2 || (comp.variable + '₂'), unit2: comp.unit2 || comp.unit,
+      dependsOn: pairs.map(function (o) { return o.id; }),
+      shownOf: { shown: shown, total: total },
+      n: n
+    };
+    if (status === 'refuse') {
+      base.refused = true;
+      base.estimate = null;
+      base.text = levelWord(base.level) + ': n=' + n + ' paired points — too few to estimate an association; ' +
+        'no correlation reported (need at least ' + SMALL_N.refuseBelow + ').';
+      base._hash = cyrb53('assoc-refuse:' + n + ':' + shown + '/' + total);
+      return base;
+    }
+    var pts = pairs.map(function (o) { return { x: o.y, y: o.y2 }; }); // x-axis = primary measure, y-axis = 2nd
+    var fit = linregress(pts);
+    var deg = !fit || fit.degenerate;
+    var rci = bootstrapRCI(pts, 1000, base.variable2 + '~' + comp.variable + ':' + JSON.stringify(pts));
+    base.estimate = {
+      r: deg ? 0 : round2(fit.r),
+      rInterval: rci ? [round2(rci.lo), round2(rci.hi)] : [null, null],
+      slope: deg ? null : fit.slope, intercept: deg ? null : fit.intercept,
+      n: n, small: status === 'flag'
+    };
+    base.small = status === 'flag';
+    base.caveat = 'This is association, not causation; an unmeasured third factor may drive both.';
+    base.text = associationSentence(base);
+    base._hash = cyrb53(JSON.stringify({ e: base.estimate, s: base.shownOf }));
+    return base;
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
   // PHASE 1 — chart geometry + the screen-reader data-table peer (pure).
   // The SVG render and the data table read the SAME geometry/model, so the
   // visual chart and its accessible peer cannot disagree (design §9/§15).
@@ -342,6 +438,24 @@
     { x: 7, y: 58, phase: 'tier2' }, { x: 8, y: 61, phase: 'tier2' },
     { x: 9, y: 60, phase: 'tier2' }, { x: 10, y: 66, phase: 'tier2' }
   ];
+
+  // A PAIRED sample (each probe carries a 2nd measure y2) for the scatter pathway:
+  // WCPM (y) vs reading-comprehension % (y2). Two MEASURES of one student — not two students.
+  var PAIRED_SAMPLE = [
+    { x: 1, y: 42, phase: 'baseline', y2: 55 }, { x: 2, y: 45, phase: 'baseline', y2: 58 },
+    { x: 3, y: 44, phase: 'baseline', y2: 56 }, { x: 4, y: 48, phase: 'baseline', y2: 62 },
+    { x: 5, y: 47, phase: 'baseline', y2: 60 }, { x: 6, y: 53, phase: 'tier2', y2: 66 },
+    { x: 7, y: 58, phase: 'tier2', y2: 71 }, { x: 8, y: 61, phase: 'tier2', y2: 73 },
+    { x: 9, y: 60, phase: 'tier2', y2: 72 }, { x: 10, y: 66, phase: 'tier2', y2: 79 }
+  ];
+
+  // Sorted-unique series tags present in the data ([] => the legacy single-series world).
+  // Drives the multi-series / grouped-bar fan-out (Phase 2/3) and the <=1 byte-identity delegation.
+  function seriesKeys(observations) {
+    var set = {};
+    (observations || []).forEach(function (o) { if (o.series != null) set[o.series] = true; });
+    return Object.keys(set).sort();
+  }
 
   var DEFAULT_BOX = { w: 480, h: 280, padL: 44, padR: 16, padT: 16, padB: 34 };
 
@@ -504,12 +618,39 @@
     return out;
   }
 
+  // Scatter pathway — a genuine 2nd-VARIABLE plot: each point is (primary y, paired y2) of the SAME
+  // row, so x-axis = the primary measure and y-axis = the 2nd measure (NOT time/week). L0 observed
+  // pairs; an OPTIONAL L1 line of best fit is drawn only when an association claim is supplied. No
+  // benchmark overlay (the two axes are two student measures, not a normed scale — deferred).
+  function scatterGeometry(observations, claim, box, sourceRefs) {
+    box = box || DEFAULT_BOX;
+    var pairs = (observations || []).filter(function (o) { return o.y != null && o.y2 != null; });
+    var innerW = box.w - box.padL - box.padR, innerH = box.h - box.padT - box.padB;
+    var xv = pairs.map(function (o) { return o.y; }), yv = pairs.map(function (o) { return o.y2; });
+    var minX = Math.min.apply(null, xv), maxX = Math.max.apply(null, xv);
+    var minY = Math.min.apply(null, yv), maxY = Math.max.apply(null, yv);
+    var padX = (maxX - minX) * 0.08 || 1, padY = (maxY - minY) * 0.1 || 1;
+    var xa = minX - padX, xb = maxX + padX, y0 = minY - padY, y1 = maxY + padY;
+    function sx(v) { return box.padL + (xb === xa ? 0 : (v - xa) / (xb - xa)) * innerW; }
+    function sy(v) { return box.padT + innerH - (y1 === y0 ? 0 : (v - y0) / (y1 - y0)) * innerH; }
+    var scatterPoints = pairs.map(function (o) { return { x: o.y, y: o.y2, phase: o.phase == null ? null : o.phase, level: 'L0', sx: round1(sx(o.y)), sy: round1(sy(o.y2)) }; });
+    var fitPath = null;
+    if (claim && claim.estimate && claim.estimate.slope != null) {
+      var m = claim.estimate.slope, bI = claim.estimate.intercept;
+      fitPath = 'M ' + round1(sx(minX)) + ',' + round1(sy(m * minX + bI)) + ' L ' + round1(sx(maxX)) + ',' + round1(sy(m * maxX + bI));
+    }
+    var xTicks = []; for (var i = 0; i <= 4; i++) { var xvv = xa + (xb - xa) * i / 4; xTicks.push({ value: round1(xvv), sx: round1(sx(xvv)) }); }
+    var yTicks = []; for (var t = 0; t <= 4; t++) { var yvv = y0 + (y1 - y0) * t / 4; yTicks.push({ y: round1(yvv), sy: round1(sy(yvv)) }); }
+    return { box: box, chartType: 'scatter', minX: round1(minX), maxX: round1(maxX), y0: round1(y0), y1: round1(y1), scatterPoints: scatterPoints, fitPath: fitPath, xTicks: xTicks, yTicks: yTicks };
+  }
+
   function plotGeometry(observations, claim, box, sourceRefs, chartType) {
     box = box || DEFAULT_BOX;
     if (chartType === 'bar') return barGeometry(observations, box, sourceRefs); // dispatch; trend code below is untouched
     if (chartType === 'dot') return dotGeometry(observations, box, sourceRefs);
     if (chartType === 'box') return boxGeometry(observations, box, sourceRefs);
     if (chartType === 'histogram') return histogramGeometry(observations, box, sourceRefs);
+    if (chartType === 'scatter') return scatterGeometry(observations, claim, box, sourceRefs); // claim = association claim (for the fit line)
     var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
     var n = obs.length;
     var innerW = box.w - box.padL - box.padR;
@@ -591,6 +732,13 @@
   }
 
   function chartSummaryText(observations, claim, sourceRefs, chartType) {
+    // Scatter (association) has a different axis grammar (x = a measure, not week), so it does NOT
+    // describe trend phase lines or a y=value benchmark. The association sentence already carries
+    // r + interval + n + the not-causation caveat, so it IS the complete summary.
+    if (chartType === 'scatter') {
+      var sn = 'Scatter (association). ';
+      return sn + (claim ? claim.text : 'no paired data yet.');
+    }
     var name = chartType === 'bar' ? 'Bar chart.' : chartType === 'dot' ? 'Dot plot.' : chartType === 'box' ? 'Box plot (per phase).' : chartType === 'histogram' ? 'Histogram (distribution of values).' : 'Trend chart.';
     if (!claim || claim.refused) return name + ' ' + (claim ? claim.text : 'no data yet.');
     var parts = [name, claim.text];
@@ -605,7 +753,23 @@
     return parts.join(' ');
   }
 
+  // The SR data-table peer for a scatter: each row is a paired observation. The first column header
+  // is the PRIMARY measure (the x-axis), the second is the 2nd measure (y2); rows missing y2 show '—'
+  // so the pairwise-complete drop self-declares (anti-cherry-pick). The legacy row {x,y,phase,level}
+  // render is reused with the x-slot holding the primary value and the y-slot holding y2, so the
+  // generic table renderer is untouched and the column HEADERS carry the meaning.
+  function associationTableModel(observations, claim) {
+    var word = levelWord(claim.level);
+    var withY = (observations || []).filter(function (o) { return o.y != null; }).slice().sort(function (a, b) { return a.x - b.x; });
+    var columns = [claim.variable + ' (y)', (claim.variable2 || 'y2') + ' (y2)', 'Phase', 'Level'];
+    var rows = withY.map(function (o) {
+      return { x: o.y, y: (o.y2 == null ? '—' : o.y2), phase: o.phase || '—', level: word };
+    });
+    return { columns: columns, rows: rows, perSegment: [], summary: chartSummaryText(withY, claim, [], 'scatter'), level: claim.level, kind: 'association' };
+  }
+
   function dataTableModel(observations, claim, sourceRefs) {
+    if (claim && claim.kind === 'association') return associationTableModel(observations, claim); // scatter peer; legacy path below is untouched
     var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
     var word = levelWord(claim ? claim.level : 'L0');
     var columns = ['Week (x)', (claim ? claim.variable : 'value') + ' (y)', 'Phase', 'Level'];
@@ -970,15 +1134,17 @@
     encode: encode, levelWord: levelWord,
     // stats
     SMALL_N: SMALL_N, smallNStatus: smallNStatus, tCrit95: tCrit95, mean: mean,
-    linregress: linregress, slopeInterval: slopeInterval, bootstrapSlopeCI: bootstrapSlopeCI, predictY: predictY,
+    linregress: linregress, slopeInterval: slopeInterval, bootstrapSlopeCI: bootstrapSlopeCI, bootstrapRCI: bootstrapRCI, predictY: predictY,
     // compendium / reactive graph
-    makeCompendium: makeCompendium, addObservation: addObservation, markDirty: markDirty,
+    makeCompendium: makeCompendium, addObservation: addObservation, markDirty: markDirty, seriesKeys: seriesKeys,
     // claims / prose
-    deriveTrendClaim: deriveTrendClaim, trendSentence: trendSentence, refusalSentence: refusalSentence,
+    deriveTrendClaim: deriveTrendClaim, deriveAssociationClaim: deriveAssociationClaim, associationSentence: associationSentence,
+    trendSentence: trendSentence, refusalSentence: refusalSentence,
     // chart geometry + SR data-table peer (Phase 1)
-    REYNA_SAMPLE: REYNA_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
+    REYNA_SAMPLE: REYNA_SAMPLE, PAIRED_SAMPLE: PAIRED_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
     quantiles: quantiles, dotGeometry: dotGeometry, boxGeometry: boxGeometry, histogramBins: histogramBins, histogramGeometry: histogramGeometry,
-    perSegmentSlopes: perSegmentSlopes, chartSummaryText: chartSummaryText, dataTableModel: dataTableModel,
+    scatterGeometry: scatterGeometry,
+    perSegmentSlopes: perSegmentSlopes, chartSummaryText: chartSummaryText, dataTableModel: dataTableModel, associationTableModel: associationTableModel,
     // AI-involvement layer (Phase 1) — pure guards + audience faces
     AI_CAVEAT: AI_CAVEAT, HYP_CAVEAT: HYP_CAVEAT, AI_N_FLOOR: AI_N_FLOOR, levelIndex: levelIndex,
     aiAllowed: aiAllowed, buildClaimContext: buildClaimContext, allowedNumbers: allowedNumbers,
@@ -1072,9 +1238,14 @@
             } catch (eP) { return null; }
           };
           // At the default L1 ceiling NO callGemini fires — the trend is pure math.
-          var comp = makeCompendium(d.variable || 'WCPM', d.unit || 'words/min', { measure: d.measure || 'ORF-WCPM', grade: d.benchGrade, seasonWindow: d.benchSeason });
+          var comp = makeCompendium(d.variable || 'WCPM', d.unit || 'words/min', { measure: d.measure || 'ORF-WCPM', grade: d.benchGrade, seasonWindow: d.benchSeason, variable2: d.variable2, unit2: d.unit2 });
           obs.forEach(function (o) { addObservation(comp, o); });
           var claim = obs.length ? deriveTrendClaim(comp, {}) : null;
+          // Scatter argues an ASSOCIATION claim (2nd variable y2 vs primary y), not the trend. activeClaim
+          // is what the CURRENT chart renders + tables + summarizes; for every non-scatter view it IS the
+          // trend claim, so those paths are byte-identical. The AI/export layer stays bound to the trend.
+          var assoc = (chartType === 'scatter' && obs.length) ? deriveAssociationClaim(comp, {}) : null;
+          var activeClaim = assoc || claim;
           var bundle = encode('L1');
           // The AI fires ONLY on demand, ONLY over the PII-free context, and its
           // output is gated by the tested guards before it is ever shown (§6.1/§6.3).
@@ -1169,7 +1340,7 @@
           };
           kids.push(h('div', { key: 'charttype', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Chart type' },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Chart:'),
-            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box'), ctBtn('histogram', 'Histogram')));
+            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box'), ctBtn('histogram', 'Histogram'), ctBtn('scatter', 'Scatter')));
 
           if (!obs.length) {
             kids.push(h('p', { key: 'empty', className: 'mt-2 text-sm text-slate-600' },
@@ -1181,31 +1352,42 @@
               h('input', { type: 'number', value: d.draftX == null ? '' : d.draftX, onChange: function (ev) { upd('draftX', ev.target.value); }, className: 'w-20 px-2 py-1 border rounded' })),
             h('label', { className: 'text-xs text-slate-600 flex flex-col' }, comp.variable + ' (y)',
               h('input', { type: 'number', value: d.draftY == null ? '' : d.draftY, onChange: function (ev) { upd('draftY', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' })),
+            // The 2nd-measure input appears ONLY in the scatter view (calm-by-default: the trend entry stays two fields).
+            (chartType === 'scatter' ? h('label', { key: 'y2lab', className: 'text-xs text-slate-600 flex flex-col' }, (comp.variable2 || 'value₂') + ' (y2)',
+              h('input', { type: 'number', value: d.draftY2 == null ? '' : d.draftY2, onChange: function (ev) { upd('draftY2', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' })) : null),
             h('button', {
               className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500',
               onClick: function () {
                 var x = parseFloat(d.draftX), y = parseFloat(d.draftY);
                 if (isNaN(x) || isNaN(y)) { announce('Enter a numeric week and value.'); return; }
-                var next = obs.concat([{ x: x, y: y, phase: d.draftPhase || null }]);
-                upd('observations', next); upd('draftX', ''); upd('draftY', '');
-                announce('Added week ' + x + ' equals ' + y + '. ' + next.length + ' observations.');
+                var row = { x: x, y: y, phase: d.draftPhase || null };
+                var y2 = parseFloat(d.draftY2);
+                if (chartType === 'scatter' && !isNaN(y2)) row.y2 = y2; // paired 2nd measure, scatter only
+                var next = obs.concat([row]);
+                upd('observations', next); upd('draftX', ''); upd('draftY', ''); upd('draftY2', '');
+                announce('Added week ' + x + ' equals ' + y + (row.y2 != null ? (' (and ' + row.y2 + ')') : '') + '. ' + next.length + ' observations.');
               }
             }, '+ Add'),
             h('button', {
               className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
               onClick: function () { upd('observations', REYNA_SAMPLE.slice()); announce('Loaded the Reyna ORF sample: 10 weekly probes across two phases.'); }
-            }, 'Use sample (Reyna ORF)')
+            }, 'Use sample (Reyna ORF)'),
+            // A PAIRED sample (WCPM + comprehension) only in the scatter view, so the correlation has data to read.
+            (chartType === 'scatter' ? h('button', { key: 'paired', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
+              onClick: function () { upd('observations', PAIRED_SAMPLE.slice()); announce('Loaded the paired sample: 10 probes with WCPM and comprehension.'); } }, 'Use paired sample') : null)
           ));
 
-          if (claim) {
+          if (activeClaim) {
             kids.push(h('div', { key: 'claim', className: 'mt-3 p-2 rounded bg-white border border-slate-200' },
               h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
                 h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
                 h('span', null, bundle.label)),
-              h('p', { className: 'text-sm text-slate-800 mt-1' }, faceFor(claim, audience))));
+              // Scatter shows the association sentence verbatim (it already carries r + interval + n + the
+              // not-causation caveat); the trend/other views keep the audience-faced trend wording.
+              h('p', { className: 'text-sm text-slate-800 mt-1' }, assoc ? assoc.text : faceFor(claim, audience))));
           }
 
-          var geo = (obs.length >= 2 && claim && !claim.refused) ? plotGeometry(obs, claim, undefined, sourceRefs, chartType) : null;
+          var geo = (obs.length >= 2 && activeClaim && !activeClaim.refused) ? plotGeometry(obs, activeClaim, undefined, sourceRefs, chartType) : null;
           if (geo) {
             var b = geo.box, sk = [];
             geo.yTicks.forEach(function (t, i) {
@@ -1263,6 +1445,16 @@
                 if (bn.count > 0) sk.push(h('text', { key: 'hbc' + i, x: bn.bx + bn.bw / 2, y: bn.by - 2, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l0h.ink, 'aria-hidden': 'true' }, String(bn.count)));
               });
             }
+            // Scatter pathway: L0 OBSERVED pairs (x = primary measure, y = 2nd measure). The optional
+            // L1 line of best fit is drawn UNDER the points, thin + dashed, marked as the derived layer
+            // (the not-causation caveat lives in the sentence). No connecting line between points.
+            if (geo.scatterPoints) {
+              var l0s = encode('L0'), l1s = encode('L1');
+              if (geo.fitPath) sk.push(h('path', { key: 'fit', d: geo.fitPath, fill: 'none', stroke: l1s.ink, strokeWidth: 1.5, strokeOpacity: 0.7, strokeDasharray: '4 3' }));
+              geo.scatterPoints.forEach(function (p, i) {
+                sk.push(h('circle', { key: 'sc' + i, cx: p.sx, cy: p.sy, r: 3.5, fill: l0s.ink, fillOpacity: l0s.markOpacity }));
+              });
+            }
             // §16: benchmark reference line(s) — teal, dashed, NO data marker (a fact, not a measurement).
             // Horizontal (y=value) for time-series charts; VERTICAL (x=value) for the histogram.
             if (geo.refLines) geo.refLines.forEach(function (rl, i) {
@@ -1276,12 +1468,12 @@
             });
             kids.push(h('svg', {
               key: 'svg', viewBox: '0 0 ' + b.w + ' ' + b.h, className: 'w-full mt-3 bg-white rounded-lg border border-slate-200',
-              role: 'img', 'aria-label': chartSummaryText(obs, claim, sourceRefs, chartType)
+              role: 'img', 'aria-label': chartSummaryText(obs, activeClaim, sourceRefs, chartType)
             }, sk));
           }
 
-          if (claim && !claim.refused) {
-            var tbl = dataTableModel(obs, claim, sourceRefs);
+          if (activeClaim && !activeClaim.refused) {
+            var tbl = dataTableModel(obs, activeClaim, sourceRefs);
             kids.push(h('button', { key: 'tbtn', className: 'mt-2 text-xs underline text-slate-600', onClick: function () { upd('showTable', !d.showTable); } },
               d.showTable ? 'Hide data table' : 'Show data table (the chart as a table)'));
             if (d.showTable) {
@@ -1299,8 +1491,10 @@
             }
           }
 
-          // The AI section — only at the L2/L3 ceiling, only when the n-floor gate allows.
-          if (claim && !claim.refused && levelIndex(ceiling) >= 2) {
+          // The AI section — only at the L2/L3 ceiling, only when the n-floor gate allows. The AI
+          // interpretation layer is trend-shaped (buildClaimContext sends slope/interval), so it is
+          // OFF in the scatter view: scatter v1 is a pure L1 correlation (data-only, no AI re-word).
+          if (claim && !claim.refused && levelIndex(ceiling) >= 2 && chartType !== 'scatter') {
             var gate = aiAllowed(ceiling, claim.n);
             if (!gate.allowed) {
               kids.push(h('div', { key: 'aigate', className: 'mt-3 text-xs italic text-slate-500' }, gate.reason));
@@ -1342,7 +1536,9 @@
           }
 
           // §16: external benchmark chip(s) — teal ▣, scheme-checked source link, never the student's data.
-          if (sourceRefs.length) {
+          // A benchmark overlay on a scatter is ambiguous (two student measures, not a normed scale), so
+          // the chips + picker are hidden in the scatter view — deferred, not faked.
+          if (sourceRefs.length && chartType !== 'scatter') {
             kids.push(h('div', { key: 'refchips', className: 'mt-2 flex flex-col gap-1' },
               sourceRefs.filter(function (r) { return sourcedRenderable(r).ok; }).map(function (r, i) {
                 var href = /^https?:\/\//i.test(r.locator) ? r.locator : '#';
@@ -1353,7 +1549,7 @@
               })));
           }
           // The add-from-curated-norms picker (the spine ships EMPTY → selectNorm refuses until a human populates+verifies it).
-          if (claim && !claim.refused) {
+          if (claim && !claim.refused && chartType !== 'scatter') {
             kids.push(h('div', { key: 'addbench', className: 'mt-2 flex items-end gap-2 flex-wrap' },
               h('span', { className: 'text-xs text-slate-500' }, 'Add ORF benchmark:'),
               h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'Grade',
@@ -1383,7 +1579,9 @@
             if (d.benchMsg) kids.push(h('div', { key: 'benchmsg', className: 'mt-1 text-xs italic text-slate-500' }, d.benchMsg));
           }
 
-          if (claim && !claim.refused) {
+          // Export builds the trend (primary-y) brief; the scatter-specific export is deferred, so the
+          // buttons are hidden in the scatter view rather than exporting a mismatched trend document.
+          if (claim && !claim.refused && chartType !== 'scatter') {
             kids.push(h('div', { key: 'exp', className: 'mt-3 flex items-center gap-2 flex-wrap' },
               h('span', { className: 'text-xs text-slate-500' }, 'Export this view:'),
               h('button', { className: 'px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: exportHtml }, 'Brief (HTML)'),

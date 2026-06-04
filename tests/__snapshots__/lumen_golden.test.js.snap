@@ -1,5 +1,150 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Lumen — 2nd variable: scatter / association (correlation, NOT causation) > scatter geometry: points are (primary y, y2) of one row; L0; fit line only with a claim (snapshot) 1`] = `
+{
+  "box": {
+    "h": 280,
+    "padB": 34,
+    "padL": 44,
+    "padR": 16,
+    "padT": 16,
+    "w": 480,
+  },
+  "chartType": "scatter",
+  "fitPath": "M 73,226.8 L 435,38.9",
+  "maxX": 66,
+  "minX": 42,
+  "scatterPoints": [
+    {
+      "level": "L0",
+      "phase": "baseline",
+      "sx": 73,
+      "sy": 226.8,
+      "x": 42,
+      "y": 55,
+    },
+    {
+      "level": "L0",
+      "phase": "baseline",
+      "sx": 118.2,
+      "sy": 202.9,
+      "x": 45,
+      "y": 58,
+    },
+    {
+      "level": "L0",
+      "phase": "baseline",
+      "sx": 103.1,
+      "sy": 218.8,
+      "x": 44,
+      "y": 56,
+    },
+    {
+      "level": "L0",
+      "phase": "baseline",
+      "sx": 163.5,
+      "sy": 170.9,
+      "x": 48,
+      "y": 62,
+    },
+    {
+      "level": "L0",
+      "phase": "baseline",
+      "sx": 148.4,
+      "sy": 186.9,
+      "x": 47,
+      "y": 60,
+    },
+    {
+      "level": "L0",
+      "phase": "tier2",
+      "sx": 238.9,
+      "sy": 139,
+      "x": 53,
+      "y": 66,
+    },
+    {
+      "level": "L0",
+      "phase": "tier2",
+      "sx": 314.3,
+      "sy": 99.1,
+      "x": 58,
+      "y": 71,
+    },
+    {
+      "level": "L0",
+      "phase": "tier2",
+      "sx": 359.6,
+      "sy": 83.1,
+      "x": 61,
+      "y": 73,
+    },
+    {
+      "level": "L0",
+      "phase": "tier2",
+      "sx": 344.5,
+      "sy": 91.1,
+      "x": 60,
+      "y": 72,
+    },
+    {
+      "level": "L0",
+      "phase": "tier2",
+      "sx": 435,
+      "sy": 35.2,
+      "x": 66,
+      "y": 79,
+    },
+  ],
+  "xTicks": [
+    {
+      "sx": 44,
+      "value": 40.1,
+    },
+    {
+      "sx": 149,
+      "value": 47,
+    },
+    {
+      "sx": 254,
+      "value": 54,
+    },
+    {
+      "sx": 359,
+      "value": 61,
+    },
+    {
+      "sx": 464,
+      "value": 67.9,
+    },
+  ],
+  "y0": 52.6,
+  "y1": 81.4,
+  "yTicks": [
+    {
+      "sy": 246,
+      "y": 52.6,
+    },
+    {
+      "sy": 188.5,
+      "y": 59.8,
+    },
+    {
+      "sy": 131,
+      "y": 67,
+    },
+    {
+      "sy": 73.5,
+      "y": 74.2,
+    },
+    {
+      "sy": 16,
+      "y": 81.4,
+    },
+  ],
+}
+`;
+
 exports[`Lumen — AI-involvement layer guards (Phase 1, §6.1/§6.3/§6.6/§7) > audience faces re-project the SAME claim; the Family face PRESERVES uncertainty (snapshot) 1`] = `
 {
   "family": "Over 10 check-ins, WCPM went up — about 2.7 words/min a week. With only 10 points the true rate could be roughly 2.1 to 3.2 a week, so read this as a direction, not an exact number.",

@@ -27,6 +27,9 @@ const benchRef = L.makeSourceRef({
 }, benchComp);
 benchRef.id = 's1';
 
+// A PAIRED fixture (each probe carries a 2nd measure y2) for the scatter pathway.
+const PAIRED = REYNA.map((p, i) => ({ ...p, y2: [55, 58, 56, 62, 60, 66, 71, 73, 72, 79][i] }));
+
 const aiHyps = L.validateHypotheses([
   { text: 'The Tier-2 block reduced off-task time.', kind: 'effect', rank: 1 },
   { text: 'Regression to the mean — early weeks were low.', kind: 'null', rank: 2 }
@@ -84,6 +87,14 @@ describe('Lumen — render golden master (SSR, §15)', () => {
   it('histogram + benchmark renders the VERTICAL teal reference line at the benchmark value', () => {
     expect(renderState({ observations: REYNA, chartType: 'histogram', sourceRefs: [benchRef] })).toMatchSnapshot();
   });
+
+  it('scatter pathway — L0 paired points (primary y vs y2) + L1 fit line, association sentence', () => {
+    expect(renderState({ observations: PAIRED, chartType: 'scatter', variable2: 'Comprehension', unit2: '%' })).toMatchSnapshot();
+  });
+
+  it('scatter with too few pairs refuses (no chart), naming the paired n', () => {
+    expect(renderState({ observations: PAIRED.slice(0, 2), chartType: 'scatter', variable2: 'Comprehension', unit2: '%' })).toMatchSnapshot();
+  });
 });
 
 describe('Lumen — render invariants (no snapshot, just contracts)', () => {
@@ -120,6 +131,21 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
     const box = renderState({ observations: REYNA, chartType: 'box' });
     expect(box).toMatch(/aria-label="Box plot/);
     expect(box).toMatch(/<rect/); // the IQR boxes
+  });
+
+  it('the scatter pathway reads two measures of one row, carries not-causation, draws no trend line', () => {
+    const html = renderState({ observations: PAIRED, chartType: 'scatter', variable2: 'Comprehension', unit2: '%' });
+    expect(html).toMatch(/aria-label="Scatter \(association\)/);
+    expect(html).toMatch(/not causation/i);                         // the caveat survives into the rendered claim
+    expect(html).toMatch(/Pearson r=/);
+    expect((html.match(/<circle/g) || []).length).toBe(PAIRED.length); // one observed point per pair
+    expect(html).toMatch(/stroke-dasharray="4 3"/);                  // the dashed L1 line of best fit
+    expect((html.match(/<rect/g) || []).length).toBe(0);            // not bars / histogram
+  });
+
+  it('scatter is data-only L1: no AI affordance, no export, no benchmark picker in this view', () => {
+    const html = renderState({ observations: PAIRED, chartType: 'scatter', ceiling: 'L3', audience: 'iep-team', variable2: 'Comprehension', unit2: '%' });
+    expect(html).not.toMatch(/Generate AI|Export this view|Add ORF benchmark/);
   });
 
   it('the histogram pathway renders count bars + its own SR label, with no trend line or data circles', () => {

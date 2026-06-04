@@ -76,10 +76,46 @@ ok(L.selectNorm(L.NORM_SPINE, { measure: 'ORF-WCPM', unit: 'words/min' }, { grad
 ok(L.assertSourcedDefensible({ audience: 'iep-team', sourceRefs: [{ id: 's1', verified: false, citation: 'c', locator: 'https://x', value: 1 }] }).blocked === true, 'an unverified benchmark must block an IEP-team export');
 ok(L.sourcedRenderable({ verified: true, citation: 'c', locator: 'javascript:alert(1)', value: 1 }).ok === false, 'a javascript: locator must not be renderable');
 
+// 10. 2nd-variable / multi-series extension (scatter): conditional-spread byte-identity, conditional
+//     schemaVersion, the single-var trend unchanged by y2, the association claim = correlation-not-causation
+//     L1 (never amber), its n-floor refusal/flag, seriesKeys, and the data-table column byte-identity.
+(function () {
+  function pairedComp(rows) {
+    var c = L.makeCompendium('WCPM', 'words/min', { variable2: 'Comprehension', unit2: '%' });
+    rows.forEach(function (o) { L.addObservation(c, o); });
+    return c;
+  }
+  var plain = L.makeCompendium('WCPM', 'words/min');
+  L.REYNA_SAMPLE.forEach(function (o) { L.addObservation(plain, o); });
+  var paired = pairedComp(L.PAIRED_SAMPLE);
+
+  ok(('y2' in plain.observations[0]) === false && ('series' in plain.observations[0]) === false, 'conditional spread: a legacy row must NOT carry y2/series keys');
+  ok(JSON.stringify(plain.observations[0]) === JSON.stringify({ id: 'o1', x: 1, y: 42, phase: 'baseline' }), 'a legacy row must serialize byte-identically (no phantom undefined keys)');
+  ok(L.makeCompendium('a', 'b').schemaVersion === 2 && L.makeCompendium('a', 'b', { variable2: 'c' }).schemaVersion === 3, 'schemaVersion: 2 for single-var, 3 only for multi-var');
+
+  var ct = L.deriveTrendClaim(plain, {}), cp = L.deriveTrendClaim(paired, {});
+  ok(cp._hash === ct._hash, 'adding y2 to rows must NOT change the primary trend _hash (byte-identity)');
+  ok(JSON.stringify(L.plotGeometry(paired.observations, cp, undefined, [])) === JSON.stringify(L.plotGeometry(plain.observations, ct, undefined, [])), 'the trend geometry must be byte-identical when other rows carry y2');
+
+  var assoc = L.deriveAssociationClaim(paired, {});
+  ok(assoc.kind === 'association' && assoc.level === 'L1' && L.encode(assoc.level).caution === false, 'association must be L1 (never amber/L3)');
+  ok(/not causation/i.test(assoc.text), 'the association sentence MUST carry the not-causation caveat (copy-survivable)');
+  ok(L.deriveAssociationClaim(pairedComp(L.PAIRED_SAMPLE.slice(0, 2)), {}).refused === true, 'association must refuse n<3 paired points');
+  var flagged = L.deriveAssociationClaim(pairedComp(L.PAIRED_SAMPLE.slice(0, 5)), {});
+  ok(flagged.refused !== true && flagged.small === true, 'association must flag 3<=n<8 (small)');
+  ok(L.deriveAssociationClaim(pairedComp(L.PAIRED_SAMPLE), {}).small === false, 'association must NOT flag at n>=8');
+
+  var sg = L.plotGeometry(paired.observations, assoc, undefined, [], 'scatter');
+  ok(sg.chartType === 'scatter' && sg.scatterPoints.length === L.PAIRED_SAMPLE.length && sg.scatterPoints.every(function (p) { return p.level === 'L0'; }), 'scatter points must be the L0 observed pairs');
+  ok(sg.points === undefined && sg.trendPath === undefined, 'scatter must not emit the trend points/line keys');
+  ok(JSON.stringify(L.seriesKeys(L.REYNA_SAMPLE)) === '[]', 'seriesKeys must be [] for legacy single-series data');
+  ok(JSON.stringify(L.dataTableModel(L.REYNA_SAMPLE, ct)) === JSON.stringify(L.dataTableModel(L.REYNA_SAMPLE, ct, [])), 'a legacy trend data table must be byte-identical with/without the sourceRefs arg');
+})();
+
 if (fails.length) {
   console.error('check_lumen_floor: ' + fails.length + ' FAILED');
   fails.forEach(function (f) { console.error('  x ' + f); });
   process.exit(1);
 }
-if (!QUIET) console.log('check_lumen_floor: OK — Lumen honesty-floor invariants hold (9 groups).');
+if (!QUIET) console.log('check_lumen_floor: OK — Lumen honesty-floor invariants hold (10 groups).');
 process.exit(0);

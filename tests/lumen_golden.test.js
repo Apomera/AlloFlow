@@ -580,3 +580,130 @@ describe('Lumen — histogram chart type (distribution of values)', () => {
       .toBe(JSON.stringify(L.plotGeometry(REYNA, claim, undefined, [], 'trend')));
   });
 });
+
+describe('Lumen — 2nd variable: scatter / association (correlation, NOT causation)', () => {
+  // A PAIRED fixture: WCPM (y) and reading-comprehension % (y2) — two MEASURES of one student.
+  const PAIRED = [
+    { x: 1, y: 42, phase: 'baseline', y2: 55 }, { x: 2, y: 45, phase: 'baseline', y2: 58 },
+    { x: 3, y: 44, phase: 'baseline', y2: 56 }, { x: 4, y: 48, phase: 'baseline', y2: 62 },
+    { x: 5, y: 47, phase: 'baseline', y2: 60 }, { x: 6, y: 53, phase: 'tier2', y2: 66 },
+    { x: 7, y: 58, phase: 'tier2', y2: 71 },    { x: 8, y: 61, phase: 'tier2', y2: 73 },
+    { x: 9, y: 60, phase: 'tier2', y2: 72 },    { x: 10, y: 66, phase: 'tier2', y2: 79 }
+  ];
+  function buildPaired(points) {
+    const comp = L.makeCompendium('WCPM', 'words/min', { variable2: 'Comprehension', unit2: '%' });
+    points.forEach(p => L.addObservation(comp, p));
+    return comp;
+  }
+
+  it('conditional spread: y2/series stored ONLY when supplied (the byte-identity footgun)', () => {
+    const comp = L.makeCompendium('WCPM', 'words/min');
+    L.addObservation(comp, { x: 1, y: 42, phase: 'baseline' });            // legacy
+    L.addObservation(comp, { x: 2, y: 45, phase: 'baseline', y2: 58 });    // paired
+    L.addObservation(comp, { x: 3, y: 44, phase: 'baseline', series: 'reading' });
+    expect('y2' in comp.observations[0]).toBe(false);
+    expect('series' in comp.observations[0]).toBe(false);
+    expect(JSON.stringify(comp.observations[0])).toBe(JSON.stringify({ id: 'o1', x: 1, y: 42, phase: 'baseline' }));
+    expect(comp.observations[1].y2).toBe(58);
+    expect(comp.observations[2].series).toBe('reading');
+  });
+
+  it('makeCompendium: schemaVersion 2 for single-var, 3 only for multi-var', () => {
+    expect(L.makeCompendium('WCPM', 'words/min').schemaVersion).toBe(2);
+    expect(L.makeCompendium('WCPM', 'words/min', { measure: 'ORF-WCPM' }).schemaVersion).toBe(2);
+    expect(L.makeCompendium('WCPM', 'words/min', { variable2: 'Comprehension' }).schemaVersion).toBe(3);
+  });
+
+  it('adding y2 to rows leaves the primary trend byte-identical (legacy reads never touch y2)', () => {
+    const plain = buildReyna(REYNA).comp;
+    const paired = buildPaired(PAIRED);
+    const a = L.deriveTrendClaim(plain, {});
+    const b = L.deriveTrendClaim(paired, {});
+    expect(b._hash).toBe(a._hash);
+    expect(b.text).toBe(a.text);
+    expect(JSON.stringify(L.plotGeometry(paired.observations, b, undefined, [])))
+      .toBe(JSON.stringify(L.plotGeometry(plain.observations, a, undefined, [])));
+  });
+
+  it('deriveAssociationClaim: n>=8 reports Pearson r + interval + n, level L1, NOT causation', () => {
+    const c = L.deriveAssociationClaim(buildPaired(PAIRED), {});
+    expect(c.kind).toBe('association');
+    expect(c.level).toBe('L1');                          // never L3 — no amber
+    expect(L.encode(c.level).caution).toBe(false);
+    expect(c.n).toBe(10);
+    expect(typeof c.estimate.r).toBe('number');
+    expect(c.estimate.r).toBeGreaterThan(0.8);           // WCPM & comprehension move together
+    expect(Array.isArray(c.estimate.rInterval)).toBe(true);
+    expect(c.estimate).not.toHaveProperty('interval');   // NO trend-style band on a scatter
+    expect(c.text).toMatch(/not causation/i);            // the caveat is burned into the sentence
+    expect(c.text).toMatch(/^Derived \(math\):/);        // level word leads (prose invariant)
+  });
+
+  it('deriveAssociationClaim: refuses n<3 pairs, flags 3<=n<8, never silently', () => {
+    expect(L.deriveAssociationClaim(buildPaired(PAIRED.slice(0, 2)), {}).refused).toBe(true);
+    const flagged = L.deriveAssociationClaim(buildPaired(PAIRED.slice(0, 5)), {});
+    expect(flagged.refused).toBeFalsy();
+    expect(flagged.small).toBe(true);
+    expect(L.deriveAssociationClaim(buildPaired(PAIRED), {}).small).toBe(false);
+  });
+
+  it('pairwise-complete: rows missing y2 count in total but not shown (self-declaring drop)', () => {
+    const mixed = PAIRED.slice(0, 8).concat([{ x: 9, y: 60, phase: 'tier2' }, { x: 10, y: 66, phase: 'tier2' }]);
+    const c = L.deriveAssociationClaim(buildPaired(mixed), {});
+    expect(c.shownOf.total).toBe(10);
+    expect(c.shownOf.shown).toBe(8);
+    expect(c.n).toBe(8);
+    expect(c.text).toMatch(/8 of 10 paired probes/);
+  });
+
+  it('association is deterministic (data-seeded r-bootstrap): same data -> same interval + hash', () => {
+    const c1 = L.deriveAssociationClaim(buildPaired(PAIRED), {});
+    const c2 = L.deriveAssociationClaim(buildPaired(PAIRED), {});
+    expect(c1.estimate.rInterval).toEqual(c2.estimate.rInterval);
+    expect(c1._hash).toBe(c2._hash);
+  });
+
+  it('scatter geometry: points are (primary y, y2) of one row; L0; fit line only with a claim (snapshot)', () => {
+    const comp = buildPaired(PAIRED);
+    const c = L.deriveAssociationClaim(comp, {});
+    const g = L.plotGeometry(comp.observations, c, undefined, [], 'scatter');
+    expect(g.chartType).toBe('scatter');
+    expect(g.scatterPoints.length).toBe(10);
+    expect(g.scatterPoints.every(p => p.level === 'L0')).toBe(true);  // observed pairs
+    expect(g.scatterPoints[0].x).toBe(PAIRED[0].y);                   // x-axis = primary measure
+    expect(g.scatterPoints[0].y).toBe(PAIRED[0].y2);                  // y-axis = 2nd measure
+    expect(g.points).toBeUndefined();                                 // not the trend points key
+    expect(g.trendPath).toBeUndefined();                              // no trend line
+    expect(typeof g.fitPath).toBe('string');                          // fit line drawn WITH a claim
+    expect(L.plotGeometry(comp.observations, null, undefined, [], 'scatter').fitPath).toBe(null); // none without
+    expect(g).toMatchSnapshot();
+  });
+
+  it('the trend default stays byte-identical (the scatter dispatch did not disturb it)', () => {
+    const comp = buildPaired(PAIRED);
+    const c = L.deriveTrendClaim(comp, {});
+    expect(JSON.stringify(L.plotGeometry(comp.observations, c, undefined, [])))
+      .toBe(JSON.stringify(L.plotGeometry(comp.observations, c, undefined, [], 'trend')));
+  });
+
+  it('scatter summary + data table read the two MEASURES, not week', () => {
+    const comp = buildPaired(PAIRED);
+    const c = L.deriveAssociationClaim(comp, {});
+    expect(L.chartSummaryText(comp.observations, c, [], 'scatter')).toMatch(/^Scatter \(association\)\./);
+    const tbl = L.dataTableModel(comp.observations, c, []);
+    expect(tbl.kind).toBe('association');
+    expect(tbl.columns[0]).toMatch(/WCPM/);                           // x-column = primary measure
+    expect(tbl.columns[1]).toMatch(/Comprehension/);                 // y-column = 2nd measure
+    expect(tbl.rows.length).toBe(10);
+  });
+
+  it('seriesKeys: [] for legacy data, sorted-unique tags otherwise', () => {
+    expect(L.seriesKeys(REYNA)).toEqual([]);
+    expect(L.seriesKeys([{ series: 'math' }, { series: 'reading' }, { series: 'math' }])).toEqual(['math', 'reading']);
+  });
+
+  it('a legacy trend data table is byte-identical with/without the sourceRefs arg', () => {
+    const c = L.deriveTrendClaim(buildReyna(REYNA).comp, {});
+    expect(JSON.stringify(L.dataTableModel(REYNA, c))).toBe(JSON.stringify(L.dataTableModel(REYNA, c, [])));
+  });
+});
