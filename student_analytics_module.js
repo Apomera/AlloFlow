@@ -376,10 +376,17 @@
     const [customQuestionsDraft, setCustomQuestionsDraft] = React.useState([]);
     const [cqImageGenInput, setCqImageGenInput] = React.useState({ qid: null, idx: null, prompt: '', mode: 'generate' });
     const [cqImageGenBusy, setCqImageGenBusy] = React.useState(false);
+    // Flips true once the async probe-bank load resolves, forcing one re-render
+    // so the per-form status badges (which read window.*_PROBE_* at render time)
+    // refresh from "Loading..." to real counts without needing a manual
+    // interaction first. Initialized true if banks are already present.
+    const [probeBanksReady, setProbeBanksReady] = React.useState(typeof window !== 'undefined' && !!window.BENCHMARK_PROBE_BANKS);
     React.useEffect(() => {
-      if (typeof loadProbeBanks === 'function') {
-        loadProbeBanks();
-      }
+      let cancelled = false;
+      Promise.resolve(typeof loadProbeBanks === 'function' ? loadProbeBanks() : null).then(() => {
+        if (!cancelled) setProbeBanksReady(true);
+      });
+      return () => { cancelled = true; };
     }, []);
     const [importProgress, setImportProgress] = React.useState({
       current: 0,
@@ -4802,7 +4809,7 @@
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg font-bold text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md"
     }, "\u25B6 Start Math Probe")), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 text-[11px] text-slate-600 font-semibold"
-    }, window.MATH_PROBE_BANKS && window.MATH_PROBE_BANKS[mathProbeGrade || "1"] && window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"] ? `✅ ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].problems.length} problems · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].operation} · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].difficulty}` : "⏳ Loading math probes...")), /*#__PURE__*/React.createElement("div", {
+    }, window.MATH_PROBE_BANKS && window.MATH_PROBE_BANKS[mathProbeGrade || "1"] && window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"] ? `✅ ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].problems.length} problems · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].operation} · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].difficulty}` : probeBanksReady ? "— No math probe bank for this grade / form yet" : "⏳ Loading math probes...")), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 mb-4 border border-emerald-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mb-3"
