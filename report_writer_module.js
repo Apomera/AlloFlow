@@ -1170,6 +1170,56 @@ listing only the [chunk-id] values you actually referenced. Return the section t
             return { text: textLines.join('\n').trim(), usedChunks };
         };
 
+        // ── Helper: verify ONE section's score citations against the structured
+        // input. Used by both generateReport (per-section verification, replacing
+        // the previous single-shot 8000-char-truncated pass that systematically
+        // missed Summary + Recommendations) and regenerateSection (so manual
+        // per-section retries don't slip un-gated past the AI's dice roll).
+        //
+        // Returns {errors, parseOk}. parseOk=false means the AI's response was
+        // uninterpretable JSON and the caller MUST surface "inconclusive", not
+        // green-success — silently swallowing parse failures is what made the
+        // previous pass into fabricated reassurance on signed clinical reports.
+        const verifySectionAgainstScores = async (sectionName, sectionText, allScoreData) => {
+            if (!callGemini || !sectionText || sectionText.length < 50) {
+                return { errors: [], parseOk: true };
+            }
+            const verifyResult = await callGemini(`You are a clinical data verification specialist. Cross-reference EVERY number, score, percentile, and classification label in this report SECTION against the actual input data.
+
+ACTUAL INPUT SCORES:
+${allScoreData}
+
+REPORT SECTION ("${sectionName}"):
+"""
+${sectionText}
+"""
+
+Check for:
+1. Any score cited in the text that doesn't match the input (e.g., text says 92 but input says 82)
+2. Any classification label that doesn't match the score (e.g., "Average" for a score of 78)
+3. Any percentile that doesn't match the score
+4. Any test name spelled differently
+5. SUBTEST-ATTRIBUTION BINDING — a cited score MUST be attributed to the correct subtest by name. If "VCI was 92" appears but the input has "PRI: 92, VCI: 78", that is a CRITICAL error (wrong subtest attribution). Verify every (subtest, value) pair.
+6. Any score mentioned in the draft that doesn't exist in the input data
+7. Any score in the input data that should be discussed in this section but is OMITTED
+
+Return ONLY JSON (no prose before or after):
+{"errors":[{"claim":"what the text says","actual":"what the data shows","severity":"critical|minor"}]}
+
+If no errors, return {"errors":[]}.`, true);
+            try {
+                let sv = verifyResult.trim();
+                if (sv.indexOf('```') !== -1) { const ps = sv.split('```'); sv = ps[1] || ps[0]; if (sv.indexOf('\n') !== -1) sv = sv.split('\n').slice(1).join('\n'); if (sv.lastIndexOf('```') !== -1) sv = sv.substring(0, sv.lastIndexOf('```')); }
+                const parsed = JSON.parse(sv);
+                const errors = Array.isArray(parsed.errors)
+                    ? parsed.errors.map(e => ({ ...e, section: sectionName }))
+                    : [];
+                return { errors, parseOk: true };
+            } catch (e) {
+                return { errors: [], parseOk: false };
+            }
+        };
+
         // ── Step 6: Generate report (with evidence mapping) ──
         const generateReport = async () => {
             if (!callGemini) return;
@@ -1242,67 +1292,78 @@ listing only the [chunk-id] values you actually referenced. Return the section t
             setGenProgress('Verifying score citations...');
             try {
                 const allScoreData = scoreEntries.map(s => `${s.assessment} — ${s.subtest}: ${s.score} (${s.scoreType}, ${s.classification}${s.percentile ? ', ' + s.percentile + 'th %ile' : ''})`).join('\n');
-                const fullDraft = Object.values(generated).join('\n\n');
-                const verifyResult = await callGemini(`You are a clinical data verification specialist. Cross-reference EVERY number, score, percentile, and classification label in this report draft against the actual input data.
-
-ACTUAL INPUT SCORES:
-${allScoreData}
-
-REPORT DRAFT:
-"""
-${fullDraft.substring(0, 8000)}
-"""
-
-Check for:
-1. Any score cited in the text that doesn't match the input (e.g., text says 92 but input says 82)
-2. Any classification label that doesn't match the score (e.g., "Average" for a score of 78)
-3. Any percentile that doesn't match the score
-4. Any test name spelled differently or attributed to wrong subtest
-5. Any score mentioned in the draft that doesn't exist in the input data
-
-Return ONLY JSON:
-{"verified": true/false, "errors": [{"claim": "what the report says", "actual": "what the data actually shows", "section": "which section", "severity": "critical|minor"}], "totalScoresCited": N, "totalVerified": N}`, true);
-                let scoreVerification = null;
-                try {
-                    let sv = verifyResult.trim();
-                    if (sv.indexOf('```') !== -1) { const ps = sv.split('```'); sv = ps[1] || ps[0]; if (sv.indexOf('\n') !== -1) sv = sv.split('\n').slice(1).join('\n'); if (sv.lastIndexOf('```') !== -1) sv = sv.substring(0, sv.lastIndexOf('```')); }
-                    scoreVerification = JSON.parse(sv);
-                } catch(e) {}
-                if (scoreVerification && scoreVerification.errors && scoreVerification.errors.length > 0) {
-                    // ── Self-heal: regenerate sections with score errors ──
-                    const sectionsWithErrors = [...new Set(scoreVerification.errors.filter(e => e.severity === 'critical').map(e => e.section))];
-                    if (sectionsWithErrors.length > 0) {
-                        setGenProgress(`Fixing ${sectionsWithErrors.length} section(s) with score errors...`);
-                        for (const secName of sectionsWithErrors) {
-                            const matchingSection = sections.find(s => secName.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(secName.toLowerCase()));
-                            if (matchingSection && generated[matchingSection]) {
-                                const errors = scoreVerification.errors.filter(e => e.section === secName);
-                                const corrections = errors.map(e => `CORRECTION: "${e.claim}" is WRONG. The actual data shows: ${e.actual}`).join('\n');
-                                try {
-                                    const fixPrompt = buildSectionPrompt(matchingSection, verifiedChunks, `CRITICAL CORRECTIONS FROM SCORE VERIFICATION:\n${corrections}\n\nFix these specific errors while keeping the rest of the section intact.`);
-                                    const fixResult = await callGemini(fixPrompt, false);
-                                    const { text, usedChunks } = parseEvidenceResponse(fixResult);
-                                    generated[matchingSection] = text;
-                                    evidenceMap[matchingSection] = usedChunks;
-                                } catch(fixErr) { warnLog(`Score fix failed for ${matchingSection}:`, fixErr); }
-                            }
-                        }
+                // PER-SECTION verification (replaces a single-shot pass that
+                // truncated at 8000 chars and systematically dropped Summary +
+                // Recommendations + Interpretation). Helper at top of component
+                // scope: verifySectionAgainstScores.
+                let allErrors = [];
+                let parseFailureCount = 0;
+                let sectionsChecked = 0;
+                const sectionEntries = Object.entries(generated);
+                for (let i = 0; i < sectionEntries.length; i++) {
+                    const [secName, secText] = sectionEntries[i];
+                    setGenProgress(`Verifying score citations (${i + 1}/${sectionEntries.length}: ${secName})...`);
+                    const { errors, parseOk } = await verifySectionAgainstScores(secName, secText, allScoreData);
+                    sectionsChecked++;
+                    if (!parseOk) parseFailureCount++;
+                    allErrors = allErrors.concat(errors);
+                }
+                // Self-heal: regenerate ONLY sections flagged critical. Lifted
+                // sectionsWithErrors to this scope so the toast logic below can
+                // see it for the "auto-fixed critical" tail.
+                const sectionsWithErrors = [...new Set(allErrors.filter(e => e.severity === 'critical').map(e => e.section))];
+                if (sectionsWithErrors.length > 0) {
+                    setGenProgress(`Fixing ${sectionsWithErrors.length} section(s) with score errors...`);
+                    for (const secName of sectionsWithErrors) {
+                        // Section attribution is exact (helper stamps the
+                        // section name on each error) — no fuzzy match.
+                        if (!generated[secName]) continue;
+                        const errors = allErrors.filter(e => e.section === secName && e.severity === 'critical');
+                        const corrections = errors.map(e => `CORRECTION: "${e.claim}" is WRONG. The actual data shows: ${e.actual}`).join('\n');
+                        try {
+                            const fixPrompt = buildSectionPrompt(secName, verifiedChunks, `CRITICAL CORRECTIONS FROM SCORE VERIFICATION:\n${corrections}\n\nFix these specific errors while keeping the rest of the section intact.`);
+                            const fixResult = await callGemini(fixPrompt, false);
+                            const { text, usedChunks } = parseEvidenceResponse(fixResult);
+                            generated[secName] = text;
+                            evidenceMap[secName] = usedChunks;
+                        } catch(fixErr) { warnLog(`Score fix failed for ${secName}:`, fixErr); }
                     }
-                    if (addToast) addToast(`\u26a0\ufe0f Score verification: ${scoreVerification.errors.length} issue(s) found${sectionsWithErrors.length > 0 ? ' — auto-fixed' : ''}`, 'info');
-                } else if (scoreVerification) {
-                    if (addToast) addToast(`\u2705 All ${scoreVerification.totalScoresCited || 'N'} score citations verified`, 'success');
+                }
+                // Toast — three distinct states, no fabricated counts. Use
+                // scoreEntries.length (the deterministic denominator) instead
+                // of Gemini's totalScoresCited (which could render the literal
+                // string "N" on a signed clinical document via the prior
+                // `|| 'N'` fallback). Parse-failure no longer renders green-success.
+                if (addToast) {
+                    if (allErrors.length > 0) {
+                        const errSectionCount = new Set(allErrors.map(e => e.section)).size;
+                        const inconclusiveTail = parseFailureCount > 0 ? ` (${parseFailureCount} section(s) inconclusive)` : '';
+                        const fixedTail = sectionsWithErrors.length > 0 ? ' — auto-fixed critical' : '';
+                        addToast(`\u26a0\ufe0f Score verification: ${allErrors.length} issue(s) across ${errSectionCount} section(s)${fixedTail}${inconclusiveTail}`, 'info');
+                    } else if (parseFailureCount > 0) {
+                        addToast(`\u26a0\ufe0f Score verification inconclusive on ${parseFailureCount} of ${sectionsChecked} section(s) — please review manually`, 'info');
+                    } else {
+                        addToast(`\u2705 ${scoreEntries.length} score citation(s) verified across ${sectionsChecked} section(s)`, 'success');
+                    }
                 }
             } catch(svErr) { warnLog('[Report] Score verification pass failed (non-blocking):', svErr); }
 
             // ── Improvement 2: Cross-Section Consistency Check ──
             setGenProgress('Checking cross-section consistency...');
             try {
-                const fullReport = Object.entries(generated).map(([k, v]) => `## ${k}\n${v}`).join('\n\n');
+                const fullReportFull = Object.entries(generated).map(([k, v]) => `## ${k}\n${v}`).join('\n\n');
+                // Truncation cap raised from 8000 to 24000 (typical psychoed
+                // report runs 10-15KB; the prior cap routinely dropped Summary +
+                // Recommendations + Interpretation). On truncation we still warn
+                // the user so they don't trust a partial check on a signed doc.
+                const CONSISTENCY_CAP = 24000;
+                const fullReport = fullReportFull.substring(0, CONSISTENCY_CAP);
+                const wasTruncated = fullReportFull.length > CONSISTENCY_CAP;
                 const consistencyResult = await callGemini(`You are a clinical report consistency auditor. Check this psychoeducational report for INTERNAL CONSISTENCY across sections.
 
 REPORT:
 """
-${fullReport.substring(0, 8000)}
+${fullReport}
 """
 
 Check for:
@@ -1312,35 +1373,83 @@ Check for:
 4. TERMINOLOGY CONSISTENCY: Are the same constructs described consistently? (e.g., don't call it "anxiety" in one section and "nervousness" in another if referring to the same clinical construct)
 5. COMPLETENESS: Are all major assessment scores discussed somewhere? Are all mentioned in Summary?
 
+For EVERY issue, populate the "sections" array with the actual section names involved (must match section headings in the REPORT). This is load-bearing — the self-heal pass uses it to route the fix to the correct section(s).
+
 Return ONLY JSON:
 {"consistent": true/false, "issues": [{"type": "summary-mismatch|recommendation-gap|contradiction|terminology|completeness", "description": "specific issue", "sections": ["Section A", "Section B"], "severity": "critical|moderate|minor"}]}`, true);
                 let consistencyCheck = null;
+                let consistencyParseOk = false;
                 try {
                     let cc = consistencyResult.trim();
                     if (cc.indexOf('```') !== -1) { const ps = cc.split('```'); cc = ps[1] || ps[0]; if (cc.indexOf('\n') !== -1) cc = cc.split('\n').slice(1).join('\n'); if (cc.lastIndexOf('```') !== -1) cc = cc.substring(0, cc.lastIndexOf('```')); }
                     consistencyCheck = JSON.parse(cc);
+                    consistencyParseOk = true;
                 } catch(e) {}
-                if (consistencyCheck && consistencyCheck.issues && consistencyCheck.issues.length > 0) {
-                    // ── Self-heal critical consistency issues ──
-                    const criticalIssues = consistencyCheck.issues.filter(i => i.severity === 'critical');
-                    if (criticalIssues.length > 0) {
-                        setGenProgress(`Fixing ${criticalIssues.length} consistency issue(s)...`);
-                        // Regenerate Summary section with consistency corrections
+                const issues = (consistencyCheck && Array.isArray(consistencyCheck.issues)) ? consistencyCheck.issues : [];
+                const criticalIssues = issues.filter(i => i.severity === 'critical');
+                if (criticalIssues.length > 0) {
+                    setGenProgress(`Fixing ${criticalIssues.length} consistency issue(s)...`);
+                    // Self-heal: regenerate EACH section actually named in
+                    // issue.sections[], not just Summary. The prior dispatch
+                    // hardcoded sections.find(includes('summary')) and ignored
+                    // issue.sections, so body-body contradictions (e.g.
+                    // Assessment Results FSIQ 92 vs Cognitive Functioning FSIQ
+                    // 82) were "fixed" by rewriting only Summary while both
+                    // bodies continued to contradict each other — and the toast
+                    // still claimed "auto-fixed N critical issues."
+                    const sectionsInvolved = new Set();
+                    criticalIssues.forEach(iss => {
+                        const secs = Array.isArray(iss.sections) ? iss.sections : [];
+                        secs.forEach(rawName => {
+                            const matched = sections.find(s => s === rawName)
+                                         || sections.find(s => s.toLowerCase() === String(rawName).toLowerCase())
+                                         || sections.find(s => String(rawName).toLowerCase().includes(s.toLowerCase()))
+                                         || sections.find(s => s.toLowerCase().includes(String(rawName).toLowerCase()));
+                            if (matched) sectionsInvolved.add(matched);
+                        });
+                    });
+                    // Defensive fallback: if Gemini emitted critical issues
+                    // but didn't populate sections[], regenerate Summary as
+                    // the last-resort target so we never silently skip a
+                    // critical fix.
+                    if (sectionsInvolved.size === 0) {
                         const summarySection = sections.find(s => s.toLowerCase().includes('summary'));
-                        if (summarySection && generated[summarySection]) {
-                            const issueList = criticalIssues.map(i => `- ${i.type}: ${i.description}`).join('\n');
-                            try {
-                                const fixPrompt = buildSectionPrompt(summarySection, verifiedChunks, `CRITICAL: The following consistency issues were detected between this section and the rest of the report. Fix them:\n${issueList}\n\nEnsure the summary accurately reflects ALL findings from earlier sections.`);
-                                const fixResult = await callGemini(fixPrompt, false);
-                                const { text, usedChunks } = parseEvidenceResponse(fixResult);
-                                generated[summarySection] = text;
-                                evidenceMap[summarySection] = usedChunks;
-                            } catch(fixErr) { warnLog('[Report] Consistency fix failed:', fixErr); }
-                        }
+                        if (summarySection) sectionsInvolved.add(summarySection);
                     }
-                    if (addToast) addToast(`\u26a0\ufe0f Consistency check: ${consistencyCheck.issues.length} issue(s)${criticalIssues.length > 0 ? ' — auto-fixed critical' : ''}`, 'info');
-                } else {
-                    if (addToast) addToast(t('toasts.u2705_cross_section_consistency_verified'), 'success');
+                    for (const secName of sectionsInvolved) {
+                        if (!generated[secName]) continue;
+                        const issuesForSection = criticalIssues.filter(iss => {
+                            const secs = Array.isArray(iss.sections) ? iss.sections : [];
+                            return secs.length === 0
+                                || secs.some(rn => String(rn).toLowerCase() === secName.toLowerCase()
+                                              || String(rn).toLowerCase().includes(secName.toLowerCase())
+                                              || secName.toLowerCase().includes(String(rn).toLowerCase()));
+                        });
+                        const issueList = issuesForSection.map(iss => `- ${iss.type}: ${iss.description}`).join('\n');
+                        try {
+                            const fixPrompt = buildSectionPrompt(secName, verifiedChunks, `CRITICAL: The following consistency issues involve this section. Fix them in this section's text while keeping unrelated content intact:\n${issueList}\n\nIf the issue is a contradiction with another section's claim, defer to the structured input data (assessment scores, background facts) rather than averaging the two narrative claims.`);
+                            const fixResult = await callGemini(fixPrompt, false);
+                            const { text, usedChunks } = parseEvidenceResponse(fixResult);
+                            generated[secName] = text;
+                            evidenceMap[secName] = usedChunks;
+                        } catch(fixErr) { warnLog(`[Report] Consistency fix failed for ${secName}:`, fixErr); }
+                    }
+                }
+                // Toast — no longer silently green on parse failure or
+                // truncation. Truncation surfaces as a separate warning so
+                // the clinician knows coverage was partial on a signed report.
+                if (addToast) {
+                    const truncationTail = wasTruncated ? ` (truncated at ${CONSISTENCY_CAP} chars — partial coverage)` : '';
+                    if (!consistencyParseOk) {
+                        addToast(`\u26a0\ufe0f Consistency check inconclusive (response unparseable) — please review manually${truncationTail}`, 'info');
+                    } else if (issues.length > 0) {
+                        const fixedTail = criticalIssues.length > 0 ? ' — auto-fixed critical' : '';
+                        addToast(`\u26a0\ufe0f Consistency check: ${issues.length} issue(s)${fixedTail}${truncationTail}`, 'info');
+                    } else if (wasTruncated) {
+                        addToast(`\u26a0\ufe0f Consistency check clean on first ${CONSISTENCY_CAP} chars; report was truncated — review remaining sections manually`, 'info');
+                    } else {
+                        addToast(t('toasts.u2705_cross_section_consistency_verified'), 'success');
+                    }
                 }
             } catch(ccErr) { warnLog('[Report] Consistency check failed (non-blocking):', ccErr); }
 
@@ -1359,11 +1468,42 @@ Return ONLY JSON:
             try {
                 const prompt = buildSectionPrompt(sectionName, verifiedChunks, customInstructions || null);
                 const result = await callGemini(prompt, false);
-                const { text, usedChunks } = parseEvidenceResponse(result);
+                let { text, usedChunks } = parseEvidenceResponse(result);
+                // Fix #3: re-run score-verification on the regenerated section.
+                // The previous regenerate path skipped this entirely and cleared
+                // prior accuracyResults \u2014 every retry was an ungated dice roll
+                // on numbers. Now: verify against scoreEntries, self-heal
+                // critical errors once, then surface the result.
+                if (scoreEntries.length > 0) {
+                    try {
+                        const allScoreData = scoreEntries.map(s => `${s.assessment} \u2014 ${s.subtest}: ${s.score} (${s.scoreType}, ${s.classification}${s.percentile ? ', ' + s.percentile + 'th %ile' : ''})`).join('\n');
+                        const { errors, parseOk } = await verifySectionAgainstScores(sectionName, text, allScoreData);
+                        const criticalErrs = errors.filter(e => e.severity === 'critical');
+                        if (criticalErrs.length > 0) {
+                            const corrections = criticalErrs.map(e => `CORRECTION: "${e.claim}" is WRONG. The actual data shows: ${e.actual}`).join('\n');
+                            const fixPrompt = buildSectionPrompt(sectionName, verifiedChunks, (customInstructions ? customInstructions + '\n\n' : '') + `CRITICAL CORRECTIONS FROM SCORE VERIFICATION:\n${corrections}\n\nFix these specific errors while keeping the rest of the section intact.`);
+                            const fixResult = await callGemini(fixPrompt, false);
+                            const fixed = parseEvidenceResponse(fixResult);
+                            text = fixed.text;
+                            usedChunks = fixed.usedChunks;
+                            if (addToast) addToast(`"${sectionName}" regenerated; auto-fixed ${criticalErrs.length} score citation(s) \u26a0\ufe0f`, 'info');
+                        } else if (!parseOk) {
+                            if (addToast) addToast(`"${sectionName}" regenerated; score verification inconclusive \u2014 please review`, 'info');
+                        } else if (errors.length > 0) {
+                            if (addToast) addToast(`"${sectionName}" regenerated; ${errors.length} non-critical citation issue(s) \u2014 please review`, 'info');
+                        } else {
+                            if (addToast) addToast(`"${sectionName}" regenerated; ${scoreEntries.length} score citation(s) verified \u2705`, 'success');
+                        }
+                    } catch(vErr) {
+                        warnLog(`[Report] Post-regen verification failed for ${sectionName}:`, vErr);
+                        if (addToast) addToast(`"${sectionName}" regenerated; verification pass failed \u2014 please review`, 'info');
+                    }
+                } else {
+                    if (addToast) addToast(`"${sectionName}" regenerated \u2705`, 'success');
+                }
                 setReportSections(prev => ({ ...prev, [sectionName]: text }));
                 setSectionEvidenceMap(prev => ({ ...prev, [sectionName]: usedChunks }));
                 setAccuracyResults([]); // clear stale accuracy data
-                if (addToast) addToast(`"${sectionName}" regenerated \u2705`, 'success');
             } catch (err) {
                 warnLog(`Regeneration error for ${sectionName}:`, err);
                 if (addToast) addToast(`Failed to regenerate "${sectionName}"`, 'error');
