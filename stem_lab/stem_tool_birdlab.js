@@ -7820,14 +7820,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         );
       }
 
-      function StatCard(props) {
-        return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
-          h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-700' }, props.label),
-          h('div', { className: 'text-2xl font-black ' + (props.color || 'text-emerald-700') }, props.value),
-          props.unit && h('div', { className: 'text-[10px] text-slate-700' }, props.unit)
-        );
-      }
-
       // Gold/silver/bronze rank palette + medallion ribbon — shared by Photo ID and Match Quiz.
       // Pass an optional override label (e.g., 'Strongest match') to customize the ribbon text.
       function rankPalette(i, overrideLabel) {
