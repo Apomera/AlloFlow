@@ -3976,7 +3976,11 @@ var d = labToolData || {};
               var iq = d.policyIQ || { taxCut: 0, govSpend: 0, rateChange: 0, tariff: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
               function setIQ(patch) { upd('policyIQ', Object.assign({}, iq, patch)); }
               function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
-              // simple toy model: \u0394GDP, \u0394inflation, \u0394unemployment
+              // Toy model (textbook KEYNESIAN signs): demand-side multipliers, expectations-anchored
+              // inflation, Phillips-curve unemployment. New-classical / supply-side / monetarist /
+              // MMT / neo-Fisherian schools would flip several of these coefficients; the footer
+              // disclaimer and the open questions invite the student to ask which signs would
+              // change under each school.
               var dGDP = iq.taxCut * 0.5 + iq.govSpend * 0.8 - iq.rateChange * 0.6 - iq.tariff * 0.3;
               var dInflation = iq.taxCut * 0.2 + iq.govSpend * 0.4 - iq.rateChange * 0.7 + iq.tariff * 0.5;
               var dUnemployment = -iq.taxCut * 0.1 - iq.govSpend * 0.3 + iq.rateChange * 0.4 + iq.tariff * 0.2;
@@ -4013,9 +4017,22 @@ var d = labToolData || {};
                   React.createElement('text', { x: 30, y: 110, fill: '#94a3b8', fontSize: 9 }, '\u0394GDP'),
                   React.createElement('text', { x: 130, y: 110, fill: '#94a3b8', fontSize: 9 }, '\u0394Inflation'),
                   React.createElement('text', { x: 230, y: 110, fill: '#94a3b8', fontSize: 9 }, '\u0394Unemploy'),
-                  React.createElement('rect', { x: 50, y: dGDP > 0 ? 60 - dGDP * 15 : 60, width: 40, height: Math.abs(dGDP) * 15, fill: dGDP > 0 ? '#4ade80' : '#f87171' }),
-                  React.createElement('rect', { x: 150, y: dInflation > 0 ? 60 - dInflation * 15 : 60, width: 40, height: Math.abs(dInflation) * 15, fill: dInflation > 0 ? '#facc15' : '#22d3ee' }),
-                  React.createElement('rect', { x: 250, y: dUnemployment > 0 ? 60 - dUnemployment * 15 : 60, width: 40, height: Math.abs(dUnemployment) * 15, fill: dUnemployment > 0 ? '#f87171' : '#4ade80' }),
+                  (function() {
+                    // viewBox is 0 0 320 120 with a horizontal baseline at y=60.
+                    // Clamp bar heights to 50 (the room available above/below the
+                    // baseline) so policy extremes (e.g. tariff=25 driving dInflation
+                    // past 12.5pp ⇒ untouched height = 12.5*15 = 187px) can't overflow.
+                    function bar(x, val, posFill, negFill) {
+                      var h = Math.min(50, Math.abs(val) * 15);
+                      var y = val > 0 ? 60 - h : 60;
+                      return React.createElement('rect', { x: x, y: y, width: 40, height: h, fill: val > 0 ? posFill : negFill });
+                    }
+                    return [
+                      bar(50, dGDP, '#4ade80', '#f87171'),
+                      bar(150, dInflation, '#facc15', '#22d3ee'),
+                      bar(250, dUnemployment, '#f87171', '#4ade80')
+                    ];
+                  })(),
                   React.createElement('text', { x: 4, y: 8, fill: '#475569', fontSize: 8 }, 'up'),
                   React.createElement('text', { x: 4, y: 118, fill: '#475569', fontSize: 8 }, 'down')
                 ),
@@ -4056,7 +4073,8 @@ var d = labToolData || {};
                     React.createElement('li', null, 'What combination produces "stagflation"? Why was it so politically painful in the 1970s?'),
                     React.createElement('li', null, 'Tax cuts and govt spending both stimulate GDP. Which generates more inflation per dollar of stimulus? Why?'),
                     React.createElement('li', null, 'When would a central bank deliberately CAUSE a recession? (Volcker 1979\u201382.)'),
-                    React.createElement('li', null, 'Do tariffs help domestic workers in the long run, or do they raise prices for everyone? Both? Trade-off where?')
+                    React.createElement('li', null, 'Do tariffs help domestic workers in the long run, or do they raise prices for everyone? Both? Trade-off where?'),
+                    React.createElement('li', null, 'This widget hard-codes textbook Keynesian signs. Which signs would FLIP under supply-side economics? Under MMT? Under new-classical (rational expectations)? Where does the Keynesian model give the wrong sign in real-world data?')
                   )
                 ),
                 React.createElement('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
@@ -4064,7 +4082,7 @@ var d = labToolData || {};
                   React.createElement('span', null, 'I can explain why this policy mix yields this macroeconomic state.')
                 ),
                 iq.understood && React.createElement('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                React.createElement('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget \u2014 no score, no reveal. Coefficients are pedagogical heuristics, NOT a real macro model; real responses depend on monetary regime, slack, expectations, foreign trade. Macro is contested \u2014 economists disagree on signs and magnitudes.')
+                React.createElement('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget \u2014 no score, no reveal, no answer dump. Coefficients are pedagogical heuristics, NOT a real macro model; real responses depend on monetary regime, slack, expectations, foreign trade. Macro is contested \u2014 economists disagree on signs and magnitudes.')
               );
             })()
 

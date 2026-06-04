@@ -2522,9 +2522,19 @@ var d = labToolData.universe || {};
                 var c = 299792; // km/s
                 var recessionV = iq.hubbleConst * iq.distMpc;
                 var z = recessionV / c;
-                var lookBackGyr = (iq.distMpc * 3.262 / 1000) / (1 - z * 0.5);
+                // Look-back time: linear estimate t ≈ d/c, valid only at low z. For z > 0.3 a
+                // full ΛCDM integration is needed; we keep the linear form here and flag the
+                // limit in the disclaimer. (The previous form `(d/c) / (1 - z/2)` inflated
+                // look-back by ~33% at z=0.5 — wrong direction vs the standard first-order
+                // expansion `t ≈ (d/c)·(1 − z/(1+q0) + …)`.)
+                var lookBackGyr = (iq.distMpc * 3.262 / 1000); // d·(Mpc→Gly), c→light-Gly/Gyr ≈ 1
                 var ageEstGyr = (1 / iq.hubbleConst) * 977.8; // simplified
                 var oTotal = (iq.darkEnergy + iq.matter) / 100;
+                // Ω-total ≠ 1 is meaningful: in ΛCDM it implies spatial curvature
+                // (Ω_total<1 ⇒ open, Ω_total>1 ⇒ closed). The current 'fate' label below
+                // collapses this to a Λ-vs-matter contest and ignores curvature + dark-energy
+                // equation of state w; that simplification is called out in the open
+                // questions and in the disclaimer.
                 var fate = iq.darkEnergy / 100 > 0.6 ? 'expanding' : iq.darkEnergy / 100 > 0.3 ? 'coasting' : iq.matter / 100 > 0.7 ? 'collapsing' : 'borderline';
                 var state = z > 1 ? 'highZ' : z > 0.3 ? 'cosmological' : z > 0.05 ? 'extragalactic' : z > 0.001 ? 'local' : 'gravbound';
                 var sm = ({
@@ -2605,7 +2615,9 @@ var d = labToolData.universe || {};
                       React.createElement("li", null, 'At z=1, the universe was about half its current size. What does that mean for the wavelength of light from that era?'),
                       React.createElement("li", null, 'If H\u2080 were 50 km/s/Mpc instead of 70, would the universe be older or younger?'),
                       React.createElement("li", null, 'Dark energy ~70% today. What if it were 100% \u2014 what would the fate be? 0%?'),
-                      React.createElement("li", null, 'Why doesn\'t the Local Group expand even though the rest of the universe does?')
+                      React.createElement("li", null, 'Why doesn\'t the Local Group expand even though the rest of the universe does?'),
+                      React.createElement("li", null, 'In your sliders Ω_DE and Ω_matter are independent — but if Ω_total = Ω_DE + Ω_matter ≠ 1, the universe is spatially curved (open if <1, closed if >1). What does Ω_total = ' + (oTotal * 100).toFixed(0) + '% imply about curvature in YOUR current setup? Does the badge\'s "fate" label account for that?'),
+                      React.createElement("li", null, 'The widget uses w = -1 (cosmological constant) implicitly. If dark energy had w < -1 (phantom energy), what fate would replace the "expanding" badge — and why doesn\'t this widget show it?')
                     )
                   ),
                   React.createElement("label", { className: "flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1" },
@@ -2613,7 +2625,7 @@ var d = labToolData.universe || {};
                     React.createElement("span", null, 'I can explain why this distance and \u03A9 mix yields this redshift / fate.')
                   ),
                   iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                  React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget \u2014 no score, no reveal. Look-back time uses linear approximation (valid for low z); for z>0.3 use cosmological calculator with full \u039BCDM integration. Hubble tension between Planck (~67) and local (~73) measurements is unresolved as of 2026.')
+                  React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget \u2014 no score, no reveal, no answer dump. Look-back time uses linear approximation t \u2248 d/c (valid for low z; for z>0.3 a full \u039BCDM integration is needed). Fate label ignores spatial curvature (assumes \u03A9_total = 1) and dark-energy equation of state (assumes w = -1, cosmological constant); see open questions for what those simplifications cost. Hubble tension between Planck (~67) and local SH0ES (~73) measurements remains unresolved as of 2026.')
                 );
               })()
             ),

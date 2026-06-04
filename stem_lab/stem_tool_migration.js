@@ -3408,7 +3408,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('span', null, 'I can explain why this profile yields this energy state.')
           ),
           iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Energy model is illustrative (drag ∝ m^0.67 / wingspan with V-formation savings 22% per Lissaman & Shollenberger 1970). For real-world stopover ecology consult primary literature.')
+          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Energy model is illustrative (drag ∝ m^0.67 / wingspan). V-formation savings vary ~10–30% across species and positions (Lissaman & Shollenberger 1970 theoretical upper bound; in-flight measurements include Weimerskirch et al. 2001 on pelicans and Portugal et al. 2014 on ibises). Widget uses 22% as a midpoint estimate. For real-world stopover ecology consult primary literature.')
         );
       }
 

@@ -20064,7 +20064,7 @@ test('no a11y violations', async () => {
               h('span', null, 'I can explain why this prompt-craft profile yields this output variance.')
             ),
             iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget \u2014 no score, no reveal. Quality/brittleness indices are heuristics; real prompt engineering depends on model, temperature, system message, and task type. See OpenAI/Anthropic prompt-engineering docs.')
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget \u2014 no score, no reveal, no answer dump. Quality/brittleness indices are heuristics; real prompt engineering depends on model, temperature, system message, and task type. See OpenAI/Anthropic prompt-engineering docs.')
           );
         })()
       );

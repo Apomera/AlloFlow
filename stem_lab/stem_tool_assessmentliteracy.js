@@ -9730,7 +9730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           usewithci: { label: 'Use with CI', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Reasonable reliability but report the confidence interval — never the point estimate alone.' },
           screeningonly: { label: 'Screening only', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Reliability 0.70-0.85 — fine for routine screening, NOT for placement or eligibility decisions.' },
           needmore: { label: 'Insufficient for high stakes', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'CI is wide relative to the consequences of a wrong decision. Gather more data before acting.' },
-          unreliable: { label: 'Unreliable for any decision', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Reliability < 0.70 — true score is essentially indistinguishable from noise. Do not use for individual decisions.' }
+          unreliable: { label: 'Unreliable for high-stakes individual decisions', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Reliability < 0.70 — error variance ≥ 30% of total variance. Acceptable for some group-level research questions, but the confidence interval around any individual score is too wide for high-stakes individual decisions (placement, eligibility, diagnosis).' }
         })[state];
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6' },
           h('header', { className: 'mb-4 flex items-center gap-3' },
@@ -9739,6 +9739,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           ),
           h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
             h('p', { className: 'text-sm opacity-85 mb-3 leading-snug' }, 'Adjust the four sliders. Predict whether this score is action-ready. No score, no reveal — you mark your own understanding.'),
+            h('p', { className: 'text-xs opacity-70 mb-3 leading-snug italic' }, 'Note: in classical test theory, SEM and reliability are NOT independent — SEM = SD × √(1−r). They are separated here so you can see each lever in isolation, but a real instrument constrains both together. A claim like "r=.99 with SEM=15" is mathematically impossible at any plausible SD.'),
             h('div', { className: 'inline-block px-3 py-1 rounded-full text-xs font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' · CI ' + ciLow.toFixed(1) + '-' + ciHigh.toFixed(1)),
             h('p', { className: 'text-xs opacity-80 mb-3' }, sm.desc),
             h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 12 } },
@@ -9786,7 +9787,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 h('li', null, 'Why is the 95% CI ±1.96 × SEM, not ±1 × SEM or ±2 × SEM?'),
                 h('li', null, 'A standard score of 100 with r=.95, SEM=3 vs r=.75, SEM=10 — which is action-ready and why?'),
                 h('li', null, 'AAIDD requires r > .90 for ID determination. Why do high-stakes decisions need higher reliability?'),
-                h('li', null, 'When does a SCREENING-grade tool become inappropriate (and what is the harm)?')
+                h('li', null, 'When does a SCREENING-grade tool become inappropriate (and what is the harm)?'),
+                h('li', null, 'SEM = SD × √(1−r). At what SD does r=.95 force SEM ≤ 3? At what SD does r=.70 force SEM ≥ 8? Why are the sliders here NOT independent in real instruments?')
               )
             ),
             h('label', { className: 'flex items-center gap-2 text-xs font-bold cursor-pointer mb-2' },
@@ -9794,7 +9796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('span', null, 'I can explain why this reliability/SEM/score/stakes combination yields this action-readiness state.')
             ),
             iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 3, placeholder: 'Explain in your own words...', className: 'w-full p-2 rounded text-xs mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-            h('p', { className: 'm-0 text-xs italic opacity-60' }, 'Inquiry widget — no score, no reveal. CIs assume normal sampling distribution; for very small samples use the appropriate t-distribution. Reliability is necessary but not sufficient — validity matters too. Always consult test manuals and standards (AAIDD-12, AERA/APA/NCME Standards).')
+            h('p', { className: 'm-0 text-xs italic opacity-60' }, 'Inquiry widget — no score, no reveal, no answer dump. CIs assume normal sampling distribution; for very small samples use the appropriate t-distribution. Reliability is necessary but not sufficient — validity matters too. Always consult test manuals and standards (AAIDD-12, AERA/APA/NCME Standards).')
           )
         );
       }

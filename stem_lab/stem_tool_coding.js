@@ -1897,7 +1897,7 @@
                   React.createElement("span", null, 'I can explain why this combination of n, depth, data structure, and recursion lands here.')
                 ),
                 iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget — no score, no reveal. Ops counts are illustrative pedagogical estimates assuming ~1 GHz effective throughput; real performance depends on cache, branch prediction, JIT, and constants in front of the Big-O term.')
+                React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget — no score, no reveal, no answer dump. Ops counts are illustrative pedagogical estimates assuming ~1 GHz effective throughput; real performance depends on cache, branch prediction, JIT, and constants in front of the Big-O term.')
               );
             })(),
 

@@ -7021,9 +7021,9 @@ var d = labToolData.dissection || {};
                     ),
                     React.createElement("svg", { width: '100%', height: 100, viewBox: '0 0 320 100', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
                       React.createElement("line", { x1: 30, y1: 80, x2: 310, y2: 80, stroke: '#1e293b' }),
-                      React.createElement("rect", { x: 50, y: 80 - Math.min(60, damage * 6), width: 60, height: Math.min(60, damage * 6), fill: '#f87171', opacity: 0.85 }),
+                      React.createElement("rect", { x: 50, y: 80 - Math.max(0, Math.min(60, damage * 6)), width: 60, height: Math.max(0, Math.min(60, damage * 6)), fill: '#f87171', opacity: 0.85 }),
                       React.createElement("text", { x: 80, y: 95, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'damage'),
-                      React.createElement("rect", { x: 200, y: 80 - Math.min(60, insight * 5), width: 60, height: Math.min(60, insight * 5), fill: '#4ade80', opacity: 0.85 }),
+                      React.createElement("rect", { x: 200, y: 80 - Math.max(0, Math.min(60, insight * 5)), width: 60, height: Math.max(0, Math.min(60, insight * 5)), fill: '#4ade80', opacity: 0.85 }),
                       React.createElement("text", { x: 230, y: 95, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'insight'),
                       React.createElement("text", { x: 8, y: 14, fill: '#475569', fontSize: 8 }, 'high'),
                       React.createElement("text", { x: 8, y: 78, fill: '#475569', fontSize: 8 }, 'low')
@@ -7073,7 +7073,7 @@ var d = labToolData.dissection || {};
                       React.createElement("span", null, 'I can explain why this combination of size, depth, care, and time pressure yields this outcome.')
                     ),
                     iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                    React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget — no score, no reveal. Damage/insight indices are pedagogical heuristics, not lab-grade rubrics. Real dissection outcomes depend on preservation quality, instrument sharpness, and specific anatomy.')
+                    React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget — no score, no reveal, no answer dump. Damage/insight indices are pedagogical heuristics, not lab-grade rubrics. Real dissection outcomes depend on preservation quality, instrument sharpness, and specific anatomy.')
                   );
                 })(),
 

@@ -19639,9 +19639,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var sm = ({
           keto: { label: 'Ketogenic', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Carbs <10% of macros. Body shifts to fat oxidation; ketone production likely after several days.' },
           lowcarb: { label: 'Low-carb', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Carbs 10–30%. Stable blood sugar likely; common Mediterranean/paleo range.' },
-          balanced: { label: 'Balanced', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Carbs 30–55%. DGA/MyPlate target zone. Sustainable for most people.' },
-          highcarb: { label: 'High-carb', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Carbs 55–75%. Endurance-athlete or traditional Asian-rice-based pattern; fine with fiber + protein.' },
-          sugarheavy: { label: 'Sugar-heavy', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Carbs >75% and low fiber → glycemic-load risk. Typical Western processed-food trap.' }
+          balanced: { label: 'Balanced', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Carbs 30–55%. Within the broader balanced range; the full Dietary Guidelines for Americans AMDR for carbs is 45–65%, so the upper end of this bucket and the start of "high-carb" both still fall inside DGA. Sustainable for most people.' },
+          highcarb: { label: 'High-carb', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Carbs 55–75%. The 55–65% segment is squarely within the DGA AMDR. The 65–75% segment is the endurance-athlete or traditional Asian-rice-based pattern; fine with fiber + protein.' },
+          sugarheavy: { label: 'Sugar-heavy', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Carbs >75% with low fiber → high glycemic load. Common in heavily-processed snack-dominated days, but well above the US average (NHANES puts US carb intake at ~46–50%).' }
         })[state];
         // SVG: stacked bar + macro pie
         var cy = 80;
@@ -19721,7 +19721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('li', null, 'Why might a "high-carb" meal feel different at 200g of oats vs 200g of white rice + sugar?'),
                 h('li', null, 'How does fat slow glycemic response? Try 80g carbs with 5g fat vs 30g fat.'),
                 h('li', null, 'A 100g protein day — what trade-offs would you need to make in the other macros to keep total calories sensible?'),
-                h('li', null, 'When would ketogenic make medical sense? When could it harm? (Hint: epilepsy treatment, athletic performance, kidney disease.)')
+                h('li', null, 'When could ketogenic help or harm? Consider: ketogenic-diet therapy for refractory epilepsy is well-established (decades of RCTs); nutrient gaps, hypoglycemia risk on diabetes meds, social/sustainability cost, and contested questions about long-term kidney/cardiovascular impact are all open. (For CKD specifically, high-protein patterns are the more-supported concern; isolated ketosis-vs-CKD evidence is mixed.)')
               )
             ),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
@@ -19729,7 +19729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h('span', null, 'I can explain why this macro split yields this energy state.')
             ),
             iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Satiety + GI proxies are illustrative; real glycemic response varies with food matrix, cooking, and individual metabolism. Not medical advice.')
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Satiety + GI proxies are illustrative; real glycemic response varies with food matrix, cooking, and individual metabolism. Not medical advice.')
           )
         );
       }

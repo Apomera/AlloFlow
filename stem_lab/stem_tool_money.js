@@ -3211,7 +3211,7 @@ window.StemLab = window.StemLab || {
                     React.createElement("span", null, 'I can explain why this principal/rate/time/contribution combination produces this growth state.')
                   ),
                   iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                  React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget - no score, no reveal. Compound interest assumes constant rate, no taxes, no inflation. Real-world returns are volatile (sequence-of-returns risk) and net of taxes + inflation.')
+                  React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget - no score, no reveal, no answer dump. Compound interest assumes constant rate, no taxes, no inflation. Real-world returns are volatile (sequence-of-returns risk) and net of taxes + inflation.')
                 );
               })(),
 

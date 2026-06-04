@@ -1653,7 +1653,7 @@ window.StemLab = window.StemLab || {
               h('span', null, 'I can explain why this combination of n, noise, and outliers produces this divergence.')
             ),
             iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-            h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget - no score, no reveal. Synthetic data uses a deterministic seed from sliders, so the same slider position always reproduces the same draw. Real studies see one draw and have to reason about uncertainty.')
+            h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget - no score, no reveal, no answer dump. Synthetic data uses a deterministic seed from sliders, so the same slider position always reproduces the same draw. Real studies see one draw and have to reason about uncertainty.')
           );
         })()
       );

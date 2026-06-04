@@ -3756,8 +3756,28 @@ window.StemLab = window.StemLab || {
         // expected number of beneficial mutations: μ * N * G * f_beneficial (≈1%)
         var totalMuts = iq.mutRate * iq.popSize * iq.generations;
         var beneficial = totalMuts * 0.01;
-        // probability one beneficial sweeps to fixation given selection coeff s ≈ 2s (Haldane)
-        var fixProb = Math.min(0.95, Math.max(0, 2 * iq.selection));
+        // Probability one beneficial mutation sweeps to fixation. Use the full Kimura
+        // (1962) diploid formula: (1 − e^(−2s)) / (1 − e^(−4Ns)). Special-cases:
+        //   • s = 0 (neutral)   → 1/(2N)   (drift fixation)
+        //   • Ns ≫ 1 (strong)    → ~2s     (Haldane limit)
+        //   • Ns ≪ 1 (weak)      → ~1/(2N) (effectively neutral)
+        // The old `2s` form contradicted both the widget's own neutral-mutation open
+        // question ("s=0 → fixProb = 1/(2N)") AND the disclaimer text that already
+        // recommended Kimura. Guard against overflow in exp(−4Ns) for large N·s.
+        var s = iq.selection;
+        var Ns = iq.popSize * s;
+        var fixProb;
+        if (s === 0) {
+          fixProb = 1 / (2 * iq.popSize);
+        } else if (Math.abs(4 * Ns) > 700) {
+          // exp overflow → Haldane limit (or 0 if s < 0)
+          fixProb = s > 0 ? 2 * s : 0;
+        } else {
+          var num = 1 - Math.exp(-2 * s);
+          var den = 1 - Math.exp(-4 * Ns);
+          fixProb = den === 0 ? 1 / (2 * iq.popSize) : num / den;
+        }
+        fixProb = Math.min(0.95, Math.max(0, fixProb));
         var expectedFixed = beneficial * fixProb;
         var state = expectedFixed < 0.01 ? 'static' : expectedFixed < 0.5 ? 'driftdom' : expectedFixed < 5 ? 'slowevo' : expectedFixed < 50 ? 'fastevo' : 'runaway';
         var sm = ({
@@ -3779,7 +3799,7 @@ window.StemLab = window.StemLab || {
             [
               { label: 'Total mutations', val: totalMuts.toExponential(2) },
               { label: '~Beneficial', val: beneficial.toExponential(2) },
-              { label: 'Fix prob (≈2s)', val: (fixProb * 100).toFixed(2) + '%' }
+              { label: 'Fix prob (Kimura)', val: (fixProb * 100).toFixed(2) + '%' }
             ].map(function(m) {
               return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
                 h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
@@ -3847,7 +3867,7 @@ window.StemLab = window.StemLab || {
             h('span', null, 'I can explain why this μ × N × g × s combination yields this regime.')
           ),
           iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Uses Haldane fix prob ≈ 2s (haploid, large-N); for diploids and small populations, full Kimura formula gives ~(1−e^(−2s))/(1−e^(−4Ns)).')
+          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Uses the full Kimura (1962) diploid fixation formula (1−e^(−2s))/(1−e^(−4Ns)), which interpolates between Haldane\'s ~2s in the strong-selection limit (Ns≫1) and the neutral 1/(2N) in the drift limit (Ns≪1 or s=0).')
         );
       }
 

@@ -19979,7 +19979,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               );
             })
           ),
-          h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(' + (255 - iq.paperContrast * 2) + ',' + (250 - iq.paperContrast * 2) + ',' + (230 - iq.paperContrast * 2) + ',0.9)', color: '#000', marginBottom: 10, fontFamily: 'Georgia, serif', fontSize: iq.typeSize, lineHeight: iq.leading, maxWidth: iq.lineLength * 7 + 'px' } },
+          // Paper-contrast preview: higher slider → LIGHTER paper (better contrast with #000 text).
+          // Was inverted (higher contrast → darker preview, contradicting the readout +
+          // failing WCAG AA in a typography legibility tool). Now: 0 → rgb(55,50,30) dark
+          // (low contrast); 80 → rgb(215,210,190) cream (default sweet spot); 100 → rgb(255,250,230) bright cream.
+          h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(' + (55 + iq.paperContrast * 2) + ',' + (50 + iq.paperContrast * 2) + ',' + (30 + iq.paperContrast * 2) + ',0.95)', color: '#000', marginBottom: 10, fontFamily: 'Georgia, serif', fontSize: iq.typeSize, lineHeight: iq.leading, maxWidth: iq.lineLength * 7 + 'px' } },
             'Quick brown foxes jumped over the lazy dog. This sample renders at your selected ' + iq.typeSize + 'pt with leading ' + iq.leading + ' and line length ' + iq.lineLength + ' characters. Move sliders to see how legibility shifts in real time — the print shops of 1450 figured this out by trial and error.'
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
@@ -20028,7 +20032,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('span', null, 'I can explain why this typography combination yields this legibility state.')
           ),
           iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Legibility heuristics from Tschichold, Bringhurst, Tinker; real reading rates also depend on typeface design, reader age, content density, and lighting.')
+          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Legibility heuristics from Tschichold, Bringhurst, Tinker; real reading rates also depend on typeface design, reader age, content density, and lighting.')
         );
       }
 

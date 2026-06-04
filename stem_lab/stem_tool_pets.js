@@ -1354,7 +1354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('span', null, 'I can explain why this species shows this welfare state at these slider settings.')
             ),
             iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Welfare frameworks: Five Domains (Mellor 2017), Five Freedoms (Brambell 1965).')
+            h('p', { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Welfare frameworks: Five Domains (Mellor 2017), Five Freedoms (Brambell 1965).')
           );
         })(),
         footer()

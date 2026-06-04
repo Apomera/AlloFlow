@@ -3588,7 +3588,7 @@ var d = labToolData.brainAtlas || {};
                   React.createElement('span', null, 'I can explain why this NT profile is associated with this functional state.')
                 ),
                 iq.understood && React.createElement('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                React.createElement('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget \u2014 no score, no reveal. Mapping from neurotransmitter levels to felt states is a teaching heuristic, NOT a clinical model. The "chemical imbalance" theory of mood disorders is contested; receptor sensitivity, network dynamics, and lifecycle/context matter at least as much.')
+                React.createElement('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget \u2014 no score, no reveal, no answer dump. Mapping from neurotransmitter levels to felt states is a teaching heuristic, NOT a clinical model. The "chemical imbalance" theory of mood disorders is contested; receptor sensitivity, network dynamics, and lifecycle/context matter at least as much.')
               );
             })(),
 

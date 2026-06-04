@@ -9582,7 +9582,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('span', null, 'I can explain why these parameters yield this species ranking.')
         ),
         iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-        h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — illustrative tolerance ranges only; do not use for actual stocking or fishery decisions. Always consult primary literature and DMR for production use.')
+        h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Illustrative tolerance ranges only; do not use for actual stocking or fishery decisions. Always consult primary literature and DMR for production use.')
       );
     }
 

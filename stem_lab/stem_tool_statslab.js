@@ -1929,7 +1929,7 @@ window.StemLab = window.StemLab || {
               h('span', null, 'I can explain why this d × α × n combination yields this power state.')
             ),
             iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal. Power approximated via normal-z; for small n, true power from non-central t will differ slightly (use the Power tab for the formal calc).')
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Power approximated via normal-z; for small n, true power from non-central t will differ slightly (use the Power tab for the formal calc).')
           );
         })(),
         // Concept-mastery celebration overlay — same shape as Optics/Pets/BirdLab.

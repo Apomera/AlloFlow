@@ -3504,11 +3504,11 @@ dataRef.current = d;
                   iq.log.length > 0 && React.createElement("div", { style: { maxHeight: 60, overflow: 'auto', padding: 4, borderRadius: 4, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 6, fontSize: 9, fontFamily: 'monospace', lineHeight: 1.4 } },
                     iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' \u00B7 ' + e.s + ' str' + e.str + ' alt' + e.alt + ' \u2192 ' + e.p); })
                   ),
-                  React.createElement("label", { style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 3 } }, 'Hypothesis (why does VR resist extinction so much?)'),
+                  React.createElement("label", { style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 3 } }, 'Your hypothesis (why does VR resist extinction so much?)'),
                   React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., VR makes every action potentially the rewarded one \u2014 extinction never feels conclusive...', style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
-                  !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 8px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 6 } }, "\uD83E\uDD14 Stuck \u2014 open questions"),
+                  !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 8px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 6 } }, "\uD83E\uDD14 I'm stuck \u2014 show open questions"),
                   iq.stuckRevealed && React.createElement("div", { style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 10, marginBottom: 6, lineHeight: 1.5 } },
-                    React.createElement("div", { style: { fontWeight: 700, color: sm.color, marginBottom: 3 } }, 'Open questions'),
+                    React.createElement("div", { style: { fontWeight: 700, color: sm.color, marginBottom: 3 } }, 'Open questions (no answer key)'),
                     React.createElement("ul", { style: { margin: 0, paddingLeft: 14 } },
                       React.createElement("li", null, 'Why is VR (variable ratio) the schedule behind slot machines + scrolling apps?'),
                       React.createElement("li", null, 'When does adding an alternative reinforcer FASTER extinguish a behavior than just removing the original?'),
@@ -3521,7 +3521,7 @@ dataRef.current = d;
                     React.createElement("span", null, 'I can explain why this schedule + strength + alternative yields this persistence band.')
                   ),
                   iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
-                  React.createElement("p", { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget \u2014 no score, no reveal. Skinner box terminology + matching-law extension. Persistence is multi-dimensional in real life; this is a teaching heuristic.')
+                  React.createElement("p", { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget \u2014 no score, no reveal, no answer dump. Skinner box terminology + matching-law extension. Persistence is multi-dimensional in real life; this is a teaching heuristic.')
                 );
               })()
 
