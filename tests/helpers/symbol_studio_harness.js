@@ -143,6 +143,9 @@ function scrub(html) {
 /**
  * SSR-render SymbolStudio under a chosen host theme.
  *   opts.theme : 'default' | 'dark' | 'contrast' (sets #main-content class the module mirrors)
+ *   opts.tab   : optional tab id ('board'|'schedule'|'stories'|'quickboards'|'books'|'quest'|
+ *                'search'|'garden') — seeds the opening tab via the module's initialTab prop so the
+ *                non-default tabs can be characterized under SSR (clicks don't fire). Absent => 'symbols'.
  *   opts.props : prop overrides merged into baseProps
  * localStorage is cleared first so each render starts from the same (auto-created
  * default-profile) state. Returns scrubbed, line-oriented HTML for snapshotting.
@@ -155,6 +158,7 @@ export function renderStudio(opts) {
   main.className = opts.theme === 'dark' ? 'theme-dark'
     : opts.theme === 'contrast' ? 'theme-contrast' : '';
   const props = baseProps(opts.props);
+  if (opts.tab) props.initialTab = opts.tab; // seed the opening tab (deep-link seam) for per-tab snapshots
   return scrub(ReactDOMServer.renderToStaticMarkup(React.createElement(_SymbolStudio, props)));
 }
 

@@ -510,8 +510,9 @@
       return function () { mo.disconnect(); };
     }, []);
 
-    // Shared state
-    var _tab = useState('symbols'); var tab = _tab[0]; var setTab = _tab[1];
+    // Shared state. initialTab (optional) lets a caller deep-link / restore the opening tab;
+    // absent => 'symbols' (unchanged default), so existing callers + the golden master are byte-identical.
+    var _tab = useState(props.initialTab || 'symbols'); var tab = _tab[0]; var setTab = _tab[1];
     var _profiles = useState(function () { return loadProfiles(); });
     var profiles = _profiles[0]; var setProfiles = _profiles[1];
     var _activeProfileId = useState(function () {

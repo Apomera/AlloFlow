@@ -45,6 +45,33 @@ describe('Symbol Studio — render under each host theme (snapshot)', () => {
   });
 });
 
+// The 8 non-default tabs (the 'symbols' tab is already pinned by the theme snapshots above).
+// Characterizing each one closes the gap where 8 of the 9 tabs were never snapshot-tested — the
+// safety net the deferred decomposition of this 7,993-line component needs before it can be split.
+const NON_DEFAULT_TABS = ['board', 'schedule', 'stories', 'quickboards', 'books', 'quest', 'search', 'garden'];
+
+describe('Symbol Studio — per-tab renders (snapshot)', () => {
+  NON_DEFAULT_TABS.forEach((tab) => {
+    it(`tab "${tab}" renders identically`, () => {
+      expect(renderStudio({ tab })).toMatchSnapshot();
+    });
+  });
+});
+
+describe('Symbol Studio — per-tab seam guards', () => {
+  it('the initialTab seam is backward-compatible (absent => the symbols tab, byte-identical to the default render)', () => {
+    expect(renderStudio({})).toBe(renderStudio({ theme: 'default' }));
+  });
+  it('seeding a tab actually renders that tab (non-empty + distinct from the default symbols tab)', () => {
+    const def = renderStudio({});
+    NON_DEFAULT_TABS.forEach((tab) => {
+      const r = renderStudio({ tab });
+      expect(r.length).toBeGreaterThan(200); // a real render, not a crash/empty
+      expect(r).not.toBe(def);               // the seam changed which tab is active
+    });
+  });
+});
+
 describe('Symbol Studio — determinism + theme-mirror guards', () => {
   it('default theme renders byte-identically on repeat (a golden master is only trustworthy if stable)', () => {
     expect(renderStudio({ theme: 'default' })).toBe(renderStudio({ theme: 'default' }));
