@@ -2437,7 +2437,18 @@
           }
         }
       );
-    }))));
+    }))), loopback && /* @__PURE__ */ React.createElement(
+      LoopBackPicker,
+      {
+        t,
+        fromStage: loopback.fromStage,
+        toStage: loopback.toStage,
+        onCommit: commitLoopBack,
+        onCancel: function() {
+          setLoopback(null);
+        }
+      }
+    ));
   }
   window.ResearchHub.registerLane("scientific", {
     label: "Scientific Inquiry",

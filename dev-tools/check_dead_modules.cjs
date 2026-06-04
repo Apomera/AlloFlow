@@ -59,7 +59,9 @@ const ALLOW = [
   // gate passes on known items and only surfaces NEW fossils; remove an entry
   // when the decision is made.
   { file: 'stem_lab/stem_lab_module.js', name: 'StemAIHintButton', reason: 'UNFINISHED: full "Get a Hint" AI feature (stemAIHint + state at :594/613) built but never wired — button never placed, stemAIResponse never rendered. Decide: wire vs remove.' },
-  { file: 'research_lane_scientific_module.js', name: 'LoopBackPicker', reason: 'UNFINISHED: scientific-lane parity gap — the engineering & humanities lanes wire LoopBackPicker, scientific defines but never renders it. Decide: wire into scientific vs remove.' },
+  // LoopBackPicker (research_lane_scientific) — RESOLVED 2026-06-04: wired into
+  // the scientific lane's LaneRoot render (loopback && <LoopBackPicker .../>),
+  // mirroring engineering/humanities. No longer dead; allowlist entry removed.
 ];
 const allowEntry = (file, name) => ALLOW.find((a) => a.file === file.replace(/\\/g, '/') && a.name === name);
 const isAllowed = (file, name) => !!allowEntry(file, name);
