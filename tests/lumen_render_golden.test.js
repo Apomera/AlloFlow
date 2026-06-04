@@ -76,6 +76,14 @@ describe('Lumen — render golden master (SSR, §15)', () => {
   it('box pathway — per-phase five-number boxes', () => {
     expect(renderState({ observations: REYNA, chartType: 'box' })).toMatchSnapshot();
   });
+
+  it('histogram pathway — value-range count bars (distribution, not time-series)', () => {
+    expect(renderState({ observations: REYNA, chartType: 'histogram' })).toMatchSnapshot();
+  });
+
+  it('histogram + benchmark renders the VERTICAL teal reference line at the benchmark value', () => {
+    expect(renderState({ observations: REYNA, chartType: 'histogram', sourceRefs: [benchRef] })).toMatchSnapshot();
+  });
 });
 
 describe('Lumen — render invariants (no snapshot, just contracts)', () => {
@@ -112,5 +120,21 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
     const box = renderState({ observations: REYNA, chartType: 'box' });
     expect(box).toMatch(/aria-label="Box plot/);
     expect(box).toMatch(/<rect/); // the IQR boxes
+  });
+
+  it('the histogram pathway renders count bars + its own SR label, with no trend line or data circles', () => {
+    const html = renderState({ observations: REYNA, chartType: 'histogram' });
+    expect(html).toMatch(/aria-label="Histogram/);
+    expect(html).toMatch(/<rect/);
+    expect((html.match(/<circle/g) || []).length).toBe(0); // distribution bars, not points or a trend
+    // the x-axis is the measured VALUE range, not weeks 1..10 -> a high value-tick (>40) appears
+    expect(html).toMatch(/>(4[2-9]|[5-9]\d|\d{3})</);
+  });
+
+  it('the histogram benchmark draws a VERTICAL teal line (x=value), not the horizontal time-series one', () => {
+    const html = renderState({ observations: REYNA, chartType: 'histogram', sourceRefs: [benchRef] });
+    expect(html).toMatch(/#0e7490/);                         // teal reference ink present
+    // vertical line: x1 === x2 (a single x at the benchmark value); horizontal would have x1=padL, x2=w-padR
+    expect(html).toMatch(/<line [^>]*x1="([\d.]+)"[^>]*x2="\1"[^>]*stroke="#0e7490"/);
   });
 });

@@ -778,6 +778,110 @@ exports[`Lumen — dot & box chart types > dot geometry: one L0 point per observ
 }
 `;
 
+exports[`Lumen — histogram chart type (distribution of values) > histogram geometry: bins over values, y=count, all L0, no points/bars (snapshot) 1`] = `
+{
+  "baseline": 246,
+  "bins": [
+    {
+      "bh": 230,
+      "bw": 103,
+      "bx": 45,
+      "by": 16,
+      "count": 4,
+      "hi": 48,
+      "level": "L0",
+      "lo": 42,
+    },
+    {
+      "bh": 115,
+      "bw": 103,
+      "bx": 150,
+      "by": 131,
+      "count": 2,
+      "hi": 54,
+      "level": "L0",
+      "lo": 48,
+    },
+    {
+      "bh": 57.5,
+      "bw": 103,
+      "bx": 255,
+      "by": 188.5,
+      "count": 1,
+      "hi": 60,
+      "level": "L0",
+      "lo": 54,
+    },
+    {
+      "bh": 172.5,
+      "bw": 103,
+      "bx": 360,
+      "by": 73.5,
+      "count": 3,
+      "hi": 66,
+      "level": "L0",
+      "lo": 60,
+    },
+  ],
+  "box": {
+    "h": 280,
+    "padB": 34,
+    "padL": 44,
+    "padR": 16,
+    "padT": 16,
+    "w": 480,
+  },
+  "chartType": "histogram",
+  "max": 66,
+  "maxCount": 4,
+  "min": 42,
+  "xTicks": [
+    {
+      "sx": 44,
+      "value": 42,
+    },
+    {
+      "sx": 149,
+      "value": 48,
+    },
+    {
+      "sx": 254,
+      "value": 54,
+    },
+    {
+      "sx": 359,
+      "value": 60,
+    },
+    {
+      "sx": 464,
+      "value": 66,
+    },
+  ],
+  "yTicks": [
+    {
+      "count": 0,
+      "sy": 246,
+    },
+    {
+      "count": 1,
+      "sy": 188.5,
+    },
+    {
+      "count": 2,
+      "sy": 131,
+    },
+    {
+      "count": 3,
+      "sy": 73.5,
+    },
+    {
+      "count": 4,
+      "sy": 16,
+    },
+  ],
+}
+`;
+
 exports[`Lumen — the Reyna worked scenario (golden master) > full series + a 6-of-10 subset (snapshot) 1`] = `
 {
   "full": {

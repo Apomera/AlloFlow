@@ -545,3 +545,38 @@ describe('Lumen — dot & box chart types', () => {
     expect(L.plotGeometry(REYNA, claim, undefined, [ref], 'box').refLines.length).toBe(1);
   });
 });
+
+describe('Lumen — histogram chart type (distribution of values)', () => {
+  const { comp } = buildReyna(REYNA);
+  const claim = L.deriveTrendClaim(comp, { id: 'full' });
+
+  it('histogramBins: counts sum to n; bins span [min,max]', () => {
+    const hb = L.histogramBins([1, 2, 2, 3, 9, 10]);
+    expect(hb.bins.reduce((s, b) => s + b.count, 0)).toBe(6);
+    expect(hb.min).toBe(1); expect(hb.max).toBe(10);
+  });
+
+  it('histogram geometry: bins over values, y=count, all L0, no points/bars (snapshot)', () => {
+    const g = L.plotGeometry(REYNA, claim, undefined, [], 'histogram');
+    expect(g.chartType).toBe('histogram');
+    expect(g.bins.reduce((s, b) => s + b.count, 0)).toBe(REYNA.length); // every observation counted exactly once
+    expect(g.bins.every(b => b.level === 'L0')).toBe(true);
+    expect(g.points).toBeUndefined();
+    expect(g.bars).toBeUndefined();
+    expect(g).toMatchSnapshot();
+  });
+
+  it('a benchmark on the histogram is a VERTICAL line (at the value on the x-axis, not horizontal)', () => {
+    const ref = L.makeSourceRef({ kind: 'percentile', measure: 'ORF-WCPM', unit: 'words/min', grade: 4, season: 'winter', percentile: 50, value: 55, source: 'TEST', year: 2099, locator: 'https://example.org/x', citation: 'fixture', verified: true }, L.makeCompendium('WCPM', 'words/min', { measure: 'ORF-WCPM' }));
+    const g = L.plotGeometry(REYNA, claim, undefined, [ref], 'histogram');
+    expect(g.refLines.length).toBe(1);
+    expect(g.refLines[0].vertical).toBe(true);
+    expect(typeof g.refLines[0].sx).toBe('number');
+  });
+
+  it('summary names the histogram; the trend default stays byte-identical', () => {
+    expect(L.chartSummaryText(REYNA, claim, [], 'histogram')).toMatch(/^Histogram/);
+    expect(JSON.stringify(L.plotGeometry(REYNA, claim, undefined, [])))
+      .toBe(JSON.stringify(L.plotGeometry(REYNA, claim, undefined, [], 'trend')));
+  });
+});

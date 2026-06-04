@@ -453,11 +453,63 @@
     return out;
   }
 
+  // Equal-width binning of the VALUES (Sturges-ish: ~sqrt(n) bins, clamped 4..12).
+  function histogramBins(values, k) {
+    var n = values.length;
+    k = k || Math.max(4, Math.min(12, Math.ceil(Math.sqrt(n || 1))));
+    var min = Math.min.apply(null, values), max = Math.max.apply(null, values);
+    var width = (max - min) / k || 1;
+    var bins = [];
+    for (var i = 0; i < k; i++) bins.push({ lo: min + i * width, hi: min + (i + 1) * width, count: 0 });
+    values.forEach(function (val) {
+      var bi = Math.floor((val - min) / width);
+      if (bi >= k) bi = k - 1; if (bi < 0) bi = 0;
+      bins[bi].count++;
+    });
+    return { bins: bins, width: width, min: min, max: max, k: k };
+  }
+
+  // Histogram pathway — distribution of the VALUES (x = value bins, y = count).
+  // Different axis semantics from trend/bar, so the benchmark reference line is
+  // VERTICAL (drawn at the benchmark value on the x=value axis). L0 observed.
+  function histogramGeometry(observations, box, sourceRefs) {
+    box = box || DEFAULT_BOX;
+    var ys = observations.map(function (o) { return o.y; });
+    var hb = histogramBins(ys);
+    var innerW = box.w - box.padL - box.padR, innerH = box.h - box.padT - box.padB;
+    var maxCount = Math.max.apply(null, hb.bins.map(function (b) { return b.count; }).concat([1]));
+    // §16: only RENDERABLE benchmarks participate. The value AXIS extends to include any benchmark
+    // so its vertical line stays on-canvas (matching the time-series charts), while the BINS stay
+    // computed over the observed data only — a benchmark never invents a bin or shifts the histogram.
+    var refs = (sourceRefs || []).filter(function (r) { return sourcedRenderable(r).ok; });
+    var refVals = refs.map(function (r) { return r.value; });
+    var domMin = Math.min.apply(null, [hb.min].concat(refVals));
+    var domMax = Math.max.apply(null, [hb.max].concat(refVals));
+    function vx(val) { return box.padL + (domMax === domMin ? 0 : (val - domMin) / (domMax - domMin)) * innerW; }
+    function cy(c) { return box.padT + innerH - (maxCount === 0 ? 0 : c / maxCount) * innerH; }
+    var baseline = round1(box.padT + innerH);
+    var bins = hb.bins.map(function (bn) {
+      var x0 = vx(bn.lo), x1 = vx(bn.hi), top = cy(bn.count);
+      return { lo: round2(bn.lo), hi: round2(bn.hi), count: bn.count, level: 'L0', bx: round1(x0 + 1), bw: round1(Math.max(2, x1 - x0 - 2)), by: round1(top), bh: round1(baseline - top) };
+    });
+    var xTicks = []; for (var i = 0; i <= hb.k; i++) { var val = hb.min + i * hb.width; xTicks.push({ value: round1(val), sx: round1(vx(val)) }); }
+    var yTicks = []; var steps = Math.min(4, maxCount); for (var t = 0; t <= steps; t++) { var c = Math.round(maxCount * t / (steps || 1)); yTicks.push({ count: c, sy: round1(cy(c)) }); }
+    var out = { box: box, chartType: 'histogram', min: round2(hb.min), max: round2(hb.max), maxCount: maxCount, baseline: baseline, bins: bins, xTicks: xTicks, yTicks: yTicks };
+    if (refs.length) {
+      out.refLines = refs.map(function (r) {
+        var rx = round1(vx(r.value));
+        return { id: r.id, value: r.value, vertical: true, sx: rx, dPath: 'M ' + rx + ',' + box.padT + ' L ' + rx + ',' + baseline, label: benchmarkChipText(r), verified: r.verified === true };
+      });
+    }
+    return out;
+  }
+
   function plotGeometry(observations, claim, box, sourceRefs, chartType) {
     box = box || DEFAULT_BOX;
     if (chartType === 'bar') return barGeometry(observations, box, sourceRefs); // dispatch; trend code below is untouched
     if (chartType === 'dot') return dotGeometry(observations, box, sourceRefs);
     if (chartType === 'box') return boxGeometry(observations, box, sourceRefs);
+    if (chartType === 'histogram') return histogramGeometry(observations, box, sourceRefs);
     var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
     var n = obs.length;
     var innerW = box.w - box.padL - box.padR;
@@ -539,7 +591,7 @@
   }
 
   function chartSummaryText(observations, claim, sourceRefs, chartType) {
-    var name = chartType === 'bar' ? 'Bar chart.' : chartType === 'dot' ? 'Dot plot.' : chartType === 'box' ? 'Box plot (per phase).' : 'Trend chart.';
+    var name = chartType === 'bar' ? 'Bar chart.' : chartType === 'dot' ? 'Dot plot.' : chartType === 'box' ? 'Box plot (per phase).' : chartType === 'histogram' ? 'Histogram (distribution of values).' : 'Trend chart.';
     if (!claim || claim.refused) return name + ' ' + (claim ? claim.text : 'no data yet.');
     var parts = [name, claim.text];
     plotGeometry(observations, claim).phaseLines.forEach(function (p) {
@@ -925,7 +977,7 @@
     deriveTrendClaim: deriveTrendClaim, trendSentence: trendSentence, refusalSentence: refusalSentence,
     // chart geometry + SR data-table peer (Phase 1)
     REYNA_SAMPLE: REYNA_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
-    quantiles: quantiles, dotGeometry: dotGeometry, boxGeometry: boxGeometry,
+    quantiles: quantiles, dotGeometry: dotGeometry, boxGeometry: boxGeometry, histogramBins: histogramBins, histogramGeometry: histogramGeometry,
     perSegmentSlopes: perSegmentSlopes, chartSummaryText: chartSummaryText, dataTableModel: dataTableModel,
     // AI-involvement layer (Phase 1) — pure guards + audience faces
     AI_CAVEAT: AI_CAVEAT, HYP_CAVEAT: HYP_CAVEAT, AI_N_FLOOR: AI_N_FLOOR, levelIndex: levelIndex,
@@ -1117,7 +1169,7 @@
           };
           kids.push(h('div', { key: 'charttype', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Chart type' },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Chart:'),
-            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box')));
+            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box'), ctBtn('histogram', 'Histogram')));
 
           if (!obs.length) {
             kids.push(h('p', { key: 'empty', className: 'mt-2 text-sm text-slate-600' },
@@ -1158,10 +1210,10 @@
             var b = geo.box, sk = [];
             geo.yTicks.forEach(function (t, i) {
               sk.push(h('line', { key: 'yg' + i, x1: b.padL, y1: t.sy, x2: b.w - b.padR, y2: t.sy, stroke: '#e2e8f0', strokeWidth: 1 }));
-              sk.push(h('text', { key: 'yl' + i, x: b.padL - 4, y: t.sy + 3, textAnchor: 'end', style: { fontSize: '9px' }, fill: '#64748b' }, String(t.y)));
+              sk.push(h('text', { key: 'yl' + i, x: b.padL - 4, y: t.sy + 3, textAnchor: 'end', style: { fontSize: '9px' }, fill: '#64748b' }, String(t.y != null ? t.y : t.count)));
             });
             geo.xTicks.forEach(function (t, i) {
-              sk.push(h('text', { key: 'xl' + i, x: t.sx, y: b.h - b.padB + 14, textAnchor: 'middle', style: { fontSize: '9px' }, fill: '#64748b' }, String(t.x != null ? t.x : t.label)));
+              sk.push(h('text', { key: 'xl' + i, x: t.sx, y: b.h - b.padB + 14, textAnchor: 'middle', style: { fontSize: '9px' }, fill: '#64748b' }, String(t.x != null ? t.x : (t.label != null ? t.label : t.value))));
             });
             if (geo.bandPath) sk.push(h('path', { key: 'band', d: geo.bandPath, fill: bundle.ink, fillOpacity: 0.10, stroke: 'none' }));
             if (geo.phaseLines) geo.phaseLines.forEach(function (p, i) {
@@ -1202,10 +1254,25 @@
                 sk.push(h('text', { key: 'bg' + i, x: bxx.cx, y: bxx.syMax - 3, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l0b.ink, 'aria-hidden': 'true' }, l0b.glyph));
               });
             }
+            // Histogram pathway: each bar is an L0 OBSERVED count of values falling in a value-range bin
+            // (x = the measured value, NOT time/week; y = how many points landed in that range).
+            if (geo.bins) {
+              var l0h = encode('L0');
+              geo.bins.forEach(function (bn, i) {
+                sk.push(h('rect', { key: 'hbin' + i, x: bn.bx, y: bn.by, width: bn.bw, height: Math.max(0, bn.bh), fill: l0h.ink, fillOpacity: 0.8, stroke: '#ffffff', strokeWidth: 0.5 }));
+                if (bn.count > 0) sk.push(h('text', { key: 'hbc' + i, x: bn.bx + bn.bw / 2, y: bn.by - 2, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l0h.ink, 'aria-hidden': 'true' }, String(bn.count)));
+              });
+            }
             // §16: benchmark reference line(s) — teal, dashed, NO data marker (a fact, not a measurement).
+            // Horizontal (y=value) for time-series charts; VERTICAL (x=value) for the histogram.
             if (geo.refLines) geo.refLines.forEach(function (rl, i) {
-              sk.push(h('line', { key: 'rl' + i, x1: b.padL, y1: rl.sy, x2: b.w - b.padR, y2: rl.sy, stroke: '#0e7490', strokeWidth: 1.5, strokeDasharray: '2 4' }));
-              sk.push(h('text', { key: 'rlg' + i, x: b.padL + 2, y: rl.sy - 3, style: { fontSize: '9px' }, fill: '#0e7490', 'aria-hidden': 'true' }, '▣'));
+              if (rl.vertical) {
+                sk.push(h('line', { key: 'rl' + i, x1: rl.sx, y1: b.padT, x2: rl.sx, y2: b.h - b.padB, stroke: '#0e7490', strokeWidth: 1.5, strokeDasharray: '2 4' }));
+                sk.push(h('text', { key: 'rlg' + i, x: rl.sx + 2, y: b.padT + 9, style: { fontSize: '9px' }, fill: '#0e7490', 'aria-hidden': 'true' }, '▣'));
+              } else {
+                sk.push(h('line', { key: 'rl' + i, x1: b.padL, y1: rl.sy, x2: b.w - b.padR, y2: rl.sy, stroke: '#0e7490', strokeWidth: 1.5, strokeDasharray: '2 4' }));
+                sk.push(h('text', { key: 'rlg' + i, x: b.padL + 2, y: rl.sy - 3, style: { fontSize: '9px' }, fill: '#0e7490', 'aria-hidden': 'true' }, '▣'));
+              }
             });
             kids.push(h('svg', {
               key: 'svg', viewBox: '0 0 ' + b.w + ' ' + b.h, className: 'w-full mt-3 bg-white rounded-lg border border-slate-200',
