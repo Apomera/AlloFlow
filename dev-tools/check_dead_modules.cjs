@@ -54,11 +54,10 @@ const ALLOW = [
   { file: 'stem_lab/stem_tool_nutritionlab.js', name: 'ComingSoon', reason: 'documented "retained for safety" stub' },
   { file: 'stem_lab/stem_tool_weldlab.js', name: 'ComingSoon', reason: 'documented "retained for safety" stub' },
   { file: 'stem_lab/stem_tool_evolab.js', name: 'ComingSoon', reason: 'same intentional "Coming soon" placeholder stub as its sibling tools' },
-  // UNFINISHED features — built but never wired. NOT dead: pending a maintainer
-  // decision to WIRE UP or remove. Investigated 2026-06-03. Listed here so this
-  // gate passes on known items and only surfaces NEW fossils; remove an entry
-  // when the decision is made.
-  { file: 'stem_lab/stem_lab_module.js', name: 'StemAIHintButton', reason: 'UNFINISHED: full "Get a Hint" AI feature (stemAIHint + state at :594/613) built but never wired — button never placed, stemAIResponse never rendered. Decide: wire vs remove.' },
+  // StemAIHintButton (stem_lab/stem_lab_module.js) — RESOLVED 2026-06-04: the
+  // orphan was removed and replaced by a gated ctx.getHint entry point + a
+  // default-OFF, teacher-only header toggle with consent + reveal-check guardrails
+  // (slice 1 of the AI-hints control plane; per-tool adoption is a later slice).
   // LoopBackPicker (research_lane_scientific) — RESOLVED 2026-06-04: wired into
   // the scientific lane's LaneRoot render (loopback && <LoopBackPicker .../>),
   // mirroring engineering/humanities. No longer dead; allowlist entry removed.
