@@ -138,6 +138,15 @@ describe('Arc City render — neon-city visual layer (decorative, a11y-safe)', (
     expect(unlit.find('nodehalo')).toBeNull();
     expect(unlit.find('burst')).toBeNull();
   });
+
+  it('FIRING draws the beam (dash animation class) and a HIT throws sparks; a miss has no sparks', () => {
+    const hit = render({ levelId: 'L1', byLevel: { L1: { params: { m: 0.5, b: 0 }, shots: 1, solved: true } }, tier: 'practice', fired: true, badges: [] });
+    expect(some(hit, n => n.props && typeof n.props.key === 'string' && n.props.key.indexOf('beam-') === 0 && n.props.className === 'arccity-beam-draw')).toBe(true);
+    expect(hit.find('sparks')).not.toBeNull();
+    expect(hit.find('sparks').props.className).toMatch(/arccity-sparks/); // motion-gated in CSS
+    const miss = render({ levelId: 'L1', byLevel: { L1: { params: { m: 0.5, b: 5 }, shots: 1 } }, tier: 'practice', fired: true, badges: [] });
+    expect(miss.find('sparks')).toBeNull();
+  });
 });
 
 describe('Arc City render — Sine Boulevard §3.1 affordances', () => {
@@ -152,6 +161,11 @@ describe('Arc City render — Sine Boulevard §3.1 affordances', () => {
     const r = render({ levelId: 'L5', byLevel: {}, tier: 'independent', fired: false, badges: [] });
     expect(r.find('sh')).toBeNull();
     expect(r.find('ghost-0')).toBeNull();
+  });
+
+  it('the inline equation annotates the whole-number period (bridges the symbolic b to the period slider)', () => {
+    const r = render({ levelId: 'L5', byLevel: {}, tier: 'practice', fired: false, badges: [] });
+    expect(r.text).toMatch(/\(period 4\)/); // default b = 2π/4
   });
 });
 

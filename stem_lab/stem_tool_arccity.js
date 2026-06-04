@@ -691,16 +691,22 @@
       '#allo-arccity-root [role="slider"]:focus{outline:3px solid #22d3ee;outline-offset:2px;border-radius:6px;}' +
       '#allo-arccity-root [role="slider"]:focus-visible{outline:3px solid #22d3ee;outline-offset:2px;border-radius:6px;}' +
       '#allo-arccity-root button:focus-visible{outline:2px solid #22d3ee;outline-offset:2px;border-radius:6px;}' +
-      // burst ring is invisible unless the (reduced-motion-gated) animation reveals it
+      // burst ring + sparks are invisible unless the (reduced-motion-gated) animation reveals them
       '#allo-arccity-root .arccity-burst{transform-box:fill-box;transform-origin:center;opacity:0;}' +
+      '#allo-arccity-root .arccity-sparks{transform-box:fill-box;transform-origin:center;opacity:0;}' +
       '@keyframes arccityPulse{0%,100%{opacity:1;}50%{opacity:.5;}}' +
       '@keyframes arccityBurst{0%{transform:scale(.3);opacity:.9;}100%{transform:scale(2.7);opacity:0;}}' +
       '@keyframes arccityHalo{0%,100%{opacity:.28;}50%{opacity:.12;}}' +
+      '@keyframes arccitySparks{0%{transform:scale(.4);opacity:.95;}100%{transform:scale(1.7);opacity:0;}}' +
+      // beam draws on from the source when fired (dashoffset along its own length)
+      '@keyframes arccityBeamDraw{from{stroke-dashoffset:100;}to{stroke-dashoffset:0;}}' +
       // ALL motion is opt-in: nothing animates when the user prefers reduced motion.
       '@media (prefers-reduced-motion: no-preference){' +
       '#allo-arccity-root .arccity-node-unlit{animation:arccityPulse 1.8s ease-in-out infinite;}' +
       '#allo-arccity-root .arccity-burst{animation:arccityBurst .65s ease-out forwards;}' +
+      '#allo-arccity-root .arccity-sparks{animation:arccitySparks .55s ease-out forwards;}' +
       '#allo-arccity-root .arccity-halo{animation:arccityHalo 2.6s ease-in-out infinite;}' +
+      '#allo-arccity-root .arccity-beam-draw{animation:arccityBeamDraw .5s ease-out;}' +
       '}';
     document.head.appendChild(st);
   })();
@@ -1055,10 +1061,17 @@
         function startHandleDrag(evt, computeParams) {
           if (typeof setToolData !== 'function') return;
           if (evt && evt.preventDefault) evt.preventDefault();
-          var svgEl = evt.currentTarget && evt.currentTarget.ownerSVGElement;
+          var handleEl = evt.currentTarget;
+          var svgEl = handleEl && handleEl.ownerSVGElement;
           if (!svgEl) return;
+          // Capture the pointer so a fast or touch drag that leaves the small handle
+          // keeps delivering move events (prevents the drag "dropping" on mobile).
+          try { if (handleEl.setPointerCapture && evt.pointerId != null) handleEl.setPointerCapture(evt.pointerId); } catch (e) { }
           function move(ev) { var w = svgWorldFromEvent(svgEl, ev); if (w) setParamsMulti(computeParams(w.x, w.y)); }
-          function up() { try { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); } catch (e) { } }
+          function up(ev) {
+            try { if (handleEl.releasePointerCapture && ev && ev.pointerId != null) handleEl.releasePointerCapture(ev.pointerId); } catch (e) { }
+            try { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); } catch (e) { }
+          }
           try { window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); } catch (e) { }
         }
 
@@ -1095,6 +1108,12 @@
         var backdropEls = [];
         if (SKY) backdropEls.push(h('rect', { key: 'backdrop', x: 0, y: 0, width: W, height: H, fill: 'url(#arc-sky)', 'aria-hidden': 'true' }));
         if (THEME === 'dark') backdropEls.push(h('rect', { key: 'horizon', x: 0, y: H * 0.6, width: W, height: H * 0.4, fill: 'url(#arc-horizon)', 'aria-hidden': 'true' }));
+        // Faint distant city skyline along the bottom (dark theme only — decorative,
+        // aria-hidden, low-opacity so it never competes with the grid/gameplay above).
+        if (THEME === 'dark') {
+          var bld = [[0, 46, 26], [42, 30, 40], [78, 60, 20], [104, 40, 34], [150, 34, 52], [198, 54, 24], [228, 30, 44], [264, 64, 18], [296, 38, 36], [344, 30, 50], [390, 56, 22], [422, 34, 40], [462, 48, 30], [506, 30, 46], [542, 62, 20], [578, 36, 38], [612, 28, 48]];
+          bld.forEach(function (b, i) { backdropEls.push(h('rect', { key: 'bld' + i, x: b[0], y: H - b[2], width: b[1] - 2, height: b[2], fill: '#0d1530', opacity: 0.55, 'aria-hidden': 'true' })); });
+        }
 
         var gridEls = [];
         for (var gx = 0; gx <= 10; gx++) gridEls.push(h('line', { key: 'gx' + gx, x1: sx(gx), y1: sy(wy0), x2: sx(gx), y2: sy(wy1), stroke: GRID, strokeWidth: gx === 0 ? 1.5 : 0.5, opacity: gx === 0 ? 0.9 : 0.4 }));
@@ -1124,7 +1143,15 @@
         });
         // Soft halo behind a lit node; expanding burst ring the moment it's lit.
         var nodeGlowEls = lit ? [h('circle', { key: 'nodehalo', cx: ncx, cy: ncy, r: nodeR * 1.9, fill: NODE_ON, opacity: 0.24, filter: 'url(#arc-glow-strong)', className: 'arccity-halo', 'aria-hidden': 'true' })] : [];
-        var nodeBurstEls = (S.fired && res.result === 'hit') ? [h('circle', { key: 'burst', cx: ncx, cy: ncy, r: nodeR, fill: 'none', stroke: NODE_ON, strokeWidth: 3, className: 'arccity-burst', 'aria-hidden': 'true' })] : [];
+        var nodeBurstEls = (S.fired && res.result === 'hit') ? [
+          h('circle', { key: 'burst', cx: ncx, cy: ncy, r: nodeR, fill: 'none', stroke: NODE_ON, strokeWidth: 3, className: 'arccity-burst', 'aria-hidden': 'true' }),
+          // sparks: 8 short rays from the node, fading outward (decorative, motion-gated)
+          h('g', { key: 'sparks', className: 'arccity-sparks', 'aria-hidden': 'true' },
+            [0, 45, 90, 135, 180, 225, 270, 315].map(function (deg, i) {
+              var rad = deg * Math.PI / 180, r0 = nodeR * 1.1, r1 = nodeR * 1.9;
+              return h('line', { key: 'spk' + i, x1: ncx + Math.cos(rad) * r0, y1: ncy + Math.sin(rad) * r0, x2: ncx + Math.cos(rad) * r1, y2: ncy + Math.sin(rad) * r1, stroke: NODE_ON, strokeWidth: 2.5, strokeLinecap: 'round' });
+            }))
+        ] : [];
 
         var samples = sampleCurve(level, P);
         function ptsStr(filterFn) {
@@ -1148,7 +1175,7 @@
         var overlay = [];
         if (S.fired) {
           var killX = res.killedAt ? res.killedAt.x : wx1;
-          overlay.push(h('polyline', { key: 'beam-' + (ls.shots || 0), ref: beamRef, points: ptsStr(function (pt) { return pt.x <= killX + 0.0001; }), fill: 'none', stroke: res.result === 'hit' ? NODE_ON : BEAM, strokeWidth: 3.5, strokeLinecap: 'round', filter: 'url(#arc-glow)' }));
+          overlay.push(h('polyline', { key: 'beam-' + (ls.shots || 0), ref: beamRef, points: ptsStr(function (pt) { return pt.x <= killX + 0.0001; }), fill: 'none', stroke: res.result === 'hit' ? NODE_ON : BEAM, strokeWidth: 3.5, strokeLinecap: 'round', filter: 'url(#arc-glow)', pathLength: 100, strokeDasharray: 100, className: 'arccity-beam-draw' }));
           if (res.killedAt) {
             var kx = sx(res.killedAt.x), ky = sy(res.killedAt.y), mk = 7;
             overlay.push(h('line', { key: 'kx1', x1: kx - mk, y1: ky - mk, x2: kx + mk, y2: ky + mk, stroke: PAL.danger, strokeWidth: 3, strokeLinecap: 'round' }));
@@ -1311,7 +1338,7 @@
               : (level.family === 'absval'
                 ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · |x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.h, level.params.h.step)), '| + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
                 : (level.family === 'sine'
-                  ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · sin(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step)), '·x + ', h('span', { key: 'c', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.c, level.params.c.step)), ') + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
+                  ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · sin(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step)), '·x + ', h('span', { key: 'c', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.c, level.params.c.step)), ') + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step)), h('span', { key: 'per', style: { opacity: 0.7, fontWeight: 600 } }, '   (period ' + periodOf(P.b) + ')')]
                   : (level.family === 'exp'
                     ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · e^(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step)), '·x) + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
                     : (level.family === 'log'
