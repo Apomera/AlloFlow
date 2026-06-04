@@ -3239,8 +3239,8 @@
               {
                 // @tool lumen
                 id: 'lumen', icon: '💡', label: 'Lumen',
-                desc: 'Reactive research canvas — collect, analyze & present as one honest, provenance-bound object. (In development.)',
-                color: 'amber', ready: false
+                desc: 'Reactive research canvas — collect, analyze & present as one honest, provenance-bound object. 9 chart types, correlation-not-causation guards, FERPA-aware exports.',
+                color: 'amber', ready: true
               },
               {
                 id: 'opticsLab', icon: '🔆', label: 'OpticsLab AP',
@@ -4666,7 +4666,9 @@
             migration: true,
             appLab: true,
             bakingScience: true,
-            alloBotSage: true
+            alloBotSage: true,
+            // Jun 2026: Lumen go-live — provenance-bound reactive research canvas.
+            lumen: true
           };
           // Throttle fallback log to once per tool (avoid flooding console on re-renders)
           if (!window._stemFallbackLogged) window._stemFallbackLogged = {};

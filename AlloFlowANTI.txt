@@ -4784,6 +4784,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // fundamentals. Anchor exhibits for the King Middle Spring 2026 pilot.
         'stem_lab/stem_tool_fisherlab.js',
         'stem_lab/stem_tool_aquaculture.js',
+        // Jun 2026: Lumen — provenance-bound reactive research canvas (9 honesty-gated chart
+        // types). Pairs with the lumen tile (ready:true) + _pluginOnlyTools flag in stem_lab_module.js.
+        'stem_lab/stem_tool_lumen.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
