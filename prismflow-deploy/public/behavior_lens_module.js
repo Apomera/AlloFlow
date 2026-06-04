@@ -17896,7 +17896,7 @@ Keep it under 150 words.`);
                 ),
                 mode === 'free' && h('div', { className: 'space-y-6' },
                     h('div', { className: 'text-center bg-slate-900 text-slate-100 p-6 rounded-2xl shadow-inner' },
-                        h('div', { className: 'text-xs font-bold text-slate-600 mb-1 uppercase tracking-widest' }, 'Total Session Time'),
+                        h('div', { className: 'text-xs font-bold text-slate-300 mb-1 uppercase tracking-widest' }, 'Total Session Time'),
                         h('div', { className: 'text-5xl font-mono' }, formatTime(foTotalTime))
                     ),
                     h('div', { className: 'grid grid-cols-2 gap-4' },

@@ -7638,7 +7638,7 @@
         // ── Sentence strip ──
         e('div', { 'aria-live': 'polite', 'aria-label': 'Sentence strip - ' + (strip.length === 0 ? 'empty' : strip.map(function (w) { return w.label; }).join(' ')), style: { background: '#1a1a2e', borderBottom: '2px solid #312e81', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, minHeight: '58px', flexWrap: 'wrap' } },
           strip.length === 0
-            ? e('span', { style: { color: '#475569', fontSize: '14px', fontStyle: 'italic' } }, 'Tap symbols below to build a message\u2026')
+            ? e('span', { style: { color: '#94a3b8', fontSize: '14px', fontStyle: 'italic' } }, 'Tap symbols below to build a message\u2026')
             : strip.map(function (w, i) {
                 return e('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '4px', background: '#312e81', borderRadius: '8px', padding: '4px 10px' } },
                   w.image && e('img', { src: w.image, style: { width: '26px', height: '26px', objectFit: 'contain', borderRadius: '4px' } }),
@@ -7686,7 +7686,7 @@
           // Cell grid
           e('div', { role: 'grid', 'aria-label': 'Communication board symbols', style: { flex: 1, display: 'grid', gridTemplateColumns: 'repeat(' + useCols + ', 1fr)', gap: '14px', padding: '18px', overflowY: 'auto', alignContent: 'start' } },
             useCells.length === 0
-              ? e('p', { style: { color: '#475569', gridColumn: '1/-1', textAlign: 'center', paddingTop: '40px' } }, 'No generated symbols yet — go to Board Builder and generate images first.')
+              ? e('p', { style: { color: '#94a3b8', gridColumn: '1/-1', textAlign: 'center', paddingTop: '40px' } }, 'No generated symbols yet — go to Board Builder and generate images first.')
               : useCells.map(function (cell, idx) {
                   // Garden-aware cell: border color reflects vocabulary growth level
                   var cellKey = cell.label.trim().toLowerCase();
