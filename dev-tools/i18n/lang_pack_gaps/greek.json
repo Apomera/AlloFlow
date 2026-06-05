@@ -1,0 +1,10 @@
+{
+  "langName": "greek",
+  "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
+  "totalEnglishKeys": 1427,
+  "translatedKeys": 1422,
+  "missingKeys": 0,
+  "passthroughKeys": 5,
+  "coveragePct": 99.6,
+  "missing": {}
+}

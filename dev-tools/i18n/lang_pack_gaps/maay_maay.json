@@ -1,0 +1,10 @@
+{
+  "langName": "maay_maay",
+  "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
+  "totalEnglishKeys": 1427,
+  "translatedKeys": 1421,
+  "missingKeys": 0,
+  "passthroughKeys": 6,
+  "coveragePct": 99.6,
+  "missing": {}
+}

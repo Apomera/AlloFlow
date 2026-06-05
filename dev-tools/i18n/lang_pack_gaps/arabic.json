@@ -1,0 +1,10 @@
+{
+  "langName": "arabic",
+  "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
+  "totalEnglishKeys": 1427,
+  "translatedKeys": 1424,
+  "missingKeys": 0,
+  "passthroughKeys": 3,
+  "coveragePct": 99.8,
+  "missing": {}
+}

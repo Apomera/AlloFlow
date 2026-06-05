@@ -1,0 +1,110 @@
+[
+  {
+    "key": "behavior_lens.loading_hint",
+    "referencedIn": [
+      "src\\App.jsx"
+    ]
+  },
+  {
+    "key": "behavior_lens.hub.title",
+    "referencedIn": [
+      "src\\App.jsx",
+      "teacher_module.js",
+      "teacher_source.jsx"
+    ]
+  },
+  {
+    "key": "behavior_lens.hub.subtitle",
+    "referencedIn": [
+      "src\\App.jsx",
+      "teacher_module.js",
+      "teacher_source.jsx"
+    ]
+  },
+  {
+    "key": "behavior_lens.hub.open_btn",
+    "referencedIn": [
+      "src\\App.jsx",
+      "teacher_module.js",
+      "teacher_source.jsx"
+    ]
+  },
+  {
+    "key": "behavior_lens.raw.abc_data_collection_101",
+    "referencedIn": [
+      "behavior_lens_module.js"
+    ]
+  },
+  {
+    "key": "behavior_lens.raw.attentionseeking_behavior",
+    "referencedIn": [
+      "behavior_lens_module.js"
+    ]
+  },
+  {
+    "key": "behavior_lens.raw.escapemaintained_behavior",
+    "referencedIn": [
+      "behavior_lens_module.js"
+    ]
+  },
+  {
+    "key": "behavior_lens.raw.ethics_cultural_humility",
+    "referencedIn": [
+      "behavior_lens_module.js"
+    ]
+  },
+  {
+    "key": "behavior_lens.raw.identifying_function",
+    "referencedIn": [
+      "behavior_lens_module.js"
+    ]
+  },
+  {
+    "key": "behavior_lens.raw.multifunction_complex",
+    "referencedIn": [
+      "behavior_lens_module.js"
+    ]
+  },
+  {
+    "key": "behavior_lens.raw.observation_methods",
+    "referencedIn": [
+      "behavior_lens_module.js"
+    ]
+  },
+  {
+    "key": "behavior_lens.raw.reinforcement_schedules",
+    "referencedIn": [
+      "behavior_lens_module.js"
+    ]
+  },
+  {
+    "key": "behavior_lens.raw.replacement_behaviors",
+    "referencedIn": [
+      "behavior_lens_module.js"
+    ]
+  },
+  {
+    "key": "behavior_lens.raw.sensoryautomatic_function",
+    "referencedIn": [
+      "behavior_lens_module.js"
+    ]
+  },
+  {
+    "key": "behavior_lens.raw.tangible_access",
+    "referencedIn": [
+      "behavior_lens_module.js"
+    ]
+  },
+  {
+    "key": "behavior_lens.raw.team_collaboration",
+    "referencedIn": [
+      "behavior_lens_module.js"
+    ]
+  },
+  {
+    "key": "behavior_lens.raw.what_is_behaviorlens",
+    "referencedIn": [
+      "behavior_lens_module.js"
+    ]
+  }
+]

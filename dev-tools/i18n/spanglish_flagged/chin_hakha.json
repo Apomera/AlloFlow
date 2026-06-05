@@ -1,0 +1,933 @@
+{
+  "hub.subtitle": {
+    "en": "Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.",
+    "tr": "Functional Behavior Assessment (FBA), ABC data ngahnak, le Behavior Intervention Plan (BIP) hmanthlannak hna.",
+    "contentWordCount": 9,
+    "matchedCount": 7,
+    "ratio": 0.78
+  },
+  "hub.abc_desc": {
+    "en": "Record antecedent, behavior, and consequence observations",
+    "tr": "Antecedent (a hmaisa thil), behavior (zianganh), le consequence (a hnu thil) hmuhnak hna ngah",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.obs_desc": {
+    "en": "Real-time interval, frequency, or duration recording",
+    "tr": "Live interval, frequency, asiloah duration ngahnak",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.freq_desc": {
+    "en": "Quick tallying and rate-per-minute tracking",
+    "tr": "Tally fai le rate-per-minute zohkhenhnak",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.interval_desc": {
+    "en": "Partial, whole, or momentary time sampling grid",
+    "tr": "Partial, whole, asiloah momentary caan sampling grid",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "hub.export_desc": {
+    "en": "Download ABC data and observations as JSON or text",
+    "tr": "ABC data le hmuhnak hna kha JSON asiloah text in lakchuah",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "hub.hypothesis_desc": {
+    "en": "Visual A→B→C→Function flow chart with AI generation",
+    "tr": "A→B→C→Function flow chart mit i hmuhmi a, AI in chuahter awk",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.cycle_desc": {
+    "en": "7-phase escalation cycle with intervention strategies",
+    "tr": "Phase 7 explosive-behavior cycle a, intervention strategy hna he",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.audit_desc": {
+    "en": "8-item classroom environment checklist with AI recommendations",
+    "tr": "Item 8 classroom environment checklist a, AI cohlannak he",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.triangulation_desc": {
+    "en": "Cross-reference 3+ data sources for convergence",
+    "tr": "Data source 3+ kha aa kahkhin lo le aa rem ti hmuhnak ah cross-reference tuah",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.impact_desc": {
+    "en": "Quantify behavior frequency, duration, and annual cost",
+    "tr": "Behavior frequency, duration, le kum khat tangka senh kha tahnak",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.traffic_desc": {
+    "en": "Student-facing red/yellow/green behavior zone poster",
+    "tr": "Sianginn fa hmaiah sen/eng/hring behavior zone poster",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "hub.datasheet_desc": {
+    "en": "Printable frequency, duration, ABC, or latency data sheets",
+    "tr": "Tial khawh awkah frequency, duration, ABC, asiloah latency data sheet",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.fidelity_desc": {
+    "en": "AI-generated daily BIP implementation checklist",
+    "tr": "AI in chuahmi nifate BIP implementation checklist (treatment adherence zohkhennak)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "hub.feasibility_desc": {
+    "en": "5-question contextual fit assessment with AI recommendations",
+    "tr": "Bia 5 contextual fit assessment a, AI cohlannak he",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.gas_desc": {
+    "en": "Goal Attainment Scaling with AI-generated descriptors",
+    "tr": "Goal Attainment Scaling (GAS) a, AI in chuahmi descriptor he",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.pocket_desc": {
+    "en": "Compact index-card BIP summary for clipboard carry",
+    "tr": "Index-card BIP tonghmuhnak tete a, clipboard ah keng khawh awk",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.abagraph_desc": {
+    "en": "Publication-standard graphs with phase lines, trend lines, and visual analysis",
+    "tr": "Publication-standard graph a, phase line, trend line, le mitin zohnak he",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "hub.abaguide_desc": {
+    "en": "Searchable glossary, reinforcement schedules, decision tree & common mistakes",
+    "tr": "Zawhnak khawh awk glossary, reinforcement schedule, decision tree le palhnak fawi tlangpi hna",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.bcbahandoff_desc": {
+    "en": "Data dashboard for BCBAs + printable handoff packet for consultation",
+    "tr": "BCBA caah data dashboard + consultation caah tial khawh awk handoff packet",
+    "contentWordCount": 7,
+    "matchedCount": 5,
+    "ratio": 0.71
+  },
+  "hub.condprob_desc": {
+    "en": "Foreground vs background probability analysis to validate ABC hypotheses with data",
+    "tr": "ABC hypothesis hna kha data he tahmaih awkah foreground vs background probability hmuhnak",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.cultural_desc": {
+    "en": "8-question pause-and-reflect checklist before interpreting behavior through a cultural humility lens",
+    "tr": "Behavior kha cultural humility lens in tonghnga hlanah ngaihtuahnak bia 8 checklist",
+    "contentWordCount": 11,
+    "matchedCount": 5,
+    "ratio": 0.45
+  },
+  "hub.cumrecord_desc": {
+    "en": "Classic Skinner-style cumulative frequency graph — the heritage of ABA data display",
+    "tr": "Skinner-style cumulative frequency graph hlun — ABA data tarhnak phunglam",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "hub.drstrategy_desc": {
+    "en": "Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)",
+    "tr": "Differential reinforcement strategy a dik (DRA, DRI, DRO, DRL) thim",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.dtt_desc": {
+    "en": "Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance",
+    "tr": "Discrete Trial Training (DTT) — trial khat lengmang ngahnak a, mastery criteria le auto-advance he",
+    "contentWordCount": 11,
+    "matchedCount": 9,
+    "ratio": 0.82
+  },
+  "hub.fcttemplate_desc": {
+    "en": "Functional Communication Training planning with modality selection",
+    "tr": "Functional Communication Training (FCT) timhpiaknak a, modality thimnak he",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "hub.ioacalc_desc": {
+    "en": "Inter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count",
+    "tr": "Inter-Observer Agreement (IOA) lampi 6 — point-by-point, interval, scored/unscored, exact count",
+    "contentWordCount": 12,
+    "matchedCount": 10,
+    "ratio": 0.83
+  },
+  "hub.latency_desc": {
+    "en": "Stimulus-to-response time measurement with mean, median, and range statistics",
+    "tr": "Stimulus-to-response caan tahnak a, mean, median, le range statistic he",
+    "contentWordCount": 9,
+    "matchedCount": 5,
+    "ratio": 0.56
+  },
+  "hub.mtss_desc": {
+    "en": "Visual 3-tier pyramid for managing multi-tiered supports with AI-powered tier placement recommendations",
+    "tr": "Multi-tiered support tlawm awkah mit i hmuhmi tier 3 pyramid a, AI cohlannak tier hmunh he",
+    "contentWordCount": 12,
+    "matchedCount": 5,
+    "ratio": 0.42
+  },
+  "hub.prefassess_desc": {
+    "en": "Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols",
+    "tr": "Reinforcer hmuhthlennak phunglam — MSWO, Paired Stimulus, le Free Operant protocol",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "hub.reframe_desc": {
+    "en": "AI rewrites deficit-based descriptions into asset-focused, strengths-based language",
+    "tr": "Deficit-based chimnak hna kha AI nih asset-focused, thazaang-based biafang ah tial than",
+    "contentWordCount": 10,
+    "matchedCount": 5,
+    "ratio": 0.5
+  },
+  "hub.sandbox_desc": {
+    "en": "Load simulated student data for PD, pre-service training, or learning ABA without real students",
+    "tr": "PD, pre-service training, asiloah ABA cawnnak ca simulated sianginn fa data la — sianginn fa taktak hman lo in",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "hub.socialvalidity_desc": {
+    "en": "TARF and IRP-15 scales for measuring treatment acceptability — required for publication",
+    "tr": "Treatment cohlanhawkmi tahnak ca TARF le IRP-15 scale — publication caah a herh",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "hub.taskanalysis_desc": {
+    "en": "Break skills into teachable steps with forward, backward, or total-task chaining and prompt tracking",
+    "tr": "Skill kha cawn khawh awk lampi ah thlerh, forward, backward, asiloah total-task chaining le prompt zohkhenhnak he",
+    "contentWordCount": 13,
+    "matchedCount": 6,
+    "ratio": 0.46
+  },
+  "hub.trends_desc": {
+    "en": "SVG charts showing intensity trends, setting frequency, and day/time heatmap",
+    "tr": "Intensity lampi, setting frequency, le ni/caan heatmap langhtermi SVG graph hna",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.bipgen_desc": {
+    "en": "Draft a Behavior Intervention Plan from your data.",
+    "tr": "Na data in Behavior Intervention Plan tial.",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "hub.mipractice_title": {
+    "en": "Motivational Interviewing Practice",
+    "tr": "Motivational Interviewing Tuahmaihnak",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.practicum_desc": {
+    "en": "Run a guided practice case from start to finish.",
+    "tr": "Guided practice case kha athawk in a donghnak tiang zohpi.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "abc.setting_placeholder": {
+    "en": "e.g., Classroom, Hallway, Cafeteria",
+    "tr": "tahchunhnak, Classroom, Hallway, Cafeteria",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "generating_questions": {
+    "en": "⏳ Generating context-specific questions...",
+    "tr": "⏳ Context-specific bia hna a chuah lai...",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "search_placeholder": {
+    "en": "Search antecedent, behavior, consequence, notes, setting...",
+    "tr": "antecedent, behavior, consequence, note, setting zawh...",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "fidelity_tip_2": {
+    "en": "Provide additional BST (Behavioral Skills Training)",
+    "tr": "BST (Behavioral Skills Training) thabik thlamh in pek",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.add_a_team_note_shiftenter_for_new_line": {
+    "en": "Add a team note... (Shift+Enter for new line)",
+    "tr": "Team note kha chinh... (Shift+Enter line thar awkah)",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "ph.eg_does_a_token_economy_reduce_offtask_behavior_du": {
+    "en": "e.g. \"Does a token economy reduce off-task behavior during math instruction?\"",
+    "tr": "tahchunhnak \"Token economy nih math cawnpiaknak chungah off-task langhternak a tlawmter maw?\"",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "ph.eg_offtask_behavior_in_math": {
+    "en": "e.g. Off-task behavior in math",
+    "tr": "tahchunhnak Math chungah off-task langhternak",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.eg_spanish_arabic_somali": {
+    "en": "e.g. Spanish, Arabic, Somali…",
+    "tr": "tahchunhnak Spanish, Arabic, Somali…",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "ph.eg_token_economy_fct_protocol": {
+    "en": "e.g. Token Economy + FCT Protocol",
+    "tr": "tahchunhnak Token Economy + FCT Protocol",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "ph.search_terms_eg_reinforcement_fba_data": {
+    "en": "🔍 Search terms... (e.g. \"reinforcement\", \"FBA\", \"data\")",
+    "tr": "🔍 Kawl awkmi bia... (tahchunhnak \"reinforcement\", \"FBA\", \"data\")",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.setting_eg_math_class_cafeteria": {
+    "en": "Setting (e.g., Math class, Cafeteria)",
+    "tr": "Hmun (tahchunhnak, Math class, Caaitnak hmun)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.type_language_eg_spanish_arabic_somali": {
+    "en": "Type language (e.g., Spanish, Arabic, Somali)",
+    "tr": "Holh kha ttial (tahchunhnak, Spanish, Arabic, Somali)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.autofilled_n_baseline_n_intervention_points_from_n": {
+    "en": "Auto-filled: N baseline + N intervention points from \"N\"",
+    "tr": "Mahte-khathnak: N baseline + N intervention points \"N\" in",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.behavior_occurred_dro_timer_reset": {
+    "en": "⚠️ Behavior occurred — DRO timer reset",
+    "tr": "⚠️ Langhternak a chuah — DRO timer reset",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.case_study_complete_review_your_debrief": {
+    "en": "Case study complete! Review your debrief.",
+    "tr": "Case study a dih! Na debrief kha hmuhlet.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.case_study_generated_begin_phase_1": {
+    "en": "Case study generated! Begin Phase 1.",
+    "tr": "Case study a chuak cang! Phase 1 thawk.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.consent_template_exported": {
+    "en": "Consent template exported",
+    "tr": "Consent template export tuah cang",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.consent_template_imported": {
+    "en": "Consent template imported",
+    "tr": "Consent template import tuah cang",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.data_loaded_from_cloud": {
+    "en": "☁️ Data loaded from cloud",
+    "tr": "☁️ Data cu cloud in lak cang",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.effect_sizes_attached_to_iep_prep": {
+    "en": "Effect sizes attached to IEP Prep!",
+    "tr": "Effect sizes cu IEP Prep ah pehtlaih cang!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.failed_to_generate_case_study_try_again": {
+    "en": "Failed to generate case study. Try again.",
+    "tr": "Case study chuahter a tlin lo. Tuah ttham.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.failed_to_generate_share_code": {
+    "en": "Failed to generate share code",
+    "tr": "Share code chuahter a tlin lo",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.failed_to_parse_snapshot_file": {
+    "en": "Failed to parse snapshot file",
+    "tr": "Snapshot file parse tuah a tlin lo",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.failed_to_parse_transcript": {
+    "en": "Failed to parse transcript",
+    "tr": "Transcript parse tuah a tlin lo",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.graph_data_attached_to_iep_prep": {
+    "en": "Graph data attached to IEP Prep!",
+    "tr": "Graph data cu IEP Prep ah pehtlaih cang!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.graph_data_ready_autofill_available_in_effect_size": {
+    "en": "Graph data ready — auto-fill available in Effect Size!",
+    "tr": "Graph data aa timh — mahte-khathnak cu Effect Size ah a um!",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "toast.iep_prep_packet_generated": {
+    "en": "IEP prep packet generated ✨",
+    "tr": "IEP prep packet chuah cang ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.need_at_least_2_data_points_per_phase": {
+    "en": "Need at least 2 data points per phase",
+    "tr": "Phase pakhat cio ah a tlawmpa bik in data point 2 a herh",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.need_at_least_2_phases_in_the_graph_baseline_inter": {
+    "en": "Need at least 2 phases in the Graph (baseline + intervention)",
+    "tr": "Graph chungah a tlawmpa bik in phase 2 a herh (baseline + intervention)",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.not_a_valid_alloflow_snapshot_file": {
+    "en": "Not a valid AlloFlow snapshot file",
+    "tr": "Hi cu aa tlakmi AlloFlow snapshot file a si lo",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.not_a_valid_consent_template_file": {
+    "en": "Not a valid consent template file",
+    "tr": "Hi cu aa tlakmi consent template file a si lo",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.pattern_analysis_complete": {
+    "en": "Pattern analysis complete ✨",
+    "tr": "Pattern analysis a dih ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.popups_blocked_downloaded_as_html_file_instead": {
+    "en": "Pop-ups blocked — downloaded as HTML file instead.",
+    "tr": "Pop-ups khamh — HTML file in download tuah cang.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.predictive_analysis_complete": {
+    "en": "Predictive analysis complete ✨",
+    "tr": "Predictive analysis a dih ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.quick_fill_n_items_loaded": {
+    "en": "Quick Fill: N items loaded ⚡",
+    "tr": "Quick Fill: thil N lak cang ⚡",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.reset_to_default_template": {
+    "en": "Reset to default template",
+    "tr": "Default template ah aa thlen ttham",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.saved_to_session_history": {
+    "en": "Saved to session history!",
+    "tr": "Session history ah khoh cang!",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.share_code_copied_to_clipboard": {
+    "en": "Share code copied to clipboard!",
+    "tr": "Share code clipboard ah copy tuah cang!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.simulation_started_you_are_now_the_counselor": {
+    "en": "Simulation started — you are now the counselor 🎭",
+    "tr": "Simulation thawk cang — atu cu nangmah cu counselor na si 🎭",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.traffic_light_generated": {
+    "en": "Traffic light generated ✨",
+    "tr": "Traffic light chuah cang ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.share_code_too_large": {
+    "en": "Snapshot too large for share code (${encoded.length.toLocaleString()} chars, limit 5,000). Use 💾 Download Snapshot instead.",
+    "tr": "Snapshot cu share code caah a ngan tuk (${encoded.length.toLocaleString()} chars, hramnak 5,000). Mahruangah 💾 Download Snapshot hmang.",
+    "contentWordCount": 12,
+    "matchedCount": 9,
+    "ratio": 0.75
+  },
+  "ui.add_abc_entries_to_see_visual_trend_data": {
+    "en": "Add ABC entries to see visual trend data.",
+    "tr": "Mit hmuh khawh trend data hmuh awkah ABC lutnak chuah.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.add_data_points_above_or_paste_csv_data_to_get_sta": {
+    "en": "Add data points above or paste CSV data to get started.",
+    "tr": "Cunglei ah data point chuah asiloah CSV data paste in thawk.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.based_on_horner_salentine_albin_2003": {
+    "en": "Based on Horner, Salentine, & Albin (2003)",
+    "tr": "Horner, Salentine, & Albin (2003) cungah aṭha",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.choose_the_right_differential_reinforcement_strate": {
+    "en": "Choose the right differential reinforcement strategy",
+    "tr": "A hmaan mi differential reinforcement strategy thim",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.click_ai_generate_checklist_to_create_items_based": {
+    "en": "Click \"AI Generate Checklist\" to create items based on the BIP",
+    "tr": "BIP cungah aṭha in item siam awkah \"AI Generate Checklist\" click",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.click_load_student_workspaces_and_select_multiple": {
+    "en": "Click \"Load Student Workspaces\" and select multiple .json files saved from BehaviorLens",
+    "tr": "\"Load Student Workspaces\" click i BehaviorLens in khoel cia .json file tampi thim",
+    "contentWordCount": 10,
+    "matchedCount": 5,
+    "ratio": 0.5
+  },
+  "ui.discrete_trial_training_with_mastery_tracking_and": {
+    "en": "Discrete Trial Training with mastery tracking and auto-advance",
+    "tr": "Fiannak tracking le auto-advance he Discrete Trial Training",
+    "contentWordCount": 8,
+    "matchedCount": 6,
+    "ratio": 0.75
+  },
+  "ui.drop_a_snapshot_file_here": {
+    "en": "Drop a Snapshot File Here",
+    "tr": "Hihhmun ah Snapshot File Drop",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.enter_data_or_record_sessions_to_generate_a_cumula": {
+    "en": "Enter data or record sessions to generate a cumulative record.",
+    "tr": "Khawm bunmi record siam awkah data lutter asiloah session khumh.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.functional_communication_training_planning_tool": {
+    "en": "Functional Communication Training planning tool",
+    "tr": "Functional Communication Training timhciamnak tool",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ui.generate_a_professional_printready_progress_report": {
+    "en": "Generate a professional, print-ready progress report with inline charts, data summaries, and AI recommendations. One-click PDF export via browser print.",
+    "tr": "Chunglei chart, data tomhnak, le AI chawnhnak he professional, print awk timhcia mi hmasawnnak report siam. Browser print thawngin click pakhat PDF export.",
+    "contentWordCount": 16,
+    "matchedCount": 8,
+    "ratio": 0.5
+  },
+  "ui.map_target_behaviors_to_functionally_equivalent_re": {
+    "en": "Map target behaviors to functionally equivalent replacements",
+    "tr": "Target ziaza cu functionally equivalent replacement ah map",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.no_session_data_recorded_yet": {
+    "en": "No session data recorded yet.",
+    "tr": "Session data record a um rih lo.",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.paste_one_value_per_line_supports_formats_5_sessio": {
+    "en": "Paste one value per line. Supports formats: \"5\", \"Session 1: 5\", or \"1,5\"",
+    "tr": "Line khat ah value pakhat paste. Format hna: \"5\", \"Session 1: 5\", asiloah \"1,5\"",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ui.publicationstandard_singlecase_design_graphs": {
+    "en": "Publication-standard single-case design graphs",
+    "tr": "Chuahternak-standard single-case design graph hna",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ui.read_through_the_module_content_above_then_click_c": {
+    "en": "Read through the module content above, then click Complete below.",
+    "tr": "Cungah module content rel hnu ah, cuhnuah Complete click.",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "ui.record_sessions_with_the_session_data_tracker_or_s": {
+    "en": "Record sessions with the Session Data Tracker, or switch to Manual Entry mode.",
+    "tr": "Session Data Tracker thawngin session khumh, asiloah Manual Entry mode ah thlen.",
+    "contentWordCount": 10,
+    "matchedCount": 6,
+    "ratio": 0.6
+  },
+  "ui.select_a_research_design_to_structure_your_data_co": {
+    "en": "Select a research design to structure your data collection",
+    "tr": "Na data pumhnak siamning awkah research design thim",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.singlecase_design_manager": {
+    "en": "Single-Case Design Manager",
+    "tr": "Single-Case Design Zohkhenhtu",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.systematic_reinforcer_identification_using_evidenc": {
+    "en": "Systematic reinforcer identification using evidence-based protocols",
+    "tr": "Evidence-thawngin protocol hmang in systematic reinforcer hngalhnak",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "intervention.title": {
+    "en": "AI Intervention Plan Generator",
+    "tr": "AI Intervention Plan Siamtu",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "obs.start_to_begin": {
+    "en": "Start timer to begin latency measurement",
+    "tr": "Latency tlukpi relnak thawk awkah timer thawk",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.artificial_intelligence_ai_usage_disclosure": {
+    "en": "Artificial Intelligence (AI) Usage Disclosure",
+    "tr": "Artificial Intelligence (AI) Hmannak Langhternak",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.canvas_environment_local_storage_only": {
+    "en": "Canvas environment — local storage only",
+    "tr": "Canvas hmun — local storage lawng",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.compare_current_data_to_baseline_levels": {
+    "en": "Compare current data to baseline levels",
+    "tr": "Atu data le baseline level tahchunh",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.complete_a_classroomwide_behavior_scan": {
+    "en": "Complete a classroom-wide behavior scan",
+    "tr": "Classroom dihlak behavior scan tuah",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.conduct_a_full_functional_behavior_assessment": {
+    "en": "Conduct a full Functional Behavior Assessment",
+    "tr": "Functional Behavior Assessment dihlak tuah",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.create_a_behavior_contract": {
+    "en": "Create a behavior contract",
+    "tr": "Behavior contract ser",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.develop_an_individualized_behavior_intervention_plan": {
+    "en": "Develop an individualized Behavior Intervention Plan",
+    "tr": "Mizapi hrang Behavior Intervention Plan ser",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.document_baseline_frequency_for_flagged_students": {
+    "en": "Document baseline frequency for flagged students",
+    "tr": "Tialmi sianginncawl caah baseline frequency tial",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.document_the_hypothesis_in_session_notes": {
+    "en": "Document the hypothesis in session notes",
+    "tr": "Session note ah hypothesis tial",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.generate_an_intervention_plan": {
+    "en": "Generate an intervention plan",
+    "tr": "Intervention plan ser",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.identify_students_exceeding_the_universal_threshold": {
+    "en": "Identify students exceeding the universal threshold",
+    "tr": "Universal threshold a tlangtu sianginncawl thim",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.map_each_target_behavior_to_a_replacement": {
+    "en": "Map each target behavior to a replacement",
+    "tr": "Target behavior cio kha thlennak he zual",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.plan_a_reinforcement_schedule_for_replacement_behaviors": {
+    "en": "Plan a reinforcement schedule for replacement behaviors",
+    "tr": "Thlennak behavior caah reinforcement schedule timhtuah",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.plan_data_collection_methods_and_frequency": {
+    "en": "Plan data collection methods and frequency",
+    "tr": "Data cohlannak lam le frequency timhtuah",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.plan_weekly_progress_monitoring_data_collection": {
+    "en": "Plan weekly progress monitoring data collection",
+    "tr": "Zarhkhat tein progress monitoring data cohlannak timhtuah",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "raw.ready_to_generate_hypothesis_diagram": {
+    "en": "Ready to generate hypothesis diagram",
+    "tr": "Hypothesis diagram ser dingah timhcia",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.review_existing_data_supporting_the_hypothesis": {
+    "en": "Review existing data supporting the hypothesis",
+    "tr": "Hypothesis a bawmtu a ummi data zoh",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.review_progress_monitoring_data_vs_baseline": {
+    "en": "Review progress monitoring data vs. baseline",
+    "tr": "Progress monitoring data le baseline tahchunhnak zoh",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.run_ai_analysis_on_collected_data": {
+    "en": "Run AI Analysis on collected data",
+    "tr": "Cohlanmi data ah AI Analysis tuah",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.set_a_6week_intervention_cycle": {
+    "en": "Set a 6-week intervention cycle",
+    "tr": "Zarh 6 intervention cycle khendingmi tuah",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.set_review_dates_and_checkin_schedule": {
+    "en": "Set review dates and check-in schedule",
+    "tr": "Zoh ttawnnak ni le check-in schedule khendingmi tuah",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.triangulate_with_observation_data": {
+    "en": "Triangulate with observation data",
+    "tr": "Observation data he triangulate tuah",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.view_trend_dashboard_with_your_data": {
+    "en": "View trend dashboard with your data",
+    "tr": "Na data he trend dashboard zoh",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "raw.you_have_enough_data_for_ai_analysis": {
+    "en": "You have enough data for AI analysis",
+    "tr": "AI analysis caah data tlawk in na ngei",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.interval_and_latency_recording": {
+    "en": "Interval and latency recording",
+    "tr": "Interval le latency tialnak",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "dq.tip_data_current": {
+    "en": "Data is current and reflects recent behavior.",
+    "tr": "Data cu atu mi a si i hnu lawnglawng behavior a langhter.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "fba.step_collect_more_desc": {
+    "en": "Add more observation sessions to strengthen the dataset.",
+    "tr": "Dataset fehter dingah observation session tam deuh chiah.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "fba.step_hypothesis_desc": {
+    "en": "Draft a working hypothesis of behavior function.",
+    "tr": "Behavior function ttuanmi hypothesis ttial.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "heatmap.subtitle": {
+    "en": "Behavior frequency by day and time",
+    "tr": "Ni le caan in behavior frequency",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "sandbox.add_phase_desc": {
+    "en": "Add a new phase with custom data points.",
+    "tr": "Custom data point he phase thar chiah.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "sandbox.complex_desc": {
+    "en": "Multi-phase data with mixed trends.",
+    "tr": "Trend aathlamhmi he multi-phase data.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "sandbox.standard_desc": {
+    "en": "A typical baseline-intervention dataset.",
+    "tr": "A tlangpi baseline-intervention dataset khat.",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  }
+}

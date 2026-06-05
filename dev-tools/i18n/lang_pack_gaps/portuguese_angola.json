@@ -1,0 +1,10 @@
+{
+  "langName": "portuguese_angola",
+  "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
+  "totalEnglishKeys": 1427,
+  "translatedKeys": 1420,
+  "missingKeys": 0,
+  "passthroughKeys": 7,
+  "coveragePct": 99.5,
+  "missing": {}
+}

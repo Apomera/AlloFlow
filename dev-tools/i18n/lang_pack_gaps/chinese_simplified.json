@@ -1,0 +1,10 @@
+{
+  "langName": "chinese_simplified",
+  "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
+  "totalEnglishKeys": 1427,
+  "translatedKeys": 1427,
+  "missingKeys": 0,
+  "passthroughKeys": 0,
+  "coveragePct": 100,
+  "missing": {}
+}

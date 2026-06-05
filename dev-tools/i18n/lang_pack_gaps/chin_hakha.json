@@ -1,0 +1,10 @@
+{
+  "langName": "chin_hakha",
+  "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
+  "totalEnglishKeys": 1427,
+  "translatedKeys": 1407,
+  "missingKeys": 0,
+  "passthroughKeys": 20,
+  "coveragePct": 98.6,
+  "missing": {}
+}

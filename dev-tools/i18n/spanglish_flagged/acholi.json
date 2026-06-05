@@ -1,0 +1,422 @@
+{
+  "hub.subtitle": {
+    "en": "Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.",
+    "tr": "Jami me Functional Behavior Assessment, coc me data me ABC, ki yub me Behavior Intervention Plan.",
+    "contentWordCount": 9,
+    "matchedCount": 7,
+    "ratio": 0.78
+  },
+  "hub.abc_desc": {
+    "en": "Record antecedent, behavior, and consequence observations",
+    "tr": "Coo gin ma okwongo (antecedent), kit me tim (behavior), ki gin ma olubo (consequence)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.interval_desc": {
+    "en": "Partial, whole, or momentary time sampling grid",
+    "tr": "Cawa me kwac (partial), me ducu (whole), onyo me kombedi (momentary)",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.gas_desc": {
+    "en": "Goal Attainment Scaling with AI-generated descriptors",
+    "tr": "Goal Attainment Scaling ki coc ma AI ocoyo",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.bcbahandoff_desc": {
+    "en": "Data dashboard for BCBAs + printable handoff packet for consultation",
+    "tr": "Dashboard me data pi BCBA ki packet me coyo me yor pi consultation",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "hub.drstrategy_desc": {
+    "en": "Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)",
+    "tr": "Yer differential reinforcement ma ber (DRA, DRI, DRO, DRL)",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.dtt_desc": {
+    "en": "Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance",
+    "tr": "Discrete Trial Training — coc me trial acel acel ki cik me loyo ki cako auto",
+    "contentWordCount": 11,
+    "matchedCount": 6,
+    "ratio": 0.55
+  },
+  "hub.fcttemplate_desc": {
+    "en": "Functional Communication Training planning with modality selection",
+    "tr": "Yub me Functional Communication Training ki yer me modality",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "hub.ioacalc_desc": {
+    "en": "Inter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count",
+    "tr": "Inter-Observer Agreement ki yo 6 — point-by-point, interval, scored/unscored, exact count",
+    "contentWordCount": 12,
+    "matchedCount": 10,
+    "ratio": 0.83
+  },
+  "hub.latency_desc": {
+    "en": "Stimulus-to-response time measurement with mean, median, and range statistics",
+    "tr": "Pim cawa ki cing kun stimulus pa cing me dwoko ki mean, median, ki range",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.prefassess_desc": {
+    "en": "Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols",
+    "tr": "Nong reinforcer ki yo — MSWO, Paired Stimulus, ki Free Operant",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "hub.snapshot_title": {
+    "en": "Student Snapshot Exchange",
+    "tr": "Exchange me Snapshot pa Latin Kwan",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.socialvalidity_desc": {
+    "en": "TARF and IRP-15 scales for measuring treatment acceptability — required for publication",
+    "tr": "Scales me TARF ki IRP-15 me pim me yer pa kony — mite pi publication",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "hub.bipgen_desc": {
+    "en": "Draft a Behavior Intervention Plan from your data.",
+    "tr": "Coo Behavior Intervention Plan ki data ni.",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "hub.cantdowontdo_desc": {
+    "en": "Sort skill vs. performance deficits to pick the right support.",
+    "tr": "Pok skill vs. performance deficits wek iyer kony ma ber.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "hub.mipractice_title": {
+    "en": "Motivational Interviewing Practice",
+    "tr": "Pwony me Motivational Interviewing",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hypothesis.generate": {
+    "en": "Generate Hypothesis from Data",
+    "tr": "Coo Hypothesis ki Data",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "quiz_replacement": {
+    "en": "What is a replacement behavior?",
+    "tr": "Kit kwo me leyo (replacement behavior) obedo ngo?",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "fidelity_tip_2": {
+    "en": "Provide additional BST (Behavioral Skills Training)",
+    "tr": "Mi pwony mukene me BST (Behavioral Skills Training)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.add_a_team_note_shiftenter_for_new_line": {
+    "en": "Add a team note... (Shift+Enter for new line)",
+    "tr": "Med kor lok pa team... (Shift+Enter pi pol manyen)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.eg_token_economy_fct_protocol": {
+    "en": "e.g. Token Economy + FCT Protocol",
+    "tr": "lapor: Token Economy + FCT Protocol",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "ph.search_terms_eg_reinforcement_fba_data": {
+    "en": "🔍 Search terms... (e.g. \"reinforcement\", \"FBA\", \"data\")",
+    "tr": "🔍 Lok me yeny... (lapor: \"reinforcement\", \"FBA\", \"data\")",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.case_study_generated_begin_phase_1": {
+    "en": "Case study generated! Begin Phase 1.",
+    "tr": "Ki cweyo case study! Cak Phase 1.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.data_loaded_from_cloud": {
+    "en": "☁️ Data loaded from cloud",
+    "tr": "☁️ Ki kelo data ki i cloud",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.failed_to_generate_case_study_try_again": {
+    "en": "Failed to generate case study. Try again.",
+    "tr": "Pe otwero cweyo case study. Tem doki.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.failed_to_parse_snapshot_file": {
+    "en": "Failed to parse snapshot file",
+    "tr": "Pe otwero niang file me snapshot",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.graph_data_attached_to_iep_prep": {
+    "en": "Graph data attached to IEP Prep!",
+    "tr": "Data me graph ki keto i IEP Prep!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.iep_prep_packet_generated": {
+    "en": "IEP prep packet generated ✨",
+    "tr": "Ki cweyo packet me IEP prep ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.need_at_least_2_data_points_per_phase": {
+    "en": "Need at least 2 data points per phase",
+    "tr": "Mito data 2 nicelo i phase acel acel",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.need_at_least_2_phases_in_the_graph_baseline_inter": {
+    "en": "Need at least 2 phases in the Graph (baseline + intervention)",
+    "tr": "Mito phase 2 nicelo i Graph (baseline + intervention)",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.not_a_valid_alloflow_snapshot_file": {
+    "en": "Not a valid AlloFlow snapshot file",
+    "tr": "Man pe file me AlloFlow snapshot ma kakare",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.not_a_valid_consent_template_file": {
+    "en": "Not a valid consent template file",
+    "tr": "Man pe file me template me yee ma kakare",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.popups_blocked_downloaded_as_html_file_instead": {
+    "en": "Pop-ups blocked — downloaded as HTML file instead.",
+    "tr": "Ki gengo pop-up — ki kelo piny macalo file me HTML.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.share_code_copied_to_clipboard": {
+    "en": "Share code copied to clipboard!",
+    "tr": "Code me nyutu okopi i clipboard!",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.autofilled_from_phase_tagged_entries": {
+    "en": "Autofilled from phase-tagged entries.",
+    "tr": "Opongo pi ngene ki i entries ma kiketo phase tags.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.need_2_baseline_2_intervention_entries_with_phase_tags": {
+    "en": "Need at least 2 baseline and 2 intervention entries with phase tags.",
+    "tr": "Mito 2 baseline ki 2 intervention entries ma kibedo ki phase tags.",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "toast.snapshot_rejected_entries": {
+    "en": "Skipped ${rejectedAbc + rejectedObs} malformed entries (missing/invalid timestamp or wrong field types). ${validAbc.length + validObs.length} valid entries kept for review.",
+    "tr": "Okwango ${rejectedAbc + rejectedObs} entries ma pe tye atir (timestamp aye pe nyo kit pa field me kupore). ${validAbc.length + validObs.length} entries ma atir gugwoki pi ngiyo.",
+    "contentWordCount": 19,
+    "matchedCount": 10,
+    "ratio": 0.53
+  },
+  "toast.share_code_too_large": {
+    "en": "Snapshot too large for share code (${encoded.length.toLocaleString()} chars, limit 5,000). Use 💾 Download Snapshot instead.",
+    "tr": "Snapshot dwong adwong pi share code (${encoded.length.toLocaleString()} chars, kom 5,000). Tic ki 💾 Cwal Snapshot kakare.",
+    "contentWordCount": 12,
+    "matchedCount": 8,
+    "ratio": 0.67
+  },
+  "ui.add_abc_entries_before_generating_a_report": {
+    "en": "Add ABC entries before generating a report.",
+    "tr": "Med ABC entries ma peya iyubo report.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.add_abc_entries_to_see_visual_trend_data": {
+    "en": "Add ABC entries to see visual trend data.",
+    "tr": "Med ABC entries me neno data me anenne pa trend.",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.add_data_points_above_or_paste_csv_data_to_get_sta": {
+    "en": "Add data points above or paste CSV data to get started.",
+    "tr": "Med data points malo nyo cik CSV data me cako.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.based_on_horner_salentine_albin_2003": {
+    "en": "Based on Horner, Salentine, & Albin (2003)",
+    "tr": "Olubu Horner, Salentine, & Albin (2003)",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.choose_the_right_differential_reinforcement_strate": {
+    "en": "Choose the right differential reinforcement strategy",
+    "tr": "Yer yore me differential reinforcement ma atir",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ui.click_load_student_workspaces_and_select_multiple": {
+    "en": "Click \"Load Student Workspaces\" and select multiple .json files saved from BehaviorLens",
+    "tr": "Dii \"Load Student Workspaces\" ki yer .json files mapol ma kigwoko ki i BehaviorLens",
+    "contentWordCount": 10,
+    "matchedCount": 5,
+    "ratio": 0.5
+  },
+  "ui.create_your_first_replacement_behavior_plan": {
+    "en": "Create your first replacement behavior plan.",
+    "tr": "Yub plan ni mukwongo me replacement behavior.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.discrete_trial_training_with_mastery_tracking_and": {
+    "en": "Discrete Trial Training with mastery tracking and auto-advance",
+    "tr": "Discrete Trial Training ki ngene pa mastery ki auto-advance",
+    "contentWordCount": 8,
+    "matchedCount": 6,
+    "ratio": 0.75
+  },
+  "ui.drop_a_snapshot_file_here": {
+    "en": "Drop a Snapshot File Here",
+    "tr": "Cwer Snapshot File kany",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.enter_data_or_record_sessions_to_generate_a_cumula": {
+    "en": "Enter data or record sessions to generate a cumulative record.",
+    "tr": "Ket data nyo gwok tic me cawa me yubo cumulative record.",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.functional_communication_training_planning_tool": {
+    "en": "Functional Communication Training planning tool",
+    "tr": "Gin tic me yiko pa Functional Communication Training",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.no_entries_yet_tap_log_a_behavior_to_get_started": {
+    "en": "No entries yet. Tap \"Log a Behavior\" to get started!",
+    "tr": "Entries pe tye pud. Dii \"Log a Behavior\" me cako!",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.publicationstandard_singlecase_design_graphs": {
+    "en": "Publication-standard single-case design graphs",
+    "tr": "Single-case design graphs ma rom me coc i waraga",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ui.record_sessions_with_the_session_data_tracker_or_s": {
+    "en": "Record sessions with the Session Data Tracker, or switch to Manual Entry mode.",
+    "tr": "Gwok tic me cawa ki Session Data Tracker, nyo lok i mode me Manual Entry.",
+    "contentWordCount": 10,
+    "matchedCount": 6,
+    "ratio": 0.6
+  },
+  "ui.select_a_research_design_to_structure_your_data_co": {
+    "en": "Select a research design to structure your data collection",
+    "tr": "Yer research design me yubo kit pa coko data ni",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.share_workspace_data_with_team_members_rolebased_v": {
+    "en": "Share workspace data with team members. Role-based views filter data appropriately for BCBAs, teachers, and parents.",
+    "tr": "Nyut workspace data ki jo me team. Anenne ma olubu role yenyo data ma rom pi BCBAs, lupwony, ki lunyodo.",
+    "contentWordCount": 15,
+    "matchedCount": 6,
+    "ratio": 0.4
+  },
+  "ui.singlecase_design_manager": {
+    "en": "Single-Case Design Manager",
+    "tr": "Layub me Single-Case Design",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.artificial_intelligence_ai_usage_disclosure": {
+    "en": "Artificial Intelligence (AI) Usage Disclosure",
+    "tr": "Lok me Tic ki Artificial Intelligence (AI)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.compare_current_data_to_baseline_levels": {
+    "en": "Compare current data to baseline levels",
+    "tr": "Por data me ki kombedi ki dit me baseline",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.conduct_a_full_functional_behavior_assessment": {
+    "en": "Conduct a full Functional Behavior Assessment",
+    "tr": "Tim Functional Behavior Assessment ma otye dong",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.review_progress_monitoring_data_vs_baseline": {
+    "en": "Review progress monitoring data vs. baseline",
+    "tr": "Ngi data me ngiyo dongo vs. baseline",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "sandbox.add_phase_desc": {
+    "en": "Add a new phase with custom data points.",
+    "tr": "Med phase manyen ki coc me data mamegi.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  }
+}

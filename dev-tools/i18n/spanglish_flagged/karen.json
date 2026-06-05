@@ -1,0 +1,366 @@
+{
+  "hub.subtitle": {
+    "en": "Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.",
+    "tr": "Functional Behavior Assessment (တၢ်ဂံၢ်တၢ်ဘါတၢ်ဟူးတၢ်ဂဲၤအတၢ်ဟ့ၣ်အါထီၣ်တၢ်ဆၢတဲာ်), ABC တၢ်ဂံၢ်တၢ်ဘါတၢ်ဖီၣ်ဃံးထီၣ်, ဒီး Behavior Intervention Plan (တၢ်ဟူးတၢ်ဂဲၤတၢ်နုာ်လီၤမၤစၢၤအတၢ်ရဲၣ်တၢ်ကျဲၤ) အပီးအလီတဖၣ်.",
+    "contentWordCount": 9,
+    "matchedCount": 6,
+    "ratio": 0.67
+  },
+  "hub.abc_desc": {
+    "en": "Record antecedent, behavior, and consequence observations",
+    "tr": "မၤနီၣ်တၢ်အကစၢ်အဆၢကတီၢ်ပူၤကွံာ် (antecedent), တၢ်ဟူးတၢ်ဂဲၤ (behavior), ဒီးတၢ်ကဲထီၣ်အသးခံကါ (consequence) တၢ်ကွၢ်ထွဲတဖၣ်",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.obs_desc": {
+    "en": "Real-time interval, frequency, or duration recording",
+    "tr": "တၢ်ဆၢကတီၢ်လိၤလိၤ (real-time) တၢ်ဆၢကတီၢ်အကဆၢ (interval), တၢ်အါစုၤ (frequency), မ့တမ့ၢ်တၢ်ယံၤထီၣ်အဆၢကတီၢ် (duration) တၢ်မၤနီၣ်",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "hub.interval_desc": {
+    "en": "Partial, whole, or momentary time sampling grid",
+    "tr": "တၢ်ဆၢကတီၢ်အကဆၢကအိၣ်ထဲတဆၢ (partial), ဂံၢ်ခါးတခါ (whole), မ့တမ့ၢ်တဘျီထဲတဘျီ (momentary) တၢ်ဂံၢ်ဂုၤထူဂုၤ",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.gas_desc": {
+    "en": "Goal Attainment Scaling with AI-generated descriptors",
+    "tr": "Goal Attainment Scaling (တၢ်တုၤထီၣ်ပတီၢ်ဖီတၢၣ်အတၢ်ဖီၣ်) ဒီး AI ထုးထီၣ်တၢ်ဒုးနဲၣ်တၢ်",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.abagraph_desc": {
+    "en": "Publication-standard graphs with phase lines, trend lines, and visual analysis",
+    "tr": "ထုးထီၣ်အပတီၢ်ဂံၢ်တၢ်ဘါ (graphs) ဒီးအကရၢအိၣ်ဖျါ (phase lines), တၢ်လဲၤကျဲအိၣ်ဖျါ (trend lines), ဒီးတၢ်ထံၣ်အကံၤလီၢ်တၢ်သ့ၣ်ညါနၢ်ပၢၢ်",
+    "contentWordCount": 10,
+    "matchedCount": 5,
+    "ratio": 0.5
+  },
+  "hub.cumrecord_desc": {
+    "en": "Classic Skinner-style cumulative frequency graph — the heritage of ABA data display",
+    "tr": "Skinner-style cumulative frequency graph (တၢ်အါစုၤအဂံၢ်ဂုၤထူဂုၤလၢအဖှိၣ်ထီၣ်) — ABA တၢ်ဂံၢ်တၢ်ဘါအတၢ်ပာ်ဖျါအသးအတၢ်စူၤလၢအလီၢ်လံၤ",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.drstrategy_desc": {
+    "en": "Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)",
+    "tr": "ဃုထၢ differential reinforcement strategy (DRA, DRI, DRO, DRL) လၢအဘၣ်",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.dtt_desc": {
+    "en": "Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance",
+    "tr": "Discrete Trial Training — တၢ်မၤကွၢ်တကွၢ်ဘၣ်တကွၢ်တၢ်မၤနီၣ်ဒီးတၢ်နၢ်ပၢၢ်အပတီၢ်ဂံၢ်ဂုၤထူဂုၤဒီးတၢ်လဲၤထီၣ်နီၢ်ကစၢ်",
+    "contentWordCount": 11,
+    "matchedCount": 5,
+    "ratio": 0.45
+  },
+  "hub.fcttemplate_desc": {
+    "en": "Functional Communication Training planning with modality selection",
+    "tr": "Functional Communication Training (တၢ်ဆဲးကျိးကသ့အတၢ်သိၣ်လိ) တၢ်ရဲၣ်တၢ်ကျဲၤဒီးတၢ်ဆဲးကျိးအကျိၤအကျဲဃုထၢ",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "hub.ioacalc_desc": {
+    "en": "Inter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count",
+    "tr": "Inter-Observer Agreement (IOA, ပှၤကွၢ်တၢ်လိာ်အသးအတၢ်ဘၣ်လိာ်အသး) ဒီး 6 ကျိၤကျဲ — point-by-point, interval, scored/unscored, exact count",
+    "contentWordCount": 12,
+    "matchedCount": 10,
+    "ratio": 0.83
+  },
+  "hub.latency_desc": {
+    "en": "Stimulus-to-response time measurement with mean, median, and range statistics",
+    "tr": "Stimulus-to-response (တၢ်ဒုးအိၣ်ထီၣ်တုၤလၢတၢ်စံးဆၢ) တၢ်ဆၢကတီၢ်တၢ်ထိၣ်ဒီးတၢ်ဂံၢ်တၢ်ဘါ mean (တၢ်အကရၢ), median (တၢ်အခၢၣ်သး), ဒီး range (တၢ်အကရၢကရိၤ)",
+    "contentWordCount": 9,
+    "matchedCount": 5,
+    "ratio": 0.56
+  },
+  "hub.prefassess_desc": {
+    "en": "Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols",
+    "tr": "တၢ်အကျိၤအကျဲ reinforcer (တၢ်ဟ့ၣ်အါထီၣ်စၢၤပျၢၤ) တၢ်ပာ်ဖျါ — MSWO, Paired Stimulus, ဒီး Free Operant အကျိၤအကျဲ",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "hub.bipgen_desc": {
+    "en": "Draft a Behavior Intervention Plan from your data.",
+    "tr": "ကွဲးထီၣ်တၢ်ဂံၢ်တၢ်ဘါ Behavior Intervention Plan လၢနတၢ်ဂံၢ်တၢ်ဘါ.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "quiz_replacement": {
+    "en": "What is a replacement behavior?",
+    "tr": "ဆီကွံာ်တၢ်ဟူးတၢ်ဂဲၤ (replacement behavior / alternative behavior) မ့ၢ်တၢ်မနုၤလဲၣ်?",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "search_placeholder": {
+    "en": "Search antecedent, behavior, consequence, notes, setting...",
+    "tr": "ဃုထံၣ်ဘၣ် antecedent, behavior, consequence, တၢ်ကွဲးနီၣ်, တၢ်အလီၢ်...",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "nl_edit_placeholder": {
+    "en": "e.g. \"change consequence to teacher redirected\"",
+    "tr": "ဒ်အဒိ \"ဆီတလဲ consequence ဆူ teacher ဟ့ၣ်ကျဲတဘျီကဒီး\"",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "fidelity_tip_2": {
+    "en": "Provide additional BST (Behavioral Skills Training)",
+    "tr": "ဟ့ၣ်အါထီၣ် BST (Behavioral Skills Training)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.eg_does_a_token_economy_reduce_offtask_behavior_du": {
+    "en": "e.g. \"Does a token economy reduce off-task behavior during math instruction?\"",
+    "tr": "ဒ်အဒိ \"token economy မၤစှၤလီၤ off-task တၢ်အိၣ်အသးဖဲ math အခါဧါ?\"",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "ph.eg_offtask_behavior_in_math": {
+    "en": "e.g. Off-task behavior in math",
+    "tr": "ဒ်အဒိ Off-task တၢ်အိၣ်အသးဖဲ math",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.eg_spanish_arabic_somali": {
+    "en": "e.g. Spanish, Arabic, Somali…",
+    "tr": "ဒ်အဒိ Spanish, Arabic, Somali…",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "ph.eg_token_economy_fct_protocol": {
+    "en": "e.g. Token Economy + FCT Protocol",
+    "tr": "ဒ်အဒိ Token Economy + FCT Protocol",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "ph.search_terms_eg_reinforcement_fba_data": {
+    "en": "🔍 Search terms... (e.g. \"reinforcement\", \"FBA\", \"data\")",
+    "tr": "🔍 ဃုထံၣ်တၢ်ကတိၤ... (ဒ်အဒိ \"reinforcement\", \"FBA\", \"data\")",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.setting_eg_math_class_cafeteria": {
+    "en": "Setting (e.g., Math class, Cafeteria)",
+    "tr": "တၢ်အလီၢ် (ဒ်အဒိ, Math class, Cafeteria)",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ph.type_language_eg_spanish_arabic_somali": {
+    "en": "Type language (e.g., Spanish, Arabic, Somali)",
+    "tr": "ဆဲးလီၤ ကျိာ် (ဒ်အဒိ, Spanish, Arabic, Somali)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.case_study_generated_begin_phase_1": {
+    "en": "Case study generated! Begin Phase 1.",
+    "tr": "case study တ့ထီၣ်ဝံၤ! စးထီၣ် Phase 1.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.consent_template_exported": {
+    "en": "Consent template exported",
+    "tr": "consent template ထုးထီၣ်ဝံၤ",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.consent_template_imported": {
+    "en": "Consent template imported",
+    "tr": "consent template ထၢနုာ်ဝံၤ",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.data_loaded_from_cloud": {
+    "en": "☁️ Data loaded from cloud",
+    "tr": "☁️ data ထၢနုာ်လၢ cloud",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.effect_sizes_attached_to_iep_prep": {
+    "en": "Effect sizes attached to IEP Prep!",
+    "tr": "effect sizes ဘျးစဲဆူ IEP Prep!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.failed_to_generate_case_study_try_again": {
+    "en": "Failed to generate case study. Try again.",
+    "tr": "တ့ထီၣ် case study တန့ၢ်ဘၣ်. မၤကွၢ်ကဒီး.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.failed_to_generate_share_code": {
+    "en": "Failed to generate share code",
+    "tr": "တ့ထီၣ် share code တန့ၢ်ဘၣ်",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.graph_data_attached_to_iep_prep": {
+    "en": "Graph data attached to IEP Prep!",
+    "tr": "graph data ဘျးစဲဆူ IEP Prep!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.graph_data_ready_autofill_available_in_effect_size": {
+    "en": "Graph data ready — auto-fill available in Effect Size!",
+    "tr": "graph data အိၣ်သးကတဲာ်ကတီၤ — တၢ်ဒိးထၢနုာ်ဒၣ်တၢ်အသးအိၣ်လၢ Effect Size!",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "toast.iep_prep_packet_generated": {
+    "en": "IEP prep packet generated ✨",
+    "tr": "IEP prep packet တ့ထီၣ်ဝံၤ ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.need_at_least_2_data_points_per_phase": {
+    "en": "Need at least 2 data points per phase",
+    "tr": "လိၣ်ဘၣ် data points အစှၤကတၢၢ် 2 လၢ phase တခါစုာ်စုာ်",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.need_at_least_2_phases_in_the_graph_baseline_inter": {
+    "en": "Need at least 2 phases in the Graph (baseline + intervention)",
+    "tr": "လိၣ်ဘၣ် phase အစှၤကတၢၢ် 2 လၢ Graph (baseline + intervention)",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.not_a_valid_consent_template_file": {
+    "en": "Not a valid consent template file",
+    "tr": "တမ့ၢ် consent template လံာ်ဖၠူၣ် လၢအဘၣ်",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.quick_fill_n_items_loaded": {
+    "en": "Quick Fill: N items loaded ⚡",
+    "tr": "Quick Fill: N တၢ်ဖိတၢ်လံၤ ထၢနုာ်ဝံၤ ⚡",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.share_code_copied_to_clipboard": {
+    "en": "Share code copied to clipboard!",
+    "tr": "share code ဒိနီၤလီၤဆူ clipboard!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.simulation_started_you_are_now_the_counselor": {
+    "en": "Simulation started — you are now the counselor 🎭",
+    "tr": "simulation စးထီၣ်ဝံၤ — ခဲအံၤ နမ့ၢ် counselor 🎭",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.traffic_light_generated": {
+    "en": "Traffic light generated ✨",
+    "tr": "traffic light တ့ထီၣ်ဝံၤ ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.autofilled_from_phase_tagged_entries": {
+    "en": "Autofilled from phase-tagged entries.",
+    "tr": "ဒိးထၢနုာ်ဒၣ်တၢ်ဝံၤလၢ phase-tagged တၢ်ဆဲးလီၤ.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.need_2_baseline_2_intervention_entries_with_phase_tags": {
+    "en": "Need at least 2 baseline and 2 intervention entries with phase tags.",
+    "tr": "လိၣ်ဘၣ်အစှၤကတၢၢ် 2 baseline ဒီး 2 intervention တၢ်ဆဲးလီၤလၢ phase tags.",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "toast.share_code_too_large": {
+    "en": "Snapshot too large for share code (${encoded.length.toLocaleString()} chars, limit 5,000). Use 💾 Download Snapshot instead.",
+    "tr": "Snapshot ဒိၣ်တလၢ share code (${encoded.length.toLocaleString()} chars, တၢ်ပာ်ပနီၣ် 5,000). သူ 💾 Download Snapshot အလီၢ်.",
+    "contentWordCount": 12,
+    "matchedCount": 9,
+    "ratio": 0.75
+  },
+  "ui.based_on_horner_salentine_albin_2003": {
+    "en": "Based on Horner, Salentine, & Albin (2003)",
+    "tr": "မ့ၢ်ဒိးအိၣ်ဒီး Horner, Salentine, & Albin (2003)",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.choose_the_right_differential_reinforcement_strate": {
+    "en": "Choose the right differential reinforcement strategy",
+    "tr": "ဃုထၢ differential reinforcement အကျိၤအကွၢ်လၢအဂ့ၤ",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ui.click_load_student_workspaces_and_select_multiple": {
+    "en": "Click \"Load Student Workspaces\" and select multiple .json files saved from BehaviorLens",
+    "tr": "ဆဲးနီၣ် \"Load Student Workspaces\" ဒီးဃုထၢအါ .json တၢ်ဖီၣ်ဖးလၢအဘၣ်တၢ်ပာ်ဂၢၢ်လီၤလၢ BehaviorLens",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "ui.record_sessions_with_the_session_data_tracker_or_s": {
+    "en": "Record sessions with the Session Data Tracker, or switch to Manual Entry mode.",
+    "tr": "ကွဲးနီၣ်တၢ်အိၣ်ဖှိၣ်တဖၣ်ဖျိ Session Data Tracker, မ့တမ့ၢ်ဆီတလဲဆူ Manual Entry အကျိၤ.",
+    "contentWordCount": 10,
+    "matchedCount": 5,
+    "ratio": 0.5
+  },
+  "raw.artificial_intelligence_ai_usage_disclosure": {
+    "en": "Artificial Intelligence (AI) Usage Disclosure",
+    "tr": "Artificial Intelligence (AI) တၢ်သုးကျဲးစၢးတၢ်ပာ်ဖျါ",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.conduct_a_full_functional_behavior_assessment": {
+    "en": "Conduct a full Functional Behavior Assessment",
+    "tr": "မၤတၢ် Functional Behavior Assessment လၢအလၢပှဲၤ",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.develop_an_individualized_behavior_intervention_plan": {
+    "en": "Develop an individualized Behavior Intervention Plan",
+    "tr": "ဒုးအိၣ်ထီၣ်ပှၤတဂၤစုာ်စုာ်အ Behavior Intervention Plan",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  }
+}

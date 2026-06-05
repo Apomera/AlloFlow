@@ -1,0 +1,867 @@
+{
+  "behavior_lens.toast.n_entries_deleted": {
+    "source": "${selectedIds.size} entries deleted",
+    "uiStrings": "N entries deleted",
+    "line": 914
+  },
+  "behavior_lens.abc.no_entries_hint": {
+    "source": "Click \"Add Entry\" to start recording behavioral observations",
+    "uiStrings": "Click",
+    "line": 1062
+  },
+  "behavior_lens.obs_momentary": {
+    "source": "Momentary",
+    "uiStrings": "Momentary Time Sampling",
+    "line": 2127
+  },
+  "behavior_lens.export.title": {
+    "source": "Export Reports",
+    "uiStrings": "Export Data",
+    "line": 2951
+  },
+  "behavior_lens.hypothesis.title": {
+    "source": "Functional Hypothesis Diagram",
+    "uiStrings": "Hypothesis Diagram",
+    "line": 3459
+  },
+  "behavior_lens.toast.goal_marked_as_n": {
+    "source": "Goal marked as ${status}",
+    "uiStrings": "Goal marked as N",
+    "line": 3643
+  },
+  "behavior_lens.cycle.title": {
+    "source": "Escalation Cycle (Colvin & Sugai)",
+    "uiStrings": "Acting-Out Cycle",
+    "line": 4163
+  },
+  "behavior_lens.toast.choice_n": {
+    "source": "Choice: ${choices[idx].label} ",
+    "uiStrings": "Choice: N ",
+    "line": 4484
+  },
+  "behavior_lens.audit.title": {
+    "source": "Classroom Environment Audit",
+    "uiStrings": "Environment Audit",
+    "line": 4668
+  },
+  "behavior_lens.impact.title": {
+    "source": "Impact Analysis Calculator",
+    "uiStrings": "Impact Calculator",
+    "line": 4900
+  },
+  "behavior_lens.crisis.title": {
+    "source": "Crisis Intervention Plan",
+    "uiStrings": "Crisis Plan",
+    "line": 5072
+  },
+  "behavior_lens.toast.translated_to_n": {
+    "source": "Translated to ${translateLang.trim()} ✨",
+    "uiStrings": "Translated to N ✨",
+    "line": 5453
+  },
+  "behavior_lens.homenote.title": {
+    "source": "Home Note Generator",
+    "uiStrings": "Home Note",
+    "line": 5500
+  },
+  "behavior_lens.toast.fidelity_saved_for_n": {
+    "source": "Fidelity saved for ${date} ✅",
+    "uiStrings": "Fidelity saved for N ✅",
+    "line": 5615
+  },
+  "behavior_lens.toast.quick_fill_n_items_loaded": {
+    "source": "Quick Fill: ${template.length} items loaded ⚡",
+    "uiStrings": "Quick Fill: N items loaded ⚡",
+    "line": 5691
+  },
+  "behavior_lens.fidelity.title": {
+    "source": "Teacher Fidelity Checklist",
+    "uiStrings": "Fidelity Checklist",
+    "line": 5771
+  },
+  "behavior_lens.feasibility.title": {
+    "source": "Contextual Fit Assessment",
+    "uiStrings": "Feasibility Check",
+    "line": 5852
+  },
+  "behavior_lens.gas.title": {
+    "source": "Goal Attainment Scale",
+    "uiStrings": "GAS Rubric",
+    "line": 5950
+  },
+  "behavior_lens.ui.track_behaviors_at_home_using_simple_everyday_lang": {
+    "source": "Track behaviors at home using simple, everyday language. This helps your child\\'s school team see the full picture.",
+    "uiStrings": "Track behaviors at home using simple, everyday language. This helps your child\\",
+    "line": 6288
+  },
+  "behavior_lens.toast.n_home_entries_pushed_to_abc_data": {
+    "source": "${fresh.length} home entries pushed to ABC data ✅",
+    "uiStrings": "N home entries pushed to ABC data ✅",
+    "line": 6331
+  },
+  "behavior_lens.ph.reflect_on_your_approachn_what_worked_welln_what_w": {
+    "source": "Reflect on your approach...\n• What worked well?\n• What would you do differently?\n• What strategies do you want to practice next?",
+    "uiStrings": "Reflect on your approach...\\n• What worked well?\\n• What would you do differently?\\n• What strategies do you want to practice next?",
+    "line": 6927
+  },
+  "behavior_lens.toast.snapshot_exported_as_n": {
+    "source": "Snapshot exported as ${filename}",
+    "uiStrings": "Snapshot exported as N",
+    "line": 7378
+  },
+  "behavior_lens.toast.merged_n_abc_entries_and_n_observations": {
+    "source": "Merged ${newAbc.length} ABC entries and ${newObs.length} observations",
+    "uiStrings": "Merged N ABC entries and N observations",
+    "line": 7477
+  },
+  "behavior_lens.toast.language_customized_u2728": {
+    "source": "Language customized ✨",
+    "uiStrings": "Language customized \\u2728",
+    "line": 7765
+  },
+  "behavior_lens.toast.loaded_n": {
+    "source": "Loaded: ${scenario.title}",
+    "uiStrings": "Loaded: N",
+    "line": 8343
+  },
+  "behavior_lens.toast.generated_n": {
+    "source": "Generated: ${data.title || 'Custom Scenario'} ✨",
+    "uiStrings": "Generated: N ✨",
+    "line": 8402
+  },
+  "behavior_lens.sandbox.complex_scenario": {
+    "source": "🧩 Complex Scenario",
+    "uiStrings": "Complex scenario",
+    "line": 8525
+  },
+  "behavior_lens.sandbox.standard_scenario": {
+    "source": "📋 Standard Scenario",
+    "uiStrings": "Standard scenario",
+    "line": 8525
+  },
+  "behavior_lens.sandbox.complex_desc": {
+    "source": "Co-occurring behaviors, environmental shifts, trend patterns",
+    "uiStrings": "Multi-phase data with mixed trends.",
+    "line": 8527
+  },
+  "behavior_lens.sandbox.standard_desc": {
+    "source": "Single function, consistent setting, straightforward data",
+    "uiStrings": "A typical baseline-intervention dataset.",
+    "line": 8528
+  },
+  "behavior_lens.sandbox.generating": {
+    "source": "⏳ Generating Scenario...",
+    "uiStrings": "Generating…",
+    "line": 8547
+  },
+  "behavior_lens.sandbox.generate_custom": {
+    "source": "🧠 Generate Custom Scenario",
+    "uiStrings": "Generate custom",
+    "line": 8547
+  },
+  "behavior_lens.sandbox.add_phase_data": {
+    "source": "📊 Add Phase Data",
+    "uiStrings": "Add phase data",
+    "line": 8553
+  },
+  "behavior_lens.sandbox.entries_loaded": {
+    "source": "${abcEntries.length} entries loaded",
+    "uiStrings": "Entries loaded",
+    "line": 8554
+  },
+  "behavior_lens.sandbox.add_phase_desc": {
+    "source": "Generate additional data representing a new phase (e.g., after implementing an intervention). New entries will be appended to existing data with timestamps continuing forward.",
+    "uiStrings": "Add a new phase with custom data points.",
+    "line": 8556
+  },
+  "behavior_lens.sandbox.phase_label": {
+    "source": "🏷️ Phase Label",
+    "uiStrings": "Phase",
+    "line": 8560
+  },
+  "behavior_lens.sandbox.intervention_desc_label": {
+    "source": "📋 Intervention / Phase Description",
+    "uiStrings": "Intervention description",
+    "line": 8578
+  },
+  "behavior_lens.sandbox.expected_pattern": {
+    "source": "📉 Expected Pattern",
+    "uiStrings": "Expected pattern",
+    "line": 8591
+  },
+  "behavior_lens.sandbox.phase_duration": {
+    "source": "📅 Phase Duration",
+    "uiStrings": "Phase duration",
+    "line": 8614
+  },
+  "behavior_lens.sandbox.new_entries": {
+    "source": "📝 New Entries",
+    "uiStrings": "New entries",
+    "line": 8623
+  },
+  "behavior_lens.sandbox.generation_preview": {
+    "source": "📋 Generation Preview",
+    "uiStrings": "Generation preview",
+    "line": 8635
+  },
+  "behavior_lens.dq.tip_add_entries": {
+    "source": "Add ${Math.max(0, 10 - entries.length)} more entries (need 10+)",
+    "uiStrings": "Add more entries to strengthen this score.",
+    "line": 8922
+  },
+  "behavior_lens.dq.tip_great_volume": {
+    "source": "Great volume of data!",
+    "uiStrings": "Great volume of entries for analysis.",
+    "line": 8922
+  },
+  "behavior_lens.dq.tip_last_entry_ago": {
+    "source": "Last entry was ${Math.round(daysSince)} days ago — add fresh data",
+    "uiStrings": "Last entry was recorded a while ago.",
+    "line": 8923
+  },
+  "behavior_lens.dq.tip_data_current": {
+    "source": "Data is current!",
+    "uiStrings": "Data is current and reflects recent behavior.",
+    "line": 8923
+  },
+  "behavior_lens.dq.tip_antecedent_types": {
+    "source": "Only ${uniqueAnt.size} antecedent type${uniqueAnt.size !== 1 ? 's' : ''} — collect across 3+ settings",
+    "uiStrings": "Good range of antecedent types observed.",
+    "line": 8924
+  },
+  "behavior_lens.dq.tip_good_diversity": {
+    "source": "Good setting diversity!",
+    "uiStrings": "Good diversity across antecedents.",
+    "line": 8924
+  },
+  "behavior_lens.dq.tip_missing_fields": {
+    "source": "${entries.length - complete} entries are missing A, B, or C fields",
+    "uiStrings": "Some entries are missing required fields.",
+    "line": 8925
+  },
+  "behavior_lens.dq.tip_all_complete": {
+    "source": "All entries fully complete!",
+    "uiStrings": "All entries have the required fields filled in.",
+    "line": 8925
+  },
+  "behavior_lens.dq.temporal_spread": {
+    "source": "Temporal Spread",
+    "uiStrings": "Temporal spread",
+    "line": 8926
+  },
+  "behavior_lens.dq.tip_spread_days": {
+    "source": "Data from only ${uniqueDays.size} day${uniqueDays.size !== 1 ? 's' : ''} — spread across 3+ days",
+    "uiStrings": "Entries are well spread across days.",
+    "line": 8926
+  },
+  "behavior_lens.dq.tip_good_coverage": {
+    "source": "Good temporal coverage!",
+    "uiStrings": "Good coverage across days.",
+    "line": 8926
+  },
+  "behavior_lens.dq.scorecard_title": {
+    "source": "📊 Data Quality Scorecard",
+    "uiStrings": "Data Quality Scorecard",
+    "line": 8952
+  },
+  "behavior_lens.fba.step_select_student": {
+    "source": "Select a Student",
+    "uiStrings": "Select Student",
+    "line": 8983
+  },
+  "behavior_lens.fba.step_select_student_desc": {
+    "source": "Choose or create a student profile to begin collecting data",
+    "uiStrings": "Choose which student this FBA is for.",
+    "line": 8983
+  },
+  "behavior_lens.fba.step_record_abc_desc": {
+    "source": "Start documenting Antecedent-Behavior-Consequence observations",
+    "uiStrings": "Document antecedents, behaviors, and consequences.",
+    "line": 8984
+  },
+  "behavior_lens.fba.step_collect_more_desc": {
+    "source": "You have ${abcEntries.length} entries — aim for 5+ across different days for reliable patterns",
+    "uiStrings": "Add more observation sessions to strengthen the dataset.",
+    "line": 8985
+  },
+  "behavior_lens.fba.step_ai_analysis": {
+    "source": "Run AI Pattern Analysis",
+    "uiStrings": "AI Analysis",
+    "line": 8986
+  },
+  "behavior_lens.fba.step_ai_analysis_desc": {
+    "source": "You have enough data! Let AI identify behavior patterns and potential functions",
+    "uiStrings": "Use AI to identify patterns and hypothesized function.",
+    "line": 8986
+  },
+  "behavior_lens.fba.step_hypothesis": {
+    "source": "Build a Hypothesis",
+    "uiStrings": "Hypothesis",
+    "line": 8987
+  },
+  "behavior_lens.fba.step_hypothesis_desc": {
+    "source": "Create a visual hypothesis diagram linking triggers, behaviors, and consequences",
+    "uiStrings": "Draft a working hypothesis of behavior function.",
+    "line": 8987
+  },
+  "behavior_lens.fba.step_sessions": {
+    "source": "Track Intervention Sessions",
+    "uiStrings": "Sessions",
+    "line": 8988
+  },
+  "behavior_lens.fba.step_sessions_desc": {
+    "source": "Start tracking data on your intervention to measure effectiveness",
+    "uiStrings": "Run observation sessions across settings and times.",
+    "line": 8988
+  },
+  "behavior_lens.fba.step_report": {
+    "source": "Generate a Progress Report",
+    "uiStrings": "Report",
+    "line": 8989
+  },
+  "behavior_lens.fba.step_report_desc": {
+    "source": "🎉 Full FBA cycle data collected! Create a professional progress report",
+    "uiStrings": "Generate the FBA report for the team.",
+    "line": 8989
+  },
+  "behavior_lens.fba.open_tool": {
+    "source": "→ Open Tool",
+    "uiStrings": "Open tool",
+    "line": 9016
+  },
+  "behavior_lens.fba.progress_pct": {
+    "source": "${progress}% through FBA workflow",
+    "uiStrings": "Progress",
+    "line": 9021
+  },
+  "behavior_lens.heatmap.title": {
+    "source": "Behavior Timeline Heatmap",
+    "uiStrings": "Behavior Heatmap",
+    "line": 9077
+  },
+  "behavior_lens.heatmap.subtitle": {
+    "source": "Incident density across the past 4 school weeks",
+    "uiStrings": "Behavior frequency by day and time",
+    "line": 9078
+  },
+  "behavior_lens.ph.person": {
+    "source": "Person\\'s name or role",
+    "uiStrings": "Person\\",
+    "line": 11507
+  },
+  "behavior_lens.ph.teaching_strategy_how_you": {
+    "source": "📚 Teaching strategy (how you\\'ll teach the replacement)",
+    "uiStrings": "📚 Teaching strategy (how you\\",
+    "line": 12378
+  },
+  "behavior_lens.ph.reinforcement_how_you": {
+    "source": "⭐ Reinforcement (how you\\'ll reward the replacement)",
+    "uiStrings": "⭐ Reinforcement (how you\\",
+    "line": 12385
+  },
+  "behavior_lens.toast.phase_n_evaluated_n": {
+    "source": "Phase ${phaseIdx + 1} evaluated! ${score ? score + '/25' : ''}",
+    "uiStrings": "Phase N evaluated! N",
+    "line": 13412
+  },
+  "behavior_lens.raw.your_response": {
+    "source": "Your Response: ",
+    "uiStrings": "Your response",
+    "line": 13498
+  },
+  "behavior_lens.ui.at_each_phase_you": {
+    "source": "At each phase you\\'ll write your analysis, then receive AI evaluation with scoring and feedback.",
+    "uiStrings": "At each phase you\\",
+    "line": 13645
+  },
+  "behavior_lens.raw.choosing_an_observation_method": {
+    "source": "Choosing an Observation Method",
+    "uiStrings": "Choosing an observation method",
+    "line": 13971
+  },
+  "behavior_lens.raw.interval_and_latency_recording": {
+    "source": "Interval & Latency Recording",
+    "uiStrings": "Interval and latency recording",
+    "line": 13972
+  },
+  "behavior_lens.raw.collecting_data_with_care": {
+    "source": "Collecting Data with Care",
+    "uiStrings": "Collecting data with care",
+    "line": 13973
+  },
+  "behavior_lens.raw.what_is_reinforcement_really": {
+    "source": "What is Reinforcement, Really?",
+    "uiStrings": "What is reinforcement, really?",
+    "line": 13979
+  },
+  "behavior_lens.raw.schedules_of_reinforcement": {
+    "source": "Schedules of Reinforcement",
+    "uiStrings": "Schedules of reinforcement",
+    "line": 13980
+  },
+  "behavior_lens.raw.differential_reinforcement": {
+    "source": "Differential Reinforcement: The Affirming Approach",
+    "uiStrings": "Differential reinforcement",
+    "line": 13981
+  },
+  "behavior_lens.raw.what_is_a_replacement_behavior": {
+    "source": "What is a Replacement Behavior?",
+    "uiStrings": "What is a replacement behavior?",
+    "line": 13987
+  },
+  "behavior_lens.raw.choosing_effective_replacements": {
+    "source": "Choosing Effective Replacements",
+    "uiStrings": "Choosing effective replacements",
+    "line": 13988
+  },
+  "behavior_lens.raw.teaching_not_just_expecting": {
+    "source": "Teaching, Not Just Expecting",
+    "uiStrings": "Teaching, not just expecting",
+    "line": 13989
+  },
+  "behavior_lens.raw.building_team_based_support": {
+    "source": "Building Team-Based Support",
+    "uiStrings": "Building team-based support",
+    "line": 13995
+  },
+  "behavior_lens.raw.when_to_consult_specialists": {
+    "source": "When to Consult Specialists",
+    "uiStrings": "When to consult specialists",
+    "line": 13996
+  },
+  "behavior_lens.raw.partnering_with_families": {
+    "source": "Partnering with Families",
+    "uiStrings": "Partnering with families",
+    "line": 13997
+  },
+  "behavior_lens.raw.bias_and_behavior": {
+    "source": "Bias and Behavior: Looking Inward First",
+    "uiStrings": "Bias and behavior",
+    "line": 14003
+  },
+  "behavior_lens.raw.person_first_always": {
+    "source": "Person-First, Always",
+    "uiStrings": "Person-first always?",
+    "line": 14004
+  },
+  "behavior_lens.raw.restorative_over_punitive": {
+    "source": "Restorative Over Punitive",
+    "uiStrings": "Restorative over punitive",
+    "line": 14005
+  },
+  "behavior_lens.toast.session_saved_ns_n_total_responses": {
+    "source": "Session saved! ${duration}s, ${targets.reduce((a, t) => a + t.count, 0)} total responses",
+    "uiStrings": "Session saved! Ns, N total responses",
+    "line": 15936
+  },
+  "behavior_lens.toast.imported_n_data_points": {
+    "source": "Imported ${parsed.length} data points!",
+    "uiStrings": "Imported N data points!",
+    "line": 16215
+  },
+  "behavior_lens.ph.session_1_3nsession_2_7nsession_3_5n": {
+    "source": "Session 1: 3\nSession 2: 7\nSession 3: 5\n...",
+    "uiStrings": "Session 1: 3\\nSession 2: 7\\nSession 3: 5\\n...",
+    "line": 16744
+  },
+  "behavior_lens.toast.phase_changed_to_n": {
+    "source": "Phase changed to: ${phases[nextPhase].label}",
+    "uiStrings": "Phase changed to: N",
+    "line": 17136
+  },
+  "behavior_lens.toast.need_3_items": {
+    "source": "Please enter at least 3 items",
+    "uiStrings": "Need at least 3 items.",
+    "line": 17728
+  },
+  "behavior_lens.toast.enter_task_name": {
+    "source": "Please enter a Task/Skill Name first",
+    "uiStrings": "Enter a task name.",
+    "line": 19201
+  },
+  "behavior_lens.toast.steps_generated": {
+    "source": "Task steps generated successfully!",
+    "uiStrings": "Steps generated.",
+    "line": 19240
+  },
+  "behavior_lens.toast.session_saved_n_independent": {
+    "source": "Session saved! ${session.independentPct}% independent",
+    "uiStrings": "Session saved! N% independent",
+    "line": 19279
+  },
+  "behavior_lens.toast.session_n_correct_nn": {
+    "source": "Session: ${pct}% correct (${correct}/${sessionTrials.length})",
+    "uiStrings": "Session: N% correct (N/N)",
+    "line": 19445
+  },
+  "behavior_lens.toast.mastered_n_n_consecutive_sessions_at_criterion": {
+    "source": "🎉 MASTERED! ${program?.name || 'Target'} — ${program?.masteryCriteria.sessions} consecutive sessions at criterion!",
+    "uiStrings": "🎉 MASTERED! N — N consecutive sessions at criterion!",
+    "line": 19449
+  },
+  "behavior_lens.toast.populated_from_n_abc_entries": {
+    "source": "Populated from ${abcEntries.length} ABC entries",
+    "uiStrings": "Populated from N ABC entries",
+    "line": 19797
+  },
+  "behavior_lens.raw.cumulative_record": {
+    "source": "Cumulative Record",
+    "uiStrings": "Cumulative record",
+    "line": 20713
+  },
+  "behavior_lens.toast.integrity_n_nn": {
+    "source": "Integrity: ${integrity}% (${implemented}/${total})",
+    "uiStrings": "Integrity: N% (N/N)",
+    "line": 21054
+  },
+  "behavior_lens.raw.intensity": {
+    "source": "Intensity ",
+    "uiStrings": "Intensity",
+    "line": 21285
+  },
+  "behavior_lens.toast.autofilled_n_baseline_n_intervention_points_from_n": {
+    "source": "Auto-filled: ${baseVals.length} baseline + ${intVals.length} intervention points from \"${graphExport.behaviorName}\"",
+    "uiStrings": "Auto-filled: N baseline + N intervention points from \"N\"",
+    "line": 21790
+  },
+  "behavior_lens.toast.need_2_baseline_2_intervention_entries_with_phase_tags": {
+    "source": "Need at least 2 baseline + 2 intervention entries with phase tags",
+    "uiStrings": "Need at least 2 baseline and 2 intervention entries with phase tags.",
+    "line": 21800
+  },
+  "behavior_lens.toast.autofilled_from_phase_tagged_entries": {
+    "source": "Auto-filled: ${baseVals.length} baseline + ${intVals.length} intervention intensity values from ABC data",
+    "uiStrings": "Autofilled from phase-tagged entries.",
+    "line": 21807
+  },
+  "behavior_lens.toast.imported_n_n": {
+    "source": "Imported ${validRows.length} ${importMode === 'abc' ? 'ABC entries' : 'students'}!",
+    "uiStrings": "Imported N N!",
+    "line": 22331
+  },
+  "behavior_lens.toast.parsed_n_abc_entries_from_transcript": {
+    "source": "Parsed ${safeEntries.length} ABC entries from transcript!",
+    "uiStrings": "Parsed N ABC entries from transcript!",
+    "line": 22646
+  },
+  "behavior_lens.toast.added_n_entries_to_abc_data": {
+    "source": "Added ${clean.length} entries to ABC data!",
+    "uiStrings": "Added N entries to ABC data!",
+    "line": 22656
+  },
+  "behavior_lens.raw.momentary_time_sampling": {
+    "source": "Momentary Time Sampling (MTS)",
+    "uiStrings": "Momentary time sampling",
+    "line": 23423
+  },
+  "behavior_lens.raw.partial_interval": {
+    "source": "Partial Interval Recording",
+    "uiStrings": "Partial interval",
+    "line": 23424
+  },
+  "behavior_lens.raw.whole_interval": {
+    "source": "Whole Interval Recording",
+    "uiStrings": "Whole interval",
+    "line": 23425
+  },
+  "behavior_lens.toast.switched_to_n_no_data_loaded": {
+    "source": "Switched to ${studentName} (no data loaded)",
+    "uiStrings": "Switched to N (no data loaded)",
+    "line": 24349
+  },
+  "behavior_lens.toast.switched_to_n": {
+    "source": "Switched to ${studentName} ✅",
+    "uiStrings": "Switched to N ✅",
+    "line": 24380
+  },
+  "behavior_lens.toast.workspace_loaded_n_entries_n_notes": {
+    "source": "Workspace loaded (${(data.abcEntries || []).length} entries, ${(data.sessionNotes || []).length} notes) 📂",
+    "uiStrings": "Workspace loaded (N entries, N notes) 📂",
+    "line": 24558
+  },
+  "behavior_lens.toast.loaded_n_workspaces_for_comparison": {
+    "source": "Loaded ${loaded.length} workspace(s) for comparison",
+    "uiStrings": "Loaded N workspace(s) for comparison",
+    "line": 24613
+  },
+  "behavior_lens.hub.abc_title": {
+    "source": "ABC Data Collection",
+    "uiStrings": "ABC Data",
+    "line": 25179
+  },
+  "behavior_lens.hub.abc_desc": {
+    "source": "Record antecedent-behavior-consequence data for functional analysis",
+    "uiStrings": "Record antecedent, behavior, and consequence observations",
+    "line": 25180
+  },
+  "behavior_lens.hub.obs_desc": {
+    "source": "Fullscreen observation mode with frequency, duration, interval, and latency recording",
+    "uiStrings": "Real-time interval, frequency, or duration recording",
+    "line": 25188
+  },
+  "behavior_lens.hub.analysis_title": {
+    "source": "AI Pattern Analysis",
+    "uiStrings": "AI Analysis",
+    "line": 25195
+  },
+  "behavior_lens.hub.analysis_desc": {
+    "source": "AI-powered functional behavior analysis based on your collected data",
+    "uiStrings": "AI-powered behavior pattern analysis & recommendations",
+    "line": 25196
+  },
+  "behavior_lens.hub.overview_title": {
+    "source": "Behavior Overview",
+    "uiStrings": "Overview",
+    "line": 25204
+  },
+  "behavior_lens.hub.overview_desc": {
+    "source": "Visual dashboard with trends, heatmap, and data summaries",
+    "uiStrings": "Behavior trends, charts, and summary statistics",
+    "line": 25205
+  },
+  "behavior_lens.hub.freq_desc": {
+    "source": "Quick-click tap counter for rapid in-class behavior tallying",
+    "uiStrings": "Quick tallying and rate-per-minute tracking",
+    "line": 25213
+  },
+  "behavior_lens.hub.interval_desc": {
+    "source": "Visual grid with partial, whole, and momentary recording modes",
+    "uiStrings": "Partial, whole, or momentary time sampling grid",
+    "line": 25220
+  },
+  "behavior_lens.hub.token_desc": {
+    "source": "Visual reinforcement tracker for positive behavior support",
+    "uiStrings": "Visual reinforcement board with customizable tokens",
+    "line": 25227
+  },
+  "behavior_lens.hub.hotspot_title": {
+    "source": "Routine Hotspot Matrix",
+    "uiStrings": "Routine Hotspot",
+    "line": 25233
+  },
+  "behavior_lens.hub.hotspot_desc": {
+    "source": "Map behavioral patterns to daily routine periods with AI analysis",
+    "uiStrings": "Identify high-frequency behavior times across routines",
+    "line": 25234
+  },
+  "behavior_lens.hub.export_title": {
+    "source": "Export Reports",
+    "uiStrings": "Export Data",
+    "line": 25241
+  },
+  "behavior_lens.hub.export_desc": {
+    "source": "Download data as JSON, CSV, text reports, or printable PDF portfolio",
+    "uiStrings": "Download ABC data and observations as JSON or text",
+    "line": 25242
+  },
+  "behavior_lens.hub.record_desc": {
+    "source": "Paste IEP/eval text for AI-powered structured summary",
+    "uiStrings": "Paste IEP/evaluations for AI-powered summarization",
+    "line": 25250
+  },
+  "behavior_lens.hub.hypothesis_desc": {
+    "source": "Visual function hypothesis flow from ABC data with AI generation",
+    "uiStrings": "Visual A→B→C→Function flow chart with AI generation",
+    "line": 25257
+  },
+  "behavior_lens.hub.goals_title": {
+    "source": "SMART Goal Builder",
+    "uiStrings": "SMART Goals",
+    "line": 25265
+  },
+  "behavior_lens.hub.goals_desc": {
+    "source": "Step-by-step behavioral goal construction with AI suggestions",
+    "uiStrings": "AI-generated SMART behavior goals with progress tracking",
+    "line": 25266
+  },
+  "behavior_lens.hub.contract_desc": {
+    "source": "AI-drafted contract with student and teacher sections",
+    "uiStrings": "AI-drafted student-teacher behavior agreement",
+    "line": 25273
+  },
+  "behavior_lens.hub.cycle_title": {
+    "source": "Escalation Cycle",
+    "uiStrings": "Acting-Out Cycle",
+    "line": 25279
+  },
+  "behavior_lens.hub.cycle_desc": {
+    "source": "Colvin & Sugai 7-phase emotional regulation model with personalized strategies",
+    "uiStrings": "7-phase escalation cycle with intervention strategies",
+    "line": 25280
+  },
+  "behavior_lens.hub.reinforcer_desc": {
+    "source": "Preference inventory with AI-recommended reinforcers",
+    "uiStrings": "Identify effective reinforcers across 5 categories",
+    "line": 25287
+  },
+  "behavior_lens.hub.choice_desc": {
+    "source": "Fullscreen student-facing visual choice overlay",
+    "uiStrings": "Student-facing visual choice cards for self-regulation",
+    "line": 25294
+  },
+  "behavior_lens.hub.triangulation_title": {
+    "source": "Data Triangulation",
+    "uiStrings": "Triangulation",
+    "line": 25307
+  },
+  "behavior_lens.hub.triangulation_desc": {
+    "source": "Cross-reference ABC, observations, and AI analysis for convergence",
+    "uiStrings": "Cross-reference 3+ data sources for convergence",
+    "line": 25308
+  },
+  "behavior_lens.hub.impact_desc": {
+    "source": "Quantify lost instructional time and estimated annual cost",
+    "uiStrings": "Quantify behavior frequency, duration, and annual cost",
+    "line": 25316
+  },
+  "behavior_lens.hub.crisis_desc": {
+    "source": "3-tier emergency protocol with AI-drafted safety plan",
+    "uiStrings": "Three-tier crisis intervention protocol generator",
+    "line": 25323
+  },
+  "behavior_lens.hub.fbaworkflow_title": {
+    "source": "Guided Workflows",
+    "uiStrings": "FBA Workflow Guide",
+    "line": 25449
+  },
+  "behavior_lens.hub.functionquiz_title": {
+    "source": "What's the Function?",
+    "uiStrings": "Function Quiz",
+    "line": 25644
+  },
+  "behavior_lens.hub.functionquiz_desc": {
+    "source": "Interactive clinical scenarios to practice identifying behavioral functions via the AC model",
+    "uiStrings": "Practice identifying behavior function from short scenarios.",
+    "line": 25645
+  },
+  "behavior_lens.hub.practicum_desc": {
+    "source": "Practice MTS, Partial, and Whole Interval recording against simulated scenarios with accuracy grading",
+    "uiStrings": "Run a guided practice case from start to finish.",
+    "line": 25652
+  },
+  "behavior_lens.hub.scdmanager_title": {
+    "source": "Single-Case Design",
+    "uiStrings": "SCD Manager",
+    "line": 25696
+  },
+  "behavior_lens.hub.bipgen_desc": {
+    "source": "Synthesize ABC and preference data into a formal, editable BIP document",
+    "uiStrings": "Draft a Behavior Intervention Plan from your data.",
+    "line": 25704
+  },
+  "behavior_lens.raw.crossstudent_comparison": {
+    "source": "Cross-Student Comparison",
+    "uiStrings": "Cross-student comparison",
+    "line": 25826
+  },
+  "behavior_lens.raw.batch_import": {
+    "source": "Batch Import",
+    "uiStrings": "Batch import",
+    "line": 25864
+  },
+  "behavior_lens.raw.progress_monitor": {
+    "source": "Progress Monitor",
+    "uiStrings": "Progress monitor",
+    "line": 25871
+  },
+  "behavior_lens.raw.workspace_sharing": {
+    "source": "Workspace Sharing",
+    "uiStrings": "Workspace sharing",
+    "line": 25886
+  },
+  "behavior_lens.raw.print_report": {
+    "source": "Print-Ready Report",
+    "uiStrings": "Print report",
+    "line": 25893
+  },
+  "behavior_lens.hub.competingpathways_desc": {
+    "source": "Visual model mapping problem, replacement, and competing behaviors for FBA/BIP planning",
+    "uiStrings": "Map desired and replacement behaviors against the problem path.",
+    "line": 25901
+  },
+  "behavior_lens.hub.cantdowontdo_desc": {
+    "source": "Skill deficit vs performance deficit assessment through structured probes",
+    "uiStrings": "Sort skill vs. performance deficits to pick the right support.",
+    "line": 25909
+  },
+  "behavior_lens.hub.mipractice_title": {
+    "source": "MI Practice Simulator",
+    "uiStrings": "Motivational Interviewing Practice",
+    "line": 25916
+  },
+  "behavior_lens.hub.mipractice_desc": {
+    "source": "Practice motivational interviewing with AI-powered student simulations",
+    "uiStrings": "Rehearse MI conversations with simulated student responses.",
+    "line": 25917
+  },
+  "behavior_lens.hub.replacementbehavior_title": {
+    "source": "Replacement Behavior Tracker",
+    "uiStrings": "Replacement Behavior",
+    "line": 25924
+  },
+  "behavior_lens.hub.replacementbehavior_desc": {
+    "source": "Track teaching trials and monitor acquisition of replacement behaviors",
+    "uiStrings": "Identify a same-function behavior that meets the student’s need.",
+    "line": 25925
+  },
+  "behavior_lens.hub.opdef_title": {
+    "source": "Operational Definition Builder",
+    "uiStrings": "Operational Definition",
+    "line": 25940
+  },
+  "behavior_lens.hub.wizard_title": {
+    "source": "Tool Wizard",
+    "uiStrings": "Behavior Lens Wizard",
+    "line": 26483
+  },
+  "behavior_lens.subtitle": {
+    "source": "Behavioral Observation & Analysis",
+    "uiStrings": "Behavioral Observation & Support",
+    "line": 26762
+  },
+  "behavior_lens.raw.export_this_tool": {
+    "source": "Export this tool's data",
+    "uiStrings": "Export this tool\\",
+    "line": 26875
+  },
+  "behavior_lens.raw.conditional_probability": {
+    "source": "Conditional Probability",
+    "uiStrings": "Conditional probability",
+    "line": 27487
+  },
+  "behavior_lens.raw.trend_dashboard": {
+    "source": "Trend Dashboard",
+    "uiStrings": "Trend dashboard",
+    "line": 27490
+  },
+  "behavior_lens.raw.predictive_insights": {
+    "source": "Predictive Insights",
+    "uiStrings": "Predictive insights",
+    "line": 27996
+  },
+  "behavior_lens.raw.treatment_integrity": {
+    "source": "Treatment Integrity",
+    "uiStrings": "Treatment integrity",
+    "line": 28022
+  },
+  "behavior_lens.raw.social_validity": {
+    "source": "Social Validity",
+    "uiStrings": "Social validity",
+    "line": 28031
+  },
+  "behavior_lens.raw.dtt_data_sheet": {
+    "source": "DTT Data Sheet",
+    "uiStrings": "DTT data sheet",
+    "line": 28038
+  },
+  "behavior_lens.raw.task_analysis": {
+    "source": "Task Analysis",
+    "uiStrings": "Task analysis",
+    "line": 28042
+  },
+  "behavior_lens.raw.caseload_dashboard": {
+    "source": "Caseload Dashboard",
+    "uiStrings": "Caseload dashboard",
+    "line": 28079
+  }
+}

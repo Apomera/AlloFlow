@@ -1,0 +1,10 @@
+{
+  "langName": "polish",
+  "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
+  "totalEnglishKeys": 1427,
+  "translatedKeys": 1390,
+  "missingKeys": 0,
+  "passthroughKeys": 37,
+  "coveragePct": 97.4,
+  "missing": {}
+}

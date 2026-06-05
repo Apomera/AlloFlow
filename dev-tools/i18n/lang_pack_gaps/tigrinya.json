@@ -1,0 +1,10 @@
+{
+  "langName": "tigrinya",
+  "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
+  "totalEnglishKeys": 1427,
+  "translatedKeys": 1425,
+  "missingKeys": 0,
+  "passthroughKeys": 2,
+  "coveragePct": 99.9,
+  "missing": {}
+}

@@ -1,0 +1,240 @@
+[
+  {
+    "slug": "acholi",
+    "idx": 1,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/acholi_01_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "acholi",
+    "idx": 2,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/acholi_02_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "acholi",
+    "idx": 3,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/acholi_03_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "acholi",
+    "idx": 4,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/acholi_04_of_04.json",
+    "count": 52
+  },
+  {
+    "slug": "chin_hakha",
+    "idx": 1,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/chin_hakha_01_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "chin_hakha",
+    "idx": 2,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/chin_hakha_02_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "chin_hakha",
+    "idx": 3,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/chin_hakha_03_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "chin_hakha",
+    "idx": 4,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/chin_hakha_04_of_04.json",
+    "count": 125
+  },
+  {
+    "slug": "karen",
+    "idx": 1,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/karen_01_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "karen",
+    "idx": 2,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/karen_02_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "karen",
+    "idx": 3,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/karen_03_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "karen",
+    "idx": 4,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/karen_04_of_04.json",
+    "count": 167
+  },
+  {
+    "slug": "marshallese",
+    "idx": 1,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/marshallese_01_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "marshallese",
+    "idx": 2,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/marshallese_02_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "marshallese",
+    "idx": 3,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/marshallese_03_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "marshallese",
+    "idx": 4,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/marshallese_04_of_04.json",
+    "count": 187
+  },
+  {
+    "slug": "maay_maay",
+    "idx": 1,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/maay_maay_01_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "maay_maay",
+    "idx": 2,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/maay_maay_02_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "maay_maay",
+    "idx": 3,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/maay_maay_03_of_04.json",
+    "count": 200
+  },
+  {
+    "slug": "maay_maay",
+    "idx": 4,
+    "total": 4,
+    "file": "dev-tools/i18n/chunks/maay_maay_04_of_04.json",
+    "count": 191
+  },
+  {
+    "slug": "chin_falam",
+    "idx": 1,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/chin_falam_01_of_07.json",
+    "count": 200
+  },
+  {
+    "slug": "chin_falam",
+    "idx": 2,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/chin_falam_02_of_07.json",
+    "count": 200
+  },
+  {
+    "slug": "chin_falam",
+    "idx": 3,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/chin_falam_03_of_07.json",
+    "count": 200
+  },
+  {
+    "slug": "chin_falam",
+    "idx": 4,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/chin_falam_04_of_07.json",
+    "count": 200
+  },
+  {
+    "slug": "chin_falam",
+    "idx": 5,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/chin_falam_05_of_07.json",
+    "count": 200
+  },
+  {
+    "slug": "chin_falam",
+    "idx": 6,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/chin_falam_06_of_07.json",
+    "count": 200
+  },
+  {
+    "slug": "chin_falam",
+    "idx": 7,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/chin_falam_07_of_07.json",
+    "count": 126
+  },
+  {
+    "slug": "lao",
+    "idx": 1,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/lao_01_of_07.json",
+    "count": 200
+  },
+  {
+    "slug": "lao",
+    "idx": 2,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/lao_02_of_07.json",
+    "count": 200
+  },
+  {
+    "slug": "lao",
+    "idx": 3,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/lao_03_of_07.json",
+    "count": 200
+  },
+  {
+    "slug": "lao",
+    "idx": 4,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/lao_04_of_07.json",
+    "count": 200
+  },
+  {
+    "slug": "lao",
+    "idx": 5,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/lao_05_of_07.json",
+    "count": 200
+  },
+  {
+    "slug": "lao",
+    "idx": 6,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/lao_06_of_07.json",
+    "count": 200
+  },
+  {
+    "slug": "lao",
+    "idx": 7,
+    "total": 7,
+    "file": "dev-tools/i18n/chunks/lao_07_of_07.json",
+    "count": 126
+  }
+]

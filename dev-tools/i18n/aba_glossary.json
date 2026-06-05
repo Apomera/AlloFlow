@@ -1,0 +1,97 @@
+{
+  "_meta": {
+    "purpose": "Canonical translation glossary for behavior_lens.* keys. Used by check_translation_quality.cjs (CI guard) and any future build_language_pack / re-translation passes. Lessons captured from the 2026-06-04 303-agent accuracy audit + the 2026-06-04/05 fix passes.",
+    "generated": "2026-06-05",
+    "format_version": 1
+  },
+  "preserve_verbatim": {
+    "_note": "These tokens MUST stay byte-identical in every target-language translation. The translation-quality CI guard treats their presence as a non-issue (won't count toward English-density flags).",
+    "brands": [
+      "BehaviorLens", "AlloFlow", "Gemini", "Firebase", "Chrome", "Edge", "Safari", "Imagen", "iPad"
+    ],
+    "clinical_acronyms": [
+      "ABA", "ABC", "IEP", "BIP", "FBA", "BCBA", "BACB", "FERPA", "HIPAA",
+      "MTSS", "RTI", "UDL", "SEL", "DTT", "IOA", "MSWO", "FCT",
+      "DR", "DRA", "DRI", "DRO", "DRL", "GAS", "SCD", "CICO", "PECS",
+      "VTA", "STAG", "NTAC", "AI", "ASR", "AAC", "SPED",
+      "SMART", "K-2", "FR", "VR", "CRF",
+      "Tau-U", "NAP", "PND", "MI",
+      "SoR", "SOR", "DIBELS", "DIBELS-8", "ORF",
+      "Toulmin", "SIFT", "VAK", "STEM", "ESSA", "ESSER", "ESSER-III"
+    ],
+    "tech_formats": [
+      "JSON", "CSV", "PDF", "PNG", "SVG", "ARIA", "WCAG"
+    ]
+  },
+  "aba_term_glosses": {
+    "_note": "These English clinical terms have non-obvious meanings. Translators MUST use these senses, NOT literal dictionary glosses. Format: english_term: { sense, anti_pattern (what NOT to translate it as) }",
+    "Acting-Out Cycle": {
+      "sense": "Colvin's escalation cycle of disruptive/explosive behavior (calm → trigger → agitation → acceleration → peak → de-escalation → recovery).",
+      "anti_pattern": "drama/theater/expression/performance — these were 2026-06-04 audit defects in lao + acholi"
+    },
+    "Fidelity": {
+      "sense": "Treatment fidelity = degree of adherence to a behavior plan as written / as designed.",
+      "anti_pattern": "moral honesty/loyalty — was a 2026-06-04 audit defect in lao (คວາਡສື່ສັດ = honesty)"
+    },
+    "Reinforcement Inventory": {
+      "sense": "Structured survey/list of items that function as reinforcers for a given student.",
+      "anti_pattern": "goods warehouse/stockroom — was a 2026-06-04 audit defect in lao (ສາງສິນຄ້າ = warehouse)"
+    },
+    "Replacement Behavior": {
+      "sense": "Alternative socially-acceptable behavior that meets the same function as the target behavior to reduce."
+    },
+    "Antecedent": {
+      "sense": "Stimulus / event preceding a behavior (the A in ABC)."
+    },
+    "Consequence": {
+      "sense": "Stimulus / event following a behavior (behavioral sense — NOT moral/punitive sense, NOT karma)."
+    },
+    "Real-time": {
+      "sense": "Live / synchronous (as it happens).",
+      "anti_pattern": "literal-time / authentic-time; AND no hyphenated stubs like Real-iien (marshallese pipeline bug)"
+    },
+    "Caseload": {
+      "sense": "Set of students under a single clinician's care."
+    },
+    "Inter-Observer Agreement (IOA)": {
+      "sense": "Reliability statistic for behavioral observations across two or more observers."
+    },
+    "Wizard": {
+      "sense": "Guided multi-step UI workflow.",
+      "anti_pattern": "sorcerer/magician/occult — was a 2026-06-04 audit defect in maay_maay (Saaxir)"
+    },
+    "Data": {
+      "sense": "Behavioral data points / measurements.",
+      "anti_pattern": "Matter — was a 2026-06-04 audit defect across dozens of acholi keys"
+    },
+    "Off-task": {
+      "sense": "Engaging in any behavior other than the assigned task during instruction time."
+    }
+  },
+  "preserve_anti_patterns": {
+    "_note": "Lexical patterns that have been observed as bugs from older build pipelines. The CI guard flags any string containing these in any pack.",
+    "contraction_stubs": [
+      "'t Do",
+      "'t do",
+      "'t Won",
+      "won't ",
+      "wuu kara't",
+      "maroñ't"
+    ],
+    "compound_stubs": [
+      "Real-iien",
+      "real-iien",
+      "Check-Ilo",
+      "check-ilo",
+      "ABA-iien"
+    ],
+    "calques": [
+      {"calque": "Matter", "lang": "acholi", "context_hint": "not as a verb 'to matter' — as a NOUN for Data"}
+    ]
+  },
+  "conservative_principle": {
+    "_note": "When no clean target-language equivalent exists for a clinical ABA term, KEEP the English clinical term verbatim with target-language framing (parenthetical gloss). DO NOT invent neologisms. Confident-but-wrong native invention is worse than mixed-English-clinical, because it misleads a teacher reading the UI in their family's language and gives them a false-confident translation of a clinical concept.",
+    "example_good": "Coo gin ma okwongo (antecedent), kit me tim (behavior), ki gin ma olubo (consequence) — acholi keeps the technical English term in parens.",
+    "example_bad": "Cawa me Pweyo (back-translates to 'time of unclear') — invented confident wrong rendering of 'Acting-Out Cycle'."
+  }
+}

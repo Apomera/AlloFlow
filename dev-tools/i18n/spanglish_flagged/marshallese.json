@@ -1,0 +1,1052 @@
+{
+  "hub.subtitle": {
+    "en": "Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.",
+    "tr": "Kein jerbal ñan Functional Behavior Assessment, aini ABC data, im Behavior Intervention Plan.",
+    "contentWordCount": 9,
+    "matchedCount": 7,
+    "ratio": 0.78
+  },
+  "hub.abc_desc": {
+    "en": "Record antecedent, behavior, and consequence observations",
+    "tr": "Jeje antecedent, ṃwilin, im consequence ko jān lale",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.interval_desc": {
+    "en": "Partial, whole, or momentary time sampling grid",
+    "tr": "Grid ñan time sampling: partial, whole, ak momentary",
+    "contentWordCount": 6,
+    "matchedCount": 6,
+    "ratio": 1
+  },
+  "hub.hypothesis_desc": {
+    "en": "Visual A→B→C→Function flow chart with AI generation",
+    "tr": "Visual A→B→C→Function flow chart kōṃṃane jān AI",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.contract_desc": {
+    "en": "AI-drafted student-teacher behavior agreement",
+    "tr": "AI ej je behavior agreement ikōtaan ri-jikuuḷ im ri-kaki",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.triangulation_desc": {
+    "en": "Cross-reference 3+ data sources for convergence",
+    "tr": "Keidi 3+ unin data ñan lo convergence",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.gas_desc": {
+    "en": "Goal Attainment Scaling with AI-generated descriptors",
+    "tr": "Goal Attainment Scaling ippān descriptor ko jān AI",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.pocket_desc": {
+    "en": "Compact index-card BIP summary for clipboard carry",
+    "tr": "BIP summary ekanooj edik āinwōt index-card ñan bōk ilo clipboard",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.abagraph_desc": {
+    "en": "Publication-standard graphs with phase lines, trend lines, and visual analysis",
+    "tr": "Jaat ko rekkar ñan publication ippān phase line, trend line, im visual analysis",
+    "contentWordCount": 10,
+    "matchedCount": 5,
+    "ratio": 0.5
+  },
+  "hub.bcbahandoff_desc": {
+    "en": "Data dashboard for BCBAs + printable handoff packet for consultation",
+    "tr": "Dashboard in data ñan BCBA + handoff packet emaroñ kabbōj ñan jipañ",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "hub.casestudy_desc": {
+    "en": "AI-generated case studies with 4-phase clinical reasoning and scoring",
+    "tr": "Case study ko jān AI ippān 4-phase clinical reasoning im scoring",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "hub.condprob_desc": {
+    "en": "Foreground vs background probability analysis to validate ABC hypotheses with data",
+    "tr": "Etale foreground vs background probability ñan kaṃṃool ABC hypothesis ippān data",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.counseling_desc": {
+    "en": "AI role-play with student personas for counseling practice",
+    "tr": "Role-play kōn AI ippān persona in ri-jikuuḷ ñan kōkātak counseling",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "hub.cumrecord_desc": {
+    "en": "Classic Skinner-style cumulative frequency graph — the heritage of ABA data display",
+    "tr": "Skinner-style cumulative frequency graph — jolet eo an ABA data display",
+    "contentWordCount": 8,
+    "matchedCount": 6,
+    "ratio": 0.75
+  },
+  "hub.drstrategy_desc": {
+    "en": "Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)",
+    "tr": "Kāālōt differential reinforcement strategy eo ejejjet (DRA, DRI, DRO, DRL)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.dtt_desc": {
+    "en": "Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance",
+    "tr": "Discrete Trial Training — jeje trial-by-trial ippān mastery criteria im auto-advance",
+    "contentWordCount": 11,
+    "matchedCount": 9,
+    "ratio": 0.82
+  },
+  "hub.fcttemplate_desc": {
+    "en": "Functional Communication Training planning with modality selection",
+    "tr": "Functional Communication Training karōk ippān kāālōt in modality",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "hub.iepprep_desc": {
+    "en": "AI-generated meeting preparation packet with data summary, talking points, and next steps",
+    "tr": "Packet in pojak ñan meeting jān AI ippān data summary, talking point, im juon ko reitok",
+    "contentWordCount": 11,
+    "matchedCount": 5,
+    "ratio": 0.45
+  },
+  "hub.ioacalc_desc": {
+    "en": "Inter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count",
+    "tr": "Inter-Observer Agreement kōn 6 wāween — point-by-point, interval, scored/unscored, exact count",
+    "contentWordCount": 12,
+    "matchedCount": 10,
+    "ratio": 0.83
+  },
+  "hub.latency_desc": {
+    "en": "Stimulus-to-response time measurement with mean, median, and range statistics",
+    "tr": "Joñe iien jān stimulus ñan response ippān mean, median, im range",
+    "contentWordCount": 9,
+    "matchedCount": 5,
+    "ratio": 0.56
+  },
+  "hub.maintenance_desc": {
+    "en": "Track skill retention post-mastery and generalization across settings, people, and materials",
+    "tr": "Lale skill retention ālikin mastery im generalization ilo jikin, armej, im men ko",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "hub.mtss_desc": {
+    "en": "Visual 3-tier pyramid for managing multi-tiered supports with AI-powered tier placement recommendations",
+    "tr": "Visual 3-tier pyramid ñan jipañ multi-tiered supports ippān tier placement jipañ jān AI",
+    "contentWordCount": 12,
+    "matchedCount": 8,
+    "ratio": 0.67
+  },
+  "hub.prefassess_desc": {
+    "en": "Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols",
+    "tr": "Kile reinforcer ilo wāween rejejjet — MSWO, Paired Stimulus, im Free Operant protocol",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "hub.progressreport_desc": {
+    "en": "AI-generated progress reports with data summaries, trend analysis, goal progress, and parent-friendly language option",
+    "tr": "Progress report ko jān AI ippān data summary, trend analysis, goal progress, im naan ñan ri-utiej",
+    "contentWordCount": 14,
+    "matchedCount": 6,
+    "ratio": 0.43
+  },
+  "hub.selfcheck_desc": {
+    "en": "Student-facing mood check-in and reflection journal — capturing their voice",
+    "tr": "Mood check-in im reflection journal ñan ri-jikuuḷ — ñan roñjake aer ainikien",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.socialvalidity_desc": {
+    "en": "TARF and IRP-15 scales for measuring treatment acceptability — required for publication",
+    "tr": "TARF im IRP-15 scale ñan joñe an mālim treatment — aikuj ñan publication",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "hub.taskanalysis_desc": {
+    "en": "Break skills into teachable steps with forward, backward, or total-task chaining and prompt tracking",
+    "tr": "Aikuj skill ñan jekjek emaroñ katakin ippān forward, backward, ak total-task chaining im prompt tracking",
+    "contentWordCount": 13,
+    "matchedCount": 7,
+    "ratio": 0.54
+  },
+  "hub.treatintegrity_desc": {
+    "en": "Document whether interventions are implemented as designed — component-level fidelity tracking",
+    "tr": "Jeje eḷaññe intervention ko rej etal āinwōt karōk — component-level fidelity tracking (treatment adherence)",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.bipgen_desc": {
+    "en": "Draft a Behavior Intervention Plan from your data.",
+    "tr": "Je juon Behavior Intervention Plan jān aṃ data.",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "hub.mipractice_title": {
+    "en": "Motivational Interviewing Practice",
+    "tr": "Kōkātak in Motivational Interviewing",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.practicum_desc": {
+    "en": "Run a guided practice case from start to finish.",
+    "tr": "Etale juon guided practice case jān jino ñan jeṃḷọk.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hotspot.tap_hint": {
+    "en": "Tap a cell to increment. Click routine name to edit.",
+    "tr": "Uññūr juon cell ñan kalōñ. Klik routine name ñan ukōte.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "quick_fill_label": {
+    "en": "🧠 Quick-Fill — Describe what happened",
+    "tr": "🧠 Quick-Fill — Kwaḷọk ta eo eaḷ waḷọk",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "quiz_replacement": {
+    "en": "What is a replacement behavior?",
+    "tr": "Ta eo ej juon ṃwilin pinej jenkwan (replacement behavior)?",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "fidelity_tip_2": {
+    "en": "Provide additional BST (Behavioral Skills Training)",
+    "tr": "Lewōj BST (Behavioral Skills Training) kobaḷọk",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.add_a_team_note_shiftenter_for_new_line": {
+    "en": "Add a team note... (Shift+Enter for new line)",
+    "tr": "Kobaḷọk juon kakōḷḷe an team eo... (Shift+Enter ñan juon laajrak ekāāl)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.eg_does_a_token_economy_reduce_offtask_behavior_du": {
+    "en": "e.g. \"Does a token economy reduce off-task behavior during math instruction?\"",
+    "tr": "joñak: \"Ej ke juon token economy kadikḷọk off-task behavior ilo iien katakin math?\"",
+    "contentWordCount": 9,
+    "matchedCount": 5,
+    "ratio": 0.56
+  },
+  "ph.eg_offtask_behavior_in_math": {
+    "en": "e.g. Off-task behavior in math",
+    "tr": "joñak: Off-task behavior ilo math",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "ph.eg_spanish_arabic_somali": {
+    "en": "e.g. Spanish, Arabic, Somali…",
+    "tr": "joñak: Spanish, Arabic, Somali…",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "ph.eg_student_with_autism_cooccurring_adhd_new_to_the": {
+    "en": "e.g. \"student with autism\", \"co-occurring ADHD\", \"new to the school\"",
+    "tr": "joñak: \"ri-jikuuḷ eo ewōr an autism\", \"co-occurring ADHD\", \"ekāāl ñan jikuuḷ in\"",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ph.eg_token_economy_fct_protocol": {
+    "en": "e.g. Token Economy + FCT Protocol",
+    "tr": "joñak: Token Economy + FCT Protocol",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "ph.search_terms_eg_reinforcement_fba_data": {
+    "en": "🔍 Search terms... (e.g. \"reinforcement\", \"FBA\", \"data\")",
+    "tr": "🔍 Kōmḷan ko ñan pukot... (joñak: \"reinforcement\", \"FBA\", \"data\")",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.setting_eg_math_class_cafeteria": {
+    "en": "Setting (e.g., Math class, Cafeteria)",
+    "tr": "Jikin (joñak, Math class, Cafeteria)",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ph.type_language_eg_spanish_arabic_somali": {
+    "en": "Type language (e.g., Spanish, Arabic, Somali)",
+    "tr": "Taipi kajin (joñak, Spanish, Arabic, Somali)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.autofilled_n_baseline_n_intervention_points_from_n": {
+    "en": "Auto-filled: N baseline + N intervention points from \"N\"",
+    "tr": "Eṃōj-make-kobrak: N baseline + N intervention points jān \"N\"",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.behavior_occurred_dro_timer_reset": {
+    "en": "⚠️ Behavior occurred — DRO timer reset",
+    "tr": "⚠️ Ṃwil eo eaar waḷọk — DRO timer eṃōj an reset",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.case_study_complete_review_your_debrief": {
+    "en": "Case study complete! Review your debrief.",
+    "tr": "Eṃōj case study! Etale debrief eo aṃ.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.case_study_generated_begin_phase_1": {
+    "en": "Case study generated! Begin Phase 1.",
+    "tr": "Eṃōj kōṃṃan case study! Jino Phase 1.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.consent_template_exported": {
+    "en": "Consent template exported",
+    "tr": "Eṃōj kadiwōjḷọk consent template",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.consent_template_imported": {
+    "en": "Consent template imported",
+    "tr": "Eṃōj kadeḷọñ consent template",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.dro_interval_complete_reinforce_no_target_behavior": {
+    "en": "🎉 DRO interval complete — REINFORCE! No target behavior occurred!",
+    "tr": "🎉 Eṃōj DRO interval — KAPEN! Ejjeḷọk target behavior eaar waḷọk!",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.each_phase_needs_at_least_2_data_points": {
+    "en": "Each phase needs at least 2 data points",
+    "tr": "Kajjojo phase ej aikuj rōḷap iiō ruo data points",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.effect_sizes_attached_to_iep_prep": {
+    "en": "Effect sizes attached to IEP Prep!",
+    "tr": "Eṃōj likūt effect sizes ñan IEP Prep!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.enter_a_target_behavior_first": {
+    "en": "Enter a target behavior first",
+    "tr": "Likūt juon target behavior ṃokta",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.failed_to_generate_case_study_try_again": {
+    "en": "Failed to generate case study. Try again.",
+    "tr": "Eaar likjab an kōṃṃan case study. Bar kajjioñ.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.failed_to_generate_share_code": {
+    "en": "Failed to generate share code",
+    "tr": "Eaar likjab an kōṃṃan share code",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.failed_to_parse_snapshot_file": {
+    "en": "Failed to parse snapshot file",
+    "tr": "Eaar likjab an parse snapshot file",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.failed_to_parse_transcript": {
+    "en": "Failed to parse transcript",
+    "tr": "Eaar likjab an parse transcript",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.family_voice_entry_added": {
+    "en": "Family voice entry added ✨",
+    "tr": "Eṃōj kobaḷọk family voice entry ✨",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.graph_data_attached_to_iep_prep": {
+    "en": "Graph data attached to IEP Prep!",
+    "tr": "Eṃōj likūt graph data ñan IEP Prep!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.graph_data_ready_autofill_available_in_effect_size": {
+    "en": "Graph data ready — auto-fill available in Effect Size!",
+    "tr": "Pojak graph data — make-kobrak ej pād ilo Effect Size!",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "toast.home_log_exported_as_snapshot": {
+    "en": "Home log exported as snapshot 📦",
+    "tr": "Eṃōj kadiwōjḷọk home log āinwōt juon snapshot 📦",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.iep_prep_packet_generated": {
+    "en": "IEP prep packet generated ✨",
+    "tr": "Eṃōj kōṃṃan IEP prep packet ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.intervention_plan_generated": {
+    "en": "Intervention plan generated ✨",
+    "tr": "Eṃōj kōṃṃan intervention plan ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.merged_n_abc_entries_and_n_observations": {
+    "en": "Merged N ABC entries and N observations",
+    "tr": "Eṃōj koba N ABC entries im N observations",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.modification_plan_generated": {
+    "en": "Modification plan generated",
+    "tr": "Eṃōj kōṃṃan modification plan",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.n_home_entries_pushed_to_abc_data": {
+    "en": "N home entries pushed to ABC data ✅",
+    "tr": "Eṃōj jilkinḷọk N home entries ñan ABC data ✅",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.name_at_least_one_target_behavior": {
+    "en": "Name at least one target behavior",
+    "tr": "Likūt etan rōḷap juon target behavior",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.need_at_least_2_data_points_per_phase": {
+    "en": "Need at least 2 data points per phase",
+    "tr": "Eaikuj rōḷap iiō ruo data points kajjojo phase",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.need_at_least_2_phases_in_the_graph_baseline_inter": {
+    "en": "Need at least 2 phases in the Graph (baseline + intervention)",
+    "tr": "Eaikuj rōḷap iiō ruo phase ilo Graph eo (baseline + intervention)",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.not_a_valid_alloflow_snapshot_file": {
+    "en": "Not a valid AlloFlow snapshot file",
+    "tr": "Ejjab juon AlloFlow snapshot file ejejjet",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.not_a_valid_consent_template_file": {
+    "en": "Not a valid consent template file",
+    "tr": "Ejjab juon consent template file ejejjet",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.pattern_analysis_complete": {
+    "en": "Pattern analysis complete ✨",
+    "tr": "Eṃōj pattern analysis ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.please_define_a_student_persona": {
+    "en": "Please define a student persona",
+    "tr": "Jouj im kōmḷeḷeik juon student persona",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.popups_blocked_downloaded_as_html_file_instead": {
+    "en": "Pop-ups blocked — downloaded as HTML file instead.",
+    "tr": "Eṃōj bōbrae pop-ups — eṃōj download āinwōt juon HTML file.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.predictive_analysis_complete": {
+    "en": "Predictive analysis complete ✨",
+    "tr": "Eṃōj predictive analysis ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.progress_narrative_generated": {
+    "en": "Progress narrative generated ✨",
+    "tr": "Eṃōj kōṃṃan progress narrative ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.quick_fill_n_items_loaded": {
+    "en": "Quick Fill: N items loaded ⚡",
+    "tr": "Quick Fill: Eṃōj load N men ⚡",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.reflection_analysis_ready": {
+    "en": "Reflection analysis ready 🌟",
+    "tr": "Pojak reflection analysis 🌟",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.report_generated_use_printsave_as_pdf_in_the_new_t": {
+    "en": "Report generated — use Print/Save as PDF in the new tab!",
+    "tr": "Eṃōj kōṃṃan report — kōjerbal Print/Save as PDF ilo tab eo ekāāl!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.reset_to_default_template": {
+    "en": "Reset to default template",
+    "tr": "Reset ñan default template",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.speech_recognition_not_supported_in_this_browser": {
+    "en": "Speech recognition not supported in this browser",
+    "tr": "Speech recognition ejjab jerbal ilo browser in",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.autofilled_from_phase_tagged_entries": {
+    "en": "Autofilled from phase-tagged entries.",
+    "tr": "Kar make-kanne jān entries ko ewōr aer phase tag.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.need_2_baseline_2_intervention_entries_with_phase_tags": {
+    "en": "Need at least 2 baseline and 2 intervention entries with phase tags.",
+    "tr": "Aikuj ulōñ 2 baseline im 2 intervention entries ewōr aer phase tags.",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "toast.snapshot_rejected_entries": {
+    "en": "Skipped ${rejectedAbc + rejectedObs} malformed entries (missing/invalid timestamp or wrong field types). ${validAbc.length + validObs.length} valid entries kept for review.",
+    "tr": "Kar kāālōt ${rejectedAbc + rejectedObs} entries ko rejjab jiṃwe (eḷḷaḷḷap/jab-jiṃwe timestamp ak field types ko rebōd). ${validAbc.length + validObs.length} entries ko rejiṃwe rej pād wōt ñan etale.",
+    "contentWordCount": 19,
+    "matchedCount": 11,
+    "ratio": 0.58
+  },
+  "toast.share_code_too_large": {
+    "en": "Snapshot too large for share code (${encoded.length.toLocaleString()} chars, limit 5,000). Use 💾 Download Snapshot instead.",
+    "tr": "Snapshot eḷḷap im jab tōllọk ñan kakkien kōjjeḷọk (${encoded.length.toLocaleString()} chars, joñan eo 5,000). Kōjerbal 💾 Download Snapshot ijo jeḷā.",
+    "contentWordCount": 12,
+    "matchedCount": 7,
+    "ratio": 0.58
+  },
+  "ui.add_abc_entries_before_generating_a_report": {
+    "en": "Add ABC entries before generating a report.",
+    "tr": "Kobaiki ABC entries ṃokta jān aṃ kōṃṃan report.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.add_abc_entries_to_see_visual_trend_data": {
+    "en": "Add ABC entries to see visual trend data.",
+    "tr": "Kobaiki ABC entries ñan lo data in trend in alikkar.",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.add_data_points_above_or_paste_csv_data_to_get_sta": {
+    "en": "Add data points above or paste CSV data to get started.",
+    "tr": "Kobaiki data points ilōñ ak likūt CSV data ñan jino.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.based_on_horner_salentine_albin_2003": {
+    "en": "Based on Horner, Salentine, & Albin (2003)",
+    "tr": "Pedped ioon Horner, Salentine, & Albin (2003)",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.choose_the_right_differential_reinforcement_strate": {
+    "en": "Choose the right differential reinforcement strategy",
+    "tr": "Kāālōt strategy in differential reinforcement eo ejejjet",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.click_ai_generate_checklist_to_create_items_based": {
+    "en": "Click \"AI Generate Checklist\" to create items based on the BIP",
+    "tr": "Kaḷōke \"AI Generate Checklist\" ñan kōṃṃan items ko pedped ioon BIP",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.click_load_student_workspaces_and_select_multiple": {
+    "en": "Click \"Load Student Workspaces\" and select multiple .json files saved from BehaviorLens",
+    "tr": "Kaḷōke \"Load Student Workspaces\" im kāālōt elōñ .json files ko kar kọjjeḷọki jān BehaviorLens",
+    "contentWordCount": 10,
+    "matchedCount": 5,
+    "ratio": 0.5
+  },
+  "ui.create_your_first_replacement_behavior_plan": {
+    "en": "Create your first replacement behavior plan.",
+    "tr": "Kōṃṃan aṃ ṃokta replacement behavior plan.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.discrete_trial_training_with_mastery_tracking_and": {
+    "en": "Discrete Trial Training with mastery tracking and auto-advance",
+    "tr": "Discrete Trial Training kōn mastery tracking im auto-advance",
+    "contentWordCount": 8,
+    "matchedCount": 7,
+    "ratio": 0.88
+  },
+  "ui.drop_a_snapshot_file_here": {
+    "en": "Drop a Snapshot File Here",
+    "tr": "Drop juon Snapshot File ijin",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.enter_data_or_record_sessions_to_generate_a_cumula": {
+    "en": "Enter data or record sessions to generate a cumulative record.",
+    "tr": "Kobaiki data ak record sessions ñan kōṃṃan juon cumulative record.",
+    "contentWordCount": 7,
+    "matchedCount": 5,
+    "ratio": 0.71
+  },
+  "ui.functional_communication_training_planning_tool": {
+    "en": "Functional Communication Training planning tool",
+    "tr": "Kein jerbal in karōk ñan Functional Communication Training",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.generate_a_multiweek_intervention_plan_based_on_yo": {
+    "en": "Generate a multi-week intervention plan based on your collected ABC data and AI analysis.",
+    "tr": "Kōṃṃan juon plan in intervention iuṃwin elōñ wiik pedped ioon aṃ ABC data im AI analysis.",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "ui.generate_a_professional_printready_progress_report": {
+    "en": "Generate a professional, print-ready progress report with inline charts, data summaries, and AI recommendations. One-click PDF export via browser print.",
+    "tr": "Kōṃṃan juon report in wōnṃaanḷọk eṃṃan, ekkar ñan print, ewōr aer charts, kadu in data, im AI recommendations. Juon-click PDF export ilo browser print.",
+    "contentWordCount": 16,
+    "matchedCount": 9,
+    "ratio": 0.56
+  },
+  "ui.generate_compliant_iep_behavioral_goals_from_obser": {
+    "en": "Generate compliant IEP behavioral goals from observation data with present levels, SMART goals, and progress monitoring.",
+    "tr": "Kōṃṃan IEP behavioral goals ko rejejjet jān observation data im ewōr present levels, SMART goals, im wōnṃaanḷọk monitoring.",
+    "contentWordCount": 13,
+    "matchedCount": 8,
+    "ratio": 0.62
+  },
+  "ui.generate_iepready_progress_monitoring_paragraphs_f": {
+    "en": "Generate IEP-ready progress monitoring paragraphs from your accumulated behavioral data.",
+    "tr": "Kōṃṃan IEP-ready paragraphs in wōnṃaanḷọk monitoring jān aṃ behavioral data eo kar kobaiki.",
+    "contentWordCount": 10,
+    "matchedCount": 5,
+    "ratio": 0.5
+  },
+  "ui.load_multiple_student_workspace_files_to_compare_b": {
+    "en": "Load multiple student workspace files to compare behavior patterns, intensity levels, and trends side-by-side.",
+    "tr": "Load elōñ files in student workspace ñan keidi wāween mwil, joñan kajoor, im trends side-by-side.",
+    "contentWordCount": 13,
+    "matchedCount": 7,
+    "ratio": 0.54
+  },
+  "ui.no_behavioral_data_recorded": {
+    "en": "No behavioral data recorded",
+    "tr": "Ejjeḷọk behavioral data kar record",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.no_entries_yet_tap_log_a_behavior_to_get_started": {
+    "en": "No entries yet. Tap \"Log a Behavior\" to get started!",
+    "tr": "Ejjañin wōr entries. Uññūr \"Log a Behavior\" ñan jino!",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.no_session_data_recorded_yet": {
+    "en": "No session data recorded yet.",
+    "tr": "Ejjañin wōr session data kar record.",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.no_team_notes_yet_start_the_conversation": {
+    "en": "No team notes yet. Start the conversation!",
+    "tr": "Ejjañin wōr team notes. Jino kōnnaan eo!",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.or_explore_the_pd_learning_path": {
+    "en": "Or explore the PD Learning Path →",
+    "tr": "Ak etale PD Learning Path →",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.paste_one_value_per_line_supports_formats_5_sessio": {
+    "en": "Paste one value per line. Supports formats: \"5\", \"Session 1: 5\", or \"1,5\"",
+    "tr": "Likūt juon value ilo juon laajrak. Ej jerbal kōn formats: \"5\", \"Session 1: 5\", ak \"1,5\"",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.please_use_chrome_edge_or_safari_for_voice_input": {
+    "en": "Please use Chrome, Edge, or Safari for voice input.",
+    "tr": "Jouj im kōjerbal Chrome, Edge, ak Safari ñan voice input.",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.practice_clinical_reasoning_with_aigenerated_case": {
+    "en": "Practice clinical reasoning with AI-generated case studies. Get expert-level feedback on your responses.",
+    "tr": "Kamminene clinical reasoning kōn case studies ko AI ear kōṃṃani. Bōk expert-level uwaak ñan aṃ uwaak.",
+    "contentWordCount": 12,
+    "matchedCount": 6,
+    "ratio": 0.5
+  },
+  "ui.publicationstandard_singlecase_design_graphs": {
+    "en": "Publication-standard single-case design graphs",
+    "tr": "Graphs in single-case design ekkar ñan publication-standard",
+    "contentWordCount": 6,
+    "matchedCount": 6,
+    "ratio": 1
+  },
+  "ui.record_sessions_with_the_session_data_tracker_or_s": {
+    "en": "Record sessions with the Session Data Tracker, or switch to Manual Entry mode.",
+    "tr": "Record sessions kōn Session Data Tracker, ak oktak ñan Manual Entry mode.",
+    "contentWordCount": 10,
+    "matchedCount": 8,
+    "ratio": 0.8
+  },
+  "ui.select_a_research_design_to_structure_your_data_co": {
+    "en": "Select a research design to structure your data collection",
+    "tr": "Kāālōt juon research design ñan kōṃṃan struktur ñan aṃ kobaik data",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.share_workspace_data_with_team_members_rolebased_v": {
+    "en": "Share workspace data with team members. Role-based views filter data appropriately for BCBAs, teachers, and parents.",
+    "tr": "Kakkien workspace data ippān ri-team ro. Role-based views rej kāālōt data ko rejejjet ñan BCBAs, ri-kaki, im jinen im jemen.",
+    "contentWordCount": 15,
+    "matchedCount": 8,
+    "ratio": 0.53
+  },
+  "ui.track_behavior_frequency_over_time_with_aim_lines": {
+    "en": "Track behavior frequency over time with aim lines, phase changes, and trend analysis.",
+    "tr": "Track frequency in mwil ilo iien kōn aim lines, phase changes, im etale trend.",
+    "contentWordCount": 11,
+    "matchedCount": 6,
+    "ratio": 0.55
+  },
+  "ui.track_your_feelings_earn_badges_and_build_streaks": {
+    "en": "Track your feelings, earn badges, and build streaks!",
+    "tr": "Track eññjake ko aṃ, bōk badges, im kalōk streaks!",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.visual_multitiered_system_of_supports_assign_stude": {
+    "en": "Visual multi-tiered system of supports. Assign students to tiers, get AI-powered placement recommendations.",
+    "tr": "Visual multi-tiered system of supports. Likūt ri-jikuuḷ ñan tiers, bōk AI-powered recommendations in likūt.",
+    "contentWordCount": 11,
+    "matchedCount": 8,
+    "ratio": 0.73
+  },
+  "allobot_chat.empty_title": {
+    "en": "Ask me anything about behavior analysis!",
+    "tr": "Kajjitōk jabdewōt kōn behavior analysis!",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "intervention.title": {
+    "en": "AI Intervention Plan Generator",
+    "tr": "Ri-Kōṃṃan Plan in Intervention eo AI",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.additional_schooldistrict_notes": {
+    "en": "Additional School/District Notes",
+    "tr": "Notes ko Jet kōn Jikuuḷ/District",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.adjust_the_plan_based_on_data_trends": {
+    "en": "Adjust the plan based on data trends",
+    "tr": "Ukot plan eo ekkar ñan trend ko an data",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.artificial_intelligence_ai_usage_disclosure": {
+    "en": "Artificial Intelligence (AI) Usage Disclosure",
+    "tr": "Kwaḷọk kōn Kōjerbal AI (Artificial Intelligence)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.compare_current_data_to_baseline_levels": {
+    "en": "Compare current data to baseline levels",
+    "tr": "Keidi data eo kiiō ippān ḷōñūn baseline",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.conduct_a_full_functional_behavior_assessment": {
+    "en": "Conduct a full Functional Behavior Assessment",
+    "tr": "Kōṃṃane juon Functional Behavior Assessment ej dedeḷok",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.develop_an_individualized_behavior_intervention_plan": {
+    "en": "Develop an individualized Behavior Intervention Plan",
+    "tr": "Ejaak juon Behavior Intervention Plan ekkar ñan armej eo make",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.document_baseline_frequency_for_flagged_students": {
+    "en": "Document baseline frequency for flagged students",
+    "tr": "Jeje baseline frequency ñan ri-jikuuḷ ro raar kakōḷḷeik",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.document_the_hypothesis_in_session_notes": {
+    "en": "Document the hypothesis in session notes",
+    "tr": "Jeje hypothesis eo ilo notes in jenkwōn",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.identify_12_functionally_equivalent_replacement_behaviors": {
+    "en": "Identify 1–2 functionally equivalent replacement behaviors",
+    "tr": "Kile 1–2 ṃwil in pinej jenkwa ko functionally equivalent",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.identify_students_exceeding_the_universal_threshold": {
+    "en": "Identify students exceeding the universal threshold",
+    "tr": "Kile ri-jikuuḷ ro reeḷḷā jān threshold eo universal",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.plan_a_reinforcement_schedule_for_replacement_behaviors": {
+    "en": "Plan a reinforcement schedule for replacement behaviors",
+    "tr": "Karōk juon schedule in reinforcement ñan ṃwil in pinej jenkwa ko",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.plan_data_collection_methods_and_frequency": {
+    "en": "Plan data collection methods and frequency",
+    "tr": "Karōk wāween aini data im frequency",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.ready_to_generate_hypothesis_diagram": {
+    "en": "Ready to generate hypothesis diagram",
+    "tr": "Pojak ñan kōṃṃane diagram in hypothesis",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.review_existing_data_supporting_the_hypothesis": {
+    "en": "Review existing data supporting the hypothesis",
+    "tr": "Etale data eo ej pād kiiō im rejetake hypothesis eo",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.review_progress_monitoring_data_vs_baseline": {
+    "en": "Review progress monitoring data vs. baseline",
+    "tr": "Etale data in progress monitoring vs. baseline",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.run_ai_analysis_on_collected_data": {
+    "en": "Run AI Analysis on collected data",
+    "tr": "Kōjjeḷā AI Analysis ioon data ko ar aini",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.sensoryautomatic_function": {
+    "en": "Sensory/Automatic Function",
+    "tr": "Function in Eñjake/Automatic",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.set_a_6week_intervention_cycle": {
+    "en": "Set a 6-week intervention cycle",
+    "tr": "Likūt juon cycle in intervention 6-wiik",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.set_review_dates_and_checkin_schedule": {
+    "en": "Set review dates and check-in schedule",
+    "tr": "Likūt raan in etale im schedule in check-in",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.triangulate_with_observation_data": {
+    "en": "Triangulate with observation data",
+    "tr": "Triangulate ippān data in lale",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.view_trend_dashboard_with_your_data": {
+    "en": "View trend dashboard with your data",
+    "tr": "Lale dashboard in trend ippān data eo aṃ",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "raw.you_have_enough_data_for_ai_analysis": {
+    "en": "You have enough data for AI analysis",
+    "tr": "Eṃōj aṃ bōk bwe data ñan AI analysis",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.interval_and_latency_recording": {
+    "en": "Interval and latency recording",
+    "tr": "Jeje interval im latency",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "dq.tip_antecedent_types": {
+    "en": "Good range of antecedent types observed.",
+    "tr": "Ewōr juon range eṃṃan in kain antecedent ko ar lale.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "dq.tip_great_volume": {
+    "en": "Great volume of entries for analysis.",
+    "tr": "Volume eḷap an entry ko ñan analysis.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "fba.step_hypothesis_desc": {
+    "en": "Draft a working hypothesis of behavior function.",
+    "tr": "Jeje juon hypothesis ejjab dedeḷok an function in ṃwil.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "sandbox.add_phase_desc": {
+    "en": "Add a new phase with custom data points.",
+    "tr": "Kobaik juon phase ekāāl ippān data point ko aṃ make.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "sandbox.standard_desc": {
+    "en": "A typical baseline-intervention dataset.",
+    "tr": "Juon dataset in baseline-intervention ej ekkein.",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "confirm.delete_self_check": {
+    "en": "Delete the self-check from ${when}? This can't be undone.",
+    "tr": "Joḷọk self-check eo jān ${when}? Eban maroñ bar oktak.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "maintenance.probe_schedule_label_v2": {
+    "en": "Standard ABA Maintenance Probe Tiers",
+    "tr": "Tier ko an Probe Maintenance Standard ABA",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  }
+}
