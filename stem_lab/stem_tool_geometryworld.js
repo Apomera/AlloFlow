@@ -6153,8 +6153,12 @@
                         var npcWrongMap = Object.assign({}, d.npcWrongCount || {});
                         npcWrongMap[dialogNpcIdx] = (npcWrongMap[dialogNpcIdx] || 0) + 1;
                         var newWrong = npcWrongMap[dialogNpcIdx];
+                        // Remember this NPC's last wrong choice so the gated AI-hint
+                        // button (shown at >=2 wrongs) can pass it to ctx.getHint.
+                        var npcLastWrongMap = Object.assign({}, d.npcLastWrong || {});
+                        npcLastWrongMap[dialogNpcIdx] = choice;
                         var totalConsecutive = consecutiveWrong + 1;
-                        upd({ consecutiveWrong: totalConsecutive, npcWrongCount: npcWrongMap });
+                        upd({ consecutiveWrong: totalConsecutive, npcWrongCount: npcWrongMap, npcLastWrong: npcLastWrongMap });
                         checkFrustration(totalConsecutive);
                         setTimeout(runAchievementCheck, 100);
                         var hintText = '\u274C Not quite. ';
@@ -6172,7 +6176,21 @@
                     },
                     style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '7px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }
                   }, choice);
-                })
+                }),
+                // Gated AI hint (slice-2 pilot). Only shows when the teacher has
+                // enabled AI hints AND the student has missed this NPC >=2 times.
+                // ctx.getHint self-gates (off => zero traffic), enforces the
+                // attempt floor + one-per-question cap + reveal-check.
+                ctx && ctx.aiHintsEnabled && ((d.npcWrongCount || {})[dialogNpcIdx] || 0) >= 2 && el('button', {
+                  key: 'aihint',
+                  'aria-label': 'Ask the AI for a hint',
+                  onClick: function() {
+                    var wc = (d.npcWrongCount || {})[dialogNpcIdx] || 0;
+                    var lw = (d.npcLastWrong || {})[dialogNpcIdx];
+                    ctx.getHint('geometryworld', curQ.text, lw != null ? String(lw) : '', String(curQ.choices[curQ.correct]), wc, function(hint) { if (addToast) addToast(hint, 'info'); });
+                  },
+                  style: { display: 'block', width: '100%', padding: '6px 12px', marginTop: '2px', background: 'rgba(124,58,237,0.15)', border: '1px solid #7c3aed', borderRadius: '7px', color: '#c4b5fd', fontSize: '11px', fontWeight: 700, cursor: 'pointer', textAlign: 'center', fontFamily: 'inherit' }
+                }, '🤖 Ask AI for a hint')
               );
             })(),
             isAnswered && el('div', { style: { borderTop: '1px solid rgba(34,197,94,0.2)', paddingTop: '8px', marginTop: '4px' } },
@@ -6293,9 +6311,12 @@
                 if (!eng || !callGemini) return;
                 var wrong = (eng.sessionLog || []).filter(function(e) { return e.type === 'answer_wrong'; });
                 var lastWrong = wrong.length > 0 ? wrong[wrong.length - 1] : null;
+                // Integrity: do NOT send the correct answer to the model (it was
+                // being injected here and could be echoed back, revealing it). The
+                // coach gives GENERAL strategy + encouragement, not the solution.
                 var coachPrompt = 'You are a warm, encouraging growth mindset coach for a student (age 8-12) struggling with a geometry question in a 3D block world. '
-                  + (lastWrong ? 'They just got this wrong: "' + (lastWrong.data.question || '') + '". The correct answer was: "' + (lastWrong.data.correctAnswer || '') + '". ' : '')
-                  + 'In 2-3 sentences: (1) validate their effort, (2) give a concrete strategy for solving volume problems using blocks, (3) end with encouragement. '
+                  + (lastWrong ? 'They just got this geometry question wrong: "' + (lastWrong.data.question || '') + '". ' : '')
+                  + 'In 2-3 sentences: (1) validate their effort, (2) give a concrete GENERAL strategy for solving volume problems using blocks \u2014 do NOT solve this specific problem or state any numeric answer, (3) end with encouragement. '
                   + 'Use language a child would understand. Reference counting blocks, layers, or L\u00d7W\u00d7H.';
                 callGemini(coachPrompt, true).then(function(response) {
                   if (addToast) addToast('\uD83C\uDF31 Coach: ' + response, 'info');
