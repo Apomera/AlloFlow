@@ -522,6 +522,23 @@
         const [regenSection, setRegenSection] = useState(null);
         const [regenInstructions, setRegenInstructions] = useState('');
         const [showRegenInput, setShowRegenInput] = useState(null);
+        // ─── psycheck handoff (Architecture C) ────────────────────────────
+        // External tool (https://github.com/.../psycheck) does deterministic
+        // numeric-fidelity verification of an exported draft against the
+        // structured scoreEntries and emits a JSON discrepancy report. The
+        // clinician imports that JSON here; we render the discrepancies as
+        // amber banners attached to the relevant sections.
+        //
+        // FERPA invariant — this state is RENDER-ONLY:
+        //   - never written to setHistory / saveHistory
+        //   - never written to Firestore via saveToCloud
+        //   - never serialized into snapshot / saveSnapshot
+        //   - never included in copyFullReport / printReport / export bundles
+        //   - resets on component unmount (component-local useState only)
+        // The imported JSON may contain extracted quotes from the source
+        // narrative; routing them through any persistence path would
+        // join the Tier-2 leak surface.
+        const [discrepancyReport, setDiscrepancyReport] = useState(null);
         // ─── Phase D — Dynamic Assessment ingestion ───
         // When DA Studio writes window.__alloDAExport, surface a banner
         // offering to ingest its fact chunks + pre-drafted section into
@@ -1514,6 +1531,103 @@ Return ONLY JSON:
             }
         };
 
+        // ── psycheck handoff (Architecture C) ──
+        // File-input handler. Reads a psycheck VerificationResult JSON,
+        // validates its shape lightly, stores it in component-local state.
+        // No persistence. No Firestore write. No export inclusion.
+        const handleImportDiscrepancyReport = (event) => {
+            const file = event && event.target && event.target.files && event.target.files[0];
+            if (!file) return;
+            // Reset the input value so re-selecting the same file fires
+            // onChange again — without this, a clinician who fixes their
+            // draft then re-runs psycheck and picks the same path can't
+            // re-import.
+            const inputEl = event.target;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const raw = ev.target.result;
+                    const data = JSON.parse(raw);
+                    if (!data || typeof data !== 'object') {
+                        throw new Error('Expected a JSON object at the top level');
+                    }
+                    if (!Array.isArray(data.discrepancies)) {
+                        throw new Error('Missing or non-array "discrepancies" field — not a psycheck report?');
+                    }
+                    setDiscrepancyReport(data);
+                    if (addToast) addToast(
+                        `Imported psycheck report: ${data.discrepancies.length} discrepancy(ies), ` +
+                        `${Array.isArray(data.verified) ? data.verified.length : 0} verified citation(s)`,
+                        data.discrepancies.length > 0 ? 'info' : 'success'
+                    );
+                } catch (e) {
+                    warnLog('[Report] psycheck import failed:', e);
+                    if (addToast) addToast(`Failed to import discrepancy report: ${(e && e.message) || e}`, 'error');
+                } finally {
+                    if (inputEl) inputEl.value = '';
+                }
+            };
+            reader.onerror = () => {
+                if (addToast) addToast('Failed to read discrepancy report file', 'error');
+                if (inputEl) inputEl.value = '';
+            };
+            reader.readAsText(file);
+        };
+
+        const clearDiscrepancyReport = () => {
+            setDiscrepancyReport(null);
+            if (addToast) addToast('Discrepancy report cleared', 'info');
+        };
+
+        // Map each discrepancy to the section it most likely refers to.
+        // Two-tier match:
+        //   1. Substring match on the span context (the verified-against text
+        //      and the current reportSections may differ — clinician may have
+        //      edited after exporting — so we use a short stable substring).
+        //   2. Subtest-name fallback (case-insensitive) when the span no
+        //      longer matches any section.
+        // Discrepancies that bind to neither go into __unattached and render
+        // in a top-of-report panel.
+        const discrepanciesBySection = useMemo(() => {
+            const out = { __unattached: [] };
+            if (!discrepancyReport || !Array.isArray(discrepancyReport.discrepancies)) return out;
+            const sectionEntries = Object.entries(reportSections || {});
+            for (const disc of discrepancyReport.discrepancies) {
+                let matched = null;
+                // Tier 1: span substring match
+                if (disc && disc.span && typeof disc.span.text === 'string' && disc.span.text.length > 20) {
+                    // Use a middle slice — first/last chars are often
+                    // partial-word fragments due to extractor span padding.
+                    const t = disc.span.text;
+                    const needle = t.substring(Math.floor(t.length * 0.25), Math.floor(t.length * 0.75));
+                    if (needle.length > 10) {
+                        for (const [secName, secText] of sectionEntries) {
+                            if (typeof secText === 'string' && secText.indexOf(needle) !== -1) {
+                                matched = secName;
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Tier 2: subtest-name fallback
+                if (!matched && disc && disc.subtest) {
+                    const needle = String(disc.subtest).toLowerCase();
+                    for (const [secName, secText] of sectionEntries) {
+                        if (typeof secText === 'string' && secText.toLowerCase().indexOf(needle) !== -1) {
+                            matched = secName;
+                            break;
+                        }
+                    }
+                }
+                if (matched) {
+                    (out[matched] = out[matched] || []).push(disc);
+                } else {
+                    out.__unattached.push(disc);
+                }
+            }
+            return out;
+        }, [discrepancyReport, reportSections]);
+
         // ── Step 5: Dual-Pass Accuracy Check ──
         const runAccuracyCheck = async () => {
             if (!callGemini) return;
@@ -2465,6 +2579,73 @@ Return ONLY valid JSON:
                     ),
                     h('p', { className: 'text-[11px] text-center text-violet-600' }, genProgress)
                 ),
+                // ── psycheck handoff (Architecture C): import discrepancy report ──
+                // Render-only; never persisted. See state declaration block for the
+                // FERPA invariant.
+                Object.keys(reportSections).length > 0 && h('div', {
+                    className: 'mt-3 rounded-lg p-3 border ' + (discrepancyReport
+                        ? (Array.isArray(discrepancyReport.discrepancies) && discrepancyReport.discrepancies.length > 0
+                            ? 'bg-amber-50 border-amber-300'
+                            : 'bg-emerald-50 border-emerald-300')
+                        : 'bg-slate-50 border-slate-300')
+                },
+                    h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
+                        h('div', { className: 'flex items-center gap-2 text-xs' },
+                            h('span', { className: 'text-sm' }, '🔍'),
+                            h('span', { className: 'font-bold text-slate-700' }, 'psycheck verification'),
+                            discrepancyReport
+                                ? h('span', { className: 'text-[11px] text-slate-600' },
+                                    `${Array.isArray(discrepancyReport.discrepancies) ? discrepancyReport.discrepancies.length : 0} discrepancy(ies), ` +
+                                    `${Array.isArray(discrepancyReport.verified) ? discrepancyReport.verified.length : 0} verified, ` +
+                                    `${Array.isArray(discrepancyReport.omitted_scores) ? discrepancyReport.omitted_scores.length : 0} omitted`)
+                                : h('span', { className: 'text-[11px] italic text-slate-600' }, 'no report imported')
+                        ),
+                        h('div', { className: 'flex items-center gap-1.5' },
+                            h('label', {
+                                className: 'text-[11px] px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-500 cursor-pointer transition-colors font-medium',
+                                title: 'Import a psycheck JSON discrepancy report'
+                            },
+                                '📥 Import discrepancy report',
+                                h('input', {
+                                    type: 'file',
+                                    accept: '.json,application/json',
+                                    onChange: handleImportDiscrepancyReport,
+                                    className: 'hidden',
+                                    'aria-label': 'Import psycheck JSON discrepancy report'
+                                })
+                            ),
+                            discrepancyReport && h('button', {
+                                'aria-label': 'Clear discrepancy report',
+                                className: 'text-[11px] px-2 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors',
+                                onClick: clearDiscrepancyReport
+                            }, '✕ Clear')
+                        )
+                    ),
+                    // Top-level summary for unattached discrepancies (no section binding)
+                    discrepancyReport && Array.isArray(discrepanciesBySection.__unattached) && discrepanciesBySection.__unattached.length > 0
+                        && h('div', { className: 'mt-2 pt-2 border-t border-amber-200 text-[11px]' },
+                            h('div', { className: 'font-bold text-amber-800 mb-1' },
+                                `⚠️ ${discrepanciesBySection.__unattached.length} discrepancy(ies) could not be matched to a section:`),
+                            h('ul', { className: 'list-disc list-inside space-y-0.5 text-slate-700' },
+                                discrepanciesBySection.__unattached.map((d, i) =>
+                                    h('li', { key: i }, `[${d.kind || 'unknown'}] ${d.detail || ''}`)
+                                )
+                            )
+                        ),
+                    // Omitted scores warning — surfaces "should this be discussed?"
+                    discrepancyReport && Array.isArray(discrepancyReport.omitted_scores) && discrepancyReport.omitted_scores.length > 0
+                        && h('div', { className: 'mt-2 pt-2 border-t border-amber-200 text-[11px]' },
+                            h('div', { className: 'font-bold text-slate-700 mb-1' },
+                                `🔕 ${discrepancyReport.omitted_scores.length} score(s) in input but not discussed in draft:`),
+                            h('ul', { className: 'list-disc list-inside space-y-0.5 text-slate-700' },
+                                discrepancyReport.omitted_scores.map((s, i) =>
+                                    h('li', { key: i },
+                                        `${s.assessment || ''} ${s.subtest || ''}: ${s.score} ` +
+                                        (s.classification ? `(${s.classification})` : ''))
+                                )
+                            )
+                        )
+                ),
                 // Generated sections with evidence mapping & per-section controls
                 Object.keys(reportSections).length > 0 && h('div', { className: 'space-y-3 mt-3' },
                     Object.entries(reportSections).map(([section, text]) =>
@@ -2497,6 +2678,41 @@ Return ONLY valid JSON:
                                     }, regenSection === section ? '⏳ Regenerating...' : '\uD83D\uDD04 Regen')
                                 )
                             ),
+                            // ── psycheck discrepancy banner (Architecture C) ──
+                            // Render-only. Critical findings get a red tint; others
+                            // an amber tint. Each finding shows kind + detail + the
+                            // span quote from the verified draft so the clinician
+                            // can locate the prose to fix.
+                            Array.isArray(discrepanciesBySection[section]) && discrepanciesBySection[section].length > 0
+                                && h('div', {
+                                    className: 'mb-2 p-2 rounded-lg border ' + (
+                                        discrepanciesBySection[section].some(d => d.kind === 'subtest_attribution')
+                                            ? 'bg-red-50 border-red-300'
+                                            : 'bg-amber-50 border-amber-300'),
+                                    'aria-label': 'psycheck discrepancies for section ' + section
+                                },
+                                    h('div', { className: 'text-[11px] font-bold mb-1 ' + (
+                                        discrepanciesBySection[section].some(d => d.kind === 'subtest_attribution')
+                                            ? 'text-red-800' : 'text-amber-800') },
+                                        `🔍 psycheck flagged ${discrepanciesBySection[section].length} issue(s) in this section`),
+                                    h('ul', { className: 'space-y-1 text-[11px] text-slate-800' },
+                                        discrepanciesBySection[section].map((d, i) =>
+                                            h('li', { key: i, className: 'leading-snug' },
+                                                h('div', { className: 'flex items-start gap-1' },
+                                                    h('span', { className: 'font-bold ' + (d.kind === 'subtest_attribution' ? 'text-red-700' : 'text-amber-700') },
+                                                        (d.kind === 'subtest_attribution' ? '⚠ CRITICAL: ' : '• ') +
+                                                        String(d.kind || '').replace(/_/g, ' ')),
+                                                    h('span', { className: 'flex-1' },
+                                                        ' — ', d.detail || '')
+                                                ),
+                                                d.span && d.span.text && h('div', { className: 'mt-0.5 pl-3 italic text-slate-600' },
+                                                    '“', d.span.text.length > 140 ? d.span.text.substring(0, 140) + '…' : d.span.text, '”'),
+                                                d.confidence && d.confidence !== 'high' && h('span', { className: 'ml-2 text-[10px] text-slate-500' },
+                                                    `(${d.confidence} confidence)`)
+                                            )
+                                        )
+                                    )
+                                ),
                             // Regeneration input panel
                             showRegenInput === section && h('div', { className: 'mb-2 p-2 bg-amber-50 rounded-lg border border-amber-200 space-y-1' },
                                 h('p', { className: 'text-[11px] text-amber-700 font-medium' }, 'Custom instructions for regeneration (optional):'),
