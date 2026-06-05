@@ -4435,7 +4435,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                           </div>
                         )}
-                        <p className="text-[11px] text-slate-600">Commands: <span className="text-slate-600">audit</span> · <span className="text-slate-600">auto</span> · <span className="text-slate-600">contrast</span> · or describe what to fix in plain language</p>
+                        <p className="text-[11px] text-slate-400">Commands: <span className="text-slate-400">audit</span> · <span className="text-slate-400">auto</span> · <span className="text-slate-400">contrast</span> · or describe what to fix in plain language</p>
                         </div>
                       </details>
 

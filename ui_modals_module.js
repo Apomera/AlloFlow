@@ -186,7 +186,7 @@ const StudentQuizOverlay = React.memo(({
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-end"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider"
+    className: "text-[11px] font-bold text-slate-300 uppercase tracking-wider"
   }, t('quiz.question_label')), /*#__PURE__*/React.createElement("span", {
     className: "text-3xl font-mono font-black text-white leading-none"
   }, currentQuestionIndex + 1, " ", /*#__PURE__*/React.createElement("span", {

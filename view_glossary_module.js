@@ -526,7 +526,7 @@
   }, /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.toggle_images'),
     onClick: handleToggleShowFlashcardImages,
-    className: `p-1.5 rounded border ${showFlashcardImages ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-600'}`
+    className: `p-1.5 rounded border ${showFlashcardImages ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`
   }, /*#__PURE__*/React.createElement(ImageIcon, {
     size: 14
   })), /*#__PURE__*/React.createElement("button", {
@@ -535,7 +535,7 @@
       setFlashcardOptions([]);
       setFlashcardFeedback(null);
     },
-    className: `p-1.5 rounded border ${isFlashcardQuizMode ? 'bg-yellow-500 border-yellow-400 text-indigo-900' : 'bg-slate-800 border-slate-700 text-slate-600'}`
+    className: `p-1.5 rounded border ${isFlashcardQuizMode ? 'bg-yellow-500 border-yellow-400 text-indigo-900' : 'bg-slate-800 border-slate-700 text-slate-300'}`
   }, /*#__PURE__*/React.createElement(Brain, {
     size: 14
   }))))), /*#__PURE__*/React.createElement("div", {

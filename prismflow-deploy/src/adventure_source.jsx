@@ -420,8 +420,8 @@ const ClimaxProgressBar = React.memo(({ climaxState }) => {
         <div className="absolute top-0 bottom-0 left-[75%] w-px bg-white/10 z-0"></div>
       </div>
       <div className="flex justify-between text-[11px] font-bold text-slate-600 uppercase mt-1.5 px-1">
-        <span className="text-red-600">{leftLabel} (0%)</span>
-        <span className="text-green-700">{rightLabel} (100%)</span>
+        <span className="text-red-400">{leftLabel} (0%)</span>
+        <span className="text-green-400">{rightLabel} (100%)</span>
       </div>
     </div>
   );

@@ -127,7 +127,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                 )}
             </div>
              <div className="flex flex-col items-end">
-                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('quiz.question_label')}</span>
+                <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">{t('quiz.question_label')}</span>
                 <span className="text-3xl font-mono font-black text-white leading-none">
                     {currentQuestionIndex + 1} <span className="text-lg text-white/50">/ {generatedContent?.data.questions.length}</span>
                 </span>
