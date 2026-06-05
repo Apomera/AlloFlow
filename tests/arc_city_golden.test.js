@@ -76,7 +76,7 @@ describe('Arc City — module contract', () => {
     expect(typeof describeBoard).toBe('function');
     expect(typeof isLevelUnlocked).toBe('function');
     expect(Array.isArray(LEVELS)).toBe(true);
-    expect(LEVELS.map(l => l.id)).toEqual(['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9', 'L10']);
+    expect(LEVELS.map(l => l.id)).toEqual(['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9', 'L10', 'L11', 'L12', 'L13']);
   });
 
   it('level geometry (snapshot)', () => {
@@ -91,9 +91,9 @@ describe('Arc City — module contract', () => {
 });
 
 describe('Arc City — adjudication + SR narration per level (golden master)', () => {
-  // L9 (The Gauntlet) is a meta-level with no function geometry of its own — it
-  // sequences the other levels' clones — so it has no per-shot CASES matrix.
-  LEVELS.filter(l => l.family !== 'gauntlet').forEach(level => {
+  // The Gauntlet (meta) and the match-goal Transformations levels have no gate/node
+  // geometry, so they are not part of this gate/node CASES matrix (match has its own).
+  LEVELS.filter(l => l.family !== 'gauntlet' && l.goal !== 'match').forEach(level => {
     it(`${level.id} (${level.title}) outcome + narration matrix (snapshot)`, () => {
       const out = {};
       CASES[level.id].forEach((c, i) => {
@@ -234,6 +234,97 @@ describe('Arc City — Sine Boulevard §3.1 (snapped period + crest-grabber)', (
 
   it('describeEquation reports the period in whole units, not raw b', () => {
     expect(describeEquation(L5, { a: 2.5, b: 1.0472, c: 1, k: 4 })).toMatch(/every 6 units/);
+  });
+});
+
+describe('Arc City — Transformations world (Re-Target / match the ghost, §5 / HSF-BF.B.3)', () => {
+  const TX = ['L11', 'L12', 'L13'];
+
+  it('the three match levels exist with goal:match + a ghost + a tolerance', () => {
+    TX.forEach(id => {
+      const L = levelById(id);
+      expect(L.goal).toBe('match');
+      expect(L.ghost && L.ghost.params).toBeTruthy();
+      expect(typeof L.matchTol).toBe('number');
+      expect(['parabola', 'sine']).toContain(L.family); // reuse existing evaluators, no new fnY
+    });
+  });
+
+  it('classifyMatch: the exact ghost is a hit; the starting defaults are NOT (you must transform)', () => {
+    TX.forEach(id => {
+      const L = levelById(id);
+      expect(classifyShot(L, Object.assign({}, L.ghost.params)).result).toBe('hit');
+      expect(classifyShot(L, arc.defaultParams(L)).result).toBe('miss'); // defaults are deliberately off the ghost
+    });
+  });
+
+  it('match-result carries a worst-x + the two y-values for directional SR narration', () => {
+    const L = levelById('L11');
+    const r = classifyShot(L, arc.defaultParams(L));
+    expect(r.result).toBe('miss');
+    expect(typeof r.matchWorstX).toBe('number');
+    expect(typeof r.playerYAtWorst).toBe('number');
+    expect(typeof r.ghostYAtWorst).toBe('number');
+    expect(r.matchErr).toBeGreaterThan(L.matchTol);
+  });
+
+  it('sine equivalence: a·sin(bx+c) ≡ −a·sin(bx+c+π) is accepted as a match (normalizeForMatch)', () => {
+    const L = levelById('L13');           // ghost a=2.5, c=1.0
+    const TAU = 2 * Math.PI;
+    const equiv = { a: -2.5, b: 1.0472, c: ((1.0 + Math.PI) % TAU), k: 4 };
+    expect(classifyShot(L, equiv).result).toBe('hit'); // same curve, flipped authoring
+    // a genuinely different period is NOT a match
+    expect(classifyShot(L, { a: 2.5, b: 0.7854, c: 1.0, k: 4 }).result).toBe('miss');
+  });
+
+  it('non-finite curve values → miss with Infinite error, never a false hit', () => {
+    const L = levelById('L13');
+    const r = classifyShot(L, { a: NaN, b: 1.0472, c: 1, k: 4 });
+    expect(r.result).toBe('miss');
+    expect(r.matchErr).toBe(Infinity);
+  });
+
+  it('narration is honest: match boards mention the ghost (not walls/gates/node-to-light); result never claims ability', () => {
+    TX.forEach(id => {
+      const L = levelById(id);
+      const board = describeBoard(L);
+      expect(board).toMatch(/match the ghost/i);
+      expect(board).not.toMatch(/wall|gate|node to light/i);
+      const miss = describeResult(L, classifyShot(L, arc.defaultParams(L)), 1);
+      expect(miss).not.toMatch(/master|genius|smart|talent/i);
+    });
+    // L13 names WHY horizontal stretch is only taught on a wave (the degeneracy lesson)
+    expect(describeBoard(levelById('L13'))).toMatch(/invisible on a parabola/i);
+  });
+
+  it('a match solve earns the action-named re-targeter badge, NOT a node-lighting badge', () => {
+    const earned = arc.badgesForSolve(levelById('L11'), { result: 'hit' }, 1, 'practice', []);
+    expect(earned).toContain('re-targeter');
+    expect(earned).not.toContain('arc-architect'); // that's for re-lighting a node with a parabola
+    expect(arc.BADGES.find(b => b.id === 're-targeter').label).not.toMatch(/master|mastery/i);
+  });
+
+  it('unlock: L11 needs ≥4 solved families (capstone gate), then L12←L11, L13←L12 (linear)', () => {
+    const idx = id => LEVELS.findIndex(l => l.id === id);
+    const four = { L1: { solved: true }, L3: { solved: true }, L4: { solved: true }, L5: { solved: true } };
+    expect(arc.isLevelUnlocked({ L1: { solved: true }, L3: { solved: true }, L4: { solved: true } }, idx('L11'))).toBe(false); // 3 < 4
+    expect(arc.isLevelUnlocked(four, idx('L11'))).toBe(true);
+    expect(arc.isLevelUnlocked(four, idx('L12'))).toBe(false);                                  // needs L11 solved
+    expect(arc.isLevelUnlocked(Object.assign({ L11: { solved: true } }, four), idx('L12'))).toBe(true);
+  });
+
+  it('match levels do NOT count toward family-solved (the gauntlet/L11 gate stays parent-only)', () => {
+    // solving L11 (a parabola GHOST match) must not register as "used the parabola family"
+    const by = { L11: { solved: true, independent: true } };
+    expect(arc.familyStatus(by, 'parabola')).toBe('not started');
+    expect(arc.solvedFamilies(by, ['L1', 'L3', 'L4', 'L5', 'L7', 'L8', 'L9'])).toEqual([]);
+  });
+
+  it('match solves are NOT counted in the teacher "Levels solved" node total (surfaced via the badge instead)', () => {
+    const s = arc.teacherSummary({ L11: { solved: true }, L12: { solved: true }, L13: { solved: true } }, ['re-targeter']);
+    expect(s.nodesReLit).toBe(0);                                          // no NODE objectives solved
+    expect(s.levels.some(l => ['L11', 'L12', 'L13'].includes(l.id))).toBe(false); // not node rows
+    expect(s.badges.join(' ')).toMatch(/Re-Targeter/);                    // shown via the badge
   });
 });
 
@@ -480,11 +571,13 @@ describe('Arc City — teacher summary (honest, deterministic; design §9.5/§9.
     };
     const s = arc.teacherSummary(byLevel, ['first-light']);
     expect(s.nodesReLit).toBe(2);
-    // counts FUNCTION levels only — the Gauntlet (meta) is excluded so the
-    // denominator never reads "8 of 9" and "The Gauntlet: not started" never shows.
-    expect(s.totalLevels).toBe(LEVELS.filter(l => l.family !== 'gauntlet').length);
+    // counts NODE-goal levels only — the Gauntlet (meta) AND the Transformations
+    // (goal:'match') levels are excluded, so "Levels solved" never conflates a
+    // ghost-match with re-lighting a node.
+    expect(s.totalLevels).toBe(LEVELS.filter(l => l.family !== 'gauntlet' && l.goal !== 'match').length);
     expect(s.families.gauntlet).toBeUndefined();             // not a function family
     expect(s.levels.find(l => l.id === 'L10')).toBeUndefined(); // the Gauntlet (L10, meta) is not a node row
+    expect(s.levels.find(l => l.id === 'L11')).toBeUndefined(); // Transformations (match) levels are not node rows
     expect(s.levels.find(l => l.id === 'L9')).toBeDefined();    // L9 (cubic) IS a real function level
     expect(s.families.poly).toBe('not started');   // cubic family present in the roster, untouched here
     expect(s.families.absval).toBe('not started'); // L4 family present, untouched in this mock

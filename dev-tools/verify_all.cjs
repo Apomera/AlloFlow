@@ -94,6 +94,11 @@ const checks = [
     description: 'React "unique key" warning class: elements from .map()/array children without a key (the StemPluginBridge warning)',
   },
   {
+    name: 'Arc City gauntlet stages',
+    cmd: ['node', 'dev-tools/check_gauntlet_stages.cjs'],
+    description: 'The Gauntlet only stages real function-family levels — never a Transformations (goal:match) level',
+  },
+  {
     name: 'Lang pack JSON validity',
     cmd: ['node', 'dev-tools/check_lang_json.cjs', '--quiet'],
     description: 'Every lang/*.js parses as JSON (catches corruption before deploy)',

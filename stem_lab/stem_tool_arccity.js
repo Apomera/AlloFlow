@@ -201,6 +201,54 @@
       world: { x0: 0, x1: 10, y0: 0, y1: 8 }, walls: [], gates: [], node: { x: 5, y: 4, r: 0.5 }, dx: 0.05,
       paramOrder: [], params: {},
       hint: 'The Gauntlet: one challenge from every function family, ordered to put your weakest first. Re-light a node with each — line, parabola, V, sine, exponential, logarithm, and cubic — to win.'
+    },
+    {
+      // ── Re-Target Yards (Transformations world, design §5 / HSF-BF.B.3). A new
+      // GOAL TYPE: 'match' — overlay your curve onto a faint GHOST (a transformed
+      // parent in the same family) instead of threading gates. No walls/gates; the
+      // stub node is never adjudicated (classifyShot branches early on goal:'match').
+      // L11 isolates TRANSLATION: a is locked, the player slides h & k onto the ghost.
+      // Forcing certificate (basin small + load-bearing + default is a clear miss)
+      // verified in arc_city_solvability.test.js. Unlocks once ≥4 families are solved.
+      id: 'L11', title: 'Re-Target: Slide', family: 'parabola', goal: 'match',
+      world: { x0: 0, x1: 10, y0: 0, y1: 8 }, walls: [], gates: [], node: { x: 5, y: 4, r: 0.5 }, dx: 0.05,
+      ghost: { params: { a: 0.3, h: 5, k: 3 } }, matchTol: 0.3,
+      paramOrder: ['a', 'h', 'k'],
+      params: {
+        a: { min: -1.5, max: 1.5, step: 0.05, default: 0.3, locked: true, label: 'a  (arc tightness — fixed this level)' },
+        h: { min: 0, max: 10, step: 0.25, default: 2, label: 'h  (slide left/right)' },
+        k: { min: 0, max: 8, step: 0.25, default: 1, label: 'k  (slide up/down)' }
+      },
+      hint: 'Re-target the ghost: it is the SAME parabola, just moved. Slide it into place — set h to shift left/right and k to shift up/down until your curve lies on top of the ghost. The arc tightness a is fixed this round.'
+    },
+    {
+      // L12 adds REFLECTION + VERTICAL STRETCH: a is now free (and goes negative).
+      id: 'L12', title: 'Re-Target: Flip & Stretch', family: 'parabola', goal: 'match',
+      world: { x0: 0, x1: 10, y0: 0, y1: 8 }, walls: [], gates: [], node: { x: 5, y: 4, r: 0.5 }, dx: 0.05,
+      ghost: { params: { a: -0.6, h: 5, k: 6 } }, matchTol: 0.35,
+      paramOrder: ['a', 'h', 'k'],
+      params: {
+        a: { min: -1.5, max: 1.5, step: 0.05, default: 0.3, label: 'a  (flip with a negative sign; stretch with a bigger size)' },
+        h: { min: 0, max: 10, step: 0.25, default: 5, label: 'h  (slide left/right)' },
+        k: { min: 0, max: 8, step: 0.25, default: 3, label: 'k  (slide up/down)' }
+      },
+      hint: 'This ghost opens the other way and is stretched. Make a NEGATIVE to flip the curve over, then change its size to match the steepness, and slide h/k so it sits on the ghost.'
+    },
+    {
+      // L13 moves to SINE so HORIZONTAL STRETCH (period, b) is honest — on a parabola
+      // it would collapse into a (a·b²(x−h)²), so it's only taught here. k (midline)
+      // is locked so the player must engage amplitude/period/phase, not slide vertically.
+      id: 'L13', title: 'Re-Target: The Wave', family: 'sine', goal: 'match',
+      world: { x0: 0, x1: 10, y0: 0, y1: 8 }, walls: [], gates: [], node: { x: 5, y: 4, r: 0.5 }, dx: 0.05,
+      ghost: { params: { a: 2.5, b: 1.0472, c: 1, k: 4 } }, matchTol: 0.3,
+      paramOrder: ['a', 'b', 'c', 'k'],
+      params: {
+        a: { min: 0.5, max: 3.5, step: 0.25, default: 1, label: 'a  (amplitude — how tall)' },
+        b: { min: 0.7854, max: 1.5708, step: 0.05, snapValues: [1.5708, 1.2566, 1.0472, 0.7854], asPeriod: true, default: 1.5708, label: 'period  (stretch the wave wider/narrower)' },
+        c: { min: 0, max: 6, step: 0.25, default: 0, label: 'c  (phase — slide the wave sideways)' },
+        k: { min: 4, max: 4, step: 1, default: 4, locked: true, label: 'k  (midline — fixed this level)' }
+      },
+      hint: 'Re-target the wave. Set the amplitude a (height), the PERIOD (how wide each wave is — a stretch you can only make on a wave, not a parabola), and the phase c (slide sideways) until your wave overlays the ghost. The midline is fixed.'
     }
   ];
 
@@ -252,9 +300,51 @@
     return pts;
   }
 
+  // ── Transformations world (§5 "Re-Target"): the "match the ghost" goal. The
+  // player overlays their curve onto a faint TARGET curve (a transformed parent in
+  // the SAME family) by authoring h/k/a (and b/c on sine). Success = the curves
+  // agree to within level.matchTol everywhere on the match domain (L∞, sampled on
+  // the shared x-grid so there is no interpolation/aliasing). ──
+  function normalizeForMatch(family, p) {
+    // sine: a·sin(bx+c) ≡ −a·sin(bx + c+π). Fold a<0 into a positive amplitude so an
+    // equivalent authoring (−a, c+π) is judged a MATCH, not a near-miss. Parabola
+    // vertex form is unique → no normalization.
+    if (family === 'sine' && p.a < 0) {
+      var TAU = 2 * Math.PI;
+      return Object.assign({}, p, { a: -p.a, c: ((p.c + Math.PI) % TAU + TAU) % TAU });
+    }
+    return p;
+  }
+  function classifyMatch(level, params) {
+    var g = normalizeForMatch(level.family, Object.assign({}, level.ghost.params)); // defensive copy — never mutate the stored ghost
+    var pp = normalizeForMatch(level.family, params);
+    var dom = level.matchDomain || [level.world.x0, level.world.x1];
+    var lo = Math.max(dom[0], level.world.x0), hi = Math.min(dom[1], level.world.x1);
+    var n = Math.round((hi - lo) / level.dx);
+    var maxGap = 0, worstX = null, pw = null, gw = null;
+    for (var i = 0; i <= n; i++) {
+      var x = lo + i * level.dx;
+      var pe = fnY(level.family, pp, x), ge = fnY(level.family, g, x);
+      if (!isFinite(pe) || !isFinite(ge)) { maxGap = Infinity; worstX = x; pw = pe; gw = ge; break; }
+      var d = Math.abs(pe - ge);
+      if (d > maxGap) { maxGap = d; worstX = x; pw = pe; gw = ge; }
+    }
+    return { result: maxGap <= level.matchTol ? 'hit' : 'miss', matchErr: maxGap, matchWorstX: worstX, playerYAtWorst: pw, ghostYAtWorst: gw, at: null, yAt: null, obstacle: null, nodeDist: null, killedAt: null };
+  }
+
   // Adjudicate a shot. The beam travels left→right and dies at the first
   // obstacle (by x) it fails; otherwise we measure nearest approach to the node.
   function classifyShot(level, params) {
+    // Enforce LOCKED params at the adjudication layer (the UI hides their sliders,
+    // but a bypass must not soften the math or break a level's isolation). Pin each
+    // locked param to its default — on a non-mutating copy, only if something differs.
+    var lparams = level.params || {}, clamped = null;
+    (level.paramOrder || []).forEach(function (n) {
+      var sp = lparams[n];
+      if (sp && sp.locked && params[n] !== sp.default) { if (!clamped) clamped = Object.assign({}, params); clamped[n] = sp.default; }
+    });
+    if (clamped) params = clamped;
+    if (level.goal === 'match') return classifyMatch(level, params); // Transformations world
     function y(x) { return fnY(level.family, params, x); }
     var obstacles = [];
     (level.walls || []).forEach(function (w) { obstacles.push({ kind: 'wall', x: w.x, w: w }); });
@@ -313,11 +403,22 @@
       if (fam === 'poly') return tooHigh ? 'The wiggle sits too high here — nudge the crest p or the dip q toward this window, or ease the steepness a.' : 'The wiggle sits too low here — nudge the crest p or the dip q toward this window, or increase the steepness a.';
       return tooHigh ? 'The beam is too high there — tighten the arc (more negative a) or lower k.' : 'The beam is too low there — widen the arc or raise k.';
     }
+    // Transformations world — directional match coaching, by family + which side
+    // the worst gap is on (never disclose the ghost's exact params).
+    if (res.result === 'miss' && level.goal === 'match') {
+      var above = res.playerYAtWorst > res.ghostYAtWorst;
+      if (fam === 'sine') return above ? 'Your wave sits above the ghost there — lower the amplitude a, slide sideways with the phase c, or widen the period.' : 'Your wave sits below the ghost there — raise the amplitude a, slide with the phase c, or narrow the period.';
+      return above ? 'Your curve sits above the ghost there — slide it down with k, change the size or sign of a, or shift h.' : 'Your curve sits below the ghost there — slide it up with k, change the size or sign of a, or shift h.';
+    }
     return '';
   }
 
   // Outcome narration — direction AND magnitude of the error (design §8.2).
   function describeResult(level, res, shots) {
+    if (level.goal === 'match') {
+      if (res.result === 'hit') return 'Matched! Your curve overlays the ghost — within ' + level.matchTol + ' units the whole way. Solved in ' + shots + (shots === 1 ? ' shot.' : ' shots.');
+      return 'Not matched yet — your curve and the ghost differ most at x ≈ ' + round1(res.matchWorstX) + ', where yours is ' + round1(res.playerYAtWorst) + ' and the target is ' + round1(res.ghostYAtWorst) + '. ' + actionHint(level, res);
+    }
     if (res.result === 'hit') {
       return 'Lit! The beam reached the node at (' + level.node.x + ', ' + level.node.y + '). Solved in ' +
         shots + (shots === 1 ? ' shot.' : ' shots.');
@@ -386,6 +487,14 @@
 
   function describeBoard(level) {
     if (level.family === 'gauntlet') return 'Arc City, ' + level.title + ': an adaptive capstone — one challenge from every function family, weakest first.';
+    if (level.goal === 'match') {
+      var freeP = (level.paramOrder || []).filter(function (n) { return !(level.params[n] && level.params[n].locked); });
+      var lockedP = (level.paramOrder || []).filter(function (n) { return level.params[n] && level.params[n].locked; });
+      var shape = level.family === 'sine' ? 'sine wave' : 'parabola';
+      var dom = level.matchDomain;
+      var domMsg = (dom && (dom[0] !== level.world.x0 || dom[1] !== level.world.x1)) ? ' (judged from x ' + dom[0] + ' to ' + dom[1] + ')' : '';
+      return 'Arc City, ' + level.title + ': match the ghost curve — overlay your ' + shape + ' onto the faint target by adjusting ' + freeP.join(', ') + (lockedP.length ? ' (' + lockedP.join(', ') + ' is fixed this level)' : '') + '. Keep your curve within ' + level.matchTol + ' units of the ghost the whole way across' + domMsg + '.' + (level.family === 'sine' ? ' You can stretch this wave left-to-right by changing its period — a move that is invisible on a parabola, so it is taught here on a wave.' : '');
+    }
     var s = 'Arc City, level: ' + level.title + '. ';
     s += level.family === 'line' ? 'Author a straight-line beam. ' : (level.family === 'absval' ? 'Author a V-shaped, absolute-value beam. ' : (level.family === 'sine' ? 'Author a sine-wave beam. ' : (level.family === 'exp' ? 'Author an exponential beam that curves toward a floor it never touches. ' : (level.family === 'log' ? 'Author a logarithmic beam — a concave climb that rises fast then slows. ' : (level.family === 'poly' ? 'Author a cubic beam — an S-shaped curve with two turning points, a crest then a dip, set by placing p and q. ' : 'Author a parabola beam. ')))));
     s += 'The dark node to light is at x ' + level.node.x + ', y ' + level.node.y + '. ';
@@ -403,6 +512,10 @@
     if (idx <= 0) return true;
     var lvl = LEVELS[idx];
     if (lvl && lvl.family === 'gauntlet') return solvedFamilies(byLevel, lvl.stages).length >= GAUNTLET_MIN_FAMILIES;
+    // Re-Target Yards (L11) is capstone content, same gate as the Gauntlet: unlock
+    // on ≥4 solved families (NOT byLevel['L10'].solved — the Gauntlet never sets it).
+    // L12/L13 fall through to the linear prev-solved rule (their prev is L11/L12).
+    if (lvl && lvl.id === 'L11') return solvedFamilies(byLevel, levelById('L10').stages).length >= GAUNTLET_MIN_FAMILIES;
     var prev = LEVELS[idx - 1];
     var ps = byLevel && byLevel[prev.id];
     return !!(ps && ps.solved);
@@ -433,6 +546,7 @@
     { id: 'decay-rider', label: 'Decay Rider — re-lit a node riding an exponential to its asymptote' },
     { id: 'log-climber', label: 'Log Climber — re-lit a node riding a logarithm’s slowing climb' },
     { id: 'twin-turn', label: 'Twin Turn — re-lit a node by threading a cubic’s two turning points' },
+    { id: 're-targeter', label: 'Re-Targeter — overlaid a curve onto its ghost by transforming it' },
     { id: 'tilt-threader', label: 'Tilt Threader — passed a tilted slope-gate at the right angle' },
     { id: 'sharp-shooter', label: 'Sharp Shooter — lit a node on the first shot' },
     { id: 'independent', label: 'Independent — solved with the preview hidden' },
@@ -446,12 +560,17 @@
     function add(id) { if ((earned || []).indexOf(id) === -1 && out.indexOf(id) === -1) out.push(id); }
     if (level.id === 'L1') add('first-light');
     if ((level.gates || []).length) add('window-threader');
-    if (level.family === 'parabola') add('arc-architect');
-    if (level.family === 'absval') add('switchback');
-    if (level.family === 'sine') add('wave-rider');
-    if (level.family === 'exp') add('decay-rider');
-    if (level.family === 'log') add('log-climber');
-    if (level.family === 'poly') add('twin-turn');
+    if (level.goal === 'match') {
+      add('re-targeter'); // Transformations world — a transform, not a node-lighting
+    } else {
+      // family "re-lit a node using X" badges apply only to node-goal levels
+      if (level.family === 'parabola') add('arc-architect');
+      if (level.family === 'absval') add('switchback');
+      if (level.family === 'sine') add('wave-rider');
+      if (level.family === 'exp') add('decay-rider');
+      if (level.family === 'log') add('log-climber');
+      if (level.family === 'poly') add('twin-turn');
+    }
     if ((level.gates || []).some(function (g) { return g.slope; })) add('tilt-threader');
     if (shots === 1) add('sharp-shooter');
     if (solveIsIndependent(tier)) add('independent');
@@ -516,7 +635,10 @@
     byLevel = byLevel || {};
     var anyIndep = false, anySolved = false, anyTried = false;
     for (var i = 0; i < LEVELS.length; i++) {
-      var l = LEVELS[i]; if (l.family !== family) continue;
+      // Skip Transformations (match-goal) levels: matching a parabola/sine GHOST is
+      // not the same as "using" that family to light a node, and conflating them
+      // would let a transform level satisfy the gauntlet's family-solved gate.
+      var l = LEVELS[i]; if (l.family !== family || l.goal === 'match') continue;
       var st = byLevel[l.id]; if (!st) continue;
       if (st.solved) { anySolved = true; if (st.independent) anyIndep = true; }
       if ((st.shots || 0) > 0 || (st.misses || 0) > 0) anyTried = true;
@@ -596,7 +718,11 @@
     // is excluded from the per-level list, the family roster, and the node count
     // (its completion is reported via the 'grand-tour' badge instead). Including it
     // would otherwise read "The Gauntlet: not started" forever and skew "N of M".
-    var fnLevels = LEVELS.filter(function (l) { return l.family !== 'gauntlet'; });
+    // Exclude the Gauntlet (meta) AND the Transformations (goal:'match') levels:
+    // matching a ghost is not "re-lighting a node", so counting it under "Levels
+    // solved" would conflate two different objectives. Transformations progress is
+    // surfaced via the 're-targeter' badge instead.
+    var fnLevels = LEVELS.filter(function (l) { return l.family !== 'gauntlet' && l.goal !== 'match'; });
     var levels = fnLevels.map(function (l) {
       var st = byLevel[l.id] || {};
       var status = st.solved ? 'completed' : (((st.shots || 0) > 0 || (st.misses || 0) > 0) ? 'explored' : 'not started');
@@ -609,7 +735,7 @@
     return { caveat: TEACHER_CAVEAT, families: families, levels: levels, nodesReLit: nodesReLit, totalLevels: fnLevels.length, stars: starsEarned, starsMax: fnLevels.length * 3, starLegend: STAR_LEGEND, badges: badges.map(badgeLabel) };
   }
   function teacherSummaryText(summary) {
-    var lines = ['Arc City — progress summary', '', summary.caveat, '', 'Nodes re-lit: ' + summary.nodesReLit + ' of ' + summary.totalLevels, '', 'Functions:'];
+    var lines = ['Arc City — progress summary', '', summary.caveat, '', 'Levels solved: ' + summary.nodesReLit + ' of ' + summary.totalLevels, '', 'Functions:'];
     Object.keys(summary.families).forEach(function (f) { lines.push('  - ' + f + ': ' + summary.families[f]); });
     lines.push(''); lines.push('Levels:');
     summary.levels.forEach(function (l) {
@@ -633,12 +759,15 @@
     defaultParams: defaultParams,
     sampleCurve: sampleCurve,
     classifyShot: classifyShot,
+    classifyMatch: classifyMatch,
+    normalizeForMatch: normalizeForMatch,
     fPrime: fPrime,
     describeEquation: describeEquation,
     describeResult: describeResult,
     successWord: successWord,
     describeBoard: describeBoard,
     isLevelUnlocked: isLevelUnlocked,
+    solvedFamilies: solvedFamilies,
     TIERS: TIERS,
     tierLabel: tierLabel,
     tierBlurb: tierBlurb,
@@ -1187,19 +1316,23 @@
           }
         });
 
+        // Transformations (match) levels have no node-to-light — the payoff is the
+        // player curve overlaying the ghost (and turning green on a match). Suppress
+        // the node circle + halo, but keep the celebration burst on a match-hit.
+        var isMatch = level.goal === 'match';
         var nodeR = (W / (wx1 - wx0)) * level.node.r;
         var lit = ls.solved || res.result === 'hit';
         var ncx = sx(level.node.x), ncy = sy(level.node.y);
         // The node "powers on" with a squash-overshoot punch the instant it lights
         // (key flips on lit ⇒ remount ⇒ the one-shot pop plays exactly once).
-        var nodeEl = h('circle', {
+        var nodeEl = isMatch ? null : h('circle', {
           key: 'node-' + (lit ? 'on' : 'off'), cx: ncx, cy: ncy, r: nodeR,
           fill: lit ? NODE_ON : NODE_OFF, opacity: lit ? 1 : 0.85,
           filter: lit ? 'url(#arc-glow-strong)' : 'url(#arc-glow)',
           className: lit ? 'arccity-node-lit' : 'arccity-node-unlit', stroke: lit ? NODE_ON : NODE_OFF, strokeWidth: 2
         });
         // Soft halo behind a lit node; full celebration the moment a shot lands.
-        var nodeGlowEls = lit ? [h('circle', { key: 'nodehalo', cx: ncx, cy: ncy, r: nodeR * 1.9, fill: NODE_ON, opacity: 0.24, filter: 'url(#arc-glow-strong)', className: 'arccity-halo', 'aria-hidden': 'true' })] : [];
+        var nodeGlowEls = (!isMatch && lit) ? [h('circle', { key: 'nodehalo', cx: ncx, cy: ncy, r: nodeR * 1.9, fill: NODE_ON, opacity: 0.24, filter: 'url(#arc-glow-strong)', className: 'arccity-halo', 'aria-hidden': 'true' })] : [];
         var sk = ls.shots || 0; // celebration els key off the shot count → replay on every hit
         var nodeBurstEls = (S.fired && res.result === 'hit') ? [
           h('circle', { key: 'shock-' + sk, cx: ncx, cy: ncy, r: nodeR, fill: 'none', stroke: NODE_ON, strokeWidth: 4, className: 'arccity-shock', 'aria-hidden': 'true' }),
@@ -1216,7 +1349,9 @@
               return h('circle', { key: 'ember' + i, cx: ncx + d * nodeR * 0.55, cy: ncy - nodeR * 0.3, r: Math.max(2, nodeR * 0.18), fill: NODE_ON, className: 'arccity-ember', style: { animationDelay: (i * 0.05) + 's' } });
             })),
           // big celebration word, escalating with how clean the solve was (action-praise, not ability)
-          h('text', { key: 'pop-' + sk, x: W / 2, y: 54, textAnchor: 'middle', fill: NODE_ON, fontSize: 34, fontWeight: 900, className: 'arccity-pop', 'aria-hidden': 'true', style: { letterSpacing: '1px', paintOrder: 'stroke', stroke: 'rgba(2,8,6,0.35)', strokeWidth: 3 } }, successWord(sk))
+          // On a match level the burst anchors at the board-centre node stub (5,4) —
+          // an intentional centred celebration — and the word reflects the goal.
+          h('text', { key: 'pop-' + sk, x: W / 2, y: 54, textAnchor: 'middle', fill: NODE_ON, fontSize: 34, fontWeight: 900, className: 'arccity-pop', 'aria-hidden': 'true', style: { letterSpacing: '1px', paintOrder: 'stroke', stroke: 'rgba(2,8,6,0.35)', strokeWidth: 3 } }, isMatch ? 'MATCHED!' : successWord(sk))
         ] : [];
 
         var samples = sampleCurve(level, P);
@@ -1230,12 +1365,29 @@
           }
           return s.trim();
         }
+        // Ghost target curve (Transformations world): the faint curve to overlay.
+        // Shown ONLY when the preview is — same anti-fishing gate as the player's own
+        // curve (hidden on guided/independent until Fire). Distinct dash + glow so it
+        // never reads as the player's line.
+        var ghostCurveEls = [];
+        if (isMatch && level.ghost && showPreview) {
+          // Sample the SAME (normalized, copied) ghost the adjudication judges against,
+          // so the drawn target can never diverge from the one classifyMatch compares.
+          var gp = normalizeForMatch(level.family, Object.assign({}, level.ghost.params));
+          var gsamp = sampleCurve(level, gp), gs = '';
+          for (var gi = 0; gi < gsamp.length; gi++) { var gy = gsamp[gi].y; if (gy < wy0 - 2 || gy > wy1 + 2) continue; gs += sx(gsamp[gi].x) + ',' + sy(gy) + ' '; }
+          // opacity 0.85 (clears WCAG 3:1 for graphical objects on the light canvas)
+          // + a long dash distinct from the player preview's '4 5', so it never reads
+          // as the player's own line.
+          ghostCurveEls.push(h('polyline', { key: 'ghost-curve', points: gs.trim(), fill: 'none', stroke: GATE, strokeWidth: 3, strokeDasharray: '10 6', opacity: 0.85, filter: 'url(#arc-glow)', 'aria-hidden': 'true' }));
+        }
         var previewEls = [];
         if (showPreview) {
           previewEls.push(h('polyline', { key: 'preview', points: ptsStr(null), fill: 'none', stroke: INK, strokeWidth: 2, strokeDasharray: '4 5', opacity: 0.55 }));
         } else {
-          // Hidden-preview tier: the curve is concealed until Fire (anti-fishing).
-          previewEls.push(h('text', { key: 'pvhide', x: W / 2, y: 28, textAnchor: 'middle', fill: INK, opacity: 0.6, fontSize: 14 }, t('arccity.preview_hidden', 'Preview hidden — predict, then Fire ⚡')));
+          // Hidden-preview tier: the curve (and, on match levels, the ghost) is
+          // concealed until Fire (anti-fishing).
+          previewEls.push(h('text', { key: 'pvhide', x: W / 2, y: 28, textAnchor: 'middle', fill: INK, opacity: 0.6, fontSize: 14 }, isMatch ? t('arccity.preview_hidden_match', 'Preview hidden — predict the curve, then Fire ⚡') : t('arccity.preview_hidden', 'Preview hidden — predict, then Fire ⚡')));
         }
 
         var overlay = [];
@@ -1311,7 +1463,7 @@
           key: 'svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%',
           role: 'img', 'aria-label': describeBoard(level),
           style: { display: 'block', maxHeight: '50vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden', touchAction: 'none' }
-        }, [].concat([defs], backdropEls, gridEls, obstacleEls, ghostEls, previewEls, overlay, nodeGlowEls, [nodeEl], nodeBurstEls, handleEls));
+        }, [].concat([defs], backdropEls, gridEls, obstacleEls, ghostEls, ghostCurveEls, previewEls, overlay, nodeGlowEls, (nodeEl ? [nodeEl] : []), nodeBurstEls, handleEls));
 
         // ── Level progression bar ──
         var levelBtns = LEVELS.map(function (lv, i) {
@@ -1476,7 +1628,7 @@
         var teacherPanel = h('div', { key: 'teacherpanel', style: { marginTop: 4 } },
           h('div', { key: 'caveat', role: 'note', style: { fontSize: 13, lineHeight: 1.5, color: INK, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + GRID, background: 'rgba(148,163,184,0.10)', marginBottom: 12 } }, '⚠️ ' + summary.caveat),
           h('h3', { key: 'psh', style: { fontSize: 15, margin: '0 0 8px', color: INK } }, t('arccity.progress_summary', 'Progress summary')),
-          h('div', { key: 'relit', style: { fontSize: 14, fontWeight: 700, color: INK, marginBottom: 4 } }, t('arccity.nodes_relit', 'Nodes re-lit:') + ' ' + summary.nodesReLit + ' / ' + summary.totalLevels),
+          h('div', { key: 'relit', style: { fontSize: 14, fontWeight: 700, color: INK, marginBottom: 4 } }, t('arccity.levels_solved', 'Levels solved:') + ' ' + summary.nodesReLit + ' / ' + summary.totalLevels),
           h('div', { key: 'starsline', style: { fontSize: 14, fontWeight: 700, color: INK, marginBottom: 2 } }, t('arccity.stars', 'Stars:') + ' ' + summary.stars + ' / ' + summary.starsMax),
           h('div', { key: 'starlegend', style: { fontSize: 11, color: INK, opacity: 0.65, marginBottom: 10 } }, summary.starLegend),
           h('h3', { key: 'fh', style: { fontSize: 14, margin: '0 0 6px', color: INK } }, t('arccity.functions', 'Functions')),

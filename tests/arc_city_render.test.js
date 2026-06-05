@@ -140,7 +140,7 @@ describe('Arc City render — neon-city visual layer (decorative, a11y-safe)', (
     expect(some(hit, n => n.props && typeof n.props.key === 'string' && n.props.key.indexOf('beam-') === 0 && n.props.className === 'arccity-beam-draw')).toBe(true);
     expect(some(hit, n => n.props && /^burst-/.test(n.props.key || ''))).toBe(true);   // keyed by shot so it replays each hit
     expect(some(hit, n => n.props && /^sparks-/.test(n.props.key || ''))).toBe(true);
-    const miss = render({ levelId: 'L1', byLevel: { L1: { params: { m: 0.5, b: 5 }, shots: 1 } }, tier: 'practice', fired: true, badges: [] });
+    const miss = render({ levelId: 'L1', byLevel: { L1: { params: { m: 1.5, b: 0 }, shots: 1 } }, tier: 'practice', fired: true, badges: [] }); // wrong SLOPE (b is locked)
     expect(some(miss, n => n.props && /^burst-/.test(n.props.key || ''))).toBe(false);
   });
 
@@ -179,6 +179,38 @@ describe('Arc City render — Sine Boulevard §3.1 affordances', () => {
   it('the inline equation annotates the whole-number period (bridges the symbolic b to the period slider)', () => {
     const r = render({ levelId: 'L5', byLevel: {}, tier: 'practice', fired: false, badges: [] });
     expect(r.text).toMatch(/\(period 4\)/); // default b = 2π/4
+  });
+});
+
+describe('Arc City render — Transformations world (ghost curve + anti-fishing gate)', () => {
+  function some(r, pred) {
+    let found = false;
+    (function walk(n) { if (found || n == null || n === false) return; if (Array.isArray(n)) { n.forEach(walk); return; } if (typeof n === 'object') { if (pred(n)) { found = true; return; } if (n.children) n.children.forEach(walk); } })(r.tree);
+    return found;
+  }
+  it('practice tier draws the ghost target curve and suppresses the node (no node to light)', () => {
+    const r = render({ levelId: 'L11', byLevel: {}, tier: 'practice', fired: false, badges: [] });
+    const ghost = r.find('ghost-curve');
+    expect(ghost).not.toBeNull();
+    expect(ghost.props['aria-hidden']).toBe('true');
+    expect(some(r, n => n.props && typeof n.props.key === 'string' && n.props.key.indexOf('node-') === 0)).toBe(false); // node suppressed
+    expect(r.text).toMatch(/match the ghost/i);        // board readout for SR
+    expect(r.text).toMatch(/a.*is fixed this level/i); // names the locked param
+    // the ghost is visually DISTINCT from the player's own preview (dash + opacity)
+    const preview = r.find('preview');
+    expect(ghost.props.strokeDasharray).not.toEqual(preview.props.strokeDasharray);
+    expect(ghost.props.opacity).toBeGreaterThanOrEqual(0.8); // clears WCAG 3:1 for a graphical object on light
+  });
+  it('a match HIT celebrates with the goal-appropriate word (MATCHED!)', () => {
+    const r = render({ levelId: 'L11', byLevel: { L11: { params: { a: 0.3, h: 5, k: 3 }, shots: 1, solved: true } }, tier: 'practice', fired: true, badges: [] });
+    expect(r.text).toMatch(/MATCHED!/);
+  });
+  it('hidden-preview tiers HIDE the ghost until Fire (same anti-fishing gate as the player curve)', () => {
+    const pre = render({ levelId: 'L11', byLevel: {}, tier: 'independent', fired: false, badges: [] });
+    expect(pre.find('ghost-curve')).toBeNull();
+    expect(pre.text).toMatch(/Preview hidden/);
+    const post = render({ levelId: 'L11', byLevel: {}, tier: 'independent', fired: true, badges: [] });
+    expect(post.find('ghost-curve')).not.toBeNull(); // revealed after Fire
   });
 });
 
