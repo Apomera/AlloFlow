@@ -576,6 +576,19 @@
     });
   }
 
+  // ── Mastery stars (design §9.4): rewards INDEPENDENCE, never ability. ──
+  //  ★   solved (any tier — you lit the node)
+  //  ★★  solved with the preview hidden + no hint ("independent")
+  //  ★★★ ...AND aced it with no misses that run ("flawless"). Re-earnable: Reset
+  //      clears the attempt counters (not the earned stars), so anyone can try for 3.
+  function levelStars(st) {
+    if (!st || !st.solved) return 0;
+    if (st.flawless) return 3;
+    if (st.independent) return 2;
+    return 1;
+  }
+  var STAR_LEGEND = '★ solved · ★★ solved preview-hidden · ★★★ first try, preview-hidden';
+
   function teacherSummary(byLevel, badges) {
     byLevel = byLevel || {}; badges = badges || [];
     // The Gauntlet (family 'gauntlet') is a meta-level that replays the others
@@ -587,12 +600,13 @@
     var levels = fnLevels.map(function (l) {
       var st = byLevel[l.id] || {};
       var status = st.solved ? 'completed' : (((st.shots || 0) > 0 || (st.misses || 0) > 0) ? 'explored' : 'not started');
-      return { id: l.id, title: l.title, family: l.family, status: status, independent: !!st.independent, shots: st.shots || 0, exploredAdjustments: st.misses || 0 };
+      return { id: l.id, title: l.title, family: l.family, status: status, independent: !!st.independent, shots: st.shots || 0, exploredAdjustments: st.misses || 0, stars: levelStars(st) };
     });
     var families = {};
     fnLevels.map(function (l) { return l.family; }).filter(function (f, i, a) { return a.indexOf(f) === i; }).forEach(function (f) { families[f] = familyStatus(byLevel, f); });
     var nodesReLit = levels.filter(function (l) { return l.status === 'completed'; }).length;
-    return { caveat: TEACHER_CAVEAT, families: families, levels: levels, nodesReLit: nodesReLit, totalLevels: fnLevels.length, badges: badges.map(badgeLabel) };
+    var starsEarned = levels.reduce(function (n, l) { return n + l.stars; }, 0);
+    return { caveat: TEACHER_CAVEAT, families: families, levels: levels, nodesReLit: nodesReLit, totalLevels: fnLevels.length, stars: starsEarned, starsMax: fnLevels.length * 3, starLegend: STAR_LEGEND, badges: badges.map(badgeLabel) };
   }
   function teacherSummaryText(summary) {
     var lines = ['Arc City — progress summary', '', summary.caveat, '', 'Nodes re-lit: ' + summary.nodesReLit + ' of ' + summary.totalLevels, '', 'Functions:'];
@@ -602,8 +616,10 @@
       var bit = l.status;
       if (l.status === 'completed') bit += l.independent ? ' (independently)' : ' (with live preview)';
       if (l.status !== 'not started') bit += ' — ' + l.shots + ' shot' + (l.shots === 1 ? '' : 's') + ' (' + l.exploredAdjustments + ' missed)';
+      if (l.stars) bit += ' — ' + l.stars + '/3 stars';
       lines.push('  - ' + l.title + ': ' + bit);
     });
+    lines.push(''); lines.push('Stars: ' + summary.stars + ' of ' + summary.starsMax + ' (' + summary.starLegend + ')');
     if (summary.badges.length) { lines.push(''); lines.push('Badges: ' + summary.badges.join(', ')); }
     return lines.join('\n');
   }
@@ -644,6 +660,8 @@
     gauntletOrder: gauntletOrder,
     gauntletWhy: gauntletWhy,
     gauntletComplete: gauntletComplete,
+    levelStars: levelStars,
+    STAR_LEGEND: STAR_LEGEND,
     teacherSummary: teacherSummary,
     teacherSummaryText: teacherSummaryText
   };
@@ -949,7 +967,10 @@
             var shots = (base.shots || 0) + 1;
             var solved = base.solved || r.result === 'hit';
             var misses = (base.misses || 0) + (r.result === 'hit' ? 0 : 1);
-            bl[level.id] = Object.assign({}, base, { params: P, shots: shots, solved: solved, misses: misses, independent: base.independent || indep });
+            // flawless (3rd star): an independent solve with ZERO misses THIS run
+            // (base.misses is the count before this shot). Sticky once earned.
+            var flawless = base.flawless || (r.result === 'hit' && solveIsIndependent(tier) && (base.misses || 0) === 0);
+            bl[level.id] = Object.assign({}, base, { params: P, shots: shots, solved: solved, misses: misses, independent: base.independent || indep, flawless: flawless });
             var mergedBadges = (cur.badges || []).slice();
             newBadges.forEach(function (bd) { if (mergedBadges.indexOf(bd) === -1) mergedBadges.push(bd); });
             return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: true, badges: mergedBadges }) });
@@ -1026,7 +1047,10 @@
             var cur = (prev && prev._arccity) || S;
             var bl = Object.assign({}, cur.byLevel || {});
             var base = Object.assign({ params: defaultParams(level), shots: 0, solved: false, misses: 0 }, bl[level.id] || {});
-            bl[level.id] = Object.assign({}, base, { params: defaultParams(level) });
+            // Reset = a FRESH attempt: clear the shot/miss counters (so a clean run can
+            // earn the 3rd star) but KEEP the earned achievements (solved/independent/
+            // flawless/stars never regress).
+            bl[level.id] = Object.assign({}, base, { params: defaultParams(level), shots: 0, misses: 0 });
             return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: false }) });
           });
           announceArc(ctx, t('arccity.reset', 'Reset. ') + describeBoard(level));
@@ -1298,19 +1322,24 @@
           var solved = lv.family === 'gauntlet' ? gauntletComplete(byLevel, gauntletOrder(byLevel, lv.stages)) : !!(byLevel[lv.id] && byLevel[lv.id].solved);
           var current = lv.id === (S.levelId || 'L1');
           var face = (solved ? '✅ ' : (unlocked ? '' : '🔒 ')) + lv.title;
+          // Mastery stars (function levels only — the Gauntlet shows ✅ via its own rule).
+          var stars = lv.family === 'gauntlet' ? 0 : levelStars(byLevel[lv.id]);
+          var starLine = stars > 0
+            ? h('div', { key: 'stars', 'aria-hidden': 'true', style: { fontSize: 11, lineHeight: 1, marginTop: 3, letterSpacing: '1px', color: PAL.warn } }, '★★★☆☆☆'.slice(3 - stars, 6 - stars))
+            : null;
           return h('button', {
             key: 'lvl-' + lv.id, type: 'button', disabled: !unlocked,
             'aria-current': current ? 'true' : null,
-            'aria-label': lv.title + (solved ? ' (completed)' : (unlocked ? '' : ' (locked)')),
+            'aria-label': lv.title + (solved ? ' (completed' + (stars ? ', ' + stars + ' of 3 stars' : '') + ')' : (unlocked ? '' : ' (locked)')),
             onClick: function () { if (unlocked) switchLevel(lv.id); },
             style: {
               padding: '6px 10px', borderRadius: 8, fontSize: 12, fontWeight: current ? 800 : 600,
               border: '1px solid ' + (current ? BEAM : GRID),
               background: current ? 'rgba(34,211,238,0.15)' : 'transparent',
               color: unlocked ? INK : 'var(--allo-stem-text, #64748b)',
-              opacity: unlocked ? 1 : 0.5, cursor: unlocked ? 'pointer' : 'not-allowed'
+              opacity: unlocked ? 1 : 0.5, cursor: unlocked ? 'pointer' : 'not-allowed', textAlign: 'center'
             }
-          }, face);
+          }, h('div', { key: 'face' }, face), starLine);
         });
 
         // ── Parameter controls ──
@@ -1447,7 +1476,9 @@
         var teacherPanel = h('div', { key: 'teacherpanel', style: { marginTop: 4 } },
           h('div', { key: 'caveat', role: 'note', style: { fontSize: 13, lineHeight: 1.5, color: INK, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + GRID, background: 'rgba(148,163,184,0.10)', marginBottom: 12 } }, '⚠️ ' + summary.caveat),
           h('h3', { key: 'psh', style: { fontSize: 15, margin: '0 0 8px', color: INK } }, t('arccity.progress_summary', 'Progress summary')),
-          h('div', { key: 'relit', style: { fontSize: 14, fontWeight: 700, color: INK, marginBottom: 10 } }, t('arccity.nodes_relit', 'Nodes re-lit:') + ' ' + summary.nodesReLit + ' / ' + summary.totalLevels),
+          h('div', { key: 'relit', style: { fontSize: 14, fontWeight: 700, color: INK, marginBottom: 4 } }, t('arccity.nodes_relit', 'Nodes re-lit:') + ' ' + summary.nodesReLit + ' / ' + summary.totalLevels),
+          h('div', { key: 'starsline', style: { fontSize: 14, fontWeight: 700, color: INK, marginBottom: 2 } }, t('arccity.stars', 'Stars:') + ' ' + summary.stars + ' / ' + summary.starsMax),
+          h('div', { key: 'starlegend', style: { fontSize: 11, color: INK, opacity: 0.65, marginBottom: 10 } }, summary.starLegend),
           h('h3', { key: 'fh', style: { fontSize: 14, margin: '0 0 6px', color: INK } }, t('arccity.functions', 'Functions')),
           h('ul', { key: 'fams', style: { listStyle: 'none', padding: 0, margin: '0 0 12px', fontSize: 13, color: INK } },
             Object.keys(summary.families).map(function (f) { return h('li', { key: 'fam-' + f, style: { marginBottom: 3 } }, f + ': ' + summary.families[f]); })),
@@ -1458,6 +1489,7 @@
               var bit = l.status;
               if (l.status === 'completed') bit += l.independent ? ' (independently)' : ' (with live preview)';
               if (l.status !== 'not started') bit += ' — ' + l.shots + ' shot' + (l.shots === 1 ? '' : 's') + ' (' + l.exploredAdjustments + ' missed)';
+              if (l.stars) bit += '  ' + '★★★☆☆☆'.slice(3 - l.stars, 6 - l.stars);
               return h('li', { key: 'tl-' + l.id, style: { marginBottom: 3 } }, l.title + ': ' + bit);
             })),
           summary.badges.length ? h('div', { key: 'tbadges', style: { fontSize: 13, color: INK, marginBottom: 12 } }, t('arccity.badges', 'Badges earned') + ': ' + summary.badges.join(', ')) : null,

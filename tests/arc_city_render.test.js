@@ -182,6 +182,30 @@ describe('Arc City render — Sine Boulevard §3.1 affordances', () => {
   });
 });
 
+describe('Arc City render — mastery stars', () => {
+  it('a solved level shows a star row + a star count in its aria-label', () => {
+    const r = render({ levelId: 'L3', byLevel: { L1: { solved: true, independent: true, flawless: true } }, tier: 'practice', fired: false, badges: [] });
+    expect(r.find('lvl-L1').props['aria-label']).toMatch(/3 of 3 stars/);
+    expect(r.find('stars')).not.toBeNull(); // decorative row (aria-hidden; the count lives in the label)
+  });
+
+  it('an independent FIRST-TRY solve flags flawless (3★); a miss-then-solve does not; Reset clears counters but keeps achievements', () => {
+    const ace = click({ levelId: 'L1', byLevel: { L1: { params: { m: 0.5, b: 0 }, shots: 0, solved: false, misses: 0 } }, tier: 'independent', fired: false, badges: [] }, 'fire');
+    expect(ace.byLevel.L1.solved).toBe(true);
+    expect(ace.byLevel.L1.independent).toBe(true);
+    expect(ace.byLevel.L1.flawless).toBe(true);   // → 3 stars
+
+    const capped = click({ levelId: 'L1', byLevel: { L1: { params: { m: 0.5, b: 0 }, shots: 1, solved: false, misses: 1 } }, tier: 'independent', fired: false, badges: [] }, 'fire');
+    expect(capped.byLevel.L1.flawless).toBeFalsy(); // missed first → caps at 2 stars
+
+    const reset = click({ levelId: 'L1', byLevel: { L1: { params: { m: 1, b: 1 }, shots: 5, misses: 3, solved: true, independent: true, flawless: true } }, tier: 'practice', fired: false, badges: [] }, 'reset');
+    expect(reset.byLevel.L1.shots).toBe(0);
+    expect(reset.byLevel.L1.misses).toBe(0);        // fresh attempt → can try for 3★ again
+    expect(reset.byLevel.L1.flawless).toBe(true);   // earned achievements never regress
+    expect(reset.byLevel.L1.solved).toBe(true);
+  });
+});
+
 describe('Arc City render — leaving/returning preserves the run (no silent data loss)', () => {
   it('switching to a normal level mid-run keeps the gauntlet state; returning resumes at the same stage', () => {
     const mid = {

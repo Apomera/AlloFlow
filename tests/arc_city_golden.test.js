@@ -237,6 +237,27 @@ describe('Arc City — Sine Boulevard §3.1 (snapped period + crest-grabber)', (
   });
 });
 
+describe('Arc City — mastery stars (reward independence, re-earnable, never ability)', () => {
+  it('levelStars: 0 unsolved → 1 solved → 2 independent → 3 flawless', () => {
+    expect(arc.levelStars(null)).toBe(0);
+    expect(arc.levelStars({ solved: false })).toBe(0);
+    expect(arc.levelStars({ solved: true })).toBe(1);
+    expect(arc.levelStars({ solved: true, independent: true })).toBe(2);
+    expect(arc.levelStars({ solved: true, independent: true, flawless: true })).toBe(3);
+  });
+  it('the tiers reward INDEPENDENCE, not ability (legend is action-based)', () => {
+    expect(arc.STAR_LEGEND).toMatch(/preview-hidden/);
+    expect(arc.STAR_LEGEND).not.toMatch(/master|genius|smart|talent/i);
+  });
+  it('teacherSummary totals stars and surfaces the legend (out of 3 per function level)', () => {
+    const s = arc.teacherSummary({ L1: { solved: true, independent: true, flawless: true }, L3: { solved: true }, L4: { solved: true, independent: true } }, []);
+    expect(s.stars).toBe(6);                              // 3 + 1 + 2
+    expect(s.starsMax).toBe(s.totalLevels * 3);
+    expect(s.levels.find(l => l.id === 'L1').stars).toBe(3);
+    expect(arc.teacherSummaryText(s)).toMatch(/Stars: 6 of/);
+  });
+});
+
 describe('Arc City — success celebration copy (action-praise, never an ability claim)', () => {
   it('escalates with how clean the solve was', () => {
     expect(arc.successWord(1)).toBe('FIRST TRY!');   // first shot
