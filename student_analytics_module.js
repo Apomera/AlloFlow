@@ -4637,11 +4637,11 @@
         React.createElement("div", { className: "bg-slate-100 rounded-lg p-3" },
           React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2" }, "\uD83D\uDCCA Quick Interpretation"),
           React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center" },
-            React.createElement("div", { className: "bg-emerald-50 rounded-lg p-2 border border-emerald-200" }, React.createElement("div", { className: "text-[11px] font-bold text-emerald-700" }, "\u2265 40th %ile"), React.createElement("div", { className: "text-[11px] text-emerald-600" }, "Tier 1: On Track")),
-            React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" }, React.createElement("div", { className: "text-[11px] font-bold text-amber-700" }, "15th-39th %ile"), React.createElement("div", { className: "text-[11px] text-amber-600" }, "Tier 2: Strategic")),
-            React.createElement("div", { className: "bg-red-50 rounded-lg p-2 border border-red-200" }, React.createElement("div", { className: "text-[11px] font-bold text-red-700" }, "< 15th %ile"), React.createElement("div", { className: "text-[11px] text-red-600" }, "Tier 3: Intensive"))
+            React.createElement("div", { className: "bg-emerald-50 rounded-lg p-2 border border-emerald-200" }, React.createElement("div", { className: "text-[11px] font-bold text-emerald-700" }, "\u2265 75% of benchmark"), React.createElement("div", { className: "text-[11px] text-emerald-600" }, "Tier 1: On Track")),
+            React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" }, React.createElement("div", { className: "text-[11px] font-bold text-amber-700" }, "50\u201374% of benchmark"), React.createElement("div", { className: "text-[11px] text-amber-600" }, "Tier 2: Strategic")),
+            React.createElement("div", { className: "bg-red-50 rounded-lg p-2 border border-red-200" }, React.createElement("div", { className: "text-[11px] font-bold text-red-700" }, "< 50% of benchmark"), React.createElement("div", { className: "text-[11px] text-red-600" }, "Tier 3: Intensive"))
           ),
-          React.createElement("p", { className: "text-[11px] text-slate-600 mt-2 italic" }, "General guidelines. Use RTI Settings to customize for your district norms.")
+          React.createElement("p", { className: "text-[11px] text-slate-600 mt-2 italic" }, "General guidelines \u2014 bands compare the score to the 50th-percentile benchmark (median), not a percentile rank. Use RTI Settings to customize for your district norms.")
         )
       ) : null
     ),
@@ -4656,9 +4656,9 @@
       className: "text-sm font-bold text-slate-700"
     }, t('probes.benchmark_battery')), /*#__PURE__*/React.createElement("span", {
       className: "text-[11px] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
-    }, "Standardized")), /*#__PURE__*/React.createElement("p", {
+    }, "CBM-style")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3"
-    }, "Curated word lists with fixed activity order per grade. No gamification \u2014 designed for formal assessment."), /*#__PURE__*/React.createElement("div", {
+    }, "Curated word lists with fixed activity order per grade. No gamification \u2014 CBM-style measures for progress monitoring, not standardized/norm-referenced tests; they don't replace a formal evaluation."), /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2 items-center flex-wrap"
     }, /*#__PURE__*/React.createElement("select", {
       "aria-label": t('common.probe_grade'),
@@ -4725,7 +4725,7 @@
       className: "text-sm font-bold text-slate-700"
     }, t('probes.math_fluency')), /*#__PURE__*/React.createElement("span", {
       className: "text-[11px] font-bold text-orange-800 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
-    }, "Standardized")), /*#__PURE__*/React.createElement("p", {
+    }, "CBM-style")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3"
     }, "Fixed problem sets with DCPM scoring. 25 problems, 2-minute timer. Forms A/B/C for progress monitoring."), /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2 items-center flex-wrap"
@@ -4819,7 +4819,7 @@
       className: "text-sm font-bold text-slate-700"
     }, t('probes.literacy_fluency')), /*#__PURE__*/React.createElement("span", {
       className: "text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
-    }, "Standardized")), /*#__PURE__*/React.createElement("p", {
+    }, "CBM-style")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3"
     }, "Nonsense Word Fluency (NWF), Letter Naming Fluency (LNF), and Rapid Automatized Naming (RAN) assessments."), /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-1 sm:grid-cols-3 gap-2"

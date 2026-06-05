@@ -4126,6 +4126,7 @@ show();
                             </div>
                           )}
                         </div>
+                        <div className="text-[11px] text-slate-500 italic mb-1">AI estimate from one read-aloud — practice feedback, not a normed ORF benchmark or a teacher-administered DIBELS score.</div>
                         {/* Word-by-word display */}
                         {fluencyResult.wordData && (
                           <div className="flex flex-wrap gap-1 mt-2">
