@@ -10734,6 +10734,27 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
   };
 
   // ── Generate formatted audit report (human-readable HTML) ──
+  // ── Honest, parity-extended report blocks (shared by both report generators) ──
+  // Surfaces the structural-vs-semantic SPLIT (axe-core passes ≠ the document is
+  // usable) + a content-integrity coverage line — so a high automated score never
+  // reads as "fully accessible" when the AI rubric or text-coverage says otherwise.
+  const _honestReportBlocks = (structural, semantic, coverage) => {
+    let h = '';
+    if (typeof structural === 'number' && typeof semantic === 'number') {
+      const div = Math.abs(structural - semantic);
+      h += `<div style="display:flex;gap:12px;margin:12px 0;flex-wrap:wrap">
+        <div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:#1e3a5f">${structural}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">Structural (axe-core)</div></div>
+        <div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:#1e3a5f">${semantic}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">Semantic (AI rubric)</div></div>
+      </div>`;
+      if (div >= 15) h += `<p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; These two scores diverge by ${div} points.</strong> Automated structural checks (axe-core) can pass while the AI rubric flags meaning/usability gaps. Treat the lower score as the honest ceiling and have a human verify the experience.</p>`;
+    }
+    if (typeof coverage === 'number') {
+      h += `<h2 style="font-size:1.15rem;margin-top:1.5rem;color:#1e3a5f">Content Integrity</h2>
+        <p style="font-size:13px;color:#475569;margin:0 0 12px">Text preserved from source: <strong>${coverage}%</strong>. ${coverage < 97 ? 'Some characters differ from the source — usually formatting cleanup (de-hyphenation, whitespace normalization), not lost content. Review the Diff to confirm no meaning was dropped.' : 'Full text preserved.'}</p>`;
+    }
+    return h;
+  };
+
   const generateAuditReportHtml = (auditData, fileName, isBeforeAfter = false) => {
     const d = auditData;
     const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -10800,14 +10821,19 @@ tr { page-break-inside: avoid; }
     }
     html += `<div style="font-size:14px;margin-top:8px;color:#475569">${d.summary || d.before?.audit?.summary || ''}</div></div>`;
 
+    // Honest structural-vs-semantic split + content-integrity coverage
+    const _structScore = isBeforeAfter ? (d.after?.axeCoreAudit?.score ?? d.after?.axeScore) : (d.axeCoreAudit?.score ?? d.axeScore);
+    const _semScore = isBeforeAfter ? (d.after?.aiAudit?.score ?? d.after?.verificationAudit?.score) : (d.aiAudit?.score ?? d.verificationAudit?.score);
+    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage);
+
     // Reliability metrics
     const audit = isBeforeAfter ? (d.before?.audit || d) : d;
     if (audit.scores && audit.scores.length > 1) {
       html += `<h2>Auditor Agreement Metrics</h2><div class="meta-grid">
         <div class="meta-card"><div class="meta-val">${audit.ci95 ? audit.ci95[0] + '&ndash;' + audit.ci95[1] : 'N/A'}</div><div class="meta-label">95% Confidence Interval</div></div>
         <div class="meta-card"><div class="meta-val">${audit.scoreSD ?? 'N/A'}</div><div class="meta-label">Standard Deviation</div></div>
-        <div class="meta-card"><div class="meta-val">${audit.icc ?? 'N/A'}</div><div class="meta-label">Pass-to-pass score agreement (heuristic)</div></div>
-        ${audit.cronbachAlpha !== null && audit.cronbachAlpha !== undefined ? '<div class="meta-card"><div class="meta-val">' + audit.cronbachAlpha + '</div><div class="meta-label">Cross-pass consistency (heuristic)</div></div>' : ''}
+        <div class="meta-card"><div class="meta-val">${audit.icc ?? 'N/A'}</div><div class="meta-label">Auditor Agreement (heuristic index)</div></div>
+        ${audit.cronbachAlpha !== null && audit.cronbachAlpha !== undefined ? '<div class="meta-card"><div class="meta-val">' + audit.cronbachAlpha + '</div><div class="meta-label">Auditor Agreement (consistency heuristic)</div></div>' : ''}
       </div>
       <p style="font-size:12px;color:#64748b">Auditors: ${audit.auditorCount || audit.scores.length} | Individual scores: ${audit.scores.join(', ')} | SEM: &plusmn;${audit.scoreSEM || 'N/A'} | Range: ${audit.scoreRange || 'N/A'} | Reliability: ${audit.reliability || 'N/A'}</p>`;
     }
@@ -11037,13 +11063,13 @@ tr { page-break-inside: avoid; }
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Standard Deviation (across auditors)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.scoreSD ?? 'n/a'}</td></tr>
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Standard error of pass scores (SEM)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">±${ar.scoreSEM ?? 'n/a'}</td></tr>
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">95% Confidence Interval</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${Array.isArray(ar.ci95) ? ar.ci95.join(' – ') : 'n/a'}</td></tr>
-          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Pass-to-pass score agreement (heuristic)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.icc ?? 'n/a'}</td></tr>
-          ${ar.cronbachAlpha != null ? `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Cross-pass consistency (heuristic)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.cronbachAlpha}</td></tr>` : ''}
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Auditor Agreement (heuristic index)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.icc ?? 'n/a'}</td></tr>
+          ${ar.cronbachAlpha != null ? `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Auditor Agreement (consistency heuristic)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.cronbachAlpha}</td></tr>` : ''}
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Agreement Classification</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-transform:capitalize">${_esc(ar.reliability || 'n/a')}</td></tr>
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Individual Auditor Scores</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${Array.isArray(ar.scores) ? ar.scores.join(', ') : 'n/a'}</td></tr>
         </tbody>
       </table>
-      <p style="font-size:11px;color:#64748b;margin-top:0">No commercial PDF accessibility validator currently reports a cross-pass agreement signal. This is an AlloFlow extension: because AlloFlow's passes use a single AI model, it reflects repeat-measurement stability, not inter-rater reliability.</p>
+      <p style="font-size:11px;color:#64748b;margin-top:0">No commercial PDF accessibility validator currently reports a cross-pass agreement signal. This is an AlloFlow extension: these are agreement heuristics computed across multiple AI audit passes of the same single model — repeat-measurement stability, <strong>not</strong> independent human reviewer agreement. Read them as a consistency signal, not a validity guarantee.</p>
     ` : '';
 
     // Score-blend block
@@ -11164,6 +11190,12 @@ tr { page-break-inside: avoid; }
   </div>
 
   ${_scoreBlock}
+
+  ${_honestReportBlocks(
+    (fr.axeScore != null ? fr.axeScore : (fr.axeAudit && fr.axeAudit.score != null ? fr.axeAudit.score : ar._baselineAxeScore)),
+    (fr.verificationAudit && fr.verificationAudit.score != null ? fr.verificationAudit.score : (fr.aiAudit && fr.aiAudit.score != null ? fr.aiAudit.score : ar._aiOnlyScore)),
+    fr.integrityCoverage
+  )}
 
   <h2>PDF/UA-1 Compliance Checks</h2>
   ${hasChecks
