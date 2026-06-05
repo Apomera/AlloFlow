@@ -89,6 +89,11 @@ const checks = [
     description: 'Undeclared identifiers in hook dep arrays of *_module.js (data/onPlayAudio/isEscaped render-crash class)',
   },
   {
+    name: 'FERPA — discrepancyReport persistence gate',
+    cmd: ['node', 'dev-tools/check_no_discrepancy_persistence.cjs'],
+    description: 'discrepancyReport must NEVER appear as a property key in any object literal in report_writer_module.js (psycheck verifier state — render-only)',
+  },
+  {
     name: 'Keyless list children (CDN modules + STEM tools)',
     cmd: ['node', 'dev-tools/check_keyless_map.cjs', '--quiet'],
     description: 'React "unique key" warning class: elements from .map()/array children without a key (the StemPluginBridge warning)',
