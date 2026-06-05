@@ -9768,6 +9768,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, []);
   const [diffLibReady, setDiffLibReady] = useState(typeof window !== 'undefined' && !!window.Diff);
   const [diffLibLoading, setDiffLibLoading] = useState(false);
+  // Bumped by _ensureDiffLib every time the lib is confirmed ready. Because every
+  // Diff button awaits _ensureDiffLib(), bumping a nonce that the build effect depends
+  // on guarantees the click DETERMINISTICALLY drives a (re)compute — even when
+  // diffLibReady was already true (so setDiffLibReady is a no-op) and pdfFixResult's
+  // reference hasn't changed. This is what makes the diff appear on the FIRST click
+  // instead of only after a later state change (e.g. a "Fix remaining" pass).
+  const [diffRebuildNonce, setDiffRebuildNonce] = useState(0);
   const _lastDiffFingerprintRef = React.useRef(null);
   useEffect(() => {
     // Diagnostic ring buffer — every bail/build path writes here so Aaron can
@@ -9794,6 +9801,15 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     if (!diffViewOpen || !pdfFixResult) {
       if (diffViewOpen && !pdfFixResult) _diag('skipped — modal open but pdfFixResult is null');
       return;
+    }
+    // Self-heal a poisoned cache: a staked fingerprint with no rendered chunks means a
+    // prior build bailed/failed AFTER staking the fingerprint (e.g. compute threw, or the
+    // lib wasn't ready that pass). Without clearing it, the cache-hit guard below could
+    // short-circuit forever and the diff would stay blank until pdfFixResult next changed
+    // (a later "Fix remaining" pass) — exactly the reported first-click-does-nothing bug.
+    if (_lastDiffFingerprintRef.current && !diffChunks) {
+      _diag('self-heal — clearing staked fingerprint with no chunks so this run recomputes');
+      _lastDiffFingerprintRef.current = null;
     }
     if (!diffLibReady || !window.Diff) {
       _diag('skipped — jsdiff library not ready yet');
@@ -9850,10 +9866,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       _diag('built chunks', { total: annotated.length, add: _nAdd, del: _nDel, rehydratedRejections: _nRehydrated });
     } catch (e) {
       console.warn('[Diff] compute failed:', e);
+      // Clear the staked fingerprint so the NEXT trigger (lib-ready flip, granularity
+      // change, reopen) retries instead of caching this failure as a permanent blank.
+      _lastDiffFingerprintRef.current = null;
       setDiffChunks(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [diffViewOpen, pdfFixResult, diffGranularity, diffLibReady]);
+  }, [diffViewOpen, pdfFixResult, diffGranularity, diffLibReady, diffRebuildNonce]);
   // Defensive cache-invalidation: when the source/final text pair changes
   // (auto-fix loop iteration, manual remarkup, project load), drop the stale
   // fingerprint so the next diff-build effect run re-computes against the
@@ -9898,11 +9917,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, []);
   const _ensureDiffLib = React.useCallback(() => {
     if (typeof window === 'undefined') return Promise.resolve(false);
-    if (window.Diff && typeof window.Diff.diffWordsWithSpace === 'function') { setDiffLibReady(true); return Promise.resolve(true); }
+    if (window.Diff && typeof window.Diff.diffWordsWithSpace === 'function') { setDiffLibReady(true); setDiffRebuildNonce(n => n + 1); return Promise.resolve(true); }
     if (document.getElementById('jsdiff-cdn')) {
       return new Promise((resolve) => {
         const t = setInterval(() => {
-          if (window.Diff) { clearInterval(t); setDiffLibReady(true); setDiffLibLoading(false); resolve(true); }
+          if (window.Diff) { clearInterval(t); setDiffLibReady(true); setDiffLibLoading(false); setDiffRebuildNonce(n => n + 1); resolve(true); }
         }, 50);
         setTimeout(() => { clearInterval(t); resolve(!!window.Diff); }, 5000);
       });
@@ -9913,7 +9932,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       s.id = 'jsdiff-cdn';
       s.src = 'https://cdn.jsdelivr.net/npm/diff@5.2.0/dist/diff.min.js';
       s.async = true;
-      s.onload = () => { setDiffLibReady(!!window.Diff); setDiffLibLoading(false); resolve(!!window.Diff); };
+      s.onload = () => { setDiffLibReady(!!window.Diff); setDiffLibLoading(false); if (window.Diff) setDiffRebuildNonce(n => n + 1); resolve(!!window.Diff); };
       s.onerror = () => { setDiffLibLoading(false); setDiffLibReady(false); resolve(false); };
       document.head.appendChild(s);
     });
