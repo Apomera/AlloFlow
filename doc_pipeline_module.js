@@ -10412,17 +10412,42 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
       // ── Integrity check: compare final HTML text content to deterministic ground truth ──
       // This catches silent truncation that slipped past individual fix-pass guards.
+      // Both sides are normalized IDENTICALLY first — words split across a line break by a
+      // hyphen are rejoined and whitespace is collapsed — so legitimate cleanup (de-hyphenation,
+      // reflow) is NOT miscounted as missing content. Previously the raw extracted char count
+      // (with its line-break hyphens + newlines) was compared against the cleaned output, which
+      // produced false "content loss" warnings + an expert-review banner on documents that were
+      // actually fine (e.g. an 88% reading where ~12% was just rejoined hyphens / collapsed space).
       let integrityCoverage = null;
       let integrityWarning = null;
       try {
-        const groundTruth = window.__lastGroundTruthCharCount || 0;
-        const groundTruthMethod = window.__lastGroundTruthMethod || 'unknown';
+        // Rejoin "exam-\nple" -> "example" (hyphen immediately after a letter, then whitespace,
+        // then a letter — leaves real compounds like "well-being" untouched) + collapse whitespace.
+        const _normIntegrity = (s) => String(s || '')
+          .replace(/(\p{L})[-­]\s+(\p{L})/gu, '$1$2')
+          .replace(/­/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        const _srcRaw = extractedText || '';
+        let groundTruth, finalText, groundTruthMethod;
+        if (_srcRaw) {
+          // Preferred: normalized source TEXT vs normalized output TEXT (de-hyphenation-safe).
+          groundTruth = _normIntegrity(_srcRaw).length;
+          finalText = _normIntegrity(htmlToPlainText(accessibleHtml)).length;
+          groundTruthMethod = (window.__lastGroundTruthMethod || 'extracted-text') + '+normalized';
+        } else {
+          // Fallback: deterministic ground-truth char count (legacy path, source text unavailable).
+          groundTruth = window.__lastGroundTruthCharCount || 0;
+          finalText = textCharCount(accessibleHtml);
+          groundTruthMethod = window.__lastGroundTruthMethod || 'unknown';
+        }
         if (groundTruth > 0) {
-          const finalText = textCharCount(accessibleHtml);
-          integrityCoverage = Math.round((finalText / groundTruth) * 100);
-          warnLog(`[Integrity] Final HTML text: ${finalText} chars / source: ${groundTruth} chars (${integrityCoverage}% coverage, method=${groundTruthMethod})`);
+          // Remediation ADDS text (alt text, table headers, ARIA labels) so the ratio can exceed
+          // 100%; clamp the displayed coverage but keep the raw ratio for the shortfall test.
+          integrityCoverage = Math.min(100, Math.round((finalText / groundTruth) * 100));
+          warnLog(`[Integrity] Final text: ${finalText} chars / source: ${groundTruth} chars (${integrityCoverage}% coverage, method=${groundTruthMethod})`);
           if (finalText < groundTruth * 0.97) {
-            integrityWarning = `Output contains ${finalText.toLocaleString()} chars but source had ${groundTruth.toLocaleString()} (${integrityCoverage}% coverage). Some content may be missing.`;
+            integrityWarning = `Output preserves ${finalText.toLocaleString()} of ${groundTruth.toLocaleString()} source characters (${integrityCoverage}% coverage) after de-hyphenation and whitespace normalization. Some source content may be missing — review the Diff to confirm.`;
             if (!_silentMode) addToast(t('toasts.integrity') + integrityWarning, 'error');
             warnLog('[Integrity] COVERAGE SHORT — ' + integrityWarning);
           } else if (!_silentMode && integrityCoverage >= 98) {
@@ -10437,9 +10462,18 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const axeViolations = axeResults ? axeResults.totalViolations : 0;
       const axeCritical = axeResults ? axeResults.critical.length : 0;
       const axeFailed = !axeResults || typeof axeResults.score !== 'number';
-      const needsExpertReview = axeFailed || // axe-core failed entirely — can't verify
-        integrityWarning || // content loss detected — always flag for review
+      // Two independent concerns drive the expert-review banner. Keep them separate so the
+      // banner copy can be reason-specific: an accessibility concern is an a11y-expertise
+      // problem (Knowbility referral), a content-fidelity concern is a "verify the text
+      // carried over" problem (review the Diff) — they are not the same ask.
+      const _accessibilityConcern = axeFailed || // axe-core failed entirely — can't verify
         (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 70) || axeCritical > 0));
+      const _contentFidelityConcern = !!integrityWarning;
+      const needsExpertReview = _accessibilityConcern || _contentFidelityConcern;
+      const expertReviewReason = (_accessibilityConcern && _contentFidelityConcern) ? 'both'
+        : _accessibilityConcern ? 'accessibility'
+        : _contentFidelityConcern ? 'content-fidelity'
+        : null;
 
       // ── Final step: restore deferred image data URLs ──
       // All AI passes (grammar, surgical, aiFixChunked, artifact cleanup) have completed; now we
@@ -10600,6 +10634,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         _scoreIsBlended: !axeCoreFailed && finalAfterScore !== null,
         autoFixPasses,
         needsExpertReview,
+        expertReviewReason, // 'accessibility' | 'content-fidelity' | 'both' | null — drives banner copy
         docStyle, // extracted color palette for auto brand match in preview
         pageCount,
         imageCount: extractedImages.length,

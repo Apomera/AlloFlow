@@ -3482,9 +3482,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </div>
                       )}
 
-                      {/* Expert Referral Panel - shows when document needs human remediation */}
-                      {pdfFixResult.needsExpertReview && (
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-4 space-y-2">
+                      {/* Expert Referral Panel - reason-specific: an accessibility-barrier concern is an
+                          a11y-expertise problem (Knowbility referral); a content-fidelity concern is a
+                          "verify the text carried over" problem (review the Diff). They are not the same ask. */}
+                      {pdfFixResult.needsExpertReview && (() => {
+                        const reason = pdfFixResult.expertReviewReason || 'accessibility';
+                        const showA11y = reason === 'accessibility' || reason === 'both';
+                        const showFidelity = reason === 'content-fidelity' || reason === 'both';
+                        const cov = pdfFixResult.integrityCoverage;
+                        return (
+                        <div className={`border-2 rounded-xl p-4 space-y-3 ${showA11y ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-300' : 'bg-gradient-to-r from-sky-50 to-blue-50 border-sky-300'}`}>
+                          {showA11y && (
                           <div className="flex items-start gap-3">
                             <span className="text-2xl shrink-0">🔍</span>
                             <div>
@@ -3518,8 +3526,24 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </p>
                             </div>
                           </div>
+                          )}
+                          {showFidelity && (
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl shrink-0">📄</span>
+                            <div>
+                              <h4 className="text-sm font-bold text-sky-900">{t('pdf_audit.fidelity_review.heading') || 'Verify Content Fidelity Before Use'}</h4>
+                              <p className="text-xs text-sky-800 leading-relaxed mt-1">
+                                {(t('pdf_audit.fidelity_review.body') || 'After accounting for de-hyphenation and whitespace cleanup, the remediated output still preserves {cov} of the source text. This is a content-fidelity check, not an accessibility barrier — some source text may not have carried over. Open the Diff view to compare the remediated text against the original, and keep the source PDF on hand to confirm nothing important was dropped.').replace('{cov}', cov != null ? cov + '%' : 'less than the full source')}
+                              </p>
+                              <p className="text-[11px] text-sky-600 mt-2 italic">
+                                {t('pdf_audit.fidelity_review.note') || 'Coverage already excludes formatting-only changes (rejoined hyphens, collapsed spaces), so a shortfall here points to actual missing text worth a human glance — not a scoring artifact.'}
+                              </p>
+                            </div>
+                          </div>
+                          )}
                         </div>
-                      )}
+                        );
+                      })()}
 
                       {/* Action buttons */}
                       <div className="flex gap-2 flex-wrap">
