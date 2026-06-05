@@ -120,7 +120,7 @@ describe('Arc City render — neon-city visual layer (decorative, a11y-safe)', (
     expect(some(r, n => n.props && n.props.id === 'arc-glow-strong')).toBe(true);
     expect(r.find('backdrop')).not.toBeNull();                                     // sky backdrop present
     // glow is applied to the gates (additive halo — never lowers their tested contrast)
-    expect(some(r, n => n.props && n.props.key === 'gateLo0' && n.props.filter === 'url(#arc-glow)')).toBe(true);
+    expect(some(r, n => n.props && /^gateLo0/.test(n.props.key || '') && n.props.filter === 'url(#arc-glow)')).toBe(true);
   });
 
   it('decorative layers are aria-hidden (no SR noise)', () => {
@@ -128,24 +128,37 @@ describe('Arc City render — neon-city visual layer (decorative, a11y-safe)', (
     expect(r.find('backdrop').props['aria-hidden']).toBe('true');
   });
 
-  it('a lit node gets a halo, and FIRING a hit spawns the burst ring', () => {
+  it('a lit node gets a halo (and the unlit board does not)', () => {
     const lit = render({ levelId: 'L1', byLevel: { L1: { params: { m: 0.5, b: 0 }, shots: 1, solved: true } }, tier: 'practice', fired: true, badges: [] });
     expect(lit.find('nodehalo')).not.toBeNull();
-    expect(lit.find('burst')).not.toBeNull();
-    expect(lit.find('burst').props.className).toMatch(/arccity-burst/); // CSS gates its animation behind prefers-reduced-motion
-    // an UNlit board has neither
     const unlit = render({ levelId: 'L1', byLevel: {}, tier: 'practice', fired: false, badges: [] });
     expect(unlit.find('nodehalo')).toBeNull();
-    expect(unlit.find('burst')).toBeNull();
   });
 
-  it('FIRING draws the beam (dash animation class) and a HIT throws sparks; a miss has no sparks', () => {
+  it('FIRING draws the beam (dash animation class) and a HIT throws the full burst; a miss throws none', () => {
     const hit = render({ levelId: 'L1', byLevel: { L1: { params: { m: 0.5, b: 0 }, shots: 1, solved: true } }, tier: 'practice', fired: true, badges: [] });
     expect(some(hit, n => n.props && typeof n.props.key === 'string' && n.props.key.indexOf('beam-') === 0 && n.props.className === 'arccity-beam-draw')).toBe(true);
-    expect(hit.find('sparks')).not.toBeNull();
-    expect(hit.find('sparks').props.className).toMatch(/arccity-sparks/); // motion-gated in CSS
+    expect(some(hit, n => n.props && /^burst-/.test(n.props.key || ''))).toBe(true);   // keyed by shot so it replays each hit
+    expect(some(hit, n => n.props && /^sparks-/.test(n.props.key || ''))).toBe(true);
     const miss = render({ levelId: 'L1', byLevel: { L1: { params: { m: 0.5, b: 5 }, shots: 1 } }, tier: 'practice', fired: true, badges: [] });
-    expect(miss.find('sparks')).toBeNull();
+    expect(some(miss, n => n.props && /^burst-/.test(n.props.key || ''))).toBe(false);
+  });
+
+  it('a HIT delivers the visceral payoff: node power-on punch, shockwave, embers, an escalating word, and gates igniting green', () => {
+    const hit = render({ levelId: 'L3', byLevel: { L3: { params: { a: -0.5, h: 5, k: 5 }, shots: 1, solved: true } }, tier: 'practice', fired: true, badges: [] });
+    expect(hit.find('node-on')).not.toBeNull();
+    expect(hit.find('node-on').props.className).toMatch(/arccity-node-lit/);          // power-on punch class
+    expect(some(hit, n => n.props && /^shock-/.test(n.props.key || ''))).toBe(true);  // shockwave
+    expect(hit.find('ember0')).not.toBeNull();                                        // rising embers
+    expect(hit.text).toMatch(/FIRST TRY!/);                                           // escalating action-praise
+    // the threaded gates IGNITE green (success-green fill + flash class) — ties the payoff to the math
+    expect(some(hit, n => n.props && /^gateLo0on/.test(n.props.key || '') && n.props.fill && n.props.className === 'arccity-gate-lit')).toBe(true);
+    // a 3-shot solve celebrates differently, and a miss has neither shockwave nor a word
+    const h3 = render({ levelId: 'L3', byLevel: { L3: { params: { a: -0.5, h: 5, k: 5 }, shots: 3, solved: true } }, tier: 'practice', fired: true, badges: [] });
+    expect(h3.text).toMatch(/NAILED IT!/);
+    const miss = render({ levelId: 'L3', byLevel: { L3: { params: { a: 0, h: 5, k: 1 }, shots: 1 } }, tier: 'practice', fired: true, badges: [] });
+    expect(some(miss, n => n.props && /^shock-/.test(n.props.key || ''))).toBe(false);
+    expect(miss.text).not.toMatch(/FIRST TRY!|NAILED IT!|LIT!/);
   });
 });
 

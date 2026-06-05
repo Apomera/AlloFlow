@@ -339,6 +339,13 @@
       ' units. Fine-tune the controls so the beam meets (' + level.node.x + ', ' + level.node.y + ').';
   }
 
+  // Escalating, ACTION-based celebration word for the big on-hit pop (never an
+  // ability/mastery claim — it's about how clean THIS shot was). Decorative only;
+  // the screen reader hears the full describeResult, not this.
+  function successWord(shots) {
+    return (shots || 0) <= 1 ? 'FIRST TRY!' : ((shots || 0) <= 3 ? 'NAILED IT!' : 'LIT!');
+  }
+
   function describeEquation(level, p) {
     if (level.family === 'line') {
       return 'y = m·x + b, with m = ' + fmtVal(p.m, level.params.m.step) + ', b = ' + fmtVal(p.b, level.params.b.step) +
@@ -613,6 +620,7 @@
     fPrime: fPrime,
     describeEquation: describeEquation,
     describeResult: describeResult,
+    successWord: successWord,
     describeBoard: describeBoard,
     isLevelUnlocked: isLevelUnlocked,
     TIERS: TIERS,
@@ -691,20 +699,35 @@
       '#allo-arccity-root [role="slider"]:focus{outline:3px solid #22d3ee;outline-offset:2px;border-radius:6px;}' +
       '#allo-arccity-root [role="slider"]:focus-visible{outline:3px solid #22d3ee;outline-offset:2px;border-radius:6px;}' +
       '#allo-arccity-root button:focus-visible{outline:2px solid #22d3ee;outline-offset:2px;border-radius:6px;}' +
-      // burst ring + sparks are invisible unless the (reduced-motion-gated) animation reveals them
-      '#allo-arccity-root .arccity-burst{transform-box:fill-box;transform-origin:center;opacity:0;}' +
-      '#allo-arccity-root .arccity-sparks{transform-box:fill-box;transform-origin:center;opacity:0;}' +
+      // success-celebration elements are invisible / un-transformed unless the
+      // (reduced-motion-gated) animation reveals them — so reduced-motion is calm.
+      '#allo-arccity-root .arccity-burst,#allo-arccity-root .arccity-sparks,#allo-arccity-root .arccity-shock,#allo-arccity-root .arccity-pop{transform-box:fill-box;transform-origin:center;opacity:0;}' +
+      '#allo-arccity-root .arccity-ember{transform-box:fill-box;transform-origin:center;opacity:0;}' +
+      '#allo-arccity-root .arccity-node-lit{transform-box:fill-box;transform-origin:center;}' +
       '@keyframes arccityPulse{0%,100%{opacity:1;}50%{opacity:.5;}}' +
       '@keyframes arccityBurst{0%{transform:scale(.3);opacity:.9;}100%{transform:scale(2.7);opacity:0;}}' +
+      '@keyframes arccityShock{0%{transform:scale(.4);opacity:.6;}100%{transform:scale(4.2);opacity:0;}}' +
       '@keyframes arccityHalo{0%,100%{opacity:.28;}50%{opacity:.12;}}' +
-      '@keyframes arccitySparks{0%{transform:scale(.4);opacity:.95;}100%{transform:scale(1.7);opacity:0;}}' +
+      '@keyframes arccitySparks{0%{transform:scale(.4);opacity:.95;}100%{transform:scale(1.9);opacity:0;}}' +
+      '@keyframes arccityEmber{0%{transform:translateY(0) scale(1);opacity:.9;}100%{transform:translateY(-32px) scale(.3);opacity:0;}}' +
+      // node power-on punch (squash → overshoot → settle) the instant it lights
+      '@keyframes arccityNodePop{0%{transform:scale(.55);}55%{transform:scale(1.22);}100%{transform:scale(1);}}' +
+      // big celebration word: snap in, hold, fade
+      '@keyframes arccityPop{0%{transform:scale(.5);opacity:0;}22%{transform:scale(1.18);opacity:1;}72%{transform:scale(1);opacity:1;}100%{transform:scale(1);opacity:0;}}' +
+      // gates flash bright the moment the beam threads them all
+      '@keyframes arccityGateLit{0%{opacity:.35;}45%{opacity:1;}100%{opacity:.85;}}' +
       // beam draws on from the source when fired (dashoffset along its own length)
       '@keyframes arccityBeamDraw{from{stroke-dashoffset:100;}to{stroke-dashoffset:0;}}' +
       // ALL motion is opt-in: nothing animates when the user prefers reduced motion.
       '@media (prefers-reduced-motion: no-preference){' +
       '#allo-arccity-root .arccity-node-unlit{animation:arccityPulse 1.8s ease-in-out infinite;}' +
+      '#allo-arccity-root .arccity-node-lit{animation:arccityNodePop .5s cubic-bezier(.34,1.56,.64,1);}' +
       '#allo-arccity-root .arccity-burst{animation:arccityBurst .65s ease-out forwards;}' +
+      '#allo-arccity-root .arccity-shock{animation:arccityShock .6s ease-out forwards;}' +
       '#allo-arccity-root .arccity-sparks{animation:arccitySparks .55s ease-out forwards;}' +
+      '#allo-arccity-root .arccity-ember{animation:arccityEmber .8s ease-out forwards;}' +
+      '#allo-arccity-root .arccity-pop{animation:arccityPop 1.1s ease-out forwards;}' +
+      '#allo-arccity-root .arccity-gate-lit{animation:arccityGateLit .5s ease-out;}' +
       '#allo-arccity-root .arccity-halo{animation:arccityHalo 2.6s ease-in-out infinite;}' +
       '#allo-arccity-root .arccity-beam-draw{animation:arccityBeamDraw .5s ease-out;}' +
       '}';
@@ -945,6 +968,8 @@
           }
           announceArc(ctx, msg);
           if (!muted) { try { sfxFire(); if (r.result === 'hit') sfxHit(); else sfxBlock(); } catch (e) { } }
+          // Subtle haptic punch on a hit (mobile), unless the user prefers reduced motion.
+          if (r.result === 'hit') { try { var rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; if (!rm && navigator.vibrate) navigator.vibrate(14); } catch (e) { } }
         }
         function advanceGauntlet() {
           if (typeof setToolData !== 'function' || !gauntlet) return;
@@ -1119,13 +1144,19 @@
         for (var gx = 0; gx <= 10; gx++) gridEls.push(h('line', { key: 'gx' + gx, x1: sx(gx), y1: sy(wy0), x2: sx(gx), y2: sy(wy1), stroke: GRID, strokeWidth: gx === 0 ? 1.5 : 0.5, opacity: gx === 0 ? 0.9 : 0.4 }));
         for (var gy = 0; gy <= 8; gy++) gridEls.push(h('line', { key: 'gy' + gy, x1: sx(wx0), y1: sy(gy), x2: sx(wx1), y2: sy(gy), stroke: GRID, strokeWidth: gy === 0 ? 1.5 : 0.5, opacity: gy === 0 ? 0.9 : 0.4 }));
 
+        // Gates IGNITE green the moment the beam threads them all (a solved board
+        // turns success-green) — ties the visceral payoff straight to the math.
+        var litNow = ls.solved || res.result === 'hit';
+        var gateFill = litNow ? NODE_ON : GATE;
+        var gateCls = litNow ? 'arccity-gate-lit' : '';
+        var gateKey = litNow ? 'on' : 'off';
         var obstacleEls = [];
         (level.walls || []).forEach(function (w, i) {
           obstacleEls.push(h('rect', { key: 'wall' + i, x: sx(w.x) - 4, y: sy(w.height), width: 8, height: sy(0) - sy(w.height), fill: WALL, rx: 2, filter: 'url(#arc-glow)' }));
         });
         (level.gates || []).forEach(function (g, i) {
-          obstacleEls.push(h('rect', { key: 'gateLo' + i, x: sx(g.x) - 4, y: sy(g.lo), width: 8, height: sy(0) - sy(g.lo), fill: GATE, opacity: 0.85, rx: 2, filter: 'url(#arc-glow)' }));
-          obstacleEls.push(h('rect', { key: 'gateHi' + i, x: sx(g.x) - 4, y: sy(wy1), width: 8, height: sy(g.hi) - sy(wy1), fill: GATE, opacity: 0.85, rx: 2, filter: 'url(#arc-glow)' }));
+          obstacleEls.push(h('rect', { key: 'gateLo' + i + gateKey, x: sx(g.x) - 4, y: sy(g.lo), width: 8, height: sy(0) - sy(g.lo), fill: gateFill, opacity: 0.85, rx: 2, filter: 'url(#arc-glow)', className: gateCls }));
+          obstacleEls.push(h('rect', { key: 'gateHi' + i + gateKey, x: sx(g.x) - 4, y: sy(wy1), width: 8, height: sy(g.hi) - sy(wy1), fill: gateFill, opacity: 0.85, rx: 2, filter: 'url(#arc-glow)', className: gateCls }));
           if (g.slope) { // tangent tick showing the required entry slope (the "tilt")
             var smy = (g.lo + g.hi) / 2, sdx = 0.9;
             obstacleEls.push(h('line', { key: 'gslope' + i, x1: sx(g.x - sdx), y1: sy(smy - g.slope.value * sdx), x2: sx(g.x + sdx), y2: sy(smy + g.slope.value * sdx), stroke: PAL.warn, strokeWidth: 2.5, strokeDasharray: '5 3', strokeLinecap: 'round' }));
@@ -1135,22 +1166,33 @@
         var nodeR = (W / (wx1 - wx0)) * level.node.r;
         var lit = ls.solved || res.result === 'hit';
         var ncx = sx(level.node.x), ncy = sy(level.node.y);
+        // The node "powers on" with a squash-overshoot punch the instant it lights
+        // (key flips on lit ⇒ remount ⇒ the one-shot pop plays exactly once).
         var nodeEl = h('circle', {
-          key: 'node', cx: ncx, cy: ncy, r: nodeR,
+          key: 'node-' + (lit ? 'on' : 'off'), cx: ncx, cy: ncy, r: nodeR,
           fill: lit ? NODE_ON : NODE_OFF, opacity: lit ? 1 : 0.85,
           filter: lit ? 'url(#arc-glow-strong)' : 'url(#arc-glow)',
-          className: lit ? '' : 'arccity-node-unlit', stroke: lit ? NODE_ON : NODE_OFF, strokeWidth: 2
+          className: lit ? 'arccity-node-lit' : 'arccity-node-unlit', stroke: lit ? NODE_ON : NODE_OFF, strokeWidth: 2
         });
-        // Soft halo behind a lit node; expanding burst ring the moment it's lit.
+        // Soft halo behind a lit node; full celebration the moment a shot lands.
         var nodeGlowEls = lit ? [h('circle', { key: 'nodehalo', cx: ncx, cy: ncy, r: nodeR * 1.9, fill: NODE_ON, opacity: 0.24, filter: 'url(#arc-glow-strong)', className: 'arccity-halo', 'aria-hidden': 'true' })] : [];
+        var sk = ls.shots || 0; // celebration els key off the shot count → replay on every hit
         var nodeBurstEls = (S.fired && res.result === 'hit') ? [
-          h('circle', { key: 'burst', cx: ncx, cy: ncy, r: nodeR, fill: 'none', stroke: NODE_ON, strokeWidth: 3, className: 'arccity-burst', 'aria-hidden': 'true' }),
-          // sparks: 8 short rays from the node, fading outward (decorative, motion-gated)
-          h('g', { key: 'sparks', className: 'arccity-sparks', 'aria-hidden': 'true' },
+          h('circle', { key: 'shock-' + sk, cx: ncx, cy: ncy, r: nodeR, fill: 'none', stroke: NODE_ON, strokeWidth: 4, className: 'arccity-shock', 'aria-hidden': 'true' }),
+          h('circle', { key: 'burst-' + sk, cx: ncx, cy: ncy, r: nodeR, fill: 'none', stroke: NODE_ON, strokeWidth: 3, className: 'arccity-burst', 'aria-hidden': 'true' }),
+          // sparks: 8 short rays bursting outward
+          h('g', { key: 'sparks-' + sk, className: 'arccity-sparks', 'aria-hidden': 'true' },
             [0, 45, 90, 135, 180, 225, 270, 315].map(function (deg, i) {
               var rad = deg * Math.PI / 180, r0 = nodeR * 1.1, r1 = nodeR * 1.9;
               return h('line', { key: 'spk' + i, x1: ncx + Math.cos(rad) * r0, y1: ncy + Math.sin(rad) * r0, x2: ncx + Math.cos(rad) * r1, y2: ncy + Math.sin(rad) * r1, stroke: NODE_ON, strokeWidth: 2.5, strokeLinecap: 'round' });
-            }))
+            })),
+          // embers drifting up from the node
+          h('g', { key: 'embers-' + sk, 'aria-hidden': 'true' },
+            [-2, -1, 0, 1, 2].map(function (d, i) {
+              return h('circle', { key: 'ember' + i, cx: ncx + d * nodeR * 0.55, cy: ncy - nodeR * 0.3, r: Math.max(2, nodeR * 0.18), fill: NODE_ON, className: 'arccity-ember', style: { animationDelay: (i * 0.05) + 's' } });
+            })),
+          // big celebration word, escalating with how clean the solve was (action-praise, not ability)
+          h('text', { key: 'pop-' + sk, x: W / 2, y: 54, textAnchor: 'middle', fill: NODE_ON, fontSize: 34, fontWeight: 900, className: 'arccity-pop', 'aria-hidden': 'true', style: { letterSpacing: '1px', paintOrder: 'stroke', stroke: 'rgba(2,8,6,0.35)', strokeWidth: 3 } }, successWord(sk))
         ] : [];
 
         var samples = sampleCurve(level, P);

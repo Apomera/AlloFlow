@@ -237,6 +237,18 @@ describe('Arc City — Sine Boulevard §3.1 (snapped period + crest-grabber)', (
   });
 });
 
+describe('Arc City — success celebration copy (action-praise, never an ability claim)', () => {
+  it('escalates with how clean the solve was', () => {
+    expect(arc.successWord(1)).toBe('FIRST TRY!');   // first shot
+    expect(arc.successWord(2)).toBe('NAILED IT!');
+    expect(arc.successWord(3)).toBe('NAILED IT!');
+    expect(arc.successWord(5)).toBe('LIT!');
+  });
+  it('is about THIS shot, not the student — no ability/mastery words', () => {
+    [0, 1, 2, 3, 5, 12].forEach(s => expect(arc.successWord(s)).not.toMatch(/master|mastery|genius|smart|talent|brilliant|gifted/i));
+  });
+});
+
 describe('Arc City — load-bearing invariants (the math IS the mechanic)', () => {
   it('every level has a solving author', () => {
     expect(classifyShot(levelById('L1'), { m: 0.5, b: 0 }).result).toBe('hit');
