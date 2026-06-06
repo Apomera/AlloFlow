@@ -1347,6 +1347,268 @@
     if (!offenders.length) return { ok: true, blocked: false };
     return { ok: false, blocked: true, reason: 'This view has ' + offenders.length + ' external benchmark(s) unverified or with a stale sign-off. Verify the source(s) before an IEP-team export.', offenders: offenders.map(function (r) { return r.id; }) };
   }
+  // ══════════════════════════════════════════════════════════════════════
+  // §16 SOURCED — Phase 2A: human-assisted benchmark-document workspace.
+  //
+  // Phase 2A is the deliberately-tighter cut of the §16.4 AI-assist-then-
+  // verify path: it accepts a benchmark DOCUMENT (PDF / DOCX / TXT / CSV /
+  // XLSX), extracts text DETERMINISTICALLY (pdf.js / mammoth / the §17
+  // parsers — never an AI parse from bytes to numbers), and shows the
+  // extracted text side-by-side with a scaffold of empty spine cells the
+  // human fills + signs off per cell. Verified cells fold into the
+  // curated NORM_SPINE.cells JSON for paste-back into source.
+  //
+  // What Phase 2A is NOT: the full §16.4 AI-search assist (findNormViaAI,
+  // groundingChunks extraction, on-line UNVERIFIED stamp). That stays
+  // CUT to Phase 2B per §16.7. The seam is set right — proposals carry
+  // the same shape AI-search would emit — but no callGemini fires.
+  // ══════════════════════════════════════════════════════════════════════
+
+  var BENCH_DOC_TYPES = ['pdf', 'docx', 'txt', 'csv', 'xlsx'];
+  var BENCH_DOC_MAX_BYTES = 8 * 1024 * 1024; // 8 MB — H&T2017 PDF is ~2 MB; leaves headroom
+
+  function benchDocTypeFromName(name) {
+    if (!name || typeof name !== 'string') return null;
+    var lower = name.toLowerCase();
+    if (/\.pdf$/.test(lower)) return 'pdf';
+    if (/\.docx$/.test(lower)) return 'docx';
+    if (/\.tsv$/.test(lower)) return 'txt';
+    if (/\.csv$/.test(lower)) return 'csv';
+    if (/\.txt$/.test(lower)) return 'txt';
+    if (/\.xlsx$/.test(lower)) return 'xlsx';
+    return null;
+  }
+
+  // Normalize the post-extraction shape into a common record. The UI calls
+  // either lazyLoadPdfJs / lazyLoadMammoth (document path) or the §17
+  // parsers (table path); either output goes through this normalizer so
+  // downstream code (preview pane, scaffold filler) speaks ONE shape.
+  function normalizeBenchExtraction(input) {
+    if (!input) return { kind: 'empty', pages: [], notes: ['null-input'] };
+    if (typeof input.headers !== 'undefined' && typeof input.rows !== 'undefined') {
+      // §17 text-table shape (CSV/TSV/XLSX path)
+      var flat = [input.headers.join('  |  ')].concat(input.rows.map(function (r) { return r.join('  |  '); })).join('\n');
+      return { kind: 'text-table', pages: [{ pageNum: 1, text: flat }], notes: input.notes || [], delimiter: input.delimiter, sheetName: input.sheetName || null, table: input };
+    }
+    if (Array.isArray(input.pages)) {
+      return { kind: 'document-pages', pages: input.pages.map(function (p, i) {
+        return { pageNum: p.pageNum != null ? p.pageNum : (i + 1), text: typeof p.text === 'string' ? p.text : '' };
+      }), notes: input.notes || [] };
+    }
+    if (typeof input.text === 'string') {
+      return { kind: 'document-pages', pages: [{ pageNum: 1, text: input.text }], notes: input.notes || [] };
+    }
+    return { kind: 'unknown', pages: [], notes: ['unknown-input-shape'] };
+  }
+
+  // Generate the scaffold of empty cells a human needs to fill for a given
+  // spine slice. Pure: no AI, no library, no Date. The maintainer picks
+  // the slice (a single grade × season combination is a 1-cell sliver
+  // they can finish in 60 seconds; the full H&T G1-6 percentile set is
+  // 6×3×3 = 54 cells they can finish in a sitting).
+  function buildSpineCellScaffold(spineMeta, opts) {
+    if (!spineMeta || typeof spineMeta !== 'object') return [];
+    opts = opts || {};
+    var seasons = opts.seasons || ['fall', 'winter', 'spring'];
+    var percentiles = opts.percentiles || [50];
+    var grades = opts.grades;
+    if (!grades) {
+      var range = spineMeta.gradeRange || [1, 6];
+      grades = [];
+      for (var g = range[0]; g <= range[1]; g++) grades.push(g);
+    }
+    var cells = [];
+    for (var gi = 0; gi < grades.length; gi++) {
+      var grade = grades[gi];
+      for (var si = 0; si < seasons.length; si++) {
+        var season = seasons[si];
+        for (var pi = 0; pi < percentiles.length; pi++) {
+          var percentile = percentiles[pi];
+          cells.push({
+            id: 'cell_' + (spineMeta.measure || 'X') + '_g' + grade + '_' + season + '_p' + percentile,
+            measure: spineMeta.measure, unit: spineMeta.unit,
+            grade: grade, season: season, percentile: percentile,
+            value: null, // <-- the only field the human fills
+            sourceExcerpt: '', // optional: the human can paste the page snippet they verified against
+            source: spineMeta.source, year: spineMeta.year, edition: spineMeta.edition || null,
+            population: spineMeta.population || null, locator: spineMeta.locator, citation: spineMeta.citation,
+            verified: false, retrievedBy: 'human-assisted', reviewedOn: null, signoffHash: null
+          });
+        }
+      }
+    }
+    return cells;
+  }
+
+  // Schema check for a single proposed cell. Returns { ok, errors[] }.
+  // Run before signoff and again at bind time.
+  function validateProposedSpineCell(cell) {
+    var errors = [];
+    if (!cell || typeof cell !== 'object') return { ok: false, errors: ['not-an-object'] };
+    if (typeof cell.measure !== 'string' || !cell.measure) errors.push('measure-missing-or-not-string');
+    if (typeof cell.unit !== 'string' || !cell.unit) errors.push('unit-missing-or-not-string');
+    if (typeof cell.grade !== 'number' || cell.grade < 0 || cell.grade > 12) errors.push('grade-out-of-range');
+    if (typeof cell.season !== 'string' || !cell.season) errors.push('season-missing');
+    if (typeof cell.percentile !== 'number' || cell.percentile < 1 || cell.percentile > 99) errors.push('percentile-out-of-range');
+    if (typeof cell.value !== 'number' || !isFinite(cell.value) || cell.value <= 0) errors.push('value-not-positive-number');
+    if (typeof cell.locator !== 'string' || !/^https?:\/\//i.test(cell.locator)) errors.push('locator-not-http-url');
+    if (typeof cell.citation !== 'string' || !cell.citation) errors.push('citation-missing');
+    if (typeof cell.source !== 'string' || !cell.source) errors.push('source-missing');
+    return { ok: errors.length === 0, errors: errors };
+  }
+
+  // Per-cell sign-off. Returns the cell mutated with verified:true,
+  // reviewedOn set (caller supplies — we forbid Date in this layer), and
+  // signoffHash computed via the SAME hash function § sourcedSignoffHash
+  // uses (so a stale-edit re-blocks the same way a stale sourceRef does).
+  function signoffSpineCell(cell, reviewedOnIso) {
+    var v = validateProposedSpineCell(cell);
+    if (!v.ok) return { ok: false, errors: v.errors, cell: cell };
+    if (typeof reviewedOnIso !== 'string' || !reviewedOnIso) return { ok: false, errors: ['reviewedOn-required'], cell: cell };
+    cell.verified = true;
+    cell.reviewedOn = reviewedOnIso;
+    cell.signoffHash = sourcedSignoffHash(cell);
+    return { ok: true, errors: [], cell: cell };
+  }
+
+  // Bind a list of (presumably-signed) cells into a spine.cells structure
+  // shape: cells[grade][season] = { p25, p50, p75, ... }. Refuses to
+  // accept an unverified cell; refuses to overwrite an existing populated
+  // cell with a different value (the stable-spine invariant — the only
+  // safe overwrite is identical-value, e.g. re-import of the same source).
+  function bindVerifiedCellsToSpine(existingCells, newCells) {
+    var merged = JSON.parse(JSON.stringify(existingCells || {}));
+    var collisions = [];
+    var added = 0, skipped = 0;
+    if (!Array.isArray(newCells)) return { cells: merged, added: 0, skipped: 0, collisions: [{ reason: 'newCells-not-array' }] };
+    for (var i = 0; i < newCells.length; i++) {
+      var c = newCells[i];
+      if (!c) { collisions.push({ idx: i, reason: 'null-cell' }); continue; }
+      if (c.verified !== true) { collisions.push({ id: c.id, reason: 'not-verified' }); skipped++; continue; }
+      if (!c.signoffHash) { collisions.push({ id: c.id, reason: 'no-signoff-hash' }); skipped++; continue; }
+      var hashNow = sourcedSignoffHash(c);
+      if (hashNow !== c.signoffHash) { collisions.push({ id: c.id, reason: 'stale-signoff', expected: c.signoffHash, computed: hashNow }); skipped++; continue; }
+      var v = validateProposedSpineCell(c);
+      if (!v.ok) { collisions.push({ id: c.id, reason: 'schema', errors: v.errors }); skipped++; continue; }
+      if (!merged[c.grade]) merged[c.grade] = {};
+      if (!merged[c.grade][c.season]) merged[c.grade][c.season] = {};
+      var pKey = 'p' + c.percentile;
+      var existing = merged[c.grade][c.season][pKey];
+      if (existing !== undefined && existing !== c.value) {
+        collisions.push({ id: c.id, reason: 'value-collision', existing: existing, proposed: c.value, grade: c.grade, season: c.season, percentile: c.percentile });
+        skipped++; continue;
+      }
+      merged[c.grade][c.season][pKey] = c.value;
+      added++;
+    }
+    return { cells: merged, added: added, skipped: skipped, collisions: collisions };
+  }
+
+  // Pretty JSON for paste-back into NORM_SPINE.cells in source. Sorted
+  // grade-then-season-then-percentile so diffs stay small.
+  function spineCellsToJSON(cells, indent) {
+    if (!cells || typeof cells !== 'object') return '{}';
+    var sortedGrades = Object.keys(cells).sort(function (a, b) { return parseFloat(a) - parseFloat(b); });
+    var SEASON_ORDER = { fall: 0, winter: 1, spring: 2 };
+    var out = {};
+    sortedGrades.forEach(function (g) {
+      var seasons = cells[g] || {};
+      var sortedSeasons = Object.keys(seasons).sort(function (a, b) {
+        var ao = SEASON_ORDER[a] != null ? SEASON_ORDER[a] : 99;
+        var bo = SEASON_ORDER[b] != null ? SEASON_ORDER[b] : 99;
+        return ao - bo || a.localeCompare(b);
+      });
+      out[g] = {};
+      sortedSeasons.forEach(function (s) {
+        var pcts = seasons[s] || {};
+        var sortedP = Object.keys(pcts).sort(function (a, b) { return parseFloat(a.slice(1)) - parseFloat(b.slice(1)); });
+        out[g][s] = {};
+        sortedP.forEach(function (pk) { out[g][s][pk] = pcts[pk]; });
+      });
+    });
+    return JSON.stringify(out, null, indent == null ? 2 : indent);
+  }
+
+  // Lazy loaders — same pattern as lazyLoadXLSX. Browser only.
+  var _pdfJsLoadPromise = null;
+  function lazyLoadPdfJs(cdnUrl, workerUrl) {
+    if (typeof window === 'undefined') return Promise.resolve(null);
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (_pdfJsLoadPromise) return _pdfJsLoadPromise;
+    var url = cdnUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs';
+    var wurl = workerUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
+    _pdfJsLoadPromise = new Promise(function (resolve, reject) {
+      try {
+        var s = document.createElement('script');
+        s.type = 'module';
+        s.crossOrigin = 'anonymous';
+        s.textContent = 'import * as pdfjs from "' + url + '"; window.pdfjsLib = pdfjs; window.pdfjsLib.GlobalWorkerOptions.workerSrc = "' + wurl + '"; window.dispatchEvent(new Event("pdfjs-loaded"));';
+        window.addEventListener('pdfjs-loaded', function once() { window.removeEventListener('pdfjs-loaded', once); resolve(window.pdfjsLib || null); });
+        document.head.appendChild(s);
+        // Hard timeout: the script-tag module load can hang silently behind a CSP block
+        setTimeout(function () { if (!window.pdfjsLib) { _pdfJsLoadPromise = null; reject(new Error('pdf.js did not load within 15 s — check network or CSP for ' + url)); } }, 15000);
+      } catch (e) { _pdfJsLoadPromise = null; reject(e); }
+    });
+    return _pdfJsLoadPromise;
+  }
+
+  var _mammothLoadPromise = null;
+  function lazyLoadMammoth(cdnUrl) {
+    if (typeof window === 'undefined') return Promise.resolve(null);
+    if (window.mammoth) return Promise.resolve(window.mammoth);
+    if (_mammothLoadPromise) return _mammothLoadPromise;
+    var url = cdnUrl || 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+    _mammothLoadPromise = new Promise(function (resolve, reject) {
+      try {
+        var s = document.createElement('script');
+        s.src = url; s.async = true; s.crossOrigin = 'anonymous';
+        s.onload = function () { resolve(window.mammoth || null); };
+        s.onerror = function () { _mammothLoadPromise = null; reject(new Error('Could not load mammoth from ' + url)); };
+        document.head.appendChild(s);
+      } catch (e) { _mammothLoadPromise = null; reject(e); }
+    });
+    return _mammothLoadPromise;
+  }
+
+  // Browser-side extractors. Pure-ish (no Date, no Math.random) but they
+  // call into the loaded libraries. The libraries themselves are not
+  // Node-testable; the unit tests cover the pure layer (scaffold +
+  // validate + signoff + bind + normalize) with fixture text instead.
+  function extractPdfText(pdfjsLib, buffer) {
+    if (!pdfjsLib || typeof pdfjsLib.getDocument !== 'function') {
+      return Promise.resolve({ pages: [], notes: ['pdfjs-missing'], error: 'pdf.js not loaded' });
+    }
+    try {
+      return pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise.then(function (pdf) {
+        var pageNums = [];
+        for (var i = 1; i <= pdf.numPages; i++) pageNums.push(i);
+        return Promise.all(pageNums.map(function (n) {
+          return pdf.getPage(n).then(function (page) {
+            return page.getTextContent().then(function (tc) {
+              var text = (tc.items || []).map(function (it) { return it.str || ''; }).join(' ');
+              return { pageNum: n, text: text };
+            });
+          });
+        })).then(function (pages) { return { pages: pages, notes: [] }; });
+      }).catch(function (e) {
+        return { pages: [], notes: ['pdf-parse-error'], error: 'PDF parse failed: ' + (e && e.message ? e.message : 'unknown') };
+      });
+    } catch (e) {
+      return Promise.resolve({ pages: [], notes: ['pdf-parse-error'], error: 'PDF parse failed: ' + (e && e.message ? e.message : 'unknown') });
+    }
+  }
+
+  function extractDocxText(mammoth, buffer) {
+    if (!mammoth || typeof mammoth.extractRawText !== 'function') {
+      return Promise.resolve({ pages: [], notes: ['mammoth-missing'], error: 'mammoth not loaded' });
+    }
+    return mammoth.extractRawText({ arrayBuffer: buffer }).then(function (result) {
+      return { pages: [{ pageNum: 1, text: result && result.value ? result.value : '' }], notes: (result && result.messages ? result.messages.map(function (m) { return 'mammoth: ' + (m && m.message ? m.message : ''); }) : []) };
+    }).catch(function (e) {
+      return { pages: [], notes: ['docx-parse-error'], error: 'DOCX parse failed: ' + (e && e.message ? e.message : 'unknown') };
+    });
+  }
+
   // THE single export gate — ANDs the AI-reading gate (assertDefensible) and the Sourced gate.
   function assertExportClean(req) {
     req = req || {};
@@ -1595,7 +1857,13 @@
     // Ingest (§5 Pillar 1) — pure parsers + column mapper; L0-only by construction
     INGEST_MAX_BYTES: INGEST_MAX_BYTES, INGEST_MAX_ROWS: INGEST_MAX_ROWS, INGEST_DELIMS: INGEST_DELIMS, INGEST_FILE_TYPES: INGEST_FILE_TYPES,
     parseTextTable: parseTextTable, mapTextTableToObservations: mapTextTableToObservations,
-    parseWorkbookSheet: parseWorkbookSheet, lazyLoadXLSX: lazyLoadXLSX, ingestFileTypeFromName: ingestFileTypeFromName
+    parseWorkbookSheet: parseWorkbookSheet, lazyLoadXLSX: lazyLoadXLSX, ingestFileTypeFromName: ingestFileTypeFromName,
+    // §16 Phase 2A — human-assisted benchmark-document workspace (PDF/DOCX/TXT/CSV/XLSX → scaffold → per-cell signoff → spine JSON)
+    BENCH_DOC_TYPES: BENCH_DOC_TYPES, BENCH_DOC_MAX_BYTES: BENCH_DOC_MAX_BYTES, benchDocTypeFromName: benchDocTypeFromName,
+    normalizeBenchExtraction: normalizeBenchExtraction, buildSpineCellScaffold: buildSpineCellScaffold,
+    validateProposedSpineCell: validateProposedSpineCell, signoffSpineCell: signoffSpineCell,
+    bindVerifiedCellsToSpine: bindVerifiedCellsToSpine, spineCellsToJSON: spineCellsToJSON,
+    lazyLoadPdfJs: lazyLoadPdfJs, lazyLoadMammoth: lazyLoadMammoth, extractPdfText: extractPdfText, extractDocxText: extractDocxText
   };
 
   // Dual export: Node/vitest (CommonJS) AND browser/Canvas (window global).
@@ -1948,6 +2216,220 @@
                     }))))),
               h('p', { className: 'mt-2 text-[10px] italic text-slate-500' }, 'Imported values land as L0 (verbatim echoes). Rows missing or non-numeric in the mapped x/y are reported on bind, never silently dropped. No AI call fires during ingest.')));
           }
+
+          // ═══════════════════════════════════════════════════════════════
+          // §16 Phase 2A — Benchmark workspace (SOURCED lane).
+          //
+          // A SEPARATE ingest lane from §17. Drops a benchmark document
+          // (PDF/DOCX/TXT/CSV/XLSX), extracts text DETERMINISTICALLY,
+          // renders a side-by-side extracted-text + scaffold-cells UI, and
+          // produces a paste-back JSON for NORM_SPINE.cells. AI-search is
+          // NOT involved (§16.4 Phase 2B stays deferred). Renders only on
+          // an explicit toggle so the everyday Lumen workflow stays calm.
+          //
+          // NOTE on placement: this lives BELOW the chart entry/mapper so
+          // a maintainer who opens it does not lose sight of the chart
+          // they're contextualizing. The button to open it sits in the
+          // entry row above; opening sets d.benchWorkspace.open = true.
+          // ═══════════════════════════════════════════════════════════════
+          (function () {
+            // Open button (always visible in the entry zone — added LAST in the row above)
+            kids.push(h('div', { key: 'benchOpener', className: 'mt-2' },
+              h('button', {
+                className: 'px-3 py-1 text-xs rounded border ' + (d.benchWorkspace && d.benchWorkspace.open ? 'border-cyan-700 bg-cyan-50 text-cyan-800' : 'border-slate-300 hover:bg-slate-50'),
+                onClick: function () {
+                  var open = !(d.benchWorkspace && d.benchWorkspace.open);
+                  var defaults = open ? Object.assign({
+                    open: true, fileName: null, fileType: null, error: null,
+                    extraction: null, // normalized { kind, pages: [{pageNum,text}] }
+                    spineMeta: {
+                      measure: NORM_SPINE.measure, unit: NORM_SPINE.unit,
+                      source: NORM_SPINE.source, year: NORM_SPINE.year, edition: NORM_SPINE.edition,
+                      population: NORM_SPINE.population, locator: NORM_SPINE.locator, citation: NORM_SPINE.citation,
+                      gradeRange: NORM_SPINE.gradeRange
+                    },
+                    grades: null, seasons: ['winter'], percentiles: [50],
+                    cells: [], // built from buildSpineCellScaffold on demand
+                    activePageIdx: 0,
+                    summary: null // populated by Bind verified cells → spine
+                  }, d.benchWorkspace || {}) : Object.assign({}, d.benchWorkspace || {}, { open: false });
+                  upd('benchWorkspace', defaults);
+                  announce(open ? 'Benchmark workspace opened. Import a PDF, DOCX, CSV, TSV, TXT, or single-sheet XLSX to populate the norm spine.' : 'Benchmark workspace closed.');
+                }
+              }, (d.benchWorkspace && d.benchWorkspace.open ? '▣ Close benchmark workspace' : '▣ Open benchmark workspace (§16 SOURCED)'))));
+
+            if (!d.benchWorkspace || !d.benchWorkspace.open) return;
+            var bw = d.benchWorkspace;
+            var sm = bw.spineMeta || {};
+
+            function setBench(patch) { upd('benchWorkspace', Object.assign({}, bw, patch)); }
+
+            // Build / refresh scaffold when grades/seasons/percentiles change. Each
+            // edit copies any already-typed value from the old scaffold so the user
+            // doesn't lose work mid-pick.
+            function rebuildScaffold(opts) {
+              var byKey = {};
+              (bw.cells || []).forEach(function (c) { byKey[c.id] = c; });
+              var next = buildSpineCellScaffold(sm, opts || { grades: bw.grades, seasons: bw.seasons, percentiles: bw.percentiles });
+              return next.map(function (c) {
+                var prev = byKey[c.id];
+                if (prev && prev.verified) return Object.assign({}, c, { value: prev.value, sourceExcerpt: prev.sourceExcerpt, verified: true, reviewedOn: prev.reviewedOn, signoffHash: prev.signoffHash });
+                if (prev) return Object.assign({}, c, { value: prev.value != null ? prev.value : null, sourceExcerpt: prev.sourceExcerpt || '' });
+                return c;
+              });
+            }
+
+            // Render the workspace
+            var pagesText = (bw.extraction && bw.extraction.pages) || [];
+            var activePage = pagesText[bw.activePageIdx || 0] || null;
+            var verifiedCount = (bw.cells || []).filter(function (c) { return c.verified === true; }).length;
+            var totalCount = (bw.cells || []).length;
+
+            kids.push(h('section', { key: 'benchWorkspace', 'aria-label': '§16 SOURCED — benchmark workspace', className: 'mt-3 p-3 rounded-lg border-2 border-cyan-700/40 bg-cyan-50/40' },
+              h('div', { className: 'flex items-start gap-3 flex-wrap' },
+                h('div', { className: 'flex-1 min-w-[200px]' },
+                  h('div', { className: 'text-sm font-semibold text-cyan-900' }, '▣ Benchmark workspace — §16 SOURCED'),
+                  h('p', { className: 'text-[11px] text-slate-700 mt-1' },
+                    'Drop a benchmark document. Text extracts deterministically (no AI). You byte-check each cell against the source and sign it off; verified cells fold into the NORM_SPINE JSON for paste-back. ',
+                    h('strong', null, 'AI-search is intentionally deferred (§16.4 Phase 2B).'))),
+                h('label', {
+                  htmlFor: 'lumen-bench-file', className: 'px-3 py-1 text-xs rounded border border-cyan-700 bg-white text-cyan-800 hover:bg-cyan-50 cursor-pointer',
+                  title: 'PDF, DOCX, CSV, TSV, TXT, or single-sheet XLSX (max ' + (BENCH_DOC_MAX_BYTES / 1024 / 1024) + ' MB).'
+                }, '⇪ Import benchmark document…'),
+                h('input', {
+                  id: 'lumen-bench-file', type: 'file', accept: '.pdf,.docx,.csv,.tsv,.txt,.xlsx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                  style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 },
+                  onChange: function (ev) {
+                    var file = ev.target && ev.target.files && ev.target.files[0];
+                    if (!file) return;
+                    var docType = benchDocTypeFromName(file.name);
+                    if (!docType) { setBench({ error: 'Unsupported file type. Supported: ' + BENCH_DOC_TYPES.join(', ') }); ev.target.value = ''; return; }
+                    if (file.size > BENCH_DOC_MAX_BYTES) { setBench({ error: 'File too large (' + (file.size / 1024 / 1024).toFixed(2) + ' MB > ' + (BENCH_DOC_MAX_BYTES / 1024 / 1024) + ' MB limit).' }); ev.target.value = ''; return; }
+                    function land(extraction) {
+                      var normalized = normalizeBenchExtraction(extraction);
+                      var nextCells = rebuildScaffold();
+                      setBench({ fileName: file.name, fileType: docType, error: extraction && extraction.error ? extraction.error : null, extraction: normalized, cells: nextCells, activePageIdx: 0 });
+                      announce('Loaded ' + file.name + ': ' + normalized.pages.length + ' page(s). Scaffold has ' + nextCells.length + ' empty cell(s) to verify.');
+                    }
+                    if (docType === 'pdf') {
+                      lazyLoadPdfJs().then(function (pdfjs) { return file.arrayBuffer().then(function (buf) { return extractPdfText(pdfjs, buf); }); }).then(land).catch(function (err) { setBench({ error: 'Could not load pdf.js: ' + (err && err.message ? err.message : 'unknown') + '. Try saving the PDF as plain text and importing that instead.' }); });
+                    } else if (docType === 'docx') {
+                      lazyLoadMammoth().then(function (mammoth) { return file.arrayBuffer().then(function (buf) { return extractDocxText(mammoth, buf); }); }).then(land).catch(function (err) { setBench({ error: 'Could not load mammoth.js: ' + (err && err.message ? err.message : 'unknown') + '. Try saving the Word doc as plain text.' }); });
+                    } else if (docType === 'xlsx') {
+                      lazyLoadXLSX().then(function (XLSX) { return file.arrayBuffer().then(function (buf) { return parseWorkbookSheet(XLSX, buf); }); }).then(land);
+                    } else {
+                      file.text().then(function (text) { land(parseTextTable(text)); });
+                    }
+                    ev.target.value = '';
+                  }
+                })),
+              bw.fileName ? h('div', { className: 'mt-2 text-[11px] text-slate-700' }, 'Loaded: ', h('strong', null, bw.fileName), bw.fileType ? (' · ' + bw.fileType) : '', pagesText.length ? (' · ' + pagesText.length + ' page(s)') : '') : null,
+              bw.error ? h('p', { className: 'mt-2 text-xs text-rose-700' }, bw.error) : null,
+              // Scaffold controls
+              h('div', { className: 'mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs' },
+                h('label', { className: 'flex flex-col text-slate-700' }, 'Grades (e.g. 1-6)',
+                  h('input', { type: 'text', value: bw.grades == null ? (sm.gradeRange ? (sm.gradeRange[0] + '-' + sm.gradeRange[1]) : '1-6') : bw.grades.join(','),
+                    className: 'w-full px-2 py-1 border border-slate-300 rounded',
+                    onChange: function (ev) {
+                      var t = String(ev.target.value || '').trim();
+                      var gs = [];
+                      if (/^\d+\s*[-–]\s*\d+$/.test(t)) { var p = t.split(/[-–]/).map(function (s) { return parseInt(s.trim(), 10); }); for (var g = p[0]; g <= p[1]; g++) gs.push(g); }
+                      else { gs = t.split(',').map(function (s) { return parseInt(s.trim(), 10); }).filter(function (n) { return !isNaN(n); }); }
+                      var nb = Object.assign({}, bw, { grades: gs.length ? gs : null });
+                      nb.cells = (function () { var prev = bw.cells; var byKey = {}; (prev || []).forEach(function (c) { byKey[c.id] = c; }); var fresh = buildSpineCellScaffold(sm, { grades: nb.grades, seasons: nb.seasons, percentiles: nb.percentiles }); return fresh.map(function (c) { var pv = byKey[c.id]; return pv ? Object.assign({}, c, pv) : c; }); })();
+                      upd('benchWorkspace', nb);
+                    } })),
+                h('label', { className: 'flex flex-col text-slate-700' }, 'Seasons',
+                  h('select', { multiple: true, value: bw.seasons || ['winter'], size: 3,
+                    className: 'w-full px-2 py-1 border border-slate-300 rounded',
+                    onChange: function (ev) {
+                      var picked = Array.prototype.slice.call(ev.target.selectedOptions).map(function (o) { return o.value; });
+                      var nb = Object.assign({}, bw, { seasons: picked.length ? picked : ['winter'] });
+                      var byKey = {}; (bw.cells || []).forEach(function (c) { byKey[c.id] = c; });
+                      var fresh = buildSpineCellScaffold(sm, { grades: nb.grades, seasons: nb.seasons, percentiles: nb.percentiles });
+                      nb.cells = fresh.map(function (c) { var pv = byKey[c.id]; return pv ? Object.assign({}, c, pv) : c; });
+                      upd('benchWorkspace', nb);
+                    } },
+                    ['fall', 'winter', 'spring'].map(function (s) { return h('option', { key: s, value: s }, s); }))),
+                h('label', { className: 'flex flex-col text-slate-700' }, 'Percentiles (e.g. 25,50,75)',
+                  h('input', { type: 'text', value: (bw.percentiles || [50]).join(','),
+                    className: 'w-full px-2 py-1 border border-slate-300 rounded',
+                    onChange: function (ev) {
+                      var ps = String(ev.target.value || '').split(',').map(function (s) { return parseInt(s.trim(), 10); }).filter(function (n) { return !isNaN(n) && n >= 1 && n <= 99; });
+                      var nb = Object.assign({}, bw, { percentiles: ps.length ? ps : [50] });
+                      var byKey = {}; (bw.cells || []).forEach(function (c) { byKey[c.id] = c; });
+                      var fresh = buildSpineCellScaffold(sm, { grades: nb.grades, seasons: nb.seasons, percentiles: nb.percentiles });
+                      nb.cells = fresh.map(function (c) { var pv = byKey[c.id]; return pv ? Object.assign({}, c, pv) : c; });
+                      upd('benchWorkspace', nb);
+                    } })),
+                h('div', { className: 'flex flex-col justify-end text-slate-700' },
+                  h('button', {
+                    className: 'px-2 py-1 text-xs rounded border border-cyan-700 bg-white text-cyan-800 hover:bg-cyan-50',
+                    onClick: function () { setBench({ cells: rebuildScaffold() }); announce('Scaffold rebuilt: ' + (bw.cells || []).length + ' cells.'); }
+                  }, 'Rebuild scaffold (' + totalCount + ' cells, ' + verifiedCount + ' verified)'))),
+              // Two-column layout: extracted text | cells
+              h('div', { className: 'mt-3 grid grid-cols-1 lg:grid-cols-2 gap-3' },
+                // Left: extracted-text pane
+                h('div', { className: 'p-2 rounded border border-slate-300 bg-white' },
+                  h('div', { className: 'text-[11px] font-semibold text-slate-700 mb-1' }, 'Extracted text (deterministic; no AI parse) — read here, type values on the right'),
+                  pagesText.length > 1 ? h('div', { className: 'mb-1 flex flex-wrap gap-1' }, pagesText.map(function (p, i) {
+                    return h('button', { key: 'pg' + i, className: 'px-1.5 py-0.5 text-[10px] rounded border ' + (i === (bw.activePageIdx || 0) ? 'border-cyan-700 bg-cyan-50' : 'border-slate-300 hover:bg-slate-50'), onClick: function () { setBench({ activePageIdx: i }); } }, 'p' + (p.pageNum != null ? p.pageNum : (i + 1)));
+                  })) : null,
+                  h('pre', { className: 'text-[10.5px] leading-snug whitespace-pre-wrap break-words max-h-72 overflow-auto bg-slate-50 p-2 rounded border border-slate-200' }, activePage ? activePage.text : 'No document loaded yet.')),
+                // Right: scaffold cells
+                h('div', { className: 'p-2 rounded border border-slate-300 bg-white' },
+                  h('div', { className: 'text-[11px] font-semibold text-slate-700 mb-1' }, 'Scaffold cells — fill the value, paste the source excerpt, tick to verify'),
+                  (bw.cells || []).length === 0 ? h('p', { className: 'text-xs text-slate-500 italic' }, 'Pick a grade range / season / percentile above, then Rebuild scaffold.') :
+                  h('div', { className: 'space-y-2 max-h-96 overflow-auto pr-1' }, (bw.cells || []).map(function (c, idx) {
+                    var v = validateProposedSpineCell(c);
+                    var canVerify = v.ok && !c.verified;
+                    return h('div', { key: c.id, className: 'p-2 rounded border ' + (c.verified ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 bg-white') },
+                      h('div', { className: 'flex items-center justify-between text-[11px] font-semibold text-slate-700' },
+                        h('span', null, 'Grade ' + c.grade + ' · ' + c.season + ' · p' + c.percentile + ' · ' + c.measure),
+                        c.verified ? h('span', { className: 'text-emerald-700 text-[10px]' }, '✓ verified ' + c.reviewedOn) : null),
+                      h('div', { className: 'mt-1 grid grid-cols-2 gap-2' },
+                        h('label', { className: 'text-[10.5px] text-slate-600' }, 'Value (' + c.unit + ')',
+                          h('input', { type: 'number', step: 'any', value: c.value == null ? '' : c.value, disabled: c.verified,
+                            className: 'w-full px-1.5 py-0.5 border border-slate-300 rounded text-xs',
+                            onChange: function (ev) {
+                              var num = parseFloat(ev.target.value);
+                              var next = (bw.cells || []).slice();
+                              next[idx] = Object.assign({}, c, { value: isNaN(num) ? null : num });
+                              setBench({ cells: next });
+                            } })),
+                        h('label', { className: 'text-[10.5px] text-slate-600' }, 'Source excerpt (optional, traceability)',
+                          h('input', { type: 'text', value: c.sourceExcerpt || '', disabled: c.verified, className: 'w-full px-1.5 py-0.5 border border-slate-300 rounded text-xs',
+                            onChange: function (ev) { var next = (bw.cells || []).slice(); next[idx] = Object.assign({}, c, { sourceExcerpt: ev.target.value }); setBench({ cells: next }); } }))),
+                      h('div', { className: 'mt-1 flex items-center gap-2' },
+                        c.verified ? h('button', { className: 'px-2 py-0.5 text-[10.5px] rounded border border-slate-300 hover:bg-slate-50', onClick: function () { var next = (bw.cells || []).slice(); next[idx] = Object.assign({}, c, { verified: false, reviewedOn: null, signoffHash: null }); setBench({ cells: next }); announce('Cell unverified — edits re-enabled.'); } }, 'Unverify (edit)') :
+                          h('button', { disabled: !canVerify, className: 'px-2 py-0.5 text-[10.5px] rounded border ' + (canVerify ? 'border-emerald-700 bg-emerald-50 text-emerald-800 hover:bg-emerald-100' : 'border-slate-300 bg-slate-50 text-slate-400 cursor-not-allowed'),
+                            onClick: function () {
+                              // No Date in this layer — the caller provides reviewedOn as the YYYY-MM-DD of the host. The browser is allowed to use Date here (the render path is not a workflow script).
+                              var iso;
+                              try { iso = new Date().toISOString().slice(0, 10); } catch (e) { iso = '2026-06-05'; }
+                              var copy = Object.assign({}, c);
+                              var r = signoffSpineCell(copy, iso);
+                              if (!r.ok) { announce('Cannot verify: ' + r.errors.join(', ')); return; }
+                              var next = (bw.cells || []).slice();
+                              next[idx] = r.cell;
+                              setBench({ cells: next });
+                              announce('Cell verified: G' + c.grade + ' ' + c.season + ' p' + c.percentile + ' = ' + c.value + '.');
+                            } }, '✓ Verify this cell'),
+                        v.ok ? null : h('span', { className: 'text-[10px] text-amber-700' }, 'Needs: ' + v.errors.join(', '))));
+                  })))),
+              // Spine JSON output
+              (function () {
+                if (verifiedCount === 0) return h('p', { key: 'noOut', className: 'mt-3 text-[10px] italic text-slate-500' }, 'Verify at least one cell to see the paste-back JSON.');
+                var verified = (bw.cells || []).filter(function (c) { return c.verified === true; });
+                var bound = bindVerifiedCellsToSpine({}, verified);
+                var jsonOut = spineCellsToJSON(bound.cells, 2);
+                return h('div', { key: 'spineOut', className: 'mt-3 p-2 rounded border border-cyan-300 bg-white' },
+                  h('div', { className: 'text-[11px] font-semibold text-slate-700' }, 'Spine cells JSON (paste into stem_tool_lumen.js → NORM_SPINE.cells)'),
+                  bound.collisions.length ? h('p', { className: 'mt-1 text-[10px] text-amber-700' }, bound.collisions.length + ' cell(s) excluded: ' + bound.collisions.map(function (c) { return (c.id || c.idx) + ' (' + c.reason + ')'; }).join('; ')) : null,
+                  h('pre', { className: 'mt-1 text-[10.5px] leading-snug whitespace-pre-wrap break-words max-h-48 overflow-auto bg-slate-50 p-2 rounded border border-slate-200', id: 'lumen-spine-json' }, jsonOut),
+                  h('p', { className: 'mt-2 text-[10px] italic text-slate-500' }, 'After pasting + setting reviewedOn in source, the spine\'s `validateNormSpine` returns "ready" and assertExportClean lets curated benchmark refs draw at IEP-team export. The signoff hash spans every truth-bearing field, so a stale (edited-after) cell re-blocks.'));
+              })()));
+          })();
 
           // Multi-series: ONE provenance-bound sentence PER series (refused ones included — anti-cherry-pick).
           // The colour dot beside each is the legend (maps the line colour to its series label).

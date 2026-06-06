@@ -218,10 +218,67 @@ ok(L.sourcedRenderable({ verified: true, citation: 'c', locator: 'javascript:ale
   ok(L.parseWorkbookSheet(null, new ArrayBuffer(0)).error && /SheetJS/.test(L.parseWorkbookSheet(null, new ArrayBuffer(0)).error), 'parseWorkbookSheet: SheetJS-missing case returns a structured error, never throws');
 })();
 
+// 12. §16 SOURCED Phase 2A — benchmark-document workspace invariants.
+//     The §16.1 separation rule + §16.4 always-unverified-by-construction
+//     contract get explicit gates here so a future refactor can't quietly
+//     erode them. A cell never reaches the spine without an explicit
+//     signoffSpineCell call; a stale (post-edit) cell re-blocks; the
+//     bind step never touches comp.observations; spineCellsToJSON is
+//     deterministic across re-runs.
+(function () {
+  // Pure scaffold path
+  var scaffold = L.buildSpineCellScaffold(L.NORM_SPINE, { grades: [4], seasons: ['winter'], percentiles: [50] });
+  ok(scaffold.length === 1 && scaffold[0].verified === false && scaffold[0].signoffHash === null, 'buildSpineCellScaffold: single G4 winter p50 cell is unverified by default');
+
+  // Validate refuses non-positive value + non-http locator
+  var bad = Object.assign({}, scaffold[0], { value: 0, locator: 'javascript:alert(1)' });
+  var vBad = L.validateProposedSpineCell(bad);
+  ok(!vBad.ok && vBad.errors.indexOf('value-not-positive-number') !== -1 && vBad.errors.indexOf('locator-not-http-url') !== -1, 'validateProposedSpineCell: refuses value<=0 + non-http locator');
+
+  // Signoff requires a real reviewedOn ISO; no implicit Date
+  var c1 = Object.assign({}, scaffold[0], { value: 120 });
+  ok(L.signoffSpineCell(c1, null).ok === false, 'signoffSpineCell: refuses missing reviewedOn (no implicit Date in the pure layer)');
+  var sr = L.signoffSpineCell(c1, '2026-06-05');
+  ok(sr.ok === true && c1.verified === true && c1.signoffHash != null, 'signoffSpineCell: valid call mutates verified + reviewedOn + signoffHash');
+  ok(c1.signoffHash === L.sourcedSignoffHash(c1), 'signoffSpineCell: hash equals sourcedSignoffHash (consistent stale-detection)');
+
+  // Bind: refuses unverified, detects stale, refuses value-collision
+  ok(L.bindVerifiedCellsToSpine({}, [Object.assign({}, scaffold[0], { value: 120 })]).added === 0, 'bind: refuses an unverified cell (verified:false)');
+  var stale = Object.assign({}, c1, { value: 121 }); // edited after signoff
+  ok(L.bindVerifiedCellsToSpine({}, [stale]).collisions[0].reason === 'stale-signoff', 'bind: detects a stale (post-signoff-edit) cell');
+  var existing = { 4: { winter: { p50: 120 } } };
+  var collide = (function () { var cc = Object.assign({}, scaffold[0], { value: 999 }); L.signoffSpineCell(cc, '2026-06-05'); return cc; })();
+  ok(L.bindVerifiedCellsToSpine(existing, [collide]).collisions[0].reason === 'value-collision', 'bind: refuses overwrite-with-different-value (stable-spine)');
+  // Idempotent identical-value re-bind
+  var same = (function () { var cc = Object.assign({}, scaffold[0], { value: 120 }); L.signoffSpineCell(cc, '2026-06-05'); return cc; })();
+  ok(L.bindVerifiedCellsToSpine(existing, [same]).added === 1, 'bind: identical-value re-bind is idempotent (no collision)');
+
+  // §16.1 separation invariant: the bind never touches comp.observations
+  var comp = L.makeCompendium('ORF-WCPM', 'words/min', { measure: 'ORF-WCPM' });
+  L.REYNA_SAMPLE.forEach(function (o) { L.addObservation(comp, o); });
+  var nObsBefore = comp.observations.length;
+  var sCell = (function () { var cc = Object.assign({}, scaffold[0], { value: 120 }); L.signoffSpineCell(cc, '2026-06-05'); return cc; })();
+  L.bindVerifiedCellsToSpine({}, [sCell]);
+  ok(comp.observations.length === nObsBefore && comp.observations.every(function (o) { return o.y !== 120 || o.x !== 4; }), '§16.1 separation: bindVerifiedCellsToSpine never adds to comp.observations');
+
+  // spineCellsToJSON is deterministic (sorted grade → fall/winter/spring → p25/p50/p75)
+  var cells = { 4: { winter: { p50: 120 }, fall: { p50: 90 }, spring: { p50: 110 } }, 1: { winter: { p75: 50, p25: 10 } } };
+  var json1 = L.spineCellsToJSON(cells);
+  var json2 = L.spineCellsToJSON(cells);
+  ok(json1 === json2, 'spineCellsToJSON: deterministic across re-runs (sorted)');
+  ok(json1.indexOf('"1"') < json1.indexOf('"4"'), 'spineCellsToJSON: grades sorted numerically');
+  var g4 = json1.slice(json1.indexOf('"4"'));
+  ok(g4.indexOf('fall') < g4.indexOf('winter') && g4.indexOf('winter') < g4.indexOf('spring'), 'spineCellsToJSON: seasons sorted fall → winter → spring');
+
+  // Extractor failure modes never throw
+  ok(L.normalizeBenchExtraction(null).kind === 'empty', 'normalizeBenchExtraction: null input → kind:empty (no throw)');
+  ok(L.benchDocTypeFromName('a.pdf') === 'pdf' && L.benchDocTypeFromName('a.docx') === 'docx' && L.benchDocTypeFromName('a.png') === null, 'benchDocTypeFromName: pdf+docx accepted; png (handwritten OCR risk) rejected');
+})();
+
 if (fails.length) {
   console.error('check_lumen_floor: ' + fails.length + ' FAILED');
   fails.forEach(function (f) { console.error('  x ' + f); });
   process.exit(1);
 }
-if (!QUIET) console.log('check_lumen_floor: OK — Lumen honesty-floor invariants hold (11 groups, incl. ingest).');
+if (!QUIET) console.log('check_lumen_floor: OK — Lumen honesty-floor invariants hold (12 groups, incl. §16 Phase 2A workspace).');
 process.exit(0);
