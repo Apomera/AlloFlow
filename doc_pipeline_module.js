@@ -336,13 +336,21 @@ var createDocPipeline = function(deps) {
           if (r.pages[1] < newStart || r.pages[0] > newEnd) return r; // no overlap
           // New fully contains old — drop old entirely
           if (r.pages[0] >= newStart && r.pages[1] <= newEnd) return null;
-          // Old extends to the left of new — truncate old's end
-          if (r.pages[0] < newStart && r.pages[1] >= newStart && r.pages[1] <= newEnd) {
-            return Object.assign({}, r, { pages: [r.pages[0], newStart - 1], _truncatedBy: [newStart, newEnd] });
+          // Partial overlap (old extends to the left OR right of new). We can only
+          // truncate the PAGE METADATA, not the stored HTML (there are no per-page
+          // markers in the remediated HTML to slice on). Keeping a range whose pages
+          // say [5,7] but whose HTML still covers [5,10] made mergeRangesToFullHtml
+          // emit the overlapping pages TWICE. So drop the old range entirely — the
+          // uncovered sliver is honestly surfaced as a gap note at merge time and the
+          // user can re-upload it, which is strictly better than shipping duplicated
+          // content. (Matches the strict-subset handling below.)
+          if (r.pages[1] >= newStart && r.pages[1] <= newEnd && r.pages[0] < newStart) {
+            warnLog('[MultiSession] Range ' + r.pages[0] + '-' + r.pages[1] + ' partially overlaps the newer ' + newStart + '-' + newEnd + '; dropping it (cannot page-slice its HTML). Re-upload pages ' + r.pages[0] + '-' + (newStart - 1) + ' if still needed.');
+            return null;
           }
-          // Old extends to the right of new — truncate old's start
           if (r.pages[0] >= newStart && r.pages[0] <= newEnd && r.pages[1] > newEnd) {
-            return Object.assign({}, r, { pages: [newEnd + 1, r.pages[1]], _truncatedBy: [newStart, newEnd] });
+            warnLog('[MultiSession] Range ' + r.pages[0] + '-' + r.pages[1] + ' partially overlaps the newer ' + newStart + '-' + newEnd + '; dropping it (cannot page-slice its HTML). Re-upload pages ' + (newEnd + 1) + '-' + r.pages[1] + ' if still needed.');
+            return null;
           }
           // New is strictly inside old — we'd need to split into two metadata
           // entries to cover {old_start..new_start-1} and {new_end+1..old_end}.
@@ -2505,6 +2513,19 @@ var createDocPipeline = function(deps) {
     }
   };
 
+  // OOM guard: atob + Uint8Array.from allocates the whole file at once, which crashes
+  // memory-constrained devices (education tablets, mobile) before remediation even begins.
+  // Throw a clear, user-actionable error instead of a silent tab crash. base64 length
+  // × 0.75 ≈ decoded byte count, so we can reject before allocating.
+  const _MAX_PDF_BYTES = 200 * 1024 * 1024; // 200 MB
+  const _b64ToBytes = (base64) => {
+    const raw = base64 && base64.includes(',') ? base64.split(',')[1] : (base64 || '');
+    if (raw.length * 0.75 > _MAX_PDF_BYTES) {
+      throw new Error('File is too large (~' + Math.round(raw.length * 0.75 / (1024 * 1024)) + ' MB). The accessibility pipeline handles up to ' + Math.round(_MAX_PDF_BYTES / (1024 * 1024)) + ' MB — please split the document into smaller parts.');
+    }
+    return Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+  };
+
   // Extract text from a PDF using pdf.js's native text layer. Zero AI calls, zero truncation.
   // Returns { fullText, pages, pageCount, sourceCharCount, isScanned }.
   // isScanned = true when the PDF has no text layer (< 50 chars/page average) — fall back to OCR.
@@ -2512,8 +2533,7 @@ var createDocPipeline = function(deps) {
     try {
       await ensurePdfJsLoaded();
       if (!window.pdfjsLib) throw new Error('pdf.js unavailable');
-      const raw = base64.includes(',') ? base64.split(',')[1] : base64;
-      const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+      const bytes = _b64ToBytes(base64);
       const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
       const pages = [];
       for (let p = 1; p <= pdf.numPages; p++) {
@@ -5750,7 +5770,15 @@ Return ONLY JSON:
           const passRatio = pc > 0 ? pc / (pc + ic) : 0;
           const pf = 1 - (passRatio * 0.4);
           const calculatedScore = Math.max(0, 100 - Math.round(totalDeductions * pf));
-          if (Math.abs((parsed.score || 0) - calculatedScore) > 12) parsed.score = calculatedScore;
+          if (Math.abs((parsed.score || 0) - calculatedScore) > 12) {
+            // Transparency: don't silently overwrite the auditor's number. Log the
+            // divergence and keep the AI-reported score so the report can disclose
+            // that the displayed score is the stricter deduction-grounded calculation.
+            try { warnLog('[audit] AI-reported score ' + parsed.score + ' diverged >12 pts from the deduction-calculated ' + calculatedScore + ' — using the calculated (deduction-grounded) score.'); } catch(_) {}
+            parsed._aiReportedScore = parsed.score;
+            parsed._scoreAdjusted = true;
+            parsed.score = calculatedScore;
+          }
         }
         // Tone-check: if summary contains harsh language but score is high, soften it
         if (parsed.score >= 80 && parsed.summary) {
@@ -8633,6 +8661,21 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           if (!block.type && block.html) block.type = 'rawhtml';
           if (!block.type && block.description) block.type = 'image';
           const sanitizeField = (val) => { if (typeof val !== 'string') return String(val || ''); return val.replace(/\\\\n/g, ' ').replace(/\\0/g, '').trim(); };
+          // XSS guard: AI-produced block text is interpolated into the HTML templates
+          // below. A prompt-injected / compromised model could emit <img onerror=…>,
+          // <script>, or event handlers. Escape ALL markup, then re-allow ONLY
+          // attribute-less safe inline tags so intended emphasis survives while every
+          // scripting vector is neutralized (no attributes can pass the allow-list).
+          const escapeTextField = (val) => {
+            const s = String(val == null ? '' : val)
+              .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            return s
+              .replace(/&lt;(\/?(?:strong|em|b|i|u|sub|sup|mark|code|s|small))&gt;/gi, '<$1>')
+              .replace(/&lt;br\s*\/?&gt;/gi, '<br>');
+          };
+          // Only allow safe URL schemes in link hrefs (block javascript:, data:, etc.).
+          const safeHref = (u) => { const v = String(u || '').trim(); return /^(https?:|mailto:|tel:|#|\/|\.)/i.test(v) ? v.replace(/"/g, '&quot;') : '#'; };
           try {
           // Clean block text: strip JSON field names, id tags, literal \n, and type labels
           if (block.text) {
@@ -8660,12 +8703,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           }
           const id = block.id ? ` id="${block.id}"` : '';
           switch (block.type) {
-            case 'h1': return `<h1${id} style="color:${docStyle.headingColor};font-size:1.75rem;font-weight:bold;border-bottom:3px solid ${docStyle.accentColor};padding-bottom:0.5rem;margin:1.5em 0 0.5em">${block.text}</h1>`;
-            case 'h2': return `<h2${id} style="color:${docStyle.headingColor};font-size:1.35rem;font-weight:bold;margin:1.5em 0 0.5em;${docStyle.hasSidebarAccents ? 'border-left:4px solid ' + docStyle.accentColor + ';padding-left:12px;' : ''}">${block.text}</h2>`;
-            case 'h3': return `<h3${id} style="color:${docStyle.headingColor};font-size:1.1rem;font-weight:bold;margin:1.2em 0 0.4em">${block.text}</h3>`;
-            case 'p': return `<p style="margin:0.6em 0;line-height:1.7">${block.text}</p>`;
-            case 'ul': return `<ul style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${sanitizeField(i)}</li>`).join('')}</ul>`;
-            case 'ol': return `<ol style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${sanitizeField(i)}</li>`).join('')}</ol>`;
+            case 'h1': return `<h1${id} style="color:${docStyle.headingColor};font-size:1.75rem;font-weight:bold;border-bottom:3px solid ${docStyle.accentColor};padding-bottom:0.5rem;margin:1.5em 0 0.5em">${escapeTextField(block.text)}</h1>`;
+            case 'h2': return `<h2${id} style="color:${docStyle.headingColor};font-size:1.35rem;font-weight:bold;margin:1.5em 0 0.5em;${docStyle.hasSidebarAccents ? 'border-left:4px solid ' + docStyle.accentColor + ';padding-left:12px;' : ''}">${escapeTextField(block.text)}</h2>`;
+            case 'h3': return `<h3${id} style="color:${docStyle.headingColor};font-size:1.1rem;font-weight:bold;margin:1.2em 0 0.4em">${escapeTextField(block.text)}</h3>`;
+            case 'p': return `<p style="margin:0.6em 0;line-height:1.7">${escapeTextField(block.text)}</p>`;
+            case 'ul': return `<ul style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ul>`;
+            case 'ol': return `<ol style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ol>`;
             case 'table': {
               const cap = block.caption ? `<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${docStyle.headingColor}">`+sanitizeField(block.caption)+`</caption>` : '';
               const hdrs = Array.isArray(block.headers) ? block.headers : [];
@@ -8751,8 +8794,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 + (_captionText ? `<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5rem">${_captionText}</figcaption>` : '')
                 + `</figure>`;
             }
-            case 'link': return `<a href="${block.url || '#'}" style="color:${docStyle.accentColor}">${block.text}</a>`;
-            case 'blockquote': return `<blockquote style="border-left:4px solid ${docStyle.accentColor};padding:12px 16px;margin:1em 0;background:${docStyle.bgColor === '#ffffff' ? '#f8fafc' : docStyle.bgColor};border-radius:0 8px 8px 0;font-style:italic">${block.text}</blockquote>`;
+            case 'link': return `<a href="${safeHref(block.url)}" style="color:${docStyle.accentColor}">${escapeTextField(block.text)}</a>`;
+            case 'blockquote': return `<blockquote style="border-left:4px solid ${docStyle.accentColor};padding:12px 16px;margin:1em 0;background:${docStyle.bgColor === '#ffffff' ? '#f8fafc' : docStyle.bgColor};border-radius:0 8px 8px 0;font-style:italic">${escapeTextField(block.text)}</blockquote>`;
             case 'hr': return `<hr style="border:none;border-top:2px solid ${docStyle.sectionBorderColor};margin:2em 0">`;
             case 'wordart': {
               // Decorative stylized text. Renders via the shared WORD_ART_PRESETS so the in-app
@@ -8819,13 +8862,18 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 + `</div>`;
             }
             case 'rawhtml': {
-              // Strip scripts, styles, event handlers, and javascript: URLs before trusting model-supplied HTML.
+              // Strip scripts/styles, dangerous embedding tags, event handlers, and
+              // dangerous URL schemes before trusting model-supplied HTML. The event-
+              // handler match accepts a leading whitespace OR '/' so <svg/onload=…> and
+              // <img/onerror=…> can't slip past, and we drop the tags that carry active
+              // content (iframe/object/embed/svg/math/link/meta/base).
               const _rawHtml = String(block.html || '');
               return _rawHtml
                 .replace(/<script[\s\S]*?<\/script>/gi, '')
                 .replace(/<style[\s\S]*?<\/style>/gi, '')
-                .replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-                .replace(/javascript:/gi, '');
+                .replace(/<\/?(?:iframe|object|embed|svg|math|link|meta|base)\b[^>]*>/gi, '')
+                .replace(/[\s/]on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+                .replace(/(?:javascript|vbscript|data\s*:\s*text\/html)\s*:/gi, '');
             }
             default: {
               // Unknown block type — salvage any content field we recognize instead of silently dropping it,
@@ -8833,13 +8881,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               const _salvage = block.text || block.title || block.description || block.caption
                 || (Array.isArray(block.items) ? block.items.join(', ') : '');
               if (block.type) _pipeLog('renderJsonToHtml', 'unknown block type: ' + block.type + ' — salvaged ' + _salvage.length + ' chars');
-              return `<div style="margin:0.6em 0">${_salvage}</div>`;
+              return `<div style="margin:0.6em 0">${escapeTextField(_salvage)}</div>`;
             }
           }
           } catch (blockRenderErr) {
             console.warn('[PDF Fix] Block ' + blockIdx + ' render error (type=' + (block.type||'?') + '):', blockRenderErr);
             const salvageText = block.text || block.title || block.description || (Array.isArray(block.items) ? block.items.join(', ') : '');
-            if (salvageText) return '<p style="margin:0.6em 0;line-height:1.7">' + sanitizeField(salvageText) + '</p>';
+            if (salvageText) return '<p style="margin:0.6em 0;line-height:1.7">' + escapeTextField(sanitizeField(salvageText)) + '</p>';
             return '';
           }
         }).filter(html => html.length > 0).join('\n');
@@ -10114,12 +10162,21 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const newAxeViolations = reAxe ? reAxe.totalViolations : bestAxeViolations;
           autoFixPasses++;
 
-          // Regression guard: if BOTH scores got worse, revert
-          const aiWorse = newAiScore < bestAiScore - 5; // allow 5-point tolerance
+          // Regression guard: revert if BOTH scores got worse, OR if axe (structural
+          // WCAG) regressed by more than a small noise tolerance even when the AI
+          // rubric improved. Previously the AND-only check let a pass that traded a
+          // real WCAG violation for AI-perceived gains survive silently — accessibility
+          // compliance shouldn't be tradeable against the rubric score.
+          const aiWorse = newAiScore < bestAiScore - 5;            // allow 5-point AI tolerance
+          const AXE_TOL = 2;                                       // allow ±2 axe-violation noise
           const axeWorse = newAxeViolations > bestAxeViolations;
+          const axeMuchWorse = newAxeViolations > bestAxeViolations + AXE_TOL;
 
-          if (aiWorse && axeWorse) {
-            warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — REVERTING`);
+          if ((aiWorse && axeWorse) || axeMuchWorse) {
+            const _why = axeMuchWorse && !aiWorse
+              ? `introduced ${newAxeViolations - bestAxeViolations} new axe/WCAG violation(s) despite AI gains`
+              : 'both scores got worse';
+            warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (${_why}; AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — REVERTING`);
             accessibleHtml = snapshotHtml;
             if (addToast) addToast(`⚠️ Fix pass ${fixPass + 1} made things worse — reverted`, 'info');
             break;
@@ -11304,12 +11361,24 @@ tr { page-break-inside: avoid; }
     if (meta.title) { try { doc.setTitle(meta.title); } catch(_) {} }
     if (meta.author) { try { doc.setAuthor(meta.author); } catch(_) {} }
     if (meta.subject) { try { doc.setSubject(meta.subject); } catch(_) {} }
-    try { doc.setProducer('AlloFlow Accessibility Pipeline'); } catch(_) {}
+    // Track whether the metadata stamps actually landed. These sit in try/catch
+    // because pdf-lib can throw on unusual source Info dicts (e.g. a PoDoFo/scanner
+    // chain), but a silent no-op previously shipped PDFs that kept the SOURCE
+    // Producer and carried no PDF/UA-1 marker while the UI implied otherwise.
+    let _producerStamped = false, _xmpStamped = false;
+    try { doc.setProducer('AlloFlow Accessibility Pipeline'); _producerStamped = true; }
+    catch(prodErr) { try { warnLog('[createTaggedPdf] WARNING: could not stamp Producer metadata — output keeps the source Producer and is not marked as AlloFlow-processed: ' + (prodErr && prodErr.message)); } catch(_) {} }
     try { doc.setModificationDate(new Date()); } catch(_) {}
     // ── Document language (Catalog/Lang) ──
     // Required by PDF/UA-1 §7.2. pdf-lib doesn't expose a high-level setter
     // so we write it directly into the Catalog.
-    const lang = (meta.lang || 'en').toString();
+    let lang = (meta.lang || 'en').toString().trim();
+    // Validate BCP 47 shape (en, en-US, zh-Hant, pt-BR…). A malformed /Lang
+    // breaks screen-reader pronunciation, so fall back to 'en' on junk input.
+    if (!/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(lang)) {
+      try { warnLog('[createTaggedPdf] invalid document language "' + lang + '" — falling back to "en"'); } catch(_) {}
+      lang = 'en';
+    }
     catalog.set(PDFName.of('Lang'), PDFString.of(lang));
     // ── MarkInfo dict ──
     // Marked=true signals that the document has Marked Content / is tagged.
@@ -11365,9 +11434,12 @@ tr { page-break-inside: avoid; }
         const metaStream = PDFRawStream.of(metaDict, new TextEncoder().encode(xmp));
         const metaRef = context.register(metaStream);
         catalog.set(PDFName.of('Metadata'), metaRef);
+        _xmpStamped = true;
+      } else {
+        try { warnLog('[createTaggedPdf] WARNING: PDFRawStream/PDFDict unavailable — PDF/UA-1 XMP conformance marker NOT embedded; the document is tagged but validators will report it as not PDF/UA-1 declared.'); } catch(_) {}
       }
     } catch (xmpErr) {
-      try { warnLog('[createTaggedPdf] XMP metadata failed (non-fatal): ' + (xmpErr && xmpErr.message)); } catch(_) {}
+      try { warnLog('[createTaggedPdf] WARNING: PDF/UA-1 XMP conformance marker failed — the document is tagged but will NOT validate as PDF/UA-1 declared: ' + (xmpErr && xmpErr.message)); } catch(_) {}
     }
     // ── Build the StructTreeRoot from fixResult.accessibleHtml ──
     // Parse the remediated HTML to get the semantic outline (headings,
@@ -11637,6 +11709,11 @@ tr { page-break-inside: avoid; }
           // /Headers on the resulting StructElems.
           structId: tag === 'th' ? (el.getAttribute('data-struct-id') || '') : '',
           headers: tag === 'td' ? (el.getAttribute('data-headers') || '') : '',
+          // Capture merged-cell spans so buildLeaf can emit /ColSpan //RowSpan
+          // (PDF/UA-1 / ISO 32000 §14.8.5.7). Without these, a screen reader
+          // mis-maps headers to data in any table with merged header cells.
+          colSpan: (tag === 'th' || tag === 'td') ? (parseInt(el.getAttribute('colspan') || '1', 10) || 1) : 1,
+          rowSpan: (tag === 'th' || tag === 'td') ? (parseInt(el.getAttribute('rowspan') || '1', 10) || 1) : 1,
           // Stage 6a: /Lang on StructElem — PDF spec §14.9.2 lets an element
           // override the document-level /Lang for SR voice/pronunciation
           // switching on multilingual content (bilingual worksheets,
@@ -11710,6 +11787,10 @@ tr { page-break-inside: avoid; }
             d.Alt = PDFString.of(isExternal ? ('Link to ' + item.href) : ('Link: ' + item.href));
           } else if (item.text) {
             d.Alt = PDFString.of('Link: ' + item.text);
+          } else {
+            // No href and no text — never ship a Link StructElem with no /Alt
+            // (a screen reader would announce an empty, unactionable link).
+            d.Alt = PDFString.of('Link (unlabeled)');
           }
         }
         if (['H1','H2','H3','H4','H5','H6','P','Caption','BlockQuote'].includes(item.role) && item.text) {
@@ -11742,6 +11823,13 @@ tr { page-break-inside: avoid; }
             attrDict.Headers = context.obj(ids.map(id => PDFString.of(id)));
             attrDirty = true;
           }
+        }
+        // Merged cells: /ColSpan //RowSpan on TH/TD (PDF/UA-1 / ISO 32000
+        // §14.8.5.7). Without these a 2-row merged header reads as covering one
+        // cell, breaking the header→data mapping /Scope and /Headers rely on.
+        if ((item.role === 'TH' || item.role === 'TD')) {
+          if (item.colSpan && item.colSpan > 1) { attrDict.ColSpan = PDFNumber.of(item.colSpan); attrDirty = true; }
+          if (item.rowSpan && item.rowSpan > 1) { attrDict.RowSpan = PDFNumber.of(item.rowSpan); attrDirty = true; }
         }
         if (attrDirty) d.A = context.obj(attrDict);
         const elemRef = context.register(context.obj(d));
@@ -11885,6 +11973,19 @@ tr { page-break-inside: avoid; }
       .replace(/\u2026/g, '...')
       .replace(/\u00A0/g, ' ')
       .replace(/[^\x20-\xFF\n\r\t]/g, '');
+    // Count how many OCR characters the WinAnsi/Helvetica layer will DROP (after the
+    // 1:1 punctuation maps above). Non-Latin scripts (Arabic, CJK, Cyrillic, Devanagari,
+    // Ethiopic\u2026) fall entirely outside WinAnsi, so for a scanned non-English document the
+    // invisible text layer would otherwise come out empty \u2014 silently. We tally the loss so
+    // we can warn instead of shipping a gutted, unreadable text layer.
+    const _countNonWinAnsi = (s) => ((s || '')
+      .replace(/[\u2018\u2019\u201A\u2032]/g, "'")
+      .replace(/[\u201C\u201D\u201E\u2033]/g, '"')
+      .replace(/[\u2013\u2014]/g, '-')
+      .replace(/\u2026/g, '...')
+      .replace(/\u00A0/g, ' ')
+      .match(/[^\x20-\xFF\n\r\t]/g) || []).length;
+    let _ocrTotalChars = 0, _ocrDroppedChars = 0;
 
     // Stage 4 pdf.js doc load (text-layer PDFs only — scanned PDFs use the
     // Stage 3 single-MCID wrap because pdf.js on original bytes sees no text).
@@ -11938,6 +12039,8 @@ tr { page-break-inside: avoid; }
         }
         const ocrText = (ocrEntry && (ocrEntry.text || ocrEntry.content || ocrEntry.fullText || '')) || '';
         if (ocrText && ocrText.trim()) {
+          _ocrTotalChars += ocrText.length;
+          _ocrDroppedChars += _countNonWinAnsi(ocrText);
           try {
             const helv = await _getHelv();
             if (helv) {
@@ -12025,6 +12128,20 @@ tr { page-break-inside: avoid; }
           parentTreeNums.push(PDFNumber.of(pi));
           parentTreeNums.push(pageElemRef);
         } catch(elemErr) { try { warnLog('[createTaggedPdf] page StructElem build failed p' + (pi+1) + ': ' + (elemErr && elemErr.message)); } catch(_) {} }
+      }
+    }
+    // ── Non-Latin OCR coverage guard ──
+    // If a meaningful fraction of the scanned text layer fell outside WinAnsi, the
+    // invisible OCR text was dropped (Helvetica can't encode it). Surface it loudly +
+    // flag it on the result so the UI can warn — silently shipping an empty text layer
+    // for a scanned Arabic/CJK/etc. document is the opposite of accessible.
+    let _ocrLayerNonLatinDropped = false, _ocrCoveragePct = 100;
+    if (_ocrTotalChars > 0 && _ocrDroppedChars > 0) {
+      _ocrCoveragePct = Math.max(0, Math.round(((_ocrTotalChars - _ocrDroppedChars) / _ocrTotalChars) * 100));
+      // Treat >5% dropped (or any drop on a short doc) as a real coverage problem.
+      if (_ocrDroppedChars >= 20 || _ocrCoveragePct < 95) {
+        _ocrLayerNonLatinDropped = true;
+        try { warnLog('[createTaggedPdf] WARNING: the scanned-PDF text layer is only ' + _ocrCoveragePct + '% covered — ' + _ocrDroppedChars + ' of ' + _ocrTotalChars + ' OCR characters are outside Latin-1 (non-Latin script: Arabic, CJK, Cyrillic, Devanagari, Ethiopic, etc.) and could not be embedded with the built-in Helvetica font. Screen readers will not read those passages. Embedding a Unicode font is required for full coverage of non-English scanned documents.'); } catch(_) {}
       }
     }
     // ── Stage 3: AcroForm field tagging ──
@@ -12313,10 +12430,18 @@ tr { page-break-inside: avoid; }
                     if (/^H[1-6]$/.test(it.role)) {
                         headings++;
                         const level = parseInt(it.role.slice(1), 10);
-                        // Only flag jumps DOWN the hierarchy (toward more
-                        // specific) where you skip a level. Going back up
+                        // The document outline should START at H1; a first
+                        // heading of H2/H3 (common after AI chunking demotes the
+                        // title) is a real screen-reader-navigation defect.
+                        if (lastHeadingLevel === 0) {
+                            if (level !== 1) {
+                                headingHierarchyIssues++;
+                                headingPath.push('first heading is H' + level + ' (should start at H1)');
+                            }
+                        // Otherwise only flag jumps DOWN the hierarchy (toward
+                        // more specific) where you skip a level. Going back up
                         // (h3 -> h2) is fine.
-                        if (lastHeadingLevel > 0 && level > lastHeadingLevel + 1) {
+                        } else if (level > lastHeadingLevel + 1) {
                             headingHierarchyIssues++;
                             headingPath.push('H' + lastHeadingLevel + ' -> H' + level);
                         }
@@ -12398,6 +12523,16 @@ tr { page-break-inside: avoid; }
         const stRoot = catalog.get(PDFName.of('StructTreeRoot'));
         _addCheck('Document', 'Tagged PDF', stRoot ? 'pass' : 'fail',
           stRoot ? 'Document carries a StructTreeRoot' : 'No StructTreeRoot found — document is not tagged');
+        // Honesty guard: a StructTreeRoot with an empty /K is "tagged" on paper
+        // but has no content elements — it fails PDF/UA and gives a screen reader
+        // nothing to navigate. Read the real tree, not the HTML summary.
+        try {
+          const _stk = stRoot && stRoot.get ? stRoot.get(PDFName.of('K')) : null;
+          const _kLen = (_stk && typeof _stk.size === 'function') ? _stk.size() : (_stk ? 1 : 0);
+          _addCheck('Document', 'Structure tree has content', _kLen > 0 ? 'pass' : 'fail',
+            _kLen > 0 ? 'StructTreeRoot /K holds ' + _kLen + ' top-level structure element(s)'
+                      : 'StructTreeRoot present but /K is empty — no content is tagged (document will fail PDF/UA)');
+        } catch (_) { _addCheck('Document', 'Structure tree has content', 'warn', 'Could not read StructTreeRoot /K'); }
       } catch (_) { _addCheck('Document', 'Tagged PDF', 'fail', 'Could not read StructTreeRoot'); }
       try {
         const markInfo = catalog.get(PDFName.of('MarkInfo'));
@@ -12427,10 +12562,18 @@ tr { page-break-inside: avoid; }
           ddtTrue ? 'Window chrome will show document title (PDF/UA §7.1)' : 'ViewerPreferences /DisplayDocTitle not set true');
       } catch (_) { _addCheck('Document', 'DisplayDocTitle', 'fail', 'Could not read ViewerPreferences'); }
       try {
+        // Honest check: did WE write the pdfuaid:part marker this run? A source
+        // /Metadata stream existing is NOT proof of PDF/UA conformance (e.g. a
+        // PoDoFo/scanner source carries its own XMP with no pdfuaid).
         const meta = catalog.get(PDFName.of('Metadata'));
-        _addCheck('Document', 'PDF/UA-1 declared (XMP)', meta ? 'pass' : 'fail',
-          meta ? 'XMP metadata stream attached with pdfuaid:part 1' : 'No XMP metadata stream — PDF/UA conformance not declared');
+        _addCheck('Document', 'PDF/UA-1 declared (XMP)', _xmpStamped ? 'pass' : 'fail',
+          _xmpStamped ? 'XMP metadata stream attached with pdfuaid:part 1'
+            : (meta ? 'A /Metadata stream exists but the PDF/UA-1 marker was NOT written this run — validators will not see pdfuaid:part 1'
+                    : 'No XMP metadata stream — PDF/UA conformance not declared'));
       } catch (_) { _addCheck('Document', 'PDF/UA-1 declared (XMP)', 'fail', 'Could not read /Metadata'); }
+      _addCheck('Document', 'Producer stamped', _producerStamped ? 'pass' : 'warn',
+        _producerStamped ? 'Producer set to "AlloFlow Accessibility Pipeline"'
+          : 'Could not stamp Producer — output keeps the source PDF\'s Producer (not marked as AlloFlow-processed)');
       // PAGE CONTENT
       try {
         let pagesWithStructParents = 0;
@@ -12531,6 +12674,7 @@ tr { page-break-inside: avoid; }
         checks,
         summary: { pass: passCount, fail: failCount, warn: warnCount, manual: manualCount, na: naCount, conformancePct },
         spec: 'PDF/UA-1 (ISO 14289-1) — self-check',
+        scopeNote: 'Document- and page-level rules are read from the built PDF (catalog, pages, StructTreeRoot /K). Element-level rules (alt text, table scope, headings, links) are validated against the structure model AlloFlow built, not a byte-level walk of every StructElem — for certification, run the output through PAC 2024 or Adobe Acrobat Pro.',
         validatorVersion: 'AlloFlow ' + _PIPELINE_PROMPT_VERSION,
       };
     })();
@@ -12539,8 +12683,18 @@ tr { page-break-inside: avoid; }
     // useObjectStreams=false produces slightly larger PDFs but more
     // compatible with older readers and validators.
     const _bytes = await doc.save({ useObjectStreams: false, addDefaultPage: false });
-    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks };
+    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks, metadataStamped: { producer: _producerStamped, xmp: _xmpStamped }, ocrTextLayer: { coveragePct: _ocrCoveragePct, nonLatinDropped: _ocrLayerNonLatinDropped, droppedChars: _ocrDroppedChars } };
   };
+
+  // Defense-in-depth for the print/preview windows: the body HTML is already
+  // escaped at the renderJsonToHtml source, but we strip active content here too
+  // (scripts, event handlers, dangerous URL schemes, embedding tags) before writing
+  // it into a real document. KEEPS <style> — the print document needs its own CSS.
+  const _sanitizeHtmlForWrite = (html) => String(html || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<\/?(?:iframe|object|embed)\b[^>]*>/gi, '')
+    .replace(/[\s/]on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/(?:javascript|vbscript)\s*:/gi, '');
 
   // ── Download Accessible PDF from HTML ──
   const downloadAccessiblePdf = (htmlContent, filename) => {
@@ -12548,7 +12702,7 @@ tr { page-break-inside: avoid; }
     const printWindow = window.open('', '_blank');
     if (!printWindow) { addToast(t('toasts.pop_up_blocked_allow_pop_2'), 'error'); return; }
     try {
-      printWindow.document.write(htmlContent);
+      printWindow.document.write(_sanitizeHtmlForWrite(htmlContent));
     } catch(writeErr) {
       warnLog('[downloadAccessiblePdf] doc.write failed — retrying with scripts stripped: ' + (writeErr?.message || writeErr));
       try { printWindow.document.write(htmlContent.replace(/<script[\s\S]*?<\/script>/gi, '')); }
@@ -12666,7 +12820,7 @@ tr { page-break-inside: avoid; }
     if (!doc) return;
     doc.open();
     try {
-      doc.write(themed);
+      doc.write(_sanitizeHtmlForWrite(themed));
     } catch(writeErr) {
       warnLog('[updatePdfPreview] doc.write failed (' + (writeErr?.message || writeErr) + ') — retrying with scripts stripped');
       try {
