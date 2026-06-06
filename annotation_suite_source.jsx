@@ -38,6 +38,22 @@ const STICKER_TYPES = [
 // base64 (local-only, never network); 'draw' is a freehand SVG stroke.
 const ANNOTATION_KINDS = ['sticker', 'note', 'highlight', 'voice', 'draw'];
 
+// ── i18n bridge ──────────────────────────────────────────────────────────────
+// The host threads its translation fn in as props.t, but only the top-level
+// components (Toolbar) receive it. The internal annotation nodes (NoteBubble,
+// VoiceNoteBubble, RecordingOverlay, HighlightOverlay, DrawingOverlay) call bare
+// t(...) — including a VISIBLE note placeholder — but are rendered by Overlay
+// without being passed props.t. With no module-level t they throw
+// "ReferenceError: t is not defined" and crash the whole app via the ErrorBoundary
+// (observed live 2026-06-05). We capture the host translator from props.t when a
+// top-level component mounts (Toolbar always renders) and expose a module-level
+// t() that uses it, falling back to the key only if the host never provided one.
+// (Proper prop-threading of t down to each node is a follow-up; this restores both
+// crash-safety AND translation.)
+let _hostT = null;
+const _captureHostT = (props) => { if (props && typeof props.t === 'function') _hostT = props.t; };
+function t(key, vars) { return _hostT ? _hostT(key, vars) : key; }
+
 // Drawing palette — same 4 colors as note/highlight so the tool families
 // feel paired. Width is in pixels of the SVG stroke.
 const DRAW_COLORS = {
@@ -1057,6 +1073,7 @@ function Toolbar(props) {
   const Mic = (window.AlloIcons && window.AlloIcons.Mic) || null;
   const Trash2 = (window.AlloIcons && window.AlloIcons.Trash2) || null;
   const tt = typeof props.t === 'function' ? props.t : (k) => k;
+  _captureHostT(props); // populate the module-level t() that the annotation nodes' bare t(...) calls use
   // Resolve mode (new API) with fallback to isStickerMode (legacy API).
   let mode = props.mode;
   if (mode == null) mode = props.isStickerMode ? 'sticker' : '';

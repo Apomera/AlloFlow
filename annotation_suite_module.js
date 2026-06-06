@@ -30,6 +30,13 @@ const STICKER_TYPES = [
   "flag"
 ];
 const ANNOTATION_KINDS = ["sticker", "note", "highlight", "voice", "draw"];
+let _hostT = null;
+const _captureHostT = (props) => {
+  if (props && typeof props.t === "function") _hostT = props.t;
+};
+function t(key, vars) {
+  return _hostT ? _hostT(key, vars) : key;
+}
 const DRAW_COLORS = {
   red: "#dc2626",
   blue: "#2563eb",
@@ -318,7 +325,7 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
           setDraft(e.target.value);
         },
         onBlur: commit,
-        placeholder: "Type your note\u2026",
+        placeholder: t("placeholders.type_note"),
         rows: 3,
         className: "w-full p-2 text-xs resize-y bg-transparent outline-none",
         style: { color: palette.text, minHeight: 60 },
@@ -515,11 +522,11 @@ function HighlightOverlay({ a, onDelete }) {
         background: "transparent"
       },
       onMouseEnter: function(e) {
-        const btn = e.currentTarget.querySelector('button[aria-label="Delete highlight"]');
+        const btn = e.currentTarget.querySelector('button[aria-label={t("a11y.delete_highlight")}]');
         if (btn) btn.style.opacity = "1";
       },
       onMouseLeave: function(e) {
-        const btn = e.currentTarget.querySelector('button[aria-label="Delete highlight"]');
+        const btn = e.currentTarget.querySelector('button[aria-label={t("a11y.delete_highlight")}]');
         if (btn) btn.style.opacity = "0";
       }
     },
@@ -922,6 +929,7 @@ function Toolbar(props) {
   const Mic = window.AlloIcons && window.AlloIcons.Mic || null;
   const Trash2 = window.AlloIcons && window.AlloIcons.Trash2 || null;
   const tt = typeof props.t === "function" ? props.t : (k) => k;
+  _captureHostT(props);
   let mode = props.mode;
   if (mode == null) mode = props.isStickerMode ? "sticker" : "";
   const stickerType = props.stickerType || "star";
