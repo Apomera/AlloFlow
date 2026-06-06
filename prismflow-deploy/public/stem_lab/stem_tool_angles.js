@@ -1503,6 +1503,10 @@ window.StemLab = window.StemLab || {
         }
         return h('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
           TAB_GROUPS.map(function(g) {
+            // A standalone entry (no .tabs — e.g. the Pisa linked-reps tab) renders as a single
+            // button. Without this guard `g.tabs.map` threw "Cannot read properties of undefined
+            // (reading 'map')" and crashed the whole protractor tool on render.
+            if (!g.tabs) return renderBtn(g, g.color || 'slate');
             return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
               h('span', { 'aria-hidden': 'true', className: 'text-[9px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
               g.tabs.map(function(s) { return renderBtn(s, g.color); })
