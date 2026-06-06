@@ -946,11 +946,16 @@ Return ONLY JSON:
             pageCount: project.pageCount,
             imageCount: project.imageCount || 0,
             needsExpertReview: project.needsExpertReview || false,
-            htmlChars: project.accessibleHtml.length,
-            extractedChars: 0,
-            issuesFixed: 0,
-            remainingIssues: 0,
-            autoFixPasses: 0
+            expertReviewReason: project.expertReviewReason || null,
+            integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
+            integrityWarning: project.integrityWarning || null,
+            sourceText: project.sourceText || '',
+            finalText: project.finalText || '',
+            htmlChars: project.htmlChars || project.accessibleHtml.length,
+            extractedChars: project.extractedChars || 0,
+            issuesFixed: project.issuesFixed || 0,
+            remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
+            autoFixPasses: project.autoFixPasses || 0
           });
           setPendingPdfFile({ name: project.fileName || "loaded-project.pdf" });
           addToast(t("toasts.loaded_2") + (project.fileName || "project") + " \u2014 continue editing!", "success");
@@ -2720,11 +2725,16 @@ Return ONLY JSON:
             pageCount: project.pageCount,
             imageCount: project.imageCount || 0,
             needsExpertReview: project.needsExpertReview || false,
-            htmlChars: project.accessibleHtml.length,
-            extractedChars: 0,
-            issuesFixed: 0,
-            remainingIssues: 0,
-            autoFixPasses: 0
+            expertReviewReason: project.expertReviewReason || null,
+            integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
+            integrityWarning: project.integrityWarning || null,
+            sourceText: project.sourceText || '',
+            finalText: project.finalText || '',
+            htmlChars: project.htmlChars || project.accessibleHtml.length,
+            extractedChars: project.extractedChars || 0,
+            issuesFixed: project.issuesFixed || 0,
+            remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
+            autoFixPasses: project.autoFixPasses || 0
           });
           setPendingPdfFile({ name: project.fileName || "loaded-project.pdf", size: project.multiSession?.fileSize || 0 });
           if (project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0) {
@@ -2829,15 +2839,25 @@ Return ONLY JSON:
       const zip = new window.JSZip();
       zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
       zip.file("META-INF/container.xml", '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+      const epubLang = (typeof html === "string" && html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || "en";
       const opf = `<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:identifier id="uid">alloflow-${Date.now()}</dc:identifier>
     <dc:title>${xmlTitle}</dc:title>
-    <dc:language>en</dc:language>
+    <dc:language>${epubLang}</dc:language>
     <dc:creator>AlloFlow Document Pipeline</dc:creator>
     <dc:date>${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}</dc:date>
     <meta property="dcterms:modified">${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z/, "Z")}</meta>
+    <meta property="schema:accessMode">textual</meta>
+    <meta property="schema:accessMode">visual</meta>
+    <meta property="schema:accessModeSufficient">textual</meta>
+    <meta property="schema:accessibilityFeature">structuralNavigation</meta>
+    <meta property="schema:accessibilityFeature">tableOfContents</meta>
+    <meta property="schema:accessibilityFeature">readingOrder</meta>
+    <meta property="schema:accessibilityFeature">alternativeText</meta>
+    <meta property="schema:accessibilityHazard">none</meta>
+    <meta property="schema:accessibilitySummary">Remediated for accessibility by AlloFlow: semantic headings, logical reading order, table of contents, and alternative text for images.</meta>
   </metadata>
   <manifest>
     <item id="content" href="content.xhtml" media-type="application/xhtml+xml"/>

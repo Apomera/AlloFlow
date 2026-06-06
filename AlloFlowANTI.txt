@@ -15438,6 +15438,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       pageCount: cur.pageCount,
       imageCount: cur.imageCount,
       needsExpertReview: cur.needsExpertReview,
+      // Persist the fields the reload path previously dropped, so a loaded project
+      // restores the same UI state: the reason-specific expert-review banner, the
+      // integrity/coverage indicators, the Diff inputs (source vs final text), and
+      // the remediation stat badges — instead of showing wrong/blank/zeroed values.
+      expertReviewReason: cur.expertReviewReason,
+      integrityCoverage: cur.integrityCoverage,
+      integrityWarning: cur.integrityWarning,
+      sourceText: cur.sourceText,
+      finalText: cur.finalText,
+      extractedChars: cur.extractedChars,
+      htmlChars: cur.htmlChars,
+      issuesFixed: cur.issuesFixed,
+      remainingIssues: cur.remainingIssues,
+      autoFixPasses: cur.autoFixPasses,
     };
     if (pdfMultiSession && Array.isArray(pdfMultiSession.ranges) && pdfMultiSession.ranges.length > 0) {
       project.multiSession = {
@@ -23837,7 +23851,18 @@ ${_toolList}
                                 axeAudit: project.axeAudit || null, verificationAudit: project.verificationAudit || null,
                                 docStyle: project.docStyle || null, pageCount: project.pageCount,
                                 imageCount: project.imageCount || 0, needsExpertReview: project.needsExpertReview || false,
-                                htmlChars: project.accessibleHtml.length, extractedChars: 0, issuesFixed: 0, remainingIssues: 0, autoFixPasses: 0,
+                                // Restore the fields older project files didn't carry (fallbacks keep
+                                // backward compatibility): reason-specific banner, integrity indicators,
+                                // Diff inputs (so the Diff works on a loaded project), and stat badges.
+                                expertReviewReason: project.expertReviewReason || null,
+                                integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
+                                integrityWarning: project.integrityWarning || null,
+                                sourceText: project.sourceText || '', finalText: project.finalText || '',
+                                htmlChars: project.htmlChars || project.accessibleHtml.length,
+                                extractedChars: project.extractedChars || 0,
+                                issuesFixed: project.issuesFixed || 0,
+                                remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
+                                autoFixPasses: project.autoFixPasses || 0,
                               });
                               setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf' });
                               addToast(t('toasts.loaded') + (project.fileName || 'project'), 'success');
