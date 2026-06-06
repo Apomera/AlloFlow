@@ -23745,7 +23745,7 @@ ${_toolList}
           _applyTextSurgery, _lastDiffFingerprintRef, addToast, applyingRemarkup, callGemini,
           diffChunks, diffGranularity, diffLibLoading, diffLibReady, diffSelection,
           diffViewOpen, pdfFixResult, setApplyingRemarkup, setDiffChunks, setDiffGranularity,
-          setDiffSelection, setDiffViewOpen, setPdfFixResult, setRangeRejected, toggleDiffChunk,
+          setDiffSelection, setDiffViewOpen, setPdfFixResult, setRangeRejected, t, toggleDiffChunk,
           warnLog
       })}
         {/* ── UDL Guide Modal — extracted to view_misc_modals_module.js (CDN) ── */}

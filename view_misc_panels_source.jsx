@@ -17,6 +17,15 @@
 
 // ── PdfDiffViewer: PORTAL from AlloFlowANTI.txt L22149-L22512 ──
 function PdfDiffViewer(props) {
+  // `t` is the host's i18n translator. It was missing from this destructure
+  // and from the host's prop-passing block, so 2026-06-06 the live Canvas
+  // crashed with `ReferenceError: t is not defined` (at the first `t(...)`
+  // call) the moment a user opened the diff viewer. Fix is two-sided: add
+  // it here AND in AlloFlowANTI.txt. We also fall back to a passthrough
+  // function so a stale host bundle that still doesn't pass `t` degrades
+  // to labels-as-keys instead of taking down AlloFlowErrorBoundary.
+  let { t } = props;
+  if (typeof t !== 'function') t = (key) => key;
   const {
     _applyTextSurgery, _lastDiffFingerprintRef, addToast, applyingRemarkup,
     callGemini, diffChunks, diffGranularity, diffLibLoading,
