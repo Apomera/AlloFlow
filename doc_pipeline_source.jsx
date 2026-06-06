@@ -11791,7 +11791,13 @@ tr { page-break-inside: avoid; }
             d.Alt = PDFString.of('Link (unlabeled)');
           }
         }
-        if (['H1','H2','H3','H4','H5','H6','P','Caption','BlockQuote'].includes(item.role) && item.text) {
+        if (['H1','H2','H3','H4','H5','H6','P','Caption','BlockQuote','TH','TD'].includes(item.role) && item.text) {
+          // ActualText carries the element's text in the semantic tree. Until the
+          // semantic StructElems are linked to page marked content via MCID (the
+          // larger "unified tag tree" work — see docs), ActualText is how an AT that
+          // walks the structure tree gets the text. Table cells previously got
+          // /Scope and /Headers but NO text, so an orphaned cell announced its
+          // header role with nothing to read — adding ActualText fixes that.
           d.ActualText = PDFString.of(item.text);
         }
         // Stage 6a: /Lang overrides the document-level language for this
