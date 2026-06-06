@@ -4341,7 +4341,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'd8e156a5';
+    var pluginCdnVersion = '2df69b8c';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -23745,7 +23745,7 @@ ${_toolList}
           _applyTextSurgery, _lastDiffFingerprintRef, addToast, applyingRemarkup, callGemini,
           diffChunks, diffGranularity, diffLibLoading, diffLibReady, diffSelection,
           diffViewOpen, pdfFixResult, setApplyingRemarkup, setDiffChunks, setDiffGranularity,
-          setDiffSelection, setDiffViewOpen, setPdfFixResult, setRangeRejected, toggleDiffChunk,
+          setDiffSelection, setDiffViewOpen, setPdfFixResult, setRangeRejected, t, toggleDiffChunk,
           warnLog
       })}
         {/* ── UDL Guide Modal — extracted to view_misc_modals_module.js (CDN) ── */}
