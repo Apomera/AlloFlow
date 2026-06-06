@@ -219,4 +219,68 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
     // vertical line: x1 === x2 (a single x at the benchmark value); horizontal would have x1=padL, x2=w-padR
     expect(html).toMatch(/<line [^>]*x1="([\d.]+)"[^>]*x2="\1"[^>]*stroke="#0e7490"/);
   });
+
+  // ─────────────────────────────────────────────────────────────────────
+  // INGEST (design §5 Pillar 1) — the column-mapper preview panel.
+  // When a file has been parsed (importPreview present), the render
+  // shows a Cancel + Confirm header, a 5-role mapping grid, the first
+  // ≤5 rows from the file, an error line if present, and the L0
+  // disclosure. We pin a structural snapshot AND assert the privacy
+  // guarantee at the render layer (headers can be student-name-shaped
+  // but never enter the AI surface — see check_lumen_floor for the
+  // claim-context assertion; here we just confirm they render in the
+  // preview as plain text inside the mapper panel).
+  // ─────────────────────────────────────────────────────────────────────
+  const SAMPLE_IMPORT_PREVIEW = {
+    fileName: 'reyna_orf_weeks_01_10.csv',
+    fileType: 'csv',
+    delimiter: ',',
+    notes: [],
+    headers: ['week', 'wcpm', 'phase'],
+    rows: [
+      ['1', '42', 'baseline'],
+      ['2', '45', 'baseline'],
+      ['3', '44', 'baseline'],
+      ['4', '48', 'baseline'],
+      ['5', '47', 'baseline'],
+      ['6', '53', 'tier2']
+    ],
+    mapping: { xCol: 0, yCol: 1, phaseCol: 2, y2Col: null, seriesCol: null },
+    error: null
+  };
+
+  it('the import-mapper preview renders headers, first 5 rows, mapping dropdowns, and the L0 disclosure', () => {
+    const html = renderState({ importPreview: SAMPLE_IMPORT_PREVIEW });
+    expect(html).toMatch(/Map columns from reyna_orf_weeks_01_10\.csv/);
+    expect(html).toMatch(/Confirm \+ bind/);
+    expect(html).toMatch(/Cancel/);
+    expect(html).toMatch(/x column \(required\)/);
+    expect(html).toMatch(/y column \(required\)/);
+    expect(html).toMatch(/phase column \(optional\)/);
+    // headers render as <th> text in the preview table
+    expect(html).toMatch(/<th[^>]*>week<\/th>/);
+    expect(html).toMatch(/<th[^>]*>wcpm<\/th>/);
+    expect(html).toMatch(/<th[^>]*>phase<\/th>/);
+    // the L0 disclosure copy must be present and copy-survivable as plain text
+    expect(html).toMatch(/Imported values land as L0/);
+    expect(html).toMatch(/No AI call fires during ingest/);
+  });
+
+  it('the import-mapper surfaces a structured parse error inline (rose-700 text), without throwing', () => {
+    const errPreview = Object.assign({}, SAMPLE_IMPORT_PREVIEW, { rows: [], error: 'File exceeds 2 MB limit (3145728 bytes).' });
+    const html = renderState({ importPreview: errPreview });
+    expect(html).toMatch(/File exceeds 2 MB limit/);
+    expect(html).toMatch(/text-rose-700/);
+  });
+
+  it('the import-mapper preview is structurally byte-stable (snapshot)', () => {
+    expect(renderState({ importPreview: SAMPLE_IMPORT_PREVIEW })).toMatchSnapshot();
+  });
+
+  it('the import button + hidden file input render on the empty state (the only entry point for new files)', () => {
+    const html = renderState({});
+    expect(html).toMatch(/Import file/);
+    expect(html).toMatch(/id="lumen-file-input"/);
+    expect(html).toMatch(/accept="[^"]*\.csv[^"]*\.xlsx/);
+  });
 });

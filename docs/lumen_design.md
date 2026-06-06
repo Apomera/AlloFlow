@@ -777,6 +777,65 @@ assertExportClean(req)                      // ANDs assertDefensible + assertSou
 
 ---
 
+## 17. Ingest — file formats beyond CSV (Phase 1.5 + the deferred fork)
+
+§5 Pillar 1 already commits Lumen to "INGEST is a binding, not a paste." This section spec's the *file-format* surface for the student-data lane (the §16 SOURCED lane has its own ingest spec at §16.4). The 2026-06-04 audit-driven extension shipped Phase 1.5; this section pins what was built, what was deliberately deferred, and the rule that keeps the deferred path from being smuggled in.
+
+### 17.1 What's in (Phase 1.5 — shipped 2026-06-04)
+
+A file-picker button (`⇪ Import file…`) sits next to **Use sample**. It accepts four extensions — `.csv`, `.tsv`, `.txt`, `.xlsx` — and routes each through one of two pure parsers exported from `LumenCore`:
+
+| Type | Parser | Library | Determinism |
+|---|---|---|---|
+| `.csv` / `.tsv` / `.txt` | `parseTextTable(raw, opts?)` | none (~115 lines of in-file RFC-4180) | byte-stable |
+| `.xlsx` (single sheet) | `parseWorkbookSheet(XLSX, buffer, sheetName?)` → `XLSX.utils.sheet_to_csv` → `parseTextTable` | SheetJS via `lazyLoadXLSX()` CDN script tag | byte-stable when SheetJS pinned; wrapper degrades to a structured error if the library never loads |
+
+The text parser autodetects the delimiter (`,` vs `\t` vs `;`) from the first line, strips a UTF-8 BOM, normalizes CRLF→LF, handles RFC-4180 quoted fields with embedded delimiters and doubled-quote escapes, downgrades `hasHeader` when the first row is all numeric, trims wholly-empty trailing rows (Excel artefact), caps at **2 MB / 10 000 rows** with structured errors on overflow.
+
+**Mapping is decoupled from parsing.** `parseTextTable` returns `{ headers, rows, delimiter, notes }`. The user picks column roles (x / y / phase / y2 / series) in a preview panel — the column-mapper — that shows the first ≤5 rows. On **Confirm + bind**, `mapTextTableToObservations(table, mapping)` coerces the chosen columns and returns `{ rows, dropped }`; only `rows` reach `addObservation`. Numeric fields refuse non-numerics; refused rows go to `dropped` with `rowIdx` + a structured reason (`'missing-xy'` or `'non-numeric-xy'`) — **never silently lost**.
+
+### 17.2 The L0 contract — verbatim echo, no AI in the parse path
+
+Every observation that survives mapping is **L0** by §6.1: "verbatim echo of a value the user entered/pasted/imported." The implementation guarantees this with five invariants, all gated in `check_lumen_floor.cjs` group 11:
+
+1. **No AI call in the ingest path.** Parsers, mapper, and the wrapper UI never reach for `callGemini`. The parse → preview → bind sequence is fully deterministic.
+2. **Headers never enter the AI surface.** Headers stay on `d.importPreview` (preview-shape only). They never copy into `comp.variable`, `comp.observations`, or `buildClaimContext`. A header that happens to read `"Reyna_Hernandez_grade4_wcpm"` produces a chart-context JSON with zero PII (golden-master-pinned).
+3. **Kept + dropped = total.** The mapper never invents a row and never silently drops one.
+4. **`y2` and `series` are conditional-spread** (the same single-var byte-identity invariant `addObservation` enforces). A single-var mapping never carries `y2: undefined` or `series: undefined`, so the imported rows are byte-identical to typed ones at the compendium level.
+5. **Round-trip is L1.** Imported observations bind into an existing compendium and `deriveTrendClaim` produces an L1 claim — no level inflation from the ingest channel.
+
+### 17.3 What's deliberately deferred (and the rule that keeps it deferred)
+
+The four file types **not** in Phase 1.5 — `.pdf`, `.docx`, `.png`/`.jpg` (data-sheet photos), and Google Sheets URLs — were deferred. Each carries a different version of the same risk:
+
+| Type | Why deferred | What it would need before ship |
+|---|---|---|
+| **`.pdf` (born-digital, student data)** | A PDF table is not a table — `pdf.js` extracts a text stream, and reconstructing rows/columns requires AI layout inference. That makes the parse step **L2 producing L0 numbers** — exactly the L0-contract violation §6.1 is designed to prevent. | A "Parse Receipt" UI that shows every extracted cell with an edit box BEFORE binding; the L2 parse is marked L2 in the preview, and only the user-edited-and-confirmed values flip to L0 at bind time. Even with that, a sweep-accept of 30 cells where one is wrong is a credible harm in a school-psych progress chart — wait for the **v2 L2 claim-verb detector** (the same one that makes L2 a real boundary). |
+| **`.docx` (Word with embedded tables)** | Mammoth.js can extract a clean HTML/text representation, but real-world progress-monitoring Word docs are narrative ("Reyna read 53 wcpm with 4 errors") not tables. Parsing narrative → numbers is again **L2 over an L0 contract.** | Same Parse Receipt + v2 detector. Until then, encourage the practitioner to paste the numbers into a CSV. |
+| **`.png` / `.jpg` (handwritten data-sheet photo)** | Vision-OCR over a handwritten sheet inherits *all* of the PDF risk plus character-recognition error. It is the maximum-laundering path. | Multi-pass OCR + per-cell confidence + a Parse Receipt that defaults every low-confidence cell to "edit required". Not in scope until a real classroom workflow demands it. |
+| **Google Sheets URL** | The data is fine (it *is* a sheet); the problem is OAuth + cross-origin + a permanent network dependency in a tool that ships zero-cost in Canvas. | If the maintainer wants it, ship a "paste the public CSV-export URL" flow first (which is still text + `parseTextTable`); leave OAuth until v2. |
+
+**The rule:** **a file type may join the ingest menu ONLY when its bind step produces L0 *without* an AI parse on the path from bytes to numbers.** CSV/TSV/TXT meet the rule trivially. XLSX meets it because `sheet_to_csv` is a deterministic transformation written by SheetJS, not a model inference. PDF/DOCX/images do not meet it today — they would require AI structuring, and the audit's "L0 must be verbatim" line is precisely the one that protects the school-psych use case.
+
+### 17.4 Where the §16 SOURCED lane fits
+
+The §16 SOURCED lane (curated norm spine) is a **separate ingest surface** with a separate rule: external benchmark documents *can* feed it via PDF/DOCX extraction (§16.4 "AI-assist-then-verify, Phase 2"), because the SOURCED lane requires a sign-off for every cell and the lane is **structurally never the student's data**. The same PDF that is unsafe for the student-data lane is safe for the SOURCED lane *because the SOURCED lane was designed for it.* This is the cleanest place to land the "PDF support" the practitioner asked about — but as a **§16 Phase-2** unblock, not a §17 student-data extension. (Phase 2 of §16.4 specifies the verify-every-cell pattern; the byte-transcription release-blocker on the H&T spine is the right next milestone.)
+
+### 17.5 Pure-function surface (LumenCore exports)
+
+Wire this into any new ingest UI or test:
+
+- `parseTextTable(raw, opts?)` — text → `{ headers, rows, delimiter, notes, error? }`.
+- `mapTextTableToObservations(table, mapping)` — table + role assignment → `{ rows, dropped, error? }`.
+- `parseWorkbookSheet(XLSX, buffer, sheetName?)` — workbook → `parseTextTable` result with `sheetName` + `sheetNames`.
+- `lazyLoadXLSX(cdnUrl?)` — Promise-based on-demand load; returns `null` in Node.
+- `ingestFileTypeFromName(name)` — `'csv' | 'tsv' | 'txt' | 'xlsx' | null` (the gate the file-picker uses; PDF/DOCX/images return `null` by design).
+- Constants: `INGEST_MAX_BYTES` (2 MB), `INGEST_MAX_ROWS` (10 000), `INGEST_DELIMS` (`[',', '\t', ';']`), `INGEST_FILE_TYPES` (`['csv','tsv','txt','xlsx']`).
+
+Coverage: `tests/lumen_ingest.test.js` (29 unit tests on the pure parsers + the L0/PII contract); `tests/lumen_render_golden.test.js` (4 new snapshots covering the import button + column-mapper preview + parse-error inline surface); `dev-tools/check_lumen_floor.cjs` group 11 (10 ingest invariants, blocking).
+
+---
+
 ## Appendix — provenance of this document
 
 This design was produced over several maintainer conversations and **four multi-agent design workflows** (2026-06-02):

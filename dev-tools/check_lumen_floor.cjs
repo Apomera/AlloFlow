@@ -150,10 +150,78 @@ ok(L.sourcedRenderable({ verified: true, citation: 'c', locator: 'javascript:ale
   ok(aGrp && aGrp.bars.some(function (b) { return b.empty === true; }), 'an empty (phase × series) cell must be flagged empty — no fabricated bar');
 })();
 
+// 11. INGEST (design §5 Pillar 1) — pure-parser invariants. Imports MUST
+//     land as L0 (verbatim echo), MUST refuse to invent values, MUST never
+//     drop a row silently (kept + dropped = total), and the parser caps +
+//     RFC-4180 quoting MUST hold. Headers MUST be tolerated as strings so a
+//     header that looks like a student name never reaches the AI surface
+//     (PII-free buildClaimContext is already proven above; this group
+//     adds the parse-layer assertions).
+(function () {
+  // Pure-parse happy path
+  var t = L.parseTextTable('week,wcpm,phase\n1,42,baseline\n2,45,baseline\n6,53,tier2');
+  ok(t.delimiter === ',' && t.headers.length === 3 && t.rows.length === 3, 'parseTextTable: simple CSV with header parses to 3 rows / 3 headers / comma delim');
+  ok(t.notes.length === 0 && t.error === undefined, 'parseTextTable: clean input emits no notes/error');
+
+  // Delimiter autodetect (TAB and ;)
+  ok(L.parseTextTable('a\tb\n1\t2').delimiter === '\t', 'parseTextTable: autodetects TAB delimiter');
+  ok(L.parseTextTable('a;b\n1;2').delimiter === ';', 'parseTextTable: autodetects semicolon delimiter');
+
+  // hasHeader downgrade on all-numeric first row
+  var nh = L.parseTextTable('1,42\n2,45');
+  ok(nh.headers[0] === 'col1' && nh.rows.length === 2, 'parseTextTable: all-numeric first row downgrades hasHeader');
+
+  // RFC-4180 quoted with embedded delimiter
+  var q = L.parseTextTable('label,value\n"Smith, J",10');
+  ok(q.rows[0][0] === 'Smith, J', 'parseTextTable: handles embedded delimiter inside quoted field');
+
+  // BOM strip + CRLF
+  var b = L.parseTextTable('﻿week,wcpm\r\n1,42');
+  ok(b.headers[0] === 'week' && b.rows[0][1] === '42', 'parseTextTable: strips BOM and normalizes CRLF');
+
+  // Mapping: kept + dropped == total (no silent loss)
+  var m = L.mapTextTableToObservations(L.parseTextTable('x,y\n1,1\n2,bad\n3,3\n,99\n4,4'), { xCol: 0, yCol: 1 });
+  var total = L.parseTextTable('x,y\n1,1\n2,bad\n3,3\n,99\n4,4').rows.length;
+  ok(m.rows.length + m.dropped.length === total, 'mapTextTableToObservations: kept + dropped = total (no silent loss)');
+  ok(m.dropped.every(function (d) { return d.reason === 'missing-xy' || d.reason === 'non-numeric-xy'; }), 'every dropped row carries a structured reason');
+
+  // L0 contract: imported observations are bindable into a compendium and the round-trip claim is L1
+  var compIng = L.makeCompendium('WCPM', 'words/min');
+  m.rows.forEach(function (r) { L.addObservation(compIng, r); });
+  // 3 valid rows → small-N flag, not refuse
+  var cIng = L.deriveTrendClaim(compIng, {});
+  ok(cIng.level === 'L1', 'imported observations derive a deterministic L1 claim (round-trip)');
+
+  // PII safety: a header that LOOKS like a student name does not leak into the AI context
+  var compPii = L.makeCompendium('WCPM', 'words/min');
+  var pt = L.parseTextTable('Reyna_Hernandez_grade4,wcpm,phase\n1,42,baseline\n2,45,baseline\n6,53,tier2\n7,58,tier2\n8,61,tier2\n9,60,tier2\n10,66,tier2\n11,70,tier2');
+  L.mapTextTableToObservations(pt, { xCol: 0, yCol: 1, phaseCol: 2 }).rows.forEach(function (r) { L.addObservation(compPii, r); });
+  var ctxPii = L.buildClaimContext(compPii, L.deriveTrendClaim(compPii, {}));
+  var ctxJson = JSON.stringify(ctxPii);
+  ok(!/reyna|hernandez|student/i.test(ctxJson), 'buildClaimContext from an imported file with a PII-flavored header MUST NOT leak the header text to AI');
+
+  // y2 / series conditional spread (single-var byte-identity is load-bearing)
+  var m2 = L.mapTextTableToObservations(L.parseTextTable('x,y\n1,2'), { xCol: 0, yCol: 1 });
+  ok(!('y2' in m2.rows[0]) && !('series' in m2.rows[0]), 'mapTextTableToObservations: a single-var mapping must NOT carry y2/series keys (byte-identity)');
+
+  // Parser caps + structured error shape
+  var huge = 'a,b\n' + Array(L.INGEST_MAX_BYTES + 1).join('1');
+  ok(L.parseTextTable(huge).error && /MB limit/.test(L.parseTextTable(huge).error), 'parseTextTable: refuses files over INGEST_MAX_BYTES with a structured error');
+
+  // File-type guard
+  ok(L.ingestFileTypeFromName('a.csv') === 'csv' && L.ingestFileTypeFromName('a.xlsx') === 'xlsx' && L.ingestFileTypeFromName('a.pdf') === null, 'ingestFileTypeFromName: csv/xlsx accepted; pdf (unsafe-without-OCR) rejected');
+
+  // Mapping invariant: xCol/yCol are REQUIRED (refuses a partial mapping)
+  ok(L.mapTextTableToObservations(t, { xCol: 0 }).error, 'mapTextTableToObservations: refuses a partial mapping (xCol+yCol both required)');
+
+  // SheetJS wrapper graceful failure
+  ok(L.parseWorkbookSheet(null, new ArrayBuffer(0)).error && /SheetJS/.test(L.parseWorkbookSheet(null, new ArrayBuffer(0)).error), 'parseWorkbookSheet: SheetJS-missing case returns a structured error, never throws');
+})();
+
 if (fails.length) {
   console.error('check_lumen_floor: ' + fails.length + ' FAILED');
   fails.forEach(function (f) { console.error('  x ' + f); });
   process.exit(1);
 }
-if (!QUIET) console.log('check_lumen_floor: OK — Lumen honesty-floor invariants hold (10 groups).');
+if (!QUIET) console.log('check_lumen_floor: OK — Lumen honesty-floor invariants hold (11 groups, incl. ingest).');
 process.exit(0);

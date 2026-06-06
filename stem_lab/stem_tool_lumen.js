@@ -1356,6 +1356,209 @@
     return { ok: true, blocked: false };
   }
 
+  // ══════════════════════════════════════════════════════════════════════
+  // INGEST (design §5 Pillar 1) — pure parsers + column mapper.
+  //
+  // Contract: every observation that survives mapping is L0 — "a verbatim
+  // echo of a value the user entered/pasted/imported" (§6.1). The parser
+  // refuses to invent values, refuses to coerce non-numerics, and labels
+  // every drop so the row-by-row provenance survives. No AI in the parse
+  // path; headers are stored on the preview only and are never sent to
+  // buildClaimContext (which is already PII-free by construction).
+  //
+  // File-format support: .csv/.tsv/.txt deterministic in pure JS;
+  // .xlsx via SheetJS-CDN-on-demand (UI loads it lazily) — the workbook
+  // helper here is a thin wrapper that delegates back to parseTextTable
+  // via sheet_to_csv, so the parse stays deterministic + unit-testable.
+  // ══════════════════════════════════════════════════════════════════════
+
+  var INGEST_MAX_BYTES = 2 * 1024 * 1024; // 2 MB cap on the raw text — bounds parser CPU / memory
+  var INGEST_MAX_ROWS = 10000;            // hard row cap (truncate, never throw)
+  var INGEST_DELIMS = [',', '\t', ';'];
+  var INGEST_FILE_TYPES = ['csv', 'tsv', 'txt', 'xlsx'];
+
+  // Single-pass RFC-4180 parser. Handles quoted fields with embedded
+  // delimiters / newlines / escaped doubled quotes. Returns rows[][].
+  function _parseDelim(text, delim) {
+    var rows = [];
+    var row = [];
+    var cell = '';
+    var inQ = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charAt(i);
+      if (inQ) {
+        if (c === '"') {
+          if (text.charAt(i + 1) === '"') { cell += '"'; i++; continue; }
+          inQ = false; continue;
+        }
+        cell += c; continue;
+      }
+      if (c === '"' && cell === '') { inQ = true; continue; }
+      if (c === delim) { row.push(cell); cell = ''; continue; }
+      if (c === '\n') { row.push(cell); cell = ''; rows.push(row); row = []; continue; }
+      cell += c;
+    }
+    if (cell.length || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+
+  // Parse CSV/TSV/semicolon-delimited text. Strips BOM, normalizes CRLF→LF,
+  // autodetects the delimiter from the most-common counts on the first line
+  // (override via opts.delimiter), and downgrades hasHeader if the first
+  // row is all numeric. Returns { headers, rows, delimiter, notes }; on
+  // overflow or fatal error sets `error`.
+  function parseTextTable(raw, opts) {
+    opts = opts || {};
+    if (raw == null) return { headers: [], rows: [], delimiter: ',', notes: ['empty'] };
+    if (raw.length > INGEST_MAX_BYTES) return { headers: [], rows: [], delimiter: ',', notes: ['too-large'], error: 'File exceeds ' + (INGEST_MAX_BYTES / 1024 / 1024) + ' MB limit (' + raw.length + ' bytes).' };
+    if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
+    raw = raw.replace(/\r\n?/g, '\n');
+    var firstLine = '';
+    for (var li = 0; li < raw.length; li++) {
+      var ch = raw.charAt(li);
+      if (ch === '\n') break;
+      firstLine += ch;
+    }
+    if (!firstLine) return { headers: [], rows: [], delimiter: ',', notes: ['empty'] };
+    var delim = opts.delimiter;
+    if (!delim) {
+      var counts = [0, 0, 0];
+      for (var k = 0; k < firstLine.length; k++) {
+        var ch2 = firstLine.charAt(k);
+        if (ch2 === ',') counts[0]++;
+        else if (ch2 === '\t') counts[1]++;
+        else if (ch2 === ';') counts[2]++;
+      }
+      delim = counts[1] > counts[0] && counts[1] >= counts[2] ? '\t'
+            : counts[2] > counts[0] ? ';' : ',';
+    }
+    var parsed = _parseDelim(raw, delim);
+    if (parsed.length > INGEST_MAX_ROWS) parsed = parsed.slice(0, INGEST_MAX_ROWS);
+    // Trim wholly-empty trailing rows (Excel exports often end with one or two)
+    while (parsed.length && parsed[parsed.length - 1].every(function (c) { return c === ''; })) parsed.pop();
+    if (!parsed.length) return { headers: [], rows: [], delimiter: delim, notes: ['empty'] };
+    var hasHeader = opts.hasHeader !== false;
+    var firstRow = parsed[0];
+    if (hasHeader && firstRow.length && firstRow.every(function (c) { return c !== '' && !isNaN(parseFloat(c)); })) {
+      hasHeader = false;
+    }
+    var headers = hasHeader
+      ? firstRow.map(function (s) { return String(s).trim(); })
+      : firstRow.map(function (_, i) { return 'col' + (i + 1); });
+    var rows = hasHeader ? parsed.slice(1) : parsed;
+    var notes = [];
+    if (parsed.length === INGEST_MAX_ROWS) notes.push('truncated');
+    return { headers: headers, rows: rows, delimiter: delim, notes: notes };
+  }
+
+  // Map a parsed table → observation rows via an explicit column mapping.
+  // mapping = { xCol:int, yCol:int, phaseCol:int|null, y2Col:int|null, seriesCol:int|null }
+  // Numeric fields refuse non-numerics; refused rows are reported in `dropped`
+  // (with row index + reason) so the column-mapper can show a parse-receipt
+  // panel before the user confirms binding. No row is silently dropped.
+  function mapTextTableToObservations(table, mapping) {
+    mapping = mapping || {};
+    var rows = [], dropped = [];
+    if (mapping.xCol == null || mapping.yCol == null) {
+      return { rows: rows, dropped: dropped, error: 'Mapping requires xCol and yCol.' };
+    }
+    if (!table || !Array.isArray(table.rows)) {
+      return { rows: rows, dropped: dropped, error: 'Table has no rows.' };
+    }
+    for (var i = 0; i < table.rows.length; i++) {
+      var r = table.rows[i];
+      var xRaw = r[mapping.xCol], yRaw = r[mapping.yCol];
+      if (xRaw == null || yRaw == null || String(xRaw).trim() === '' || String(yRaw).trim() === '') {
+        dropped.push({ rowIdx: i, reason: 'missing-xy', preview: r.slice(0, 6) });
+        continue;
+      }
+      var x = parseFloat(xRaw), y = parseFloat(yRaw);
+      if (isNaN(x) || isNaN(y)) {
+        dropped.push({ rowIdx: i, reason: 'non-numeric-xy', preview: r.slice(0, 6) });
+        continue;
+      }
+      var row = { x: x, y: y, phase: null };
+      if (mapping.phaseCol != null && mapping.phaseCol >= 0) {
+        var p = r[mapping.phaseCol];
+        row.phase = (p != null && String(p).trim() !== '') ? String(p).trim() : null;
+      }
+      if (mapping.y2Col != null && mapping.y2Col >= 0) {
+        var y2 = parseFloat(r[mapping.y2Col]);
+        if (!isNaN(y2)) row.y2 = y2;
+      }
+      if (mapping.seriesCol != null && mapping.seriesCol >= 0) {
+        var s = r[mapping.seriesCol];
+        if (s != null && String(s).trim() !== '') row.series = String(s).trim();
+      }
+      rows.push(row);
+    }
+    return { rows: rows, dropped: dropped };
+  }
+
+  // XLSX parse — caller provides the SheetJS namespace (window.XLSX). The
+  // wrapper extracts a single sheet's CSV and delegates to parseTextTable,
+  // so the parse path stays deterministic + golden-master-pinnable. If
+  // SheetJS is missing or read fails, returns an empty parsed table with
+  // a structured `error`; never throws into the render path.
+  function parseWorkbookSheet(XLSX, buffer, sheetName) {
+    if (!XLSX || typeof XLSX.read !== 'function' || !XLSX.utils || typeof XLSX.utils.sheet_to_csv !== 'function') {
+      return { headers: [], rows: [], delimiter: ',', notes: ['xlsx-library-missing'], error: 'SheetJS not loaded — call lazyLoadXLSX() first or paste/upload CSV instead.' };
+    }
+    try {
+      var wb = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+      if (!wb || !wb.SheetNames || !wb.SheetNames.length) {
+        return { headers: [], rows: [], delimiter: ',', notes: ['no-sheets'], error: 'Workbook contains no sheets.' };
+      }
+      var name = sheetName || wb.SheetNames[0];
+      if (!wb.Sheets[name]) {
+        return { headers: [], rows: [], delimiter: ',', notes: ['no-sheet'], error: 'Sheet "' + name + '" not found. Available: ' + wb.SheetNames.join(', ') };
+      }
+      var csv = XLSX.utils.sheet_to_csv(wb.Sheets[name]);
+      var parsed = parseTextTable(csv);
+      parsed.sheetName = name;
+      parsed.sheetNames = wb.SheetNames.slice();
+      return parsed;
+    } catch (e) {
+      return { headers: [], rows: [], delimiter: ',', notes: ['parse-error'], error: 'XLSX parse failed: ' + (e && e.message ? e.message : 'unknown') };
+    }
+  }
+
+  // The single-call wire-up the UI uses. Accepts a File-like object
+  // (name, size, slice, arrayBuffer, text) and returns a Promise<parsed
+  // table>. Routes by filename extension; rejects unknown extensions.
+  // SheetJS is loaded lazily from a CDN ONLY when an .xlsx file is the
+  // first one chosen, and only inside a browser — Node tests never
+  // touch the network because they call the pure parsers directly.
+  var _xlsxLoadPromise = null;
+  function lazyLoadXLSX(cdnUrl) {
+    if (typeof window === 'undefined') return Promise.resolve(null);
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    if (_xlsxLoadPromise) return _xlsxLoadPromise;
+    var url = cdnUrl || 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
+    _xlsxLoadPromise = new Promise(function (resolve, reject) {
+      try {
+        var s = document.createElement('script');
+        s.src = url;
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.onload = function () { resolve(window.XLSX || null); };
+        s.onerror = function () { _xlsxLoadPromise = null; reject(new Error('Could not load SheetJS from ' + url)); };
+        document.head.appendChild(s);
+      } catch (e) { _xlsxLoadPromise = null; reject(e); }
+    });
+    return _xlsxLoadPromise;
+  }
+
+  function ingestFileTypeFromName(name) {
+    if (!name || typeof name !== 'string') return null;
+    var lower = name.toLowerCase();
+    if (/\.xlsx$/.test(lower)) return 'xlsx';
+    if (/\.tsv$/.test(lower)) return 'tsv';
+    if (/\.csv$/.test(lower)) return 'csv';
+    if (/\.txt$/.test(lower)) return 'txt';
+    return null;
+  }
+
   var LumenCore = {
     version: 'phase1',
     // numerics
@@ -1388,7 +1591,11 @@
     NORM_SPINE: NORM_SPINE, DIBELS8_ORF: DIBELS8_ORF, selectNorm: selectNorm, validateNormSpine: validateNormSpine,
     makeSourceRef: makeSourceRef, addSourceRef: addSourceRef, sourcedRenderable: sourcedRenderable,
     benchmarkChipText: benchmarkChipText, sourcedFace: sourcedFace, referenceContrastOK: referenceContrastOK,
-    sourcedSignoffHash: sourcedSignoffHash, assertSourcedDefensible: assertSourcedDefensible, assertExportClean: assertExportClean
+    sourcedSignoffHash: sourcedSignoffHash, assertSourcedDefensible: assertSourcedDefensible, assertExportClean: assertExportClean,
+    // Ingest (§5 Pillar 1) — pure parsers + column mapper; L0-only by construction
+    INGEST_MAX_BYTES: INGEST_MAX_BYTES, INGEST_MAX_ROWS: INGEST_MAX_ROWS, INGEST_DELIMS: INGEST_DELIMS, INGEST_FILE_TYPES: INGEST_FILE_TYPES,
+    parseTextTable: parseTextTable, mapTextTableToObservations: mapTextTableToObservations,
+    parseWorkbookSheet: parseWorkbookSheet, lazyLoadXLSX: lazyLoadXLSX, ingestFileTypeFromName: ingestFileTypeFromName
   };
 
   // Dual export: Node/vitest (CommonJS) AND browser/Canvas (window global).
@@ -1621,8 +1828,126 @@
               onClick: function () { upd('observations', PAIRED_SAMPLE.slice()); announce('Loaded the paired sample: 10 probes with WCPM and comprehension.'); } }, 'Use paired sample') : null),
             // A MULTI-SERIES sample (one student, two conditions of one measure) only in the multi-line view.
             (chartType === 'multiSeriesLine' ? h('button', { key: 'multi', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
-              onClick: function () { upd('observations', MULTI_SAMPLE.slice()); announce('Loaded the multi-series sample: cold vs practiced WCPM across 8 weeks.'); } }, 'Use multi-series sample') : null)
+              onClick: function () { upd('observations', MULTI_SAMPLE.slice()); announce('Loaded the multi-series sample: cold vs practiced WCPM across 8 weeks.'); } }, 'Use multi-series sample') : null),
+            // ═══════════════════════════════════════════════════════════════
+            // INGEST (§5 Pillar 1) — file picker for CSV/TSV/TXT/XLSX.
+            //
+            // A hidden file input triggered by a labeled button. Files parse
+            // through the pure parseTextTable / parseWorkbookSheet path. The
+            // result is stashed at d.importPreview = { headers, rows, mapping,
+            // fileName, fileType, error } and the column-mapper panel renders
+            // BELOW (out of this flex row). Until the user confirms the
+            // mapping, NOTHING is bound into the observations array — this
+            // preserves the "INGEST is a binding" pillar: a glance + a
+            // confirm, never a silent paste.
+            // ═══════════════════════════════════════════════════════════════
+            h('label', {
+              key: 'imp', htmlFor: 'lumen-file-input',
+              className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer',
+              title: 'Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.'
+            }, '⇪ Import file…'),
+            h('input', {
+              key: 'impInput', id: 'lumen-file-input', type: 'file', accept: '.csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 },
+              onChange: function (ev) {
+                var file = ev.target && ev.target.files && ev.target.files[0];
+                if (!file) return;
+                var fileType = ingestFileTypeFromName(file.name);
+                if (!fileType) {
+                  upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: file.name, fileType: null, error: 'Unsupported file type. Supported: ' + INGEST_FILE_TYPES.join(', ') });
+                  announce('File type not supported: ' + file.name);
+                  ev.target.value = ''; return;
+                }
+                if (file.size > INGEST_MAX_BYTES) {
+                  upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: file.name, fileType: fileType, error: 'File too large (' + (file.size / 1024 / 1024).toFixed(2) + ' MB > 2 MB limit). Split into smaller files.' });
+                  announce('File too large.');
+                  ev.target.value = ''; return;
+                }
+                function landTable(parsed) {
+                  var mapping = { xCol: 0, yCol: (parsed.headers.length > 1 ? 1 : 0), phaseCol: null, y2Col: null, seriesCol: null };
+                  upd('importPreview', {
+                    headers: parsed.headers, rows: parsed.rows, delimiter: parsed.delimiter,
+                    notes: parsed.notes || [], sheetName: parsed.sheetName || null, sheetNames: parsed.sheetNames || null,
+                    mapping: mapping, fileName: file.name, fileType: fileType, error: parsed.error || null
+                  });
+                  announce('Loaded ' + file.name + ': ' + parsed.headers.length + ' columns, ' + parsed.rows.length + ' rows. Map the columns and confirm to bind.');
+                }
+                if (fileType === 'xlsx') {
+                  lazyLoadXLSX().then(function (XLSX) {
+                    file.arrayBuffer().then(function (buf) {
+                      landTable(parseWorkbookSheet(XLSX, buf));
+                    });
+                  }).catch(function (err) {
+                    upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: file.name, fileType: fileType, error: 'Could not load the Excel parser library. Try saving the sheet as CSV instead. (' + (err && err.message ? err.message : 'unknown') + ')' });
+                    announce('Excel parser unavailable; try CSV.');
+                  });
+                } else {
+                  file.text().then(function (text) { landTable(parseTextTable(text)); });
+                }
+                // Reset the input so picking the same file twice still fires onChange.
+                ev.target.value = '';
+              }
+            })
           ));
+
+          // ═══════════════════════════════════════════════════════════════
+          // Column-mapper preview panel — renders when an import is staged.
+          // Shows the file name, file type, error (if any), first ≤5 rows,
+          // and dropdowns for x/y/phase/y2/series column roles. Confirm
+          // BINDS the mapped rows into observations (atomic via concat);
+          // Cancel discards the preview.
+          // ═══════════════════════════════════════════════════════════════
+          if (d.importPreview) {
+            var ip = d.importPreview;
+            var imp = ip.mapping || {};
+            var colOpts = (ip.headers || []).map(function (hd, i) { return h('option', { key: 'h' + i, value: String(i) }, (hd || ('col' + (i + 1))) + ' (col ' + (i + 1) + ')'); });
+            function setMap(k, v) {
+              var next = Object.assign({}, ip, { mapping: Object.assign({}, imp) });
+              next.mapping[k] = (v === '' || v == null) ? null : parseInt(v, 10);
+              upd('importPreview', next);
+            }
+            var previewRows = (ip.rows || []).slice(0, 5);
+            var dropDownClass = 'w-40 px-2 py-1 border border-slate-300 rounded text-xs';
+            kids.push(h('div', { key: 'mapper', className: 'mt-3 p-3 rounded border border-amber-300 bg-amber-50/60' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', { className: 'text-sm font-semibold text-slate-700' }, '⇪ Map columns from ' + (ip.fileName || 'imported file') + (ip.fileType ? (' · ' + ip.fileType + (ip.delimiter && ip.fileType !== 'xlsx' ? (' · delim ' + (ip.delimiter === '\t' ? 'TAB' : '"' + ip.delimiter + '"')) : '')) : '')),
+                h('div', { className: 'flex gap-2' },
+                  h('button', { className: 'px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: function () { upd('importPreview', null); announce('Import cancelled.'); } }, 'Cancel'),
+                  h('button', { className: 'px-3 py-1 text-xs font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () {
+                    var mapped = mapTextTableToObservations({ headers: ip.headers, rows: ip.rows }, imp);
+                    if (mapped.error) { announce('Import error: ' + mapped.error); return; }
+                    if (!mapped.rows.length) { announce('Import bound 0 rows (every row missing or non-numeric in the mapped columns).'); return; }
+                    var next = obs.concat(mapped.rows);
+                    upd('observations', next);
+                    upd('importPreview', null);
+                    announce('Bound ' + mapped.rows.length + ' observations from ' + (ip.fileName || 'file') + (mapped.dropped.length ? ('; ' + mapped.dropped.length + ' row(s) dropped (missing or non-numeric).') : '.') + ' Total now ' + next.length + '.');
+                  } }, 'Confirm + bind'))),
+              ip.error ? h('p', { className: 'mt-2 text-xs text-rose-700' }, ip.error) : null,
+              (ip.notes && ip.notes.indexOf('truncated') !== -1) ? h('p', { className: 'mt-1 text-xs text-amber-700' }, 'File was truncated at ' + INGEST_MAX_ROWS + ' rows.') : null,
+              h('div', { className: 'mt-2 grid grid-cols-2 md:grid-cols-5 gap-2' },
+                h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'x column (required)',
+                  h('select', { className: dropDownClass, value: imp.xCol == null ? '' : String(imp.xCol), onChange: function (ev) { setMap('xCol', ev.target.value); } }, colOpts)),
+                h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'y column (required)',
+                  h('select', { className: dropDownClass, value: imp.yCol == null ? '' : String(imp.yCol), onChange: function (ev) { setMap('yCol', ev.target.value); } }, colOpts)),
+                h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'phase column (optional)',
+                  h('select', { className: dropDownClass, value: imp.phaseCol == null ? '' : String(imp.phaseCol), onChange: function (ev) { setMap('phaseCol', ev.target.value); } },
+                    [h('option', { key: 'none', value: '' }, '— none —')].concat(colOpts))),
+                (chartType === 'scatter' ? h('label', { key: 'y2map', className: 'text-xs text-slate-600 flex flex-col' }, 'y2 column (scatter only)',
+                  h('select', { className: dropDownClass, value: imp.y2Col == null ? '' : String(imp.y2Col), onChange: function (ev) { setMap('y2Col', ev.target.value); } },
+                    [h('option', { key: 'none', value: '' }, '— none —')].concat(colOpts))) : null),
+                (chartType === 'multiSeriesLine' ? h('label', { key: 'sermap', className: 'text-xs text-slate-600 flex flex-col' }, 'series column (multi-line only)',
+                  h('select', { className: dropDownClass, value: imp.seriesCol == null ? '' : String(imp.seriesCol), onChange: function (ev) { setMap('seriesCol', ev.target.value); } },
+                    [h('option', { key: 'none', value: '' }, '— none —')].concat(colOpts))) : null)),
+              h('div', { className: 'mt-3' },
+                h('div', { className: 'text-[11px] font-semibold text-slate-600 mb-1' }, 'First ' + previewRows.length + ' row(s) (of ' + (ip.rows || []).length + ') — headers NEVER reach the AI surface:'),
+                h('div', { className: 'overflow-x-auto' },
+                  h('table', { className: 'min-w-full text-[11px]' },
+                    h('thead', null, h('tr', null, (ip.headers || []).map(function (hd, i) { return h('th', { key: 'th' + i, className: 'px-2 py-1 text-left bg-slate-100 border border-slate-200 font-semibold text-slate-700' }, hd || ('col' + (i + 1))); }))),
+                    h('tbody', null, previewRows.map(function (r, ri) {
+                      return h('tr', { key: 'tr' + ri }, r.map(function (c, ci) { return h('td', { key: 'td' + ri + '-' + ci, className: 'px-2 py-1 border border-slate-200 text-slate-700' }, c == null ? '' : String(c)); }));
+                    }))))),
+              h('p', { className: 'mt-2 text-[10px] italic text-slate-500' }, 'Imported values land as L0 (verbatim echoes). Rows missing or non-numeric in the mapped x/y are reported on bind, never silently dropped. No AI call fires during ingest.')));
+          }
 
           // Multi-series: ONE provenance-bound sentence PER series (refused ones included — anti-cherry-pick).
           // The colour dot beside each is the legend (maps the line colour to its series label).
