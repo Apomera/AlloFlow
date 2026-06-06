@@ -1130,7 +1130,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                                 warnLog(`⚠️ Rate limited on "${item.term}", will retry...`);
                                 continue;
                             }
-                            console.error(`[Imagen] ❌ Image failed for "${item.term}" after ${attempt + 1} attempts:`, e.message);
+                            console.warn(`[Imagen] ⚠️ Image failed for "${item.term}" after ${attempt + 1} attempts (skipped, content continues without it):`, e.message);
                             return item;
                         }
                     }
