@@ -99,6 +99,12 @@ const checks = [
     description: 'discrepancyReport must NEVER appear as a property key in any object literal in report_writer_module.js (psycheck verifier state — render-only)',
   },
   {
+    name: 'STEM Lab — .find().field deref gate',
+    cmd: ['node', 'dev-tools/check_find_deref.cjs', '--quiet'],
+    description: '`ARR.find(arrow).field` immediate-deref chains in stem_lab/ crash tools on data drift (renamed id, i18n filter, stale state). Informational; promote to blocking once the audit-named tools are converted to window.StemLab.findById.',
+    informational: true,
+  },
+  {
     name: 'Keyless list children (CDN modules + STEM tools)',
     cmd: ['node', 'dev-tools/check_keyless_map.cjs', '--quiet'],
     description: 'React "unique key" warning class: elements from .map()/array children without a key (the StemPluginBridge warning)',

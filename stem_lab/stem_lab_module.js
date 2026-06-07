@@ -198,6 +198,28 @@
           canvas._dpr = dpr;
           canvas._logicalW = logicalW;
           canvas._logicalH = logicalH;
+        },
+        // ── findById: null-safe lookup over an array of {id, ...} records.
+        // Replaces the corpus-wide `.find(x => x.id === id).field` chain that
+        // crashes the tool when an id is renamed, i18n-filtered, or stale
+        // in persisted state. The recommended replacement pattern is:
+        //
+        //   var rec = window.StemLab.findById(SCENARIOS, id);
+        //   var name = rec ? rec.name : 'Unknown';
+        //   // OR with optional chaining at the call site:
+        //   var name = window.StemLab.findById(SCENARIOS, id)?.name ?? 'Unknown';
+        //
+        // The check_find_deref.cjs gate flags new `.find(...).field` writes;
+        // existing instances are converted opportunistically as authors touch
+        // each tool. STEM Lab audit (2026-06-07) found ~10 tools with this
+        // pattern; autorepair / learning_lab / rocks were the HIGH-severity
+        // first-pass conversions.
+        findById: function(arr, id) {
+          if (!Array.isArray(arr) || id === null || id === undefined) return null;
+          for (var i = 0; i < arr.length; i++) {
+            if (arr[i] && arr[i].id === id) return arr[i];
+          }
+          return null;
         }
       };
     }

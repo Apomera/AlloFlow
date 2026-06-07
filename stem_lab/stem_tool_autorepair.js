@@ -5692,7 +5692,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         function pickLab(id) {
           updMulti({ labId: id, labStep: 0, labAnswers: {} });
-          arAnnounce('Starting scenario: ' + LAB_SCENARIOS.find(function(s) { return s.id === id; }).name);
+          // findById is null-safe (window.StemLab.findById); falls back to
+          // the raw id if the scenario was renamed or stripped, instead of
+          // crashing on `.find(...).name` against undefined.
+          var picked = window.StemLab && window.StemLab.findById ? window.StemLab.findById(LAB_SCENARIOS, id) : null;
+          arAnnounce('Starting scenario: ' + (picked ? picked.name : id));
         }
         function reset() {
           updMulti({ labId: null, labStep: 0, labAnswers: {} });

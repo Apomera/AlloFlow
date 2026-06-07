@@ -1314,8 +1314,31 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                 : React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
                     (d.bonds || []).map((b, i) => d.atoms[b[0]] && d.atoms[b[1]] ? React.createElement("line", { key: 'b' + i, x1: d.atoms[b[0]].x, y1: d.atoms[b[0]].y, x2: d.atoms[b[1]].x, y2: d.atoms[b[1]].y, stroke: "#94a3b8", strokeWidth: 4, strokeLinecap: "round" }) : null),
                     (d.atoms || []).map((a, i) => React.createElement("g", { key: i },
-                      React.createElement("circle", { cx: a.x, cy: a.y, r: 24, fill: a.color || '#94a3b8', stroke: '#fff', strokeWidth: 3, style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' }, onMouseDown: e => { e.preventDefault(); upd('dragging', i); } }),
-                      React.createElement("text", { x: a.x, y: a.y + 5, textAnchor: "middle", fill: "white", style: { fontSize: '14px', fontWeight: 'bold' } }, a.el)
+                      // A11y: role + tabIndex + aria-label + onKeyDown so keyboard /
+                      // switch users (and Chromebook GPU-blacklist users on the
+                      // WebGL-off 2D fallback) can move atoms with arrow keys.
+                      // Drag still works for pointer users.
+                      React.createElement("circle", {
+                        cx: a.x, cy: a.y, r: 24,
+                        fill: a.color || '#94a3b8', stroke: '#fff', strokeWidth: 3,
+                        style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' },
+                        role: 'button',
+                        tabIndex: 0,
+                        'aria-label': (a.el || 'atom') + ' at x ' + Math.round(a.x) + ', y ' + Math.round(a.y) + '. Arrow keys to move.',
+                        onMouseDown: e => { e.preventDefault(); upd('dragging', i); },
+                        onKeyDown: e => {
+                          var dx = 0, dy = 0;
+                          if (e.key === 'ArrowLeft') dx = -10;
+                          else if (e.key === 'ArrowRight') dx = 10;
+                          else if (e.key === 'ArrowUp') dy = -10;
+                          else if (e.key === 'ArrowDown') dy = 10;
+                          else return;
+                          e.preventDefault();
+                          var na = d.atoms.map((at, ai) => ai === i ? { ...at, x: Math.round(at.x + dx), y: Math.round(at.y + dy) } : at);
+                          upd('atoms', na);
+                        }
+                      }),
+                      React.createElement("text", { x: a.x, y: a.y + 5, textAnchor: "middle", fill: "white", style: { fontSize: '14px', fontWeight: 'bold', pointerEvents: 'none' } }, a.el)
                     ))
                   ),
 
@@ -1620,11 +1643,58 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     // Atom circle
 
+                    // A11y: role + tabIndex + aria-label + onKeyDown so keyboard /
+                    // switch users can move atoms (arrow keys) and create bonds
+                    // (Enter / Space, same logic as onMouseDown below). The 2D
+                    // build view is the WebGL-off fallback used on Chromebook
+                    // GPU-blacklists, so keyboard access here is load-bearing for
+                    // SpEd assistive-tech users.
                     React.createElement("circle", {
 
                       cx: a.x, cy: a.y, r: 22, fill: a.color || '#94a3b8', stroke: isSelected ? '#3b82f6' : '#fff', strokeWidth: isSelected ? 3 : 2.5,
 
                       style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' },
+
+                      role: 'button',
+                      tabIndex: 0,
+                      'aria-label': (a.el || 'atom') + ' at x ' + Math.round(a.x) + ', y ' + Math.round(a.y) +
+                        '. Arrow keys to move; Enter or Space to ' +
+                        ((d.buildBondMode || (d.buildBondFrom !== null && d.buildBondFrom !== undefined)) ? 'select for bond' : 'pick up'),
+                      'aria-pressed': isSelected ? 'true' : 'false',
+                      onKeyDown: e => {
+                        var dx = 0, dy = 0;
+                        if (e.key === 'ArrowLeft') dx = -10;
+                        else if (e.key === 'ArrowRight') dx = 10;
+                        else if (e.key === 'ArrowUp') dy = -10;
+                        else if (e.key === 'ArrowDown') dy = 10;
+                        else if (e.key === 'Enter' || e.key === ' ') {
+                          // Mirror the onMouseDown bond-mode + select behavior below.
+                          e.preventDefault();
+                          if (d.buildBondMode || (d.buildBondFrom !== null && d.buildBondFrom !== undefined)) {
+                            if (d.buildBondFrom === null || d.buildBondFrom === undefined) {
+                              upd('buildBondFrom', i);
+                            } else if (d.buildBondFrom === i) {
+                              upd('buildBondFrom', null);
+                            } else {
+                              const existingBonds = d.buildBonds || [];
+                              const already = existingBonds.find(b => (b[0] === d.buildBondFrom && b[1] === i) || (b[0] === i && b[1] === d.buildBondFrom));
+                              if (!already) {
+                                upd('buildBonds', [...existingBonds, [d.buildBondFrom, i, 1]]);
+                                if (typeof announceToSR === 'function') announceToSR("Connected atom " + d.buildAtoms[d.buildBondFrom].el + " to " + a.el);
+                              }
+                              upd('buildBondFrom', null);
+                              upd('buildCheckResult', null);
+                            }
+                          }
+                          return;
+                        } else {
+                          return;
+                        }
+                        e.preventDefault();
+                        var W2 = W, H2 = H;
+                        var na = (d.buildAtoms || []).map((at, ai) => ai === i ? { ...at, x: Math.max(20, Math.min(W2 - 20, Math.round(at.x + dx))), y: Math.max(20, Math.min(H2 - 20, Math.round(at.y + dy))) } : at);
+                        upd('buildAtoms', na);
+                      },
 
                       onMouseDown: e => {
 

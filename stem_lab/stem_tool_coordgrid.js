@@ -149,6 +149,7 @@ window.StemLab = window.StemLab || {
       var bsShots = Array.isArray(_cg.bsShots) ? _cg.bsShots : [];
       var bsWon = _cg.bsWon || false;
       var bsLastResult = _cg.bsLastResult || '';
+      var bsInput = _cg.bsInput || '';
       var worldCity = _cg.worldCity || 'portland_me';
       var worldClickLat = _cg.worldClickLat != null ? _cg.worldClickLat : null;
       var worldClickLon = _cg.worldClickLon != null ? _cg.worldClickLon : null;
@@ -1371,13 +1372,29 @@ window.StemLab = window.StemLab || {
                   }
                 }
               }
+              // A11y: keyboard fallback so switch/keyboard users can fire on a cell.
+              // role='button' + tabIndex=0 gets the cell into the Tab order; Enter or
+              // Space invokes fireAt. The "Type a square" input below the grid is the
+              // primary keyboard path; this is the secondary spatial-Tab path.
+              var bsStateMsg = state === 'hit' ? 'hit' : (state === 'miss' ? 'miss' : 'unshot');
+              var bsAriaLabel = notationFor(cx, ry) + ', ' + bsStateMsg;
               squares.push(h('rect', {
                 key: 'bs-' + cx + '-' + ry,
                 x: cx * cell, y: ry * cell, width: cell, height: cell,
                 fill: fillColor,
                 stroke: '#0c4a6e', strokeWidth: 0.5,
                 style: { cursor: state || won ? 'default' : 'crosshair', transition: 'fill 0.18s ease' },
-                onClick: function(x, y) { return function() { if (!won) fireAt(x, y); }; }(cx, ry)
+                role: 'button',
+                tabIndex: (state || won) ? -1 : 0,
+                'aria-label': bsAriaLabel,
+                'aria-disabled': (state || won) ? 'true' : 'false',
+                onClick: function(x, y) { return function() { if (!won) fireAt(x, y); }; }(cx, ry),
+                onKeyDown: function(x, y) { return function(ev) {
+                  if (ev.key === 'Enter' || ev.key === ' ') {
+                    ev.preventDefault();
+                    if (!won) fireAt(x, y);
+                  }
+                }; }(cx, ry)
               }));
               if (state === 'hit') {
                 squares.push(h('text', { key: 'bst-' + cx + '-' + ry,
@@ -1431,6 +1448,49 @@ window.StemLab = window.StemLab || {
                 style: { background: 'transparent' }, role: 'img',
                 'aria-label': 'Battleship grid, ' + totalShots + ' shots fired, ' + totalHits + ' hits, ' + totalSunk + ' of 4 ships sunk'
               }, squares, labels, splashEl)
+            ),
+            // A11y: keyboard fallback for switch/screen-reader users. Mirror of the
+            // chess-tab "Type a square" pattern at line ~1165 — type like "B5",
+            // press Enter to fire. Required because the SVG <rect> cells alone
+            // are a WCAG 2.1.1 failure for non-pointer users even with the per-cell
+            // tabIndex/onKeyDown added above (which is the secondary spatial path).
+            h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200 flex flex-wrap items-center gap-3' },
+              h('span', { className: 'text-xs font-bold text-emerald-800' }, 'Type a square to fire:'),
+              h('input', { type: 'text', value: bsInput, maxLength: 3,
+                onChange: function(e) { updCG({ bsInput: e.target.value.toUpperCase() }); },
+                onKeyDown: function(e) {
+                  if (e.key === 'Enter') {
+                    var v = (bsInput || '').toUpperCase().trim();
+                    if (v.length < 2 || v.length > 3) {
+                      addToast('Enter like "B5" — letter A-J then number 1-10.', 'warning');
+                      return;
+                    }
+                    var letterIdx = letters.indexOf(v.charAt(0));
+                    var rowNum = parseInt(v.substring(1), 10);
+                    if (letterIdx < 0 || isNaN(rowNum) || rowNum < 1 || rowNum > 10) {
+                      addToast('Enter like "B5" — letter A-J then number 1-10.', 'warning');
+                      return;
+                    }
+                    if (won) {
+                      addToast('Game over — start a new game to fire again.', 'info');
+                      return;
+                    }
+                    var targetCx = letterIdx;
+                    var targetCy = rowNum - 1;
+                    var alreadyHit = hitMap[targetCx + '_' + targetCy];
+                    if (alreadyHit) {
+                      addToast('You already fired at ' + v + '. Pick a different square.', 'warning');
+                      return;
+                    }
+                    fireAt(targetCx, targetCy);
+                    updCG({ bsInput: '' });
+                  }
+                },
+                placeholder: 'B5',
+                'aria-label': 'Type a Battleship coordinate like B5, then press Enter to fire',
+                className: 'w-20 px-2 py-1 border border-emerald-400 rounded text-center font-mono uppercase'
+              }),
+              h('span', { className: 'text-[11px] text-emerald-700' }, 'or Tab through cells and press Enter')
             ),
             h('div', { className: 'grid grid-cols-4 gap-2' },
               h('div', { className: 'bg-emerald-50 rounded-lg p-2 border border-emerald-200 text-center' },

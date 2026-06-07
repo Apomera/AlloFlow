@@ -186,11 +186,15 @@ const d = labToolData.rocks || {};
               if (typeof addToast === 'function') {
                 for (var j = 0; j < newlyCompleted.length; j++) {
                   var finishedId = newlyCompleted[j];
-                  var name = ROCKS_CHALLENGES.find(function(c) { return c.id === finishedId; }).name;
+                  // findById is null-safe; if the challenge id was renamed,
+                  // fall back to a generic message instead of crashing.
+                  var fc = window.StemLab && window.StemLab.findById ? window.StemLab.findById(ROCKS_CHALLENGES, finishedId) : null;
+                  var name = fc ? fc.name : finishedId;
+                  var rp = fc ? fc.rp : 0;
                   addToast({
                     type: 'success',
                     title: 'Challenge Complete!',
-                    message: 'Unlocked: ' + name + ' (+' + ROCKS_CHALLENGES.find(function(c) { return c.id === finishedId; }).rp + ' RP)'
+                    message: 'Unlocked: ' + name + ' (+' + rp + ' RP)'
                   });
                 }
               }
@@ -4513,6 +4517,13 @@ const d = labToolData.rockCycle || {};
 
                   var isActive = d.selectedProcess && d.selectedProcess.label === proc.label && d.selectedProcess.from === proc.from;
 
+                  // findById is null-safe \u2014 chained `.find(...).label` was the
+                  // single-click-crashes-the-panel pattern the 2026-06-07 audit
+                  // flagged. Fallback to the raw id keeps the panel renderable.
+                  var fromRock = window.StemLab && window.StemLab.findById ? window.StemLab.findById(ROCKS, proc.from) : null;
+                  var toRock = window.StemLab && window.StemLab.findById ? window.StemLab.findById(ROCKS, proc.to) : null;
+                  var processFromTo = (fromRock ? fromRock.label : proc.from) + " \u2192 " + (toRock ? toRock.label : proc.to);
+
                   return React.createElement("button", { key: i, onClick: function () { upd('selectedProcess', proc); },
 
                     className: "p-2 rounded-lg text-left border transition-all " + (isActive ? 'bg-orange-100 border-orange-400 shadow-md' : 'bg-slate-50 border-slate-200 hover:bg-orange-50')
@@ -4521,7 +4532,7 @@ const d = labToolData.rockCycle || {};
 
                     React.createElement("p", { className: "text-sm font-bold " + (isActive ? 'text-orange-700' : 'text-slate-600') }, proc.emoji + " " + proc.label),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600" }, ROCKS.find(function (r) { return r.id === proc.from; }).label + " \u2192 " + ROCKS.find(function (r) { return r.id === proc.to; }).label)
+                    React.createElement("p", { className: "text-[11px] text-slate-600" }, processFromTo)
 
                   );
 
@@ -4648,7 +4659,11 @@ const d = labToolData.rockCycle || {};
                             Object.keys(challengeChecks).forEach(function(cid) {
                               if (completed.indexOf(cid) === -1 && challengeChecks[cid]) {
                                 newlyCompleted.push(cid);
-                                pointsEarned += ROCKS_CHALLENGES.find(function(c) { return c.id === cid; }).rp;
+                                // findById is null-safe — challenge id drift no
+                                // longer crashes the unlock event; renames just
+                                // silently skip the rp award for that challenge.
+                                var ch = window.StemLab && window.StemLab.findById ? window.StemLab.findById(ROCKS_CHALLENGES, cid) : null;
+                                pointsEarned += ch ? (ch.rp || 0) : 0;
                               }
                             });
 
@@ -4879,7 +4894,11 @@ const d = labToolData.rockCycle || {};
                             Object.keys(challengeChecks).forEach(function(cid) {
                               if (completed.indexOf(cid) === -1 && challengeChecks[cid]) {
                                 newlyCompleted.push(cid);
-                                pointsEarned += ROCKS_CHALLENGES.find(function(c) { return c.id === cid; }).rp;
+                                // findById is null-safe — challenge id drift no
+                                // longer crashes the unlock event; renames just
+                                // silently skip the rp award for that challenge.
+                                var ch = window.StemLab && window.StemLab.findById ? window.StemLab.findById(ROCKS_CHALLENGES, cid) : null;
+                                pointsEarned += ch ? (ch.rp || 0) : 0;
                               }
                             });
 
