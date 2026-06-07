@@ -283,4 +283,32 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
     expect(html).toMatch(/id="lumen-file-input"/);
     expect(html).toMatch(/accept="[^"]*\.csv[^"]*\.xlsx/);
   });
+
+  // ─────────────────────────────────────────────────────────────────────
+  // SYNTHETIC practice data (the "generate sample" feature): a synthetic
+  // dataset must SELF-DECLARE everywhere — a persistent banner, an in-SVG
+  // watermark (so a chart crop carries it), and SYN-burned marks — while
+  // a real dataset stays byte-identical (no banner, no watermark).
+  // ─────────────────────────────────────────────────────────────────────
+  it('synthetic practice data — persistent banner + in-SVG watermark + SYN marks (snapshot)', () => {
+    const synth = REYNA.map((r) => ({ ...r, synthetic: true }));
+    const html = renderState({ observations: synth, ceiling: 'L1', audience: 'working', chartType: 'bar' });
+    expect(html).toMatch(/Synthetic practice data — NOT a real student/); // the persistent banner
+    expect(html).toMatch(/PRACTICE DATA/);                                 // the in-SVG watermark (uppercase)
+    expect(html).toMatch(/#6d28d9/);                                       // the reserved synthetic violet
+    expect(html).toMatchSnapshot();
+  });
+
+  it('the generate-practice control + scenario picker render in every state', () => {
+    const html = renderState({});
+    expect(html).toMatch(/Generate practice data/);
+    expect(html).toMatch(/Practice-data scenario/);
+    ['improving', 'flat', 'variable', 'declining', 'responsive'].forEach((s) => expect(html).toMatch(new RegExp('value="' + s + '"')));
+  });
+
+  it('real data shows NO synthetic banner or watermark (byte-identity guard)', () => {
+    const html = renderState({ observations: REYNA, chartType: 'bar' });
+    expect(html).not.toMatch(/Synthetic practice data — NOT a real student/);
+    expect(html).not.toMatch(/PRACTICE DATA/); // uppercase watermark absent (the lowercase button label is fine)
+  });
 });

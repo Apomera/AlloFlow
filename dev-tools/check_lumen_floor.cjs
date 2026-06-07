@@ -275,10 +275,53 @@ ok(L.sourcedRenderable({ verified: true, citation: 'c', locator: 'javascript:ale
   ok(L.benchDocTypeFromName('a.pdf') === 'pdf' && L.benchDocTypeFromName('a.docx') === 'docx' && L.benchDocTypeFromName('a.png') === null, 'benchDocTypeFromName: pdf+docx accepted; png (handwritten OCR risk) rejected');
 })();
 
+// ── GROUP 13: synthetic PRACTICE data is ALWAYS flagged + ALWAYS export-guarded ──
+// The "generate sample" feature must never let fabricated data pose as observed
+// (L0) data or reach a defensible IEP export.
+(function () {
+  function compFrom(rs) { var c = L.makeCompendium('WCPM', 'words/min'); rs.forEach(function (r) { L.addObservation(c, r); }); return c; }
+  var rows = L.generatePracticeData({ scenario: 'improving', n: 10, seed: 'floor' });
+  ok(rows.length === 10 && rows.every(function (r) { return r.synthetic === true; }), 'SYN: every generated row carries synthetic:true');
+  ok(JSON.stringify(L.generatePracticeData({ scenario: 'improving', n: 10, seed: 'floor' })) === JSON.stringify(rows), 'SYN: generator is deterministic for a fixed seed');
+  ok(JSON.stringify(L.generatePracticeData({ scenario: 'improving', n: 10, seed: 'floor2' })) !== JSON.stringify(rows), 'SYN: a different seed re-rolls');
+  ok(L.generatePracticeData().length >= 3, 'SYN: default args never return below the n<3 refuse floor');
+  ok(L.generatePracticeData({ n: 1 }).length === 3 && L.generatePracticeData({ n: 999 }).length === 60, 'SYN: n clamps to [3,60]');
+
+  var synC = compFrom(rows);
+  var realC = compFrom([{ x: 1, y: 42, phase: 'b' }, { x: 2, y: 45, phase: 'b' }, { x: 3, y: 50, phase: 'b' }]);
+  ok(L.compHasSynthetic(synC) === true, 'SYN: compHasSynthetic true for generated data');
+  ok(L.compHasSynthetic(compFrom([{ x: 1, y: 2 }, { x: 2, y: 3, synthetic: true }])) === true, 'SYN: a single fabricated row taints the set (fail-safe)');
+  ok(L.compHasSynthetic(realC) === false, 'SYN: all-real data is not synthetic');
+
+  ok(L.LEVELS.indexOf('SYN') === -1, 'SYN: not in LEVELS (the AI dial can never reach it)');
+  ok((function () { try { return L.encode('SYN').srWord === 'Synthetic (practice)'; } catch (e) { return false; } })(), 'SYN: encode(SYN) resolves to the practice word');
+
+  var synClaim = L.deriveTrendClaim(synC, {});
+  var synBars = L.barGeometry(synC.observations, synClaim).bars.map(function (m) { return m.level; });
+  var realBars = L.barGeometry(realC.observations, L.deriveTrendClaim(realC, {})).bars.map(function (m) { return m.level; });
+  ok(synBars.length > 0 && synBars.every(function (x) { return x === 'SYN'; }), 'SYN: synthetic marks burn SYN');
+  ok(realBars.length > 0 && realBars.every(function (x) { return x === 'L0'; }), 'SYN: real marks stay L0 (byte-identity)');
+
+  ok(L.assertExportClean({ audience: 'iep-team', synthetic: true }).blocked === true, 'SYN: iep-team synthetic export is BLOCKED');
+  ok(L.assertExportClean({ audience: 'iep-team', synthetic: true, signoff: 'x' }).blocked === true, 'SYN: no signoff clears the synthetic block');
+  ok(L.assertExportClean({ audience: 'working', synthetic: true }).blocked === false, 'SYN: working/family synthetic export still allowed (watermarked)');
+  ok(L.assertExportClean({ audience: 'iep-team', synthetic: false }).blocked === false, 'SYN: a real iep-team export is not blocked by the synthetic clause');
+  ok(/SYNTHETIC/.test(L.buildExportHtml(synC, synClaim, { audience: 'working', synthetic: true }).html), 'SYN: HTML export carries the SYNTHETIC watermark');
+  ok(!/SYNTHETIC/.test(L.buildExportHtml(realC, L.deriveTrendClaim(realC, {}), { audience: 'working' }).html), 'SYN: a real HTML export carries no SYNTHETIC marker');
+  var synCsv = L.buildExportCsv(synC, synClaim, { includePII: true, synthetic: true });
+  ok(/SYNTHETIC/.test(synCsv.csv) && /Synthetic \(practice\)/.test(synCsv.csv) && /SYNTHETIC/.test(synCsv.filename), 'SYN: CSV export marks rows + filename');
+
+  var realRows = [{ x: 1, y: 42, phase: 'b' }, { x: 2, y: 45, phase: 'b' }, { x: 3, y: 50, phase: 't' }, { x: 4, y: 55, phase: 't' }];
+  var synRows = realRows.map(function (r) { return Object.assign({}, r, { synthetic: true }); });
+  ok(L.deriveTrendClaim(compFrom(synRows), {})._hash === L.deriveTrendClaim(compFrom(realRows), {})._hash, 'SYN: synthetic flag never perturbs the claim _hash');
+  ok(!('synthetic' in L.buildClaimContext(compFrom(synRows), L.deriveTrendClaim(compFrom(synRows), {}))), 'SYN: synthetic never enters the AI context');
+  ok(Object.keys(compFrom([{ x: 1, y: 2, phase: 'a' }]).observations[0]).join(',') === 'id,x,y,phase', 'SYN: a real row has no phantom synthetic key (byte-identity)');
+})();
+
 if (fails.length) {
   console.error('check_lumen_floor: ' + fails.length + ' FAILED');
   fails.forEach(function (f) { console.error('  x ' + f); });
   process.exit(1);
 }
-if (!QUIET) console.log('check_lumen_floor: OK — Lumen honesty-floor invariants hold (12 groups, incl. §16 Phase 2A workspace).');
+if (!QUIET) console.log('check_lumen_floor: OK — Lumen honesty-floor invariants hold (13 groups, incl. §16 Phase 2A workspace + synthetic practice-data guard).');
 process.exit(0);

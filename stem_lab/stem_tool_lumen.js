@@ -91,6 +91,16 @@
   GRAMMAR['SRC-U'] = { label: 'Sourced — AI-retrieved, UNVERIFIED — check the source', glyph: '▢', opacity: 1.00, dash: '1 4', texture: 'reference', caution: false, reference: true };
   DEFAULT_PALETTE.reference = '#0e7490'; // reserved teal — NOT student ink, NOT L3 amber
 
+  // Synthetic PRACTICE data (the "generate sample" feature): a FIFTH, ORTHOGONAL
+  // origin — also kept OUT of LEVELS so the AI dial / maxLevel math can never
+  // touch it. This is the honesty fix for procedurally-fabricated demo data:
+  // a synthetic mark burns a DISTINCT ◇ dotted violet glyph + the word
+  // "Synthetic (practice)", so it can never pose as the solid L0 'Observed'
+  // dot, survives a chart-crop screenshot, and (with the export gate) can
+  // never be handed to an IEP team as a defensible record.
+  GRAMMAR.SYN = { label: 'Synthetic (practice)', glyph: '◇', opacity: 1.00, dash: '2 2', texture: 'dotted', caution: true, synthetic: true };
+  DEFAULT_PALETTE.synthetic = '#6d28d9'; // reserved violet — NOT student ink, NOT L3 amber, NOT SRC teal, NOT a series hue
+
   // The WCAG opacity floor: 0.38-ish ink on white fails 1.4.11, so any mark
   // that must remain legible is clamped to >= 0.6 (design §6.4).
   var OPACITY_FLOOR = 0.6;
@@ -104,7 +114,7 @@
   // and all series colours must be mutually distinct — so a series line can never read as the L3 signal.
   function seriesColorOK(palette) {
     var p = palette || DEFAULT_PALETTE;
-    var reserved = [p.caution, p.reference, p.neutral, p.line];
+    var reserved = [p.caution, p.reference, p.neutral, p.line, p.synthetic];
     var seen = {};
     for (var i = 0; i < SERIES_PALETTE.length; i++) {
       var c = SERIES_PALETTE[i];
@@ -128,11 +138,12 @@
       labelOpacity: 1.0,                               // the level WORD never fades
       strokeDasharray: g.dash,
       texture: g.texture,
-      // amber ONLY at L3; reference teal for SRC; otherwise neutral ink. Last, redundant channel.
-      ink: g.caution ? pal.caution : (g.reference ? pal.reference : pal.neutral),
+      // violet for synthetic; amber ONLY at L3; reference teal for SRC; otherwise neutral ink. Last, redundant channel.
+      ink: g.synthetic ? (pal.synthetic || pal.caution) : (g.caution ? pal.caution : (g.reference ? pal.reference : pal.neutral)),
       caution: g.caution
     };
     if (g.reference) bundle.isReference = true; // §16: a Sourced benchmark draws a line, not a dot
+    if (g.synthetic) bundle.isSynthetic = true; // synthetic practice mark — never a defensible observation
     return bundle;
   }
 
@@ -302,9 +313,78 @@
     comp.observations.push(Object.assign(
       { id: id, x: obs.x, y: obs.y, phase: obs.phase == null ? null : obs.phase },
       (obs.y2 != null ? { y2: obs.y2 } : {}),
-      (obs.series != null ? { series: String(obs.series) } : {})
+      (obs.series != null ? { series: String(obs.series) } : {}),
+      // synthetic = procedurally fabricated PRACTICE data (or a curated example).
+      // Conditional-spread like y2/series: a real {id,x,y,phase} row stays
+      // byte-identical (no `synthetic: undefined` key), while fabricated rows
+      // carry an indelible origin stamp that drives the SYN burn + export block.
+      (obs.synthetic ? { synthetic: true } : {})
     ));
     return id;
+  }
+
+  // FAIL-SAFE demo flag: derived from the ROWS, not a free-standing UI bool, so
+  // a single fabricated row among real ones still taints the whole view (you
+  // cannot "clean" synthetic data by adding real points) and the flag can never
+  // be silently dropped by editing. Clears only when no synthetic row remains.
+  function compHasSynthetic(comp) {
+    return !!(comp && comp.observations && comp.observations.some(function (o) { return o && o.synthetic; }));
+  }
+
+  // ─── Synthetic PRACTICE-data generator (the "generate sample" feature) ───
+  // PURE + deterministic: seeded ONLY via the kernel's own cyrb53 + mulberry32
+  // (NO Date.now()/Math.random — same reproducibility contract as the bootstrap).
+  // MEASURE-AGNOSTIC: it makes a plausible numeric series (baseline + trend +
+  // bounded symmetric noise, clamped >= 0) and never reads what the measure /
+  // unit / x-label MEAN. Every row is stamped synthetic:true so it can never be
+  // mistaken for an observed record. Returns rows ONLY — it never mutates a
+  // compendium, pushes an L0 mark, or calls callGemini.
+  var PRACTICE_SCENARIOS = {
+    improving:  { baseline: 42, slope: 2.2,  noise: 2.5, phaseAt: 0.4,  levelShift: 0, postSlope: null },
+    flat:       { baseline: 50, slope: 0.0,  noise: 3.0, phaseAt: null, levelShift: 0, postSlope: null },
+    variable:   { baseline: 48, slope: 0.8,  noise: 9.0, phaseAt: null, levelShift: 0, postSlope: null },
+    declining:  { baseline: 60, slope: -1.6, noise: 3.0, phaseAt: null, levelShift: 0, postSlope: null },
+    responsive: { baseline: 40, slope: 0.3,  noise: 2.5, phaseAt: 0.4,  levelShift: 4, postSlope: 3.0 }
+  };
+  function generatePracticeData(opts) {
+    opts = opts || {};
+    var scenarioKey = PRACTICE_SCENARIOS[opts.scenario] ? opts.scenario : 'improving';
+    var sc = PRACTICE_SCENARIOS[scenarioKey];
+    var n = Math.max(3, Math.min(60, Math.round(opts.n == null ? 10 : opts.n))); // clamp, never throw — never below the n<3 refuse floor
+    var xStart = opts.xStart == null ? 1 : Number(opts.xStart);
+    var xStep = (opts.xStep == null || Number(opts.xStep) <= 0) ? 1 : Number(opts.xStep);
+    var baseline = opts.baseline == null ? sc.baseline : Number(opts.baseline);
+    var slope = opts.slope == null ? sc.slope : Number(opts.slope);
+    var noise = opts.noise == null ? sc.noise : Math.abs(Number(opts.noise));
+    var phaseAt = (opts.phaseAt === undefined) ? sc.phaseAt : opts.phaseAt;
+    var phaseLabels = (opts.phaseLabels && opts.phaseLabels.length === 2) ? opts.phaseLabels : ['baseline', 'tier2'];
+    var clampMin = (opts.clampMin === null) ? null : (opts.clampMin == null ? 0 : Number(opts.clampMin));
+    var clampMax = opts.clampMax == null ? null : Number(opts.clampMax);
+    var postSlope = (opts.postSlope == null) ? sc.postSlope : Number(opts.postSlope);
+    var levelShift = (opts.levelShift == null) ? sc.levelShift : Number(opts.levelShift);
+    // The seed is the re-roll handle: same seed => byte-identical rows; bump it for variety.
+    var seedKey = String(opts.seed == null ? (scenarioKey + '|' + n + '|' + (opts.xLabel || 'Week') + '|' + xStep) : opts.seed);
+    var rng = mulberry32(cyrb53(seedKey) >>> 0);
+    var k = (phaseAt == null) ? n : Math.max(1, Math.min(n - 1, Math.round(phaseAt * n))); // phase-change index (so a phase line is meaningful)
+    var rows = [];
+    for (var i = 0; i < n; i++) {
+      var xi = round1(xStart + i * xStep);
+      var trend, phase;
+      if (phaseAt == null || i < k) {
+        trend = baseline + slope * i;
+        phase = (phaseAt == null) ? null : phaseLabels[0];
+      } else {
+        var ps = (postSlope == null) ? slope : postSlope; // intervention segment: continue from the boundary, optional level-shift + new slope
+        trend = (baseline + slope * k) + levelShift + ps * (i - k);
+        phase = phaseLabels[1];
+      }
+      var e = (rng() * 2 - 1) * noise; // symmetric, BOUNDED noise (no Gaussian tail that could spike off-chart)
+      var y = trend + e;
+      if (clampMin != null) y = Math.max(clampMin, y);
+      if (clampMax != null) y = Math.min(clampMax, y);
+      rows.push({ x: xi, y: round1(y), phase: phase, synthetic: true });
+    }
+    return rows;
   }
 
   // Returns the ids of claims whose dependencies intersect the changed set.
@@ -542,7 +622,7 @@
     var bars = obs.map(function (o) {
       var cx = sx(o.x), top = sy(o.y);
       return {
-        x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: 'L0',
+        x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: o.synthetic ? 'SYN' : 'L0',
         cx: round1(cx), bx: round1(cx - bw / 2), bw: round1(bw), by: round1(top), bh: round1(baseline - top)
       };
     });
@@ -589,7 +669,7 @@
     var padY = (maxY - minY) * 0.1 || 1, y0 = minY - padY, y1 = maxY + padY;
     function sx(x) { return box.padL + (maxX === minX ? 0 : (x - minX) / (maxX - minX)) * innerW; }
     function sy(y) { return box.padT + innerH - (y1 === y0 ? 0 : (y - y0) / (y1 - y0)) * innerH; }
-    var dots = obs.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
+    var dots = obs.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: o.synthetic ? 'SYN' : 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
     var phaseLines = [];
     for (var i = 1; i < n; i++) { if (obs[i].phase !== obs[i - 1].phase) { var px = (obs[i].x + obs[i - 1].x) / 2; phaseLines.push({ x: round1(px), sx: round1(sx(px)), fromPhase: obs[i - 1].phase, toPhase: obs[i].phase }); } }
     var xTicks = obs.map(function (o) { return { x: o.x, sx: round1(sx(o.x)) }; });
@@ -604,6 +684,7 @@
   function boxGeometry(observations, box, sourceRefs) {
     box = box || DEFAULT_BOX;
     var innerW = box.w - box.padL - box.padR, innerH = box.h - box.padT - box.padB;
+    var syn = observations.some(function (o) { return o && o.synthetic; }); // aggregate over synthetic data is itself synthetic
     var groups = [], gmap = {};
     observations.forEach(function (o) { var key = o.phase == null ? '(all)' : o.phase; if (!gmap[key]) { gmap[key] = { phase: key, vals: [] }; groups.push(gmap[key]); } gmap[key].vals.push(o.y); });
     var allY = observations.map(function (o) { return o.y; });
@@ -614,7 +695,7 @@
     var ng = groups.length, slotW = innerW / ng;
     var boxes = groups.map(function (g, i) {
       var qn = quantiles(g.vals), center = box.padL + slotW * (i + 0.5), bw = Math.min(48, slotW * 0.5);
-      return { phase: g.phase, n: qn.n, level: 'L0', min: round2(qn.min), q1: round2(qn.q1), median: round2(qn.median), q3: round2(qn.q3), max: round2(qn.max), iqr: round2(qn.iqr), cx: round1(center), bw: round1(bw), syMin: round1(sy(qn.min)), syQ1: round1(sy(qn.q1)), syMed: round1(sy(qn.median)), syQ3: round1(sy(qn.q3)), syMax: round1(sy(qn.max)) };
+      return { phase: g.phase, n: qn.n, level: syn ? 'SYN' : 'L0', min: round2(qn.min), q1: round2(qn.q1), median: round2(qn.median), q3: round2(qn.q3), max: round2(qn.max), iqr: round2(qn.iqr), cx: round1(center), bw: round1(bw), syMin: round1(sy(qn.min)), syQ1: round1(sy(qn.q1)), syMed: round1(sy(qn.median)), syQ3: round1(sy(qn.q3)), syMax: round1(sy(qn.max)) };
     });
     var xTicks = boxes.map(function (b) { return { label: b.phase, sx: b.cx }; });
     var yTicks = []; for (var t = 0; t <= 4; t++) { var yv = y0 + (y1 - y0) * t / 4; yTicks.push({ y: round1(yv), sy: round1(sy(yv)) }); }
@@ -645,6 +726,7 @@
   function histogramGeometry(observations, box, sourceRefs) {
     box = box || DEFAULT_BOX;
     var ys = observations.map(function (o) { return o.y; });
+    var syn = observations.some(function (o) { return o && o.synthetic; }); // aggregate over synthetic data is itself synthetic
     var hb = histogramBins(ys);
     var innerW = box.w - box.padL - box.padR, innerH = box.h - box.padT - box.padB;
     var maxCount = Math.max.apply(null, hb.bins.map(function (b) { return b.count; }).concat([1]));
@@ -660,7 +742,7 @@
     var baseline = round1(box.padT + innerH);
     var bins = hb.bins.map(function (bn) {
       var x0 = vx(bn.lo), x1 = vx(bn.hi), top = cy(bn.count);
-      return { lo: round2(bn.lo), hi: round2(bn.hi), count: bn.count, level: 'L0', bx: round1(x0 + 1), bw: round1(Math.max(2, x1 - x0 - 2)), by: round1(top), bh: round1(baseline - top) };
+      return { lo: round2(bn.lo), hi: round2(bn.hi), count: bn.count, level: syn ? 'SYN' : 'L0', bx: round1(x0 + 1), bw: round1(Math.max(2, x1 - x0 - 2)), by: round1(top), bh: round1(baseline - top) };
     });
     var xTicks = []; for (var i = 0; i <= hb.k; i++) { var val = hb.min + i * hb.width; xTicks.push({ value: round1(val), sx: round1(vx(val)) }); }
     var yTicks = []; var steps = Math.min(4, maxCount); for (var t = 0; t <= steps; t++) { var c = Math.round(maxCount * t / (steps || 1)); yTicks.push({ count: c, sy: round1(cy(c)) }); }
@@ -689,7 +771,7 @@
     var xa = minX - padX, xb = maxX + padX, y0 = minY - padY, y1 = maxY + padY;
     function sx(v) { return box.padL + (xb === xa ? 0 : (v - xa) / (xb - xa)) * innerW; }
     function sy(v) { return box.padT + innerH - (y1 === y0 ? 0 : (v - y0) / (y1 - y0)) * innerH; }
-    var scatterPoints = pairs.map(function (o) { return { x: o.y, y: o.y2, phase: o.phase == null ? null : o.phase, level: 'L0', sx: round1(sx(o.y)), sy: round1(sy(o.y2)) }; });
+    var scatterPoints = pairs.map(function (o) { return { x: o.y, y: o.y2, phase: o.phase == null ? null : o.phase, level: o.synthetic ? 'SYN' : 'L0', sx: round1(sx(o.y)), sy: round1(sy(o.y2)) }; });
     var fitPath = null;
     if (claim && claim.estimate && claim.estimate.slope != null) {
       var m = claim.estimate.slope, bI = claim.estimate.intercept;
@@ -721,7 +803,7 @@
     var seriesGeo = keys.map(function (k, idx) {
       var c = claimByKey[k];
       var pts = all.filter(function (o) { return o.series === k; }).slice().sort(function (a, b) { return a.x - b.x; });
-      var points = pts.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
+      var points = pts.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: o.synthetic ? 'SYN' : 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
       var linePath = points.length >= 2 ? ('M ' + points.map(function (p) { return p.sx + ',' + p.sy; }).join(' L ')) : null;
       return { series: k, label: (c && c.seriesLabel) || k, colorIdx: idx, refused: !!(c && c.refused), n: pts.length, slope: (c && c.estimate) ? c.estimate.slope : null, points: points, linePath: linePath };
     });
@@ -890,7 +972,7 @@
         sx2: fok ? round1(sx(gmax)) : null, sy2: fok ? round1(sy(fit.slope * gmax + fit.intercept)) : null
       };
     });
-    var dots = obs.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
+    var dots = obs.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: o.synthetic ? 'SYN' : 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
     var phaseLines = [];
     for (var i = 1; i < n; i++) { if (obs[i].phase !== obs[i - 1].phase) { var px = (obs[i].x + obs[i - 1].x) / 2; phaseLines.push({ x: round1(px), sx: round1(sx(px)), fromPhase: obs[i - 1].phase, toPhase: obs[i].phase }); } }
     var xTicks = obs.map(function (o) { return { x: o.x, sx: round1(sx(o.x)) }; });
@@ -955,7 +1037,7 @@
     var withY = (observations || []).filter(function (o) { return o.y != null; }).slice().sort(function (a, b) { return a.x - b.x; });
     var columns = [claim.variable + ' (y)', (claim.variable2 || 'y2') + ' (y2)', 'Phase', 'Level'];
     var rows = withY.map(function (o) {
-      return { x: o.y, y: (o.y2 == null ? '—' : o.y2), phase: o.phase || '—', level: word };
+      return { x: o.y, y: (o.y2 == null ? '—' : o.y2), phase: o.phase || '—', level: o.synthetic ? levelWord('SYN') : word };
     });
     return { columns: columns, rows: rows, perSegment: [], summary: chartSummaryText(withY, claim, [], 'scatter'), level: claim.level, kind: 'association' };
   }
@@ -968,7 +1050,7 @@
     var variable = (claims && claims[0] && claims[0].variable) || 'value';
     var obs = observations.slice().sort(function (a, b) { return (a.x - b.x) || String(a.series).localeCompare(String(b.series)); });
     var columns = [((claims && claims[0] && claims[0].xLabel) || 'Week') + ' (x)', variable + ' (y)', 'Series', 'Phase', 'Level'];
-    var rows = obs.map(function (o) { return { x: o.x, y: o.y, series: (labelByKey[o.series] || o.series || '—'), phase: o.phase || '—', level: word }; });
+    var rows = obs.map(function (o) { return { x: o.x, y: o.y, series: (labelByKey[o.series] || o.series || '—'), phase: o.phase || '—', level: o.synthetic ? levelWord('SYN') : word }; });
     return { columns: columns, rows: rows, perSegment: [], summary: chartSummaryText(observations, claims, [], 'multiSeriesLine'), level: 'L1', kind: 'multiSeries' };
   }
 
@@ -983,7 +1065,7 @@
       if (i > 0 && obs[i].phase !== obs[i - 1].phase) {
         rows.push({ boundary: true, label: 'phase boundary: ' + (obs[i - 1].phase || 'prior') + ' → ' + (obs[i].phase || 'next') });
       }
-      rows.push({ x: obs[i].x, y: obs[i].y, phase: obs[i].phase || '—', level: word });
+      rows.push({ x: obs[i].x, y: obs[i].y, phase: obs[i].phase || '—', level: obs[i].synthetic ? levelWord('SYN') : word });
     }
     // §16: benchmark rows appended AFTER the student rows, carrying the verify-state in WORDS.
     (sourceRefs || []).filter(function (r) { return sourcedRenderable(r).ok; }).forEach(function (r) {
@@ -1138,6 +1220,15 @@
     };
   }
 
+  // Synthetic practice data is categorically NOT a defensible record: block any
+  // iep-team export while the view contains synthetic rows. Unlike the L3 gate,
+  // NO signoff clears it — you cannot "own" fabricated data into an IEP brief.
+  // Working/family exports still proceed (always watermarked) for exploration.
+  function assertNotSynthetic(req) {
+    if (!req || req.audience !== 'iep-team' || !req.synthetic) return { ok: true, blocked: false };
+    return { ok: false, blocked: true, reason: 'This view contains synthetic practice data and cannot be exported as a defensible IEP-team document.' };
+  }
+
   function buildExportHtml(comp, claim, opts) {
     opts = opts || {};
     var audience = opts.audience || 'working';
@@ -1170,25 +1261,37 @@
       return '<li><strong>' + escHtml(benchmarkChipText(r)) + '</strong><br>' + escHtml(r.citation) +
         ' — <a href="' + escHtml(href) + '">source</a>' + (r.verified ? ' [verified]' : ' [UNVERIFIED — check the source]') + '</li>';
     }).join('') + '</ul><p><em>External benchmarks are general references, not this student\'s measured data or individualized goals.</em></p>') : '';
-    var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + escHtml('Lumen — ' + comp.variable) + '</title></head><body>'
-      + '<h1>' + escHtml('Lumen — ' + comp.variable + ' (' + comp.unit + ')') + '</h1>'
+    // Synthetic watermark in hard-to-strip positions (title + h1 + a body banner
+    // + footer); when opts.synthetic is falsy every piece is '' so a real export
+    // is byte-identical.
+    var synth = !!opts.synthetic;
+    var synTag = synth ? 'SYNTHETIC — NOT A REAL STUDENT · ' : '';
+    var synBanner = synth ? '<p style="background:#6d28d9;color:#fff;padding:8px;font-weight:bold;border-radius:6px">⚗ SYNTHETIC PRACTICE DATA — NOT A REAL STUDENT. For demonstration/training only; not a defensible record.</p>' : '';
+    var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + escHtml(synTag + 'Lumen — ' + comp.variable) + '</title></head><body>'
+      + synBanner
+      + '<h1>' + escHtml(synTag + 'Lumen — ' + comp.variable + ' (' + comp.unit + ')') + '</h1>'
       + '<p><strong>' + escHtml(faceFor(claim, audience)) + '</strong></p>'
       + subset
       + '<p>' + escHtml(chartSummaryText(comp.observations, claim, opts.sourceRefs)) + '</p>'
       + '<table border="1" cellpadding="3"><thead><tr>' + tbl.columns.map(function (c) { return '<th>' + escHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table>'
       + ai + methods + references
-      + '<hr><p><small>Lumen export · max epistemic level ' + escHtml(maxLevel) + ' · audience: ' + escHtml(audience) + '. Levels: Observed / Derived (math) / AI-organized / AI reading.</small></p>'
+      + '<hr><p><small>' + escHtml(synth ? 'SYNTHETIC PRACTICE DATA — NOT A REAL STUDENT. ' : '') + 'Lumen export · max epistemic level ' + escHtml(maxLevel) + ' · audience: ' + escHtml(audience) + '. Levels: Observed / Derived (math) / AI-organized / AI reading.</small></p>'
       + '</body></html>';
-    return { html: html, filename: 'lumen-' + slug(comp.variable) + '-' + audience + '.html', maxLevel: maxLevel };
+    return { html: html, filename: 'lumen-' + (synth ? 'PRACTICE-' : '') + slug(comp.variable) + '-' + audience + '.html', maxLevel: maxLevel };
   }
 
   function buildExportCsv(comp, claim, opts) {
     opts = opts || {};
-    var lines = ['# Lumen export — max epistemic level L1' + (opts.includePII ? ' — CONFIDENTIAL (identifiable)' : ' — aggregate only')];
+    var synth = !!opts.synthetic;
+    var lines = [];
+    if (synth) lines.push('# SYNTHETIC PRACTICE DATA — NOT A REAL STUDENT (demonstration only)');
+    lines.push('# Lumen export — max epistemic level L1' + (opts.includePII ? ' — CONFIDENTIAL (identifiable)' : ' — aggregate only'));
     if (opts.includePII) {
       lines.push(csvSafe((comp.xLabel || 'Week').toLowerCase()) + ',' + csvSafe(comp.variable) + ',phase,level');
       comp.observations.slice().sort(function (a, b) { return a.x - b.x; }).forEach(function (o) {
-        lines.push([o.x, o.y, csvSafe(o.phase || ''), 'Derived (math)'].join(','));
+        // the per-row origin token is the precise masquerade surface — a synthetic
+        // row reads 'Synthetic (practice)', never 'Derived (math)'.
+        lines.push([o.x, o.y, csvSafe(o.phase || ''), (o.synthetic ? 'Synthetic (practice)' : 'Derived (math)')].join(','));
       });
     } else {
       lines.push('metric,value');
@@ -1198,7 +1301,7 @@
         lines.push('slope,' + round2(e.slope));
         lines.push('interval_lo,' + round2(e.interval[0]));
         lines.push('interval_hi,' + round2(e.interval[1]));
-        lines.push('level,Derived (math)');
+        lines.push('level,' + (synth ? 'Synthetic (practice)' : 'Derived (math)'));
       } else {
         lines.push('n,' + (claim ? claim.n : 0));
         lines.push('note,too few points to estimate a trend');
@@ -1211,7 +1314,7 @@
         lines.push('reference,' + csvSafe(r.keyLabel) + ',' + r.value + ',' + csvSafe(r.unit) + ',' + csvSafe(r.citation) + ',' + (r.verified ? 'verified' : 'unverified'));
       });
     }
-    return { csv: lines.join('\n'), filename: 'lumen-' + slug(comp.variable) + (opts.includePII ? '-CONFIDENTIAL' : '-summary') + '.csv', maxLevel: 'L1' };
+    return { csv: lines.join('\n'), filename: 'lumen-' + (synth ? 'SYNTHETIC-' : '') + slug(comp.variable) + (opts.includePII ? '-CONFIDENTIAL' : '-summary') + '.csv', maxLevel: 'L1' };
   }
 
   // ══════════════════════════════════════════════════════════════════════
@@ -1621,7 +1724,8 @@
     req = req || {};
     var a = assertDefensible({ audience: req.audience, aiHyps: req.aiHyps, signoff: req.signoff });
     var s = assertSourcedDefensible(req);
-    if (a.blocked || s.blocked) return { ok: false, blocked: true, reason: [a.blocked ? a.reason : null, s.blocked ? s.reason : null].filter(Boolean).join(' ') };
+    var n = assertNotSynthetic(req);
+    if (a.blocked || s.blocked || n.blocked) return { ok: false, blocked: true, reason: [a.blocked ? a.reason : null, s.blocked ? s.reason : null, n.blocked ? n.reason : null].filter(Boolean).join(' ') };
     return { ok: true, blocked: false };
   }
 
@@ -1891,6 +1995,7 @@
     linregress: linregress, slopeInterval: slopeInterval, bootstrapSlopeCI: bootstrapSlopeCI, bootstrapRCI: bootstrapRCI, predictY: predictY,
     // compendium / reactive graph
     makeCompendium: makeCompendium, addObservation: addObservation, markDirty: markDirty, seriesKeys: seriesKeys,
+    generatePracticeData: generatePracticeData, compHasSynthetic: compHasSynthetic, PRACTICE_SCENARIOS: PRACTICE_SCENARIOS,
     // claims / prose
     deriveTrendClaim: deriveTrendClaim, deriveAssociationClaim: deriveAssociationClaim, associationSentence: associationSentence,
     trendSentence: trendSentence, refusalSentence: refusalSentence,
@@ -1911,7 +2016,7 @@
     NORM_SPINE: NORM_SPINE, DIBELS8_ORF: DIBELS8_ORF, selectNorm: selectNorm, validateNormSpine: validateNormSpine,
     makeSourceRef: makeSourceRef, addSourceRef: addSourceRef, sourcedRenderable: sourcedRenderable,
     benchmarkChipText: benchmarkChipText, sourcedFace: sourcedFace, referenceContrastOK: referenceContrastOK,
-    sourcedSignoffHash: sourcedSignoffHash, assertSourcedDefensible: assertSourcedDefensible, assertExportClean: assertExportClean,
+    sourcedSignoffHash: sourcedSignoffHash, assertSourcedDefensible: assertSourcedDefensible, assertExportClean: assertExportClean, assertNotSynthetic: assertNotSynthetic,
     // Ingest (§5 Pillar 1) — pure parsers + column mapper; L0-only by construction
     INGEST_MAX_BYTES: INGEST_MAX_BYTES, INGEST_MAX_ROWS: INGEST_MAX_ROWS, INGEST_DELIMS: INGEST_DELIMS, INGEST_FILE_TYPES: INGEST_FILE_TYPES,
     parseTextTable: parseTextTable, mapTextTableToObservations: mapTextTableToObservations,
@@ -2065,23 +2170,40 @@
           var exportHtml = function () {
             if (!claim || claim.refused) return;
             var includeAI = levelIndex(ceiling) >= 2;
-            var gate = assertExportClean({ audience: audience, aiHyps: includeAI ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs });
+            var gate = assertExportClean({ audience: audience, aiHyps: includeAI ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
             if (gate.blocked) { upd('exportMsg', gate.reason); announce(gate.reason); return; }
-            var out = buildExportHtml(comp, claim, { audience: audience, aiText: d.aiText, aiHyps: d.aiHyps, includeAI: includeAI, sourceRefs: sourceRefs });
+            var out = buildExportHtml(comp, claim, { audience: audience, aiText: d.aiText, aiHyps: d.aiHyps, includeAI: includeAI, sourceRefs: sourceRefs, synthetic: compHasSynthetic(comp) });
             download(out.filename, out.html, 'text/html');
             upd('exportMsg', 'Exported ' + out.filename + ' (max level ' + out.maxLevel + ').');
           };
           var exportCsv = function () {
             if (!claim) return;
-            var gate = assertExportClean({ audience: audience, aiHyps: levelIndex(ceiling) >= 2 ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs });
+            var gate = assertExportClean({ audience: audience, aiHyps: levelIndex(ceiling) >= 2 ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
             if (gate.blocked) { upd('exportMsg', gate.reason); announce(gate.reason); return; }
             if (d.includePII && typeof window !== 'undefined' && window.confirm &&
               !window.confirm('This CSV contains identifiable student data. Export it?')) return;
-            var out = buildExportCsv(comp, claim, { includePII: !!d.includePII, sourceRefs: sourceRefs });
+            var out = buildExportCsv(comp, claim, { includePII: !!d.includePII, sourceRefs: sourceRefs, synthetic: compHasSynthetic(comp) });
             download(out.filename, out.csv, 'text/csv');
             upd('exportMsg', 'Exported ' + out.filename + '.');
           };
           var kids = [];
+          // Load a curated EXAMPLE dataset (REYNA/PAIRED/MULTI) — stamped synthetic
+          // so it self-declares + is export-guarded exactly like generated data (a
+          // sample is not a real student's record either).
+          var loadExample = function (rows, msg) {
+            upd('observations', rows.map(function (r) { return Object.assign({}, r, { synthetic: true }); }));
+            announce(msg);
+          };
+          // Generate fresh synthetic PRACTICE data from the current scenario; pass
+          // bumpSeed=true to re-roll for variety (deterministic per seed). Rows are
+          // already synthetic-stamped by generatePracticeData.
+          var genPractice = function (bumpSeed) {
+            var seed = (d.genSeed || 0) + (bumpSeed ? 1 : 0);
+            if (bumpSeed) upd('genSeed', seed);
+            var sc = d.genScenario || 'improving';
+            upd('observations', generatePracticeData({ scenario: sc, n: d.genN, seed: seed, xLabel: d.xLabel }));
+            announce('Generated ' + sc + ' synthetic practice data — not a real student.');
+          };
           // Stage a parsed table (from a file OR pasted text) into the column-
           // mapper preview — the shared glance-then-confirm binding flow. The
           // mapper panel below reads d.importPreview; NOTHING binds into
@@ -2111,6 +2233,15 @@
             h('span', { className: 'font-bold text-amber-800' }, '💡 Lumen'),
             h('span', { className: 'text-[11px] text-slate-500' }, comp.variable + ' (' + comp.unit + ')')
           ));
+          // Persistent, non-dismissible synthetic-data banner — fires whenever ANY
+          // row is synthetic (generated OR a loaded example). Drives home that this
+          // is practice data; the per-mark SYN burn + export watermark carry the
+          // same message into a screenshot crop / exported file.
+          if (compHasSynthetic(comp)) {
+            kids.push(h('div', { key: 'synBanner', role: 'note', className: 'mt-2 px-3 py-2 rounded-lg text-sm font-semibold flex flex-wrap items-center gap-2', style: { background: '#6d28d9', color: '#ffffff' } },
+              h('span', null, '⚗ Synthetic practice data — NOT a real student.'),
+              h('span', { className: 'font-normal text-[11px]', style: { opacity: 0.9 } }, 'For exploring Lumen; marked on every chart + export, and blocked from a defensible IEP-team export.')));
+          }
           // The AI-involvement dial (default L1 = zero callGemini) + the audience faces.
           var ceilBtn = function (lvl, label) {
             return h('button', {
@@ -2153,7 +2284,7 @@
                 h('li', { key: 's2' }, h('b', null, 'Add data'), ' — type points, paste a table, or import a CSV / Excel / JSON file.'),
                 h('li', { key: 's3' }, h('b', null, 'Read the trend'), ' — a chart + finding appear at 3+ points; export it for the IEP team.')),
               h('div', { className: 'mt-3 flex gap-2 flex-wrap' },
-                h('button', { key: 'obSample', className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () { upd('observations', REYNA_SAMPLE.slice()); announce('Loaded the Reyna ORF sample: 10 weekly probes across two phases.'); } }, 'Try a sample'),
+                h('button', { key: 'obSample', className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () { loadExample(REYNA_SAMPLE.slice(), 'Loaded the Reyna ORF example — synthetic practice data, not a real student: 10 weekly probes across two phases.'); } }, 'Try a sample'),
                 h('button', { key: 'obPaste', className: 'px-3 py-1 text-sm rounded border border-amber-400 text-amber-800 hover:bg-amber-100', onClick: function () { upd('showPaste', true); announce('Paste box opened.'); } }, '⎘ Paste data'),
                 h('label', { key: 'obImport', htmlFor: 'lumen-file-input', className: 'px-3 py-1 text-sm rounded border border-amber-400 text-amber-800 hover:bg-amber-100 cursor-pointer' }, '⇪ Import file')),
               h('p', { className: 'mt-2 text-[11px] text-slate-500' }, 'Honest by design: fewer than 3 points yields a "not enough data" card, never a fake line. AI stays OFF until you raise the AI ceiling.')));
@@ -2200,14 +2331,31 @@
             }, '+ Add'),
             h('button', {
               className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
-              onClick: function () { upd('observations', REYNA_SAMPLE.slice()); announce('Loaded the Reyna ORF sample: 10 weekly probes across two phases.'); }
+              onClick: function () { loadExample(REYNA_SAMPLE.slice(), 'Loaded the Reyna ORF example — synthetic practice data, not a real student: 10 weekly probes across two phases.'); }
             }, 'Use sample (Reyna ORF)'),
+            // Generate fresh synthetic practice data (the "generate sample" feature) — a scenario picker + Generate + Re-roll.
+            h('select', {
+              key: 'genScenario', value: d.genScenario || 'improving',
+              onChange: function (ev) { upd('genScenario', ev.target.value); },
+              'aria-label': 'Practice-data scenario',
+              className: 'px-2 py-1 text-sm border border-slate-300 rounded'
+            }, Object.keys(PRACTICE_SCENARIOS).map(function (s) { return h('option', { key: s, value: s }, s); })),
+            h('button', {
+              key: 'genBtn', className: 'px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50',
+              title: 'Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.',
+              onClick: function () { genPractice(false); }
+            }, '⚗ Generate practice data'),
+            (obs.length && compHasSynthetic(comp) ? h('button', {
+              key: 'rerollBtn', className: 'px-3 py-1 text-sm rounded border border-violet-300 text-violet-700 hover:bg-violet-50',
+              title: 'Re-roll: a fresh random draw of the same scenario.',
+              onClick: function () { genPractice(true); }
+            }, '↻ Re-roll') : null),
             // A PAIRED sample (WCPM + comprehension) only in the scatter view, so the correlation has data to read.
             (chartType === 'scatter' ? h('button', { key: 'paired', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
-              onClick: function () { upd('observations', PAIRED_SAMPLE.slice()); announce('Loaded the paired sample: 10 probes with WCPM and comprehension.'); } }, 'Use paired sample') : null),
+              onClick: function () { loadExample(PAIRED_SAMPLE.slice(), 'Loaded the paired example — synthetic practice data, not a real student: 10 probes with WCPM and comprehension.'); } }, 'Use paired sample') : null),
             // A MULTI-SERIES sample (one student, two conditions of one measure) only in the multi-line view.
             (chartType === 'multiSeriesLine' ? h('button', { key: 'multi', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
-              onClick: function () { upd('observations', MULTI_SAMPLE.slice()); announce('Loaded the multi-series sample: cold vs practiced WCPM across 8 weeks.'); } }, 'Use multi-series sample') : null),
+              onClick: function () { loadExample(MULTI_SAMPLE.slice(), 'Loaded the multi-series example — synthetic practice data, not a real student: cold vs practiced WCPM across 8 weeks.'); } }, 'Use multi-series sample') : null),
             h('button', {
               key: 'pasteBtn',
               className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
@@ -2722,7 +2870,9 @@
             kids.push(h('svg', {
               key: 'svg', viewBox: '0 0 ' + b.w + ' ' + b.h, className: 'w-full mt-3 bg-white rounded-lg border border-slate-200',
               role: 'img', 'aria-label': chartSummaryText(obs, (chartType === 'multiSeriesLine' ? multiClaims : activeClaim), sourceRefs, chartType)
-            }, sk));
+            }, (compHasSynthetic(comp)
+              ? sk.concat([h('text', { key: 'synWm', x: b.w / 2, y: b.h / 2, textAnchor: 'middle', 'aria-hidden': 'true', transform: 'rotate(-18 ' + (b.w / 2) + ' ' + (b.h / 2) + ')', style: { fill: '#6d28d9', opacity: 0.16, fontSize: Math.round(b.h / 7), fontWeight: 'bold', pointerEvents: 'none' } }, 'PRACTICE DATA')])
+              : sk)));
           }
 
           // Grouped bar (>1 series) shows the RAW data peer (every point, with its series) so the mean
