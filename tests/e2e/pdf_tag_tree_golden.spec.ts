@@ -257,7 +257,7 @@ test.describe('createTaggedPdf — non-Latin OCR text layer (Arabic)', () => {
           groundTruthPages: [{ pageNum: 1, text: arabic, words: arabicWords, pageW: 612, pageH: 792 }],
         };
         const result = await pipeline.createTaggedPdf(inputBytes, fixResult, { title: 'Arabic Scan', lang: 'ar' });
-        return { ok: true, byteLength: result.bytes ? result.bytes.length : 0, ocrTextLayer: result.ocrTextLayer || null, roundTrip: result.roundTrip || null, arabicCharCount: (arabic.match(/[؀-ۿ]/g) || []).length };
+        return { ok: true, byteLength: result.bytes ? result.bytes.length : 0, ocrTextLayer: result.ocrTextLayer || null, roundTrip: result.roundTrip || null, docChecks: ((result.pdfUa1Checks && result.pdfUa1Checks.checks) || []).filter((c: any) => c.category === 'Document').map((c: any) => ({ rule: c.rule, status: c.status })), arabicCharCount: (arabic.match(/[؀-ۿ]/g) || []).length };
       } catch (e: any) {
         return { error: (e && e.message) || String(e), stack: e && e.stack };
       }
@@ -291,5 +291,18 @@ test.describe('createTaggedPdf — non-Latin OCR text layer (Arabic)', () => {
       'round-trip should pass; failures: ' + JSON.stringify((ocrSummary.roundTrip.checks || []).filter((c: any) => c.status === 'fail'))
     ).toBe(true);
     expect(ocrSummary.roundTrip.structElemsSaved, 'saved file must contain StructElem objects').toBeGreaterThan(0);
+  });
+
+  test('pdfUa1Checks Document rules report accurately (no unresolved-PDFRef bug)', () => {
+    expect(ocrSummary.docChecks, 'must capture Document-category checks').toBeTruthy();
+    const byRule: Record<string, string> = {};
+    for (const c of (ocrSummary.docChecks || [])) byRule[c.rule] = c.status;
+    // Regression gate: the "Structure tree has content" check must lookup() the
+    // StructTreeRoot (catalog.get returns an unresolved PDFRef); reading .get('K') on the
+    // raw ref falsely reported 0 top-level elements on a perfectly tagged PDF and deflated
+    // conformancePct. The assertion message prints every Document check for one-run insight.
+    expect(byRule['Structure tree has content'], 'Document checks: ' + JSON.stringify(ocrSummary.docChecks)).toBe('pass');
+    expect(byRule['MarkInfo present']).toBe('pass');
+    expect(byRule['Primary language']).toBe('pass');
   });
 });

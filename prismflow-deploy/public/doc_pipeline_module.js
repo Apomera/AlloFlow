@@ -12718,7 +12718,7 @@ tr { page-break-inside: avoid; }
       };
       // DOCUMENT
       try {
-        const stRoot = catalog.get(PDFName.of('StructTreeRoot'));
+        const stRoot = catalog.lookup(PDFName.of('StructTreeRoot')); // lookup() resolves the indirect ref so the /K read below sees the real array — get() returns the raw PDFRef (no .get), which falsely reported an empty structure tree
         _addCheck('Document', 'Tagged PDF', stRoot ? 'pass' : 'fail',
           stRoot ? 'Document carries a StructTreeRoot' : 'No StructTreeRoot found — document is not tagged');
         // Honesty guard: a StructTreeRoot with an empty /K is "tagged" on paper
