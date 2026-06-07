@@ -111,6 +111,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ no render-path free vars in CDN modules."
   node dev-tools/check_keyless_map.cjs --quiet
   echo "  ✓ no keyless list children in CDN modules / STEM tools."
+  node dev-tools/check_stem_render.cjs --quiet
+  echo "  ✓ all STEM tools render without throwing (render-phase smoke)."
 fi
 
 # ── Step 1: Source commit ──────────────────────────────────────────

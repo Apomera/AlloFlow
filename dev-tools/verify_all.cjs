@@ -99,6 +99,11 @@ const checks = [
     description: 'React "unique key" warning class: elements from .map()/array children without a key (the StemPluginBridge warning)',
   },
   {
+    name: 'STEM tool render-smoke',
+    cmd: ['node', 'dev-tools/check_stem_render.cjs', '--quiet'],
+    description: 'Headlessly renders every STEM tool with a stub ctx; catches the render-phase TypeError class static gates miss (undefined.map, mis-shaped data literals — the 2026-06-05 protractor crash). Skips if React/jsdom absent.',
+  },
+  {
     name: 'Arc City gauntlet stages',
     cmd: ['node', 'dev-tools/check_gauntlet_stages.cjs'],
     description: 'The Gauntlet only stages real function-family levels — never a Transformations (goal:match) level',
@@ -107,6 +112,12 @@ const checks = [
     name: 'Lang pack JSON validity',
     cmd: ['node', 'dev-tools/check_lang_json.cjs', '--quiet'],
     description: 'Every lang/*.js parses as JSON (catches corruption before deploy)',
+  },
+  {
+    name: 'Translation quality (i18n CI guard)',
+    cmd: ['node', 'dev-tools/i18n/check_translation_quality.cjs', '--quiet'],
+    description: 'Contraction stubs / compound stubs / Matter-calque / ASCII-density in non-Latin packs. Informational — promote to blocking after a future Spanglish sweep drives ascii-density to ~0.',
+    informational: true,
   },
   {
     name: 'Deploy mirror sync',
