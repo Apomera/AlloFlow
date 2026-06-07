@@ -317,6 +317,11 @@ function _upgradeGeminiAPI() {
         window.callGemini = callGemini;
         window.callGeminiVision = callGeminiVision;
         window.callGeminiImageEdit = callGeminiImageEdit;
+        // Expose the model-catalog probe + smoke-probe so the AI Model
+        // Diagnostics UI (view_misc_modals_module.js → ModelDiagnosticsSection)
+        // can call them without taking a direct dependency on the factory.
+        window.listAvailableGeminiModels = api.listAvailableModels;
+        window.probeGeminiModelHealth = api.probeModelHealth;
     }
     console.log('[GeminiAPI] Monolith shim upgraded from CDN module.');
 }
@@ -967,6 +972,36 @@ const _DEPLOY_MODELS = {
   vision: 'gemini-3-flash-preview',
   quality: 'gemini-3.1-pro-preview', // For clinical reports, high-stakes operations
 };
+
+// ── User model overrides (Canvas + deploy) ────────────────────────────────
+// The AI Model Diagnostics panel writes per-slot overrides to
+// localStorage.alloflow_ai_config.models. Apply them here, AFTER all three
+// model maps are defined — every consumer (callGemini, callGeminiVision,
+// fluency analyzer, ai_backend, etc.) reads from these objects at call
+// time, so mutating them in-place takes effect for this page load. Page
+// reload after saving is required (the modal's footer hint says so). Works
+// in both Canvas and deploy; in Canvas, the dropdown is gated to Canvas's
+// catalog so a fat-fingered override can't pick a model that 404s.
+try {
+  const _stored = (typeof localStorage !== 'undefined') ? localStorage.getItem('alloflow_ai_config') : null;
+  if (_stored) {
+    const _cfg = JSON.parse(_stored);
+    if (_cfg && _cfg.models && typeof _cfg.models === 'object') {
+      for (const _slot of Object.keys(_cfg.models)) {
+        const _val = _cfg.models[_slot];
+        if (typeof _val === 'string' && _val) {
+          GEMINI_MODELS[_slot] = _val;
+          if (_CANVAS_MODELS[_slot] !== undefined) _CANVAS_MODELS[_slot] = _val;
+          if (_DEPLOY_MODELS[_slot] !== undefined) _DEPLOY_MODELS[_slot] = _val;
+        }
+      }
+      if (typeof window !== 'undefined' && window.GEMINI_MODELS) {
+        // window.GEMINI_MODELS was assigned above to the same object literal
+        // so mutating GEMINI_MODELS already propagates; no extra work needed.
+      }
+    }
+  }
+} catch (_) { /* localStorage may throw in sandboxed contexts — best effort */ }
 
 // ── AudioBanks extracted to audio_banks_module.js (CDN) ──
 // Four lazy Proxy-backed audio lookup tables. Host shims are null until
@@ -26411,9 +26446,13 @@ ${_toolList}
           handleSetIsProjectSettingsOpenToFalse
       })}
       {/* --- AI Backend: Canvas-Only Minimal Config --- */}
+      {/* Canvas users can't pick a backend or supply an API key (Google injects the key
+          and locks the endpoint), so this modal only surfaces what IS user-configurable
+          in Canvas: third-party power-user keys + AI Model Diagnostics. The deploy modal
+          (renders below, gated on !_isCanvasEnv) has the full provider/key/URL stack. */}
       {showAIBackendModal && _isCanvasEnv && (
         <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
             <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-5 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Settings size={20} className="text-violet-600"/></div>
@@ -26452,6 +26491,10 @@ ${_toolList}
                     />
                     <p className="text-[11px] text-slate-600 mt-1">{t('canvas_settings.wolfram_hint') || 'Free: 2,000 queries/month. Adds exact math solving and step-by-step verification'}</p>
                 </div>
+                {/* AI Model Diagnostics (shared component — same one used in the deploy modal) */}
+                {window.AlloModules && window.AlloModules.ModelDiagnosticsSection && React.createElement(window.AlloModules.ModelDiagnosticsSection, {
+                    t, _isCanvasEnv, GEMINI_MODELS
+                })}
                 <div className="flex justify-end pt-2">
                     <button
                         onClick={() => setShowAIBackendModal(false)}
@@ -26468,7 +26511,7 @@ ${_toolList}
         {/* ── AI Backend Modal — extracted to view_misc_modals_module.js (CDN) ── */}
         {(showAIBackendModal && !_isCanvasEnv) && window.AlloModules && window.AlloModules.AIBackendModal && React.createElement(window.AlloModules.AIBackendModal, {
           _isCanvasEnv, ai, setShowAIBackendModal,
-          showAIBackendModal, t
+          showAIBackendModal, t, GEMINI_MODELS
         })}
       {showStudyTimerModal && <StudyTimerModal ConfettiExplosion={ConfettiExplosion} customTimerMinutes={customTimerMinutes} formatTime={formatTime} handleSetShowStudyTimerModalToFalse={handleSetShowStudyTimerModalToFalse} isStudyTimerRunning={isStudyTimerRunning} setCustomTimerMinutes={setCustomTimerMinutes} setIsStudyTimerRunning={setIsStudyTimerRunning} setStudyDuration={setStudyDuration} setStudyTaskLabel={setStudyTaskLabel} setStudyTimeLeft={setStudyTimeLeft} showStudyTimerModal={showStudyTimerModal} showTimerConfetti={showTimerConfetti} studyDuration={studyDuration} studyTaskLabel={studyTaskLabel} studyTimeLeft={studyTimeLeft} studyTimerRef={studyTimerRef} t={t} />}
       {showVisualSupports && <VisualSupportsModal setShowVisualSupports={setShowVisualSupports} setVsTab={setVsTab} showVisualSupports={showVisualSupports} vsTab={vsTab} />}

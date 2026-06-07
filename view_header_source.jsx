@@ -684,7 +684,12 @@ function HeaderBar(props) {
                                 <UiLanguageSelector />
                             </div>
                         </div>
-                        {!_isCanvasEnv && isTeacherMode && (
+                        {/* AI Backend / Diagnostics — visible to teachers in BOTH Canvas
+                            and deploy. The modal itself swaps content based on _isCanvasEnv:
+                            Canvas shows only Canvas-viable fields (CSE/Wolfram keys + Model
+                            Diagnostics); deploy shows the full provider/key/URL stack +
+                            Model Diagnostics. */}
+                        {isTeacherMode && (
                         <button
                           onClick={() => setShowAIBackendModal(true)}
                           data-help-key="header_ai_backend"
@@ -693,8 +698,8 @@ function HeaderBar(props) {
                               ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/50'
                               : 'hover:bg-white/10 text-white/80 hover:text-white border border-white/10'
                           }`}
-                          title={t('header.ai_backend_config') || 'AI Backend Configuration'}
-                          aria-label={t('header.ai_backend_config') || 'AI Backend Configuration'}
+                          title={_isCanvasEnv ? (t('header.ai_diagnostics_canvas') || 'AI Settings & Model Diagnostics') : (t('header.ai_backend_config') || 'AI Backend Configuration')}
+                          aria-label={_isCanvasEnv ? (t('header.ai_diagnostics_canvas') || 'AI Settings & Model Diagnostics') : (t('header.ai_backend_config') || 'AI Backend Configuration')}
                         >
                           <Unplug size={14} aria-hidden="true" />
                           <span className="hidden lg:inline">AI</span>

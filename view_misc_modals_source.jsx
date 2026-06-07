@@ -290,11 +290,256 @@ function UDLGuideModal(props) {
   );
 }
 
+// ── ModelDiagnosticsSection ─────────────────────────────────────────────
+// Shared sub-section for both the deploy AIBackendModal and the inline
+// Canvas Advanced Settings modal. Three things:
+//   1. Requested → Served ledger — reads `window.__alloGeminiModelUsage`,
+//      populated by every successful Gemini call in gemini_api_source.jsx.
+//      The "Served" column is data.modelVersion from Google's response,
+//      which can differ from what the app asked for if Canvas / Google
+//      routes an alias to a different backbone.
+//   2. Available-models catalog — on demand, hits ListModels via the
+//      window.listAvailableGeminiModels function exposed by the host on
+//      _upgradeGeminiAPI. In Canvas, that catalog is Canvas's provisioned
+//      set (often narrower / has preview names absent from public GA).
+//   3. Current GEMINI_MODELS map + per-slot override dropdowns. Dropdown
+//      options are POPULATED from #2 — so users can only ever pick a model
+//      that's actually in their catalog (no fat-fingered 404s). Overrides
+//      persist to localStorage.alloflow_ai_config.models and the app
+//      applies them on next page load.
+function ModelDiagnosticsSection(props) {
+  const { t, _isCanvasEnv, GEMINI_MODELS } = props;
+  const [catalog, setCatalog] = useState([]);
+  const [catalogError, setCatalogError] = useState(null);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogFetched, setCatalogFetched] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const usage = (typeof window !== 'undefined' && window.__alloGeminiModelUsage) || {};
+  const usageEntries = Object.values(usage).sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
+
+  // Slots that map to the GEMINI_MODELS map. Listed in the order users care
+  // about most. 'safety' is a dedicated low-cost model used for content
+  // moderation; we expose it because it's a real slot, but it's rarely worth
+  // overriding so it sits at the end.
+  const slots = ['default', 'fallback', 'flash', 'image', 'vision', 'tts', 'quality', 'safety'];
+
+  const storedOverrides = (() => {
+    try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').models || {}; }
+    catch (_) { return {}; }
+  })();
+
+  const refreshCatalog = async () => {
+    setCatalogLoading(true);
+    setCatalogError(null);
+    try {
+      const fn = (typeof window !== 'undefined') ? window.listAvailableGeminiModels : null;
+      if (typeof fn !== 'function') {
+        setCatalogError(t('model_diag.list_unavailable') || 'Model catalog API not yet loaded. Try again in a moment.');
+        setCatalogLoading(false);
+        return;
+      }
+      const result = await fn();
+      if (result.error) {
+        setCatalogError(result.error);
+        setCatalog([]);
+      } else {
+        setCatalog(result.models || []);
+        setCatalogError(null);
+      }
+      setCatalogFetched(true);
+    } catch (e) {
+      setCatalogError((e && e.message) || 'Unknown error');
+      setCatalog([]);
+    }
+    setCatalogLoading(false);
+  };
+
+  const saveOverride = (slot, value) => {
+    try {
+      const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
+      const models = { ...(current.models || {}) };
+      if (value) models[slot] = value;
+      else delete models[slot];
+      const next = { ...current, models };
+      // If no overrides remain, drop the whole `models` key so the stored
+      // config stays tidy.
+      if (Object.keys(models).length === 0) delete next.models;
+      localStorage.setItem('alloflow_ai_config', JSON.stringify(next));
+      setRefreshKey(k => k + 1);
+    } catch (_) { /* localStorage may be disabled */ }
+  };
+
+  const clearAllOverrides = () => {
+    try {
+      const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
+      delete current.models;
+      localStorage.setItem('alloflow_ai_config', JSON.stringify(current));
+      setRefreshKey(k => k + 1);
+    } catch (_) {}
+  };
+
+  const formatRelativeTime = (ts) => {
+    if (!ts) return '—';
+    const now = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
+    const ago = now - ts;
+    if (ago < 60_000) return Math.max(1, Math.floor(ago / 1000)) + 's ago';
+    if (ago < 3_600_000) return Math.floor(ago / 60_000) + 'm ago';
+    return Math.floor(ago / 3_600_000) + 'h ago';
+  };
+
+  return (
+    <div className="pt-3 border-t-2 border-violet-50">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="bg-indigo-100 p-1.5 rounded-lg"><Cpu size={14} className="text-indigo-600"/></div>
+        <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">{t('model_diag.header') || 'AI Model Diagnostics'}</h4>
+      </div>
+
+      {/* ── 1. Requested → Served ledger ── */}
+      <div className="mb-3">
+        <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('model_diag.served_header') || 'Models actually used this session'}</p>
+        {usageEntries.length === 0 ? (
+          <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+            <p className="text-[11px] text-slate-600 italic">{t('model_diag.no_calls_yet') || 'No AI calls completed yet this session. Run an audit, generate text, or use any AI feature to populate.'}</p>
+          </div>
+        ) : (
+          <div className="bg-slate-50 rounded-lg border border-slate-100 overflow-x-auto">
+            <table className="text-[11px] w-full">
+              <thead>
+                <tr className="bg-slate-100 text-slate-700">
+                  <th className="text-left p-1.5 font-bold">{t('model_diag.col_requested') || 'Requested'}</th>
+                  <th className="text-left p-1.5 font-bold">{t('model_diag.col_served') || 'Served by Google'}</th>
+                  <th className="text-right p-1.5 font-bold">{t('model_diag.col_count') || 'Calls'}</th>
+                  <th className="text-right p-1.5 font-bold">{t('model_diag.col_last') || 'Last'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usageEntries.map((entry, i) => (
+                  <tr key={i} className={entry.divergent ? 'bg-amber-50 border-t border-amber-200' : 'border-t border-slate-200'}>
+                    <td className="p-1.5 font-mono text-slate-700">{entry.requested}</td>
+                    <td className="p-1.5 font-mono text-slate-700">
+                      {entry.served || <span className="italic text-slate-400">{t('model_diag.unreported') || '(unreported)'}</span>}
+                      {entry.divergent && <span className="ml-1 text-amber-700 font-bold" title={t('model_diag.divergent_tooltip') || 'Google routed this request to a different model'}>⇄</span>}
+                    </td>
+                    <td className="p-1.5 text-right text-slate-700 font-bold">{entry.count}</td>
+                    <td className="p-1.5 text-right text-slate-600">{formatRelativeTime(entry.lastSeen)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <p className="text-[10px] text-slate-500 mt-1 italic">{t('model_diag.served_hint') || '⇄ marks a row where Google served a different model than the one requested (silent reroute by the API).'}</p>
+      </div>
+
+      {/* ── 2. Catalog ── */}
+      <div className="mb-3">
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('model_diag.catalog_header') || 'Available models for your API key'}</p>
+          <button
+            type="button"
+            onClick={refreshCatalog}
+            disabled={catalogLoading}
+            className="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded hover:bg-indigo-200 disabled:opacity-50 active:scale-95"
+          >
+            {catalogLoading ? (t('model_diag.loading') || '⏳ Loading...') : ((catalogFetched ? '↻ ' : '↓ ') + (t('model_diag.refresh') || 'Fetch catalog'))}
+          </button>
+        </div>
+        {catalogError && (
+          <div className="bg-red-50 p-2 rounded-lg border border-red-100 mb-2">
+            <p className="text-[11px] text-red-700 font-medium">⚠ {catalogError}</p>
+          </div>
+        )}
+        {catalog.length > 0 && (
+          <div className="bg-slate-50 rounded-lg border border-slate-100 max-h-40 overflow-y-auto">
+            <table className="text-[10px] w-full">
+              <thead className="sticky top-0 bg-slate-100">
+                <tr className="text-slate-700">
+                  <th className="text-left p-1 font-bold">{t('model_diag.col_id') || 'Model'}</th>
+                  <th className="text-left p-1 font-bold">{t('model_diag.col_display') || 'Name'}</th>
+                  <th className="text-right p-1 font-bold" title={t('model_diag.col_in_tt') || 'Input token limit'}>{t('model_diag.col_in') || 'In tok'}</th>
+                  <th className="text-right p-1 font-bold" title={t('model_diag.col_out_tt') || 'Output token limit'}>{t('model_diag.col_out') || 'Out tok'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {catalog.map((m, i) => (
+                  <tr key={i} className="border-t border-slate-200">
+                    <td className="p-1 font-mono text-slate-700">{m.id}</td>
+                    <td className="p-1 text-slate-700">{m.displayName}</td>
+                    <td className="p-1 text-right text-slate-600">{m.inputTokenLimit ? m.inputTokenLimit.toLocaleString() : '—'}</td>
+                    <td className="p-1 text-right text-slate-600">{m.outputTokenLimit ? m.outputTokenLimit.toLocaleString() : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {!catalogFetched && !catalogError && (
+          <p className="text-[10px] text-slate-500 italic">{t('model_diag.click_to_load') || 'Click "Fetch catalog" to query Google for the list of models your key can access.'}</p>
+        )}
+      </div>
+
+      {/* ── 3. Current model map + per-slot overrides ── */}
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('model_diag.map_header') || 'Current model map (what the app requests)'}</p>
+          {Object.keys(storedOverrides).length > 0 && (
+            <button
+              type="button"
+              onClick={clearAllOverrides}
+              className="text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-700 px-2 py-1 rounded hover:bg-slate-300 active:scale-95"
+              title={t('model_diag.clear_all_tt') || 'Remove every per-slot override and revert to app defaults'}
+            >
+              {t('model_diag.clear_all') || '↩ Clear overrides'}
+            </button>
+          )}
+        </div>
+        <div className="bg-slate-50 rounded-lg border border-slate-100 p-2 space-y-1.5">
+          {slots.map((slot) => {
+            const current = (GEMINI_MODELS && GEMINI_MODELS[slot]) || '(not set)';
+            const overridden = !!storedOverrides[slot];
+            const inCatalog = (catalog.length === 0) || catalog.some(m => m.id === current);
+            return (
+              <div key={slot + ':' + refreshKey} className="flex items-center gap-1.5 text-[11px]">
+                <span className="font-bold text-slate-700 uppercase tracking-wider w-14 shrink-0">{slot}</span>
+                {catalog.length > 0 ? (
+                  <select
+                    defaultValue={storedOverrides[slot] || ''}
+                    onChange={(e) => saveOverride(slot, e.target.value)}
+                    className="flex-1 p-1 text-[11px] border border-slate-200 rounded bg-white font-mono text-slate-700"
+                    aria-label={(t('model_diag.slot_aria') || 'Model override for slot') + ': ' + slot}
+                  >
+                    <option value="">{(t('model_diag.use_default_prefix') || 'Use app default') + ' (' + current + ')'}</option>
+                    {catalog.map((m, i) => <option key={i} value={m.id}>{m.id}</option>)}
+                  </select>
+                ) : (
+                  <span className="flex-1 font-mono text-slate-700">{current}</span>
+                )}
+                {overridden && !inCatalog && catalog.length > 0 && (
+                  <span className="text-[10px] text-amber-700 font-bold whitespace-nowrap" title={t('model_diag.not_in_catalog_tt') || 'This override is not in your current model catalog — may 404 at request time'}>⚠ {t('model_diag.not_in_catalog') || 'not in catalog'}</span>
+                )}
+                {overridden && (inCatalog || catalog.length === 0) && (
+                  <span className="text-[10px] text-indigo-700 font-bold" title={t('model_diag.overridden_tt') || 'You have overridden this slot'}>✎</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-[10px] text-slate-500 mt-1.5 italic">⚡ {t('model_diag.reload_hint') || 'Reload the page after changing a model override for it to take effect.'}</p>
+        {_isCanvasEnv && (
+          <p className="text-[10px] text-slate-500 mt-0.5 italic">{t('model_diag.canvas_hint') || 'In Gemini Canvas, available models are determined by Google and may be a narrower set than public GA.'}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── AIBackendModal (AI Backend Modal) — gate: showAIBackendModal && !_isCanvasEnv ──
 function AIBackendModal(props) {
   const {
     _isCanvasEnv, ai,
-    setShowAIBackendModal, showAIBackendModal, t
+    setShowAIBackendModal, showAIBackendModal, t,
+    GEMINI_MODELS
   } = props;
   if (!(showAIBackendModal && !_isCanvasEnv)) return null;
   return (
@@ -558,6 +803,9 @@ function AIBackendModal(props) {
                         </p>
                     </div>
                 </div>
+
+                {/* ─── Section 5: AI Model Diagnostics (shared with Canvas modal) ─── */}
+                <ModelDiagnosticsSection t={t} _isCanvasEnv={_isCanvasEnv} GEMINI_MODELS={GEMINI_MODELS} />
 
                 {/* ─── Active Config Summary ─── */}
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">

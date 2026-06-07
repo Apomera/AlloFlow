@@ -83,9 +83,10 @@ window.AlloModules = window.AlloModules || {};
 // (they aren't defined in this scope) and is harmless only because view_misc_panels loads later.
 window.AlloModules.UDLGuideModal = (typeof UDLGuideModal !== 'undefined') ? UDLGuideModal : null;
 window.AlloModules.AIBackendModal = (typeof AIBackendModal !== 'undefined') ? AIBackendModal : null;
+window.AlloModules.ModelDiagnosticsSection = (typeof ModelDiagnosticsSection !== 'undefined') ? ModelDiagnosticsSection : null;
 window.AlloModules.ViewMiscModalsModule = true;
 window.AlloModules.MiscModals = true;  // satisfies loadModule('MiscModals', ...) registration check
-console.log('[CDN] ViewMiscModalsModule loaded — 2 modals registered (UDLGuide, AIBackend)');
+console.log('[CDN] ViewMiscModalsModule loaded — 2 modals + 1 shared section registered (UDLGuide, AIBackend, ModelDiagnosticsSection)');
 })();
 `;
 

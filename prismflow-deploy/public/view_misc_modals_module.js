@@ -316,13 +316,121 @@ function UDLGuideModal(props) {
     isShowMeMode ? /* @__PURE__ */ React.createElement(Eye, { size: 18 }) : /* @__PURE__ */ React.createElement(Send, { size: 18 })
   ))));
 }
+function ModelDiagnosticsSection(props) {
+  const { t, _isCanvasEnv, GEMINI_MODELS } = props;
+  const [catalog, setCatalog] = useState([]);
+  const [catalogError, setCatalogError] = useState(null);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogFetched, setCatalogFetched] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const usage = typeof window !== "undefined" && window.__alloGeminiModelUsage || {};
+  const usageEntries = Object.values(usage).sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
+  const slots = ["default", "fallback", "flash", "image", "vision", "tts", "quality", "safety"];
+  const storedOverrides = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}").models || {};
+    } catch (_) {
+      return {};
+    }
+  })();
+  const refreshCatalog = async () => {
+    setCatalogLoading(true);
+    setCatalogError(null);
+    try {
+      const fn = typeof window !== "undefined" ? window.listAvailableGeminiModels : null;
+      if (typeof fn !== "function") {
+        setCatalogError(t("model_diag.list_unavailable") || "Model catalog API not yet loaded. Try again in a moment.");
+        setCatalogLoading(false);
+        return;
+      }
+      const result = await fn();
+      if (result.error) {
+        setCatalogError(result.error);
+        setCatalog([]);
+      } else {
+        setCatalog(result.models || []);
+        setCatalogError(null);
+      }
+      setCatalogFetched(true);
+    } catch (e) {
+      setCatalogError(e && e.message || "Unknown error");
+      setCatalog([]);
+    }
+    setCatalogLoading(false);
+  };
+  const saveOverride = (slot, value) => {
+    try {
+      const current = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
+      const models = { ...current.models || {} };
+      if (value) models[slot] = value;
+      else delete models[slot];
+      const next = { ...current, models };
+      if (Object.keys(models).length === 0) delete next.models;
+      localStorage.setItem("alloflow_ai_config", JSON.stringify(next));
+      setRefreshKey((k) => k + 1);
+    } catch (_) {
+    }
+  };
+  const clearAllOverrides = () => {
+    try {
+      const current = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
+      delete current.models;
+      localStorage.setItem("alloflow_ai_config", JSON.stringify(current));
+      setRefreshKey((k) => k + 1);
+    } catch (_) {
+    }
+  };
+  const formatRelativeTime = (ts) => {
+    if (!ts) return "\u2014";
+    const now = typeof Date !== "undefined" && Date.now ? Date.now() : 0;
+    const ago = now - ts;
+    if (ago < 6e4) return Math.max(1, Math.floor(ago / 1e3)) + "s ago";
+    if (ago < 36e5) return Math.floor(ago / 6e4) + "m ago";
+    return Math.floor(ago / 36e5) + "h ago";
+  };
+  return /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-indigo-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("model_diag.header") || "AI Model Diagnostics")), /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("model_diag.served_header") || "Models actually used this session"), usageEntries.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2.5 rounded-lg border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, t("model_diag.no_calls_yet") || "No AI calls completed yet this session. Run an audit, generate text, or use any AI feature to populate.")) : /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-100 overflow-x-auto" }, /* @__PURE__ */ React.createElement("table", { className: "text-[11px] w-full" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "bg-slate-100 text-slate-700" }, /* @__PURE__ */ React.createElement("th", { className: "text-left p-1.5 font-bold" }, t("model_diag.col_requested") || "Requested"), /* @__PURE__ */ React.createElement("th", { className: "text-left p-1.5 font-bold" }, t("model_diag.col_served") || "Served by Google"), /* @__PURE__ */ React.createElement("th", { className: "text-right p-1.5 font-bold" }, t("model_diag.col_count") || "Calls"), /* @__PURE__ */ React.createElement("th", { className: "text-right p-1.5 font-bold" }, t("model_diag.col_last") || "Last"))), /* @__PURE__ */ React.createElement("tbody", null, usageEntries.map((entry, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: entry.divergent ? "bg-amber-50 border-t border-amber-200" : "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "p-1.5 font-mono text-slate-700" }, entry.requested), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 font-mono text-slate-700" }, entry.served || /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-400" }, t("model_diag.unreported") || "(unreported)"), entry.divergent && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-amber-700 font-bold", title: t("model_diag.divergent_tooltip") || "Google routed this request to a different model" }, "\u21C4")), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-right text-slate-700 font-bold" }, entry.count), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-right text-slate-600" }, formatRelativeTime(entry.lastSeen))))))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1 italic" }, t("model_diag.served_hint") || "\u21C4 marks a row where Google served a different model than the one requested (silent reroute by the API).")), /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t("model_diag.catalog_header") || "Available models for your API key"), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: refreshCatalog,
+      disabled: catalogLoading,
+      className: "text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded hover:bg-indigo-200 disabled:opacity-50 active:scale-95"
+    },
+    catalogLoading ? t("model_diag.loading") || "\u23F3 Loading..." : (catalogFetched ? "\u21BB " : "\u2193 ") + (t("model_diag.refresh") || "Fetch catalog")
+  )), catalogError && /* @__PURE__ */ React.createElement("div", { className: "bg-red-50 p-2 rounded-lg border border-red-100 mb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 font-medium" }, "\u26A0 ", catalogError)), catalog.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-100 max-h-40 overflow-y-auto" }, /* @__PURE__ */ React.createElement("table", { className: "text-[10px] w-full" }, /* @__PURE__ */ React.createElement("thead", { className: "sticky top-0 bg-slate-100" }, /* @__PURE__ */ React.createElement("tr", { className: "text-slate-700" }, /* @__PURE__ */ React.createElement("th", { className: "text-left p-1 font-bold" }, t("model_diag.col_id") || "Model"), /* @__PURE__ */ React.createElement("th", { className: "text-left p-1 font-bold" }, t("model_diag.col_display") || "Name"), /* @__PURE__ */ React.createElement("th", { className: "text-right p-1 font-bold", title: t("model_diag.col_in_tt") || "Input token limit" }, t("model_diag.col_in") || "In tok"), /* @__PURE__ */ React.createElement("th", { className: "text-right p-1 font-bold", title: t("model_diag.col_out_tt") || "Output token limit" }, t("model_diag.col_out") || "Out tok"))), /* @__PURE__ */ React.createElement("tbody", null, catalog.map((m, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "p-1 font-mono text-slate-700" }, m.id), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-slate-700" }, m.displayName), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-right text-slate-600" }, m.inputTokenLimit ? m.inputTokenLimit.toLocaleString() : "\u2014"), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-right text-slate-600" }, m.outputTokenLimit ? m.outputTokenLimit.toLocaleString() : "\u2014")))))), !catalogFetched && !catalogError && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic" }, t("model_diag.click_to_load") || 'Click "Fetch catalog" to query Google for the list of models your key can access.')), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t("model_diag.map_header") || "Current model map (what the app requests)"), Object.keys(storedOverrides).length > 0 && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: clearAllOverrides,
+      className: "text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-700 px-2 py-1 rounded hover:bg-slate-300 active:scale-95",
+      title: t("model_diag.clear_all_tt") || "Remove every per-slot override and revert to app defaults"
+    },
+    t("model_diag.clear_all") || "\u21A9 Clear overrides"
+  )), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-100 p-2 space-y-1.5" }, slots.map((slot) => {
+    const current = GEMINI_MODELS && GEMINI_MODELS[slot] || "(not set)";
+    const overridden = !!storedOverrides[slot];
+    const inCatalog = catalog.length === 0 || catalog.some((m) => m.id === current);
+    return /* @__PURE__ */ React.createElement("div", { key: slot + ":" + refreshKey, className: "flex items-center gap-1.5 text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 uppercase tracking-wider w-14 shrink-0" }, slot), catalog.length > 0 ? /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        defaultValue: storedOverrides[slot] || "",
+        onChange: (e) => saveOverride(slot, e.target.value),
+        className: "flex-1 p-1 text-[11px] border border-slate-200 rounded bg-white font-mono text-slate-700",
+        "aria-label": (t("model_diag.slot_aria") || "Model override for slot") + ": " + slot
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "" }, (t("model_diag.use_default_prefix") || "Use app default") + " (" + current + ")"),
+      catalog.map((m, i) => /* @__PURE__ */ React.createElement("option", { key: i, value: m.id }, m.id))
+    ) : /* @__PURE__ */ React.createElement("span", { className: "flex-1 font-mono text-slate-700" }, current), overridden && !inCatalog && catalog.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-amber-700 font-bold whitespace-nowrap", title: t("model_diag.not_in_catalog_tt") || "This override is not in your current model catalog \u2014 may 404 at request time" }, "\u26A0 ", t("model_diag.not_in_catalog") || "not in catalog"), overridden && (inCatalog || catalog.length === 0) && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-indigo-700 font-bold", title: t("model_diag.overridden_tt") || "You have overridden this slot" }, "\u270E"));
+  })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5 italic" }, "\u26A1 ", t("model_diag.reload_hint") || "Reload the page after changing a model override for it to take effect."), _isCanvasEnv && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-0.5 italic" }, t("model_diag.canvas_hint") || "In Gemini Canvas, available models are determined by Google and may be a narrower set than public GA.")));
+}
 function AIBackendModal(props) {
   const {
     _isCanvasEnv,
     ai,
     setShowAIBackendModal,
     showAIBackendModal,
-    t
+    t,
+    GEMINI_MODELS
   } = props;
   if (!(showAIBackendModal && !_isCanvasEnv)) return null;
   return /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
@@ -591,7 +699,7 @@ function AIBackendModal(props) {
     /* @__PURE__ */ React.createElement("option", { value: "imagen" }, "\u{1F3A8} Imagen 4.0 (Google Cloud)"),
     /* @__PURE__ */ React.createElement("option", { value: "flux" }, "\u{1F5BC}\uFE0F FLUX (Local \u2014 port 7860)"),
     /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F6AB} Off (disable image generation)")
-  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-600" }, "Active:"), " ", (() => {
+  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-600" }, "Active:"), " ", (() => {
     try {
       const c = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
       return c.backend ? c.backend.charAt(0).toUpperCase() + c.backend.slice(1) + (c.baseUrl ? " \u2192 " + c.baseUrl : "") : "Gemini (default)";
@@ -606,7 +714,8 @@ window.AlloModules = window.AlloModules || {};
 // (they aren't defined in this scope) and is harmless only because view_misc_panels loads later.
 window.AlloModules.UDLGuideModal = (typeof UDLGuideModal !== 'undefined') ? UDLGuideModal : null;
 window.AlloModules.AIBackendModal = (typeof AIBackendModal !== 'undefined') ? AIBackendModal : null;
+window.AlloModules.ModelDiagnosticsSection = (typeof ModelDiagnosticsSection !== 'undefined') ? ModelDiagnosticsSection : null;
 window.AlloModules.ViewMiscModalsModule = true;
 window.AlloModules.MiscModals = true;  // satisfies loadModule('MiscModals', ...) registration check
-console.log('[CDN] ViewMiscModalsModule loaded — 2 modals registered (UDLGuide, AIBackend)');
+console.log('[CDN] ViewMiscModalsModule loaded — 2 modals + 1 shared section registered (UDLGuide, AIBackend, ModelDiagnosticsSection)');
 })();
