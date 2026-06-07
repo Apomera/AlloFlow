@@ -199,7 +199,7 @@ var d = (labToolData.probability) || {};
 
           var runTrial = function(n) {
 
-            const results = [...d.results];
+            const results = [...(d.results || [])];
 
             var newPiPoints = [];
 
@@ -231,7 +231,7 @@ var d = (labToolData.probability) || {};
 
                 }
 
-                if (results.length === d.results.length + i) results.push(activeSport.outcomes[activeSport.outcomes.length - 1]);
+                if (results.length === (d.results || []).length + i) results.push(activeSport.outcomes[activeSport.outcomes.length - 1]);
 
               }
 
@@ -247,7 +247,7 @@ var d = (labToolData.probability) || {};
 
                 }
 
-                if (results.length === d.results.length + i) results.push(customOutcomes[customOutcomes.length - 1].label);
+                if (results.length === (d.results || []).length + i) results.push(customOutcomes[customOutcomes.length - 1].label);
 
               }
 
@@ -301,7 +301,7 @@ var d = (labToolData.probability) || {};
 
                   }
 
-                  if (results.length === d.results.length + i) results.push(customOutcomes[customOutcomes.length - 1].label);
+                  if (results.length === (d.results || []).length + i) results.push(customOutcomes[customOutcomes.length - 1].label);
 
                 }
 
