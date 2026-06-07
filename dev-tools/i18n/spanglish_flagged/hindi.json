@@ -1,0 +1,1941 @@
+{
+  "loading_hint": {
+    "en": "Module loading from CDN. If this persists, check your connection.",
+    "tr": "Module loading से CDN. यदि यह persists, जाँच आपका connection.",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.abc_desc": {
+    "en": "Record antecedent, behavior, and consequence observations",
+    "tr": "Record antecedent, व्यवहार, और consequence अवलोकन",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.obs_desc": {
+    "en": "Real-time interval, frequency, or duration recording",
+    "tr": "वास्तविक समय interval, frequency, या duration recording",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.analysis_desc": {
+    "en": "AI-powered behavior pattern analysis & recommendations",
+    "tr": "AI-powered व्यवहार pattern विश्लेषण & recommendations",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.overview_desc": {
+    "en": "Behavior trends, charts, and summary statistics",
+    "tr": "व्यवहार trends, चार्ट, और सारांश statistics",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.interval_desc": {
+    "en": "Partial, whole, or momentary time sampling grid",
+    "tr": "Partial, whole, या momentary समय sampling ग्रिड",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.token_desc": {
+    "en": "Visual reinforcement board with customizable tokens",
+    "tr": "दृश्य reinforcement board के साथ customizable tokens",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.record_desc": {
+    "en": "Paste IEP/evaluations for AI-powered summarization",
+    "tr": "पेस्ट करें IEP/evaluations के लिए AI-powered summarization",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "hub.contract_desc": {
+    "en": "AI-drafted student-teacher behavior agreement",
+    "tr": "AI-drafted छात्र-शिक्षक व्यवहार agreement",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.cycle_desc": {
+    "en": "7-phase escalation cycle with intervention strategies",
+    "tr": "7-phase escalation cycle के साथ हस्तक्षेप रणनीतियां",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.reinforcer_desc": {
+    "en": "Identify effective reinforcers across 5 categories",
+    "tr": "पहचानना effective reinforcers के पार 5 श्रेणियां",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.audit_desc": {
+    "en": "8-item classroom environment checklist with AI recommendations",
+    "tr": "8-आइटम कक्षा environment checklist के साथ AI recommendations",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.impact_desc": {
+    "en": "Quantify behavior frequency, duration, and annual cost",
+    "tr": "Quantify व्यवहार frequency, duration, और annual cost",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "hub.traffic_desc": {
+    "en": "Student-facing red/yellow/green behavior zone poster",
+    "tr": "student-facing red/yellow/green व्यवहार zone poster",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "hub.datasheet_desc": {
+    "en": "Printable frequency, duration, ABC, or latency data sheets",
+    "tr": "प्रिंट करने योग्य frequency, duration, ABC, या latency डेटा sheets",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.homenote_desc": {
+    "en": "AI-drafted parent communication with tone selector",
+    "tr": "AI-drafted अभिभावक communication के साथ स्वर selector",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.feasibility_desc": {
+    "en": "5-question contextual fit assessment with AI recommendations",
+    "tr": "5-प्रश्न contextual fit मूल्यांकन के साथ AI recommendations",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.gas_desc": {
+    "en": "Goal Attainment Scaling with AI-generated descriptors",
+    "tr": "लक्ष्य Attainment Scaling के साथ AI-generated descriptors",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.abaguide_desc": {
+    "en": "Searchable glossary, reinforcement schedules, decision tree & common mistakes",
+    "tr": "Searchable शब्दकोश, reinforcement schedules, निर्णय tree & सामान्य mistakes",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "hub.antecedentmod_desc": {
+    "en": "AI-powered environmental change recommendations to prevent behaviors before they start",
+    "tr": "AI-powered environmental बदलाव recommendations को prevent व्यवहार पहले वे शुरू करें",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.bcbahandoff_desc": {
+    "en": "Data dashboard for BCBAs + printable handoff packet for consultation",
+    "tr": "डेटा डैशबोर्ड के लिए BCBAs + प्रिंट करने योग्य handoff packet के लिए consultation",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "hub.biascheck_desc": {
+    "en": "Gently surfaces patterns in your data for reflection on potential implicit bias — growth, not guilt",
+    "tr": "Gently surfaces पैटर्न में आपका डेटा के लिए reflection पर potential implicit bias — growth, नहीं guilt",
+    "contentWordCount": 11,
+    "matchedCount": 8,
+    "ratio": 0.73
+  },
+  "hub.caseload_desc": {
+    "en": "Bird\\'s-eye overview of all students — status indicators, trends, safety alerts, and AI caseload summary",
+    "tr": "Bird\\'s-eye overview का सभी छात्र — status indicators, trends, safety alerts, और AI caseload सारांश",
+    "contentWordCount": 10,
+    "matchedCount": 8,
+    "ratio": 0.8
+  },
+  "hub.casestudy_desc": {
+    "en": "AI-generated case studies with 4-phase clinical reasoning and scoring",
+    "tr": "AI-generated case studies के साथ 4-phase clinical reasoning और scoring",
+    "contentWordCount": 8,
+    "matchedCount": 7,
+    "ratio": 0.88
+  },
+  "hub.commlog_desc": {
+    "en": "Two-way family contact tracker with follow-ups — ensure no family falls through the cracks",
+    "tr": "Two-way family contact tracker के साथ follow-ups — ensure no family falls के माध्यम से cracks",
+    "contentWordCount": 10,
+    "matchedCount": 8,
+    "ratio": 0.8
+  },
+  "hub.condprob_desc": {
+    "en": "Foreground vs background probability analysis to validate ABC hypotheses with data",
+    "tr": "Foreground vs background संभावना विश्लेषण को validate ABC hypotheses के साथ डेटा",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.consent_desc": {
+    "en": "Customizable consent form for parent data exchange — edit, print, share as JSON",
+    "tr": "customizable consent form के लिए अभिभावक डेटा exchange — संपादित करें, प्रिंट करें, साझा करें as JSON",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.cultural_title": {
+    "en": "Cultural Context Reflection",
+    "tr": "Cultural संदर्भ Reflection",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.deescalate_desc": {
+    "en": "Breathing exercises, visual timers, sensory breaks, and grounding — real-time calming support",
+    "tr": "Breathing exercises, दृश्य timers, sensory breaks, और grounding — वास्तविक समय calming समर्थन",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "hub.drstrategy_desc": {
+    "en": "Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)",
+    "tr": "चुनें सही differential reinforcement रणनीति (DRA, DRI, DRO, DRL)",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.dtt_desc": {
+    "en": "Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance",
+    "tr": "Discrete Trial Training — trial-by-trial recording के साथ mastery criteria और स्वतः-आगे बढ़ें",
+    "contentWordCount": 11,
+    "matchedCount": 8,
+    "ratio": 0.73
+  },
+  "hub.effectsize_desc": {
+    "en": "Calculate Tau-U, NAP, and PND to quantify intervention effectiveness with visual phase comparison",
+    "tr": "गणना करें Tau-U, NAP, और PND को quantify हस्तक्षेप effectiveness के साथ दृश्य phase comparison",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.familyvoice_desc": {
+    "en": "Structured form for families to share observations, cultural insights, and celebrations — with AI translation",
+    "tr": "Structured form के लिए families को साझा करें अवलोकन, cultural insights, और celebrations — के साथ AI अनुवाद",
+    "contentWordCount": 10,
+    "matchedCount": 6,
+    "ratio": 0.6
+  },
+  "hub.fbaworkflow_desc": {
+    "en": "Step-by-step guided workflows for FBA, BIP, and RTI behavior tiers with AI coaching",
+    "tr": "step-by-step guided workflows के लिए FBA, BIP, और RTI व्यवहार tiers के साथ AI coaching",
+    "contentWordCount": 8,
+    "matchedCount": 6,
+    "ratio": 0.75
+  },
+  "hub.fcttemplate_desc": {
+    "en": "Functional Communication Training planning with modality selection",
+    "tr": "Functional Communication Training planning के साथ modality selection",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "hub.gamify_desc": {
+    "en": "Student-facing mood tracker with streaks, badges, quests, and reflection journal",
+    "tr": "student-facing mood tracker के साथ streaks, बैज, खोज, और reflection journal",
+    "contentWordCount": 10,
+    "matchedCount": 7,
+    "ratio": 0.7
+  },
+  "hub.iepgoals_desc": {
+    "en": "AI-generated present levels, SMART goals, objectives, accommodations, and progress monitoring plans",
+    "tr": "AI-generated present स्तर, SMART लक्ष्य, objectives, accommodations, और प्रगति monitoring plans",
+    "contentWordCount": 9,
+    "matchedCount": 6,
+    "ratio": 0.67
+  },
+  "hub.iepprep_desc": {
+    "en": "AI-generated meeting preparation packet with data summary, talking points, and next steps",
+    "tr": "AI-generated meeting preparation packet के साथ डेटा सारांश, talking बिंदु, और अगला चरण",
+    "contentWordCount": 11,
+    "matchedCount": 5,
+    "ratio": 0.45
+  },
+  "hub.intervention_desc": {
+    "en": "AI-generated multi-week intervention plan with measurable goals and milestones",
+    "tr": "AI-generated multi-week हस्तक्षेप योजना के साथ measurable लक्ष्य और milestones",
+    "contentWordCount": 9,
+    "matchedCount": 5,
+    "ratio": 0.56
+  },
+  "hub.ioacalc_desc": {
+    "en": "Inter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count",
+    "tr": "Inter-Observer Agreement के साथ 6 methods — बिंदु-by-बिंदु, interval, scored/unscored, exact गिनें",
+    "contentWordCount": 12,
+    "matchedCount": 8,
+    "ratio": 0.67
+  },
+  "hub.maintenance_desc": {
+    "en": "Track skill retention post-mastery and generalization across settings, people, and materials",
+    "tr": "Track कौशल retention post-mastery और generalization के पार सेटिंग्स, people, और सामग्री",
+    "contentWordCount": 10,
+    "matchedCount": 6,
+    "ratio": 0.6
+  },
+  "hub.mtss_desc": {
+    "en": "Visual 3-tier pyramid for managing multi-tiered supports with AI-powered tier placement recommendations",
+    "tr": "दृश्य 3-स्तर pyramid के लिए managing multi-tiered समर्थन के साथ AI-powered स्तर placement recommendations",
+    "contentWordCount": 12,
+    "matchedCount": 7,
+    "ratio": 0.58
+  },
+  "hub.nlabc_desc": {
+    "en": "Type or paste observation notes in everyday English — AI structures them into ABC entries automatically",
+    "tr": "प्रकार या पेस्ट करें अवलोकन नोट्स में everyday English — AI structures them में ABC entries स्वचालित रूप से",
+    "contentWordCount": 11,
+    "matchedCount": 5,
+    "ratio": 0.45
+  },
+  "hub.obscoach_desc": {
+    "en": "Real-time coaching on your data collection quality — identifies gaps, suggests improvements, and rates your data",
+    "tr": "वास्तविक समय coaching पर आपका डेटा collection गुणवत्ता — identifies gaps, suggests improvements, और rates आपका डेटा",
+    "contentWordCount": 14,
+    "matchedCount": 7,
+    "ratio": 0.5
+  },
+  "hub.pdpath_desc": {
+    "en": "Guided onboarding modules for building ABA skills step-by-step",
+    "tr": "Guided onboarding modules के लिए building ABA कौशल step-by-step",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "hub.prefassess_desc": {
+    "en": "Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols",
+    "tr": "systematic reinforcer identification — MSWO, Paired Stimulus, और मुफ्त Operant protocols",
+    "contentWordCount": 8,
+    "matchedCount": 7,
+    "ratio": 0.88
+  },
+  "hub.progress_desc": {
+    "en": "IEP-ready progress monitoring paragraphs from accumulated behavioral data",
+    "tr": "IEP-ready प्रगति monitoring अनुच्छेद से accumulated behavioral डेटा",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.qualitycheck_desc": {
+    "en": "AI-powered review of your ABC entries with specific improvement suggestions",
+    "tr": "AI-powered समीक्षा का आपका ABC entries के साथ विशिष्ट improvement suggestions",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.quick_launch_hint": {
+    "en": "Core clinical tools — one tap access",
+    "tr": "Core clinical उपकरण — one tap पहुंच",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "hub.reinforcement_desc": {
+    "en": "Structured motivation survey — identify what drives each student across 6 categories",
+    "tr": "Structured motivation survey — पहचानना क्या drives प्रत्येक छात्र के पार 6 श्रेणियां",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "hub.relmap_desc": {
+    "en": "Visual diagram of student connections — trusted adults, peers, family, mentors — with gap analysis",
+    "tr": "दृश्य आरेख का छात्र connections — trusted adults, peers, family, mentors — के साथ gap विश्लेषण",
+    "contentWordCount": 11,
+    "matchedCount": 6,
+    "ratio": 0.55
+  },
+  "hub.replacebehavior_title": {
+    "en": "Replacement Behavior Planner",
+    "tr": "Replacement व्यवहार Planner",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.restorative_desc": {
+    "en": "Step-by-step scripts for harm repair, community circles, and reintegration conferences",
+    "tr": "step-by-step scripts के लिए harm repair, समुदाय वृत्त, और reintegration conferences",
+    "contentWordCount": 9,
+    "matchedCount": 7,
+    "ratio": 0.78
+  },
+  "hub.restorative_title": {
+    "en": "Restorative Conversation Guide",
+    "tr": "Restorative बातचीत Guide",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.scdmanager_desc": {
+    "en": "AB, ABAB, Multiple Baseline, Alternating Treatments, Changing Criterion",
+    "tr": "AB, ABAB, कई Baseline, Alternating Treatments, Changing Criterion",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "hub.selfcheck_desc": {
+    "en": "Student-facing mood check-in and reflection journal — capturing their voice",
+    "tr": "student-facing mood जाँच-में और reflection journal — capturing उनका आवाज़",
+    "contentWordCount": 9,
+    "matchedCount": 6,
+    "ratio": 0.67
+  },
+  "hub.sessionnotes_desc": {
+    "en": "Timestamped observation notes with voice dictation — capture context as it happens",
+    "tr": "Timestamped अवलोकन नोट्स के साथ आवाज़ dictation — capture संदर्भ as it happens",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.sessiontracker_desc": {
+    "en": "Systematic session-based behavioral measurement with rate calculation",
+    "tr": "systematic सत्र-आधारित behavioral measurement के साथ rate calculation",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "hub.snapshot_title": {
+    "en": "Student Snapshot Exchange",
+    "tr": "छात्र Snapshot Exchange",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.socialvalidity_desc": {
+    "en": "TARF and IRP-15 scales for measuring treatment acceptability — required for publication",
+    "tr": "TARF और IRP-15 scales के लिए measuring treatment acceptability — आवश्यक के लिए publication",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "hub.teamnotes_desc": {
+    "en": "Multi-role timestamped collaboration thread for teachers, paras, counselors, and parents",
+    "tr": "Multi-role timestamped सहयोग thread के लिए शिक्षक, paras, counselors, और अभिभावक",
+    "contentWordCount": 9,
+    "matchedCount": 6,
+    "ratio": 0.67
+  },
+  "hub.treatintegrity_desc": {
+    "en": "Document whether interventions are implemented as designed — component-level fidelity tracking",
+    "tr": "दस्तावेज़ whether हस्तक्षेप हैं implemented as designed — घटक-स्तर fidelity ट्रैकिंग",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.cantdowontdo_desc": {
+    "en": "Sort skill vs. performance deficits to pick the right support.",
+    "tr": "क्रमबद्ध करें कौशल vs. performance deficits को pick सही समर्थन.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "hub.competingpathways_desc": {
+    "en": "Map desired and replacement behaviors against the problem path.",
+    "tr": "Map desired और replacement व्यवहार against problem path.",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "hub.mipractice_title": {
+    "en": "Motivational Interviewing Practice",
+    "tr": "Motivational Interviewing अभ्यास करें",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.mipractice_desc": {
+    "en": "Rehearse MI conversations with simulated student responses.",
+    "tr": "Rehearse MI conversations के साथ अनुकरण किया गया छात्र responses.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.practicum_desc": {
+    "en": "Run a guided practice case from start to finish.",
+    "tr": "चलाएं एक guided अभ्यास करें case से शुरू करें को finish.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "abc.analysis_failed": {
+    "en": "Analysis failed — try again",
+    "tr": "विश्लेषण failed — प्रयास करें again",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "abc.setting_placeholder": {
+    "en": "e.g., Classroom, Hallway, Cafeteria",
+    "tr": "e.g., कक्षा, Hallway, Cafeteria",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "overview.empty_desc": {
+    "en": "Start collecting ABC data or run live observations to see trends here.",
+    "tr": "शुरू करें collecting ABC डेटा या चलाएं लाइव अवलोकन को देखें trends here.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "token.target_placeholder": {
+    "en": "e.g., Raise hand before speaking",
+    "tr": "e.g., Raise hand पहले speaking",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "hotspot.tap_hint": {
+    "en": "Tap a cell to increment. Click routine name to edit.",
+    "tr": "Tap एक सेल को increment. क्लिक करें routine name को संपादित करें.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "no_entries_match": {
+    "en": "No entries match your filters",
+    "tr": "नहीं entries मिलान आपका filters",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "quick_fill_hint": {
+    "en": "AI will parse your description into the fields below. You can then edit manually.",
+    "tr": "AI होगा parse आपका description में fields below. आप सकता है फिर संपादित करें मैनुअल रूप से.",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "quiz_fba_purpose": {
+    "en": "What is the primary purpose of an FBA?",
+    "tr": "क्या है primary purpose का एक FBA?",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "quick_fill_placeholder": {
+    "en": "e.g. \"Student threw paper during math when asked to show work, teacher redirected calmly\"",
+    "tr": "e.g. \"छात्र threw paper के दौरान गणित जब asked को दिखाएं काम, शिक्षक redirected calmly\"",
+    "contentWordCount": 12,
+    "matchedCount": 5,
+    "ratio": 0.42
+  },
+  "nl_edit_placeholder": {
+    "en": "e.g. \"change consequence to teacher redirected\"",
+    "tr": "e.g. \"बदलाव consequence को शिक्षक redirected\"",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "reinforce_step_1": {
+    "en": "Start with dense reinforcement (e.g., FR-1 or FR-2)",
+    "tr": "शुरू करें के साथ dense reinforcement (e.g., FR-1 या FR-2)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "reinforce_step_2": {
+    "en": "Once behavior is consistent (~80%), increase ratio by 1-2",
+    "tr": "Once व्यवहार है consistent (~80%), increase ratio by 1-2",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "reinforce_step_3": {
+    "en": "Move to variable schedule (VR) for more natural maintenance",
+    "tr": "स्थानांतरित करें को चर schedule (VR) के लिए अधिक natural maintenance",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "reinforce_step_4": {
+    "en": "Gradually increase VR value (VR-3 → VR-5 → VR-8)",
+    "tr": "Gradually increase VR मान (VR-3 → VR-5 → VR-8)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "reinforce_step_5": {
+    "en": "Transition to intermittent/natural reinforcement",
+    "tr": "Transition को intermittent/natural reinforcement",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "fidelity_tip_1": {
+    "en": "Review implementation procedures with staff",
+    "tr": "समीक्षा implementation procedures के साथ staff",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "fidelity_tip_2": {
+    "en": "Provide additional BST (Behavioral Skills Training)",
+    "tr": "प्रदान additional BST (Behavioral कौशल Training)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "fidelity_tip_3": {
+    "en": "Simplify procedures if too complex",
+    "tr": "Simplify procedures यदि too जटिल",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "fidelity_tip_4": {
+    "en": "Consider environmental barriers to implementation",
+    "tr": "विचार environmental barriers को implementation",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "record_tip_4": {
+    "en": "Use specific, observable descriptions",
+    "tr": "उपयोग करें विशिष्ट, observable descriptions",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "quiz_opt_any_stops": {
+    "en": "Any behavior that stops the problem",
+    "tr": "कोई भी व्यवहार वह stops problem",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.a_break_help_someone_to_listen_space": {
+    "en": "A break? Help? Someone to listen? Space?",
+    "tr": "एक break? सहायता? Someone को सुनें? Space?",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.add_context_constraints_or_specific_challenges_eg": {
+    "en": "Add context, constraints, or specific challenges... e.g., \"The student also has a speech delay\" or \"This is a middle school student\"",
+    "tr": "जोड़ें संदर्भ, constraints, या विशिष्ट चुनौती... e.g., \" छात्र also has एक speech delay\" या \"यह है एक middle school छात्र\"",
+    "contentWordCount": 12,
+    "matchedCount": 6,
+    "ratio": 0.5
+  },
+  "ph.any_other_details_was_child_tired_hungry_etc": {
+    "en": "Any other details (was child tired, hungry, etc.)...",
+    "tr": "कोई भी अन्य विवरण (was child tired, hungry, etc.)...",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.describe_the_student_persona_eg_you_are_a_3rd_grad": {
+    "en": "Describe the student persona... e.g., \"You are a 3rd grader who becomes anxious during math and tends to cry and shut down...\"",
+    "tr": "Describe छात्र persona... e.g., \"आप हैं एक 3rd grader who becomes anxious के दौरान गणित और tends को cry और shut down...\"",
+    "contentWordCount": 11,
+    "matchedCount": 8,
+    "ratio": 0.73
+  },
+  "ph.describe_what_your_child_did": {
+    "en": "Describe what your child did...",
+    "tr": "Describe क्या आपका child did...",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.eg_does_a_token_economy_reduce_offtask_behavior_du": {
+    "en": "e.g. \"Does a token economy reduce off-task behavior during math instruction?\"",
+    "tr": "e.g. \"Does एक token economy reduce off-task व्यवहार के दौरान गणित निर्देश?\"",
+    "contentWordCount": 9,
+    "matchedCount": 5,
+    "ratio": 0.56
+  },
+  "ph.eg_hitting_peers_when_frustrated": {
+    "en": "e.g. Hitting peers when frustrated",
+    "tr": "e.g. Hitting peers जब frustrated",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ph.eg_student_is_defiant_and_refuses_to_follow_direct": {
+    "en": "e.g., \"Student is defiant and refuses to follow directions.\"",
+    "tr": "e.g., \"छात्र है defiant और refuses को follow directions.\"",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ph.eg_student_with_autism_cooccurring_adhd_new_to_the": {
+    "en": "e.g. \"student with autism\", \"co-occurring ADHD\", \"new to the school\"",
+    "tr": "e.g. \"छात्र के साथ autism\", \"co-occurring ADHD\", \"नया को school\"",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ph.enter_the_behavioral_goal_to_scale_eg_student_will": {
+    "en": "Enter the behavioral goal to scale (e.g., \"Student will remain in seat during independent work for 15 minutes\")",
+    "tr": "दर्ज करें behavioral लक्ष्य को scale (e.g., \"छात्र होगा remain में seat के दौरान independent काम के लिए 15 minutes\")",
+    "contentWordCount": 12,
+    "matchedCount": 6,
+    "ratio": 0.5
+  },
+  "ph.followup_needed_optional": {
+    "en": "Follow-up needed? (optional)",
+    "tr": "Follow-up needed? (वैकल्पिक)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.items_separated_by_semicolons": {
+    "en": "Items separated by semicolons",
+    "tr": "आइटम separated by semicolons",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.outcome_key_takeaways_optional": {
+    "en": "Outcome / key takeaways (optional)",
+    "tr": "Outcome / कुंजी takeaways (वैकल्पिक)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.rationale_which_antecedent_does_this_address": {
+    "en": "Rationale (which antecedent does this address?)",
+    "tr": "Rationale (which antecedent does यह address?)",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "ph.reflect_on_your_approachn_what_worked_welln_what_w": {
+    "en": "Reflect on your approach...\\n• What worked well?\\n• What would you do differently?\\n• What strategies do you want to practice next?",
+    "tr": "Reflect पर आपका approach...\\n• क्या worked well?\\n• क्या would आप do differently?\\n• क्या रणनीतियां do आप चाहते को अभ्यास करें अगला?",
+    "contentWordCount": 14,
+    "matchedCount": 6,
+    "ratio": 0.43
+  },
+  "ph.replacement_behavior_functionally_equivalent": {
+    "en": "✅ Replacement behavior (functionally equivalent)",
+    "tr": "✅ Replacement व्यवहार (functionally समतुल्य)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.share_what_you_notice_at_home_strengths_concerns_c": {
+    "en": "Share what you notice at home — strengths, concerns, cultural context, or suggestions for the school team...",
+    "tr": "साझा करें क्या आप notice at home — strengths, concerns, cultural संदर्भ, या suggestions के लिए school team...",
+    "contentWordCount": 11,
+    "matchedCount": 8,
+    "ratio": 0.73
+  },
+  "ph.topic_purpose_of_contact": {
+    "en": "Topic / purpose of contact",
+    "tr": "विषय / purpose का contact",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.type_language_eg_spanish_arabic_somali": {
+    "en": "Type language (e.g., Spanish, Arabic, Somali)",
+    "tr": "प्रकार भाषा (e.g., Spanish, Arabic, Somali)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.type_your_response_here_be_thorough_and_use_profes": {
+    "en": "Type your response here. Be thorough and use professional language...",
+    "tr": "प्रकार आपका प्रतिक्रिया here. Be thorough और उपयोग करें professional भाषा...",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ph.what_could_you_or_a_grownup_do_differently": {
+    "en": "What could you or a grown-up do differently?",
+    "tr": "क्या could आप या एक grown-up do differently?",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ph.what_made_you_feel_this_way_optional": {
+    "en": "What made you feel this way? (optional)",
+    "tr": "क्या made आप feel यह way? (वैकल्पिक)",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ph.what_was_going_on_before_you_felt_this_way": {
+    "en": "What was going on before you felt this way?",
+    "tr": "क्या was going पर पहले आप felt यह way?",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.added_n_entries_to_abc_data": {
+    "en": "Added N entries to ABC data!",
+    "tr": "Added N entries को ABC डेटा!",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.ai_suggestion_failed_try_again": {
+    "en": "AI suggestion failed — try again",
+    "tr": "AI suggestion failed — प्रयास करें again",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.all_entries_already_synced_to_abc_data": {
+    "en": "All entries already synced to ABC data",
+    "tr": "सभी entries already synced को ABC डेटा",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.behavior_occurred_dro_timer_reset": {
+    "en": "⚠️ Behavior occurred — DRO timer reset",
+    "tr": "⚠️ व्यवहार occurred — DRO timer रीसेट करें",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.case_study_complete_review_your_debrief": {
+    "en": "Case study complete! Review your debrief.",
+    "tr": "Case study पूरा करें! समीक्षा आपका debrief.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.case_study_generated_begin_phase_1": {
+    "en": "Case study generated! Begin Phase 1.",
+    "tr": "Case study उत्पन्न! Begin Phase 1.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.consent_template_exported": {
+    "en": "Consent template exported",
+    "tr": "Consent template निर्यात",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.data_loaded_from_cloud": {
+    "en": "☁️ Data loaded from cloud",
+    "tr": "☁️ डेटा loaded से cloud",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.dro_interval_complete_reinforce_no_target_behavior": {
+    "en": "🎉 DRO interval complete — REINFORCE! No target behavior occurred!",
+    "tr": "🎉 DRO interval पूरा करें — REINFORCE! नहीं लक्ष्य व्यवहार occurred!",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.each_phase_needs_at_least_2_data_points": {
+    "en": "Each phase needs at least 2 data points",
+    "tr": "प्रत्येक phase needs at least 2 डेटा बिंदु",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.effect_sizes_attached_to_iep_prep": {
+    "en": "Effect sizes attached to IEP Prep!",
+    "tr": "Effect sizes attached को IEP Prep!",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "toast.evaluation_failed_try_again": {
+    "en": "Evaluation failed. Try again.",
+    "tr": "Evaluation failed. प्रयास करें again.",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.failed_to_generate_case_study_try_again": {
+    "en": "Failed to generate case study. Try again.",
+    "tr": "Failed को उत्पन्न करें case study. प्रयास करें again.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.failed_to_generate_comparison": {
+    "en": "Failed to generate comparison",
+    "tr": "Failed को उत्पन्न करें comparison",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.failed_to_parse_snapshot_file": {
+    "en": "Failed to parse snapshot file",
+    "tr": "Failed को parse snapshot फ़ाइल",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.failed_to_parse_transcript": {
+    "en": "Failed to parse transcript",
+    "tr": "Failed को parse transcript",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.family_voice_entry_added": {
+    "en": "Family voice entry added ✨",
+    "tr": "Family आवाज़ entry added ✨",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.graph_data_attached_to_iep_prep": {
+    "en": "Graph data attached to IEP Prep!",
+    "tr": "ग्राफ़ डेटा attached को IEP Prep!",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.home_log_exported_as_snapshot": {
+    "en": "Home log exported as snapshot 📦",
+    "tr": "Home log निर्यात as snapshot 📦",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.iep_prep_packet_generated": {
+    "en": "IEP prep packet generated ✨",
+    "tr": "IEP prep packet उत्पन्न ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.interval_ready_reinforce_next_behavior": {
+    "en": "⏰ Interval ready — reinforce next behavior!",
+    "tr": "⏰ Interval ready — reinforce अगला व्यवहार!",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.language_customized_u2728": {
+    "en": "Language customized \\u2728",
+    "tr": "भाषा customized \\u2728",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.loaded_n_workspaces_for_comparison": {
+    "en": "Loaded N workspace(s) for comparison",
+    "tr": "Loaded N workspace(s) के लिए comparison",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.mastered_n_n_consecutive_sessions_at_criterion": {
+    "en": "🎉 MASTERED! N — N consecutive sessions at criterion!",
+    "tr": "🎉 MASTERED! N — N consecutive सत्र at criterion!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.merged_n_abc_entries_and_n_observations": {
+    "en": "Merged N ABC entries and N observations",
+    "tr": "Merged N ABC entries और N अवलोकन",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.n_home_entries_pushed_to_abc_data": {
+    "en": "N home entries pushed to ABC data ✅",
+    "tr": "N home entries pushed को ABC डेटा ✅",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.name_at_least_one_target_behavior": {
+    "en": "Name at least one target behavior",
+    "tr": "Name at least one लक्ष्य व्यवहार",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.need_at_least_2_data_points_per_phase": {
+    "en": "Need at least 2 data points per phase",
+    "tr": "आवश्यकता at least 2 डेटा बिंदु प्रति phase",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.need_at_least_2_phases_in_the_graph_baseline_inter": {
+    "en": "Need at least 2 phases in the Graph (baseline + intervention)",
+    "tr": "आवश्यकता at least 2 phases में ग्राफ़ (baseline + हस्तक्षेप)",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.no_valid_data_found_in_csv": {
+    "en": "No valid data found in CSV",
+    "tr": "नहीं valid डेटा found में CSV",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.not_a_valid_alloflow_snapshot_file": {
+    "en": "Not a valid AlloFlow snapshot file",
+    "tr": "नहीं एक valid AlloFlow snapshot फ़ाइल",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.not_a_valid_consent_template_file": {
+    "en": "Not a valid consent template file",
+    "tr": "नहीं एक valid consent template फ़ाइल",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.parsed_n_abc_entries_from_transcript": {
+    "en": "Parsed N ABC entries from transcript!",
+    "tr": "Parsed N ABC entries से transcript!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.populated_from_n_abc_entries": {
+    "en": "Populated from N ABC entries",
+    "tr": "Populated से N ABC entries",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.popups_blocked_downloaded_as_html_file_instead": {
+    "en": "Pop-ups blocked — downloaded as HTML file instead.",
+    "tr": "Pop-ups blocked — downloaded as HTML फ़ाइल instead.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.quick_fill_n_items_loaded": {
+    "en": "Quick Fill: N items loaded ⚡",
+    "tr": "तेज़ Fill: N आइटम loaded ⚡",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.rate_at_least_one_item_first": {
+    "en": "Rate at least one item first",
+    "tr": "Rate at least one आइटम पहला",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.reflection_analysis_ready": {
+    "en": "Reflection analysis ready 🌟",
+    "tr": "Reflection विश्लेषण ready 🌟",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.reframed_through_strengths_lens": {
+    "en": "Reframed through strengths lens ✨",
+    "tr": "Reframed के माध्यम से strengths lens ✨",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.response_failed_try_again": {
+    "en": "Response failed — try again",
+    "tr": "प्रतिक्रिया failed — प्रयास करें again",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.review_failed_try_again": {
+    "en": "Review failed — try again",
+    "tr": "समीक्षा failed — प्रयास करें again",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.scenario_generation_failed_try_again": {
+    "en": "Scenario generation failed — try again",
+    "tr": "परिदृश्य पीढ़ी failed — प्रयास करें again",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.session_saved_ns_n_total_responses": {
+    "en": "Session saved! Ns, N total responses",
+    "tr": "सत्र सहेजा गया! Ns, N total responses",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.share_code_copied_to_clipboard": {
+    "en": "Share code copied to clipboard!",
+    "tr": "साझा करें कोड copied को clipboard!",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.speech_recognition_not_supported_in_this_browser": {
+    "en": "Speech recognition not supported in this browser",
+    "tr": "Speech recognition नहीं समर्थन में यह browser",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.switched_to_n_no_data_loaded": {
+    "en": "Switched to N (no data loaded)",
+    "tr": "Switched को N (no डेटा loaded)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.traffic_light_generated": {
+    "en": "Traffic light generated ✨",
+    "tr": "Traffic light उत्पन्न ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.workspace_loaded_n_entries_n_notes": {
+    "en": "Workspace loaded (N entries, N notes) 📂",
+    "tr": "Workspace loaded (N entries, N नोट्स) 📂",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.autofilled_from_phase_tagged_entries": {
+    "en": "Autofilled from phase-tagged entries.",
+    "tr": "Autofilled से phase-tagged entries.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.need_2_baseline_2_intervention_entries_with_phase_tags": {
+    "en": "Need at least 2 baseline and 2 intervention entries with phase tags.",
+    "tr": "आवश्यकता at least 2 baseline और 2 हस्तक्षेप entries के साथ phase tags.",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "ui.add_abc_entries_to_see_visual_trend_data": {
+    "en": "Add ABC entries to see visual trend data.",
+    "tr": "जोड़ें ABC entries को देखें दृश्य trend डेटा.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.add_connections_to_build_the_relationship_map": {
+    "en": "Add connections to build the relationship map.",
+    "tr": "जोड़ें connections को बनाना relationship map.",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.ai_is_analyzing_your_transcript": {
+    "en": "AI is analyzing your transcript...",
+    "tr": "AI है analyzing आपका transcript...",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.aigenerated_meeting_preparation_packet_from_your_b": {
+    "en": "AI-generated meeting preparation packet from your behavioral data",
+    "tr": "AI-generated meeting preparation packet से आपका behavioral डेटा",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "ui.aipowered_pattern_analysis_with_proactive_preventi": {
+    "en": "AI-powered pattern analysis with proactive prevention strategies",
+    "tr": "AI-powered pattern विश्लेषण के साथ proactive prevention रणनीतियां",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.aisynthesized_behavioral_profile_from_all_data_sou": {
+    "en": "AI-synthesized behavioral profile from all data sources",
+    "tr": "AI-synthesized behavioral profile से सभी डेटा sources",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ui.avoid_these_frequently_seen_errors_to_improve_beha": {
+    "en": "Avoid these frequently seen errors to improve behavioral outcomes.",
+    "tr": "Avoid these frequently seen त्रुटि को improve behavioral outcomes.",
+    "contentWordCount": 8,
+    "matchedCount": 7,
+    "ratio": 0.88
+  },
+  "ui.based_on_horner_salentine_albin_2003": {
+    "en": "Based on Horner, Salentine, & Albin (2003)",
+    "tr": "आधारित पर Horner, Salentine, & Albin (2003)",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.calculate_tauu_nap_and_pnd_to_quantify_interventio": {
+    "en": "Calculate Tau-U, NAP, and PND to quantify intervention effectiveness.",
+    "tr": "गणना करें Tau-U, NAP, और PND को quantify हस्तक्षेप effectiveness.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.choose_the_right_differential_reinforcement_strate": {
+    "en": "Choose the right differential reinforcement strategy",
+    "tr": "चुनें सही differential reinforcement रणनीति",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ui.collect_some_abc_data_first_to_generate_a_meaningf": {
+    "en": "Collect some ABC data first to generate a meaningful packet.",
+    "tr": "Collect कुछ ABC डेटा पहला को उत्पन्न करें एक meaningful packet.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.crf_every_time_fr2_fr3_fr5_vr5_vr8_natural_reinfor": {
+    "en": "CRF (every time) → FR-2 → FR-3 → FR-5 → VR-5 → VR-8 → Natural reinforcement",
+    "tr": "CRF (every समय) → FR-2 → FR-3 → FR-5 → VR-5 → VR-8 → Natural reinforcement",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.cultural_context_reflection": {
+    "en": "Cultural Context Reflection",
+    "tr": "Cultural संदर्भ Reflection",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.describe_your_research_question_and_let_ai_recomme": {
+    "en": "Describe your research question and let AI recommend the best design.",
+    "tr": "Describe आपका research प्रश्न और let AI recommend सर्वश्रेष्ठ design.",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.discrete_trial_training_with_mastery_tracking_and": {
+    "en": "Discrete Trial Training with mastery tracking and auto-advance",
+    "tr": "Discrete Trial Training के साथ mastery ट्रैकिंग और स्वतः-आगे बढ़ें",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "ui.document_whether_interventions_are_implemented_as": {
+    "en": "Document whether interventions are implemented as designed",
+    "tr": "दस्तावेज़ whether हस्तक्षेप हैं implemented as designed",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.drop_a_snapshot_file_here": {
+    "en": "Drop a Snapshot File Here",
+    "tr": "छोड़ें एक Snapshot फ़ाइल Here",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.enter_data_or_record_sessions_to_generate_a_cumula": {
+    "en": "Enter data or record sessions to generate a cumulative record.",
+    "tr": "दर्ज करें डेटा या record सत्र को उत्पन्न करें एक cumulative record.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.family_voices_are_powerful_share_your_first_observ": {
+    "en": "Family voices are powerful. Share your first observation!",
+    "tr": "Family voices हैं powerful. साझा करें आपका पहला अवलोकन!",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.functional_communication_training_planning_tool": {
+    "en": "Functional Communication Training planning tool",
+    "tr": "Functional Communication Training planning उपकरण",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ui.generate_a_professional_printready_progress_report": {
+    "en": "Generate a professional, print-ready progress report with inline charts, data summaries, and AI recommendations. One-click PDF export via browser print.",
+    "tr": "उत्पन्न करें एक professional, प्रिंट ready-to-use प्रगति रिपोर्ट के साथ inline चार्ट, डेटा summaries, और AI recommendations. One-click करें PDF निर्यात करें via browser प्रिंट करें.",
+    "contentWordCount": 16,
+    "matchedCount": 7,
+    "ratio": 0.44
+  },
+  "ui.generate_a_unique_scenario_tailored_to_your_traini": {
+    "en": "Generate a unique scenario tailored to your training needs.",
+    "tr": "उत्पन्न करें एक unique परिदृश्य tailored को आपका training needs.",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.generate_iepready_progress_monitoring_paragraphs_f": {
+    "en": "Generate IEP-ready progress monitoring paragraphs from your accumulated behavioral data.",
+    "tr": "उत्पन्न करें IEP-ready प्रगति monitoring अनुच्छेद से आपका accumulated behavioral डेटा.",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "ui.generate_tailored_recommendations_based_on_the_beh": {
+    "en": "Generate tailored recommendations based on the behavioral data and selected audience.",
+    "tr": "उत्पन्न करें tailored recommendations आधारित पर behavioral डेटा और चयनित audience.",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "ui.gently_surfaces_patterns_for_reflection_growth_not": {
+    "en": "Gently surfaces patterns for reflection — growth, not guilt",
+    "tr": "Gently surfaces पैटर्न के लिए reflection — growth, नहीं guilt",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "ui.get_ai_coaching_on_data_collection_quality_identif": {
+    "en": "Get AI coaching on data collection quality. Identifies gaps, suggests improvements, rates your data.",
+    "tr": "Get AI coaching पर डेटा collection गुणवत्ता. Identifies gaps, suggests improvements, rates आपका डेटा.",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "ui.how_often_and_when_to_deliver_reinforcement_use_th": {
+    "en": "How often and when to deliver reinforcement. Use the Token Board tool to implement these schedules in practice.",
+    "tr": "कैसे often और जब को deliver reinforcement. उपयोग करें Token Board उपकरण को implement these schedules में अभ्यास करें.",
+    "contentWordCount": 11,
+    "matchedCount": 8,
+    "ratio": 0.73
+  },
+  "ui.identify_temporal_patterns_in_behavior_occurrence": {
+    "en": "Identify temporal patterns in behavior occurrence",
+    "tr": "पहचानना temporal पैटर्न में व्यवहार occurrence",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ui.import_student_profiles_or_historical_abc_data_fro": {
+    "en": "Import student profiles or historical ABC data from CSV files. Onboard 10-15 students at once.",
+    "tr": "आयात करें छात्र profiles या historical ABC डेटा से CSV फ़ाइल. Onboard 10-15 छात्र at once.",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "ui.map_target_behaviors_to_functionally_equivalent_re": {
+    "en": "Map target behaviors to functionally equivalent replacements",
+    "tr": "Map लक्ष्य व्यवहार को functionally समतुल्य replacements",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ui.natural_language_abc_entry": {
+    "en": "Natural Language ABC Entry",
+    "tr": "Natural भाषा ABC Entry",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.need_at_least_3_abc_entries_for_pattern_detection": {
+    "en": "Need at least 3 ABC entries for pattern detection.",
+    "tr": "आवश्यकता at least 3 ABC entries के लिए pattern detection.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ui.need_at_least_5_abc_entries_for_pattern_analysis": {
+    "en": "Need at least 5 ABC entries for pattern analysis.",
+    "tr": "आवश्यकता at least 5 ABC entries के लिए pattern विश्लेषण.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.no_behavioral_data_recorded": {
+    "en": "No behavioral data recorded",
+    "tr": "नहीं behavioral डेटा recorded",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.no_contacts_logged_yet_consistent_communication_bu": {
+    "en": "No contacts logged yet. Consistent communication builds trust!",
+    "tr": "नहीं contacts logged yet. Consistent communication बनाता है trust!",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "ui.no_reflections_yet_tap_the_button_above_to_check_i": {
+    "en": "No reflections yet. Tap the button above to check in with yourself!",
+    "tr": "नहीं reflections yet. Tap बटन above को जाँच में के साथ yourself!",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.prebuilt_scenarios_covering_the_4_functions_of_beh": {
+    "en": "Pre-built scenarios covering the 4 functions of behavior. Work offline — no AI needed.",
+    "tr": "Pre-built परिदृश्य covering 4 functions का व्यवहार. काम offline — no AI needed.",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "ui.remember_cultural_humility_is_a_lifelong_practice": {
+    "en": "Remember: cultural humility is a lifelong practice. Every reflection makes you a more equitable practitioner.",
+    "tr": "Remember: cultural humility है एक lifelong अभ्यास करें. Every reflection makes आप एक अधिक equitable practitioner.",
+    "contentWordCount": 11,
+    "matchedCount": 9,
+    "ratio": 0.82
+  },
+  "ui.restorative_conversation_guide": {
+    "en": "Restorative Conversation Guide",
+    "tr": "Restorative बातचीत Guide",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.select_a_research_design_to_structure_your_data_co": {
+    "en": "Select a research design to structure your data collection",
+    "tr": "चुनें एक research design को संरचना आपका डेटा collection",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.singlecase_design_manager": {
+    "en": "Single-Case Design Manager",
+    "tr": "Single-Case Design manager",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "ui.stepbystep_scripts_for_healing_relationships_and_b": {
+    "en": "Step-by-step scripts for healing relationships and building community",
+    "tr": "step-by-step scripts के लिए healing relationships और building समुदाय",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "ui.student_snapshot_exchange": {
+    "en": "Student Snapshot Exchange",
+    "tr": "छात्र Snapshot Exchange",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.systematic_behavioral_measurement_across_sessions": {
+    "en": "Systematic behavioral measurement across sessions",
+    "tr": "systematic behavioral measurement के पार सत्र",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.systematic_reinforcer_identification_using_evidenc": {
+    "en": "Systematic reinforcer identification using evidence-based protocols",
+    "tr": "systematic reinforcer identification उपयोग करते हुए सबूत-आधारित protocols",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.track_your_feelings_earn_badges_and_build_streaks": {
+    "en": "Track your feelings, earn badges, and build streaks!",
+    "tr": "Track आपका feelings, अर्जित करें बैज, और बनाना streaks!",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.use_these_criteria_when_examining_your_graph": {
+    "en": "Use these criteria when examining your graph:",
+    "tr": "उपयोग करें these criteria जब examining आपका ग्राफ़:",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.use_this_flow_to_hypothesize_the_function_of_a_cha": {
+    "en": "Use this flow to hypothesize the function of a challenging behavior.",
+    "tr": "उपयोग करें यह flow को hypothesize function का एक challenging व्यवहार.",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ui.visual_multitiered_system_of_supports_assign_stude": {
+    "en": "Visual multi-tiered system of supports. Assign students to tiers, get AI-powered placement recommendations.",
+    "tr": "दृश्य multi-tiered सिस्टम का समर्थन. Assign छात्र को tiers, get AI-powered placement recommendations.",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "add_notes_hint": {
+    "en": "Add notes above or use the mic to dictate",
+    "tr": "जोड़ें नोट्स above या उपयोग करें mic को dictate",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "correlation_desc": {
+    "en": "Darker cells indicate stronger co-occurrence between a trigger and behavior",
+    "tr": "Darker सेल indicate stronger co-occurrence के बीच एक ट्रिगर और व्यवहार",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "correlation_matrix": {
+    "en": "Antecedent → Behavior Correlations",
+    "tr": "Antecedent → व्यवहार Correlations",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast_invalid_file": {
+    "en": "Invalid workspace file — must be BehaviorLens JSON",
+    "tr": "Invalid workspace फ़ाइल — must be BehaviorLens JSON",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "allobot_chat.empty_desc": {
+    "en": "I can help with FBA strategies, intervention ideas, data interpretation, de-escalation techniques, and more.",
+    "tr": "I सकता है सहायता के साथ FBA रणनीतियां, हस्तक्षेप ideas, डेटा interpretation, de-escalation techniques, और अधिक.",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "allobot_chat.subtitle": {
+    "en": "AI-powered behavioral analysis assistant",
+    "tr": "AI-powered behavioral विश्लेषण assistant",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "obs.start_to_begin": {
+    "en": "Start timer to begin latency measurement",
+    "tr": "शुरू करें timer को begin latency measurement",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "snapshot.title": {
+    "en": "Student Snapshot Exchange",
+    "tr": "छात्र Snapshot Exchange",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "workflow.subtitle": {
+    "en": "Choose a step-by-step guide for your clinical process",
+    "tr": "चुनें एक step-by-step guide के लिए आपका clinical process",
+    "contentWordCount": 7,
+    "matchedCount": 5,
+    "ratio": 0.71
+  },
+  "raw.additional_schooldistrict_notes": {
+    "en": "Additional School/District Notes",
+    "tr": "Additional School/Difficult नोट्स",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.assign_an_ioa_partner_for_reliability_checks": {
+    "en": "Assign an IOA partner for reliability checks",
+    "tr": "Assign एक IOA partner के लिए reliability checks",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "raw.assign_team_roles_and_responsibilities": {
+    "en": "Assign team roles and responsibilities",
+    "tr": "Assign team roles और responsibilities",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "raw.attentionseeking_behavior": {
+    "en": "Attention-Seeking Behavior",
+    "tr": "Attention-Seeking व्यवहार",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.canvas_environment_local_storage_only": {
+    "en": "Canvas environment — local storage only",
+    "tr": "Canvas environment — local storage केवल",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.compare_student_performance_to_peer_norms": {
+    "en": "Compare student performance to peer norms",
+    "tr": "तुलना करें छात्र performance को peer norms",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.complete_a_classroomwide_behavior_scan": {
+    "en": "Complete a classroom-wide behavior scan",
+    "tr": "पूरा करें एक class-wide व्यवहार scan",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.conduct_a_full_functional_behavior_assessment": {
+    "en": "Conduct a full Functional Behavior Assessment",
+    "tr": "Conduct एक पूर्ण Functional व्यवहार मूल्यांकन",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.confirm_function_with_team_consensus": {
+    "en": "Confirm function with team consensus",
+    "tr": "पुष्टि करें function के साथ team consensus",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.confirm_hypothesis_with_the_team_or_a_colleague": {
+    "en": "Confirm hypothesis with the team or a colleague",
+    "tr": "पुष्टि करें परिकल्पना के साथ team या एक colleague",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.confirm_two_observers_could_agree_on_occurrence": {
+    "en": "Confirm two observers could agree on occurrence",
+    "tr": "पुष्टि करें two observers could agree पर occurrence",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.develop_an_individualized_behavior_intervention_plan": {
+    "en": "Develop an individualized Behavior Intervention Plan",
+    "tr": "Develop एक individualized व्यवहार हस्तक्षेप योजना",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.document_baseline_frequency_for_flagged_students": {
+    "en": "Document baseline frequency for flagged students",
+    "tr": "दस्तावेज़ baseline frequency के लिए flagged छात्र",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.document_outcomes_and_lessons_learned": {
+    "en": "Document outcomes and lessons learned",
+    "tr": "दस्तावेज़ outcomes और पाठ learned करें",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.document_the_confirmed_function": {
+    "en": "Document the confirmed function",
+    "tr": "दस्तावेज़ confirmed function",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.escapemaintained_behavior": {
+    "en": "Escape-Maintained Behavior",
+    "tr": "Escape-Maintained व्यवहार",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.example_during_math_class_when_asked_to_complete_worksheet_p": {
+    "en": "Example: During math class, when asked to complete worksheet problems, Johnny pushed his papers off the desk...",
+    "tr": "उदाहरण: के दौरान गणित कक्षा, जब asked को पूरा करें worksheet समस्याएं, Johnny pushed his papers off desk...",
+    "contentWordCount": 13,
+    "matchedCount": 6,
+    "ratio": 0.46
+  },
+  "raw.identify_12_functionally_equivalent_replacement_behaviors": {
+    "en": "Identify 1–2 functionally equivalent replacement behaviors",
+    "tr": "पहचानना 1–2 functionally समतुल्य replacement व्यवहार",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.identify_students_exceeding_the_universal_threshold": {
+    "en": "Identify students exceeding the universal threshold",
+    "tr": "पहचानना छात्र exceeding universal threshold",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.instantly_fill_functionmatched_fidelity_items_no_ai_needed": {
+    "en": "Instantly fill function-matched fidelity items (no AI needed)",
+    "tr": "Instantly fill function-matched fidelity आइटम (no AI needed)",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "raw.make_tier_movement_decision_stay_fade_intensify": {
+    "en": "Make tier movement decision (stay / fade / intensify)",
+    "tr": "बनाएं स्तर movement निर्णय (stay / fade / intensify)",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "raw.map_antecedent_behavior_consequence_pathways": {
+    "en": "Map antecedent → behavior → consequence pathways",
+    "tr": "Map antecedent → व्यवहार → consequence pathways",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.measure_effect_size_of_interventions": {
+    "en": "Measure effect size of interventions",
+    "tr": "मापें effect size का हस्तक्षेप",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.plan_a_reinforcement_schedule_for_replacement_behaviors": {
+    "en": "Plan a reinforcement schedule for replacement behaviors",
+    "tr": "योजना एक reinforcement schedule के लिए replacement व्यवहार",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.plan_data_collection_methods_and_frequency": {
+    "en": "Plan data collection methods and frequency",
+    "tr": "योजना डेटा collection methods और frequency",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.plan_reinforcement_for_replacement_behaviors": {
+    "en": "Plan reinforcement for replacement behaviors",
+    "tr": "योजना reinforcement के लिए replacement व्यवहार",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.plan_weekly_progress_monitoring_data_collection": {
+    "en": "Plan weekly progress monitoring data collection",
+    "tr": "योजना weekly प्रगति monitoring डेटा collection",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "raw.prepare_documentation_for_iep_team_if_applicable": {
+    "en": "Prepare documentation for IEP team (if applicable)",
+    "tr": "Prepare documentation के लिए IEP team (यदि applicable)",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "raw.record_duration_and_intensity_for_each_incident": {
+    "en": "Record duration and intensity for each incident",
+    "tr": "Record duration और intensity के लिए प्रत्येक incident",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.review_progress_monitoring_data_vs_baseline": {
+    "en": "Review progress monitoring data vs. baseline",
+    "tr": "समीक्षा प्रगति monitoring डेटा vs. baseline",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.select_the_primary_settings_for_data_collection": {
+    "en": "Select the primary setting(s) for data collection",
+    "tr": "चुनें primary सेटिंग(s) के लिए डेटा collection",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.set_a_6week_intervention_cycle": {
+    "en": "Set a 6-week intervention cycle",
+    "tr": "सेट करें एक 6-week हस्तक्षेप cycle",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.set_intervention_duration_eg_46_weeks": {
+    "en": "Set intervention duration (e.g., 4–6 weeks)",
+    "tr": "सेट करें हस्तक्षेप duration (e.g., 4–6 weeks)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.set_review_dates_and_checkin_schedule": {
+    "en": "Set review dates and check-in schedule",
+    "tr": "सेट करें समीक्षा dates और जाँच-में schedule",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.set_timeline_and_milestones_eg_4_weeks": {
+    "en": "Set timeline and milestones (e.g., 4 weeks)",
+    "tr": "सेट करें timeline और milestones (e.g., 4 weeks)",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "raw.set_up_weekly_progress_monitoring": {
+    "en": "Set up weekly progress monitoring",
+    "tr": "सेट करें up weekly प्रगति monitoring",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.share_progress_with_the_team_and_family": {
+    "en": "Share progress with the team and family",
+    "tr": "साझा करें प्रगति के साथ team और family",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.write_an_observable_measurable_behavior_definition": {
+    "en": "Write an observable, measurable behavior definition",
+    "tr": "लिखें एक observable, measurable व्यवहार परिभाषा",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.choosing_an_observation_method": {
+    "en": "Choosing an observation method",
+    "tr": "Choosing एक अवलोकन method",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.collecting_data_with_care": {
+    "en": "Collecting data with care",
+    "tr": "Collecting डेटा के साथ care",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.interval_and_latency_recording": {
+    "en": "Interval and latency recording",
+    "tr": "Interval और latency recording",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "raw.restorative_over_punitive": {
+    "en": "Restorative over punitive",
+    "tr": "Restorative के ऊपर punitive",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.teaching_not_just_expecting": {
+    "en": "Teaching, not just expecting",
+    "tr": "सिखाना, नहीं just expecting",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.what_is_reinforcement_really": {
+    "en": "What is reinforcement, really?",
+    "tr": "क्या है reinforcement, really?",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.when_to_consult_specialists": {
+    "en": "When to consult specialists",
+    "tr": "जब को consult specialists",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "dq.tip_add_entries": {
+    "en": "Add more entries to strengthen this score.",
+    "tr": "जोड़ें अधिक entries को strengthen यह स्कोर.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "dq.tip_all_complete": {
+    "en": "All entries have the required fields filled in.",
+    "tr": "सभी entries है आवश्यक fields filled में.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "dq.tip_antecedent_types": {
+    "en": "Good range of antecedent types observed.",
+    "tr": "अच्छा range का antecedent टाइप करें observed.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "dq.tip_data_current": {
+    "en": "Data is current and reflects recent behavior.",
+    "tr": "डेटा है वर्तमान और reflects recent व्यवहार.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "dq.tip_good_coverage": {
+    "en": "Good coverage across days.",
+    "tr": "अच्छा coverage के पार days.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "dq.tip_good_diversity": {
+    "en": "Good diversity across antecedents.",
+    "tr": "अच्छा diversity के पार antecedents.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "dq.tip_last_entry_ago": {
+    "en": "Last entry was recorded a while ago.",
+    "tr": "अंतिम entry was recorded एक जबकि ago.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "dq.tip_missing_fields": {
+    "en": "Some entries are missing required fields.",
+    "tr": "कुछ entries हैं missing आवश्यक fields.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "dq.tip_spread_days": {
+    "en": "Entries are well spread across days.",
+    "tr": "Entries हैं well spread के पार days.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "fba.step_ai_analysis_desc": {
+    "en": "Use AI to identify patterns and hypothesized function.",
+    "tr": "उपयोग करें AI को पहचानना पैटर्न और hypothesized function.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "fba.step_collect_more_desc": {
+    "en": "Add more observation sessions to strengthen the dataset.",
+    "tr": "जोड़ें अधिक अवलोकन सत्र को strengthen dataset.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "fba.step_hypothesis_desc": {
+    "en": "Draft a working hypothesis of behavior function.",
+    "tr": "Draft एक working परिकल्पना का व्यवहार function.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "sandbox.complex_desc": {
+    "en": "Multi-phase data with mixed trends.",
+    "tr": "Multi-phase डेटा के साथ मिश्रित trends.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  }
+}

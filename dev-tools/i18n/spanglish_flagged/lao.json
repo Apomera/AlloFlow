@@ -1,0 +1,79 @@
+{
+  "hub.dtt_desc": {
+    "en": "Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance",
+    "tr": "Discrete Trial Training: ການບັນທຶກເທື່ອລະການທົດສອບພ້ອມເງື່ອນໄຂການເຮັດໄດ້ຊຳນານ ແລະ ການກ້າວໜ້າອັດຕະໂນມັດ",
+    "contentWordCount": 11,
+    "matchedCount": 5,
+    "ratio": 0.45
+  },
+  "hub.prefassess_desc": {
+    "en": "Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols",
+    "tr": "ການລະບຸຕົວເສີມແຮງຢ່າງເປັນລະບົບ: ໂປຣໂຕຄອນ MSWO, Paired Stimulus, ແລະ Free Operant",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.snapshot_desc": {
+    "en": "Export & import JSON snapshots for parent–teacher data exchange",
+    "tr": "Export & import JSON snapshots for parent,teacher data exchange",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "fidelity_tip_2": {
+    "en": "Provide additional BST (Behavioral Skills Training)",
+    "tr": "ໃຫ້ BST ເພີ່ມເຕີມ (Behavioral Skills Training)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.quick_fill_n_items_loaded": {
+    "en": "Quick Fill: N items loaded ⚡",
+    "tr": "Quick Fill: ໂຫລດ N ລາຍການແລ້ວ ⚡",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.report_generated_use_printsave_as_pdf_in_the_new_t": {
+    "en": "Report generated — use Print/Save as PDF in the new tab!",
+    "tr": "ສ້າງລາຍງານແລ້ວ: ໃຊ້ Print/Save as PDF ໃນແທັບໃໝ່!",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.share_code_too_large": {
+    "en": "Snapshot too large for share code (${encoded.length.toLocaleString()} chars, limit 5,000). Use 💾 Download Snapshot instead.",
+    "tr": "Snapshot ໃຫຍ່ເກີນໄປສຳລັບລະຫັດແບ່ງປັນ (${encoded.length.toLocaleString()} ຕົວອັກສອນ, ຂີດຈຳກັດ 5,000). ໃຊ້ແທນດ້ວຍ 💾 ດາວໂຫຼດ Snapshot.",
+    "contentWordCount": 12,
+    "matchedCount": 5,
+    "ratio": 0.42
+  },
+  "ui.based_on_horner_salentine_albin_2003": {
+    "en": "Based on Horner, Salentine, & Albin (2003)",
+    "tr": "ອີງຕາມ Horner, Salentine, & Albin (2003)",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.click_load_student_workspaces_and_select_multiple": {
+    "en": "Click \"Load Student Workspaces\" and select multiple .json files saved from BehaviorLens",
+    "tr": "ຄລິກ \"Load Student Workspaces\" ແລະ ເລືອກໄຟລ໌ .json ຫລາຍໄຟລ໌ທີ່ບັນທຶກຈາກ BehaviorLens",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "raw.identify_12_functionally_equivalent_replacement_behaviors": {
+    "en": "Identify 1–2 functionally equivalent replacement behaviors",
+    "tr": "Identify 1,2 functionally equivalent replacement behaviors",
+    "contentWordCount": 5,
+    "matchedCount": 5,
+    "ratio": 1
+  },
+  "raw.set_intervention_duration_eg_46_weeks": {
+    "en": "Set intervention duration (e.g., 4–6 weeks)",
+    "tr": "Set intervention duration (e.g., 4,6 weeks)",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  }
+}

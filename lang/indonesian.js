@@ -9759,7 +9759,7 @@
       "trends_title": "Trend Dasbor",
       "bipgen_title": "Generator BIP",
       "bipgen_desc": "Draft sebuah perilaku Intervention Rencana dari Anda data.",
-      "cantdowontdo_title": "dapat't melakukan / Won't melakukan",
+      "cantdowontdo_title": "Tidak bisa / Tidak mau",
       "cantdowontdo_desc": "Urutkan keterampilan vs. performance deficits ke pick benar dukungan.",
       "competingpathways_title": "Jalur Bersaing",
       "competingpathways_desc": "Map desired dan replacement perilaku against problem path.",

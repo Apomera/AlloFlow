@@ -9751,7 +9751,7 @@
       "trends_title": "Iboneza ry'Imihindukire",
       "bipgen_title": "Inkozi ya BIP",
       "bipgen_desc": "Tegura Behavior Intervention Plan iva ku makuru yawe.",
-      "cantdowontdo_title": "Cannot Do / Won't Do",
+      "cantdowontdo_title": "Ntibishoboka / Ntabwo ashaka",
       "cantdowontdo_desc": "Tondeka ubuhanga bubuze cyangwa imikorere ibura kugira ngo uhitemo inkunga nyayo.",
       "competingpathways_title": "Inzira Zihiganira",
       "competingpathways_desc": "Shyira ku karita imyitwarire ifuzwa n'iyo gusimbuza ugereranya n'inzira y'ikibazo.",

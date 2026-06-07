@@ -1,0 +1,359 @@
+{
+  "hub.abaquiz_desc": {
+    "en": "Test your ABA knowledge — earn a competency badge at 80%+",
+    "tr": "Test your ABA knowledge, earn a competency badge at 80%+",
+    "contentWordCount": 6,
+    "matchedCount": 6,
+    "ratio": 1
+  },
+  "hub.biascheck_desc": {
+    "en": "Gently surfaces patterns in your data for reflection on potential implicit bias — growth, not guilt",
+    "tr": "Gently surfaces patterns in your data for reflection on potential implicit bias, growth, not guilt",
+    "contentWordCount": 11,
+    "matchedCount": 11,
+    "ratio": 1
+  },
+  "hub.caseload_desc": {
+    "en": "Bird\\'s-eye overview of all students — status indicators, trends, safety alerts, and AI caseload summary",
+    "tr": "Bird\\'s-eye overview of all students, status indicators, trends, safety alerts, and AI caseload summary",
+    "contentWordCount": 10,
+    "matchedCount": 10,
+    "ratio": 1
+  },
+  "hub.commlog_desc": {
+    "en": "Two-way family contact tracker with follow-ups — ensure no family falls through the cracks",
+    "tr": "Two-way family contact tracker with follow-ups, ensure no family falls through the cracks",
+    "contentWordCount": 10,
+    "matchedCount": 10,
+    "ratio": 1
+  },
+  "hub.consent_desc": {
+    "en": "Customizable consent form for parent data exchange — edit, print, share as JSON",
+    "tr": "Customizable consent form for parent data exchange, edit, print, share as JSON",
+    "contentWordCount": 9,
+    "matchedCount": 9,
+    "ratio": 1
+  },
+  "hub.cumrecord_desc": {
+    "en": "Classic Skinner-style cumulative frequency graph — the heritage of ABA data display",
+    "tr": "Classic Skinner-style cumulative frequency graph, the heritage of ABA data display",
+    "contentWordCount": 8,
+    "matchedCount": 8,
+    "ratio": 1
+  },
+  "hub.deescalate_desc": {
+    "en": "Breathing exercises, visual timers, sensory breaks, and grounding — real-time calming support",
+    "tr": "Breathing exercises, visual timers, sensory breaks, and grounding, real-time calming support",
+    "contentWordCount": 11,
+    "matchedCount": 11,
+    "ratio": 1
+  },
+  "hub.dtt_desc": {
+    "en": "Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance",
+    "tr": "Discrete Trial Training, trial-by-trial recording with mastery criteria and auto-advance",
+    "contentWordCount": 11,
+    "matchedCount": 11,
+    "ratio": 1
+  },
+  "hub.familyvoice_desc": {
+    "en": "Structured form for families to share observations, cultural insights, and celebrations — with AI translation",
+    "tr": "Structured form for families to share observations, cultural insights, and celebrations, with AI translation",
+    "contentWordCount": 10,
+    "matchedCount": 10,
+    "ratio": 1
+  },
+  "hub.ioacalc_desc": {
+    "en": "Inter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count",
+    "tr": "Inter-Observer Agreement with 6 methods, point-by-point, interval, scored/unscored, exact count",
+    "contentWordCount": 12,
+    "matchedCount": 12,
+    "ratio": 1
+  },
+  "hub.nlabc_desc": {
+    "en": "Type or paste observation notes in everyday English — AI structures them into ABC entries automatically",
+    "tr": "Type or paste observation notes in everyday English, AI structures them into ABC entries automatically",
+    "contentWordCount": 11,
+    "matchedCount": 11,
+    "ratio": 1
+  },
+  "hub.obscoach_desc": {
+    "en": "Real-time coaching on your data collection quality — identifies gaps, suggests improvements, and rates your data",
+    "tr": "Real-time coaching on your data collection quality, identifies gaps, suggests improvements, and rates your data",
+    "contentWordCount": 14,
+    "matchedCount": 14,
+    "ratio": 1
+  },
+  "hub.predict_desc": {
+    "en": "AI-powered pattern analysis predicting when, where, and what triggers behaviors — with prevention strategies",
+    "tr": "AI-powered pattern analysis predicting when, where, and what triggers behaviors, with prevention strategies",
+    "contentWordCount": 12,
+    "matchedCount": 12,
+    "ratio": 1
+  },
+  "hub.prefassess_desc": {
+    "en": "Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols",
+    "tr": "Systematic reinforcer identification, MSWO, Paired Stimulus, and Free Operant protocols",
+    "contentWordCount": 8,
+    "matchedCount": 8,
+    "ratio": 1
+  },
+  "hub.quick_launch_hint": {
+    "en": "Core clinical tools — one tap access",
+    "tr": "Core clinical tools, one tap access",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "hub.reinforcement_desc": {
+    "en": "Structured motivation survey — identify what drives each student across 6 categories",
+    "tr": "Structured motivation survey, identify what drives each student across 6 categories",
+    "contentWordCount": 10,
+    "matchedCount": 10,
+    "ratio": 1
+  },
+  "hub.relmap_desc": {
+    "en": "Visual diagram of student connections — trusted adults, peers, family, mentors — with gap analysis",
+    "tr": "Visual diagram of student connections, trusted adults, peers, family, mentors, with gap analysis",
+    "contentWordCount": 11,
+    "matchedCount": 11,
+    "ratio": 1
+  },
+  "hub.scatterplot_desc": {
+    "en": "Time-of-day × behavior grid to identify temporal patterns — auto-populates from ABC data",
+    "tr": "Time-of-day × behavior grid to identify temporal patterns, auto-populates from ABC data",
+    "contentWordCount": 10,
+    "matchedCount": 10,
+    "ratio": 1
+  },
+  "hub.selfcheck_desc": {
+    "en": "Student-facing mood check-in and reflection journal — capturing their voice",
+    "tr": "Student-facing mood check-in and reflection journal, capturing their voice",
+    "contentWordCount": 9,
+    "matchedCount": 9,
+    "ratio": 1
+  },
+  "hub.sessionnotes_desc": {
+    "en": "Timestamped observation notes with voice dictation — capture context as it happens",
+    "tr": "Timestamped observation notes with voice dictation, capture context as it happens",
+    "contentWordCount": 9,
+    "matchedCount": 9,
+    "ratio": 1
+  },
+  "hub.snapshot_desc": {
+    "en": "Export & import JSON snapshots for parent–teacher data exchange",
+    "tr": "Export & import JSON snapshots for parent,teacher data exchange",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "hub.socialvalidity_desc": {
+    "en": "TARF and IRP-15 scales for measuring treatment acceptability — required for publication",
+    "tr": "TARF and IRP-15 scales for measuring treatment acceptability, required for publication",
+    "contentWordCount": 7,
+    "matchedCount": 7,
+    "ratio": 1
+  },
+  "hub.treatintegrity_desc": {
+    "en": "Document whether interventions are implemented as designed — component-level fidelity tracking",
+    "tr": "Document whether interventions are implemented as designed, component-level fidelity tracking",
+    "contentWordCount": 9,
+    "matchedCount": 9,
+    "ratio": 1
+  },
+  "hub.mipractice_title": {
+    "en": "Motivational Interviewing Practice",
+    "tr": "การฝึก Motivational Interviewing",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "abc.analysis_failed": {
+    "en": "Analysis failed — try again",
+    "tr": "Analysis failed, try again",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "quick_fill_label": {
+    "en": "🧠 Quick-Fill — Describe what happened",
+    "tr": "🧠 Quick-Fill, Describe what happened",
+    "contentWordCount": 5,
+    "matchedCount": 5,
+    "ratio": 1
+  },
+  "fidelity_tip_2": {
+    "en": "Provide additional BST (Behavioral Skills Training)",
+    "tr": "จัดให้มี BST เพิ่มเติม (Behavioral Skills Training)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.eg_token_economy_fct_protocol": {
+    "en": "e.g. Token Economy + FCT Protocol",
+    "tr": "เช่น Token Economy + FCT Protocol",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "ph.search_terms_eg_reinforcement_fba_data": {
+    "en": "🔍 Search terms... (e.g. \"reinforcement\", \"FBA\", \"data\")",
+    "tr": "🔍 ค้นหาคำศัพท์... (เช่น \"reinforcement\", \"FBA\", \"data\")",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.share_what_you_notice_at_home_strengths_concerns_c": {
+    "en": "Share what you notice at home — strengths, concerns, cultural context, or suggestions for the school team...",
+    "tr": "Share what you notice at home, strengths, concerns, cultural context, or suggestions for the school team...",
+    "contentWordCount": 11,
+    "matchedCount": 11,
+    "ratio": 1
+  },
+  "toast.ai_suggestion_failed_try_again": {
+    "en": "AI suggestion failed — try again",
+    "tr": "AI suggestion failed, try again",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.behavior_occurred_dro_timer_reset": {
+    "en": "⚠️ Behavior occurred — DRO timer reset",
+    "tr": "⚠️ Behavior occurred, DRO timer reset",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "toast.dro_interval_complete_reinforce_no_target_behavior": {
+    "en": "🎉 DRO interval complete — REINFORCE! No target behavior occurred!",
+    "tr": "🎉 DRO interval complete, REINFORCE! No target behavior occurred!",
+    "contentWordCount": 6,
+    "matchedCount": 6,
+    "ratio": 1
+  },
+  "toast.graph_data_ready_autofill_available_in_effect_size": {
+    "en": "Graph data ready — auto-fill available in Effect Size!",
+    "tr": "Graph data ready, auto-fill available in Effect Size!",
+    "contentWordCount": 8,
+    "matchedCount": 8,
+    "ratio": 1
+  },
+  "toast.interval_ready_reinforce_next_behavior": {
+    "en": "⏰ Interval ready — reinforce next behavior!",
+    "tr": "⏰ Interval ready, reinforce next behavior!",
+    "contentWordCount": 5,
+    "matchedCount": 5,
+    "ratio": 1
+  },
+  "toast.mastered_n_n_consecutive_sessions_at_criterion": {
+    "en": "🎉 MASTERED! N — N consecutive sessions at criterion!",
+    "tr": "🎉 MASTERED! N, N consecutive sessions at criterion!",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "toast.popups_blocked_downloaded_as_html_file_instead": {
+    "en": "Pop-ups blocked — downloaded as HTML file instead.",
+    "tr": "Pop-ups blocked, downloaded as HTML file instead.",
+    "contentWordCount": 5,
+    "matchedCount": 5,
+    "ratio": 1
+  },
+  "toast.report_generated_use_printsave_as_pdf_in_the_new_t": {
+    "en": "Report generated — use Print/Save as PDF in the new tab!",
+    "tr": "Report generated, use พิมพ์/Save as PDF in the new tab!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.response_failed_try_again": {
+    "en": "Response failed — try again",
+    "tr": "Response failed, try again",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.review_failed_try_again": {
+    "en": "Review failed — try again",
+    "tr": "Review failed, try again",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.scenario_generation_failed_try_again": {
+    "en": "Scenario generation failed — try again",
+    "tr": "Scenario generation failed, try again",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "toast.simulation_started_you_are_now_the_counselor": {
+    "en": "Simulation started — you are now the counselor 🎭",
+    "tr": "Simulation started, you are now the counselor 🎭",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.you_have_unsaved_changes_consider_saving_your_work": {
+    "en": "💡 You have unsaved changes — consider saving your workspace.",
+    "tr": "💡 You have unsaved changes, consider saving your workspace.",
+    "contentWordCount": 7,
+    "matchedCount": 7,
+    "ratio": 1
+  },
+  "ui.based_on_horner_salentine_albin_2003": {
+    "en": "Based on Horner, Salentine, & Albin (2003)",
+    "tr": "อ้างอิงจาก Horner, Salentine, & Albin (2003)",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.gently_surfaces_patterns_for_reflection_growth_not": {
+    "en": "Gently surfaces patterns for reflection — growth, not guilt",
+    "tr": "Gently surfaces patterns for reflection, growth, not guilt",
+    "contentWordCount": 6,
+    "matchedCount": 6,
+    "ratio": 1
+  },
+  "ui.prebuilt_scenarios_covering_the_4_functions_of_beh": {
+    "en": "Pre-built scenarios covering the 4 functions of behavior. Work offline — no AI needed.",
+    "tr": "Pre-built scenarios covering the 4 functions of behavior. Work offline, no AI needed.",
+    "contentWordCount": 8,
+    "matchedCount": 8,
+    "ratio": 1
+  },
+  "ui.test_your_behavioral_analysis_knowledge_80_to_earn": {
+    "en": "Test your behavioral analysis knowledge — 80% to earn your badge",
+    "tr": "Test your behavioral analysis knowledge, 80% to earn your badge",
+    "contentWordCount": 8,
+    "matchedCount": 8,
+    "ratio": 1
+  },
+  "toast_invalid_file": {
+    "en": "Invalid workspace file — must be BehaviorLens JSON",
+    "tr": "Invalid workspace file, must be BehaviorLens JSON",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "raw.canvas_environment_local_storage_only": {
+    "en": "Canvas environment — local storage only",
+    "tr": "Canvas environment, local storage only",
+    "contentWordCount": 5,
+    "matchedCount": 5,
+    "ratio": 1
+  },
+  "raw.identify_12_functionally_equivalent_replacement_behaviors": {
+    "en": "Identify 1–2 functionally equivalent replacement behaviors",
+    "tr": "Identify 1,2 functionally equivalent replacement behaviors",
+    "contentWordCount": 5,
+    "matchedCount": 5,
+    "ratio": 1
+  },
+  "raw.set_intervention_duration_eg_46_weeks": {
+    "en": "Set intervention duration (e.g., 4–6 weeks)",
+    "tr": "Set intervention duration (e.g., 4,6 weeks)",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  }
+}

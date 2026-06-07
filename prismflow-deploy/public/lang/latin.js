@@ -9759,7 +9759,7 @@
       "trends_title": "Tabula Tendentiarum",
       "bipgen_title": "Generator BIP",
       "bipgen_desc": "Draft mōrēs interventus Cōnsilium ā tuus data.",
-      "cantdowontdo_title": "potest't Do / Won't Do",
+      "cantdowontdo_title": "Non potest / Non vult",
       "cantdowontdo_desc": "Dispōne peritia vs. performance deficits ad pick rectus subsidium.",
       "competingpathways_title": "Viae Concertantes",
       "competingpathways_desc": "Map desired et replacement mōrēs against problem path.",

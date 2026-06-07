@@ -9751,7 +9751,7 @@
       "trends_title": "Trend Dashibodi",
       "bipgen_title": "Kitengeneza BIP",
       "bipgen_desc": "Draft tabia uingiliaji Mpango kutoka yako data.",
-      "cantdowontdo_title": "inaweza't Do / Won't Do",
+      "cantdowontdo_title": "Hawezi / Hataki",
       "cantdowontdo_desc": "Panga ujuzi vs. performance deficits kwa pick sahihi msaada.",
       "competingpathways_title": "Njia Zinazoshindana",
       "competingpathways_desc": "Map desired na replacement tabia against problem path.",

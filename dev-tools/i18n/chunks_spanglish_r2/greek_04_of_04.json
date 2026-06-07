@@ -1,0 +1,13 @@
+{
+  "dq.tip_good_coverage": "Good coverage across days.",
+  "dq.tip_good_diversity": "Good diversity across antecedents.",
+  "dq.tip_last_entry_ago": "Last entry was recorded a while ago.",
+  "dq.tip_missing_fields": "Some entries are missing required fields.",
+  "dq.tip_spread_days": "Entries are well spread across days.",
+  "fba.step_ai_analysis_desc": "Use AI to identify patterns and hypothesized function.",
+  "fba.step_collect_more_desc": "Add more observation sessions to strengthen the dataset.",
+  "fba.step_hypothesis_desc": "Draft a working hypothesis of behavior function.",
+  "fba.step_record_abc_desc": "Document antecedents, behaviors, and consequences.",
+  "sandbox.complex_desc": "Multi-phase data with mixed trends.",
+  "sandbox.standard_desc": "A typical baseline-intervention dataset."
+}

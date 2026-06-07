@@ -1,0 +1,13 @@
+{
+  "hub.dtt_desc": "DTT (Discrete Trial Training) — ການບັນທຶກແຕ່ລະຮອບທົດລອງພ້ອມເງື່ອນໄຂການຊຳນານ ແລະ ການເລື່ອນອັດຕະໂນມັດ",
+  "hub.prefassess_desc": "ການລະບຸຕົວເສີມແຮງຢ່າງເປັນລະບົບ — ໂປຣໂຕຄອນ MSWO, Paired Stimulus, ແລະ Free Operant",
+  "hub.snapshot_desc": "ສົ່ງອອກ ແລະ ນຳເຂົ້າພາບລວມ JSON ສຳລັບການແລກປ່ຽນຂໍ້ມູນລະຫວ່າງຜູ້ປົກຄອງ-ຄູ",
+  "fidelity_tip_2": "ໃຫ້ BST (Behavioral Skills Training) ເພີ່ມເຕີມ",
+  "toast.quick_fill_n_items_loaded": "Quick Fill: ໂຫຼດ N ລາຍການແລ້ວ ⚡",
+  "toast.report_generated_use_printsave_as_pdf_in_the_new_t": "ສ້າງລາຍງານແລ້ວ — ໃຊ້ Print/Save as PDF ໃນແທັບໃໝ່!",
+  "toast.share_code_too_large": "ພາບລວມໃຫຍ່ເກີນໄປສຳລັບລະຫັດແບ່ງປັນ (${encoded.length.toLocaleString()} ຕົວອັກສອນ, ຈຳກັດ 5,000). ໃຫ້ໃຊ້ 💾 ດາວໂຫຼດພາບລວມແທນ.",
+  "ui.based_on_horner_salentine_albin_2003": "ອີງຕາມ Horner, Salentine, & Albin (2003)",
+  "ui.click_load_student_workspaces_and_select_multiple": "ກົດ \"Load Student Workspaces\" ແລະ ເລືອກຫຼາຍໄຟລ໌ .json ທີ່ບັນທຶກໄວ້ຈາກ BehaviorLens",
+  "raw.identify_12_functionally_equivalent_replacement_behaviors": "ລະບຸ 1–2 ພຶດຕິກຳທົດແທນທີ່ມີໜ້າທີ່ທຽບເທົ່າ",
+  "raw.set_intervention_duration_eg_46_weeks": "ກຳນົດໄລຍະເວລາການແຊກແຊງ (ຕົວຢ່າງ, 4–6 ອາທິດ)"
+}

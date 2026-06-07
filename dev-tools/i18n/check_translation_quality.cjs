@@ -13,14 +13,15 @@
 //                           after stop-word/whitelist removal is almost certainly Spanglish residue
 //
 // Usage:
-//   node dev-tools/i18n/check_translation_quality.cjs              informational (exit 0)
-//   node dev-tools/i18n/check_translation_quality.cjs --strict     blocking (exit 1 on any defect)
-//   node dev-tools/i18n/check_translation_quality.cjs --json       machine-readable, no human output
+//   node dev-tools/i18n/check_translation_quality.cjs              exit 1 if any defect; exit 0 if clean
+//   node dev-tools/i18n/check_translation_quality.cjs --quiet      suppress per-defect detail; one-line summary
+//   node dev-tools/i18n/check_translation_quality.cjs --json       machine-readable; same exit semantics
 //   node dev-tools/i18n/check_translation_quality.cjs <slug> [...] scope to specific packs
 //
-// Wired into verify_all as INFORMATIONAL until the residual fossil-defect count is driven
-// down to a small known set (currently ~395 Spanglish flags surviving the 2026-06-05 sweep,
-// most of which are conservative-principle outcomes — see aba_glossary.json conservative_principle).
+// Wired into verify_all as INFORMATIONAL — defects surface but don't block deploys, since the
+// residual ascii-density count (~1900) is mostly Spanglish residue in non-refugee packs not
+// yet swept and many of those are legit conservative-principle outcomes (English clinical terms
+// kept verbatim). Promote to blocking after a future sweep drives the count toward zero.
 
 'use strict';
 const fs = require('fs');
@@ -32,7 +33,7 @@ const LANG = path.join(ROOT, 'lang');
 const GLOSSARY = path.join(__dirname, 'aba_glossary.json');
 
 const args = process.argv.slice(2);
-const STRICT = args.includes('--strict');
+const QUIET = args.includes('--quiet');
 const JSON_OUT = args.includes('--json');
 const slugFilter = args.filter((a) => !a.startsWith('--'));
 
@@ -44,9 +45,14 @@ const PRESERVED = new Set([
   ...glossary.preserve_verbatim.tech_formats,
 ]);
 
-// Per-pack target-script classification
+// Per-pack target-script classification. Note: Hmong RPA (Romanized Popular
+// Alphabet) is Latin-script with tone-letters — looks like ASCII to a naive
+// detector, so hmong is intentionally EXCLUDED from the ascii-density check
+// (would otherwise produce all-false-positives on legitimate Hmong text).
+// Karen pack uses MIXED Karen-script + Latin words, so it IS included here
+// (Latin in karen means residual Spanglish).
 const NON_LATIN_PACKS = new Set([
-  'lao', 'thai', 'khmer', 'burmese', 'karen', 'hmong',
+  'lao', 'thai', 'khmer', 'burmese', 'karen',
   'amharic', 'tigrinya',
   'arabic', 'farsi', 'dari', 'pashto', 'urdu',
   'hebrew',
@@ -123,10 +129,17 @@ for (const slug of allSlugs) {
     if (typeof v !== 'string' || v.length === 0) continue;
 
     // (1) + (2) contraction & compound stubs
-    for (const sp of stubPatterns) {
-      if (sp.pattern.test(v)) {
-        findings[sp.bucket].push({ key: k, sample: sp.sample, value: v.slice(0, 120) });
-        break;
+    // Skip if value is byte-identical to the canonical English source — that's
+    // a deliberate conservative-principle revert (e.g., marshallese
+    // hub.cantdowontdo_title = "Can't Do / Won't Do"), not a corruption.
+    const enSrc = enBL[k];
+    const isCleanEnglishRevert = enSrc !== undefined && v === enSrc;
+    if (!isCleanEnglishRevert) {
+      for (const sp of stubPatterns) {
+        if (sp.pattern.test(v)) {
+          findings[sp.bucket].push({ key: k, sample: sp.sample, value: v.slice(0, 120) });
+          break;
+        }
       }
     }
 
@@ -168,12 +181,35 @@ for (const slug of allSlugs) {
   for (const k of Object.keys(report.totals)) report.totals[k] += summary[k];
 }
 
+const totalDefects = Object.values(report.totals).reduce((a, b) => a + b, 0);
+
 if (JSON_OUT) {
   console.log(JSON.stringify(report, null, 2));
-  process.exit(STRICT && Object.values(report.totals).some((n) => n > 0) ? 1 : 0);
+  process.exit(totalDefects > 0 ? 1 : 0);
 }
 
-// Human output
+if (QUIET) {
+  if (totalDefects === 0) {
+    console.log('Translation-quality: 0 defects across ' + allSlugs.length + ' packs.');
+  } else {
+    console.log(
+      'Translation-quality: ' +
+        totalDefects +
+        ' defects (contraction_stubs=' +
+        report.totals.contraction_stubs +
+        ', compound_stubs=' +
+        report.totals.compound_stubs +
+        ', calques=' +
+        report.totals.calques +
+        ', ascii_density=' +
+        report.totals.ascii_density +
+        '). Run without --quiet for per-pack breakdown.'
+    );
+  }
+  process.exit(totalDefects > 0 ? 1 : 0);
+}
+
+// Human output (verbose default)
 console.log('=== Translation-quality CI guard ===');
 console.log(
   'Scanned ' +
@@ -218,15 +254,11 @@ if (offenders.length === 0) {
 }
 
 console.log('');
-const totalDefects = Object.values(report.totals).reduce((a, b) => a + b, 0);
-if (STRICT && totalDefects > 0) {
-  console.error('FAIL: ' + totalDefects + ' translation-quality defects detected. Run without --strict for informational output.');
-  process.exit(1);
-} else {
-  console.log(
-    'PASS (informational): ' +
-      totalDefects +
-      ' defects flagged. Use --strict to make blocking. See dev-tools/i18n/aba_glossary.json for the rule definitions.'
+if (totalDefects > 0) {
+  console.error(
+    totalDefects + ' translation-quality defects detected. See dev-tools/i18n/aba_glossary.json for rule definitions.'
   );
-  process.exit(0);
+  process.exit(1);
 }
+console.log('All packs clean — 0 defects.');
+process.exit(0);

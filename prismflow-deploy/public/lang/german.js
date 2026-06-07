@@ -9756,7 +9756,7 @@
       "trends_title": "Trend-Dashboard",
       "bipgen_title": "BIP-Generator",
       "bipgen_desc": "Draft ein Verhalten Ichntervention Plan von dein Daten.",
-      "cantdowontdo_title": "Kann't Do / Won't Do",
+      "cantdowontdo_title": "Kann nicht / Will nicht",
       "cantdowontdo_desc": "Unterscheide Fähigkeits- und Leistungsdefizite, um die richtige Unterstützung zu wählen.",
       "competingpathways_title": "Konkurrierende Pfade",
       "competingpathways_desc": "Map desired und replacement Verhaltens against die problem path.",

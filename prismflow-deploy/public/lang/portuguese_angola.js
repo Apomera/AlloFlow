@@ -9759,7 +9759,7 @@
       "trends_title": "Painel de Tendências",
       "bipgen_title": "Gerador BIP",
       "bipgen_desc": "Draft um comportamento Intervention Plan de seu dados.",
-      "cantdowontdo_title": "pode't faz / Won't faz",
+      "cantdowontdo_title": "Não pode / Não quer",
       "cantdowontdo_desc": "Ordenar competência vs. performance deficits para pick o right apoio.",
       "competingpathways_title": "Vias Concorrentes",
       "competingpathways_desc": "Map desired e replacement comportamento against o problem path.",

@@ -1,0 +1,1682 @@
+{
+  "hub.gas_desc": {
+    "en": "Goal Attainment Scaling with AI-generated descriptors",
+    "tr": "Goal Attainment Scaling עם תיאורים שנוצרו ב-AI",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.dtt_desc": {
+    "en": "Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance",
+    "tr": "Discrete Trial Training — הקלטה ניסיון-אחר-ניסיון עם קריטריוני שליטה והתקדמות אוטומטית",
+    "contentWordCount": 11,
+    "matchedCount": 5,
+    "ratio": 0.45
+  },
+  "hub.fcttemplate_desc": {
+    "en": "Functional Communication Training planning with modality selection",
+    "tr": "תכנון Functional Communication Training עם בחירת מודאליות",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "quiz_replacement": {
+    "en": "What is a replacement behavior?",
+    "tr": "What is a replacement התנהגות?",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "quick_fill_placeholder": {
+    "en": "e.g. \"Student threw paper during math when asked to show work, teacher redirected calmly\"",
+    "tr": "e.g. \"תלמידים threw paper during math when asked to הצג work, מורים redirected calmly\"",
+    "contentWordCount": 12,
+    "matchedCount": 9,
+    "ratio": 0.75
+  },
+  "nl_edit_placeholder": {
+    "en": "e.g. \"change consequence to teacher redirected\"",
+    "tr": "e.g. \"change תוצאות to מורים redirected\"",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "reinforce_step_1": {
+    "en": "Start with dense reinforcement (e.g., FR-1 or FR-2)",
+    "tr": "התחל with dense reinforcement (e.g., FR-1 or FR-2)",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "reinforce_step_2": {
+    "en": "Once behavior is consistent (~80%), increase ratio by 1-2",
+    "tr": "Once התנהגות is consistent (~80%), increase ratio by 1-2",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "reinforce_step_3": {
+    "en": "Move to variable schedule (VR) for more natural maintenance",
+    "tr": "הזז to משתנים schedule (VR) for יותר natural maintenance",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "reinforce_step_4": {
+    "en": "Gradually increase VR value (VR-3 → VR-5 → VR-8)",
+    "tr": "Gradually increase VR ערכים (VR-3 → VR-5 → VR-8)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "fidelity_tip_2": {
+    "en": "Provide additional BST (Behavioral Skills Training)",
+    "tr": "Provide additional BST (Behavioral מיומנויות Training)",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "fidelity_tip_3": {
+    "en": "Simplify procedures if too complex",
+    "tr": "Simplify procedures if too מורכב",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "record_tip_1": {
+    "en": "Include what happened before, during, and after the behavior",
+    "tr": "כלול what happened before, during, and after the התנהגות",
+    "contentWordCount": 7,
+    "matchedCount": 5,
+    "ratio": 0.71
+  },
+  "record_tip_2": {
+    "en": "Mention the setting/location when possible",
+    "tr": "Mention the הגדרה/location when possible",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "record_tip_3": {
+    "en": "You can paste multiple incidents",
+    "tr": "תוכל הדבק multiple incidents",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "record_tip_4": {
+    "en": "Use specific, observable descriptions",
+    "tr": "השתמש מסוים, observable descriptions",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "parent_removed_item": {
+    "en": "Removed the item/activity",
+    "tr": "Removed the פריטים/activity",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "quiz_opt_identify_why": {
+    "en": "To identify WHY a behavior occurs",
+    "tr": "To identify WHY a התנהגות occurs",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "quiz_opt_any_stops": {
+    "en": "Any behavior that stops the problem",
+    "tr": "Any התנהגות זה stops the problem",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.a_break_help_someone_to_listen_space": {
+    "en": "A break? Help? Someone to listen? Space?",
+    "tr": "A break? עזרה? Someone to הקשב? Space?",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.add_a_team_note_shiftenter_for_new_line": {
+    "en": "Add a team note... (Shift+Enter for new line)",
+    "tr": "הוסף a team note... (Shift+הזן for חדש קווים)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.add_context_constraints_or_specific_challenges_eg": {
+    "en": "Add context, constraints, or specific challenges... e.g., \"The student also has a speech delay\" or \"This is a middle school student\"",
+    "tr": "הוסף context, constraints, or מסוים אתגרים... e.g., \"The תלמידים also has a speech delay\" or \"זה is a middle school תלמידים\"",
+    "contentWordCount": 12,
+    "matchedCount": 7,
+    "ratio": 0.58
+  },
+  "ph.any_other_details_was_child_tired_hungry_etc": {
+    "en": "Any other details (was child tired, hungry, etc.)...",
+    "tr": "Any other פרטים (was child tired, hungry, etc.)...",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ph.behavior_name_from_sessions": {
+    "en": "Behavior name (from sessions)...",
+    "tr": "התנהגות name (from מפגשים)...",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.describe_the_scenario_you_want_to_practice_with": {
+    "en": "Describe the scenario you want to practice with...",
+    "tr": "Describe the scenario you want to תרגל with...",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ph.describe_the_student_persona_eg_you_are_a_3rd_grad": {
+    "en": "Describe the student persona... e.g., \"You are a 3rd grader who becomes anxious during math and tends to cry and shut down...\"",
+    "tr": "Describe the תלמידים persona... e.g., \"You are a 3rd grader who becomes anxious during math and tends to cry and shut down...\"",
+    "contentWordCount": 11,
+    "matchedCount": 10,
+    "ratio": 0.91
+  },
+  "ph.eg_does_a_token_economy_reduce_offtask_behavior_du": {
+    "en": "e.g. \"Does a token economy reduce off-task behavior during math instruction?\"",
+    "tr": "e.g. \"Does a token economy reduce off-task התנהגות during math הוראות?\"",
+    "contentWordCount": 9,
+    "matchedCount": 7,
+    "ratio": 0.78
+  },
+  "ph.eg_offtask_behavior_in_math": {
+    "en": "e.g. Off-task behavior in math",
+    "tr": "e.g. Off-task התנהגות in math",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.eg_student_is_defiant_and_refuses_to_follow_direct": {
+    "en": "e.g., \"Student is defiant and refuses to follow directions.\"",
+    "tr": "e.g., \"תלמידים is defiant and refuses to follow directions.\"",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ph.eg_student_with_autism_cooccurring_adhd_new_to_the": {
+    "en": "e.g. \"student with autism\", \"co-occurring ADHD\", \"new to the school\"",
+    "tr": "e.g. \"תלמידים with autism\", \"co-occurring ADHD\", \"חדש to the school\"",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "ph.enter_the_behavioral_goal_to_scale_eg_student_will": {
+    "en": "Enter the behavioral goal to scale (e.g., \"Student will remain in seat during independent work for 15 minutes\")",
+    "tr": "הזן the behavioral מטרות to scale (e.g., \"תלמידים will remain in seat during independent work for 15 minutes\")",
+    "contentWordCount": 12,
+    "matchedCount": 9,
+    "ratio": 0.75
+  },
+  "ph.followup_needed_optional": {
+    "en": "Follow-up needed? (optional)",
+    "tr": "Follow-up needed? (אופציונלי)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.how_will_progress_be_measured": {
+    "en": "How will progress be measured?",
+    "tr": "How will התקדמות be measured?",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.items_separated_by_semicolons": {
+    "en": "Items separated by semicolons",
+    "tr": "פריטים separated by semicolons",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.outcome_key_takeaways_optional": {
+    "en": "Outcome / key takeaways (optional)",
+    "tr": "Outcome / key takeaways (אופציונלי)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.rationale_which_antecedent_does_this_address": {
+    "en": "Rationale (which antecedent does this address?)",
+    "tr": "Rationale (which קדמות does זה address?)",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ph.reflect_on_your_approachn_what_worked_welln_what_w": {
+    "en": "Reflect on your approach...\\n• What worked well?\\n• What would you do differently?\\n• What strategies do you want to practice next?",
+    "tr": "Reflect on your approach...\\n• What worked well?\\n• What would you do differently?\\n• What אסטרטגיות do you want to תרגל הבא?",
+    "contentWordCount": 14,
+    "matchedCount": 11,
+    "ratio": 0.79
+  },
+  "ph.replacement_behavior_functionally_equivalent": {
+    "en": "✅ Replacement behavior (functionally equivalent)",
+    "tr": "✅ Replacement התנהגות (functionally שווה ערך)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.session_1_3nsession_2_7nsession_3_5n": {
+    "en": "Session 1: 3\\nSession 2: 7\\nSession 3: 5\\n...",
+    "tr": "מפגשים 1: 3\\nSession 2: 7\\nSession 3: 5\\n...",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.setting_eg_math_class_cafeteria": {
+    "en": "Setting (e.g., Math class, Cafeteria)",
+    "tr": "הגדרה (e.g., Math כיתה, Cafeteria)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.share_what_you_notice_at_home_strengths_concerns_c": {
+    "en": "Share what you notice at home — strengths, concerns, cultural context, or suggestions for the school team...",
+    "tr": "שתף what you notice at home — strengths, concerns, cultural context, or suggestions for the school team...",
+    "contentWordCount": 11,
+    "matchedCount": 10,
+    "ratio": 0.91
+  },
+  "ph.target_behavior_what_you_want_to_reduce": {
+    "en": "🎯 Target behavior (what you want to reduce)",
+    "tr": "🎯 Target התנהגות (what you want to reduce)",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ph.what_behavior_will_change": {
+    "en": "What behavior will change?",
+    "tr": "What התנהגות will change?",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ph.what_environmental_change_will_you_make": {
+    "en": "What environmental change will you make?",
+    "tr": "What environmental change will you צור?",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ph.what_made_you_feel_this_way_optional": {
+    "en": "What made you feel this way? (optional)",
+    "tr": "What made you feel זה way? (אופציונלי)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.what_supports_are_needed": {
+    "en": "What supports are needed?",
+    "tr": "What תמיכה are needed?",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.what_was_going_on_before_you_felt_this_way": {
+    "en": "What was going on before you felt this way?",
+    "tr": "What was going on before you felt זה way?",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.added_n_entries_to_abc_data": {
+    "en": "Added N entries to ABC data!",
+    "tr": "Added N entries to ABC נתונים!",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.ai_suggestion_failed_try_again": {
+    "en": "AI suggestion failed — try again",
+    "tr": "בינה מלאכותית suggestion failed — נסה again",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.autofilled_n_baseline_n_intervention_points_from_n": {
+    "en": "Auto-filled: N baseline + N intervention points from \"N\"",
+    "tr": "Auto-filled: N baseline + N התערבויות נקודות from \"N\"",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "toast.behavior_occurred_dro_timer_reset": {
+    "en": "⚠️ Behavior occurred — DRO timer reset",
+    "tr": "⚠️ התנהגות occurred — DRO timer אפס",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.case_study_complete_review_your_debrief": {
+    "en": "Case study complete! Review your debrief.",
+    "tr": "Case study השלם! Review your debrief.",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "toast.case_study_generated_begin_phase_1": {
+    "en": "Case study generated! Begin Phase 1.",
+    "tr": "Case study הופק! Begin Phase 1.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.data_loaded_from_cloud": {
+    "en": "☁️ Data loaded from cloud",
+    "tr": "☁️ נתונים loaded from cloud",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.dro_interval_complete_reinforce_no_target_behavior": {
+    "en": "🎉 DRO interval complete — REINFORCE! No target behavior occurred!",
+    "tr": "🎉 DRO interval השלם — REINFORCE! No target התנהגות occurred!",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "toast.each_phase_needs_at_least_2_data_points": {
+    "en": "Each phase needs at least 2 data points",
+    "tr": "Each phase needs at least 2 נתונים נקודות",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "toast.evaluation_failed_try_again": {
+    "en": "Evaluation failed. Try again.",
+    "tr": "Evaluation failed. נסה again.",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.failed_to_generate_case_study_try_again": {
+    "en": "Failed to generate case study. Try again.",
+    "tr": "Failed to הפק case study. נסה again.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.failed_to_generate_comparison": {
+    "en": "Failed to generate comparison",
+    "tr": "Failed to הפק comparison",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.failed_to_generate_share_code": {
+    "en": "Failed to generate share code",
+    "tr": "Failed to הפק שתף code",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.failed_to_generate_summary": {
+    "en": "Failed to generate summary",
+    "tr": "Failed to הפק summary",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.failed_to_parse_snapshot_file": {
+    "en": "Failed to parse snapshot file",
+    "tr": "Failed to parse snapshot קבצים",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.family_voice_entry_added": {
+    "en": "Family voice entry added ✨",
+    "tr": "Family קול entry added ✨",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.graph_data_attached_to_iep_prep": {
+    "en": "Graph data attached to IEP Prep!",
+    "tr": "גרפים נתונים attached to IEP Prep!",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.graph_data_ready_autofill_available_in_effect_size": {
+    "en": "Graph data ready — auto-fill available in Effect Size!",
+    "tr": "גרפים נתונים ready — auto-fill זמין in Effect Size!",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "toast.iep_prep_packet_generated": {
+    "en": "IEP prep packet generated ✨",
+    "tr": "IEP prep packet הופק ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.interval_ready_reinforce_next_behavior": {
+    "en": "⏰ Interval ready — reinforce next behavior!",
+    "tr": "⏰ Interval ready — reinforce הבא התנהגות!",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.language_customized_u2728": {
+    "en": "Language customized \\u2728",
+    "tr": "שפות customized \\u2728",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.mastered_n_n_consecutive_sessions_at_criterion": {
+    "en": "🎉 MASTERED! N — N consecutive sessions at criterion!",
+    "tr": "🎉 MASTERED! N — N consecutive מפגשים at criterion!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.merged_n_abc_entries_and_n_observations": {
+    "en": "Merged N ABC entries and N observations",
+    "tr": "Merged N ABC entries and N תצפיות",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.modification_plan_generated": {
+    "en": "Modification plan generated",
+    "tr": "Modification plan הופק",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.n_home_entries_pushed_to_abc_data": {
+    "en": "N home entries pushed to ABC data ✅",
+    "tr": "N home entries pushed to ABC נתונים ✅",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.name_at_least_one_target_behavior": {
+    "en": "Name at least one target behavior",
+    "tr": "Name at least one target התנהגות",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.no_valid_data_found_in_csv": {
+    "en": "No valid data found in CSV",
+    "tr": "No valid נתונים found in CSV",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.not_a_valid_alloflow_snapshot_file": {
+    "en": "Not a valid AlloFlow snapshot file",
+    "tr": "Not a valid AlloFlow snapshot קבצים",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.not_a_valid_consent_template_file": {
+    "en": "Not a valid consent template file",
+    "tr": "Not a valid consent template קבצים",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.pattern_analysis_complete": {
+    "en": "Pattern analysis complete ✨",
+    "tr": "Pattern analysis השלם ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.please_define_a_student_persona": {
+    "en": "Please define a student persona",
+    "tr": "נא define a תלמידים persona",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.please_write_your_response_before_submitting": {
+    "en": "Please write your response before submitting.",
+    "tr": "נא כתוב your response before submitting.",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "toast.popups_blocked_downloaded_as_html_file_instead": {
+    "en": "Pop-ups blocked — downloaded as HTML file instead.",
+    "tr": "Pop-ups blocked — downloaded as HTML קבצים instead.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.predictive_analysis_complete": {
+    "en": "Predictive analysis complete ✨",
+    "tr": "Predictive analysis השלם ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.quick_fill_n_items_loaded": {
+    "en": "Quick Fill: N items loaded ⚡",
+    "tr": "מהיר Fill: N פריטים loaded ⚡",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.rate_at_least_one_item_first": {
+    "en": "Rate at least one item first",
+    "tr": "Rate at least one פריטים ראשון",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.response_failed_try_again": {
+    "en": "Response failed — try again",
+    "tr": "Response failed — נסה again",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.review_failed_try_again": {
+    "en": "Review failed — try again",
+    "tr": "Review failed — נסה again",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.saved_to_session_history": {
+    "en": "Saved to session history!",
+    "tr": "Saved to מפגשים history!",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.scenario_generation_failed_try_again": {
+    "en": "Scenario generation failed — try again",
+    "tr": "Scenario generation failed — נסה again",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "toast.session_saved_ns_n_total_responses": {
+    "en": "Session saved! Ns, N total responses",
+    "tr": "מפגשים נשמר! Ns, N total responses",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.share_code_copied_to_clipboard": {
+    "en": "Share code copied to clipboard!",
+    "tr": "שתף code copied to clipboard!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.speech_recognition_not_supported_in_this_browser": {
+    "en": "Speech recognition not supported in this browser",
+    "tr": "Speech recognition not supported in זה browser",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.switched_to_n_no_data_loaded": {
+    "en": "Switched to N (no data loaded)",
+    "tr": "Switched to N (no נתונים loaded)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.traffic_light_generated": {
+    "en": "Traffic light generated ✨",
+    "tr": "Traffic light הופק ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.add_abc_entries_before_generating_a_report": {
+    "en": "Add ABC entries before generating a report.",
+    "tr": "הוסף ABC entries before מפיק a report.",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.add_abc_entries_to_see_progress_over_time": {
+    "en": "Add ABC entries to see progress over time",
+    "tr": "הוסף ABC entries to ראה התקדמות over time",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.add_abc_entries_to_see_visual_trend_data": {
+    "en": "Add ABC entries to see visual trend data.",
+    "tr": "הוסף ABC entries to ראה חזותי trend נתונים.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.add_connections_to_build_the_relationship_map": {
+    "en": "Add connections to build the relationship map.",
+    "tr": "הוסף connections to build the relationship map.",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "ui.additional_context_optional": {
+    "en": "Additional Context (optional)",
+    "tr": "Additional Context (אופציונלי)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.ai_is_analyzing_your_transcript": {
+    "en": "AI is analyzing your transcript...",
+    "tr": "בינה מלאכותית is analyzing your transcript...",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "ui.ai_will_generate_visual_scenes_during_the_conversa": {
+    "en": "AI will generate visual scenes during the conversation (requires Imagen)",
+    "tr": "בינה מלאכותית will הפק חזותי סצנות during the conversation (requires Imagen)",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.aigenerated_meeting_preparation_packet_from_your_b": {
+    "en": "AI-generated meeting preparation packet from your behavioral data",
+    "tr": "בינה מלאכותית-הופק meeting preparation packet from your behavioral נתונים",
+    "contentWordCount": 8,
+    "matchedCount": 6,
+    "ratio": 0.75
+  },
+  "ui.aipowered_pattern_analysis_with_proactive_preventi": {
+    "en": "AI-powered pattern analysis with proactive prevention strategies",
+    "tr": "בינה מלאכותית-powered pattern analysis with proactive prevention אסטרטגיות",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "ui.aisynthesized_behavioral_profile_from_all_data_sou": {
+    "en": "AI-synthesized behavioral profile from all data sources",
+    "tr": "בינה מלאכותית-synthesized behavioral profile from all נתונים sources",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "ui.avoid_these_frequently_seen_errors_to_improve_beha": {
+    "en": "Avoid these frequently seen errors to improve behavioral outcomes.",
+    "tr": "Avoid these frequently seen שגיאות to improve behavioral outcomes.",
+    "contentWordCount": 8,
+    "matchedCount": 7,
+    "ratio": 0.88
+  },
+  "ui.based_on_horner_salentine_albin_2003": {
+    "en": "Based on Horner, Salentine, & Albin (2003)",
+    "tr": "מבוסס על Horner, Salentine, & Albin (2003)",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.behaviors_can_serve_multiple_functions_always_coll": {
+    "en": "Behaviors can serve MULTIPLE functions. Always collect enough data (10+ ABC entries) before finalizing your hypothesis. Use the AI Pattern Analysis tool for data-driven confirmation.",
+    "tr": "התנהגות can serve MULTIPLE functions. Always collect enough נתונים (10+ ABC entries) before finalizing your השערה. השתמש the בינה מלאכותית Pattern Analysis כלים for נתונים-driven confirmation.",
+    "contentWordCount": 19,
+    "matchedCount": 14,
+    "ratio": 0.74
+  },
+  "ui.break_skills_into_teachable_steps_with_chaining_an": {
+    "en": "Break skills into teachable steps with chaining and prompt tracking",
+    "tr": "Break מיומנויות into teachable שלבים with chaining and prompt tracking",
+    "contentWordCount": 9,
+    "matchedCount": 7,
+    "ratio": 0.78
+  },
+  "ui.calculate_tauu_nap_and_pnd_to_quantify_interventio": {
+    "en": "Calculate Tau-U, NAP, and PND to quantify intervention effectiveness.",
+    "tr": "חשב Tau-U, NAP, and PND to quantify התערבויות effectiveness.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.choose_the_right_differential_reinforcement_strate": {
+    "en": "Choose the right differential reinforcement strategy",
+    "tr": "בחר the right differential reinforcement אסטרטגיה",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.click_load_student_workspaces_and_select_multiple": {
+    "en": "Click \"Load Student Workspaces\" and select multiple .json files saved from BehaviorLens",
+    "tr": "לחץ \"טען תלמידים Workspaces\" and בחר multiple .json קבצים נשמר from BehaviorLens",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "ui.collect_some_abc_data_first_to_generate_a_meaningf": {
+    "en": "Collect some ABC data first to generate a meaningful packet.",
+    "tr": "Collect some ABC נתונים ראשון to הפק a meaningful packet.",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.create_your_first_replacement_behavior_plan": {
+    "en": "Create your first replacement behavior plan.",
+    "tr": "צור your ראשון replacement התנהגות plan.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.describe_your_research_question_and_let_ai_recomme": {
+    "en": "Describe your research question and let AI recommend the best design.",
+    "tr": "Describe your research שאלות and let בינה מלאכותית recommend the best design.",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "ui.document_whether_interventions_are_implemented_as": {
+    "en": "Document whether interventions are implemented as designed",
+    "tr": "מסמכים whether התערבויות are implemented as designed",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.drop_a_snapshot_file_here": {
+    "en": "Drop a Snapshot File Here",
+    "tr": "שחרר a Snapshot קבצים Here",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.enter_data_or_record_sessions_to_generate_a_cumula": {
+    "en": "Enter data or record sessions to generate a cumulative record.",
+    "tr": "הזן נתונים or record מפגשים to הפק a cumulative record.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.family_voices_are_powerful_share_your_first_observ": {
+    "en": "Family voices are powerful. Share your first observation!",
+    "tr": "Family voices are powerful. שתף your ראשון תצפיות!",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.functional_communication_training_planning_tool": {
+    "en": "Functional Communication Training planning tool",
+    "tr": "Functional Communication Training planning כלים",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ui.generate_a_multiweek_intervention_plan_based_on_yo": {
+    "en": "Generate a multi-week intervention plan based on your collected ABC data and AI analysis.",
+    "tr": "הפק a multi-week התערבויות plan based on your collected ABC נתונים and בינה מלאכותית analysis.",
+    "contentWordCount": 10,
+    "matchedCount": 7,
+    "ratio": 0.7
+  },
+  "ui.generate_a_professional_printready_progress_report": {
+    "en": "Generate a professional, print-ready progress report with inline charts, data summaries, and AI recommendations. One-click PDF export via browser print.",
+    "tr": "הפק a professional, הדפס-ready התקדמות report with inline תרשימים, נתונים summaries, and בינה מלאכותית recommendations. One-לחץ PDF ייצא via browser הדפס.",
+    "contentWordCount": 16,
+    "matchedCount": 8,
+    "ratio": 0.5
+  },
+  "ui.generate_a_unique_scenario_tailored_to_your_traini": {
+    "en": "Generate a unique scenario tailored to your training needs.",
+    "tr": "הפק a unique scenario tailored to your training needs.",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "ui.generate_compliant_iep_behavioral_goals_from_obser": {
+    "en": "Generate compliant IEP behavioral goals from observation data with present levels, SMART goals, and progress monitoring.",
+    "tr": "הפק compliant IEP behavioral מטרות from תצפיות נתונים with present רמות, SMART מטרות, and התקדמות monitoring.",
+    "contentWordCount": 13,
+    "matchedCount": 6,
+    "ratio": 0.46
+  },
+  "ui.generate_tailored_recommendations_based_on_the_beh": {
+    "en": "Generate tailored recommendations based on the behavioral data and selected audience.",
+    "tr": "הפק tailored recommendations based on the behavioral נתונים and selected audience.",
+    "contentWordCount": 8,
+    "matchedCount": 6,
+    "ratio": 0.75
+  },
+  "ui.how_often_and_when_to_deliver_reinforcement_use_th": {
+    "en": "How often and when to deliver reinforcement. Use the Token Board tool to implement these schedules in practice.",
+    "tr": "How often and when to deliver reinforcement. השתמש the Token Board כלים to implement these schedules in תרגל.",
+    "contentWordCount": 11,
+    "matchedCount": 9,
+    "ratio": 0.82
+  },
+  "ui.identify_temporal_patterns_in_behavior_occurrence": {
+    "en": "Identify temporal patterns in behavior occurrence",
+    "tr": "Identify temporal patterns in התנהגות occurrence",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ui.import_student_profiles_or_historical_abc_data_fro": {
+    "en": "Import student profiles or historical ABC data from CSV files. Onboard 10-15 students at once.",
+    "tr": "ייבא תלמידים profiles or historical ABC נתונים from CSV קבצים. Onboard 10-15 תלמידים at once.",
+    "contentWordCount": 10,
+    "matchedCount": 5,
+    "ratio": 0.5
+  },
+  "ui.load_multiple_student_workspace_files_to_compare_b": {
+    "en": "Load multiple student workspace files to compare behavior patterns, intensity levels, and trends side-by-side.",
+    "tr": "טען multiple תלמידים workspace קבצים to השווה התנהגות patterns, intensity רמות, and trends side-by-side.",
+    "contentWordCount": 13,
+    "matchedCount": 7,
+    "ratio": 0.54
+  },
+  "ui.map_target_behaviors_to_functionally_equivalent_re": {
+    "en": "Map target behaviors to functionally equivalent replacements",
+    "tr": "Map target התנהגות to functionally שווה ערך replacements",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.measure_time_between_stimulus_presentation_and_beh": {
+    "en": "Measure time between stimulus presentation and behavioral response",
+    "tr": "מדוד time between stimulus presentation and behavioral response",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "ui.modify_the_environment_to_prevent_behaviors_before": {
+    "en": "Modify the environment to prevent behaviors before they start",
+    "tr": "שנה the environment to prevent התנהגות before they התחל",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.natural_language_abc_entry": {
+    "en": "Natural Language ABC Entry",
+    "tr": "Natural שפות ABC Entry",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.no_abc_entries_to_check_yet_start_collecting_data": {
+    "en": "No ABC entries to check yet. Start collecting data first!",
+    "tr": "No ABC entries to check yet. התחל collecting נתונים ראשון!",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.no_behavioral_data_recorded": {
+    "en": "No behavioral data recorded",
+    "tr": "No behavioral נתונים recorded",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.no_entries_yet_tap_log_a_behavior_to_get_started": {
+    "en": "No entries yet. Tap \"Log a Behavior\" to get started!",
+    "tr": "No entries yet. Tap \"Log a התנהגות\" to get started!",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.no_reflections_yet_tap_the_button_above_to_check_i": {
+    "en": "No reflections yet. Tap the button above to check in with yourself!",
+    "tr": "No reflections yet. Tap the כפתורים above to check in with yourself!",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "ui.no_team_notes_yet_start_the_conversation": {
+    "en": "No team notes yet. Start the conversation!",
+    "tr": "No team notes yet. התחל the conversation!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.or_explore_the_pd_learning_path": {
+    "en": "Or explore the PD Learning Path →",
+    "tr": "Or חקור the PD Learning Path →",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.practice_clinical_reasoning_with_aigenerated_case": {
+    "en": "Practice clinical reasoning with AI-generated case studies. Get expert-level feedback on your responses.",
+    "tr": "תרגל clinical reasoning with בינה מלאכותית-הופק case studies. Get expert-רמות feedback on your responses.",
+    "contentWordCount": 12,
+    "matchedCount": 9,
+    "ratio": 0.75
+  },
+  "ui.prebuilt_scenarios_covering_the_4_functions_of_beh": {
+    "en": "Pre-built scenarios covering the 4 functions of behavior. Work offline — no AI needed.",
+    "tr": "Pre-built scenarios covering the 4 functions of התנהגות. Work offline — no בינה מלאכותית needed.",
+    "contentWordCount": 8,
+    "matchedCount": 7,
+    "ratio": 0.88
+  },
+  "ui.progress_monitoring_dashboard": {
+    "en": "Progress Monitoring Dashboard",
+    "tr": "התקדמות Monitoring Dashboard",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.progress_report_generator": {
+    "en": "Progress Report Generator",
+    "tr": "התקדמות Report Generator",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.publicationstandard_singlecase_design_graphs": {
+    "en": "Publication-standard single-case design graphs",
+    "tr": "Publication-תקנים single-case design גרפים",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ui.read_through_the_module_content_above_then_click_c": {
+    "en": "Read through the module content above, then click Complete below.",
+    "tr": "קרא through the module תוכן above, then לחץ השלם below.",
+    "contentWordCount": 9,
+    "matchedCount": 5,
+    "ratio": 0.56
+  },
+  "ui.realtime_calming_tools_for_inthemoment_support": {
+    "en": "Real-time calming tools for in-the-moment support",
+    "tr": "Real-time calming כלים for in-the-moment תמיכה",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ui.remember_cultural_humility_is_a_lifelong_practice": {
+    "en": "Remember: cultural humility is a lifelong practice. Every reflection makes you a more equitable practitioner.",
+    "tr": "Remember: cultural humility is a lifelong תרגל. Every reflection makes you a יותר equitable practitioner.",
+    "contentWordCount": 11,
+    "matchedCount": 9,
+    "ratio": 0.82
+  },
+  "ui.review_your_abc_data_collection_for_completeness_a": {
+    "en": "Review your ABC data collection for completeness and quality",
+    "tr": "Review your ABC נתונים collection for completeness and quality",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "ui.select_a_research_design_to_structure_your_data_co": {
+    "en": "Select a research design to structure your data collection",
+    "tr": "בחר a research design to structure your נתונים collection",
+    "contentWordCount": 7,
+    "matchedCount": 5,
+    "ratio": 0.71
+  },
+  "ui.share_workspace_data_with_team_members_rolebased_v": {
+    "en": "Share workspace data with team members. Role-based views filter data appropriately for BCBAs, teachers, and parents.",
+    "tr": "שתף workspace נתונים with team members. Role-based views סנן נתונים appropriately for BCBAs, מורים, and הורים.",
+    "contentWordCount": 15,
+    "matchedCount": 9,
+    "ratio": 0.6
+  },
+  "ui.speak_your_observations_naturally_ai_will_extract": {
+    "en": "Speak your observations naturally. AI will extract structured ABC entries from your transcript.",
+    "tr": "דבר your תצפיות naturally. בינה מלאכותית will חלץ structured ABC entries from your transcript.",
+    "contentWordCount": 11,
+    "matchedCount": 8,
+    "ratio": 0.73
+  },
+  "ui.stepbystep_scripts_for_healing_relationships_and_b": {
+    "en": "Step-by-step scripts for healing relationships and building community",
+    "tr": "שלבים-by-שלבים scripts for healing relationships and building community",
+    "contentWordCount": 7,
+    "matchedCount": 5,
+    "ratio": 0.71
+  },
+  "ui.student_snapshot_exchange": {
+    "en": "Student Snapshot Exchange",
+    "tr": "תלמידים Snapshot Exchange",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.systematic_behavioral_measurement_across_sessions": {
+    "en": "Systematic behavioral measurement across sessions",
+    "tr": "Systematic behavioral measurement across מפגשים",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ui.test_your_behavioral_analysis_knowledge_80_to_earn": {
+    "en": "Test your behavioral analysis knowledge — 80% to earn your badge",
+    "tr": "מבחנים your behavioral analysis knowledge — 80% to earn your תגים",
+    "contentWordCount": 8,
+    "matchedCount": 6,
+    "ratio": 0.75
+  },
+  "ui.track_behavior_frequency_over_time_with_aim_lines": {
+    "en": "Track behavior frequency over time with aim lines, phase changes, and trend analysis.",
+    "tr": "Track התנהגות frequency over time with aim קווים, phase changes, and trend analysis.",
+    "contentWordCount": 11,
+    "matchedCount": 9,
+    "ratio": 0.82
+  },
+  "ui.track_behaviors_at_home_using_simple_everyday_lang": {
+    "en": "Track behaviors at home using simple, everyday language. This helps your child\\",
+    "tr": "Track התנהגות at home using פשוט, everyday שפות. זה helps your child\\",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "ui.track_your_feelings_earn_badges_and_build_streaks": {
+    "en": "Track your feelings, earn badges, and build streaks!",
+    "tr": "Track your feelings, earn תגים, and build streaks!",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "ui.transform_deficitbased_language_into_assetfocused": {
+    "en": "Transform deficit-based language into asset-focused descriptions",
+    "tr": "Transform deficit-based שפות into asset-focused descriptions",
+    "contentWordCount": 8,
+    "matchedCount": 7,
+    "ratio": 0.88
+  },
+  "ui.use_these_criteria_when_examining_your_graph": {
+    "en": "Use these criteria when examining your graph:",
+    "tr": "השתמש these criteria when examining your גרפים:",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "ui.use_this_flow_to_hypothesize_the_function_of_a_cha": {
+    "en": "Use this flow to hypothesize the function of a challenging behavior.",
+    "tr": "השתמש זה flow to hypothesize the function of a challenging התנהגות.",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ui.visual_multitiered_system_of_supports_assign_stude": {
+    "en": "Visual multi-tiered system of supports. Assign students to tiers, get AI-powered placement recommendations.",
+    "tr": "חזותי multi-tiered מערכות of תמיכה. Assign תלמידים to tiers, get בינה מלאכותית-powered placement recommendations.",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "add_notes_hint": {
+    "en": "Add notes above or use the mic to dictate",
+    "tr": "הוסף notes above or השתמש the mic to dictate",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "correlation_desc": {
+    "en": "Darker cells indicate stronger co-occurrence between a trigger and behavior",
+    "tr": "Darker תאים indicate stronger co-occurrence between a טריגרים and התנהגות",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "toast_invalid_file": {
+    "en": "Invalid workspace file — must be BehaviorLens JSON",
+    "tr": "Invalid workspace קבצים — must be BehaviorLens JSON",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "allobot_chat.card_desc": {
+    "en": "Chat with AI about behavior strategies, FBA, BIP, and intervention planning",
+    "tr": "צ'אט with בינה מלאכותית about התנהגות אסטרטגיות, FBA, BIP, and התערבויות planning",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "allobot_chat.empty_desc": {
+    "en": "I can help with FBA strategies, intervention ideas, data interpretation, de-escalation techniques, and more.",
+    "tr": "I can עזרה with FBA אסטרטגיות, התערבויות ideas, נתונים interpretation, de-escalation techniques, and יותר.",
+    "contentWordCount": 10,
+    "matchedCount": 5,
+    "ratio": 0.5
+  },
+  "allobot_chat.empty_title": {
+    "en": "Ask me anything about behavior analysis!",
+    "tr": "Ask me anything about התנהגות analysis!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "allobot_chat.subtitle": {
+    "en": "AI-powered behavioral analysis assistant",
+    "tr": "בינה מלאכותית-powered behavioral analysis assistant",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "intervention.title": {
+    "en": "AI Intervention Plan Generator",
+    "tr": "בינה מלאכותית התערבויות Plan Generator",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "obs.start_to_begin": {
+    "en": "Start timer to begin latency measurement",
+    "tr": "התחל timer to begin latency measurement",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "profile.desc": {
+    "en": "This information is automatically shared with all AI-powered tools to personalize recommendations.",
+    "tr": "זה מידע is אוטומטית shared with all בינה מלאכותית-powered כלים to personalize recommendations.",
+    "contentWordCount": 9,
+    "matchedCount": 5,
+    "ratio": 0.56
+  },
+  "progress.title": {
+    "en": "Progress Narrative Generator",
+    "tr": "התקדמות Narrative Generator",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "snapshot.title": {
+    "en": "Student Snapshot Exchange",
+    "tr": "תלמידים Snapshot Exchange",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "workflow.subtitle": {
+    "en": "Choose a step-by-step guide for your clinical process",
+    "tr": "בחר a שלבים-by-שלבים guide for your clinical process",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "raw.adjust_the_plan_based_on_data_trends": {
+    "en": "Adjust the plan based on data trends",
+    "tr": "Adjust the plan based on נתונים trends",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.artificial_intelligence_ai_usage_disclosure": {
+    "en": "Artificial Intelligence (AI) Usage Disclosure",
+    "tr": "Artificial Intelligence (בינה מלאכותית) Usage Disclosure",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "raw.attentionseeking_behavior": {
+    "en": "Attention-Seeking Behavior",
+    "tr": "Attention-Seeking התנהגות",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.compare_current_data_to_baseline_levels": {
+    "en": "Compare current data to baseline levels",
+    "tr": "השווה current נתונים to baseline רמות",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.compare_student_performance_to_peer_norms": {
+    "en": "Compare student performance to peer norms",
+    "tr": "השווה תלמידים performance to peer norms",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.complete_a_classroomwide_behavior_scan": {
+    "en": "Complete a classroom-wide behavior scan",
+    "tr": "השלם a כיתה-wide התנהגות scan",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.conduct_a_full_functional_behavior_assessment": {
+    "en": "Conduct a full Functional Behavior Assessment",
+    "tr": "Conduct a full Functional התנהגות הערכות",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.confirm_function_with_team_consensus": {
+    "en": "Confirm function with team consensus",
+    "tr": "אשר function with team consensus",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.confirm_hypothesis_with_the_team_or_a_colleague": {
+    "en": "Confirm hypothesis with the team or a colleague",
+    "tr": "אשר השערה with the team or a colleague",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.confirm_two_observers_could_agree_on_occurrence": {
+    "en": "Confirm two observers could agree on occurrence",
+    "tr": "אשר two observers could agree on occurrence",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.develop_an_individualized_behavior_intervention_plan": {
+    "en": "Develop an individualized Behavior Intervention Plan",
+    "tr": "Develop an individualized התנהגות התערבויות Plan",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.document_baseline_frequency_for_flagged_students": {
+    "en": "Document baseline frequency for flagged students",
+    "tr": "מסמכים baseline frequency for flagged תלמידים",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.document_outcomes_and_lessons_learned": {
+    "en": "Document outcomes and lessons learned",
+    "tr": "מסמכים outcomes and שיעורים learned",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.document_the_confirmed_function": {
+    "en": "Document the confirmed function",
+    "tr": "מסמכים the confirmed function",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.escapemaintained_behavior": {
+    "en": "Escape-Maintained Behavior",
+    "tr": "Escape-Maintained התנהגות",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.example_during_math_class_when_asked_to_complete_worksheet_p": {
+    "en": "Example: During math class, when asked to complete worksheet problems, Johnny pushed his papers off the desk...",
+    "tr": "דוגמאות: During math כיתה, when asked to השלם worksheet problems, Johnny pushed his papers off the desk...",
+    "contentWordCount": 13,
+    "matchedCount": 10,
+    "ratio": 0.77
+  },
+  "raw.identify_12_functionally_equivalent_replacement_behaviors": {
+    "en": "Identify 1–2 functionally equivalent replacement behaviors",
+    "tr": "Identify 1–2 functionally שווה ערך replacement התנהגות",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.identify_students_exceeding_the_universal_threshold": {
+    "en": "Identify students exceeding the universal threshold",
+    "tr": "Identify תלמידים exceeding the universal threshold",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.instantly_fill_functionmatched_fidelity_items_no_ai_needed": {
+    "en": "Instantly fill function-matched fidelity items (no AI needed)",
+    "tr": "Instantly fill function-matched fidelity פריטים (no בינה מלאכותית needed)",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "raw.make_tier_movement_decision_stay_fade_intensify": {
+    "en": "Make tier movement decision (stay / fade / intensify)",
+    "tr": "צור tier movement decision (stay / fade / intensify)",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "raw.map_each_target_behavior_to_a_replacement": {
+    "en": "Map each target behavior to a replacement",
+    "tr": "Map each target התנהגות to a replacement",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.measure_effect_size_of_interventions": {
+    "en": "Measure effect size of interventions",
+    "tr": "מדוד effect size of התערבויות",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.observe_across_multiple_settings_classroom_recess_etc": {
+    "en": "Observe across multiple settings (classroom, recess, etc.)",
+    "tr": "Observe across multiple הגדרות (כיתה, recess, etc.)",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "raw.plan_a_reinforcement_schedule_for_replacement_behaviors": {
+    "en": "Plan a reinforcement schedule for replacement behaviors",
+    "tr": "Plan a reinforcement schedule for replacement התנהגות",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.plan_data_collection_methods_and_frequency": {
+    "en": "Plan data collection methods and frequency",
+    "tr": "Plan נתונים collection methods and frequency",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.plan_reinforcement_for_replacement_behaviors": {
+    "en": "Plan reinforcement for replacement behaviors",
+    "tr": "Plan reinforcement for replacement התנהגות",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.plan_replacement_behaviors": {
+    "en": "Plan Replacement Behaviors",
+    "tr": "Plan Replacement התנהגות",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.plan_weekly_progress_monitoring_data_collection": {
+    "en": "Plan weekly progress monitoring data collection",
+    "tr": "Plan weekly התקדמות monitoring נתונים collection",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "raw.review_existing_data_supporting_the_hypothesis": {
+    "en": "Review existing data supporting the hypothesis",
+    "tr": "Review existing נתונים supporting the השערה",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.review_progress_monitoring_data_vs_baseline": {
+    "en": "Review progress monitoring data vs. baseline",
+    "tr": "Review התקדמות monitoring נתונים vs. baseline",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.review_the_most_common_antecedent_triggers": {
+    "en": "Review the most common antecedent triggers",
+    "tr": "Review the most common קדמות טריגרים",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.review_the_most_common_consequence_patterns": {
+    "en": "Review the most common consequence patterns",
+    "tr": "Review the most common תוצאות patterns",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.run_ai_analysis_on_collected_data": {
+    "en": "Run AI Analysis on collected data",
+    "tr": "הפעל בינה מלאכותית Analysis on collected נתונים",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.select_a_teaching_strategy_for_each_replacement": {
+    "en": "Select a teaching strategy for each replacement",
+    "tr": "בחר a teaching אסטרטגיה for each replacement",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.select_a_tier_2_group_strategy_eg_cico_social_skills": {
+    "en": "Select a Tier 2 group strategy (e.g., CICO, social skills)",
+    "tr": "בחר a Tier 2 group אסטרטגיה (e.g., CICO, social מיומנויות)",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.select_evidencebased_intervention_strategies": {
+    "en": "Select evidence-based intervention strategies",
+    "tr": "בחר evidence-based התערבויות אסטרטגיות",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.select_the_primary_settings_for_data_collection": {
+    "en": "Select the primary setting(s) for data collection",
+    "tr": "בחר the primary הגדרה(s) for נתונים collection",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.sensoryautomatic_function": {
+    "en": "Sensory/Automatic Function",
+    "tr": "Sensory/אוטומטי Function",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.set_a_6week_intervention_cycle": {
+    "en": "Set a 6-week intervention cycle",
+    "tr": "הגדר a 6-week התערבויות cycle",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.set_intervention_duration_eg_46_weeks": {
+    "en": "Set intervention duration (e.g., 4–6 weeks)",
+    "tr": "הגדר התערבויות duration (e.g., 4–6 weeks)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.set_review_dates_and_checkin_schedule": {
+    "en": "Set review dates and check-in schedule",
+    "tr": "הגדר review dates and check-in schedule",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "raw.set_timeline_and_milestones_eg_4_weeks": {
+    "en": "Set timeline and milestones (e.g., 4 weeks)",
+    "tr": "הגדר timeline and milestones (e.g., 4 weeks)",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "raw.set_up_weekly_progress_monitoring": {
+    "en": "Set up weekly progress monitoring",
+    "tr": "הגדר up weekly התקדמות monitoring",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.triangulate_with_observation_data": {
+    "en": "Triangulate with observation data",
+    "tr": "Triangulate with תצפיות נתונים",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.types_of_data_collected_shared": {
+    "en": "Types of Data Collected & Shared",
+    "tr": "Types of נתונים Collected & Shared",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.write_an_observable_measurable_behavior_definition": {
+    "en": "Write an observable, measurable behavior definition",
+    "tr": "כתוב an observable, measurable התנהגות הגדרות",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.writing_observable_behaviors": {
+    "en": "Writing Observable Behaviors",
+    "tr": "Writing Observable התנהגות",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.you_have_enough_data_for_ai_analysis": {
+    "en": "You have enough data for AI analysis",
+    "tr": "You have enough נתונים for בינה מלאכותית analysis",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.building_team_based_support": {
+    "en": "Building team-based support",
+    "tr": "Building team-based תמיכה",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.choosing_an_observation_method": {
+    "en": "Choosing an observation method",
+    "tr": "Choosing an תצפיות method",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.collecting_data_with_care": {
+    "en": "Collecting data with care",
+    "tr": "Collecting נתונים with care",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.what_is_a_replacement_behavior": {
+    "en": "What is a replacement behavior?",
+    "tr": "What is a replacement התנהגות?",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "dq.tip_add_entries": {
+    "en": "Add more entries to strengthen this score.",
+    "tr": "הוסף יותר entries to strengthen זה ציונים.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "dq.tip_antecedent_types": {
+    "en": "Good range of antecedent types observed.",
+    "tr": "טוב range of קדמות types observed.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "dq.tip_data_current": {
+    "en": "Data is current and reflects recent behavior.",
+    "tr": "נתונים is current and reflects recent התנהגות.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "dq.tip_good_coverage": {
+    "en": "Good coverage across days.",
+    "tr": "טוב coverage across days.",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "dq.tip_good_diversity": {
+    "en": "Good diversity across antecedents.",
+    "tr": "טוב diversity across קדמות.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "dq.tip_great_volume": {
+    "en": "Great volume of entries for analysis.",
+    "tr": "Great נפח of entries for analysis.",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "dq.tip_last_entry_ago": {
+    "en": "Last entry was recorded a while ago.",
+    "tr": "אחרון entry was recorded a while ago.",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "dq.tip_missing_fields": {
+    "en": "Some entries are missing required fields.",
+    "tr": "Some entries are missing נדרש fields.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "fba.step_ai_analysis_desc": {
+    "en": "Use AI to identify patterns and hypothesized function.",
+    "tr": "השתמש בינה מלאכותית to identify patterns and hypothesized function.",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "fba.step_collect_more_desc": {
+    "en": "Add more observation sessions to strengthen the dataset.",
+    "tr": "הוסף יותר תצפיות מפגשים to strengthen the dataset.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "fba.step_hypothesis_desc": {
+    "en": "Draft a working hypothesis of behavior function.",
+    "tr": "Draft a working השערה of התנהגות function.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "fba.step_sessions_desc": {
+    "en": "Run observation sessions across settings and times.",
+    "tr": "הפעל תצפיות מפגשים across הגדרות and times.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "heatmap.subtitle": {
+    "en": "Behavior frequency by day and time",
+    "tr": "התנהגות frequency by day and time",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "sandbox.add_phase_desc": {
+    "en": "Add a new phase with custom data points.",
+    "tr": "הוסף a חדש phase with מותאם אישית נתונים נקודות.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "sandbox.complex_desc": {
+    "en": "Multi-phase data with mixed trends.",
+    "tr": "Multi-phase נתונים with מעורב trends.",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "sandbox.standard_desc": {
+    "en": "A typical baseline-intervention dataset.",
+    "tr": "A typical baseline-התערבויות dataset.",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  }
+}

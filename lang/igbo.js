@@ -9759,7 +9759,7 @@
       "trends_title": "Dashboard Nzọụkwụ",
       "bipgen_title": "Onye Na-emepụta BIP",
       "bipgen_desc": "Draft otu omume Intervention Plan site na gị data.",
-      "cantdowontdo_title": "nwere ike't Do / Won't Do",
+      "cantdowontdo_title": "Enweghị ike / Achọghị",
       "cantdowontdo_desc": "Hazie nkà vs. performance deficits na pick right nkwado.",
       "competingpathways_title": "Ụzọ Na-asọ Mpi",
       "competingpathways_desc": "Map desired na replacement omume against problem path.",

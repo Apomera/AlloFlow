@@ -1,0 +1,13 @@
+{
+  "hub.dtt_desc": "Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance",
+  "hub.prefassess_desc": "Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols",
+  "hub.snapshot_desc": "Export & import JSON snapshots for parent–teacher data exchange",
+  "fidelity_tip_2": "Provide additional BST (Behavioral Skills Training)",
+  "toast.quick_fill_n_items_loaded": "Quick Fill: N items loaded ⚡",
+  "toast.report_generated_use_printsave_as_pdf_in_the_new_t": "Report generated — use Print/Save as PDF in the new tab!",
+  "toast.share_code_too_large": "Snapshot too large for share code (${encoded.length.toLocaleString()} chars, limit 5,000). Use 💾 Download Snapshot instead.",
+  "ui.based_on_horner_salentine_albin_2003": "Based on Horner, Salentine, & Albin (2003)",
+  "ui.click_load_student_workspaces_and_select_multiple": "Click \"Load Student Workspaces\" and select multiple .json files saved from BehaviorLens",
+  "raw.identify_12_functionally_equivalent_replacement_behaviors": "Identify 1–2 functionally equivalent replacement behaviors",
+  "raw.set_intervention_duration_eg_46_weeks": "Set intervention duration (e.g., 4–6 weeks)"
+}

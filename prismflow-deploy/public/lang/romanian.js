@@ -9751,7 +9751,7 @@
       "trends_title": "Tablou de tendințe",
       "bipgen_title": "Generator BIP",
       "bipgen_desc": "Draft un comportament Intervention Plan din tău date.",
-      "cantdowontdo_title": "poate't Do / Won't Do",
+      "cantdowontdo_title": "Nu poate / Nu vrea",
       "cantdowontdo_desc": "Sortează abilitate vs. performance deficits la pick right suport.",
       "competingpathways_title": "Căi concurente",
       "competingpathways_desc": "Map desired și replacement comportament against problem path.",

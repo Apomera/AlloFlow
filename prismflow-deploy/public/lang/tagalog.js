@@ -9751,7 +9751,7 @@
       "trends_title": "Dashboard ng mga Trend",
       "bipgen_title": "BIP Generator",
       "bipgen_desc": "Draft isang pag-uugali interbensyon Plano mula sa iyong datos.",
-      "cantdowontdo_title": "maaari't Do / Won't Do",
+      "cantdowontdo_title": "Hindi kaya / Ayaw",
       "cantdowontdo_desc": "Ayusin kasanayan vs. performance deficits sa pick ang tama suporta.",
       "competingpathways_title": "Mga Magkakatunggaling Daan",
       "competingpathways_desc": "Map desired at replacement pag-uugali against ang problem path.",

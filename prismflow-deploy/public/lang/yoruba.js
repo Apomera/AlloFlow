@@ -9759,7 +9759,7 @@
       "trends_title": "Pátákó Àṣà",
       "bipgen_title": "Aṣẹ̀dá BIP",
       "bipgen_desc": "Draft iwa Intervention Plan lati rẹ data.",
-      "cantdowontdo_title": "le't Do / Won't Do",
+      "cantdowontdo_title": "Kò lè / Kò fẹ́",
       "cantdowontdo_desc": "Si imọ vs. performance deficits si pick right atilẹyin.",
       "competingpathways_title": "Àwọn Ọ̀nà Tó Ń Bára Wọn Jà",
       "competingpathways_desc": "Map desired ati replacement iwa against problem path.",

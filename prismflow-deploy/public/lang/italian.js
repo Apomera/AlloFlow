@@ -9751,7 +9751,7 @@
       "trends_title": "Trend Cruscotto",
       "bipgen_title": "Generatore BIP",
       "bipgen_desc": "Draft un comportamento interventi Piano da tuo dati.",
-      "cantdowontdo_title": "può't Do / Won't Do",
+      "cantdowontdo_title": "Non può / Non vuole",
       "cantdowontdo_desc": "Ordina competenze vs. performance deficits un pick il destra supporto.",
       "competingpathways_title": "Competing Percorsos",
       "competingpathways_desc": "Map desired e replacement comportamento against il problem path.",

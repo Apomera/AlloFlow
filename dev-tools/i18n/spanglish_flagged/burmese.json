@@ -1,0 +1,2088 @@
+{
+  "loading_hint": {
+    "en": "Module loading from CDN. If this persists, check your connection.",
+    "tr": "Module loading မှ CDN. လျှင် ဤ persists, စစ်ဆေး သင်၏ connection.",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.select_student_first": {
+    "en": "Select a student above to get started",
+    "tr": "ရွေးချယ်ပါ ကျောင်းသား above သို့ get started",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "hub.abc_desc": {
+    "en": "Record antecedent, behavior, and consequence observations",
+    "tr": "Record antecedent, အပြုအမူ, နှင့် consequence အကဲခတ်",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.obs_desc": {
+    "en": "Real-time interval, frequency, or duration recording",
+    "tr": "အစစ်အမှန်-အချိန် interval, frequency, သို့မဟုတ် duration recording",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.analysis_desc": {
+    "en": "AI-powered behavior pattern analysis & recommendations",
+    "tr": "AI-powered အပြုအမူ pattern ခွဲခြမ်းစိတ်ဖြာမှု & recommendations",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.overview_desc": {
+    "en": "Behavior trends, charts, and summary statistics",
+    "tr": "အပြုအမူ trends, ဇယား, နှင့် အကျဉ်းချုပ် statistics",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.freq_desc": {
+    "en": "Quick tallying and rate-per-minute tracking",
+    "tr": "မြန် tallying နှင့် rate-per-minute ခြေရာခံ",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.interval_desc": {
+    "en": "Partial, whole, or momentary time sampling grid",
+    "tr": "Partial, whole, သို့မဟုတ် momentary အချိန် sampling ဇကာ",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.token_desc": {
+    "en": "Visual reinforcement board with customizable tokens",
+    "tr": "အမြင် reinforcement board ဖြင့် customizable tokens",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.record_desc": {
+    "en": "Paste IEP/evaluations for AI-powered summarization",
+    "tr": "ကပ်ပါ IEP/evaluations အတွက် AI-powered summarization",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "hub.contract_desc": {
+    "en": "AI-drafted student-teacher behavior agreement",
+    "tr": "AI-drafted ကျောင်းသား-ဆရာ အပြုအမူ agreement",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.cycle_desc": {
+    "en": "7-phase escalation cycle with intervention strategies",
+    "tr": "7-phase escalation cycle ဖြင့် ဝင်ရောက်စွက်ဖက် နည်းဗျူဟာများ",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.reinforcer_desc": {
+    "en": "Identify effective reinforcers across 5 categories",
+    "tr": "ဖော်ထုတ် effective reinforcers တစ်လျှောက် 5 အမျိုးအစား",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.audit_desc": {
+    "en": "8-item classroom environment checklist with AI recommendations",
+    "tr": "8-အရာ အတန်း environment checklist ဖြင့် AI recommendations",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.impact_desc": {
+    "en": "Quantify behavior frequency, duration, and annual cost",
+    "tr": "Quantify အပြုအမူ frequency, duration, နှင့် annual cost",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "hub.crisis_desc": {
+    "en": "Three-tier crisis intervention protocol generator",
+    "tr": "Three-tier crisis ဝင်ရောက်စွက်ဖက် protocol generator",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "hub.datasheet_desc": {
+    "en": "Printable frequency, duration, ABC, or latency data sheets",
+    "tr": "ပုံနှိပ်နိုင်သော frequency, duration, ABC, သို့မဟုတ် latency ဒေတာ sheets",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.homenote_desc": {
+    "en": "AI-drafted parent communication with tone selector",
+    "tr": "AI-drafted မိဘ communication ဖြင့် အသံ selector",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.feasibility_desc": {
+    "en": "5-question contextual fit assessment with AI recommendations",
+    "tr": "5-မေးခွန်း contextual fit အကဲဖြတ်ခြင်း ဖြင့် AI recommendations",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.gas_desc": {
+    "en": "Goal Attainment Scaling with AI-generated descriptors",
+    "tr": "ပန်းတိုင် Attainment Scaling ဖြင့် AI-generated descriptors",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.abaguide_desc": {
+    "en": "Searchable glossary, reinforcement schedules, decision tree & common mistakes",
+    "tr": "Searchable အဘိဓာန်, reinforcement schedules, decision tree & ဘုံ mistakes",
+    "contentWordCount": 8,
+    "matchedCount": 6,
+    "ratio": 0.75
+  },
+  "hub.abaquiz_desc": {
+    "en": "Test your ABA knowledge — earn a competency badge at 80%+",
+    "tr": "စာမေးပွဲ သင်၏ ABA knowledge — earn competency တံဆိပ် at 80%+",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.antecedentmod_desc": {
+    "en": "AI-powered environmental change recommendations to prevent behaviors before they start",
+    "tr": "AI-powered environmental ပြောင်းလဲ recommendations သို့ prevent အပြုအမူ မတိုင်မီ ၎င်းတို့ စတင်ပါ",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.bcbahandoff_desc": {
+    "en": "Data dashboard for BCBAs + printable handoff packet for consultation",
+    "tr": "ဒေတာ dashboard အတွက် BCBAs + ပုံနှိပ်နိုင်သော handoff packet အတွက် consultation",
+    "contentWordCount": 7,
+    "matchedCount": 5,
+    "ratio": 0.71
+  },
+  "hub.biascheck_desc": {
+    "en": "Gently surfaces patterns in your data for reflection on potential implicit bias — growth, not guilt",
+    "tr": "Gently surfaces ပုံစံများ တွင် သင်၏ ဒေတာ အတွက် ပြန်လည်သုံးသပ်ခြင်း အပေါ် potential implicit bias — growth, မ guilt",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "hub.caseload_desc": {
+    "en": "Bird\\'s-eye overview of all students — status indicators, trends, safety alerts, and AI caseload summary",
+    "tr": "Bird\\'s-eye overview ၏ အားလုံး ကျောင်းသား — status indicators, trends, safety alerts, နှင့် AI caseload အကျဉ်းချုပ်",
+    "contentWordCount": 10,
+    "matchedCount": 8,
+    "ratio": 0.8
+  },
+  "hub.casestudy_desc": {
+    "en": "AI-generated case studies with 4-phase clinical reasoning and scoring",
+    "tr": "AI-generated case studies ဖြင့် 4-phase clinical reasoning နှင့် scoring",
+    "contentWordCount": 8,
+    "matchedCount": 7,
+    "ratio": 0.88
+  },
+  "hub.commlog_desc": {
+    "en": "Two-way family contact tracker with follow-ups — ensure no family falls through the cracks",
+    "tr": "Two-way family contact tracker ဖြင့် follow-ups — ensure no family falls မှတဆင့် cracks",
+    "contentWordCount": 10,
+    "matchedCount": 8,
+    "ratio": 0.8
+  },
+  "hub.condprob_desc": {
+    "en": "Foreground vs background probability analysis to validate ABC hypotheses with data",
+    "tr": "Foreground vs background probability ခွဲခြမ်းစိတ်ဖြာမှု သို့ validate ABC hypotheses ဖြင့် ဒေတာ",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "hub.consent_desc": {
+    "en": "Customizable consent form for parent data exchange — edit, print, share as JSON",
+    "tr": "Customizable consent form အတွက် မိဘ ဒေတာ exchange — တည်းဖြတ်ပါ, ပုံနှိပ်ပါ, မျှဝေပါ as JSON",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.cultural_title": {
+    "en": "Cultural Context Reflection",
+    "tr": "Cultural အကြောင်းအရာ Reflection",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.deescalate_desc": {
+    "en": "Breathing exercises, visual timers, sensory breaks, and grounding — real-time calming support",
+    "tr": "Breathing exercises, အမြင် timers, sensory breaks, နှင့် grounding — အစစ်အမှန်-အချိန် calming ပံ့ပိုးမှု",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "hub.drstrategy_desc": {
+    "en": "Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)",
+    "tr": "ရွေးချယ်ပါ မှန်ကန် differential reinforcement နည်းဗျူဟာ (DRA, DRI, DRO, DRL)",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.dtt_desc": {
+    "en": "Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance",
+    "tr": "Discrete Trial Training — trial-by-trial recording ဖြင့် mastery criteria နှင့် auto-advance",
+    "contentWordCount": 11,
+    "matchedCount": 10,
+    "ratio": 0.91
+  },
+  "hub.effectsize_desc": {
+    "en": "Calculate Tau-U, NAP, and PND to quantify intervention effectiveness with visual phase comparison",
+    "tr": "တွက်ချက်ပါ Tau-U, NAP, နှင့် PND သို့ quantify ဝင်ရောက်စွက်ဖက် effectiveness ဖြင့် အမြင် phase comparison",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.familyvoice_desc": {
+    "en": "Structured form for families to share observations, cultural insights, and celebrations — with AI translation",
+    "tr": "Structured form အတွက် families သို့ မျှဝေပါ အကဲခတ်, cultural insights, နှင့် celebrations — ဖြင့် AI ဘာသာပြန်",
+    "contentWordCount": 10,
+    "matchedCount": 6,
+    "ratio": 0.6
+  },
+  "hub.fbaworkflow_desc": {
+    "en": "Step-by-step guided workflows for FBA, BIP, and RTI behavior tiers with AI coaching",
+    "tr": "step-by-step guided workflows အတွက် FBA, BIP, နှင့် RTI အပြုအမူ tiers ဖြင့် AI coaching",
+    "contentWordCount": 8,
+    "matchedCount": 6,
+    "ratio": 0.75
+  },
+  "hub.fcttemplate_desc": {
+    "en": "Functional Communication Training planning with modality selection",
+    "tr": "Functional Communication Training planning ဖြင့် modality selection",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "hub.iepgoals_desc": {
+    "en": "AI-generated present levels, SMART goals, objectives, accommodations, and progress monitoring plans",
+    "tr": "AI-generated present အဆင့်, SMART ပန်းတိုင်, objectives, accommodations, နှင့် တိုးတက်မှု monitoring plans",
+    "contentWordCount": 9,
+    "matchedCount": 6,
+    "ratio": 0.67
+  },
+  "hub.iepprep_desc": {
+    "en": "AI-generated meeting preparation packet with data summary, talking points, and next steps",
+    "tr": "AI-generated meeting preparation packet ဖြင့် ဒေတာ အကျဉ်းချုပ်, talking အမှတ်, နှင့် နောက် အဆင့်",
+    "contentWordCount": 11,
+    "matchedCount": 5,
+    "ratio": 0.45
+  },
+  "hub.intervention_desc": {
+    "en": "AI-generated multi-week intervention plan with measurable goals and milestones",
+    "tr": "AI-generated multi-week ဝင်ရောက်စွက်ဖက် အစီအစဉ် ဖြင့် measurable ပန်းတိုင် နှင့် milestones",
+    "contentWordCount": 9,
+    "matchedCount": 5,
+    "ratio": 0.56
+  },
+  "hub.ioacalc_desc": {
+    "en": "Inter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count",
+    "tr": "Inter-Observer Agreement ဖြင့် 6 methods — အမှတ်-by-အမှတ်, interval, scored/unscored, exact ရေတွက်ပါ",
+    "contentWordCount": 12,
+    "matchedCount": 8,
+    "ratio": 0.67
+  },
+  "hub.maintenance_desc": {
+    "en": "Track skill retention post-mastery and generalization across settings, people, and materials",
+    "tr": "Track ကျွမ်းကျင်မှု retention post-mastery နှင့် generalization တစ်လျှောက် ဆက်တင်များ, people, နှင့် ပစ္စည်းများ",
+    "contentWordCount": 10,
+    "matchedCount": 6,
+    "ratio": 0.6
+  },
+  "hub.mtss_desc": {
+    "en": "Visual 3-tier pyramid for managing multi-tiered supports with AI-powered tier placement recommendations",
+    "tr": "အမြင် 3-tier pyramid အတွက် managing multi-tiered ပံ့ပိုးမှု ဖြင့် AI-powered tier placement recommendations",
+    "contentWordCount": 12,
+    "matchedCount": 9,
+    "ratio": 0.75
+  },
+  "hub.nlabc_desc": {
+    "en": "Type or paste observation notes in everyday English — AI structures them into ABC entries automatically",
+    "tr": "အမျိုးအစား သို့မဟုတ် ကပ်ပါ အကဲခတ် မှတ်စုများ တွင် everyday English — AI structures them ထဲသို့ ABC entries အလိုအလျောက်",
+    "contentWordCount": 11,
+    "matchedCount": 5,
+    "ratio": 0.45
+  },
+  "hub.obscoach_desc": {
+    "en": "Real-time coaching on your data collection quality — identifies gaps, suggests improvements, and rates your data",
+    "tr": "အစစ်အမှန်-အချိန် coaching အပေါ် သင်၏ ဒေတာ collection အရည်အသွေး — identifies gaps, suggests improvements, နှင့် rates သင်၏ ဒေတာ",
+    "contentWordCount": 14,
+    "matchedCount": 7,
+    "ratio": 0.5
+  },
+  "hub.pdpath_desc": {
+    "en": "Guided onboarding modules for building ABA skills step-by-step",
+    "tr": "Guided onboarding modules အတွက် building ABA ကျွမ်းကျင်မှု step-by-step",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "hub.prefassess_desc": {
+    "en": "Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols",
+    "tr": "Systematic reinforcer identification — MSWO, Paired Stimulus, နှင့် အခမဲ့ Operant protocols",
+    "contentWordCount": 8,
+    "matchedCount": 7,
+    "ratio": 0.88
+  },
+  "hub.progress_desc": {
+    "en": "IEP-ready progress monitoring paragraphs from accumulated behavioral data",
+    "tr": "IEP-ready တိုးတက်မှု monitoring စာပိုဒ် မှ accumulated behavioral ဒေတာ",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.qualitycheck_desc": {
+    "en": "AI-powered review of your ABC entries with specific improvement suggestions",
+    "tr": "AI-powered ပြန်လည်စိစစ် ၏ သင်၏ ABC entries ဖြင့် တိကျသော improvement suggestions",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.quick_launch_hint": {
+    "en": "Core clinical tools — one tap access",
+    "tr": "Core clinical ကိရိယာများ — one tap ဝင်ရောက်ခွင့်",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "hub.recent_sessions": {
+    "en": "Recent Observation Sessions",
+    "tr": "Recent အကဲခတ် sessions",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.reinforcement_desc": {
+    "en": "Structured motivation survey — identify what drives each student across 6 categories",
+    "tr": "Structured motivation survey — ဖော်ထုတ် ဘာ drives တစ်ခုစီ ကျောင်းသား တစ်လျှောက် 6 အမျိုးအစား",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "hub.relmap_desc": {
+    "en": "Visual diagram of student connections — trusted adults, peers, family, mentors — with gap analysis",
+    "tr": "အမြင် ပုံ ၏ ကျောင်းသား connections — trusted adults, peers, family, mentors — ဖြင့် gap ခွဲခြမ်းစိတ်ဖြာမှု",
+    "contentWordCount": 11,
+    "matchedCount": 6,
+    "ratio": 0.55
+  },
+  "hub.replacebehavior_desc": {
+    "en": "Map behaviors of concern to functionally equivalent replacements with teaching strategies",
+    "tr": "Map အပြုအမူ ၏ concern သို့ functionally ညီမျှ replacements ဖြင့် teaching နည်းဗျူဟာများ",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.replacebehavior_title": {
+    "en": "Replacement Behavior Planner",
+    "tr": "Replacement အပြုအမူ Planner",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.restorative_desc": {
+    "en": "Step-by-step scripts for harm repair, community circles, and reintegration conferences",
+    "tr": "step-by-step scripts အတွက် harm repair, community စက်ဝိုင်း, နှင့် reintegration conferences",
+    "contentWordCount": 9,
+    "matchedCount": 8,
+    "ratio": 0.89
+  },
+  "hub.restorative_title": {
+    "en": "Restorative Conversation Guide",
+    "tr": "Restorative စကားပြောဆိုမှု Guide",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.scdmanager_desc": {
+    "en": "AB, ABAB, Multiple Baseline, Alternating Treatments, Changing Criterion",
+    "tr": "AB, ABAB, များစွာ Baseline, Alternating Treatments, Changing Criterion",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "hub.sessionnotes_desc": {
+    "en": "Timestamped observation notes with voice dictation — capture context as it happens",
+    "tr": "Timestamped အကဲခတ် မှတ်စုများ ဖြင့် အသံ dictation — capture အကြောင်းအရာ as it happens",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.snapshot_title": {
+    "en": "Student Snapshot Exchange",
+    "tr": "ကျောင်းသား Snapshot Exchange",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.socialvalidity_desc": {
+    "en": "TARF and IRP-15 scales for measuring treatment acceptability — required for publication",
+    "tr": "TARF နှင့် IRP-15 scales အတွက် measuring treatment acceptability — လိုအပ် အတွက် publication",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "hub.taskanalysis_desc": {
+    "en": "Break skills into teachable steps with forward, backward, or total-task chaining and prompt tracking",
+    "tr": "Break ကျွမ်းကျင်မှု ထဲသို့ teachable အဆင့် ဖြင့် forward, backward, သို့မဟုတ် total-task chaining နှင့် prompt ခြေရာခံ",
+    "contentWordCount": 13,
+    "matchedCount": 8,
+    "ratio": 0.62
+  },
+  "hub.teamnotes_desc": {
+    "en": "Multi-role timestamped collaboration thread for teachers, paras, counselors, and parents",
+    "tr": "Multi-role timestamped collaboration thread အတွက် ဆရာ, paras, counselors, နှင့် မိဘ",
+    "contentWordCount": 9,
+    "matchedCount": 7,
+    "ratio": 0.78
+  },
+  "hub.treatintegrity_desc": {
+    "en": "Document whether interventions are implemented as designed — component-level fidelity tracking",
+    "tr": "စာရွက်စာတမ်း whether ဝင်ရောက်စွက်ဖက် ဖြစ်ကြသည် implemented as designed — အစိတ်အပိုင်း-အဆင့် fidelity ခြေရာခံ",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.cantdowontdo_desc": {
+    "en": "Sort skill vs. performance deficits to pick the right support.",
+    "tr": "စီစဉ်ပါ ကျွမ်းကျင်မှု vs. performance deficits သို့ pick မှန်ကန် ပံ့ပိုးမှု.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "hub.competingpathways_desc": {
+    "en": "Map desired and replacement behaviors against the problem path.",
+    "tr": "Map desired နှင့် replacement အပြုအမူ against problem path.",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "hub.functionquiz_desc": {
+    "en": "Practice identifying behavior function from short scenarios.",
+    "tr": "လေ့ကျင့်ပါ identifying အပြုအမူ function မှ တို scenarios.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "hub.mipractice_title": {
+    "en": "Motivational Interviewing Practice",
+    "tr": "Motivational Interviewing လေ့ကျင့်ပါ",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.mipractice_desc": {
+    "en": "Rehearse MI conversations with simulated student responses.",
+    "tr": "Rehearse MI conversations ဖြင့် simulated ကျောင်းသား responses.",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.practicum_desc": {
+    "en": "Run a guided practice case from start to finish.",
+    "tr": "လုပ်ဆောင်ပါ guided လေ့ကျင့်ပါ case မှ စတင်ပါ သို့ finish.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "abc.analysis_failed": {
+    "en": "Analysis failed — try again",
+    "tr": "ခွဲခြမ်းစိတ်ဖြာမှု failed — ကြိုးစားပါ again",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "abc.setting_placeholder": {
+    "en": "e.g., Classroom, Hallway, Cafeteria",
+    "tr": "e.g., အတန်း, Hallway, Cafeteria",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "overview.empty_desc": {
+    "en": "Start collecting ABC data or run live observations to see trends here.",
+    "tr": "စတင်ပါ collecting ABC ဒေတာ သို့မဟုတ် လုပ်ဆောင်ပါ တိုက်ရိုက် အကဲခတ် သို့ ကြည့်ပါ trends here.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "token.target_placeholder": {
+    "en": "e.g., Raise hand before speaking",
+    "tr": "e.g., Raise hand မတိုင်မီ speaking",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "hotspot.tap_hint": {
+    "en": "Tap a cell to increment. Click routine name to edit.",
+    "tr": "Tap ဆဲလ် သို့ increment. နှိပ်ပါ routine name သို့ တည်းဖြတ်ပါ.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "no_entries_match": {
+    "en": "No entries match your filters",
+    "tr": "မဟုတ်ပါ entries ကိုက်ညီ သင်၏ filters",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "quick_fill_hint": {
+    "en": "AI will parse your description into the fields below. You can then edit manually.",
+    "tr": "AI မည် parse သင်၏ description ထဲသို့ fields below. သင် နိုင်သည် ထို့နောက် တည်းဖြတ်ပါ ကိုယ်တိုင်.",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "restorative_title": {
+    "en": "💬 Restorative Conversation Starters",
+    "tr": "💬 Restorative စကားပြောဆိုမှု Starters",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "quiz_fba_purpose": {
+    "en": "What is the primary purpose of an FBA?",
+    "tr": "ဘာ ဖြစ်သည် primary purpose ၏ FBA?",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "quick_fill_placeholder": {
+    "en": "e.g. \"Student threw paper during math when asked to show work, teacher redirected calmly\"",
+    "tr": "e.g. \"ကျောင်းသား threw paper အတွင်း သင်္ချာ အခါ asked သို့ ပြပါ အလုပ်, ဆရာ redirected calmly\"",
+    "contentWordCount": 12,
+    "matchedCount": 5,
+    "ratio": 0.42
+  },
+  "nl_edit_placeholder": {
+    "en": "e.g. \"change consequence to teacher redirected\"",
+    "tr": "e.g. \"ပြောင်းလဲ consequence သို့ ဆရာ redirected\"",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "reinforce_step_1": {
+    "en": "Start with dense reinforcement (e.g., FR-1 or FR-2)",
+    "tr": "စတင်ပါ ဖြင့် dense reinforcement (e.g., FR-1 သို့မဟုတ် FR-2)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "reinforce_step_2": {
+    "en": "Once behavior is consistent (~80%), increase ratio by 1-2",
+    "tr": "Once အပြုအမူ ဖြစ်သည် consistent (~80%), increase ratio by 1-2",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "reinforce_step_3": {
+    "en": "Move to variable schedule (VR) for more natural maintenance",
+    "tr": "ရွှေ့ပါ သို့ ပြောင်းလဲကိန်း schedule (VR) အတွက် ပိုပြီး natural maintenance",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "reinforce_step_4": {
+    "en": "Gradually increase VR value (VR-3 → VR-5 → VR-8)",
+    "tr": "Gradually increase VR တန်ဖိုး (VR-3 → VR-5 → VR-8)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "reinforce_step_5": {
+    "en": "Transition to intermittent/natural reinforcement",
+    "tr": "Transition သို့ intermittent/natural reinforcement",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "fidelity_tip_1": {
+    "en": "Review implementation procedures with staff",
+    "tr": "ပြန်လည်စိစစ် implementation procedures ဖြင့် staff",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "fidelity_tip_2": {
+    "en": "Provide additional BST (Behavioral Skills Training)",
+    "tr": "Provide additional BST (Behavioral ကျွမ်းကျင်မှု Training)",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "fidelity_tip_3": {
+    "en": "Simplify procedures if too complex",
+    "tr": "Simplify procedures လျှင် too ရှုပ်ထွေး",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "fidelity_tip_4": {
+    "en": "Consider environmental barriers to implementation",
+    "tr": "စဉ်းစား environmental barriers သို့ implementation",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "record_tip_4": {
+    "en": "Use specific, observable descriptions",
+    "tr": "အသုံးပြုပါ တိကျသော, observable descriptions",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "quiz_opt_any_stops": {
+    "en": "Any behavior that stops the problem",
+    "tr": "မည်သည့် အပြုအမူ ထို stops problem",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.a_break_help_someone_to_listen_space": {
+    "en": "A break? Help? Someone to listen? Space?",
+    "tr": "break? အကူအညီ? Someone သို့ နားထောင်ပါ? Space?",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.add_context_constraints_or_specific_challenges_eg": {
+    "en": "Add context, constraints, or specific challenges... e.g., \"The student also has a speech delay\" or \"This is a middle school student\"",
+    "tr": "ထည့်ပါ အကြောင်းအရာ, constraints, သို့မဟုတ် တိကျသော စိန်ခေါ်မှု... e.g., \" ကျောင်းသား also has speech delay\" သို့မဟုတ် \"ဤ ဖြစ်သည် middle school ကျောင်းသား\"",
+    "contentWordCount": 12,
+    "matchedCount": 6,
+    "ratio": 0.5
+  },
+  "ph.any_other_details_was_child_tired_hungry_etc": {
+    "en": "Any other details (was child tired, hungry, etc.)...",
+    "tr": "မည်သည့် အခြား အသေးစိတ် (was child tired, hungry, etc.)...",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.behavior_name_from_sessions": {
+    "en": "Behavior name (from sessions)...",
+    "tr": "အပြုအမူ name (မှ sessions)...",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.describe_the_scenario_you_want_to_practice_with": {
+    "en": "Describe the scenario you want to practice with...",
+    "tr": "Describe scenario သင် လိုချင် သို့ လေ့ကျင့်ပါ ဖြင့်...",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ph.describe_the_student_persona_eg_you_are_a_3rd_grad": {
+    "en": "Describe the student persona... e.g., \"You are a 3rd grader who becomes anxious during math and tends to cry and shut down...\"",
+    "tr": "Describe ကျောင်းသား persona... e.g., \"သင် ဖြစ်ကြသည် 3rd grader who becomes anxious အတွင်း သင်္ချာ နှင့် tends သို့ cry နှင့် shut down...\"",
+    "contentWordCount": 11,
+    "matchedCount": 8,
+    "ratio": 0.73
+  },
+  "ph.describe_what_your_child_did": {
+    "en": "Describe what your child did...",
+    "tr": "Describe ဘာ သင်၏ child did...",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.eg_does_a_token_economy_reduce_offtask_behavior_du": {
+    "en": "e.g. \"Does a token economy reduce off-task behavior during math instruction?\"",
+    "tr": "e.g. \"Does token economy reduce off-task အပြုအမူ အတွင်း သင်္ချာ ညွှန်ကြားချက်?\"",
+    "contentWordCount": 9,
+    "matchedCount": 5,
+    "ratio": 0.56
+  },
+  "ph.eg_hitting_peers_when_frustrated": {
+    "en": "e.g. Hitting peers when frustrated",
+    "tr": "e.g. Hitting peers အခါ frustrated",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ph.eg_student_is_defiant_and_refuses_to_follow_direct": {
+    "en": "e.g., \"Student is defiant and refuses to follow directions.\"",
+    "tr": "e.g., \"ကျောင်းသား ဖြစ်သည် defiant နှင့် refuses သို့ follow directions.\"",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ph.eg_student_with_autism_cooccurring_adhd_new_to_the": {
+    "en": "e.g. \"student with autism\", \"co-occurring ADHD\", \"new to the school\"",
+    "tr": "e.g. \"ကျောင်းသား ဖြင့် autism\", \"co-occurring ADHD\", \"အသစ် သို့ school\"",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ph.eg_token_economy_fct_protocol": {
+    "en": "e.g. Token Economy + FCT Protocol",
+    "tr": "ဥပမာ - Token Economy + FCT Protocol",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "ph.enter_the_behavioral_goal_to_scale_eg_student_will": {
+    "en": "Enter the behavioral goal to scale (e.g., \"Student will remain in seat during independent work for 15 minutes\")",
+    "tr": "ထည့်ပါ behavioral ပန်းတိုင် သို့ scale (e.g., \"ကျောင်းသား မည် remain တွင် seat အတွင်း independent အလုပ် အတွက် 15 minutes\")",
+    "contentWordCount": 12,
+    "matchedCount": 6,
+    "ratio": 0.5
+  },
+  "ph.followup_needed_optional": {
+    "en": "Follow-up needed? (optional)",
+    "tr": "Follow-up needed? (ရွေးချယ်စရာ)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.items_separated_by_semicolons": {
+    "en": "Items separated by semicolons",
+    "tr": "အရာ separated by semicolons",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.outcome_key_takeaways_optional": {
+    "en": "Outcome / key takeaways (optional)",
+    "tr": "Outcome / သော့ takeaways (ရွေးချယ်စရာ)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.rationale_which_antecedent_does_this_address": {
+    "en": "Rationale (which antecedent does this address?)",
+    "tr": "Rationale (which antecedent does ဤ address?)",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "ph.reflect_on_your_approachn_what_worked_welln_what_w": {
+    "en": "Reflect on your approach...\\n• What worked well?\\n• What would you do differently?\\n• What strategies do you want to practice next?",
+    "tr": "Reflect အပေါ် သင်၏ approach...\\n• ဘာ worked well?\\n• ဘာ would သင် do differently?\\n• ဘာ နည်းဗျူဟာများ do သင် လိုချင် သို့ လေ့ကျင့်ပါ နောက်?",
+    "contentWordCount": 14,
+    "matchedCount": 6,
+    "ratio": 0.43
+  },
+  "ph.replacement_behavior_functionally_equivalent": {
+    "en": "✅ Replacement behavior (functionally equivalent)",
+    "tr": "✅ Replacement အပြုအမူ (functionally ညီမျှ)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.session_1_3nsession_2_7nsession_3_5n": {
+    "en": "Session 1: 3\\nSession 2: 7\\nSession 3: 5\\n...",
+    "tr": "sessions 1: 3\\nSession 2: 7\\nSession 3: 5\\n...",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.share_what_you_notice_at_home_strengths_concerns_c": {
+    "en": "Share what you notice at home — strengths, concerns, cultural context, or suggestions for the school team...",
+    "tr": "မျှဝေပါ ဘာ သင် notice at home — strengths, concerns, cultural အကြောင်းအရာ, သို့မဟုတ် suggestions အတွက် school အသင်း...",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "ph.topic_purpose_of_contact": {
+    "en": "Topic / purpose of contact",
+    "tr": "အကြောင်းအရာ / purpose ၏ contact",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.type_language_eg_spanish_arabic_somali": {
+    "en": "Type language (e.g., Spanish, Arabic, Somali)",
+    "tr": "အမျိုးအစား ဘာသာစကား (e.g., Spanish, Arabic, Somali)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.type_your_response_here_be_thorough_and_use_profes": {
+    "en": "Type your response here. Be thorough and use professional language...",
+    "tr": "အမျိုးအစား သင်၏ တုံ့ပြန်ချက် here. Be thorough နှင့် အသုံးပြုပါ professional ဘာသာစကား...",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ph.what_could_you_or_a_grownup_do_differently": {
+    "en": "What could you or a grown-up do differently?",
+    "tr": "ဘာ could သင် သို့မဟုတ် grown-up do differently?",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ph.what_made_you_feel_this_way_optional": {
+    "en": "What made you feel this way? (optional)",
+    "tr": "ဘာ made သင် feel ဤ way? (ရွေးချယ်စရာ)",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ph.what_was_going_on_before_you_felt_this_way": {
+    "en": "What was going on before you felt this way?",
+    "tr": "ဘာ was going အပေါ် မတိုင်မီ သင် felt ဤ way?",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.added_n_entries_to_abc_data": {
+    "en": "Added N entries to ABC data!",
+    "tr": "Added N entries သို့ ABC ဒေတာ!",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.ai_suggestion_failed_try_again": {
+    "en": "AI suggestion failed — try again",
+    "tr": "AI suggestion failed — ကြိုးစားပါ again",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.all_entries_already_synced_to_abc_data": {
+    "en": "All entries already synced to ABC data",
+    "tr": "အားလုံး entries already synced သို့ ABC ဒေတာ",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.autofilled_n_baseline_n_intervention_points_from_n": {
+    "en": "Auto-filled: N baseline + N intervention points from \"N\"",
+    "tr": "Auto-filled: N baseline + N ဝင်ရောက်စွက်ဖက် အမှတ် မှ \"N\"",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.behavior_occurred_dro_timer_reset": {
+    "en": "⚠️ Behavior occurred — DRO timer reset",
+    "tr": "⚠️ အပြုအမူ occurred — DRO timer ပြန်လည်သတ်မှတ်ပါ",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.case_study_complete_review_your_debrief": {
+    "en": "Case study complete! Review your debrief.",
+    "tr": "Case study ပြီးစီးပါ! ပြန်လည်စိစစ် သင်၏ debrief.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.case_study_generated_begin_phase_1": {
+    "en": "Case study generated! Begin Phase 1.",
+    "tr": "Case study ထုတ်လုပ်ပြီး! Begin Phase 1.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.data_loaded_from_cloud": {
+    "en": "☁️ Data loaded from cloud",
+    "tr": "☁️ ဒေတာ loaded မှ cloud",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.dro_interval_complete_reinforce_no_target_behavior": {
+    "en": "🎉 DRO interval complete — REINFORCE! No target behavior occurred!",
+    "tr": "🎉 DRO interval ပြီးစီးပါ — REINFORCE! မဟုတ်ပါ ပစ်မှတ် အပြုအမူ occurred!",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.each_phase_needs_at_least_2_data_points": {
+    "en": "Each phase needs at least 2 data points",
+    "tr": "တစ်ခုစီ phase needs at least 2 ဒေတာ အမှတ်",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.effect_sizes_attached_to_iep_prep": {
+    "en": "Effect sizes attached to IEP Prep!",
+    "tr": "Effect sizes attached သို့ IEP Prep!",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "toast.evaluation_failed_try_again": {
+    "en": "Evaluation failed. Try again.",
+    "tr": "Evaluation failed. ကြိုးစားပါ again.",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.failed_to_generate_case_study_try_again": {
+    "en": "Failed to generate case study. Try again.",
+    "tr": "Failed သို့ ထုတ်လုပ်ပါ case study. ကြိုးစားပါ again.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.failed_to_generate_comparison": {
+    "en": "Failed to generate comparison",
+    "tr": "Failed သို့ ထုတ်လုပ်ပါ comparison",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.failed_to_generate_share_code": {
+    "en": "Failed to generate share code",
+    "tr": "Failed သို့ ထုတ်လုပ်ပါ မျှဝေပါ code",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.failed_to_parse_snapshot_file": {
+    "en": "Failed to parse snapshot file",
+    "tr": "Failed သို့ parse snapshot ဖိုင်",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.failed_to_parse_transcript": {
+    "en": "Failed to parse transcript",
+    "tr": "Failed သို့ parse transcript",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.family_voice_entry_added": {
+    "en": "Family voice entry added ✨",
+    "tr": "Family အသံ entry added ✨",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.graph_data_attached_to_iep_prep": {
+    "en": "Graph data attached to IEP Prep!",
+    "tr": "ဂရပ် ဒေတာ attached သို့ IEP Prep!",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.graph_data_ready_autofill_available_in_effect_size": {
+    "en": "Graph data ready — auto-fill available in Effect Size!",
+    "tr": "ဂရပ် ဒေတာ ready — auto-fill ရရှိနိုင် တွင် Effect Size!",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "toast.iep_prep_packet_generated": {
+    "en": "IEP prep packet generated ✨",
+    "tr": "IEP prep packet ထုတ်လုပ်ပြီး ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.interval_ready_reinforce_next_behavior": {
+    "en": "⏰ Interval ready — reinforce next behavior!",
+    "tr": "⏰ Interval ready — reinforce နောက် အပြုအမူ!",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.language_customized_u2728": {
+    "en": "Language customized \\u2728",
+    "tr": "ဘာသာစကား customized \\u2728",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.loaded_n_workspaces_for_comparison": {
+    "en": "Loaded N workspace(s) for comparison",
+    "tr": "Loaded N workspace(s) အတွက် comparison",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.merged_n_abc_entries_and_n_observations": {
+    "en": "Merged N ABC entries and N observations",
+    "tr": "Merged N ABC entries နှင့် N အကဲခတ်",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.n_home_entries_pushed_to_abc_data": {
+    "en": "N home entries pushed to ABC data ✅",
+    "tr": "N home entries pushed သို့ ABC ဒေတာ ✅",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.name_at_least_one_target_behavior": {
+    "en": "Name at least one target behavior",
+    "tr": "Name at least one ပစ်မှတ် အပြုအမူ",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.need_at_least_2_data_points_per_phase": {
+    "en": "Need at least 2 data points per phase",
+    "tr": "လိုအပ် at least 2 ဒေတာ အမှတ် per phase",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.need_at_least_2_phases_in_the_graph_baseline_inter": {
+    "en": "Need at least 2 phases in the Graph (baseline + intervention)",
+    "tr": "လိုအပ် at least 2 phases တွင် ဂရပ် (baseline + ဝင်ရောက်စွက်ဖက်)",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.no_valid_data_found_in_csv": {
+    "en": "No valid data found in CSV",
+    "tr": "မဟုတ်ပါ valid ဒေတာ found တွင် CSV",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.not_a_valid_alloflow_snapshot_file": {
+    "en": "Not a valid AlloFlow snapshot file",
+    "tr": "မ valid AlloFlow snapshot ဖိုင်",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.not_a_valid_consent_template_file": {
+    "en": "Not a valid consent template file",
+    "tr": "မ valid consent template ဖိုင်",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.parsed_n_abc_entries_from_transcript": {
+    "en": "Parsed N ABC entries from transcript!",
+    "tr": "Parsed N ABC entries မှ transcript!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.please_define_a_student_persona": {
+    "en": "Please define a student persona",
+    "tr": "ကျေးဇူးပြု၍ define ကျောင်းသား persona",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.populated_from_n_abc_entries": {
+    "en": "Populated from N ABC entries",
+    "tr": "Populated မှ N ABC entries",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.popups_blocked_downloaded_as_html_file_instead": {
+    "en": "Pop-ups blocked — downloaded as HTML file instead.",
+    "tr": "Pop-ups blocked — downloaded as HTML ဖိုင် instead.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.quick_fill_n_items_loaded": {
+    "en": "Quick Fill: N items loaded ⚡",
+    "tr": "မြန် Fill: N အရာ loaded ⚡",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.rate_at_least_one_item_first": {
+    "en": "Rate at least one item first",
+    "tr": "Rate at least one အရာ ပထမ",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.reflection_analysis_ready": {
+    "en": "Reflection analysis ready 🌟",
+    "tr": "Reflection ခွဲခြမ်းစိတ်ဖြာမှု ready 🌟",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.reframed_through_strengths_lens": {
+    "en": "Reframed through strengths lens ✨",
+    "tr": "Reframed မှတဆင့် strengths lens ✨",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.response_failed_try_again": {
+    "en": "Response failed — try again",
+    "tr": "တုံ့ပြန်ချက် failed — ကြိုးစားပါ again",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.review_failed_try_again": {
+    "en": "Review failed — try again",
+    "tr": "ပြန်လည်စိစစ် failed — ကြိုးစားပါ again",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.scenario_generation_failed_try_again": {
+    "en": "Scenario generation failed — try again",
+    "tr": "Scenario မျိုးဆက် failed — ကြိုးစားပါ again",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.session_saved_ns_n_total_responses": {
+    "en": "Session saved! Ns, N total responses",
+    "tr": "sessions သိမ်းပြီး! Ns, N total responses",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.share_code_copied_to_clipboard": {
+    "en": "Share code copied to clipboard!",
+    "tr": "မျှဝေပါ code copied သို့ clipboard!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.simulation_started_you_are_now_the_counselor": {
+    "en": "Simulation started — you are now the counselor 🎭",
+    "tr": "ပုံတူ started — သင် ဖြစ်ကြသည် ယခု counselor 🎭",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.speech_recognition_not_supported_in_this_browser": {
+    "en": "Speech recognition not supported in this browser",
+    "tr": "Speech recognition မ supported တွင် ဤ browser",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.switched_to_n_no_data_loaded": {
+    "en": "Switched to N (no data loaded)",
+    "tr": "Switched သို့ N (no ဒေတာ loaded)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.traffic_light_generated": {
+    "en": "Traffic light generated ✨",
+    "tr": "Traffic light ထုတ်လုပ်ပြီး ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.workspace_loaded_n_entries_n_notes": {
+    "en": "Workspace loaded (N entries, N notes) 📂",
+    "tr": "Workspace loaded (N entries, N မှတ်စုများ) 📂",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.autofilled_from_phase_tagged_entries": {
+    "en": "Autofilled from phase-tagged entries.",
+    "tr": "Autofilled မှ phase-tagged entries.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.need_2_baseline_2_intervention_entries_with_phase_tags": {
+    "en": "Need at least 2 baseline and 2 intervention entries with phase tags.",
+    "tr": "လိုအပ် at least 2 baseline နှင့် 2 ဝင်ရောက်စွက်ဖက် entries ဖြင့် phase tags.",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "toast.share_code_too_large": {
+    "en": "Snapshot too large for share code (${encoded.length.toLocaleString()} chars, limit 5,000). Use 💾 Download Snapshot instead.",
+    "tr": "Snapshot သည် မျှဝေသည့်ကုဒ်အတွက် ကြီးလွန်းပါသည် (${encoded.length.toLocaleString()} လုံး၊ ကန့်သတ်ချက် 5,000)။ အစား 💾 Snapshot ဒေါင်းလုဒ်လုပ်ပါ ကို အသုံးပြုပါ။",
+    "contentWordCount": 12,
+    "matchedCount": 5,
+    "ratio": 0.42
+  },
+  "ui.add_abc_entries_to_see_visual_trend_data": {
+    "en": "Add ABC entries to see visual trend data.",
+    "tr": "ထည့်ပါ ABC entries သို့ ကြည့်ပါ အမြင် trend ဒေတာ.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.add_connections_to_build_the_relationship_map": {
+    "en": "Add connections to build the relationship map.",
+    "tr": "ထည့်ပါ connections သို့ တည်ဆောက် relationship map.",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.ai_is_analyzing_your_transcript": {
+    "en": "AI is analyzing your transcript...",
+    "tr": "AI ဖြစ်သည် analyzing သင်၏ transcript...",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.aigenerated_meeting_preparation_packet_from_your_b": {
+    "en": "AI-generated meeting preparation packet from your behavioral data",
+    "tr": "AI-generated meeting preparation packet မှ သင်၏ behavioral ဒေတာ",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "ui.aipowered_pattern_analysis_with_proactive_preventi": {
+    "en": "AI-powered pattern analysis with proactive prevention strategies",
+    "tr": "AI-powered pattern ခွဲခြမ်းစိတ်ဖြာမှု ဖြင့် proactive prevention နည်းဗျူဟာများ",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.aisynthesized_behavioral_profile_from_all_data_sou": {
+    "en": "AI-synthesized behavioral profile from all data sources",
+    "tr": "AI-synthesized behavioral profile မှ အားလုံး ဒေတာ sources",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ui.avoid_these_frequently_seen_errors_to_improve_beha": {
+    "en": "Avoid these frequently seen errors to improve behavioral outcomes.",
+    "tr": "Avoid these frequently seen အမှား သို့ improve behavioral outcomes.",
+    "contentWordCount": 8,
+    "matchedCount": 7,
+    "ratio": 0.88
+  },
+  "ui.based_on_horner_salentine_albin_2003": {
+    "en": "Based on Horner, Salentine, & Albin (2003)",
+    "tr": "အပေါ်အခြေခံ အပေါ် Horner, Salentine, & Albin (2003)",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.break_skills_into_teachable_steps_with_chaining_an": {
+    "en": "Break skills into teachable steps with chaining and prompt tracking",
+    "tr": "Break ကျွမ်းကျင်မှု ထဲသို့ teachable အဆင့် ဖြင့် chaining နှင့် prompt ခြေရာခံ",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "ui.calculate_tauu_nap_and_pnd_to_quantify_interventio": {
+    "en": "Calculate Tau-U, NAP, and PND to quantify intervention effectiveness.",
+    "tr": "တွက်ချက်ပါ Tau-U, NAP, နှင့် PND သို့ quantify ဝင်ရောက်စွက်ဖက် effectiveness.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.choose_the_right_differential_reinforcement_strate": {
+    "en": "Choose the right differential reinforcement strategy",
+    "tr": "ရွေးချယ်ပါ မှန်ကန် differential reinforcement နည်းဗျူဟာ",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ui.collect_some_abc_data_first_to_generate_a_meaningf": {
+    "en": "Collect some ABC data first to generate a meaningful packet.",
+    "tr": "Collect အချို့ ABC ဒေတာ ပထမ သို့ ထုတ်လုပ်ပါ meaningful packet.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.crf_every_time_fr2_fr3_fr5_vr5_vr8_natural_reinfor": {
+    "en": "CRF (every time) → FR-2 → FR-3 → FR-5 → VR-5 → VR-8 → Natural reinforcement",
+    "tr": "CRF (every အချိန်) → FR-2 → FR-3 → FR-5 → VR-5 → VR-8 → Natural reinforcement",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.cultural_context_reflection": {
+    "en": "Cultural Context Reflection",
+    "tr": "Cultural အကြောင်းအရာ Reflection",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.describe_your_research_question_and_let_ai_recomme": {
+    "en": "Describe your research question and let AI recommend the best design.",
+    "tr": "Describe သင်၏ research မေးခွန်း နှင့် let AI recommend အကောင်းဆုံး design.",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.discrete_trial_training_with_mastery_tracking_and": {
+    "en": "Discrete Trial Training with mastery tracking and auto-advance",
+    "tr": "Discrete Trial Training ဖြင့် mastery ခြေရာခံ နှင့် auto-advance",
+    "contentWordCount": 8,
+    "matchedCount": 6,
+    "ratio": 0.75
+  },
+  "ui.document_whether_interventions_are_implemented_as": {
+    "en": "Document whether interventions are implemented as designed",
+    "tr": "စာရွက်စာတမ်း whether ဝင်ရောက်စွက်ဖက် ဖြစ်ကြသည် implemented as designed",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.drop_a_snapshot_file_here": {
+    "en": "Drop a Snapshot File Here",
+    "tr": "ချပါ Snapshot ဖိုင် Here",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.enter_data_or_record_sessions_to_generate_a_cumula": {
+    "en": "Enter data or record sessions to generate a cumulative record.",
+    "tr": "ထည့်ပါ ဒေတာ သို့မဟုတ် record sessions သို့ ထုတ်လုပ်ပါ cumulative record.",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.family_voices_are_powerful_share_your_first_observ": {
+    "en": "Family voices are powerful. Share your first observation!",
+    "tr": "Family voices ဖြစ်ကြသည် powerful. မျှဝေပါ သင်၏ ပထမ အကဲခတ်!",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.functional_communication_training_planning_tool": {
+    "en": "Functional Communication Training planning tool",
+    "tr": "Functional Communication Training planning ကိရိယာများ",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ui.generate_a_professional_printready_progress_report": {
+    "en": "Generate a professional, print-ready progress report with inline charts, data summaries, and AI recommendations. One-click PDF export via browser print.",
+    "tr": "inline ဇယားများ၊ data အကျဉ်းချုပ်များ၊ နှင့် AI အကြံပြုချက်များပါသော ပရော်ဖက်ရှင်နယ်၊ ပုံနှိပ်-အသင့် တိုးတက်မှု အစီရင်ခံစာ ဖန်တီးပါ။ Browser print မှတဆင့် One-click PDF export။",
+    "contentWordCount": 16,
+    "matchedCount": 7,
+    "ratio": 0.44
+  },
+  "ui.generate_a_unique_scenario_tailored_to_your_traini": {
+    "en": "Generate a unique scenario tailored to your training needs.",
+    "tr": "ထုတ်လုပ်ပါ unique scenario tailored သို့ သင်၏ training needs.",
+    "contentWordCount": 7,
+    "matchedCount": 5,
+    "ratio": 0.71
+  },
+  "ui.generate_iepready_progress_monitoring_paragraphs_f": {
+    "en": "Generate IEP-ready progress monitoring paragraphs from your accumulated behavioral data.",
+    "tr": "ထုတ်လုပ်ပါ IEP-ready တိုးတက်မှု monitoring စာပိုဒ် မှ သင်၏ accumulated behavioral ဒေတာ.",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "ui.generate_tailored_recommendations_based_on_the_beh": {
+    "en": "Generate tailored recommendations based on the behavioral data and selected audience.",
+    "tr": "ထုတ်လုပ်ပါ tailored recommendations အပေါ်အခြေခံ အပေါ် behavioral ဒေတာ နှင့် ရွေးထားသော audience.",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "ui.gently_surfaces_patterns_for_reflection_growth_not": {
+    "en": "Gently surfaces patterns for reflection — growth, not guilt",
+    "tr": "Gently surfaces ပုံစံများ အတွက် ပြန်လည်သုံးသပ်ခြင်း — growth, မ guilt",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ui.get_ai_coaching_on_data_collection_quality_identif": {
+    "en": "Get AI coaching on data collection quality. Identifies gaps, suggests improvements, rates your data.",
+    "tr": "Get AI coaching အပေါ် ဒေတာ collection အရည်အသွေး. Identifies gaps, suggests improvements, rates သင်၏ ဒေတာ.",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "ui.how_often_and_when_to_deliver_reinforcement_use_th": {
+    "en": "How often and when to deliver reinforcement. Use the Token Board tool to implement these schedules in practice.",
+    "tr": "ဘယ်လို often နှင့် အခါ သို့ deတိုက်ရိုက်r reinforcement. အသုံးပြုပါ Token Board ကိရိယာများ သို့ implement these schedules တွင် လေ့ကျင့်ပါ.",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "ui.identify_temporal_patterns_in_behavior_occurrence": {
+    "en": "Identify temporal patterns in behavior occurrence",
+    "tr": "ဖော်ထုတ် temporal ပုံစံများ တွင် အပြုအမူ occurrence",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ui.import_student_profiles_or_historical_abc_data_fro": {
+    "en": "Import student profiles or historical ABC data from CSV files. Onboard 10-15 students at once.",
+    "tr": "တင်သွင်းပါ ကျောင်းသား profiles သို့မဟုတ် historical ABC ဒေတာ မှ CSV ဖိုင်. Onboard 10-15 ကျောင်းသား at once.",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "ui.map_target_behaviors_to_functionally_equivalent_re": {
+    "en": "Map target behaviors to functionally equivalent replacements",
+    "tr": "Map ပစ်မှတ် အပြုအမူ သို့ functionally ညီမျှ replacements",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ui.measure_time_between_stimulus_presentation_and_beh": {
+    "en": "Measure time between stimulus presentation and behavioral response",
+    "tr": "တိုင်းတာပါ အချိန် ကြား stimulus presentation နှင့် behavioral တုံ့ပြန်ချက်",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.natural_language_abc_entry": {
+    "en": "Natural Language ABC Entry",
+    "tr": "Natural ဘာသာစကား ABC Entry",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.need_at_least_3_abc_entries_for_pattern_detection": {
+    "en": "Need at least 3 ABC entries for pattern detection.",
+    "tr": "လိုအပ် at least 3 ABC entries အတွက် pattern detection.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ui.need_at_least_5_abc_entries_for_pattern_analysis": {
+    "en": "Need at least 5 ABC entries for pattern analysis.",
+    "tr": "လိုအပ် at least 5 ABC entries အတွက် pattern ခွဲခြမ်းစိတ်ဖြာမှု.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.no_behavioral_data_recorded": {
+    "en": "No behavioral data recorded",
+    "tr": "မဟုတ်ပါ behavioral ဒေတာ recorded",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.no_contacts_logged_yet_consistent_communication_bu": {
+    "en": "No contacts logged yet. Consistent communication builds trust!",
+    "tr": "မဟုတ်ပါ contacts logged yet. Consistent communication တည်ဆောက် trust!",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "ui.no_entries_yet_tap_log_a_behavior_to_get_started": {
+    "en": "No entries yet. Tap \"Log a Behavior\" to get started!",
+    "tr": "မဟုတ်ပါ entries yet. Tap \"Log အပြုအမူ\" သို့ get started!",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.prebuilt_scenarios_covering_the_4_functions_of_beh": {
+    "en": "Pre-built scenarios covering the 4 functions of behavior. Work offline — no AI needed.",
+    "tr": "Pre-built scenarios covering 4 functions ၏ အပြုအမူ. အလုပ် offline — no AI needed.",
+    "contentWordCount": 8,
+    "matchedCount": 6,
+    "ratio": 0.75
+  },
+  "ui.progress_monitoring_dashboard": {
+    "en": "Progress Monitoring Dashboard",
+    "tr": "တိုးတက်မှု Monitoring Dashboard",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.record_sessions_with_the_session_data_tracker_or_s": {
+    "en": "Record sessions with the Session Data Tracker, or switch to Manual Entry mode.",
+    "tr": "Record sessions ဖြင့် sessions ဒေတာ Tracker, သို့မဟုတ် ပြောင်းပါ သို့ ကိုယ်တိုင် Entry မုဒ်.",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "ui.remember_cultural_humility_is_a_lifelong_practice": {
+    "en": "Remember: cultural humility is a lifelong practice. Every reflection makes you a more equitable practitioner.",
+    "tr": "Remember: cultural humility ဖြစ်သည် lifelong လေ့ကျင့်ပါ. Every ပြန်လည်သုံးသပ်ခြင်း makes သင် ပိုပြီး equitable practitioner.",
+    "contentWordCount": 11,
+    "matchedCount": 8,
+    "ratio": 0.73
+  },
+  "ui.restorative_conversation_guide": {
+    "en": "Restorative Conversation Guide",
+    "tr": "Restorative စကားပြောဆိုမှု Guide",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.select_a_research_design_to_structure_your_data_co": {
+    "en": "Select a research design to structure your data collection",
+    "tr": "ရွေးချယ်ပါ research design သို့ ဖွဲ့စည်းပုံ သင်၏ ဒေတာ collection",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.stepbystep_scripts_for_healing_relationships_and_b": {
+    "en": "Step-by-step scripts for healing relationships and building community",
+    "tr": "step-by-step scripts အတွက် healing relationships နှင့် building community",
+    "contentWordCount": 7,
+    "matchedCount": 7,
+    "ratio": 1
+  },
+  "ui.student_snapshot_exchange": {
+    "en": "Student Snapshot Exchange",
+    "tr": "ကျောင်းသား Snapshot Exchange",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.systematic_behavioral_measurement_across_sessions": {
+    "en": "Systematic behavioral measurement across sessions",
+    "tr": "Systematic behavioral measurement တစ်လျှောက် sessions",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ui.systematic_reinforcer_identification_using_evidenc": {
+    "en": "Systematic reinforcer identification using evidence-based protocols",
+    "tr": "Systematic reinforcer identification အသုံးပြုခြင်း အထောက်အထား-အပေါ်အခြေခံ protocols",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.track_your_feelings_earn_badges_and_build_streaks": {
+    "en": "Track your feelings, earn badges, and build streaks!",
+    "tr": "Track သင်၏ feelings, earn တံဆိပ်, နှင့် တည်ဆောက် streaks!",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.use_these_criteria_when_examining_your_graph": {
+    "en": "Use these criteria when examining your graph:",
+    "tr": "အသုံးပြုပါ these criteria အခါ examining သင်၏ ဂရပ်:",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.use_this_flow_to_hypothesize_the_function_of_a_cha": {
+    "en": "Use this flow to hypothesize the function of a challenging behavior.",
+    "tr": "အသုံးပြုပါ ဤ flow သို့ hypothesize function ၏ challenging အပြုအမူ.",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ui.visual_multitiered_system_of_supports_assign_stude": {
+    "en": "Visual multi-tiered system of supports. Assign students to tiers, get AI-powered placement recommendations.",
+    "tr": "အမြင် multi-tiered စနစ် ၏ ပံ့ပိုးမှု. Assign ကျောင်းသား သို့ tiers, get AI-powered placement recommendations.",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "ui.preference_assessment_wizard": {
+    "en": "Preference Assessment Wizard",
+    "tr": "Preference အကဲဖြတ်ခြင်း wizard",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "add_notes_hint": {
+    "en": "Add notes above or use the mic to dictate",
+    "tr": "ထည့်ပါ မှတ်စုများ above သို့မဟုတ် အသုံးပြုပါ mic သို့ dictate",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "correlation_desc": {
+    "en": "Darker cells indicate stronger co-occurrence between a trigger and behavior",
+    "tr": "Darker ဆဲလ် indicate stronger co-occurrence ကြား အစပျိုးသူ နှင့် အပြုအမူ",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "correlation_matrix": {
+    "en": "Antecedent → Behavior Correlations",
+    "tr": "Antecedent → အပြုအမူ Correlations",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast_invalid_file": {
+    "en": "Invalid workspace file — must be BehaviorLens JSON",
+    "tr": "Invalid workspace ဖိုင် — must be BehaviorLens JSON",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "allobot_chat.empty_desc": {
+    "en": "I can help with FBA strategies, intervention ideas, data interpretation, de-escalation techniques, and more.",
+    "tr": "I နိုင်သည် အကူအညီ ဖြင့် FBA နည်းဗျူဟာများ, ဝင်ရောက်စွက်ဖက် ideas, ဒေတာ interpretation, de-escalation techniques, နှင့် ပိုပြီး.",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "allobot_chat.subtitle": {
+    "en": "AI-powered behavioral analysis assistant",
+    "tr": "AI-powered behavioral ခွဲခြမ်းစိတ်ဖြာမှု assistant",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "obs.start_to_begin": {
+    "en": "Start timer to begin latency measurement",
+    "tr": "စတင်ပါ timer သို့ begin latency measurement",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "profile.desc": {
+    "en": "This information is automatically shared with all AI-powered tools to personalize recommendations.",
+    "tr": "ဤ အချက်အလက် ဖြစ်သည် အလိုအလျောက် shared ဖြင့် အားလုံး AI-powered ကိရိယာများ သို့ personalize recommendations.",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "snapshot.title": {
+    "en": "Student Snapshot Exchange",
+    "tr": "ကျောင်းသား Snapshot Exchange",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "workflow.subtitle": {
+    "en": "Choose a step-by-step guide for your clinical process",
+    "tr": "ရွေးချယ်ပါ step-by-step guide အတွက် သင်၏ clinical process",
+    "contentWordCount": 7,
+    "matchedCount": 5,
+    "ratio": 0.71
+  },
+  "raw.additional_schooldistrict_notes": {
+    "en": "Additional School/District Notes",
+    "tr": "Additional School/District မှတ်စုများ",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.assign_an_ioa_partner_for_reliability_checks": {
+    "en": "Assign an IOA partner for reliability checks",
+    "tr": "Assign IOA partner အတွက် reliability checks",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "raw.assign_team_roles_and_responsibilities": {
+    "en": "Assign team roles and responsibilities",
+    "tr": "Assign အသင်း roles နှင့် responsibilities",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.attentionseeking_behavior": {
+    "en": "Attention-Seeking Behavior",
+    "tr": "Attention-Seeking အပြုအမူ",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.canvas_environment_local_storage_only": {
+    "en": "Canvas environment — local storage only",
+    "tr": "Canvas environment — local storage သာ",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.compare_student_performance_to_peer_norms": {
+    "en": "Compare student performance to peer norms",
+    "tr": "နှိုင်းယှဉ်ပါ ကျောင်းသား performance သို့ peer norms",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.complete_at_least_3_observation_sessions": {
+    "en": "Complete at least 3 observation sessions",
+    "tr": "ပြီးစီးပါ at least 3 အကဲခတ် sessions",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.conduct_a_full_functional_behavior_assessment": {
+    "en": "Conduct a full Functional Behavior Assessment",
+    "tr": "Conduct အပြည့်အ၀ Functional အပြုအမူ အကဲဖြတ်ခြင်း",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.confirm_function_with_team_consensus": {
+    "en": "Confirm function with team consensus",
+    "tr": "အတည်ပြုပါ function ဖြင့် အသင်း consensus",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.confirm_two_observers_could_agree_on_occurrence": {
+    "en": "Confirm two observers could agree on occurrence",
+    "tr": "အတည်ပြုပါ two observers could agree အပေါ် occurrence",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.develop_an_individualized_behavior_intervention_plan": {
+    "en": "Develop an individualized Behavior Intervention Plan",
+    "tr": "Develop individualized အပြုအမူ ဝင်ရောက်စွက်ဖက် အစီအစဉ်",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.document_baseline_frequency_for_flagged_students": {
+    "en": "Document baseline frequency for flagged students",
+    "tr": "စာရွက်စာတမ်း baseline frequency အတွက် flagged ကျောင်းသား",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.document_outcomes_and_lessons_learned": {
+    "en": "Document outcomes and lessons learned",
+    "tr": "စာရွက်စာတမ်း outcomes နှင့် သင်ခန်းစာ learned",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.document_the_confirmed_function": {
+    "en": "Document the confirmed function",
+    "tr": "စာရွက်စာတမ်း confirmed function",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.escapemaintained_behavior": {
+    "en": "Escape-Maintained Behavior",
+    "tr": "Escape-Maintained အပြုအမူ",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.example_during_math_class_when_asked_to_complete_worksheet_p": {
+    "en": "Example: During math class, when asked to complete worksheet problems, Johnny pushed his papers off the desk...",
+    "tr": "ဥပမာ: အတွင်း သင်္ချာ အတန်း, အခါ asked သို့ ပြီးစီးပါ worksheet ပြဿနာများ, Johnny pushed his papers off desk...",
+    "contentWordCount": 13,
+    "matchedCount": 6,
+    "ratio": 0.46
+  },
+  "raw.identify_12_functionally_equivalent_replacement_behaviors": {
+    "en": "Identify 1–2 functionally equivalent replacement behaviors",
+    "tr": "ဖော်ထုတ် 1–2 functionally ညီမျှ replacement အပြုအမူ",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.identify_students_exceeding_the_universal_threshold": {
+    "en": "Identify students exceeding the universal threshold",
+    "tr": "ဖော်ထုတ် ကျောင်းသား exceeding universal threshold",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.instantly_fill_functionmatched_fidelity_items_no_ai_needed": {
+    "en": "Instantly fill function-matched fidelity items (no AI needed)",
+    "tr": "Instantly fill function-matched fidelity အရာ (no AI needed)",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "raw.make_tier_movement_decision_stay_fade_intensify": {
+    "en": "Make tier movement decision (stay / fade / intensify)",
+    "tr": "ပြုလုပ်ပါ tier movement decision (stay / fade / intensify)",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "raw.map_antecedent_behavior_consequence_pathways": {
+    "en": "Map antecedent → behavior → consequence pathways",
+    "tr": "Map antecedent → အပြုအမူ → consequence pathways",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.measure_effect_size_of_interventions": {
+    "en": "Measure effect size of interventions",
+    "tr": "တိုင်းတာပါ effect size ၏ ဝင်ရောက်စွက်ဖက်",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.plan_a_reinforcement_schedule_for_replacement_behaviors": {
+    "en": "Plan a reinforcement schedule for replacement behaviors",
+    "tr": "အစီအစဉ် reinforcement schedule အတွက် replacement အပြုအမူ",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.plan_data_collection_methods_and_frequency": {
+    "en": "Plan data collection methods and frequency",
+    "tr": "အစီအစဉ် ဒေတာ collection methods နှင့် frequency",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.plan_reinforcement_for_replacement_behaviors": {
+    "en": "Plan reinforcement for replacement behaviors",
+    "tr": "အစီအစဉ် reinforcement အတွက် replacement အပြုအမူ",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.plan_weekly_progress_monitoring_data_collection": {
+    "en": "Plan weekly progress monitoring data collection",
+    "tr": "အစီအစဉ် weekly တိုးတက်မှု monitoring ဒေတာ collection",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "raw.prepare_documentation_for_iep_team_if_applicable": {
+    "en": "Prepare documentation for IEP team (if applicable)",
+    "tr": "Prepare documentation အတွက် IEP အသင်း (လျှင် applicable)",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.record_duration_and_intensity_for_each_incident": {
+    "en": "Record duration and intensity for each incident",
+    "tr": "Record duration နှင့် intensity အတွက် တစ်ခုစီ incident",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.review_existing_data_supporting_the_hypothesis": {
+    "en": "Review existing data supporting the hypothesis",
+    "tr": "ပြန်လည်စိစစ် existing ဒေတာ supporting ယူဆချက်",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.review_progress_monitoring_data_vs_baseline": {
+    "en": "Review progress monitoring data vs. baseline",
+    "tr": "ပြန်လည်စိစစ် တိုးတက်မှု monitoring ဒေတာ vs. baseline",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.select_a_teaching_strategy_for_each_replacement": {
+    "en": "Select a teaching strategy for each replacement",
+    "tr": "ရွေးချယ်ပါ teaching နည်းဗျူဟာ အတွက် တစ်ခုစီ replacement",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.select_the_primary_settings_for_data_collection": {
+    "en": "Select the primary setting(s) for data collection",
+    "tr": "ရွေးချယ်ပါ primary ဆက်တင်(s) အတွက် ဒေတာ collection",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.set_a_6week_intervention_cycle": {
+    "en": "Set a 6-week intervention cycle",
+    "tr": "သတ်မှတ်ပါ 6-week ဝင်ရောက်စွက်ဖက် cycle",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.set_intervention_duration_eg_46_weeks": {
+    "en": "Set intervention duration (e.g., 4–6 weeks)",
+    "tr": "သတ်မှတ်ပါ ဝင်ရောက်စွက်ဖက် duration (e.g., 4–6 weeks)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.set_review_dates_and_checkin_schedule": {
+    "en": "Set review dates and check-in schedule",
+    "tr": "သတ်မှတ်ပါ ပြန်လည်စိစစ် dates နှင့် စစ်ဆေး-တွင် schedule",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.set_timeline_and_milestones_eg_4_weeks": {
+    "en": "Set timeline and milestones (e.g., 4 weeks)",
+    "tr": "သတ်မှတ်ပါ timeline နှင့် milestones (e.g., 4 weeks)",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "raw.set_up_weekly_progress_monitoring": {
+    "en": "Set up weekly progress monitoring",
+    "tr": "သတ်မှတ်ပါ up weekly တိုးတက်မှု monitoring",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.types_of_data_collected_shared": {
+    "en": "Types of Data Collected & Shared",
+    "tr": "Types ၏ ဒေတာ Collected & Shared",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.write_an_observable_measurable_behavior_definition": {
+    "en": "Write an observable, measurable behavior definition",
+    "tr": "ရေးပါ observable, measurable အပြုအမူ အဓိပ္ပါယ်",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.choosing_an_observation_method": {
+    "en": "Choosing an observation method",
+    "tr": "Choosing အကဲခတ် method",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.collecting_data_with_care": {
+    "en": "Collecting data with care",
+    "tr": "Collecting ဒေတာ ဖြင့် care",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.interval_and_latency_recording": {
+    "en": "Interval and latency recording",
+    "tr": "Interval နှင့် latency recording",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "raw.restorative_over_punitive": {
+    "en": "Restorative over punitive",
+    "tr": "Restorative အပေါ် punitive",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.teaching_not_just_expecting": {
+    "en": "Teaching, not just expecting",
+    "tr": "Teaching, မ just expecting",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "raw.what_is_reinforcement_really": {
+    "en": "What is reinforcement, really?",
+    "tr": "ဘာ ဖြစ်သည် reinforcement, really?",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.when_to_consult_specialists": {
+    "en": "When to consult specialists",
+    "tr": "အခါ သို့ consult specialists",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "dq.tip_add_entries": {
+    "en": "Add more entries to strengthen this score.",
+    "tr": "ထည့်ပါ ပိုပြီး entries သို့ strengthen ဤ ရမှတ်.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "dq.tip_all_complete": {
+    "en": "All entries have the required fields filled in.",
+    "tr": "အားလုံး entries ရှိသည် လိုအပ် fields filled တွင်.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "dq.tip_antecedent_types": {
+    "en": "Good range of antecedent types observed.",
+    "tr": "ကောင်း range ၏ antecedent types observed.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "dq.tip_data_current": {
+    "en": "Data is current and reflects recent behavior.",
+    "tr": "ဒေတာ ဖြစ်သည် လက်ရှိ နှင့် reflects recent အပြုအမူ.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "dq.tip_good_coverage": {
+    "en": "Good coverage across days.",
+    "tr": "ကောင်း coverage တစ်လျှောက် days.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "dq.tip_good_diversity": {
+    "en": "Good diversity across antecedents.",
+    "tr": "ကောင်း diversity တစ်လျှောက် antecedents.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "dq.tip_last_entry_ago": {
+    "en": "Last entry was recorded a while ago.",
+    "tr": "နောက်ဆုံး entry was recorded စဉ် ago.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "dq.tip_missing_fields": {
+    "en": "Some entries are missing required fields.",
+    "tr": "အချို့ entries ဖြစ်ကြသည် missing လိုအပ် fields.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "dq.tip_spread_days": {
+    "en": "Entries are well spread across days.",
+    "tr": "Entries ဖြစ်ကြသည် well spread တစ်လျှောက် days.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "fba.step_ai_analysis_desc": {
+    "en": "Use AI to identify patterns and hypothesized function.",
+    "tr": "အသုံးပြုပါ AI သို့ ဖော်ထုတ် ပုံစံများ နှင့် hypothesized function.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "fba.step_collect_more_desc": {
+    "en": "Add more observation sessions to strengthen the dataset.",
+    "tr": "ထည့်ပါ ပိုပြီး အကဲခတ် sessions သို့ strengthen dataset.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "fba.step_hypothesis_desc": {
+    "en": "Draft a working hypothesis of behavior function.",
+    "tr": "Draft working ယူဆချက် ၏ အပြုအမူ function.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "fba.step_record_abc_desc": {
+    "en": "Document antecedents, behaviors, and consequences.",
+    "tr": "စာရွက်စာတမ်း antecedents, အပြုအမူ, နှင့် consequences.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "fba.step_sessions_desc": {
+    "en": "Run observation sessions across settings and times.",
+    "tr": "လုပ်ဆောင်ပါ အကဲခတ် sessions တစ်လျှောက် ဆက်တင်များ နှင့် times.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "sandbox.complex_desc": {
+    "en": "Multi-phase data with mixed trends.",
+    "tr": "Multi-phase ဒေတာ ဖြင့် ရော trends.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "sandbox.standard_desc": {
+    "en": "A typical baseline-intervention dataset.",
+    "tr": "ပုံမှန် baseline-ပြုပြင်ခြင်း dataset တစ်ခု။",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  }
+}

@@ -9759,7 +9759,7 @@
       "trends_title": "Dashboard na Yanayi",
       "bipgen_title": "Mai Samar da BIP",
       "bipgen_desc": "Draft hali Intervention Plan daga naka bayanai.",
-      "cantdowontdo_title": "zai iya't Do / Won't Do",
+      "cantdowontdo_title": "Ba zai iya ba / Ba zai yi ba",
       "cantdowontdo_desc": "Tsara fasaha vs. performance deficits zuwa pick right tallafi.",
       "competingpathways_title": "Hanyoyi Masu Gasa",
       "competingpathways_desc": "Map desired da replacement hali against problem path.",

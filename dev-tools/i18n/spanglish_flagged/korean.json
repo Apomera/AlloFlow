@@ -1,0 +1,1920 @@
+{
+  "loading_hint": {
+    "en": "Module loading from CDN. If this persists, check your connection.",
+    "tr": "Module loading 에서 CDN. 만약 이것 persists, 확인 당신의 connection.",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.select_student_first": {
+    "en": "Select a student above to get started",
+    "tr": "선택 학생 above 에 get started",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "hub.abc_desc": {
+    "en": "Record antecedent, behavior, and consequence observations",
+    "tr": "Record antecedent, 행동, 및 consequence 관찰",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.obs_desc": {
+    "en": "Real-time interval, frequency, or duration recording",
+    "tr": "실시간 interval, frequency, 또는 duration recording",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.analysis_desc": {
+    "en": "AI-powered behavior pattern analysis & recommendations",
+    "tr": "AI-powered 행동 pattern 분석 & recommendations",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "hub.overview_desc": {
+    "en": "Behavior trends, charts, and summary statistics",
+    "tr": "행동 trends, 차트, 및 요약 statistics",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.interval_desc": {
+    "en": "Partial, whole, or momentary time sampling grid",
+    "tr": "Partial, whole, 또는 momentary 시간 sampling 격자",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.token_desc": {
+    "en": "Visual reinforcement board with customizable tokens",
+    "tr": "시각 reinforcement 보드 함께 customizable tokens",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.record_desc": {
+    "en": "Paste IEP/evaluations for AI-powered summarization",
+    "tr": "붙여넣기 IEP/evaluations 위한 AI-powered summarization",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "hub.contract_desc": {
+    "en": "AI-drafted student-teacher behavior agreement",
+    "tr": "AI-drafted 학생-교사 행동 agreement",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.cycle_desc": {
+    "en": "7-phase escalation cycle with intervention strategies",
+    "tr": "7-phase escalation cycle 함께 중재 전략",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.reinforcer_desc": {
+    "en": "Identify effective reinforcers across 5 categories",
+    "tr": "식별 effective reinforcers 걸쳐 5 카테고리",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.audit_desc": {
+    "en": "8-item classroom environment checklist with AI recommendations",
+    "tr": "8-항목 학급 environment checklist 함께 AI recommendations",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.impact_desc": {
+    "en": "Quantify behavior frequency, duration, and annual cost",
+    "tr": "Quantify 행동 frequency, duration, 및 annual cost",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "hub.datasheet_desc": {
+    "en": "Printable frequency, duration, ABC, or latency data sheets",
+    "tr": "인쇄 가능 frequency, duration, ABC, 또는 latency 데이터 sheets",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.homenote_desc": {
+    "en": "AI-drafted parent communication with tone selector",
+    "tr": "AI-drafted 학부모 communication 함께 톤 selector",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.feasibility_desc": {
+    "en": "5-question contextual fit assessment with AI recommendations",
+    "tr": "5-질문 contextual fit 평가 함께 AI recommendations",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.gas_desc": {
+    "en": "Goal Attainment Scaling with AI-generated descriptors",
+    "tr": "목표 Attainment Scaling 함께 AI-generated descriptors",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "hub.abaguide_desc": {
+    "en": "Searchable glossary, reinforcement schedules, decision tree & common mistakes",
+    "tr": "Searchable 용어집, reinforcement schedules, 결정 tree & 공통 mistakes",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "hub.antecedentmod_desc": {
+    "en": "AI-powered environmental change recommendations to prevent behaviors before they start",
+    "tr": "AI-powered environmental 변경 recommendations 에 prevent 행동 이전 그들 시작",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.bcbahandoff_desc": {
+    "en": "Data dashboard for BCBAs + printable handoff packet for consultation",
+    "tr": "데이터 대시보드 위한 BCBAs + 인쇄 가능 handoff packet 위한 consultation",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "hub.biascheck_desc": {
+    "en": "Gently surfaces patterns in your data for reflection on potential implicit bias — growth, not guilt",
+    "tr": "Gently surfaces 패턴 안에 당신의 데이터 위한 reflection 위에 potential implicit bias — growth, 아닙니다 guilt",
+    "contentWordCount": 11,
+    "matchedCount": 8,
+    "ratio": 0.73
+  },
+  "hub.caseload_desc": {
+    "en": "Bird\\'s-eye overview of all students — status indicators, trends, safety alerts, and AI caseload summary",
+    "tr": "Bird\\'s-eye overview 의 모든 학생 — status indicators, trends, safety alerts, 및 AI caseload 요약",
+    "contentWordCount": 10,
+    "matchedCount": 8,
+    "ratio": 0.8
+  },
+  "hub.casestudy_desc": {
+    "en": "AI-generated case studies with 4-phase clinical reasoning and scoring",
+    "tr": "AI-generated case studies 함께 4-phase clinical reasoning 및 점수 매기기",
+    "contentWordCount": 8,
+    "matchedCount": 6,
+    "ratio": 0.75
+  },
+  "hub.commlog_desc": {
+    "en": "Two-way family contact tracker with follow-ups — ensure no family falls through the cracks",
+    "tr": "Two-way family contact tracker 함께 follow-ups — ensure no family falls 통해 cracks",
+    "contentWordCount": 10,
+    "matchedCount": 8,
+    "ratio": 0.8
+  },
+  "hub.condprob_desc": {
+    "en": "Foreground vs background probability analysis to validate ABC hypotheses with data",
+    "tr": "Foreground vs background 확률 분석 에 validate ABC hypotheses 함께 데이터",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.consent_desc": {
+    "en": "Customizable consent form for parent data exchange — edit, print, share as JSON",
+    "tr": "Customizable consent form 위한 학부모 데이터 exchange — 편집, 인쇄, 공유 as JSON",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.cultural_title": {
+    "en": "Cultural Context Reflection",
+    "tr": "Cultural 맥락 Reflection",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.deescalate_desc": {
+    "en": "Breathing exercises, visual timers, sensory breaks, and grounding — real-time calming support",
+    "tr": "Breathing exercises, 시각 timers, sensory breaks, 및 grounding — 실시간 calming 지원",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "hub.drstrategy_desc": {
+    "en": "Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)",
+    "tr": "선택 올바른 differential reinforcement 전략 (DRA, DRI, DRO, DRL)",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "hub.dtt_desc": {
+    "en": "Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance",
+    "tr": "Discrete Trial Training — 숙달 기준 및 자동 진행이 있는 시도별 기록",
+    "contentWordCount": 11,
+    "matchedCount": 5,
+    "ratio": 0.45
+  },
+  "hub.effectsize_desc": {
+    "en": "Calculate Tau-U, NAP, and PND to quantify intervention effectiveness with visual phase comparison",
+    "tr": "계산 Tau-U, NAP, 및 PND 에 quantify 중재 effectiveness 함께 시각 phase comparison",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.familyvoice_desc": {
+    "en": "Structured form for families to share observations, cultural insights, and celebrations — with AI translation",
+    "tr": "Structured form 위한 families 에 공유 관찰, cultural insights, 및 celebrations — 함께 AI 번역",
+    "contentWordCount": 10,
+    "matchedCount": 6,
+    "ratio": 0.6
+  },
+  "hub.fbaworkflow_desc": {
+    "en": "Step-by-step guided workflows for FBA, BIP, and RTI behavior tiers with AI coaching",
+    "tr": "step-by-step guided workflows 위한 FBA, BIP, 및 RTI 행동 tiers 함께 AI coaching",
+    "contentWordCount": 8,
+    "matchedCount": 6,
+    "ratio": 0.75
+  },
+  "hub.fcttemplate_desc": {
+    "en": "Functional Communication Training planning with modality selection",
+    "tr": "Functional Communication Training planning 함께 modality selection",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "hub.iepgoals_desc": {
+    "en": "AI-generated present levels, SMART goals, objectives, accommodations, and progress monitoring plans",
+    "tr": "AI-generated present 수준, SMART 목표, objectives, accommodations, 및 진행 상황 monitoring plans",
+    "contentWordCount": 9,
+    "matchedCount": 6,
+    "ratio": 0.67
+  },
+  "hub.iepprep_desc": {
+    "en": "AI-generated meeting preparation packet with data summary, talking points, and next steps",
+    "tr": "AI-generated meeting preparation packet 함께 데이터 요약, talking 점, 및 다음 단계",
+    "contentWordCount": 11,
+    "matchedCount": 5,
+    "ratio": 0.45
+  },
+  "hub.intervention_desc": {
+    "en": "AI-generated multi-week intervention plan with measurable goals and milestones",
+    "tr": "AI-generated multi-week 중재 계획 함께 measurable 목표 및 milestones",
+    "contentWordCount": 9,
+    "matchedCount": 5,
+    "ratio": 0.56
+  },
+  "hub.ioacalc_desc": {
+    "en": "Inter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count",
+    "tr": "Inter-Observer Agreement 함께 6 methods — 점-by-점, interval, scored/unscored, exact 세기",
+    "contentWordCount": 12,
+    "matchedCount": 8,
+    "ratio": 0.67
+  },
+  "hub.maintenance_desc": {
+    "en": "Track skill retention post-mastery and generalization across settings, people, and materials",
+    "tr": "Track 기술 retention post-mastery 및 generalization 걸쳐 설정, people, 및 자료",
+    "contentWordCount": 10,
+    "matchedCount": 6,
+    "ratio": 0.6
+  },
+  "hub.mtss_desc": {
+    "en": "Visual 3-tier pyramid for managing multi-tiered supports with AI-powered tier placement recommendations",
+    "tr": "시각 3-계층 pyramid 위한 managing multi-tiered 지원 함께 AI-powered 계층 placement recommendations",
+    "contentWordCount": 12,
+    "matchedCount": 7,
+    "ratio": 0.58
+  },
+  "hub.nlabc_desc": {
+    "en": "Type or paste observation notes in everyday English — AI structures them into ABC entries automatically",
+    "tr": "유형 또는 붙여넣기 관찰 메모 안에 everyday English — AI structures them 안으로 ABC entries 자동으로",
+    "contentWordCount": 11,
+    "matchedCount": 5,
+    "ratio": 0.45
+  },
+  "hub.obscoach_desc": {
+    "en": "Real-time coaching on your data collection quality — identifies gaps, suggests improvements, and rates your data",
+    "tr": "실시간 coaching 위에 당신의 데이터 collection 품질 — identifies gaps, suggests improvements, 및 rates 당신의 데이터",
+    "contentWordCount": 14,
+    "matchedCount": 7,
+    "ratio": 0.5
+  },
+  "hub.pdpath_desc": {
+    "en": "Guided onboarding modules for building ABA skills step-by-step",
+    "tr": "Guided on보드 modules 위한 building ABA 기술 step-by-step",
+    "contentWordCount": 7,
+    "matchedCount": 5,
+    "ratio": 0.71
+  },
+  "hub.prefassess_desc": {
+    "en": "Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols",
+    "tr": "체계적인 강화제 식별 — MSWO, Paired Stimulus 및 Free Operant 프로토콜",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.progress_desc": {
+    "en": "IEP-ready progress monitoring paragraphs from accumulated behavioral data",
+    "tr": "IEP-ready 진행 상황 monitoring 단락 에서 accumulated behavioral 데이터",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.qualitycheck_desc": {
+    "en": "AI-powered review of your ABC entries with specific improvement suggestions",
+    "tr": "AI-powered 검토 의 당신의 ABC entries 함께 특정 improvement suggestions",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.quick_launch_hint": {
+    "en": "Core clinical tools — one tap access",
+    "tr": "Core clinical 도구 — one tap 접근",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "hub.reinforcement_desc": {
+    "en": "Structured motivation survey — identify what drives each student across 6 categories",
+    "tr": "Structured motivation survey — 식별 무엇 drives 각각 학생 걸쳐 6 카테고리",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "hub.relmap_desc": {
+    "en": "Visual diagram of student connections — trusted adults, peers, family, mentors — with gap analysis",
+    "tr": "시각 다이어그램 의 학생 connections — trusted adults, peers, family, mentors — 함께 gap 분석",
+    "contentWordCount": 11,
+    "matchedCount": 6,
+    "ratio": 0.55
+  },
+  "hub.replacebehavior_desc": {
+    "en": "Map behaviors of concern to functionally equivalent replacements with teaching strategies",
+    "tr": "Map 행동 의 concern 에 functionally 동등 replacements 함께 teaching 전략",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "hub.replacebehavior_title": {
+    "en": "Replacement Behavior Planner",
+    "tr": "Replacement 행동 Planner",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.restorative_desc": {
+    "en": "Step-by-step scripts for harm repair, community circles, and reintegration conferences",
+    "tr": "step-by-step scripts 위한 harm repair, 커뮤니티 원, 및 reintegration conferences",
+    "contentWordCount": 9,
+    "matchedCount": 7,
+    "ratio": 0.78
+  },
+  "hub.restorative_title": {
+    "en": "Restorative Conversation Guide",
+    "tr": "Restorative 대화 Guide",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.scdmanager_desc": {
+    "en": "AB, ABAB, Multiple Baseline, Alternating Treatments, Changing Criterion",
+    "tr": "AB, ABAB, 여러 Baseline, Alternating Treatments, Changing Criterion",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "hub.sessionnotes_desc": {
+    "en": "Timestamped observation notes with voice dictation — capture context as it happens",
+    "tr": "Timestamped 관찰 메모 함께 음성 dictation — capture 맥락 as it happens",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.snapshot_title": {
+    "en": "Student Snapshot Exchange",
+    "tr": "학생 Snapshot Exchange",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.socialvalidity_desc": {
+    "en": "TARF and IRP-15 scales for measuring treatment acceptability — required for publication",
+    "tr": "TARF 및 IRP-15 scales 위한 measuring treatment acceptability — 필수 위한 publication",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "hub.taskanalysis_desc": {
+    "en": "Break skills into teachable steps with forward, backward, or total-task chaining and prompt tracking",
+    "tr": "Break 기술 안으로 teachable 단계 함께 forward, backward, 또는 total-task chaining 및 prompt 추적",
+    "contentWordCount": 13,
+    "matchedCount": 8,
+    "ratio": 0.62
+  },
+  "hub.teamnotes_desc": {
+    "en": "Multi-role timestamped collaboration thread for teachers, paras, counselors, and parents",
+    "tr": "Multi-role timestamped 협업 thread 위한 교사, paras, counselors, 및 학부모",
+    "contentWordCount": 9,
+    "matchedCount": 6,
+    "ratio": 0.67
+  },
+  "hub.treatintegrity_desc": {
+    "en": "Document whether interventions are implemented as designed — component-level fidelity tracking",
+    "tr": "문서 whether 중재 입니다 implemented as designed — 구성 요소-수준 fidelity 추적",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "hub.cantdowontdo_desc": {
+    "en": "Sort skill vs. performance deficits to pick the right support.",
+    "tr": "정렬 기술 vs. performance deficits 에 pick 올바른 지원.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "hub.competingpathways_desc": {
+    "en": "Map desired and replacement behaviors against the problem path.",
+    "tr": "Map desired 및 replacement 행동 against problem path.",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "hub.mipractice_title": {
+    "en": "Motivational Interviewing Practice",
+    "tr": "Motivational Interviewing 연습",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "hub.mipractice_desc": {
+    "en": "Rehearse MI conversations with simulated student responses.",
+    "tr": "Rehearse MI conversations 함께 시뮬레이션된 학생 responses.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "hub.practicum_desc": {
+    "en": "Run a guided practice case from start to finish.",
+    "tr": "실행 guided 연습 case 에서 시작 에 finish.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "abc.analysis_failed": {
+    "en": "Analysis failed — try again",
+    "tr": "분석 failed — 시도 again",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "abc.setting_placeholder": {
+    "en": "e.g., Classroom, Hallway, Cafeteria",
+    "tr": "e.g., 학급, Hallway, Cafeteria",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "overview.empty_desc": {
+    "en": "Start collecting ABC data or run live observations to see trends here.",
+    "tr": "시작 collecting ABC 데이터 또는 실행 실시간 관찰 에 보기 trends here.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "token.target_placeholder": {
+    "en": "e.g., Raise hand before speaking",
+    "tr": "e.g., Raise hand 이전 speaking",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "hotspot.tap_hint": {
+    "en": "Tap a cell to increment. Click routine name to edit.",
+    "tr": "Tap 셀 에 increment. 클릭 routine name 에 편집.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "no_entries_match": {
+    "en": "No entries match your filters",
+    "tr": "No entries 일치 당신의 filters",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "quick_fill_hint": {
+    "en": "AI will parse your description into the fields below. You can then edit manually.",
+    "tr": "AI 것입니다 parse 당신의 description 안으로 fields below. 당신 수 있습니다 그 다음 편집 수동으로.",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "restorative_title": {
+    "en": "💬 Restorative Conversation Starters",
+    "tr": "💬 Restorative 대화 Starters",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "quiz_fba_purpose": {
+    "en": "What is the primary purpose of an FBA?",
+    "tr": "무엇 입니다 primary purpose 의 FBA?",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "quick_fill_placeholder": {
+    "en": "e.g. \"Student threw paper during math when asked to show work, teacher redirected calmly\"",
+    "tr": "e.g. \"학생 threw paper 동안 수학 때 asked 에 표시 작업, 교사 redirected calmly\"",
+    "contentWordCount": 12,
+    "matchedCount": 5,
+    "ratio": 0.42
+  },
+  "nl_edit_placeholder": {
+    "en": "e.g. \"change consequence to teacher redirected\"",
+    "tr": "e.g. \"변경 consequence 에 교사 redirected\"",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "reinforce_step_1": {
+    "en": "Start with dense reinforcement (e.g., FR-1 or FR-2)",
+    "tr": "시작 함께 dense reinforcement (e.g., FR-1 또는 FR-2)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "reinforce_step_2": {
+    "en": "Once behavior is consistent (~80%), increase ratio by 1-2",
+    "tr": "Once 행동 입니다 consistent (~80%), increase ratio by 1-2",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "reinforce_step_3": {
+    "en": "Move to variable schedule (VR) for more natural maintenance",
+    "tr": "이동 에 변수 schedule (VR) 위한 더 많이 natural maintenance",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "reinforce_step_4": {
+    "en": "Gradually increase VR value (VR-3 → VR-5 → VR-8)",
+    "tr": "Gradually increase VR 값 (VR-3 → VR-5 → VR-8)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "reinforce_step_5": {
+    "en": "Transition to intermittent/natural reinforcement",
+    "tr": "Transition 에 intermittent/natural reinforcement",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "fidelity_tip_1": {
+    "en": "Review implementation procedures with staff",
+    "tr": "검토 implementation procedures 함께 staff",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "fidelity_tip_2": {
+    "en": "Provide additional BST (Behavioral Skills Training)",
+    "tr": "제공 additional BST (Behavioral 기술 Training)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "fidelity_tip_3": {
+    "en": "Simplify procedures if too complex",
+    "tr": "Simplify procedures 만약 too 복잡",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "fidelity_tip_4": {
+    "en": "Consider environmental barriers to implementation",
+    "tr": "고려 environmental barriers 에 implementation",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "record_tip_4": {
+    "en": "Use specific, observable descriptions",
+    "tr": "사용 특정, observable descriptions",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "quiz_opt_any_stops": {
+    "en": "Any behavior that stops the problem",
+    "tr": "어떤 행동 저것 stops problem",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.a_break_help_someone_to_listen_space": {
+    "en": "A break? Help? Someone to listen? Space?",
+    "tr": "break? 도움말? Someone 에 듣기? Space?",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.add_context_constraints_or_specific_challenges_eg": {
+    "en": "Add context, constraints, or specific challenges... e.g., \"The student also has a speech delay\" or \"This is a middle school student\"",
+    "tr": "추가 맥락, constraints, 또는 특정 도전... e.g., \" 학생 also has speech delay\" 또는 \"이것 입니다 middle school 학생\"",
+    "contentWordCount": 12,
+    "matchedCount": 6,
+    "ratio": 0.5
+  },
+  "ph.any_other_details_was_child_tired_hungry_etc": {
+    "en": "Any other details (was child tired, hungry, etc.)...",
+    "tr": "어떤 다른 세부 정보 (was child tired, hungry, etc.)...",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.describe_the_student_persona_eg_you_are_a_3rd_grad": {
+    "en": "Describe the student persona... e.g., \"You are a 3rd grader who becomes anxious during math and tends to cry and shut down...\"",
+    "tr": "Describe 학생 persona... e.g., \"당신 입니다 3rd grader who becomes anxious 동안 수학 및 tends 에 cry 및 shut down...\"",
+    "contentWordCount": 11,
+    "matchedCount": 8,
+    "ratio": 0.73
+  },
+  "ph.describe_what_your_child_did": {
+    "en": "Describe what your child did...",
+    "tr": "Describe 무엇 당신의 child did...",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.eg_does_a_token_economy_reduce_offtask_behavior_du": {
+    "en": "e.g. \"Does a token economy reduce off-task behavior during math instruction?\"",
+    "tr": "e.g. \"Does token economy reduce off-task 행동 동안 수학 지시?\"",
+    "contentWordCount": 9,
+    "matchedCount": 5,
+    "ratio": 0.56
+  },
+  "ph.eg_hitting_peers_when_frustrated": {
+    "en": "e.g. Hitting peers when frustrated",
+    "tr": "e.g. Hitting peers 때 frustrated",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ph.eg_student_is_defiant_and_refuses_to_follow_direct": {
+    "en": "e.g., \"Student is defiant and refuses to follow directions.\"",
+    "tr": "e.g., \"학생 입니다 defiant 및 refuses 에 follow directions.\"",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ph.eg_student_with_autism_cooccurring_adhd_new_to_the": {
+    "en": "e.g. \"student with autism\", \"co-occurring ADHD\", \"new to the school\"",
+    "tr": "e.g. \"학생 함께 autism\", \"co-occurring ADHD\", \"새로운 에 school\"",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ph.enter_the_behavioral_goal_to_scale_eg_student_will": {
+    "en": "Enter the behavioral goal to scale (e.g., \"Student will remain in seat during independent work for 15 minutes\")",
+    "tr": "입력 behavioral 목표 에 scale (e.g., \"학생 것입니다 remain 안에 seat 동안 independent 작업 위한 15 minutes\")",
+    "contentWordCount": 12,
+    "matchedCount": 6,
+    "ratio": 0.5
+  },
+  "ph.followup_needed_optional": {
+    "en": "Follow-up needed? (optional)",
+    "tr": "Follow-up needed? (선택 사항)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.items_separated_by_semicolons": {
+    "en": "Items separated by semicolons",
+    "tr": "항목 separated by semicolons",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.outcome_key_takeaways_optional": {
+    "en": "Outcome / key takeaways (optional)",
+    "tr": "Outcome / 키 takeaways (선택 사항)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.rationale_which_antecedent_does_this_address": {
+    "en": "Rationale (which antecedent does this address?)",
+    "tr": "Rationale (which antecedent does 이것 address?)",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "ph.reflect_on_your_approachn_what_worked_welln_what_w": {
+    "en": "Reflect on your approach...\\n• What worked well?\\n• What would you do differently?\\n• What strategies do you want to practice next?",
+    "tr": "Reflect 위에 당신의 approach...\\n• 무엇 worked well?\\n• 무엇 would 당신 do differently?\\n• 무엇 전략 do 당신 원하는 에 연습 다음?",
+    "contentWordCount": 14,
+    "matchedCount": 6,
+    "ratio": 0.43
+  },
+  "ph.replacement_behavior_functionally_equivalent": {
+    "en": "✅ Replacement behavior (functionally equivalent)",
+    "tr": "✅ Replacement 행동 (functionally 동등)",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ph.share_what_you_notice_at_home_strengths_concerns_c": {
+    "en": "Share what you notice at home — strengths, concerns, cultural context, or suggestions for the school team...",
+    "tr": "공유 무엇 당신 notice at home — strengths, concerns, cultural 맥락, 또는 suggestions 위한 school team...",
+    "contentWordCount": 11,
+    "matchedCount": 8,
+    "ratio": 0.73
+  },
+  "ph.topic_purpose_of_contact": {
+    "en": "Topic / purpose of contact",
+    "tr": "주제 / purpose 의 contact",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ph.type_language_eg_spanish_arabic_somali": {
+    "en": "Type language (e.g., Spanish, Arabic, Somali)",
+    "tr": "유형 언어 (e.g., Spanish, Arabic, Somali)",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ph.type_your_response_here_be_thorough_and_use_profes": {
+    "en": "Type your response here. Be thorough and use professional language...",
+    "tr": "유형 당신의 응답 here. Be thorough 및 사용 professional 언어...",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ph.what_could_you_or_a_grownup_do_differently": {
+    "en": "What could you or a grown-up do differently?",
+    "tr": "무엇 could 당신 또는 grown-up do differently?",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ph.what_made_you_feel_this_way_optional": {
+    "en": "What made you feel this way? (optional)",
+    "tr": "무엇 made 당신 feel 이것 way? (선택 사항)",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ph.what_was_going_on_before_you_felt_this_way": {
+    "en": "What was going on before you felt this way?",
+    "tr": "무엇 was going 위에 이전 당신 felt 이것 way?",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.added_n_entries_to_abc_data": {
+    "en": "Added N entries to ABC data!",
+    "tr": "Added N entries 에 ABC 데이터!",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.ai_suggestion_failed_try_again": {
+    "en": "AI suggestion failed — try again",
+    "tr": "AI suggestion failed — 시도 again",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.all_entries_already_synced_to_abc_data": {
+    "en": "All entries already synced to ABC data",
+    "tr": "모든 entries already synced 에 ABC 데이터",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.behavior_occurred_dro_timer_reset": {
+    "en": "⚠️ Behavior occurred — DRO timer reset",
+    "tr": "⚠️ 행동 occurred — DRO timer 재설정",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.case_study_complete_review_your_debrief": {
+    "en": "Case study complete! Review your debrief.",
+    "tr": "Case study 완료! 검토 당신의 debrief.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.case_study_generated_begin_phase_1": {
+    "en": "Case study generated! Begin Phase 1.",
+    "tr": "Case study 생성됨! Begin Phase 1.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.consent_template_exported": {
+    "en": "Consent template exported",
+    "tr": "Consent template 내보내기",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.data_loaded_from_cloud": {
+    "en": "☁️ Data loaded from cloud",
+    "tr": "☁️ 데이터 loaded 에서 cloud",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.dro_interval_complete_reinforce_no_target_behavior": {
+    "en": "🎉 DRO interval complete — REINFORCE! No target behavior occurred!",
+    "tr": "🎉 DRO interval 완료 — REINFORCE! No 대상 행동 occurred!",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.each_phase_needs_at_least_2_data_points": {
+    "en": "Each phase needs at least 2 data points",
+    "tr": "각각 phase needs at least 2 데이터 점",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.effect_sizes_attached_to_iep_prep": {
+    "en": "Effect sizes attached to IEP Prep!",
+    "tr": "Effect sizes attached 에 IEP Prep!",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "toast.evaluation_failed_try_again": {
+    "en": "Evaluation failed. Try again.",
+    "tr": "Evaluation failed. 시도 again.",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.failed_to_generate_case_study_try_again": {
+    "en": "Failed to generate case study. Try again.",
+    "tr": "Failed 에 생성 case study. 시도 again.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.failed_to_generate_comparison": {
+    "en": "Failed to generate comparison",
+    "tr": "Failed 에 생성 comparison",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.failed_to_parse_snapshot_file": {
+    "en": "Failed to parse snapshot file",
+    "tr": "Failed 에 parse snapshot 파일",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.failed_to_parse_transcript": {
+    "en": "Failed to parse transcript",
+    "tr": "Failed 에 parse transcript",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.family_voice_entry_added": {
+    "en": "Family voice entry added ✨",
+    "tr": "Family 음성 entry added ✨",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.graph_data_attached_to_iep_prep": {
+    "en": "Graph data attached to IEP Prep!",
+    "tr": "그래프 데이터 attached 에 IEP Prep!",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.home_log_exported_as_snapshot": {
+    "en": "Home log exported as snapshot 📦",
+    "tr": "Home log 내보내기 as snapshot 📦",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.iep_prep_packet_generated": {
+    "en": "IEP prep packet generated ✨",
+    "tr": "IEP prep packet 생성됨 ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.interval_ready_reinforce_next_behavior": {
+    "en": "⏰ Interval ready — reinforce next behavior!",
+    "tr": "⏰ Interval ready — reinforce 다음 행동!",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.language_customized_u2728": {
+    "en": "Language customized \\u2728",
+    "tr": "언어 customized \\u2728",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.loaded_n_workspaces_for_comparison": {
+    "en": "Loaded N workspace(s) for comparison",
+    "tr": "Loaded N workspace(s) 위한 comparison",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "toast.mastered_n_n_consecutive_sessions_at_criterion": {
+    "en": "🎉 MASTERED! N — N consecutive sessions at criterion!",
+    "tr": "🎉 MASTERED! N — N consecutive 세션 at criterion!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.merged_n_abc_entries_and_n_observations": {
+    "en": "Merged N ABC entries and N observations",
+    "tr": "Merged N ABC entries 및 N 관찰",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.n_home_entries_pushed_to_abc_data": {
+    "en": "N home entries pushed to ABC data ✅",
+    "tr": "N home entries pushed 에 ABC 데이터 ✅",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.name_at_least_one_target_behavior": {
+    "en": "Name at least one target behavior",
+    "tr": "Name at least one 대상 행동",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.need_at_least_2_data_points_per_phase": {
+    "en": "Need at least 2 data points per phase",
+    "tr": "필요 at least 2 데이터 점 당 phase",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "toast.need_at_least_2_phases_in_the_graph_baseline_inter": {
+    "en": "Need at least 2 phases in the Graph (baseline + intervention)",
+    "tr": "필요 at least 2 phases 안에 그래프 (baseline + 중재)",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "toast.no_valid_data_found_in_csv": {
+    "en": "No valid data found in CSV",
+    "tr": "No valid 데이터 found 안에 CSV",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.not_a_valid_alloflow_snapshot_file": {
+    "en": "Not a valid AlloFlow snapshot file",
+    "tr": "아닙니다 valid AlloFlow snapshot 파일",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.not_a_valid_consent_template_file": {
+    "en": "Not a valid consent template file",
+    "tr": "아닙니다 valid consent template 파일",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.parsed_n_abc_entries_from_transcript": {
+    "en": "Parsed N ABC entries from transcript!",
+    "tr": "Parsed N ABC entries 에서 transcript!",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.populated_from_n_abc_entries": {
+    "en": "Populated from N ABC entries",
+    "tr": "Populated 에서 N ABC entries",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.popups_blocked_downloaded_as_html_file_instead": {
+    "en": "Pop-ups blocked — downloaded as HTML file instead.",
+    "tr": "Pop-ups blocked — downloaded as HTML 파일 instead.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.quick_fill_n_items_loaded": {
+    "en": "Quick Fill: N items loaded ⚡",
+    "tr": "빠른 Fill: N 항목 loaded ⚡",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.rate_at_least_one_item_first": {
+    "en": "Rate at least one item first",
+    "tr": "Rate at least one 항목 첫 번째",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.reflection_analysis_ready": {
+    "en": "Reflection analysis ready 🌟",
+    "tr": "Reflection 분석 ready 🌟",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.reframed_through_strengths_lens": {
+    "en": "Reframed through strengths lens ✨",
+    "tr": "Reframed 통해 strengths lens ✨",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.response_failed_try_again": {
+    "en": "Response failed — try again",
+    "tr": "응답 failed — 시도 again",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.review_failed_try_again": {
+    "en": "Review failed — try again",
+    "tr": "검토 failed — 시도 again",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.scenario_generation_failed_try_again": {
+    "en": "Scenario generation failed — try again",
+    "tr": "시나리오 생성 failed — 시도 again",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.session_saved_ns_n_total_responses": {
+    "en": "Session saved! Ns, N total responses",
+    "tr": "세션 저장됨! Ns, N total responses",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.share_code_copied_to_clipboard": {
+    "en": "Share code copied to clipboard!",
+    "tr": "공유 코드 copied 에 clipboard!",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "toast.simulation_started_you_are_now_the_counselor": {
+    "en": "Simulation started — you are now the counselor 🎭",
+    "tr": "시뮬레이션 started — 당신 입니다 지금 counselor 🎭",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.speech_recognition_not_supported_in_this_browser": {
+    "en": "Speech recognition not supported in this browser",
+    "tr": "Speech recognition 아닙니다 지원 안에 이것 browser",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "toast.switched_to_n_no_data_loaded": {
+    "en": "Switched to N (no data loaded)",
+    "tr": "Switched 에 N (no 데이터 loaded)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.traffic_light_generated": {
+    "en": "Traffic light generated ✨",
+    "tr": "Traffic light 생성됨 ✨",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast.workspace_loaded_n_entries_n_notes": {
+    "en": "Workspace loaded (N entries, N notes) 📂",
+    "tr": "Workspace loaded (N entries, N 메모) 📂",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "toast.autofilled_from_phase_tagged_entries": {
+    "en": "Autofilled from phase-tagged entries.",
+    "tr": "Autofilled 에서 phase-tagged entries.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "toast.need_2_baseline_2_intervention_entries_with_phase_tags": {
+    "en": "Need at least 2 baseline and 2 intervention entries with phase tags.",
+    "tr": "필요 at least 2 baseline 및 2 중재 entries 함께 phase tags.",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "ui.add_abc_entries_to_see_visual_trend_data": {
+    "en": "Add ABC entries to see visual trend data.",
+    "tr": "추가 ABC entries 에 보기 시각 trend 데이터.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.add_connections_to_build_the_relationship_map": {
+    "en": "Add connections to build the relationship map.",
+    "tr": "추가 connections 에 빌드 relationship map.",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.ai_is_analyzing_your_transcript": {
+    "en": "AI is analyzing your transcript...",
+    "tr": "AI 입니다 analyzing 당신의 transcript...",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.aigenerated_meeting_preparation_packet_from_your_b": {
+    "en": "AI-generated meeting preparation packet from your behavioral data",
+    "tr": "AI-generated meeting preparation packet 에서 당신의 behavioral 데이터",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "ui.aipowered_pattern_analysis_with_proactive_preventi": {
+    "en": "AI-powered pattern analysis with proactive prevention strategies",
+    "tr": "AI-powered pattern 분석 함께 proactive prevention 전략",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.aisynthesized_behavioral_profile_from_all_data_sou": {
+    "en": "AI-synthesized behavioral profile from all data sources",
+    "tr": "AI-synthesized behavioral profile 에서 모든 데이터 sources",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ui.avoid_these_frequently_seen_errors_to_improve_beha": {
+    "en": "Avoid these frequently seen errors to improve behavioral outcomes.",
+    "tr": "Avoid these frequently seen 오류 에 improve behavioral outcomes.",
+    "contentWordCount": 8,
+    "matchedCount": 7,
+    "ratio": 0.88
+  },
+  "ui.based_on_horner_salentine_albin_2003": {
+    "en": "Based on Horner, Salentine, & Albin (2003)",
+    "tr": "기반 위에 Horner, Salentine, & Albin (2003)",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.break_skills_into_teachable_steps_with_chaining_an": {
+    "en": "Break skills into teachable steps with chaining and prompt tracking",
+    "tr": "Break 기술 안으로 teachable 단계 함께 chaining 및 prompt 추적",
+    "contentWordCount": 9,
+    "matchedCount": 4,
+    "ratio": 0.44
+  },
+  "ui.calculate_tauu_nap_and_pnd_to_quantify_interventio": {
+    "en": "Calculate Tau-U, NAP, and PND to quantify intervention effectiveness.",
+    "tr": "계산 Tau-U, NAP, 및 PND 에 quantify 중재 effectiveness.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.choose_the_right_differential_reinforcement_strate": {
+    "en": "Choose the right differential reinforcement strategy",
+    "tr": "선택 올바른 differential reinforcement 전략",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ui.collect_some_abc_data_first_to_generate_a_meaningf": {
+    "en": "Collect some ABC data first to generate a meaningful packet.",
+    "tr": "Collect 일부 ABC 데이터 첫 번째 에 생성 meaningful packet.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.crf_every_time_fr2_fr3_fr5_vr5_vr8_natural_reinfor": {
+    "en": "CRF (every time) → FR-2 → FR-3 → FR-5 → VR-5 → VR-8 → Natural reinforcement",
+    "tr": "CRF (every 시간) → FR-2 → FR-3 → FR-5 → VR-5 → VR-8 → Natural reinforcement",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "ui.cultural_context_reflection": {
+    "en": "Cultural Context Reflection",
+    "tr": "Cultural 맥락 Reflection",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.describe_your_research_question_and_let_ai_recomme": {
+    "en": "Describe your research question and let AI recommend the best design.",
+    "tr": "Describe 당신의 research 질문 및 AI 에게 recommend 최고 design.",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.document_whether_interventions_are_implemented_as": {
+    "en": "Document whether interventions are implemented as designed",
+    "tr": "문서 whether 중재 입니다 implemented as designed",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.drop_a_snapshot_file_here": {
+    "en": "Drop a Snapshot File Here",
+    "tr": "드롭 Snapshot 파일 Here",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "ui.enter_data_or_record_sessions_to_generate_a_cumula": {
+    "en": "Enter data or record sessions to generate a cumulative record.",
+    "tr": "입력 데이터 또는 record 세션 에 생성 cumulative record.",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.family_voices_are_powerful_share_your_first_observ": {
+    "en": "Family voices are powerful. Share your first observation!",
+    "tr": "Family voices 입니다 powerful. 공유 당신의 첫 번째 관찰!",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.functional_communication_training_planning_tool": {
+    "en": "Functional Communication Training planning tool",
+    "tr": "Functional Communication Training planning 도구",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ui.generate_a_unique_scenario_tailored_to_your_traini": {
+    "en": "Generate a unique scenario tailored to your training needs.",
+    "tr": "생성 unique 시나리오 tailored 에 당신의 training needs.",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "ui.generate_iepready_progress_monitoring_paragraphs_f": {
+    "en": "Generate IEP-ready progress monitoring paragraphs from your accumulated behavioral data.",
+    "tr": "생성 IEP-ready 진행 상황 monitoring 단락 에서 당신의 accumulated behavioral 데이터.",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "ui.generate_tailored_recommendations_based_on_the_beh": {
+    "en": "Generate tailored recommendations based on the behavioral data and selected audience.",
+    "tr": "생성 tailored recommendations 기반 위에 behavioral 데이터 및 선택됨 audience.",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "ui.gently_surfaces_patterns_for_reflection_growth_not": {
+    "en": "Gently surfaces patterns for reflection — growth, not guilt",
+    "tr": "Gently surfaces 패턴 위한 reflection — growth, 아닙니다 guilt",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "ui.get_ai_coaching_on_data_collection_quality_identif": {
+    "en": "Get AI coaching on data collection quality. Identifies gaps, suggests improvements, rates your data.",
+    "tr": "Get AI coaching 위에 데이터 collection 품질. Identifies gaps, suggests improvements, rates 당신의 데이터.",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "ui.how_often_and_when_to_deliver_reinforcement_use_th": {
+    "en": "How often and when to deliver reinforcement. Use the Token Board tool to implement these schedules in practice.",
+    "tr": "어떻게 often 및 때 에 deliver reinforcement. 사용 Token 보드 도구 에 implement these schedules 안에 연습.",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "ui.identify_temporal_patterns_in_behavior_occurrence": {
+    "en": "Identify temporal patterns in behavior occurrence",
+    "tr": "식별 temporal 패턴 안에 행동 occurrence",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ui.map_target_behaviors_to_functionally_equivalent_re": {
+    "en": "Map target behaviors to functionally equivalent replacements",
+    "tr": "Map 대상 행동 에 functionally 동등 replacements",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "ui.natural_language_abc_entry": {
+    "en": "Natural Language ABC Entry",
+    "tr": "Natural 언어 ABC Entry",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.need_at_least_3_abc_entries_for_pattern_detection": {
+    "en": "Need at least 3 ABC entries for pattern detection.",
+    "tr": "필요 at least 3 ABC entries 위한 pattern detection.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "ui.need_at_least_5_abc_entries_for_pattern_analysis": {
+    "en": "Need at least 5 ABC entries for pattern analysis.",
+    "tr": "필요 at least 5 ABC entries 위한 pattern 분석.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "ui.no_behavioral_data_recorded": {
+    "en": "No behavioral data recorded",
+    "tr": "No behavioral 데이터 recorded",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.no_contacts_logged_yet_consistent_communication_bu": {
+    "en": "No contacts logged yet. Consistent communication builds trust!",
+    "tr": "No contacts logged yet. Consistent communication 빌드 trust!",
+    "contentWordCount": 6,
+    "matchedCount": 5,
+    "ratio": 0.83
+  },
+  "ui.no_entries_yet_tap_log_a_behavior_to_get_started": {
+    "en": "No entries yet. Tap \"Log a Behavior\" to get started!",
+    "tr": "No entries yet. Tap \"Log 행동\" 에 get started!",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.no_reflections_yet_tap_the_button_above_to_check_i": {
+    "en": "No reflections yet. Tap the button above to check in with yourself!",
+    "tr": "No reflections yet. Tap 버튼 above 에 확인 안에 함께 yourself!",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.prebuilt_scenarios_covering_the_4_functions_of_beh": {
+    "en": "Pre-built scenarios covering the 4 functions of behavior. Work offline — no AI needed.",
+    "tr": "Pre-built 시나리오 covering 4 functions 의 행동. 작업 offline — no AI needed.",
+    "contentWordCount": 8,
+    "matchedCount": 5,
+    "ratio": 0.63
+  },
+  "ui.remember_cultural_humility_is_a_lifelong_practice": {
+    "en": "Remember: cultural humility is a lifelong practice. Every reflection makes you a more equitable practitioner.",
+    "tr": "Remember: cultural humility 입니다 lifelong 연습. Every reflection makes 당신 더 많이 equitable practitioner.",
+    "contentWordCount": 11,
+    "matchedCount": 9,
+    "ratio": 0.82
+  },
+  "ui.restorative_conversation_guide": {
+    "en": "Restorative Conversation Guide",
+    "tr": "Restorative 대화 Guide",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.select_a_research_design_to_structure_your_data_co": {
+    "en": "Select a research design to structure your data collection",
+    "tr": "선택 research design 에 구조 당신의 데이터 collection",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.stepbystep_scripts_for_healing_relationships_and_b": {
+    "en": "Step-by-step scripts for healing relationships and building community",
+    "tr": "step-by-step scripts 위한 healing relationships 및 building 커뮤니티",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "ui.student_snapshot_exchange": {
+    "en": "Student Snapshot Exchange",
+    "tr": "학생 Snapshot Exchange",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "ui.track_your_feelings_earn_badges_and_build_streaks": {
+    "en": "Track your feelings, earn badges, and build streaks!",
+    "tr": "Track 당신의 feelings, 획득 배지, 및 빌드 streaks!",
+    "contentWordCount": 7,
+    "matchedCount": 3,
+    "ratio": 0.43
+  },
+  "ui.use_these_criteria_when_examining_your_graph": {
+    "en": "Use these criteria when examining your graph:",
+    "tr": "사용 these criteria 때 examining 당신의 그래프:",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "ui.use_this_flow_to_hypothesize_the_function_of_a_cha": {
+    "en": "Use this flow to hypothesize the function of a challenging behavior.",
+    "tr": "사용 이것 flow 에 hypothesize function 의 challenging 행동.",
+    "contentWordCount": 6,
+    "matchedCount": 4,
+    "ratio": 0.67
+  },
+  "ui.visual_multitiered_system_of_supports_assign_stude": {
+    "en": "Visual multi-tiered system of supports. Assign students to tiers, get AI-powered placement recommendations.",
+    "tr": "시각 multi-tiered 시스템 의 지원. Assign 학생 에 tiers, get AI-powered placement recommendations.",
+    "contentWordCount": 11,
+    "matchedCount": 7,
+    "ratio": 0.64
+  },
+  "add_notes_hint": {
+    "en": "Add notes above or use the mic to dictate",
+    "tr": "추가 메모 above 또는 사용 mic 에 dictate",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "correlation_desc": {
+    "en": "Darker cells indicate stronger co-occurrence between a trigger and behavior",
+    "tr": "Darker 셀 indicate stronger co-occurrence 사이 유발 요인 및 행동",
+    "contentWordCount": 8,
+    "matchedCount": 4,
+    "ratio": 0.5
+  },
+  "correlation_matrix": {
+    "en": "Antecedent → Behavior Correlations",
+    "tr": "Antecedent → 행동 Correlations",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "toast_invalid_file": {
+    "en": "Invalid workspace file — must be BehaviorLens JSON",
+    "tr": "Invalid workspace 파일 — must be BehaviorLens JSON",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "allobot_chat.empty_desc": {
+    "en": "I can help with FBA strategies, intervention ideas, data interpretation, de-escalation techniques, and more.",
+    "tr": "I 수 있습니다 도움말 함께 FBA 전략, 중재 ideas, 데이터 interpretation, de-escalation techniques, 및 더 많이.",
+    "contentWordCount": 10,
+    "matchedCount": 4,
+    "ratio": 0.4
+  },
+  "allobot_chat.subtitle": {
+    "en": "AI-powered behavioral analysis assistant",
+    "tr": "AI-powered behavioral 분석 assistant",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "obs.start_to_begin": {
+    "en": "Start timer to begin latency measurement",
+    "tr": "시작 timer 에 begin latency measurement",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "snapshot.title": {
+    "en": "Student Snapshot Exchange",
+    "tr": "학생 Snapshot Exchange",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "workflow.subtitle": {
+    "en": "Choose a step-by-step guide for your clinical process",
+    "tr": "선택 step-by-step guide 위한 당신의 clinical process",
+    "contentWordCount": 7,
+    "matchedCount": 5,
+    "ratio": 0.71
+  },
+  "raw.assign_an_ioa_partner_for_reliability_checks": {
+    "en": "Assign an IOA partner for reliability checks",
+    "tr": "Assign IOA partner 위한 reliability checks",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "raw.assign_team_roles_and_responsibilities": {
+    "en": "Assign team roles and responsibilities",
+    "tr": "Assign team roles 및 responsibilities",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "raw.attentionseeking_behavior": {
+    "en": "Attention-Seeking Behavior",
+    "tr": "Attention-Seeking 행동",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.canvas_environment_local_storage_only": {
+    "en": "Canvas environment — local storage only",
+    "tr": "Canvas environment — local storage 만",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.compare_student_performance_to_peer_norms": {
+    "en": "Compare student performance to peer norms",
+    "tr": "비교 학생 performance 에 peer norms",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.conduct_a_full_functional_behavior_assessment": {
+    "en": "Conduct a full Functional Behavior Assessment",
+    "tr": "Conduct 전체 Functional 행동 평가",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.confirm_function_with_team_consensus": {
+    "en": "Confirm function with team consensus",
+    "tr": "확인 function 함께 team consensus",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.confirm_hypothesis_with_the_team_or_a_colleague": {
+    "en": "Confirm hypothesis with the team or a colleague",
+    "tr": "확인 가설 함께 team 또는 colleague",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.confirm_two_observers_could_agree_on_occurrence": {
+    "en": "Confirm two observers could agree on occurrence",
+    "tr": "확인 two observers could agree 위에 occurrence",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.develop_an_individualized_behavior_intervention_plan": {
+    "en": "Develop an individualized Behavior Intervention Plan",
+    "tr": "Develop individualized 행동 중재 계획",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.document_baseline_frequency_for_flagged_students": {
+    "en": "Document baseline frequency for flagged students",
+    "tr": "문서 baseline frequency 위한 flagged 학생",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.document_outcomes_and_lessons_learned": {
+    "en": "Document outcomes and lessons learned",
+    "tr": "문서 outcomes 및 수업 learned",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.document_the_confirmed_function": {
+    "en": "Document the confirmed function",
+    "tr": "문서 confirmed function",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.escapemaintained_behavior": {
+    "en": "Escape-Maintained Behavior",
+    "tr": "Escape-Maintained 행동",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.example_during_math_class_when_asked_to_complete_worksheet_p": {
+    "en": "Example: During math class, when asked to complete worksheet problems, Johnny pushed his papers off the desk...",
+    "tr": "예: 동안 수학 학급, 때 asked 에 완료 worksheet 문제, Johnny pushed his papers off desk...",
+    "contentWordCount": 13,
+    "matchedCount": 6,
+    "ratio": 0.46
+  },
+  "raw.identify_12_functionally_equivalent_replacement_behaviors": {
+    "en": "Identify 1–2 functionally equivalent replacement behaviors",
+    "tr": "식별 1–2 functionally 동등 replacement 행동",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.identify_students_exceeding_the_universal_threshold": {
+    "en": "Identify students exceeding the universal threshold",
+    "tr": "식별 학생 exceeding universal threshold",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.instantly_fill_functionmatched_fidelity_items_no_ai_needed": {
+    "en": "Instantly fill function-matched fidelity items (no AI needed)",
+    "tr": "Instantly fill function-matched fidelity 항목 (no AI needed)",
+    "contentWordCount": 7,
+    "matchedCount": 6,
+    "ratio": 0.86
+  },
+  "raw.make_tier_movement_decision_stay_fade_intensify": {
+    "en": "Make tier movement decision (stay / fade / intensify)",
+    "tr": "만들기 계층 movement 결정 (stay / fade / intensify)",
+    "contentWordCount": 7,
+    "matchedCount": 4,
+    "ratio": 0.57
+  },
+  "raw.map_antecedent_behavior_consequence_pathways": {
+    "en": "Map antecedent → behavior → consequence pathways",
+    "tr": "Map antecedent → 행동 → consequence pathways",
+    "contentWordCount": 4,
+    "matchedCount": 3,
+    "ratio": 0.75
+  },
+  "raw.measure_effect_size_of_interventions": {
+    "en": "Measure effect size of interventions",
+    "tr": "측정 effect size 의 중재",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.plan_a_reinforcement_schedule_for_replacement_behaviors": {
+    "en": "Plan a reinforcement schedule for replacement behaviors",
+    "tr": "계획 reinforcement schedule 위한 replacement 행동",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.plan_data_collection_methods_and_frequency": {
+    "en": "Plan data collection methods and frequency",
+    "tr": "계획 데이터 collection methods 및 frequency",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "raw.plan_reinforcement_for_replacement_behaviors": {
+    "en": "Plan reinforcement for replacement behaviors",
+    "tr": "계획 reinforcement 위한 replacement 행동",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.plan_weekly_progress_monitoring_data_collection": {
+    "en": "Plan weekly progress monitoring data collection",
+    "tr": "계획 weekly 진행 상황 monitoring 데이터 collection",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  },
+  "raw.prepare_documentation_for_iep_team_if_applicable": {
+    "en": "Prepare documentation for IEP team (if applicable)",
+    "tr": "Prepare documentation 위한 IEP team (만약 applicable)",
+    "contentWordCount": 4,
+    "matchedCount": 4,
+    "ratio": 1
+  },
+  "raw.record_duration_and_intensity_for_each_incident": {
+    "en": "Record duration and intensity for each incident",
+    "tr": "Record duration 및 intensity 위한 각각 incident",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "raw.review_progress_monitoring_data_vs_baseline": {
+    "en": "Review progress monitoring data vs. baseline",
+    "tr": "검토 진행 상황 monitoring 데이터 vs. baseline",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.select_a_teaching_strategy_for_each_replacement": {
+    "en": "Select a teaching strategy for each replacement",
+    "tr": "선택 teaching 전략 위한 각각 replacement",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.select_the_primary_settings_for_data_collection": {
+    "en": "Select the primary setting(s) for data collection",
+    "tr": "선택 primary 설정(s) 위한 데이터 collection",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.set_a_6week_intervention_cycle": {
+    "en": "Set a 6-week intervention cycle",
+    "tr": "설정 6-week 중재 cycle",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.set_intervention_duration_eg_46_weeks": {
+    "en": "Set intervention duration (e.g., 4–6 weeks)",
+    "tr": "설정 중재 duration (e.g., 4–6 weeks)",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.set_review_dates_and_checkin_schedule": {
+    "en": "Set review dates and check-in schedule",
+    "tr": "설정 검토 dates 및 확인-안에 schedule",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.set_timeline_and_milestones_eg_4_weeks": {
+    "en": "Set timeline and milestones (e.g., 4 weeks)",
+    "tr": "설정 timeline 및 milestones (e.g., 4 weeks)",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "raw.set_up_weekly_progress_monitoring": {
+    "en": "Set up weekly progress monitoring",
+    "tr": "설정 up weekly 진행 상황 monitoring",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.share_progress_with_the_team_and_family": {
+    "en": "Share progress with the team and family",
+    "tr": "공유 진행 상황 함께 team 및 family",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.types_of_data_collected_shared": {
+    "en": "Types of Data Collected & Shared",
+    "tr": "Types 의 데이터 Collected & 공유",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.write_an_observable_measurable_behavior_definition": {
+    "en": "Write an observable, measurable behavior definition",
+    "tr": "쓰기 observable, measurable 행동 정의",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "raw.choosing_an_observation_method": {
+    "en": "Choosing an observation method",
+    "tr": "Choosing 관찰 method",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.collecting_data_with_care": {
+    "en": "Collecting data with care",
+    "tr": "Collecting 데이터 함께 care",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "raw.interval_and_latency_recording": {
+    "en": "Interval and latency recording",
+    "tr": "Interval 및 latency recording",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "raw.restorative_over_punitive": {
+    "en": "Restorative over punitive",
+    "tr": "Restorative 위에 punitive",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.teaching_not_just_expecting": {
+    "en": "Teaching, not just expecting",
+    "tr": "Teaching, 아닙니다 just expecting",
+    "contentWordCount": 3,
+    "matchedCount": 3,
+    "ratio": 1
+  },
+  "raw.what_is_reinforcement_really": {
+    "en": "What is reinforcement, really?",
+    "tr": "무엇 입니다 reinforcement, really?",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "raw.when_to_consult_specialists": {
+    "en": "When to consult specialists",
+    "tr": "때 에 consult specialists",
+    "contentWordCount": 3,
+    "matchedCount": 2,
+    "ratio": 0.67
+  },
+  "dq.tip_add_entries": {
+    "en": "Add more entries to strengthen this score.",
+    "tr": "추가 더 많이 entries 에 strengthen 이것 점수.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "dq.tip_all_complete": {
+    "en": "All entries have the required fields filled in.",
+    "tr": "모든 entries 있습니다 필수 fields filled 안에.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "dq.tip_antecedent_types": {
+    "en": "Good range of antecedent types observed.",
+    "tr": "좋은 range 의 antecedent types observed.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "dq.tip_data_current": {
+    "en": "Data is current and reflects recent behavior.",
+    "tr": "데이터 입니다 현재 및 reflects recent 행동.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "dq.tip_good_coverage": {
+    "en": "Good coverage across days.",
+    "tr": "좋은 coverage 걸쳐 days.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "dq.tip_good_diversity": {
+    "en": "Good diversity across antecedents.",
+    "tr": "좋은 diversity 걸쳐 antecedents.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "dq.tip_last_entry_ago": {
+    "en": "Last entry was recorded a while ago.",
+    "tr": "마지막 entry was recorded 동안 ago.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "dq.tip_missing_fields": {
+    "en": "Some entries are missing required fields.",
+    "tr": "일부 entries 입니다 missing 필수 fields.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "dq.tip_spread_days": {
+    "en": "Entries are well spread across days.",
+    "tr": "Entries 입니다 well spread 걸쳐 days.",
+    "contentWordCount": 5,
+    "matchedCount": 4,
+    "ratio": 0.8
+  },
+  "fba.step_ai_analysis_desc": {
+    "en": "Use AI to identify patterns and hypothesized function.",
+    "tr": "사용 AI 에 식별 패턴 및 hypothesized function.",
+    "contentWordCount": 4,
+    "matchedCount": 2,
+    "ratio": 0.5
+  },
+  "fba.step_collect_more_desc": {
+    "en": "Add more observation sessions to strengthen the dataset.",
+    "tr": "추가 더 많이 관찰 세션 에 strengthen dataset.",
+    "contentWordCount": 5,
+    "matchedCount": 2,
+    "ratio": 0.4
+  },
+  "fba.step_hypothesis_desc": {
+    "en": "Draft a working hypothesis of behavior function.",
+    "tr": "Draft working 가설 의 행동 function.",
+    "contentWordCount": 5,
+    "matchedCount": 3,
+    "ratio": 0.6
+  },
+  "sandbox.complex_desc": {
+    "en": "Multi-phase data with mixed trends.",
+    "tr": "Multi-phase 데이터 함께 혼합 trends.",
+    "contentWordCount": 6,
+    "matchedCount": 3,
+    "ratio": 0.5
+  }
+}
