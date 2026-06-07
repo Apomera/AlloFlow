@@ -3994,11 +3994,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 // the report still works (omits the PDF/UA-1 section).
                                 const cached = lastTaggedValidation;
                                 const checks = cached && cached.pdfUa1Checks ? cached.pdfUa1Checks : null;
+                                // Thread the post-export validator results (re-parsed exported
+                                // bytes, 14 PDF/UA-1-relevant rules) into the report opts so
+                                // the renderer can show the "Independent Self-Check" section.
+                                const postExportValidator = cached && cached.postExportValidator ? cached.postExportValidator : null;
                                 const html = _docPipeline.generateAccessibilityReportHtml(
                                   pdfFixResult,
                                   pdfAuditResult,
                                   checks,
-                                  { fileName: pendingPdfFile?.name || 'document.pdf' }
+                                  { fileName: pendingPdfFile?.name || 'document.pdf', postExportValidator }
                                 );
                                 const blob = new Blob([html], { type: 'text/html' });
                                 const url = URL.createObjectURL(blob);

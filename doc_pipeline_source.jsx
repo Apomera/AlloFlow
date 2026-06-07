@@ -11687,6 +11687,42 @@ tr { page-break-inside: avoid; }
     fr.integrityCoverage
   )}
 
+  ${(() => {
+    // Post-export validator block — re-parses the EXPORTED bytes (not in-memory
+    // state) and runs 14 structural assertions. Independent verification: if
+    // the in-memory pdfUa1Checks say "tagged" but the validator says "no
+    // StructTreeRoot", something was lost at save. This is the same check set
+    // as dev-tools/demo/exported_pdf_validator.cjs (CLI) and produces results
+    // a reviewer can independently reproduce.
+    const pev = opts.postExportValidator;
+    if (!pev || pev.error) return '';
+    const c = pev.checks || [];
+    if (c.length === 0) return '';
+    const passN = (pev.summary && pev.summary.pass) || 0;
+    const failN = (pev.summary && pev.summary.fail) || 0;
+    const overall = (pev.summary && pev.summary.overall) || 'UNKNOWN';
+    const ovColor = overall === 'PASS' ? '#16a34a' : (failN <= 2 ? '#d97706' : '#dc2626');
+    const ovBg = overall === 'PASS' ? '#dcfce7' : (failN <= 2 ? '#fef3c7' : '#fee2e2');
+    const rows = c.map(ch => {
+      const mark = ch.status === 'pass' ? '✓' : '✗';
+      const color = ch.status === 'pass' ? '#16a34a' : '#dc2626';
+      return `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;color:${color};font-weight:700;width:24px;text-align:center">${mark}</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${_esc(ch.rule)}</td><td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:11px;color:#64748b">${_esc(ch.detail || '')}</td></tr>`;
+    }).join('');
+    return `
+  <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Independent Self-Check (Re-parsed Output Bytes)</h2>
+  <p style="font-size:13px;color:#475569;margin:0 0 12px">
+    The exported PDF was re-parsed from its saved bytes and walked structurally — 14 PDF/UA-1-relevant rules verified independently of the build-time checks above. A divergence between this section and the in-memory checks indicates content was lost at serialization.
+    The same 14 rules run via <code>dev-tools/demo/exported_pdf_validator.cjs</code> for reviewer reproduction. For ISO-grade PDF/UA-1 verification, complement with <a href="https://verapdf.org/">veraPDF</a> (see <code>docs/verapdf_install.md</code>).
+  </p>
+  <div style="margin:12px 0;padding:10px 16px;background:${ovBg};border:1px solid ${ovColor};border-radius:6px;display:inline-block">
+    <strong style="color:${ovColor};font-size:13px">${overall}</strong>
+    <span style="color:#64748b;font-size:12px;margin-left:8px">${passN} pass · ${failN} fail · ${pev.byteLength || 0} bytes · ${pev.pageCount || 0} page(s)</span>
+  </div>
+  <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px">
+    <tbody>${rows}</tbody>
+  </table>`;
+  })()}
+
   <h2>PDF/UA-1 Compliance Checks</h2>
   ${hasChecks
     ? `<p style="font-size:13px;color:#475569;margin:0 0 12px">Automated rule-by-rule verification of the tagged PDF against PDF/UA-1 (ISO 14289-1). Categories follow the Adobe Accessibility Checker format for familiarity. Items marked "Manual Check" cannot be verified automatically and require human review with assistive technology.</p>${_checksBlock}`
@@ -13381,7 +13417,22 @@ tr { page-break-inside: avoid; }
       _roundTrip = { ok: null, checks: [], warnings: ['Round-trip re-parse threw: ' + (_rtErr && _rtErr.message)] };
       try { warnLog('[createTaggedPdf] round-trip re-parse failed (non-fatal): ' + (_rtErr && _rtErr.message)); } catch (_) {}
     }
-    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks, metadataStamped: { producer: _producerStamped, xmp: _xmpStamped }, ocrTextLayer: { coveragePct: _ocrCoveragePct, nonLatinDropped: _ocrLayerNonLatinDropped, droppedChars: _ocrDroppedChars }, roundTrip: _roundTrip };
+    // ── Post-export validator (CDN module) ──
+    // Runs the same checks as dev-tools/demo/exported_pdf_validator.cjs against
+    // the saved bytes (re-parses with pdf-lib, walks the structure tree, asserts
+    // 14 PDF/UA-1-relevant rules). When the CDN module isn't loaded yet, returns
+    // null and the report renderer falls back to showing the round-trip section.
+    let _postExportValidator = null;
+    try {
+      const _pev = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PdfValidator) ? window.AlloModules.PdfValidator : null;
+      if (_pev && typeof _pev.validateExportedPdfBytes === 'function') {
+        _postExportValidator = await _pev.validateExportedPdfBytes(_bytes);
+      }
+    } catch (_pevErr) {
+      try { warnLog('[createTaggedPdf] post-export validator threw (non-fatal): ' + (_pevErr && _pevErr.message)); } catch (_) {}
+      _postExportValidator = { error: (_pevErr && _pevErr.message) || 'validator threw' };
+    }
+    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks, metadataStamped: { producer: _producerStamped, xmp: _xmpStamped }, ocrTextLayer: { coveragePct: _ocrCoveragePct, nonLatinDropped: _ocrLayerNonLatinDropped, droppedChars: _ocrDroppedChars }, roundTrip: _roundTrip, postExportValidator: _postExportValidator };
   };
 
   // Defense-in-depth for the print/preview windows: the body HTML is already

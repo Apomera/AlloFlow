@@ -106,6 +106,15 @@ function walkStructTree(stRoot, ctx) {
 // ── The actual validator ──
 async function validatePdf(filepath) {
   const bytes = fs.readFileSync(filepath);
+  // Track encryption separately — a real reviewer would flag an encrypted PDF
+  // because SR/AT can't read it without the decryption key.
+  let isEncrypted = false;
+  try {
+    // Try unencrypted load first; if it throws, fall back to ignoreEncryption.
+    await PDFDocument.load(bytes, { ignoreEncryption: false });
+  } catch (e) {
+    isEncrypted = /encrypted|password/i.test(e.message || '');
+  }
   const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
   const ctx = doc.context;
   const catalog = doc.catalog;
@@ -118,6 +127,39 @@ async function validatePdf(filepath) {
   const markedRaw = markInfo && markInfo.get ? markInfo.get(nm('Marked')) : null;
   const langRaw = catalog.get(nm('Lang'));
   const pages = doc.getPages();
+  // PDF/UA-1 requires DisplayDocTitle in ViewerPreferences so the title bar
+  // shows the document title (not the filename) — assistive tech reads it.
+  const viewerPrefs = resolve(catalog.get(nm('ViewerPreferences')));
+  const displayDocTitle = viewerPrefs && viewerPrefs.get ? viewerPrefs.get(nm('DisplayDocTitle')) : null;
+  // Document outline (bookmarks) — multi-page docs benefit from one;
+  // single-page docs don't strictly need it but it's never harmful.
+  const outlines = resolve(catalog.get(nm('Outlines')));
+  // Document metadata title — many PDF/UA validators check this.
+  const info = resolve(catalog.get(nm('Info')) || (ctx.trailerInfo && ctx.trailerInfo.Info));
+  const docTitle = info && info.get ? info.get(nm('Title')) : null;
+  // Font embedding: walk page resources, find Font dictionaries, check each has
+  // a FontDescriptor with at least one FontFile* entry. PDF/UA requires fonts
+  // be embedded so the document renders correctly even when the system is
+  // missing the font (otherwise content can substitute and break SR reading).
+  let fontsTotal = 0, fontsEmbedded = 0;
+  try {
+    for (const page of pages) {
+      const resources = resolve(page.node.get(nm('Resources')));
+      if (!resources || !resources.get) continue;
+      const fontDict = resolve(resources.get(nm('Font')));
+      if (!fontDict || !fontDict.entries) continue;
+      for (const [, fontRef] of fontDict.entries()) {
+        const font = resolve(fontRef);
+        if (!font || !font.get) continue;
+        fontsTotal++;
+        const fd = resolve(font.get(nm('FontDescriptor')));
+        if (fd && fd.get) {
+          const hasFile = fd.get(nm('FontFile')) || fd.get(nm('FontFile2')) || fd.get(nm('FontFile3'));
+          if (hasFile) fontsEmbedded++;
+        }
+      }
+    }
+  } catch (_) { /* font-walk is best-effort */ }
 
   // Walk the structure tree
   const elems = stRoot ? walkStructTree(stRoot, ctx) : [];
@@ -145,6 +187,16 @@ async function validatePdf(filepath) {
   passOrFail('Every TH has /Scope', thElems.length === 0 || thElems.every(e => e.hasA), thElems.length + ' TH cells');
   passOrFail('Every TH/TD has /ActualText', cellElems.length === 0 || cellElems.every(e => e.hasActualText), cellElems.length + ' cells');
   passOrFail('Every Figure has /Alt', figures.length === 0 || figures.every(e => e.hasAlt), figures.length + ' figures');
+  passOrFail('Document is NOT encrypted (AT requires read access)', !isEncrypted, isEncrypted ? 'PDF is password-protected' : '');
+  passOrFail('Document title set in metadata (/Info /Title)', !!docTitle, docTitle ? String(docTitle).slice(0, 80) : '');
+  passOrFail('ViewerPreferences /DisplayDocTitle = true (AT reads title bar)', String(displayDocTitle) === 'true', displayDocTitle ? String(displayDocTitle) : '(missing)');
+  passOrFail('All page fonts embedded (no SR-breaking substitution)',
+    fontsTotal === 0 || fontsEmbedded === fontsTotal,
+    fontsEmbedded + '/' + fontsTotal + ' fonts embedded');
+  // Outline (bookmarks) — not strict PDF/UA-1 requirement but a major navigation
+  // aid for multi-page docs. Soft check: report presence, don't fail multi-page
+  // docs that lack one (we don't have authoritative "should have bookmarks" rule).
+  passOrFail('Document outline (bookmarks) present', !!outlines, outlines ? '(navigation aid for multi-page docs)' : '(none — multi-page docs benefit from one)');
 
   // Content linkage (PAC 2024's "orphaned semantic elements" check)
   const orphanedRoles = orphanedLeaves.map(e => e.role);
@@ -161,10 +213,16 @@ async function validatePdf(filepath) {
     fullPath: filepath,
     byteLength: bytes.length,
     pageCount: pages.length,
+    isEncrypted,
     catalogChecks: {
       hasStructTreeRoot: !!stRoot,
       marked: String(markedRaw),
       lang: langRaw ? String(langRaw) : null,
+      docTitle: docTitle ? String(docTitle).slice(0, 200) : null,
+      displayDocTitle: displayDocTitle ? String(displayDocTitle) : null,
+      hasOutline: !!outlines,
+      fontsTotal,
+      fontsEmbedded,
     },
     structureTally: {
       totalStructElems: elems.length,

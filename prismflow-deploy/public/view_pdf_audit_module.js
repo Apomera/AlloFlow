@@ -2516,11 +2516,12 @@ Return ONLY JSON:
         }
         const cached = lastTaggedValidation;
         const checks = cached && cached.pdfUa1Checks ? cached.pdfUa1Checks : null;
+        const postExportValidator = cached && cached.postExportValidator ? cached.postExportValidator : null;
         const html = _docPipeline.generateAccessibilityReportHtml(
           pdfFixResult,
           pdfAuditResult,
           checks,
-          { fileName: pendingPdfFile?.name || "document.pdf" }
+          { fileName: pendingPdfFile?.name || "document.pdf", postExportValidator }
         );
         const blob = new Blob([html], { type: "text/html" });
         const url = URL.createObjectURL(blob);
