@@ -1453,7 +1453,7 @@
             },
             rows: 2,
             maxLength: 240,
-            placeholder: "Briefly: what made you loop back? (\u226510 chars)",
+            placeholder: t("humanities.loopback_other_ph") || "Briefly: what made you loop back? (\u226510 chars)",
             style: {
               marginTop: "8px",
               width: "100%",
@@ -1724,7 +1724,7 @@
       borderRadius: "12px",
       background: "#fdf2f8",
       border: "1px solid #f9a8d4"
-    } }, SuggestionBadge && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "6px" } }, /* @__PURE__ */ React.createElement(SuggestionBadge, { t })), renderQuestions(data.what_makes_this_contestable_questions, "What makes this contestable?"), renderQuestions(data.whose_stake_is_unnamed_questions, "Whose stake is unnamed?"), renderQuestions(data.framings_that_might_dissolve_the_question_questions, "Framings that might dissolve the question:"), renderQuestions(data.lateral_moves_still_missing_questions, "Lateral moves still missing:"), renderQuestions(data.whose_stake_in_publishing_this_questions, "Whose stake in publishing this?"), renderQuestions(data.independent_coverage_gaps_questions, "Independent coverage gaps:"), Array.isArray(data.absent_voice_kinds_not_yet_tracked) && data.absent_voice_kinds_not_yet_tracked.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "6px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#9d174d" } }, "Absent-voice kinds not yet tracked:"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, data.absent_voice_kinds_not_yet_tracked.map(function(c, i) {
+    } }, SuggestionBadge && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "6px" } }, /* @__PURE__ */ React.createElement(SuggestionBadge, { t })), renderQuestions(data.what_makes_this_contestable_questions, t("humanities.aiq_contestable") || "What makes this contestable?"), renderQuestions(data.whose_stake_is_unnamed_questions, t("humanities.aiq_stake_unnamed") || "Whose stake is unnamed?"), renderQuestions(data.framings_that_might_dissolve_the_question_questions, t("humanities.aiq_dissolve") || "Framings that might dissolve the question:"), renderQuestions(data.lateral_moves_still_missing_questions, t("humanities.aiq_lateral_missing") || "Lateral moves still missing:"), renderQuestions(data.whose_stake_in_publishing_this_questions, t("humanities.aiq_stake_publishing") || "Whose stake in publishing this?"), renderQuestions(data.independent_coverage_gaps_questions, t("humanities.aiq_coverage_gaps") || "Independent coverage gaps:"), Array.isArray(data.absent_voice_kinds_not_yet_tracked) && data.absent_voice_kinds_not_yet_tracked.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "6px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#9d174d" } }, t("humanities.aiq_absent_voice_kinds") || "Absent-voice kinds not yet tracked:"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, data.absent_voice_kinds_not_yet_tracked.map(function(c, i) {
       return /* @__PURE__ */ React.createElement("span", { key: i, style: {
         padding: "3px 8px",
         borderRadius: "999px",
@@ -1734,7 +1734,7 @@
         fontWeight: 700,
         border: "1px solid #f9a8d4"
       } }, c);
-    }))), renderQuestions(data.presentism_risks_in_my_reading_questions, "Presentism risks in my reading:"), renderQuestions(data.what_the_original_audience_would_have_heard_questions, "What the original audience would have heard:"), renderQuestions(data.chain_of_transmission_blind_spots_questions, "Chain-of-transmission blind spots:"), Array.isArray(data.framing_kind_chips_not_yet_used) && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "6px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#9d174d" } }, "Unused framing chips you might explore:"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, data.framing_kind_chips_not_yet_used.map(function(c, i) {
+    }))), renderQuestions(data.presentism_risks_in_my_reading_questions, t("humanities.aiq_presentism") || "Presentism risks in my reading:"), renderQuestions(data.what_the_original_audience_would_have_heard_questions, t("humanities.aiq_original_audience") || "What the original audience would have heard:"), renderQuestions(data.chain_of_transmission_blind_spots_questions, t("humanities.aiq_transmission") || "Chain-of-transmission blind spots:"), Array.isArray(data.framing_kind_chips_not_yet_used) && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "6px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#9d174d" } }, t("humanities.aiq_unused_chips") || "Unused framing chips you might explore:"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, data.framing_kind_chips_not_yet_used.map(function(c, i) {
       var chip = chipById(c);
       return /* @__PURE__ */ React.createElement("span", { key: i, style: {
         padding: "3px 8px",
@@ -1747,22 +1747,22 @@
       } }, chip ? chip.label : c);
     }))), Array.isArray(data.what_each_chip_would_foreground_questions) && data.what_each_chip_would_foreground_questions.map(function(entry, i) {
       var chip = chipById(entry.frame_kind_chip);
-      return /* @__PURE__ */ React.createElement("div", { key: i, style: { marginTop: "8px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#9d174d" } }, "If you tried [", chip ? chip.label : entry.frame_kind_chip, "]:"), renderQuestions(entry.foregrounding_questions, "Foregrounding:"), renderQuestions(entry.occlusion_questions, "Occlusion:"));
-    }), renderQuestions(data.framings_that_might_compete_with_yours_questions, "Framings that might compete with yours:"), renderQuestions(data.warrant_assumptions_left_implicit_questions, "Warrant assumptions left implicit:"), renderQuestions(data.qualifier_scope_questions, "Qualifier scope:"), renderQuestions(data.rebuttal_pressure_questions, "Rebuttal pressure:"), renderQuestions(data.standpoint_dependency_questions, "Standpoint dependency:"), data.analog_domain_shape && data.analog_domain_shape.analog_domain && /* @__PURE__ */ React.createElement("div", { style: {
+      return /* @__PURE__ */ React.createElement("div", { key: i, style: { marginTop: "8px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#9d174d" } }, (t("humanities.aiq_if_you_tried") || "If you tried [{chip}]:").replace("{chip}", chip ? chip.label : entry.frame_kind_chip)), renderQuestions(entry.foregrounding_questions, t("humanities.aiq_foregrounding") || "Foregrounding:"), renderQuestions(entry.occlusion_questions, t("humanities.aiq_occlusion") || "Occlusion:"));
+    }), renderQuestions(data.framings_that_might_compete_with_yours_questions, t("humanities.aiq_compete") || "Framings that might compete with yours:"), renderQuestions(data.warrant_assumptions_left_implicit_questions, t("humanities.aiq_warrant_assumptions") || "Warrant assumptions left implicit:"), renderQuestions(data.qualifier_scope_questions, t("humanities.aiq_qualifier_scope") || "Qualifier scope:"), renderQuestions(data.rebuttal_pressure_questions, t("humanities.aiq_rebuttal_pressure") || "Rebuttal pressure:"), renderQuestions(data.standpoint_dependency_questions, t("humanities.aiq_standpoint_dependency") || "Standpoint dependency:"), data.analog_domain_shape && data.analog_domain_shape.analog_domain && /* @__PURE__ */ React.createElement("div", { style: {
       marginTop: "8px",
       padding: "8px 10px",
       borderRadius: "8px",
       background: "#fff",
       border: "1px solid #f9a8d4"
-    } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#9d174d" } }, "Analog domain (", data.analog_domain_shape.analog_domain.replace(/_/g, " "), "):"), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("em", null, "Claim shape:"), " ", data.analog_domain_shape.example_claim_shape), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("em", null, "Warrant shape:"), " ", data.analog_domain_shape.example_warrant_shape), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("em", null, "Qualifier shape:"), " ", data.analog_domain_shape.example_qualifier_shape), renderQuestions(data.analog_domain_shape.transfer_questions, "Transfer questions (translate the shape, not the content):")), Array.isArray(data.pressure_test_questions_by_framing) && data.pressure_test_questions_by_framing.map(function(entry, i) {
+    } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#9d174d" } }, (t("humanities.aiq_analog_domain") || "Analog domain ({domain}):").replace("{domain}", data.analog_domain_shape.analog_domain.replace(/_/g, " "))), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("em", null, t("humanities.aiq_claim_shape") || "Claim shape:"), " ", data.analog_domain_shape.example_claim_shape), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("em", null, t("humanities.aiq_warrant_shape") || "Warrant shape:"), " ", data.analog_domain_shape.example_warrant_shape), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("em", null, t("humanities.aiq_qualifier_shape") || "Qualifier shape:"), " ", data.analog_domain_shape.example_qualifier_shape), renderQuestions(data.analog_domain_shape.transfer_questions, t("humanities.aiq_transfer") || "Transfer questions (translate the shape, not the content):")), Array.isArray(data.pressure_test_questions_by_framing) && data.pressure_test_questions_by_framing.map(function(entry, i) {
       var f = (props.journal && props.journal.framings || []).filter(function(fr) {
         return fr.id === entry.framing_id;
       })[0];
       var chip = f ? chipById(f.frameKindChip) : null;
-      return /* @__PURE__ */ React.createElement("div", { key: i, style: { marginTop: "6px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#9d174d" } }, "Pressure test via [", chip ? chip.label : entry.framing_id, "]:"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "20px", fontSize: "12px" } }, (entry.questions || []).map(function(q, j) {
+      return /* @__PURE__ */ React.createElement("div", { key: i, style: { marginTop: "6px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#9d174d" } }, (t("humanities.aiq_pressure_test_via") || "Pressure test via [{frame}]:").replace("{frame}", chip ? chip.label : entry.framing_id)), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "20px", fontSize: "12px" } }, (entry.questions || []).map(function(q, j) {
         return /* @__PURE__ */ React.createElement("li", { key: j }, q);
       })));
-    }), renderQuestions(data.echoed_what_you_said_about_visibility_questions, "Echoed: what you said about visibility:"), renderQuestions(data.echoed_what_you_said_about_obscuring_questions, "Echoed: what you said about obscuring:"), renderQuestions(data.absent_voices_you_named_then_might_explore_further_questions, "Absent voices you named, then might explore further:"), renderQuestions(data.where_your_standpoint_might_shape_your_warrant_questions, "Where your standpoint might shape your warrant:"), renderQuestions(data.foreclosure_completeness_questions, "Foreclosure-coda completeness:"), renderQuestions(data.genre_accountability_questions, "Genre accountability:"));
+    }), renderQuestions(data.echoed_what_you_said_about_visibility_questions, t("humanities.aiq_echoed_visibility") || "Echoed: what you said about visibility:"), renderQuestions(data.echoed_what_you_said_about_obscuring_questions, t("humanities.aiq_echoed_obscuring") || "Echoed: what you said about obscuring:"), renderQuestions(data.absent_voices_you_named_then_might_explore_further_questions, t("humanities.aiq_absent_explore") || "Absent voices you named, then might explore further:"), renderQuestions(data.where_your_standpoint_might_shape_your_warrant_questions, t("humanities.aiq_standpoint_warrant") || "Where your standpoint might shape your warrant:"), renderQuestions(data.foreclosure_completeness_questions, t("humanities.aiq_foreclosure") || "Foreclosure-coda completeness:"), renderQuestions(data.genre_accountability_questions, t("humanities.aiq_genre_accountability") || "Genre accountability:"));
   }
   function PositionalityCard(props) {
     var t = props.t || function(k) {
@@ -2078,7 +2078,7 @@
         }
       },
       "\u2715"
-    )), gateRow("stop", "Stop \u2014 first reaction", stopOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 4px", fontSize: "10px", color: "#64748b" } }, "What is your first reaction to this source, before reading further? (\u226540 chars)"), /* @__PURE__ */ React.createElement(
+    )), gateRow("stop", t("humanities.sift_stop_title") || "Stop \u2014 first reaction", stopOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 4px", fontSize: "10px", color: "#64748b" } }, "What is your first reaction to this source, before reading further? (\u226540 chars)"), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: stop.firstReactionText || "",
@@ -2098,7 +2098,7 @@
           fontFamily: "inherit"
         }
       }
-    ))), gateRow("investigate", "Investigate \u2014 leave the source", invOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 4px", fontSize: "10px", color: "#64748b" } }, "Open a separate tab. Search for this source / publisher / claim. Provide:"), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569", display: "block" } }, "Independent reference URL or publication (different host) *", /* @__PURE__ */ React.createElement(
+    ))), gateRow("investigate", t("humanities.sift_investigate_title") || "Investigate \u2014 leave the source", invOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 4px", fontSize: "10px", color: "#64748b" } }, "Open a separate tab. Search for this source / publisher / claim. Provide:"), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569", display: "block" } }, "Independent reference URL or publication (different host) *", /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
@@ -2107,7 +2107,7 @@
         onChange: function(e) {
           updateSift("investigate.independentSourceRef", e.target.value);
         },
-        placeholder: "e.g. https://americanlibrariesmagazine.org/...",
+        placeholder: t("humanities.source_url_ph") || "e.g. https://americanlibrariesmagazine.org/...",
         style: {
           marginTop: "2px",
           width: "100%",
@@ -2150,7 +2150,7 @@
             arr[i] = Object.assign({}, arr[i], { text: e.target.value, ts: Date.now() });
             updateSift("investigate.whoMadeItFacts", arr);
           },
-          placeholder: "e.g. Founded 1995 by Ms. Jane Doe (LinkedIn verified)",
+          placeholder: t("humanities.who_made_it_ph") || "e.g. Founded 1995 by Ms. Jane Doe (LinkedIn verified)",
           style: {
             flex: 1,
             padding: "4px 8px",
@@ -2241,7 +2241,7 @@
           fontSize: "11px"
         }
       }
-    )))), gateRow("find", "Find \u2014 independent coverage", findOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 4px", fontSize: "10px", color: "#64748b" } }, "Link to other sources in your list that cover the same topic from a different host (\u22651 required)."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px" } }, allSources.filter(function(s) {
+    )))), gateRow("find", t("humanities.sift_find_title") || "Find \u2014 independent coverage", findOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 4px", fontSize: "10px", color: "#64748b" } }, "Link to other sources in your list that cover the same topic from a different host (\u22651 required)."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px" } }, allSources.filter(function(s) {
       return s.id !== source.id;
     }).map(function(s) {
       var on = (find.independentCoverageSourceIds || []).indexOf(s.id) !== -1;
@@ -2275,7 +2275,7 @@
         },
         (s.citation || s.id).slice(0, 30)
       );
-    })), allSources.length <= 1 && /* @__PURE__ */ React.createElement("p", { style: { margin: "6px 0 0", fontSize: "10px", color: "#a16207", fontStyle: "italic" } }, "Add at least one more source (with a different host) to enable independent-coverage linking."))), gateRow("trace", "Trace \u2014 to the original", traceOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569", display: "flex", gap: "6px", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
+    })), allSources.length <= 1 && /* @__PURE__ */ React.createElement("p", { style: { margin: "6px 0 0", fontSize: "10px", color: "#a16207", fontStyle: "italic" } }, "Add at least one more source (with a different host) to enable independent-coverage linking."))), gateRow("trace", t("humanities.sift_trace_title") || "Trace \u2014 to the original", traceOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569", display: "flex", gap: "6px", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "checkbox",
@@ -2293,7 +2293,7 @@
         onChange: function(e) {
           updateSift("trace.originalContextCitation", e.target.value);
         },
-        placeholder: "e.g. ALA Bill of Rights 1965, Article III",
+        placeholder: t("humanities.counter_citation_ph") || "e.g. ALA Bill of Rights 1965, Article III",
         style: {
           marginTop: "2px",
           width: "100%",
@@ -2324,7 +2324,7 @@
           fontFamily: "inherit"
         }
       }
-    )))), isHistoricalScholarly && gateRow("historiographical", "Historiographical \u2014 scholar contestation (AP/9-12 only)", histOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 6px", fontSize: "10px", color: "#475569", lineHeight: 1.5 } }, "Scholarly articles are not inherently more reliable \u2014 they sit within ongoing scholarly debates. At AP / 9-12, citing a scholarly source requires showing you know where the scholar sits in that debate. (This unlocks richer scholar citation while preserving the V1 rule that AI never names scholars.)"), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569", display: "block" } }, "Where does this scholar sit? *", /* @__PURE__ */ React.createElement(
+    )))), isHistoricalScholarly && gateRow("historiographical", t("humanities.sift_historiographical_title") || "Historiographical \u2014 scholar contestation (AP/9-12 only)", histOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 6px", fontSize: "10px", color: "#475569", lineHeight: 1.5 } }, "Scholarly articles are not inherently more reliable \u2014 they sit within ongoing scholarly debates. At AP / 9-12, citing a scholarly source requires showing you know where the scholar sits in that debate. (This unlocks richer scholar citation while preserving the V1 rule that AI never names scholars.)"), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569", display: "block" } }, "Where does this scholar sit? *", /* @__PURE__ */ React.createElement(
       "select",
       {
         value: scholar.scholarEpistemicStatus || "",
@@ -2377,7 +2377,7 @@
         onChange: function(e) {
           onUpdate(Object.assign({}, source, { scholarMeta: Object.assign({}, scholar, { scholarContestationNote: e.target.value }) }));
         },
-        placeholder: "e.g. Wineburg argues lateral reading is essential; Caulfield extends with SIFT but adds 'find better coverage' as a discrete move Wineburg did not name. The debate concerns whether 'investigate the source' is sufficient or whether trace-to-original is required.",
+        placeholder: t("humanities.scholar_contestation_ph") || "e.g. Wineburg argues lateral reading is essential; Caulfield extends with SIFT but adds 'find better coverage' as a discrete move Wineburg did not name. The debate concerns whether 'investigate the source' is sufficient or whether trace-to-original is required.",
         style: {
           marginTop: "2px",
           width: "100%",
@@ -2502,7 +2502,7 @@
         onChange: function(e) {
           setDraft(Object.assign({}, draft, { whoseVoiceText: e.target.value }));
         },
-        placeholder: "e.g. Yearbook subjects from 1962-1989 who never consented to being archived",
+        placeholder: t("humanities.absent_voices_ph") || "e.g. Yearbook subjects from 1962-1989 who never consented to being archived",
         style: {
           marginTop: "2px",
           width: "100%",
@@ -2920,6 +2920,9 @@
     ), aiResult && aiResult.blocked && /* @__PURE__ */ React.createElement(BlockedNote, { t, reason: aiResult.detail || aiResult.blockedReason }), aiResult && !aiResult.blocked && aiResult.data && /* @__PURE__ */ React.createElement(AiResultPanel, { t, data: aiResult.data, primitives, journal }));
   }
   function StakeholderEditor(props) {
+    var t = props.t || function(k) {
+      return k;
+    };
     var _draft = useState({ whoseQuestionIsThis: "", whyTheyCareText: "", whatThisFramingForegrounds: "", whatThisFramingObscures: "" });
     var draft = _draft[0];
     var setDraft = _draft[1];
@@ -2942,7 +2945,7 @@
         onChange: function(e) {
           setDraft(Object.assign({}, draft, { whoseQuestionIsThis: e.target.value }));
         },
-        placeholder: "Whose question is this? (e.g. alumni asking for redaction)",
+        placeholder: t("humanities.stakeholder_question_ph") || "Whose question is this? (e.g. alumni asking for redaction)",
         style: { padding: "5px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "11px" }
       }
     ), /* @__PURE__ */ React.createElement(
@@ -2954,7 +2957,7 @@
         onChange: function(e) {
           setDraft(Object.assign({}, draft, { whyTheyCareText: e.target.value }));
         },
-        placeholder: "Why do they care? (\u226520 chars)",
+        placeholder: t("humanities.stakeholder_why_ph") || "Why do they care? (\u226520 chars)",
         style: { padding: "5px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "11px", fontFamily: "inherit" }
       }
     ), /* @__PURE__ */ React.createElement(
@@ -2966,7 +2969,7 @@
         onChange: function(e) {
           setDraft(Object.assign({}, draft, { whatThisFramingForegrounds: e.target.value }));
         },
-        placeholder: "What does their framing foreground? (optional)",
+        placeholder: t("humanities.stakeholder_foreground_ph") || "What does their framing foreground? (optional)",
         style: { padding: "5px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "11px" }
       }
     ), /* @__PURE__ */ React.createElement(
@@ -2978,7 +2981,7 @@
         onChange: function(e) {
           setDraft(Object.assign({}, draft, { whatThisFramingObscures: e.target.value }));
         },
-        placeholder: "What does their framing obscure? (optional)",
+        placeholder: t("humanities.stakeholder_obscure_ph") || "What does their framing obscure? (optional)",
         style: { padding: "5px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "11px" }
       }
     ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: "4px" } }, /* @__PURE__ */ React.createElement(
@@ -3021,6 +3024,9 @@
     )));
   }
   function PlausibleAnswerEditor(props) {
+    var t = props.t || function(k) {
+      return k;
+    };
     var _text = useState("");
     var text = _text[0];
     var setText = _text[1];
@@ -3043,7 +3049,7 @@
         onChange: function(e) {
           setText(e.target.value);
         },
-        placeholder: "A competing position someone could reasonably hold (\u22656 words)",
+        placeholder: t("humanities.plausible_answer_ph") || "A competing position someone could reasonably hold (\u22656 words)",
         style: { padding: "6px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "11px", fontFamily: "inherit" }
       }
     ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: "4px" } }, /* @__PURE__ */ React.createElement(
@@ -3258,7 +3264,7 @@
         onChange: function(e) {
           setNewSrc(Object.assign({}, newSrc, { citation: e.target.value }));
         },
-        placeholder: "URL or full citation",
+        placeholder: t("humanities.source_citation_ph") || "URL or full citation",
         style: { padding: "6px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12px" }
       }
     ), /* @__PURE__ */ React.createElement(
@@ -3286,7 +3292,7 @@
         onChange: function(e) {
           setNewSrc(Object.assign({}, newSrc, { notes: e.target.value }));
         },
-        placeholder: "Initial notes (optional)",
+        placeholder: t("humanities.source_notes_ph") || "Initial notes (optional)",
         style: { padding: "6px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12px", fontFamily: "inherit" }
       }
     ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: "6px" } }, /* @__PURE__ */ React.createElement(
@@ -3528,7 +3534,7 @@
         onChange: function(e) {
           setDraft(Object.assign({}, draft, { label: e.target.value }));
         },
-        placeholder: "Your label for this framing (\u22654 chars)",
+        placeholder: t("humanities.framing_label_ph") || "Your label for this framing (\u22654 chars)",
         style: { padding: "6px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "11px" }
       }
     ), /* @__PURE__ */ React.createElement(
@@ -3540,7 +3546,7 @@
         onChange: function(e) {
           setDraft(Object.assign({}, draft, { framingPrompt: e.target.value }));
         },
-        placeholder: "Framing prompt: a question this lens would ask of your sources (\u226530 chars)",
+        placeholder: t("humanities.framing_prompt_ph") || "Framing prompt: a question this lens would ask of your sources (\u226530 chars)",
         style: { padding: "6px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "11px", fontFamily: "inherit" }
       }
     ), /* @__PURE__ */ React.createElement(
@@ -3552,7 +3558,7 @@
         onChange: function(e) {
           setDraft(Object.assign({}, draft, { whatItForegrounds: e.target.value }));
         },
-        placeholder: "What does this framing FOREGROUND? (must include an anchor word, \u226520 chars)",
+        placeholder: t("humanities.framing_foreground_ph") || "What does this framing FOREGROUND? (must include an anchor word, \u226520 chars)",
         style: {
           padding: "6px 8px",
           borderRadius: "6px",
@@ -3570,7 +3576,7 @@
         onChange: function(e) {
           setDraft(Object.assign({}, draft, { whatItOccludes: e.target.value }));
         },
-        placeholder: "What does it OCCLUDE? (optional)",
+        placeholder: t("humanities.framing_occlude_ph") || "What does it OCCLUDE? (optional)",
         style: { padding: "6px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "11px", fontFamily: "inherit" }
       }
     ), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "11px", fontWeight: 700, color: "#9d174d" } }, "Which vetted sources fit this framing? (\u22651)", /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, vettedSources.map(function(s) {
@@ -3824,7 +3830,7 @@
         onChange: function(e) {
           setHpDraft(Object.assign({}, hpDraft, { text: e.target.value }));
         },
-        placeholder: "State your position in your own voice.",
+        placeholder: t("humanities.position_text_ph") || "State your position in your own voice.",
         style: {
           width: "100%",
           boxSizing: "border-box",
@@ -3844,7 +3850,7 @@
         onChange: function(e) {
           setHpDraft(Object.assign({}, hpDraft, { positionalityLinkText: e.target.value }));
         },
-        placeholder: "Multi-word phrase (\u22653 content words, \u226512 chars) from your positionality or an absent voice",
+        placeholder: t("humanities.position_link_ph") || "Multi-word phrase (\u22653 content words, \u226512 chars) from your positionality or an absent voice",
         style: {
           marginTop: "6px",
           width: "100%",
@@ -3864,7 +3870,7 @@
         onChange: function(e) {
           setHpDraft(Object.assign({}, hpDraft, { whatThisClaimDoesNotSpeakTo: e.target.value }));
         },
-        placeholder: "What this claim does NOT speak to (\u226560 chars; will feed the Foreclosure Coda)",
+        placeholder: t("humanities.position_notspeak_ph") || "What this claim does NOT speak to (\u226560 chars; will feed the Foreclosure Coda)",
         style: {
           marginTop: "6px",
           width: "100%",
@@ -4290,7 +4296,7 @@
             onChange: function(e) {
               setAsJust(e.target.value);
             },
-            placeholder: "Why does the warrant truly survive every framing? Be specific about which evidence resists which framing.",
+            placeholder: t("humanities.all_survives_just_ph") || "Why does the warrant truly survive every framing? Be specific about which evidence resists which framing.",
             style: {
               marginTop: "6px",
               width: "100%",
