@@ -291,6 +291,12 @@ test.describe('createTaggedPdf — non-Latin OCR text layer (Arabic)', () => {
       'round-trip should pass; failures: ' + JSON.stringify((ocrSummary.roundTrip.checks || []).filter((c: any) => c.status === 'fail'))
     ).toBe(true);
     expect(ocrSummary.roundTrip.structElemsSaved, 'saved file must contain StructElem objects').toBeGreaterThan(0);
+    // Post-save verification now covers the full structural rule set against the shipped bytes.
+    const _rtRules = (ocrSummary.roundTrip.checks || []).map((c: any) => c.rule);
+    expect(_rtRules, 'verifies page→tag-tree linkage on the saved bytes').toContain('Pages link to tag tree (StructParents)');
+    expect(_rtRules, 'verifies DisplayDocTitle on the saved bytes').toContain('DisplayDocTitle survived');
+    // Divergence detector: nothing should pass at build but fail after save on a good PDF.
+    expect(ocrSummary.roundTrip.divergences || [], 'no build-vs-shipped divergence on a correctly tagged PDF').toEqual([]);
   });
 
   test('pdfUa1Checks Document rules report accurately (no unresolved-PDFRef bug)', () => {

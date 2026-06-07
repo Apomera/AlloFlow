@@ -12915,6 +12915,24 @@ tr { page-break-inside: avoid; }
       let _rtLang = false;
       try { _rtLang = !!_rtCat.lookup(PDFName.of('Lang')); } catch (_) {}
       _rtChecks.push({ rule: 'Document /Lang survived', status: _rtLang ? 'pass' : 'warn' });
+      // Title / DisplayDocTitle / XMP / per-page StructParents — re-read from the SHIPPED
+      // bytes so the report verifies what actually survived save, not just build intent.
+      let _rtTitle = false;
+      try { const _info = _rt.getInfoDict ? _rt.getInfoDict() : null; const _ti = _info && _info.lookup ? _info.lookup(PDFName.of('Title')) : null; _rtTitle = !!_ti && String(_ti).replace(/^\(|\)$/g, '').trim().length > 0; } catch (_) {}
+      _rtChecks.push({ rule: 'Document title survived', status: _rtTitle ? 'pass' : 'warn' });
+      let _rtDdt = false;
+      try { const _vp = _rtCat.lookup(PDFName.of('ViewerPreferences')); const _ddt = _vp && _vp.lookup ? _vp.lookup(PDFName.of('DisplayDocTitle')) : null; _rtDdt = !!_ddt && String(_ddt) === 'true'; } catch (_) {}
+      _rtChecks.push({ rule: 'DisplayDocTitle survived', status: _rtDdt ? 'pass' : 'fail' });
+      let _rtXmp = false;
+      try { _rtXmp = !!_rtCat.lookup(PDFName.of('Metadata')); } catch (_) {}
+      _rtChecks.push({ rule: 'XMP metadata stream survived', status: _rtXmp ? 'pass' : (_xmpStamped ? 'fail' : 'warn') });
+      try {
+        const _rtPages = _rt.getPages();
+        let _spOk = 0;
+        for (const _p of _rtPages) { try { const _sp = _p.node && _p.node.lookup ? _p.node.lookup(PDFName.of('StructParents')) : (_p.node && _p.node.get ? _p.node.get(PDFName.of('StructParents')) : null); if (_sp != null) _spOk++; } catch (_) {} }
+        const _allP = _rtPages.length;
+        _rtChecks.push({ rule: 'Pages link to tag tree (StructParents)', status: (_allP > 0 && _spOk === _allP) ? 'pass' : 'fail', detail: _spOk + '/' + _allP + ' pages' });
+      } catch (_) {}
       // Content-loss guard: compare the StructElem count in the SAVED file to what we
       // built in memory. A large shortfall means a subtree was dropped at serialization.
       const _builtCount = ((typeof structElemRefs !== 'undefined' && Array.isArray(structElemRefs)) ? structElemRefs.length : 0)
@@ -12932,9 +12950,30 @@ tr { page-break-inside: avoid; }
         _rtWarn.push('No StructElem objects found in the saved file though ' + _builtCount + ' were built — the tag tree did not survive save.');
         _rtChecks.push({ rule: 'No structure lost at save', status: 'fail', detail: '0/' + _builtCount });
       }
-      const _rtFailed = _rtChecks.some(c => c.status === 'fail');
-      _roundTrip = { ok: !_rtFailed, checks: _rtChecks, warnings: _rtWarn, structElemsSaved: _rtStructCount, structElemsBuilt: _builtCount };
-      if (_rtFailed) { try { warnLog('[createTaggedPdf] round-trip self-check FAILED: ' + JSON.stringify(_rtChecks.filter(c => c.status === 'fail'))); } catch (_) {} }
+      // Divergence detector: a rule that PASSED at build time (in-memory _pdfUa1Checks)
+      // but FAILS when re-read from the shipped bytes means something was lost at save —
+      // the single most important reliability signal this verification can produce.
+      const _divergences = [];
+      try {
+        const _imById = {};
+        for (const _c of ((_pdfUa1Checks && _pdfUa1Checks.checks) || [])) _imById[_c.rule] = _c.status;
+        const _rtById = {};
+        for (const _c of _rtChecks) _rtById[_c.rule] = _c.status;
+        const _pairs = [
+          ['Tagged PDF', 'StructTreeRoot survived save'],
+          ['Structure tree has content', 'Structure tree has content'],
+          ['MarkInfo present', 'MarkInfo/Marked survived'],
+          ['Primary language', 'Document /Lang survived'],
+          ['DisplayDocTitle', 'DisplayDocTitle survived'],
+          ['Tagged content', 'Pages link to tag tree (StructParents)'],
+        ];
+        for (const _pr of _pairs) {
+          if (_imById[_pr[0]] === 'pass' && _rtById[_pr[1]] === 'fail') _divergences.push({ rule: _pr[0], build: 'pass', shipped: 'fail' });
+        }
+      } catch (_) {}
+      const _rtFailed = _rtChecks.some(c => c.status === 'fail') || _divergences.length > 0;
+      _roundTrip = { ok: !_rtFailed, validatedAgainst: 'reparsed-bytes', checks: _rtChecks, warnings: _rtWarn, divergences: _divergences, structElemsSaved: _rtStructCount, structElemsBuilt: _builtCount };
+      if (_rtFailed) { try { warnLog('[createTaggedPdf] post-save verification FAILED: ' + JSON.stringify({ fails: _rtChecks.filter(c => c.status === 'fail'), divergences: _divergences })); } catch (_) {} }
     } catch (_rtErr) {
       _roundTrip = { ok: null, checks: [], warnings: ['Round-trip re-parse threw: ' + (_rtErr && _rtErr.message)] };
       try { warnLog('[createTaggedPdf] round-trip re-parse failed (non-fatal): ' + (_rtErr && _rtErr.message)); } catch (_) {}
