@@ -1505,8 +1505,8 @@ window.StemLab = window.StemLab || {
         ),
         // === H7b'' inquiry widget: fact mastery ===
         (function() {
-          var iq = d._factHunt || { threshold: 80, factor: 6, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-          function setIQ(patch) { upd('_factHunt', Object.assign({}, iq, patch)); }
+          var iq = _ext._factHunt || { threshold: 80, factor: 6, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { extUpd({ _factHunt: Object.assign({}, iq, patch) }); }
           var mock = iq.factor * 7;
           var perf = Math.min(100, iq.factor * 10);
           var state;

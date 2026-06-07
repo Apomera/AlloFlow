@@ -1122,8 +1122,8 @@ window.StemLab = window.StemLab || {
         ),
         // === H7b'' inquiry widget: area discovery ===
         (function() {
-          var iq = d._areaHunt || { rows: 4, cols: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-          function setIQ(patch) { upd('_areaHunt', Object.assign({}, iq, patch)); }
+          var iq = _a._areaHunt || { rows: 4, cols: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd({ _areaHunt: Object.assign({}, iq, patch) }); }
           var area = iq.rows * iq.cols;
           var state;
           if (area === iq.rows + iq.cols) state = 'special';

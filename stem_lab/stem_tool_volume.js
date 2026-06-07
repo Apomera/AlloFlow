@@ -1801,7 +1801,7 @@ window.StemLab = window.StemLab || {
 
         // === H7b'' inquiry widget: volume predictor ===
         (function() {
-          var iq = d._volPred || { lpred: 3, wpred: 3, hpred: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          var iq = _v._volPred || { lpred: 3, wpred: 3, hpred: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
           function setIQ(patch) { upd({ _volPred: Object.assign({}, iq, patch) }); }
           var predicted = iq.lpred * iq.wpred * iq.hpred;
           var actual = (dims.l || 1) * (dims.w || 1) * (dims.h || 1);

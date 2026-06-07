@@ -120,8 +120,20 @@ files.forEach(function (f) {
 
 const registry = (window.StemLab && window.StemLab._registry) || {};
 const ids = Object.keys(registry).sort();
-const renderErrors = [];
+const renderErrors = []; // uncaught throw → ErrorBoundary would take down the app (angles class)
+const swallowed = [];    // tool caught its own render error → shows fallback UI, not the real tool
+const _origErr = console.error;
 ids.forEach(function (id) {
+  // Tools wrap render in try/catch and log "[StemLab] Error rendering <id>" then show a
+  // fallback. That error is swallowed (no uncaught throw) — capture it so the gate sees the
+  // degraded-tool class too, not just app-crashes.
+  const caught = [];
+  console.error = function () {
+    try {
+      var s = Array.prototype.map.call(arguments, function (x) { return x && x.message ? x.message : String(x); }).join(' ');
+      if (/error rendering/i.test(s)) caught.push(s);
+    } catch (_) {}
+  };
   try {
     const ctx = makeCtx();
     RDS.renderToStaticMarkup(React.createElement(function StemSmoke() {
@@ -129,7 +141,10 @@ ids.forEach(function (id) {
     }));
   } catch (e) {
     renderErrors.push({ id: id, error: (e && e.message) || String(e) });
+  } finally {
+    console.error = _origErr;
   }
+  if (caught.length) swallowed.push({ id: id, error: caught[0] });
 });
 
 if (!QUIET) {
@@ -140,10 +155,20 @@ if (loadErrors.length) {
   loadErrors.forEach(function (e) { console.error('   - ' + e.file + ': ' + e.error); });
 }
 if (renderErrors.length) {
-  console.error('✗ ' + renderErrors.length + ' tool(s) THREW during render:');
+  console.error('✗ ' + renderErrors.length + ' tool(s) THREW (uncaught → ErrorBoundary crashes the app):');
   renderErrors.forEach(function (e) { console.error('   - ' + e.id + ': ' + e.error); });
 }
-if (loadErrors.length || renderErrors.length) {
+if (swallowed.length) {
+  // ADVISORY (non-blocking for now): these tools catch their own render error and show a
+  // DEGRADED fallback UI instead of the real tool — typically a first-render bug (unhandled
+  // empty/initial state). Promote to a hard failure once the current backlog is cleared
+  // (set STEM_RENDER_STRICT=1 to fail on these today).
+  console.warn('⚠ ' + swallowed.length + ' STEM tool(s) render DEGRADED (caught render error → fallback UI, not the real tool):');
+  swallowed.forEach(function (e) { console.warn('   - ' + e.id + ': ' + e.error); });
+}
+const STRICT = process.env.STEM_RENDER_STRICT === '1';
+if (loadErrors.length || renderErrors.length || (STRICT && swallowed.length)) {
   process.exit(1);
 }
-console.log('✓ check_stem_render: all ' + ids.length + ' STEM tools render without throwing.');
+console.log('✓ check_stem_render: no app-crash render failures across ' + ids.length + ' STEM tools'
+  + (swallowed.length ? ' (' + swallowed.length + ' degraded-render advisory — see ⚠ above)' : '') + '.');
