@@ -691,6 +691,7 @@ const syncProgressToFirestore = async (deps) => {
                   idleMinutes: focusData.idleMinutes || 0,
                   focusStreak: focusData.longestStreak || 0,
                   pasteEventCount: pasteEvents.length,
+                  pasteEventResponseCount: (pasteEvents || []).filter((e) => e && e.isResponseField).length,
                   storyForgeSubmissions: history.filter(h => h.type === 'storyforge-submission').length,
                   storyForgeLatest: (() => { const sf = history.filter(h => h.type === 'storyforge-submission').pop(); return sf ? { title: sf.data?.storyTitle, words: sf.data?.analytics?.totalWords, vocab: sf.data?.analytics?.vocabUsedCount, grade: sf.data?.analytics?.readingLevel?.grade, drafts: sf.data?.analytics?.draftCount } : null; })(),
                   dbqProgress: (() => {

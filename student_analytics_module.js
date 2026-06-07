@@ -923,13 +923,37 @@
           severity: 'info'
         });
       }
+      // Two-tier paste-event flag (sharpened 2026-06-07):
+      //   WARNING — pastes into writable response fields (TEXTAREA / INPUT /
+      //   contenteditable). The actual cheat signal: a student pasting an
+      //   AI-generated answer into a quiz / adventure / sentence-frames /
+      //   note-taking response. Fires at >=1, severity warning.
+      //
+      //   INFO — total session pastes that did NOT land in a response field
+      //   (search boxes, the help panel, etc.). Background noise. Fires at
+      //   >5 only, severity info. Suppressed when the warning fires (the
+      //   response-field count is the load-bearing signal; piling on two
+      //   flags for the same paste cluster is confusing).
+      //
+      // Live-sync path: both counts come through `student.stats.*`
+      // (populated by calculateStudentStats in the host). Imported-JSON
+      // path: both counts come through `student.*` directly.
       const pasteCount = student.pasteEventCount || student.stats?.pasteEventCount || 0;
-      if (pasteCount > 5) {
+      const pasteResponseCount = student.pasteEventResponseCount || student.stats?.pasteEventResponseCount || 0;
+      if (pasteResponseCount >= 1) {
+        flags.push({
+          type: 'paste_into_answer',
+          icon: '📋',
+          label: pasteResponseCount + ' paste(s) in answers',
+          detail: `${pasteResponseCount} paste event(s) detected in writable response fields this session. Possible AI-assisted answer entry; review with the student.`,
+          severity: 'warning'
+        });
+      } else if (pasteCount > 5) {
         flags.push({
           type: 'paste_activity',
           icon: '📋',
           label: pasteCount + ' pastes',
-          detail: `${pasteCount} paste events detected this session`,
+          detail: `${pasteCount} paste events detected this session (none in answer fields)`,
           severity: 'info'
         });
       }

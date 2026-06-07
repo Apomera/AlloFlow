@@ -664,6 +664,7 @@ const syncProgressToFirestore = async (deps) => {
         idleMinutes: focusData.idleMinutes || 0,
         focusStreak: focusData.longestStreak || 0,
         pasteEventCount: pasteEvents.length,
+        pasteEventResponseCount: (pasteEvents || []).filter((e) => e && e.isResponseField).length,
         storyForgeSubmissions: history.filter((h) => h.type === "storyforge-submission").length,
         storyForgeLatest: (() => {
           const sf = history.filter((h) => h.type === "storyforge-submission").pop();
