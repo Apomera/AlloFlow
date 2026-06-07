@@ -22,6 +22,12 @@
   var useCallback = React.useCallback;
   var useFocusTrap = window.__alloHooks && window.__alloHooks.useFocusTrap || function() {
   };
+  function announce(msg, priority) {
+    try {
+      if (typeof window !== "undefined" && window.alloAnnounce) window.alloAnnounce(msg, priority || "polite");
+    } catch (_) {
+    }
+  }
   var H = window.ResearchHub.helpers || {};
   var isPlausibleProse = H.isPlausibleProse || function() {
     return { ok: true };
@@ -1001,6 +1007,66 @@
     }
     return out;
   }
+  var SCHOLAR_NAMES_UNAMBIGUOUS = /* @__PURE__ */ new Set([
+    "foucault",
+    "foucauldian",
+    "foucaults",
+    "derrida",
+    "derridean",
+    "marx",
+    "marxist",
+    "marxian",
+    "gramsci",
+    "gramscian",
+    "spivak",
+    "bourdieu",
+    "habermas",
+    "chomsky",
+    "nietzsche",
+    "nietzschean",
+    "freud",
+    "freudian",
+    "lacan",
+    "lacanian",
+    "zizek",
+    "adorno",
+    "durkheim",
+    "fanon",
+    "fanonian",
+    "crenshaw",
+    "wineburg",
+    "caulfield",
+    "barthes",
+    "sartre",
+    "sartrean",
+    "beauvoir",
+    "deleuze",
+    "deleuzian",
+    "hegel",
+    "hegelian",
+    "kant",
+    "kantian",
+    "arendt",
+    "gadamer",
+    "ranciere",
+    "agamben"
+  ]);
+  var SCHOLAR_NAMES_AMBIGUOUS = /* @__PURE__ */ new Set(["Said", "Butler", "Hooks", "Weber"]);
+  function scholarNameSuspected(text) {
+    if (!text) return false;
+    var s = String(text);
+    if (/\b(Dr\.?|Professor|Prof\.?|Sir|Dame)\s+[A-Z][a-z]+/.test(s)) return true;
+    if (/\b(de|van|von|da|del|della|du|al)\s+[A-Z][a-z]+/.test(s)) return true;
+    var lowerTokens = s.toLowerCase().match(/[a-z']+/g) || [];
+    for (var i = 0; i < lowerTokens.length; i++) {
+      if (SCHOLAR_NAMES_UNAMBIGUOUS.has(lowerTokens[i])) return true;
+    }
+    var capTokens = s.match(/\b[A-Z][a-z]+\b/g) || [];
+    for (var j = 0; j < capTokens.length; j++) {
+      if (SCHOLAR_NAMES_AMBIGUOUS.has(capTokens[j])) return true;
+    }
+    return false;
+  }
   function sourceLateralProbeValidate(out, journal) {
     if (!out) return { __rejected: true, rejectReason: "no_output", attemptedShapeKeys: [] };
     var needed = ["lateral_moves_still_missing_questions", "whose_stake_in_publishing_this_questions", "independent_coverage_gaps_questions", "absent_voice_kinds_not_yet_tracked", "presentism_risks_in_my_reading_questions", "what_the_original_audience_would_have_heard_questions", "chain_of_transmission_blind_spots_questions"];
@@ -1010,7 +1076,7 @@
       }
     }
     var allText = JSON.stringify(out);
-    if (/\b(Dr\.|Professor|Prof\.) [A-Z][a-z]+\b/.test(allText)) {
+    if (scholarNameSuspected(allText)) {
       return { __rejected: true, rejectReason: "scholar_name_in_output", attemptedShapeKeys: ["*"] };
     }
     if (/"[^"]{20,}"/.test(allText)) {
@@ -1050,6 +1116,9 @@
       }
     }
     var allText = JSON.stringify(out);
+    if (scholarNameSuspected(allText)) {
+      return { __rejected: true, rejectReason: "scholar_name_in_output", attemptedShapeKeys: ["*"] };
+    }
     if (/\b[A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\b/.test(allText)) {
       var safeWhitelist = FRAMING_TAXONOMY.map(function(c) {
         return c.label;
@@ -3656,7 +3725,18 @@
         var next = Object.assign({}, prev);
         next.claimEvidenceLinks = (prev.claimEvidenceLinks || []).map(function(l) {
           if (l.id !== id) return l;
-          return Object.assign({}, l, patch);
+          var merged = Object.assign({}, l, patch);
+          if (patch.qualifier !== void 0 && Array.isArray(l.qualifierRevisionLog) && l.qualifierRevisionLog.length) {
+            var log = l.qualifierRevisionLog.slice();
+            for (var i = log.length - 1; i >= 0; i--) {
+              if (log[i] && log[i].toQualifier === null) {
+                log[i] = Object.assign({}, log[i], { toQualifier: patch.qualifier, resolvedTs: Date.now() });
+                break;
+              }
+            }
+            merged.qualifierRevisionLog = log;
+          }
+          return merged;
         });
         return next;
       });
@@ -3676,8 +3756,9 @@
     var setProbeVerdict = function(linkId, framingId, verdict, studentRationale, quotedSnippetRef, allSurvivesJustification) {
       setJournal(function(prev) {
         var next = Object.assign({}, prev);
+        var probeId = "fp" + Date.now() + "_" + Math.floor(Math.random() * 1e3);
         next.framingProbes = (prev.framingProbes || []).concat([{
-          id: "fp" + Date.now() + "_" + Math.floor(Math.random() * 1e3),
+          id: probeId,
           ts: Date.now(),
           linkId,
           framingId,
@@ -3694,9 +3775,8 @@
                 ts: Date.now(),
                 fromQualifier: lnk.qualifier || "",
                 toQualifier: null,
-                // populated when student edits qualifier
-                triggeredByFramingProbeId: "fp_pending"
-                // updated on next render via the probe id
+                // back-filled by updateLink when the student next edits this link's qualifier
+                triggeredByFramingProbeId: probeId
               }])
             });
           });
@@ -4873,6 +4953,7 @@
         return next;
       });
       setLoopback(null);
+      announce((t("humanities.sr_looped_back") || "Looped back to ") + (STAGE_BY_KEY[toStage] && STAGE_BY_KEY[toStage].label || toStage) + ". " + (t("humanities.sr_work_preserved") || "Your earlier work is preserved; you can return to where you were."), "polite");
     }, [loopback]);
     var returnToOrigin = useCallback(function() {
       if (!journal.pendingLoopReturn) return;

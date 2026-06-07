@@ -100,6 +100,10 @@
   // Shared focus-trap hook (WCAG 2.1.2/2.4.3). Resolved once at module load so
   // the call is a stable hook across renders; no-op fallback if host is older.
   var useFocusTrap = (window.__alloHooks && window.__alloHooks.useFocusTrap) || function () {};
+  // SR live-region announcer (host exposes window.alloAnnounce; no-op if absent).
+  function announce(msg, priority) {
+    try { if (typeof window !== 'undefined' && window.alloAnnounce) window.alloAnnounce(msg, priority || 'polite'); } catch (_) {}
+  }
 
   var H = window.ResearchHub.helpers || {};
   var isPlausibleProse = H.isPlausibleProse || function () { return { ok: true }; };
@@ -3695,6 +3699,7 @@
         return next;
       });
       setLoopback(null);
+      announce((t('engineering.sr_looped_back') || 'Looped back to ') + ((STAGE_BY_KEY[toStage] && STAGE_BY_KEY[toStage].label) || toStage) + '. ' + (t('engineering.sr_work_preserved') || 'Your earlier work is preserved; you can return to where you were.'), 'polite');
     }, [loopback]);
 
     var returnToOrigin = useCallback(function () {

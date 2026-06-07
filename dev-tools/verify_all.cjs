@@ -74,6 +74,11 @@ const checks = [
     description: 'Root *_source.jsx vs prismflow-deploy/src/ duplicates',
   },
   {
+    name: 'Research Hub rebuild-diff',
+    cmd: ['node', 'dev-tools/check_research_drift.cjs', '--quiet'],
+    description: 'TRUE rebuild-diff: each research_*_source.jsx recompiled via esbuild must byte-match its committed *_module.js + prismflow mirror (catches the hand-patched-artifact P0 class the heuristic pair-drift + mtime checks miss)',
+  },
+  {
     name: 'Pipeline integrity',
     cmd: ['node', 'dev-tools/check_pipeline_integrity.js'],
     description: '_docPipeline.X UI calls all map to exports',

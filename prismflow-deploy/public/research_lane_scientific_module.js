@@ -22,6 +22,12 @@
   var useCallback = React.useCallback;
   var useFocusTrap = window.__alloHooks && window.__alloHooks.useFocusTrap || function() {
   };
+  function announce(msg, priority) {
+    try {
+      if (typeof window !== "undefined" && window.alloAnnounce) window.alloAnnounce(msg, priority || "polite");
+    } catch (_) {
+    }
+  }
   var H = window.ResearchHub.helpers || {};
   var isPlausibleProse = H.isPlausibleProse || function() {
     return { ok: true };
@@ -2307,6 +2313,7 @@
         return next;
       });
       setLoopback(null);
+      announce((t("scientific.sr_looped_back") || "Looped back to ") + (STAGE_BY_KEY[toStage] && STAGE_BY_KEY[toStage].label || toStage) + ". " + (t("scientific.sr_work_preserved") || "Your earlier work is preserved; you can return to where you were."), "polite");
     }, [loopback]);
     var returnToOrigin = useCallback(function() {
       if (!journal.pendingLoopReturn) return;

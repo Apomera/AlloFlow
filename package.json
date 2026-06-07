@@ -19,6 +19,7 @@
     "verify:translations": "node dev-tools/check_translation_keys.cjs",
     "verify:tools": "node dev-tools/check_tool_registry.cjs",
     "verify:pair-drift": "node dev-tools/audit_pair_drift.js",
+    "verify:research-drift": "node dev-tools/check_research_drift.cjs",
     "verify:source-pair": "node dev-tools/check_source_pair_drift.js",
     "verify:pipeline": "node dev-tools/check_pipeline_integrity.js",
     "verify:build": "node dev-tools/check_build_smoke.cjs",

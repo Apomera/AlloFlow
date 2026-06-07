@@ -104,6 +104,10 @@
   // Shared focus-trap hook (WCAG 2.1.2/2.4.3). Resolved once at module load so
   // the call is a stable hook across renders; no-op fallback if host is older.
   var useFocusTrap = (window.__alloHooks && window.__alloHooks.useFocusTrap) || function () {};
+  // SR live-region announcer (host exposes window.alloAnnounce; no-op if absent).
+  function announce(msg, priority) {
+    try { if (typeof window !== 'undefined' && window.alloAnnounce) window.alloAnnounce(msg, priority || 'polite'); } catch (_) {}
+  }
 
   var H = window.ResearchHub.helpers || {};
   var isPlausibleProse = H.isPlausibleProse || function () { return { ok: true }; };
@@ -818,6 +822,42 @@
     return out;
   }
 
+  // Shared scholar-name guard. The lane's load-bearing Tier-1 prohibition is
+  // "AI never names a scholar." The old per-validator checks were porous:
+  // sourceLateralProbe caught only honorific-prefixed names, and
+  // counterFramingVoicer required TWO capitalized words — so single-surname
+  // mononyms (Foucault, Marx, Gramsci, Derrida…) slipped through both. This
+  // helper adds: honorifics, particle surnames (de/van/von + Cap), a curated
+  // denylist of unambiguous theorist surnames/schools (case-insensitive, also
+  // catches ALL-CAPS + adjectival forms), and a small set of common-word-
+  // collision surnames flagged ONLY when capitalized (so "the author said"
+  // does not false-positive while a capitalized "Said" does). False positives
+  // only cost an AI retry; a false negative leaks a scholar name — so this
+  // leans strict, as the design intends.
+  var SCHOLAR_NAMES_UNAMBIGUOUS = new Set([
+    'foucault','foucauldian','foucaults','derrida','derridean','marx','marxist','marxian',
+    'gramsci','gramscian','spivak','bourdieu','habermas','chomsky','nietzsche','nietzschean',
+    'freud','freudian','lacan','lacanian','zizek','adorno','durkheim','fanon','fanonian',
+    'crenshaw','wineburg','caulfield','barthes','sartre','sartrean','beauvoir','deleuze',
+    'deleuzian','hegel','hegelian','kant','kantian','arendt','gadamer','ranciere','agamben',
+  ]);
+  var SCHOLAR_NAMES_AMBIGUOUS = new Set(['Said','Butler','Hooks','Weber']);
+  function scholarNameSuspected(text) {
+    if (!text) return false;
+    var s = String(text);
+    if (/\b(Dr\.?|Professor|Prof\.?|Sir|Dame)\s+[A-Z][a-z]+/.test(s)) return true;       // honorific + name
+    if (/\b(de|van|von|da|del|della|du|al)\s+[A-Z][a-z]+/.test(s)) return true;          // particle surname
+    var lowerTokens = s.toLowerCase().match(/[a-z']+/g) || [];
+    for (var i = 0; i < lowerTokens.length; i++) {
+      if (SCHOLAR_NAMES_UNAMBIGUOUS.has(lowerTokens[i])) return true;
+    }
+    var capTokens = s.match(/\b[A-Z][a-z]+\b/g) || [];
+    for (var j = 0; j < capTokens.length; j++) {
+      if (SCHOLAR_NAMES_AMBIGUOUS.has(capTokens[j])) return true;
+    }
+    return false;
+  }
+
   function sourceLateralProbeValidate(out, journal) {
     if (!out) return { __rejected: true, rejectReason: 'no_output', attemptedShapeKeys: [] };
     var needed = ['lateral_moves_still_missing_questions','whose_stake_in_publishing_this_questions','independent_coverage_gaps_questions','absent_voice_kinds_not_yet_tracked','presentism_risks_in_my_reading_questions','what_the_original_audience_would_have_heard_questions','chain_of_transmission_blind_spots_questions'];
@@ -826,9 +866,9 @@
         return { __rejected: true, rejectReason: 'missing_' + needed[i], attemptedShapeKeys: Object.keys(out || {}) };
       }
     }
-    // No scholar names
+    // No scholar names (mononyms + honorifics + particle names + known theorists)
     var allText = JSON.stringify(out);
-    if (/\b(Dr\.|Professor|Prof\.) [A-Z][a-z]+\b/.test(allText)) {
+    if (scholarNameSuspected(allText)) {
       return { __rejected: true, rejectReason: 'scholar_name_in_output', attemptedShapeKeys: ['*'] };
     }
     // No quoted text
@@ -868,8 +908,13 @@
         return { __rejected: true, rejectReason: 'chip_not_in_taxonomy', attemptedShapeKeys: ['framing_kind_chips_not_yet_used'] };
       }
     }
-    // Adversarial guard: no capitalized multi-word proper-noun strings (scholar names)
+    // Adversarial guard: no scholar names. First the mononym/honorific/particle/
+    // known-theorist helper (the multi-word pair check below misses single
+    // surnames — the leak the 2026-06-07 review found), then the pair check.
     var allText = JSON.stringify(out);
+    if (scholarNameSuspected(allText)) {
+      return { __rejected: true, rejectReason: 'scholar_name_in_output', attemptedShapeKeys: ['*'] };
+    }
     if (/\b[A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\b/.test(allText)) {
       // Allow if it appears to be from FRAMING_TAXONOMY labels
       var safeWhitelist = FRAMING_TAXONOMY.map(function (c) { return c.label; }).join(' ').toLowerCase();
@@ -2792,7 +2837,22 @@
         next.claimEvidenceLinks = (prev.claimEvidenceLinks || []).map(function (l) {
           if (l.id !== id) return l;
           // If qualifier changes after Stage 6 entered, treat as locked unless looped back
-          return Object.assign({}, l, patch);
+          var merged = Object.assign({}, l, patch);
+          // Back-fill the open qualifierRevisionLog entry (toQualifier:null,
+          // seeded by a warrant_contracts probe) with the new qualifier value so
+          // the educator dashboard's load-bearing warrant-trajectory artifact is
+          // complete instead of permanently half-written.
+          if (patch.qualifier !== undefined && Array.isArray(l.qualifierRevisionLog) && l.qualifierRevisionLog.length) {
+            var log = l.qualifierRevisionLog.slice();
+            for (var i = log.length - 1; i >= 0; i--) {
+              if (log[i] && log[i].toQualifier === null) {
+                log[i] = Object.assign({}, log[i], { toQualifier: patch.qualifier, resolvedTs: Date.now() });
+                break;
+              }
+            }
+            merged.qualifierRevisionLog = log;
+          }
+          return merged;
         });
         return next;
       });
@@ -2809,8 +2869,9 @@
     var setProbeVerdict = function (linkId, framingId, verdict, studentRationale, quotedSnippetRef, allSurvivesJustification) {
       setJournal(function (prev) {
         var next = Object.assign({}, prev);
+        var probeId = 'fp' + Date.now() + '_' + Math.floor(Math.random()*1000);
         next.framingProbes = (prev.framingProbes || []).concat([{
-          id: 'fp' + Date.now() + '_' + Math.floor(Math.random()*1000),
+          id: probeId,
           ts: Date.now(),
           linkId: linkId, framingId: framingId,
           verdict: verdict,
@@ -2828,8 +2889,8 @@
               qualifierRevisionLog: (lnk.qualifierRevisionLog || []).concat([{
                 ts: Date.now(),
                 fromQualifier: lnk.qualifier || '',
-                toQualifier: null, // populated when student edits qualifier
-                triggeredByFramingProbeId: 'fp_pending', // updated on next render via the probe id
+                toQualifier: null, // back-filled by updateLink when the student next edits this link's qualifier
+                triggeredByFramingProbeId: probeId,
               }]),
             });
           });
@@ -3747,6 +3808,7 @@
         return next;
       });
       setLoopback(null);
+      announce((t('humanities.sr_looped_back') || 'Looped back to ') + ((STAGE_BY_KEY[toStage] && STAGE_BY_KEY[toStage].label) || toStage) + '. ' + (t('humanities.sr_work_preserved') || 'Your earlier work is preserved; you can return to where you were.'), 'polite');
     }, [loopback]);
 
     var returnToOrigin = useCallback(function () {
