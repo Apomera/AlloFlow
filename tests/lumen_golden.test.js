@@ -910,3 +910,65 @@ describe('Lumen — norm-spine honesty gate (validateNormSpine)', () => {
     expect(L.validateNormSpine({ reviewedOn: '2026-06-04', cells: { 3: { spring: { p50: -5 } } } }).status).toBe('invalid');
   });
 });
+
+// The x-axis label is user-editable (measure-setup row). A custom label must
+// flow through the table/summary/CSV display surfaces, the default must stay
+// 'Week' byte-for-byte, and — because it is display-only — it must NEVER change
+// the provenance hash or the AI context.
+describe('Lumen — editable x-axis label (xLabel)', () => {
+  it('defaults to Week and carries onto the claim, excluded from _hash', () => {
+    const def = buildReyna(REYNA);
+    expect(def.comp.xLabel).toBe('Week');
+    const cDef = L.deriveTrendClaim(def.comp, { obsIds: def.ids });
+    expect(cDef.xLabel).toBe('Week');
+
+    const compX = L.makeCompendium('WCPM', 'words/min', { xLabel: 'Session' });
+    const idsX = REYNA.map(p => L.addObservation(compX, p));
+    expect(compX.xLabel).toBe('Session');
+    const cX = L.deriveTrendClaim(compX, { obsIds: idsX });
+    expect(cX.xLabel).toBe('Session');
+    expect(cX._hash).toBe(cDef._hash); // display-only: provenance hash unchanged
+  });
+
+  it('relabels the data-table x column (default Week)', () => {
+    const def = buildReyna(REYNA);
+    const cDef = L.deriveTrendClaim(def.comp, { obsIds: def.ids });
+    expect(L.dataTableModel(REYNA, cDef).columns[0]).toBe('Week (x)');
+
+    const compX = L.makeCompendium('WCPM', 'words/min', { xLabel: 'Session' });
+    REYNA.forEach(p => L.addObservation(compX, p));
+    const cX = L.deriveTrendClaim(compX, {});
+    expect(L.dataTableModel(REYNA, cX).columns[0]).toBe('Session (x)');
+  });
+
+  it('relabels the phase-line summary sentence (lower-cased)', () => {
+    const compX = L.makeCompendium('WCPM', 'words/min', { xLabel: 'Session' });
+    REYNA.forEach(p => L.addObservation(compX, p));
+    const cX = L.deriveTrendClaim(compX, {});
+    const sX = L.chartSummaryText(REYNA, cX);
+    expect(sX).toContain('phase line at session 5.5'); // midpoint of the baseline->tier2 boundary
+    expect(sX).not.toContain('at week 5.5');
+  });
+
+  it('relabels the identifiable-CSV header column (lower-cased), default stays week', () => {
+    // The raw per-point rows (with the x-label header) are the FERPA-gated
+    // includePII export; the aggregate default emits metric/value rows instead.
+    const def = buildReyna(REYNA);
+    const cDef = L.deriveTrendClaim(def.comp, { obsIds: def.ids });
+    expect(L.buildExportCsv(def.comp, cDef, { includePII: true }).csv).toContain('week,WCPM,phase,level');
+
+    const compX = L.makeCompendium('WCPM', 'words/min', { xLabel: 'Session' });
+    REYNA.forEach(p => L.addObservation(compX, p));
+    const cX = L.deriveTrendClaim(compX, {});
+    const csvX = L.buildExportCsv(compX, cX, { includePII: true }).csv;
+    expect(csvX).toContain('session,WCPM,phase,level');
+    expect(csvX).not.toContain('week,WCPM,phase,level');
+  });
+
+  it('does not leak xLabel into the AI context', () => {
+    const compX = L.makeCompendium('WCPM', 'words/min', { xLabel: 'Session' });
+    REYNA.forEach(p => L.addObservation(compX, p));
+    const cX = L.deriveTrendClaim(compX, {});
+    expect(L.buildClaimContext(compX, cX)).not.toHaveProperty('xLabel');
+  });
+});

@@ -275,6 +275,11 @@
     meta = meta || {};
     return {
       variable: variable || 'value', unit: unit || 'units',
+      // The x-axis label (time/trial axis). Default 'Week' keeps every legacy
+      // sentence/table/CSV byte-identical; a custom label (e.g. 'Session',
+      // 'Date', 'Trial') flows through the entry field, SR tables, the family
+      // rate sentence ("per week" -> "per session"), and the CSV header.
+      xLabel: meta.xLabel || 'Week',
       observations: [], claims: [], _seq: 0,
       // §16: external benchmarks live HERE — never pushed into observations.
       sourceRefs: [], _srcSeq: 0,
@@ -361,6 +366,7 @@
       level: 'L1', // provenance: produced by Lumen's own deterministic math
       variable: comp.variable,
       unit: comp.unit,
+      xLabel: comp.xLabel || 'Week', // carried for the SR/table/sentence x-axis label (excluded from _hash + AI context)
       dependsOn: obs.map(function (o) { return o.id; }),
       shownOf: { shown: shown, total: total },
       n: n
@@ -929,7 +935,7 @@
     if (!claim || claim.refused) return name + ' ' + (claim ? claim.text : 'no data yet.');
     var parts = [name, claim.text];
     plotGeometry(observations, claim).phaseLines.forEach(function (p) {
-      parts.push('A human-set phase line at week ' + p.x + ' divides ' +
+      parts.push('A human-set phase line at ' + ((claim.xLabel || 'Week').toLowerCase()) + ' ' + p.x + ' divides ' +
         (p.fromPhase || 'the prior phase') + ' from ' + (p.toPhase || 'the next phase') + '.');
     });
     // §16: name each benchmark + its not-this-student status (empty => unchanged).
@@ -961,7 +967,7 @@
     var labelByKey = {}; (claims || []).forEach(function (c) { if (c && c.seriesKey != null) labelByKey[c.seriesKey] = c.seriesLabel || c.seriesKey; });
     var variable = (claims && claims[0] && claims[0].variable) || 'value';
     var obs = observations.slice().sort(function (a, b) { return (a.x - b.x) || String(a.series).localeCompare(String(b.series)); });
-    var columns = ['Week (x)', variable + ' (y)', 'Series', 'Phase', 'Level'];
+    var columns = [((claims && claims[0] && claims[0].xLabel) || 'Week') + ' (x)', variable + ' (y)', 'Series', 'Phase', 'Level'];
     var rows = obs.map(function (o) { return { x: o.x, y: o.y, series: (labelByKey[o.series] || o.series || '—'), phase: o.phase || '—', level: word }; });
     return { columns: columns, rows: rows, perSegment: [], summary: chartSummaryText(observations, claims, [], 'multiSeriesLine'), level: 'L1', kind: 'multiSeries' };
   }
@@ -971,7 +977,7 @@
     if (claim && claim.kind === 'association') return associationTableModel(observations, claim); // scatter peer; legacy path below is untouched
     var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
     var word = levelWord(claim ? claim.level : 'L0');
-    var columns = ['Week (x)', (claim ? claim.variable : 'value') + ' (y)', 'Phase', 'Level'];
+    var columns = [((claim && claim.xLabel) || 'Week') + ' (x)', (claim ? claim.variable : 'value') + ' (y)', 'Phase', 'Level'];
     var rows = [];
     for (var i = 0; i < obs.length; i++) {
       if (i > 0 && obs[i].phase !== obs[i - 1].phase) {
@@ -1088,9 +1094,10 @@
     }
     if (audience === 'family') {
       var dir = e.slope > 0 ? 'went up' : (e.slope < 0 ? 'went down' : 'held steady');
+      var xlow = (claim.xLabel || 'Week').toLowerCase();
       return 'Over ' + e.n + ' check-ins, ' + claim.variable + ' ' + dir + ' — about ' + round1(Math.abs(e.slope)) +
-        ' ' + claim.unit + ' a week. With only ' + e.n + ' points the true rate could be roughly ' +
-        round1(e.interval[0]) + ' to ' + round1(e.interval[1]) + ' a week, so read this as a direction, not an exact number.';
+        ' ' + claim.unit + ' a ' + xlow + '. With only ' + e.n + ' points the true rate could be roughly ' +
+        round1(e.interval[0]) + ' to ' + round1(e.interval[1]) + ' a ' + xlow + ', so read this as a direction, not an exact number.';
     }
     return claim.text; // 'working' (default)
   }
@@ -1179,7 +1186,7 @@
     opts = opts || {};
     var lines = ['# Lumen export — max epistemic level L1' + (opts.includePII ? ' — CONFIDENTIAL (identifiable)' : ' — aggregate only')];
     if (opts.includePII) {
-      lines.push('week,' + csvSafe(comp.variable) + ',phase,level');
+      lines.push(csvSafe((comp.xLabel || 'Week').toLowerCase()) + ',' + csvSafe(comp.variable) + ',phase,level');
       comp.observations.slice().sort(function (a, b) { return a.x - b.x; }).forEach(function (o) {
         lines.push([o.x, o.y, csvSafe(o.phase || ''), 'Derived (math)'].join(','));
       });
@@ -1996,7 +2003,8 @@
             } catch (eP) { return null; }
           };
           // At the default L1 ceiling NO callGemini fires — the trend is pure math.
-          var comp = makeCompendium(d.variable || 'WCPM', d.unit || 'words/min', { measure: d.measure || 'ORF-WCPM', grade: d.benchGrade, seasonWindow: d.benchSeason, variable2: d.variable2, unit2: d.unit2, seriesLabels: d.seriesLabels });
+          var xLabel = (d.xLabel && String(d.xLabel).trim()) || 'Week';
+          var comp = makeCompendium(d.variable || 'WCPM', d.unit || 'words/min', { measure: d.measure || 'ORF-WCPM', grade: d.benchGrade, seasonWindow: d.benchSeason, variable2: d.variable2, unit2: d.unit2, seriesLabels: d.seriesLabels, xLabel: xLabel });
           obs.forEach(function (o) { addObservation(comp, o); });
           var claim = obs.length ? deriveTrendClaim(comp, {}) : null;
           // Scatter argues an ASSOCIATION claim (2nd variable y2 vs primary y), not the trend. activeClaim
@@ -2074,6 +2082,30 @@
             upd('exportMsg', 'Exported ' + out.filename + '.');
           };
           var kids = [];
+          // Stage a parsed table (from a file OR pasted text) into the column-
+          // mapper preview — the shared glance-then-confirm binding flow. The
+          // mapper panel below reads d.importPreview; NOTHING binds into
+          // observations until the user maps columns and confirms.
+          function stageParsedTable(parsed, fileName, fileType) {
+            var mapping = { xCol: 0, yCol: (parsed.headers.length > 1 ? 1 : 0), phaseCol: null, y2Col: null, seriesCol: null };
+            upd('importPreview', {
+              headers: parsed.headers, rows: parsed.rows, delimiter: parsed.delimiter,
+              notes: parsed.notes || [], sheetName: parsed.sheetName || null, sheetNames: parsed.sheetNames || null,
+              mapping: mapping, fileName: fileName, fileType: fileType, error: parsed.error || null
+            });
+            announce('Loaded ' + fileName + ': ' + parsed.headers.length + ' columns, ' + parsed.rows.length + ' rows. Map the columns and confirm to bind.');
+          }
+          // Parse a raw pasted block: sniff JSON ({ or [) vs delimited text,
+          // route through the SAME pure parsers as the file path, and stage it.
+          function stagePastedText(raw) {
+            var text = (raw == null ? '' : String(raw)).trim();
+            if (!text) { announce('Nothing to parse — paste some data first.'); return; }
+            if (text.length > INGEST_MAX_BYTES) { upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: 'pasted text', fileType: null, error: 'Pasted text exceeds the ' + (INGEST_MAX_BYTES / 1024 / 1024) + ' MB limit.' }); announce('Pasted text too large.'); return; }
+            var isJson = text[0] === '{' || text[0] === '[';
+            var parsed = isJson ? parseJsonTable(text) : parseTextTable(text);
+            stageParsedTable(parsed, 'pasted text', isJson ? 'json' : 'text');
+            upd('pasteText', ''); upd('showPaste', false);
+          }
 
           kids.push(h('div', { key: 'hdr', className: 'flex items-center gap-2 flex-wrap' },
             h('span', { className: 'font-bold text-amber-800' }, '💡 Lumen'),
@@ -2108,13 +2140,41 @@
             h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Chart:'),
             ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box'), ctBtn('histogram', 'Histogram'), ctBtn('scatter', 'Scatter'), ctBtn('slope', 'Slope'), ctBtn('multiSeriesLine', 'Multi-line'), ctBtn('groupedBar', 'Grouped bar')));
 
-          if (!obs.length) {
-            kids.push(h('p', { key: 'empty', className: 'mt-2 text-sm text-slate-600' },
-              'No observations yet. Type a few points, or load a sample, to see an honestly-marked trend.'));
+          // Guided 3-step onboarding — the empty canvas explains what Lumen is
+          // FOR and the exact path to a result, instead of a wall of controls.
+          // Shows only on the empty first run (no data, no staged import, paste
+          // box closed); it vanishes the moment data or an import is present.
+          if (!obs.length && !d.importPreview && !d.showPaste) {
+            kids.push(h('div', { key: 'onboard', className: 'mt-3 p-4 rounded-xl border border-amber-300 bg-amber-50/70' },
+              h('div', { className: 'text-sm font-semibold text-amber-900' }, 'Turn progress-monitoring data into an honest, defensible chart + finding.'),
+              h('p', { className: 'mt-1 text-xs text-slate-600' }, 'Lumen charts YOUR data and writes a plain-language finding from the numbers only — it never invents certainty or a score.'),
+              h('ol', { className: 'mt-2 text-xs text-slate-700 list-decimal ml-5 space-y-1' },
+                h('li', { key: 's1' }, h('b', null, 'Name your measure'), ' in the Setup row (e.g. WCPM / Week, or accuracy % / Session).'),
+                h('li', { key: 's2' }, h('b', null, 'Add data'), ' — type points, paste a table, or import a CSV / Excel / JSON file.'),
+                h('li', { key: 's3' }, h('b', null, 'Read the trend'), ' — a chart + finding appear at 3+ points; export it for the IEP team.')),
+              h('div', { className: 'mt-3 flex gap-2 flex-wrap' },
+                h('button', { key: 'obSample', className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () { upd('observations', REYNA_SAMPLE.slice()); announce('Loaded the Reyna ORF sample: 10 weekly probes across two phases.'); } }, 'Try a sample'),
+                h('button', { key: 'obPaste', className: 'px-3 py-1 text-sm rounded border border-amber-400 text-amber-800 hover:bg-amber-100', onClick: function () { upd('showPaste', true); announce('Paste box opened.'); } }, '⎘ Paste data'),
+                h('label', { key: 'obImport', htmlFor: 'lumen-file-input', className: 'px-3 py-1 text-sm rounded border border-amber-400 text-amber-800 hover:bg-amber-100 cursor-pointer' }, '⇪ Import file')),
+              h('p', { className: 'mt-2 text-[11px] text-slate-500' }, 'Honest by design: fewer than 3 points yields a "not enough data" card, never a fake line. AI stays OFF until you raise the AI ceiling.')));
           }
 
+          // Measure setup — name your own x/y variables. comp is rebuilt from
+          // these every render, so the entry labels, chart, SR tables, family
+          // sentence, and CSV header all relabel live. Defaults (WCPM /
+          // words/min / Week) reproduce the legacy strings byte-for-byte.
+          kids.push(h('div', { key: 'setup', className: 'mt-3 flex items-end gap-2 flex-wrap', role: 'group', 'aria-label': 'Measure setup' },
+            h('span', { className: 'text-xs text-slate-500 mr-1 self-center' }, 'Setup:'),
+            h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'Measure name',
+              h('input', { type: 'text', value: d.variable == null ? '' : d.variable, placeholder: 'WCPM', 'aria-label': 'Measure name (y variable)', onChange: function (ev) { upd('variable', ev.target.value); }, className: 'w-32 px-2 py-1 border rounded' })),
+            h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'Unit',
+              h('input', { type: 'text', value: d.unit == null ? '' : d.unit, placeholder: 'words/min', 'aria-label': 'Unit', onChange: function (ev) { upd('unit', ev.target.value); }, className: 'w-28 px-2 py-1 border rounded' })),
+            h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'X-axis label',
+              h('input', { type: 'text', value: d.xLabel == null ? '' : d.xLabel, placeholder: 'Week', 'aria-label': 'X-axis label (x variable)', onChange: function (ev) { upd('xLabel', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' }))
+          ));
+
           kids.push(h('div', { key: 'entry', className: 'mt-3 flex items-end gap-2 flex-wrap' },
-            h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'Week (x)',
+            h('label', { className: 'text-xs text-slate-600 flex flex-col' }, xLabel + ' (x)',
               h('input', { type: 'number', value: d.draftX == null ? '' : d.draftX, onChange: function (ev) { upd('draftX', ev.target.value); }, className: 'w-20 px-2 py-1 border rounded' })),
             h('label', { className: 'text-xs text-slate-600 flex flex-col' }, comp.variable + ' (y)',
               h('input', { type: 'number', value: d.draftY == null ? '' : d.draftY, onChange: function (ev) { upd('draftY', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' })),
@@ -2128,14 +2188,14 @@
               className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500',
               onClick: function () {
                 var x = parseFloat(d.draftX), y = parseFloat(d.draftY);
-                if (isNaN(x) || isNaN(y)) { announce('Enter a numeric week and value.'); return; }
+                if (isNaN(x) || isNaN(y)) { announce('Enter a numeric ' + xLabel.toLowerCase() + ' and value.'); return; }
                 var row = { x: x, y: y, phase: d.draftPhase || null };
                 var y2 = parseFloat(d.draftY2);
                 if (chartType === 'scatter' && !isNaN(y2)) row.y2 = y2; // paired 2nd measure, scatter only
                 if (chartType === 'multiSeriesLine' && d.draftSeries) row.series = d.draftSeries; // category tag, multi-series only
                 var next = obs.concat([row]);
                 upd('observations', next); upd('draftX', ''); upd('draftY', ''); upd('draftY2', '');
-                announce('Added week ' + x + ' equals ' + y + (row.y2 != null ? (' (and ' + row.y2 + ')') : '') + (row.series ? (' [' + row.series + ']') : '') + '. ' + next.length + ' observations.');
+                announce('Added ' + xLabel.toLowerCase() + ' ' + x + ' equals ' + y + (row.y2 != null ? (' (and ' + row.y2 + ')') : '') + (row.series ? (' [' + row.series + ']') : '') + '. ' + next.length + ' observations.');
               }
             }, '+ Add'),
             h('button', {
@@ -2148,6 +2208,12 @@
             // A MULTI-SERIES sample (one student, two conditions of one measure) only in the multi-line view.
             (chartType === 'multiSeriesLine' ? h('button', { key: 'multi', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
               onClick: function () { upd('observations', MULTI_SAMPLE.slice()); announce('Loaded the multi-series sample: cold vs practiced WCPM across 8 weeks.'); } }, 'Use multi-series sample') : null),
+            h('button', {
+              key: 'pasteBtn',
+              className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
+              title: 'Paste a block of CSV / TSV / JSON text directly — no file needed.',
+              onClick: function () { upd('showPaste', !d.showPaste); }
+            }, d.showPaste ? '⎘ Hide paste box' : '⎘ Paste data…'),
             // ═══════════════════════════════════════════════════════════════
             // INGEST (§5 Pillar 1) — file picker for CSV/TSV/TXT/XLSX.
             //
@@ -2182,34 +2248,47 @@
                   announce('File too large.');
                   ev.target.value = ''; return;
                 }
-                function landTable(parsed) {
-                  var mapping = { xCol: 0, yCol: (parsed.headers.length > 1 ? 1 : 0), phaseCol: null, y2Col: null, seriesCol: null };
-                  upd('importPreview', {
-                    headers: parsed.headers, rows: parsed.rows, delimiter: parsed.delimiter,
-                    notes: parsed.notes || [], sheetName: parsed.sheetName || null, sheetNames: parsed.sheetNames || null,
-                    mapping: mapping, fileName: file.name, fileType: fileType, error: parsed.error || null
-                  });
-                  announce('Loaded ' + file.name + ': ' + parsed.headers.length + ' columns, ' + parsed.rows.length + ' rows. Map the columns and confirm to bind.');
-                }
                 if (isWorkbookIngestType(fileType)) {
                   lazyLoadXLSX().then(function (XLSX) {
                     file.arrayBuffer().then(function (buf) {
-                      landTable(parseWorkbookSheet(XLSX, buf));
+                      stageParsedTable(parseWorkbookSheet(XLSX, buf), file.name, fileType);
                     });
                   }).catch(function (err) {
                     upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: file.name, fileType: fileType, error: 'Could not load the spreadsheet parser library. Try saving the sheet as CSV instead. (' + (err && err.message ? err.message : 'unknown') + ')' });
                     announce('Spreadsheet parser unavailable; try CSV.');
                   });
                 } else if (fileType === 'json') {
-                  file.text().then(function (text) { landTable(parseJsonTable(text)); });
+                  file.text().then(function (text) { stageParsedTable(parseJsonTable(text), file.name, fileType); });
                 } else {
-                  file.text().then(function (text) { landTable(parseTextTable(text)); });
+                  file.text().then(function (text) { stageParsedTable(parseTextTable(text), file.name, fileType); });
                 }
                 // Reset the input so picking the same file twice still fires onChange.
                 ev.target.value = '';
               }
             })
           ));
+
+          // Paste-text ingest — a textarea that routes pasted CSV/TSV/JSON
+          // through the SAME pure parsers + column-mapper as a file import.
+          // "Accepts input text as well as files" without weakening the
+          // glance-then-confirm binding (still nothing binds until Confirm).
+          if (d.showPaste) {
+            kids.push(h('div', { key: 'pastebox', className: 'mt-3 p-3 rounded border border-amber-300 bg-amber-50/60' },
+              h('div', { className: 'text-sm font-semibold text-slate-700 mb-1' }, '⎘ Paste data'),
+              h('p', { className: 'text-[11px] text-slate-600 mb-2' }, 'Paste CSV, TSV, or JSON straight from a spreadsheet or export. The first row is treated as headers; you map x/y/phase and confirm before anything binds — same as a file import.'),
+              h('textarea', {
+                value: d.pasteText == null ? '' : d.pasteText,
+                onChange: function (ev) { upd('pasteText', ev.target.value); },
+                rows: 6,
+                placeholder: 'week,wcpm,phase\n1,42,baseline\n2,45,baseline\n6,53,tier2',
+                className: 'w-full px-2 py-1 border border-slate-300 rounded text-xs font-mono',
+                'aria-label': 'Paste data as CSV, TSV, or JSON'
+              }),
+              h('div', { className: 'mt-2 flex gap-2' },
+                h('button', { className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () { stagePastedText(d.pasteText); } }, 'Parse pasted data'),
+                h('button', { className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50', onClick: function () { upd('pasteText', ''); upd('showPaste', false); announce('Paste cancelled.'); } }, 'Cancel')))
+            );
+          }
 
           // ═══════════════════════════════════════════════════════════════
           // Column-mapper preview panel — renders when an import is staged.
