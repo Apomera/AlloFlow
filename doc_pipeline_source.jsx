@@ -12368,30 +12368,44 @@ tr { page-break-inside: avoid; }
     const _gtm = (fixResult && fixResult.groundTruthMethod) ? String(fixResult.groundTruthMethod) : '';
     const isScanned = /tesseract|vision|ocr/i.test(_gtm);
 
-    // ── Tag-tree unify Slice 1: minimal /K→MCR linkage for scanned single-page ──
+    // ── Tag-tree unify Slices 1+2: /K→MCR linkage for scanned PDFs (any page count) ──
     // Without this, every semantic leaf (H1, P, Figure, TH, TD, Link, …) has only
     // /ActualText — fine for SR but flagged by PAC 2024 / Adobe Accessibility
     // Checker as "orphaned semantic elements with no content linkage." This pass
-    // retro-patches each leaf with /K → MCR(firstPage, MCID 0) — the page-wrap
-    // MCID that Stage-3 already generates below. Every leaf shares MCID 0, which
-    // is structurally degenerate (no per-leaf granularity) but VALID per PDF
-    // spec, and /ActualText still wins for SR reading order per spec § 14.9.4,
-    // so the SR experience is unchanged. Gated to single-page scanned only.
+    // retro-patches each leaf with /K → MCR(page, MCID 0) — the page-wrap MCID
+    // that Stage-3 already generates per-page. Every leaf shares MCID 0 on its
+    // assigned page, which is structurally degenerate (no per-leaf granularity)
+    // but VALID per PDF spec, and /ActualText still wins for SR reading order
+    // per spec §14.9.4, so the SR experience is unchanged.
     //
-    // Why this approach + why now: a fuller per-leaf MCID unification was
-    // attempted at b0d24ae3 and reverted because of a content-loss regression
-    // whose root cause is still unknown after extensive isolated repro (see
-    // docs/tag_tree_unification_design.md attempt log + investigation update).
-    // This minimal pass uses ONLY the patterns my standalone repro proved safe
+    // Slice 1 (single-page): all leaves point to pages[0].ref MCID 0.
+    // Slice 2 (multi-page): leaves are distributed PROPORTIONALLY across pages
+    // in document order — first N/P leaves to page 0, next N/P to page 1, etc.
+    // HTML extraction processes pages in order, so document-order roughly tracks
+    // page-order. This is the cheapest "leaves point to their own page" heuristic
+    // without per-leaf page coordinates (which would require threading OCR box
+    // data through _buildOutlineStructElems, a larger refactor).
+    //
+    // Why this approach + why not per-leaf MCID granularity: a fuller per-leaf
+    // unification was attempted at b0d24ae3 and reverted because of a content-loss
+    // regression whose root cause is still unknown after extensive isolated repro
+    // (see docs/tag_tree_unification_design.md attempt log + investigation update).
+    // This pass uses ONLY the patterns my standalone repro proved safe
     // (context.lookup().set() — variant B), changes NO page-loop drawing, and
-    // keeps Stage-3's existing /P MCID 0 wrap untouched. Worst case: PAC stops
+    // keeps Stage-3's existing /P MCID 0 wraps untouched. Worst case: PAC stops
     // flagging orphaned, SR unchanged. Catastrophe path (content loss) gated by
     // tests/e2e/pdf_tag_tree_golden.spec.ts BEFORE deploy.
-    if (isScanned && pages.length === 1 && _unifiableLeafRefs.length > 0) {
+    if (isScanned && pages.length >= 1 && _unifiableLeafRefs.length > 0) {
       try {
-        const firstPageRef = pages[0].ref;
+        const _pageCount = pages.length;
+        const _leafCount = _unifiableLeafRefs.length;
+        const _leavesPerPage = Math.max(1, Math.ceil(_leafCount / _pageCount));
         let _unifyPatched = 0;
-        for (const { ref } of _unifiableLeafRefs) {
+        for (let i = 0; i < _leafCount; i++) {
+          // Proportional page assignment; clamp to last page if rounding overshoots.
+          const _pageIdx = Math.min(Math.floor(i / _leavesPerPage), _pageCount - 1);
+          const _pageRef = pages[_pageIdx].ref;
+          const { ref } = _unifiableLeafRefs[i];
           try {
             const leaf = context.lookup(ref);
             if (!leaf || typeof leaf.get !== 'function' || typeof leaf.set !== 'function') continue;
@@ -12401,14 +12415,15 @@ tr { page-break-inside: avoid; }
             if (leaf.get(PDFName.of('K'))) continue;
             const mcr = context.obj({
               Type: PDFName.of('MCR'),
-              Pg: firstPageRef,
+              Pg: _pageRef,
               MCID: PDFNumber.of(0),
             });
             leaf.set(PDFName.of('K'), context.obj([mcr]));
             _unifyPatched++;
           } catch (_) { /* per-leaf failure is non-fatal — leave that leaf orphaned */ }
         }
-        warnLog('[Tag-Tree Unify Slice 1] Patched ' + _unifyPatched + '/' + _unifiableLeafRefs.length + ' leaf StructElems with /K → MCR(firstPage, 0)');
+        const _sliceLabel = _pageCount === 1 ? 'Slice 1 (single-page)' : 'Slice 2 (multi-page, proportional)';
+        warnLog('[Tag-Tree Unify ' + _sliceLabel + '] Patched ' + _unifyPatched + '/' + _leafCount + ' leaves across ' + _pageCount + ' page(s)');
       } catch (_) { /* whole-pass failure is non-fatal — orphaned state remains the safe fallback */ }
     }
     // When Tesseract word boxes are present (ocrPages[].words), Path B draws each

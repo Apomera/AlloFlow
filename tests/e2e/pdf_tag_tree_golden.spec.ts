@@ -299,6 +299,120 @@ test.describe('createTaggedPdf — tag-tree unify Slice 1 (scanned single-page)'
   });
 });
 
+// ── Tag-tree unify Slice 2 — multi-page scanned ──
+// Slice 1 was gated to pages.length === 1. Slice 2 extends it to multi-page
+// scanned PDFs via PROPORTIONAL distribution: leaves are assigned to pages in
+// document order (first N/P leaves to page 0, next to page 1, etc). Each leaf
+// gets /K → MCR(itsAssignedPage.ref, 0). HTML extraction processes pages in
+// order so document-order ≈ page-order; this is degenerate but lets multi-page
+// scanned docs pass PAC's "no orphaned" check without threading per-leaf page
+// coordinates through _buildOutlineStructElems.
+let unifyMultiSummary: any = null;
+test.describe('createTaggedPdf — tag-tree unify Slice 2 (scanned multi-page)', () => {
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.addScriptTag({ url: PDFLIB_CDN });
+    await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
+    await page.addScriptTag({ path: MODULE_PATH });
+    await page.waitForFunction(() => !!((window as any).AlloModules && (window as any).AlloModules.createDocPipeline), null, { timeout: 20000 });
+
+    unifyMultiSummary = await page.evaluate(async (accessibleHtml) => {
+      const PDFLib = (window as any).PDFLib;
+      const { PDFDocument, PDFName, PDFArray, PDFDict, PDFNumber, PDFRef } = PDFLib;
+      try {
+        // Build a 3-page input PDF (image-only — no text layer so isScanned would
+        // normally be inferred at extraction time; we force isScanned via
+        // groundTruthMethod below).
+        const inDoc = await PDFDocument.create();
+        inDoc.addPage([612, 792]);
+        inDoc.addPage([612, 792]);
+        inDoc.addPage([612, 792]);
+        const inputBytes = await inDoc.save();
+        const pipeline = (window as any).AlloModules.createDocPipeline({
+          callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+          addToast: () => {}, t: (k: string) => k, isRtlLang: () => false, updateExportPreview: () => {},
+          getDefaultTitle: () => 'Document', state: {},
+        });
+        const result = await pipeline.createTaggedPdf(inputBytes, {
+          accessibleHtml,
+          groundTruthMethod: 'tesseract', // triggers isScanned=true → unify pass
+        }, { title: 'Multi-page Unify Test', lang: 'en' });
+        if (!result || !result.bytes) return { error: 'createTaggedPdf returned no bytes' };
+        const outDoc = await PDFDocument.load(result.bytes);
+        const ctx = outDoc.context;
+        const resolve = (o: any) => (o instanceof PDFRef ? ctx.lookup(o) : o);
+        const nm = (n: string) => PDFName.of(n);
+        const LEAF_ROLES = ['H1','H2','H3','H4','H5','H6','P','Figure','Caption','BlockQuote','Lbl','LBody','TH','TD','Span','Link'];
+        const pageRefs: any[] = outDoc.getPages().map((p: any) => p.ref);
+        const elems: any[] = [];
+        const walk = (objIn: any, depth: number) => {
+          let obj = resolve(objIn);
+          if (depth > 60 || obj == null) return;
+          if (obj instanceof PDFArray) { for (let i = 0; i < obj.size(); i++) walk(obj.get(i), depth + 1); return; }
+          if (!(obj instanceof PDFDict)) return;
+          const S = obj.get(nm('S')); if (!S) { const k0 = obj.get(nm('K')); if (k0 != null) walk(k0, depth + 1); return; }
+          const role = String(S).replace(/^\//, '');
+          const K = obj.get(nm('K'));
+          let hasContent = false; let mcrPageRef: any = null;
+          if (K != null) {
+            const kr = resolve(K);
+            const items = (kr instanceof PDFArray) ? Array.from({ length: kr.size() }, (_, i) => resolve(kr.get(i))) : [kr];
+            for (const it of items) {
+              if (it instanceof PDFNumber) hasContent = true;
+              else if (it instanceof PDFDict) {
+                const t = it.get(nm('Type')); const ts = t ? String(t) : '';
+                if (ts === '/MCR' || ts === '/OBJR') {
+                  hasContent = true;
+                  if (ts === '/MCR') mcrPageRef = it.get(nm('Pg'));
+                }
+              }
+            }
+          }
+          elems.push({ role, hasContent, mcrPageRef: mcrPageRef ? String(mcrPageRef) : null });
+          if (K != null) walk(K, depth + 1);
+        };
+        const stRoot = resolve(outDoc.catalog.get(nm('StructTreeRoot')));
+        const rootK = stRoot && stRoot.get ? stRoot.get(nm('K')) : null;
+        if (rootK != null) walk(rootK, 0);
+        const leaves = elems.filter((e) => LEAF_ROLES.includes(e.role));
+        const orphaned = leaves.filter((e) => !e.hasContent);
+        // Page distribution: count which leaves reference which page
+        const pageRefStrs = pageRefs.map((r: any) => String(r));
+        const distribution: Record<string, number> = {};
+        for (const l of leaves) {
+          if (l.mcrPageRef) {
+            const pageIdx = pageRefStrs.indexOf(l.mcrPageRef);
+            const key = pageIdx >= 0 ? 'page_' + pageIdx : 'unknown';
+            distribution[key] = (distribution[key] || 0) + 1;
+          }
+        }
+        return {
+          pageCount: outDoc.getPages().length,
+          leafCount: leaves.length,
+          orphanedLeafCount: orphaned.length,
+          distribution,
+        };
+      } catch (e: any) { return { error: e.message || String(e) }; }
+    }, ACCESSIBLE_HTML);
+  });
+
+  test('Scanned multi-page: orphanedLeafCount=0 AND leaves distributed across pages', () => {
+    expect(unifyMultiSummary, 'unifyMultiSummary populated').toBeTruthy();
+    if (unifyMultiSummary && unifyMultiSummary.error) console.log('[unify Slice 2] eval error:', unifyMultiSummary.error);
+    expect(unifyMultiSummary.error, 'no eval error').toBeUndefined();
+    expect(unifyMultiSummary.pageCount, '3-page input survives').toBe(3);
+    expect(unifyMultiSummary.leafCount, 'leaves produced').toBeGreaterThan(0);
+    expect(unifyMultiSummary.orphanedLeafCount, 'every leaf retro-patched').toBe(0);
+    // Distribution sanity: leaves should reference >1 page (proves the multi-page
+    // path actually distributed; if everything went to page 0, the heuristic
+    // collapsed and we'd have shipped a Slice-1-disguised-as-Slice-2 bug).
+    const pagesUsed = Object.keys(unifyMultiSummary.distribution).filter((k) => k.startsWith('page_')).length;
+    expect(pagesUsed, 'leaves distributed across more than one page (proportional heuristic actually distributed)').toBeGreaterThan(1);
+    console.log(`[tag-tree unify Slice 2] pages: ${unifyMultiSummary.pageCount}, leaves: ${unifyMultiSummary.leafCount}, orphaned: ${unifyMultiSummary.orphanedLeafCount}, distribution: ${JSON.stringify(unifyMultiSummary.distribution)}`);
+  });
+});
+
 // Non-Latin OCR: a scanned (image-only) document whose OCR text is Arabic. Before the
 // Unicode-font embed, Helvetica/WinAnsi dropped every Arabic glyph → the invisible text
 // layer shipped EMPTY (coverage 0%). With the embed, the Noto Sans Arabic subset encodes
