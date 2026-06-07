@@ -107,3 +107,41 @@ covered. Hardest slice; do last, behind the gate.
   while the model-config change is in flight.
 - The invisible-layer positioning is irrelevant (opacity 0) — only Unicode code points + `ToUnicode`
   (provided by `embedFont`) + `/K`→MCID + reading order matter.
+
+## Attempt log
+
+### Slice 1, attempt 1 — REVERTED (content-loss bug; gate caught it pre-commit)
+Implemented the gated single-page-scanned unification end to end (moved `pages`/`isScanned` above
+the outline build; recorded leaf MCID runs in `buildLeaf`; drew each run as a `/<role> <</MCID n>> BDC
+… EMC` invisible run in the page loop with the Noto font; set `/K`→MCR; wired StructParents/ParentTree;
+`continue`d past the flat-`/P` path). The harness (extended with an Arabic single-page scanned fixture
++ a full StructTree walk + an `enumerateIndirectObjects` tally) exposed a **content-loss regression**:
+
+- **Headings linked correctly** (`H1`/`H2` → `/K`→`MCR`, present in output), but **every level-0 leaf
+  (`<p>`) DANGLED** — `buildLeaf` ran and `context.register` returned a ref (confirmed via a temporary
+  `window.__dbgLeaves` probe: `["Sect","H1+mcid","P+mcid"]`), the ref appeared in its parent `Sect`'s
+  `/K`, yet the P StructElem object was **absent from the saved output** (`allByRole` enumeration over
+  the loaded PDF found `Sect`/`H1`/`H2` but **no `P`** — so it's dropped at save, not merely unlinked).
+- Reproduced **with and without** the build-time `d.K = MCR` mutation (so `d.K` is NOT the cause), and
+  on a `<main>`-less 2-heading/2-paragraph fixture (so it's not the `<main>` Sect either).
+- **Pattern:** leaves created via `pushChild(buildLeaf(it, parentRef))` (level-0 items, tryNested
+  `:11900`) dangle; leaves created via `s.kids.push(buildLeaf(it, s.ref))` (headings) survive. Both
+  paths call `buildLeaf`→`context.register` identically, so the differentiator is upstream of the leaf
+  object itself.
+
+**Leading hypotheses for the next focused attempt (trace PDF object numbers):**
+1. The **moved `doc.getPages()`** changed when page refs are allocated relative to the StructElem
+   registrations — possible ref-number interaction with pdf-lib's writer. Test: keep `getPages()` where
+   it was and compute `_unifyScanned`/`_unifyPage` lazily without calling `getPages()` early.
+2. A pdf-lib **save/GC interaction** with `openSect`'s reserved-but-unassigned refs (`context.nextRef()`
+   without immediate `assign`) interleaved with the level-0 `register` calls — the reserved Sect refs
+   are only `context.assign`ed later in `closeTo`, which may confuse object-number bookkeeping for the
+   refs registered in between.
+3. **Reproduce in isolation** (a standalone pdf-lib script like the BDC prototype): build
+   `Sect→[H1(register), P(register)]` with an `openSect`-style reserved-ref-assigned-later pattern, save,
+   reload, and check whether the level-0 leaf object survives. This pinpoints whether it's the
+   nested-build ref pattern or something in `createTaggedPdf` specifically.
+
+The orphaned-but-complete tree (current shipped behavior) is the correct safe state until this is
+root-caused — a content-losing unification is strictly worse. The gate (`pdf_tag_tree_golden.spec.ts`)
+catching this pre-commit is the gate-first approach working as intended.
