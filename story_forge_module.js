@@ -3610,6 +3610,9 @@ Continue?`)) return;
   // ═══════════════════════════════════════════════════════════════
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.StoryForge = StoryForge;
+  // Test seam (read-only): expose pure reading-level helpers for characterization
+  // tests (tests/story_forge_golden.test.js). Zero behavior change.
+  try { window.AlloModules.StoryForge._meta = { computeReadingLevel: computeReadingLevel, gradeLevelToNumber: gradeLevelToNumber }; } catch (e) {}
 
   console.log('[StoryForge] Module registered');
 })();
