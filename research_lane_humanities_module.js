@@ -1079,8 +1079,16 @@
     if (scholarNameSuspected(allText)) {
       return { __rejected: true, rejectReason: "scholar_name_in_output", attemptedShapeKeys: ["*"] };
     }
-    if (/"[^"]{20,}"/.test(allText)) {
-      return { __rejected: true, rejectReason: "quoted_text_in_output", attemptedShapeKeys: ["*"] };
+    var allValuesForQuoteCheck = needed.reduce(function(acc, k) {
+      var v = out[k];
+      return Array.isArray(v) ? acc.concat(v.filter(function(x) {
+        return typeof x === "string";
+      })) : acc;
+    }, []);
+    for (var qv = 0; qv < allValuesForQuoteCheck.length; qv++) {
+      if (/"[^"]{20,}"/.test(allValuesForQuoteCheck[qv])) {
+        return { __rejected: true, rejectReason: "quoted_text_in_output", attemptedShapeKeys: ["*"] };
+      }
     }
     var IMP = /\b(try|use|add|replace|swap|consider|should|must|need to)\b/i;
     var allQ = ["lateral_moves_still_missing_questions", "whose_stake_in_publishing_this_questions", "independent_coverage_gaps_questions", "presentism_risks_in_my_reading_questions", "what_the_original_audience_would_have_heard_questions", "chain_of_transmission_blind_spots_questions"].reduce(function(acc, k) {

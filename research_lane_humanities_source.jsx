@@ -871,9 +871,20 @@
     if (scholarNameSuspected(allText)) {
       return { __rejected: true, rejectReason: 'scholar_name_in_output', attemptedShapeKeys: ['*'] };
     }
-    // No quoted text
-    if (/"[^"]{20,}"/.test(allText)) {
-      return { __rejected: true, rejectReason: 'quoted_text_in_output', attemptedShapeKeys: ['*'] };
+    // No verbatim quoted text (a 20+ char span between quotes) INSIDE any value.
+    // Scan the string VALUES, not JSON.stringify(out): the envelope's long key
+    // names (e.g. "lateral_moves_still_missing_questions") are themselves quoted
+    // in JSON and always matched /"[^"]{20,}"/, so the old check rejected EVERY
+    // well-formed output (the touchpoint never returned usable questions). Fixed
+    // 2026-06-07; pinned by tests/research_lane_humanities_golden.test.js.
+    var allValuesForQuoteCheck = needed.reduce(function (acc, k) {
+      var v = out[k];
+      return Array.isArray(v) ? acc.concat(v.filter(function (x) { return typeof x === 'string'; })) : acc;
+    }, []);
+    for (var qv = 0; qv < allValuesForQuoteCheck.length; qv++) {
+      if (/"[^"]{20,}"/.test(allValuesForQuoteCheck[qv])) {
+        return { __rejected: true, rejectReason: 'quoted_text_in_output', attemptedShapeKeys: ['*'] };
+      }
     }
     // Imperative verbs
     var IMP = /\b(try|use|add|replace|swap|consider|should|must|need to)\b/i;
