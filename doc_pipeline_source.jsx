@@ -5977,11 +5977,22 @@ HTML section ${chunkNum}/${chunks.length}:
       }
       if (chunkResults.length === 0) return null;
       // Merge: deduplicate issues across chunks using WCAG code + violation category
-      // This prevents length-penalty: "missing alt on page 5" and "missing alt on page 20" count as ONE issue type
-      const seenIssues = new Map(); // key → issue (keeps the first/best description)
+      // This prevents length-penalty: "missing alt on page 5" and "missing alt on page 20" count as ONE issue type.
+      // ALSO: preserve the page distribution across the dedup so the report
+      // renderer can show "appears on pages 2, 5, 12" alongside each issue.
+      // The first occurrence keeps its description; subsequent occurrences only
+      // contribute their page numbers to the pages[] array.
+      const seenIssues = new Map(); // key → issue (keeps the first/best description; gains pages[])
       const seenPassKeys = new Set();
       const mergedPassList = [];
-      chunkResults.forEach(cr => {
+      const _extractPageNum = (loc) => {
+        if (!loc || typeof loc !== 'string') return null;
+        const m = loc.match(/page\s+(\d+)/i);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      chunkResults.forEach((cr, chunkIdx) => {
+        // chunkIdx maps to page index for single-page chunks; for multi-page
+        // chunks we fall back to the location field.
         (cr.issues || []).forEach(issue => {
           // Dedup by WCAG code + severity (same violation type = same deduction regardless of how many pages)
           const wcag = (issue.wcag || '').trim();
@@ -5989,8 +6000,12 @@ HTML section ${chunkNum}/${chunks.length}:
           const categoryWords = (issue.issue || '').toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/).filter(w => w.length > 3).slice(0, 3).sort().join('_');
           const key = wcag ? `${wcag}_${severity}` : `${severity}_${categoryWords}`;
           if (!seenIssues.has(key)) {
-            seenIssues.set(key, issue);
+            seenIssues.set(key, { ...issue, pages: new Set() });
           }
+          // Add this occurrence's page number to the issue's page set.
+          const stored = seenIssues.get(key);
+          const pageNum = _extractPageNum(issue.location) || (chunkResults.length > 1 ? chunkIdx + 1 : null);
+          if (pageNum != null) stored.pages.add(pageNum);
         });
         // Deduplicate passes by normalized keywords — Gemini phrases the same pass
         // differently per chunk ("No images found" vs "No images without alt text detected")
@@ -6005,7 +6020,12 @@ HTML section ${chunkNum}/${chunks.length}:
           }
         });
       });
-      const mergedIssues = [...seenIssues.values()];
+      // Convert each issue's pages Set to a sorted array so downstream
+      // consumers (the report renderer) get serializable data.
+      const mergedIssues = [...seenIssues.values()].map(iss => {
+        const pagesArr = iss.pages ? [...iss.pages].sort((a, b) => a - b) : [];
+        return { ...iss, pages: pagesArr };
+      });
 
       // ── Structural pass detection on full document ──
       // Chunked audits underreport passes because most chunks are plain content.
@@ -11228,15 +11248,37 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
   // Surfaces the structural-vs-semantic SPLIT (axe-core passes ≠ the document is
   // usable) + a content-integrity coverage line — so a high automated score never
   // reads as "fully accessible" when the AI rubric or text-coverage says otherwise.
-  const _honestReportBlocks = (structural, semantic, coverage) => {
+  const _honestReportBlocks = (structural, semantic, coverage, pdfua) => {
+    // pdfua: optional PdfValidator summary { pass, fail, overall } — when
+    // present, renders a 3rd score tile labelled "PDF/UA-1 (self-check)"
+    // alongside the existing Structural (axe-core) and Semantic (AI rubric)
+    // tiles. The three are INDEPENDENT dimensions:
+    //   - Structural (axe-core) = HTML/WCAG checks against extracted text
+    //   - Semantic (AI rubric)  = multi-pass Gemini Vision judgment
+    //   - PDF/UA-1 (self-check) = post-export structural assertions on the
+    //                              exported bytes (StructTreeRoot, MarkInfo,
+    //                              orphaned leaves, /Scope, /ActualText, /Alt,
+    //                              font embedding, encryption, etc.)
+    // Three tiles tell the reviewer where to look when scores diverge. Only
+    // the accessibility report (post-tag) has the PdfValidator data; the
+    // audit report (pre-tag) stays 2-axis.
     let h = '';
+    const hasPdfUa = pdfua && (typeof pdfua.pass === 'number') && (typeof pdfua.fail === 'number');
+    const pdfuaPct = hasPdfUa ? Math.round((pdfua.pass / (pdfua.pass + pdfua.fail)) * 100) : null;
     if (typeof structural === 'number' && typeof semantic === 'number') {
       const div = Math.abs(structural - semantic);
+      const pdfuaTile = hasPdfUa
+        ? `<div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:#1e3a5f">${pdfuaPct}<span style="font-size:0.75rem;color:#64748b">%</span></div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">PDF/UA-1 (self-check)</div><div style="font-size:10px;color:#94a3b8;margin-top:2px">${pdfua.pass}/${pdfua.pass + pdfua.fail} rules</div></div>`
+        : '';
       h += `<div style="display:flex;gap:12px;margin:12px 0;flex-wrap:wrap">
         <div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:#1e3a5f">${structural}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">Structural (axe-core)</div></div>
         <div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:#1e3a5f">${semantic}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">Semantic (AI rubric)</div></div>
+        ${pdfuaTile}
       </div>`;
-      if (div >= 15) h += `<p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; These two scores diverge by ${div} points.</strong> Automated structural checks (axe-core) can pass while the AI rubric flags meaning/usability gaps. Treat the lower score as the honest ceiling and have a human verify the experience.</p>`;
+      if (div >= 15) h += `<p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; Structural and semantic scores diverge by ${div} points.</strong> Automated structural checks (axe-core) can pass while the AI rubric flags meaning/usability gaps. Treat the lower score as the honest ceiling and have a human verify the experience.</p>`;
+      if (hasPdfUa && pdfuaPct < 80 && (structural >= 80 || semantic >= 80)) {
+        h += `<p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; PDF/UA-1 self-check (${pdfuaPct}%) is meaningfully lower than the WCAG / semantic scores.</strong> The HTML representation passes WCAG but the exported PDF bytes have structural gaps — a PDF/UA-1 validator (PAC 2024, veraPDF, Acrobat Pro Accessibility Checker) would flag what's missing. See the "Independent Self-Check" section below for the specific rules that failed.</p>`;
+      }
     }
     if (typeof coverage === 'number') {
       h += `<h2 style="font-size:1.15rem;margin-top:1.5rem;color:#1e3a5f">Content Integrity</h2>
@@ -11265,7 +11307,15 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         .trim();
       // Ensure it ends cleanly
       if (issueText && !/[.!?)\]]$/.test(issueText)) issueText += '.';
-      return `<tr><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:13px;width:65%;word-wrap:break-word;overflow-wrap:break-word">${issueText}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:12px;color:#64748b;text-align:center;width:20%;font-family:monospace">${wcag || 'N/A'}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;text-align:center;width:15%">${i.count > 1 ? i.count : ''}</td></tr>`;
+      // Per-page distribution: show pages this issue appears on (post-dedup).
+      // Compact for ≤5 pages, summarized for more (e.g. "pages 1-3, 5, 8-12").
+      const pagesArr = Array.isArray(i.pages) ? i.pages : [];
+      let pagesLabel = '';
+      if (pagesArr.length > 0) {
+        const display = pagesArr.length <= 8 ? pagesArr.join(', ') : (pagesArr.slice(0, 5).join(', ') + ', +' + (pagesArr.length - 5) + ' more');
+        pagesLabel = `<div style="font-size:11px;color:#94a3b8;margin-top:4px">Page${pagesArr.length === 1 ? '' : 's'}: ${display}</div>`;
+      }
+      return `<tr><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:13px;width:65%;word-wrap:break-word;overflow-wrap:break-word">${issueText}${pagesLabel}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:12px;color:#64748b;text-align:center;width:20%;font-family:monospace">${wcag || 'N/A'}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;text-align:center;width:15%">${i.count > 1 ? i.count : ''}</td></tr>`;
     }).join('');
 
     let html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Accessibility Audit Report - ${fileName}</title>
@@ -11684,7 +11734,8 @@ tr { page-break-inside: avoid; }
   ${_honestReportBlocks(
     (fr.axeScore != null ? fr.axeScore : (fr.axeAudit && fr.axeAudit.score != null ? fr.axeAudit.score : ar._baselineAxeScore)),
     (fr.verificationAudit && fr.verificationAudit.score != null ? fr.verificationAudit.score : (fr.aiAudit && fr.aiAudit.score != null ? fr.aiAudit.score : ar._aiOnlyScore)),
-    fr.integrityCoverage
+    fr.integrityCoverage,
+    opts.postExportValidator && opts.postExportValidator.summary
   )}
 
   ${(() => {
@@ -13377,11 +13428,23 @@ tr { page-break-inside: avoid; }
       const _builtCount = ((typeof structElemRefs !== 'undefined' && Array.isArray(structElemRefs)) ? structElemRefs.length : 0)
         + ((typeof pageElemRefs !== 'undefined' && Array.isArray(pageElemRefs)) ? pageElemRefs.length : 0)
         + ((typeof fieldElemRefs !== 'undefined' && Array.isArray(fieldElemRefs)) ? fieldElemRefs.length : 0);
+      // Tightened 2026-06-07: previously warned at <90% retention (b0d24ae3
+      // content-loss bug was 93% retained, didn't trip). Now warns on ANY
+      // delta. A 1-of-15-leaves drop is exactly the kind of silent loss the
+      // round-trip check exists to catch. Allow ≥98% as a "pass with minor
+      // drift" band so noise from incidental object counts doesn't fail
+      // perfectly-good documents.
       if (_builtCount > 0 && _rtStructCount > 0) {
         const _ratio = _rtStructCount / _builtCount;
-        if (_ratio < 0.9) {
-          _rtWarn.push('Only ' + _rtStructCount + ' of ~' + _builtCount + ' structure elements survived save (' + Math.round(_ratio * 100) + '%) — possible content loss at serialization.');
-          _rtChecks.push({ rule: 'No structure lost at save', status: 'fail', detail: _rtStructCount + '/' + _builtCount });
+        const _delta = _builtCount - _rtStructCount;
+        if (_ratio < 0.98) {
+          // <98% retention — fail outright. Real content loss territory.
+          _rtWarn.push('Only ' + _rtStructCount + ' of ~' + _builtCount + ' structure elements survived save (' + Math.round(_ratio * 100) + '%, ' + _delta + ' lost) — content loss at serialization.');
+          _rtChecks.push({ rule: 'No structure lost at save', status: 'fail', detail: _rtStructCount + '/' + _builtCount + ' (' + _delta + ' lost)' });
+        } else if (_delta > 0) {
+          // 98-99% retention — warn but don't fail. Could be incidental.
+          _rtWarn.push('Saved ' + _rtStructCount + ' of ~' + _builtCount + ' structure elements (' + _delta + ' delta) — likely incidental; review the diff to confirm no semantic leaves were dropped.');
+          _rtChecks.push({ rule: 'No structure lost at save', status: 'warn', detail: _rtStructCount + '/' + _builtCount + ' (' + _delta + ' delta)' });
         } else {
           _rtChecks.push({ rule: 'No structure lost at save', status: 'pass', detail: _rtStructCount + '/' + _builtCount });
         }

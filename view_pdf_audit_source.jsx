@@ -460,7 +460,24 @@ function PdfAuditView(props) {
                     {/* Action Buttons */}
                     <div className="flex gap-2 justify-center">
                       {!pdfBatchProcessing && !pdfBatchSummary && pdfBatchQueue.length > 0 && (
-                        <button onClick={() => runPdfBatchRemediation()} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                        <button onClick={() => {
+                          // Pre-batch cost estimator \u2014 honest range based on file count and
+                          // configured fix passes. Canvas mode: free under Google quotas.
+                          // Self-hosted (Blaze tier): show $ range so the user can ack before kicking off.
+                          const fileCount = pdfBatchQueue.length;
+                          const passes = Math.max(1, pdfAutoFixPasses || 3);
+                          const callsPerFile = 4 + (passes * 4);
+                          const totalCalls = fileCount * callsPerFile;
+                          const costLow = (totalCalls * 0.001).toFixed(2);
+                          const costHigh = (totalCalls * 0.01).toFixed(2);
+                          const isCanvas = typeof window !== 'undefined' && window._isCanvasEnv;
+                          const filePlural = fileCount === 1 ? '' : 's';
+                          const passPlural = passes === 1 ? '' : 'es';
+                          const message = isCanvas
+                            ? `Start batch remediation of ${fileCount} PDF${filePlural}?\n\nCanvas mode \u2014 model calls are covered by your Google / Gemini quota. No billing.\n\nEstimated work: ~${totalCalls} model calls across ${fileCount} file${filePlural} (avg. ${callsPerFile} per file \u00d7 up to ${passes} fix pass${passPlural}).`
+                            : `Start batch remediation of ${fileCount} PDF${filePlural}?\n\nEstimated Gemini API consumption: ~${totalCalls} calls (${callsPerFile} per file \u00d7 ${fileCount} files \u00d7 ${passes} fix pass${passPlural}).\n\nEstimated cost on Gemini Flash (Blaze tier): $${costLow}\u2013$${costHigh}\n\nThis is a rough estimate \u2014 actual cost varies with file complexity (scanned/image-heavy PDFs use more vision calls). Reduce \u201cMax Fix Passes\u201d in Settings to cap cost.`;
+                          if (window.confirm(message)) runPdfBatchRemediation();
+                        }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                           {'\u267f'} Start Batch ({pdfBatchQueue.length} files)
                         </button>
                       )}
