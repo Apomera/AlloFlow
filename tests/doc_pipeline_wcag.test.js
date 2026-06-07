@@ -170,6 +170,63 @@ function injectReducedMotionCss(html) {
   return { html: html.replace('<head>', '<head>\n' + reducedMotionCSS), fixCount: 1 };
 }
 
+// ── Mirror: fixFormFieldAria (doc_pipeline_source.jsx slice-3, ~L7011+) ──
+function fixFormFieldAria(htmlContent) {
+  if (!htmlContent) return { html: htmlContent, fixCount: 0 };
+  let fixCount = 0;
+  const fixed = htmlContent.replace(/<(input|select|textarea)\b([^>]*?)(\/?)>/gi, (match, tag, attrs, selfClose) => {
+    if (/type\s*=\s*["']?(hidden|submit|button|image|reset)["']?/i.test(attrs)) return match;
+    const hasRequiredAttr = /\srequired(?:\s|=|\/|$)/i.test(attrs);
+    const hasAriaRequired = /\saria-required\s*=/i.test(attrs);
+    if (hasRequiredAttr && !hasAriaRequired) {
+      fixCount++;
+      return '<' + tag + attrs + ' aria-required="true"' + selfClose + '>';
+    }
+    return match;
+  });
+  return { html: fixed, fixCount };
+}
+
+// ── Mirror: fixButtonLinkLabels (doc_pipeline_source.jsx slice-3, ~L7039+) ──
+function fixButtonLinkLabels(htmlContent) {
+  if (!htmlContent) return { html: htmlContent, fixCount: 0 };
+  let fixCount = 0;
+  const tagRegex = /<(button|a)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
+  const fixed = htmlContent.replace(tagRegex, (match, tag, attrs, inner) => {
+    if (tag.toLowerCase() === 'a' && !/\shref\s*=/i.test(attrs)) return match;
+    const hasAriaLabel = /\saria-label\s*=\s*["'][^"']+["']/i.test(attrs);
+    const hasAriaLabelledby = /\saria-labelledby\s*=\s*["'][^"']+["']/i.test(attrs);
+    if (hasAriaLabel || hasAriaLabelledby) return match;
+    const imgAltMatches = [...inner.matchAll(/<img\b[^>]*\salt\s*=\s*["']([^"']*)["']/gi)];
+    const altText = imgAltMatches.map(m => m[1]).filter(Boolean).join(' ').trim();
+    const innerText = inner.replace(/<[^>]+>/g, '').replace(/&[a-z#0-9]+;/gi, '').replace(/\s+/g, '').trim();
+    if (altText || innerText) return match;
+    let label = (tag.toLowerCase() === 'button') ? 'Button' : 'Link';
+    const hrefM = attrs.match(/\shref\s*=\s*["']([^"']+)["']/i);
+    if (hrefM) {
+      const h = hrefM[1].trim();
+      if (/^mailto:/i.test(h)) label = 'Email ' + h.slice(7).split('?')[0];
+      else if (/^tel:/i.test(h)) label = 'Phone ' + h.slice(4);
+    }
+    fixCount++;
+    return '<' + tag + attrs + ' aria-label="' + label.replace(/"/g, '&quot;') + '">' + inner + '</' + tag + '>';
+  });
+  return { html: fixed, fixCount };
+}
+
+// ── Mirror: fixFigureSemantics (doc_pipeline_source.jsx slice-3, ~L7077+) ──
+function fixFigureSemantics(htmlContent) {
+  if (!htmlContent) return { html: htmlContent, fixCount: 0 };
+  let fixCount = 0;
+  const fixed = htmlContent.replace(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/gi, (match, inner) => {
+    const stripped = inner.replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ').replace(/&[a-z#0-9]+;/gi, '').trim();
+    if (stripped) return match;
+    fixCount++;
+    return '';
+  });
+  return { html: fixed, fixCount };
+}
+
 describe('WCAG contrast ratio (relative luminance)', () => {
   it('black on white is the maximum 21:1', () => {
     expect(contrastRatio([0, 0, 0], [255, 255, 255])).toBeCloseTo(21, 4);
@@ -387,5 +444,101 @@ describe('prefers-reduced-motion gating (sanitizeStyleForWCAG step 6, WCAG 2.3.3
     const result = injectReducedMotionCss('<html><head></head></html>');
     // The !important rules are SCOPED to the media query — outside it, page animations still work
     expect(result.html).toMatch(/@media \(prefers-reduced-motion: reduce\)\{[\s\S]+animation-duration/);
+  });
+});
+
+describe('fixFormFieldAria (slice-3, WCAG 3.3.2 / 4.1.2)', () => {
+  it('adds aria-required to <input required> without it', () => {
+    const r = fixFormFieldAria('<input type="text" required>');
+    expect(r.fixCount).toBe(1);
+    expect(r.html).toBe('<input type="text" required aria-required="true">');
+  });
+  it('is a no-op if aria-required already set', () => {
+    const r = fixFormFieldAria('<input type="text" required aria-required="true">');
+    expect(r.fixCount).toBe(0);
+  });
+  it('works on <select required> and <textarea required>', () => {
+    const r1 = fixFormFieldAria('<select required><option>x</option></select>');
+    expect(r1.html).toContain('aria-required="true"');
+    const r2 = fixFormFieldAria('<textarea required></textarea>');
+    expect(r2.html).toContain('aria-required="true"');
+  });
+  it('skips type=hidden/submit/button/image/reset (HTML "required" is meaningless for those)', () => {
+    const r = fixFormFieldAria('<input type="submit" required value="Submit">');
+    expect(r.fixCount).toBe(0);
+  });
+  it('does NOT add HTML5 required to fields that only have aria-required (intentional asymmetry)', () => {
+    const r = fixFormFieldAria('<input type="text" aria-required="true">');
+    expect(r.fixCount).toBe(0);
+    expect(r.html).toBe('<input type="text" aria-required="true">');
+  });
+});
+
+describe('fixButtonLinkLabels (slice-3, WCAG 4.1.2 / 2.4.4)', () => {
+  it('adds aria-label="Button" to an empty <button> with no label', () => {
+    const r = fixButtonLinkLabels('<button class="icon-close"></button>');
+    expect(r.fixCount).toBe(1);
+    expect(r.html).toContain('aria-label="Button"');
+  });
+  it('adds aria-label="Button" to a button that only contains an icon <svg> with no labelling', () => {
+    const r = fixButtonLinkLabels('<button class="close"><svg><path d="M0,0L10,10"/></svg></button>');
+    expect(r.fixCount).toBe(1);
+    expect(r.html).toContain('aria-label="Button"');
+  });
+  it('is a no-op when the button has visible text', () => {
+    const r = fixButtonLinkLabels('<button>Save</button>');
+    expect(r.fixCount).toBe(0);
+  });
+  it('is a no-op when the button has aria-label already', () => {
+    const r = fixButtonLinkLabels('<button aria-label="Close dialog"><svg></svg></button>');
+    expect(r.fixCount).toBe(0);
+  });
+  it('is a no-op when the button contains an <img alt="..."> with text (alt IS the accessible name)', () => {
+    const r = fixButtonLinkLabels('<button><img src="x.png" alt="Save"></button>');
+    expect(r.fixCount).toBe(0);
+  });
+  it('adds aria-label="Link" to an empty <a href>', () => {
+    const r = fixButtonLinkLabels('<a href="/page"></a>');
+    expect(r.fixCount).toBe(1);
+    expect(r.html).toContain('aria-label="Link"');
+  });
+  it('infers "Email <addr>" label from mailto: href', () => {
+    const r = fixButtonLinkLabels('<a href="mailto:foo@bar.com"></a>');
+    expect(r.html).toContain('aria-label="Email foo@bar.com"');
+  });
+  it('infers "Phone <num>" label from tel: href', () => {
+    const r = fixButtonLinkLabels('<a href="tel:555-1234"></a>');
+    expect(r.html).toContain('aria-label="Phone 555-1234"');
+  });
+  it('skips <a> with no href (it\'s a fragment anchor, not a control)', () => {
+    const r = fixButtonLinkLabels('<a id="top"></a>');
+    expect(r.fixCount).toBe(0);
+  });
+});
+
+describe('fixFigureSemantics (slice-3, WCAG 1.3.1)', () => {
+  it('strips an empty <figcaption></figcaption>', () => {
+    const r = fixFigureSemantics('<figure><img src="x" alt="x"><figcaption></figcaption></figure>');
+    expect(r.fixCount).toBe(1);
+    expect(r.html).toBe('<figure><img src="x" alt="x"></figure>');
+  });
+  it('strips a whitespace-only figcaption', () => {
+    const r = fixFigureSemantics('<figure><figcaption>   \n  </figcaption></figure>');
+    expect(r.fixCount).toBe(1);
+    expect(r.html).not.toContain('<figcaption');
+  });
+  it('strips a figcaption containing only &nbsp;', () => {
+    const r = fixFigureSemantics('<figure><figcaption>&nbsp;</figcaption></figure>');
+    expect(r.fixCount).toBe(1);
+  });
+  it('leaves a captioned figcaption alone', () => {
+    const r = fixFigureSemantics('<figure><figcaption>A real caption</figcaption></figure>');
+    expect(r.fixCount).toBe(0);
+    expect(r.html).toContain('<figcaption>A real caption</figcaption>');
+  });
+  it('preserves attributes on non-empty figcaptions', () => {
+    const r = fixFigureSemantics('<figure><figcaption id="fc1" class="cap">Caption</figcaption></figure>');
+    expect(r.fixCount).toBe(0);
+    expect(r.html).toContain('<figcaption id="fc1" class="cap">Caption</figcaption>');
   });
 });

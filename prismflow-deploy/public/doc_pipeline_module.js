@@ -6991,6 +6991,101 @@ HTML section ${chunkNum}/${chunks.length}:
     return { html: fixed, fixCount: rules.length };
   };
 
+  // ── fixFormFieldAria: keep HTML5 `required` and SR `aria-required` in sync (WCAG 3.3.2 / 4.1.2) ──
+  // Atomic narrow scope: when an input/select/textarea has the HTML5 `required`
+  // attribute but lacks `aria-required`, add `aria-required="true"` so SR users
+  // hear the field is required (older AT + some Linux SR combos don't expose
+  // HTML5 required state via the accessibility tree). Symmetric fix: if a
+  // field has aria-required="true" but no HTML5 required, we DON'T touch it —
+  // that asymmetry can be intentional (e.g., custom validation gates).
+  // Skips type=hidden/submit/button/image/reset (same exclusions as fixFormLabels).
+  const fixFormFieldAria = (htmlContent) => {
+    if (!htmlContent) return { html: htmlContent, fixCount: 0 };
+    let fixCount = 0;
+    const fixed = htmlContent.replace(/<(input|select|textarea)\b([^>]*?)(\/?)>/gi, (match, tag, attrs, selfClose) => {
+      if (/type\s*=\s*["']?(hidden|submit|button|image|reset)["']?/i.test(attrs)) return match;
+      // Match `required` as a standalone attribute: preceded by whitespace,
+      // followed by whitespace/=/slash OR end-of-string (last attribute case).
+      const hasRequiredAttr = /\srequired(?:\s|=|\/|$)/i.test(attrs);
+      const hasAriaRequired = /\saria-required\s*=/i.test(attrs);
+      if (hasRequiredAttr && !hasAriaRequired) {
+        fixCount++;
+        return '<' + tag + attrs + ' aria-required="true"' + selfClose + '>';
+      }
+      return match;
+    });
+    if (fixCount > 0) warnLog('[Form aria] Added aria-required to ' + fixCount + ' required fields deterministically');
+    return { html: fixed, fixCount };
+  };
+
+  // ── fixButtonLinkLabels: rescue icon-only buttons and links from silence (WCAG 4.1.2 / 2.4.4) ──
+  // When a <button> or <a href> has empty visible text content AND no aria-label
+  // AND no aria-labelledby, screen readers announce "button" or "link" with no
+  // purpose. This catches the icon-only case (button containing only <svg>/<img>/<i>)
+  // and supplies a generic fallback label so SR users at least know it's a control,
+  // not silence. The label is generic — a developer should still set a real
+  // aria-label — but a generic label is strictly better than nothing.
+  //
+  // Heuristic for "empty visible text": strip child tags AND HTML entities, then
+  // check if any non-whitespace text remains. <img alt="..."> inside also counts
+  // as text (alt is the accessible name), so we extract alt before stripping.
+  const fixButtonLinkLabels = (htmlContent) => {
+    if (!htmlContent) return { html: htmlContent, fixCount: 0 };
+    let fixCount = 0;
+    // Process both <button>...</button> and <a href="...">...</a>
+    // Non-greedy inner; matches single-element only (no nested buttons in real HTML).
+    const tagRegex = /<(button|a)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
+    const fixed = htmlContent.replace(tagRegex, (match, tag, attrs, inner) => {
+      // <a> without href is just an anchor — skip (not a control)
+      if (tag.toLowerCase() === 'a' && !/\shref\s*=/i.test(attrs)) return match;
+      const hasAriaLabel = /\saria-label\s*=\s*["'][^"']+["']/i.test(attrs);
+      const hasAriaLabelledby = /\saria-labelledby\s*=\s*["'][^"']+["']/i.test(attrs);
+      if (hasAriaLabel || hasAriaLabelledby) return match;
+      // Extract any <img alt="..."> text inside — that IS the accessible name
+      const imgAltMatches = [...inner.matchAll(/<img\b[^>]*\salt\s*=\s*["']([^"']*)["']/gi)];
+      const altText = imgAltMatches.map(m => m[1]).filter(Boolean).join(' ').trim();
+      // Strip remaining HTML tags + entities + whitespace to see if any text remains
+      const innerText = inner
+        .replace(/<[^>]+>/g, '')
+        .replace(/&[a-z#0-9]+;/gi, '')
+        .replace(/\s+/g, '')
+        .trim();
+      if (altText || innerText) return match; // has visible / alt-supplied name
+      // Empty button/link with no label — add a generic fallback aria-label.
+      // For <a>, infer from href when href text is meaningful (mailto:/tel:).
+      let label = (tag.toLowerCase() === 'button') ? 'Button' : 'Link';
+      const hrefM = attrs.match(/\shref\s*=\s*["']([^"']+)["']/i);
+      if (hrefM) {
+        const h = hrefM[1].trim();
+        if (/^mailto:/i.test(h)) label = 'Email ' + h.slice(7).split('?')[0];
+        else if (/^tel:/i.test(h)) label = 'Phone ' + h.slice(4);
+      }
+      fixCount++;
+      return '<' + tag + attrs + ' aria-label="' + label.replace(/"/g, '&quot;') + '">' + inner + '</' + tag + '>';
+    });
+    if (fixCount > 0) warnLog('[Button/Link Labels] Added fallback aria-label to ' + fixCount + ' icon-only controls deterministically');
+    return { html: fixed, fixCount };
+  };
+
+  // ── fixFigureSemantics: strip empty <figcaption> noise (WCAG 1.3.1) ──
+  // An empty <figcaption></figcaption> adds nothing for sighted users and emits
+  // a redundant "caption" announcement for SR users — strip it. Whitespace-only
+  // captions get the same treatment. Non-empty captions are left alone (they're
+  // doing their job). Figures without ANY captions are NOT auto-captioned here
+  // (that's an AI judgment call — see the existing fix_figcaption surgical tool).
+  const fixFigureSemantics = (htmlContent) => {
+    if (!htmlContent) return { html: htmlContent, fixCount: 0 };
+    let fixCount = 0;
+    const fixed = htmlContent.replace(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/gi, (match, inner) => {
+      const stripped = inner.replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ').replace(/&[a-z#0-9]+;/gi, '').trim();
+      if (stripped) return match;
+      fixCount++;
+      return '';
+    });
+    if (fixCount > 0) warnLog('[Figure Semantics] Stripped ' + fixCount + ' empty <figcaption> elements deterministically');
+    return { html: fixed, fixCount };
+  };
+
   // ── Heading hierarchy fixer (WCAG 1.3.1 / 2.4.6 / 2.4.10) ──
   // Detects skips > 2 levels (h2 → h5, h1 → h4, etc.) and renumbers the
   // offending heading down to the maximum-valid-skip level (prev + 2). Single-
@@ -7066,6 +7161,9 @@ HTML section ${chunkNum}/${chunks.length}:
     try { result = fixComplexTables(result).html; } catch (e) { warnLog('[Det WCAG] fixComplexTables failed:', e?.message); }
     try { result = fixLangSpans(result).html; } catch (e) { warnLog('[Det WCAG] fixLangSpans failed:', e?.message); }
     try { result = fixHeadingHierarchy(result).html; } catch (e) { warnLog('[Det WCAG] fixHeadingHierarchy failed:', e?.message); }
+    try { result = fixFormFieldAria(result).html; } catch (e) { warnLog('[Det WCAG] fixFormFieldAria failed:', e?.message); }
+    try { result = fixButtonLinkLabels(result).html; } catch (e) { warnLog('[Det WCAG] fixButtonLinkLabels failed:', e?.message); }
+    try { result = fixFigureSemantics(result).html; } catch (e) { warnLog('[Det WCAG] fixFigureSemantics failed:', e?.message); }
     return result;
   };
 
