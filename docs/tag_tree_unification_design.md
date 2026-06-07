@@ -145,3 +145,54 @@ the outline build; recorded leaf MCID runs in `buildLeaf`; drew each run as a `/
 The orphaned-but-complete tree (current shipped behavior) is the correct safe state until this is
 root-caused — a content-losing unification is strictly worse. The gate (`pdf_tag_tree_golden.spec.ts`)
 catching this pre-commit is the gate-first approach working as intended.
+
+### Investigation update — 2026-06-07 (no live code change; diagnostic only)
+
+A standalone pdf-lib repro at `dev-tools/debug/tag_tree_repro.cjs` was built to test the three leading
+hypotheses against the openSect/closeTo/buildLeaf flow in isolation. The repro builds the same shape
+the failed attempt produced — `StructTreeRoot → Sect → [H1, P, P]`, each leaf with `/K → MCR(page, mcid)`
+and a matching BDC/EMC pair drawn into the page content stream — across three variants:
+
+- **A**: mirrors `openSect` exactly — `context.nextRef()` for the Sect, register leaves with that as
+  parent, `context.assign()` the Sect last with `K = sectKids`
+- **B**: register Sect FIRST with empty `K`, register leaves AFTER, patch `K` via `context.lookup().set()`
+- **C**: no Sect wrapper — flat leaves directly under StructTreeRoot
+
+**Result: A and B both PASS. All four objects (Sect + H1 + P + P) survive `save()` + reload + an
+`enumerateIndirectObjects` walk.** C also serializes its three leaves (H1 + P + P, no Sect by design).
+
+**What this rules out:**
+- Hypothesis #2 (pdf-lib save-time GC dropping objects registered between `nextRef()` and `assign()`
+  on the reserved Sect ref) — **REFUTED**. The reserved-ref pattern works fine.
+- Hypothesis "the nested-build ref pattern itself is broken" — **REFUTED**. The pattern works
+  identically for leaves built before the parent Sect is assigned, regardless of whether they go
+  through `pushChild` or directly into `s.kids`.
+
+**What this implicates:** the bug is in Slice-1-specific orchestration the failed attempt added on top
+of the working nested-build pattern. Candidates (in suspected order):
+
+1. **The `continue` past Stage-3 flat-/P interacts with the page loop's `page.node.set(StructParents, pi)`**
+   indexing. If `StructParents` isn't set for the unify-page or is set to a stale value, the ParentTree
+   lookup at save-time may fail to confirm each MCID has a back-pointer, and pdf-lib's writer may quietly
+   drop the StructElem (this is the most suspicious gap, since the failed attempt explicitly described
+   `continue`ing past the flat-/P path).
+2. **The ParentTree Nums-array shape**: if `ParentTree.Nums = [pageStructParentsIndex, [leafRef0, leafRef1, ...]]`
+   has any leaf ref that's NOT yet in the context (or is the wrong PDFRef), pdf-lib may skip it.
+3. **The BDC operand encoding of `{ MCID: n }`**: pdf-lib's `PDFOperator.of(BeginMarkedContentSequence, [...])`
+   expects the second operand to be a `PDFDict`, not a plain JS object — the repro confirms `context.obj({MCID: n})`
+   works, but the failed attempt may have passed a plain `{MCID: n}` which would fail silently.
+4. **Hypothesis #1 (moved `doc.getPages()`)** still un-tested in isolation. The current recommendation
+   stands: don't move `getPages()` — compute `_unifyScanned`/`_unifyPage` lazily.
+
+**Next focused attempt: keep `getPages()` in its original position** and, instead of forcing the unify
+path through `tryNested`, **route unify-scanned through `tryFlat`** (synthesis's Rank 4) so the
+nested-build path is bypassed entirely for the unify case. Wire BDC/EMC per leaf in the page loop AND
+preserve `page.node.set(StructParents, pi)` AND keep the existing Stage-3 wrap as a control — only the
+unify-page should skip the flat `/P` wrap, and only after confirming the unify-page's StructParents
+indexing is consistent with the ParentTree Nums shape. The standalone repro should be extended to
+isolate each of the above suspects before any change lands in `createTaggedPdf`.
+
+The standalone repro at `dev-tools/debug/tag_tree_repro.cjs` is the diagnostic surface for the next
+attempt. It's cheap (1-2 seconds to run; pdf-lib only; no AlloFlow context). Add a Variant D that
+includes the explicit `page.node.set(StructParents, 0)` and a ParentTree.Nums shape exactly matching
+the failed attempt — that should narrow further.
