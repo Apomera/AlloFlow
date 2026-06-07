@@ -1054,6 +1054,11 @@
       if (probeType === 'math_dcpm' && tier >= 2) recs.push('Short daily fact fluency sessions (5-10 min).');
       return { tier: tier, status: status, statusColor: statusColor, benchmark50: benchmark, pctOfBenchmark: pct, interpretation: interpretation, recommendations: recs, season: season, grade: grade };
     };
+    // Test seam (one-time): capture the FIRST probe-engine copy. NOTE: this copy is
+    // DEAD at runtime — the second `var interpretProbeResult`/`var CBM_NORMS` below
+    // (same function scope) wins via var-hoist redeclaration. Captured only so the
+    // characterization test can assert the two CBM_NORMS tables never diverge.
+    try { window.AlloModules = window.AlloModules || {}; var _saiA = (window.AlloModules.StudentAnalyticsInternals = window.AlloModules.StudentAnalyticsInternals || {}); if (!_saiA.CBM_NORMS_1) { _saiA.CBM_NORMS_1 = CBM_NORMS; _saiA.interpretProbeResult_1 = interpretProbeResult; } } catch (e) {}
 
     var renderProbeInterpretation = function(probeType, score, grade, season) {
       var result = interpretProbeResult(probeType, score, grade, season);
@@ -1174,6 +1179,12 @@
       if (probeType === 'math_dcpm' && tier >= 2) { recommendations.push('Short daily fact fluency practice (5-10 min) with corrective feedback.'); if (tier === 3) recommendations.push('Check conceptual understanding vs. automaticity.'); }
       return { tier: tier, status: status, statusColor: statusColor, benchmark50: benchmark, pctOfBenchmark: pct, interpretation: interpretation, recommendations: recommendations, season: season, grade: grade };
     };
+    // Test seam (one-time): the LIVE probe engine (this copy wins via var-hoist
+    // redeclaration) + RTI tier classifier. tests/student_analytics.test.js pins
+    // these against real bytes (the tests/extracted_logic fork has drifted) and
+    // asserts CBM_NORMS_1 (above) deep-equals this CBM_NORMS so the norm tables
+    // can never silently diverge and re-tier a student.
+    try { window.AlloModules = window.AlloModules || {}; var _saiB = (window.AlloModules.StudentAnalyticsInternals = window.AlloModules.StudentAnalyticsInternals || {}); if (!_saiB.interpretProbeResult) { _saiB.interpretProbeResult = interpretProbeResult; _saiB.CBM_NORMS = CBM_NORMS; _saiB.CBM_NORMS_2 = CBM_NORMS; _saiB.classifyRTITier = classifyRTITier; } } catch (e) {}
 
     // ── Render Probe Interpretation UI ──
     var renderProbeInterpretation = function(probeType, score, grade, season) {
