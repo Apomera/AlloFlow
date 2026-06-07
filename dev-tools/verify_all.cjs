@@ -114,6 +114,11 @@ const checks = [
     description: 'Curated render-smoke for non-STEM CDN view modules (annotation suite Toolbar/Overlay/nodes + more); catches the render-phase crash class (the 2026-06-05 annotation bare-`t` crash). Skips if React/jsdom absent.',
   },
   {
+    name: 'aria-label / handler-deref static lint',
+    cmd: ['node', 'dev-tools/check_aria_handler.cjs', '--quiet'],
+    description: 'AST lint for two crash classes the render-smoke misses: must-be-string attrs (aria-label/title/alt) given an object/array value (the 2026-06-07 SEL `aria-label: x||{}` class), and unguarded array-spreads of tool-state members `[...d.results]` (the 2026-06-07 probability/runTrial first-interaction class).',
+  },
+  {
     name: 'Arc City gauntlet stages',
     cmd: ['node', 'dev-tools/check_gauntlet_stages.cjs'],
     description: 'The Gauntlet only stages real function-family levels — never a Transformations (goal:match) level',

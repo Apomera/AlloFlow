@@ -117,6 +117,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ all SEL Hub tools render without throwing (render-phase smoke)."
   node dev-tools/check_module_render.cjs --quiet
   echo "  ✓ curated non-STEM CDN modules render without throwing."
+  node dev-tools/check_aria_handler.cjs --quiet
+  echo "  ✓ no object-typed aria-labels / unguarded tool-state array-spreads."
 fi
 
 # ── Step 1: Source commit ──────────────────────────────────────────
