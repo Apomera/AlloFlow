@@ -699,7 +699,7 @@
       // Quest progress persistence
       React.useEffect(function() {
         try { localStorage.setItem('alloflow_quest_progress', JSON.stringify(_questProgress)); }
-        catch(e) { console.error('[QuestSystem] Failed to save quest progress (quota or permission):', e.message || e); }
+        catch(e) { console.warn('[QuestSystem] Quest progress not saved (storage quota or permission) — non-fatal, continuing:', e.message || e); }
       }, [_questProgress]);
 
       // Quest evaluation — watches labToolData for auto-completion

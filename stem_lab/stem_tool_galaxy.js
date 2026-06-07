@@ -1396,7 +1396,7 @@ if (!window._galaxyHasLoadedOnce) {
                                             upd("dynamicQuiz", qList);
                                         }
                                     } catch(e) {
-                                        console.error("Gemini JSON Parse Error:", e, res.text);
+                                        console.warn("Gemini JSON Parse Error:", e, res.text);
                                     }
                                 }
                             });

@@ -5249,7 +5249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           callGemini(meta, false, false, 0.4).then(function(out) {
             setMyCoach((out || '').trim() || '(no response)');
           }).catch(function(err) {
-            console.error('[llmLiteracy] UDL coach failed:', err);
+            console.warn('[llmLiteracy] UDL coach failed:', err);
             var info = classifyGeminiError(err);
             setMyCoach('[' + info.emoji + ' ' + info.friendly + ']\n\nWhy this happens: ' + info.teaching + '\n\nThe heuristic direction below is still valid.');
             addToast(info.emoji + ' Live coach unavailable. Heuristic below still works.', 'warn');

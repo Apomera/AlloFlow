@@ -4004,7 +4004,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   throw new Error('Invalid format');
                 }
               } catch(e) {
-                console.error('[Singing] AI exercise parse error:', e);
+                console.warn('[Singing] AI exercise parse error:', e);
                 if (addToast) addToast('Could not parse AI response. Using random exercise.', 'warning');
                 setSrNotes(generateSightReadExercise(srDifficulty));
                 setSrMode('idle');
@@ -4013,7 +4013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               }
               setSrAiLoading(false);
             }).catch(function(err) {
-              console.error('[Singing] AI exercise error:', err);
+              console.warn('[Singing] AI exercise error:', err);
               if (addToast) addToast('AI unavailable. Using random exercise.', 'warning');
               setSrNotes(generateSightReadExercise(srDifficulty));
               setSrMode('idle');

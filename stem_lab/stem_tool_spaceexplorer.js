@@ -792,7 +792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             setTimeout(function() { generateEvent(); }, 1500);
           }
         }).catch(function(err) {
-          console.error('[SpaceExplorer] Gemini error:', err);
+          console.warn('[SpaceExplorer] Gemini error:', err);
           upd('isGenerating', false);
           if (addToast) addToast('AI connection issue. Please try again.', 'error');
         });

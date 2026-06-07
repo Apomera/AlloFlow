@@ -2282,7 +2282,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             })
             .catch(function(err) {
               setTtsLoading(false);
-              console.error('[Oratory] TTS error:', err);
+              console.warn('[Oratory] TTS error:', err);
               if (addToast) addToast('Error generating speech model.', 'error');
             });
         }
@@ -2337,7 +2337,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             })
             .catch(function(err) {
               setAiLoading(false);
-              console.error('[Oratory] AI error:', err);
+              console.warn('[Oratory] AI error:', err);
               if (addToast) addToast('AI generation failed. Using built-in exercises.', 'info');
               setAiExercises(null);
             });

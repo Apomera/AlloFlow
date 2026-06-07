@@ -5951,7 +5951,7 @@ const d = labToolData.artStudio || {};
 
                             } catch (parseErr) {
 
-                              console.error('[AI Motion] Failed to parse Gemini storyboard JSON. Raw response:', rawResponse);
+                              console.warn('[AI Motion] Failed to parse Gemini storyboard JSON. Raw response:', rawResponse);
 
                               throw new Error('Could not parse Gemini storyboard: ' + parseErr.message);
 
@@ -5959,7 +5959,7 @@ const d = labToolData.artStudio || {};
 
                             if (!Array.isArray(poses) || poses.length === 0) {
 
-                              console.error('[AI Motion] Gemini storyboard not an array. Parsed value:', poses);
+                              console.warn('[AI Motion] Gemini storyboard not an array. Parsed value:', poses);
 
                               throw new Error('Gemini returned an empty or malformed storyboard (got ' + (Array.isArray(poses) ? 'empty array' : typeof poses) + ').');
 
@@ -6015,7 +6015,7 @@ const d = labToolData.artStudio || {};
 
                           }).catch(function(err) {
 
-                            console.error('[AI Motion] Storyboard / pipeline failed:', err);
+                            console.warn('[AI Motion] Storyboard / pipeline failed:', err);
 
                             upd('stereoAnimRendering', false);
 

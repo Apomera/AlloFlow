@@ -2459,7 +2459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     addToast('+' + addedCount + ' AI questions ready', 'success');
                   }).catch(function(err) {
                     // Reset in-flight state so the user can retry — without this, loading spinners freeze
-                    console.error('[AlloBotSage] Pre-load AI questions failed:', err);
+                    console.warn('[AlloBotSage] Pre-load AI questions failed:', err);
                     var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
                     var freshFlight = Object.assign({}, freshD._aiInFlight || {});
                     equippedLoadout.forEach(function(spellId) { delete freshFlight[spellId]; });
@@ -2941,7 +2941,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 }
               }).catch(function(err) {
                 // Background generation — student already has bank questions, so silent + log only
-                console.error('[AlloBotSage] Background AI generation failed for ' + s.name + ':', err);
+                console.warn('[AlloBotSage] Background AI generation failed for ' + s.name + ':', err);
                 var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
                 var freshFlight = Object.assign({}, freshD._aiInFlight || {});
                 delete freshFlight[spellId];
