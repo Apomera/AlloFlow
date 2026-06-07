@@ -757,7 +757,7 @@ window.SelHub = window.SelHub || {
               }
             }, t.icon + ' ' + t.label);
           }),
-          h('button', { 'aria-label': popBadge.icon, onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8' }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
+          h('button', { 'aria-label': soundEnabled ? 'Mute' : 'Unmute', onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8' }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         );
 
         // ══════════════════════════════════════════════════════

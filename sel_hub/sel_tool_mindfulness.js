@@ -22381,7 +22381,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Start button
-          !breathActive && h('button', { 'aria-label': st.breathPatternsUsed || {},
+          !breathActive && h('button', { 'aria-label': 'Start breathing exercise',
             onClick: function() {
               stopBreathTimer();
               upd({ breathActive: true, breathPhase: 'inhale', breathTimeLeft: bp.inhale, breathCycle: 1 });
@@ -23506,7 +23506,7 @@ window.SelHub = window.SelHub || {
 
                 // Start / Stop button
                 h('div', { style: { textAlign: 'center' } },
-                  !techBoxActive && h('button', { 'aria-label': st.techsDone || {},
+                  !techBoxActive && h('button', { 'aria-label': 'Start box breathing',
                     onClick: function() {
                       upd({ techBoxActive: true, techBoxPhase: 0, techBoxRound: 0, techBoxTimer: 4 });
                       if (soundEnabled) sfxBowl();

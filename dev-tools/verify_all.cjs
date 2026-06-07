@@ -104,6 +104,11 @@ const checks = [
     description: 'Headlessly renders every STEM tool with a stub ctx; catches the render-phase TypeError class static gates miss (undefined.map, mis-shaped data literals — the 2026-06-05 protractor crash). Skips if React/jsdom absent.',
   },
   {
+    name: 'SEL Hub tool render-smoke',
+    cmd: ['node', 'dev-tools/check_sel_render.cjs', '--quiet'],
+    description: 'Headlessly renders every SEL Hub tool (window.SelHub plugin bridge) with a stub ctx; catches the render-phase crash class static gates miss. Found 3 first-render crashes (journal/mindfulness/safety) on first run 2026-06-07. Skips if React/jsdom absent.',
+  },
+  {
     name: 'Non-STEM module render-smoke',
     cmd: ['node', 'dev-tools/check_module_render.cjs', '--quiet'],
     description: 'Curated render-smoke for non-STEM CDN view modules (annotation suite Toolbar/Overlay/nodes + more); catches the render-phase crash class (the 2026-06-05 annotation bare-`t` crash). Skips if React/jsdom absent.',
