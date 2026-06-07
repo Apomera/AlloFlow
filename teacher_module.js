@@ -4296,5 +4296,12 @@ window.AlloModules.LongitudinalProgressChart = LongitudinalProgressChart;
 window.AlloModules.LearnerProgressView = LearnerProgressView;
 window.AlloModules.TeacherDashboard = TeacherDashboard;
 window.AlloModules.TeacherModule = true;
+// Test seam (read-only): expose the pure teacher-analytics functions for
+// characterization tests (tests/teacher_analytics.test.js). Zero behavior change.
+window.AlloModules.TeacherAnalyticsInternals = {
+  calculateAnalyticsMetrics: calculateAnalyticsMetrics,
+  computeNotebookQualitySignals: _computeNotebookQualitySignals,
+  computeCrossToolMisconceptions: _computeCrossToolMisconceptions,
+};
   console.log('[TeacherModule] 11 components registered:', ["RosterKeyPanel","SimpleBarChart","SimpleDonutChart","LongitudinalProgressChart","ConfettiEffect","StudentEscapeRoomOverlay","EscapeRoomTeacherControls","TeacherLiveQuizControls","calculateAnalyticsMetrics","LearnerProgressView","TeacherDashboard"]);
 })();
