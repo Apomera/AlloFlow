@@ -257,7 +257,30 @@ test.describe('createTaggedPdf — non-Latin OCR text layer (Arabic)', () => {
           groundTruthPages: [{ pageNum: 1, text: arabic, words: arabicWords, pageW: 612, pageH: 792 }],
         };
         const result = await pipeline.createTaggedPdf(inputBytes, fixResult, { title: 'Arabic Scan', lang: 'ar' });
-        return { ok: true, byteLength: result.bytes ? result.bytes.length : 0, ocrTextLayer: result.ocrTextLayer || null, roundTrip: result.roundTrip || null, docChecks: ((result.pdfUa1Checks && result.pdfUa1Checks.checks) || []).filter((c: any) => c.category === 'Document').map((c: any) => ({ rule: c.rule, status: c.status })), arabicCharCount: (arabic.match(/[؀-ۿ]/g) || []).length };
+
+        // CJK fixture (Japanese: kana + kanji) — exercises the Noto Sans CJK OTF embed path
+        // (previously CJK was rejected → Helvetica → 0% coverage). Fetches the ~4MB JP subset.
+        const jp = '日本語のテスト。これはスキャン文書の隠しテキスト層です。第一章：はじめに。';
+        const jpWords = [
+          { t: '日本語', x0: 520, y0: 60, x1: 580, y1: 84 },
+          { t: 'テスト', x0: 450, y0: 60, x1: 510, y1: 84 },
+          { t: '文書', x0: 360, y0: 60, x1: 430, y1: 84 },
+        ];
+        const jpInDoc = await PDFDocument.create();
+        jpInDoc.addPage([612, 792]);
+        const jpInputBytes = await jpInDoc.save();
+        const jpFix = {
+          accessibleHtml: `<!DOCTYPE html><html lang="ja"><body><main><h1>第一章</h1><p>${jp}</p></main></body></html>`,
+          groundTruthMethod: 'vision-ocr',
+          groundTruthPages: [{ pageNum: 1, text: jp, words: jpWords, pageW: 612, pageH: 792 }],
+        };
+        let cjk: any = null;
+        try {
+          const jpResult = await pipeline.createTaggedPdf(jpInputBytes, jpFix, { title: 'Japanese Scan', lang: 'ja' });
+          cjk = { ocrTextLayer: jpResult.ocrTextLayer || null, byteLength: jpResult.bytes ? jpResult.bytes.length : 0 };
+        } catch (e: any) { cjk = { error: (e && e.message) || String(e) }; }
+
+        return { ok: true, byteLength: result.bytes ? result.bytes.length : 0, ocrTextLayer: result.ocrTextLayer || null, roundTrip: result.roundTrip || null, docChecks: ((result.pdfUa1Checks && result.pdfUa1Checks.checks) || []).filter((c: any) => c.category === 'Document').map((c: any) => ({ rule: c.rule, status: c.status })), cjk, arabicCharCount: (arabic.match(/[؀-ۿ]/g) || []).length };
       } catch (e: any) {
         return { error: (e && e.message) || String(e), stack: e && e.stack };
       }
@@ -276,6 +299,18 @@ test.describe('createTaggedPdf — non-Latin OCR text layer (Arabic)', () => {
     expect(ocrSummary.ocrTextLayer.nonLatinDropped, 'no non-Latin chars should be dropped').toBe(false);
     expect(ocrSummary.ocrTextLayer.droppedChars, 'zero dropped chars with the Unicode font').toBe(0);
     expect(ocrSummary.ocrTextLayer.coveragePct).toBe(100);
+  });
+
+  test('CJK (Japanese) scanned OCR layer embeds a Noto Sans CJK font — no characters dropped', () => {
+    expect(ocrSummary.cjk, 'beforeAll must build the CJK fixture').toBeTruthy();
+    expect(ocrSummary.cjk.error, ocrSummary.cjk && ocrSummary.cjk.error ? `CJK build error: ${ocrSummary.cjk.error}` : '').toBeFalsy();
+    expect(ocrSummary.cjk.ocrTextLayer, 'CJK result must report ocrTextLayer').toBeTruthy();
+    // Japanese (kana + kanji) is entirely non-WinAnsi; full coverage proves the language-
+    // subsetted Noto Sans CJK (JP) OTF was fetched, CFF-subset, embedded, and used. Before
+    // this, _getUnicodeFont rejected 'cjk' → Helvetica → every glyph dropped (0% coverage).
+    expect(ocrSummary.cjk.ocrTextLayer.nonLatinDropped, 'no CJK chars should be dropped').toBe(false);
+    expect(ocrSummary.cjk.ocrTextLayer.droppedChars, 'zero dropped chars with the CJK font').toBe(0);
+    expect(ocrSummary.cjk.ocrTextLayer.coveragePct).toBe(100);
   });
 
   test('Round-trip self-check confirms the tag tree survived save', () => {

@@ -12065,16 +12065,26 @@ tr { page-break-inside: avoid; }
     // screen-reader-readable + searchable. The layer is invisible (opacity 0) and exists
     // for AT/extraction — complex shaping/bidi are irrelevant; only the Unicode code points
     // + ToUnicode mapping matter, which embedFont provides.
-    // CJK is DETECTED but not embedded (the source fonts are ~10-16MB to fetch+subset per
-    // doc) — left to the Helvetica fallback + coverage warning. Mixed-script pages embed the
-    // dominant script; any uncovered glyphs degrade to .notdef (still better than an empty
-    // layer). Requires a network fetch (consistent with the pipeline already loading
-    // pdf-lib/pdf.js/axe/Tesseract from CDNs); falls back gracefully on any failure.
+    // CJK (Chinese/Japanese/Korean) embeds a language-subsetted Noto Sans CJK OTF
+    // (JP/KR/SC, ~4-5MB fetched once per doc, then glyph-subset via pdf-lib so the embedded
+    // bytes are tiny — verified: a few CJK words embed to ~20KB). Mixed-script pages embed
+    // the dominant script; any uncovered glyphs degrade to .notdef (still better than an
+    // empty layer). Requires a network fetch (consistent with the pipeline already loading
+    // pdf-lib/pdf.js/axe/Tesseract from CDNs); falls back gracefully (Helvetica + coverage
+    // warning) on any failure.
     const _notoUrl = (fam) => 'https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/' + fam + '/hinted/ttf/' + fam + '-Regular.ttf';
     const _SCRIPT_FONT = {
       arabic: 'NotoSansArabic', ethiopic: 'NotoSansEthiopic', devanagari: 'NotoSansDevanagari',
       hebrew: 'NotoSansHebrew', thai: 'NotoSansThai', lao: 'NotoSansLao', khmer: 'NotoSansKhmer',
       myanmar: 'NotoSansMyanmar', latinplus: 'NotoSans', // Greek + Cyrillic (basic Latin handled by Helvetica)
+    };
+    // CJK fonts live in a different repo (notofonts/noto-cjk) and are OTF/CFF; the
+    // language-subsetted regional builds keep the fetch to ~4-5MB and pdf-lib subset:true
+    // shrinks the embed to only the glyphs the document actually uses.
+    const _CJK_URL = {
+      japanese: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/JP/NotoSansJP-Regular.otf',
+      korean: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/KR/NotoSansKR-Regular.otf',
+      chinese: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/SC/NotoSansSC-Regular.otf',
     };
     const _detectScript = (s) => {
       const t = String(s || '');
@@ -12082,11 +12092,20 @@ tr { page-break-inside: avoid; }
         arabic: /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/g,
         ethiopic: /[ሀ-፿]/g, devanagari: /[ऀ-ॿ]/g, hebrew: /[֐-׿]/g,
         thai: /[฀-๿]/g, lao: /[຀-໿]/g, khmer: /[ក-៿]/g,
-        myanmar: /[က-႟]/g, cjk: /[぀-ヿ一-鿿가-힯]/g,
+        myanmar: /[က-႟]/g,
         latinplus: /[Ͱ-ϿЀ-ӿ]/g,
       };
+      // CJK is resolved separately: a pure count vote would misroute Japanese (kanji usually
+      // outnumber kana) to a Chinese font and drop the kana. Tally the families, then pick by
+      // script priority — kana→JP (also covers kanji), hangul→KR (also covers hanja), else
+      // ideographs→SC. CJK only wins if it's at least as common as any non-CJK script.
+      const _kana = (t.match(/[぀-ヿ]/g) || []).length;
+      const _hangul = (t.match(/[가-힯]/g) || []).length;
+      const _han = (t.match(/[㐀-鿿豈-﫿]/g) || []).length;
+      const _cjk = _kana + _hangul + _han;
       let best = null, bestN = 0;
       for (const k of Object.keys(ranges)) { const n = (t.match(ranges[k]) || []).length; if (n > bestN) { bestN = n; best = k; } }
+      if (_cjk > 0 && _cjk >= bestN) return _kana > 0 ? 'japanese' : (_hangul > 0 ? 'korean' : 'chinese');
       return bestN > 0 ? best : null;
     };
     let _fontkitReady = false;
@@ -12107,13 +12126,14 @@ tr { page-break-inside: avoid; }
     };
     const _unicodeFontCache = {};
     const _getUnicodeFont = async (scriptKey) => {
-      // CJK intentionally unsupported here (font too large to fetch+subset per doc).
-      if (!scriptKey || scriptKey === 'cjk' || !_SCRIPT_FONT[scriptKey]) return null;
+      // CJK routes to the noto-cjk OTF URLs; all other scripts to the notofonts TTFs.
+      const _fontUrl = scriptKey ? (_CJK_URL[scriptKey] || (_SCRIPT_FONT[scriptKey] ? _notoUrl(_SCRIPT_FONT[scriptKey]) : null)) : null;
+      if (!_fontUrl) return null;
       if (Object.prototype.hasOwnProperty.call(_unicodeFontCache, scriptKey)) return _unicodeFontCache[scriptKey];
       _unicodeFontCache[scriptKey] = null;
       try {
         if (!(await _ensureFontkit())) return null;
-        const resp = await fetch(_notoUrl(_SCRIPT_FONT[scriptKey]));
+        const resp = await fetch(_fontUrl);
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         const bytes = new Uint8Array(await resp.arrayBuffer());
         _unicodeFontCache[scriptKey] = await doc.embedFont(bytes, { subset: true });
