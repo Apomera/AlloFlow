@@ -240,10 +240,21 @@ test.describe('createTaggedPdf — non-Latin OCR text layer (Arabic)', () => {
           addToast: () => {}, t: (k: string) => k, isRtlLang: () => true, updateExportPreview: () => {}, getDefaultTitle: () => 'Document', state: {},
         });
         const arabic = 'هذا نص تجريبي باللغة العربية لاختبار طبقة النص غير المرئية. الفصل الأول: مقدمة موجزة.';
+        // Word boxes (PDF points, top-left origin) drive the per-word positioned layer.
+        const arabicWords = [
+          { t: 'هذا', x0: 520, y0: 60, x1: 580, y1: 84 },
+          { t: 'نص', x0: 450, y0: 60, x1: 510, y1: 84 },
+          { t: 'تجريبي', x0: 360, y0: 60, x1: 440, y1: 84 },
+        ];
         const fixResult = {
           accessibleHtml: `<!DOCTYPE html><html lang="ar"><body><main><h1>الفصل الأول</h1><p>${arabic}</p></main></body></html>`,
-          groundTruthMethod: 'tesseract',                 // → isScanned = true
-          groundTruthPages: [{ pageNum: 1, text: arabic }], // → ocrPages
+          // Use the PRODUCTION OCR method string (the live pipeline records 'vision-ocr',
+          // never the literal 'tesseract'/'vision'). This guards the isScanned gate so the
+          // "dead in production" regression — gate never matched 'vision-ocr' — can't return.
+          groundTruthMethod: 'vision-ocr',
+          // words + page dims → the per-word positioned layer (each Arabic word drawn at its
+          // box with the Noto font); text-only would exercise the top-left block fallback.
+          groundTruthPages: [{ pageNum: 1, text: arabic, words: arabicWords, pageW: 612, pageH: 792 }],
         };
         const result = await pipeline.createTaggedPdf(inputBytes, fixResult, { title: 'Arabic Scan', lang: 'ar' });
         return { ok: true, byteLength: result.bytes ? result.bytes.length : 0, ocrTextLayer: result.ocrTextLayer || null, arabicCharCount: (arabic.match(/[؀-ۿ]/g) || []).length };

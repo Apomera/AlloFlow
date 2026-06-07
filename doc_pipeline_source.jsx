@@ -3377,9 +3377,71 @@ var createDocPipeline = function(deps) {
     return _tesseractLoadPromise;
   };
 
+  // Flatten Tesseract.js word boxes into [{t,x0,y0,x1,y1,c}] in PDF points (origin
+  // top-left), dividing out the OCR render scale. Tesseract.js v5 returns the
+  // block→paragraph→line→word hierarchy under data.blocks when {blocks:true} is
+  // requested; older shapes expose a flat data.words. Handles both; returns null on
+  // anything unusable so the caller falls back to the block layer.
+  const _collectOcrWords = (data, scale) => {
+    if (!data) return null;
+    const s = scale || 1;
+    const out = [];
+    const pushWord = (w) => {
+      if (!w || typeof w.text !== 'string') return;
+      const t = w.text.trim(); if (!t) return;
+      const b = w.bbox;
+      if (!b || typeof b.x0 !== 'number' || typeof b.y0 !== 'number' || typeof b.x1 !== 'number' || typeof b.y1 !== 'number') return;
+      out.push({ t: t, x0: b.x0 / s, y0: b.y0 / s, x1: b.x1 / s, y1: b.y1 / s, c: (typeof w.confidence === 'number' ? w.confidence : null) });
+    };
+    try {
+      if (Array.isArray(data.words) && data.words.length) {
+        for (let i = 0; i < data.words.length; i++) pushWord(data.words[i]);
+      } else if (Array.isArray(data.blocks)) {
+        for (const bl of data.blocks) {
+          if (!bl) continue;
+          const paras = Array.isArray(bl.paragraphs) ? bl.paragraphs : [];
+          for (const pa of paras) {
+            const lines = pa && Array.isArray(pa.lines) ? pa.lines : [];
+            for (const ln of lines) {
+              const ws = ln && Array.isArray(ln.words) ? ln.words : [];
+              for (const w of ws) pushWord(w);
+            }
+          }
+        }
+      }
+    } catch (_) { return null; }
+    return out;
+  };
+
+  // Map OCR word boxes (PDF points, origin top-left) to invisible-text draw calls in
+  // PDF user space (origin bottom-left). Pure + deterministic so it can be unit-tested
+  // without pdf-lib. Each call: { text, x, y, size } — font size from box height, text
+  // baseline placed at the box bottom. This is what makes Ctrl+F highlight and drag-
+  // select align with the scanned image (vs the old single top-left block).
+  const _ocrWordsToDrawCalls = (words, pageH, opts) => {
+    const o = opts || {};
+    const sizeFactor = typeof o.sizeFactor === 'number' ? o.sizeFactor : 0.92;
+    const minSize = o.minSize || 4, maxSize = o.maxSize || 300;
+    const out = [];
+    if (!Array.isArray(words) || typeof pageH !== 'number') return out;
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i];
+      if (!w || typeof w.t !== 'string') continue;
+      const text = w.t.trim(); if (!text) continue;
+      const h = (typeof w.y1 === 'number' && typeof w.y0 === 'number') ? (w.y1 - w.y0) : 0;
+      let size = h > 0 ? h * sizeFactor : 8;
+      if (size < minSize) size = minSize; else if (size > maxSize) size = maxSize;
+      const x = w.x0;
+      const y = pageH - w.y1; // baseline ≈ box bottom in PDF (bottom-left origin) space
+      if (!isFinite(x) || !isFinite(y) || !isFinite(size)) continue;
+      out.push({ text: text, x: x, y: y, size: size });
+    }
+    return out;
+  };
+
   // OCR every page of a PDF with Tesseract. Renders each page at 2× to a canvas, recognises,
-  // concatenates. Returns { fullText, pages: [{pageNum, text}], sourceCharCount }. Progress
-  // callback fires per page (0..1) so the UI can show "OCR page 3 of 12" without blocking.
+  // concatenates. Returns { fullText, pages: [{pageNum, text, words, pageW, pageH}], sourceCharCount }.
+  // Progress callback fires per page (0..1) so the UI can show "OCR page 3 of 12" without blocking.
   const extractPdfTextTesseract = async (base64, onProgress, lang) => {
     try {
       await ensurePdfJsLoaded();
@@ -3400,9 +3462,17 @@ var createDocPipeline = function(deps) {
         const ctx = canvas.getContext('2d');
         await page.render({ canvasContext: ctx, viewport }).promise;
         if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'ocr' });
-        const result = await window.Tesseract.recognize(canvas, useLang);
-        const pageText = ((result && result.data && result.data.text) || '').trim();
-        pages.push({ pageNum: p, text: pageText });
+        // Tesseract.js v5 returns ONLY text by default; opt into the block/word
+        // hierarchy (4th "output" arg) so we can place each word's invisible glyphs
+        // at its real position. Older signatures ignore the extra arg; if the call
+        // shape is rejected we retry the plain form so OCR never breaks.
+        let result;
+        try { result = await window.Tesseract.recognize(canvas, useLang, undefined, { blocks: true }); }
+        catch (_recErr) { result = await window.Tesseract.recognize(canvas, useLang); }
+        const data = (result && result.data) || {};
+        const pageText = (data.text || '').trim();
+        const words = _collectOcrWords(data, 2.0); // normalize bboxes to PDF points (render scale 2×)
+        pages.push({ pageNum: p, text: pageText, words: (words && words.length ? words : null), pageW: viewport.width / 2.0, pageH: viewport.height / 2.0 });
         // Free the canvas so a 100-page scan doesn't balloon memory.
         canvas.width = 0; canvas.height = 0;
       }
@@ -3431,7 +3501,14 @@ var createDocPipeline = function(deps) {
       // Pick the longer one — loses nothing vs picking shorter; Tesseract wins ties for
       // determinism.
       const chosen = tLen >= vLen ? { source: 'tesseract', text: tText } : { source: 'vision', text: vText };
-      merged.push({ pageNum: i + 1, text: chosen.text, source: chosen.source });
+      // Carry the Tesseract word boxes + page dims through reconciliation (Vision has
+      // none). These are text+position PAIRS from Tesseract, used to draw a positioned
+      // searchable layer — independent of which engine's TEXT won the length contest.
+      const _tp = tessPages[i] || {};
+      merged.push({ pageNum: i + 1, text: chosen.text, source: chosen.source,
+        words: (Array.isArray(_tp.words) && _tp.words.length ? _tp.words : null),
+        pageW: (typeof _tp.pageW === 'number' ? _tp.pageW : null),
+        pageH: (typeof _tp.pageH === 'number' ? _tp.pageH : null) });
       // Flag disagreement if length gap > 10% or > 20 chars absolute.
       if (longest > 0 && (Math.abs(tLen - vLen) > Math.max(20, longest * 0.1))) {
         disagreements.push({ pageNum: i + 1, tesseractChars: tLen, visionChars: vLen, tesseractText: tText, visionText: vText });
@@ -8234,6 +8311,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         window.__lastOcrVisionText = visionResult.fullText || '';
         window.__lastOcrDisagreements = rec.disagreements || [];
         window.__lastOcrMethod = (tessResult.fullText && visionResult.fullText) ? 'tesseract+vision' : (tessResult.fullText ? 'tesseract' : 'vision');
+        // Wire the reconciled OCR page map (carries Tesseract word boxes + page dims) so
+        // createTaggedPdf can lay down a POSITIONED, searchable invisible text layer for the
+        // scanned PDF. Previously this was never set on the scanned path, so the tagged-PDF
+        // OCR layer had no text to draw even when its gate fired.
+        window.__lastGroundTruthPageMap = (rec.pages && rec.pages.length) ? rec.pages : (tessResult.pages || []);
         warnLog(`[OCR reconcile] Tesseract ${tessResult.fullText.length} chars · Vision ${visionResult.fullText.length} chars · merged ${extractedText.length} chars · ${rec.disagreements.length} page disagreements`);
         if (typeof addToast === 'function' && rec.disagreements.length > 0) {
           addToast(`OCR reconciled — ${rec.disagreements.length} page${rec.disagreements.length === 1 ? '' : 's'} where Tesseract & Vision disagree. Review in the fidelity panel.`, 'info');
@@ -11951,11 +12033,18 @@ tr { page-break-inside: avoid; }
     // validators (Acrobat Pro Accessibility Checker, PAC 2024) want the
     // MCID linkage that Stage 1 omitted.
     const pages = doc.getPages();
-    const isScanned = !!(fixResult && (fixResult.groundTruthMethod === 'tesseract' || fixResult.groundTruthMethod === 'vision'));
-    // Tesseract extraction (line 2400) only preserves page-level {pageNum,text},
-    // no word bboxes. So Path B falls back to a single invisible run per page
-    // at top-left — visually clipped but SR reads the actual text instead of
-    // announcing "paragraph" over a picture.
+    // Recognize the production OCR method strings. The live pipeline records
+    // 'vision-ocr' / 'vision-ocr+normalized'; the OCR reconcile also yields
+    // 'tesseract' / 'vision' / 'tesseract+vision'. Text-layer methods ('pdfjs',
+    // 'docx-*', 'pptx-*', 'extracted-text*') are NOT scanned. (This previously
+    // matched only the exact strings 'tesseract'/'vision', so the invisible OCR
+    // layer never ran in production — the gate AND the page map were both unwired.)
+    const _gtm = (fixResult && fixResult.groundTruthMethod) ? String(fixResult.groundTruthMethod) : '';
+    const isScanned = /tesseract|vision|ocr/i.test(_gtm);
+    // When Tesseract word boxes are present (ocrPages[].words), Path B draws each
+    // word at its real position so search-highlight + selection align with the
+    // scanned image. Without boxes (e.g. Vision-only), it falls back to a single
+    // top-left invisible run per page — still searchable + SR-readable.
     const ocrPages = isScanned
       ? ((fixResult && fixResult.groundTruthPages)
           || (typeof window !== 'undefined' ? window.__lastGroundTruthPageMap : null)
@@ -12112,27 +12201,56 @@ tr { page-break-inside: avoid; }
         if (ocrText && ocrText.trim()) {
           _ocrTotalChars += ocrText.length;
           const sz = page.getSize();
-          const _drawOpts = (font) => ({ x: 36, y: (sz && sz.height ? sz.height : 792) - 36, size: 1, font, opacity: 0, lineHeight: 1, maxWidth: (sz && sz.width ? sz.width : 612) - 72 });
           const _scriptKey = _detectScript(ocrText);
           let _uniFont = null;
           if (_scriptKey) { try { _uniFont = await _getUnicodeFont(_scriptKey); } catch(_) { _uniFont = null; } }
-          if (_uniFont) {
-            // The embedded Noto font encodes this script — draw the raw OCR text (no WinAnsi
-            // stripping), so the invisible layer carries the full non-Latin text. No drop tally.
-            try { page.drawText(ocrText, _drawOpts(_uniFont)); }
-            catch (uniErr) {
-              // A glyph the subset couldn't place — fall back so we never lose the whole layer.
-              _ocrDroppedChars += _countNonWinAnsi(ocrText);
-              try { const helv = await _getHelv(); if (helv) page.drawText(_toWinAnsi(ocrText), _drawOpts(helv)); } catch(_) {}
-              try { warnLog('[createTaggedPdf] unicode OCR draw failed p' + (pi+1) + ' — fell back to Helvetica: ' + (uniErr && uniErr.message)); } catch(_) {}
+          // ── Per-word positioned layer (when Tesseract word boxes are present) ──
+          // Draw each word at its real (x,y) with font size from the box height, so
+          // Ctrl+F highlight + drag-select align with the scanned image. Guarded on
+          // geometry: unrotated page + extraction dims matching this page's MediaBox;
+          // a misplaced layer would be worse than the honest top-left block.
+          let _rot = 0; try { _rot = (page.getRotation && page.getRotation().angle) || 0; } catch(_) {}
+          const _ocrWords = ocrEntry && Array.isArray(ocrEntry.words) ? ocrEntry.words : null;
+          const _dimsOK = !!(_ocrWords && typeof ocrEntry.pageH === 'number' && typeof ocrEntry.pageW === 'number'
+            && sz && Math.abs(sz.height - ocrEntry.pageH) <= 2 && Math.abs(sz.width - ocrEntry.pageW) <= 2);
+          const _perWord = !!(_ocrWords && _ocrWords.length && _ocrWords.length <= 8000 && _dimsOK && (!_rot || _rot % 360 === 0));
+          if (_perWord) {
+            const _calls = _ocrWordsToDrawCalls(_ocrWords, sz.height, { sizeFactor: 0.92 });
+            let _helvPW = null;
+            for (let _ci = 0; _ci < _calls.length; _ci++) {
+              const _c = _calls[_ci];
+              try {
+                if (_uniFont) {
+                  page.drawText(_c.text, { x: _c.x, y: _c.y, size: _c.size, font: _uniFont, opacity: 0 });
+                } else {
+                  _ocrDroppedChars += _countNonWinAnsi(_c.text);
+                  if (!_helvPW) _helvPW = await _getHelv();
+                  if (_helvPW) page.drawText(_toWinAnsi(_c.text), { x: _c.x, y: _c.y, size: _c.size, font: _helvPW, opacity: 0 });
+                }
+              } catch(_wErr) { if (_uniFont) _ocrDroppedChars += _countNonWinAnsi(_c.text); }
             }
           } else {
-            // Latin-only (or no font for this script): existing Helvetica + WinAnsi path; tally drops.
-            _ocrDroppedChars += _countNonWinAnsi(ocrText);
-            try {
-              const helv = await _getHelv();
-              if (helv) page.drawText(_toWinAnsi(ocrText), _drawOpts(helv));
-            } catch(textErr) { try { warnLog('[createTaggedPdf] invisible OCR text layer failed p' + (pi+1) + ': ' + (textErr && textErr.message)); } catch(_) {} }
+            // ── Block fallback (no word boxes / rotated / dim mismatch) ──
+            // Single invisible run at top-left: searchable + SR-readable, not aligned.
+            const _drawOpts = (font) => ({ x: 36, y: (sz && sz.height ? sz.height : 792) - 36, size: 1, font, opacity: 0, lineHeight: 1, maxWidth: (sz && sz.width ? sz.width : 612) - 72 });
+            if (_uniFont) {
+              // The embedded Noto font encodes this script — draw the raw OCR text (no WinAnsi
+              // stripping), so the invisible layer carries the full non-Latin text. No drop tally.
+              try { page.drawText(ocrText, _drawOpts(_uniFont)); }
+              catch (uniErr) {
+                // A glyph the subset couldn't place — fall back so we never lose the whole layer.
+                _ocrDroppedChars += _countNonWinAnsi(ocrText);
+                try { const helv = await _getHelv(); if (helv) page.drawText(_toWinAnsi(ocrText), _drawOpts(helv)); } catch(_) {}
+                try { warnLog('[createTaggedPdf] unicode OCR draw failed p' + (pi+1) + ' — fell back to Helvetica: ' + (uniErr && uniErr.message)); } catch(_) {}
+              }
+            } else {
+              // Latin-only (or no font for this script): existing Helvetica + WinAnsi path; tally drops.
+              _ocrDroppedChars += _countNonWinAnsi(ocrText);
+              try {
+                const helv = await _getHelv();
+                if (helv) page.drawText(_toWinAnsi(ocrText), _drawOpts(helv));
+              } catch(textErr) { try { warnLog('[createTaggedPdf] invisible OCR text layer failed p' + (pi+1) + ': ' + (textErr && textErr.message)); } catch(_) {} }
+            }
           }
         }
       }
