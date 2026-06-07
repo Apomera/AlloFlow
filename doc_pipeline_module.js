@@ -6544,6 +6544,54 @@ HTML section ${chunkNum}/${chunks.length}:
       totalFixes++;
     }
 
+    // 5. Focus-visible restoration (WCAG 2.4.7) — Keyboard users must SEE
+    //    where focus is. Two-part fix:
+    //    (a) inject a global :focus-visible style at the end of <head> so
+    //        any interactive element that loses its outline gets a visible
+    //        ring back for keyboard users (mouse focus stays clean via
+    //        :focus-visible — the WCAG-correct approach, not just :focus).
+    //    (b) strip outline:none / outline:0 from INLINE styles on common
+    //        interactive elements (button, a, input, textarea, select).
+    //        Don't touch outline:none in stylesheets — those may be paired
+    //        with a custom focus indicator we can't see at sanitize time.
+    //        Don't touch outline:none on decorative divs — that's a layout
+    //        signal, not an a11y bug.
+    if (html.includes('<head>') && !html.includes('/* a11y-focus-visible */')) {
+      const focusVisibleCSS = '<style>/* a11y-focus-visible */\n' +
+        'a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid #2563eb;outline-offset:2px;box-shadow:0 0 0 4px rgba(37,99,235,0.18)}\n' +
+        '</style>';
+      html = html.replace('<head>', '<head>\n' + focusVisibleCSS);
+      totalFixes++;
+    }
+    // Strip outline:none / outline:0 from inline styles on interactive elements.
+    // Pattern: <button ... style="...outline:none..."> or <a style="outline:0">, etc.
+    html = html.replace(/(<(?:a|button|input|textarea|select)\b[^>]*\sstyle=")([^"]*)"/gi, (match, prefix, styleContent) => {
+      // Only touch outline:none/0/initial — leave outline:1px solid red etc. alone
+      const cleaned = styleContent.replace(/\boutline\s*:\s*(?:none|0|initial)\s*;?/gi, '');
+      if (cleaned !== styleContent) {
+        totalFixes++;
+        // Tidy trailing/leading semicolons left behind
+        return prefix + cleaned.replace(/;{2,}/g, ';').replace(/^\s*;/, '').replace(/;\s*$/, '') + '"';
+      }
+      return match;
+    });
+
+    // 6. prefers-reduced-motion gating (WCAG 2.3.3) — Users with vestibular
+    //    disorders need a way to disable animations. Inject a global override
+    //    that effectively cancels animations + transitions when the user has
+    //    requested reduced motion. Doesn't try to find every @keyframes block
+    //    and wrap it — a single high-specificity override at the end of <head>
+    //    covers the whole document without parsing existing CSS.
+    if (html.includes('<head>') && !html.includes('/* a11y-reduced-motion */')) {
+      const reducedMotionCSS = '<style>/* a11y-reduced-motion */\n' +
+        '@media (prefers-reduced-motion: reduce){\n' +
+        ' *,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important}\n' +
+        '}\n' +
+        '</style>';
+      html = html.replace('<head>', '<head>\n' + reducedMotionCSS);
+      totalFixes++;
+    }
+
     if (totalFixes > 0) {
       warnLog(`[WCAG Sanitizer] Applied ${totalFixes} fixes (level: ${level}, minFont: ${minFontSize}px)`);
     }

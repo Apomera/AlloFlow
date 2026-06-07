@@ -132,6 +132,44 @@ function injectTextSpacingCss(html) {
   return { html: html.replace('<head>', '<head>\n' + textSpacingCSS), fixCount: 1 };
 }
 
+// ── Mirror: focus-visible restoration (sanitizeStyleForWCAG step 5 ~L6562+) ──
+// Two-part fix: (a) inject :focus-visible defaults, (b) strip outline:none
+// from inline styles on interactive elements only.
+function applyFocusVisibleFix(html) {
+  if (!html) return { html, fixCount: 0 };
+  let result = html;
+  let fixCount = 0;
+  if (result.includes('<head>') && !result.includes('/* a11y-focus-visible */')) {
+    const focusVisibleCSS = '<style>/* a11y-focus-visible */\n' +
+      'a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid #2563eb;outline-offset:2px;box-shadow:0 0 0 4px rgba(37,99,235,0.18)}\n' +
+      '</style>';
+    result = result.replace('<head>', '<head>\n' + focusVisibleCSS);
+    fixCount++;
+  }
+  result = result.replace(/(<(?:a|button|input|textarea|select)\b[^>]*\sstyle=")([^"]*)"/gi, (match, prefix, styleContent) => {
+    const cleaned = styleContent.replace(/\boutline\s*:\s*(?:none|0|initial)\s*;?/gi, '');
+    if (cleaned !== styleContent) {
+      fixCount++;
+      return prefix + cleaned.replace(/;{2,}/g, ';').replace(/^\s*;/, '').replace(/;\s*$/, '') + '"';
+    }
+    return match;
+  });
+  return { html: result, fixCount };
+}
+
+// ── Mirror: prefers-reduced-motion gating (sanitizeStyleForWCAG step 6 ~L6592+) ──
+function injectReducedMotionCss(html) {
+  if (!html || !html.includes('<head>') || html.includes('/* a11y-reduced-motion */')) {
+    return { html, fixCount: 0 };
+  }
+  const reducedMotionCSS = '<style>/* a11y-reduced-motion */\n' +
+    '@media (prefers-reduced-motion: reduce){\n' +
+    ' *,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important}\n' +
+    '}\n' +
+    '</style>';
+  return { html: html.replace('<head>', '<head>\n' + reducedMotionCSS), fixCount: 1 };
+}
+
 describe('WCAG contrast ratio (relative luminance)', () => {
   it('black on white is the maximum 21:1', () => {
     expect(contrastRatio([0, 0, 0], [255, 255, 255])).toBeCloseTo(21, 4);
@@ -290,5 +328,64 @@ describe('text-spacing CSS injection (sanitizeStyleForWCAG step 4)', () => {
   it('uses element-level selectors, not !important — so existing styles still win', () => {
     const result = injectTextSpacingCss('<html><head></head></html>');
     expect(result.html).not.toContain('!important');
+  });
+});
+
+describe('focus-visible restoration (sanitizeStyleForWCAG step 5, WCAG 2.4.7)', () => {
+  it('injects the focus-visible style block when <head> is present', () => {
+    const result = applyFocusVisibleFix('<html><head></head><body></body></html>');
+    expect(result.fixCount).toBeGreaterThanOrEqual(1);
+    expect(result.html).toContain('/* a11y-focus-visible */');
+    expect(result.html).toContain(':focus-visible');
+    expect(result.html).toContain('outline:2px solid #2563eb');
+  });
+  it('strips outline:none from inline styles on interactive elements', () => {
+    const result = applyFocusVisibleFix('<body><button style="outline:none;color:red">Click</button></body>');
+    expect(result.html).toContain('<button style="color:red">');
+    expect(result.html).not.toContain('outline:none');
+    expect(result.fixCount).toBe(1);
+  });
+  it('strips outline:0 from inline styles on links', () => {
+    const result = applyFocusVisibleFix('<body><a href="#" style="outline:0;text-decoration:none">x</a></body>');
+    expect(result.html).toContain('<a href="#" style="text-decoration:none">');
+  });
+  it('LEAVES outline:none on decorative divs (not in the interactive allowlist)', () => {
+    // role-on-div is intentionally NOT touched — we only strip on real interactive tags
+    const result = applyFocusVisibleFix('<body><div style="outline:none;padding:4px">deco</div></body>');
+    expect(result.html).toContain('outline:none');
+  });
+  it('LEAVES intentional outline rules alone (outline:1px solid red is a custom focus indicator)', () => {
+    const result = applyFocusVisibleFix('<body><button style="outline:1px solid red">Click</button></body>');
+    expect(result.html).toContain('outline:1px solid red');
+  });
+  it('is idempotent — second call does not double-inject the marker', () => {
+    const once = applyFocusVisibleFix('<html><head></head></html>').html;
+    const twice = applyFocusVisibleFix(once);
+    expect(twice.html.match(/a11y-focus-visible/g)).toHaveLength(1);
+  });
+});
+
+describe('prefers-reduced-motion gating (sanitizeStyleForWCAG step 6, WCAG 2.3.3)', () => {
+  it('injects the media-query override when <head> is present', () => {
+    const result = injectReducedMotionCss('<html><head></head><body></body></html>');
+    expect(result.fixCount).toBe(1);
+    expect(result.html).toContain('/* a11y-reduced-motion */');
+    expect(result.html).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(result.html).toContain('animation-duration:0.01ms !important');
+    expect(result.html).toContain('transition-duration:0.01ms !important');
+  });
+  it('is idempotent', () => {
+    const once = injectReducedMotionCss('<html><head></head></html>').html;
+    const twice = injectReducedMotionCss(once);
+    expect(twice.fixCount).toBe(0);
+    expect(twice.html.match(/a11y-reduced-motion/g)).toHaveLength(1);
+  });
+  it('is a no-op when there is no <head>', () => {
+    expect(injectReducedMotionCss('<body>fragment</body>')).toEqual({ html: '<body>fragment</body>', fixCount: 0 });
+  });
+  it('only applies inside the media query — does not blanket-disable animations for users without prefers-reduced-motion', () => {
+    const result = injectReducedMotionCss('<html><head></head></html>');
+    // The !important rules are SCOPED to the media query — outside it, page animations still work
+    expect(result.html).toMatch(/@media \(prefers-reduced-motion: reduce\)\{[\s\S]+animation-duration/);
   });
 });
