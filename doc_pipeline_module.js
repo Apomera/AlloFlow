@@ -432,6 +432,71 @@ var createDocPipeline = function(deps) {
   // the document, returning a structured result with the specific reason. Callers that just
   // need truthy/falsy can use the acceptFixedHtml alias below.
   // Replaces the old `fixed.length > original.length * 0.5` checks which allowed 50% truncation.
+  // detectFabrication: content-fabrication (hallucination) signal. The shrink guards in
+  // acceptFixedHtmlDetailed catch LOST content; this catches ADDED/INVENTED content — the
+  // AI putting numbers/dates/URLs into its output that weren't in its input (which it was
+  // told to preserve word-for-word), or a low-grounding bulk expansion. WARN-ONLY and
+  // opt-in (opts.mode==='faithful'): it never flips `accepted`, because a false reject
+  // would block a legitimate a11y fix and train users to ignore the warning. Only the
+  // high-precision signals are used (numbers/dates/URLs) plus a conservative bulk signal;
+  // sentence-grounding / ROUGE are deliberately omitted (too false-positive-prone on
+  // legitimate paraphrase). Pure + deterministic (no network), so it is unit-testable.
+  const detectFabrication = (fixed, original, opts) => {
+    if (!opts || opts.mode !== 'faithful' || !fixed || !original) return { suspected: false, reason: 'bypass' };
+    // Strip legitimate a11y additions so they don't read as "new" content, then drop tags.
+    const _strip = (h) => String(h || '')
+      .replace(/<img[^>]*>/gi, ' ')
+      .replace(/\s+aria-label\s*=\s*"[^"]*"/gi, ' ').replace(/\s+aria-label\s*=\s*'[^']*'/gi, ' ')
+      .replace(/<figcaption[\s\S]*?<\/figcaption>/gi, ' ')
+      .replace(/<a[^>]*class\s*=\s*["'][^"']*sr-only[^"']*["'][^>]*>[\s\S]*?<\/a>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ');
+    const _norm = (t) => String(t || '')
+      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#?[a-z0-9]+;/gi, ' ')
+      .replace(/(\w)-\s+(\w)/g, '$1$2') // de-hyphenate line wraps (sys- tem -> system)
+      .toLowerCase().replace(/\s+/g, ' ').trim();
+    const outT = _norm(_strip(fixed));
+    const srcT = _norm(_strip(original));
+    if (!outT || !srcT) return { suspected: false, reason: 'empty' };
+    // Numbers: only >=2 significant digits (ignore single-digit ordinals/list markers, which
+    // are the dominant false-positive source). Exact token match; large numbers allow +/-10%.
+    const _nums = (s) => (s.match(/\d[\d,]*(?:\.\d+)?/g) || []).map(x => x.replace(/,/g, '')).filter(x => x.replace(/\D/g, '').length >= 2);
+    const srcNums = _nums(srcT);
+    const srcNumSet = new Set(srcNums);
+    const fabricatedNumbers = [];
+    for (const n of _nums(outT)) {
+      if (srcNumSet.has(n)) continue;
+      const val = parseFloat(n);
+      const fuzzy = isFinite(val) && val >= 100 && srcNums.some(s => { const sv = parseFloat(s); return isFinite(sv) && sv > 0 && Math.abs(sv - val) / Math.max(sv, val) < 0.10; });
+      if (!fuzzy) fabricatedNumbers.push(n);
+    }
+    const _urls = (s) => (s.match(/https?:\/\/[^\s)"'<>]+/g) || []);
+    const srcUrls = new Set(_urls(srcT));
+    const fabricatedUrls = _urls(outT).filter(u => !srcUrls.has(u));
+    const _dates = (s) => (s.match(/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b|\b\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}\b/g) || []);
+    const srcDates = new Set(_dates(srcT));
+    const fabricatedDates = _dates(outT).filter(d => !srcDates.has(d));
+    // Conservative bulk-fabrication signal: only fire when grounding is low AND the output
+    // expanded a lot — i.e. a wall of un-sourced prose, not paraphrase or a11y markup.
+    const _stop = new Set(['the','a','an','is','are','in','on','at','to','and','or','but','for','of','with','as','by','was','be','been','this','that','it','from','its','has','have','will','not']);
+    const _toks = (s) => s.split(/[^a-z0-9À-ɏ]+/).filter(t => t.length >= 3 && !_stop.has(t));
+    const outTokSet = new Set(_toks(outT));
+    const srcTokSet = new Set(_toks(srcT));
+    let matched = 0;
+    for (const t of outTokSet) if (srcTokSet.has(t)) matched++;
+    const tokenRecall = outTokSet.size ? matched / outTokSet.size : 1;
+    const wordCountRatio = srcT.length ? outT.length / srcT.length : 1;
+    const lowGrounding = tokenRecall < 0.85 && wordCountRatio > 1.20;
+    const suspected = fabricatedNumbers.length > 0 || fabricatedUrls.length > 0 || fabricatedDates.length > 0 || lowGrounding;
+    return {
+      suspected,
+      fabricatedNumbers: fabricatedNumbers.slice(0, 10),
+      fabricatedDates: fabricatedDates.slice(0, 10),
+      fabricatedUrls: fabricatedUrls.slice(0, 10),
+      tokenRecall: Math.round(tokenRecall * 100) / 100,
+      wordCountRatio: Math.round(wordCountRatio * 100) / 100,
+      lowGrounding,
+    };
+  };
   const acceptFixedHtmlDetailed = (fixed, original, opts) => {
     if (!fixed) return { accepted: false, reason: 'empty-output' };
     if (!original) return { accepted: false, reason: 'no-original' };
@@ -448,6 +513,16 @@ var createDocPipeline = function(deps) {
     }
     if (!(fixed.includes('<!DOCTYPE') || fixed.includes('<html') || fixed.includes('<main') || fixed.includes('<body'))) {
       return { accepted: false, reason: 'no-doc-markers' };
+    }
+    // Content-fabrication (hallucination) signal — WARN-ONLY, faithful path only. Attaches
+    // a `fabrication` report to the accepted decision; never flips `accepted` (see
+    // detectFabrication). The caller surfaces it so the teacher can verify before
+    // distributing — the shrink guards above only catch lost content, not invented content.
+    if (opts && opts.mode === 'faithful') {
+      try {
+        const _fab = detectFabrication(fixed, original, opts);
+        if (_fab && _fab.suspected) return { accepted: true, fabrication: _fab };
+      } catch (_) {}
     }
     return { accepted: true };
   };
@@ -7121,9 +7196,21 @@ ${currentHtml}
 
 Return ONLY the complete fixed HTML.`, true);
 
-          const _singlePassDecision = acceptFixedHtmlDetailed(fixedHtml, currentHtml);
+          const _singlePassDecision = acceptFixedHtmlDetailed(fixedHtml, currentHtml, { mode: 'faithful' });
           if (_singlePassDecision.accepted) {
             currentHtml = fixedHtml;
+            // Hallucination guard (WARN-only): the AI was told to preserve content
+            // word-for-word, so numbers/dates/URLs in the output that aren't in its input
+            // are likely invented. Surface for teacher review — false info is worse than a
+            // missed tag. Does not block the fix (accepted stayed true).
+            const _fab = _singlePassDecision.fabrication;
+            if (_fab && _fab.suspected) {
+              const _samples = [].concat(_fab.fabricatedNumbers || [], _fab.fabricatedDates || [], _fab.fabricatedUrls || []).slice(0, 6);
+              const _detail = _samples.length ? ': ' + _samples.join(', ')
+                : (_fab.lowGrounding ? ' (only ' + Math.round(_fab.tokenRecall * 100) + '% of output words trace to the source, ' + _fab.wordCountRatio + '× size)' : '');
+              warnLog('[Hallucination] Remediation may have added content not in the source' + _detail + ' — review before distributing.');
+              if (typeof addToast === 'function') addToast('⚠ AI remediation may have added content not in the source' + _detail + '. Review the Diff panel before distributing.', 'warning');
+            }
           } else if (fixedHtml) {
             const _pct = _singlePassDecision.textRatio != null
               ? Math.round((1 - _singlePassDecision.textRatio) * 100)
