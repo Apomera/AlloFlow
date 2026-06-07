@@ -257,7 +257,7 @@ test.describe('createTaggedPdf — non-Latin OCR text layer (Arabic)', () => {
           groundTruthPages: [{ pageNum: 1, text: arabic, words: arabicWords, pageW: 612, pageH: 792 }],
         };
         const result = await pipeline.createTaggedPdf(inputBytes, fixResult, { title: 'Arabic Scan', lang: 'ar' });
-        return { ok: true, byteLength: result.bytes ? result.bytes.length : 0, ocrTextLayer: result.ocrTextLayer || null, arabicCharCount: (arabic.match(/[؀-ۿ]/g) || []).length };
+        return { ok: true, byteLength: result.bytes ? result.bytes.length : 0, ocrTextLayer: result.ocrTextLayer || null, roundTrip: result.roundTrip || null, arabicCharCount: (arabic.match(/[؀-ۿ]/g) || []).length };
       } catch (e: any) {
         return { error: (e && e.message) || String(e), stack: e && e.stack };
       }
@@ -276,5 +276,20 @@ test.describe('createTaggedPdf — non-Latin OCR text layer (Arabic)', () => {
     expect(ocrSummary.ocrTextLayer.nonLatinDropped, 'no non-Latin chars should be dropped').toBe(false);
     expect(ocrSummary.ocrTextLayer.droppedChars, 'zero dropped chars with the Unicode font').toBe(0);
     expect(ocrSummary.ocrTextLayer.coveragePct).toBe(100);
+  });
+
+  test('Round-trip self-check confirms the tag tree survived save', () => {
+    expect(ocrSummary, 'beforeAll must populate ocrSummary').toBeTruthy();
+    expect(ocrSummary.error, ocrSummary.error ? `pipeline error: ${ocrSummary.error}` : '').toBeFalsy();
+    expect(ocrSummary.roundTrip, 'result must report roundTrip (re-parse of saved bytes)').toBeTruthy();
+    // Decisive: re-parsing the SAVED bytes finds the structure intact — StructTreeRoot,
+    // MarkInfo, /Lang present, and no catastrophic StructElem loss at serialization.
+    // This is the post-save check the in-memory pdfUa1Checks can't perform (it would
+    // have caught the Approach-1 content-loss-at-save bug).
+    expect(
+      ocrSummary.roundTrip.ok,
+      'round-trip should pass; failures: ' + JSON.stringify((ocrSummary.roundTrip.checks || []).filter((c: any) => c.status === 'fail'))
+    ).toBe(true);
+    expect(ocrSummary.roundTrip.structElemsSaved, 'saved file must contain StructElem objects').toBeGreaterThan(0);
   });
 });

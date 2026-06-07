@@ -2446,11 +2446,15 @@ Return ONLY JSON:
             const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
             const summary = _result && _result.summary || null;
             const pdfUa1Checks = _result && _result.pdfUa1Checks || null;
+            const ocrTextLayer = _result && _result.ocrTextLayer || null;
+            const roundTrip = _result && _result.roundTrip || null;
             if (pdfUa1Checks) {
               setLastTaggedValidation({
                 fileName: pendingPdfFile?.name || "document.pdf",
                 title,
                 pdfUa1Checks,
+                ocrTextLayer,
+                roundTrip,
                 generatedAt: (/* @__PURE__ */ new Date()).toISOString()
               });
             }
@@ -2460,6 +2464,16 @@ Return ONLY JSON:
             }
             const blob = new Blob([taggedBytes], { type: "application/pdf" });
             safeDownloadBlob(blob, (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged.pdf");
+            if (ocrTextLayer && typeof ocrTextLayer.coveragePct === "number" && (ocrTextLayer.coveragePct < 100 || ocrTextLayer.nonLatinDropped)) {
+              addToast("⚠ Searchable text layer covers " + ocrTextLayer.coveragePct + "% of the scanned text — " + (ocrTextLayer.droppedChars || 0) + " character(s) in a non-Latin script (e.g. CJK) could not be embedded with the built-in font, so those passages will not be searchable or read aloud. A Unicode-font pass is needed for full coverage.", "error");
+            }
+            if (roundTrip && roundTrip.ok === false) {
+              const _rtFails = (roundTrip.checks || []).filter((c) => c && c.status === "fail").map((c) => c.rule);
+              const _rtMsg = _rtFails.length ? _rtFails.join("; ") : (roundTrip.warnings || []).join("; ") || "structure may not have survived serialization";
+              addToast("⚠ Post-save structure check FAILED: " + _rtMsg + ". Do not distribute until verified in PAC 3 or a screen reader.", "error");
+            } else if (roundTrip && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
+              addToast("Note (structure self-check): " + roundTrip.warnings.join("; "), "info");
+            }
             if (summary) {
               const parts = [];
               if (summary.headings) parts.push(summary.headings + (summary.headings === 1 ? " heading" : " headings"));

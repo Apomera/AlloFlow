@@ -12879,7 +12879,65 @@ tr { page-break-inside: avoid; }
     // useObjectStreams=false produces slightly larger PDFs but more
     // compatible with older readers and validators.
     const _bytes = await doc.save({ useObjectStreams: false, addDefaultPage: false });
-    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks, metadataStamped: { producer: _producerStamped, xmp: _xmpStamped }, ocrTextLayer: { coveragePct: _ocrCoveragePct, nonLatinDropped: _ocrLayerNonLatinDropped, droppedChars: _ocrDroppedChars } };
+    // ── Round-trip self-check (Tier A) ──
+    // _pdfUa1Checks above walk the IN-MEMORY structures (before save). This RE-PARSES
+    // the SAVED bytes and walks the result, to confirm the structure actually survived
+    // serialization — catching the content-loss-at-save class (StructElems that
+    // registered fine but vanished at save, the Approach-1 failure mode that a
+    // before-save check can't see). Advisory: it reports, never blocks the download.
+    let _roundTrip = { ok: null, checks: [], warnings: [] };
+    try {
+      const _rt = await PDFDocument.load(_bytes, { updateMetadata: false });
+      const _rtCat = _rt.catalog;
+      const _rtChecks = [];
+      const _rtWarn = [];
+      let _rtHasStruct = false, _rtKLen = 0, _rtStructCount = 0;
+      try {
+        const _str = _rtCat.lookup(PDFName.of('StructTreeRoot')); // lookup() resolves the indirect ref (get() returns the raw PDFRef)
+        _rtHasStruct = !!_str;
+        const _k = _str && _str.lookup ? _str.lookup(PDFName.of('K')) : null;
+        _rtKLen = (_k && typeof _k.size === 'function') ? _k.size() : (_k ? 1 : 0);
+        try {
+          const _objs = _rt.context.enumerateIndirectObjects();
+          for (const _entry of _objs) {
+            const _obj = _entry && _entry[1];
+            try { const _ty = _obj && _obj.get && _obj.get(PDFName.of('Type')); if (_ty && String(_ty) === '/StructElem') _rtStructCount++; } catch (_) {}
+          }
+        } catch (_) {}
+      } catch (_) {}
+      _rtChecks.push({ rule: 'StructTreeRoot survived save', status: _rtHasStruct ? 'pass' : 'fail' });
+      _rtChecks.push({ rule: 'Structure tree has content', status: _rtKLen > 0 ? 'pass' : 'fail', detail: _rtKLen + ' top-level element(s)' });
+      let _rtMarked = false;
+      try { const _mi = _rtCat.lookup(PDFName.of('MarkInfo')); const _mk = _mi && _mi.lookup ? _mi.lookup(PDFName.of('Marked')) : null; _rtMarked = !!_mk && String(_mk) === 'true'; } catch (_) {}
+      _rtChecks.push({ rule: 'MarkInfo/Marked survived', status: _rtMarked ? 'pass' : 'fail' });
+      let _rtLang = false;
+      try { _rtLang = !!_rtCat.lookup(PDFName.of('Lang')); } catch (_) {}
+      _rtChecks.push({ rule: 'Document /Lang survived', status: _rtLang ? 'pass' : 'warn' });
+      // Content-loss guard: compare the StructElem count in the SAVED file to what we
+      // built in memory. A large shortfall means a subtree was dropped at serialization.
+      const _builtCount = ((typeof structElemRefs !== 'undefined' && Array.isArray(structElemRefs)) ? structElemRefs.length : 0)
+        + ((typeof pageElemRefs !== 'undefined' && Array.isArray(pageElemRefs)) ? pageElemRefs.length : 0)
+        + ((typeof fieldElemRefs !== 'undefined' && Array.isArray(fieldElemRefs)) ? fieldElemRefs.length : 0);
+      if (_builtCount > 0 && _rtStructCount > 0) {
+        const _ratio = _rtStructCount / _builtCount;
+        if (_ratio < 0.9) {
+          _rtWarn.push('Only ' + _rtStructCount + ' of ~' + _builtCount + ' structure elements survived save (' + Math.round(_ratio * 100) + '%) — possible content loss at serialization.');
+          _rtChecks.push({ rule: 'No structure lost at save', status: 'fail', detail: _rtStructCount + '/' + _builtCount });
+        } else {
+          _rtChecks.push({ rule: 'No structure lost at save', status: 'pass', detail: _rtStructCount + '/' + _builtCount });
+        }
+      } else if (_builtCount > 0 && _rtStructCount === 0) {
+        _rtWarn.push('No StructElem objects found in the saved file though ' + _builtCount + ' were built — the tag tree did not survive save.');
+        _rtChecks.push({ rule: 'No structure lost at save', status: 'fail', detail: '0/' + _builtCount });
+      }
+      const _rtFailed = _rtChecks.some(c => c.status === 'fail');
+      _roundTrip = { ok: !_rtFailed, checks: _rtChecks, warnings: _rtWarn, structElemsSaved: _rtStructCount, structElemsBuilt: _builtCount };
+      if (_rtFailed) { try { warnLog('[createTaggedPdf] round-trip self-check FAILED: ' + JSON.stringify(_rtChecks.filter(c => c.status === 'fail'))); } catch (_) {} }
+    } catch (_rtErr) {
+      _roundTrip = { ok: null, checks: [], warnings: ['Round-trip re-parse threw: ' + (_rtErr && _rtErr.message)] };
+      try { warnLog('[createTaggedPdf] round-trip re-parse failed (non-fatal): ' + (_rtErr && _rtErr.message)); } catch (_) {}
+    }
+    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks, metadataStamped: { producer: _producerStamped, xmp: _xmpStamped }, ocrTextLayer: { coveragePct: _ocrCoveragePct, nonLatinDropped: _ocrLayerNonLatinDropped, droppedChars: _ocrDroppedChars }, roundTrip: _roundTrip };
   };
 
   // Defense-in-depth for the print/preview windows: the body HTML is already
