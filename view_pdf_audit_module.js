@@ -11,6 +11,48 @@ var useContext = React.useContext;
 var Fragment = React.Fragment;
 var warnLog = (typeof window !== 'undefined' && window.warnLog) || console.warn.bind(console);
 var debugLog = (typeof window !== 'undefined' && (window.__alloDebugLog || window.debugLog)) || function(){};
+// Merge multiple TTS audio Blobs into ONE downloadable file. callTTS returns a
+// COMPLETE audio file per segment; for WAV (Gemini TTS) each carries its own 44-byte
+// RIFF header, so naively Blob-concatenating them embeds extra headers mid-stream and
+// players stop after the first segment. We strip each WAV to PCM and write ONE header
+// (mirrors the working audio_helpers pcmToWav). MP3 fallback blobs concatenate cleanly.
+async function _concatAudioBlobs(blobs) {
+  if (!blobs || blobs.length === 0) return null;
+  if (blobs.length === 1) return blobs[0];
+  const first = new Uint8Array(await blobs[0].arrayBuffer());
+  const isWav = first.length > 12 &&
+    first[0] === 0x52 && first[1] === 0x49 && first[2] === 0x46 && first[3] === 0x46 &&
+    first[8] === 0x57 && first[9] === 0x41 && first[10] === 0x56 && first[11] === 0x45;
+  if (!isWav) { return new Blob(blobs, { type: blobs[0].type || "audio/mpeg" }); }
+  const pcms = [];
+  for (let i = 0; i < blobs.length; i++) {
+    const buf = i === 0 ? first : new Uint8Array(await blobs[i].arrayBuffer());
+    if (buf.length <= 44 || buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) continue;
+    let dataStart = 44;
+    for (let j = 12; j < Math.min(buf.length - 8, 256); j++) {
+      if (buf[j] === 0x64 && buf[j + 1] === 0x61 && buf[j + 2] === 0x74 && buf[j + 3] === 0x61) { dataStart = j + 8; break; }
+    }
+    pcms.push(buf.subarray(dataStart));
+  }
+  if (pcms.length === 0) return null;
+  const total = pcms.reduce(function (n, p) { return n + p.length; }, 0);
+  const pcm = new Uint8Array(total);
+  let off = 0;
+  for (let i = 0; i < pcms.length; i++) { pcm.set(pcms[i], off); off += pcms[i].length; }
+  const sampleRate = 24000, numCh = 1, bps = 16;
+  const blockAlign = numCh * bps / 8, byteRate = sampleRate * blockAlign;
+  const outBuf = new ArrayBuffer(44 + pcm.length);
+  const dv = new DataView(outBuf);
+  const ws = function (o, s) { for (let k = 0; k < s.length; k++) dv.setUint8(o + k, s.charCodeAt(k)); };
+  ws(0, "RIFF"); dv.setUint32(4, 36 + pcm.length, true); ws(8, "WAVE");
+  ws(12, "fmt "); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, numCh, true);
+  dv.setUint32(24, sampleRate, true); dv.setUint32(28, byteRate, true);
+  dv.setUint16(32, blockAlign, true); dv.setUint16(34, bps, true);
+  ws(36, "data"); dv.setUint32(40, pcm.length, true);
+  new Uint8Array(outBuf, 44).set(pcm);
+  return new Blob([outBuf], { type: "audio/wav" });
+}
+
 var _lazyIcon = function (name) {
   return function (props) {
     var I = window.AlloIcons && window.AlloIcons[name];
@@ -3213,7 +3255,7 @@ Return simplified text with # for headings, - for lists.`, false);
       for (let si = 0; si < segments.length; si++) {
         if (btn) btn.textContent = "\u23F3 " + (si + 1) + "/" + segments.length + "...";
         try {
-          const url = await callTTS(segments[si], selectedVoice || "Puck", 1, 1);
+          const url = await callTTS(segments[si], selectedVoice || "Puck", 1, 2);
           if (url) {
             if (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http")) {
               const resp = await fetch(url);
@@ -3242,11 +3284,12 @@ Return simplified text with # for headings, - for lists.`, false);
         addToast(t("toasts.audio_generation_failed_tts_may"), "error");
         return;
       }
-      const combined = new Blob(audioBlobs, { type: audioBlobs[0].type || "audio/wav" });
+      const combined = await _concatAudioBlobs(audioBlobs);
+      if (!combined) { addToast(t("toasts.audio_generation_failed_tts_may"), "error"); return; }
       const dlUrl = URL.createObjectURL(combined);
       const a = document.createElement("a");
       a.href = dlUrl;
-      a.download = (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-audio." + (audioBlobs[0].type?.includes("mp3") ? "mp3" : "wav");
+      a.download = (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-audio." + (combined.type?.includes("mpeg") || combined.type?.includes("mp3") ? "mp3" : "wav");
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -6059,7 +6102,7 @@ Return ONLY JSON:
       for (let si = 0; si < segments.length; si++) {
         if (btn) btn.textContent = "\u23F3 " + (si + 1) + "/" + segments.length;
         try {
-          const url = await callTTS(segments[si], selectedVoice || "Puck", 1, 1);
+          const url = await callTTS(segments[si], selectedVoice || "Puck", 1, 2);
           if (url && (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http"))) {
             const r = await fetch(url);
             blobs.push(await r.blob());
@@ -6083,11 +6126,12 @@ Return ONLY JSON:
         addToast(t("toasts.audio_generation_failed_check_tts"), "error");
         return;
       }
-      const combined = new Blob(blobs, { type: blobs[0].type || "audio/wav" });
+      const combined = await _concatAudioBlobs(blobs);
+      if (!combined) { addToast(t("toasts.audio_generation_failed_check_tts"), "error"); return; }
       const dlUrl = URL.createObjectURL(combined);
       const a = document.createElement("a");
       a.href = dlUrl;
-      a.download = "document-audio." + (blobs[0].type?.includes("mp3") ? "mp3" : "wav");
+      a.download = "document-audio." + (combined.type?.includes("mpeg") || combined.type?.includes("mp3") ? "mp3" : "wav");
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

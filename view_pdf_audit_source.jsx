@@ -11,6 +11,55 @@
 // Run `node _verify_view_props.cjs AlloFlowANTI.txt PdfAuditView` after any
 // edit to confirm the host still supplies every prop.
 
+// Merge multiple TTS audio Blobs into ONE downloadable file.
+// callTTS returns a COMPLETE audio file per segment. For WAV (the Gemini TTS path)
+// each blob carries its own 44-byte RIFF header, so naively Blob-concatenating them
+// embeds extra RIFF headers mid-stream — players stop after the first segment
+// (silent/glitchy audio). We strip each WAV down to its PCM data and write ONE header,
+// mirroring the working leveled-text path (audio_helpers pcmToWav). MP3 fallback blobs
+// (frame-based) concatenate cleanly, so those are left untouched. Self-contained: no
+// new props (callTTS already supplies the per-segment WAV); avoids a host prop change.
+async function _concatAudioBlobs(blobs) {
+  if (!blobs || blobs.length === 0) return null;
+  if (blobs.length === 1) return blobs[0];
+  const first = new Uint8Array(await blobs[0].arrayBuffer());
+  const isWav = first.length > 12 &&
+    first[0] === 0x52 && first[1] === 0x49 && first[2] === 0x46 && first[3] === 0x46 &&   // 'RIFF'
+    first[8] === 0x57 && first[9] === 0x41 && first[10] === 0x56 && first[11] === 0x45;   // 'WAVE'
+  if (!isWav) {
+    // Non-WAV (e.g. MP3 fallback): frame concatenation is valid; keep prior behavior.
+    return new Blob(blobs, { type: blobs[0].type || 'audio/mpeg' });
+  }
+  // WAV: strip each file to its PCM data chunk, then write a single canonical header.
+  const pcms = [];
+  for (let i = 0; i < blobs.length; i++) {
+    const buf = i === 0 ? first : new Uint8Array(await blobs[i].arrayBuffer());
+    if (buf.length <= 44 || buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) continue; // skip non-RIFF
+    let dataStart = 44; // canonical header; scan for the 'data' chunk to be safe
+    for (let j = 12; j < Math.min(buf.length - 8, 256); j++) {
+      if (buf[j] === 0x64 && buf[j + 1] === 0x61 && buf[j + 2] === 0x74 && buf[j + 3] === 0x61) { dataStart = j + 8; break; } // 'data'
+    }
+    pcms.push(buf.subarray(dataStart));
+  }
+  if (pcms.length === 0) return null;
+  const total = pcms.reduce(function (n, p) { return n + p.length; }, 0);
+  const pcm = new Uint8Array(total);
+  let off = 0;
+  for (let i = 0; i < pcms.length; i++) { pcm.set(pcms[i], off); off += pcms[i].length; }
+  const sampleRate = 24000, numCh = 1, bps = 16; // matches tts_module pcmToWav
+  const blockAlign = numCh * bps / 8, byteRate = sampleRate * blockAlign;
+  const outBuf = new ArrayBuffer(44 + pcm.length);
+  const dv = new DataView(outBuf);
+  const ws = function (o, s) { for (let k = 0; k < s.length; k++) dv.setUint8(o + k, s.charCodeAt(k)); };
+  ws(0, 'RIFF'); dv.setUint32(4, 36 + pcm.length, true); ws(8, 'WAVE');
+  ws(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, numCh, true);
+  dv.setUint32(24, sampleRate, true); dv.setUint32(28, byteRate, true);
+  dv.setUint16(32, blockAlign, true); dv.setUint16(34, bps, true);
+  ws(36, 'data'); dv.setUint32(40, pcm.length, true);
+  new Uint8Array(outBuf, 44).set(pcm);
+  return new Blob([outBuf], { type: 'audio/wav' });
+}
+
 function PdfAuditView(props) {
   const {
     STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit,
@@ -4712,7 +4761,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           for (let si = 0; si < segments.length; si++) {
                             if (btn) btn.textContent = '⏳ ' + (si + 1) + '/' + segments.length + '...';
                             try {
-                              const url = await callTTS(segments[si], selectedVoice || 'Puck', 1, 1);
+                              const url = await callTTS(segments[si], selectedVoice || 'Puck', 1, 2);
                               if (url) {
                                 if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http')) {
                                   const resp = await fetch(url);
@@ -4733,11 +4782,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           }
                           if (btn) { btn.textContent = '🎧 Download Audio'; btn.disabled = false; }
                           if (audioBlobs.length === 0) { addToast(t('toasts.audio_generation_failed_tts_may'), 'error'); return; }
-                          const combined = new Blob(audioBlobs, { type: audioBlobs[0].type || 'audio/wav' });
+                          const combined = await _concatAudioBlobs(audioBlobs);
+                          if (!combined) { addToast(t('toasts.audio_generation_failed_tts_may'), 'error'); return; }
                           const dlUrl = URL.createObjectURL(combined);
                           const a = document.createElement('a');
                           a.href = dlUrl;
-                          a.download = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-audio.' + (audioBlobs[0].type?.includes('mp3') ? 'mp3' : 'wav');
+                          a.download = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-audio.' + (combined.type?.includes('mpeg') || combined.type?.includes('mp3') ? 'mp3' : 'wav');
                           document.body.appendChild(a); a.click(); document.body.removeChild(a);
                           URL.revokeObjectURL(dlUrl);
                           addToast(t('toasts.audio_downloaded') + audioBlobs.length + '/' + segments.length + ' sections' + (failed > 0 ? ' (' + failed + ' failed)' : ''), 'success');
@@ -7282,7 +7332,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   for (let si = 0; si < segments.length; si++) {
                     if (btn) btn.textContent = '⏳ ' + (si + 1) + '/' + segments.length;
                     try {
-                      const url = await callTTS(segments[si], selectedVoice || 'Puck', 1, 1);
+                      const url = await callTTS(segments[si], selectedVoice || 'Puck', 1, 2);
                       if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
                         const r = await fetch(url); blobs.push(await r.blob());
                       } else { failed++; }
@@ -7296,10 +7346,11 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   }
                   if (btn) { btn.textContent = '🎧 Download Audio'; btn.disabled = false; }
                   if (blobs.length === 0) { addToast(t('toasts.audio_generation_failed_check_tts'), 'error'); return; }
-                  const combined = new Blob(blobs, { type: blobs[0].type || 'audio/wav' });
+                  const combined = await _concatAudioBlobs(blobs);
+                  if (!combined) { addToast(t('toasts.audio_generation_failed_check_tts'), 'error'); return; }
                   const dlUrl = URL.createObjectURL(combined);
                   const a = document.createElement('a');
-                  a.href = dlUrl; a.download = 'document-audio.' + (blobs[0].type?.includes('mp3') ? 'mp3' : 'wav');
+                  a.href = dlUrl; a.download = 'document-audio.' + (combined.type?.includes('mpeg') || combined.type?.includes('mp3') ? 'mp3' : 'wav');
                   document.body.appendChild(a); a.click(); document.body.removeChild(a);
                   URL.revokeObjectURL(dlUrl);
                   addToast(t('toasts.downloaded') + blobs.length + '/' + segments.length + (failed > 0 ? ' (' + failed + ' failed)' : ''), 'success');
