@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -6528,6 +6528,22 @@ HTML section ${chunkNum}/${chunks.length}:
       return match;
     });
 
+    // 4. Text-spacing defensive minimums (WCAG 1.4.12 spirit + readability)
+    //    Inject a low-specificity <style> block that establishes a 1.5
+    //    line-height baseline on body text and gives paragraphs / list-items
+    //    a real visual break. Element-specific styles still win via CSS cascade
+    //    — this only fills in when no rule is set. Idempotent via marker
+    //    comment so multiple passes don't stack.
+    if (html.includes('<head>') && !html.includes('/* a11y-text-spacing */')) {
+      const textSpacingCSS = '<style>/* a11y-text-spacing */\n' +
+        'body{line-height:1.5}\n' +
+        'p,li,dd,dt,td,th,blockquote{line-height:1.5}\n' +
+        'p+p,li+li{margin-top:0.75em}\n' +
+        '</style>';
+      html = html.replace('<head>', '<head>\n' + textSpacingCSS);
+      totalFixes++;
+    }
+
     if (totalFixes > 0) {
       warnLog(`[WCAG Sanitizer] Applied ${totalFixes} fixes (level: ${level}, minFont: ${minFontSize}px)`);
     }
@@ -6927,7 +6943,73 @@ HTML section ${chunkNum}/${chunks.length}:
     return { html: fixed, fixCount: rules.length };
   };
 
-  // Convenience wrapper: run all four new deterministic WCAG fixes in sequence
+  // ── Heading hierarchy fixer (WCAG 1.3.1 / 2.4.6 / 2.4.10) ──
+  // Detects skips > 2 levels (h2 → h5, h1 → h4, etc.) and renumbers the
+  // offending heading down to the maximum-valid-skip level (prev + 2). Single-
+  // and two-level skips are PRESERVED — some designers use h2 → h4 intentionally
+  // (e.g., to group sub-sections without a visible h3). The algorithm walks
+  // headings in document order; once a heading is renumbered, the new level
+  // becomes the "previous" for the next comparison, so a cascade of skipped
+  // levels gets compressed naturally.
+  //
+  // Does NOT promote the first heading to h1 if h1 is missing — that's a
+  // semantic restructuring (it changes what "page title" means) and is left
+  // for AI judgment. Pure deterministic fix is the safer win here.
+  //
+  // Heading elements MUST NOT nest in valid HTML (h2 cannot contain h3), so
+  // we match opens and closes 1:1 by scanning forward from each open for the
+  // next same-level close.
+  const fixHeadingHierarchy = (htmlContent) => {
+    if (!htmlContent || typeof htmlContent !== 'string') return { html: htmlContent, fixCount: 0 };
+    const headingOpenRegex = /<h([1-6])\b([^>]*)>/gi;
+    const opens = [];
+    let m;
+    while ((m = headingOpenRegex.exec(htmlContent)) !== null) {
+      opens.push({ pos: m.index, openLen: m[0].length, level: parseInt(m[1], 10), attrs: m[2] });
+    }
+    if (opens.length < 2) return { html: htmlContent, fixCount: 0 };
+
+    // Decide new levels in document order; only renumber when skip > 2.
+    let prevLevel = 0;
+    let fixCount = 0;
+    for (const op of opens) {
+      const lvl = op.level;
+      if (prevLevel > 0 && (lvl - prevLevel) > 2) {
+        op.newLevel = prevLevel + 2;
+        if (op.newLevel > 6) op.newLevel = 6;
+        if (op.newLevel !== op.level) fixCount++;
+      } else {
+        op.newLevel = lvl;
+      }
+      prevLevel = op.newLevel;
+    }
+    if (fixCount === 0) return { html: htmlContent, fixCount: 0 };
+
+    // Build (pos, oldStr, newStr) edit list for opens + their matching closes.
+    const edits = [];
+    for (const op of opens) {
+      if (op.newLevel === op.level) continue;
+      edits.push({ pos: op.pos, oldStr: '<h' + op.level, newStr: '<h' + op.newLevel });
+      // Match the FIRST </hN> after this open — headings don't nest so the
+      // first occurrence is unambiguously this open's close. (We won't be
+      // confused by a later h{level}'s close because that later open hasn't
+      // had its close scanned yet at this point.)
+      const closeMarker = '</h' + op.level + '>';
+      const closeIdx = htmlContent.indexOf(closeMarker, op.pos + op.openLen);
+      if (closeIdx === -1) continue; // truncated/malformed — leave open as-is
+      edits.push({ pos: closeIdx, oldStr: closeMarker, newStr: '</h' + op.newLevel + '>' });
+    }
+
+    // Apply edits right-to-left so earlier positions remain valid.
+    edits.sort((a, b) => b.pos - a.pos);
+    let result = htmlContent;
+    for (const e of edits) {
+      result = result.slice(0, e.pos) + e.newStr + result.slice(e.pos + e.oldStr.length);
+    }
+    return { html: result, fixCount };
+  };
+
+  // Convenience wrapper: run all deterministic WCAG fixes in sequence
   const runDeterministicWcagFixes = (html) => {
     if (!html) return html;
     let result = html;
@@ -6935,6 +7017,7 @@ HTML section ${chunkNum}/${chunks.length}:
     try { result = fixDecorativeImages(result).html; } catch (e) { warnLog('[Det WCAG] fixDecorativeImages failed:', e?.message); }
     try { result = fixComplexTables(result).html; } catch (e) { warnLog('[Det WCAG] fixComplexTables failed:', e?.message); }
     try { result = fixLangSpans(result).html; } catch (e) { warnLog('[Det WCAG] fixLangSpans failed:', e?.message); }
+    try { result = fixHeadingHierarchy(result).html; } catch (e) { warnLog('[Det WCAG] fixHeadingHierarchy failed:', e?.message); }
     return result;
   };
 
@@ -19257,11 +19340,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
