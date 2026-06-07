@@ -212,3 +212,58 @@ test.describe('createTaggedPdf — tag-tree golden master', () => {
     expect(summary.orphanedLeafCount).toBeLessThanOrEqual(summary.leafCount);
   });
 });
+
+// Non-Latin OCR: a scanned (image-only) document whose OCR text is Arabic. Before the
+// Unicode-font embed, Helvetica/WinAnsi dropped every Arabic glyph → the invisible text
+// layer shipped EMPTY (coverage 0%). With the embed, the Noto Sans Arabic subset encodes
+// the script → full coverage. This is the regression gate for the multilingual fix.
+let ocrSummary: any = null;
+test.describe('createTaggedPdf — non-Latin OCR text layer (Arabic)', () => {
+  test.beforeAll(async ({ browser }) => {
+    test.setTimeout(120000); // CDN fetch of fontkit (~760KB) + Noto Sans Arabic (~235KB)
+    const page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.addScriptTag({ url: PDFLIB_CDN });
+    await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
+    await page.addScriptTag({ path: MODULE_PATH });
+    await page.waitForFunction(() => !!((window as any).AlloModules && (window as any).AlloModules.createDocPipeline), null, { timeout: 20000 });
+
+    ocrSummary = await page.evaluate(async () => {
+      const PDFLib = (window as any).PDFLib;
+      const { PDFDocument } = PDFLib;
+      try {
+        const inDoc = await PDFDocument.create();
+        inDoc.addPage([612, 792]); // image-only / scanned page (no text layer)
+        const inputBytes = await inDoc.save();
+        const pipeline = (window as any).AlloModules.createDocPipeline({
+          callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+          addToast: () => {}, t: (k: string) => k, isRtlLang: () => true, updateExportPreview: () => {}, getDefaultTitle: () => 'Document', state: {},
+        });
+        const arabic = 'هذا نص تجريبي باللغة العربية لاختبار طبقة النص غير المرئية. الفصل الأول: مقدمة موجزة.';
+        const fixResult = {
+          accessibleHtml: `<!DOCTYPE html><html lang="ar"><body><main><h1>الفصل الأول</h1><p>${arabic}</p></main></body></html>`,
+          groundTruthMethod: 'tesseract',                 // → isScanned = true
+          groundTruthPages: [{ pageNum: 1, text: arabic }], // → ocrPages
+        };
+        const result = await pipeline.createTaggedPdf(inputBytes, fixResult, { title: 'Arabic Scan', lang: 'ar' });
+        return { ok: true, byteLength: result.bytes ? result.bytes.length : 0, ocrTextLayer: result.ocrTextLayer || null, arabicCharCount: (arabic.match(/[؀-ۿ]/g) || []).length };
+      } catch (e: any) {
+        return { error: (e && e.message) || String(e), stack: e && e.stack };
+      }
+    });
+    await page.close();
+    console.log('[non-Latin OCR] summary:', JSON.stringify(ocrSummary, null, 2));
+  });
+
+  test('Arabic scanned OCR layer embeds a Unicode font — no characters dropped', () => {
+    expect(ocrSummary, 'beforeAll must populate ocrSummary').toBeTruthy();
+    expect(ocrSummary.error, ocrSummary.error ? `pipeline error: ${ocrSummary.error}\n${ocrSummary.stack || ''}` : '').toBeFalsy();
+    expect(ocrSummary.ocrTextLayer, 'result must report ocrTextLayer').toBeTruthy();
+    // The decisive assertion: Arabic is entirely non-WinAnsi, so if it had fallen back to
+    // Helvetica every glyph would be dropped (coverage 0%). Full coverage proves the Noto
+    // Sans Arabic subset was embedded and the text was drawn with it.
+    expect(ocrSummary.ocrTextLayer.nonLatinDropped, 'no non-Latin chars should be dropped').toBe(false);
+    expect(ocrSummary.ocrTextLayer.droppedChars, 'zero dropped chars with the Unicode font').toBe(0);
+    expect(ocrSummary.ocrTextLayer.coveragePct).toBe(100);
+  });
+});

@@ -11967,6 +11967,73 @@ tr { page-break-inside: avoid; }
       try { _helvFont = await doc.embedFont(StandardFonts.Helvetica); } catch(_) { _helvFont = null; }
       return _helvFont;
     };
+    // ── Unicode OCR font embedding (non-Latin scripts) ──
+    // Helvetica (WinAnsi) can't encode Arabic / Ethiopic / Devanagari / Cyrillic / etc.,
+    // so a scanned non-English document's invisible OCR text layer would otherwise ship
+    // EMPTY (the opposite of accessible — and exactly the refugee/ELL case AlloFlow targets).
+    // For the dominant non-Latin script on a page we lazy-load the matching Noto font
+    // (subset-embedded via fontkit) and draw the OCR text with it, so the text is
+    // screen-reader-readable + searchable. The layer is invisible (opacity 0) and exists
+    // for AT/extraction — complex shaping/bidi are irrelevant; only the Unicode code points
+    // + ToUnicode mapping matter, which embedFont provides.
+    // CJK is DETECTED but not embedded (the source fonts are ~10-16MB to fetch+subset per
+    // doc) — left to the Helvetica fallback + coverage warning. Mixed-script pages embed the
+    // dominant script; any uncovered glyphs degrade to .notdef (still better than an empty
+    // layer). Requires a network fetch (consistent with the pipeline already loading
+    // pdf-lib/pdf.js/axe/Tesseract from CDNs); falls back gracefully on any failure.
+    const _notoUrl = (fam) => 'https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/' + fam + '/hinted/ttf/' + fam + '-Regular.ttf';
+    const _SCRIPT_FONT = {
+      arabic: 'NotoSansArabic', ethiopic: 'NotoSansEthiopic', devanagari: 'NotoSansDevanagari',
+      hebrew: 'NotoSansHebrew', thai: 'NotoSansThai', lao: 'NotoSansLao', khmer: 'NotoSansKhmer',
+      myanmar: 'NotoSansMyanmar', latinplus: 'NotoSans', // Greek + Cyrillic (basic Latin handled by Helvetica)
+    };
+    const _detectScript = (s) => {
+      const t = String(s || '');
+      const ranges = {
+        arabic: /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/g,
+        ethiopic: /[ሀ-፿]/g, devanagari: /[ऀ-ॿ]/g, hebrew: /[֐-׿]/g,
+        thai: /[฀-๿]/g, lao: /[຀-໿]/g, khmer: /[ក-៿]/g,
+        myanmar: /[က-႟]/g, cjk: /[぀-ヿ一-鿿가-힯]/g,
+        latinplus: /[Ͱ-ϿЀ-ӿ]/g,
+      };
+      let best = null, bestN = 0;
+      for (const k of Object.keys(ranges)) { const n = (t.match(ranges[k]) || []).length; if (n > bestN) { bestN = n; best = k; } }
+      return bestN > 0 ? best : null;
+    };
+    let _fontkitReady = false;
+    const _ensureFontkit = async () => {
+      if (_fontkitReady) return true;
+      try {
+        if (!window.fontkit) {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js';
+            s.onload = resolve; s.onerror = () => reject(new Error('fontkit CDN load failed'));
+            document.head.appendChild(s);
+          });
+        }
+        if (window.fontkit && typeof doc.registerFontkit === 'function') { doc.registerFontkit(window.fontkit); _fontkitReady = true; }
+      } catch (e) { try { warnLog('[createTaggedPdf] fontkit load failed — non-Latin OCR falls back to Helvetica: ' + (e && e.message)); } catch(_) {} }
+      return _fontkitReady;
+    };
+    const _unicodeFontCache = {};
+    const _getUnicodeFont = async (scriptKey) => {
+      // CJK intentionally unsupported here (font too large to fetch+subset per doc).
+      if (!scriptKey || scriptKey === 'cjk' || !_SCRIPT_FONT[scriptKey]) return null;
+      if (Object.prototype.hasOwnProperty.call(_unicodeFontCache, scriptKey)) return _unicodeFontCache[scriptKey];
+      _unicodeFontCache[scriptKey] = null;
+      try {
+        if (!(await _ensureFontkit())) return null;
+        const resp = await fetch(_notoUrl(_SCRIPT_FONT[scriptKey]));
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const bytes = new Uint8Array(await resp.arrayBuffer());
+        _unicodeFontCache[scriptKey] = await doc.embedFont(bytes, { subset: true });
+      } catch (e) {
+        try { warnLog('[createTaggedPdf] Unicode font (' + scriptKey + ') embed failed — OCR layer for this script falls back to Helvetica: ' + (e && e.message)); } catch(_) {}
+        _unicodeFontCache[scriptKey] = null;
+      }
+      return _unicodeFontCache[scriptKey];
+    };
     // Helvetica only supports WinAnsiEncoding. OCR may return curly quotes /
     // em-dashes / accented letters. Swap the common ones and drop anything
     // else outside 0x20–0xFF so drawText doesn't throw mid-document.
@@ -12044,22 +12111,29 @@ tr { page-break-inside: avoid; }
         const ocrText = (ocrEntry && (ocrEntry.text || ocrEntry.content || ocrEntry.fullText || '')) || '';
         if (ocrText && ocrText.trim()) {
           _ocrTotalChars += ocrText.length;
-          _ocrDroppedChars += _countNonWinAnsi(ocrText);
-          try {
-            const helv = await _getHelv();
-            if (helv) {
-              const sz = page.getSize();
-              page.drawText(_toWinAnsi(ocrText), {
-                x: 36,
-                y: (sz && sz.height ? sz.height : 792) - 36,
-                size: 1,
-                font: helv,
-                opacity: 0,
-                lineHeight: 1,
-                maxWidth: (sz && sz.width ? sz.width : 612) - 72,
-              });
+          const sz = page.getSize();
+          const _drawOpts = (font) => ({ x: 36, y: (sz && sz.height ? sz.height : 792) - 36, size: 1, font, opacity: 0, lineHeight: 1, maxWidth: (sz && sz.width ? sz.width : 612) - 72 });
+          const _scriptKey = _detectScript(ocrText);
+          let _uniFont = null;
+          if (_scriptKey) { try { _uniFont = await _getUnicodeFont(_scriptKey); } catch(_) { _uniFont = null; } }
+          if (_uniFont) {
+            // The embedded Noto font encodes this script — draw the raw OCR text (no WinAnsi
+            // stripping), so the invisible layer carries the full non-Latin text. No drop tally.
+            try { page.drawText(ocrText, _drawOpts(_uniFont)); }
+            catch (uniErr) {
+              // A glyph the subset couldn't place — fall back so we never lose the whole layer.
+              _ocrDroppedChars += _countNonWinAnsi(ocrText);
+              try { const helv = await _getHelv(); if (helv) page.drawText(_toWinAnsi(ocrText), _drawOpts(helv)); } catch(_) {}
+              try { warnLog('[createTaggedPdf] unicode OCR draw failed p' + (pi+1) + ' — fell back to Helvetica: ' + (uniErr && uniErr.message)); } catch(_) {}
             }
-          } catch(textErr) { try { warnLog('[createTaggedPdf] invisible OCR text layer failed p' + (pi+1) + ': ' + (textErr && textErr.message)); } catch(_) {} }
+          } else {
+            // Latin-only (or no font for this script): existing Helvetica + WinAnsi path; tally drops.
+            _ocrDroppedChars += _countNonWinAnsi(ocrText);
+            try {
+              const helv = await _getHelv();
+              if (helv) page.drawText(_toWinAnsi(ocrText), _drawOpts(helv));
+            } catch(textErr) { try { warnLog('[createTaggedPdf] invisible OCR text layer failed p' + (pi+1) + ': ' + (textErr && textErr.message)); } catch(_) {} }
+          }
         }
       }
       // ── Stage 4 attempt ── Per-block MCID wrapping with proper /H1, /P,
