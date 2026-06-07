@@ -63,11 +63,8 @@ describe('CBM_NORMS — pin the benchmark numbers (a typo re-tiers a student)', 
     expect(SAI.CBM_NORMS.lnf.K).toEqual({ fall: 7, winter: 30, spring: 47 });
     expect(SAI.CBM_NORMS.math_dcpm['3']).toEqual({ fall: 25, winter: 35, spring: 45 });
   });
-  it('INVARIANT: the dead duplicate norm table is byte-identical to the live one', () => {
-    // If these ever diverge, a student could be tiered against stale norms.
-    expect(SAI.CBM_NORMS_1).toEqual(SAI.CBM_NORMS_2);
-    expect(SAI.CBM_NORMS_1).toEqual(SAI.CBM_NORMS);
-  });
+  // (The dead duplicate CBM_NORMS copy was removed from the module 2026-06-07; a
+  //  single live norm table remains, pinned above.)
 });
 
 describe('interpretProbeResult — tier cut points (ORF grade 3 winter, benchmark 92)', () => {
@@ -111,15 +108,6 @@ describe('interpretProbeResult — across probe types + edge cases', () => {
   it('benchmark of 0 (ORF grade 1 fall): any positive score → pct 200 / Tier 1; zero → pct 0 / Tier 3', () => {
     expect(SAI.interpretProbeResult('orf', 10, '1', 'fall')).toMatchObject({ tier: 1, benchmark50: 0, pctOfBenchmark: 200 });
     expect(SAI.interpretProbeResult('orf', 0, '1', 'fall')).toMatchObject({ tier: 3, benchmark50: 0, pctOfBenchmark: 0 });
-  });
-  it('INVARIANT: live + dead copies agree on the integrity-critical numbers (tier/benchmark/pct)', () => {
-    // Their narrative TEXT differs (the dead copy is stale), but tier math must match.
-    for (const [pt, score, grade] of [['orf', 70, '3'], ['math_dcpm', 20, '3'], ['nwf_cls', 5, 'K']]) {
-      const live = SAI.interpretProbeResult(pt, score, grade, 'winter');
-      const dead = SAI.interpretProbeResult_1(pt, score, grade, 'winter');
-      expect({ tier: dead.tier, b: dead.benchmark50, p: dead.pctOfBenchmark })
-        .toEqual({ tier: live.tier, b: live.benchmark50, p: live.pctOfBenchmark });
-    }
   });
 });
 

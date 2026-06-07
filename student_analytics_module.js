@@ -1053,36 +1053,11 @@
         recommendations: recs
       };
     };
-    // ── CBM Benchmark Norms (Hasbrouck & Tindal 2017, DIBELS 8th Ed) ──
-    var CBM_NORMS = {
-      orf: { '1': { fall: 0, winter: 23, spring: 53 }, '2': { fall: 51, winter: 72, spring: 89 }, '3': { fall: 71, winter: 92, spring: 107 }, '4': { fall: 94, winter: 112, spring: 123 }, '5': { fall: 110, winter: 127, spring: 139 }, '6': { fall: 127, winter: 140, spring: 150 } },
-      nwf_cls: { 'K': { fall: 0, winter: 17, spring: 35 }, '1': { fall: 35, winter: 55, spring: 65 } },
-      lnf: { 'K': { fall: 7, winter: 30, spring: 47 } },
-      math_dcpm: { '1': { fall: 8, winter: 15, spring: 25 }, '2': { fall: 15, winter: 25, spring: 35 }, '3': { fall: 25, winter: 35, spring: 45 }, '4': { fall: 30, winter: 40, spring: 50 }, '5': { fall: 35, winter: 45, spring: 55 }, '6': { fall: 40, winter: 50, spring: 60 } }
-    };
-    var getSeason = function() { var m = new Date().getMonth(); if (m >= 7 && m <= 10) return 'fall'; if (m >= 11 || m <= 1) return 'winter'; return 'spring'; };
-
-    var interpretProbeResult = function(probeType, score, grade, season) {
-      season = season || getSeason(); grade = String(grade || '1');
-      var norms = CBM_NORMS[probeType]; if (!norms || !norms[grade]) return { tier: 0, status: 'No norms available', statusColor: '#64748b', benchmark50: null, pctOfBenchmark: null, interpretation: '', recommendations: [] };
-      var benchmark = norms[grade][season]; if (benchmark === undefined || benchmark === null) return { tier: 0, status: 'No norms for this season', statusColor: '#64748b', benchmark50: null, pctOfBenchmark: null, interpretation: '', recommendations: [] };
-      var pct = benchmark > 0 ? Math.round((score / benchmark) * 100) : (score > 0 ? 200 : 0);
-      var tier, status, statusColor, interpretation, recs = [];
-      if (pct >= 100) { tier = 1; status = 'At or Above Benchmark'; statusColor = '#16a34a'; interpretation = score + ' is at or above the 50th percentile (' + benchmark + ') for ' + season + ' grade ' + grade + '.'; recs = ['Continue current instruction.', 'Re-assess at next screening window.']; }
-      else if (pct >= 75) { tier = 1; status = 'Approaching Benchmark'; statusColor = '#65a30d'; interpretation = score + ' is approaching the 50th percentile (' + benchmark + ') for ' + season + ' grade ' + grade + '.'; recs = ['Monitor informally.', 'Additional practice within Tier 1.']; }
-      else if (pct >= 50) { tier = 2; status = 'Below Benchmark'; statusColor = '#d97706'; interpretation = score + ' is below the 50th percentile (' + benchmark + ') for ' + season + ' grade ' + grade + '. Strategic intervention recommended.'; recs = ['Begin Tier 2 intervention.', 'Monitor bi-weekly.', 'Aim for 8+ data points.']; }
-      else { tier = 3; status = 'Well Below Benchmark'; statusColor = '#dc2626'; interpretation = score + ' is well below the 50th percentile (' + benchmark + ') for ' + season + ' grade ' + grade + '. Intensive intervention needed.'; recs = ['Begin Tier 3 intensive intervention.', 'Monitor weekly.', 'Consider referral if insufficient growth after 6-8 weeks.']; }
-      if (probeType === 'orf' && tier >= 2) recs.push('Implement repeated reading with corrective feedback.');
-      if (probeType === 'nwf_cls' && tier >= 2) recs.push('Focus on phonics: CVC blending, sound-symbol correspondence.');
-      if (probeType === 'lnf' && tier >= 2) recs.push('Increase letter exposure through multisensory activities.');
-      if (probeType === 'math_dcpm' && tier >= 2) recs.push('Short daily fact fluency sessions (5-10 min).');
-      return { tier: tier, status: status, statusColor: statusColor, benchmark50: benchmark, pctOfBenchmark: pct, interpretation: interpretation, recommendations: recs, season: season, grade: grade };
-    };
-    // Test seam (one-time): capture the FIRST probe-engine copy. NOTE: this copy is
-    // DEAD at runtime — the second `var interpretProbeResult`/`var CBM_NORMS` below
-    // (same function scope) wins via var-hoist redeclaration. Captured only so the
-    // characterization test can assert the two CBM_NORMS tables never diverge.
-    try { window.AlloModules = window.AlloModules || {}; var _saiA = (window.AlloModules.StudentAnalyticsInternals = window.AlloModules.StudentAnalyticsInternals || {}); if (!_saiA.CBM_NORMS_1) { _saiA.CBM_NORMS_1 = CBM_NORMS; _saiA.interpretProbeResult_1 = interpretProbeResult; } } catch (e) {}
+    // (A dead duplicate of CBM_NORMS / getSeason / interpretProbeResult was removed
+    //  here 2026-06-07. It was shadowed at runtime by the live copy below via var-hoist
+    //  redeclaration — same function scope, second declaration wins — and had already
+    //  drifted in its narrative/recommendation text. The single live copy is in the
+    //  "Probe Interpretation Engine" section below.)
 
     var renderProbeInterpretation = function(probeType, score, grade, season) {
       var result = interpretProbeResult(probeType, score, grade, season);
@@ -1203,12 +1178,10 @@
       if (probeType === 'math_dcpm' && tier >= 2) { recommendations.push('Short daily fact fluency practice (5-10 min) with corrective feedback.'); if (tier === 3) recommendations.push('Check conceptual understanding vs. automaticity.'); }
       return { tier: tier, status: status, statusColor: statusColor, benchmark50: benchmark, pctOfBenchmark: pct, interpretation: interpretation, recommendations: recommendations, season: season, grade: grade };
     };
-    // Test seam (one-time): the LIVE probe engine (this copy wins via var-hoist
-    // redeclaration) + RTI tier classifier. tests/student_analytics.test.js pins
-    // these against real bytes (the tests/extracted_logic fork has drifted) and
-    // asserts CBM_NORMS_1 (above) deep-equals this CBM_NORMS so the norm tables
-    // can never silently diverge and re-tier a student.
-    try { window.AlloModules = window.AlloModules || {}; var _saiB = (window.AlloModules.StudentAnalyticsInternals = window.AlloModules.StudentAnalyticsInternals || {}); if (!_saiB.interpretProbeResult) { _saiB.interpretProbeResult = interpretProbeResult; _saiB.CBM_NORMS = CBM_NORMS; _saiB.CBM_NORMS_2 = CBM_NORMS; _saiB.classifyRTITier = classifyRTITier; } } catch (e) {}
+    // Test seam (read-only, one-time): the probe interpretation engine + RTI tier
+    // classifier, pinned against real bytes by tests/student_analytics.test.js (the
+    // tests/extracted_logic fork has drifted, so we test the shipped module directly).
+    try { window.AlloModules = window.AlloModules || {}; var _saiB = (window.AlloModules.StudentAnalyticsInternals = window.AlloModules.StudentAnalyticsInternals || {}); if (!_saiB.interpretProbeResult) { _saiB.interpretProbeResult = interpretProbeResult; _saiB.CBM_NORMS = CBM_NORMS; _saiB.classifyRTITier = classifyRTITier; } } catch (e) {}
 
     // ── Render Probe Interpretation UI ──
     var renderProbeInterpretation = function(probeType, score, grade, season) {
