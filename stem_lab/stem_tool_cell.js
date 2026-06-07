@@ -122,7 +122,7 @@ window.StemLab = window.StemLab || {
 
       // ── Tool body (cell) ──
       return (function() {
-var d = labToolData.cell;
+var d = labToolData.cell || {};
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {

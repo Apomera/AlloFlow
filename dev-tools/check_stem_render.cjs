@@ -21,7 +21,9 @@
  * minimizing false positives while still catching real data-shape crashes.
  *
  * Usage:  node dev-tools/check_stem_render.cjs [--quiet]
- * Exit:   non-zero if any tool fails to load or throws on render.
+ * Exit:   non-zero if any tool fails to load, throws on render, OR renders DEGRADED
+ *         (catches its own render error → fallback UI). Set STEM_RENDER_LENIENT=1 to
+ *         downgrade the degraded-render case to a non-blocking advisory.
  */
 'use strict';
 const fs = require('fs');
@@ -158,17 +160,19 @@ if (renderErrors.length) {
   console.error('✗ ' + renderErrors.length + ' tool(s) THREW (uncaught → ErrorBoundary crashes the app):');
   renderErrors.forEach(function (e) { console.error('   - ' + e.id + ': ' + e.error); });
 }
+// BLOCKING by default since 2026-06-07 (the 7-tool first-render backlog that justified the
+// grace period is cleared). A "degraded render" = the tool caught its own render error and
+// showed a fallback UI instead of the real tool — almost always a first-render bug (unhandled
+// empty/initial state). Escape hatch: STEM_RENDER_LENIENT=1 downgrades to a non-blocking advisory.
+const LENIENT = process.env.STEM_RENDER_LENIENT === '1';
 if (swallowed.length) {
-  // ADVISORY (non-blocking for now): these tools catch their own render error and show a
-  // DEGRADED fallback UI instead of the real tool — typically a first-render bug (unhandled
-  // empty/initial state). Promote to a hard failure once the current backlog is cleared
-  // (set STEM_RENDER_STRICT=1 to fail on these today).
-  console.warn('⚠ ' + swallowed.length + ' STEM tool(s) render DEGRADED (caught render error → fallback UI, not the real tool):');
-  swallowed.forEach(function (e) { console.warn('   - ' + e.id + ': ' + e.error); });
+  const mark = LENIENT ? '⚠' : '✗';
+  const tail = LENIENT ? ' (advisory — STEM_RENDER_LENIENT set)' : ' (BLOCKING — set STEM_RENDER_LENIENT=1 to override)';
+  console.error(mark + ' ' + swallowed.length + ' STEM tool(s) render DEGRADED (caught render error → fallback UI, not the real tool)' + tail + ':');
+  swallowed.forEach(function (e) { console.error('   - ' + e.id + ': ' + e.error); });
 }
-const STRICT = process.env.STEM_RENDER_STRICT === '1';
-if (loadErrors.length || renderErrors.length || (STRICT && swallowed.length)) {
+if (loadErrors.length || renderErrors.length || (!LENIENT && swallowed.length)) {
   process.exit(1);
 }
 console.log('✓ check_stem_render: no app-crash render failures across ' + ids.length + ' STEM tools'
-  + (swallowed.length ? ' (' + swallowed.length + ' degraded-render advisory — see ⚠ above)' : '') + '.');
+  + (swallowed.length ? ' (' + swallowed.length + ' degraded-render advisory — LENIENT set, see above)' : '') + '.');

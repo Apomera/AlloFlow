@@ -751,7 +751,7 @@
       var callGemini=ctx.callGemini;
       var canvasNarrate=ctx.canvasNarrate;
       return (function(){
-const d = labToolData.waterCycle;
+const d = labToolData.waterCycle || {};
           var isDark = !!(ctx && ctx.darkMode);
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, waterCycle: { ...prev.waterCycle, [key]: val } }));

@@ -120,7 +120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
 
       // â"€â"€ Tool body (solarSystem) â"€â"€
       return (function() {
-const d = labToolData.solarSystem;
+const d = labToolData.solarSystem || {};
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {

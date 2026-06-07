@@ -3585,7 +3585,7 @@ const d = labToolData.rocks || {};
 
       // ── Tool body (rockCycle) ──
       return (function() {
-const d = labToolData.rockCycle;
+const d = labToolData.rockCycle || {};
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, rockCycle: { ...prev.rockCycle, [key]: val } }));
 

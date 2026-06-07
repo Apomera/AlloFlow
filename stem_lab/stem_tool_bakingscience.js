@@ -471,8 +471,8 @@
           gluten:    { label: 'baking.activities.gluten_label',    desc: 'baking.activities.gluten_desc'    },
           browning:  { label: 'baking.activities.browning_label',  desc: 'baking.activities.browning_desc'  }
         };
-        var subtoolLabel = function(st) { return tr(subtoolI18n[st.id].label, st.label); };
-        var subtoolDesc  = function(st) { return tr(subtoolI18n[st.id].desc,  st.desc ); };
+        var subtoolLabel = function(st) { return tr((subtoolI18n[st.id] || {}).label, st.label); };
+        var subtoolDesc  = function(st) { return tr((subtoolI18n[st.id] || {}).desc,  st.desc ); };
 
         var renderMenu = function() {
           return h('div', { className: 'p-4 sm:p-6 max-w-5xl mx-auto' },

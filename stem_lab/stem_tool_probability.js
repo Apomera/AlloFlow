@@ -506,7 +506,7 @@ var d = (labToolData.probability) || {};
 
           const counts = {};
 
-          d.results.forEach(r => { counts[r] = (counts[r] || 0) + 1; });
+          (d.results || []).forEach(r => { counts[r] = (counts[r] || 0) + 1; });
 
           var expected;
 

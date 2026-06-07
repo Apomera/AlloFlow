@@ -120,7 +120,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             if (from === 'K' && to === '\u00B0F') return (val - 273.15) * 9 / 5 + 32;
             return val;
           }
-          var units = CATEGORIES[catKey].units;
+          var units = (CATEGORIES[catKey] || cat).units;
           return val * (units[from] || 1) / (units[to] || 1);
         };
 
