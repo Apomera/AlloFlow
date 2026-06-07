@@ -3874,5 +3874,12 @@
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.MathFluency = MathFluencyPanel;
   window.AlloModules.FluencyMaze = FluencyMazePanel;
+  // Test-only seam: expose the pure CBM-scoring internals for characterization
+  // tests (tests/math_fluency.test.js). Read-only pure fns + the benchmark table;
+  // zero behavior change (mirrors the symbol_studio initialTab seam pattern).
+  window.AlloModules.MathFluencyInternals = {
+    getBenchmark: getBenchmark, getBenchmarkLabel: getBenchmarkLabel,
+    analyzeErrors: analyzeErrors, getSeason: getSeason, BENCHMARKS: BENCHMARKS,
+  };
   console.log('[CDN] MathFluency + FluencyMaze modules registered');
 })();
