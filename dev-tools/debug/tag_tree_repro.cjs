@@ -6,12 +6,21 @@
 // linkage is added.
 
 let pdfLib;
-try {
-  pdfLib = require('C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/pdf-lib');
-  console.log('Using AlloFlow-installed pdf-lib');
-} catch (_) {
-  try { pdfLib = require('pdf-lib'); console.log('Using globally-resolved pdf-lib'); }
-  catch (e) { console.error('pdf-lib not found'); process.exit(1); }
+// AlloFlow loads pdf-lib via CDN at runtime (window.PDFLib), not as a node_modules
+// dependency, so this standalone repro looks for it in C:/tmp/node_modules first.
+// To install: `cd C:/tmp && npm install pdf-lib@1.17.1 --no-save`
+const candidates = [
+  'C:/tmp/node_modules/pdf-lib',
+  'C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/pdf-lib',
+  'pdf-lib',
+];
+for (const p of candidates) {
+  try { pdfLib = require(p); console.log('Using pdf-lib from:', p); break; }
+  catch (_) {}
+}
+if (!pdfLib) {
+  console.error('pdf-lib not found. Install with: cd C:/tmp && npm install pdf-lib@1.17.1 --no-save');
+  process.exit(1);
 }
 const { PDFDocument, PDFName, PDFNumber, PDFString, PDFOperator, PDFOperatorNames, StandardFonts } = pdfLib;
 
@@ -166,27 +175,157 @@ async function variantC(ctx) {
   return { rootKids, leafRefs };
 }
 
-async function main() {
-  const A = await runVariant('A (openSect-mirror: reserve Sect first, assign last)', variantA);
-  const B = await runVariant('B (Sect registered first with empty K, patched later)', variantB);
-  const C = await runVariant('C (no Sect wrapper — flat leaves under StructTreeRoot)', variantC);
+// ── VARIANT D: multi-Sect cycle (matches a 2-heading/2-paragraph fixture mentioned in the design doc) ──
+// Two Sects, each containing [H, P]. First Sect is CLOSED via context.assign BEFORE the second
+// Sect opens. Tests whether close-then-open invalidates leaves of the first Sect.
+async function variantD(ctx) {
+  const { context, page, font, structRootRef } = ctx;
+  const rootKids = [];
+  const allLeafRefs = [];
 
-  console.log('\n=== Diagnosis ===');
-  const results = { A: A.ok, B: B.ok, C: C.ok };
-  console.log('Results:', JSON.stringify(results));
-  if (!A.ok && B.ok) {
-    console.log('→ Variant B works, A fails. The openSect reserved-ref pattern IS the cause.');
-    console.log('→ Apply Rank 2/3 fix: register Sect first with empty K, patch K later.');
-  } else if (A.ok && B.ok && C.ok) {
-    console.log('→ All 3 variants PASS. The nested-build ref pattern works in isolation.');
-    console.log('→ The b0d24ae3 bug is in Slice-1-specific orchestration (NOT in openSect).');
-  } else if (!A.ok && !B.ok && C.ok) {
-    console.log('→ Only C (no Sect) works. The Sect wrapper itself is dropping its kids on save.');
-    console.log('→ Investigate pdf-lib Sect-with-children serialization OR our MCR shape inside K.');
-  } else if (!A.ok && !B.ok && !C.ok) {
-    console.log('→ ALL fail — MCR construction in registerLeaf is wrong. Investigate the MCR dict shape.');
+  // First Sect cycle
+  const sect1Ref = context.nextRef();
+  rootKids.push(sect1Ref);
+  const sect1Kids = [];
+  drawRun(context, page, font, 'H1', 0, 'Heading One', 720);
+  sect1Kids.push(registerLeaf(context, 'H1', sect1Ref, page, 0, 'Heading One'));
+  allLeafRefs.push(sect1Kids[sect1Kids.length - 1]);
+  drawRun(context, page, font, 'P', 1, 'Paragraph one.', 700);
+  sect1Kids.push(registerLeaf(context, 'P', sect1Ref, page, 1, 'Paragraph one.'));
+  allLeafRefs.push(sect1Kids[sect1Kids.length - 1]);
+  // Close Sect 1 (assign)
+  context.assign(sect1Ref, context.obj({
+    Type: PDFName.of('StructElem'), S: PDFName.of('Sect'), P: structRootRef, K: context.obj(sect1Kids),
+  }));
+
+  // Second Sect cycle (mimics the closeTo + openSect pattern between iterations)
+  const sect2Ref = context.nextRef();
+  rootKids.push(sect2Ref);
+  const sect2Kids = [];
+  drawRun(context, page, font, 'H1', 2, 'Heading Two', 680);
+  sect2Kids.push(registerLeaf(context, 'H1', sect2Ref, page, 2, 'Heading Two'));
+  allLeafRefs.push(sect2Kids[sect2Kids.length - 1]);
+  drawRun(context, page, font, 'P', 3, 'Paragraph two.', 660);
+  sect2Kids.push(registerLeaf(context, 'P', sect2Ref, page, 3, 'Paragraph two.'));
+  allLeafRefs.push(sect2Kids[sect2Kids.length - 1]);
+  context.assign(sect2Ref, context.obj({
+    Type: PDFName.of('StructElem'), S: PDFName.of('Sect'), P: structRootRef, K: context.obj(sect2Kids),
+  }));
+
+  return { rootKids, leafRefs: allLeafRefs };
+}
+
+// ── VARIANT E: plain-object BDC operand (suspected silent-fail in pdf-lib) ──
+// Tests whether passing { MCID: PDFNumber.of(n) } (a plain JS object, NOT a PDFDict made
+// via context.obj()) to PDFOperator.of(BDC, [PDFName, object]) silently fails to serialize
+// and corrupts the surrounding tag tree.
+function drawRunPlainObj(context, page, font, role, mcid, text, y) {
+  const BDC = PDFOperator.of(PDFOperatorNames.BeginMarkedContentSequence, [
+    PDFName.of(role),
+    { MCID: PDFNumber.of(mcid) }, // <-- plain object, not PDFDict
+  ]);
+  const EMC = PDFOperator.of(PDFOperatorNames.EndMarkedContent, []);
+  page.pushOperators(BDC);
+  page.drawText(text, { font, size: 1, opacity: 0, x: 10, y });
+  page.pushOperators(EMC);
+}
+async function variantE(ctx) {
+  const { context, page, font, structRootRef } = ctx;
+  const sectRef = context.nextRef();
+  const rootKids = [sectRef];
+  const sectKids = [];
+  drawRunPlainObj(context, page, font, 'H1', 0, 'Chapter One', 700);
+  sectKids.push(registerLeaf(context, 'H1', sectRef, page, 0, 'Chapter One'));
+  drawRunPlainObj(context, page, font, 'P', 1, 'Paragraph one.', 680);
+  sectKids.push(registerLeaf(context, 'P', sectRef, page, 1, 'Paragraph one.'));
+  drawRunPlainObj(context, page, font, 'P', 2, 'Paragraph two.', 660);
+  sectKids.push(registerLeaf(context, 'P', sectRef, page, 2, 'Paragraph two.'));
+  context.assign(sectRef, context.obj({
+    Type: PDFName.of('StructElem'), S: PDFName.of('Sect'), P: structRootRef, K: context.obj(sectKids),
+  }));
+  return { rootKids, leafRefs: sectKids };
+}
+
+// ── VARIANT F: draw-AFTER-register ordering ──
+// Mimics the createTaggedPdf flow where _buildOutlineStructElems() runs FIRST (registering
+// all StructElems with /K → MCR refs to MCIDs that don't exist yet), THEN the page loop
+// draws BDC/EMC for those MCIDs.
+async function variantF(ctx) {
+  const { context, page, font, structRootRef } = ctx;
+  const sectRef = context.nextRef();
+  const rootKids = [sectRef];
+  const sectKids = [];
+  // PHASE 1: register all StructElems with MCRs pointing to MCIDs that don't yet exist
+  sectKids.push(registerLeaf(context, 'H1', sectRef, page, 0, 'Chapter One'));
+  sectKids.push(registerLeaf(context, 'P', sectRef, page, 1, 'Paragraph one.'));
+  sectKids.push(registerLeaf(context, 'P', sectRef, page, 2, 'Paragraph two.'));
+  context.assign(sectRef, context.obj({
+    Type: PDFName.of('StructElem'), S: PDFName.of('Sect'), P: structRootRef, K: context.obj(sectKids),
+  }));
+  // PHASE 2: page loop draws BDC/EMC after registration is complete
+  drawRun(context, page, font, 'H1', 0, 'Chapter One', 700);
+  drawRun(context, page, font, 'P', 1, 'Paragraph one.', 680);
+  drawRun(context, page, font, 'P', 2, 'Paragraph two.', 660);
+  return { rootKids, leafRefs: sectKids };
+}
+
+// ── VARIANT G: like F but ALSO mimics page-content-stream interaction with Stage 3 flat /P wrap ──
+// The failed attempt `continue`d past the flat-/P wrap. Tests whether having BOTH the per-leaf
+// BDC/EMC wrap AND an outer /P <</MCID 99>> BDC wrap interferes. If we have to choose one,
+// the per-leaf is what unifies the tag tree; the flat-/P would be redundant + might double-tag.
+async function variantG(ctx) {
+  const { context, page, font, structRootRef } = ctx;
+  const sectRef = context.nextRef();
+  const rootKids = [sectRef];
+  const sectKids = [];
+  sectKids.push(registerLeaf(context, 'H1', sectRef, page, 0, 'Chapter One'));
+  sectKids.push(registerLeaf(context, 'P', sectRef, page, 1, 'Paragraph one.'));
+  sectKids.push(registerLeaf(context, 'P', sectRef, page, 2, 'Paragraph two.'));
+  context.assign(sectRef, context.obj({
+    Type: PDFName.of('StructElem'), S: PDFName.of('Sect'), P: structRootRef, K: context.obj(sectKids),
+  }));
+  // Per-leaf BDC/EMC for the unified MCIDs
+  drawRun(context, page, font, 'H1', 0, 'Chapter One', 700);
+  drawRun(context, page, font, 'P', 1, 'Paragraph one.', 680);
+  drawRun(context, page, font, 'P', 2, 'Paragraph two.', 660);
+  // Also wrap the entire page content with /P <</MCID 99>> BDC ... EMC like Stage 3 does
+  // when the `continue` is NOT taken. This is what would happen if the unify path runs
+  // but the Stage 3 wrap also runs (double-tag).
+  const BDC_outer = PDFOperator.of(PDFOperatorNames.BeginMarkedContentSequence, [
+    PDFName.of('P'), context.obj({ MCID: PDFNumber.of(99) }),
+  ]);
+  const EMC_outer = PDFOperator.of(PDFOperatorNames.EndMarkedContent, []);
+  page.pushOperators(BDC_outer);
+  page.pushOperators(EMC_outer);
+  return { rootKids, leafRefs: sectKids };
+}
+
+async function main() {
+  const A = await runVariant('A (openSect-mirror)', variantA);
+  const B = await runVariant('B (register-Sect-first-patch-later)', variantB);
+  const C = await runVariant('C (flat leaves, no Sect)', variantC);
+  const D = await runVariant('D (multi-Sect cycle: 2 Sects, each [H,P])', variantD);
+  const E = await runVariant('E (plain-object BDC operand, NOT PDFDict)', variantE);
+  const F = await runVariant('F (register ALL leaves first, draw BDC/EMC after)', variantF);
+  const G = await runVariant('G (per-leaf BDC/EMC + outer Stage-3 /P wrap = double-tag)', variantG);
+
+  console.log('\n=== Full Diagnosis ===');
+  const results = { A: A.ok, B: B.ok, C: C.ok, D: D.ok, E: E.ok, F: F.ok, G: G.ok };
+  console.log('Pass map:', JSON.stringify(results));
+  // Special: D's expected counts are different (2x Sect, 2x H1, 2x P)
+  console.log(`Variant D actual counts (expected {Sect:2, H1:2, P:2}): ${JSON.stringify(D.counts)}`);
+  const failedVariants = Object.entries(results).filter(([k, v]) => !v).map(([k]) => k);
+  if (failedVariants.length === 0) {
+    console.log('→ ALL variants PASS. The bug is in something the repro still does not cover —');
+    console.log('  probably a page-loop interaction with StructParents or ParentTree that needs');
+    console.log('  the actual createTaggedPdf context (multiple page nodes, doc.context already');
+    console.log('  populated with other refs). Time to instrument createTaggedPdf directly.');
   } else {
-    console.log('→ Unexpected pattern. Inspect bytes manually.');
+    console.log('→ FAILED VARIANTS: ' + failedVariants.join(', '));
+    if (failedVariants.includes('E')) console.log('  E fails → plain-object BDC operand is the bug. Use context.obj({MCID:n}) everywhere.');
+    if (failedVariants.includes('F')) console.log('  F fails → register-before-draw ordering is the bug. Draw BDC/EMC BEFORE registering leaves.');
+    if (failedVariants.includes('G')) console.log('  G fails → double-tagging (per-leaf + flat-/P) corrupts content. The `continue` past Stage-3 is REQUIRED for unify path.');
+    if (failedVariants.includes('D')) console.log('  D fails → multi-Sect cycle is the bug. Investigate close-then-open interaction.');
   }
 }
 

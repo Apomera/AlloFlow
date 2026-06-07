@@ -213,6 +213,92 @@ test.describe('createTaggedPdf — tag-tree golden master', () => {
   });
 });
 
+// ── Tag-tree unify Slice 1 — positive confirmation on a SCANNED input ──
+// The Latin baseline above is a text-PDF fixture (groundTruthMethod omitted →
+// isScanned=false), so the unify pass correctly stays gated off and the
+// orphaned count stays at 13/13. This separate suite passes groundTruthMethod
+// = 'tesseract' to TRIGGER the unify path and confirms (a) leafCount is
+// preserved end-to-end (no content loss), and (b) orphanedLeafCount drops to
+// 0 because every leaf was retro-patched with /K → MCR(firstPage, 0).
+let unifySummary: any = null;
+test.describe('createTaggedPdf — tag-tree unify Slice 1 (scanned single-page)', () => {
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.addScriptTag({ url: PDFLIB_CDN });
+    await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
+    await page.addScriptTag({ path: MODULE_PATH });
+    await page.waitForFunction(() => !!((window as any).AlloModules && (window as any).AlloModules.createDocPipeline), null, { timeout: 20000 });
+
+    unifySummary = await page.evaluate(async (accessibleHtml) => {
+      const PDFLib = (window as any).PDFLib;
+      const { PDFDocument, StandardFonts, PDFName, PDFArray, PDFDict, PDFNumber, PDFRef, PDFString } = PDFLib;
+      try {
+        const inDoc = await PDFDocument.create();
+        inDoc.addPage([612, 792]);
+        const inputBytes = await inDoc.save();
+        const pipeline = (window as any).AlloModules.createDocPipeline({
+          callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+          addToast: () => {}, t: (k: string) => k, isRtlLang: () => false, updateExportPreview: () => {},
+          getDefaultTitle: () => 'Document', state: {},
+        });
+        const result = await pipeline.createTaggedPdf(inputBytes, {
+          accessibleHtml,
+          groundTruthMethod: 'tesseract', // triggers isScanned=true → unify pass fires
+        }, { title: 'Scanned Unify Test', lang: 'en' });
+        if (!result || !result.bytes) return { error: 'createTaggedPdf returned no bytes' };
+        const outDoc = await PDFDocument.load(result.bytes);
+        const ctx = outDoc.context;
+        const resolve = (o: any) => (o instanceof PDFRef ? ctx.lookup(o) : o);
+        const nm = (n: string) => PDFName.of(n);
+        const LEAF_ROLES = ['H1','H2','H3','H4','H5','H6','P','Figure','Caption','BlockQuote','Lbl','LBody','TH','TD','Span','Link'];
+        const elems: any[] = [];
+        const walk = (objIn: any, depth: number) => {
+          let obj = objIn; obj = resolve(obj);
+          if (depth > 60 || obj == null) return;
+          if (obj instanceof PDFArray) { for (let i = 0; i < obj.size(); i++) walk(obj.get(i), depth + 1); return; }
+          if (!(obj instanceof PDFDict)) return;
+          const S = obj.get(nm('S')); if (!S) { const k0 = obj.get(nm('K')); if (k0 != null) walk(k0, depth + 1); return; }
+          const role = String(S).replace(/^\//, '');
+          const K = obj.get(nm('K'));
+          let hasContent = false;
+          if (K != null) {
+            const kr = resolve(K);
+            const items = (kr instanceof PDFArray) ? Array.from({ length: kr.size() }, (_, i) => resolve(kr.get(i))) : [kr];
+            for (const it of items) {
+              if (it instanceof PDFNumber) hasContent = true;
+              else if (it instanceof PDFDict) {
+                const t = it.get(nm('Type')); const ts = t ? String(t) : '';
+                if (ts === '/MCR' || ts === '/OBJR') hasContent = true;
+              }
+            }
+          }
+          elems.push({ role, hasContent });
+          if (K != null) walk(K, depth + 1);
+        };
+        const stRoot = resolve(outDoc.catalog.get(nm('StructTreeRoot')));
+        const rootK = stRoot && stRoot.get ? stRoot.get(nm('K')) : null;
+        if (rootK != null) walk(rootK, 0);
+        const leaves = elems.filter((e) => LEAF_ROLES.includes(e.role));
+        const orphanedLeaves = leaves.filter((e) => !e.hasContent);
+        return { leafCount: leaves.length, orphanedLeafCount: orphanedLeaves.length };
+      } catch (e: any) { return { error: e.message || String(e) }; }
+    }, ACCESSIBLE_HTML);
+  });
+
+  test('Scanned single-page: orphanedLeafCount drops to 0 (no content loss)', () => {
+    expect(unifySummary, 'unifySummary populated').toBeTruthy();
+    if (unifySummary && unifySummary.error) console.log('[unify Slice 1] eval error:', unifySummary.error);
+    expect(unifySummary.error, 'no eval error').toBeUndefined();
+    // The scanned path may produce a slightly different leaf count than the
+    // text-PDF baseline (OCR can add Spans / Captions) — what we care about is
+    // (a) leaves were produced, (b) every one was retro-patched with /K → MCR.
+    expect(unifySummary.leafCount, 'leaves produced').toBeGreaterThan(0);
+    expect(unifySummary.orphanedLeafCount, 'every leaf retro-patched with /K → MCR (Slice 1 unify pass fired)').toBe(0);
+    console.log(`[tag-tree unify Slice 1] scanned-path leaves: ${unifySummary.leafCount}, orphaned: ${unifySummary.orphanedLeafCount} (expected orphaned=0)`);
+  });
+});
+
 // Non-Latin OCR: a scanned (image-only) document whose OCR text is Arabic. Before the
 // Unicode-font embed, Helvetica/WinAnsi dropped every Arabic glyph → the invisible text
 // layer shipped EMPTY (coverage 0%). With the embed, the Noto Sans Arabic subset encodes

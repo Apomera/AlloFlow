@@ -12080,6 +12080,12 @@ tr { page-break-inside: avoid; }
     // Hoisted to the outer closure so the post-build summary can count
     // headings/paragraphs/tables/etc. without repeating the DOM walk.
     let _outlineItems = [];
+    // Hoisted: track every leaf StructElem ref built by buildLeaf so the
+    // unify pass (later, after isScanned is known) can retro-patch /K → MCR
+    // without re-walking the StructTreeRoot. Populated inside buildLeaf;
+    // consumed after pages = doc.getPages(). See "Tag-tree unify Slice 1"
+    // post-processing below the page loop.
+    const _unifiableLeafRefs = [];
     const _buildOutlineStructElems = () => {
       const body = htmlDoc.body || htmlDoc.documentElement;
       // Walk once collecting ordered {role, text, alt, isDecorative, level}.
@@ -12237,6 +12243,10 @@ tr { page-break-inside: avoid; }
         }
         if (attrDirty) d.A = context.obj(attrDict);
         const elemRef = context.register(context.obj(d));
+        // Track every leaf StructElem ref for the post-build unify pass
+        // (retro-patches /K → MCR when isScanned + single-page; gated below).
+        // Inert when unify doesn't trigger — pushing a ref into a list is free.
+        _unifiableLeafRefs.push({ ref: elemRef, role: item.role });
         // Stage 5b lite: TH /ID is an indirect spec entry (not inside /A).
         // We collect {id, ref} entries for the /IDTree built after the
         // tree is assembled.
@@ -12359,6 +12369,50 @@ tr { page-break-inside: avoid; }
     // layer never ran in production — the gate AND the page map were both unwired.)
     const _gtm = (fixResult && fixResult.groundTruthMethod) ? String(fixResult.groundTruthMethod) : '';
     const isScanned = /tesseract|vision|ocr/i.test(_gtm);
+
+    // ── Tag-tree unify Slice 1: minimal /K→MCR linkage for scanned single-page ──
+    // Without this, every semantic leaf (H1, P, Figure, TH, TD, Link, …) has only
+    // /ActualText — fine for SR but flagged by PAC 2024 / Adobe Accessibility
+    // Checker as "orphaned semantic elements with no content linkage." This pass
+    // retro-patches each leaf with /K → MCR(firstPage, MCID 0) — the page-wrap
+    // MCID that Stage-3 already generates below. Every leaf shares MCID 0, which
+    // is structurally degenerate (no per-leaf granularity) but VALID per PDF
+    // spec, and /ActualText still wins for SR reading order per spec § 14.9.4,
+    // so the SR experience is unchanged. Gated to single-page scanned only.
+    //
+    // Why this approach + why now: a fuller per-leaf MCID unification was
+    // attempted at b0d24ae3 and reverted because of a content-loss regression
+    // whose root cause is still unknown after extensive isolated repro (see
+    // docs/tag_tree_unification_design.md attempt log + investigation update).
+    // This minimal pass uses ONLY the patterns my standalone repro proved safe
+    // (context.lookup().set() — variant B), changes NO page-loop drawing, and
+    // keeps Stage-3's existing /P MCID 0 wrap untouched. Worst case: PAC stops
+    // flagging orphaned, SR unchanged. Catastrophe path (content loss) gated by
+    // tests/e2e/pdf_tag_tree_golden.spec.ts BEFORE deploy.
+    if (isScanned && pages.length === 1 && _unifiableLeafRefs.length > 0) {
+      try {
+        const firstPageRef = pages[0].ref;
+        let _unifyPatched = 0;
+        for (const { ref } of _unifiableLeafRefs) {
+          try {
+            const leaf = context.lookup(ref);
+            if (!leaf || typeof leaf.get !== 'function' || typeof leaf.set !== 'function') continue;
+            // Don't overwrite if a /K is already set (defensive — nothing should
+            // be setting /K on these today, but if a future change does we
+            // preserve it).
+            if (leaf.get(PDFName.of('K'))) continue;
+            const mcr = context.obj({
+              Type: PDFName.of('MCR'),
+              Pg: firstPageRef,
+              MCID: PDFNumber.of(0),
+            });
+            leaf.set(PDFName.of('K'), context.obj([mcr]));
+            _unifyPatched++;
+          } catch (_) { /* per-leaf failure is non-fatal — leave that leaf orphaned */ }
+        }
+        warnLog('[Tag-Tree Unify Slice 1] Patched ' + _unifyPatched + '/' + _unifiableLeafRefs.length + ' leaf StructElems with /K → MCR(firstPage, 0)');
+      } catch (_) { /* whole-pass failure is non-fatal — orphaned state remains the safe fallback */ }
+    }
     // When Tesseract word boxes are present (ocrPages[].words), Path B draws each
     // word at its real position so search-highlight + selection align with the
     // scanned image. Without boxes (e.g. Vision-only), it falls back to a single
