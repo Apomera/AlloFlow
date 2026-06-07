@@ -64,6 +64,17 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [handleCancel, handleSubmit, promptDialog.multiline]);
 
+  // role="alert" on the error element only triggers SR announcement when the
+  // element is INSERTED into the DOM. If the dialog is already open when the
+  // error appears (rev validation, etc.), the role="alert" won't re-fire.
+  // Push it through the global aria-live region so SR users hear validation
+  // failures even on subsequent submit attempts.
+  React.useEffect(() => {
+    if (error && typeof window !== 'undefined' && typeof window.alloAnnounce === 'function') {
+      window.alloAnnounce(error, 'assertive');
+    }
+  }, [error]);
+
   const InputTag = promptDialog.multiline ? 'textarea' : 'input';
   const inputCommonProps = {
     ref: inputRef,

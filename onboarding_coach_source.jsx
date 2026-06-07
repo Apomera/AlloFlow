@@ -734,6 +734,7 @@ function OnboardingCoach(props) {
                       <div
                         aria-live="polite"
                         aria-busy="true"
+                        aria-atomic="true"
                         style={{
                           marginBottom: '10px', display: 'flex',
                           justifyContent: 'flex-start',

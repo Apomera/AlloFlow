@@ -65,6 +65,11 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [handleCancel, handleSubmit, promptDialog.multiline]);
+  React.useEffect(() => {
+    if (error && typeof window !== "undefined" && typeof window.alloAnnounce === "function") {
+      window.alloAnnounce(error, "assertive");
+    }
+  }, [error]);
   const InputTag = promptDialog.multiline ? "textarea" : "input";
   const inputCommonProps = {
     ref: inputRef,

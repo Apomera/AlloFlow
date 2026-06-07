@@ -4538,7 +4538,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </form>
                         {agentActivityLog.length > 0 && (
                           <div>
-                            <div className={(agentLogFullView ? 'max-h-64' : 'max-h-20') + ' overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[11px] font-mono'} aria-live="polite" aria-label={t('pdf_audit.expert.log_aria') || 'Agent activity log'}>
+                            <div className={(agentLogFullView ? 'max-h-64' : 'max-h-20') + ' overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[11px] font-mono'} aria-live="polite" aria-atomic="true" aria-label={t('pdf_audit.expert.log_aria') || 'Agent activity log'}>
                               {(agentLogFullView ? agentActivityLog : agentActivityLog.slice(-6)).map((entry, i) => (
                                 <div key={i} className={'flex items-start gap-1 ' + (entry.type === 'error' ? 'text-red-400' : entry.type === 'score' ? 'text-cyan-300' : entry.type === 'success' || entry.type === 'complete' ? 'text-green-400' : entry.type === 'tool' ? 'text-amber-300' : entry.type === 'command' ? 'text-purple-300' : 'text-slate-400')}>
                                   <span className="text-slate-600 shrink-0">{entry.time}</span>

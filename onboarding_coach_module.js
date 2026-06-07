@@ -701,6 +701,7 @@ function OnboardingCoach(props) {
           {
             "aria-live": "polite",
             "aria-busy": "true",
+            "aria-atomic": "true",
             style: {
               marginBottom: "10px",
               display: "flex",

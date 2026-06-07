@@ -256,6 +256,7 @@
     ref: personaScrollRef,
     role: "log",
     "aria-live": "polite",
+    "aria-atomic": "true",
     "aria-label": t("a11y.interview_conversation")
   }, personaState.chatHistory.map((msg, idx) => {
     const isUser = msg.role === 'user';

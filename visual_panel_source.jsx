@@ -1029,7 +1029,7 @@ Return ONLY valid JSON:
                         <button onClick={handleResetChallenge} aria-label={t('common.reset_the_challenge_and_try_again')} style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #f59e0b", background: "#fffbeb", color: "#b45309", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>
                             🔄 Try Again
                         </button>
-                        <span role="status" aria-live="polite" aria-label={`Your score is ${challengeResult?.score || 0} percent`} style={{ fontSize: "13px", fontWeight: 800, color: challengeResult?.score >= 80 ? "#16a34a" : challengeResult?.score >= 50 ? "#f59e0b" : "#ef4444" }}>
+                        <span role="status" aria-live="polite" aria-atomic="true" aria-label={`Your score is ${challengeResult?.score || 0} percent`} style={{ fontSize: "13px", fontWeight: 800, color: challengeResult?.score >= 80 ? "#16a34a" : challengeResult?.score >= 50 ? "#f59e0b" : "#ef4444" }}>
                             Score: {challengeResult?.score || 0}%
                         </span>
                     </div>
@@ -1041,7 +1041,7 @@ Return ONLY valid JSON:
             </div>}
             {isStudentChallenge && !challengeSubmitted && (
                 <div style={{ textAlign: "center", padding: "10px 16px", background: isFillBlank ? "linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%)" : "linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%)", borderRadius: "10px", border: isFillBlank ? "1px solid #86efac" : "1px solid #93c5fd", marginBottom: "8px" }}>
-                    <div role="status" aria-live="polite" style={{ fontSize: "14px", fontWeight: 700, color: isFillBlank ? "#166534" : "#1e40af" }}>🏆 Label Challenge: {isFillBlank ? 'Fill in the Blanks' : 'Label from Scratch'}</div>
+                    <div role="status" aria-live="polite" aria-atomic="true" style={{ fontSize: "14px", fontWeight: 700, color: isFillBlank ? "#166534" : "#1e40af" }}>🏆 Label Challenge: {isFillBlank ? 'Fill in the Blanks' : 'Label from Scratch'}</div>
                     <div style={{ fontSize: "12px", color: isFillBlank ? "#16a34a" : "#3b82f6", marginTop: "2px" }}>
                         {isFillBlank
                             ? "Type the correct label in each blank field. Use your own words — synonyms and paraphrases are accepted!"

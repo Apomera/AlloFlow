@@ -97,7 +97,7 @@ function InfoModal({
   };
 
   return (
-    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowInfoModalToFalse}>
+    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowInfoModalToFalse} aria-label={t('common.close')}>
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
         <div className="bg-indigo-700 p-4 text-white flex justify-between items-center shrink-0">
           <h3 className="font-bold text-lg flex items-center gap-2"><Layers size={20}/> {t('about.title')}</h3>

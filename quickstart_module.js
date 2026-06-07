@@ -548,12 +548,15 @@ const QuickStartWizard = React.memo(({
     "data-help-key": "wizard_find_standard_btn",
     onClick: handleGoalSearch,
     disabled: isSearching || !learningGoal.trim(),
+    "aria-busy": isSearching,
     className: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 rounded-xl shadow-md transition-all flex items-center gap-2 disabled:opacity-50 shrink-0"
   }, isSearching ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 20,
-    className: "animate-spin"
+    className: "animate-spin",
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Search, {
-    size: 20
+    size: 20,
+    "aria-hidden": "true"
   }), t('wizard.find_button'))))), suggestedStandards.length > 0 && /*#__PURE__*/React.createElement("div", {
     ref: standardsListRef,
     className: "space-y-2 animate-in slide-in-from-top-2"
@@ -692,12 +695,15 @@ const QuickStartWizard = React.memo(({
     "data-help-key": "wizard_url_fetch_btn",
     onClick: () => handleWizardUrlFetch(urlInput),
     disabled: isFetching || !urlInput,
+    "aria-busy": isFetching,
     className: "bg-blue-600 text-white font-bold px-6 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-md"
   }, isFetching ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 20,
-    className: "animate-spin"
+    className: "animate-spin",
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Download, {
-    size: 20
+    size: 20,
+    "aria-hidden": "true"
   }), t('wizard.fetch_action'))), typeof localData.fetchedContent === 'string' && localData.fetchedContent && /*#__PURE__*/React.createElement("div", {
     className: "bg-green-50 border border-green-200 rounded-xl p-5 animate-in fade-in slide-in-from-top-2 shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
@@ -764,10 +770,14 @@ const QuickStartWizard = React.memo(({
   }, opt.description || t('wizard.no_description')), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] text-slate-600 mt-2 truncate max-w-xs"
   }, opt.url), isFetching && /*#__PURE__*/React.createElement("div", {
-    className: "absolute inset-0 bg-white/50 flex items-center justify-center"
+    className: "absolute inset-0 bg-white/50 flex items-center justify-center",
+    role: "status",
+    "aria-busy": true,
+    "aria-label": t('wizard.finding_button') || 'Loading'
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 20,
-    className: "animate-spin text-teal-600"
+    className: "animate-spin text-teal-600",
+    "aria-hidden": "true"
   }))), /*#__PURE__*/React.createElement("a", {
     href: opt.url,
     target: "_blank",
