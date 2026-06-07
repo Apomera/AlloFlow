@@ -4376,7 +4376,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '1b4ed2b4';
+    var pluginCdnVersion = '36e1ff61';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -6667,6 +6667,57 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   useFocusTrap(xpModalRef, showXPModal, () => setShowXPModal(false));
   const studyTimerRef = useRef(null);
   useFocusTrap(studyTimerRef, showStudyTimerModal, () => setShowStudyTimerModal(false));
+  // ── Modal focus-trap + restore wiring (SR-review batch 2026-06-07) ──
+  // These 5 modals previously rendered without focus trapping, so Tab keys
+  // escaped into background content (WCAG 2.4.3) and on close focus reset to
+  // <body> instead of returning to the trigger button. useFocusTrap already
+  // handles BOTH: traps Tab within the modal while open, and restores focus
+  // to document.activeElement-at-open on close (see hook body lines ~1959-63).
+  // The refs are attached via wrapper divs at each modal's render site.
+  const infoModalRef = useRef(null);
+  useFocusTrap(infoModalRef, showInfoModal, () => setShowInfoModal(false));
+  const hintsModalRef = useRef(null);
+  useFocusTrap(hintsModalRef, showHintsModal, () => setShowHintsModal(false));
+  const sessionModalRef = useRef(null);
+  useFocusTrap(sessionModalRef, showSessionModal && !!activeSessionCode, () => setShowSessionModal(false));
+  const aiBackendModalRef = useRef(null);
+  useFocusTrap(aiBackendModalRef, showAIBackendModal, () => setShowAIBackendModal(false));
+
+  // ── SR announcement helper (SR-review batch 2026-06-07) ──
+  // Single source for all aria-live announcements via two persistent regions
+  // (#allo-live-polite and #allo-live-assertive) rendered at the top of the
+  // App tree. Resetting textContent to '' then to the message ensures SR
+  // fires even on identical successive messages.
+  const alloAnnounce = React.useCallback((message, priority) => {
+    if (typeof document === 'undefined' || !message) return;
+    const id = (priority === 'assertive') ? 'allo-live-assertive' : 'allo-live-polite';
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = '';
+    const setNext = () => { el.textContent = String(message); };
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(setNext);
+    else setTimeout(setNext, 0);
+  }, []);
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') window.alloAnnounce = alloAnnounce;
+  }, [alloAnnounce]);
+
+  // Announce activeView changes for screen-reader users. Skip the initial
+  // 'input' announcement on mount — only fire on real navigation.
+  const _viewAnnounceMounted = useRef(false);
+  React.useEffect(() => {
+    if (!_viewAnnounceMounted.current) { _viewAnnounceMounted.current = true; return; }
+    const label = (t && t('view_announcer.' + activeView)) || activeView;
+    const prefix = (t && t('view_announcer.loaded_prefix')) || 'View loaded:';
+    alloAnnounce(prefix + ' ' + label, 'polite');
+  }, [activeView, alloAnnounce, t]);
+
+  // Announce major modal opens that previously rendered silently.
+  React.useEffect(() => {
+    if (!showGlobalLevelUp) return;
+    const msg = (t && t('a11y.level_up_announcement')) || 'Level up!';
+    alloAnnounce(msg, 'assertive');
+  }, [showGlobalLevelUp, alloAnnounce, t]);
   const [saveFileName, setSaveFileName] = useState('');
   const [saveType, setSaveType] = useState(null);
   const [isStudentLinkMode, setIsStudentLinkMode] = useState(false);
@@ -22935,7 +22986,7 @@ ${_toolList}
             </div>
         ))}
       </div>
-      {showSessionModal && activeSessionCode && <SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} />}
+      {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
       {confirmDialog && <ConfirmDialog confirmDialog={confirmDialog} setConfirmDialog={setConfirmDialog} t={t} />}
       {promptDialog && <PromptDialog promptDialog={promptDialog} setPromptDialog={setPromptDialog} t={t} />}
       {/* ── GroupSessionModal extracted to view_misc_panels_module.js (CDN) ── */}
@@ -23682,10 +23733,17 @@ ${_toolList}
       >
         {t('a11y.skip_content')}
       </a>
+      {/* SR announcement regions — drive these via window.alloAnnounce(msg, 'polite'|'assertive'). */}
+      <div id="allo-live-polite" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
+      <div id="allo-live-assertive" role="alert" aria-live="assertive" aria-atomic="true" className="sr-only" />
       {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={startClassSession} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
-      {showInfoModal && <InfoModal handleSetInfoModalTabToAbout={handleSetInfoModalTabToAbout} handleSetInfoModalTabToFeatures={handleSetInfoModalTabToFeatures} handleSetShowInfoModalToFalse={handleSetShowInfoModalToFalse} infoModalTab={infoModalTab} safeRemoveItem={safeRemoveItem} setShowInfoModal={setShowInfoModal} setShowWizard={setShowWizard} t={t} />}
-      {showHintsModal && <HintsModal handleApplyHint={handleApplyHint} handleGenerateLessonIdeas={handleGenerateLessonIdeas} handleSaveExtensionToHistory={handleSaveExtensionToHistory} handleSetShowHintsModalToFalse={handleSetShowHintsModalToFalse} hintHistory={hintHistory} history={history} isGeneratingExtension={isGeneratingExtension} renderFormattedText={renderFormattedText} t={t} />}
-      {showXPModal && <XPModal currentLevelXP={currentLevelXP} globalLevel={globalLevel} globalPoints={globalPoints} globalProgress={globalProgress} globalXPNext={globalXPNext} handleSetShowXPModalToFalse={handleSetShowXPModalToFalse} pointHistory={pointHistory} t={t} />}
+      {/* Wrapper divs attach the focus-trap refs declared near line 6677. They
+          don't affect layout (modals position fixed); they only give useFocusTrap
+          a DOM scope to query for focusable elements + a place to capture and
+          restore document.activeElement around open/close. */}
+      {showInfoModal && <div ref={infoModalRef}><InfoModal handleSetInfoModalTabToAbout={handleSetInfoModalTabToAbout} handleSetInfoModalTabToFeatures={handleSetInfoModalTabToFeatures} handleSetShowInfoModalToFalse={handleSetShowInfoModalToFalse} infoModalTab={infoModalTab} safeRemoveItem={safeRemoveItem} setShowInfoModal={setShowInfoModal} setShowWizard={setShowWizard} t={t} /></div>}
+      {showHintsModal && <div ref={hintsModalRef}><HintsModal handleApplyHint={handleApplyHint} handleGenerateLessonIdeas={handleGenerateLessonIdeas} handleSaveExtensionToHistory={handleSaveExtensionToHistory} handleSetShowHintsModalToFalse={handleSetShowHintsModalToFalse} hintHistory={hintHistory} history={history} isGeneratingExtension={isGeneratingExtension} renderFormattedText={renderFormattedText} t={t} /></div>}
+      {showXPModal && <div ref={xpModalRef}><XPModal currentLevelXP={currentLevelXP} globalLevel={globalLevel} globalPoints={globalPoints} globalProgress={globalProgress} globalXPNext={globalXPNext} handleSetShowXPModalToFalse={handleSetShowXPModalToFalse} pointHistory={pointHistory} t={t} /></div>}
       {adventureState.isGameOver && adventureState.climax?.masteryScore >= 80 && !adventureState.missionReportDismissed && (
           <MissionReportCard
               adventureState={adventureState}
@@ -26451,12 +26509,12 @@ ${_toolList}
           in Canvas: third-party power-user keys + AI Model Diagnostics. The deploy modal
           (renders below, gated on !_isCanvasEnv) has the full provider/key/URL stack. */}
       {showAIBackendModal && _isCanvasEnv && (
-        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)} aria-label={t('common.close') || 'Close'}>
+          <div ref={aiBackendModalRef} className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-canvas-title" onClick={e => e.stopPropagation()}>
             <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-5 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Settings size={20} className="text-violet-600"/></div>
-                <h3 className="font-black text-lg">{t('canvas_settings.title') || 'Advanced Settings'}</h3>
+                <h3 id="ai-backend-canvas-title" className="font-black text-lg">{t('canvas_settings.title') || 'Advanced Settings'}</h3>
             </div>
             <div className="space-y-4">
                 <div>
@@ -26509,10 +26567,12 @@ ${_toolList}
       )}
       {/* --- AI Backend: Config Modal (non-Canvas) --- */}
         {/* ── AI Backend Modal — extracted to view_misc_modals_module.js (CDN) ── */}
-        {(showAIBackendModal && !_isCanvasEnv) && window.AlloModules && window.AlloModules.AIBackendModal && React.createElement(window.AlloModules.AIBackendModal, {
-          _isCanvasEnv, ai, setShowAIBackendModal,
-          showAIBackendModal, t, GEMINI_MODELS
-        })}
+        {(showAIBackendModal && !_isCanvasEnv) && window.AlloModules && window.AlloModules.AIBackendModal && (
+          <div ref={aiBackendModalRef}>{React.createElement(window.AlloModules.AIBackendModal, {
+            _isCanvasEnv, ai, setShowAIBackendModal,
+            showAIBackendModal, t, GEMINI_MODELS
+          })}</div>
+        )}
       {showStudyTimerModal && <StudyTimerModal ConfettiExplosion={ConfettiExplosion} customTimerMinutes={customTimerMinutes} formatTime={formatTime} handleSetShowStudyTimerModalToFalse={handleSetShowStudyTimerModalToFalse} isStudyTimerRunning={isStudyTimerRunning} setCustomTimerMinutes={setCustomTimerMinutes} setIsStudyTimerRunning={setIsStudyTimerRunning} setStudyDuration={setStudyDuration} setStudyTaskLabel={setStudyTaskLabel} setStudyTimeLeft={setStudyTimeLeft} showStudyTimerModal={showStudyTimerModal} showTimerConfetti={showTimerConfetti} studyDuration={studyDuration} studyTaskLabel={studyTaskLabel} studyTimeLeft={studyTimeLeft} studyTimerRef={studyTimerRef} t={t} />}
       {showVisualSupports && <VisualSupportsModal setShowVisualSupports={setShowVisualSupports} setVsTab={setVsTab} showVisualSupports={showVisualSupports} vsTab={vsTab} />}
       {isTeacherMode && (<ErrorBoundary fallbackMessage="Student analytics encountered an error. Please close and reopen.">
@@ -27566,15 +27626,27 @@ ${_toolList}
                       </div>
                   </div>
                   {/* Focus Narration Toggle */}
+                  {/* This feature is for users WITHOUT a real screen reader (struggling
+                      readers, ELL students, low-vision users using a magnifier). If a
+                      genuine SR (NVDA/JAWS/VoiceOver) is already running, this WILL
+                      double-narrate every focused control. There's no reliable browser
+                      API to detect a screen reader, so we render an inline warning
+                      below the label so the user can make an informed call. */}
                   <div className="flex items-center gap-3 px-3 py-2 border-b" style={{ borderColor: theme === 'contrast' ? '#fbbf24' : '#334155' }}>
                       <label className="flex items-center gap-2 cursor-pointer select-none flex-1">
                           <input type="checkbox" checked={focusNarrationEnabled} onChange={(e) => setFocusNarrationEnabled(e.target.checked)}
                               className="w-4 h-4 rounded accent-purple-500"
+                              aria-describedby="focus-narration-sr-warning"
                           />
                           <span className="text-[11px] font-bold">{t('read_this_page.focus_narration_label') || 'Keyboard Focus Narration'}</span>
                       </label>
                       <span className="text-[11px] text-slate-600">{focusNarrationEnabled ? (t('read_this_page.focus_narration_on_hint') || 'Tab to hear controls') : (t('common.off') || 'Off')}</span>
                   </div>
+                  {focusNarrationEnabled && (
+                      <div id="focus-narration-sr-warning" role="note" className="px-3 py-1.5 text-[11px] border-b" style={{ borderColor: theme === 'contrast' ? '#fbbf24' : '#334155', color: theme === 'contrast' ? '#fbbf24' : '#fbbf24', background: theme === 'contrast' ? '#000' : 'rgba(251,191,36,0.1)' }}>
+                          {t('read_this_page.focus_narration_sr_warning') || '⚠ If you use a screen reader (NVDA, JAWS, VoiceOver), turn this off to avoid double-announcements.'}
+                      </div>
+                  )}
                   {/* Content Items */}
                   <div className="flex-1 overflow-y-auto p-2 space-y-1" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
                       {items.map((item, idx) => (
