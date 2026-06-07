@@ -269,6 +269,72 @@ async function variantF(ctx) {
   return { rootKids, leafRefs: sectKids };
 }
 
+// ── VARIANT H: TRUE "continue past Stage-3 flat-/P" — per-leaf BDC/EMC only, no outer wrap ──
+// b0d24ae3's design doc explicitly says it `continue`d past the flat-/P path. That means
+// (a) the per-page /P StructElem from Stage 3 was NOT created, (b) page.node.set(StructParents, pi)
+// was likely NOT called for the unify page, (c) the ParentTree.Nums entry for that page was
+// populated DIFFERENTLY — as an array indexed by per-leaf MCID rather than a single ref.
+// Tests whether this entire "skip Stage 3, replace with per-leaf wrap" pattern is the cause.
+async function variantH(ctx) {
+  const { context, page, font, structRootRef } = ctx;
+  const sectRef = context.nextRef();
+  const rootKids = [sectRef];
+  const sectKids = [];
+
+  // Per-leaf draw with unique MCIDs starting at 0 (no Stage-3 outer wrap).
+  drawRun(context, page, font, 'H1', 0, 'Chapter One', 700);
+  sectKids.push(registerLeaf(context, 'H1', sectRef, page, 0, 'Chapter One'));
+  drawRun(context, page, font, 'P', 1, 'Paragraph one.', 680);
+  sectKids.push(registerLeaf(context, 'P', sectRef, page, 1, 'Paragraph one.'));
+  drawRun(context, page, font, 'P', 2, 'Paragraph two.', 660);
+  sectKids.push(registerLeaf(context, 'P', sectRef, page, 2, 'Paragraph two.'));
+
+  context.assign(sectRef, context.obj({
+    Type: PDFName.of('StructElem'), S: PDFName.of('Sect'), P: structRootRef, K: context.obj(sectKids),
+  }));
+
+  // NOTE: do NOT push to a per-page pageElemRef. NO Stage-3 /P. NO Stage-3 wrap.
+  // ParentTree.Nums for this page = array indexed by MCID (entries 0, 1, 2).
+  // The shared registerLeaf returns leaf refs in document order; runVariant's
+  // outer code uses `leafRefs` as the ParentTree.Nums second element.
+  // So leafRefs ordering matters here — must match MCID assignment.
+  return { rootKids, leafRefs: sectKids };
+}
+
+// ── VARIANT I: like H but combines a per-page /P StructElem (Stage-3 style) AS WELL AS per-leaf ──
+// Tests whether mixing the two patterns — keeping the per-page /P for ParentTree wiring AND adding
+// per-leaf BDC/EMC for granularity — causes one of the patterns to invalidate the other on save.
+async function variantI(ctx) {
+  const { context, page, font, structRootRef } = ctx;
+  const sectRef = context.nextRef();
+  const rootKids = [sectRef];
+  const sectKids = [];
+
+  // Per-leaf MCIDs 0, 1, 2 (same as H).
+  drawRun(context, page, font, 'H1', 0, 'Chapter One', 700);
+  sectKids.push(registerLeaf(context, 'H1', sectRef, page, 0, 'Chapter One'));
+  drawRun(context, page, font, 'P', 1, 'Paragraph one.', 680);
+  sectKids.push(registerLeaf(context, 'P', sectRef, page, 1, 'Paragraph one.'));
+  drawRun(context, page, font, 'P', 2, 'Paragraph two.', 660);
+  sectKids.push(registerLeaf(context, 'P', sectRef, page, 2, 'Paragraph two.'));
+
+  context.assign(sectRef, context.obj({
+    Type: PDFName.of('StructElem'), S: PDFName.of('Sect'), P: structRootRef, K: context.obj(sectKids),
+  }));
+
+  // ALSO create a per-page /P StructElem like Stage 3 does (claiming MCID 99 to avoid collision).
+  const outerMcr = context.obj({ Type: PDFName.of('MCR'), Pg: page.ref, MCID: PDFNumber.of(99) });
+  const pageElemRef = context.register(context.obj({
+    Type: PDFName.of('StructElem'), S: PDFName.of('P'), P: structRootRef, Pg: page.ref, K: context.obj([outerMcr]),
+  }));
+  rootKids.push(pageElemRef);
+
+  // Outer BDC/EMC for MCID 99 (the Stage-3 page-wrap mimic) — separate from per-leaf MCIDs.
+  drawRun(context, page, font, 'P', 99, 'Page-wrap outer text', 100);
+
+  return { rootKids, leafRefs: sectKids.concat([pageElemRef]) };
+}
+
 // ── VARIANT G: like F but ALSO mimics page-content-stream interaction with Stage 3 flat /P wrap ──
 // The failed attempt `continue`d past the flat-/P wrap. Tests whether having BOTH the per-leaf
 // BDC/EMC wrap AND an outer /P <</MCID 99>> BDC wrap interferes. If we have to choose one,
@@ -308,24 +374,51 @@ async function main() {
   const E = await runVariant('E (plain-object BDC operand, NOT PDFDict)', variantE);
   const F = await runVariant('F (register ALL leaves first, draw BDC/EMC after)', variantF);
   const G = await runVariant('G (per-leaf BDC/EMC + outer Stage-3 /P wrap = double-tag)', variantG);
+  const H = await runVariant('H (TRUE continue-past-Stage-3: per-leaf only, NO Stage-3 /P)', variantH);
+  const I = await runVariant('I (per-leaf MCIDs 0/1/2 + per-page /P at MCID 99 = mixed pattern)', variantI);
 
   console.log('\n=== Full Diagnosis ===');
-  const results = { A: A.ok, B: B.ok, C: C.ok, D: D.ok, E: E.ok, F: F.ok, G: G.ok };
-  console.log('Pass map:', JSON.stringify(results));
-  // Special: D's expected counts are different (2x Sect, 2x H1, 2x P)
-  console.log(`Variant D actual counts (expected {Sect:2, H1:2, P:2}): ${JSON.stringify(D.counts)}`);
-  const failedVariants = Object.entries(results).filter(([k, v]) => !v).map(([k]) => k);
-  if (failedVariants.length === 0) {
-    console.log('→ ALL variants PASS. The bug is in something the repro still does not cover —');
-    console.log('  probably a page-loop interaction with StructParents or ParentTree that needs');
-    console.log('  the actual createTaggedPdf context (multiple page nodes, doc.context already');
-    console.log('  populated with other refs). Time to instrument createTaggedPdf directly.');
+  // Per-variant expected counts (some variants intentionally produce different shapes).
+  const expected = {
+    A: { Sect: 1, H1: 1, P: 2 },
+    B: { Sect: 1, H1: 1, P: 2 },
+    C: { Sect: 0, H1: 1, P: 2 },         // no Sect by design
+    D: { Sect: 2, H1: 2, P: 2 },         // 2 Sects each [H, P]
+    E: { Sect: 1, H1: 1, P: 2 },
+    F: { Sect: 1, H1: 1, P: 2 },
+    G: { Sect: 1, H1: 1, P: 2 },
+    H: { Sect: 1, H1: 1, P: 2 },
+    I: { Sect: 1, H1: 1, P: 3 },         // extra page-/P StructElem
+  };
+  const all = { A, B, C, D, E, F, G, H, I };
+  const trueResults = {};
+  for (const [k, v] of Object.entries(all)) {
+    const exp = expected[k];
+    trueResults[k] = exp.Sect === v.counts.Sect && exp.H1 === v.counts.H1 && exp.P === v.counts.P;
+  }
+  console.log('True pass map (per-variant expected counts):', JSON.stringify(trueResults));
+  const truefails = Object.entries(trueResults).filter(([k, v]) => !v).map(([k]) => k);
+  if (truefails.length === 0) {
+    console.log('→ ALL 9 variants PASS per their own expected shape.');
+    console.log('→ The b0d24ae3 content-loss bug is NOT in any of these surfaces:');
+    console.log('   - openSect reserved-ref pattern (A)');
+    console.log('   - register-Sect-first-then-patch pattern (B)');
+    console.log('   - flat leaves under StructTreeRoot (C)');
+    console.log('   - multi-Sect close-and-reopen cycles (D)');
+    console.log('   - plain-object vs PDFDict BDC operand encoding (E)');
+    console.log('   - register-then-draw vs draw-then-register ordering (F)');
+    console.log('   - per-leaf + outer-Stage-3 double-tag (G)');
+    console.log('   - TRUE continue-past-Stage-3 (per-leaf only, no flat /P) (H)');
+    console.log('   - mixed per-leaf MCIDs + per-page /P at separate MCID (I)');
+    console.log('→ Next session: extend the repro with IDTree (for TH cells), RoleMap, the combined');
+    console.log('   StructTreeRoot.K array (semantic refs + pageElemRefs + fieldElemRefs concatenated),');
+    console.log('   AND/OR instrument the live createTaggedPdf with trace logs. The bug is in');
+    console.log('   something specific to the full pipeline context that isolated variants do not reach.');
   } else {
-    console.log('→ FAILED VARIANTS: ' + failedVariants.join(', '));
-    if (failedVariants.includes('E')) console.log('  E fails → plain-object BDC operand is the bug. Use context.obj({MCID:n}) everywhere.');
-    if (failedVariants.includes('F')) console.log('  F fails → register-before-draw ordering is the bug. Draw BDC/EMC BEFORE registering leaves.');
-    if (failedVariants.includes('G')) console.log('  G fails → double-tagging (per-leaf + flat-/P) corrupts content. The `continue` past Stage-3 is REQUIRED for unify path.');
-    if (failedVariants.includes('D')) console.log('  D fails → multi-Sect cycle is the bug. Investigate close-then-open interaction.');
+    console.log('→ Variants that produced UNEXPECTED counts: ' + truefails.join(', '));
+    for (const k of truefails) {
+      console.log('   ' + k + ': got ' + JSON.stringify(all[k].counts) + ', expected ' + JSON.stringify(expected[k]));
+    }
   }
 }
 

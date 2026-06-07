@@ -196,3 +196,74 @@ The standalone repro at `dev-tools/debug/tag_tree_repro.cjs` is the diagnostic s
 attempt. It's cheap (1-2 seconds to run; pdf-lib only; no AlloFlow context). Add a Variant D that
 includes the explicit `page.node.set(StructParents, 0)` and a ParentTree.Nums shape exactly matching
 the failed attempt — that should narrow further.
+
+### Investigation update — 2026-06-07 evening (after Slices 1+2 shipped)
+
+The repro was extended with 4 more variants (D, E, F, G initially; later H, I). After Aaron asked
+whether per-leaf MCID granularity could be shipped safely, the repro was extended TWO more times to
+test the specific surfaces the b0d24ae3 design-doc hypotheses pointed at:
+
+- **Variant H** — TRUE "continue past Stage-3 flat-/P" (per-leaf BDC/EMC only, NO per-page /P
+  StructElem, NO Stage-3 wrap). This is what the failed attempt's `continue` past flat-/P actually
+  meant in code.
+- **Variant I** — mixed pattern (per-leaf MCIDs 0/1/2 PLUS a per-page /P StructElem at MCID 99 with
+  its own outer BDC/EMC pair). Tests whether keeping both patterns causes one to invalidate the other.
+
+**Result: all 9 variants (A–I) pass their per-variant expected shapes through save() + reload +
+enumerateIndirectObjects walk.** Specifically: variant H (the TRUE continue-past-Stage-3 pattern,
+the closest direct mirror of the failed attempt) serializes Sect + H1 + 2P correctly.
+
+**What this rules out, cumulatively (all 9 variants):**
+- openSect reserved-ref pattern (A)
+- register-Sect-first-then-patch pattern (B)
+- flat leaves under StructTreeRoot (C)
+- multi-Sect close-and-reopen cycles (D)
+- plain-object vs PDFDict BDC operand encoding (E)
+- register-then-draw vs draw-then-register ordering (F)
+- per-leaf + outer-Stage-3 double-tag (G)
+- TRUE continue-past-Stage-3 (per-leaf only, no flat /P) (H)
+- mixed per-leaf MCIDs + per-page /P at separate MCID (I)
+
+**Where the b0d24ae3 bug must therefore live** (the un-tested surfaces specific to the FULL
+createTaggedPdf flow that the standalone repro can't reach):
+
+1. **IDTree construction for TH cells** (`idTreeEntries` populated inside buildLeaf, used to build a
+   name tree on `StructTreeRoot.IDTree`). My repro never registers a TH with `/ID`. Untested.
+2. **RoleMap** on `StructTreeRoot.RoleMap`. My repro never sets one. Untested.
+3. **Combined `StructTreeRoot.K` array shape** — the real code concatenates `structElemRefs.concat(pageElemRefs).concat(fieldElemRefs)`. My repro tested each separately; never the combined three-way concat. Untested.
+4. **Long context object chains** — the real createTaggedPdf has hundreds of context.register calls
+   between the leaf registrations and doc.save() (Stage 3 wraps for each page, IDTree refs, etc.).
+   My repro has ~5 register calls total. There may be a pdf-lib limit / pattern that only manifests
+   at higher object counts. Untested.
+5. **page.node.set(Contents, …) mutating the page's Contents array** — the real code REWRITES the
+   page's Contents array (line 12707) by wrapping the existing content stream with BDC/EMC refs.
+   This is a page-mutation interaction my repro doesn't model (my repro starts with an empty page
+   and draws into it; the real code wraps EXISTING content). Untested.
+6. **Stage 4 attempts** when `!isScanned && pako` — different code path that may interact differently
+   with already-registered StructElems. Not relevant for the scanned-PDF unify case but still
+   un-tested.
+
+**Recommended next session approach** (lean toward instrumentation over more repro variants):
+
+The cheap-variant cycle (1-2 seconds each) has rule-out coverage of 9 patterns now. Continuing to
+guess more variants is high-effort-low-yield since the remaining suspect surfaces (especially #5,
+#3) require modeling actual createTaggedPdf state that's expensive to replicate. The faster path is
+to **instrument the LIVE createTaggedPdf with trace logs** when running against the golden master:
+
+- Add a counter inside buildLeaf that logs `context.register(d) → ref ${ref.toString()}` for each
+  leaf
+- After doc.save() but BEFORE returning bytes, re-parse the saved bytes and enumerate; log which
+  refs survived vs didn't
+- Run the golden master with this instrumentation enabled
+- The leaf refs that registered but didn't survive are the dropped leaves; their ref numbers
+  give the exact range to investigate via pdf-lib's internal object table
+
+This is ~30 minutes of instrumentation, runs in Playwright with the existing golden master
+infrastructure, and directly observes the failure without guessing.
+
+**For now (Slices 1+2 shipped @0d5eee14 / @a7eb71b3): the shared-MCID-0 approach is the right ship.**
+It satisfies PAC and adds zero risk of content loss because the patch is purely additive
+(`context.lookup().set()` on existing registered objects, the variant-B-proven pattern). Per-leaf
+MCID granularity is the un-shipped delta; the diagnostic infrastructure in this repro lowers the
+cost of the eventual focused debug session by 90% — the next debugger will skip 9 wrong-tree
+investigations and start from the narrowed-suspect surface above.
