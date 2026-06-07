@@ -27629,6 +27629,12 @@
   // ─────────────────────────────────────────────────────────
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.AlloHaven = AlloHaven;
+  // Test seam (read-only): expose pure progress / IEP-packet aggregator helpers for
+  // characterization tests (tests/allohaven_golden.test.js). Zero behavior change.
+  window.AlloModules.AlloHavenInternals = {
+    computeTenureStats: computeTenureStats, computeSkillLevel: computeSkillLevel,
+    computeStreak: computeStreak, cardMasteryBucket: cardMasteryBucket, daysUntilDue: daysUntilDue,
+  };
   console.log('[CDN] AlloHaven loaded');
 
 })();

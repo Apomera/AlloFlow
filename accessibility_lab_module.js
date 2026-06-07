@@ -2098,5 +2098,11 @@ body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' {\
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.AccessibilityLab = AccessibilityLab;
+  // Test seam (read-only): expose the pure screen-reader-simulation helpers for
+  // characterization tests (tests/accessibility_lab_golden.test.js). Zero behavior change.
+  window.AlloModules.AccessibilityLabInternals = {
+    composeAnnouncement: composeAnnouncement, getScreenReaderRole: getScreenReaderRole,
+    getScreenReaderName: getScreenReaderName, getScreenReaderState: getScreenReaderState,
+  };
   console.log('[CDN] AccessibilityLab loaded');
 })();
