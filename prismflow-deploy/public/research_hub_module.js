@@ -27,6 +27,21 @@
     { key: "9_12", label: "9\u201312", long: "High school (9\u201312)" },
     { key: "ap", label: "AP / honors", long: "AP / honors / dual-enrollment" }
   ];
+  function gradeLevelToDevLevel(gl) {
+    if (!gl || typeof gl !== "string") return null;
+    var s = gl.toLowerCase();
+    if (s.indexOf("kindergarten") !== -1 || s.indexOf("pre-k") !== -1 || s.indexOf("pre-kindergarten") !== -1) return "k2";
+    if (s.indexOf("college") !== -1 || s.indexOf("graduate") !== -1) return "ap";
+    var m = s.match(/(\d+)\s*(?:st|nd|rd|th)?\s*grade/);
+    if (m) {
+      var n = parseInt(m[1], 10);
+      if (n <= 2) return "k2";
+      if (n <= 5) return "3_5";
+      if (n <= 8) return "6_8";
+      return "9_12";
+    }
+    return null;
+  }
   function safeLocal(key, value) {
     try {
       if (value === void 0) return window.localStorage.getItem(key);
@@ -1405,7 +1420,7 @@
       fontSize: "12px",
       color: "#92400e",
       lineHeight: 1.5
-    } }, /* @__PURE__ */ React.createElement("strong", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F527} "), t("research_hub.lane_under_construction_title") || "This lane is shipping next."), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 0" } }, t("research_hub.lane_under_construction_body") || "The Hub shell, AI guardrails, voice notes, and inquiry journal are live now. The lane workspace lands in the next update.")), /* @__PURE__ */ React.createElement("details", { style: { fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", fontWeight: 700 } }, t("research_hub.lane_preview_summary") || "Preview the loop"), /* @__PURE__ */ React.createElement("p", { style: { marginTop: "6px", lineHeight: 1.55 } }, t("research_hub.lane_preview_body_" + lane.id) || 'When this lane lands you will move through its stages in any order, with explicit "loop back" affordances so revising is the point \u2014 not a setback.')));
+    } }, /* @__PURE__ */ React.createElement("strong", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F527} "), t("research_hub.lane_under_construction_title") || "This lane didn\u2019t load."), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 0" } }, t("research_hub.lane_under_construction_body") || "The Hub and your inquiry journal are working. This lane\u2019s workspace failed to load \u2014 try closing and reopening the Research Hub, or reload the page.")), /* @__PURE__ */ React.createElement("details", { style: { fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", fontWeight: 700 } }, t("research_hub.lane_preview_summary") || "Preview the loop"), /* @__PURE__ */ React.createElement("p", { style: { marginTop: "6px", lineHeight: 1.55 } }, t("research_hub.lane_preview_body_" + lane.id) || 'In this lane you move through its stages in any order, with explicit "loop back" affordances so revising is the point \u2014 not a setback.')));
   }
   function ResearchHub(props) {
     var t = typeof props.t === "function" ? props.t : function(k) {
@@ -1416,6 +1431,8 @@
     var studentCodename = props.studentCodename || "";
     var addToast = props.addToast || function() {
     };
+    var isTeacherMode = props.isTeacherMode === true;
+    var gradeLevel = props.gradeLevel;
     var _journal = useState(loadJournal);
     var journal = _journal[0];
     var setJournal = _journal[1];
@@ -1431,6 +1448,16 @@
         clearTimeout(id);
       };
     }, [journal]);
+    var hadSavedJournalRef = useRef(safeLocal(STORAGE_KEY) != null);
+    useEffect(function() {
+      if (hadSavedJournalRef.current) return;
+      var seeded = gradeLevelToDevLevel(gradeLevel);
+      if (seeded && seeded !== journal.devLevel) {
+        setJournal(function(prev) {
+          return Object.assign({}, prev, { devLevel: seeded });
+        });
+      }
+    }, []);
     var ask = useMemo(function() {
       return makeAskResearchCoach({
         ai: props.ai,
@@ -1526,7 +1553,7 @@
           gap: "12px",
           flexWrap: "wrap",
           borderRadius: "20px 20px 0 0"
-        } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "28px" } }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("research_hub.modal_title") || "Investigation & Research Hub"), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "11px", opacity: 0.85 } }, studentCodename ? (t("research_hub.modal_subtitle_with_codename") || "Inquiry journal for ") + studentCodename : t("research_hub.modal_subtitle") || "Loop, model, source, and argue your way through a question worth asking."))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(CostMeter, { t, used: journal.aiCallCount || 0, cap: MAX_AI_CALLS_PER_SESSION }), /* @__PURE__ */ React.createElement(DevLevelSelector, { t, value: journal.devLevel, onChange: setDevLevel }), educatorView && /* @__PURE__ */ React.createElement(
+        } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "28px" } }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("research_hub.modal_title") || "Investigation & Research Hub"), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "11px", opacity: 0.85 } }, studentCodename ? (t("research_hub.modal_subtitle_with_codename") || "Inquiry journal for ") + studentCodename : t("research_hub.modal_subtitle") || "Loop, model, source, and argue your way through a question worth asking."))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(CostMeter, { t, used: journal.aiCallCount || 0, cap: MAX_AI_CALLS_PER_SESSION }), /* @__PURE__ */ React.createElement(DevLevelSelector, { t, value: journal.devLevel, onChange: setDevLevel }), educatorView && isTeacherMode && /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
@@ -1626,7 +1653,7 @@
           alignItems: "center",
           gap: "10px",
           flexWrap: "wrap"
-        } }, /* @__PURE__ */ React.createElement(SuggestionBadge, { t }), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#78350f", lineHeight: 1.5, flex: 1, minWidth: "200px" } }, t("research_hub.ai_convention_banner") || "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.")), educatorViewOn && educatorView ? /* @__PURE__ */ React.createElement(
+        } }, /* @__PURE__ */ React.createElement(SuggestionBadge, { t }), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#78350f", lineHeight: 1.5, flex: 1, minWidth: "200px" } }, t("research_hub.ai_convention_banner") || "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.")), educatorViewOn && educatorView && isTeacherMode ? /* @__PURE__ */ React.createElement(
           EducatorViewShell,
           {
             t,
@@ -1698,7 +1725,7 @@
                 border: "1px solid #fbbf24",
                 textTransform: "uppercase",
                 letterSpacing: "0.4px"
-              } }, t("research_hub.lane_coming_soon") || "Lane shipping soon")
+              } }, t("research_hub.lane_coming_soon") || "Failed to load")
             );
           }))) : activeLane._placeholder ? /* @__PURE__ */ React.createElement(PlaceholderLaneView, { t, lane: activeLane, onBack: function() {
             setActiveLane(null);
@@ -1773,7 +1800,7 @@
           flexWrap: "wrap",
           fontSize: "11px",
           color: "#64748b"
-        } }, /* @__PURE__ */ React.createElement("span", null, t("research_hub.footer_persistence_note") || "Your inquiry journal is saved on this device. Switching codenames mid-investigation will show prior work \u2014 clear the inquiry above to start fresh."), /* @__PURE__ */ React.createElement("span", { style: { fontStyle: "italic" } }, t("research_hub.footer_tier_note") || "Hub shell v1 \u2014 lane workspaces shipping next."))
+        } }, /* @__PURE__ */ React.createElement("span", null, t("research_hub.footer_persistence_note") || "Your inquiry journal is saved on this device. Switching codenames mid-investigation will show prior work \u2014 clear the inquiry above to start fresh."), /* @__PURE__ */ React.createElement("span", { style: { fontStyle: "italic" } }, t("research_hub.footer_tier_note") || "Scientific \xB7 Engineering \xB7 Humanities lanes."))
       )
     );
   }

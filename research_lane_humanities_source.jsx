@@ -101,6 +101,9 @@
   var useMemo = React.useMemo;
   var useRef = React.useRef;
   var useCallback = React.useCallback;
+  // Shared focus-trap hook (WCAG 2.1.2/2.4.3). Resolved once at module load so
+  // the call is a stable hook across renders; no-op fallback if host is older.
+  var useFocusTrap = (window.__alloHooks && window.__alloHooks.useFocusTrap) || function () {};
 
   var H = window.ResearchHub.helpers || {};
   var isPlausibleProse = H.isPlausibleProse || function () { return { ok: true }; };
@@ -1046,8 +1049,10 @@
     var _id = useState(preloadChipId); var chipId = _id[0]; var setChipId = _id[1];
     var _other = useState(''); var otherText = _other[0]; var setOtherText = _other[1];
     var canCommit = !!chipId && (chipId !== 'other' || otherText.trim().length >= 10);
+    var modalRef = useRef(null);
+    useFocusTrap(modalRef, true, onCancel);
     return (
-      <div role="dialog" aria-modal="true"
+      <div ref={modalRef} role="dialog" aria-modal="true"
         aria-label={t('humanities.loopback_modal_title') || 'Why are you looping back?'}
         style={{ position: 'fixed', inset: 0, zIndex: 80,
           background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(4px)',
@@ -1289,7 +1294,7 @@
       );
     }
     return (
-      <div style={{ marginTop: '10px', padding: '12px 14px', borderRadius: '12px',
+      <div role="status" aria-live="polite" style={{ marginTop: '10px', padding: '12px 14px', borderRadius: '12px',
         background: '#fdf2f8', border: '1px solid #f9a8d4' }}>
         {SuggestionBadge && (<div style={{ marginBottom: '6px' }}><SuggestionBadge t={t} /></div>)}
         {renderQuestions(data.what_makes_this_contestable_questions, 'What makes this contestable?')}
@@ -3128,9 +3133,11 @@
 
     var color = verdict === 'warrant_survives' ? '#16a34a' :
                 verdict === 'warrant_contracts' ? '#d97706' : '#dc2626';
+    var modalRef = useRef(null);
+    useFocusTrap(modalRef, true, onCancel);
 
     return (
-      <div role="dialog" aria-modal="true"
+      <div ref={modalRef} role="dialog" aria-modal="true"
         aria-label={t('humanities.framing_probe_modal_title') || 'Record framing probe verdict'}
         style={{ position: 'fixed', inset: 0, zIndex: 90,
           background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(4px)',
@@ -3649,12 +3656,12 @@
             </button>
             {latest && (
               <button type="button" onClick={sendToStoryForge}
-                title={t('humanities.send_to_storyforge_title') || 'Stage this composition for StoryForge to pick up (egress only — StoryForge-side import shipped separately)'}
+                title={t('humanities.send_to_storyforge_title') || 'Saves your composition to this device. Note: StoryForge import is not available yet — this stages the data so a future StoryForge import can pick it up.'}
                 style={{ padding: '10px 18px', borderRadius: '999px',
                   background: '#7c3aed', color: '#fff', border: 'none',
                   fontWeight: 800, fontSize: '12px', cursor: 'pointer' }}>
                 <span aria-hidden="true">{'\u{1F4DA} '}</span>
-                {t('humanities.send_to_storyforge') || 'Send to StoryForge'}
+                {t('humanities.send_to_storyforge') || 'Save for StoryForge'}
               </button>
             )}
           </div>
@@ -3663,9 +3670,9 @@
           <div role="status" style={{ padding: '10px 12px', borderRadius: '10px',
             background: '#f5f3ff', border: '1px solid #c4b5fd',
             fontSize: '11px', color: '#5b21b6', lineHeight: 1.5 }}>
-            <strong>{'\u{2705} '}{t('humanities.egress_ok') || 'Composition staged for StoryForge.'}</strong>{' '}
+            <strong>{'\u{2705} '}{t('humanities.egress_ok') || 'Composition saved on this device.'}</strong>{' '}
             {t('humanities.egress_ok_detail') ||
-              'Payload (composition + standpoint + foreclosure coda + provenance counts) written to localStorage["__alloHubEgressToStoryForge"]. Open StoryForge in this session to import; the data is your own and stays on this device.'}
+              'Your composition (with standpoint, foreclosure coda, and provenance counts) is saved in this browser. StoryForge import isn’t available yet — when it ships it will be able to pick this up. Your data stays on this device.'}
           </div>
         )}
         {egress && !egress.ok && (

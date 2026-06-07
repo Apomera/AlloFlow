@@ -116,6 +116,9 @@
   var useMemo = React.useMemo;
   var useRef = React.useRef;
   var useCallback = React.useCallback;
+  // Shared focus-trap hook (WCAG 2.1.2/2.4.3). Resolved once at module load so
+  // the call is a stable hook across renders; no-op fallback if host is older.
+  var useFocusTrap = (window.__alloHooks && window.__alloHooks.useFocusTrap) || function () {};
 
   var H = window.ResearchHub.helpers || {};
   var isPlausibleProse = H.isPlausibleProse || function () { return { ok: true }; };
@@ -789,9 +792,12 @@
     var _id = useState(null); var chipId = _id[0]; var setChipId = _id[1];
     var _other = useState(''); var otherText = _other[0]; var setOtherText = _other[1];
     var canCommit = !!chipId && (chipId !== 'other' || otherText.trim().length >= 10);
+    var modalRef = useRef(null);
+    useFocusTrap(modalRef, true, onCancel);
 
     return (
       <div
+        ref={modalRef}
         role="dialog"
         aria-modal="true"
         aria-label={(t('scientific.loopback_modal_title') || 'Why are you looping back?')}
@@ -1146,7 +1152,7 @@
     var SuggestionBadge = primitives.SuggestionBadge;
     if (!data) return null;
     return (
-      <div style={{
+      <div role="status" aria-live="polite" style={{
         marginTop: '10px', padding: '12px 14px', borderRadius: '12px',
         background: '#f5f3ff', border: '1px solid #c4b5fd',
       }}>
@@ -2134,6 +2140,9 @@
     var primitives = ctx.primitives;
 
     var activeStage = journal.activeStage || 'notice_wonder';
+    // Defensive clamp: a stale/cross-lane activeStage would crash the
+    // STAGE_BY_KEY[activeStage] deref below. The sibling lanes already do this.
+    if (STAGE_KEYS.indexOf(activeStage) === -1) activeStage = 'notice_wonder';
 
     var _loopback = useState(null); var loopback = _loopback[0]; var setLoopback = _loopback[1];
 
@@ -2343,6 +2352,12 @@
             })}
           </div>
         </details>
+
+        {loopback && (
+          <LoopBackPicker t={t} fromStage={loopback.fromStage} toStage={loopback.toStage}
+            onCommit={commitLoopBack}
+            onCancel={function () { setLoopback(null); }} />
+        )}
       </div>
     );
   }

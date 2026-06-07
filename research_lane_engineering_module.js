@@ -20,6 +20,8 @@
   var useMemo = React.useMemo;
   var useRef = React.useRef;
   var useCallback = React.useCallback;
+  var useFocusTrap = window.__alloHooks && window.__alloHooks.useFocusTrap || function() {
+  };
   var H = window.ResearchHub.helpers || {};
   var isPlausibleProse = H.isPlausibleProse || function() {
     return { ok: true };
@@ -560,6 +562,22 @@
     }
     return { ok: true };
   }
+  function hasUnmetSafety(journal) {
+    var cons = journal.constraintMatrix || [];
+    var crits = journal.criteria || [];
+    var runs = journal.testRun || [];
+    return cons.some(function(c) {
+      return c.source === "safety" && c.measured != null && c.passed === false;
+    }) || crits.some(function(c) {
+      if (c.kind !== "physical-safety") return false;
+      var matched = runs.filter(function(r) {
+        return r.criterionId === c.id;
+      });
+      return matched.length > 0 && matched.every(function(r) {
+        return r.passed === false;
+      });
+    });
+  }
   function stakeholderTranslatorGate(journal) {
     var floors = devFloors(journal.devLevel || "6_8");
     var rs = (journal.stageNotes || {}).communicate || {};
@@ -605,6 +623,17 @@
           reason: "Label every design claim (meets_criteria / partial / not_yet).",
           bypass_signals: ["designClaim_" + i + "_unlabeled"]
         };
+      }
+    }
+    if (hasUnmetSafety(journal)) {
+      for (var s = 0; s < claims.length; s++) {
+        if (claims[s].label === "meets_criteria") {
+          return {
+            ok: false,
+            reason: 'A physical-safety criterion is unmet, so no design claim can be labeled "meets criteria." Relabel claim ' + (s + 1) + ' as "partial" or "not yet."',
+            bypass_signals: ["safety_override_meets_label"]
+          };
+        }
       }
     }
     var builds = journal.buildLog || [];
@@ -1128,9 +1157,12 @@
     var otherText = _other[0];
     var setOtherText = _other[1];
     var canCommit = !!chipId && (chipId !== "other" || otherText.trim().length >= 10);
+    var modalRef = useRef(null);
+    useFocusTrap(modalRef, true, onCancel);
     return /* @__PURE__ */ React.createElement(
       "div",
       {
+        ref: modalRef,
         role: "dialog",
         "aria-modal": "true",
         "aria-label": t("engineering.loopback_modal_title") || "Why are you looping back?",
@@ -1452,7 +1484,7 @@
         return /* @__PURE__ */ React.createElement("li", { key: i }, q);
       })));
     }
-    return /* @__PURE__ */ React.createElement("div", { style: {
+    return /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", style: {
       marginTop: "10px",
       padding: "12px 14px",
       borderRadius: "12px",
@@ -4267,22 +4299,13 @@
       });
     }, [rationale, acc]);
     var epistemicBlocked = sp && (sp.epistemicStatus === "invented" || sp.epistemicStatus === "curriculum_prompt");
-    var availableLabels = epistemicBlocked ? [{ k: "partial", lab: "Partial", color: "#d97706" }, { k: "not_yet", lab: "Not yet", color: "#dc2626" }] : [
+    var unmetSafety = hasUnmetSafety(journal);
+    var blockMeets = epistemicBlocked || unmetSafety;
+    var availableLabels = blockMeets ? [{ k: "partial", lab: "Partial", color: "#d97706" }, { k: "not_yet", lab: "Not yet", color: "#dc2626" }] : [
       { k: "meets_criteria", lab: "Meets criteria", color: "#16a34a" },
       { k: "partial", lab: "Partial", color: "#d97706" },
       { k: "not_yet", lab: "Not yet", color: "#dc2626" }
     ];
-    var hasUnmetSafety = cons.some(function(c) {
-      return c.source === "safety" && c.measured != null && c.passed === false;
-    }) || crits.some(function(c) {
-      if (c.kind !== "physical-safety") return false;
-      var matched = runs.filter(function(r) {
-        return r.criterionId === c.id;
-      });
-      return matched.length > 0 && matched.every(function(r) {
-        return r.passed === false;
-      });
-    });
     var addClaim = function() {
       if (!addingClaim.trim()) return;
       setJournal(function(prev) {
@@ -4351,7 +4374,7 @@
         primitives,
         pair: EXEMPLAR_PAIRS.communicate
       }
-    ), /* @__PURE__ */ React.createElement(ConstraintCoverageBar, { t, constraints: cons }), hasUnmetSafety && /* @__PURE__ */ React.createElement("div", { style: {
+    ), /* @__PURE__ */ React.createElement(ConstraintCoverageBar, { t, constraints: cons }), unmetSafety && /* @__PURE__ */ React.createElement("div", { role: "alert", style: {
       padding: "10px 12px",
       borderRadius: "10px",
       background: "#fef2f2",
@@ -4480,7 +4503,7 @@
           },
           opt.lab
         );
-      }), /* @__PURE__ */ React.createElement(
+      }), unmetSafety && c.label === "meets_criteria" && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", color: "#b91c1c", fontWeight: 800 } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u26A0\uFE0F "), t("engineering.claim_safety_relabel") || "relabel required \u2014 physical-safety criterion unmet"), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",

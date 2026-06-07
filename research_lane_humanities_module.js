@@ -20,6 +20,8 @@
   var useMemo = React.useMemo;
   var useRef = React.useRef;
   var useCallback = React.useCallback;
+  var useFocusTrap = window.__alloHooks && window.__alloHooks.useFocusTrap || function() {
+  };
   var H = window.ResearchHub.helpers || {};
   var isPlausibleProse = H.isPlausibleProse || function() {
     return { ok: true };
@@ -1301,9 +1303,12 @@
     var otherText = _other[0];
     var setOtherText = _other[1];
     var canCommit = !!chipId && (chipId !== "other" || otherText.trim().length >= 10);
+    var modalRef = useRef(null);
+    useFocusTrap(modalRef, true, onCancel);
     return /* @__PURE__ */ React.createElement(
       "div",
       {
+        ref: modalRef,
         role: "dialog",
         "aria-modal": "true",
         "aria-label": t("humanities.loopback_modal_title") || "Why are you looping back?",
@@ -1644,7 +1649,7 @@
         return /* @__PURE__ */ React.createElement("li", { key: i }, q);
       })));
     }
-    return /* @__PURE__ */ React.createElement("div", { style: {
+    return /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", style: {
       marginTop: "10px",
       padding: "12px 14px",
       borderRadius: "12px",
@@ -4120,9 +4125,12 @@
     var asJustOk = !wouldBeAllSurvives || asJust.trim().length >= 120;
     var canCommit = rationaleLengthOk && rationaleDenylistOk && rationaleContentOk && asJustOk;
     var color = verdict === "warrant_survives" ? "#16a34a" : verdict === "warrant_contracts" ? "#d97706" : "#dc2626";
+    var modalRef = useRef(null);
+    useFocusTrap(modalRef, true, onCancel);
     return /* @__PURE__ */ React.createElement(
       "div",
       {
+        ref: modalRef,
         role: "dialog",
         "aria-modal": "true",
         "aria-label": t("humanities.framing_probe_modal_title") || "Record framing probe verdict",
@@ -4774,7 +4782,7 @@
       {
         type: "button",
         onClick: sendToStoryForge,
-        title: t("humanities.send_to_storyforge_title") || "Stage this composition for StoryForge to pick up (egress only \u2014 StoryForge-side import shipped separately)",
+        title: t("humanities.send_to_storyforge_title") || "Saves your composition to this device. Note: StoryForge import is not available yet \u2014 this stages the data so a future StoryForge import can pick it up.",
         style: {
           padding: "10px 18px",
           borderRadius: "999px",
@@ -4787,7 +4795,7 @@
         }
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4DA} "),
-      t("humanities.send_to_storyforge") || "Send to StoryForge"
+      t("humanities.send_to_storyforge") || "Save for StoryForge"
     )), egress && egress.ok && /* @__PURE__ */ React.createElement("div", { role: "status", style: {
       padding: "10px 12px",
       borderRadius: "10px",
@@ -4796,7 +4804,7 @@
       fontSize: "11px",
       color: "#5b21b6",
       lineHeight: 1.5
-    } }, /* @__PURE__ */ React.createElement("strong", null, "\u2705 ", t("humanities.egress_ok") || "Composition staged for StoryForge."), " ", t("humanities.egress_ok_detail") || 'Payload (composition + standpoint + foreclosure coda + provenance counts) written to localStorage["__alloHubEgressToStoryForge"]. Open StoryForge in this session to import; the data is your own and stays on this device.'), egress && !egress.ok && /* @__PURE__ */ React.createElement("div", { role: "alert", style: {
+    } }, /* @__PURE__ */ React.createElement("strong", null, "\u2705 ", t("humanities.egress_ok") || "Composition saved on this device."), " ", t("humanities.egress_ok_detail") || "Your composition (with standpoint, foreclosure coda, and provenance counts) is saved in this browser. StoryForge import isn\u2019t available yet \u2014 when it ships it will be able to pick this up. Your data stays on this device."), egress && !egress.ok && /* @__PURE__ */ React.createElement("div", { role: "alert", style: {
       padding: "10px 12px",
       borderRadius: "10px",
       background: "#fef2f2",

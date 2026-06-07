@@ -20,6 +20,8 @@
   var useMemo = React.useMemo;
   var useRef = React.useRef;
   var useCallback = React.useCallback;
+  var useFocusTrap = window.__alloHooks && window.__alloHooks.useFocusTrap || function() {
+  };
   var H = window.ResearchHub.helpers || {};
   var isPlausibleProse = H.isPlausibleProse || function() {
     return { ok: true };
@@ -824,9 +826,12 @@
     var otherText = _other[0];
     var setOtherText = _other[1];
     var canCommit = !!chipId && (chipId !== "other" || otherText.trim().length >= 10);
+    var modalRef = useRef(null);
+    useFocusTrap(modalRef, true, onCancel);
     return /* @__PURE__ */ React.createElement(
       "div",
       {
+        ref: modalRef,
         role: "dialog",
         "aria-modal": "true",
         "aria-label": t("scientific.loopback_modal_title") || "Why are you looping back?",
@@ -1164,7 +1169,7 @@
     var primitives = props.primitives || {};
     var SuggestionBadge = primitives.SuggestionBadge;
     if (!data) return null;
-    return /* @__PURE__ */ React.createElement("div", { style: {
+    return /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", style: {
       marginTop: "10px",
       padding: "12px 14px",
       borderRadius: "12px",
@@ -2253,6 +2258,7 @@
     var setJournal = ctx.setJournal;
     var primitives = ctx.primitives;
     var activeStage = journal.activeStage || "notice_wonder";
+    if (STAGE_KEYS.indexOf(activeStage) === -1) activeStage = "notice_wonder";
     var _loopback = useState(null);
     var loopback = _loopback[0];
     var setLoopback = _loopback[1];

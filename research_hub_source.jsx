@@ -90,6 +90,25 @@
     { key: 'ap',  label: 'AP / honors', long: 'AP / honors / dual-enrollment' },
   ];
 
+  // Map the host's grade string ('Kindergarten', '3rd Grade', '12th Grade',
+  // 'College', …) to a DEV_LEVELS key so the reading level can be seeded from
+  // what the host already knows. Returns null when the grade is unrecognized.
+  function gradeLevelToDevLevel(gl) {
+    if (!gl || typeof gl !== 'string') return null;
+    var s = gl.toLowerCase();
+    if (s.indexOf('kindergarten') !== -1 || s.indexOf('pre-k') !== -1 || s.indexOf('pre-kindergarten') !== -1) return 'k2';
+    if (s.indexOf('college') !== -1 || s.indexOf('graduate') !== -1) return 'ap';
+    var m = s.match(/(\d+)\s*(?:st|nd|rd|th)?\s*grade/);
+    if (m) {
+      var n = parseInt(m[1], 10);
+      if (n <= 2) return 'k2';
+      if (n <= 5) return '3_5';
+      if (n <= 8) return '6_8';
+      return '9_12';
+    }
+    return null;
+  }
+
   // ───────────────────────────────────────────────────────────────────────
   // safeLocal — Safari private + sandboxed iframe throw on storage access.
   // Mirrors the pattern from onboarding_helpers_module.js so a quota failure
@@ -1291,9 +1310,9 @@
   }
 
   // ───────────────────────────────────────────────────────────────────────
-  // Tier-1 placeholder lane workspace. Renders when the user clicks a lane
-  // tile whose plugin hasn't loaded yet (i.e., all three lanes in Tier 1).
-  // Communicates what's coming + offers a "back to lane selector" exit.
+  // Lane load-failure fallback. All three lanes ship and self-register, so this
+  // now renders only if a lane plugin fails to load. Explains the failure and
+  // offers a "back to lane selector" exit.
   // ───────────────────────────────────────────────────────────────────────
   function PlaceholderLaneView(props) {
     var t = props.t || function (k) { return k; };
@@ -1336,11 +1355,11 @@
         }}>
           <strong>
             <span aria-hidden="true">{'\u{1F527} '}</span>
-            {t('research_hub.lane_under_construction_title') || 'This lane is shipping next.'}
+            {t('research_hub.lane_under_construction_title') || 'This lane didn’t load.'}
           </strong>
           <p style={{ margin: '4px 0 0' }}>
             {t('research_hub.lane_under_construction_body') ||
-              'The Hub shell, AI guardrails, voice notes, and inquiry journal are live now. The lane workspace lands in the next update.'}
+              'The Hub and your inquiry journal are working. This lane’s workspace failed to load — try closing and reopening the Research Hub, or reload the page.'}
           </p>
         </div>
         <details style={{ fontSize: '11px', color: '#475569' }}>
@@ -1349,7 +1368,7 @@
           </summary>
           <p style={{ marginTop: '6px', lineHeight: 1.55 }}>
             {t('research_hub.lane_preview_body_' + lane.id) ||
-              'When this lane lands you will move through its stages in any order, with explicit "loop back" affordances so revising is the point — not a setback.'}
+              'In this lane you move through its stages in any order, with explicit "loop back" affordances so revising is the point — not a setback.'}
           </p>
         </details>
       </div>
@@ -1365,6 +1384,8 @@
     var onClose = props.onClose;
     var studentCodename = props.studentCodename || '';
     var addToast = props.addToast || function () {};
+    var isTeacherMode = props.isTeacherMode === true;
+    var gradeLevel = props.gradeLevel;
 
     var _journal = useState(loadJournal);
     var journal = _journal[0]; var setJournal = _journal[1];
@@ -1381,6 +1402,18 @@
       }, 60);
       return function () { clearTimeout(id); };
     }, [journal]);
+
+    // Seed reading level from the host's known grade — but only on a genuinely
+    // fresh journal (nothing persisted at mount). Never override a level the
+    // student/teacher already picked in this or a prior session.
+    var hadSavedJournalRef = useRef(safeLocal(STORAGE_KEY) != null);
+    useEffect(function () {
+      if (hadSavedJournalRef.current) return;
+      var seeded = gradeLevelToDevLevel(gradeLevel);
+      if (seeded && seeded !== journal.devLevel) {
+        setJournal(function (prev) { return Object.assign({}, prev, { devLevel: seeded }); });
+      }
+    }, []); // mount only
 
     var ask = useMemo(function () {
       return makeAskResearchCoach({
@@ -1489,7 +1522,7 @@
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <CostMeter t={t} used={journal.aiCallCount || 0} cap={MAX_AI_CALLS_PER_SESSION} />
               <DevLevelSelector t={t} value={journal.devLevel} onChange={setDevLevel} />
-              {educatorView && (
+              {educatorView && isTeacherMode && (
                 <button
                   type="button"
                   onClick={function () { setEducatorViewOn(!educatorViewOn); }}
@@ -1577,8 +1610,8 @@
               </p>
             </div>
 
-            {/* V2: Educator view takes precedence when toggled on */}
-            {educatorViewOn && educatorView ? (
+            {/* V2: Educator view takes precedence when toggled on (teachers only) */}
+            {educatorViewOn && educatorView && isTeacherMode ? (
               <EducatorViewShell t={t} journal={journal}
                 onExit={function () { setEducatorViewOn(false); }}
                 educatorView={educatorView}
@@ -1638,7 +1671,7 @@
                             border: '1px solid #fbbf24',
                             textTransform: 'uppercase', letterSpacing: '0.4px',
                           }}>
-                            {t('research_hub.lane_coming_soon') || 'Lane shipping soon'}
+                            {t('research_hub.lane_coming_soon') || 'Failed to load'}
                           </span>
                         )}
                       </button>
@@ -1736,7 +1769,7 @@
                 'Your inquiry journal is saved on this device. Switching codenames mid-investigation will show prior work — clear the inquiry above to start fresh.'}
             </span>
             <span style={{ fontStyle: 'italic' }}>
-              {t('research_hub.footer_tier_note') || 'Hub shell v1 — lane workspaces shipping next.'}
+              {t('research_hub.footer_tier_note') || 'Scientific · Engineering · Humanities lanes.'}
             </span>
           </div>
         </div>

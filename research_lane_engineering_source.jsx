@@ -97,6 +97,9 @@
   var useMemo = React.useMemo;
   var useRef = React.useRef;
   var useCallback = React.useCallback;
+  // Shared focus-trap hook (WCAG 2.1.2/2.4.3). Resolved once at module load so
+  // the call is a stable hook across renders; no-op fallback if host is older.
+  var useFocusTrap = (window.__alloHooks && window.__alloHooks.useFocusTrap) || function () {};
 
   var H = window.ResearchHub.helpers || {};
   var isPlausibleProse = H.isPlausibleProse || function () { return { ok: true }; };
@@ -465,6 +468,24 @@
     return { ok: true };
   }
 
+  // Physical-safety override: a measured-failed safety-sourced constraint OR a
+  // tested-and-failed physical-safety criterion. Used by BOTH the gate (source
+  // of truth) and the Communicate UI so a safety-failing design can never be
+  // labeled "meets criteria" — stakeholder approval never overrides physical
+  // harm. Keep the two call sites on this one helper so they cannot drift.
+  function hasUnmetSafety(journal) {
+    var cons = journal.constraintMatrix || [];
+    var crits = journal.criteria || [];
+    var runs = journal.testRun || [];
+    return cons.some(function (c) {
+      return c.source === 'safety' && c.measured != null && c.passed === false;
+    }) || crits.some(function (c) {
+      if (c.kind !== 'physical-safety') return false;
+      var matched = runs.filter(function (r) { return r.criterionId === c.id; });
+      return matched.length > 0 && matched.every(function (r) { return r.passed === false; });
+    });
+  }
+
   function stakeholderTranslatorGate(journal) {
     var floors = devFloors(journal.devLevel || '6_8');
     var rs = (journal.stageNotes || {}).communicate || {};
@@ -495,6 +516,16 @@
       if (!c.label) {
         return { ok: false, reason: 'Label every design claim (meets_criteria / partial / not_yet).',
                  bypass_signals: ['designClaim_' + i + '_unlabeled'] };
+      }
+    }
+    // Safety override (source of truth): an unmet physical-safety criterion
+    // forbids any "meets criteria" label, regardless of stakeholder approval.
+    if (hasUnmetSafety(journal)) {
+      for (var s = 0; s < claims.length; s++) {
+        if (claims[s].label === 'meets_criteria') {
+          return { ok: false, reason: 'A physical-safety criterion is unmet, so no design claim can be labeled "meets criteria." Relabel claim ' + (s + 1) + ' as "partial" or "not yet."',
+                   bypass_signals: ['safety_override_meets_label'] };
+        }
       }
     }
     var builds = journal.buildLog || [];
@@ -947,8 +978,10 @@
     var _id = useState(preloadChipId); var chipId = _id[0]; var setChipId = _id[1];
     var _other = useState(''); var otherText = _other[0]; var setOtherText = _other[1];
     var canCommit = !!chipId && (chipId !== 'other' || otherText.trim().length >= 10);
+    var modalRef = useRef(null);
+    useFocusTrap(modalRef, true, onCancel);
     return (
-      <div role="dialog" aria-modal="true"
+      <div ref={modalRef} role="dialog" aria-modal="true"
         aria-label={t('engineering.loopback_modal_title') || 'Why are you looping back?'}
         style={{ position: 'fixed', inset: 0, zIndex: 80,
           background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(4px)',
@@ -1169,7 +1202,7 @@
       );
     }
     return (
-      <div style={{ marginTop: '10px', padding: '12px 14px', borderRadius: '12px',
+      <div role="status" aria-live="polite" style={{ marginTop: '10px', padding: '12px 14px', borderRadius: '12px',
         background: '#fff7ed', border: '1px solid #fdba74' }}>
         {SuggestionBadge && (<div style={{ marginBottom: '6px' }}><SuggestionBadge t={t} /></div>)}
         {renderQuestions(data.missing_dimension_questions, t('engineering.q_missing_dimension') || 'Constraint dimensions you may have missed:')}
@@ -3406,19 +3439,16 @@
     }, [rationale, acc]);
 
     var epistemicBlocked = sp && (sp.epistemicStatus === 'invented' || sp.epistemicStatus === 'curriculum_prompt');
-    var availableLabels = epistemicBlocked
+    var unmetSafety = hasUnmetSafety(journal);
+    // "Meets criteria" is removed from the selectable labels when EITHER the
+    // stakeholder is invented/curriculum-prompt OR a physical-safety criterion
+    // is unmet. The gate enforces the same rule as source of truth.
+    var blockMeets = epistemicBlocked || unmetSafety;
+    var availableLabels = blockMeets
       ? [{ k: 'partial', lab: 'Partial', color: '#d97706' }, { k: 'not_yet', lab: 'Not yet', color: '#dc2626' }]
       : [{ k: 'meets_criteria', lab: 'Meets criteria', color: '#16a34a' },
          { k: 'partial', lab: 'Partial', color: '#d97706' },
          { k: 'not_yet', lab: 'Not yet', color: '#dc2626' }];
-
-    var hasUnmetSafety = cons.some(function (c) {
-      return c.source === 'safety' && c.measured != null && c.passed === false;
-    }) || crits.some(function (c) {
-      if (c.kind !== 'physical-safety') return false;
-      var matched = runs.filter(function (r) { return r.criterionId === c.id; });
-      return matched.length > 0 && matched.every(function (r) { return r.passed === false; });
-    });
 
     var addClaim = function () {
       if (!addingClaim.trim()) return;
@@ -3480,8 +3510,8 @@
 
         <ConstraintCoverageBar t={t} constraints={cons} />
 
-        {hasUnmetSafety && (
-          <div style={{ padding: '10px 12px', borderRadius: '10px',
+        {unmetSafety && (
+          <div role="alert" style={{ padding: '10px 12px', borderRadius: '10px',
             background: '#fef2f2', border: '1px solid #fca5a5',
             fontSize: '11px', color: '#7f1d1d' }}>
             <strong>{t('engineering.safety_override') || 'Safety override active.'} </strong>
@@ -3570,6 +3600,12 @@
                         </button>
                       );
                     })}
+                    {unmetSafety && c.label === 'meets_criteria' && (
+                      <span style={{ fontSize: '10px', color: '#b91c1c', fontWeight: 800 }}>
+                        <span aria-hidden="true">{'\u{26A0}\u{FE0F} '}</span>
+                        {t('engineering.claim_safety_relabel') || 'relabel required — physical-safety criterion unmet'}
+                      </span>
+                    )}
                     <button type="button" onClick={function () { removeClaim(c.id); }}
                       aria-label="Remove claim"
                       style={{ marginLeft: 'auto', background: 'transparent', border: 'none',
