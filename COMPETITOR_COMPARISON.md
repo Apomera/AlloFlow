@@ -2,13 +2,13 @@
 
 **Generated:** May 2026 · For sharing with reviewers, evaluators, and partners
 **Scope:** How AlloFlow compares to the most-cited AI ed-tech products on feature surface, distribution model, and accessibility posture
-**Honest framing:** AlloFlow has more documented surface area than every competitor in this list, and is genuinely free for districts. It is also pre-distribution (no real users yet) and built by one person — so polish, support, and brand recognition lag.
+**Honest framing:** AlloFlow has more documented surface area than every competitor in this list, and is genuinely free for districts using the Gemini Canvas distribution (Google injects the API key under their Education Workspace quotas — no district billing). Self-hosted Firebase deployment incurs Gemini API costs at standard Google AI pricing (most usage covered by the free Spark-tier limits; the PDF remediation pipeline in particular can consume Vision API calls that may push heavy users into Blaze billing — see [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) for the cost model). AlloFlow is also pre-distribution (no real users yet) and built by one person — so polish, support, and brand recognition lag.
 
 ---
 
 ## Elevator pitch
 
-AlloFlow is a single-creator AI lesson-design + student-experience platform with **~520 documented features** across **~656,000 lines of source**, distributed as a Gemini Canvas artifact so districts pay $0 (Google Education Gemini quotas cover all inference). It includes 95 STEM Lab tools, 33 SEL Hub tools mapped to CASEL, a full WCAG 2.1 AA / VPAT 2.5 accessibility infrastructure, LTI 1.3 LMS integration, multi-provider TTS with offline fallback, gamepad/adaptive-controller support, a clinical Behavior Lens (FBA + BIP), Symbol Studio (a Boardmaker alternative), and a 7,000+ line PDF accessibility audit + remediation pipeline with an autonomous-agent Expert Workbench.
+AlloFlow is a single-creator AI lesson-design + student-experience platform with **~520 documented features** across **~656,000 lines of source**, distributed primarily as a Gemini Canvas artifact (so districts using Canvas pay $0 — Google Education Gemini quotas cover all inference). Self-hosted Firebase deployment is also supported; that path runs on the Gemini API free tier for typical classroom use, with Blaze pay-as-you-go pricing applying to heavy usage like batch PDF remediation. AlloFlow includes 95 STEM Lab tools, 33 SEL Hub tools mapped to CASEL, a full WCAG 2.1 AA / VPAT 2.5 accessibility infrastructure, LTI 1.3 LMS integration, multi-provider TTS with offline fallback, gamepad/adaptive-controller support, a clinical Behavior Lens (FBA + BIP), Symbol Studio (a Boardmaker alternative), and a 7,000+ line PDF accessibility audit + remediation pipeline with an autonomous-agent Expert Workbench.
 
 The creator is a school psychologist (PsyD), so SEL, FBA/BIP, accessibility, and special-education depth are unusually strong relative to teacher-built or VC-funded competitors that lead with classroom-content generation.
 
@@ -106,7 +106,7 @@ These features either don't exist anywhere else or exist only as inferior implem
 
 When introducing AlloFlow to evaluators or partners, the strongest 30-second pitch is:
 
-> **"It's the entire ed-tech AI category — lesson generation, differentiation, quizzing, SEL, STEM tools, AAC, behavior support, PDF accessibility — built by a school psychologist as one Gemini Canvas artifact, free for districts. No procurement cycle, no per-teacher fees, full WCAG AA, runs on Google Education's existing AI quotas."**
+> **"It's the entire ed-tech AI category — lesson generation, differentiation, quizzing, SEL, STEM tools, AAC, behavior support, PDF accessibility — built by a school psychologist as one Gemini Canvas artifact. Districts using Canvas pay $0; Google's Education Gemini quotas cover all inference. Self-hosted Firebase deployment is also supported and runs on the Gemini API free tier for typical classroom use. No procurement cycle, no per-teacher fees, full WCAG AA."**
 
 The credibility hook: **"It's all in one auditable inventory; the codebase is open. The accessibility audit is public (VPAT 2.5). I'm not pitching a roadmap; I'm pitching what's already shipped."**
 

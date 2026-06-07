@@ -155,6 +155,53 @@ The Gemini API free tier (available on Firebase Spark plan, no billing required)
 
 ---
 
+## PDF Remediation Cost Model (Self-Hosted Firebase Only)
+
+> **Canvas users: skip this section.** Inside Gemini Canvas, Google injects the
+> API key under your Workspace Education quotas — you pay $0 for inference, full
+> stop. This section is for Firebase self-hosted deployments where your district
+> supplies the Gemini API key and pays Google directly.
+
+The PDF accessibility audit + remediation pipeline (`doc_pipeline_source.jsx`,
+~19K lines) is AlloFlow's heaviest API consumer. Each PDF runs through a
+multi-pass audit panel that uses Gemini Vision (not just Flash text), so the
+cost model is different from text-only features like lesson generation.
+
+**Per-document cost estimate** (Gemini API list pricing, as of June 2026):
+
+| Document type | Vision calls per file | Approx cost per file |
+|---|---|---|
+| Ordinary text PDF (5-page handout) | 3–8 | $0.012–$0.08 |
+| Complex-table or scanned single-page | 8–20 | $0.03–$0.20 |
+| Multi-page scanned with OCR | 16–32 | $0.06–$0.32 |
+| Worst case (32 Vision calls / file) | 32 | ~$0.32 |
+
+A typical district batch (50 mixed-document files): **~$3–$16 total** depending
+on document mix. A K-12 school running 200 PDFs through the pipeline over a
+semester: **~$10–$60**.
+
+> **What this means for procurement.** Vision API charges are pay-as-you-go on
+> the Firebase Blaze tier. There is no upfront commitment, no per-seat license,
+> and the same key handles all AlloFlow's other Gemini features (text
+> generation, image generation, TTS) which mostly fit inside the free Spark
+> tier. The PDF pipeline is what may push a heavy-batch user over the free
+> ceiling — surface this in your Blaze projection if your IT department is
+> sizing a billing alert.
+
+**To keep PDF remediation cost-free in deploy mode:** stay on the Spark tier and
+batch-process under ~50 PDFs/month, OR use the air-gapped School Box deployment
+with a local LLM (no API costs at all, requires hardware up-front).
+
+**In-app cost visibility (Canvas vs deploy):**
+
+- **Canvas:** the AI Backend Settings modal shows your daily Gemini quota
+  estimate (header bar → "AI" button).
+- **Deploy (self-hosted):** the same modal shows the model catalog you have
+  access to + a per-session ledger of requested-vs-served models. A real-time
+  cost meter is not yet built — track usage in your [Google Cloud billing console](https://console.cloud.google.com/billing).
+
+---
+
 ## Updating AlloFlow
 
 When a new version is released:

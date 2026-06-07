@@ -99,7 +99,7 @@ Built by a school psychologist, for educators. The catch? There isn't one.
 | **Can we self-host?** | Yes — three deployment paths (see below). |
 | **What AI model powers it?** | Google Gemini via your district's Workspace account. District controls the key; no shared API billing. |
 
-**Your IT department can deploy AlloFlow on district infrastructure — no vendor servers, no new data agreements, no procurement gridlock.**
+**Your IT department can deploy AlloFlow on district infrastructure — no vendor servers, no new data agreements, no procurement gridlock.** Software is free (AGPL v3). The Canvas deployment path has no API costs (Google injects the key under Workspace quotas); self-hosted Firebase runs on the Gemini API free tier for typical classroom use, with pay-as-you-go pricing applying to heavy PDF batch remediation — full cost model in [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md).
 
 ---
 

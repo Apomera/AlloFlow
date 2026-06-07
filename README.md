@@ -199,13 +199,14 @@ AlloFlow is **WCAG 2.1 AA compliant**. All interactive elements — including ga
 
 ## 💵 Is It Really Free?
 
-**Yes.** AlloFlow is free and open-source under AGPL v3.
+**The software:** yes — free and open-source under AGPL v3. **The Gemini API usage** depends on your deployment path:
 
-| Path | Cost | What You Need |
-|------|------|---------------|
-| **Gemini Canvas** | Free | A Google account (uses your free daily Gemini quota) |
-| **Firebase Hosting** | Free tier available | A Firebase project; see [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) |
-| **School Box (Docker)** | Hardware cost only | Local server; no recurring API fees ever |
+| Path | Software cost | API cost | What You Need |
+|------|---|---|---|
+| **Gemini Canvas** | Free | $0 (Google injects key) | A Google account (uses your free daily Gemini quota) |
+| **Firebase Hosting (Spark — free tier)** | Free | $0 for typical classroom use | A Firebase project + Gemini API key; covers ~1,500 Flash requests/day |
+| **Firebase Hosting (Blaze — pay-as-you-go)** | Free | Pay-as-you-go | Standard Gemini pricing — relevant for heavy PDF remediation batches (Vision API). See [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) for the cost model |
+| **School Box (Docker)** | Hardware cost only | $0 (local LLM) | Local server; no recurring API fees ever |
 
 ---
 
