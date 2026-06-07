@@ -8302,7 +8302,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         thunderOsc.start(0);
         console.log('[FisherLab] Audio context initialized');
       } catch (e) {
-        console.error('[FisherLab] Audio init failed:', e);
+        console.warn('[FisherLab] Audio init failed:', e);
       }
     }
 

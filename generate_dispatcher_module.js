@@ -1674,7 +1674,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     if (visualPlan) visualPlan.layout = visualLayoutMode;
                 }
             } catch (planErr) {
-                console.error('[VisualDebug] generateVisualPlan threw:', planErr);
+                console.log('[VisualDebug] generateVisualPlan threw:', planErr);
                 warnLog('[ArtDirector] Plan generation failed, falling back to single image', planErr);
             }
         }
@@ -1682,7 +1682,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             setGenerationStep(t('visual_director.generating_panels') || 'Generating multi-panel illustration...');
             const executedPlan = await executeVisualPlan(visualPlan, targetWidth, targetQual, effectiveVisualStyle);
             if (!executedPlan?.panels?.some(p => p?.imageUrl)) {
-                console.error('[VisualDebug] executeVisualPlan returned all-null panels:', executedPlan);
+                console.log('[VisualDebug] executeVisualPlan returned all-null panels:', executedPlan);
             }
             content = {
                 prompt: finalPrompt,
@@ -1698,13 +1698,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         try {
             imageBase64 = await callImagen(finalPrompt, targetWidth, targetQual);
         } catch(e) {
-            console.error('[VisualDebug] callImagen threw:', e);
+            console.log('[VisualDebug] callImagen threw:', e);
             warnLog('Image generation failed:', e);
             if (typeof setError === 'function') setError(`Image generation failed: ${e?.message || e}`);
             return;
         }
         if (!imageBase64) {
-            console.error('[VisualDebug] callImagen returned falsy imageBase64; bailing');
+            console.log('[VisualDebug] callImagen returned falsy imageBase64; bailing');
             if (typeof setError === 'function') setError('Image generation produced no output');
             return;
         }

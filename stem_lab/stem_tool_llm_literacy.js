@@ -2676,7 +2676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             upd('tempCompared', true);
             awardXP(10, 'Compared temperatures live');
           } catch (e) {
-            console.error('[llmLiteracy] Live temperature run failed:', e);
+            console.warn('[llmLiteracy] Live temperature run failed:', e);
             var info = classifyGeminiError(e);
             addToast(info.emoji + ' ' + info.friendly + ' Showing recorded examples.', 'warn');
           } finally {
@@ -2738,7 +2738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             bump('tempCompared', 1);
             upd('tempCompared', true);
           } catch (e) {
-            console.error('[llmLiteracy] Temperature playground failed:', e);
+            console.warn('[llmLiteracy] Temperature playground failed:', e);
             var info = classifyGeminiError(e);
             addToast(info.emoji + ' ' + info.friendly, 'warn');
           } finally {
@@ -3245,7 +3245,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               return next;
             });
           }).catch(function(err) {
-            console.error('[llmLiteracy] Live ask failed:', err);
+            console.warn('[llmLiteracy] Live ask failed:', err);
             var info = classifyGeminiError(err);
             setLiveAsk(function(prev) {
               var next = Object.assign({}, prev);
@@ -3845,7 +3845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             // Autosave the attempt to the journal (deduped by exact-prompt match).
             journalAdd(userPrompt, trimmed);
           } catch (e) {
-            console.error('[llmLiteracy] Prompt live run failed:', e);
+            console.warn('[llmLiteracy] Prompt live run failed:', e);
             var info = classifyGeminiError(e);
             setLiveOutput('[' + info.emoji + ' ' + info.friendly + ']\n\nWhy this happens: ' + info.teaching);
             addToast(info.emoji + ' ' + info.friendly, 'warn');
@@ -3937,7 +3937,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
             addToast('Journal exported as Markdown.', 'success');
           } catch (e) {
-            console.error('[llmLiteracy] Export failed:', e);
+            console.warn('[llmLiteracy] Export failed:', e);
             // Fall back to copying to clipboard so students still get their work.
             copyToClipboard(body, 'Journal (copied as text)');
           }
@@ -5683,7 +5683,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
             addToast('Session report downloaded.', 'success');
           } catch (e) {
-            console.error('[llmLiteracy] Report export failed:', e);
+            console.warn('[llmLiteracy] Report export failed:', e);
             copyToClipboard(body, 'Session report (copied as text)');
           }
         }

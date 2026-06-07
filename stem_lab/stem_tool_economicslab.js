@@ -2998,7 +2998,7 @@ var d = labToolData || {};
 
                     } catch (e) {
 
-                      console.error('[EconLab] Parse error:', e);
+                      console.warn('[EconLab] Parse error:', e);
 
                       upd('pfLoading', false);
 
@@ -3235,7 +3235,7 @@ var d = labToolData || {};
                         if (addToast) addToast('\uD83D\uDCC8 Market open! 5 companies generated. Start trading!', 'success');
                         if (announceToSR) announceToSR('Stock market simulation open. 5 companies generated.');
 
-                      } catch (err) { upd('smLoading', false); if (addToast) addToast('Failed to generate market. Try again!', 'error'); console.error('[StockSim]', err); }
+                      } catch (err) { upd('smLoading', false); if (addToast) addToast('Failed to generate market. Try again!', 'error'); console.warn('[StockSim]', err); }
 
                     }).catch(function (err) { upd('smLoading', false); if (addToast) addToast('AI error', 'error'); });
 
@@ -3513,7 +3513,7 @@ var d = labToolData || {};
 
                           } catch (e) {
 
-                            console.error('[StockSim] Parse error:', e);
+                            console.warn('[StockSim] Parse error:', e);
 
                             var fallbackCos = smCompanies.map(function (c) {
 
@@ -3703,7 +3703,7 @@ var d = labToolData || {};
 
                         if (addToast) addToast('\uD83C\uDF89 ' + biz.businessName + ' is open! Starting capital: $' + (10000 - biz.startupCost).toLocaleString(), 'success');
 
-                      } catch (e3) { upd('enLoading', false); if (addToast) addToast('Failed to create business. Try again!', 'error'); console.error('[BizSim]', e3); }
+                      } catch (e3) { upd('enLoading', false); if (addToast) addToast('Failed to create business. Try again!', 'error'); console.warn('[BizSim]', e3); }
 
                     }).catch(function (e4) { upd('enLoading', false); if (addToast) addToast('AI error', 'error'); });
 
@@ -3923,7 +3923,7 @@ var d = labToolData || {};
 
                       upd('enBizLoading', false);
 
-                    } catch (e4) { upd('enBizLoading', false); if (addToast) addToast('Day sim failed. Try again!', 'error'); console.error('[BizSim]', e4); }
+                    } catch (e4) { upd('enBizLoading', false); if (addToast) addToast('Day sim failed. Try again!', 'error'); console.warn('[BizSim]', e4); }
 
                   }).catch(function (e5) { upd('enBizLoading', false); if (addToast) addToast('AI error', 'error'); });
 

@@ -1000,7 +1000,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         try {
           renderer = new THREE.WebGLRenderer({ antialias: true });
         } catch (e) {
-          console.error('[EchoTrainer] WebGLRenderer creation failed:', e);
+          console.warn('[EchoTrainer] WebGLRenderer creation failed:', e);
           setTimeout(function() {
             upd('webglError', true);
           }, 0);

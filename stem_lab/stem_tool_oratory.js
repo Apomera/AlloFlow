@@ -1819,7 +1819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   analyzeLoop();
                 },
                 onError: function(err) {
-                  console.error('[Oratory] Mic error (shared):', err);
+                  console.warn('[Oratory] Mic error (shared):', err);
                   setMicError((err && err.message) || 'Could not access microphone. Please allow microphone permissions and try again.');
                   if (announceToSR) announceToSR('Microphone access denied. Please allow microphone permissions.');
                 }
@@ -2004,7 +2004,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               analyzeLoop();
             })
             .catch(function(err) {
-              console.error('[Oratory] Mic error:', err);
+              console.warn('[Oratory] Mic error:', err);
               setMicError('Could not access microphone. Please allow microphone permissions and try again.');
               if (announceToSR) announceToSR('Microphone access denied. Please allow microphone permissions.');
             });

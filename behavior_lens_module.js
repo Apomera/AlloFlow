@@ -23604,7 +23604,7 @@ IMPORTANT rules for expert keys:
                 setAiTopicInput('');
                 if (addToast) addToast(t('toasts.ai_scenario_generated'), 'success');
             } catch (err) {
-                console.error('AI scenario generation failed:', err);
+                console.warn('AI scenario generation failed:', err);
                 if (addToast) addToast(t('toasts.failed_generate_scenario_try_again'), 'error');
             } finally {
                 setGeneratingAi(false);

@@ -231,7 +231,7 @@ Return ONLY valid JSON:
       setShowComparison(true);
       if (onChallengeSubmit) onChallengeSubmit(parsed);
     } catch (err) {
-      console.error("[LabelChallenge] Analysis failed:", err);
+      console.warn("[LabelChallenge] Analysis failed:", err);
       setChallengeResult({ score: 0, feedback: "Could not analyze labels. Try again.", labelResults: [] });
       setChallengeSubmitted(true);
     } finally {

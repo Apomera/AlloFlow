@@ -6655,7 +6655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               setGenLoading(false);
             })
             .catch(function(err) {
-              console.error('[TypingPractice] Passage generation failed:', err);
+              console.warn('[TypingPractice] Passage generation failed:', err);
               setGenError('Could not generate a passage. ' + (err && err.message ? err.message : 'Please try again.'));
               setGenLoading(false);
             });

@@ -203,7 +203,7 @@ const AnchorChartSection = React.memo((props) => {
         addToast("Image refined successfully!", "success");
       }
     } catch (e) {
-      console.error("[AnchorChart] refinement failed", e);
+      console.warn("[AnchorChart] refinement failed", e);
       addToast("Failed to refine image.", "error");
     } finally {
       setIsRefining(false);

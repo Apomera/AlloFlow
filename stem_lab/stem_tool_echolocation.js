@@ -919,7 +919,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             eng.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
             setWebglError(false);
           } catch (err) {
-            console.error('[Echolocation] WebGL / 3D initialization failed:', err);
+            console.warn('[Echolocation] WebGL / 3D initialization failed:', err);
             setWebglError(true);
             cave3dEngineRef.current = null;
             return;

@@ -32,7 +32,7 @@ const startClassSession = async (deps) => {
                 console.warn(`[SESSION DEBUG] ⚠️ Payload is ${payloadSizeKB}KB — dangerously close to Firestore 1MB limit!`);
             }
         } catch(sizeErr) {
-            console.error("[SESSION DEBUG] Cannot serialize payload:", sizeErr?.message);
+            console.log("[SESSION DEBUG] Cannot serialize payload:", sizeErr?.message);
         }
         await setDoc(sessionRef, stripUndefined({
             resources: lightweightResources,
@@ -72,21 +72,21 @@ const startClassSession = async (deps) => {
         addToast(t('session.live', { code }), "success");
     } catch (e) {
         warnLog("Session Start Error:", e);
-        console.error("[SESSION DEBUG] Full error object:", e);
-        console.error("[SESSION DEBUG] Error name:", e?.name);
-        console.error("[SESSION DEBUG] Error code:", e?.code);
-        console.error("[SESSION DEBUG] Error message:", e?.message);
-        console.error("[SESSION DEBUG] Resources count:", history?.length, "history items");
+        console.log("[SESSION DEBUG] Full error object:", e);
+        console.log("[SESSION DEBUG] Error name:", e?.name);
+        console.log("[SESSION DEBUG] Error code:", e?.code);
+        console.log("[SESSION DEBUG] Error message:", e?.message);
+        console.log("[SESSION DEBUG] Resources count:", history?.length, "history items");
         try {
             const payloadTest = JSON.stringify(history.filter(h => h.id).map(h => ({type: h.type, id: h.id, title: h.title})));
-            console.error("[SESSION DEBUG] Payload size:", payloadTest?.length, "chars (~", Math.round((payloadTest?.length || 0)/1024), "KB)");
+            console.log("[SESSION DEBUG] Payload size:", payloadTest?.length, "chars (~", Math.round((payloadTest?.length || 0)/1024), "KB)");
         } catch(jsonErr) {
-            console.error("[SESSION DEBUG] JSON.stringify FAILED:", jsonErr?.message);
-            console.error("[SESSION DEBUG] This means non-serializable data in resources");
+            console.log("[SESSION DEBUG] JSON.stringify FAILED:", jsonErr?.message);
+            console.log("[SESSION DEBUG] This means non-serializable data in resources");
             if (false /* lightweightResources out of scope */) {
                 lightweightResources.forEach((r, i) => {
                     try { JSON.stringify(r); } catch(e2) {
-                        console.error(`[SESSION DEBUG] Resource ${i} (${r?.type}/${r?.title}) is NOT serializable:`, e2?.message);
+                        console.log(`[SESSION DEBUG] Resource ${i} (${r?.type}/${r?.title}) is NOT serializable:`, e2?.message);
                     }
                 });
             }

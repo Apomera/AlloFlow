@@ -4651,7 +4651,7 @@
                 if (addToast) addToast('\uD83D\uDCF8 Screenshot saved!', 'success');
                 if (eng.logEvent) eng.logEvent('screenshot', { timestamp: Date.now(), lesson: currentLesson.title });
               } catch(err) {
-                console.error('Screenshot failed:', err);
+                console.warn('Screenshot failed:', err);
                 if (addToast) addToast('Screenshot failed — try again.', 'info');
               }
             },

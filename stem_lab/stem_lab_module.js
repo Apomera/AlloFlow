@@ -2880,12 +2880,12 @@
                   if (problems.length > 0) {
                     problems.forEach(p => { p._blockType = blockLabel; });
                     allProblems.push(...problems);
-                    console.error('[ASSESS] Block ' + (bi + 1) + ' (' + blockLabel + '): ' + problems.length + ' problems parsed');
+                    console.log('[ASSESS] Block ' + (bi + 1) + ' (' + blockLabel + '): ' + problems.length + ' problems parsed');
                   } else {
                     throw new Error('No problems in parsed response');
                   }
                 } catch (e) {
-                  console.error('[ASSESS] Block ' + (bi + 1) + ' (' + blockLabel + ') failed:', e.message);
+                  console.warn('[ASSESS] Block ' + (bi + 1) + ' (' + blockLabel + ') failed:', e.message);
                   blockErrors++;
                 }
                 if (bi < nonFluencyBlocks.length - 1) {

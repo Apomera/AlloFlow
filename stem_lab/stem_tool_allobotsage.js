@@ -2508,7 +2508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         if (qs.length > 0) addToast('\u2728 ' + s.name + ' rerolled (+' + qs.length + ' new)', 'success');
                       }).catch(function(err) {
                         // Clear in-flight so the spell can be rerolled again instead of getting stuck
-                        console.error('[AlloBotSage] Reroll failed for ' + s.name + ':', err);
+                        console.warn('[AlloBotSage] Reroll failed for ' + s.name + ':', err);
                         var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
                         var freshFlight = Object.assign({}, freshD._aiInFlight || {});
                         delete freshFlight[spellId];

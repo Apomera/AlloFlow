@@ -2310,7 +2310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               analyzeLoop();
             })
             .catch(function(err) {
-              console.error('[Singing] Mic error:', err);
+              console.warn('[Singing] Mic error:', err);
               setMicError('Could not access microphone. Please allow microphone permissions and try again.');
               if (announceToSR) announceToSR('Microphone access denied. Please allow microphone permissions.');
             });
@@ -3498,7 +3498,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               setHealthTips(response);
               setHealthLoading(false);
             }).catch(function(err) {
-              console.error('[Singing] Health tips error:', err);
+              console.warn('[Singing] Health tips error:', err);
               setHealthTips('1. Drink water often to keep your vocal cords hydrated.\n2. Rest your voice if it feels tired or scratchy.\n3. If your throat hurts when singing, stop and rest.\n4. Stand up straight with shoulders relaxed for better breath support.\n5. Take deep belly breaths before singing.\n6. Always warm up before singing loudly or for a long time.');
               setHealthLoading(false);
             });

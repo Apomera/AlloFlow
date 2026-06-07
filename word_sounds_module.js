@@ -1972,18 +1972,18 @@
         generateManipulationData,
       ]);
       React.useEffect(() => {
-        console.error(
+        console.log(
           `[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: ${initialShowReviewPanel}, activity: ${wordSoundsActivity}`,
         );
-        return () => console.error("[WS-DBG] WordSoundsModal UNMOUNTED");
+        return () => console.log("[WS-DBG] WordSoundsModal UNMOUNTED");
       }, []);
       React.useEffect(() => {
-        console.error(
+        console.log(
           `[WS-DBG] initialShowReviewPanel changed to: ${initialShowReviewPanel}`,
         );
         if (initialShowReviewPanel) {
           hasStartedFromReview.current = false;
-          console.error(
+          console.log(
             "📋 [WS-DBG] initialShowReviewPanel is true - forcing Review Panel open. current showReviewPanel state:",
             showReviewPanel,
           );
