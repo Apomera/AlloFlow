@@ -838,6 +838,72 @@ function ExportPreviewView(props) {
                           const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.md'; a.click(); URL.revokeObjectURL(a.href);
                           addToast('Markdown downloaded', 'success');
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📝 Markdown (.md)</button>
+                        <button onClick={async () => {
+                          // Send to NotebookLM: build a NotebookLM-tuned Markdown source from the
+                          // structured lesson `history` (front matter + one ## section per resource,
+                          // quiz answer keys, glossary/outline/timeline), falling back to converting
+                          // the rendered preview HTML when no structured lesson is loaded. Copy to
+                          // clipboard (NotebookLM's lowest-friction "paste a source" path) AND download
+                          // a .md (for the "upload a source" path) — whichever the user prefers.
+                          try {
+                            const doc = exportPreviewRef.current?.contentDocument;
+                            const items = Array.isArray(history) ? history.filter(h => h && h.data != null) : [];
+                            const today = new Date().toISOString().split('T')[0];
+                            const title = (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc && doc.title) || (items[0] && items[0].title) || 'AlloFlow Lesson';
+                            const esc = (v) => (v == null ? '' : String(v));
+                            const out = ['---', 'title: ' + esc(title), 'source: AlloFlow (Universal Design for Learning toolkit)', 'date_exported: ' + today, '---', '', '# ' + esc(title), ''];
+                            if (items.length) {
+                              items.forEach(it => {
+                                const ty = it.type, d = it.data;
+                                out.push('## ' + esc(it.title || (ty ? ty.charAt(0).toUpperCase() + ty.slice(1).replace(/[-_]/g, ' ') : 'Resource')), '');
+                                if (typeof d === 'string') { out.push(d.trim(), ''); }
+                                else if (ty === 'glossary' && Array.isArray(d)) {
+                                  d.forEach(g => { if (!g) return; out.push('- **' + esc(g.term) + '** — ' + esc(g.def));
+                                    if (g.translations && Object.keys(g.translations).length) out.push('  - _Translations:_ ' + Object.values(g.translations).map(t => esc(t)).join(' / '));
+                                    if (g.etymology) out.push('  - _Etymology:_ ' + esc(g.etymology)); });
+                                  out.push('');
+                                }
+                                else if (ty === 'quiz' && d && Array.isArray(d.questions)) {
+                                  d.questions.forEach((q, i) => { out.push('**Q' + (i + 1) + '. ' + esc(q.question) + '**', '');
+                                    (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + '. ' + esc(o))); out.push(''); });
+                                  out.push('### Answer Key', '');
+                                  d.questions.forEach((q, i) => { const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
+                                    out.push('- **Q' + (i + 1) + ':** ' + (li >= 0 ? String.fromCharCode(65 + li) + '. ' : '') + esc(q.correctAnswer));
+                                    if (q.factCheck) out.push('  - ' + esc(q.factCheck)); });
+                                  out.push('');
+                                }
+                                else if (ty === 'outline' && d && Array.isArray(d.branches)) {
+                                  if (d.main) out.push('**' + esc(d.main) + '**', '');
+                                  d.branches.forEach(b => { if (!b) return; out.push('- ' + esc(b.title));
+                                    if (Array.isArray(b.items)) b.items.forEach(s => out.push('  - ' + esc(s))); });
+                                  out.push('');
+                                }
+                                else if (ty === 'timeline' && Array.isArray(d)) {
+                                  d.forEach(e => { if (e) out.push('- **' + esc(e.date) + ':** ' + esc(e.event)); }); out.push('');
+                                }
+                                else if (ty === 'concept-sort' && d && Array.isArray(d.categories)) {
+                                  const its = Array.isArray(d.items) ? d.items : [];
+                                  d.categories.forEach(c => { if (!c) return; out.push('### ' + esc(c.label));
+                                    its.filter(x => x && x.categoryId === c.id).forEach(x => out.push('- ' + esc(x.content))); out.push(''); });
+                                }
+                                else if (ty === 'image' && d && d.prompt) { out.push('_Image: ' + esc(d.prompt) + '_', ''); }
+                                else { const tx = (d && (d.text || d.content || d.summary)) || ''; if (tx) out.push(esc(tx).trim(), ''); }
+                              });
+                            } else if (doc) {
+                              const html = doc.documentElement.outerHTML;
+                              const body = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n').replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n').replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n').replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*').replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\n{3,}/g, '\n\n').trim();
+                              out.push(body);
+                            } else { addToast('Nothing to export yet — generate a lesson first', 'error'); return; }
+                            const md = out.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+                            let copied = false;
+                            try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(md); copied = true; } } catch (_) {}
+                            const blob = new Blob([md], { type: 'text/markdown' });
+                            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+                            const safe = esc(title).replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').substring(0, 40) || 'lesson';
+                            a.download = safe + '-notebooklm.md'; a.click(); URL.revokeObjectURL(a.href);
+                            addToast(copied ? 'Copied to clipboard + downloaded .md — paste or upload into NotebookLM as a source' : 'Downloaded .md — upload it into NotebookLM as a source', 'success');
+                          } catch (e) { if (addToast) addToast('NotebookLM export failed', 'error'); }
+                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-50 rounded-lg">📓 Send to NotebookLM (.md)</button>
                         <button onClick={() => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc || !window.JSZip) { addToast('ePub library loading...', 'info'); return; }
