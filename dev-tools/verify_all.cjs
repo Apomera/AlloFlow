@@ -104,6 +104,11 @@ const checks = [
     description: 'Headlessly renders every STEM tool with a stub ctx; catches the render-phase TypeError class static gates miss (undefined.map, mis-shaped data literals — the 2026-06-05 protractor crash). Skips if React/jsdom absent.',
   },
   {
+    name: 'Non-STEM module render-smoke',
+    cmd: ['node', 'dev-tools/check_module_render.cjs', '--quiet'],
+    description: 'Curated render-smoke for non-STEM CDN view modules (annotation suite Toolbar/Overlay/nodes + more); catches the render-phase crash class (the 2026-06-05 annotation bare-`t` crash). Skips if React/jsdom absent.',
+  },
+  {
     name: 'Arc City gauntlet stages',
     cmd: ['node', 'dev-tools/check_gauntlet_stages.cjs'],
     description: 'The Gauntlet only stages real function-family levels — never a Transformations (goal:match) level',

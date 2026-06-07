@@ -113,6 +113,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ no keyless list children in CDN modules / STEM tools."
   node dev-tools/check_stem_render.cjs --quiet
   echo "  ✓ all STEM tools render without throwing (render-phase smoke)."
+  node dev-tools/check_module_render.cjs --quiet
+  echo "  ✓ curated non-STEM CDN modules render without throwing."
 fi
 
 # ── Step 1: Source commit ──────────────────────────────────────────
