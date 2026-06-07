@@ -37,8 +37,8 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -244,8 +244,8 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -451,8 +451,8 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -686,8 +686,8 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -903,8 +903,8 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -1086,8 +1086,8 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -1242,8 +1242,8 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -1524,8 +1524,8 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -1698,8 +1698,8 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -1794,8 +1794,8 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -2076,8 +2076,8 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -2243,8 +2243,8 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -2403,8 +2403,8 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use multi-series sample</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -2589,8 +2589,8 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -2705,8 +2705,8 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use paired sample</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -2856,8 +2856,8 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use paired sample</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -2959,8 +2959,8 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
@@ -3139,8 +3139,8 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
-<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
+<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
+<input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
 </div>
 <div class="mt-3 p-3 rounded border border-amber-300 bg-amber-50/60">
 <div class="flex items-center justify-between gap-2 flex-wrap">

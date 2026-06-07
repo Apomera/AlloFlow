@@ -1637,7 +1637,7 @@
   var INGEST_MAX_BYTES = 2 * 1024 * 1024; // 2 MB cap on the raw text — bounds parser CPU / memory
   var INGEST_MAX_ROWS = 10000;            // hard row cap (truncate, never throw)
   var INGEST_DELIMS = [',', '\t', ';'];
-  var INGEST_FILE_TYPES = ['csv', 'tsv', 'txt', 'xlsx'];
+  var INGEST_FILE_TYPES = ['csv', 'tsv', 'txt', 'json', 'xlsx', 'ods', 'xls', 'xlsb'];
 
   // Single-pass RFC-4180 parser. Handles quoted fields with embedded
   // delimiters / newlines / escaped doubled quotes. Returns rows[][].
@@ -1811,10 +1811,61 @@
     return _xlsxLoadPromise;
   }
 
+  // JSON -> table. Accepts (a) an array of flat objects (the common export
+  // shape: keys become columns in first-seen order), (b) { data:[...] } /
+  // { rows:[...] } / { records:[...] } wrapping such an array, (c) an array of
+  // arrays (2D; a non-numeric first row is sniffed as a header), or (d) a
+  // single object (one row). Pure + L0: cells are stringified, NEVER coerced
+  // to numbers here — the downstream column mapper coerces and REFUSES
+  // non-numerics exactly as the text path does. Never throws; returns an error
+  // note instead so the preview pane can surface it.
+  function parseJsonTable(raw) {
+    var data;
+    try { data = JSON.parse(raw); }
+    catch (e) { return { headers: [], rows: [], delimiter: 'json', notes: [], error: 'Not valid JSON: ' + (e && e.message ? e.message : 'parse error') }; }
+    if (data && !Array.isArray(data) && typeof data === 'object') {
+      if (Array.isArray(data.data)) data = data.data;
+      else if (Array.isArray(data.rows)) data = data.rows;
+      else if (Array.isArray(data.records)) data = data.records;
+      else data = [data];
+    }
+    if (!Array.isArray(data)) return { headers: [], rows: [], delimiter: 'json', notes: [], error: 'JSON must be an array of rows (or an object wrapping one in data/rows/records).' };
+    if (data.length === 0) return { headers: [], rows: [], delimiter: 'json', notes: ['empty'] };
+    var cellStr = function (v) {
+      if (v == null) return '';
+      if (typeof v === 'object') return JSON.stringify(v); // nested -> stringify (won't read as a number downstream)
+      return String(v);
+    };
+    var notes = [], headers, rows;
+    if (Array.isArray(data[0])) {
+      var first = data[0];
+      var looksHeader = first.length > 0 && first.every(function (c) { return typeof c === 'string' && c !== '' && isNaN(parseFloat(c)); });
+      headers = looksHeader ? first.map(function (s) { return String(s).trim(); }) : first.map(function (_, i) { return 'col' + (i + 1); });
+      var body = looksHeader ? data.slice(1) : data;
+      rows = body.slice(0, INGEST_MAX_ROWS).map(function (r) { return (Array.isArray(r) ? r : [r]).map(cellStr); });
+      if (body.length > INGEST_MAX_ROWS) notes.push('truncated');
+    } else {
+      var keyOrder = [], seen = {};
+      data.forEach(function (o) { if (o && typeof o === 'object' && !Array.isArray(o)) Object.keys(o).forEach(function (k) { if (!seen[k]) { seen[k] = true; keyOrder.push(k); } }); });
+      if (keyOrder.length === 0) return { headers: [], rows: [], delimiter: 'json', notes: [], error: 'JSON rows have no fields to use as columns.' };
+      headers = keyOrder;
+      rows = data.slice(0, INGEST_MAX_ROWS).map(function (o) { return keyOrder.map(function (k) { return cellStr(o && typeof o === 'object' ? o[k] : undefined); }); });
+      if (data.length > INGEST_MAX_ROWS) notes.push('truncated');
+    }
+    return { headers: headers, rows: rows, delimiter: 'json', notes: notes };
+  }
+
+  // Workbook formats SheetJS reads natively (the same XLSX.read path).
+  function isWorkbookIngestType(t) { return t === 'xlsx' || t === 'ods' || t === 'xls' || t === 'xlsb'; }
+
   function ingestFileTypeFromName(name) {
     if (!name || typeof name !== 'string') return null;
     var lower = name.toLowerCase();
     if (/\.xlsx$/.test(lower)) return 'xlsx';
+    if (/\.xlsb$/.test(lower)) return 'xlsb';
+    if (/\.xls$/.test(lower)) return 'xls';
+    if (/\.ods$/.test(lower)) return 'ods';
+    if (/\.json$/.test(lower)) return 'json';
     if (/\.tsv$/.test(lower)) return 'tsv';
     if (/\.csv$/.test(lower)) return 'csv';
     if (/\.txt$/.test(lower)) return 'txt';
@@ -1857,7 +1908,7 @@
     // Ingest (§5 Pillar 1) — pure parsers + column mapper; L0-only by construction
     INGEST_MAX_BYTES: INGEST_MAX_BYTES, INGEST_MAX_ROWS: INGEST_MAX_ROWS, INGEST_DELIMS: INGEST_DELIMS, INGEST_FILE_TYPES: INGEST_FILE_TYPES,
     parseTextTable: parseTextTable, mapTextTableToObservations: mapTextTableToObservations,
-    parseWorkbookSheet: parseWorkbookSheet, lazyLoadXLSX: lazyLoadXLSX, ingestFileTypeFromName: ingestFileTypeFromName,
+    parseWorkbookSheet: parseWorkbookSheet, lazyLoadXLSX: lazyLoadXLSX, parseJsonTable: parseJsonTable, isWorkbookIngestType: isWorkbookIngestType, ingestFileTypeFromName: ingestFileTypeFromName,
     // §16 Phase 2A — human-assisted benchmark-document workspace (PDF/DOCX/TXT/CSV/XLSX → scaffold → per-cell signoff → spine JSON)
     BENCH_DOC_TYPES: BENCH_DOC_TYPES, BENCH_DOC_MAX_BYTES: BENCH_DOC_MAX_BYTES, benchDocTypeFromName: benchDocTypeFromName,
     normalizeBenchExtraction: normalizeBenchExtraction, buildSpineCellScaffold: buildSpineCellScaffold,
@@ -2112,10 +2163,10 @@
             h('label', {
               key: 'imp', htmlFor: 'lumen-file-input',
               className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer',
-              title: 'Import a CSV, TSV, or single-sheet Excel file. Headers are previewed; you map x/y/phase before binding.'
+              title: 'Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.'
             }, '⇪ Import file…'),
             h('input', {
-              key: 'impInput', id: 'lumen-file-input', type: 'file', accept: '.csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              key: 'impInput', id: 'lumen-file-input', type: 'file', accept: '.csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel',
               style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 },
               onChange: function (ev) {
                 var file = ev.target && ev.target.files && ev.target.files[0];
@@ -2140,15 +2191,17 @@
                   });
                   announce('Loaded ' + file.name + ': ' + parsed.headers.length + ' columns, ' + parsed.rows.length + ' rows. Map the columns and confirm to bind.');
                 }
-                if (fileType === 'xlsx') {
+                if (isWorkbookIngestType(fileType)) {
                   lazyLoadXLSX().then(function (XLSX) {
                     file.arrayBuffer().then(function (buf) {
                       landTable(parseWorkbookSheet(XLSX, buf));
                     });
                   }).catch(function (err) {
-                    upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: file.name, fileType: fileType, error: 'Could not load the Excel parser library. Try saving the sheet as CSV instead. (' + (err && err.message ? err.message : 'unknown') + ')' });
-                    announce('Excel parser unavailable; try CSV.');
+                    upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: file.name, fileType: fileType, error: 'Could not load the spreadsheet parser library. Try saving the sheet as CSV instead. (' + (err && err.message ? err.message : 'unknown') + ')' });
+                    announce('Spreadsheet parser unavailable; try CSV.');
                   });
+                } else if (fileType === 'json') {
+                  file.text().then(function (text) { landTable(parseJsonTable(text)); });
                 } else {
                   file.text().then(function (text) { landTable(parseTextTable(text)); });
                 }

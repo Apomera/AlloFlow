@@ -212,6 +212,26 @@ describe('Lumen ingest — file-type detection', () => {
     expect(L.ingestFileTypeFromName('foo.txt')).toBe('txt');
     expect(L.ingestFileTypeFromName('foo.xlsx')).toBe('xlsx');
     expect(L.ingestFileTypeFromName('foo.XLSX')).toBe('xlsx');
+    expect(L.ingestFileTypeFromName('foo.json')).toBe('json');
+    expect(L.ingestFileTypeFromName('foo.JSON')).toBe('json');
+    expect(L.ingestFileTypeFromName('foo.ods')).toBe('ods');
+    expect(L.ingestFileTypeFromName('foo.xls')).toBe('xls');
+    expect(L.ingestFileTypeFromName('foo.xlsb')).toBe('xlsb');
+  });
+
+  it('does not confuse .xls / .xlsb with .xlsx (longest-correct match)', () => {
+    expect(L.ingestFileTypeFromName('book.xls')).toBe('xls');
+    expect(L.ingestFileTypeFromName('book.xlsx')).toBe('xlsx');
+    expect(L.ingestFileTypeFromName('book.xlsb')).toBe('xlsb');
+  });
+
+  it('routes every workbook format through the SheetJS path', () => {
+    expect(L.isWorkbookIngestType('xlsx')).toBe(true);
+    expect(L.isWorkbookIngestType('ods')).toBe(true);
+    expect(L.isWorkbookIngestType('xls')).toBe(true);
+    expect(L.isWorkbookIngestType('xlsb')).toBe(true);
+    expect(L.isWorkbookIngestType('json')).toBe(false);
+    expect(L.isWorkbookIngestType('csv')).toBe(false);
   });
 
   it('returns null for unsupported / missing extensions', () => {
@@ -220,6 +240,65 @@ describe('Lumen ingest — file-type detection', () => {
     expect(L.ingestFileTypeFromName('no-ext')).toBeNull();
     expect(L.ingestFileTypeFromName(null)).toBeNull();
     expect(L.ingestFileTypeFromName('')).toBeNull();
+  });
+});
+
+describe('Lumen ingest — parseJsonTable', () => {
+  it('parses an array of flat objects (keys -> columns, first-seen order)', () => {
+    const t = L.parseJsonTable('[{"week":1,"wcpm":42,"phase":"baseline"},{"week":2,"wcpm":45,"phase":"baseline"}]');
+    expect(t.headers).toEqual(['week', 'wcpm', 'phase']);
+    expect(t.rows).toEqual([['1', '42', 'baseline'], ['2', '45', 'baseline']]);
+    expect(t.delimiter).toBe('json');
+    expect(t.error).toBeUndefined();
+  });
+
+  it('takes the UNION of keys across rows and aligns missing cells to empty', () => {
+    const t = L.parseJsonTable('[{"a":1},{"a":2,"b":9}]');
+    expect(t.headers).toEqual(['a', 'b']);
+    expect(t.rows).toEqual([['1', ''], ['2', '9']]);
+  });
+
+  it('unwraps a { data:[...] } / { rows:[...] } / { records:[...] } envelope', () => {
+    expect(L.parseJsonTable('{"data":[{"x":1}]}').headers).toEqual(['x']);
+    expect(L.parseJsonTable('{"rows":[{"y":2}]}').headers).toEqual(['y']);
+    expect(L.parseJsonTable('{"records":[{"z":3}]}').headers).toEqual(['z']);
+  });
+
+  it('treats a single bare object as one row', () => {
+    const t = L.parseJsonTable('{"week":1,"wcpm":42}');
+    expect(t.headers).toEqual(['week', 'wcpm']);
+    expect(t.rows).toEqual([['1', '42']]);
+  });
+
+  it('parses an array-of-arrays with a sniffed header row', () => {
+    const t = L.parseJsonTable('[["week","wcpm"],[1,42],[2,45]]');
+    expect(t.headers).toEqual(['week', 'wcpm']);
+    expect(t.rows).toEqual([['1', '42'], ['2', '45']]);
+  });
+
+  it('synthesizes col-N headers when an array-of-arrays has no header row', () => {
+    const t = L.parseJsonTable('[[1,42],[2,45]]');
+    expect(t.headers).toEqual(['col1', 'col2']);
+    expect(t.rows).toEqual([['1', '42'], ['2', '45']]);
+  });
+
+  it('stringifies nested values rather than coercing them (L0: no numeric guessing)', () => {
+    const t = L.parseJsonTable('[{"a":1,"b":{"k":2}}]');
+    expect(t.headers).toEqual(['a', 'b']);
+    expect(t.rows[0][1]).toBe('{"k":2}');
+  });
+
+  it('never throws on invalid JSON — returns an error note', () => {
+    const t = L.parseJsonTable('{not json');
+    expect(t.headers).toEqual([]);
+    expect(t.rows).toEqual([]);
+    expect(typeof t.error).toBe('string');
+    expect(t.error).toMatch(/not valid json/i);
+  });
+
+  it('flags an empty array and a column-less array without throwing', () => {
+    expect(L.parseJsonTable('[]').notes).toEqual(['empty']);
+    expect(typeof L.parseJsonTable('[1,2,3]').error).toBe('string');
   });
 });
 
