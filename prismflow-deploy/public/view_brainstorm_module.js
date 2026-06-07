@@ -133,12 +133,15 @@
     "aria-label": t('common.refresh'),
     onClick: () => handleGenerateGuide(idx),
     disabled: isGeneratingGuide[idx],
+    "aria-busy": !!isGeneratingGuide[idx],
     className: "flex items-center gap-2 text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors border border-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
   }, isGeneratingGuide[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin"
+    className: "animate-spin",
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(ListChecks, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), isGeneratingGuide[idx] ? t('brainstorm.creating_guide') : t('brainstorm.generate_guide')), idea.guide && (idea.worksheet ? /*#__PURE__*/React.createElement("details", {
     className: "mt-3 group"
   }, /*#__PURE__*/React.createElement("summary", {
@@ -163,13 +166,16 @@
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => handleGenerateWorksheetCover(idx),
     disabled: isGeneratingWorksheetCover[idx],
+    "aria-busy": !!isGeneratingWorksheetCover[idx],
     className: "text-[11px] font-bold text-emerald-700 hover:bg-emerald-100 px-2 py-1 rounded-full transition-colors border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1",
     title: idea.coverImage ? t('brainstorm.regenerate_cover') || 'Regenerate cover image' : t('brainstorm.generate_cover_tip') || 'Optional: add a cover illustration to this worksheet'
   }, isGeneratingWorksheetCover[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 11,
-    className: "animate-spin"
+    className: "animate-spin",
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(ImageIcon, {
-    size: 11
+    size: 11,
+    "aria-hidden": "true"
   }), isGeneratingWorksheetCover[idx] ? t('brainstorm.creating_cover') || 'Creating cover…' : idea.coverImage ? t('brainstorm.regenerate_cover') || 'Regenerate cover' : t('brainstorm.generate_cover') || 'Add cover image')), isEditingBrainstorm ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('brainstorm.edit_worksheet') || 'Edit student worksheet',
     value: idea.worksheet,
@@ -184,12 +190,15 @@
     "aria-label": t('brainstorm.generate_worksheet') || 'Generate student worksheet',
     onClick: () => handleGenerateWorksheet(idx),
     disabled: isGeneratingWorksheet[idx],
+    "aria-busy": !!isGeneratingWorksheet[idx],
     className: "mt-3 flex items-center gap-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 px-3 py-1.5 rounded-full transition-colors border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
   }, isGeneratingWorksheet[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin"
+    className: "animate-spin",
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(FileText, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), isGeneratingWorksheet[idx] ? t('brainstorm.creating_worksheet') || 'Creating worksheet…' : t('brainstorm.generate_worksheet') || 'Generate Student Worksheet')))))));
 }
 

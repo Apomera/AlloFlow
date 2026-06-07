@@ -5102,9 +5102,9 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                         </div>
                     </div>
                 ) : (
-                    <div className="flex-grow flex items-center justify-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 m-4 h-64">
+                    <div className="flex-grow flex items-center justify-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 m-4 h-64" role="status" aria-busy="true" aria-live="polite">
                          <div className="flex flex-col items-center gap-3 text-slate-600">
-                             <RefreshCw size={32} className="animate-spin text-rose-700"/>
+                             <RefreshCw size={32} className="animate-spin text-rose-700" aria-hidden="true"/>
                              <span className="font-bold text-sm">{t('bingo.initializing_board')}</span>
                          </div>
                     </div>

@@ -203,7 +203,7 @@ const AnchorChartSection = React.memo((props) => {
         addToast("Image refined successfully!", "success");
       }
     } catch (e) {
-      console.warn("[AnchorChart] refinement failed", e);
+      console.error("[AnchorChart] refinement failed", e);
       addToast("Failed to refine image.", "error");
     } finally {
       setIsRefining(false);
@@ -297,7 +297,7 @@ const AnchorChartSection = React.memo((props) => {
         type: "text",
         value: studentAnswers[idx] || "",
         onChange: (e) => onStudentAnswerChange(idx, e.target.value),
-        placeholder: "Type your answer here\u2026",
+        placeholder: t("placeholders.type_answer_here"),
         className: "flex-1 bg-white/70 outline-none border-b-2 border-dotted py-0.5 px-1",
         style: {
           fontFamily: '"Patrick Hand", "Caveat", cursive',
@@ -394,7 +394,7 @@ const AnchorChartView = React.memo((props) => {
   const isTeacherMode = !!props.isTeacherMode;
   const callImagen = props.callImagen || null;
   const callGeminiImageEdit = props.callGeminiImageEdit || typeof window !== "undefined" && window.callGeminiImageEdit || null;
-  const t = props.t || ((k, d) => d || k);
+  const t2 = props.t || ((k, d) => d || k);
   const [isGeneratingRubric, setIsGeneratingRubric] = React.useState(false);
   const handleSuggestRubric = async () => {
     if (!props.callGemini && !window.callGemini) {
@@ -452,6 +452,18 @@ ${bulletText}`;
   React.useEffect(() => {
     setRubricDraft(interactive.rubric || "");
   }, [interactive.rubric, generatedContent && generatedContent.id]);
+  React.useEffect(() => {
+    if (!showInteractiveDialog) return;
+    if (typeof window !== "undefined" && typeof window.alloAnnounce === "function") {
+      window.alloAnnounce(t2 && t2("anchor_chart.interactive_dialog_opened_aria") || "Interactive mode dialog opened.", "assertive");
+    }
+  }, [showInteractiveDialog, t2]);
+  React.useEffect(() => {
+    if (!showCritique) return;
+    if (typeof window !== "undefined" && typeof window.alloAnnounce === "function") {
+      window.alloAnnounce(t2 && t2("anchor_chart.critique_dialog_opened_aria") || "Critique mode dialog opened.", "assertive");
+    }
+  }, [showCritique, t2]);
   const [studentAnswers, setStudentAnswers] = React.useState({});
   const [gradingState, setGradingState] = React.useState("idle");
   const [gradingResult, setGradingResult] = React.useState(null);
@@ -624,7 +636,7 @@ ${bulletText}`;
       const sectionList = sections.map((s, i) => `${i + 1}. ${s.label || "(untitled)"}`).join("\n");
       const answerBlock = ans.map(
         (a) => `Section: ${a.section}
-` + a.answers.map((t2, i) => `  ${i + 1}. ${t2}`).join("\n")
+` + a.answers.map((t3, i) => `  ${i + 1}. ${t3}`).join("\n")
       ).join("\n\n");
       const prompt = [
         "You are an encouraging K-12 teacher grading a student's anchor chart submission.",

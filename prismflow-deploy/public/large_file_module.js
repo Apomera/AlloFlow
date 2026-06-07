@@ -254,9 +254,10 @@ const LargeFileTranscriptionModal = React.memo(({
         {
           onClick: onConfirm,
           disabled: isProcessing,
+          "aria-busy": isProcessing,
           className: "px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center gap-2"
         },
-        isProcessing ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3"), t?.("modals.large_file.processing") || "Transcribing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, "\u2728"), t?.("modals.large_file.confirm") || "Start Chunked Transcription")
+        isProcessing ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "animate-spin", "aria-hidden": "true" }, "\u23F3"), t?.("modals.large_file.processing") || "Transcribing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, "\u2728"), t?.("modals.large_file.confirm") || "Start Chunked Transcription")
       ))
     )
   );

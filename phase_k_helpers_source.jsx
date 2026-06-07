@@ -1642,10 +1642,36 @@ const handleSocraticSubmit = async (inputOverride = null, deps) => {
           const activeResource = generatedContent
               ? `${generatedContent.title || getDefaultTitle(generatedContent.type)} (${generatedContent.type})`
               : "No specific resource active";
+          // ── Agentic v1: glossary manifest for Socratic resource linking ──
+          // Build a strict allow-list of glossary entries the tutor can link to.
+          // Send the GLOSSARY TERM (canonical term, not the teacher's title or
+          // notes) so FERPA-sensitive titles never reach the LLM. Cap at 10
+          // most-recent items to control token cost.
+          const glossaryItems = (function _buildGlossaryManifest() {
+              const out = [];
+              for (let i = history.length - 1; i >= 0 && out.length < 10; i--) {
+                  const h = history[i];
+                  if (!h || h.type !== 'glossary' || !h.id || !Array.isArray(h.data)) continue;
+                  // Each glossary item is the FULL set; emit per-entry refs against the same h.id
+                  // so the chatbot can suggest one term and we'll restore the whole glossary view.
+                  for (const entry of h.data) {
+                      if (!entry || !entry.term) continue;
+                      out.push({ id: h.id, term: String(entry.term).substring(0, 80) });
+                      if (out.length >= 10) break;
+                  }
+              }
+              return out;
+          })();
+          const availableResourcesSection = glossaryItems.length === 0
+              ? ''
+              : `\nAVAILABLE_RESOURCES (glossary terms — you MAY reference ONE per response if it deepens the student's understanding):\n` +
+                glossaryItems.map(g => `- [Glossary: ${g.term}](resource:${g.id})`).join('\n') +
+                `\nWhen you reference one, copy the exact markdown above. NEVER invent a resource:ID that is not in this list. ` +
+                `Use the link only AFTER asking a Socratic question — don't lead with it, and use at most one per response.\n`;
           const lessonContext = `
             Target Grade Level: ${gradeLevel}
             Current View: ${activeResource}
-            Source Material Snippet: "${snippet}..."
+            Source Material Snippet: "${snippet}..."${availableResourcesSection}
           `;
           const conversationHistory = [...socraticMessages, userMsg].map(m =>
               `${m.role === 'user' ? 'User' : 'Tutor'}: ${m.text}`
@@ -1660,7 +1686,24 @@ const handleSocraticSubmit = async (inputOverride = null, deps) => {
             Tutor:
           `;
           const result = await callGemini(finalPrompt);
-          setSocraticMessages(prev => [...prev, { role: 'model', text: result }]);
+          // ── Agentic v1 post-process: validate any [label](resource:ID) links
+          // the LLM included. Strip references to resource IDs that aren't in
+          // the current history — LLMs hallucinate IDs even with a manifest.
+          // Also cap to ONE resource link per response (prompt-level cap +
+          // belt-and-suspenders post-process cap).
+          const _validateResourceLinks = (text) => {
+              if (!text || typeof text !== 'string') return text;
+              const validIds = new Set(history.filter(h => h && h.id).map(h => h.id));
+              let linkCount = 0;
+              return text.replace(/\[([^\]\n]+)\]\(resource:([a-zA-Z0-9._-]+)\)/g, (full, label, id) => {
+                  if (!validIds.has(id)) return label;
+                  linkCount++;
+                  if (linkCount > 1) return label;
+                  return full;
+              });
+          };
+          const cleanedResult = _validateResourceLinks(result);
+          setSocraticMessages(prev => [...prev, { role: 'model', text: cleanedResult }]);
       } catch (error) {
           warnLog("Socratic Error:", error);
            const isQuota = error.isQuota || (error.message && error.message.includes('API_QUOTA_EXHAUSTED'));

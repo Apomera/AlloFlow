@@ -373,6 +373,8 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     }
                                                 }}
                                                 disabled={regeneratingIndex === idx}
+                                                aria-busy={regeneratingIndex === idx}
+                                                aria-label={regeneratingIndex === idx ? (t('common.regenerating_word_aria') || 'Regenerating word') : t('common.regenerate_this_word')}
                                                 className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors text-base font-bold border-2
                                                     ${regeneratingIndex === idx
                                                         ? 'bg-orange-200 border-orange-400 animate-spin text-orange-700'
@@ -381,7 +383,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 data-help-key="word_sounds_review_regen_word" title={t('common.regenerate_this_word')}
                                                 style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                                             >
-                                                {regeneratingIndex === idx ? '⏳' : '🔄'}
+                                                <span aria-hidden="true">{regeneratingIndex === idx ? '⏳' : '🔄'}</span>
                                             </button>
                                         </div>
                                         <div className="flex flex-col gap-0.5">
@@ -457,8 +459,10 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                             : 'bg-pink-100 hover:bg-pink-200 text-pink-600'
                                             }`}
                                             title={playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing...') : word._ttsFailed ? (t('word_sounds.audio_failed_retry_hint') || 'Audio failed to generate — click Retry audio in header') : !word.ttsReady ? (t('word_sounds.loading_audio') || 'Loading audio...') : (t('word_sounds.play_word') || 'Play word')}
+                                            aria-busy={playingWordIndex === idx || (!word._ttsFailed && !word.ttsReady)}
+                                            aria-label={playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing') : word._ttsFailed ? (t('word_sounds.audio_failed_aria') || 'Audio failed') : !word.ttsReady ? (t('word_sounds.loading_audio') || 'Loading audio') : (t('word_sounds.play_word') || 'Play word')}
                                         >
-                                            {word._ttsFailed ? '🔇' : (playingWordIndex === idx ? <RefreshCw size={18} className="animate-spin" /> : <Volume2 size={18} />)}
+                                            {word._ttsFailed ? <span aria-hidden="true">🔇</span> : (playingWordIndex === idx ? <RefreshCw size={18} className="animate-spin" aria-hidden="true" /> : <Volume2 size={18} aria-hidden="true" />)}
                                         </button>
                                         {word.phonemes && Array.isArray(word.phonemes) && word.phonemes.length > 0 && (
                                             <button
@@ -503,10 +507,12 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                             onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
                                                         }}
                                                         disabled={generatingImageIndex === idx}
+                                                        aria-busy={generatingImageIndex === idx}
+                                                        aria-label={generatingImageIndex === idx ? (t('word_sounds.generating_image_aria') || 'Generating image') : t('common.regenerate_image')}
                                                         className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity border border-indigo-200"
                                                         data-help-key="word_sounds_review_image_gen" title={t('common.regenerate_image')}
                                                     >
-                                                        {generatingImageIndex === idx ? <RefreshCw size={10} className="animate-spin text-indigo-500"/> : <RefreshCw size={10} className="text-indigo-500"/>}
+                                                        {generatingImageIndex === idx ? <RefreshCw size={10} className="animate-spin text-indigo-500" aria-hidden="true"/> : <RefreshCw size={10} className="text-indigo-500" aria-hidden="true"/>}
                                                     </button>
                                                 </div>
                                             ) : (
@@ -517,6 +523,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
                                                     }}
                                                     disabled={generatingImageIndex === idx}
+                                                    aria-busy={generatingImageIndex === idx}
                                                     className={`px-3 py-2 rounded-lg border-2 flex items-center gap-2 text-sm font-bold transition-all ${
                                                         generatingImageIndex === idx
                                                             ? 'border-indigo-400 bg-indigo-100 text-indigo-600 animate-pulse'
@@ -525,9 +532,9 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     data-help-key="word_sounds_review_image_gen" title={t('common.generate_image_for_this_word')}
                                                 >
                                                     {generatingImageIndex === idx ? (
-                                                        <><RefreshCw size={16} className="animate-spin"/> {t('word_sounds.generating_image') || 'Generating...'}</>
+                                                        <><RefreshCw size={16} className="animate-spin" aria-hidden="true"/> {t('word_sounds.generating_image') || 'Generating...'}</>
                                                     ) : (
-                                                        <><ImageIcon size={16}/> {t('word_sounds.add_image_button') || '+ Image'}</>
+                                                        <><ImageIcon size={16} aria-hidden="true"/> {t('word_sounds.add_image_button') || '+ Image'}</>
                                                     )}
                                                 </button>
                                             )}
@@ -563,10 +570,11 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     <button
                                                         onClick={() => onRegenerateWord && onRegenerateWord(idx)}
                                                         disabled={regeneratingIndex === idx}
+                                                        aria-busy={regeneratingIndex === idx}
                                                         className={`text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors ${regeneratingIndex === idx ? 'bg-slate-100 text-slate-600' : 'bg-violet-100 text-violet-600 hover:bg-violet-200'}`}
                                                         title={t('word_sounds.recheck_phonemes_tooltip') || 'Re-check phonemes with Gemini'}
                                                     >
-                                                        {regeneratingIndex === idx ? <div className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" /> : '✨'}
+                                                        {regeneratingIndex === idx ? <div className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" aria-hidden="true" /> : <span aria-hidden="true">✨</span>}
                                                         {t('word_sounds.recheck_phonemes_button') || 'Check'}
                                                     </button>
                                                 </div>

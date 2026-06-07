@@ -509,6 +509,21 @@ const AnchorChartView = React.memo((props) => {
   const [showInteractiveDialog, setShowInteractiveDialog] = React.useState(false);
   const [rubricDraft, setRubricDraft] = React.useState(interactive.rubric || '');
   React.useEffect(() => { setRubricDraft(interactive.rubric || ''); }, [interactive.rubric, generatedContent && generatedContent.id]);
+  // SR announcement when these modals open (the modal chrome has role="dialog"
+  // but SR users don't always get a "dialog opened" event from focus changes).
+  // Uses the global window.alloAnnounce helper installed in AlloFlowANTI.txt.
+  React.useEffect(() => {
+    if (!showInteractiveDialog) return;
+    if (typeof window !== 'undefined' && typeof window.alloAnnounce === 'function') {
+      window.alloAnnounce((t && t('anchor_chart.interactive_dialog_opened_aria')) || 'Interactive mode dialog opened.', 'assertive');
+    }
+  }, [showInteractiveDialog, t]);
+  React.useEffect(() => {
+    if (!showCritique) return;
+    if (typeof window !== 'undefined' && typeof window.alloAnnounce === 'function') {
+      window.alloAnnounce((t && t('anchor_chart.critique_dialog_opened_aria')) || 'Critique mode dialog opened.', 'assertive');
+    }
+  }, [showCritique, t]);
   // Student-side state: answers keyed by section id+idx, and grading result.
   const [studentAnswers, setStudentAnswers] = React.useState({}); // { [sectionId]: { [idx]: text } }
   const [gradingState, setGradingState] = React.useState('idle'); // 'idle' | 'submitting' | 'done' | 'error'

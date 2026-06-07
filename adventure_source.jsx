@@ -822,9 +822,9 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                     {characters.map((char, i) => (
                         <div key={i} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg hover:border-violet-300 relative group/card">
                             <button onClick={() => onRemoveCharacter(i)} className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-600 text-xs font-bold opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center" title={t('adventure.remove_character')}>✕</button>
-                            <div className="w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner">
+                            <div className="w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner" aria-busy={!!char.isGenerating} aria-label={char.isGenerating ? (t('adventure.generating_portrait_aria') || ('Generating portrait for ' + (char.name || 'character'))) : undefined}>
                                 {char.isGenerating ? (
-                                    <div className="animate-spin w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full"></div>
+                                    <div className="animate-spin w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full" role="status" aria-label={t('common.loading') || 'Loading'}></div>
                                 ) : char.portrait ? (
                                     <img src={char.portrait} alt={char.name} className="w-full h-full object-cover rounded-full"/>
                                 ) : (

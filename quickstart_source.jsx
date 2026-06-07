@@ -361,9 +361,10 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                     data-help-key="wizard_find_standard_btn"
                                     onClick={handleGoalSearch}
                                     disabled={isSearching || !learningGoal.trim()}
+                                    aria-busy={isSearching}
                                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 rounded-xl shadow-md transition-all flex items-center gap-2 disabled:opacity-50 shrink-0"
                                   >
-                                    {isSearching ? <RefreshCw size={20} className="animate-spin"/> : <Search size={20}/>}
+                                    {isSearching ? <RefreshCw size={20} className="animate-spin" aria-hidden="true"/> : <Search size={20} aria-hidden="true"/>}
                                     {t('wizard.find_button')}
                                   </button>
                               </div>
@@ -491,9 +492,10 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       data-help-key="wizard_url_fetch_btn"
                                       onClick={() => handleWizardUrlFetch(urlInput)}
                                       disabled={isFetching || !urlInput}
+                                      aria-busy={isFetching}
                                       className="bg-blue-600 text-white font-bold px-6 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-md"
                                   >
-                                      {isFetching ? <RefreshCw size={20} className="animate-spin"/> : <Download size={20}/>}
+                                      {isFetching ? <RefreshCw size={20} className="animate-spin" aria-hidden="true"/> : <Download size={20} aria-hidden="true"/>}
                                       {t('wizard.fetch_action')}
                                   </button>
                               </div>
@@ -536,9 +538,10 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       data-help-key="wizard_search_btn"
                                       onClick={handleWizardAiSearch}
                                       disabled={isFetching || !localData.searchQuery}
+                                      aria-busy={isFetching}
                                       className="bg-teal-600 text-white font-bold px-6 rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-md"
                                   >
-                                      {isFetching ? <RefreshCw size={20} className="animate-spin"/> : <Search size={20}/>}
+                                      {isFetching ? <RefreshCw size={20} className="animate-spin" aria-hidden="true"/> : <Search size={20} aria-hidden="true"/>}
                                       {isFetching ? t('wizard.finding_button') : t('wizard.find_button')}
                                   </button>
                               </div>
@@ -557,8 +560,8 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                 <div className="text-xs text-slate-600 group-hover:text-teal-600 line-clamp-2">{opt.description || t('wizard.no_description')}</div>
                                                 <div className="text-[11px] text-slate-600 mt-2 truncate max-w-xs">{opt.url}</div>
                                                 {isFetching && (
-                                                    <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
-                                                        <RefreshCw size={20} className="animate-spin text-teal-600"/>
+                                                    <div className="absolute inset-0 bg-white/50 flex items-center justify-center" role="status" aria-busy="true" aria-label={t('wizard.finding_button') || 'Loading'}>
+                                                        <RefreshCw size={20} className="animate-spin text-teal-600" aria-hidden="true"/>
                                                     </div>
                                                 )}
                                             </button>
@@ -794,11 +797,12 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                     <button
                                                         onClick={handleFindStandards} data-help-key="standards_search_btn"
                                                         disabled={isFindingStandards || !aiStandardQuery.trim()}
+                                                        aria-busy={isFindingStandards}
                                                         className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 transition-colors shadow-sm"
                                                         title={t('standards.search_button_title')}
                                                         aria-label={t('standards.search_button_title')}
                                                     >
-                                                        {isFindingStandards ? <RefreshCw size={14} className="animate-spin"/> : <Search size={14}/>}
+                                                        {isFindingStandards ? <RefreshCw size={14} className="animate-spin" aria-hidden="true"/> : <Search size={14} aria-hidden="true"/>}
                                                     </button>
                                                 </div>
                                                 {suggestedStandards.length > 0 && (

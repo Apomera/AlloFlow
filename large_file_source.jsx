@@ -287,11 +287,12 @@ const LargeFileTranscriptionModal = React.memo(({
                     <button
                         onClick={onConfirm}
                         disabled={isProcessing}
+                        aria-busy={isProcessing}
                         className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center gap-2"
                     >
                         {isProcessing ? (
                             <>
-                                <span className="animate-spin">⏳</span>
+                                <span className="animate-spin" aria-hidden="true">⏳</span>
                                 {t?.('modals.large_file.processing') || 'Transcribing...'}
                             </>
                         ) : (

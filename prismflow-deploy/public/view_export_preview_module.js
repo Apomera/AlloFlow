@@ -604,9 +604,10 @@ function ExportPreviewView(props) {
           setExportAuditLoading(false);
         },
         disabled: exportAuditLoading,
+        "aria-busy": exportAuditLoading,
         className: "w-full px-3 py-2 bg-violet-100 text-violet-700 rounded-lg text-xs font-bold hover:bg-violet-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
       },
-      exportAuditLoading ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin" }), " Auditing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, "\u267F Run WCAG Audit")
+      exportAuditLoading ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin", "aria-hidden": "true" }), " Auditing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u267F"), " Run WCAG Audit")
     ), exportAuditResult && exportAuditResult.score >= 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? "bg-green-50 border border-green-200" : exportAuditResult.score >= 60 ? "bg-amber-50 border border-amber-200" : "bg-red-50 border border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${exportAuditResult.score >= 80 ? "text-green-700" : exportAuditResult.score >= 60 ? "text-amber-700" : "text-red-700"}` }, exportAuditResult.score, "/100"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "WCAG 2.1 AA Score")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, exportAuditResult.summary), exportAuditResult.issues?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-red-600 uppercase mb-1" }, "Issues (", exportAuditResult.issues.length, ")"), exportAuditResult.issues.slice(0, 5).map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-slate-600 mb-1 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-red-600 shrink-0" }, "\u25CF"), /* @__PURE__ */ React.createElement("span", null, typeof issue === "string" ? issue : issue.issue, issue.wcag ? ` (${issue.wcag})` : ""))), exportAuditResult.issues.length > 5 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic" }, "+", exportAuditResult.issues.length - 5, " more")), exportAuditResult.passes?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-600 uppercase mb-1" }, "Passes (", exportAuditResult.passes.length, ")"), exportAuditResult.passes.slice(0, 3).map((pass, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-green-700 mb-0.5 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-500" }, "\u2713"), " ", pass))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-500 italic" }, "Use the A11y Inspect toggle above to see and fix issues visually, then re-audit.")))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700" }, "Live Preview"), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-500 font-medium" }, "Click text to edit directly")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const input = document.createElement("input");
       input.type = "file";
@@ -707,62 +708,94 @@ function ExportPreviewView(props) {
     }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u{1F4DD} Markdown (.md)"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       try {
         const doc = exportPreviewRef.current?.contentDocument;
-        const items = Array.isArray(history) ? history.filter(h => h && h.data != null) : [];
-        const today = new Date().toISOString().split('T')[0];
-        const title = (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc && doc.title) || (items[0] && items[0].title) || 'AlloFlow Lesson';
-        const esc = (v) => (v == null ? '' : String(v));
-        const out = ['---', 'title: ' + esc(title), 'source: AlloFlow (Universal Design for Learning toolkit)', 'date_exported: ' + today, '---', '', '# ' + esc(title), ''];
+        const items = Array.isArray(history) ? history.filter((h) => h && h.data != null) : [];
+        const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+        const title = exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle) || doc && doc.title || items[0] && items[0].title || "AlloFlow Lesson";
+        const esc = (v) => v == null ? "" : String(v);
+        const out = ["---", "title: " + esc(title), "source: AlloFlow (Universal Design for Learning toolkit)", "date_exported: " + today, "---", "", "# " + esc(title), ""];
         if (items.length) {
-          items.forEach(it => {
+          items.forEach((it) => {
             const ty = it.type, d = it.data;
-            out.push('## ' + esc(it.title || (ty ? ty.charAt(0).toUpperCase() + ty.slice(1).replace(/[-_]/g, ' ') : 'Resource')), '');
-            if (typeof d === 'string') { out.push(d.trim(), ''); }
-            else if (ty === 'glossary' && Array.isArray(d)) {
-              d.forEach(g => { if (!g) return; out.push('- **' + esc(g.term) + '** — ' + esc(g.def));
-                if (g.translations && Object.keys(g.translations).length) out.push('  - _Translations:_ ' + Object.values(g.translations).map(t => esc(t)).join(' / '));
-                if (g.etymology) out.push('  - _Etymology:_ ' + esc(g.etymology)); });
-              out.push('');
-            }
-            else if (ty === 'quiz' && d && Array.isArray(d.questions)) {
-              d.questions.forEach((q, i) => { out.push('**Q' + (i + 1) + '. ' + esc(q.question) + '**', '');
-                (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + '. ' + esc(o))); out.push(''); });
-              out.push('### Answer Key', '');
-              d.questions.forEach((q, i) => { const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
-                out.push('- **Q' + (i + 1) + ':** ' + (li >= 0 ? String.fromCharCode(65 + li) + '. ' : '') + esc(q.correctAnswer));
-                if (q.factCheck) out.push('  - ' + esc(q.factCheck)); });
-              out.push('');
-            }
-            else if (ty === 'outline' && d && Array.isArray(d.branches)) {
-              if (d.main) out.push('**' + esc(d.main) + '**', '');
-              d.branches.forEach(b => { if (!b) return; out.push('- ' + esc(b.title));
-                if (Array.isArray(b.items)) b.items.forEach(s => out.push('  - ' + esc(s))); });
-              out.push('');
-            }
-            else if (ty === 'timeline' && Array.isArray(d)) {
-              d.forEach(e => { if (e) out.push('- **' + esc(e.date) + ':** ' + esc(e.event)); }); out.push('');
-            }
-            else if (ty === 'concept-sort' && d && Array.isArray(d.categories)) {
+            out.push("## " + esc(it.title || (ty ? ty.charAt(0).toUpperCase() + ty.slice(1).replace(/[-_]/g, " ") : "Resource")), "");
+            if (typeof d === "string") {
+              out.push(d.trim(), "");
+            } else if (ty === "glossary" && Array.isArray(d)) {
+              d.forEach((g) => {
+                if (!g) return;
+                out.push("- **" + esc(g.term) + "** \u2014 " + esc(g.def));
+                if (g.translations && Object.keys(g.translations).length) out.push("  - _Translations:_ " + Object.values(g.translations).map((t2) => esc(t2)).join(" / "));
+                if (g.etymology) out.push("  - _Etymology:_ " + esc(g.etymology));
+              });
+              out.push("");
+            } else if (ty === "quiz" && d && Array.isArray(d.questions)) {
+              d.questions.forEach((q, i) => {
+                out.push("**Q" + (i + 1) + ". " + esc(q.question) + "**", "");
+                (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + ". " + esc(o)));
+                out.push("");
+              });
+              out.push("### Answer Key", "");
+              d.questions.forEach((q, i) => {
+                const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
+                out.push("- **Q" + (i + 1) + ":** " + (li >= 0 ? String.fromCharCode(65 + li) + ". " : "") + esc(q.correctAnswer));
+                if (q.factCheck) out.push("  - " + esc(q.factCheck));
+              });
+              out.push("");
+            } else if (ty === "outline" && d && Array.isArray(d.branches)) {
+              if (d.main) out.push("**" + esc(d.main) + "**", "");
+              d.branches.forEach((b) => {
+                if (!b) return;
+                out.push("- " + esc(b.title));
+                if (Array.isArray(b.items)) b.items.forEach((s) => out.push("  - " + esc(s)));
+              });
+              out.push("");
+            } else if (ty === "timeline" && Array.isArray(d)) {
+              d.forEach((e) => {
+                if (e) out.push("- **" + esc(e.date) + ":** " + esc(e.event));
+              });
+              out.push("");
+            } else if (ty === "concept-sort" && d && Array.isArray(d.categories)) {
               const its = Array.isArray(d.items) ? d.items : [];
-              d.categories.forEach(c => { if (!c) return; out.push('### ' + esc(c.label));
-                its.filter(x => x && x.categoryId === c.id).forEach(x => out.push('- ' + esc(x.content))); out.push(''); });
+              d.categories.forEach((c) => {
+                if (!c) return;
+                out.push("### " + esc(c.label));
+                its.filter((x) => x && x.categoryId === c.id).forEach((x) => out.push("- " + esc(x.content)));
+                out.push("");
+              });
+            } else if (ty === "image" && d && d.prompt) {
+              out.push("_Image: " + esc(d.prompt) + "_", "");
+            } else {
+              const tx = d && (d.text || d.content || d.summary) || "";
+              if (tx) out.push(esc(tx).trim(), "");
             }
-            else if (ty === 'image' && d && d.prompt) { out.push('_Image: ' + esc(d.prompt) + '_', ''); }
-            else { const tx = (d && (d.text || d.content || d.summary)) || ''; if (tx) out.push(esc(tx).trim(), ''); }
           });
         } else if (doc) {
           const html = doc.documentElement.outerHTML;
-          const body = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n').replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n').replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n').replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*').replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\n{3,}/g, '\n\n').trim();
+          const body = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, "# $1\n\n").replace(/<h2[^>]*>(.*?)<\/h2>/gi, "## $1\n\n").replace(/<h3[^>]*>(.*?)<\/h3>/gi, "### $1\n\n").replace(/<li[^>]*>(.*?)<\/li>/gi, "- $1\n").replace(/<p[^>]*>(.*?)<\/p>/gi, "$1\n\n").replace(/<strong[^>]*>(.*?)<\/strong>/gi, "**$1**").replace(/<em[^>]*>(.*?)<\/em>/gi, "*$1*").replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, "[$2]($1)").replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/\n{3,}/g, "\n\n").trim();
           out.push(body);
-        } else { addToast('Nothing to export yet — generate a lesson first', 'error'); return; }
-        const md = out.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+        } else {
+          addToast("Nothing to export yet \u2014 generate a lesson first", "error");
+          return;
+        }
+        const md = out.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
         let copied = false;
-        try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(md); copied = true; } } catch (_) {}
-        const blob = new Blob([md], { type: 'text/markdown' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        const safe = esc(title).replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').substring(0, 40) || 'lesson';
-        a.download = safe + '-notebooklm.md'; a.click(); URL.revokeObjectURL(a.href);
-        addToast(copied ? 'Copied to clipboard + downloaded .md — paste or upload into NotebookLM as a source' : 'Downloaded .md — upload it into NotebookLM as a source', 'success');
-      } catch (e) { if (addToast) addToast('NotebookLM export failed', 'error'); }
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(md);
+            copied = true;
+          }
+        } catch (_) {
+        }
+        const blob = new Blob([md], { type: "text/markdown" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        const safe = esc(title).replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "").substring(0, 40) || "lesson";
+        a.download = safe + "-notebooklm.md";
+        a.click();
+        URL.revokeObjectURL(a.href);
+        addToast(copied ? "Copied to clipboard + downloaded .md \u2014 paste or upload into NotebookLM as a source" : "Downloaded .md \u2014 upload it into NotebookLM as a source", "success");
+      } catch (e) {
+        if (addToast) addToast("NotebookLM export failed", "error");
+      }
     }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-50 rounded-lg" }, "\u{1F4D3} Send to NotebookLM (.md)"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const doc = exportPreviewRef.current?.contentDocument;
       if (!doc || !window.JSZip) {

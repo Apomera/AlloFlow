@@ -792,6 +792,9 @@ const executeSaveFile = (deps) => {
   const playlab = typeof window !== "undefined" && window.__alloflowPlayLab || null;
   const roadReady = typeof window !== "undefined" && window.__alloflowRoadReady || null;
   const assessmentLiteracy = typeof window !== "undefined" && window.__alloflowAssessmentLiteracy || null;
+  const selStations = typeof window !== "undefined" && window.__alloflowSelStations || null;
+  const selProgress = typeof window !== "undefined" && window.__alloflowSelProgress || null;
+  const selToolData = typeof window !== "undefined" && window.__alloflowSelToolData || null;
   if (saveType === "teacher") {
     dataStr = JSON.stringify({
       mode: isIndependentMode ? "independent" : "teacher",
@@ -818,6 +821,9 @@ const executeSaveFile = (deps) => {
       playlab,
       roadReady,
       assessmentLiteracy,
+      selStations,
+      selProgress,
+      selToolData,
       // Stickers (annotation overlays placed on the output area) ride
       // the project JSON so a teacher's feedback / a student's marks
       // survive save→load. Without this they're wiped on reload.
@@ -911,6 +917,9 @@ const executeSaveFile = (deps) => {
       playlab,
       roadReady,
       assessmentLiteracy,
+      selStations,
+      selProgress,
+      selToolData,
       // See teacher-save above — stickers persist with the project so
       // a student's marks aren't wiped on reload.
       stickers: Array.isArray(stickers) ? stickers : [],
@@ -1632,10 +1641,28 @@ const handleSocraticSubmit = async (inputOverride = null, deps) => {
     const sourceText = latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText ? latestAnalysis.data.originalText : inputText;
     const snippet = sourceText.substring(0, 1e3).replace(/\s+/g, " ");
     const activeResource = generatedContent ? `${generatedContent.title || getDefaultTitle(generatedContent.type)} (${generatedContent.type})` : "No specific resource active";
+    const glossaryItems = (function _buildGlossaryManifest() {
+      const out = [];
+      for (let i = history.length - 1; i >= 0 && out.length < 10; i--) {
+        const h = history[i];
+        if (!h || h.type !== "glossary" || !h.id || !Array.isArray(h.data)) continue;
+        for (const entry of h.data) {
+          if (!entry || !entry.term) continue;
+          out.push({ id: h.id, term: String(entry.term).substring(0, 80) });
+          if (out.length >= 10) break;
+        }
+      }
+      return out;
+    })();
+    const availableResourcesSection = glossaryItems.length === 0 ? "" : `
+AVAILABLE_RESOURCES (glossary terms \u2014 you MAY reference ONE per response if it deepens the student's understanding):
+` + glossaryItems.map((g) => `- [Glossary: ${g.term}](resource:${g.id})`).join("\n") + `
+When you reference one, copy the exact markdown above. NEVER invent a resource:ID that is not in this list. Use the link only AFTER asking a Socratic question \u2014 don't lead with it, and use at most one per response.
+`;
     const lessonContext = `
             Target Grade Level: ${gradeLevel}
             Current View: ${activeResource}
-            Source Material Snippet: "${snippet}..."
+            Source Material Snippet: "${snippet}..."${availableResourcesSection}
           `;
     const conversationHistory = [...socraticMessages, userMsg].map(
       (m) => `${m.role === "user" ? "User" : "Tutor"}: ${m.text}`
@@ -1650,7 +1677,19 @@ const handleSocraticSubmit = async (inputOverride = null, deps) => {
             Tutor:
           `;
     const result = await callGemini(finalPrompt);
-    setSocraticMessages((prev) => [...prev, { role: "model", text: result }]);
+    const _validateResourceLinks = (text) => {
+      if (!text || typeof text !== "string") return text;
+      const validIds = new Set(history.filter((h) => h && h.id).map((h) => h.id));
+      let linkCount = 0;
+      return text.replace(/\[([^\]\n]+)\]\(resource:([a-zA-Z0-9._-]+)\)/g, (full, label, id) => {
+        if (!validIds.has(id)) return label;
+        linkCount++;
+        if (linkCount > 1) return label;
+        return full;
+      });
+    };
+    const cleanedResult = _validateResourceLinks(result);
+    setSocraticMessages((prev) => [...prev, { role: "model", text: cleanedResult }]);
   } catch (error) {
     warnLog("Socratic Error:", error);
     const isQuota = error.isQuota || error.message && error.message.includes("API_QUOTA_EXHAUSTED");

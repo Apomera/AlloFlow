@@ -103,9 +103,10 @@ function BrainstormView(props) {
                                              aria-label={t('common.refresh')}
                                             onClick={() => handleGenerateGuide(idx)}
                                             disabled={isGeneratingGuide[idx]}
+                                            aria-busy={!!isGeneratingGuide[idx]}
                                             className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors border border-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                          >
-                                             {isGeneratingGuide[idx] ? <RefreshCw size={12} className="animate-spin"/> : <ListChecks size={14}/>}
+                                             {isGeneratingGuide[idx] ? <RefreshCw size={12} className="animate-spin" aria-hidden="true"/> : <ListChecks size={14} aria-hidden="true"/>}
                                              {isGeneratingGuide[idx] ? t('brainstorm.creating_guide') : t('brainstorm.generate_guide')}
                                          </button>
                                      )}
@@ -131,10 +132,11 @@ function BrainstormView(props) {
                                                          <button
                                                              onClick={() => handleGenerateWorksheetCover(idx)}
                                                              disabled={isGeneratingWorksheetCover[idx]}
+                                                             aria-busy={!!isGeneratingWorksheetCover[idx]}
                                                              className="text-[11px] font-bold text-emerald-700 hover:bg-emerald-100 px-2 py-1 rounded-full transition-colors border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                                              title={idea.coverImage ? (t('brainstorm.regenerate_cover') || 'Regenerate cover image') : (t('brainstorm.generate_cover_tip') || 'Optional: add a cover illustration to this worksheet')}
                                                          >
-                                                             {isGeneratingWorksheetCover[idx] ? <RefreshCw size={11} className="animate-spin"/> : <ImageIcon size={11}/>}
+                                                             {isGeneratingWorksheetCover[idx] ? <RefreshCw size={11} className="animate-spin" aria-hidden="true"/> : <ImageIcon size={11} aria-hidden="true"/>}
                                                              {isGeneratingWorksheetCover[idx]
                                                                  ? (t('brainstorm.creating_cover') || 'Creating cover…')
                                                                  : idea.coverImage
@@ -164,9 +166,10 @@ function BrainstormView(props) {
                                                  aria-label={t('brainstorm.generate_worksheet') || 'Generate student worksheet'}
                                                  onClick={() => handleGenerateWorksheet(idx)}
                                                  disabled={isGeneratingWorksheet[idx]}
+                                                 aria-busy={!!isGeneratingWorksheet[idx]}
                                                  className="mt-3 flex items-center gap-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 px-3 py-1.5 rounded-full transition-colors border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                              >
-                                                 {isGeneratingWorksheet[idx] ? <RefreshCw size={12} className="animate-spin"/> : <FileText size={14}/>}
+                                                 {isGeneratingWorksheet[idx] ? <RefreshCw size={12} className="animate-spin" aria-hidden="true"/> : <FileText size={14} aria-hidden="true"/>}
                                                  {isGeneratingWorksheet[idx] ? (t('brainstorm.creating_worksheet') || 'Creating worksheet…') : (t('brainstorm.generate_worksheet') || 'Generate Student Worksheet')}
                                              </button>
                                          )

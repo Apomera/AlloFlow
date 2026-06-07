@@ -695,9 +695,10 @@ function ExportPreviewView(props) {
                       setExportAuditLoading(false);
                     }}
                     disabled={exportAuditLoading}
+                    aria-busy={exportAuditLoading}
                     className="w-full px-3 py-2 bg-violet-100 text-violet-700 rounded-lg text-xs font-bold hover:bg-violet-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
                   >
-                    {exportAuditLoading ? <><RefreshCw size={12} className="animate-spin" /> Auditing...</> : <>♿ Run WCAG Audit</>}
+                    {exportAuditLoading ? <><RefreshCw size={12} className="animate-spin" aria-hidden="true" /> Auditing...</> : <><span aria-hidden="true">♿</span> Run WCAG Audit</>}
                   </button>
                   {exportAuditResult && exportAuditResult.score >= 0 && (
                     <div className="mt-2 space-y-2">
