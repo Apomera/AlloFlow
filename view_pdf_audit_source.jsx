@@ -266,7 +266,7 @@ function PdfAuditView(props) {
                     <div>
                       <label className="text-[11px] font-bold text-slate-600 uppercase" htmlFor="web-audit-url">{t('pdf_audit.web.url_label') || 'Website URL'}</label>
                       <div className="flex gap-2 mt-1">
-                        <input type="url" id="web-audit-url" placeholder="https://example.com" autoComplete="url" aria-label={t('pdf_audit.web.url_aria') || 'Website URL to audit'}
+                        <input data-help-key="pdf_audit_view_web_url_input" type="url" id="web-audit-url" placeholder="https://example.com" autoComplete="url" aria-label={t('pdf_audit.web.url_aria') || 'Website URL to audit'}
                           className="flex-1 text-sm border border-slate-400 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-300 outline-none" />
                         <button onClick={async () => {
                           const url = document.getElementById('web-audit-url')?.value?.trim();
@@ -286,7 +286,7 @@ function PdfAuditView(props) {
                           } catch (e) {
                             addToast(t('toasts.could_fetch_url_try_pasting') + e.message, 'error');
                           }
-                        }} className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 transition-colors" aria-label={t('pdf_audit.web.fetch_aria') || 'Fetch website HTML'}>
+                        }} data-help-key="pdf_audit_view_web_fetch_btn" className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 transition-colors" aria-label={t('pdf_audit.web.fetch_aria') || 'Fetch website HTML'}>
                           🔍 Fetch
                         </button>
                       </div>
@@ -296,7 +296,7 @@ function PdfAuditView(props) {
                     {/* HTML Input */}
                     <div>
                       <label className="text-[11px] font-bold text-slate-600 uppercase" htmlFor="web-audit-html">{t('pdf_audit.web.html_label') || 'HTML Source'}</label>
-                      <textarea id="web-audit-html" rows={8} placeholder={t('pdf_audit.web.html_placeholder') || 'Paste HTML source code here, or use Fetch above...'}
+                      <textarea data-help-key="pdf_audit_view_web_html_textarea" id="web-audit-html" rows={8} placeholder={t('pdf_audit.web.html_placeholder') || 'Paste HTML source code here, or use Fetch above...'}
                         className="w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1 font-mono focus:ring-2 focus:ring-indigo-300 outline-none resize-y"
                         aria-label={t('pdf_audit.web.html_aria') || 'HTML source code to audit'} />
                     </div>
@@ -333,7 +333,7 @@ function PdfAuditView(props) {
                         setPendingPdfBase64(null);
                         setPendingPdfFile({ name: (document.getElementById('web-audit-url')?.value || 'website') + '.html' });
                         window.__pendingWebHtml = html;
-                      }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                      }} data-help-key="pdf_audit_view_web_audit_btn" className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                         ♿ Audit (AI + axe-core)
                       </button>
                       <button onClick={async () => {
@@ -370,7 +370,7 @@ function PdfAuditView(props) {
                         } catch (e) { const _c = classifyPdfError(e); addToast((t('toasts.remediation_failed') || 'Remediation failed: ') + _c.friendly + (_c.actionable ? ' — ' + _c.actionable : ''), _c.severity === 'info' ? 'info' : 'error'); }
                         setPdfFixLoading(false);
                         setPdfFixStep('');
-                      }} className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center gap-2">
+                      }} data-help-key="pdf_audit_view_web_remediate_btn" className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center gap-2">
                         🔧 Audit & Remediate
                       </button>
                     </div>
@@ -383,6 +383,7 @@ function PdfAuditView(props) {
                     {/* Drag & Drop Zone */}
                     {!pdfBatchProcessing && !pdfBatchSummary && (
                       <div
+                        data-help-key="pdf_audit_view_batch_dropzone"
                         className="border-2 border-dashed border-indigo-300 rounded-xl p-6 mb-4 text-center hover:border-indigo-500 hover:bg-indigo-50/50 transition-all cursor-pointer"
                         onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-indigo-500', 'bg-indigo-50'); }}
                         onDragLeave={(e) => { e.currentTarget.classList.remove('border-indigo-500', 'bg-indigo-50'); }}
@@ -418,7 +419,7 @@ function PdfAuditView(props) {
                           if (files.length > 0) addToast(`Added ${files.length} PDF(s)`, 'success');
                           e.target.value = '';
                         }} />
-                        <label htmlFor="batch-pdf-input" className="inline-block mt-2 px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-indigo-200 transition-colors">{t('pdf_audit.batch.browse_files') || 'Browse Files'}</label>
+                        <label data-help-key="pdf_audit_view_batch_browse_btn" htmlFor="batch-pdf-input" className="inline-block mt-2 px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-indigo-200 transition-colors">{t('pdf_audit.batch.browse_files') || 'Browse Files'}</label>
                       </div>
                     )}
 
@@ -449,6 +450,7 @@ function PdfAuditView(props) {
                                   addToast(toastMsg, 'info');
                                   try { runPdfBatchRemediation({ resumeQueue }); } catch (e) { warnLog('[Batch Resume] start failed:', e); }
                                 }}
+                                data-help-key="pdf_audit_view_batch_resume_btn"
                                 className="px-4 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg text-xs font-bold hover:from-amber-700 hover:to-orange-700 transition-all shadow"
                               >
                                 {'▶'} {t('pdf_audit.batch.resume.resume_button') || 'Resume Batch'}
@@ -458,6 +460,7 @@ function PdfAuditView(props) {
                                   try { if (_docPipeline && _docPipeline.discardResumableBatch) await _docPipeline.discardResumableBatch(); } catch (_) {}
                                   setResumableBatch(null);
                                 }}
+                                data-help-key="pdf_audit_view_batch_discard_btn"
                                 className="px-4 py-1.5 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"
                               >
                                 {t('pdf_audit.batch.resume.discard_button') || 'Discard'}
@@ -473,7 +476,7 @@ function PdfAuditView(props) {
                       <div className="mb-4">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-xs font-bold text-slate-600">{pdfBatchQueue.length} file{pdfBatchQueue.length !== 1 ? 's' : ''} queued</span>
-                          {!pdfBatchProcessing && <button onClick={() => setPdfBatchQueue([])} className="text-xs text-red-600 hover:text-red-600 font-bold">{t('pdf_audit.batch.clear_all') || 'Clear All'}</button>}
+                          {!pdfBatchProcessing && <button data-help-key="pdf_audit_view_batch_clear_all_btn" onClick={() => setPdfBatchQueue([])} className="text-xs text-red-600 hover:text-red-600 font-bold">{t('pdf_audit.batch.clear_all') || 'Clear All'}</button>}
                         </div>
                         <div className="max-h-40 overflow-y-auto space-y-1">
                           {pdfBatchQueue.map((item, idx) => (
@@ -492,6 +495,7 @@ function PdfAuditView(props) {
                                   picks it up. Re-uses the existing batch infra; no new code path. */}
                               {!pdfBatchProcessing && item.status === 'failed' && (
                                 <button
+                                  data-help-key="pdf_audit_view_batch_row_retry_btn"
                                   onClick={() => {
                                     // Reset this item to pending + clear error, then re-run the batch.
                                     // The loop at doc_pipeline_source.jsx:5908 skips already-done items,
@@ -504,7 +508,7 @@ function PdfAuditView(props) {
                                   aria-label={'Retry ' + item.fileName}
                                 >{'\u21bb'}</button>
                               )}
-                              {!pdfBatchProcessing && item.status === 'pending' && <button onClick={() => setPdfBatchQueue(prev => prev.filter(q => q.id !== item.id))} className="text-slate-600 hover:text-red-400">{'\u2715'}</button>}
+                              {!pdfBatchProcessing && item.status === 'pending' && <button data-help-key="pdf_audit_view_batch_row_remove_btn" onClick={() => setPdfBatchQueue(prev => prev.filter(q => q.id !== item.id))} className="text-slate-600 hover:text-red-400">{'\u2715'}</button>}
                             </div>
                           ))}
                         </div>
@@ -532,6 +536,7 @@ function PdfAuditView(props) {
                               } catch (_) { /* noop */ }
                               addToast(t('toasts.stopping_batch_finishing_current_file'), 'info');
                             }}
+                            data-help-key="pdf_audit_view_batch_stop_btn"
                             className="shrink-0 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-[11px] font-bold"
                             aria-label={t('pdf_audit.batch.stop_aria') || 'Stop batch remediation'}
                           >
@@ -570,6 +575,7 @@ function PdfAuditView(props) {
                               setPdfBatchQueue(prev => prev ? prev.map(q => q.status === 'failed' ? { ...q, status: 'pending', error: null, result: null } : q) : prev);
                               setTimeout(() => { try { runPdfBatchRemediation && runPdfBatchRemediation({}); } catch (e) { warnLog('[Batch RetryAll] start failed:', e); } }, 50);
                             }}
+                            data-help-key="pdf_audit_view_batch_retry_all_failed_btn"
                             className="mt-2 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-bold"
                             title="Re-queue every failed file and re-run the batch. Already-succeeded files are not re-processed."
                           >{'\u21bb'} Retry all failed ({pdfBatchSummary.failed})</button>
@@ -597,16 +603,16 @@ function PdfAuditView(props) {
                             ? `Start batch remediation of ${fileCount} PDF${filePlural}?\n\nCanvas mode \u2014 model calls are covered by your Google / Gemini quota. No billing.\n\nEstimated work: ~${totalCalls} model calls across ${fileCount} file${filePlural} (avg. ${callsPerFile} per file \u00d7 up to ${passes} fix pass${passPlural}).`
                             : `Start batch remediation of ${fileCount} PDF${filePlural}?\n\nEstimated Gemini API consumption: ~${totalCalls} calls (${callsPerFile} per file \u00d7 ${fileCount} files \u00d7 ${passes} fix pass${passPlural}).\n\nEstimated cost on Gemini Flash (Blaze tier): $${costLow}\u2013$${costHigh}\n\nThis is a rough estimate \u2014 actual cost varies with file complexity (scanned/image-heavy PDFs use more vision calls). Reduce \u201cMax Fix Passes\u201d in Settings to cap cost.`;
                           if (window.confirm(message)) runPdfBatchRemediation();
-                        }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                        }} data-help-key="pdf_audit_view_batch_start_btn" className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                           {'\u267f'} Start Batch ({pdfBatchQueue.length} files)
                         </button>
                       )}
                       {pdfBatchSummary && (
                         <>
-                          <button onClick={() => downloadBatchResults()} className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center gap-2">
+                          <button data-help-key="pdf_audit_view_batch_download_zip_btn" onClick={() => downloadBatchResults()} className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center gap-2">
                             {'\ud83d\udce5'} Download All (ZIP)
                           </button>
-                          <button onClick={() => { setPdfBatchQueue([]); setPdfBatchSummary(null); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">{t('pdf_audit.batch.new_batch') || 'New Batch'}</button>
+                          <button data-help-key="pdf_audit_view_batch_new_batch_btn" onClick={() => { setPdfBatchQueue([]); setPdfBatchSummary(null); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">{t('pdf_audit.batch.new_batch') || 'New Batch'}</button>
                           <button onClick={() => {
                             const queue = pdfBatchQueue;
                             const summary = pdfBatchSummary;
@@ -734,7 +740,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 </body></html>`);
                             win.document.close();
                             addToast(t('toasts.dashboard_opened'), 'success');
-                          }} className="px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2">
+                          }} data-help-key="pdf_audit_view_batch_dashboard_btn" className="px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2">
                             📊 Dashboard
                           </button>
                         </>
@@ -748,7 +754,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <p className="text-sm text-slate-600 mb-1">{(pdfAuditResult.fileSize / (1024*1024)).toFixed(1)} MB</p>
                 <p className="text-sm text-slate-600 mb-4">{t('pdf_audit.choose_how') || 'Choose how to process this PDF:'}</p>
 
-                <details open className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400">
+                <details data-help-key="pdf_audit_view_settings_panel" open className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400">
                   <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600">⚙️ Pipeline Settings</summary>
                   <div className="mt-2 space-y-2">
                     <div>
@@ -756,7 +762,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="font-bold text-slate-600">Audit Passes: {pdfAuditorCount}</span>
                         <span className="text-slate-600">{pdfAuditorCount <= 2 ? 'Fast' : pdfAuditorCount <= 5 ? 'Balanced' : pdfAuditorCount <= 7 ? 'Thorough' : 'Research-grade'}</span>
                       </div>
-                      <input type="range" min="1" max="10" value={pdfAuditorCount} onChange={(e) => setPdfAuditorCount(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.audit_passes_aria') || 'Number of audit passes'} />
+                      <input data-help-key="pdf_audit_view_audit_passes_slider" type="range" min="1" max="10" value={pdfAuditorCount} onChange={(e) => setPdfAuditorCount(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.audit_passes_aria') || 'Number of audit passes'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>1 (quick)</span><span>5 (default)</span><span>10 (max)</span></div>
                     </div>
                     <div>
@@ -764,7 +770,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="font-bold text-slate-600">Target Score: {pdfTargetScore}</span>
                         <span className="text-slate-600">{pdfTargetScore >= 95 ? 'Near-perfect' : pdfTargetScore >= 90 ? 'Excellent' : pdfTargetScore >= 80 ? 'Good' : 'Minimum'}</span>
                       </div>
-                      <input type="range" min="60" max="100" step="5" value={pdfTargetScore} onChange={(e) => setPdfTargetScore(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.target_score_aria') || 'Target accessibility score'} />
+                      <input data-help-key="pdf_audit_view_target_score_slider" type="range" min="60" max="100" step="5" value={pdfTargetScore} onChange={(e) => setPdfTargetScore(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.target_score_aria') || 'Target accessibility score'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>60 (min)</span><span>90 (default)</span><span>100</span></div>
                     </div>
                     <div>
@@ -772,11 +778,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="font-bold text-slate-600">Max Fix Passes: {pdfAutoFixPasses}</span>
                         <span className="text-slate-600">{pdfAutoFixPasses === 0 ? 'Disabled' : pdfAutoFixPasses <= 3 ? 'Quick' : pdfAutoFixPasses <= 5 ? 'Standard' : pdfAutoFixPasses <= 8 ? 'Thorough' : 'Maximum'}</span>
                       </div>
-                      <input type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.max_fix_passes_aria') || 'Max fix pass count'} />
+                      <input data-help-key="pdf_audit_view_max_fix_passes_slider" type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.max_fix_passes_aria') || 'Max fix pass count'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>0 (off)</span><span>8 (default)</span><span>15 (max)</span></div>
                     </div>
                     <label className="flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200">
-                      <input type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="mt-0.5 rounded" aria-label={t('pdf_audit.settings.auto_continue_aria') || 'Auto-continue remediation until target score'} />
+                      <input data-help-key="pdf_audit_view_auto_continue_toggle" type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="mt-0.5 rounded" aria-label={t('pdf_audit.settings.auto_continue_aria') || 'Auto-continue remediation until target score'} />
                       <span>🔁 <b>Auto-continue</b> until score ≥ <b>{pdfTargetScore}</b> — runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.</span>
                     </label>
                     <div>
@@ -784,13 +790,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="font-bold text-slate-600">Polish Passes: {pdfPolishPasses}</span>
                         <span className="text-slate-600">{pdfPolishPasses === 0 ? 'None' : pdfPolishPasses === 1 ? 'Standard' : 'Extra polish'}</span>
                       </div>
-                      <input type="range" min="0" max="3" value={pdfPolishPasses} onChange={(e) => setPdfPolishPasses(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.polish_passes_aria') || 'Polish pass count'} />
+                      <input data-help-key="pdf_audit_view_polish_passes_slider" type="range" min="0" max="3" value={pdfPolishPasses} onChange={(e) => setPdfPolishPasses(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.polish_passes_aria') || 'Polish pass count'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>0</span><span>2 (default)</span><span>3</span></div>
                     </div>
                   </div>
                 </details>
                 {/* Style & Branding for remediation output */}
-                <details className="bg-slate-50 rounded-lg border border-slate-400 overflow-hidden mb-3">
+                <details data-help-key="pdf_audit_view_branding_panel" className="bg-slate-50 rounded-lg border border-slate-400 overflow-hidden mb-3">
                   <summary className="px-3 py-2 text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors">
                     ✨ Output Style & Branding (optional)
                   </summary>
@@ -802,11 +808,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <div className="flex flex-wrap gap-1">
                         <button onClick={() => { window.__pdfBrandMode = 'auto'; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="auto"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="auto"
+                          data-help-key="pdf_audit_view_brand_mode_auto_btn"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all ring-2 ring-indigo-400 bg-indigo-50 border-indigo-600">
                           <div className="text-[11px] font-bold text-slate-700">{t('pdf_audit.brand.match_original') || '🎨 Match Original'}</div>
                           <div className="text-[11px] text-slate-600">{t('pdf_audit.brand.match_original_desc') || 'Extract colors from this PDF'}</div>
                         </button>
                         <label data-brand-mode="upload"
+                          data-help-key="pdf_audit_view_brand_mode_upload_input"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 cursor-pointer">
                           <div className="text-[11px] font-bold text-slate-700">{t('pdf_audit.brand.upload_guide') || '📎 Upload Brand Guide'}</div>
                           <div className="text-[11px] text-slate-600">{t('pdf_audit.brand.upload_guide_desc') || 'Use a different doc/logo'}</div>
@@ -837,6 +845,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </label>
                         <button onClick={() => { window.__pdfBrandMode = 'none'; window.__pdfBrandOverride = null; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="none"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="none"
+                          data-help-key="pdf_audit_view_brand_mode_none_btn"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-600 hover:bg-indigo-50">
                           <div className="text-[11px] font-bold text-slate-700">{t('pdf_audit.brand.no_branding') || '⬜ No Branding'}</div>
                           <div className="text-[11px] text-slate-600">{t('pdf_audit.brand.no_branding_desc') || 'Use default palette'}</div>
