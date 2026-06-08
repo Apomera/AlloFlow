@@ -38,14 +38,6 @@ function EducatorHubModal(props) {
     // Dynamic Assessment Studio entry — added May 2026. Optional so legacy
     // hosts that haven't wired the setter still render the rest of the hub.
     setIsDynamicAssessmentOpen = (() => {
-    }),
-    // Lumen entry — added Jun 2026. The card opens the STEM Lab focused on the
-    // Lumen research canvas via the host's STEM-Lab setters. Optional defaults
-    // so a host that hasn't wired them still renders the rest of the hub (the
-    // card is then a harmless no-op rather than a crash).
-    setShowStemLab = (() => {
-    }),
-    setStemLabTool = (() => {
     })
   } = props;
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4", onClick: () => setShowEducatorHub(false), role: "button", tabIndex: 0, onKeyDown: (e) => {
@@ -62,18 +54,14 @@ function EducatorHubModal(props) {
   }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F3A8}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-purple-800" }, t("educator_hub.symbol_studio_title") || "Symbol Studio"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-purple-600 mt-1" }, t("educator_hub.symbol_studio_desc") || "AI-generated PCS-style icons for visual supports, AAC boards, and schedules \u2014 powered by image-to-image editing"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_dynamic_assessment_card", onClick: () => {
     setShowEducatorHub(false);
     setIsDynamicAssessmentOpen(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-blue-800" }, t("educator_hub.dynamic_assessment_title") || "Dynamic Assessment"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-blue-600 mt-1" }, t("educator_hub.dynamic_assessment_desc") || "Vygotsky/Feuerstein/Lidz test-teach-retest probes with graduated prompt ladders, modifiability scoring, IEP goals, accommodations, and family/teacher handoffs"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_lumen_card", onClick: () => {
-    setShowEducatorHub(false);
-    setStemLabTool("lumen");
-    setShowStemLab(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-amber-800" }, t("educator_hub.lumen_title") || "Lumen"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-600 mt-1" }, t("educator_hub.lumen_desc") || "Turn any dataset — research, classroom, or your own — into a defensible, honestly-marked finding: the chart and the claim are one object, uncertainty is kept, and any AI involvement is labeled. The honest way to present and argue from data."))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_document_hub_card", onClick: () => {
+  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-blue-800" }, t("educator_hub.dynamic_assessment_title") || "Dynamic Assessment"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-blue-600 mt-1" }, t("educator_hub.dynamic_assessment_desc") || "Vygotsky/Feuerstein/Lidz test-teach-retest probes with graduated prompt ladders, modifiability scoring, IEP goals, accommodations, and family/teacher handoffs"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_document_hub_card", onClick: () => {
     setShowEducatorHub(false);
     openExportPreview("print");
   }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F4C4}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-emerald-800" }, t("educator_hub.document_hub_title") || "Document Hub"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-600 mt-1" }, t("educator_hub.document_hub_desc") || "Document builder with themes, WYSIWYG editing, accessibility audit, and multi-format export (PDF, HTML, worksheet, slides)"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_pdf_accessibility_card", onClick: () => {
     setShowEducatorHub(false);
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = "application/pdf,.pdf,image/*,.docx,.pptx";
+    input.accept = "application/pdf,.pdf,.docx,.pptx";
     input.multiple = true;
     input.onchange = (e) => {
       const files = [...e.target.files];
