@@ -1322,7 +1322,9 @@
       setSyncStatus('syncing');
       try {
         var data = {
-          profiles: profiles.map(function (p) { return { id: p.id, codename: p.codename || p.id, description: p.description }; }),
+          // Appearance `description` (quasi-identifying free text) is intentionally NOT synced —
+          // it's only used locally to (re)generate the avatar, and the avatar image already round-trips.
+          profiles: profiles.map(function (p) { return { id: p.id, codename: p.codename || p.id }; }),
           boards: savedBoards.map(function (b) {
             return { id: b.id, title: b.title, createdAt: b.createdAt, cols: b.cols || 4,
               words: (b.words || []).map(function (w) { return { label: w.label, category: w.category || 'other', description: w.description || '' }; }) };
@@ -1362,7 +1364,9 @@
           profiles.forEach(function (p) { localProfMap[p.id] = p; });
           var mergedProfs = data.profiles.map(function (cp) {
             var lp = localProfMap[cp.id];
-            return { id: cp.id, name: cp.name, description: cp.description, image: lp ? lp.image : null };
+            // Display name is restored from the codename — real names are intentionally NEVER
+            // synced/round-tripped. Do NOT "fix" this by adding name to syncToCloud (would egress PII).
+            return { id: cp.id, name: cp.codename || cp.id, description: cp.description, image: lp ? lp.image : null };
           });
           var cloudProfIds = {};
           data.profiles.forEach(function (p) { cloudProfIds[p.id] = true; });
@@ -5015,7 +5019,7 @@
       });
       if (activeWishes.length > 0) {
         html += '<h2>💫 Words ' + name + ' Is Reaching For</h2>';
-        html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">During communication sessions, ' + name + ' showed intent to express these words but didn\'t have them available. This is evidence of <strong>communicative intent beyond current vocabulary</strong> — one of the strongest indicators of readiness for vocabulary expansion.</p>';
+        html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">During communication sessions, ' + name + ' showed intent to express these words but didn\'t have them available. This is evidence of <strong>communicative intent beyond current vocabulary</strong> — a practice signal of possible readiness for vocabulary expansion (a practice indicator, not a standardized measure).</p>';
         html += '<div class="word-cloud">';
         activeWishes.forEach(function (w) {
           var dateStr = w.ts ? new Date(w.ts).toLocaleDateString() : '';
