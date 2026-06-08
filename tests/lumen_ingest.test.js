@@ -340,3 +340,46 @@ describe('Lumen ingest — L0 contract + privacy invariants', () => {
     expect(m.rows.length + m.dropped.length).toBe(t.rows.length);
   });
 });
+
+describe('Lumen ingest — "bring in an AlloFlow report" recognition + row-order x', () => {
+  it('recognizes the de-identified dashboard FLUENCY export and auto-maps it', () => {
+    const rec = L.recognizeAlloFlowReport(['Date', 'Passage', 'WCPM', 'Accuracy %', 'Total Words']);
+    expect(rec.kind).toBe('alloflow-fluency');
+    expect(rec.mapping.xCol).toBe('index');   // dates aren't numeric -> x = row order
+    expect(rec.mapping.yCol).toBe(2);         // WCPM
+    expect(rec.mapping.y2Col).toBe(3);        // Accuracy %
+    expect(rec.variable).toBe('Reading rate');
+    expect(rec.xLabel).toBe('Assessment');
+  });
+
+  it('REFUSES the identifiable multi-student roster (a Student/Name column) — never a person', () => {
+    expect(L.recognizeAlloFlowReport(['Student', 'Date', 'RTI Tier', 'Fluency WCPM']).kind).toBe('refused-identifiable');
+    expect(L.recognizeAlloFlowReport(['Name', 'WCPM', 'Date']).kind).toBe('refused-identifiable');
+  });
+
+  it('returns null for a non-AlloFlow table (general import is unaffected)', () => {
+    expect(L.recognizeAlloFlowReport(['week', 'height', 'phase'])).toBeNull();
+    expect(L.recognizeAlloFlowReport([])).toBeNull();
+    expect(L.recognizeAlloFlowReport(null)).toBeNull();
+  });
+
+  it("maps x = 1-based ROW ORDER when xCol is 'index' (dated exports with no numeric x)", () => {
+    const t = L.parseTextTable('Date,Passage,WCPM,Accuracy %\n6/1,A,42,90\n6/8,B,46,92\n6/15,C,51,94');
+    const m = L.mapTextTableToObservations(t, { xCol: 'index', yCol: 2, y2Col: 3 });
+    expect(m.rows.map(r => r.x)).toEqual([1, 2, 3]);
+    expect(m.rows.map(r => r.y)).toEqual([42, 46, 51]);
+    expect(m.rows.map(r => r.y2)).toEqual([90, 92, 94]);
+    expect(m.dropped.length).toBe(0);
+  });
+
+  it('a recognized fluency export round-trips to a clean L1 trend claim', () => {
+    const rec = L.recognizeAlloFlowReport(['Date', 'Passage', 'WCPM', 'Accuracy %']);
+    const t = L.parseTextTable('Date,Passage,WCPM,Accuracy %\n6/1,A,42,90\n6/8,B,46,92\n6/15,C,51,94\n6/22,D,55,95');
+    const m = L.mapTextTableToObservations({ headers: t.headers, rows: t.rows }, rec.mapping);
+    const comp = L.makeCompendium(rec.variable, rec.unit, { xLabel: rec.xLabel });
+    m.rows.forEach(r => L.addObservation(comp, r));
+    const claim = L.deriveTrendClaim(comp, {});
+    expect(claim.refused).toBeFalsy();
+    expect(claim.estimate.slope).toBeGreaterThan(0);
+  });
+});

@@ -277,6 +277,22 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
     expect(renderState({ importPreview: SAMPLE_IMPORT_PREVIEW })).toMatchSnapshot();
   });
 
+  it('the x-column mapper offers a row-order option (for dated exports with no numeric x)', () => {
+    const html = renderState({ importPreview: SAMPLE_IMPORT_PREVIEW });
+    expect(html).toMatch(/<option value="index">\(row order/);
+  });
+
+  it('a recognized AlloFlow report shows the honest re-projection note; an identifiable roster is refused', () => {
+    const reco = Object.assign({}, SAMPLE_IMPORT_PREVIEW, { recognized: 'AlloFlow fluency export', recoNote: 'Recognized an AlloFlow fluency export — auto-mapped Reading rate (WCPM) over assessment order. Review and confirm to re-project it as an honest finding.' });
+    const html = renderState({ importPreview: reco });
+    expect(html).toMatch(/Recognized an AlloFlow fluency export/);
+    expect(html).toMatch(/text-emerald-700/);
+    const refused = Object.assign({}, SAMPLE_IMPORT_PREVIEW, { error: 'This looks like an identifiable multi-student roster (it has a Student/Name column). Lumen never imports per-student records — that is the Teacher Dashboard’s job.' });
+    const html2 = renderState({ importPreview: refused });
+    expect(html2).toMatch(/never imports per-student records/);
+    expect(html2).toMatch(/text-rose-700/);
+  });
+
   it('the import button + hidden file input render on the empty state (the only entry point for new files)', () => {
     const html = renderState({});
     expect(html).toMatch(/Import file/);

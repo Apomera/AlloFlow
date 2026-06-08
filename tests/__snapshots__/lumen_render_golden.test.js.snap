@@ -2836,6 +2836,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 <option value="0" selected="">week (col 1)</option>
 <option value="1">wcpm (col 2)</option>
 <option value="2">phase (col 3)</option>
+<option value="index">(row order — 1, 2, 3…)</option>
 </select>
 </label>
 <label class="text-xs text-slate-600 flex flex-col">y column (required)<select class="w-40 px-2 py-1 border border-slate-300 rounded text-xs">

@@ -1877,14 +1877,17 @@
     if (!table || !Array.isArray(table.rows)) {
       return { rows: rows, dropped: dropped, error: 'Table has no rows.' };
     }
+    // xCol === 'index' => x is the 1-based ROW ORDER (for sources with no numeric
+    // x column, e.g. a dated export — the row position IS the sequence).
+    var useIndexX = (mapping.xCol === 'index');
     for (var i = 0; i < table.rows.length; i++) {
       var r = table.rows[i];
-      var xRaw = r[mapping.xCol], yRaw = r[mapping.yCol];
+      var xRaw = useIndexX ? String(i + 1) : r[mapping.xCol], yRaw = r[mapping.yCol];
       if (xRaw == null || yRaw == null || String(xRaw).trim() === '' || String(yRaw).trim() === '') {
         dropped.push({ rowIdx: i, reason: 'missing-xy', preview: r.slice(0, 6) });
         continue;
       }
-      var x = parseFloat(xRaw), y = parseFloat(yRaw);
+      var x = useIndexX ? (i + 1) : parseFloat(xRaw), y = parseFloat(yRaw);
       if (isNaN(x) || isNaN(y)) {
         dropped.push({ rowIdx: i, reason: 'non-numeric-xy', preview: r.slice(0, 6) });
         continue;
@@ -1905,6 +1908,31 @@
       rows.push(row);
     }
     return { rows: rows, dropped: dropped };
+  }
+
+  // Recognize a CSV exported by an AlloFlow surface so Lumen can auto-map it and
+  // honestly RE-PROJECT it — Lumen is the "communication end" of the data the
+  // Teacher Dashboard MONITORS. We ONLY recognize the de-identified SINGLE-student
+  // time series (the dashboard's Fluency export: Date / Passage / WCPM / Accuracy
+  // …). The multi-student, real-NAME RTI roster is deliberately REFUSED — that is
+  // the dashboard's job and would breach Lumen's never-a-person boundary.
+  // Returns { kind:'alloflow-fluency', mapping, variable, unit, xLabel },
+  // { kind:'refused-identifiable' }, or null (not an AlloFlow report).
+  function recognizeAlloFlowReport(headers) {
+    if (!Array.isArray(headers) || !headers.length) return null;
+    var lower = headers.map(function (h) { return String(h == null ? '' : h).trim().toLowerCase(); });
+    var idx = function (name) { return lower.indexOf(name); };
+    if (idx('student') !== -1 || idx('name') !== -1) return { kind: 'refused-identifiable' };
+    var wcpmI = idx('wcpm');
+    if (wcpmI !== -1 && (idx('date') !== -1 || idx('passage') !== -1)) {
+      var accI = idx('accuracy %'); if (accI === -1) accI = idx('accuracy');
+      return {
+        kind: 'alloflow-fluency', label: 'AlloFlow fluency export',
+        mapping: { xCol: 'index', yCol: wcpmI, y2Col: (accI !== -1 ? accI : null), phaseCol: null, seriesCol: null },
+        variable: 'Reading rate', unit: 'WCPM', xLabel: 'Assessment'
+      };
+    }
+    return null;
   }
 
   // XLSX parse — caller provides the SheetJS namespace (window.XLSX). The
@@ -2058,7 +2086,7 @@
     sourcedSignoffHash: sourcedSignoffHash, assertSourcedDefensible: assertSourcedDefensible, assertExportClean: assertExportClean, assertNotSynthetic: assertNotSynthetic,
     // Ingest (§5 Pillar 1) — pure parsers + column mapper; L0-only by construction
     INGEST_MAX_BYTES: INGEST_MAX_BYTES, INGEST_MAX_ROWS: INGEST_MAX_ROWS, INGEST_DELIMS: INGEST_DELIMS, INGEST_FILE_TYPES: INGEST_FILE_TYPES,
-    parseTextTable: parseTextTable, mapTextTableToObservations: mapTextTableToObservations,
+    parseTextTable: parseTextTable, mapTextTableToObservations: mapTextTableToObservations, recognizeAlloFlowReport: recognizeAlloFlowReport,
     parseWorkbookSheet: parseWorkbookSheet, lazyLoadXLSX: lazyLoadXLSX, parseJsonTable: parseJsonTable, isWorkbookIngestType: isWorkbookIngestType, ingestFileTypeFromName: ingestFileTypeFromName,
     // §16 Phase 2A — human-assisted benchmark-document workspace (PDF/DOCX/TXT/CSV/XLSX → scaffold → per-cell signoff → spine JSON)
     BENCH_DOC_TYPES: BENCH_DOC_TYPES, BENCH_DOC_MAX_BYTES: BENCH_DOC_MAX_BYTES, benchDocTypeFromName: benchDocTypeFromName,
@@ -2265,12 +2293,28 @@
           // observations until the user maps columns and confirms.
           function stageParsedTable(parsed, fileName, fileType) {
             var mapping = { xCol: 0, yCol: (parsed.headers.length > 1 ? 1 : 0), phaseCol: null, y2Col: null, seriesCol: null };
+            // "Bring in an AlloFlow report": auto-map a recognized de-identified
+            // dashboard export so Lumen re-projects it honestly (the COMMUNICATION
+            // end of the data the dashboard monitors); refuse the identifiable roster.
+            var recognized = null, recoNote = null, recoErr = null;
+            var rec = recognizeAlloFlowReport(parsed.headers || []);
+            if (rec && rec.kind === 'refused-identifiable') {
+              recoErr = 'This looks like an identifiable multi-student roster (it has a Student/Name column). Lumen never imports per-student records — that is the Teacher Dashboard’s job. To re-project ONE student honestly, import their de-identified series (e.g. the Fluency export, which carries no name).';
+            } else if (rec && rec.kind === 'alloflow-fluency') {
+              mapping = Object.assign({}, mapping, rec.mapping);
+              recognized = rec.label;
+              recoNote = 'Recognized an ' + rec.label + ' — auto-mapped ' + rec.variable + ' (' + rec.unit + ') over ' + rec.xLabel.toLowerCase() + ' order. Review and confirm to re-project it as an honest finding.';
+              if (rec.variable != null) upd('variable', rec.variable);
+              if (rec.unit != null) upd('unit', rec.unit);
+              if (rec.xLabel != null) upd('xLabel', rec.xLabel);
+            }
             upd('importPreview', {
               headers: parsed.headers, rows: parsed.rows, delimiter: parsed.delimiter,
               notes: parsed.notes || [], sheetName: parsed.sheetName || null, sheetNames: parsed.sheetNames || null,
-              mapping: mapping, fileName: fileName, fileType: fileType, error: parsed.error || null
+              mapping: mapping, fileName: fileName, fileType: fileType,
+              recognized: recognized, recoNote: recoNote, error: recoErr || parsed.error || null
             });
-            announce('Loaded ' + fileName + ': ' + parsed.headers.length + ' columns, ' + parsed.rows.length + ' rows. Map the columns and confirm to bind.');
+            announce(recoErr ? 'Identifiable roster refused — import a single de-identified series instead.' : (recoNote || ('Loaded ' + fileName + ': ' + parsed.headers.length + ' columns, ' + parsed.rows.length + ' rows. Map the columns and confirm to bind.')));
           }
           // Parse a raw pasted block: sniff JSON ({ or [) vs delimited text,
           // route through the SAME pure parsers as the file path, and stage it.
@@ -2510,9 +2554,11 @@
             var ip = d.importPreview;
             var imp = ip.mapping || {};
             var colOpts = (ip.headers || []).map(function (hd, i) { return h('option', { key: 'h' + i, value: String(i) }, (hd || ('col' + (i + 1))) + ' (col ' + (i + 1) + ')'); });
+            // x may also be ROW ORDER (for a dated export with no numeric x column).
+            var xColOpts = colOpts.concat([h('option', { key: 'idx', value: 'index' }, '(row order — 1, 2, 3…)')]);
             function setMap(k, v) {
               var next = Object.assign({}, ip, { mapping: Object.assign({}, imp) });
-              next.mapping[k] = (v === '' || v == null) ? null : parseInt(v, 10);
+              next.mapping[k] = (v === '' || v == null) ? null : (v === 'index' ? 'index' : parseInt(v, 10));
               upd('importPreview', next);
             }
             var previewRows = (ip.rows || []).slice(0, 5);
@@ -2532,10 +2578,11 @@
                     announce('Bound ' + mapped.rows.length + ' observations from ' + (ip.fileName || 'file') + (mapped.dropped.length ? ('; ' + mapped.dropped.length + ' row(s) dropped (missing or non-numeric).') : '.') + ' Total now ' + next.length + '.');
                   } }, 'Confirm + bind'))),
               ip.error ? h('p', { className: 'mt-2 text-xs text-rose-700' }, ip.error) : null,
+              ip.recoNote ? h('p', { className: 'mt-2 text-xs font-semibold text-emerald-700' }, '📊 ' + ip.recoNote) : null,
               (ip.notes && ip.notes.indexOf('truncated') !== -1) ? h('p', { className: 'mt-1 text-xs text-amber-700' }, 'File was truncated at ' + INGEST_MAX_ROWS + ' rows.') : null,
               h('div', { className: 'mt-2 grid grid-cols-2 md:grid-cols-5 gap-2' },
                 h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'x column (required)',
-                  h('select', { className: dropDownClass, value: imp.xCol == null ? '' : String(imp.xCol), onChange: function (ev) { setMap('xCol', ev.target.value); } }, colOpts)),
+                  h('select', { className: dropDownClass, value: imp.xCol == null ? '' : String(imp.xCol), onChange: function (ev) { setMap('xCol', ev.target.value); } }, xColOpts)),
                 h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'y column (required)',
                   h('select', { className: dropDownClass, value: imp.yCol == null ? '' : String(imp.yCol), onChange: function (ev) { setMap('yCol', ev.target.value); } }, colOpts)),
                 h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'phase column (optional)',
