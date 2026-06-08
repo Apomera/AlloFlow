@@ -340,6 +340,20 @@ describe('Lumen — export, FERPA gate & L3 sign-off (Phase 1, §7/§8)', () => 
     expect(pii.csv).toMatch(/^1,42,baseline,Observed/m); // raw per-row values are OBSERVED (L0), not the L1 derived trend
   });
 
+  it('HTML brief is finding-only by default; the per-row table is the FERPA opt-in (the brief is the hand-to-parent artifact)', () => {
+    const brief = L.buildExportHtml(comp, claim, { audience: 'iep-team' });
+    expect(brief.html).not.toMatch(/<table/);                          // no identifiable per-row table by default
+    expect(brief.html).toMatch(/finding-only brief \(FERPA\)/);
+    expect(brief.html).toMatch(/finding-only \(no identifiable rows\)/);
+    expect(brief.filename).toMatch(/-summary\.html$/);
+    expect(brief.html).toMatch(/Ordinary least-squares/);             // the finding itself is still present
+    const conf = L.buildExportHtml(comp, claim, { audience: 'iep-team', includePII: true });
+    expect(conf.html).toMatch(/<table/);                              // explicit opt-in embeds the full table
+    expect(conf.html).toMatch(/<td>1<\/td>/);                         // a raw per-row value
+    expect(conf.html).toMatch(/CONFIDENTIAL \(identifiable\)/);
+    expect(conf.filename).toMatch(/-CONFIDENTIAL\.html$/);
+  });
+
   it('an AI-inclusive brief carries the level word, the method, and the verify-yourself caveat', () => {
     const out = L.buildExportHtml(comp, claim, { audience: 'iep-team', aiHyps: hyps, includeAI: true });
     expect(out.maxLevel).toBe('L3');

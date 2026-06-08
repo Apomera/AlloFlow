@@ -1274,17 +1274,25 @@
     var synth = !!opts.synthetic;
     var synTag = synth ? 'SYNTHETIC — NOT A REAL STUDENT · ' : '';
     var synBanner = synth ? '<p style="background:#6d28d9;color:#fff;padding:8px;font-weight:bold;border-radius:6px">⚗ SYNTHETIC PRACTICE DATA — NOT A REAL STUDENT. For demonstration/training only; not a defensible record.</p>' : '';
+    // FERPA: the brief is the hand-to-a-parent artifact, and the dated small-n
+    // series is itself quasi-identifying. So the per-row table is the SAME
+    // opt-in as the CSV's identifiable rows — finding-only by default, full
+    // table only when includePII is explicitly set (mirrors buildExportCsv).
+    var includePII = !!opts.includePII;
+    var tableBlock = includePII
+      ? ('<table border="1" cellpadding="3"><thead><tr>' + tbl.columns.map(function (c) { return '<th>' + escHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table>')
+      : '<p><em>Per-student data points are omitted from this finding-only brief (FERPA). Re-export with “Include identifiable data” to embed the full per-point table.</em></p>';
     var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + escHtml(synTag + 'Lumen — ' + comp.variable) + '</title></head><body>'
       + synBanner
       + '<h1>' + escHtml(synTag + 'Lumen — ' + comp.variable + ' (' + comp.unit + ')') + '</h1>'
       + '<p><strong>' + escHtml(faceFor(claim, audience, opts.synthetic)) + '</strong></p>'
       + subset
       + '<p>' + escHtml(chartSummaryText(comp.observations, claim, opts.sourceRefs)) + '</p>'
-      + '<table border="1" cellpadding="3"><thead><tr>' + tbl.columns.map(function (c) { return '<th>' + escHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table>'
+      + tableBlock
       + ai + methods + references
-      + '<hr><p><small>' + escHtml(synth ? 'SYNTHETIC PRACTICE DATA — NOT A REAL STUDENT. ' : '') + 'Lumen export · max epistemic level ' + escHtml(maxLevel) + ' · audience: ' + escHtml(audience) + '. Levels: Observed / Derived (math) / AI-organized / AI reading.</small></p>'
+      + '<hr><p><small>' + escHtml(synth ? 'SYNTHETIC PRACTICE DATA — NOT A REAL STUDENT. ' : '') + 'Lumen export · max epistemic level ' + escHtml(maxLevel) + ' · audience: ' + escHtml(audience) + (includePII ? ' · CONFIDENTIAL (identifiable)' : ' · finding-only (no identifiable rows)') + '. Levels: Observed / Derived (math) / AI-organized / AI reading.</small></p>'
       + '</body></html>';
-    return { html: html, filename: 'lumen-' + (synth ? 'PRACTICE-' : '') + slug(comp.variable) + '-' + audience + '.html', maxLevel: maxLevel };
+    return { html: html, filename: 'lumen-' + (synth ? 'PRACTICE-' : '') + slug(comp.variable) + '-' + audience + (includePII ? '-CONFIDENTIAL' : '-summary') + '.html', maxLevel: maxLevel };
   }
 
   function buildExportCsv(comp, claim, opts) {
@@ -2179,7 +2187,10 @@
             var includeAI = levelIndex(ceiling) >= 2;
             var gate = assertExportClean({ audience: audience, aiHyps: includeAI ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
             if (gate.blocked) { upd('exportMsg', gate.reason); announce(gate.reason); return; }
-            var out = buildExportHtml(comp, claim, { audience: audience, aiText: d.aiText, aiHyps: d.aiHyps, includeAI: includeAI, sourceRefs: sourceRefs, synthetic: compHasSynthetic(comp) });
+            // Same FERPA consent as the CSV: the brief embeds the per-row table ONLY on explicit opt-in.
+            if (d.includePII && typeof window !== 'undefined' && window.confirm &&
+              !window.confirm('This brief will embed the full identifiable per-student data table. Export it?')) return;
+            var out = buildExportHtml(comp, claim, { audience: audience, aiText: d.aiText, aiHyps: d.aiHyps, includeAI: includeAI, sourceRefs: sourceRefs, synthetic: compHasSynthetic(comp), includePII: !!d.includePII });
             download(out.filename, out.html, 'text/html');
             upd('exportMsg', 'Exported ' + out.filename + ' (max level ' + out.maxLevel + ').');
           };
