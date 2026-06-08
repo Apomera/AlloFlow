@@ -3746,6 +3746,43 @@ var createDocPipeline = function(deps) {
   // OCR every page of a PDF with Tesseract. Renders each page at 2× to a canvas, recognises,
   // concatenates. Returns { fullText, pages: [{pageNum, text, words, pageW, pageH}], sourceCharCount }.
   // Progress callback fires per page (0..1) so the UI can show "OCR page 3 of 12" without blocking.
+  // Map a BCP-47 / ISO-639 language code (or name fragment) to a Tesseract.js traineddata
+  // code. Tesseract auto-fetches the model for the returned code; unknowns fall back to
+  // 'eng'. Covers the common European + refugee/ELL languages AlloFlow targets.
+  const _toTesseractLang = (code) => {
+    if (!code) return 'eng';
+    const c = String(code).trim().toLowerCase().replace(/_/g, '-');
+    const base = c.split('-')[0];
+    if (base === 'zh') return (/(^|[-])(tw|hant|hk|mo)/.test(c)) ? 'chi_tra' : 'chi_sim';
+    const MAP = {
+      en: 'eng', es: 'spa', fr: 'fra', de: 'deu', it: 'ita', pt: 'por', nl: 'nld',
+      ru: 'rus', uk: 'ukr', pl: 'pol', tr: 'tur', sv: 'swe', da: 'dan', nb: 'nor', no: 'nor', fi: 'fin',
+      cs: 'ces', sk: 'slk', ro: 'ron', hu: 'hun', el: 'ell', bg: 'bul', hr: 'hrv', sr: 'srp',
+      he: 'heb', ar: 'ara', fa: 'fas', ps: 'pus', ur: 'urd',
+      hi: 'hin', bn: 'ben', pa: 'pan', gu: 'guj', ta: 'tam', te: 'tel', kn: 'kan', ml: 'mal',
+      th: 'tha', lo: 'lao', km: 'khm', my: 'mya', vi: 'vie', id: 'ind', ms: 'msa', tl: 'tgl',
+      ja: 'jpn', ko: 'kor', am: 'amh', ti: 'tir', sw: 'swa', so: 'som', ht: 'hat',
+    };
+    return MAP[base] || 'eng';
+  };
+
+  // Best-effort document-language detection for OCR: ONE lightweight Gemini Vision call that
+  // returns just the ISO 639-1 code, so Tesseract can run with the right model (its word
+  // boxes drive the positioned searchable layer; in 'eng' they mis-segment non-Latin scripts).
+  // Returns null on any failure so the caller falls back to English. Vision extraction itself
+  // is language-agnostic, so this is purely to sharpen the Tesseract pass.
+  const _detectOcrLanguage = async (base64, mimeType) => {
+    if (!callGeminiVision) return null;
+    try {
+      const resp = await callGeminiVision(
+        'What is the PRIMARY written language of this document? Respond with ONLY the ISO 639-1 two-letter lowercase code (e.g. en, es, fr, de, it, pt, ru, ar, zh, ja, ko, vi, hi, fa, ur, th, tr). If unsure, respond "en". Output the code and nothing else.',
+        base64, mimeType
+      );
+      const m = String(resp || '').trim().toLowerCase().match(/[a-z]{2,3}(-[a-z]{2,4})?/);
+      return m ? m[0] : null;
+    } catch (e) { try { warnLog('[OCR lang detect] failed — falling back to eng: ' + (e && e.message)); } catch (_) {} return null; }
+  };
+
   const extractPdfTextTesseract = async (base64, onProgress, lang) => {
     try {
       await ensurePdfJsLoaded();
@@ -9141,9 +9178,24 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           return { fullText: chunks.join('\n\n---\n\n'), pages: pagesOut };
         };
 
+        // ── OCR language resolution (light, best-effort) ──
+        // Priority: explicit override (state — settable by a future "Document language" UI,
+        // so the user can input any language) → one lightweight Gemini language-ID call
+        // (detect any language) → English. Resolved BEFORE Tesseract so its word boxes
+        // segment the right script. Any failure falls back to 'eng' (Vision still extracts).
+        let _ocrTessLang = 'eng';
+        try {
+          const _override = (typeof window !== 'undefined' && window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || null;
+          const _langCode = _override || await _detectOcrLanguage(_base64, _mimeType);
+          if (_langCode) {
+            _ocrTessLang = _toTesseractLang(_langCode);
+            updateProgress(1, 'Document language: ' + String(_langCode).toLowerCase() + ' → OCR model "' + _ocrTessLang + '"' + (_override ? ' (user-set)' : ' (auto-detected)'));
+          }
+        } catch (_) {}
+
         const _tesseractExtract = async () => extractPdfTextTesseract(_base64, (ev) => {
           updateProgress(1, `Tesseract OCR page ${ev.page}/${ev.total} (${ev.phase})…`);
-        });
+        }, _ocrTessLang);
 
         let tessResult = { fullText: '', pages: [] };
         let visionResult = { fullText: '', pages: [] };
