@@ -395,9 +395,11 @@ function PdfAuditView(props) {
                           files.forEach(file => {
                             const reader = new FileReader();
                             reader.onloadend = () => {
+                              if (reader.error || !reader.result) return; // onerror already surfaced it; never push a broken entry
                               const base64 = reader.result.split(',')[1];
                               setPdfBatchQueue(prev => [...prev, { id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size, base64, status: 'pending', result: null }]);
                             };
+                            reader.onerror = () => addToast('Could not read "' + file.name + '" — it may be corrupt or locked; skipped.', 'error');
                             reader.readAsDataURL(file);
                           });
                           addToast(`Added ${files.length} PDF(s) to batch queue`, 'success');
@@ -411,9 +413,11 @@ function PdfAuditView(props) {
                           files.forEach(file => {
                             const reader = new FileReader();
                             reader.onloadend = () => {
+                              if (reader.error || !reader.result) return; // onerror already surfaced it; never push a broken entry
                               const base64 = reader.result.split(',')[1];
                               setPdfBatchQueue(prev => [...prev, { id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size, base64, status: 'pending', result: null }]);
                             };
+                            reader.onerror = () => addToast('Could not read "' + file.name + '" — it may be corrupt or locked; skipped.', 'error');
                             reader.readAsDataURL(file);
                           });
                           if (files.length > 0) addToast(`Added ${files.length} PDF(s)`, 'success');
@@ -1486,6 +1490,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="text-[11px] text-blue-800 space-y-0.5">
                             <div>{t('pdf_audit.score.axe_desc') || 'Deque automated WCAG 2.1 AA checker'}</div>
                             <div>{axeAudit.totalViolations} violation{axeAudit.totalViolations !== 1 ? 's' : ''}, {axeAudit.totalPasses} passed</div>
+                            <div className="text-[10px] text-blue-600 italic">{t('pdf_audit.score.axe_proxy_note') || 'Runs on a text reconstruction of the extracted content — not the original PDF bytes — so page-structure/landmark rules can pass by construction. Treat as a content-level check, not a PDF/UA validation.'}</div>
                           </div>
                           <details data-help-key="pdf_audit_results_score_how_axe_details" className="mt-1 text-[11px]">
                             <summary className="cursor-pointer text-blue-500 hover:text-blue-800 font-bold">{t('pdf_audit.score.how_axe_scores') || 'How axe-core scores'}</summary>
