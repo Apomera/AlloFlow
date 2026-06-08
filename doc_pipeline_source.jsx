@@ -12325,6 +12325,18 @@ tr { page-break-inside: avoid; }
     // app shows a [Re-run with restoration] button gated on residual > 0.
     const normEq = typeof td.normalizationEquivalentCount === 'number' ? td.normalizationEquivalentCount : 0;
     const residual = typeof td.residualMissingCount === 'number' ? td.residualMissingCount : td.missingTokenCount;
+    // Per-page distribution (when ground-truth page map was available). Shown
+    // as a compact "Page X: N · Page Y: M" line so the user can jump to the
+    // right pages in the source PDF when reviewing in the diff viewer.
+    const _pageCounts = td.missingByPageCounts || {};
+    const _pageEntries = Object.entries(_pageCounts).map(([p, c]) => [Number(p), c]).sort((a, b) => a[0] - b[0]);
+    let pageLine = '';
+    if (_pageEntries.length > 0) {
+      const sampleEntries = _pageEntries.length > 10 ? _pageEntries.slice(0, 10) : _pageEntries;
+      const sample = sampleEntries.map(([p, c]) => `Page ${p}: ${c}`).join(' · ');
+      const more = _pageEntries.length > 10 ? ` <span style="color:#94a3b8">… and ${_pageEntries.length - 10} more page${_pageEntries.length - 10 === 1 ? '' : 's'}</span>` : '';
+      pageLine = `<div style="font-size:12px;color:${labelColor};margin-top:6px;line-height:1.6"><strong>Where:</strong> ${sample}${more}</div>`;
+    }
     return `
   <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Text Content Diff (Original PDF vs Exported PDF)</h2>
   <div style="margin:12px 0;padding:14px 18px;background:${bgColor};border:1px solid ${borderColor};border-radius:8px">
@@ -12334,6 +12346,7 @@ tr { page-break-inside: avoid; }
       Of those, <strong>${normEq}</strong> differ only in hyphenation/whitespace/case (likely cosmetic) and <strong>${residual}</strong> are residual (review).
       ${sev === 'fail' ? '<strong>Coverage below 95% is rare for legitimate cleanup — investigate before distributing.</strong>' : ''}
     </p>
+    ${pageLine}
     <details style="margin-top:8px">
       <summary style="cursor:pointer;font-size:12px;color:${labelColor};font-weight:600">Show ${td.missingTokenCount > 60 ? 'first 60 of ' + td.missingTokenCount : td.missingTokenCount} missing tokens</summary>
       <div style="margin-top:10px;padding:10px;background:#fff;border-radius:6px;border:1px solid #e2e8f0;line-height:2;word-break:break-word">${tokenList}</div>
@@ -14165,6 +14178,28 @@ tr { page-break-inside: avoid; }
             if (_shipNormSet.has(_normTokenForDiff(t))) _normEquivCount++;
           }
           const _residualCount = Math.max(0, _missing.length - _normEquivCount);
+          // Per-page localization. window.__lastGroundTruthPageMap (when present)
+          // gives per-page text from the original extractor. For each missing
+          // token, find the FIRST page containing it. Lets the user jump to
+          // the right spot when reviewing in the existing word-level Diff view.
+          // Skipped entirely if no page map (cheap fallback — coverage % alone).
+          const _missingByPage = {};
+          try {
+            const _pageMap = (typeof window !== 'undefined' && Array.isArray(window.__lastGroundTruthPageMap)) ? window.__lastGroundTruthPageMap : null;
+            if (_pageMap && _pageMap.length > 0 && _missing.length > 0) {
+              const _pagesLc = _pageMap.map(p => (p && p.text) ? String(p.text).toLowerCase() : '');
+              for (const tok of _missing) {
+                const tlc = String(tok).toLowerCase();
+                for (let i = 0; i < _pagesLc.length; i++) {
+                  if (_pagesLc[i] && _pagesLc[i].includes(tlc)) {
+                    const pn = (typeof _pageMap[i].pageNum === 'number') ? _pageMap[i].pageNum : (i + 1);
+                    (_missingByPage[pn] = _missingByPage[pn] || []).push(tok);
+                    break;
+                  }
+                }
+              }
+            }
+          } catch (_pgErr) { /* non-fatal — banner just won't show per-page breakdown */ }
           _roundTrip.textDiff = {
             coveragePct: Math.round(_coverage * 1000) / 10,
             missingTokens: _missing.slice(0, 200),
@@ -14175,6 +14210,17 @@ tr { page-break-inside: avoid; }
             // New surface — observability only, no mutation, no classification
             normalizationEquivalentCount: _normEquivCount,
             residualMissingCount: _residualCount,
+            // Per-page distribution (truncated per page to first 25 tokens so
+            // the report payload stays small on large docs). Empty object when
+            // no ground-truth page map was available.
+            missingByPage: Object.keys(_missingByPage).reduce((acc, pn) => {
+              acc[pn] = _missingByPage[pn].slice(0, 25);
+              return acc;
+            }, {}),
+            missingByPageCounts: Object.keys(_missingByPage).reduce((acc, pn) => {
+              acc[pn] = _missingByPage[pn].length;
+              return acc;
+            }, {}),
           };
           if (_coverage < 0.99) {
             const _msg = 'Text-level verification: ' + _missing.length + ' tokens missing total (' + Math.round(_coverage * 100) + '% coverage). Of those, ' + _normEquivCount + ' differ only in hyphenation/whitespace/case (likely cosmetic) and ' + _residualCount + ' are residual (review). The [Re-run with restoration] action gates on residual count.';

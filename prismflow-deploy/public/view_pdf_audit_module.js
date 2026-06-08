@@ -233,6 +233,7 @@ function PdfAuditView(props) {
   } = props;
   const [resumableBatch, setResumableBatch] = useState(null);
   const [lastTaggedValidation, setLastTaggedValidation] = useState(null);
+  const [tierBStage, setTierBStage] = useState("");
   const _agreementTooltip = (n, total) => {
     const base = t("pdf_audit.agreement.tooltip", { n, total }) || `Flagged by ${n} of ${total} auditors`;
     if (n === total) return base + (t("pdf_audit.agreement.unanimous_suffix") || " (unanimous)");
@@ -2600,8 +2601,14 @@ Return ONLY JSON:
       if (!pdfFixResult || !pdfFixResult.accessibleHtml) return null;
       const sourceText = pdfFixResult.sourceText || typeof window !== "undefined" && (window.__lastGroundTruthPageMap || []).map((p) => p && p.text).filter(Boolean).join("\n\n") || "";
       if (!sourceText) return null;
-      return /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+      const hasDiffInputs = !!(pdfFixResult.sourceText && pdfFixResult.finalText);
+      return /* @__PURE__ */ React.createElement(React.Fragment, null, hasDiffInputs && /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+        setDiffViewOpen(true);
+        const ok = await _ensureDiffLib();
+        if (!ok && typeof addToast === "function") addToast(t("toasts.diff_engine_failed_load_network") || "Diff engine failed to load", "error");
+      }, className: "w-full px-4 py-2 text-left text-xs font-bold text-sky-700 hover:bg-sky-50 transition-colors", title: "Open the word-level diff viewer to see exactly which words are missing or added between the original source and the remediated HTML. No mutations \u2014 read-only." }, "\u{1F4DD}", " Open word-level Diff view (", residual, " residual to review)"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
         try {
+          setTierBStage("word-splice");
           setPdfFixStep && setPdfFixStep("Restoring (1/3): word-level splice\u2026");
           const _normTokenForDiff = (s) => String(s || "").toLowerCase().replace(/(\p{L})[-­](\p{L})/gu, "$1$2").replace(/­/g, "").replace(/\s+/g, "");
           const shipNorm = /* @__PURE__ */ new Set();
@@ -2612,6 +2619,7 @@ Return ONLY JSON:
           if (residualTokens.length === 0) {
             addToast("No residual tokens to restore (all cosmetic). Nothing to do.", "info");
             setPdfFixStep && setPdfFixStep("");
+            setTierBStage("");
             return;
           }
           const missingEntries = residualTokens.map((w) => ({ word: w }));
@@ -2629,6 +2637,7 @@ Return ONLY JSON:
             warnLog("[TierB] applyWordRestoration failed: " + (e1 && e1.message));
           }
           if (allUnplaceable.length > 0 && _docPipeline && _docPipeline.restoreSentencesDeterministic) {
+            setTierBStage("sentence-anchor");
             setPdfFixStep && setPdfFixStep("Restoring (2/3): sentence-anchor + orphan appendix\u2026");
             try {
               const r3 = _docPipeline.restoreSentencesDeterministic(html, allUnplaceable, sourceText);
@@ -2642,7 +2651,8 @@ Return ONLY JSON:
             }
           }
           setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: html, htmlChars: html.length } : prev);
-          setPdfFixStep && setPdfFixStep("Re-tagging PDF with restored content\u2026");
+          setTierBStage("re-tag");
+          setPdfFixStep && setPdfFixStep("Restoring (3/3): re-tagging PDF with restored content\u2026");
           try {
             const _freshFixResult = { ...pdfFixResult, accessibleHtml: html, htmlChars: html.length };
             const _bytes = pendingPdfBase64 ? Uint8Array.from(atob(pendingPdfBase64.includes(",") ? pendingPdfBase64.split(",")[1] : pendingPdfBase64), (c) => c.charCodeAt(0)) : null;
@@ -2663,12 +2673,14 @@ Return ONLY JSON:
             addToast(`Restored ${allRestored.length} inline; re-tag failed \u2014 try the Tagged PDF button to regenerate.`, "info");
           }
           setPdfFixStep && setPdfFixStep("");
+          setTierBStage("");
         } catch (e) {
           warnLog("[TierB] restoration handler threw: " + (e && e.message));
           addToast("Restoration failed: " + (e && e.message ? e.message : "unknown error"), "error");
           setPdfFixStep && setPdfFixStep("");
+          setTierBStage("");
         }
-      }, className: "w-full px-4 py-2.5 text-left text-xs font-bold text-amber-700 hover:bg-amber-50 transition-colors", title: `Splices ${residual} residual missing source word${residual === 1 ? "" : "s"} back into the document via fuzzy context matching, then re-tags the PDF. Words that cannot be placed inline are preserved in a Content Recovery section. NEVER silent: shows residual count BEFORE and AFTER so you can see if it helped.` }, "\u21BB", " Re-run with restoration (", residual, " residual)");
+      }, disabled: !!tierBStage, className: "w-full px-4 py-2.5 text-left text-xs font-bold text-amber-700 hover:bg-amber-50 transition-colors disabled:opacity-50", title: `Splices ${residual} residual missing source word${residual === 1 ? "" : "s"} back into the document via fuzzy context matching, then re-tags the PDF. Words that cannot be placed inline are preserved in a Content Recovery section. NEVER silent: shows residual count BEFORE and AFTER so you can see if it helped.` }, tierBStage === "word-splice" ? "\u21BB Restoring (1/3): word-level splice\u2026" : tierBStage === "sentence-anchor" ? "\u21BB Restoring (2/3): sentence-anchor\u2026" : tierBStage === "re-tag" ? "\u21BB Restoring (3/3): re-tagging PDF\u2026" : `\u21BB Re-run with restoration (${residual} residual)`));
     })(), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const _rptAi = pdfFixResult.afterScore;
       const _rptAxe = pdfFixResult.axeAudit?.score ?? null;

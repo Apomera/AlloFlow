@@ -109,6 +109,10 @@ function PdfAuditView(props) {
   // Tagged PDF download flow. Used by the Download Accessibility Report
   // button to assemble an Adobe-style compliance report.
   const [lastTaggedValidation, setLastTaggedValidation] = useState(null);
+  // Per-stage status for the Tier B restoration handler. Empty when idle;
+  // 'word-splice' / 'sentence-anchor' / 're-tag' while running so the button
+  // can show honest progress instead of a single "Restoring..." label.
+  const [tierBStage, setTierBStage] = useState('');
   // Tier 6 helper: build a localized auditor-agreement tooltip.
   const _agreementTooltip = (n, total) => {
     const base = t('pdf_audit.agreement.tooltip', { n, total }) || `Flagged by ${n} of ${total} auditors`;
@@ -4071,12 +4075,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               🏛️ Adobe-style A11y Report{lastTaggedValidation ? ` (${(lastTaggedValidation.pdfUa1Checks?.summary?.conformancePct ?? 0)}% conformance)` : ''}
                             </button>
                             {/* Tier B — Re-run with restoration. Appears only when the post-export
-                                text-diff found RESIDUAL missing tokens (not just normalization-
-                                equivalent cosmetic ones). Calls the existing applyWordRestoration
-                                + restoreSentencesDeterministic helpers on the live HTML, then
-                                regenerates the tagged PDF so a fresh textDiff quantifies the result.
-                                Honest UX: shows BEFORE and AFTER residual counts so the user can see
-                                if the restoration actually helped. Hidden when residual = 0. */}
+                                text-diff found RESIDUAL missing tokens. Sibling "Open Diff view"
+                                button below uses the EXISTING jsdiff word-level viewer (no new
+                                infrastructure) so the user can audit what's missing before deciding
+                                to restore. Aaron's 2026-06-07 reminder: don't duplicate the existing
+                                diff UX — just make it easier to reach. */}
                             {(() => {
                               const td = lastTaggedValidation && lastTaggedValidation.roundTrip && lastTaggedValidation.roundTrip.textDiff;
                               const residual = td && typeof td.residualMissingCount === 'number' ? td.residualMissingCount : null;
@@ -4084,9 +4087,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (!pdfFixResult || !pdfFixResult.accessibleHtml) return null;
                               const sourceText = pdfFixResult.sourceText || (typeof window !== 'undefined' && (window.__lastGroundTruthPageMap || []).map(p => p && p.text).filter(Boolean).join('\n\n')) || '';
                               if (!sourceText) return null;
+                              const hasDiffInputs = !!(pdfFixResult.sourceText && pdfFixResult.finalText);
                               return (
+                                <>
+                                {hasDiffInputs && (
+                                  <button onClick={async () => {
+                                    // Reuse the existing jsdiff word-level diff viewer (same one
+                                    // the integrity banner at L2398 opens). Lets the user audit
+                                    // every dropped/added word against the source BEFORE deciding
+                                    // whether to click [Re-run with restoration] below.
+                                    setDiffViewOpen(true);
+                                    const ok = await _ensureDiffLib();
+                                    if (!ok && typeof addToast === 'function') addToast(t('toasts.diff_engine_failed_load_network') || 'Diff engine failed to load', 'error');
+                                  }} className="w-full px-4 py-2 text-left text-xs font-bold text-sky-700 hover:bg-sky-50 transition-colors" title="Open the word-level diff viewer to see exactly which words are missing or added between the original source and the remediated HTML. No mutations — read-only.">
+                                    {'📝'} Open word-level Diff view ({residual} residual to review)
+                                  </button>
+                                )}
                                 <button onClick={async () => {
                                   try {
+                                    setTierBStage('word-splice');
                                     setPdfFixStep && setPdfFixStep('Restoring (1/3): word-level splice…');
                                     // Re-derive residual tokens from the textDiff. The same normalization
                                     // check used by the surface layer; agree-with-Tier-A floor.
@@ -4096,20 +4115,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     const shipTokens = _normalize(pdfFixResult.finalText || '').split(' ').filter(t => t.length >= 3);
                                     for (const t of shipTokens) shipNorm.add(_normTokenForDiff(t));
                                     const residualTokens = (td.missingTokens || []).filter(w => !shipNorm.has(_normTokenForDiff(w)));
-                                    if (residualTokens.length === 0) { addToast('No residual tokens to restore (all cosmetic). Nothing to do.', 'info'); setPdfFixStep && setPdfFixStep(''); return; }
+                                    if (residualTokens.length === 0) { addToast('No residual tokens to restore (all cosmetic). Nothing to do.', 'info'); setPdfFixStep && setPdfFixStep(''); setTierBStage(''); return; }
                                     const missingEntries = residualTokens.map(w => ({ word: w }));
                                     let html = pdfFixResult.accessibleHtml;
                                     let allRestored = [];
                                     let allUnplaceable = missingEntries.slice();
-                                    // Stage 1: deterministic word splice (pure DOM, no AI)
                                     try {
                                       const r1 = _docPipeline && _docPipeline.applyWordRestoration ? _docPipeline.applyWordRestoration(html, missingEntries, sourceText) : null;
                                       if (r1 && r1.html) { html = r1.html; allRestored = r1.restored || []; allUnplaceable = r1.unplaceable || []; }
                                     } catch (e1) { warnLog('[TierB] applyWordRestoration failed: ' + (e1 && e1.message)); }
-                                    // Stage 2 (skipped): AI retarget is deferred — would add Gemini cost
-                                    // without explicit consent. Keep within scope per the workflow plan.
-                                    // Stage 3: sentence-anchor + orphan appendix (pure DOM)
                                     if (allUnplaceable.length > 0 && _docPipeline && _docPipeline.restoreSentencesDeterministic) {
+                                      setTierBStage('sentence-anchor');
                                       setPdfFixStep && setPdfFixStep('Restoring (2/3): sentence-anchor + orphan appendix…');
                                       try {
                                         const r3 = _docPipeline.restoreSentencesDeterministic(html, allUnplaceable, sourceText);
@@ -4117,8 +4133,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       } catch (e3) { warnLog('[TierB] restoreSentencesDeterministic failed: ' + (e3 && e3.message)); }
                                     }
                                     setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: html, htmlChars: html.length } : prev);
-                                    setPdfFixStep && setPdfFixStep('Re-tagging PDF with restored content…');
-                                    // Re-run createTaggedPdf to get a fresh textDiff (the AFTER number).
+                                    setTierBStage('re-tag');
+                                    setPdfFixStep && setPdfFixStep('Restoring (3/3): re-tagging PDF with restored content…');
                                     try {
                                       const _freshFixResult = { ...pdfFixResult, accessibleHtml: html, htmlChars: html.length };
                                       const _bytes = pendingPdfBase64 ? Uint8Array.from(atob(pendingPdfBase64.includes(',') ? pendingPdfBase64.split(',')[1] : pendingPdfBase64), c => c.charCodeAt(0)) : null;
@@ -4139,14 +4155,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       addToast(`Restored ${allRestored.length} inline; re-tag failed — try the Tagged PDF button to regenerate.`, 'info');
                                     }
                                     setPdfFixStep && setPdfFixStep('');
+                                    setTierBStage('');
                                   } catch (e) {
                                     warnLog('[TierB] restoration handler threw: ' + (e && e.message));
                                     addToast('Restoration failed: ' + (e && e.message ? e.message : 'unknown error'), 'error');
                                     setPdfFixStep && setPdfFixStep('');
+                                    setTierBStage('');
                                   }
-                                }} className="w-full px-4 py-2.5 text-left text-xs font-bold text-amber-700 hover:bg-amber-50 transition-colors" title={`Splices ${residual} residual missing source word${residual === 1 ? '' : 's'} back into the document via fuzzy context matching, then re-tags the PDF. Words that cannot be placed inline are preserved in a Content Recovery section. NEVER silent: shows residual count BEFORE and AFTER so you can see if it helped.`}>
-                                  {'↻'} Re-run with restoration ({residual} residual)
+                                }} disabled={!!tierBStage} className="w-full px-4 py-2.5 text-left text-xs font-bold text-amber-700 hover:bg-amber-50 transition-colors disabled:opacity-50" title={`Splices ${residual} residual missing source word${residual === 1 ? '' : 's'} back into the document via fuzzy context matching, then re-tags the PDF. Words that cannot be placed inline are preserved in a Content Recovery section. NEVER silent: shows residual count BEFORE and AFTER so you can see if it helped.`}>
+                                  {tierBStage === 'word-splice' ? '↻ Restoring (1/3): word-level splice…' :
+                                   tierBStage === 'sentence-anchor' ? '↻ Restoring (2/3): sentence-anchor…' :
+                                   tierBStage === 're-tag' ? '↻ Restoring (3/3): re-tagging PDF…' :
+                                   `↻ Re-run with restoration (${residual} residual)`}
                                 </button>
+                                </>
                               );
                             })()}
                             <button onClick={() => {
