@@ -1762,6 +1762,8 @@
     "ai_backend_config": "AI Backend Configuration",
     "educator_tools_tooltip": "Educator Tools (Symbol Studio, BehaviorLens, Report Writer)",
     "educator_tools_aria": "Educator Tools",
+    "learning_tools_tooltip": "Learning Tools (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)",
+    "learning_tools_aria": "Learning Tools",
     "documents_menu_aria": "Documents menu",
     "open_doc_builder_pdf_aria": "Open Document Builder for PDF",
     "export_slides_tooltip": "Opens Document Builder in Slides mode"

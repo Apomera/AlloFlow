@@ -159,6 +159,7 @@ function HeaderBar(props) {
     setShowClassAnalytics,
     setShowEducatorHub,
     setShowExportMenu,
+    setShowLearningHub,
     setShowNotebook,
     setShowReadThisPage,
     setShowSessionModal,
@@ -623,6 +624,17 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F393}"),
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "Tools")
+  ), isTeacherMode && setShowLearningHub && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setShowLearningHub(true),
+      "data-help-key": "header_learning_hub",
+      className: "px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10",
+      title: t("header.learning_tools_tooltip") || "Learning Tools (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)",
+      "aria-label": t("header.learning_tools_aria") || "Learning Tools"
+    },
+    /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F9E0}"),
+    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "Learn")
   ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-white/10 mx-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "relative" }, isTeacherMode ? !isIndependentMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
     {
