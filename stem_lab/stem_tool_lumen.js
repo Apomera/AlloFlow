@@ -1,9 +1,21 @@
 // ═══════════════════════════════════════════════════════════════════════
-// stem_tool_lumen.js — Lumen (Phase 0: the reactive kernel)
+// stem_tool_lumen.js — Lumen (LIVE; honest evidence-COMMUNICATION instrument)
 // ═══════════════════════════════════════════════════════════════════════
 // A reactive RESEARCH CANVAS where the finding, the chart, and the sentence
 // that explains it are three faces of ONE live object. "The dashboard
-// monitors; Lumen argues." Full design: docs/lumen_design.md.
+// monitors; Lumen ARGUES." Full design: docs/lumen_design.md.
+//
+// IDENTITY (do not drift): Lumen turns ANY dataset — research, classroom,
+// lab, survey, your own — into an honest, provenance-bound, FERPA-safe
+// finding you can hand to a person. It is the COMPLEMENT of the Teacher
+// Dashboard (which monitors app student data), NEVER a second progress-
+// monitor. It is constitutionally NOT a goal/aimline/RTI/decision-rule
+// tool: predictY refuses extrapolation, and "a series is a CATEGORY, never
+// a person" is enforced (multi-subject is out of scope by design). Do NOT
+// add aimline / decision-rule / RTI-tier features — that lane is owned by
+// student_analytics_module.js + BehaviorLens and would breach Lumen's
+// de-identified-by-construction boundary. (This file is a full, live,
+// hub-launched tool — NOT a "Phase 0 kernel"; that header was stale.)
 //
 // PHASE 0 ships the pure, DOM-free kernel ONLY (design §11 — "no charts yet"):
 //   - certaintyGrammar.encode(level, palette)  — the single source of the
@@ -2090,10 +2102,13 @@
     window.StemLab.registerTool('lumen', {
       icon: '💡', // 💡
       label: 'Lumen',
-      desc: 'A reactive research canvas: collect, analyze & present as one honest, provenance-bound object.',
+      desc: 'Turn any dataset into an honest, provenance-bound finding you can defend — chart and claim as one object.',
       color: 'amber',
       category: 'data',
-      ready: false, // Phase 0: kernel only; not yet a usable surface
+      // LIVE + fully usable. ready:false keeps it OUT of the STEM Lab tile grid ON PURPOSE — Lumen is
+      // plugin-only (_pluginOnlyTools.lumen), surfaced via the Educator Hub launcher card, not the grid.
+      // (This is NOT "Phase 0 / not yet usable" — that old comment was stale.)
+      ready: false,
       render: function (ctx) {
         var React = ctx && ctx.React;
         var h = React && React.createElement;
@@ -2124,7 +2139,10 @@
           };
           // At the default L1 ceiling NO callGemini fires — the trend is pure math.
           var xLabel = (d.xLabel && String(d.xLabel).trim()) || 'Week';
-          var comp = makeCompendium(d.variable || 'WCPM', d.unit || 'words/min', { measure: d.measure || 'ORF-WCPM', grade: d.benchGrade, seasonWindow: d.benchSeason, variable2: d.variable2, unit2: d.unit2, seriesLabels: d.seriesLabels, xLabel: xLabel });
+          // Neutral, domain-general defaults — Lumen is an honest data-argument tool for ANY data
+          // (research, classroom, lab, survey…), not a reading-fluency tracker. The reading-fluency
+          // frame is one example the user opts into via the Setup row, never the first impression.
+          var comp = makeCompendium(d.variable || 'Measure', d.unit || 'units', { measure: d.measure || null, grade: d.benchGrade, seasonWindow: d.benchSeason, variable2: d.variable2, unit2: d.unit2, seriesLabels: d.seriesLabels, xLabel: xLabel });
           obs.forEach(function (o) { addObservation(comp, o); });
           var claim = obs.length ? deriveTrendClaim(comp, {}) : null;
           // Scatter argues an ASSOCIATION claim (2nd variable y2 vs primary y), not the trend. activeClaim
@@ -2295,12 +2313,12 @@
           // box closed); it vanishes the moment data or an import is present.
           if (!obs.length && !d.importPreview && !d.showPaste) {
             kids.push(h('div', { key: 'onboard', className: 'mt-3 p-4 rounded-xl border border-amber-300 bg-amber-50/70' },
-              h('div', { className: 'text-sm font-semibold text-amber-900' }, 'Turn progress-monitoring data into an honest, defensible chart + finding.'),
+              h('div', { className: 'text-sm font-semibold text-amber-900' }, 'Turn any dataset into an honest, defensible finding you can hand to a person.'),
               h('p', { className: 'mt-1 text-xs text-slate-600' }, 'Lumen charts YOUR data and writes a plain-language finding from the numbers only — it never invents certainty or a score.'),
               h('ol', { className: 'mt-2 text-xs text-slate-700 list-decimal ml-5 space-y-1' },
-                h('li', { key: 's1' }, h('b', null, 'Name your measure'), ' in the Setup row (e.g. WCPM / Week, or accuracy % / Session).'),
+                h('li', { key: 's1' }, h('b', null, 'Name your measure'), ' in the Setup row (anything — plant height / Day, survey score / Round, words-per-minute / Week).'),
                 h('li', { key: 's2' }, h('b', null, 'Add data'), ' — type points, paste a table, or import a CSV / Excel / JSON file.'),
-                h('li', { key: 's3' }, h('b', null, 'Read the trend'), ' — a chart + finding appear at 3+ points; export it for the IEP team.')),
+                h('li', { key: 's3' }, h('b', null, 'Read the finding'), ' — a chart + plain-language finding appear at 3+ points; export an honest artifact to hand to a colleague, a parent, a team, or a reviewer.')),
               h('div', { className: 'mt-3 flex gap-2 flex-wrap' },
                 h('button', { key: 'obSample', className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () { loadExample(REYNA_SAMPLE.slice(), 'Loaded the Reyna ORF example — synthetic practice data, not a real student: 10 weekly probes across two phases.'); } }, 'Try a sample'),
                 h('button', { key: 'obPaste', className: 'px-3 py-1 text-sm rounded border border-amber-400 text-amber-800 hover:bg-amber-100', onClick: function () { upd('showPaste', true); announce('Paste box opened.'); } }, '⎘ Paste data'),
@@ -3089,7 +3107,7 @@
                 h('span', null, 'I can explain why this evidence configuration yields this evidentiary state.')
               ),
               iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-              h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).')
+              h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.')
             );
           })());
 

@@ -4,7 +4,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -42,7 +42,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -66,9 +66,9 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Over 10 check-ins, WCPM went up — about 2.7 words/min a week. With only 10 points the true rate could be roughly 2.1 to 3.2 a week, so read this as a direction, not an exact number.</p>
+<p class="text-sm text-slate-800 mt-1">Over 10 check-ins, Measure went up — about 2.7 units a week. With only 10 points the true rate could be roughly 2.1 to 3.2 a week, so read this as a direction, not an exact number.</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">39.6</text>
@@ -219,7 +219,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -229,7 +229,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -267,7 +267,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -291,9 +291,9 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+<p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">39.6</text>
@@ -444,7 +444,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -454,7 +454,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -492,7 +492,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -516,9 +516,9 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). (Ordinary least-squares trend; the interval is a 95% t-interval on the slope. Descriptive — not a percentile, score, or prediction.)</p>
+<p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). (Ordinary least-squares trend; the interval is a 95% t-interval on the slope. Descriptive — not a percentile, score, or prediction.)</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">39.6</text>
@@ -697,7 +697,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -707,7 +707,7 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -745,7 +745,7 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -769,9 +769,9 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+<p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2. External benchmark (not this student): TEST · 2099 · G4 · winter · 50th %ile · synthetic = 75 words/min.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2. External benchmark (not this student): TEST · 2099 · G4 · winter · 50th %ile · synthetic = 75 words/min.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">38.7</text>
@@ -932,7 +932,7 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -942,7 +942,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -980,7 +980,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -1004,9 +1004,9 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+<p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Bar chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Bar chart. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">0</text>
@@ -1133,7 +1133,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -1143,7 +1143,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1181,7 +1181,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -1205,9 +1205,9 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+<p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Box plot (per phase). Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Box plot (per phase). Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">39.6</text>
@@ -1307,7 +1307,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -1317,7 +1317,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1355,7 +1355,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -1379,9 +1379,9 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+<p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Trend chart. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">39.6</text>
@@ -1470,7 +1470,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <thead>
 <tr>
 <th class="border px-2 py-0.5 text-left bg-slate-50">Week (x)</th>
-<th class="border px-2 py-0.5 text-left bg-slate-50">WCPM (y)</th>
+<th class="border px-2 py-0.5 text-left bg-slate-50">Measure (y)</th>
 <th class="border px-2 py-0.5 text-left bg-slate-50">Phase</th>
 <th class="border px-2 py-0.5 text-left bg-slate-50">Level</th>
 </tr>
@@ -1607,7 +1607,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -1617,7 +1617,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1655,7 +1655,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -1679,9 +1679,9 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+<p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Dot plot. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Dot plot. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">39.6</text>
@@ -1798,7 +1798,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -1808,7 +1808,7 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1835,15 +1835,15 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Grouped bar</button>
 </div>
 <div class="mt-3 p-4 rounded-xl border border-amber-300 bg-amber-50/70">
-<div class="text-sm font-semibold text-amber-900">Turn progress-monitoring data into an honest, defensible chart + finding.</div>
+<div class="text-sm font-semibold text-amber-900">Turn any dataset into an honest, defensible finding you can hand to a person.</div>
 <p class="mt-1 text-xs text-slate-600">Lumen charts YOUR data and writes a plain-language finding from the numbers only — it never invents certainty or a score.</p>
 <ol class="mt-2 text-xs text-slate-700 list-decimal ml-5 space-y-1">
 <li>
-<b>Name your measure</b> in the Setup row (e.g. WCPM / Week, or accuracy % / Session).</li>
+<b>Name your measure</b> in the Setup row (anything — plant height / Day, survey score / Round, words-per-minute / Week).</li>
 <li>
 <b>Add data</b> — type points, paste a table, or import a CSV / Excel / JSON file.</li>
 <li>
-<b>Read the trend</b> — a chart + finding appear at 3+ points; export it for the IEP team.</li>
+<b>Read the finding</b> — a chart + plain-language finding appear at 3+ points; export an honest artifact to hand to a colleague, a parent, a team, or a reviewer.</li>
 </ol>
 <div class="mt-3 flex gap-2 flex-wrap">
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">Try a sample</button>
@@ -1864,7 +1864,7 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -1930,7 +1930,7 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -1940,7 +1940,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1978,7 +1978,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -2000,7 +2000,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 <div class="mt-3 p-2 rounded bg-white border border-slate-200">
 <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
 <span aria-hidden="true" style="font-size:14px">◈</span>
-<span>Derived (math) · WCPM mean per phase × series</span>
+<span>Derived (math) · Measure mean per phase × series</span>
 </div>
 <div class="mt-1 flex items-center gap-3 flex-wrap text-xs text-slate-700">
 <span class="flex items-center gap-1">
@@ -2050,7 +2050,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 <thead>
 <tr>
 <th class="border px-2 py-0.5 text-left bg-slate-50">Week (x)</th>
-<th class="border px-2 py-0.5 text-left bg-slate-50">WCPM (y)</th>
+<th class="border px-2 py-0.5 text-left bg-slate-50">Measure (y)</th>
 <th class="border px-2 py-0.5 text-left bg-slate-50">Series</th>
 <th class="border px-2 py-0.5 text-left bg-slate-50">Phase</th>
 <th class="border px-2 py-0.5 text-left bg-slate-50">Level</th>
@@ -2230,7 +2230,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -2240,7 +2240,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2278,7 +2278,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -2302,9 +2302,9 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+<p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Histogram (distribution of values). Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2. External benchmark (not this student): TEST · 2099 · G4 · winter · 50th %ile · synthetic = 75 words/min.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Histogram (distribution of values). Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2. External benchmark (not this student): TEST · 2099 · G4 · winter · 50th %ile · synthetic = 75 words/min.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">0</text>
@@ -2415,7 +2415,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -2425,7 +2425,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2463,7 +2463,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -2487,9 +2487,9 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+<p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Histogram (distribution of values). Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Histogram (distribution of values). Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">0</text>
@@ -2590,7 +2590,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -2600,7 +2600,7 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2638,7 +2638,7 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <label class="text-xs text-slate-600 flex flex-col">Series (category)<input type="text" class="w-28 px-2 py-1 border rounded" value=""/>
 </label>
@@ -2668,15 +2668,15 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 <ul class="mt-1 text-sm">
 <li class="flex items-start gap-2">
 <span aria-hidden="true" style="color:#1d4ed8;font-size:14px;line-height:1">●</span>
-<span>Derived (math): Cold read WCPM rose ~3.19 words/min per step (95% interval +2.95 to +3.43; n=8).</span>
+<span>Derived (math): Cold read Measure rose ~3.19 units per step (95% interval +2.95 to +3.43; n=8).</span>
 </li>
 <li class="flex items-start gap-2">
 <span aria-hidden="true" style="color:#be123c;font-size:14px;line-height:1">●</span>
-<span>Derived (math): Practiced WCPM rose ~3.5 words/min per step (95% interval +3.16 to +3.84; n=8).</span>
+<span>Derived (math): Practiced Measure rose ~3.5 units per step (95% interval +3.16 to +3.84; n=8).</span>
 </li>
 </ul>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Multi-series line (2 series, same measure on one axis). Derived (math): Cold read WCPM rose ~3.19 words/min per step (95% interval +2.95 to +3.43; n=8). Derived (math): Practiced WCPM rose ~3.5 words/min per step (95% interval +3.16 to +3.84; n=8).">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Multi-series line (2 series, same measure on one axis). Derived (math): Cold read Measure rose ~3.19 units per step (95% interval +2.95 to +3.43; n=8). Derived (math): Practiced Measure rose ~3.5 units per step (95% interval +3.16 to +3.84; n=8).">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">36.4</text>
@@ -2797,7 +2797,7 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -2807,7 +2807,7 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2845,7 +2845,7 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -2918,7 +2918,7 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -2938,7 +2938,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2976,7 +2976,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <label class="text-xs text-slate-600 flex flex-col">Comprehension (y2)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
@@ -3003,9 +3003,9 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM and Comprehension move together (Pearson r=+1; 95% interval +0.99 to +1; n=10). This is association, not causation; an unmeasured third factor may drive both.</p>
+<p class="text-sm text-slate-800 mt-1">Derived (math): Measure and Comprehension move together (Pearson r=+1; 95% interval +0.99 to +1; n=10). This is association, not causation; an unmeasured third factor may drive both.</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Scatter (association). Derived (math): WCPM and Comprehension move together (Pearson r=+1; 95% interval +0.99 to +1; n=10). This is association, not causation; an unmeasured third factor may drive both.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Scatter (association). Derived (math): Measure and Comprehension move together (Pearson r=+1; 95% interval +0.99 to +1; n=10). This is association, not causation; an unmeasured third factor may drive both.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">52.6</text>
@@ -3097,7 +3097,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -3107,7 +3107,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -3145,7 +3145,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <label class="text-xs text-slate-600 flex flex-col">Comprehension (y2)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
@@ -3221,7 +3221,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -3231,7 +3231,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -3269,7 +3269,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -3293,9 +3293,9 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+<p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Slope (per-phase trends). Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). Per-phase fitted slopes — baseline: ~1.3 per step; tier2: ~2.8 per step. These are descriptive per-phase trends; a steeper slope after a phase change is not proof the change caused it.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Slope (per-phase trends). Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). Per-phase fitted slopes — baseline: ~1.3 per step; tier2: ~2.8 per step. These are descriptive per-phase trends; a steeper slope after a phase change is not proof the change caused it.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">39.6</text>
@@ -3418,7 +3418,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -3428,7 +3428,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div role="note" class="mt-2 px-3 py-2 rounded-lg text-sm font-semibold flex flex-wrap items-center gap-2" style="background:#6d28d9;color:#ffffff">
 <span>⚗ Synthetic practice data — NOT a real student.</span>
@@ -3470,7 +3470,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -3495,10 +3495,10 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Practice example — not a real student. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+<p class="text-sm text-slate-800 mt-1">Practice example — not a real student. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 <p class="mt-1 text-[11px] font-semibold" style="color:#6d28d9">◇ Synthetic practice data — this finding includes fabricated points; not a defensible measurement.</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Synthetic practice data — not a real student. Bar chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Synthetic practice data — not a real student. Bar chart. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">0</text>
@@ -3626,7 +3626,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -3636,7 +3636,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap">
 <span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">WCPM (words/min)</span>
+<span class="text-[11px] text-slate-500">Measure (units)</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -3674,7 +3674,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 <div class="mt-3 flex items-end gap-2 flex-wrap">
 <label class="text-xs text-slate-600 flex flex-col">Week (x)<input type="number" class="w-20 px-2 py-1 border rounded" value=""/>
 </label>
-<label class="text-xs text-slate-600 flex flex-col">WCPM (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
+<label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
@@ -3812,7 +3812,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 <input type="checkbox"/>
 <span>I can explain why this evidence configuration yields this evidentiary state.</span>
 </label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).</p>
+<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
