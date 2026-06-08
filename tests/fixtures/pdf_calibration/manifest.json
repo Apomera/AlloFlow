@@ -1,0 +1,4 @@
+{
+  "_README": "See README.md. Add one entry per scored PDF. Required per entry: expertScore (0-100) + alloflowAiScore + alloflowAxeScore. The calibration harness activates once >=3 entries have all three.",
+  "entries": []
+}
