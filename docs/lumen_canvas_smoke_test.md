@@ -1,0 +1,71 @@
+# Lumen — real-Canvas smoke test
+
+Run this in the **deployed Gemini Canvas surface** (and/or prismflow-911fe.web.app)
+after the next deploy clears. SSR golden tests pin the render; this checks the
+*live* surface — load, interaction, AI calls, exports, and the 2026-06-08
+repositioning. Tick each box; note anything that doesn't match the expected result.
+
+Lumen is `_pluginOnlyTools` + `ready:false` (out of the STEM Lab grid), so the
+**Educator Hub 💡 Lumen card is the entry point**. ~10 minutes end to end.
+
+---
+
+## 0. Entry + de-drifted first impression
+- [ ] Open **Educator Tools (Educator Hub) → 💡 Lumen**. It opens the STEM Lab on Lumen.
+      - *If the card is missing:* the source→build pipeline dropped it — rebuild via
+        `node _build_view_educator_hub_modal_module.js` (see project memory).
+- [ ] Card copy reads the **general** pitch ("turn any dataset … into a defensible,
+      honestly-marked finding"), **not** "progress-monitoring … for IEP teams".
+- [ ] First paint of the empty canvas reads **`Measure (units)`** (neutral), **not** "WCPM (words/min)".
+- [ ] The empty canvas is **calm**: the guided 3-step onboarding shows; the dark
+      Evidence-Inquiry widget is **absent** (it's gated to ≥3 points + a disclosure).
+
+## 1. Data in — all five paths
+- [ ] **Type** 3+ points (x + Measure). At n≥3 a chart + plain-language finding appears; at n<3 a "not enough data" refusal card (no fake line).
+- [ ] **Try a sample** → loads the **plant-growth** example (height/cm over weeks, before/after fertilizer) — not reading probes.
+- [ ] **⎘ Paste data** → paste CSV/TSV/JSON text → column-mapper preview → Confirm binds.
+- [ ] **⇪ Import file** → a `.csv` / `.json` / `.xlsx` / `.ods` → mapper → bind.
+- [ ] **⚗ Generate practice data** → pick a scenario (improving/flat/variable/declining/responsive) → data appears with the **violet synthetic banner**; **↻ Re-roll** gives a fresh draw.
+
+## 2. Editable variables (Setup row)
+- [ ] Change **Measure / Unit / X-axis label** — the header, entry field, chart axes, finding sentence, and data-table relabel **live**.
+
+## 3. The 9 chart types
+- [ ] Cycle the **Chart:** switcher — trend, bar, dot, box, histogram, scatter, slope, multi-line, grouped-bar all render without error.
+- [ ] Trend (default): per-point marks burn **● "Observed"** (not the L1 ◈); the trend *line* + uncertainty band are the L1 object.
+
+## 4. Audience faces (now domain-general)
+- [ ] **Audience:** shows **Working / Formal / Plain language** (hover tooltips name the general use: a decision/IEP/grant reviewer; a parent/student/public).
+- [ ] **Plain language** keeps the **n and the interval** and says "a direction, not an exact number" — it never reads more confident than the data.
+
+## 5. AI ladder (honesty floor)
+- [ ] Default **L1** = **zero** AI calls (watch the network/AI Diagnostics — nothing fires until you raise the dial).
+- [ ] L2/L3 fire only on demand; every AI output is lint/validate-gated and marked; the export footer prints the **max epistemic level**.
+
+## 6. Synthetic-data guards
+- [ ] With generated (or sample) data loaded: the **banner** + an in-SVG **"PRACTICE DATA"** watermark are present; per-point marks burn **◇ "Synthetic (practice)"**.
+- [ ] Set Audience = **Formal** and export → **blocked** ("cannot be exported as a defensible formal document"); no sign-off clears it.
+- [ ] Working/Plain export proceeds but is **watermarked** (HTML title/h1/footer; CSV `# SYNTHETIC` + `-SYNTHETIC` filename + per-row "Synthetic (practice)").
+
+## 7. Exports + FERPA (real data)
+- [ ] **Brief (HTML)** with the FERPA box **off** → finding-only (no per-row table; `-summary` filename). Tick **Include identifiable data** → a **confirm** dialog, then the full table + `-CONFIDENTIAL` filename.
+- [ ] **Data (CSV)** off → aggregate `metric,value` only; on → confirm + identifiable rows (per-row reads **"Observed"**, not "Derived (math)") + `-CONFIDENTIAL`.
+
+## 8. "Bring in an AlloFlow report" (the complement feature)
+- [ ] Export a **single student's Fluency CSV** from the Teacher Dashboard, then **Import** it into Lumen → green **"📊 Recognized an AlloFlow fluency export — re-projecting honestly"** note; x auto-maps to **row order**, y to WCPM, y2 to Accuracy.
+- [ ] Import the **RTI roster CSV** (`RTI_Report_CONFIDENTIAL`, has a Student/Name column) → **refused** with a rose note pointing back to the dashboard (never imports per-student records).
+
+## 9. Evidence-Inquiry sandbox
+- [ ] With ≥3 points, a **"🔬 Learn: should I trust a trend? sandbox"** toggle appears (default closed). Open it → it's clearly a **what-if sandbox** ("not your data", "What-if AI level (not your live dial)").
+
+## 10. Benchmark workspace (ships empty by design)
+- [ ] **▣ Open benchmark setup** → the curated-norm picker **refuses** honestly ("no verified … cell") because the norm spine ships empty (release blocker = human byte-transcription per `docs/lumen_norm_spine_worksheet.md`). No fabricated benchmark line ever draws.
+
+---
+
+### Result
+- [ ] All boxes ticked → Lumen is verified live.
+- [ ] Note any mismatch here (surface, browser, repro steps) for follow-up.
+
+*Pairs with the SSR golden suite (`npm test` → `tests/lumen_*`) which pins the
+render structure; this doc covers what only the live surface can show.*

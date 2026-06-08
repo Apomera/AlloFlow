@@ -3089,7 +3089,11 @@
                     grade: grade, season: season, percentile: 50, value: sel.value,
                     source: spine.source, year: spine.year, population: spine.population, table: spine.edition,
                     locator: spine.locator, citation: spine.citation,
-                    verified: spine.reviewedOn != null, retrievedBy: 'curated', reviewedOn: spine.reviewedOn
+                    // verified ONLY when the WHOLE spine validates as 'ready' (cells present + reviewedOn
+                    // set + every value a positive number with p25<=p50) — not a bare reviewedOn. A stray
+                    // reviewedOn or a sibling p25>p50 typo can't stamp [verified]. (Within-bounds accuracy
+                    // is still the human byte-transcription's job — the release blocker.)
+                    verified: validateNormSpine(spine).status === 'ready', retrievedBy: 'curated', reviewedOn: spine.reviewedOn
                   }, comp);
                   nref.id = 's' + (sourceRefs.length + 1);
                   upd('sourceRefs', sourceRefs.concat([nref])); upd('benchMsg', '');
