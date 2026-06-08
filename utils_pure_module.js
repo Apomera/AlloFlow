@@ -229,16 +229,24 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5) =>
       if (response.ok) {
         return response;
       }
-      if (response.status !== 429 && response.status !== 503 && response.status !== 401) {
+      if (response.status !== 429 && response.status !== 503) {
         let errorMessage = `HTTP Error: ${response.status} ${response.statusText}`;
         if (response.status === 403) {
           errorMessage = `${response.status} Forbidden: API access denied. Check your API key and permissions.`;
+        } else if (response.status === 401) {
+          // 401 = bad/expired/missing credentials. Retrying with the identical key cannot
+          // succeed; the old code lumped 401 in with 429/503 and retried it through the full
+          // exponential backoff (~31s of dead-wait per call) before finally failing — the
+          // "freezes then fails" symptom of a misconfigured key. Fail fast so the caller can
+          // surface an honest auth error immediately.
+          errorMessage = `401 Unauthorized: API authentication failed. Check your API key.`;
         }
         const error = new Error(errorMessage);
         error.isFatal = true;
+        if (response.status === 401) error.isAuth = true;
         throw error;
       }
-      if (response.status === 401 || response.status === 429 || response.status === 503) {
+      if (response.status === 429 || response.status === 503) {
         warnLog(`⚠️ Transient API error ${response.status}, retrying (${i+1}/${maxRetries})...`);
         if (i === maxRetries - 1) {
           throw new Error(`HTTP ${response.status} — Failed to fetch ${url} after ${maxRetries} retries.`);

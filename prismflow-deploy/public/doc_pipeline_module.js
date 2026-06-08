@@ -34,6 +34,18 @@ var createDocPipeline = function(deps) {
         warnLog('[Retry] ' + (label || 'API call') + ' failed (RECITATION) — skipping retry (content filter is deterministic)');
         throw err;
       }
+      // Skip retry for permanent failures — bad/expired key (auth), daily quota exhausted,
+      // or a misconfigured model. Retrying re-pays a whole invocation + backoff window for
+      // an error that cannot change between calls; previously these fell through and doubled
+      // the dead-wait on every AI call (the "freezes then fails" symptom on a misconfigured
+      // key). Flags are set by gemini_api _classifyGeminiError; the message is checked too in
+      // case the error was re-wrapped and lost the flags.
+      var isPermanent = err && (err.isAuth || err.isQuota || err.isConfig ||
+        (err.message && /API_(AUTH_FAILED|QUOTA_EXHAUSTED|MODEL_NOT_FOUND)/.test(err.message)));
+      if (isPermanent) {
+        warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (err.message || 'permanent error') + ') — skipping retry (auth/quota/config errors do not change between calls)');
+        throw err;
+      }
       warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (isTimeout ? 'timeout' : err.message) + ') — retrying once...');
       return _withTimeout(fn(), retryMs || initialMs, label + ' (retry)');
     });
@@ -11213,6 +11225,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             break;
           }
 
+          // Plateau detection (below) compares THIS pass against the PREVIOUS best — capture
+          // it BEFORE we overwrite best* here. Otherwise the comparison is new-vs-itself
+          // (always "no improvement") and the loop breaks after a single pass regardless of
+          // the configured pass count (default 8, slider up to 15). new-vs-prev mirrors the
+          // correct pattern in runAutonomousRemediation.
+          const prevBestAiScore = bestAiScore;
+          const prevBestAxeViolations = bestAxeViolations;
           // Update best known state
           if (reVerify) verification = reVerify;
           if (reAxe) axeResults = reAxe;
@@ -11240,11 +11259,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             break;
           }
 
-          // Plateau detection with statistical significance threshold
-          const axeImproved = newAxeViolations < bestAxeViolations;
+          // Plateau detection with statistical significance threshold — compare against the
+          // PREVIOUS best (captured before the best* update above), not the just-updated value.
+          const axeImproved = newAxeViolations < prevBestAxeViolations;
           // Only count AI improvement if it exceeds 1 SEM (statistically meaningful)
           const minDetectable = Math.max(2, Math.round(reSEM * 1.5));
-          const aiImproved = newAiScore > bestAiScore + minDetectable;
+          const aiImproved = newAiScore > prevBestAiScore + minDetectable;
           if (!axeImproved && !aiImproved && fixPass > 0) {
             warnLog(`[Auto-fix] Plateau: AI ${newAiScore}, axe ${newAxeViolations} — no improvement, stopping`);
             break;
