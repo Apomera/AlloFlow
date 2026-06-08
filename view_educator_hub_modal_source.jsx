@@ -21,6 +21,11 @@ function EducatorHubModal(props) {
     // Dynamic Assessment Studio entry — added May 2026. Optional so legacy
     // hosts that haven't wired the setter still render the rest of the hub.
     setIsDynamicAssessmentOpen = (() => {}),
+    // Lumen launcher — opens the STEM Lab on the Lumen tool (Lumen is plugin-only,
+    // so this card is its primary UI entry point). Optional defaults so a host that
+    // hasn't wired the STEM-Lab setters still renders the rest of the hub.
+    setShowStemLab = (() => {}),
+    setStemLabTool = (() => {}),
   } = props;
 
   return (
@@ -60,6 +65,13 @@ function EducatorHubModal(props) {
                 <div>
                   <h3 className="font-bold text-blue-800">{t('educator_hub.dynamic_assessment_title') || 'Dynamic Assessment'}</h3>
                   <p className="text-xs text-blue-600 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Vygotsky/Feuerstein/Lidz test-teach-retest probes with graduated prompt ladders, modifiability scoring, IEP goals, accommodations, and family/teacher handoffs'}</p>
+                </div>
+              </button>
+              <button data-help-key="educator_hub_lumen_card" onClick={() => { setShowEducatorHub(false); setStemLabTool('lumen'); setShowStemLab(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">💡</span>
+                <div>
+                  <h3 className="font-bold text-amber-800">{t('educator_hub.lumen_title') || 'Lumen'}</h3>
+                  <p className="text-xs text-amber-600 mt-1">{t('educator_hub.lumen_desc') || 'Turn any dataset — research, classroom, or your own — into a defensible, honestly-marked finding: the chart and the claim are one object, uncertainty is kept, and any AI involvement is labeled. The honest way to present and argue from data.'}</p>
                 </div>
               </button>
               <button data-help-key="educator_hub_document_hub_card" onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
