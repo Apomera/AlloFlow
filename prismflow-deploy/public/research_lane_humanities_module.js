@@ -4929,6 +4929,7 @@
       setJournal(function(prev) {
         return Object.assign({}, prev, { activeStage: toStage });
       });
+      announce((t("humanities.sr_now_on") || "Now on: ") + (STAGE_BY_KEY[toStage] && STAGE_BY_KEY[toStage].label || toStage), "polite");
     }, [activeStage]);
     var commitLoopBack = useCallback(function(payload) {
       var fromStage = loopback.fromStage, toStage = loopback.toStage;

@@ -45,21 +45,32 @@
  *     authoring-the-loop and running-the-retest (retestRunId still null) so
  *     AI can surface adjacent modes without confounding retest interpretation.
  *
- *   • No AI on plan_test OR build_test. Plan-stage AI would design the test
- *     for you; Build-stage AI would propose materials. Both stages ship with
- *     no_ai_notes that name the specific failure mode prevented.
+ *   • No AI on build_test (Build-stage AI would propose materials for you).
+ *     plan_test ships exactly ONE AI touchpoint — tradeoff_inverter, the
+ *     antagonist mirror (cap 1, highest harvest-risk) — and nothing else.
+ *     The remaining no-AI stages carry no_ai_notes naming the failure mode
+ *     each one prevents.
  *
- *   • Tier-downgrades on existing hard constraints LOCKED once build_test
- *     entered (closes constraint-fitting fallacy attack).
+ *   • Constraint-fitting-fallacy guard (PARTIAL): ConstraintRow implements a
+ *     tier-downgrade lock (lockedTierDown refuses editing a hard constraint to
+ *     soft), but the current UI only ADDS/REMOVES constraints — there is no
+ *     in-place edit path, so the lock primitive is reserved for a future edit
+ *     affordance and is NOT yet a live runtime gate. Don't advertise it as one.
  *
  *   • Safety override: any constraint with kind='physical-safety' AND
  *     measured failed forces a designClaim with label ∈ {'not_yet','partial'}
  *     regardless of stakeholderJudgment. Stakeholder voice cannot override
  *     physical-harm.
  *
- *   • Triple-anchored designClaims at communicate: each claim.text must
- *     substring-link to (a) ≥1 criterion OR constraint, (b) ≥1 testRun
- *     observation OR measured pass flag, AND (c) the stakeholderProfile.
+ *   • designClaims at communicate: stakeholderTranslatorGate enforces ≥2
+ *     claims, each labeled and ≥ devFloors.designClaimText chars of real
+ *     prose, PLUS the physical-safety override (a 'meets_criteria' label is
+ *     refused while a physical-safety criterion is unmet). The richer
+ *     "triple-anchor" goal — each claim substring-linking a criterion/
+ *     constraint + a testRun observation + the stakeholder — is ASPIRATIONAL:
+ *     the ref arrays (claimEvidenceRunIds/constraintRefs/tradeoffRefs) are
+ *     seeded but neither populated by any UI nor checked by the gate. Build
+ *     that wiring before describing it as enforced.
  *
  *   • stakeholderAccountabilityStatement is the structural-leak neutralizer:
  *     ≥120 chars naming what stakeholder would STILL ask, three-way anchored
@@ -74,8 +85,9 @@
  *     (b) rationale naming an unexpected trade-off > rationale confirming
  *     initial intuition.
  *
- *   • tradeoff_inverter touchpoint held for V2 — observe baseline before
- *     shipping the highest harvest-risk AI surface.
+ *   • tradeoff_inverter SHIPPED (no longer V2-held): antagonist mirror on
+ *     plan_test, cap 1 (lowest cap, highest harvest-risk). A reverse-leak
+ *     validator + a post-AI synthesis gate guard it (see ~lines 737-782).
  */
 (function () {
   'use strict';
@@ -3662,6 +3674,7 @@
         return;
       }
       setJournal(function (prev) { return Object.assign({}, prev, { activeStage: toStage }); });
+      announce((t('engineering.sr_now_on') || 'Now on: ') + ((STAGE_BY_KEY[toStage] && STAGE_BY_KEY[toStage].label) || toStage), 'polite');
     }, [activeStage]);
 
     var commitLoopBack = useCallback(function (payload) {
