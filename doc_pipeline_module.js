@@ -2670,6 +2670,10 @@ var createDocPipeline = function(deps) {
     if (_cdnLoadPromises[label]) return _cdnLoadPromises[label];
     const marker = 'data-docpipe-' + label;
     const list = Array.isArray(urls) ? urls : [urls];
+    // Fresh attempt: clear any stale outage flag from a PRIOR failed attempt so a recovered
+    // network/CDN isn't still reported as down. (Dead <script> corpses are removed on failure
+    // below, so this retry's "already injected" check can't wait the full timeout on one.)
+    try { if (typeof window !== 'undefined' && window.__alloflowCdnDown) delete window.__alloflowCdnDown[label]; } catch (_) {}
     const p = (async () => {
       // Another path may have already injected this script — wait for its global first.
       if (typeof document !== 'undefined' && document.querySelector('script[' + marker + ']') && await _waitForGlobal(isReady, timeout)) return true;
@@ -2686,6 +2690,12 @@ var createDocPipeline = function(deps) {
       try {
         if (typeof window !== 'undefined') { window.__alloflowCdnDown = window.__alloflowCdnDown || {}; window.__alloflowCdnDown[label] = true; }
         warnLog('[CDN] ' + label + ' unavailable from all ' + list.length + ' source(s) — the dependent feature will degrade (network/CDN blocked?).');
+        // Don't permanently memoize the failure: drop the cached false-promise so a later call
+        // (after the network/CDN recovers) actually RETRIES instead of returning this resolved-
+        // false for the rest of the session. Also remove the dead <script> tags we injected so
+        // the retry's "already injected" check doesn't re-wait the full timeout on a corpse.
+        delete _cdnLoadPromises[label];
+        if (typeof document !== 'undefined') document.querySelectorAll('script[' + marker + ']').forEach(el => { try { el.parentNode && el.parentNode.removeChild(el); } catch (_) {} });
       } catch (_) {}
       return false;
     })();
@@ -4060,6 +4070,19 @@ var createDocPipeline = function(deps) {
           if (bodyText) method = 'jszip-dom';
         }
       }
+      // Tracked-changes detection: a DOCX with UNRESOLVED tracked changes is silently
+      // flattened (insertions baked in as final, deletions dropped), so the remediated
+      // output may not match the author's intent. Warn the user to accept/reject in Word
+      // first. Detection only — no change-resolution logic. (Cheap extra raw read.)
+      try {
+        const _docXml = zip.file('word/document.xml');
+        if (_docXml) {
+          const _rawXml = await _docXml.async('string');
+          if (/<w:(ins|del)\b/.test(_rawXml) && typeof addToast === 'function') {
+            addToast(t('toasts.docx_tracked_changes') || 'This Word file has unresolved tracked changes. AlloFlow flattens them (insertions kept, deletions dropped), which may not match your intent — accept or reject the changes in Word first for an accurate result.', 'info');
+          }
+        }
+      } catch (_) {}
       // Iterate aux XML parts. Sorted for stable ordering across runs.
       const allEntries = Object.keys(zip.files).sort();
       const _readPart = async (path, kind, id) => {
@@ -6420,6 +6443,15 @@ Return ONLY JSON:
             const passCount = (parsed.passes || []).length;
             parsed.summary = `The document scores ${parsed.score}/100 with ${passCount} accessibility checks passing and ${issueCount} remaining issue${issueCount !== 1 ? 's' : ''} to address.`;
           }
+        }
+        // Disclose the score override to the reviewer (was console-only): _scoreAdjusted /
+        // _aiReportedScore were set but never surfaced. Append a transparency note to the
+        // summary (a first-class rendered field) so the displayed deduction-grounded score
+        // isn't a silent rewrite of the AI auditor's self-reported number. Done AFTER the
+        // tone-check above, which can fully replace summary.
+        if (parsed._scoreAdjusted) {
+          parsed.summary = (parsed.summary ? parsed.summary + ' ' : '') +
+            `(Score note: the AI auditor self-reported ${parsed._aiReportedScore}/100; the displayed ${parsed.score}/100 is the stricter deduction-grounded recalculation — they diverged by more than 12 points.)`;
         }
         return parsed;
       }
@@ -9188,6 +9220,15 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // stashed on window globals so the fidelity panel can surface them for review.
         updateProgress(1, 'Scanned PDF detected — running Tesseract + Vision OCR in parallel...');
         if (typeof addToast === 'function') addToast(t('toasts.running_tesseract_vision_ocr_maximum'), 'info');
+
+        // Large-scan guard: a big scanned doc with NO page range fans out one OCR pass per
+        // ~PAGES_PER_CHUNK pages — hundreds of Gemini calls on a textbook-sized scan. We do NOT
+        // silently truncate (that would drop real content), but we DO warn automatically and
+        // point at the existing page-range control so the teacher can process it in sections.
+        if (effectivePageCount > 150 && !(_pageRange && _pageRange[1]) && typeof addToast === 'function') {
+          addToast(t('toasts.large_scan_warning') || ('This scanned document is ' + effectivePageCount + ' pages — OCR will make many AI calls and take a while. Tip: use the page-range control to remediate it in smaller sections (e.g. 1–50, 51–100).'), 'info');
+          try { warnLog('[OCR] Large scanned doc (' + effectivePageCount + ' pages, ' + numChunks + ' chunks) with no page range — warned the user.'); } catch (_) {}
+        }
 
         const _visionChunkedExtract = async () => {
           // Page-range-aware prompts: when the teacher selected a partial

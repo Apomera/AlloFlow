@@ -37,6 +37,7 @@ function env(goodUrls, startLoaded) {
   const win = {};
   const doc = {
     querySelector: () => null,
+    querySelectorAll: () => [], // failure path removes dead <script> corpses via this
     createElement: () => ({
       setAttribute() {},
       _src: '',
@@ -72,6 +73,17 @@ describe('_loadCdnScript — resilient CDN loader', () => {
     expect(ok).toBe(false);
     expect(e.win.__alloflowCdnDown).toBeTruthy();
     expect(e.win.__alloflowCdnDown.tesseract).toBe(true);
+  });
+
+  it('retries after a total failure (does NOT memoize the failure for the session) and clears the flag on recovery', async () => {
+    const e = env(['https://good/lib.js']); // only this URL flips the global ready
+    const first = await e.load('pdfjs', ['https://bad/lib.js'], e.isReady, FAST); // all sources bad → fails
+    expect(first).toBe(false);
+    expect(e.win.__alloflowCdnDown.pdfjs).toBe(true);
+    // A later call (network recovered) must RETRY — the old code returned the cached false forever.
+    const second = await e.load('pdfjs', ['https://good/lib.js'], e.isReady, FAST);
+    expect(second).toBe(true);
+    expect(e.win.__alloflowCdnDown.pdfjs).toBeFalsy(); // outage flag cleared on the successful retry
   });
 
   it('short-circuits when the global is already present (no injection needed)', async () => {
