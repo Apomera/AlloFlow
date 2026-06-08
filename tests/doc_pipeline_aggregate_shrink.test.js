@@ -7,17 +7,33 @@
 // added at the bottom of aiFixChunked (text 0.85 floor) catches the
 // hypothetical adversarial case and warnLogs it — bounded backstop.
 //
-// MIRROR DISCIPLINE: the gate logic is copied verbatim from
-// doc_pipeline_source.jsx. If you change the floor in source, update here.
+// ANTI-DRIFT: textCharCount + the aggregate floor are now EXTRACTED from doc_pipeline_source.jsx
+// at runtime (were hand-copied; the local textCharCount was a simpler tag-only version that could
+// diverge from the shipped one, which also strips scripts/styles/entities). The gate itself is
+// inline in source (not a named fn), so this reconstructs it using the extracted real helper +
+// floor — pinning the two drift vectors (text-counting logic, floor value) to source.
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const textCharCount = (s) => String(s || '').replace(/<[^>]+>/g, '').length;
-const _AGG_TEXT_FLOOR = 0.85;
+const SRC = fs.readFileSync(path.resolve(__dirname, '../doc_pipeline_source.jsx'), 'utf8');
+function extractArrow(name) {
+  const anchor = 'const ' + name + ' = ';
+  const at = SRC.indexOf(anchor);
+  if (at < 0) throw new Error('not found in source: ' + name);
+  const braceStart = SRC.indexOf('{', SRC.indexOf('=>', at));
+  let i = braceStart, d = 0, end = -1;
+  for (; i < SRC.length; i++) { const c = SRC[i]; if (c === '{') d++; else if (c === '}') { d--; if (d === 0) { end = i; break; } } }
+  const head = SRC.slice(at + anchor.length, SRC.indexOf('=>', at));
+  // eslint-disable-next-line no-eval
+  return eval('(' + head + '=> ' + SRC.slice(braceStart, end + 1) + ')');
+}
+const textCharCount = extractArrow('textCharCount');
+const _AGG_TEXT_FLOOR = parseFloat((SRC.match(/const _AGG_TEXT_FLOOR = ([\d.]+)/) || [])[1]);
 
-// Mirror: the aggregate-gate logic that runs after Promise.all in aiFixChunked.
-// Returns { accepted, ratio, kept, orig } for testing; in source it either
-// returns _restoreImages(html) on reject or _restoreImages(fixed.join('')) on accept.
+// Reconstructs the inline aggregate gate that runs after Promise.all in aiFixChunked, using the
+// EXTRACTED textCharCount + floor. Returns { accepted, ratio, kept, orig } for assertions.
 const aggregateGate = (chunks, fixed) => {
   let _sumOrigText = 0, _sumKeptText = 0;
   for (let i = 0; i < chunks.length; i++) {
@@ -28,6 +44,15 @@ const aggregateGate = (chunks, fixed) => {
   const ratio = _sumKeptText / _sumOrigText;
   return { accepted: ratio >= _AGG_TEXT_FLOOR, ratio, kept: _sumKeptText, orig: _sumOrigText };
 };
+
+describe('anti-drift extraction sanity', () => {
+  it('extracted the real textCharCount + aggregate floor from source', () => {
+    expect(typeof textCharCount).toBe('function');
+    expect(_AGG_TEXT_FLOOR).toBe(0.85);
+    expect(textCharCount('<p>hi</p>')).toBe(2);                       // strips tags
+    expect(textCharCount('<style>x{}</style><p>hi</p>')).toBe(2);     // and strips <style> content
+  });
+});
 
 describe('aiFixChunked aggregate text-preservation gate', () => {
   it('accepts when AI returns chunks unchanged (~1.0 ratio)', () => {

@@ -5,14 +5,24 @@
 // downstream sites silently degrade — false-positive "low fidelity" banners on
 // every DOCX/PPTX run, markers leaking into the user-visible Diff panel.
 //
-// MIRROR DISCIPLINE: the regex below is copied verbatim from
-// doc_pipeline_source.jsx (search _ALLO_MARKER_RE). If you change the
-// extractor's marker format, update both this mirror and the source regex.
+// ANTI-DRIFT: _ALLO_MARKER_RE is now EXTRACTED from doc_pipeline_source.jsx at runtime (was a
+// hand-copied verbatim mirror that could silently drift from the source regex). The test runs
+// against the real shipped regex, so a marker-format change is caught here automatically.
 
 import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 
-// Mirror: doc_pipeline_source.jsx _ALLO_MARKER_RE
-const _ALLO_MARKER_RE = /<<<ALLO_SECTION:[^>]+>>>\n?/g;
+const SRC = fs.readFileSync(path.resolve(__dirname, '../doc_pipeline_source.jsx'), 'utf8');
+function extractRegex(name) {
+  const anchor = 'const ' + name + ' = ';
+  const at = SRC.indexOf(anchor);
+  if (at < 0) throw new Error('not found in source: ' + name);
+  const semi = SRC.indexOf(';', at);
+  // eslint-disable-next-line no-eval
+  return eval(SRC.slice(at + anchor.length, semi));
+}
+const _ALLO_MARKER_RE = extractRegex('_ALLO_MARKER_RE');
 
 describe('_ALLO_MARKER_RE', () => {
   it('strips opening markers with kind only', () => {
