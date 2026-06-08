@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -2638,23 +2638,56 @@ var createDocPipeline = function(deps) {
 
   // ── Deterministic extraction helpers (Step 0 of pipeline) ──
   // Lazy-load pdf.js once — reuses the existing pattern from runPdfAccessibilityAudit
+  // ── Resilient CDN loader (shared) ──────────────────────────────────────────
+  // The pipeline pulls pdf.js / pako / Tesseract / fontkit from a CDN. A single
+  // hard-coded URL means a blocked or slow CDN (common on locked-down K-12 networks)
+  // silently disables a whole feature with no signal to the teacher. This tries each
+  // URL in turn until the library's global appears, and on TOTAL failure records the
+  // outage on window.__alloflowCdnDown[label] so the UI can surface "X unavailable"
+  // instead of failing silently. Per-label promise cache shares one load across callers.
+  const _waitForGlobal = (isReady, ms) => new Promise((resolve) => {
+    if (isReady()) return resolve(true);
+    const iv = setInterval(() => { if (isReady()) { clearInterval(iv); resolve(true); } }, 50);
+    setTimeout(() => { clearInterval(iv); resolve(!!isReady()); }, ms);
+  });
+  const _cdnLoadPromises = {};
+  const _loadCdnScript = (label, urls, isReady, opts) => {
+    opts = opts || {};
+    const timeout = opts.timeout || 12000;
+    if (isReady()) return Promise.resolve(true);
+    if (_cdnLoadPromises[label]) return _cdnLoadPromises[label];
+    const marker = 'data-docpipe-' + label;
+    const list = Array.isArray(urls) ? urls : [urls];
+    const p = (async () => {
+      // Another path may have already injected this script — wait for its global first.
+      if (typeof document !== 'undefined' && document.querySelector('script[' + marker + ']') && await _waitForGlobal(isReady, timeout)) return true;
+      for (let k = 0; k < list.length; k++) {
+        try {
+          const s = document.createElement('script');
+          s.src = list[k];
+          s.setAttribute(marker, 'true');
+          document.head.appendChild(s);
+        } catch (_) { continue; }
+        if (await _waitForGlobal(isReady, timeout)) return true; // poll for the real readiness signal (the global)
+        try { warnLog('[CDN] ' + label + ' failed from ' + list[k] + (k < list.length - 1 ? ' — trying fallback' : '')); } catch (_) {}
+      }
+      try {
+        if (typeof window !== 'undefined') { window.__alloflowCdnDown = window.__alloflowCdnDown || {}; window.__alloflowCdnDown[label] = true; }
+        warnLog('[CDN] ' + label + ' unavailable from all ' + list.length + ' source(s) — the dependent feature will degrade (network/CDN blocked?).');
+      } catch (_) {}
+      return false;
+    })();
+    _cdnLoadPromises[label] = p;
+    return p;
+  };
+
   const ensurePdfJsLoaded = async () => {
-    if (window.pdfjsLib) return;
-    if (document.querySelector('script[data-docpipe-pdfjs]')) {
-      await new Promise((resolve, reject) => {
-        const wait = setInterval(() => { if (window.pdfjsLib) { clearInterval(wait); resolve(); } }, 100);
-        setTimeout(() => { clearInterval(wait); reject(new Error('pdf.js load timeout')); }, 10000);
-      });
-    } else {
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-      s.setAttribute('data-docpipe-pdfjs', 'true');
-      document.head.appendChild(s);
-      await new Promise((resolve, reject) => {
-        const wait = setInterval(() => { if (window.pdfjsLib) { clearInterval(wait); resolve(); } }, 100);
-        setTimeout(() => { clearInterval(wait); reject(new Error('pdf.js load timeout')); }, 10000);
-      });
-    }
+    const ok = await _loadCdnScript('pdfjs', [
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+      'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+      'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js',
+    ], () => !!window.pdfjsLib);
+    if (!ok) throw new Error('pdf.js unavailable (all CDN sources failed)');
     if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
       window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
@@ -3314,23 +3347,13 @@ var createDocPipeline = function(deps) {
   // tagged-PDF export; no cost for any other code path.
   let _pakoLoadPromise = null;
   const ensurePakoLoaded = async () => {
-    if (window.pako && typeof window.pako.inflate === 'function') return window.pako;
-    if (_pakoLoadPromise) return _pakoLoadPromise;
-    _pakoLoadPromise = new Promise((resolve, reject) => {
-      const existing = document.querySelector('script[data-docpipe-pako]');
-      if (existing) {
-        const wait = setInterval(() => { if (window.pako) { clearInterval(wait); resolve(window.pako); } }, 50);
-        setTimeout(() => { clearInterval(wait); reject(new Error('pako load timeout')); }, 10000);
-        return;
-      }
-      const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js';
-      s.setAttribute('data-docpipe-pako', 'true');
-      s.onload = () => { if (window.pako) resolve(window.pako); else reject(new Error('pako loaded but not on window')); };
-      s.onerror = () => { _pakoLoadPromise = null; reject(new Error('pako CDN load failed')); };
-      document.head.appendChild(s);
-    });
-    return _pakoLoadPromise;
+    const ok = await _loadCdnScript('pako', [
+      'https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js',
+      'https://unpkg.com/pako@2.1.0/dist/pako.min.js',
+    ], () => !!(window.pako && typeof window.pako.inflate === 'function'));
+    if (!ok) throw new Error('pako unavailable (all CDN sources failed)');
+    return window.pako;
   };
 
   // ── Stage 4 PDF tagging: pure helpers ──
@@ -3652,23 +3675,12 @@ var createDocPipeline = function(deps) {
   // which pairs with Vision OCR for a reconciled "both" pass on scanned PDFs.
   let _tesseractLoadPromise = null;
   const ensureTesseractLoaded = async () => {
-    if (window.Tesseract) return window.Tesseract;
-    if (_tesseractLoadPromise) return _tesseractLoadPromise;
-    _tesseractLoadPromise = new Promise((resolve, reject) => {
-      const existing = document.querySelector('script[data-docpipe-tesseract]');
-      if (existing) {
-        const wait = setInterval(() => { if (window.Tesseract) { clearInterval(wait); resolve(window.Tesseract); } }, 100);
-        setTimeout(() => { clearInterval(wait); reject(new Error('Tesseract load timeout')); }, 20000);
-        return;
-      }
-      const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-      s.setAttribute('data-docpipe-tesseract', 'true');
-      s.onload = () => { if (window.Tesseract) resolve(window.Tesseract); else reject(new Error('Tesseract loaded but not on window')); };
-      s.onerror = () => { _tesseractLoadPromise = null; reject(new Error('Tesseract.js CDN load failed')); };
-      document.head.appendChild(s);
-    });
-    return _tesseractLoadPromise;
+    const ok = await _loadCdnScript('tesseract', [
+      'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
+      'https://unpkg.com/tesseract.js@5/dist/tesseract.min.js',
+    ], () => !!window.Tesseract, { timeout: 20000 });
+    if (!ok) throw new Error('Tesseract.js unavailable (all CDN sources failed)');
+    return window.Tesseract;
   };
 
   // Flatten Tesseract.js word boxes into [{t,x0,y0,x1,y1,c}] in PDF points (origin
@@ -13220,15 +13232,11 @@ tr { page-break-inside: avoid; }
     const _ensureFontkit = async () => {
       if (_fontkitReady) return true;
       try {
-        if (!window.fontkit) {
-          await new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = 'https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js';
-            s.onload = resolve; s.onerror = () => reject(new Error('fontkit CDN load failed'));
-            document.head.appendChild(s);
-          });
-        }
-        if (window.fontkit && typeof doc.registerFontkit === 'function') { doc.registerFontkit(window.fontkit); _fontkitReady = true; }
+        const ok = await _loadCdnScript('fontkit', [
+          'https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js',
+          'https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js',
+        ], () => !!window.fontkit);
+        if (ok && window.fontkit && typeof doc.registerFontkit === 'function') { doc.registerFontkit(window.fontkit); _fontkitReady = true; }
       } catch (e) { try { warnLog('[createTaggedPdf] fontkit load failed — non-Latin OCR falls back to Helvetica: ' + (e && e.message)); } catch(_) {} }
       return _fontkitReady;
     };
@@ -20476,6 +20484,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.createDocPipeline = createDocPipeline;
+window.AlloModules.DocPipelineModule = true;
+console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
