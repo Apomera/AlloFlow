@@ -25,11 +25,25 @@
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { setupHub } from './research_hub_harness.js';
+import { setupHub, internals as hubInternals } from './research_hub_harness.js';
 
 const require = createRequire(import.meta.url);
 const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
 const React = require(resolve(MODULES_DIR, 'react'));
+
+let _server;
+function reactServer() {
+  if (!_server) _server = require(resolve(MODULES_DIR, 'react-dom/server.js'));
+  return _server;
+}
+
+// Minimal stand-in for the hub-provided primitives (SuggestionBadge,
+// ExemplarPair, VoiceNoteBlock, CostMeter). Render-smoke exercises the LANE's
+// own stage render code, not these hub components (covered elsewhere), so a
+// valid no-op component is enough to keep renderToString happy.
+function StubPrimitive(props) {
+  return React.createElement('div', { 'data-stub-primitive': true }, props && props.children);
+}
 
 // name → { file, sentinel, capture[] }. capture[] must be EXACT top-level
 // declaration names in that lane's source (the splice ReferenceErrors otherwise).
@@ -109,4 +123,41 @@ export function laneConfig(name) {
   const lane = hub && hub._lanes && hub._lanes[name];
   if (!lane) throw new Error('Lane ' + name + ' not registered — call setupLane first.');
   return lane;
+}
+
+// The lane's stage keys, in order, from its registered config.
+export function laneStageKeys(name) {
+  setupLane(name);
+  return (laneConfig(name).stages || []).map((s) => s.key);
+}
+
+// Render-smoke: SSR-render one stage of a lane against a FRESH emptyJournal-
+// backed ctx (mirrors the ctx the hub builds in ActiveLaneView), and return the
+// HTML string. Throws if the stage's render code throws — that is the bug class
+// (undefined-field reads / .map on missing arrays on first visit) this catches.
+export function renderLaneStage(name, stageKey, journalOverrides) {
+  setupLane(name);
+  const lane = laneConfig(name);
+  const journal = Object.assign(
+    hubInternals().emptyJournal(),
+    { activeLane: name, activeStage: stageKey },
+    journalOverrides || {},
+  );
+  const ctx = {
+    t: () => '', // empty → every t('key')||'English' falls back to its English string
+    lane,
+    journal,
+    setJournal: () => {},
+    ask: async () => ({}),
+    addToast: () => {},
+    primitives: {
+      SuggestionBadge: StubPrimitive,
+      ExemplarPair: StubPrimitive,
+      VoiceNoteBlock: StubPrimitive,
+      CostMeter: StubPrimitive,
+    },
+    constants: { MAX_AI_CALLS_PER_SESSION: 8, ANSWER_HARD_CAP: 1200, VOICE_NOTE_MAX_SECONDS: 60 },
+    onExitLane: () => {},
+  };
+  return reactServer().renderToString(lane.render(ctx));
 }
