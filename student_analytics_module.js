@@ -1576,12 +1576,12 @@
       }, 'Practice ↔ Outcome Correlation'), React.createElement('div', {
         className: 'flex items-center gap-3'
       }, React.createElement('div', {
-        className: 'text-2xl font-black ' + (strengthColor[insights.correlations.practiceToQuiz.strength] || 'text-slate-600')
+        className: 'text-2xl font-black ' + (insights.correlations.practiceToQuiz.provisional ? 'text-slate-600' : (strengthColor[insights.correlations.practiceToQuiz.strength] || 'text-slate-600'))
       }, 'r = ' + insights.correlations.practiceToQuiz.r), React.createElement('div', null, React.createElement('div', {
-        className: 'text-xs font-bold ' + (strengthColor[insights.correlations.practiceToQuiz.strength] || '')
-      }, insights.correlations.practiceToQuiz.strength.charAt(0).toUpperCase() + insights.correlations.practiceToQuiz.strength.slice(1) + ' correlation'), React.createElement('div', {
+        className: 'text-xs font-bold ' + (insights.correlations.practiceToQuiz.provisional ? 'text-slate-500' : (strengthColor[insights.correlations.practiceToQuiz.strength] || ''))
+      }, insights.correlations.practiceToQuiz.provisional ? 'Preliminary trend (small sample)' : (insights.correlations.practiceToQuiz.strength.charAt(0).toUpperCase() + insights.correlations.practiceToQuiz.strength.slice(1) + ' correlation')), React.createElement('div', {
         className: 'text-[11px] text-slate-600'
-      }, 'Based on ' + insights.correlations.practiceToQuiz.n + ' data points (Word Sounds accuracy ↔ Quiz performance)')))) : null, insights.growthTrajectory.length > 1 ? React.createElement('div', {
+      }, 'Based on ' + insights.correlations.practiceToQuiz.n + ' data points (Word Sounds accuracy ↔ Quiz performance)' + (insights.correlations.practiceToQuiz.provisional ? ' — too few points for a reliable correlation; read as a descriptive within-student trend, not a tested result.' : ' — descriptive within-student trend, not a significance-tested correlation.'))))) : null, insights.growthTrajectory.length > 1 ? React.createElement('div', {
         className: 'bg-white rounded-xl border border-slate-400 p-4'
       }, React.createElement('h5', {
         className: 'text-xs font-bold text-slate-600 uppercase mb-2'
@@ -3140,7 +3140,10 @@
       return {
         r: rounded,
         n,
-        strength: Math.abs(rounded) >= 0.7 ? 'strong' : Math.abs(rounded) >= 0.4 ? 'moderate' : 'weak'
+        strength: Math.abs(rounded) >= 0.7 ? 'strong' : Math.abs(rounded) >= 0.4 ? 'moderate' : 'weak',
+        // n < 6 can't support a Pearson strength claim — flag so the UI presents a descriptive
+        // within-student trend, not a tested correlation (no significance test is run).
+        provisional: n < 6
       };
     };
     const DOMAIN_LABELS = {
