@@ -1329,12 +1329,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
               <div role="status" aria-live="polite" aria-label={`PDF accessibility audit complete. Score: ${pdfAuditResult.score} out of 100.`}>
                 {pdfFixResult && (
                   <div role="tablist" aria-label={t('pdf_audit.tabs.aria') || 'Audit view'} className="flex gap-1 mb-3 bg-slate-100 p-1 rounded-xl w-fit">
-                    <button role="tab" aria-selected={pdfAuditTab === 'results'} onClick={() => setPdfAuditTab('results')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'results' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>{t('pdf_audit.tabs.remediation_results') || 'Remediation Results'}</button>
-                    <button role="tab" aria-selected={pdfAuditTab === 'original'} onClick={() => setPdfAuditTab('original')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'original' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>{t('pdf_audit.tabs.original_audit') || 'Original Audit'}</button>
+                    <button data-help-key="pdf_audit_results_tab_remediation_btn" role="tab" aria-selected={pdfAuditTab === 'results'} onClick={() => setPdfAuditTab('results')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'results' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>{t('pdf_audit.tabs.remediation_results') || 'Remediation Results'}</button>
+                    <button data-help-key="pdf_audit_results_tab_original_btn" role="tab" aria-selected={pdfAuditTab === 'original'} onClick={() => setPdfAuditTab('original')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'original' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>{t('pdf_audit.tabs.original_audit') || 'Original Audit'}</button>
                   </div>
                 )}
                 {(!pdfFixResult || pdfAuditTab === 'original') && (
-                <div className={`p-6 text-center ${pdfAuditResult.score >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' : pdfAuditResult.score >= 50 ? 'bg-gradient-to-r from-amber-500 to-orange-600' : 'bg-gradient-to-r from-red-500 to-rose-600'} text-white rounded-t-2xl`}>
+                <div data-help-key="pdf_audit_results_score_badge" className={`p-6 text-center ${pdfAuditResult.score >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' : pdfAuditResult.score >= 50 ? 'bg-gradient-to-r from-amber-500 to-orange-600' : 'bg-gradient-to-r from-red-500 to-rose-600'} text-white rounded-t-2xl`}>
                   <div className="text-5xl font-black mb-1" aria-label={`Score: ${pdfAuditResult.score >= 0 ? pdfAuditResult.score : 'unknown'} out of 100`}>{pdfAuditResult.score >= 0 ? pdfAuditResult.score : '?'}<span className="text-2xl opacity-80" aria-hidden="true">/100</span></div>
                   <h3 className="text-lg font-bold" id="pdf-audit-title">PDF Accessibility Score {pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-70">(AI + axe-core blend)</span> : <span className="text-xs font-normal opacity-70">(AI Rubric)</span>}</h3>
                   {pdfAuditResult.scores && <p className="text-xs opacity-70 mt-0.5">Triangulated from {pdfAuditResult.auditorCount || pdfAuditResult.scores.length} independent AI audits (scores: {pdfAuditResult.scores.join(', ')}) · SD: {pdfAuditResult.scoreSD ?? '?'}</p>}
@@ -1386,7 +1386,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                   {/* Reliability Statistics */}
                   {pdfAuditResult.scores?.length > 1 && (
-                    <details className="bg-indigo-50 rounded-lg border border-indigo-200 overflow-hidden">
+                    <details data-help-key="pdf_audit_results_reliability_details" className="bg-indigo-50 rounded-lg border border-indigo-200 overflow-hidden">
                       <summary className="px-3 py-2 text-[11px] font-bold text-indigo-700 uppercase tracking-widest cursor-pointer hover:bg-indigo-100 transition-colors">
                         📊 Reliability Metrics ({pdfAuditResult.reliability || 'N/A'} agreement)
                       </summary>
@@ -1439,7 +1439,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const scoreWithoutPasses = Math.max(0, 100 - rawDed);
                     const passBenefit = Math.max(0, aiScore - scoreWithoutPasses);
                     return (
-                  <details className="bg-slate-50 rounded-lg border border-slate-400 overflow-hidden" open>
+                  <details data-help-key="pdf_audit_results_score_breakdown_details" className="bg-slate-50 rounded-lg border border-slate-400 overflow-hidden" open>
                     <summary className="px-3 py-2 text-[11px] font-bold text-slate-700 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors">
                       Score Breakdown
                     </summary>
@@ -1466,7 +1466,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             {totalIssues > 0 && <div>{totalIssues} issues found</div>}
                             {passBenefit > 0 && <div className="text-green-700 font-bold">{passCount} passes recovered +{passBenefit} pts</div>}
                           </div>
-                          <details className="mt-1 text-[11px]">
+                          <details data-help-key="pdf_audit_results_score_how_ai_details" className="mt-1 text-[11px]">
                             <summary className="cursor-pointer text-purple-500 hover:text-purple-800 font-bold">{t('pdf_audit.score.how_ai_scores') || 'How AI scores'}</summary>
                             <div className="mt-1 space-y-0.5 text-purple-700">
                               <div>{t('pdf_audit.score.ai_critical_rule') || 'Critical: -15 each (lang, title, alt, landmark, contrast)'}</div>
@@ -1487,7 +1487,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div>{t('pdf_audit.score.axe_desc') || 'Deque automated WCAG 2.1 AA checker'}</div>
                             <div>{axeAudit.totalViolations} violation{axeAudit.totalViolations !== 1 ? 's' : ''}, {axeAudit.totalPasses} passed</div>
                           </div>
-                          <details className="mt-1 text-[11px]">
+                          <details data-help-key="pdf_audit_results_score_how_axe_details" className="mt-1 text-[11px]">
                             <summary className="cursor-pointer text-blue-500 hover:text-blue-800 font-bold">{t('pdf_audit.score.how_axe_scores') || 'How axe-core scores'}</summary>
                             <div className="mt-1 space-y-0.5 text-blue-700">
                               <div>100 - (critical x15) - (serious x10) - (moderate x5) - (minor x2)</div>
@@ -1540,7 +1540,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
                             )}
                             {_explainIssue(issue.issue) && (
-                              <details className="mt-1.5">
+                              <details data-help-key="pdf_audit_results_issue_explain" className="mt-1.5">
                                 <summary className="text-[10px] text-red-700 cursor-pointer hover:underline font-bold inline-block">ⓘ Explain</summary>
                                 <p className="text-[11px] text-slate-700 mt-1 leading-relaxed">{_explainIssue(issue.issue)}{_wcagUnderstandingUrl(issue.wcag) && <> <a href={_wcagUnderstandingUrl(issue.wcag)} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">Learn more →</a></>}</p>
                               </details>
@@ -1566,7 +1566,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
                             )}
                             {_explainIssue(issue.issue) && (
-                              <details className="mt-1.5">
+                              <details data-help-key="pdf_audit_results_issue_explain" className="mt-1.5">
                                 <summary className="text-[10px] text-amber-700 cursor-pointer hover:underline font-bold inline-block">ⓘ Explain</summary>
                                 <p className="text-[11px] text-slate-700 mt-1 leading-relaxed">{_explainIssue(issue.issue)}{_wcagUnderstandingUrl(issue.wcag) && <> <a href={_wcagUnderstandingUrl(issue.wcag)} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">Learn more →</a></>}</p>
                               </details>
@@ -1592,7 +1592,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
                             )}
                             {_explainIssue(issue.issue) && (
-                              <details className="mt-1.5">
+                              <details data-help-key="pdf_audit_results_issue_explain" className="mt-1.5">
                                 <summary className="text-[10px] text-yellow-700 cursor-pointer hover:underline font-bold inline-block">ⓘ Explain</summary>
                                 <p className="text-[11px] text-slate-700 mt-1 leading-relaxed">{_explainIssue(issue.issue)}{_wcagUnderstandingUrl(issue.wcag) && <> <a href={_wcagUnderstandingUrl(issue.wcag)} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">Learn more →</a></>}</p>
                               </details>
@@ -2752,7 +2752,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 })()}
                                 {/* Image reinsertion failures row — surfaces silently-dropped images so the user sees them. */}
                                 {imgFailCount > 0 && (
-                                  <details className="mb-2 bg-amber-50 border border-amber-200 rounded-xl p-2 text-[11px]" open>
+                                  <details data-help-key="pdf_audit_results_image_failures_details" className="mb-2 bg-amber-50 border border-amber-200 rounded-xl p-2 text-[11px]" open>
                                     <summary className="cursor-pointer font-bold text-amber-800 select-none">
                                       ⚠️ {imgFailCount} image{imgFailCount === 1 ? '' : 's'} failed to reinsert — click to review
                                     </summary>
@@ -2764,6 +2764,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           <span className="text-[10px] text-slate-500 italic truncate flex-1">{(m.description || '').substring(0, 80)}</span>
                                           <button
                                             onClick={() => _regenerateImage(m.idx, m.description)}
+                                            data-help-key="pdf_audit_results_image_regenerate_btn"
                                             className="text-[10px] px-2 py-0.5 bg-indigo-600 text-white rounded font-bold hover:bg-indigo-700 shrink-0"
                                             title={t('pdf_audit.images.regen_title') || 'Regenerate this image via AI using the stored description'}
                                             aria-label={`Regenerate image ${m.idx} via AI`}
@@ -2780,6 +2781,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           <span className="text-[10px] text-slate-500 italic truncate flex-1">{(desc || '').substring(0, 80)}</span>
                                           <button
                                             onClick={() => _regenerateImage(idx, desc)}
+                                            data-help-key="pdf_audit_results_image_regenerate_btn"
                                             className="text-[10px] px-2 py-0.5 bg-indigo-600 text-white rounded font-bold hover:bg-indigo-700 shrink-0"
                                             title={t('pdf_audit.images.regen_title') || 'Regenerate this image via AI using the stored description'}
                                             aria-label={`Regenerate image ${idx} via AI`}
@@ -4237,7 +4239,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           📄 HTML
                         </button>
                         <div className="relative group">
-                          <button className="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5">
+                          <button data-help-key="pdf_audit_view_report_menu_btn" className="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5">
                             📊 Report ▾
                           </button>
                           <div className="hidden group-hover:block group-focus-within:block absolute bottom-full left-0 mb-1 bg-white border border-slate-400 rounded-xl shadow-xl z-10 min-w-[220px] overflow-hidden">
@@ -4287,7 +4289,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 warnLog('[AccessibilityReport] generation failed:', err);
                                 addToast(t('toasts.report_generation_failed') || 'Report generation failed: ' + (err?.message || 'unknown'), 'error');
                               }
-                            }} className="w-full px-4 py-2.5 text-left text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors">
+                            }} data-help-key="pdf_audit_view_adobe_report_btn" className="w-full px-4 py-2.5 text-left text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors">
                               🏛️ Adobe-style A11y Report{lastTaggedValidation ? ` (${(lastTaggedValidation.pdfUa1Checks?.summary?.conformancePct ?? 0)}% conformance)` : ''}
                             </button>
                             {/* Tier B — Re-run with restoration. Appears only when the post-export
@@ -4315,7 +4317,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     setDiffViewOpen(true);
                                     const ok = await _ensureDiffLib();
                                     if (!ok && typeof addToast === 'function') addToast(t('toasts.diff_engine_failed_load_network') || 'Diff engine failed to load', 'error');
-                                  }} className="w-full px-4 py-2 text-left text-xs font-bold text-sky-700 hover:bg-sky-50 transition-colors" title="Open the word-level diff viewer to see exactly which words are missing or added between the original source and the remediated HTML. No mutations — read-only.">
+                                  }} data-help-key="pdf_audit_view_tierb_diff_view_btn" className="w-full px-4 py-2 text-left text-xs font-bold text-sky-700 hover:bg-sky-50 transition-colors" title="Open the word-level diff viewer to see exactly which words are missing or added between the original source and the remediated HTML. No mutations — read-only.">
                                     {'📝'} Open word-level Diff view ({residual} residual to review)
                                   </button>
                                 )}
@@ -4378,7 +4380,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     setPdfFixStep && setPdfFixStep('');
                                     setTierBStage('');
                                   }
-                                }} disabled={!!tierBStage} className="w-full px-4 py-2.5 text-left text-xs font-bold text-amber-700 hover:bg-amber-50 transition-colors disabled:opacity-50" title={`Splices ${residual} residual missing source word${residual === 1 ? '' : 's'} back into the document via fuzzy context matching, then re-tags the PDF. Words that cannot be placed inline are preserved in a Content Recovery section. NEVER silent: shows residual count BEFORE and AFTER so you can see if it helped.`}>
+                                }} data-help-key="pdf_audit_view_tierb_rerun_restore_btn" disabled={!!tierBStage} className="w-full px-4 py-2.5 text-left text-xs font-bold text-amber-700 hover:bg-amber-50 transition-colors disabled:opacity-50" title={`Splices ${residual} residual missing source word${residual === 1 ? '' : 's'} back into the document via fuzzy context matching, then re-tags the PDF. Words that cannot be placed inline are preserved in a Content Recovery section. NEVER silent: shows residual count BEFORE and AFTER so you can see if it helped.`}>
                                   {tierBStage === 'word-splice' ? '↻ Restoring (1/3): word-level splice…' :
                                    tierBStage === 'sentence-anchor' ? '↻ Restoring (2/3): sentence-anchor…' :
                                    tierBStage === 're-tag' ? '↻ Restoring (3/3): re-tagging PDF…' :
@@ -4400,7 +4402,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 const ps = w.document.createElement('style'); ps.textContent = '@media print{#print-banner{display:none!important}}'; w.document.head.appendChild(ps);
                               }
                               addToast(t('toasts.report_opened_with_save_as'), 'success');
-                            }} className="w-full px-4 py-2 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors">
+                            }} data-help-key="pdf_audit_view_formatted_report_btn" className="w-full px-4 py-2 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors">
                               📄 Formatted Report (PDF)
                             </button>
                             <button onClick={() => {
@@ -4412,7 +4414,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const a = document.createElement('a'); a.href = url; a.download = `a11y-before-after-${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-${new Date().toISOString().split('T')[0]}.html`;
                               document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                               addToast(t('toasts.html_report_downloaded'), 'success');
-                            }} className="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-100">
+                            }} data-help-key="pdf_audit_view_html_report_btn" className="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-100">
                               🌐 HTML Report
                             </button>
                             <button onClick={() => {
@@ -4423,7 +4425,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const a = document.createElement('a'); a.href = url; a.download = `a11y-before-after-${new Date().toISOString().split('T')[0]}.json`;
                               document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                               addToast(t('toasts.json_data_exported'), 'success');
-                            }} className="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-100">
+                            }} data-help-key="pdf_audit_view_json_data_btn" className="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-100">
                               📊 JSON Data (research)
                             </button>
                             {/* Signed audit trail — richer JSON payload +
@@ -4561,7 +4563,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               } catch (err) {
                                 addToast(t('toasts.audit_trail_generation_failed') + (err?.message || 'unknown'), 'error');
                               }
-                            }} className="w-full px-4 py-2 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors border-t border-slate-100">
+                            }} data-help-key="pdf_audit_view_audit_trail_signed_btn" className="w-full px-4 py-2 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors border-t border-slate-100">
                               📎 Audit Trail (signed)
                             </button>
                           </div>
@@ -4570,10 +4572,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* Save / Load Project — manual button now delegates to the shared saveProjectToFile helper,
                           which also powers auto-save after the initial remediation + auto-continue loop. */}
                       <div className="flex gap-2">
-                        <button onClick={() => { saveProjectToFile(false); }} className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5">
+                        <button data-help-key="pdf_audit_view_save_project_btn" onClick={() => { saveProjectToFile(false); }} className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5">
                           💾 Save Project
                         </button>
-                        <label className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+                        <label data-help-key="pdf_audit_view_load_project_btn" className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
                           📂 Load Project
                           <input type="file" accept=".json,.alloflow.json" className="hidden" onChange={(e) => {
                             const file = e.target.files?.[0]; if (!file) return;
@@ -4691,12 +4693,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         a.download = templateName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase() + '.alloflow-template.json';
                         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                         addToast(t('toasts.template_2') + templateName + '" saved! Use it in Document Builder to create pre-structured accessible documents.', 'success');
-                      }} className="w-full px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-600 rounded-xl text-xs font-bold text-amber-700 hover:from-amber-100 hover:to-orange-100 transition-all flex items-center justify-center gap-2">
+                      }} data-help-key="pdf_audit_view_save_template_btn" className="w-full px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-600 rounded-xl text-xs font-bold text-amber-700 hover:from-amber-100 hover:to-orange-100 transition-all flex items-center justify-center gap-2">
                         📐 Save Structure as Template (for future documents)
                       </button>
 
                       {/* Alternative Formats (matching Anthology Ally feature set) */}
-                      <details className="group">
+                      <details data-help-key="pdf_audit_alt_formats_summary" className="group">
                         <summary className="text-[11px] font-bold text-teal-600 uppercase tracking-widest cursor-pointer hover:text-teal-800 transition-colors flex items-center gap-1">
                           📑 Alternative Formats <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                         </summary>
@@ -4759,7 +4761,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                               addToast(t('toasts.epub_downloaded_open_any_reader'), 'success');
                             });
-                          }} className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                          }} data-help-key="pdf_audit_alt_formats_epub_btn" className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             📚 ePub (e-readers, mobile, Kindle)
                           </button>
 
@@ -4796,7 +4798,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.brf';
                             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                             addToast(t('toasts.braille_file_downloaded_grade_brf'), 'success');
-                          }} className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                          }} data-help-key="pdf_audit_alt_formats_braille_btn" className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             ⠃⠗⠇ Electronic Braille (BRF)
                           </button>
 
@@ -4815,7 +4817,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.txt';
                             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                             addToast(t('toasts.plain_text_downloaded'), 'success');
-                          }} className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                          }} data-help-key="pdf_audit_alt_formats_text_btn" className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             📝 Plain Text (screen readers, large print)
                           </button>
 
@@ -4840,7 +4842,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.md';
                             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                             addToast(t('toasts.markdown_downloaded'), 'success');
-                          }} className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                          }} data-help-key="pdf_audit_alt_formats_markdown_btn" className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             📋 Markdown (LMS, wiki, docs)
                           </button>
                         </div>
