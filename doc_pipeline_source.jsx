@@ -798,6 +798,29 @@ var createDocPipeline = function(deps) {
         return part;
       }
     }));
+    // 2026-06-07: aggregate text-preservation gate. Backstop against the
+    // hypothetical adversarial case where EVERY chunk's AI output legitimately
+    // lands in [0.95, 1.0) text-floor band — across N chunks the compound floor
+    // would silently lose ~N*5% of total text. Realistic AI output is bimodal
+    // (accept ~1.0 or reject and keep original), so this rarely fires; warnLog
+    // makes it observable when it does. Covers ALL aiFixChunked callers in one
+    // place (L2500, L5339, L8180, L10727) since none have a downstream shrink
+    // gate. Threshold 0.85 chosen vs default 0.97 to avoid false-positive on
+    // legitimate decorative-noise strips; if it fires, returns original html
+    // unchanged (no data loss — just no AI fix this pass).
+    let _sumOrigText = 0, _sumKeptText = 0;
+    for (let i = 0; i < chunks.length; i++) {
+      _sumOrigText += textCharCount(chunks[i]);
+      _sumKeptText += textCharCount(fixed[i] || '');
+    }
+    if (_sumOrigText > 0) {
+      const _aggregateRatio = _sumKeptText / _sumOrigText;
+      const _AGG_TEXT_FLOOR = 0.85;
+      if (_aggregateRatio < _AGG_TEXT_FLOOR) {
+        try { warnLog(`[aiFixChunked:${label}] aggregate text shrink ${(_aggregateRatio * 100).toFixed(1)}% < floor ${_AGG_TEXT_FLOOR * 100}% across ${chunks.length} chunks (${_sumKeptText}/${_sumOrigText} text-chars) — returning original html unchanged`); } catch (_) {}
+        return _restoreImages(html);
+      }
+    }
     return _restoreImages(fixed.join(''));
   };
 
@@ -2700,6 +2723,127 @@ var createDocPipeline = function(deps) {
     }
   };
 
+  // ── AcroForm field-value extraction (DARK in slice 1, 2026-06-07) ──
+  // FERPA-sensitive: filled IEPs, worksheets, and clinician forms carry student PII
+  // in field /V values (name, DOB, disability category, parent contact, signature
+  // image). Default opts.consent = false makes the helper SAFE-BY-DEFAULT:
+  //   - structured `fields` array is ALWAYS populated (name + type + value)
+  //     but is NOT joined into a flowing text string until consent=true
+  //   - the `fieldText` string field is '' when consent=false
+  //   - warnLog NEVER stringifies any field value (only counts) — search the body
+  //   - field NAMES go into structured fields[] only; the user-visible
+  //     toast / fieldText path emits a per-extraction nonce-prefixed marker
+  //     to prevent value-borne injection of fake fields into AI ground truth
+  //   - signed PDFs are detected via /SigFlags bit 1 ("SignaturesExist") and
+  //     surfaced to the caller so the tagging path can SKIP modifications that
+  //     would invalidate the /Sig ByteRange hash
+  //
+  // SECURITY CONTRACT: this helper MUST NOT be called from any code path that
+  // forwards text to Gemini / logs / persists, until the FERPA consent flow +
+  // per-profile studentProjectSettings.allowFormValueExtraction toggle ships.
+  // The retention-gate at the round-trip text-diff site MUST pass consent:false
+  // on both sides regardless of the user's choice — comparing filled-in values
+  // pre/post-save would produce noise (pdf-lib re-serializes /V) and would also
+  // be a privacy escalation (PII flows through a code path it doesn't need to).
+  //
+  // See workflow w3tuxi0l5 plan + adversarial verification gaps A/B/C/D folded in.
+  const extractPdfFormFieldsDeterministic = async (base64, opts) => {
+    const consent = !!(opts && opts.consent);
+    // Anti-injection nonce: every emitted marker is prefixed with a per-call
+    // random suffix so a teacher's narrative goal containing literal "[FormField]"
+    // (or a malicious filled /V) cannot forge a fake field row into the AI ground
+    // truth. Logged once in the structured return for downstream parsers.
+    const _r = (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues)
+      ? (() => { const u = new Uint32Array(1); window.crypto.getRandomValues(u); return u[0].toString(36).slice(0, 6); })()
+      : ('rnd' + Math.floor(performance && performance.now ? performance.now() : 0).toString(36).slice(-6));
+    const sentinelNonce = _r;
+    const sentinel = '[FormField:' + sentinelNonce + ']';
+    // ZWSP-escape any literal "[FormField:" occurrences inside emitted values
+    // so a value-borne injection cannot spoof the sentinel even with the nonce.
+    const _ZWSP = '​';
+    const _escFieldMarker = (s) => String(s == null ? '' : s).replace(/\[FormField:/g, '[FormField' + _ZWSP + ':');
+    if (typeof window === 'undefined' || !window.PDFLib || !window.PDFLib.PDFDocument) {
+      return { hadForm: false, fields: [], fieldText: '', fieldCharCount: 0, suppressedForConsent: !consent, sentinelNonce, error: 'PDFLib not loaded' };
+    }
+    const PDFLib = window.PDFLib;
+    let doc;
+    try {
+      const bytes = _b64ToBytes(base64);
+      doc = await PDFLib.PDFDocument.load(bytes, { updateMetadata: false, ignoreEncryption: true });
+    } catch (e) {
+      return { hadForm: false, fields: [], fieldText: '', fieldCharCount: 0, suppressedForConsent: !consent, sentinelNonce, error: (e && e.message) || 'PDF load failed' };
+    }
+    // Detect existing digital signatures — Stage-3 form tagging caller MUST skip
+    // tagging if hasSignatures is true (modifying byte tree invalidates /Sig).
+    let hasSignatures = false;
+    try {
+      const acro = doc.catalog.get(PDFLib.PDFName.of('AcroForm'));
+      if (acro && acro.get) {
+        const sigFlags = acro.get(PDFLib.PDFName.of('SigFlags'));
+        if (sigFlags) {
+          const sigVal = (typeof sigFlags.numberValue === 'number') ? sigFlags.numberValue
+            : (typeof sigFlags.value === 'number') ? sigFlags.value
+            : Number(String(sigFlags));
+          if ((sigVal | 0) & 1) hasSignatures = true;
+        }
+      }
+    } catch (_) {}
+    let form, allFields = [];
+    try {
+      form = doc.getForm();
+      allFields = form.getFields();
+    } catch (_e) {
+      return { hadForm: false, fields: [], fieldText: '', fieldCharCount: 0, suppressedForConsent: !consent, sentinelNonce, hasSignatures };
+    }
+    const hadForm = allFields.length > 0;
+    if (!hadForm) {
+      return { hadForm: false, fields: [], fieldText: '', fieldCharCount: 0, suppressedForConsent: !consent, sentinelNonce, hasSignatures };
+    }
+    const fields = [];
+    for (const f of allFields) {
+      let type = 'Unknown';
+      let value = null;
+      let name = '';
+      try { name = f.getName() || ''; } catch (_) {}
+      try {
+        if (PDFLib.PDFTextField && f instanceof PDFLib.PDFTextField) { type = 'Text'; value = f.getText(); }
+        else if (PDFLib.PDFCheckBox && f instanceof PDFLib.PDFCheckBox) { type = 'Checkbox'; value = f.isChecked(); }
+        else if (PDFLib.PDFRadioGroup && f instanceof PDFLib.PDFRadioGroup) { type = 'Radio'; value = f.getSelected(); }
+        else if (PDFLib.PDFDropdown && f instanceof PDFLib.PDFDropdown) { type = 'Dropdown'; value = f.getSelected(); }
+        else if (PDFLib.PDFOptionList && f instanceof PDFLib.PDFOptionList) { type = 'Listbox'; value = f.getSelected(); }
+        else if (PDFLib.PDFSignature && f instanceof PDFLib.PDFSignature) { type = 'Signature'; value = '<signed>'; }
+      } catch (_e2) { type = 'Unknown'; value = null; }
+      // CRITICAL: never warnLog field VALUES — only types/counts.
+      fields.push({ name, type, value });
+    }
+    let fieldText = '';
+    if (consent) {
+      const lines = fields.map((entry) => {
+        const safeName = _escFieldMarker(entry.name);
+        let v;
+        if (entry.value === null || entry.value === undefined || entry.value === '') v = '<empty>';
+        else if (entry.type === 'Checkbox') v = entry.value ? '[x]' : '[ ]';
+        else if (entry.type === 'Radio' && !entry.value) v = '<not selected>';
+        else if (Array.isArray(entry.value)) v = entry.value.length ? entry.value.join(', ') : '<no options selected>';
+        else if (typeof entry.value === 'string') v = entry.value.replace(/\n/g, '␋');
+        else if (typeof entry.value === 'number' || typeof entry.value === 'boolean') v = String(entry.value);
+        else v = '<non-string value>';
+        const safeV = _escFieldMarker(v);
+        return sentinel + ' ' + safeName + ': ' + safeV;
+      });
+      fieldText = lines.join('\n');
+    }
+    return {
+      hadForm: true,
+      fields,
+      fieldText,
+      fieldCharCount: fieldText.length,
+      suppressedForConsent: !consent,
+      sentinelNonce,
+      hasSignatures,
+    };
+  };
+
   // ── Tier 8: extract PDF tag structure ──
   // Modern tagged PDFs (textbook exports, gov docs, well-prepared LMS exports)
   // ship a logical structure tree (H1/H2/P/Table/Figure/etc.). pdf.js exposes
@@ -3691,85 +3835,230 @@ var createDocPipeline = function(deps) {
   };
 
   // Extract text from a DOCX via mammoth (primary) or jszip+XML (fallback for air-gap)
+  // 2026-06-07: section-marker convention for DOCX/PPTX extraction. Every
+  // augmented section (header/footer/notes/comments/footnotes/master/layout/
+  // chart/diagram) is wrapped in <<<ALLO_SECTION:KIND[:ID]>>>...<<<ALLO_SECTION:END>>>
+  // so downstream prompts can distinguish body text from speaker notes /
+  // teacher-only context, AND the integrity diff knows to strip these markers
+  // before measuring coverage. Triple-angle sentinel is uncommon enough that
+  // AI rewrite usually preserves it; loss is non-fatal because content is
+  // still in the text body, just no longer audience-tagged.
+  const _ALLO_SECTION_OPEN = (kind, id) => '<<<ALLO_SECTION:' + kind + (id != null ? ':' + id : '') + '>>>';
+  const _ALLO_SECTION_CLOSE = '<<<ALLO_SECTION:END>>>';
+  const _ALLO_MARKER_RE = /<<<ALLO_SECTION:[^>]+>>>\n?/g;
+
+  // DOM-walker for OOXML paragraph/text content. Falls back to regex on parse
+  // error (failure_mode #1 — never lose the whole file because of XML issues).
+  const _ooxmlExtractPart = async (zipFile, paragraphTag, textTag, namespaceURI) => {
+    if (!zipFile) return '';
+    let xml = '';
+    try { xml = await zipFile.async('string'); } catch (_) { return ''; }
+    if (!xml) return '';
+    try {
+      const xdoc = new DOMParser().parseFromString(xml, 'text/xml');
+      const pErr = xdoc.getElementsByTagName('parsererror');
+      if (pErr && pErr.length) throw new Error('xml-parse-error');
+      const paras = namespaceURI
+        ? xdoc.getElementsByTagNameNS(namespaceURI, paragraphTag)
+        : xdoc.getElementsByTagName(paragraphTag);
+      const out = [];
+      for (let i = 0; i < paras.length; i++) {
+        const p = paras[i];
+        const ts = namespaceURI
+          ? p.getElementsByTagNameNS(namespaceURI, textTag)
+          : p.getElementsByTagName(textTag);
+        let s = '';
+        for (let j = 0; j < ts.length; j++) s += (ts[j].textContent || '');
+        if (s.trim()) out.push(s);
+      }
+      return out.join('\n');
+    } catch (_pe) {
+      // Regex fallback (the legacy path), narrowed to this file only.
+      try {
+        const tagOpen = '<' + paragraphTag + '[\\s>]';
+        const tagClose = '<\\/' + paragraphTag + '>';
+        const paraRe = new RegExp(tagOpen + '[\\s\\S]*?' + tagClose, 'g');
+        const textRe = new RegExp('<' + textTag + '[^>]*>([\\s\\S]*?)<\\/' + textTag + '>', 'g');
+        const matches = xml.match(paraRe) || [];
+        const out = [];
+        for (const p of matches) {
+          const parts = [];
+          let m;
+          textRe.lastIndex = 0;
+          while ((m = textRe.exec(p)) !== null) {
+            parts.push(m[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&apos;/g, "'"));
+          }
+          if (parts.length) out.push(parts.join(''));
+        }
+        return out.join('\n');
+      } catch (_re) { return ''; }
+    }
+  };
+
+  // OOXML namespaces (W3C-stable)
+  const _W_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+  const _A_NS = 'http://schemas.openxmlformats.org/drawingml/2006/main';
+
   const extractDocxTextDeterministic = async (base64) => {
-    // Try mammoth first
+    // Body text via mammoth (primary path — best handling of styles/structure)
+    let bodyText = '';
+    let usedMammoth = false;
     try {
       await ensureMammothLoaded();
       if (window.mammoth && typeof window.mammoth.extractRawText === 'function') {
         const bytes = _base64ToBytes(base64);
         const result = await window.mammoth.extractRawText({ arrayBuffer: bytes.buffer });
-        const fullText = (result && result.value) || '';
-        if (fullText && fullText.length > 0) {
-          return { fullText, sourceCharCount: fullText.length, method: 'mammoth' };
-        }
+        bodyText = (result && result.value) || '';
+        if (bodyText && bodyText.length > 0) usedMammoth = true;
       }
     } catch (e) {
-      warnLog('[DOCX Det] mammoth failed, falling back to jszip:', e?.message);
+      warnLog('[DOCX Det] mammoth failed, falling back to jszip+DOM:', e?.message);
     }
-    // Fallback: jszip + raw XML text extraction
+    // Augmentation: read aux parts (headers, footers, footnotes, endnotes, comments).
+    // Mammoth misses ALL of these. The jszip+DOM path also recovers body if mammoth
+    // failed entirely. Loosened regex (\d*) catches Google-Docs no-digit variants
+    // like word/header.xml in addition to numbered Office365/LibreOffice variants.
+    let augmentedParts = [];
+    let method = usedMammoth ? 'mammoth' : '';
     try {
       await ensureJsZipLoaded();
       if (!window.JSZip) throw new Error('jszip unavailable');
       const bytes = _base64ToBytes(base64);
       const zip = await window.JSZip.loadAsync(bytes);
-      const docXml = zip.file('word/document.xml');
-      if (!docXml) throw new Error('word/document.xml not found');
-      const xml = await docXml.async('string');
-      // Extract text from <w:t> nodes in document order; <w:p> becomes paragraph break
-      const paragraphs = [];
-      const paraRegex = /<w:p[\s>][\s\S]*?<\/w:p>/g;
-      const textRegex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
-      const matches = xml.match(paraRegex) || [];
-      for (const p of matches) {
-        const parts = [];
-        let m;
-        textRegex.lastIndex = 0;
-        while ((m = textRegex.exec(p)) !== null) {
-          parts.push(m[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&apos;/g, "'"));
+      // If mammoth didn't produce body text, derive it via DOM from word/document.xml
+      if (!bodyText) {
+        const docFile = zip.file('word/document.xml');
+        if (docFile) {
+          bodyText = await _ooxmlExtractPart(docFile, 'p', 't', _W_NS);
+          if (bodyText) method = 'jszip-dom';
         }
-        if (parts.length) paragraphs.push(parts.join(''));
       }
-      const fullText = paragraphs.join('\n\n');
-      return { fullText, sourceCharCount: fullText.length, method: 'jszip' };
+      // Iterate aux XML parts. Sorted for stable ordering across runs.
+      const allEntries = Object.keys(zip.files).sort();
+      const _readPart = async (path, kind, id) => {
+        const f = zip.file(path);
+        if (!f) return;
+        const txt = await _ooxmlExtractPart(f, 'p', 't', _W_NS);
+        if (txt && txt.trim()) augmentedParts.push(_ALLO_SECTION_OPEN(kind, id) + '\n' + txt + '\n' + _ALLO_SECTION_CLOSE);
+      };
+      for (const name of allEntries) {
+        const hdrM = name.match(/^word\/header(\d*)\.xml$/);
+        if (hdrM) { await _readPart(name, 'HEADER', hdrM[1] || '1'); continue; }
+        const ftrM = name.match(/^word\/footer(\d*)\.xml$/);
+        if (ftrM) { await _readPart(name, 'FOOTER', ftrM[1] || '1'); continue; }
+        if (name === 'word/footnotes.xml') { await _readPart(name, 'FOOTNOTES', null); continue; }
+        if (name === 'word/endnotes.xml') { await _readPart(name, 'ENDNOTES', null); continue; }
+        if (name === 'word/comments.xml') { await _readPart(name, 'COMMENTS', null); continue; }
+      }
     } catch (e) {
       const msg = e?.message || '';
-      warnLog('[DOCX Det] jszip fallback failed:', msg);
+      warnLog('[DOCX Det] augmentation pass failed:', msg);
       if (/password|encrypted/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.docx_appears_password_protected_using'), 'info');
       else if (/invalid|corrupt/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.docx_may_corrupted_attempting_vision'), 'info');
-      return { fullText: '', sourceCharCount: 0, method: 'failed', error: msg };
     }
+    if (!bodyText && augmentedParts.length === 0) {
+      return { fullText: '', sourceCharCount: 0, method: 'failed', error: 'no readable content' };
+    }
+    // Body first (so AI sees primary content order), then aux parts.
+    const fullText = [bodyText, ...augmentedParts].filter(Boolean).join('\n\n');
+    return {
+      fullText,
+      sourceCharCount: fullText.length,
+      method: method || 'jszip-dom',
+      augmentedParts: augmentedParts.length,
+    };
   };
 
-  // Extract text from a PPTX via jszip — parse ppt/slides/slide*.xml and <a:t> nodes
+  // PPTX extraction — speaker notes are often the ACTUAL instructional content;
+  // master/layout text carries recurring footers and section titles. Per-slide
+  // block packs body + notes together inside ONE <<<ALLO_SECTION:SLIDE:N>>>
+  // wrapper so the AI sees them as one slide's context, not as separate dumps.
   const extractPptxTextDeterministic = async (base64) => {
     try {
       await ensureJsZipLoaded();
       if (!window.JSZip) throw new Error('jszip unavailable');
       const bytes = _base64ToBytes(base64);
       const zip = await window.JSZip.loadAsync(bytes);
-      // Find all slide files, sort by slide number
-      const slideFiles = Object.keys(zip.files)
-        .filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name))
-        .sort((a, b) => {
-          const na = parseInt(a.match(/slide(\d+)\.xml/)[1], 10);
-          const nb = parseInt(b.match(/slide(\d+)\.xml/)[1], 10);
-          return na - nb;
-        });
-      const slides = [];
-      const textRegex = /<a:t[^>]*>([\s\S]*?)<\/a:t>/g;
-      for (const file of slideFiles) {
-        const xml = await zip.file(file).async('string');
-        const parts = [];
-        let m;
-        textRegex.lastIndex = 0;
-        while ((m = textRegex.exec(xml)) !== null) {
-          parts.push(m[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&apos;/g, "'"));
-        }
-        const slideText = parts.join(' ').replace(/\s+/g, ' ').trim();
-        if (slideText) slides.push({ slideNum: slides.length + 1, text: slideText });
+      const allNames = Object.keys(zip.files);
+      const slideFiles = allNames
+        .filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))
+        .sort((a, b) => parseInt(a.match(/slide(\d+)\.xml/)[1], 10) - parseInt(b.match(/slide(\d+)\.xml/)[1], 10));
+      const notesFiles = allNames
+        .filter(n => /^ppt\/notesSlides\/notesSlide\d+\.xml$/.test(n))
+        .sort((a, b) => parseInt(a.match(/notesSlide(\d+)\.xml/)[1], 10) - parseInt(b.match(/notesSlide(\d+)\.xml/)[1], 10));
+      const layoutFiles = allNames.filter(n => /^ppt\/slideLayouts\/slideLayout\d+\.xml$/.test(n)).sort();
+      const masterFiles = allNames.filter(n => /^ppt\/slideMasters\/slideMaster\d+\.xml$/.test(n)).sort();
+      const chartFiles = allNames.filter(n => /^ppt\/charts\/chart\d+\.xml$/.test(n)).sort();
+      const diagramFiles = allNames.filter(n => /^ppt\/diagrams\/data\d+\.xml$/.test(n)).sort();
+      const notesByNum = new Map();
+      for (const nf of notesFiles) {
+        const m = nf.match(/notesSlide(\d+)\.xml/);
+        if (!m) continue;
+        const num = parseInt(m[1], 10);
+        const notesText = await _ooxmlExtractPart(zip.file(nf), 'p', 't', _A_NS);
+        if (notesText && notesText.trim()) notesByNum.set(num, notesText);
       }
-      const fullText = slides.map(s => '## Slide ' + s.slideNum + '\n\n' + s.text).join('\n\n');
-      return { fullText, slides, slideCount: slideFiles.length, sourceCharCount: fullText.length, method: 'jszip' };
+      const slides = [];
+      for (const sf of slideFiles) {
+        const num = parseInt(sf.match(/slide(\d+)\.xml/)[1], 10);
+        const slideText = await _ooxmlExtractPart(zip.file(sf), 'p', 't', _A_NS);
+        const notesText = notesByNum.get(num) || '';
+        // Per-slide block packs body + notes into ONE marker so AI keeps them together.
+        const blockParts = [];
+        blockParts.push(_ALLO_SECTION_OPEN('SLIDE', num));
+        if (slideText && slideText.trim()) blockParts.push(slideText);
+        if (notesText && notesText.trim()) {
+          blockParts.push('[Teacher speaker notes for slide ' + num + ' — instructional context, not student-facing copy]');
+          blockParts.push(notesText);
+        }
+        blockParts.push(_ALLO_SECTION_CLOSE);
+        const block = blockParts.join('\n');
+        slides.push({ slideNum: num, text: slideText, notesText, block });
+      }
+      // Header-level recurring content (layouts + masters): dedup-emit once at top.
+      const headerParts = [];
+      for (const lf of layoutFiles) {
+        const txt = await _ooxmlExtractPart(zip.file(lf), 'p', 't', _A_NS);
+        if (txt && txt.trim()) headerParts.push(_ALLO_SECTION_OPEN('LAYOUT', lf.match(/slideLayout(\d+)/)[1]) + '\n' + txt + '\n' + _ALLO_SECTION_CLOSE);
+      }
+      for (const mf of masterFiles) {
+        const txt = await _ooxmlExtractPart(zip.file(mf), 'p', 't', _A_NS);
+        if (txt && txt.trim()) headerParts.push(_ALLO_SECTION_OPEN('MASTER', mf.match(/slideMaster(\d+)/)[1]) + '\n' + txt + '\n' + _ALLO_SECTION_CLOSE);
+      }
+      // Trailing block: charts/diagrams (axis labels, SmartArt text). v1 skips
+      // rels cross-ref so these are NOT linked back to their containing slide.
+      const trailingParts = [];
+      for (const cf of chartFiles) {
+        // chart text uses <c:tx><c:rich>...<a:t>...</a:t></c:rich></c:tx> — best-effort regex
+        try {
+          const xml = await zip.file(cf).async('string');
+          const m = xml.match(/<a:t[^>]*>([\s\S]*?)<\/a:t>/g) || [];
+          const txt = m.map(s => s.replace(/<[^>]+>/g, '')).filter(Boolean).join(' ').trim();
+          if (txt) trailingParts.push(_ALLO_SECTION_OPEN('CHART', cf.match(/chart(\d+)/)[1]) + '\n' + txt + '\n' + _ALLO_SECTION_CLOSE);
+        } catch (_) {}
+      }
+      for (const df of diagramFiles) {
+        try {
+          const xml = await zip.file(df).async('string');
+          const m = xml.match(/<a:t[^>]*>([\s\S]*?)<\/a:t>/g) || [];
+          const txt = m.map(s => s.replace(/<[^>]+>/g, '')).filter(Boolean).join(' ').trim();
+          if (txt) trailingParts.push(_ALLO_SECTION_OPEN('DIAGRAM', df.match(/data(\d+)/)[1]) + '\n' + txt + '\n' + _ALLO_SECTION_CLOSE);
+        } catch (_) {}
+      }
+      const fullText = [...headerParts, ...slides.map(s => s.block), ...trailingParts].filter(Boolean).join('\n\n');
+      const notesCount = slides.filter(s => s.notesText && s.notesText.trim()).length;
+      return {
+        fullText,
+        slides,
+        slideCount: slideFiles.length,
+        notesCount,
+        layoutCount: layoutFiles.length,
+        masterCount: masterFiles.length,
+        chartCount: chartFiles.length,
+        diagramCount: diagramFiles.length,
+        sourceCharCount: fullText.length,
+        method: 'jszip-dom',
+      };
     } catch (e) {
       const msg = e?.message || '';
       warnLog('[PPTX Det] extraction failed:', msg);
@@ -7327,6 +7616,11 @@ HTML section ${chunkNum}/${chunks.length}:
     let currentHtml = htmlContent;
     let currentAxe = axeResult;
     let passCount = 0;
+    // 2026-06-07: capture the original input so the reassembly gate at L8124
+    // anchors to it rather than to per-pass currentHtml (which lets the 0.7
+    // floor compound across maxPasses passes — pass-1 0.75x then pass-2 0.75x
+    // of pass-1 = 0.56x of original, both individually "passing" the gate).
+    const _origInputHtml = htmlContent;
 
     // ── Fast path: direct axe rule → surgical tool mapping ──
     // For unambiguous violations (image-alt, button-name, duplicate-id, document-title, etc.)
@@ -8098,8 +8392,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // ── Clear IndexedDB progress — full remediation completed successfully ──
           try { clearChunkProgress(_sessionId); } catch(e) {}
 
-          if (reassembled.length > currentHtml.length * 0.7) {
+          // Anchored to _origInputHtml (not currentHtml) to prevent compound
+          // shrink across passes. warnLog the rejection branch so silent
+          // discards become observable.
+          if (reassembled.length > _origInputHtml.length * 0.7) {
             currentHtml = reassembled;
+          } else {
+            try { warnLog(`[AutoFix] reassembled doc ${reassembled.length}b < 70% of original input ${_origInputHtml.length}b — keeping prior currentHtml unchanged`); } catch (_) {}
           }
         }
         } // end else (full chunk/single-pass path)
@@ -10870,7 +11169,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
         // Phase 2: Diff-based artifact detection
         if (extractedText && extractedText.length > 100) {
-          const _originalNorm = extractedText.toLowerCase().replace(/\s+/g, ' ').trim();
+          // 2026-06-07: strip ALLO_SECTION markers before normalization so DOCX/PPTX
+          // augmentation markers do not appear as "added" in the diff (false positives).
+          const _originalNorm = extractedText.replace(_ALLO_MARKER_RE, '').toLowerCase().replace(/\s+/g, ' ').trim();
           const _htmlText = accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
           const _htmlNorm = _htmlText.toLowerCase();
 
@@ -11119,7 +11420,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           .replace(/­/g, '')
           .replace(/\s+/g, ' ')
           .trim();
-        const _srcRaw = extractedText || '';
+        // 2026-06-07: strip ALLO_SECTION markers from source before measurement so
+        // DOCX/PPTX augmentation marker chars do not inflate the denominator and
+        // trigger false "low fidelity" banners on extractor-augmented documents.
+        const _srcRaw = (extractedText || '').replace(_ALLO_MARKER_RE, '');
         let groundTruth, finalText, groundTruthMethod;
         if (_srcRaw) {
           // Preferred: normalized source TEXT vs normalized output TEXT (de-hyphenation-safe).
@@ -11310,7 +11614,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         accessibleHtml,
         integrityCoverage,
         integrityWarning,
-        sourceText: extractedText || '',
+        // 2026-06-07: strip ALLO_SECTION markers before persisting so the
+        // user-visible Diff panel never shows marker substrings as content.
+        sourceText: (extractedText || '').replace(_ALLO_MARKER_RE, ''),
         finalText: htmlToPlainText(accessibleHtml),
         groundTruthCharCount: window.__lastGroundTruthCharCount || 0,
         groundTruthMethod: window.__lastGroundTruthMethod || null,
@@ -13120,8 +13426,31 @@ tr { page-break-inside: avoid; }
     const fieldElemRefs = [];
     let nextStructParentKey = pages.length;
     try {
+      // 2026-06-07: skip Stage-3 form tagging entirely when the PDF carries an
+      // existing digital signature (/AcroForm /SigFlags bit 1 = "SignaturesExist").
+      // Adding /StructParent to widget dicts + registering new StructElems modifies
+      // the byte tree, which breaks the /Sig ByteRange hash and invalidates the
+      // signature in Acrobat. For parent-signed IEPs this is a real legal/trust
+      // issue, so the conservative default is skip + visible toast.
+      let _signedFormSkip = false;
+      try {
+        const _acroSig = doc.catalog.get(PDFName.of('AcroForm'));
+        if (_acroSig && _acroSig.get) {
+          const _sigFlags = _acroSig.get(PDFName.of('SigFlags'));
+          if (_sigFlags) {
+            const _sv = (typeof _sigFlags.numberValue === 'number') ? _sigFlags.numberValue
+              : (typeof _sigFlags.value === 'number') ? _sigFlags.value
+              : Number(String(_sigFlags));
+            if ((_sv | 0) & 1) {
+              _signedFormSkip = true;
+              try { warnLog('[Stage3-AcroForm] /SigFlags SignaturesExist set — skipping form tagging to preserve existing digital signatures (re-sign after remediation if signatures must be retained)'); } catch (_) {}
+              try { if (typeof addToast === 'function') addToast('PDF contains digital signatures — form-field tagging skipped to preserve signature validity.', 'info'); } catch (_) {}
+            }
+          }
+        }
+      } catch (_) {}
       let form = null;
-      try { form = doc.getForm(); } catch(_) { form = null; }
+      if (!_signedFormSkip) { try { form = doc.getForm(); } catch(_) { form = null; } }
       let fields = [];
       if (form) { try { fields = form.getFields() || []; } catch(_) { fields = []; } }
       if (fields.length > 0) {
@@ -13165,14 +13494,22 @@ tr { page-break-inside: avoid; }
               Pg: info.page.ref,
               Obj: info.annotRef,
             });
-            const fieldElemDict = context.obj({
+            // 2026-06-07: add /TU (tooltip — PDF 1.7 §12.7.3.3, the canonical
+            // SR-announced name carrier per PDF/UA §7.18). /Alt stays for legacy
+            // readers. Wrap in try/catch so a malformed fieldName can't break the
+            // whole loop (failure_mode #7). NO /V into the tag tree — /V lives on
+            // the field's acroField.dict and duplicating creates desync if a user
+            // later edits the form in Acrobat.
+            let _fieldDictObj = {
               Type: PDFName.of('StructElem'),
               S: PDFName.of('Form'),
               P: structRootRef,
               Pg: info.page.ref,
               Alt: PDFString.of(fieldName),
               K: context.obj([objrDict]),
-            });
+            };
+            try { _fieldDictObj.TU = PDFString.of(fieldName); } catch (_) {}
+            const fieldElemDict = context.obj(_fieldDictObj);
             const fieldElemRef = context.register(fieldElemDict);
             fieldElemRefs.push(fieldElemRef);
             try { info.annotDict.set(PDFName.of('StructParent'), PDFNumber.of(key)); } catch(_) {}
@@ -20007,6 +20344,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     getPdfPreviewHtml: _wrap(getPdfPreviewHtml),
     updatePdfPreview: _wrap(updatePdfPreview),
     applyWordRestoration: applyWordRestoration, // pure helper (no state binding needed)
+    // AcroForm value extraction (DARK in slice 1 2026-06-07). DO NOT wire into
+    // any audit/transform call site without first shipping the FERPA consent UI
+    // flow + per-profile studentProjectSettings.allowFormValueExtraction toggle.
+    // Default consent:false returns structured fields[] without values.
+    extractPdfFormFieldsDeterministic: _wrapAsync(extractPdfFormFieldsDeterministic),
     applyWordRestorationInPlace: _wrap(applyWordRestorationInPlace),
     retargetMissingWordsViaGemini: _wrapAsync(retargetMissingWordsViaGemini),
     restoreSentencesDeterministic: restoreSentencesDeterministic, // pure DOM work
