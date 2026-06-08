@@ -26,19 +26,37 @@ describe('Scientific · steelmanValidate', () => {
     ],
     stageNotes: { interpret_argue: { text: '', steelmanText: '' } },
   };
+  // Post-strip shape: another_reading has NO `summary` — the hub footgun-strip
+  // (/^summary$/i) deletes it before steelmanValidate runs (by design), so the
+  // prompt no longer requests it, the validator no longer checks it, and the UI
+  // no longer renders it (2026-06-07 fix).
   const validOut = () => ({
     another_reading: {
-      summary: 'A competing account weights conductor geometry over material entirely.',
       cited_evidence: [
         { card_id: 'e1', quoted_snippet: 'wire heated up faster' },
         { card_id: 'e2', quoted_snippet: 'less current flow' },
       ],
+      assumptions_required_questions: ['What would have to hold for this reading?'],
+      disconfirmer_questions: ['What observation would disconfirm it?'],
     },
     framing_note: 'This is another reading of the same evidence, not a verdict.',
   });
 
-  it('accepts a well-formed another-reading citing two real cards', () => {
+  it('accepts a well-formed another-reading citing two real cards (no summary needed)', () => {
     const res = S().steelmanValidate(validOut(), journal);
+    expect(res.__rejected).toBeFalsy();
+  });
+
+  it('no longer runs a summary paraphrase guard (removed with the footgun-stripped field)', () => {
+    // A journal whose reading the summary echoes verbatim would have tripped the
+    // old `summary_paraphrases_student` 6-gram guard. Since summary is stripped
+    // by design, that guard was dead code and is gone — this must NOT reject.
+    const echoJournal = Object.assign({}, journal, {
+      stageNotes: { interpret_argue: { text: 'the wire heated up faster when it was thicker conductor geometry', steelmanText: '' } },
+    });
+    const out = validOut();
+    out.another_reading.summary = 'the wire heated up faster when it was thicker conductor geometry';
+    const res = S().steelmanValidate(out, echoJournal);
     expect(res.__rejected).toBeFalsy();
   });
 

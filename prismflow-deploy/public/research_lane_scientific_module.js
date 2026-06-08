@@ -527,7 +527,7 @@
       "evidence cards:",
       evidenceList,
       "",
-      'Return ONLY JSON: { "another_reading": { "summary": string, "cited_evidence": [{ "card_id": string, "quoted_snippet": string }], "assumptions_required_questions": string[], "disconfirmer_questions": string[] }, "framing_note": string, "comparison_prompt_questions": string[] }'
+      'Return ONLY JSON: { "another_reading": { "cited_evidence": [{ "card_id": string, "quoted_snippet": string }], "assumptions_required_questions": string[], "disconfirmer_questions": string[] }, "framing_note": string, "comparison_prompt_questions": string[] }'
     ].join("\n");
   }
   function honestUncertaintyPrompt(journal) {
@@ -612,17 +612,6 @@
       var cardNorm = normalizeForCompare(card.text || "");
       if (!snipNorm || cardNorm.indexOf(snipNorm) === -1) {
         return { __rejected: true, rejectReason: "quoted_snippet_not_in_card", attemptedShapeKeys: ["cited_evidence"] };
-      }
-    }
-    var note = (journal.stageNotes || {}).interpret_argue || {};
-    var summaryNorm = normalizeForCompare(ar.summary || "");
-    var readingNorm = normalizeForCompare(note.text || "");
-    var steelmanNorm = normalizeForCompare(note.steelmanText || "");
-    var sumWords = summaryNorm.split(/\s+/);
-    for (var j = 0; j < sumWords.length - 5; j++) {
-      var gram = sumWords.slice(j, j + 6).join(" ");
-      if (gram.length > 12 && (readingNorm.indexOf(gram) !== -1 || steelmanNorm.indexOf(gram) !== -1)) {
-        return { __rejected: true, rejectReason: "summary_paraphrases_student", attemptedShapeKeys: ["summary"] };
       }
     }
     var fn = (out.framing_note || "").toLowerCase();
@@ -1202,7 +1191,7 @@
       return /* @__PURE__ */ React.createElement("li", { key: i }, /* @__PURE__ */ React.createElement("em", null, s.kind), ': "', s.verbatim, '"', s.why_this_kind_question && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#7c3aed" } }, s.why_this_kind_question));
     }))), pairs && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#5b21b6" } }, t("scientific.assumption_probes_label") || "Questions about phrases from your model"), pairs.map(function(p, i) {
       return /* @__PURE__ */ React.createElement("div", { key: i, style: { marginTop: "4px", fontSize: "12px" } }, /* @__PURE__ */ React.createElement("em", null, '"', p.quoted_phrase, '"'), renderQuestions(p.assumption_probe_questions, ""));
-    }), data.entities_question && /* @__PURE__ */ React.createElement("p", { style: { marginTop: "6px", fontSize: "12px", color: "#1e293b" } }, data.entities_question), data.relationships_question && /* @__PURE__ */ React.createElement("p", { style: { marginTop: "4px", fontSize: "12px", color: "#1e293b" } }, data.relationships_question)), another && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#5b21b6" } }, t("scientific.another_reading_label") || "AI offers another reading (additional, not the alternative)"), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "12px", lineHeight: 1.6 } }, another.summary), another.cited_evidence && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("strong", null, "Cites: "), another.cited_evidence.map(function(ce, i) {
+    }), data.entities_question && /* @__PURE__ */ React.createElement("p", { style: { marginTop: "6px", fontSize: "12px", color: "#1e293b" } }, data.entities_question), data.relationships_question && /* @__PURE__ */ React.createElement("p", { style: { marginTop: "4px", fontSize: "12px", color: "#1e293b" } }, data.relationships_question)), another && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#5b21b6" } }, t("scientific.another_reading_label") || "AI offers another reading (additional, not the alternative)"), another.cited_evidence && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("strong", null, "Cites: "), another.cited_evidence.map(function(ce, i) {
       return /* @__PURE__ */ React.createElement("div", { key: i }, "\xB7 #", ce.card_id, ' \u2014 "', ce.quoted_snippet, '"');
     })), renderQuestions(another.assumptions_required_questions, t("scientific.assumptions_required_label") || "Questions about what would have to hold:"), renderQuestions(another.disconfirmer_questions, t("scientific.disconfirmer_label") || "Questions about what would disconfirm this:"), renderQuestions(data.comparison_prompt_questions, t("scientific.comparison_label") || "Compare the readings:"), data.framing_note && /* @__PURE__ */ React.createElement("p", { style: { marginTop: "6px", fontSize: "11px", color: "#7c3aed", fontStyle: "italic" } }, data.framing_note)), perClaim && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#5b21b6" } }, t("scientific.per_claim_label") || "Questions about your labels"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "18px", fontSize: "12px", lineHeight: 1.6 } }, perClaim.map(function(pc, i) {
       return /* @__PURE__ */ React.createElement("li", { key: i }, /* @__PURE__ */ React.createElement("strong", null, "Claim ", pc.claim_index || i + 1), " [", pc.student_label, ", AI flag: ", pc.calibration_flag, "]", renderQuestions(pc.label_probe_questions, ""));

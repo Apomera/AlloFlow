@@ -522,7 +522,7 @@
       'evidence cards:',
       evidenceList,
       '',
-      'Return ONLY JSON: { "another_reading": { "summary": string, "cited_evidence": [{ "card_id": string, "quoted_snippet": string }], "assumptions_required_questions": string[], "disconfirmer_questions": string[] }, "framing_note": string, "comparison_prompt_questions": string[] }',
+      'Return ONLY JSON: { "another_reading": { "cited_evidence": [{ "card_id": string, "quoted_snippet": string }], "assumptions_required_questions": string[], "disconfirmer_questions": string[] }, "framing_note": string, "comparison_prompt_questions": string[] }',
     ].join('\n');
   }
 
@@ -610,17 +610,13 @@
         return { __rejected: true, rejectReason: 'quoted_snippet_not_in_card', attemptedShapeKeys: ['cited_evidence'] };
       }
     }
-    var note = (journal.stageNotes || {}).interpret_argue || {};
-    var summaryNorm = normalizeForCompare(ar.summary || '');
-    var readingNorm = normalizeForCompare(note.text || '');
-    var steelmanNorm = normalizeForCompare(note.steelmanText || '');
-    var sumWords = summaryNorm.split(/\s+/);
-    for (var j = 0; j < sumWords.length - 5; j++) {
-      var gram = sumWords.slice(j, j + 6).join(' ');
-      if (gram.length > 12 && (readingNorm.indexOf(gram) !== -1 || steelmanNorm.indexOf(gram) !== -1)) {
-        return { __rejected: true, rejectReason: 'summary_paraphrases_student', attemptedShapeKeys: ['summary'] };
-      }
-    }
+    // No `summary` anti-paraphrase check: the hub footgun-strip
+    // (FOOTGUN_KEY_PATTERNS /^summary$/i) deletes another_reading.summary before
+    // this validator runs — by design ("replaced by quoted_snippet + questions").
+    // The deliverable is cited_evidence (the student's OWN cards, verified above)
+    // plus question arrays that enforceQuestionFormat + the framing_note guard
+    // below already constrain, so an AI-authored summary is neither requested,
+    // rendered, nor validated.
     var fn = (out.framing_note || '').toLowerCase();
     if (!/another|additional/.test(fn) || /the alternative|the correct|should instead|better than|more likely/.test(fn)) {
       return { __rejected: true, rejectReason: 'framing_note_directive', attemptedShapeKeys: ['framing_note'] };
@@ -1219,7 +1215,6 @@
         {another && (
           <div>
             <strong style={{ fontSize: '11px', color: '#5b21b6' }}>{t('scientific.another_reading_label') || 'AI offers another reading (additional, not the alternative)'}</strong>
-            <p style={{ margin: '4px 0', fontSize: '12px', lineHeight: 1.6 }}>{another.summary}</p>
             {another.cited_evidence && (
               <div style={{ fontSize: '11px', color: '#475569' }}>
                 <strong>Cites: </strong>
