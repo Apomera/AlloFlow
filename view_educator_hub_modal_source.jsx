@@ -73,7 +73,13 @@ function EducatorHubModal(props) {
                   setShowEducatorHub(false);
                   const input = document.createElement('input');
                   input.type = 'file';
-                  input.accept = 'application/pdf,.pdf,image/*,.docx,.pptx';
+                  // PDF / DOCX / PPTX only. image/* was previously offered here but a lone image
+                  // fell through to handleFileUpload's image branch — which OCRs into the
+                  // lesson-generator text box, NOT the remediation pipeline (this card promises
+                  // "audit & remediation"). The pipeline has no client-side image->document
+                  // remediation path, so don't advertise it. (To remediate a photo of a document,
+                  // save it into a PDF first — scanned PDFs get the full OCR + tag treatment.)
+                  input.accept = 'application/pdf,.pdf,.docx,.pptx';
                   input.multiple = true;
                   input.onchange = (e) => {
                       const files = [...e.target.files];
