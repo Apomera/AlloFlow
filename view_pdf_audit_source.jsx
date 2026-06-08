@@ -113,6 +113,83 @@ function PdfAuditView(props) {
   // 'word-splice' / 'sentence-anchor' / 're-tag' while running so the button
   // can show honest progress instead of a single "Restoring..." label.
   const [tierBStage, setTierBStage] = useState('');
+  // 2026-06-08: Translate raw exception messages into actionable user-facing
+  // text. Was producing toasts like "Cannot read properties of undefined
+  // (reading 'dispose')" or "Fetch failed: 429" — opaque + scary. Now classifies
+  // common failure modes and returns {friendly, actionable, severity}. Reused
+  // from gemini_api's quota/auth banner classifier (same shape, similar regex
+  // bank). Garry-readiness: today the fabricated `gemini-3-flash-preview`
+  // model name 401s the entire pipeline silently — this surfaces it as
+  // "AI model unavailable — deterministic fixes are still running" instead of
+  // a cryptic fetch error. See workflow wxnlpe7ur synthesis.
+  const classifyPdfError = (err) => {
+    const msg = (err && (err.message || (typeof err === 'string' ? err : ''))) || '';
+    const lower = String(msg).toLowerCase();
+    if (lower.includes('429') || lower.includes('resource_exhausted') || lower.includes('quota')) {
+      return { friendly: 'Gemini API rate or quota limit reached.', actionable: 'Wait about a minute and use the ↻ Retry buttons. If it persists, you may have hit the daily quota — wait until midnight Pacific.', severity: 'warning' };
+    }
+    if (lower.includes('401') || lower.includes('api key not valid') || lower.includes('api_key_invalid') || lower.includes('unauthenticated')) {
+      return { friendly: 'AI model unavailable (auth error).', actionable: 'Deterministic fixes still run. If this keeps happening, the Gemini API key may have been revoked — but if it was working recently, wait 5-10 minutes before regenerating.', severity: 'warning' };
+    }
+    if (lower.includes('recitation')) {
+      return { friendly: 'AI refused to remediate this passage (model thinks it would recite copyrighted text).', actionable: 'Try Re-run with a different model or skip this chunk via the Diff viewer.', severity: 'info' };
+    }
+    if (lower.includes('failed to fetch') || lower.includes('networkerror') || lower.includes('timed out') || msg.match(/HTTP 5\d\d/)) {
+      return { friendly: 'Network connection issue.', actionable: 'Check your internet and use the ↻ Retry buttons. AlloFlow does not buffer requests offline.', severity: 'warning' };
+    }
+    if (lower.includes('abort')) {
+      return { friendly: 'Operation cancelled.', actionable: '', severity: 'info' };
+    }
+    if (lower.includes('pdf-lib') || lower.includes('pdflib')) {
+      return { friendly: 'PDF processing error inside pdf-lib.', actionable: 'Try opening + re-saving the source PDF in Acrobat to refresh its structure, then re-upload.', severity: 'error' };
+    }
+    if (lower.includes('encrypted') || lower.includes('password')) {
+      return { friendly: 'PDF appears password-protected.', actionable: 'Remove the password (Acrobat → File → Properties → Security), save, then re-upload.', severity: 'warning' };
+    }
+    if (lower.includes('invalid pdf') || lower.includes('corrupt')) {
+      return { friendly: 'PDF appears corrupt or malformed.', actionable: 'Try opening it in Acrobat and saving as a fresh PDF, then re-upload.', severity: 'error' };
+    }
+    if (lower.includes('cannot read properties of undefined') || lower.includes('cannot read property')) {
+      return { friendly: 'Internal pipeline error (a step expected data that was missing).', actionable: 'Try ↻ Re-run with restoration, or report this in the GitHub issues with the file name.', severity: 'error' };
+    }
+    // Generic fallback — keep the raw message but framed
+    return { friendly: 'Something went wrong.', actionable: 'Details: ' + (msg || 'unknown error'), severity: 'error' };
+  };
+  // 2026-06-08: per-issue plain-English explanation. Reuses the keyword-regex
+  // pattern from the whole-pipeline whyParts (L1940+) but at per-row granularity
+  // so a teacher seeing "WCAG 1.4.3" gets actionable context without leaving
+  // the modal. Returns null when no pattern matches — caller renders no
+  // disclosure (zero-noise default). Workflow wxnlpe7ur top-5 item #3.
+  const _explainIssue = (issueText) => {
+    const s = String(issueText || '');
+    if (/alt|image|img/i.test(s)) return 'Images without descriptions: a blind student hears silence where sighted students see diagrams, charts, or photographs — they miss educational content entirely.';
+    if (/heading|h1|h2|h3|hierarchy/i.test(s)) return 'Broken heading hierarchy: a screen reader user can\'t navigate by section — they have to listen to the whole document linearly instead of jumping to the chapter they need.';
+    if (/contrast|color/i.test(s)) return 'Low contrast text is unreadable for students with low vision, color vision differences, or anyone viewing on a screen in bright light.';
+    if (/table|scope|header/i.test(s)) return 'Tables without header markup: a screen reader announces cell values with no context — "92" instead of "Math Score for Student A: 92."';
+    if (/label|input|form/i.test(s)) return 'Unlabeled form fields make worksheets and quizzes impossible to complete with a screen reader — the student hears "edit text" with no idea what to type.';
+    if (/lang|language/i.test(s)) return 'Missing language attributes mean screen readers pronounce text with the wrong accent and phonetics, making content incomprehensible.';
+    if (/link|anchor/i.test(s)) return 'Non-descriptive links ("click here") give screen reader users no idea where the link goes — they hear a list of identical "click here" links with no context.';
+    if (/landmark|main|nav|region/i.test(s)) return 'Missing landmarks: screen reader users can\'t quickly jump to the main content, navigation, or footer — they have to tab through everything sequentially.';
+    if (/skip|bypass/i.test(s)) return 'Without a skip-to-content link, keyboard users have to tab through every navigation item to reach the main content on every page visit.';
+    if (/focus|tab.*order/i.test(s)) return 'Bad focus order means tabbing through the page jumps around unpredictably — keyboard users can\'t complete forms or follow the reading order.';
+    return null;
+  };
+  // Map a WCAG rule number to its W3C Understanding page slug.
+  const _wcagUnderstandingUrl = (wcag) => {
+    const map = {
+      '1.1.1': 'non-text-content', '1.3.1': 'info-and-relationships', '1.3.2': 'meaningful-sequence',
+      '1.4.1': 'use-of-color', '1.4.3': 'contrast-minimum', '1.4.4': 'resize-text',
+      '1.4.10': 'reflow', '1.4.11': 'non-text-contrast', '1.4.12': 'text-spacing',
+      '2.1.1': 'keyboard', '2.1.2': 'no-keyboard-trap', '2.4.1': 'bypass-blocks',
+      '2.4.2': 'page-titled', '2.4.3': 'focus-order', '2.4.4': 'link-purpose-in-context',
+      '2.4.6': 'headings-and-labels', '2.4.7': 'focus-visible', '3.1.1': 'language-of-page',
+      '3.1.2': 'language-of-parts', '3.2.1': 'on-focus', '3.2.2': 'on-input',
+      '3.3.1': 'error-identification', '3.3.2': 'labels-or-instructions', '4.1.1': 'parsing',
+      '4.1.2': 'name-role-value', '4.1.3': 'status-messages',
+    };
+    const slug = map[String(wcag).trim()];
+    return slug ? `https://www.w3.org/WAI/WCAG21/Understanding/${slug}.html` : null;
+  };
   // Tier 6 helper: build a localized auditor-agreement tooltip.
   const _agreementTooltip = (n, total) => {
     const base = t('pdf_audit.agreement.tooltip', { n, total }) || `Flagged by ${n} of ${total} auditors`;
@@ -290,7 +367,7 @@ function PdfAuditView(props) {
                           });
                           setPendingPdfFile({ name: (document.getElementById('web-audit-url')?.value || 'website') + '-remediated.html' });
                           addToast(`Remediation complete! Score: ${finalScore}/100`, 'success');
-                        } catch (e) { addToast(t('toasts.remediation_failed') + e.message, 'error'); }
+                        } catch (e) { const _c = classifyPdfError(e); addToast((t('toasts.remediation_failed') || 'Remediation failed: ') + _c.friendly + (_c.actionable ? ' — ' + _c.actionable : ''), _c.severity === 'info' ? 'info' : 'error'); }
                         setPdfFixLoading(false);
                         setPdfFixStep('');
                       }} className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center gap-2">
@@ -405,7 +482,28 @@ function PdfAuditView(props) {
                               <span className="flex-1 truncate font-medium">{item.fileName}</span>
                               <span className="text-slate-600">{(item.fileSize / (1024*1024)).toFixed(1)}MB</span>
                               {item.result && <span className={`font-bold ${(item.result.afterScore || 0) >= 90 ? 'text-green-600' : (item.result.afterScore || 0) >= 70 ? 'text-amber-600' : 'text-red-600'}`}>{item.result.beforeScore}{'\u2192'}{item.result.afterScore}</span>}
-                              {item.error && <span className="text-red-500 truncate max-w-[100px]" title={item.error}>{'\u274c'}</span>}
+                              {item.error && <span className="text-red-500 truncate max-w-[100px]" title={(() => { const _c = classifyPdfError(item.error); return _c.friendly + (_c.actionable ? ' \u2014 ' + _c.actionable : ''); })()}>{'\u274c'}</span>}
+                              {/* 2026-06-08: per-row retry. Uses the REFINED shape from workflow
+                                  wxnlpe7ur verification: do NOT call runPdfBatchRemediation({resumeQueue:[item]})
+                                  because that would destructively wipe the rest of the queue
+                                  AND erase the summary card. Instead, mutate just this item's
+                                  status back to 'pending' (existing loop at doc_pipeline_source.jsx:5908
+                                  already skips done items) so the next runPdfBatchRemediation pass
+                                  picks it up. Re-uses the existing batch infra; no new code path. */}
+                              {!pdfBatchProcessing && item.status === 'failed' && (
+                                <button
+                                  onClick={() => {
+                                    // Reset this item to pending + clear error, then re-run the batch.
+                                    // The loop at doc_pipeline_source.jsx:5908 skips already-done items,
+                                    // so successes are preserved; only this row re-runs.
+                                    setPdfBatchQueue(prev => prev ? prev.map(q => q.id === item.id ? { ...q, status: 'pending', error: null, result: null } : q) : prev);
+                                    setTimeout(() => { try { runPdfBatchRemediation && runPdfBatchRemediation({}); } catch (e) { warnLog('[Batch Retry] start failed:', e); } }, 50);
+                                  }}
+                                  className="text-amber-700 hover:text-amber-800 font-bold ml-1"
+                                  title={'\u21bb Retry this file (the auto-retry already ran once if it failed transiently \u2014 this is your 3rd attempt; check the error tooltip first)'}
+                                  aria-label={'Retry ' + item.fileName}
+                                >{'\u21bb'}</button>
+                              )}
                               {!pdfBatchProcessing && item.status === 'pending' && <button onClick={() => setPdfBatchQueue(prev => prev.filter(q => q.id !== item.id))} className="text-slate-600 hover:text-red-400">{'\u2715'}</button>}
                             </div>
                           ))}
@@ -458,6 +556,24 @@ function PdfAuditView(props) {
                           {pdfBatchSummary.needsExpert > 0 && <p>{'\ud83e\uddd1\u200d\ud83d\udd2c'} {pdfBatchSummary.needsExpert} need expert review</p>}
                           <p>{'\u23f1\ufe0f'} Total time: {Math.floor(pdfBatchSummary.totalElapsed / 60)}m {pdfBatchSummary.totalElapsed % 60}s</p>
                         </div>
+                        {/* 2026-06-08: 'Retry all failed' bulk action. Same refined shape as
+                            the per-row retry \u2014 flip every status==='failed' item to 'pending'
+                            and re-run the existing batch loop (which skips done items at
+                            doc_pipeline_source.jsx:5908). Does NOT call setPdfBatchQueue with
+                            a resumeQueue array (would wipe successes) and does NOT erase the
+                            summary card before the retry. */}
+                        {pdfBatchSummary.failed > 0 && !pdfBatchProcessing && (
+                          <button
+                            onClick={() => {
+                              const _failedCount = pdfBatchQueue.filter(q => q.status === 'failed').length;
+                              if (_failedCount === 0) { addToast('No failed files to retry.', 'info'); return; }
+                              setPdfBatchQueue(prev => prev ? prev.map(q => q.status === 'failed' ? { ...q, status: 'pending', error: null, result: null } : q) : prev);
+                              setTimeout(() => { try { runPdfBatchRemediation && runPdfBatchRemediation({}); } catch (e) { warnLog('[Batch RetryAll] start failed:', e); } }, 50);
+                            }}
+                            className="mt-2 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-bold"
+                            title="Re-queue every failed file and re-run the batch. Already-succeeded files are not re-processed."
+                          >{'\u21bb'} Retry all failed ({pdfBatchSummary.failed})</button>
+                        )}
                       </div>
                     )}
 
@@ -1414,6 +1530,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
                               >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
                             )}
+                            {_explainIssue(issue.issue) && (
+                              <details className="mt-1.5">
+                                <summary className="text-[10px] text-red-700 cursor-pointer hover:underline font-bold inline-block">ⓘ Explain</summary>
+                                <p className="text-[11px] text-slate-700 mt-1 leading-relaxed">{_explainIssue(issue.issue)}{_wcagUnderstandingUrl(issue.wcag) && <> <a href={_wcagUnderstandingUrl(issue.wcag)} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">Learn more →</a></>}</p>
+                              </details>
+                            )}
                           </div>
                         </li>
                       ))}
@@ -1434,6 +1556,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
                               >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
                             )}
+                            {_explainIssue(issue.issue) && (
+                              <details className="mt-1.5">
+                                <summary className="text-[10px] text-amber-700 cursor-pointer hover:underline font-bold inline-block">ⓘ Explain</summary>
+                                <p className="text-[11px] text-slate-700 mt-1 leading-relaxed">{_explainIssue(issue.issue)}{_wcagUnderstandingUrl(issue.wcag) && <> <a href={_wcagUnderstandingUrl(issue.wcag)} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">Learn more →</a></>}</p>
+                              </details>
+                            )}
                           </div>
                         </li>
                       ))}
@@ -1453,6 +1581,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-green-100 text-green-700' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-amber-100 text-amber-700' : 'bg-orange-100 text-orange-700'}`}
                                 title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
                               >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
+                            )}
+                            {_explainIssue(issue.issue) && (
+                              <details className="mt-1.5">
+                                <summary className="text-[10px] text-yellow-700 cursor-pointer hover:underline font-bold inline-block">ⓘ Explain</summary>
+                                <p className="text-[11px] text-slate-700 mt-1 leading-relaxed">{_explainIssue(issue.issue)}{_wcagUnderstandingUrl(issue.wcag) && <> <a href={_wcagUnderstandingUrl(issue.wcag)} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">Learn more →</a></>}</p>
+                              </details>
                             )}
                           </div>
                         </li>
@@ -2355,7 +2489,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   });
                                   if (addToast) addToast(`Image #${imgIdx} regenerated ✓`, 'success');
                                 } catch (e) {
-                                  if (addToast) addToast(`Regeneration failed: ${(e && e.message) || 'unknown error'}`, 'error');
+                                  if (addToast) { const _c = classifyPdfError(e); addToast('Regeneration failed: ' + _c.friendly + (_c.actionable ? ' — ' + _c.actionable : ''), _c.severity === 'info' ? 'info' : 'error'); }
                                 }
                               };
                               return (
@@ -2720,9 +2854,38 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         </ul>
                                       </details>
                                     )}
-                                    <p className="text-[10px] text-slate-500 italic">
-                                      The remediation pipeline should preserve every word. A non-zero missing count indicates a drop worth investigating — unless Simplify or Translate was toggled, in which case some word changes are expected.
-                                    </p>
+                                    {/* 2026-06-08: actionable threshold legend + Simplify/Translate suppression.
+                                        Workflow wxnlpe7ur top-5 item #4. Replaces vague italic guidance with a
+                                        clear what-to-do-about-it band. */}
+                                    {(() => {
+                                      const _simplifyOrTranslate = !!(pdfFixResult && (pdfFixResult.simplifyMode || pdfFixResult.translationApplied || pdfFixResult.translateMode || pdfFixResult.translation));
+                                      const _band = fidelityResult.fidelity >= 99 ? 'green' : fidelityResult.fidelity >= 95 ? 'amber' : 'red';
+                                      const _bandLabel = _band === 'green' ? 'Production-ready'
+                                                       : _band === 'amber' ? 'Review the missing-words list'
+                                                       : 'Re-run remediation';
+                                      const _bandAdvice = _band === 'green'
+                                        ? 'No action needed. The remediated output preserves the source.'
+                                        : _band === 'amber'
+                                          ? 'Open the list above and confirm none of the missing words are critical. If the document contains quoted speech with internal quotes or filled forms, this is often safe. Use ↻ Re-run with restoration to attempt automatic recovery.'
+                                          : 'Use ↻ Re-run with restoration. If that doesn\'t recover the missing words, the chunking strategy may be aggressive on this document — re-run with fewer fix passes.';
+                                      const _bandColor = _band === 'green' ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                                                       : _band === 'amber' ? 'bg-amber-50 border-amber-300 text-amber-900'
+                                                       : 'bg-red-50 border-red-300 text-red-900';
+                                      if (_simplifyOrTranslate) {
+                                        return (
+                                          <div className="bg-sky-50 border border-sky-300 rounded-lg p-2 text-[11px] text-sky-900">
+                                            <strong>Simplify or Translate is on</strong> — word-count changes are <em>expected</em>. The missing-words list above will include source words that were paraphrased or translated rather than literally preserved. Verify a sample if you need byte-perfect fidelity.
+                                          </div>
+                                        );
+                                      }
+                                      return (
+                                        <div className={`${_bandColor} border rounded-lg p-2 text-[11px]`}>
+                                          <div className="font-bold mb-0.5">{_bandLabel} ({fidelityResult.fidelity}% · {_band === 'green' ? '≥99' : _band === 'amber' ? '95–99' : '<95'}%)</div>
+                                          <div className="leading-relaxed">{_bandAdvice}</div>
+                                          <div className="text-[10px] mt-1 opacity-75">Thresholds: ≥99% = production-ready · 95–99% = review · &lt;95% = re-run.</div>
+                                        </div>
+                                      );
+                                    })()}
                                   </div>
                                 )}
                                 {disagreements.length > 0 && (
@@ -3460,6 +3623,41 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <span>🔁 Auto-continue</span>
                               </label>
                             )}
+                            {/* 2026-06-08: 'Re-run with new settings' inline panel. Lets the user
+                                bump target score / max passes / polish without losing the in-memory
+                                remediation. Workflow wxnlpe7ur top-5 item #5. Reuses the same
+                                setters as the choose-screen settings panel at L767+. */}
+                            {!pdfFixLoading && pdfFixResult && pdfFixResult.accessibleHtml && (
+                              <details className="basis-full mt-2 text-[11px]">
+                                <summary className="cursor-pointer font-bold text-indigo-700 hover:underline inline-block">⚙ Re-run with new settings</summary>
+                                <div className="mt-2 p-3 bg-indigo-50 border border-indigo-200 rounded-lg space-y-2">
+                                  <p className="text-[11px] text-slate-700">Adjust settings + re-run remediation on the current accessible HTML — no re-extraction, no lost work. Manual chunk accept/reject decisions are preserved.</p>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                    <label className="flex flex-col gap-0.5">
+                                      <span className="text-[10px] font-bold text-slate-700">🎯 Target score: <span className="font-mono">{pdfTargetScore}</span></span>
+                                      <input type="range" min="60" max="100" step="5" value={pdfTargetScore} onChange={(e) => setPdfTargetScore(parseInt(e.target.value))} className="w-full" />
+                                    </label>
+                                    <label className="flex flex-col gap-0.5">
+                                      <span className="text-[10px] font-bold text-slate-700">🔧 Max fix passes: <span className="font-mono">{pdfAutoFixPasses}</span></span>
+                                      <input type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" />
+                                    </label>
+                                    <label className="flex flex-col gap-0.5">
+                                      <span className="text-[10px] font-bold text-slate-700">✨ Polish passes: <span className="font-mono">{pdfPolishPasses}</span></span>
+                                      <input type="range" min="0" max="3" value={pdfPolishPasses} onChange={(e) => setPdfPolishPasses(parseInt(e.target.value))} className="w-full" />
+                                    </label>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      // runAutoFixLoop reads pdfFixResultRef.current.accessibleHtml as the
+                                      // starting point, so this naturally re-runs against existing remediation.
+                                      addToast('Applying new settings and re-running…', 'info');
+                                      runAutoFixLoop(Math.max(1, pdfAutoFixPasses || 1));
+                                    }}
+                                    className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[11px] font-bold"
+                                  >▶ Apply new settings and continue</button>
+                                </div>
+                              </details>
+                            )}
                             {pdfAutoContinueRunning && (
                               <button onClick={() => { pdfAutoContinueAbortRef.current = true; try { pdfAutoContinueAbortCtrlRef.current?.abort(); } catch(_) {} addToast(t('toasts.stopping_aborting_flight_gemini_call'), 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label={t('pdf_audit.auto_fix.stop_aria') || 'Stop auto-continue remediation'}>
                                 ⏸ Stop auto-continue
@@ -4167,7 +4365,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     setTierBStage('');
                                   } catch (e) {
                                     warnLog('[TierB] restoration handler threw: ' + (e && e.message));
-                                    addToast('Restoration failed: ' + (e && e.message ? e.message : 'unknown error'), 'error');
+                                    { const _c = classifyPdfError(e); addToast('Restoration failed: ' + _c.friendly + (_c.actionable ? ' — ' + _c.actionable : ''), _c.severity === 'info' ? 'info' : 'error'); }
                                     setPdfFixStep && setPdfFixStep('');
                                     setTierBStage('');
                                   }
@@ -4856,7 +5054,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </div>`;
                               setPdfFixResult(prev => ({ ...prev, accessibleHtml: prev.accessibleHtml.replace('</main>', section + '</main>') }));
                               addToast('🌐 ' + lang + ' translation added!', 'success');
-                            } catch(e) { addToast(t('toasts.translation_failed_3') + e.message, 'error'); }
+                            } catch(e) { const _c = classifyPdfError(e); addToast((t('toasts.translation_failed_3') || 'Translation failed: ') + _c.friendly + (_c.actionable ? ' — ' + _c.actionable : ''), _c.severity === 'info' ? 'info' : 'error'); }
                           }} className="px-3 py-2 bg-violet-600 text-white rounded-lg text-[11px] font-bold hover:bg-violet-700 transition-colors shrink-0">
                             Translate
                           </button>
@@ -4901,7 +5099,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </div>`;
                               setPdfFixResult(prev => ({ ...prev, accessibleHtml: prev.accessibleHtml.replace('</main>', section + '</main>') }));
                               addToast(t('toasts.simplified_version_added'), 'success');
-                            } catch(e) { addToast(t('toasts.simplification_failed_2') + e.message, 'error'); }
+                            } catch(e) { const _c = classifyPdfError(e); addToast((t('toasts.simplification_failed_2') || 'Simplification failed: ') + _c.friendly + (_c.actionable ? ' — ' + _c.actionable : ''), _c.severity === 'info' ? 'info' : 'error'); }
                           }} className="px-3 py-2 bg-green-700 text-white rounded-lg text-[11px] font-bold hover:bg-green-700 transition-colors shrink-0">
                             Simplify
                           </button>
@@ -7576,7 +7774,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       ? `✅ Full re-audit complete! ${totalPasses} checks passing, 0 issues.`
                       : `⚠️ Re-audit: ${totalIssues} issue(s), ${totalPasses} passing`, totalIssues === 0 ? 'success' : 'info');
                   }
-                } catch(e) { addToast(t('toasts.re_audit_failed') + e.message, 'error'); }
+                } catch(e) { const _c = classifyPdfError(e); addToast((t('toasts.re_audit_failed') || 'Re-audit failed: ') + _c.friendly + (_c.actionable ? ' — ' + _c.actionable : ''), _c.severity === 'info' ? 'info' : 'error'); }
               }} className="w-full px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-600 hover:bg-purple-100 transition-colors flex items-center gap-2">
                 🤖 Full Re-audit (AI + axe-core)
               </button>
