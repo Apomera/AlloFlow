@@ -2187,14 +2187,40 @@ Return ONLY JSON:
         className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold text-sm hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center justify-center gap-2"
       },
       "\u270F\uFE0F Preview & Edit"
-    ), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      if (!pendingPdfBase64 || !pdfFixResult?.accessibleHtml) {
+    ), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+      if (!pdfFixResult?.accessibleHtml) {
         addToast(t("toasts.need_both_original_pdf_remediated"), "info");
         return;
+      }
+      let _b64 = pendingPdfBase64;
+      if (!_b64) {
+        try {
+          _b64 = await ensurePdfBase64();
+        } catch (_) {
+        }
+      }
+      if (!_b64) {
+        addToast(t("toasts.need_both_original_pdf_remediated"), "info");
+        return;
+      }
+      const _rawB64 = _b64.includes(",") ? _b64.split(",")[1] : _b64;
+      let _pdfBlobUrl = "";
+      try {
+        const _bin = atob(_rawB64);
+        const _len = _bin.length;
+        const _u8 = new Uint8Array(_len);
+        for (let i = 0; i < _len; i++) _u8[i] = _bin.charCodeAt(i);
+        const _isPdf = _len >= 5 && _u8[0] === 37 && _u8[1] === 80 && _u8[2] === 68 && _u8[3] === 70 && _u8[4] === 45;
+        if (_isPdf) _pdfBlobUrl = URL.createObjectURL(new Blob([_u8], { type: "application/pdf" }));
+      } catch (_) {
       }
       const win = window.open("", "_blank");
       if (!win) {
         addToast(t("toasts.pop_up_blocked"), "error");
+        if (_pdfBlobUrl) try {
+          URL.revokeObjectURL(_pdfBlobUrl);
+        } catch (_) {
+        }
         return;
       }
       const beforeScore = pdfAuditResult?.score ?? pdfFixResult.beforeScore ?? "?";
@@ -2232,7 +2258,7 @@ Return ONLY JSON:
                           <div class="compare">
                             <div class="pane pane-left">
                               <div class="pane-header">Original PDF (Before)</div>
-                              <embed src="data:application/pdf;base64,${pendingPdfBase64.includes(",") ? pendingPdfBase64.split(",")[1] : pendingPdfBase64}" type="application/pdf" />
+                              ${_pdfBlobUrl ? `<iframe src="${_pdfBlobUrl}" title="Original PDF" style="flex:1;width:100%;border:none;background:white"></iframe>` : `<embed src="data:application/pdf;base64,${_rawB64}" type="application/pdf" />`}
                             </div>
                             <div class="divider"></div>
                             <div class="pane pane-right">
@@ -2539,11 +2565,12 @@ Return ONLY JSON:
         const cached = lastTaggedValidation;
         const checks = cached && cached.pdfUa1Checks ? cached.pdfUa1Checks : null;
         const postExportValidator = cached && cached.postExportValidator ? cached.postExportValidator : null;
+        const roundTrip = cached && cached.roundTrip ? cached.roundTrip : null;
         const html = _docPipeline.generateAccessibilityReportHtml(
           pdfFixResult,
           pdfAuditResult,
           checks,
-          { fileName: pendingPdfFile?.name || "document.pdf", postExportValidator }
+          { fileName: pendingPdfFile?.name || "document.pdf", postExportValidator, roundTrip }
         );
         const blob = new Blob([html], { type: "text/html" });
         const url = URL.createObjectURL(blob);

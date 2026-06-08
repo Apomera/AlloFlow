@@ -502,14 +502,27 @@ var createDocPipeline = function(deps) {
     if (!original) return { accepted: false, reason: 'no-original' };
     const sizeFloor = (opts && opts.sizeFloor) || 0.95;
     const textFloor = (opts && opts.textFloor) || 0.97;
+    // Upper-bound ceilings — symmetric to the floors above. Catches the
+    // categoHistoryHistory-class growth/injection attacks (any hallucinated
+    // directive that scribbles a substring across the doc). 1.40 HTML / 1.25
+    // text leaves room for legitimate ARIA/lang-span/header markup additions
+    // (HTML grows more than text in legit remediation).
+    const sizeCeiling = (opts && opts.sizeCeiling) || 1.40;
+    const textCeiling = (opts && opts.textCeiling) || 1.25;
     const sizeRatio = fixed.length / original.length;
     if (sizeRatio < sizeFloor) {
       return { accepted: false, reason: 'size-shrink', sizeRatio: sizeRatio, sizeLost: original.length - fixed.length };
+    }
+    if (sizeRatio > sizeCeiling) {
+      return { accepted: false, reason: 'size-growth-unexpected', sizeRatio: sizeRatio, sizeGained: fixed.length - original.length };
     }
     const origText = textCharCount(original);
     const fixedText = textCharCount(fixed);
     if (origText > 0 && fixedText < origText * textFloor) {
       return { accepted: false, reason: 'text-shrink', textRatio: fixedText / origText, textLost: origText - fixedText };
+    }
+    if (origText > 0 && fixedText > origText * textCeiling) {
+      return { accepted: false, reason: 'text-growth-unexpected', textRatio: fixedText / origText, textGained: fixedText - origText };
     }
     if (!(fixed.includes('<!DOCTYPE') || fixed.includes('<html') || fixed.includes('<main') || fixed.includes('<body'))) {
       return { accepted: false, reason: 'no-doc-markers' };
@@ -1563,6 +1576,14 @@ var createDocPipeline = function(deps) {
       category: 'STRUCTURE', wcag: '3.1.2', params: '{text, lang}',
       fn: function(html, p) {
         if (!p.text || !p.lang) return html;
+        // Defend against hallucinated non-BCP47 lang params. Sibling guard to fix_contrast
+        // below; same risk class (Gemini-emitted directive with unvalidated string params
+        // gets blindly substituted into the document).
+        if (!/^[a-zA-Z]{2,3}(-[A-Za-z0-9]{2,8})?$/.test(String(p.lang).trim())) {
+          try { warnLog('[fix_lang_span] rejected non-BCP47 lang: ' + JSON.stringify(p.lang).slice(0, 100)); } catch (_) {}
+          return html;
+        }
+        if (String(p.text).length < 2) return html;
         return html.replace(new RegExp(escapeForRegex(p.text)), '<span lang="' + p.lang + '">' + p.text + '</span>');
       }
     },
@@ -1570,6 +1591,15 @@ var createDocPipeline = function(deps) {
       category: 'VISUAL', wcag: '1.4.3', params: '{oldColor, newColor}',
       fn: function(html, p) {
         if (!p.oldColor || !p.newColor) return html;
+        // Root-cause guard for the categoHistoryHistory-class corruption (2026-06-07):
+        // Gemini hallucinated {oldColor:'ry', newColor:'HistoryHistory'}, the dispatcher
+        // ran it unguarded, 'category'.replace(/ry/gi,'HistoryHistory') → 'categoHistoryHistory'
+        // scribbled across body text. Require oldColor to LOOK like a CSS color before
+        // executing the substitution. #hex / rgb(a) / hsl(a) / named (letters only, 3-30).
+        if (!/^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)|[a-zA-Z]{3,30})$/.test(String(p.oldColor).trim())) {
+          try { warnLog('[fix_contrast] rejected non-color oldColor: ' + JSON.stringify(p.oldColor).slice(0, 100)); } catch (_) {}
+          return html;
+        }
         return html.replace(new RegExp(escapeForRegex(p.oldColor), 'gi'), p.newColor);
       }
     },
@@ -1881,8 +1911,18 @@ var createDocPipeline = function(deps) {
             const tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
             if (tool) {
               const before = chunk;
-              try { chunk = tool(chunk, fix); } catch(toolErr) { chunk = before; }
-              if (chunk !== before) surgicalFixCount++;
+              let after = before;
+              try { after = tool(chunk, fix); } catch(toolErr) { after = before; }
+              // Upper-bound growth guard (class defense, not tool-specific): any single
+              // surgical directive that grows the chunk by >25% is almost certainly a
+              // hallucinated-param injection (the categoHistoryHistory class). Reject;
+              // keep `before`. The tool-boundary param-validation guards are the primary
+              // defense; this is the catch-all for whatever the next hallucination invents.
+              if (after !== before && after.length > before.length * 1.25) {
+                try { warnLog('[SurgicalThenAI] directive rejected (growth>1.25x): tool=' + fix.tool + ' params=' + JSON.stringify(fix).slice(0, 200)); } catch (_) {}
+                after = before;
+              }
+              if (after !== before) { chunk = after; surgicalFixCount++; }
             }
           }
         }
@@ -7708,8 +7748,13 @@ Return ONLY the complete fixed HTML.`, true);
                   const tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
                   if (tool) {
                     const before = preFixedChunk;
-                    preFixedChunk = tool(preFixedChunk, fix);
-                    if (preFixedChunk !== before) surgicalFixCount++;
+                    let after = before;
+                    try { after = tool(preFixedChunk, fix); } catch (toolErr) { after = before; }
+                    if (after !== before && after.length > before.length * 1.25) {
+                      try { warnLog('[AutoFix] directive rejected (growth>1.25x): tool=' + fix.tool + ' params=' + JSON.stringify(fix).slice(0, 200)); } catch (_) {}
+                      after = before;
+                    }
+                    if (after !== before) { preFixedChunk = after; surgicalFixCount++; }
                   }
                 }
               }
@@ -8193,8 +8238,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
           if (tool) {
             const before = preFixedChunk;
-            preFixedChunk = tool(preFixedChunk, fix);
-            if (preFixedChunk !== before) surgicalFixCount++;
+            let after = before;
+            try { after = tool(preFixedChunk, fix); } catch (toolErr) { after = before; }
+            if (after !== before && after.length > before.length * 1.25) {
+              try { warnLog('[RefixChunk] directive rejected (growth>1.25x): tool=' + fix.tool + ' params=' + JSON.stringify(fix).slice(0, 200)); } catch (_) {}
+              after = before;
+            }
+            if (after !== before) { preFixedChunk = after; surgicalFixCount++; }
           }
         }
       }
@@ -11776,6 +11826,49 @@ tr { page-break-inside: avoid; }
   </table>`;
   })()}
 
+  ${(() => {
+    // Text-content diff between the input PDF and the exported PDF. Computed by
+    // re-extracting text from both via pdf.js (same extractor, same normalization)
+    // and reporting the token-set coverage. <99% surfaces a yellow banner with
+    // the list of missing tokens — common cause is legitimate de-hyphenation or
+    // whitespace normalization, but a real content-loss bug (b0d24ae3 class) also
+    // lands here. The list gives the user enough info to eyeball whether it's
+    // noise or a real drop without comparing the documents manually.
+    //
+    // NOT silent auto-restore — by design. The round-trip thresholds were
+    // tightened (<98% structure / <99% text) specifically to expose this class
+    // of bug; silently fixing it would re-hide it.
+    const rt = opts.roundTrip;
+    const td = rt && rt.textDiff;
+    if (!td || typeof td.coveragePct !== 'number') return '';
+    if (td.coveragePct >= 99) return '';
+    const sev = td.coveragePct < 95 ? 'fail' : 'warn';
+    const bgColor = sev === 'fail' ? '#fee2e2' : '#fef3c7';
+    const borderColor = sev === 'fail' ? '#dc2626' : '#d97706';
+    const labelColor = sev === 'fail' ? '#991b1b' : '#92400e';
+    const tokenList = (td.missingTokens || []).slice(0, 60).map(t => `<code style="background:#fff;padding:1px 6px;border-radius:3px;font-size:11px;color:#475569;border:1px solid #e2e8f0">${_esc(t)}</code>`).join(' ');
+    const moreMsg = td.missingTokenCount > 60 ? `<div style="font-size:11px;color:#64748b;margin-top:8px">… and ${td.missingTokenCount - 60} more.</div>` : '';
+    return `
+  <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Text Content Diff (Original PDF vs Exported PDF)</h2>
+  <div style="margin:12px 0;padding:14px 18px;background:${bgColor};border:1px solid ${borderColor};border-radius:8px">
+    <div style="font-weight:800;color:${labelColor};font-size:14px;margin-bottom:6px">Post-export text verification: ${td.coveragePct}% token coverage</div>
+    <p style="font-size:13px;color:${labelColor};margin:0 0 8px;line-height:1.5">
+      ${td.missingTokenCount} of ${td.originalTokenCount} tokens (≥3 chars) from the original PDF appear missing from the shipped PDF.
+      Common cause: de-hyphenation or whitespace normalization (likely harmless). Less common: a real content-loss bug at save (the round-trip detector exists to catch these — review the list below to decide).
+      ${sev === 'fail' ? '<strong>Coverage below 95% is rare for legitimate cleanup — investigate before distributing.</strong>' : ''}
+    </p>
+    <details style="margin-top:8px">
+      <summary style="cursor:pointer;font-size:12px;color:${labelColor};font-weight:600">Show ${td.missingTokenCount > 60 ? 'first 60 of ' + td.missingTokenCount : td.missingTokenCount} missing tokens</summary>
+      <div style="margin-top:10px;padding:10px;background:#fff;border-radius:6px;border:1px solid #e2e8f0;line-height:2;word-break:break-word">${tokenList}</div>
+      ${moreMsg}
+    </details>
+    <p style="font-size:11px;color:#64748b;margin:10px 0 0">
+      To re-run remediation with word-level restoration enabled (HTML-level, no AI cost): regenerate the tagged PDF from the same audit session.
+      <em>Auto-restore-and-re-export button is intentionally NOT shipped automatically — silent restoration would mask the class of bug this diff is designed to expose.</em>
+    </p>
+  </div>`;
+  })()}
+
   <h2>PDF/UA-1 Compliance Checks</h2>
   ${hasChecks
     ? `<p style="font-size:13px;color:#475569;margin:0 0 12px">Automated rule-by-rule verification of the tagged PDF against PDF/UA-1 (ISO 14289-1). Categories follow the Adobe Accessibility Checker format for familiarity. Items marked "Manual Check" cannot be verified automatically and require human review with assistive technology.</p>${_checksBlock}`
@@ -13481,6 +13574,66 @@ tr { page-break-inside: avoid; }
     } catch (_rtErr) {
       _roundTrip = { ok: null, checks: [], warnings: ['Round-trip re-parse threw: ' + (_rtErr && _rtErr.message)] };
       try { warnLog('[createTaggedPdf] round-trip re-parse failed (non-fatal): ' + (_rtErr && _rtErr.message)); } catch (_) {}
+    }
+    // ── Text-level diff: original vs shipped ──
+    // The structural round-trip check above only counts StructElems. A tag whose
+    // text was dropped at save survives as an empty StructElem and slips through.
+    // This block re-extracts text from BOTH the original input bytes and the
+    // shipped bytes via the same pdf.js extractor and computes a token-set
+    // coverage. <99% surfaces a warn + list of missing tokens that the host UI
+    // can show with a [Restore and re-export] button (HTML-level word-restoration
+    // via applyWordRestoration, no byte-splice magic). Non-fatal — failure here
+    // is no worse than the pre-existing behavior (no text diff at all).
+    if (_roundTrip && _roundTrip.ok !== null) {
+      try {
+        const _u8ToB64 = (u8) => {
+          let s = '';
+          const CHUNK = 0x8000;
+          for (let i = 0; i < u8.length; i += CHUNK) {
+            s += String.fromCharCode.apply(null, u8.subarray(i, i + CHUNK));
+          }
+          return btoa(s);
+        };
+        const _origU8 = (originalPdfBytes instanceof Uint8Array) ? originalPdfBytes : new Uint8Array(originalPdfBytes);
+        const _shipU8 = _bytes;
+        const _origB64 = _u8ToB64(_origU8);
+        const _shipB64 = _u8ToB64(_shipU8);
+        const _origDet = await extractPdfTextDeterministic(_origB64);
+        const _shipDet = await extractPdfTextDeterministic(_shipB64);
+        const _origText = (_origDet && _origDet.fullText) || '';
+        const _shipText = (_shipDet && _shipDet.fullText) || '';
+        if (_origText && _shipText) {
+          // Token-set coverage. Tokens ≥3 chars to drop punctuation/articles noise.
+          // Same normalization as the integrity-coverage block: lowercase, collapse ws.
+          const _normalize = (s) => String(s).toLowerCase().replace(/\s+/g, ' ').trim();
+          const _origTokens = new Set(_normalize(_origText).split(' ').filter(t => t.length >= 3));
+          const _shipTokens = new Set(_normalize(_shipText).split(' ').filter(t => t.length >= 3));
+          let _shared = 0;
+          const _missing = [];
+          for (const t of _origTokens) {
+            if (_shipTokens.has(t)) _shared++;
+            else _missing.push(t);
+          }
+          const _coverage = _origTokens.size ? _shared / _origTokens.size : 1;
+          _roundTrip.textDiff = {
+            coveragePct: Math.round(_coverage * 1000) / 10,
+            missingTokens: _missing.slice(0, 200),
+            missingTokenCount: _missing.length,
+            originalTokenCount: _origTokens.size,
+            shippedTokenCount: _shipTokens.size,
+            sampled: _missing.length > 200,
+          };
+          if (_coverage < 0.99) {
+            const _msg = 'Text-level verification: ' + _missing.length + ' tokens from the original PDF appear missing from the shipped PDF (' + Math.round(_coverage * 100) + '% coverage). Likely cause: legitimate de-hyphenation / whitespace normalization — review the list to confirm.';
+            (_roundTrip.warnings = _roundTrip.warnings || []).push(_msg);
+            (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Text content survived save (token coverage)', status: _coverage < 0.95 ? 'fail' : 'warn', detail: Math.round(_coverage * 100) + '% (' + _shared + '/' + _origTokens.size + ' tokens)' });
+          } else {
+            (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Text content survived save (token coverage)', status: 'pass', detail: Math.round(_coverage * 100) + '% (' + _shared + '/' + _origTokens.size + ' tokens)' });
+          }
+        }
+      } catch (_tdErr) {
+        try { warnLog('[createTaggedPdf] text-diff non-fatal: ' + (_tdErr && _tdErr.message)); } catch (_) {}
+      }
     }
     // ── Post-export validator (CDN module) ──
     // Runs the same checks as dev-tools/demo/exported_pdf_validator.cjs against

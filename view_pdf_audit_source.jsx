@@ -3626,10 +3626,34 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           className="flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold text-sm hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center justify-center gap-2">
                           ✏️ Preview & Edit
                         </button>
-                        <button onClick={() => {
-                          if (!pendingPdfBase64 || !pdfFixResult?.accessibleHtml) { addToast(t('toasts.need_both_original_pdf_remediated'), 'info'); return; }
+                        <button onClick={async () => {
+                          if (!pdfFixResult?.accessibleHtml) { addToast(t('toasts.need_both_original_pdf_remediated'), 'info'); return; }
+                          // Lazy-rehydrate PDF bytes from IndexedDB when session was restored from
+                          // a project JSON (project files deliberately omit PDF bytes to stay small).
+                          // Mirrors the same pattern used at lines 963 / 1836 / 3853 — Compare was
+                          // the only PDF-button that wasn't doing this, which broke after project-restore.
+                          let _b64 = pendingPdfBase64;
+                          if (!_b64) {
+                            try { _b64 = await ensurePdfBase64(); } catch (_) {}
+                          }
+                          if (!_b64) { addToast(t('toasts.need_both_original_pdf_remediated'), 'info'); return; }
+                          // Build a blob: URL in the OPENER so the popup's <embed>/<iframe> doesn't
+                          // hit Chrome's silent-blank ceiling on large data: URLs (~2MB), which is
+                          // what blanks the Before pane for any normal-sized PDF. Sanity-check the
+                          // %PDF- magic bytes so we don't ship a malformed payload to a renderer
+                          // that hides the failure. Fall back to data URL only if blob path errors.
+                          const _rawB64 = _b64.includes(',') ? _b64.split(',')[1] : _b64;
+                          let _pdfBlobUrl = '';
+                          try {
+                            const _bin = atob(_rawB64);
+                            const _len = _bin.length;
+                            const _u8 = new Uint8Array(_len);
+                            for (let i = 0; i < _len; i++) _u8[i] = _bin.charCodeAt(i);
+                            const _isPdf = _len >= 5 && _u8[0] === 0x25 && _u8[1] === 0x50 && _u8[2] === 0x44 && _u8[3] === 0x46 && _u8[4] === 0x2D;
+                            if (_isPdf) _pdfBlobUrl = URL.createObjectURL(new Blob([_u8], { type: 'application/pdf' }));
+                          } catch (_) {}
                           const win = window.open('', '_blank');
-                          if (!win) { addToast(t('toasts.pop_up_blocked'), 'error'); return; }
+                          if (!win) { addToast(t('toasts.pop_up_blocked'), 'error'); if (_pdfBlobUrl) try { URL.revokeObjectURL(_pdfBlobUrl); } catch (_) {} return; }
                           const beforeScore = pdfAuditResult?.score ?? pdfFixResult.beforeScore ?? '?';
                           const afterAi = pdfFixResult.afterScore;
                           const afterAxe = pdfFixResult.axeAudit?.score ?? null;
@@ -3665,7 +3689,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div class="compare">
                             <div class="pane pane-left">
                               <div class="pane-header">Original PDF (Before)</div>
-                              <embed src="data:application/pdf;base64,${pendingPdfBase64.includes(',') ? pendingPdfBase64.split(',')[1] : pendingPdfBase64}" type="application/pdf" />
+                              ${_pdfBlobUrl ? `<iframe src="${_pdfBlobUrl}" title="Original PDF" style="flex:1;width:100%;border:none;background:white"></iframe>` : `<embed src="data:application/pdf;base64,${_rawB64}" type="application/pdf" />`}
                             </div>
                             <div class="divider"></div>
                             <div class="pane pane-right">
@@ -4015,11 +4039,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 // bytes, 14 PDF/UA-1-relevant rules) into the report opts so
                                 // the renderer can show the "Independent Self-Check" section.
                                 const postExportValidator = cached && cached.postExportValidator ? cached.postExportValidator : null;
+                                // Thread the round-trip result too (now carries textDiff: coveragePct,
+                                // missingTokens, missingTokenCount) so the renderer can surface a
+                                // "Text content diff" section when text was dropped at save.
+                                const roundTrip = cached && cached.roundTrip ? cached.roundTrip : null;
                                 const html = _docPipeline.generateAccessibilityReportHtml(
                                   pdfFixResult,
                                   pdfAuditResult,
                                   checks,
-                                  { fileName: pendingPdfFile?.name || 'document.pdf', postExportValidator }
+                                  { fileName: pendingPdfFile?.name || 'document.pdf', postExportValidator, roundTrip }
                                 );
                                 const blob = new Blob([html], { type: 'text/html' });
                                 const url = URL.createObjectURL(blob);
