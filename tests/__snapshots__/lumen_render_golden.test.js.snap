@@ -172,55 +172,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 <label class="text-xs text-slate-600 flex items-center gap-1">
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -397,55 +349,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 <label class="text-xs text-slate-600 flex items-center gap-1">
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -650,55 +554,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <label class="text-xs text-slate-600 flex items-center gap-1">
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -885,55 +741,7 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 <label class="text-xs text-slate-600 flex items-center gap-1">
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -1086,55 +894,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 <label class="text-xs text-slate-600 flex items-center gap-1">
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -1260,55 +1020,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 <label class="text-xs text-slate-600 flex items-center gap-1">
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -1560,55 +1272,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <label class="text-xs text-slate-600 flex items-center gap-1">
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -1751,55 +1415,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 <label class="text-xs text-slate-600 flex items-center gap-1">
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -1882,55 +1498,6 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
-</div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -2183,55 +1750,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -2368,55 +1887,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 <label class="text-xs text-slate-600 flex items-center gap-1">
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -2543,55 +2014,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 <label class="text-xs text-slate-600 flex items-center gap-1">
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -2750,55 +2173,7 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -2870,55 +2245,6 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): n=1 — too few points to estimate a trend; no line drawn (need at least 3).</p>
-</div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -3050,55 +2376,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 </circle>
 </svg>
 <button class="mt-2 text-xs underline text-slate-600" aria-expanded="false">Show data table (the chart as a table)</button>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -3173,55 +2451,6 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): n=2 paired points — too few to estimate an association; no correlation reported (need at least 3).</p>
-</div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
@@ -3371,55 +2600,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 <label class="text-xs text-slate-600 flex items-center gap-1">
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -3579,55 +2760,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 <label class="text-xs text-slate-600 flex items-center gap-1">
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
-</div>
+<button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
@@ -3764,55 +2897,6 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 </div>
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
-</div>
-<div class="mt-3 p-3 rounded-lg" style="background:#0a1f2e;border:1px solid #0891b2;color:#e8f0f5">
-<h4 class="text-xs font-black uppercase tracking-wider mb-1" style="color:#22d3ee">🔬 Evidence Inquiry — Should I Trust This Trend?</h4>
-<p class="text-[10px] opacity-85 mb-2 leading-snug">Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.</p>
-<div class="inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2" style="background:#22d3ee;color:#000">Suggestive · slope/noise 0.41</div>
-<p class="text-[10px] opacity-80 mb-2">Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.</p>
-<div class="grid grid-cols-2 gap-2 mb-2">
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Trend strength</span>
-<span class="font-mono font-bold" style="color:#22d3ee">0.50</span>
-</div>
-<input type="range" min="0" max="2" step="0.05" class="w-full" value="0.5"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Observations</span>
-<span class="font-mono font-bold" style="color:#22d3ee">8</span>
-</div>
-<input type="range" min="2" max="40" step="1" class="w-full" value="8"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>Baseline value</span>
-<span class="font-mono font-bold" style="color:#22d3ee">50</span>
-</div>
-<input type="range" min="0" max="200" step="1" class="w-full" value="50"/>
-</label>
-<label class="text-[10px]">
-<div class="flex justify-between mb-0.5">
-<span>AI ladder (L0-L3)</span>
-<span class="font-mono font-bold" style="color:#22d3ee">L1</span>
-</div>
-<input type="range" min="0" max="3" step="1" class="w-full" value="1"/>
-</label>
-</div>
-<div class="flex gap-2 mb-2">
-<button class="flex-1 px-2 py-1 rounded text-[10px] font-bold" style="background:#0a1f2e;color:#22d3ee;border:1px solid #0891b2;cursor:pointer">📋 Log this evidence call</button>
-<button class="px-2 py-1 rounded text-[10px]" style="background:#0a0a1a;color:#94a3b8;border:1px solid #1e293b;cursor:pointer">Reset</button>
-</div>
-<label class="block text-[10px] font-bold opacity-85 mb-1">Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)</label>
-<textarea rows="2" placeholder="e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty..." class="w-full p-1.5 rounded text-[10px] mb-2" style="background:#0a0a1a;border:1px solid #0891b2;color:#e8f0f5;resize:vertical">
-</textarea>
-<button class="px-2 py-1 rounded text-[10px] font-bold mb-2" style="background:#0a0a1a;color:#22d3ee;border:1px solid #1e293b;cursor:pointer">🤔 I&#x27;m stuck — show open questions</button>
-<label class="flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1">
-<input type="checkbox"/>
-<span>I can explain why this evidence configuration yields this evidentiary state.</span>
-</label>
-<p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"

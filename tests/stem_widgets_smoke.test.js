@@ -74,7 +74,7 @@ const WIDGETS = [
   { file: 'stem_lab/stem_tool_allobotsage.js', toolId: 'alloBotSage', data: { alloBotSage: { phase: 'inquiry' } } },
 
   // B17
-  { file: 'stem_lab/stem_tool_lumen.js', toolId: 'lumen', data: { lumen: { observations: [{ x: 1, y: 50, phase: 'baseline' }, { x: 2, y: 52, phase: 'baseline' }, { x: 3, y: 55, phase: 'baseline' }] } } },
+  { file: 'stem_lab/stem_tool_lumen.js', toolId: 'lumen', data: { lumen: { observations: [{ x: 1, y: 50, phase: 'baseline' }, { x: 2, y: 52, phase: 'baseline' }, { x: 3, y: 55, phase: 'baseline' }], showInquiry: true } } }, // showInquiry: the Evidence-Inquiry sandbox is now gated behind a default-closed disclosure (needs >=3 obs + the toggle)
   { file: 'stem_lab/stem_tool_assessmentliteracy.js', toolId: 'assessmentLiteracy', data: { assessmentLiteracy: { view: 'inquiry' } } },
   { file: 'stem_lab/stem_tool_printingpress.js', toolId: 'printingPress', data: { printingPress: { view: 'pressInquiry' } } },
   { file: 'stem_lab/stem_tool_schoolbehaviortoolkit.js', toolId: 'schoolBehaviorToolkit', data: { schoolBehaviorToolkit: { activeSection: 'inquiry' } } },

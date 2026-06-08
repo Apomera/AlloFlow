@@ -3066,8 +3066,14 @@
             if (d.exportMsg) kids.push(h('div', { key: 'expmsg', className: 'mt-1 text-xs italic text-slate-500' }, d.exportMsg));
           }
 
-          // ══ EVIDENCE INQUIRY widget (H7b'') ══
-          kids.push((function() {
+          // ══ EVIDENCE INQUIRY widget (H7b'') — a what-if SANDBOX (hypothetical
+          // sliders, NOT your data). Gated to appear only once real data exists,
+          // behind a default-closed disclosure, so the empty canvas + first run
+          // stay calm (positioning de-drift: it must not look like a different app).
+          if (obs.length >= 3) {
+            kids.push(h('button', { key: 'iqToggle', className: 'mt-3 text-xs underline text-slate-600', 'aria-expanded': d.showInquiry ? 'true' : 'false', onClick: function () { announce(d.showInquiry ? 'Evidence-inquiry sandbox hidden.' : 'Evidence-inquiry sandbox shown.'); upd('showInquiry', !d.showInquiry); } }, '🔬 ' + (d.showInquiry ? 'Hide the' : 'Learn:') + ' “should I trust a trend?” sandbox'));
+          }
+          if (obs.length >= 3 && d.showInquiry) kids.push((function() {
             var iq = d.evidenceIQ || { trendStrength: 0.5, sampleSize: 8, baseline: 50, aiLevel: 1, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
             function setIQ(patch) { upd('evidenceIQ', Object.assign({}, iq, patch)); }
             function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
@@ -3083,8 +3089,8 @@
               overinterpreted: { label: 'Over-interpreted', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'AI dial cranked too high relative to evidence. The narrative confidence outruns the data — exactly what Lumen\'s ladder is designed to prevent.' }
             })[state];
             return h('div', { key: 'evIQ', className: 'mt-3 p-3 rounded-lg', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-              h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, '🔬 Evidence Inquiry — Should I Trust This Trend?'),
-              h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, 'Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.'),
+              h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, '🔬 Evidence Inquiry — a what-if sandbox (not your data)'),
+              h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, 'A learning sandbox: drag these HYPOTHETICAL dials — trend strength, sample size, baseline, and a what-if AI level — to feel where evidence sits between insufficient and over-interpreted. It does not read your data and does not change your live AI ceiling. No score, no reveal.'),
               h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' · slope/noise ' + slopeConfidence.toFixed(2)),
               h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
               h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
@@ -3101,7 +3107,7 @@
                   h('input', { type: 'range', min: 0, max: 200, step: 1, value: iq.baseline, onChange: function(e) { setKey('baseline', parseInt(e.target.value, 10)); }, className: 'w-full' })
                 ),
                 h('label', { className: 'text-[10px]' },
-                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'AI ladder (L0-L3)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, 'L' + iq.aiLevel)),
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'What-if AI level (not your live dial)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, 'L' + iq.aiLevel)),
                   h('input', { type: 'range', min: 0, max: 3, step: 1, value: iq.aiLevel, onChange: function(e) { setKey('aiLevel', parseInt(e.target.value, 10)); }, className: 'w-full' })
                 )
               ),
