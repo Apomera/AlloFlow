@@ -36,8 +36,21 @@ const createGeminiAPI = (deps) => {
         return { kind: 'refusal', userMessage: 'Safety filter blocked the response.', model: null };
       }
       // Genuine quota: HTTP 429 or the structured Gemini code.
+      // 429 means EITHER per-minute rate-limit (transient, retries in seconds)
+      // OR per-day quota (resolves at midnight Pacific). We can't reliably
+      // distinguish them from the error message alone, so word the user-facing
+      // message to admit both possibilities rather than claiming "daily."
       if (msg.includes('429') || lower.includes('resource_exhausted') || lower.includes('quota exceeded')) {
-        return { kind: 'quota', userMessage: 'Daily Gemini API quota reached.', model: null };
+        // Look for explicit "per minute" / "per day" hints in the body to
+        // narrow the wording when possible.
+        const perMinHint = lower.includes('per minute') || lower.includes('rpm') || lower.includes('per-minute');
+        const perDayHint = lower.includes('per day') || lower.includes('daily limit') || lower.includes('rpd');
+        const userMessage = perMinHint
+          ? 'Gemini API per-minute rate limit hit — usually clears in 60 seconds.'
+          : perDayHint
+            ? 'Gemini API daily quota reached — resolves at midnight Pacific time.'
+            : 'Gemini API rate or quota limit hit. May be a per-minute burst (clears in seconds) or a daily quota (resolves at midnight Pacific) — try again in a minute first.';
+        return { kind: 'quota', userMessage, model: null };
       }
       // Auth: HTTP 401 + the documented Gemini codes.
       if (
@@ -52,9 +65,14 @@ const createGeminiAPI = (deps) => {
         // and permission denials. If the body actually mentions quota, treat
         // it as quota; otherwise as auth.
         if (lower.includes('quota') || lower.includes('rate')) {
-          return { kind: 'quota', userMessage: 'Gemini API rate/quota limit hit.', model: null };
+          return { kind: 'quota', userMessage: 'Gemini API rate or quota limit hit — try again in a minute first; if it persists, you may have hit the daily quota.', model: null };
         }
-        return { kind: 'auth', userMessage: 'Gemini API key is invalid, expired, or missing. AI features are unavailable until it is fixed.', model: null };
+        // 401 is normally a bad/expired/missing key. The rare case: Google can
+        // suspend a key for sustained heavy usage and then it starts returning
+        // 401 even though the root cause is rate-related. Surface that
+        // possibility honestly so a key that was working an hour ago doesn't
+        // get prematurely regenerated.
+        return { kind: 'auth', userMessage: 'Gemini API key is invalid, expired, or missing. (Rare: if the key was working recently, sustained heavy usage can trigger a temporary 401 — try waiting 5-10 minutes before regenerating.)', model: null };
       }
       // Config: model not found / unsupported / 404 / INVALID_ARGUMENT.
       if (
@@ -137,8 +155,15 @@ const createGeminiAPI = (deps) => {
           const prefix = classification.kind === 'auth' ? '🔑 Auth error: '
                        : classification.kind === 'config' ? '⚙ Configuration error: '
                        : '🛑 Quota reached: ';
-          msgEl.textContent = prefix + classification.userMessage +
-            ' AI-dependent steps (Vision OCR, rewrite, alt-text) will fail until this is resolved. Deterministic fixes still run.';
+          // Per-kind trailing advice. Was hardcoded "until this is resolved"
+          // for all kinds, which under-described the quota case (user couldn't
+          // tell if a wait would help or if they needed to fix something).
+          const trailing = classification.kind === 'quota'
+            ? ' AI-dependent steps (Vision OCR, rewrite, alt-text) will fail meanwhile. Deterministic fixes still run — try again in about a minute. If the message recurs immediately, you have likely hit the daily quota and will need to wait until midnight Pacific or upgrade the Gemini tier.'
+            : classification.kind === 'auth'
+              ? ' AI-dependent steps (Vision OCR, rewrite, alt-text) will fail until the key is fixed. Deterministic fixes still run. (If the key was working recently, this may be a temporary 401 from sustained heavy usage — wait 5-10 minutes before regenerating the key.)'
+              : ' AI-dependent steps (Vision OCR, rewrite, alt-text) will fail until this is resolved. Deterministic fixes still run.';
+          msgEl.textContent = prefix + classification.userMessage + trailing;
         }
         try {
           window.dispatchEvent(new CustomEvent('alloflow:quota-exhausted', { detail: window.__alloflowQuotaState }));
